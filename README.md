@@ -2,12 +2,21 @@
 #🔥 **Ember**
 ###*An experimental modular MMO server emulator.*
 ---
-Ember is an educational server emulation project targeting the WoW 1.12.1 protocol striving to build a modular and robust architecture.
+Ember is an educational server emulation project writtentargeting the WoW 1.12.1 protocol striving to build a modular and robust architecture.
 
 ###Project aims:
 - Offer a broad range of activities for contributors to develop their skills in.
 - A focus on code quality and robustness over features.
 - A modular architecture in contrast with the monolithic architectures of similar projects.
+
+###Supported platforms:
+Ember aims to support the following platforms as a minimum:
+
+| Operating System  | Architectures  |
+| :------------ |:---------------:|
+| Linux      | x86, x64, ARMv6 (tentative) |
+| Windows       | x86, x64        |
+| Mac OS | x86, x64        |
 
 ###Contributing:
 Contributors are always welcome. If you seek to get your hands dirty, take a peek at 'docs/Contributing.md' for advice on getting started.
