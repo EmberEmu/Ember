@@ -77,7 +77,7 @@ public:
 	~A();
 	int next_random();
 
-	private:
+private:
 	const Generator gen;
 	void do_work();
 };
