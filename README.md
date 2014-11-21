@@ -2,7 +2,7 @@
 #🔥 **Ember**
 ###*An experimental modular MMO server emulator.*
 ---
-Ember is an educational server emulation project writtentargeting the WoW 1.12.1 protocol striving to build a modular and robust architecture.
+Ember is an educational server emulation project targeting the WoW 1.12.1 protocol, striving to be a modular and robust architecture.
 
 ###Project aims:
 - Offer a broad range of activities for contributors to develop their skills in.
