@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18)
-		message(FATAL_ERROR "You need VS14 or newer to compile Ember on Windows!")
+		message(FATAL_ERROR "You need VS2013 or newer to compile Ember on Windows!")
 	endif()
 endif()
 
@@ -27,13 +27,14 @@ include_directories(${Boost_INCLUDE_DIRS})
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(VERSION --tags --dirty=-d)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/shared/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
-list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" version.h)
-set(version_file "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/shared/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
+list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
+set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
-#Botan
+# Botan
 find_package(Botan REQUIRED)
+include_directories(${BOTAN_INCLUDE_DIRS})
 
-#MySQL Connector C++
+# MySQL Connector C++
 
 add_subdirectory(src)
