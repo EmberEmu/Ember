@@ -3,7 +3,7 @@
 #include "Version.h"
 #include <iostream>
 
-namespace Ember {
+namespace ember {
 
 void print_banner(const std::string& display_name) {
 	std::cout << "\n"

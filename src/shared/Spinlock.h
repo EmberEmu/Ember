@@ -10,7 +10,7 @@
 
 #include <atomic>
 
-namespace Ember {
+namespace ember {
 
 class Spinlock {
 	typedef enum { LOCKED, UNLOCKED } State;

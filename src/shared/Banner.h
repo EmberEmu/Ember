@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Ember {
+namespace ember {
 
 void print_banner(const std::string& display_name);
 
