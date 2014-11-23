@@ -53,6 +53,11 @@ ADD_SUBDIRECTORY(deps/gtest-1.7.0)
 enable_testing()
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	option(gtest_force_shared_crt ON)
+	set(gtest_force_shared_crt ON)
+endif()
+
 ##############################
 #         Unit Tests         #
 ##############################
