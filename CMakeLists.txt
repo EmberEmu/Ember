@@ -15,7 +15,10 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	endif()
 endif()
 
-# Boost
+
+##############################
+#            Boost           #
+##############################
 add_definitions(-DBOOST_ALL_NO_LIB)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
@@ -23,7 +26,9 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.56.0 REQUIRED COMPONENTS program_options log system)
 include_directories(${Boost_INCLUDE_DIRS})
 
-# Git
+##############################
+#             Git            #
+##############################
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(VERSION --tags --dirty=-d)
@@ -31,10 +36,28 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/shared/Version.cpp.in" "${CMAKE_
 list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
 set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
-# Botan
+##############################
+#            Botan           #
+##############################
 find_package(Botan REQUIRED)
 include_directories(${BOTAN_INCLUDE_DIRS})
 
-# MySQL Connector C++
+##############################
+#     MySQL Connector C++    #
+##############################
+
+##############################
+#         Google Test        #
+##############################
+ADD_SUBDIRECTORY(deps/gtest-1.7.0)
+enable_testing()
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+##############################
+#         Unit Tests         #
+##############################
+add_executable(unit_tests tests/testgtest.cpp)
+target_link_libraries(unit_tests gtest gtest_main)
+add_test(unit_tests unit_tests)
 
 add_subdirectory(src)
