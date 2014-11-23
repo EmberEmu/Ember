@@ -15,7 +15,7 @@ set(EXECUTABLE_SRC
 	main.cpp
 	)
 
-include_directories(${CMAKE_SOURCE_DIR}/src/)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(login ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${EXECUTABLE_NAME} ${BOTAN_LIBRARY})

@@ -55,14 +55,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	option(gtest_force_shared_crt ON)
-	set(gtest_force_shared_crt ON)
 endif()
 
-##############################
-#         Unit Tests         #
-##############################
-add_executable(unit_tests tests/test.cpp)
-target_link_libraries(unit_tests gtest gtest_main)
-add_test(unit_tests unit_tests)
-
+add_subdirectory(tests)
 add_subdirectory(src)
