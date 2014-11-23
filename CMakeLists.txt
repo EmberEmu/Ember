@@ -53,11 +53,9 @@ ADD_SUBDIRECTORY(deps/gtest-1.7.0)
 enable_testing()
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-##############################
-#         Unit Tests         #
-##############################
-add_executable(unit_tests tests/testgtest.cpp)
-target_link_libraries(unit_tests gtest gtest_main)
-add_test(unit_tests unit_tests)
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	option(gtest_force_shared_crt ON)
+endif()
 
+add_subdirectory(tests)
 add_subdirectory(src)

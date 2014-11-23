@@ -7,15 +7,15 @@
 set(EXECUTABLE_NAME login)
 set(EXECUTABLE_SRC
 	../shared/Banner.cpp
-	SRP6.h
-	SRP6.cpp
-	SRP6Util.h
-	SRP6Util.cpp
-	SRP6Generator.h
+	srp6/SRP6.h
+	srp6/SRP6.cpp
+	srp6/SRP6Util.h
+	srp6/SRP6Util.cpp
+	srp6/SRP6Generator.h
 	main.cpp
 	)
 
-include_directories(${CMAKE_SOURCE_DIR}/src/)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(login ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${EXECUTABLE_NAME} ${BOTAN_LIBRARY})

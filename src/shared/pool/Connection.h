@@ -39,7 +39,7 @@ public:
 	}
 
 	Connection(Connection<ConType>&& src)
-		       : detail(src.detail), fh(std::move(src.fh)) {
+		       : detail(std::move(src.detail)), fh(std::move(src.fh)) {
 		src.released = true;
 	}
 

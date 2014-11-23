@@ -27,8 +27,8 @@ ServerSession::ServerSession(const Generator& gen, const BigInt& v, const BigInt
 }
 
 SessionKey ServerSession::session_key(const BigInt& A) {
-	if(!A) {
-		throw SRP6::exception("Client's ephemeral key is 0");
+	if(A <= 0) {
+		throw SRP6::exception("Client's ephemeral key <= 0");
 	}
 
 	A_ = A;
