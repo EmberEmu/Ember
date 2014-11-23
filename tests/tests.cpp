@@ -10,7 +10,6 @@
 #include <login/srp6/SRP6.h>
 #include <botan/bigint.h>
 #include <memory>
-#include <iostream>
 
 class SRP6ServerSessionTest : public ::testing::Test {
 public:
