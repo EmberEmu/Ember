@@ -16,7 +16,7 @@ void print_banner(const std::string& display_name) {
 		R"(                88b     d88  d88  88P d88,  d8888b     d88      )" << "\n"
 		R"(                `?888P'd88' d88'  88bd88'`?88P'`?888P'd88'      )" << "\n\n";
 		
-	std::cout << display_name << ", v" << version::VERSION << " (" << version::GIT_HASH << ")" << std::endl;
+	std::cout << display_name << ", v" << version::VERSION << " (" << version::GIT_HASH << ")\n\n";
 }
 
 }
