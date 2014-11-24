@@ -16,7 +16,7 @@ int main(int argc, const char* argv[]) try {
 	ember::print_banner("Login Daemon");
 	const po::variables_map arguments = parse_arguments(argc, argv);
 	Botan::LibraryInitializer init("thread_safe");
-} catch (std::exception& e) {
+} catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
@@ -29,7 +29,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("config,c", po::value<std::string>()->default_value("login.conf"),
 			"Path to the configuration file");
 
-	//Config only options
+	//Config file only options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
 		("networking.ip,", po::value<std::string>()->default_value("0.0.0.0"))
