@@ -34,10 +34,11 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	config_opts.add_options()
 		("networking.ip,", po::value<std::string>()->default_value("0.0.0.0"))
 		("networking.port", po::value<int>()->default_value(3724)->notifier(&verify_port))
-		("database.user", po::value<std::string>()->required())
+		("database.username", po::value<std::string>()->required())
 		("database.password", po::value<std::string>())
 		("database.database", po::value<std::string>()->required())
-		("database.host", po::value<std::string>()->required());
+		("database.host", po::value<std::string>()->required())
+		("database.port", po::value<int>()->required()->notifier(&verify_port));
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
