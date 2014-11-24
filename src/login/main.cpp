@@ -14,7 +14,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
 	ember::print_banner("Login Daemon");
-	po::variables_map arguments = parse_arguments(argc, argv);
+	const po::variables_map arguments = parse_arguments(argc, argv);
 	Botan::LibraryInitializer init("thread_safe");
 } catch (std::exception& e) {
 	std::cerr << e.what();
@@ -25,7 +25,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Command-line only options
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
-		("version,v", "Display login daemon version information")
 		("help", "Displays a list of available options")
 		("config,c", po::value<std::string>()->default_value("login.conf"),
 			"Path to the configuration file");
