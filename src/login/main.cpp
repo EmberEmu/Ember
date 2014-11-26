@@ -15,7 +15,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 int main(int argc, const char* argv[]) try {
 	ember::print_banner("Login Daemon");
 	const po::variables_map arguments = parse_arguments(argc, argv);
-	Botan::LibraryInitializer init("thread_safe");
+	//Botan::LibraryInitializer init("thread_safe");
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;

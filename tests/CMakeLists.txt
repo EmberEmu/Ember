@@ -6,8 +6,9 @@
 
 
 set(EXECUTABLE_SRC
-	${CMAKE_SOURCE_DIR}/src/login/srp6/SRP6.cpp
+	${CMAKE_SOURCE_DIR}/src/login/srp6/SRP6Server.cpp
 	${CMAKE_SOURCE_DIR}/src/login/srp6/SRP6Util.cpp
+	${CMAKE_SOURCE_DIR}/src/login/srp6/SRP6Client.cpp
 	tests.cpp
 	)
 

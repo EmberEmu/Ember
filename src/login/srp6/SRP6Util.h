@@ -31,7 +31,7 @@ Botan::BigInt decode_flip(Botan::SecureVector<Botan::byte>& val);
 Botan::BigInt decode_flip_copy(const Botan::SecureVector<Botan::byte>& val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B);
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-const Botan::SecureVector<Botan::byte>& salt);
+                        const Botan::SecureVector<Botan::byte>& salt);
 
 inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& x) {
 	return generator(x);
@@ -46,10 +46,13 @@ inline Botan::BigInt generate(const std::string& identifier, const std::string& 
 } //detail
 
 SVPair generate_verifier(const std::string& identifier, const std::string& password,
-	const Generator& generator, std::size_t salt_len);
+	                     const Generator& generator, std::size_t salt_len);
 
-Botan::BigInt verify_client_proof(const std::string& identifier, const SessionKey& key,
-	const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,
-	const Botan::BigInt& B, const Botan::SecureVector<Botan::byte>& salt);
+Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
+	                                const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,
+	                                const Botan::BigInt& B, const Botan::SecureVector<Botan::byte>& salt);
+
+Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
+                                    const SessionKey& key);
 
 } //SRP6

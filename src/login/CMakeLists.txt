@@ -7,8 +7,8 @@
 set(EXECUTABLE_NAME login)
 set(EXECUTABLE_SRC
 	../shared/Banner.cpp
-	srp6/SRP6.h
-	srp6/SRP6.cpp
+	srp6/SRP6Server.h
+	srp6/SRP6Server.cpp
 	srp6/SRP6Util.h
 	srp6/SRP6Util.cpp
 	srp6/SRP6Generator.h

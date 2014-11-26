@@ -9,6 +9,7 @@
 #include "SRP6Util.h"
 #include <botan/sha160.h>
 #include <botan/numthry.h>
+#include <botan/secmem.h>
 #include <algorithm>
 
 using Botan::byte;
@@ -73,10 +74,10 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 
 } //detail
 
-Botan::BigInt verify_client_proof(const std::string& identifier, const SessionKey& key,
-                                  const Botan::BigInt& N, const Botan::BigInt& g,
-                                  const Botan::BigInt& A, const Botan::BigInt& B,
-                                  const SecureVector<byte>& salt) {
+Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
+                                    const Botan::BigInt& N, const Botan::BigInt& g,
+                                    const Botan::BigInt& A, const Botan::BigInt& B,
+                                    const SecureVector<byte>& salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
 	Botan::SHA_160 hasher;
 	SecureVector<byte> n_hash(hasher.process(detail::encode_flip(N)));
@@ -92,6 +93,16 @@ Botan::BigInt verify_client_proof(const std::string& identifier, const SessionKe
 	hasher.update(salt);
 	hasher.update(detail::encode_flip(A));
 	hasher.update(detail::encode_flip(B));
+	hasher.update(key);
+	return detail::decode_flip(hasher.final());
+}
+
+Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
+                                    const SessionKey& key) {
+	//M = H(A, M, K)
+	Botan::SHA_160 hasher;
+	hasher.update(detail::encode_flip(A));
+	hasher.update(detail::encode_flip(proof));
 	hasher.update(key);
 	return detail::decode_flip(hasher.final());
 }
