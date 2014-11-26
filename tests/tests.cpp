@@ -11,7 +11,6 @@
 #include <login/srp6/SRP6Client.h>
 #include <botan/bigint.h>
 #include <memory>
-#include <iostream>
 
 class SRP6SessionTest : public ::testing::Test {
 public:

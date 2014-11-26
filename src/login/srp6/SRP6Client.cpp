@@ -43,7 +43,7 @@ SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>&
 	}
 
 	BigInt x = detail::compute_x(identifier, password, salt);
-	BigInt S = power_mod(B - k * gen(x), a + u * x, gen.prime());
+	BigInt S = power_mod((B - k * gen(x)) % gen.prime(), a + u * x, gen.prime());
 	return SessionKey(detail::interleaved_hash(detail::encode_flip(S)));
 }
 
