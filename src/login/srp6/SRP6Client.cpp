@@ -38,7 +38,7 @@ SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>&
 
 	BigInt u = detail::scrambler(A_, B);
 
-	if (u <= 0) {
+	if(u <= 0) {
 		throw SRP6::exception("Scrambling parameter <= 0");
 	}
 
