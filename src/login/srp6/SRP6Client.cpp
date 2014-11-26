@@ -22,33 +22,33 @@ using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
 Client::Client(std::string identifier, std::string password, Generator gen, int key_size)
-               : identifier(std::move(identifier)), password(std::move(password)),
-			     gen(std::move(gen)) {
-	a = BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % this->gen.prime();
-	A = gen(a) /* % N */;
+               : identifier_(std::move(identifier)), password_(std::move(password)),
+			     gen_(std::move(gen)) {
+	a_ = BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen_.prime();
+	A_ = gen(a_) /* % N */;
 }
 
 SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>& salt) {
-	if(!(B % gen.prime()) || B < 0) {
+	if(!(B % gen_.prime()) || B < 0) {
 		throw SRP6::exception("Server's ephemeral key is invalid!");
 	}
 
-	this->B = B;
-	this->salt = salt;
+	B_ = B;
+	salt_ = salt;
 
-	BigInt u = detail::scrambler(A, B);
+	BigInt u = detail::scrambler(A_, B);
 
 	if (u <= 0) {
 		throw SRP6::exception("Scrambling parameter <= 0");
 	}
 
-	BigInt x = detail::compute_x(identifier, password, salt);
-	BigInt S = power_mod((B - k * gen(x)) % gen.prime(), a + u * x, gen.prime());
+	BigInt x = detail::compute_x(identifier_, password_, salt);
+	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
 	return SessionKey(detail::interleaved_hash(detail::encode_flip(S)));
 }
 
 BigInt Client::generate_proof(const SessionKey& key) const {
-	return generate_client_proof(identifier, key, gen.prime(), gen.generator(), A, B, salt);
+	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B_, salt_);
 }
 
 } //SRP6

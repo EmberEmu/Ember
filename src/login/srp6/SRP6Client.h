@@ -17,18 +17,18 @@
 namespace SRP6 {
 
 class Client {
-	const Generator gen;
-	const Botan::BigInt v;
-	const Botan::BigInt k{ 3 };
-	Botan::BigInt A, B, a;
-	Botan::SecureVector<Botan::byte> salt;
-	std::string identifier, password;
+	const Generator gen_;
+	const Botan::BigInt v_;
+	const Botan::BigInt k_{ 3 };
+	Botan::BigInt A_, B_, a_;
+	Botan::SecureVector<Botan::byte> salt_;
+	std::string identifier_, password_;
 
 public:
 	Client(std::string identifier, std::string password, Generator gen, int key_size = 32);
 	SessionKey session_key(const Botan::BigInt& B, const Botan::SecureVector<Botan::byte>& salt);
 	Botan::BigInt generate_proof(const SessionKey& key) const;
-	inline const Botan::BigInt& public_ephemeral() const { return A; }
+	inline const Botan::BigInt& public_ephemeral() const { return A_; }
 };
 
 } //SRP6

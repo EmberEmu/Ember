@@ -21,24 +21,24 @@ using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
 Server::Server(const Generator& gen, const BigInt& v, int key_size)
-               : v(v), N(gen.prime()), 
-                 b(BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime()) {
-	B = (k * v + gen(b)) /* % N */;
+               : v_(v), N_(gen.prime()), 
+                 b_(BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime()) {
+	B_ = (k_ * v + gen(b_)) /* % N */;
 }
 
 SessionKey Server::session_key(const BigInt& A) {
-	if(!(A % N) || A < 0) {
+	if(!(A % N_) || A < 0) {
 		throw SRP6::exception("Client's ephemeral key is invalid!");
 	}
 
-	this->A = A;
-	BigInt u = detail::scrambler(A, B);
-	BigInt S = power_mod(A * power_mod(v, u, N), b, N);
+	A_ = A;
+	BigInt u = detail::scrambler(A, B_);
+	BigInt S = power_mod(A * power_mod(v_, u, N_), b_, N_);
 	return SessionKey(detail::interleaved_hash(detail::encode_flip(S)));
 }
 
 BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof) const {
-	return generate_server_proof(A, client_proof, key);
+	return generate_server_proof(A_, client_proof, key);
 }
 
 } //SRP6

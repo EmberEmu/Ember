@@ -16,12 +16,12 @@
 namespace SRP6 {
 
 class Server {
-	const Botan::BigInt v, N, b, k{ 3 };
-	Botan::BigInt B, A;
+	const Botan::BigInt v_, N_, b_, k_{ 3 };
+	Botan::BigInt B_, A_;
 
 public:
 	Server(const Generator& g, const Botan::BigInt& v, int key_size = 32);
-	inline const Botan::BigInt& public_ephemeral() const { return B; }
+	inline const Botan::BigInt& public_ephemeral() const { return B_; }
 	SessionKey session_key(const Botan::BigInt& A);
 	Botan::BigInt generate_proof(const SessionKey& key, const Botan::BigInt& client_proof) const;
 };
