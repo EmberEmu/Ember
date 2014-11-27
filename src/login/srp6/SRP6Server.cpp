@@ -23,7 +23,7 @@ using Botan::AutoSeeded_RNG;
 Server::Server(const Generator& gen, const BigInt& v, int key_size)
                : v_(v), N_(gen.prime()), 
                  b_(BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime()) {
-	B_ = (k_ * v + gen(b_)) /* % N */;
+	B_ = (k_ * v + gen(b_)) % N_;
 }
 
 SessionKey Server::session_key(const BigInt& A) {

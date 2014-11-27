@@ -14,11 +14,11 @@
 namespace SRP6 {
 
 struct Generator {
-	explicit Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g(g), N_(N) {}
+	explicit Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g_(g), N_(N) {}
 	inline Botan::BigInt prime() const { return N_; }
-	inline Botan::BigInt generator() const { return g; }
+	inline Botan::BigInt generator() const { return g_; }
 	inline Botan::BigInt operator()(const Botan::BigInt& x) const {
-		return Botan::power_mod(g, x, N_);
+		return Botan::power_mod(g_, x, N_);
 	}
 
 private:

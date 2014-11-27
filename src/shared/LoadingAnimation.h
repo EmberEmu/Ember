@@ -17,6 +17,14 @@ namespace ember {
 class LoadingAnimation {
 public:
 	enum class Animation { PULSE, LOOP };
+
+	LoadingAnimation(int fps, char fill, Animation animation);
+	~LoadingAnimation();
+
+	void start(std::string text = "");
+	void stop();
+	void message(std::string text);
+
 private:
 	Animation type_;
 	const char COLUMN_WIDTH_ = 79;
@@ -33,13 +41,6 @@ private:
 
 	void loop();
 	void tick();
-
-public:
-	LoadingAnimation(int fps, char fill, Animation animation);
-	~LoadingAnimation();
-	void start(std::string text = "");
-	void stop();
-	void message(std::string text);
 };
 
 }
