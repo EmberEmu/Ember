@@ -18,18 +18,18 @@ class LoadingAnimation {
 public:
 	enum class Animation { PULSE, LOOP };
 private:
-	Animation type;
-	const char COLUMN_WIDTH = 79;
-	const char PADDING = 1;
-	int progress = 1;
-	bool exit = false;
-	bool reverse = false;
-	char fill;
-	std::chrono::milliseconds sleep_time;
+	Animation type_;
+	const char COLUMN_WIDTH_ = 79;
+	const char PADDING_ = 1;
+	int progress_ = 1;
+	bool exit_ = false;
+	bool reverse_ = false;
+	char fill_;
+	std::chrono::milliseconds sleep_time_;
 
-	std::string text;
-	std::mutex lock;
-	std::unique_ptr<std::thread> thread;
+	std::string text_;
+	std::mutex lock_;
+	std::unique_ptr<std::thread> thread_;
 
 	void loop();
 	void tick();

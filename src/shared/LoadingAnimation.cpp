@@ -17,63 +17,63 @@ LoadingAnimation::LoadingAnimation(int fps, char fill, Animation animation) {
 		fps = 30;
 	}
 
-	this->sleep_time = std::chrono::milliseconds(1000 / fps);
-	this->fill = fill;
-	this->type = animation;
+	sleep_time_ = std::chrono::milliseconds(1000 / fps);
+	fill_ = fill;
+	type_ = animation;
 }
 
 LoadingAnimation::~LoadingAnimation() {
-	if(thread != nullptr && thread->joinable()) {
+	if(thread_ != nullptr && thread_->joinable()) {
 		stop();
 	}
 }
 
 void LoadingAnimation::tick() {
-	std::lock_guard<std::mutex> guard(lock);
-	int free_space = (COLUMN_WIDTH - text.length()) - (PADDING * 2);
-	int bar_width = progress * 2 > free_space ? free_space : progress * 2;
+	std::lock_guard<std::mutex> guard(lock_);
+	int free_space = (COLUMN_WIDTH_ - text_.length()) - (PADDING_ * 2);
+	int bar_width = progress_ * 2 > free_space ? free_space : progress_ * 2;
 	int alignment = free_space - bar_width;
 	std::string align(alignment / 2, ' ');
-	std::string bar(bar_width / 2, fill);
-	std::string pad(PADDING, ' ');
-	std::string final(align + bar + pad + text + pad + bar + align);
+	std::string bar(bar_width / 2, fill_);
+	std::string pad(PADDING_, ' ');
+	std::string final(align + bar + pad + text_ + pad + bar + align);
 	std::cout << final << "\r" << std::flush;
 
-	if(type == Animation::PULSE) {
-		reverse = (progress % 30 == 0) ? !reverse : reverse;
-		progress = reverse? progress - 1 : progress + 1;
+	if(type_ == Animation::PULSE) {
+		reverse_ = (progress_ % 30 == 0) ? !reverse_ : reverse_;
+		progress_ = reverse_? progress_ - 1 : progress_ + 1;
 	} else {
-		++progress;
-		progress %= free_space / 2;
+		++progress_;
+		progress_ %= free_space / 2;
 	}
 }
 
 void LoadingAnimation::start(std::string text) {
-	if(thread) {
-		throw std::runtime_error(__FILE__ + std::string(": Called start twice before stop"));
+	if(thread_) {
+		throw std::runtime_error("Called start twice before stop");
 	}
 
-	this->text = std::move(text);
-	thread = std::make_unique<std::thread>(std::bind(&LoadingAnimation::loop, this));
+	text_ = std::move(text);
+	thread_ = std::make_unique<std::thread>(std::bind(&LoadingAnimation::loop, this));
 }
 
 void LoadingAnimation::stop() {
-	exit = true;
-	thread->join();
+	exit_ = true;
+	thread_->join();
 }
 
 void LoadingAnimation::message(std::string text) {
-	std::lock_guard<std::mutex> guard(lock);
-	this->text = std::move(text);
+	std::lock_guard<std::mutex> guard(lock_);
+	text_ = std::move(text);
 }
 
 void LoadingAnimation::loop() {
 	while(!exit) {
 		tick();
-		std::this_thread::sleep_for(sleep_time);
+		std::this_thread::sleep_for(sleep_time_);
 	}
 
-	progress = 0;
+	progress_ = 0;
 	tick();
 	std::cout << "\n";
 }
