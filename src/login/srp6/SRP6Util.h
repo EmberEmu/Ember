@@ -11,6 +11,7 @@
 #include "SRP6Generator.h"
 #include <botan/bigint.h>
 #include <botan/auto_rng.h>
+#include <botan/secmem.h>
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstddef>
  
@@ -18,18 +19,14 @@ namespace SRP6 {
 	
 BOOST_STRONG_TYPEDEF(Botan::SecureVector<Botan::byte>, SessionKey);
 
-struct SVPair {
-	Botan::SecureVector<Botan::byte> salt;
-	Botan::BigInt verifier;
-};
-
 namespace detail {
 
 Botan::SecureVector<Botan::byte> interleaved_hash(Botan::SecureVector<Botan::byte>& hash);
 Botan::SecureVector<Botan::byte> encode_flip(const Botan::BigInt& val);
 Botan::BigInt decode_flip(Botan::SecureVector<Botan::byte>& val);
 Botan::BigInt decode_flip_copy(const Botan::SecureVector<Botan::byte>& val);
-Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B);
+Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding);
+Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
                         const Botan::SecureVector<Botan::byte>& salt);
 
@@ -45,12 +42,14 @@ inline Botan::BigInt generate(const std::string& identifier, const std::string& 
 
 } //detail
 
-SVPair generate_verifier(const std::string& identifier, const std::string& password,
-	                     const Generator& generator, std::size_t salt_len);
+Botan::SecureVector<Botan::byte> generate_salt(std::size_t salt_len);
+
+Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
+                                const Generator& generator, const Botan::SecureVector<Botan::byte>& salt);
 
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
-	                                const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,
-	                                const Botan::BigInt& B, const Botan::SecureVector<Botan::byte>& salt);
+                                    const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,
+                                    const Botan::BigInt& B, const Botan::SecureVector<Botan::byte>& salt);
 
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
                                     const SessionKey& key);

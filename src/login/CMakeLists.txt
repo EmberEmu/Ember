@@ -15,6 +15,7 @@ set(EXECUTABLE_SRC
 	srp6/SRP6Util.h
 	srp6/SRP6Util.cpp
 	srp6/SRP6Generator.h
+	srp6/SRP6Generator.cpp
 	main.cpp
 	)
 

@@ -51,11 +51,19 @@ SecureVector<byte> interleaved_hash(SecureVector<byte>& hash) {
 	return final;
 }
 
-Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B) {
+Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding) {
 	Botan::SHA_160 hasher;
-	hasher.update(encode_flip(A));
-	hasher.update(encode_flip(B));
-	return decode_flip(hasher.final());
+	hasher.update(Botan::BigInt::encode_1363(A, padding));
+	hasher.update(Botan::BigInt::encode_1363(B, padding));
+	return Botan::BigInt::decode(hasher.final());
+}
+
+Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
+	//k = H(N, PAD(g)) in SRP6a
+	Botan::SHA_160 hasher;
+	hasher.update(Botan::BigInt::encode(N));
+	hasher.update(Botan::BigInt::encode_1363(g, N.bytes()));
+	return Botan::BigInt::decode(hasher.final());
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
@@ -69,7 +77,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 
 	hasher.update(salt);
 	hasher.update(hash);
-	return detail::decode_flip(hasher.final());
+	return Botan::BigInt::decode(hasher.final());
 }
 
 } //detail
@@ -107,11 +115,13 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	return detail::decode_flip(hasher.final());
 }
 
-SVPair generate_verifier(const std::string& identifier, const std::string& password,
-                         const Generator& generator, std::size_t salt_len) {
-	Botan::SecureVector<Botan::byte> salt((Botan::AutoSeeded_RNG()).random_vec(salt_len));
-	Botan::BigInt v(detail::generate(identifier, password, generator, salt));
-	return SVPair{ salt, v };
+SecureVector<byte> generate_salt(std::size_t salt_len) {
+	return Botan::AutoSeeded_RNG().random_vec(salt_len);
+}
+
+Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
+                                const Generator& generator, const SecureVector<byte>& salt) {
+	return detail::generate(identifier, password, generator, salt);
 }
 
 } //SRP6

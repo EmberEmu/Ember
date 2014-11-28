@@ -14,21 +14,28 @@
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
 
-namespace SRP6 {
-
 using Botan::BigInt;
 using Botan::SecureVector;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
-Client::Client(std::string identifier, std::string password, Generator gen, int key_size)
+namespace SRP6 {
+
+Client::Client(std::string identifier, std::string password, Generator gen, int key_size, bool srp6a)
+               : Client(std::move(identifier), std::move(password), gen,
+                 BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(), srp6a) { }
+
+Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
                : identifier_(std::move(identifier)), password_(std::move(password)),
-			     gen_(std::move(gen)) {
-	a_ = BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen_.prime();
+                 gen_(std::move(gen)), a_(a) {
 	A_ = gen(a_) /* % N */;
+
+	if (srp6a) {
+		k_.swap(detail::compute_k(gen_.generator(), gen_.prime()));
+	}
 }
 
-SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>& salt) {
+SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>& salt, bool interleave) {
 	if(!(B % gen_.prime()) || B < 0) {
 		throw SRP6::exception("Server's ephemeral key is invalid!");
 	}
@@ -36,7 +43,7 @@ SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>&
 	B_ = B;
 	salt_ = salt;
 
-	BigInt u = detail::scrambler(A_, B);
+	BigInt u = detail::scrambler(A_, B, gen_.prime().bytes());
 
 	if(u <= 0) {
 		throw SRP6::exception("Scrambling parameter <= 0");
@@ -44,7 +51,8 @@ SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>&
 
 	BigInt x = detail::compute_x(identifier_, password_, salt);
 	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
-	return SessionKey(detail::interleaved_hash(detail::encode_flip(S)));
+	return interleave ? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
+		: SessionKey(Botan::BigInt::encode(S));
 }
 
 BigInt Client::generate_proof(const SessionKey& key) const {
