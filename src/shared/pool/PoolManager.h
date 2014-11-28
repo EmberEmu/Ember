@@ -16,23 +16,25 @@
 #include <cassert>
 #include <thread>
 #include <list>
+#include <exception>
 
-namespace ConnectionPool {
+namespace ember { namespace connection_pool {
 
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class PoolManager {
-	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* foo;
-	Driver* driver_;
-	foo pool_;
+	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* ConnectionPool;
+	ConnectionPool pool_;
 	unsigned int interval_ = 1;
 	unsigned int max_idle_ = 5;
 	std::thread manager_;
 	bool stop_ = false;
+	Spinlock exception_lock_;
+	std::exception_ptr exception_;
 
 	void close_excess_idle(std::vector<ConType>& connections) {
 		for(auto& c : connections) {
 			try {
-				pool_->driver.close(c);
+				pool_->driver_.close(c);
 			} catch (...) {}
 		}
 	}
@@ -41,7 +43,7 @@ class PoolManager {
 		for(auto& c : connections) {
 			try {
 				c->idle = 0;
-				c->conn = pool_->driver.keep_alive(c->conn);
+				c->conn = pool_->driver_.keep_alive(c->conn);
 				c->error = false;
 			} catch (...) {
 				c->error = true;
@@ -52,11 +54,11 @@ class PoolManager {
 	}
 
 	void close_errored() {
-		std::unique_lock<Spinlock> guard(pool_->lock);
+		std::unique_lock<Spinlock> guard(pool_->lock_);
 
-		for(auto i = pool_->pool.begin(); i != pool_->pool.end();) {
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
 			if(i->error) {
-				i = pool_->pool.erase(i);
+				i = pool_->pool_.erase(i);
 			} else {
 				++i; 
 			}
@@ -67,11 +69,11 @@ class PoolManager {
 		std::vector<ConnDetail<ConType>*> checked_out;
 		std::vector<ConType> removed;
 
-		std::unique_lock<Spinlock> guard(pool_->lock);
+		std::unique_lock<Spinlock> guard(pool_->lock_);
 
-		int removals = pool_->pool.size() - pool_->min;
+		int removals = pool_->pool_.size() - pool_->min_;
 
-		for(auto i = pool_->pool.begin(); i != pool_->pool.end();) {
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
 			if(i->checked_out) {
 				++i;
 				continue;
@@ -84,7 +86,7 @@ class PoolManager {
 			} else if(removals > 0) {
 				--removals;
 				removed.push_back(i->conn);
-				i = pool_->pool.erase(i);
+				i = pool_->pool_.erase(i);
 			} else {
 				i->checked_out = true;
 				checked_out.push_back(&*i);
@@ -92,7 +94,7 @@ class PoolManager {
 			}
 		}
 
-		pool_->lock.unlock();
+		pool_->lock_.unlock();
 
 		close_excess_idle(removed);
 		refresh_idle(checked_out);
@@ -100,12 +102,20 @@ class PoolManager {
 	}
 
 public:
-	PoolManager(foo pool) {
+	PoolManager(ConnectionPool pool) {
 		pool_ = pool;
 	}
 
+	void check_exceptions() {
+		std::unique_lock<Spinlock>(exception_lock_);
+
+		if(exception_) {
+			std::rethrow_exception(exception_);
+		}
+	}
+
 	void run() try {
-		pool_->driver.thread_enter();
+		pool_->driver_.thread_enter();
 
 		unsigned int last_check = 0;
 		const std::chrono::seconds sleep_time(1);
@@ -120,9 +130,10 @@ public:
 			}
 		}
 
-		pool_->driver.thread_exit();
+		pool_->driver_.thread_exit();
 	} catch(...) {
-		std::cout << "WHAT?";
+		std::unique_lock<Spinlock>(exception_lock_);
+		exception_ = std::current_exception();
 	}
 
 	void stop() {
@@ -137,4 +148,4 @@ public:
 	}
 };
 
-} //ConnectionPool
+}} //connection_pool, ember

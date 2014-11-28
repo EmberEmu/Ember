@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <functional>
 
-namespace ConnectionPool {
+namespace ember { namespace connection_pool {
 
 template<typename ConType>
 struct ConnDetail {
@@ -25,40 +25,40 @@ struct ConnDetail {
 
 template<typename ConType>
 class Connection {
-	bool released = false;
-	mutable ConnDetail<ConType>& detail;
+	bool released_ = false;
+	mutable ConnDetail<ConType>& detail_;
 	typedef std::function<void(Connection<ConType>&)> FreeHandler;
-	const FreeHandler fh;
+	const FreeHandler fh_;
 	Connection(FreeHandler handler, ConnDetail<ConType>& detail)
-		: fh(std::move(handler)), detail(detail) {}
+		: fh_(std::move(handler)), detail_(detail) {}
 
 public:
 	~Connection() {
-		if (!released) {
-			fh(*this);
+		if (!released_) {
+			fh_(*this);
 		}
 	}
 
 	Connection(Connection<ConType>&& src)
-		       : detail(std::move(src.detail)), fh(std::move(src.fh)) {
-		src.released = true;
+		       : detail_(std::move(src.detail_)), fh_(std::move(src.fh_)) {
+		src.released_ = true;
 	}
 
 	Connection<ConType>& operator=(Connection<ConType>&& src) {
-		detail(src.detail);
-		fh(std::move(src.fh));
-		src.released = true;
+		detail(src.detail_);
+		fh(std::move(src.fh_));
+		src.released_ = true;
 		return *this;
 	}
 
 	Connection(const Connection<ConType>& src) = delete;
 	Connection<ConType>& operator=(const Connection<ConType>& src) = delete;
 
-	ConType operator()() { return detail.conn; }
-	ConType operator->() { return detail.conn; }
+	ConType operator()() { return detail_.conn; }
+	ConType operator->() { return detail_.conn; }
 
 	template<typename A, typename B, typename C> friend class Pool;
 };
 
 
-} //ConnectionPool
+}} //connection_pool, ember

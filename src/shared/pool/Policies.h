@@ -9,8 +9,8 @@
 #pragma once
 
 #include <cstddef>
-#include <iostream>
-namespace ConnectionPool {
+
+namespace ember { namespace connection_pool {
 
 class CheckoutClean {
 protected:
@@ -96,4 +96,4 @@ class AlwaysReuse {
 
 };
 
-} //ConnectionPool
+}} //connection_pool, ember
