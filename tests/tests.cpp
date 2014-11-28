@@ -82,7 +82,7 @@ TEST(SRP6a, RFC5054_TestVectors) {
 
 	Botan::BigInt expected_u("0xCE38B9593487DA98554ED47D70A7AE5F462EF019");
 	Botan::BigInt u = SRP6::detail::scrambler(expected_A, expected_B, gen.prime().bytes());
-	ASSERT_EQ(expected_u, u);
+	ASSERT_EQ(expected_u, u) << "Scrambling parameter did not match";
 
 	Botan::BigInt expected_key("0xB0DC82BABCF30674AE450C0287745E7990A3381F63B387AAF271A10D"
 	                           "233861E359B48220F7C4693C9AE12B0A6F67809F0876E2D013800D6C"

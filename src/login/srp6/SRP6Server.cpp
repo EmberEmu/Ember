@@ -13,7 +13,7 @@
 #include <botan/sha160.h>
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
-#include <iostream>
+
 using Botan::BigInt;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
