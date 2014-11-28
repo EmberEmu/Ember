@@ -9,6 +9,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 
 namespace ConnectionPool {
 
@@ -53,8 +54,8 @@ public:
 	Connection(const Connection<ConType>& src) = delete;
 	Connection<ConType>& operator=(const Connection<ConType>& src) = delete;
 
-	ConType operator()() { return connection; }
-	ConType operator->() { return connection; }
+	ConType operator()() { return detail.conn; }
+	ConType operator->() { return detail.conn; }
 
 	template<typename A, typename B, typename C> friend class Pool;
 };

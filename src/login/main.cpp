@@ -8,6 +8,9 @@
 
 #include <shared/Version.h>
 #include <shared/Banner.h>
+#include <shared/pool/ConnectionPool.h>
+#include <shared/pool/drivers/DummyDriver.h>
+#include <shared/pool/drivers/DummyConnection.h>
 #include <botan/init.h>
 #include <boost/program_options.hpp>
 #include <boost/asio.hpp>
@@ -16,6 +19,7 @@
 #include <fstream>
 
 namespace po = boost::program_options;
+namespace Pool = ConnectionPool;
 
 void verify_port(int port);
 po::variables_map parse_arguments(int argc, const char* argv[]);
@@ -24,6 +28,13 @@ int main(int argc, const char* argv[]) try {
 	ember::print_banner("Login Daemon");
 	const po::variables_map arguments = parse_arguments(argc, argv);
 	//Botan::LibraryInitializer init("thread_safe");
+	ember::DummyDriver dummy;
+	Pool::Pool<ember::DummyDriver, Pool::CheckinClean, Pool::ExponentialGrowth> pool(dummy, 2, 50);
+	Pool::Connection<ember::DummyConnection> connection = pool.get_connection();
+	ember::DummyConnection conn = connection();
+	std::this_thread::sleep_for(std::chrono::seconds(30));
+	pool.return_connection(connection);
+	std::this_thread::sleep_for(std::chrono::seconds(30));
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;

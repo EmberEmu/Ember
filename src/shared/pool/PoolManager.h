@@ -10,25 +10,29 @@
 
 #include "Policies.h"
 #include "Connection.h"
+#include "ConnectionPool.h"
+#include "../Spinlock.h"
 #include <vector>
 #include <cassert>
 #include <thread>
+#include <list>
 
 namespace ConnectionPool {
 
-class ConnectionPool;
-
-template<typename ConType>
+template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class PoolManager {
-	ConnectionPool* pool;
-	unsigned int interval;
-	unsigned int max_idle;
-	std::thread manager;
+	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* foo;
+	Driver* driver_;
+	foo pool_;
+	unsigned int interval_ = 1;
+	unsigned int max_idle_ = 5;
+	std::thread manager_;
+	bool stop_ = false;
 
 	void close_excess_idle(std::vector<ConType>& connections) {
 		for(auto& c : connections) {
 			try {
-				driver.close(c);
+				pool_->driver.close(c);
 			} catch (...) {}
 		}
 	}
@@ -37,7 +41,7 @@ class PoolManager {
 		for(auto& c : connections) {
 			try {
 				c->idle = 0;
-				c->conn = driver.keep_alive(c->conn);
+				c->conn = pool_->driver.keep_alive(c->conn);
 				c->error = false;
 			} catch (...) {
 				c->error = true;
@@ -48,11 +52,13 @@ class PoolManager {
 	}
 
 	void close_errored() {
-		std::unique_lock<Spinlock> guard(pool.lock);
+		std::unique_lock<Spinlock> guard(pool_->lock);
 
-		for(auto i = pool.begin(); i != pool.end();) {
+		for(auto i = pool_->pool.begin(); i != pool_->pool.end();) {
 			if(i->error) {
-				i = pool.erase();
+				i = pool_->pool.erase(i);
+			} else {
+				++i; 
 			}
 		}
 	}
@@ -61,17 +67,24 @@ class PoolManager {
 		std::vector<ConnDetail<ConType>*> checked_out;
 		std::vector<ConType> removed;
 
-		std::unique_lock<Spinlock> guard(lock);
-		int removals = pool.size() - min;
+		std::unique_lock<Spinlock> guard(pool_->lock);
 
-		for(auto i = pool.begin(); i != pool.end();) {
-			if(i->idle < max_idle) {
-				i->idle += interval;
+		int removals = pool_->pool.size() - pool_->min;
+
+		for(auto i = pool_->pool.begin(); i != pool_->pool.end();) {
+			if(i->checked_out) {
+				++i;
+				continue;
+			}
+
+			if(i->idle < max_idle_) {
+				i->idle += interval_;
+				std::cout << i->idle << " but max idle is " << max_idle_ << std::endl;
 				++i;
 			} else if(removals > 0) {
 				--removals;
 				removed.push_back(i->conn);
-				i = pool.erase(i);
+				i = pool_->pool.erase(i);
 			} else {
 				i->checked_out = true;
 				checked_out.push_back(&*i);
@@ -79,46 +92,48 @@ class PoolManager {
 			}
 		}
 
-		lock.unlock();
+		pool_->lock.unlock();
 
 		close_excess_idle(removed);
 		refresh_idle(checked_out);
-		//remove_errored();
+		close_errored();
 	}
 
 public:
-	PoolManager(ConnectionPool* pool) : pool(pool) {}
+	PoolManager(foo pool) {
+		pool_ = pool;
+	}
 
 	void run() try {
-		driver.thread_enter();
+		pool_->driver.thread_enter();
 
 		unsigned int last_check = 0;
 		const std::chrono::seconds sleep_time(1);
 
-		while(!stop) {
+		while(!stop_) {
 			std::this_thread::sleep_for(sleep_time);
 			last_check += 1;
 
-			if(last_check >= interval) {
+			if(last_check >= interval_) {
 				last_check = 0;
 				manage_connections();
 			}
 		}
 
-		driver.thread_exit();
+		pool_->driver.thread_exit();
 	} catch(...) {
 		std::cout << "WHAT?";
 	}
 
 	void stop() {
-		stop = true;
-		manager.join();
+		stop_ = true;
+		manager_.join();
 	}
 
-	void start(unsigned int interval = 10, unsigned int max_idle = 300) {
-		this->interval = interval;
-		this->max_idle = max_idle;
-		manager = std::thread(&Pool::run, this);
+	void start(unsigned int interval = 10, unsigned int max_idle = 5) {
+		interval_ = interval;
+		max_idle_ = max_idle;
+		manager_ = std::thread(std::bind(&PoolManager::run, this));
 	}
 };
 

@@ -10,7 +10,8 @@
 
 #include "Connection.h"
 #include "PoolManager.h"
-#include "Spinlock.h"
+#include "IConnectionPool.h"
+#include "../Spinlock.h"
 #include "Policies.h"
 #include <utility>
 #include <functional>
@@ -20,14 +21,17 @@
 
 namespace ConnectionPool {
 
+using namespace ember;
+
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class Pool : private ReusePolicy, private GrowthPolicy {
-	template<typename ConType> friend class PoolManager;
+	template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy> friend class PoolManager;
 
 	using ConType = decltype(std::declval<Driver>().open());
 	using ReusePolicy::return_clean;
 	using GrowthPolicy::grow;
 
+	PoolManager<ConType, Driver, ReusePolicy, GrowthPolicy> manager;
 	Driver driver;
 	std::size_t min, max;
 	mutable Spinlock lock;
@@ -49,12 +53,15 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	}
 	
 public:
-	Pool(const Driver& driver, std::size_t min_size, std::size_t max_size)
+	Pool(Driver& driver, std::size_t min_size, std::size_t max_size)
 	     : driver(driver), min(min_size), max(max_size), manager(this) {
 		open_connections(min);
+		manager.start();
 	}
 
 	~Pool() {
+		manager.stop();
+
 		for(auto& c : pool) {
 			try {
 				driver.close(c.conn);
@@ -99,16 +106,16 @@ public:
 		driver.thread_exit();
 	}
 
-	auto size() {
+	std::size_t size() {
 		return pool.size();
 	}
 
-	auto dirty() {
+	bool dirty() {
 		return std::count_if(pool.begin(), pool.end(),
 			[](const ConnDetail<ConType>& c) { return c.dirty; });
 	}
 
-	auto checked_out() {
+	bool checked_out() {
 		return std::count_if(pool.begin(), pool.end(),
 			[](const ConnDetail<ConType>& c) { return c.checked_out; });
 	}

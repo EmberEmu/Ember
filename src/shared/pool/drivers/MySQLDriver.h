@@ -34,4 +34,3 @@ public:
 	void thread_enter() const;
 	void thread_exit() const;
 };
-
