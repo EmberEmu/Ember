@@ -9,8 +9,12 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
+#include <chrono>
 
-namespace ConnectionPool {
+namespace ember { namespace connection_pool {
+
+namespace sc = std::chrono;
 
 template<typename ConType>
 struct ConnDetail {
@@ -19,45 +23,48 @@ struct ConnDetail {
 	bool dirty = false;
 	bool checked_out = false;
 	bool error = false;
-	unsigned int idle = 0;
+	sc::seconds idle = 0;
 };
 
 template<typename ConType>
 class Connection {
-	bool released = false;
-	mutable ConnDetail<ConType>& detail;
+	bool released_ = false;
+	mutable std::reference_wrapper<ConnDetail<ConType>> detail_;
 	typedef std::function<void(Connection<ConType>&)> FreeHandler;
-	const FreeHandler fh;
+	FreeHandler fh_;
 	Connection(FreeHandler handler, ConnDetail<ConType>& detail)
-		: fh(std::move(handler)), detail(detail) {}
+	           : fh_(std::move(handler)), detail_(detail) {}
 
 public:
 	~Connection() {
-		if (!released) {
-			fh(*this);
+		if(!released_) {
+			fh_(*this);
 		}
 	}
 
 	Connection(Connection<ConType>&& src)
-		       : detail(std::move(src.detail)), fh(std::move(src.fh)) {
-		src.released = true;
+	           : detail_(std::move(src.detail_)), fh_(std::move(src.fh_)) {
+		src.released_ = true;
 	}
 
 	Connection<ConType>& operator=(Connection<ConType>&& src) {
-		detail(src.detail);
-		fh(std::move(src.fh));
-		src.released = true;
+		if(!released_) {
+			fh_(*this);
+		}
+
+		released_ = src.released_;
+		detail_ = src.detail_;
 		return *this;
 	}
 
 	Connection(const Connection<ConType>& src) = delete;
 	Connection<ConType>& operator=(const Connection<ConType>& src) = delete;
 
-	ConType operator()() { return connection; }
-	ConType operator->() { return connection; }
+	ConType operator()() { return detail_.get().conn; }
+	ConType operator->() { return detail_.get().conn; }
 
 	template<typename A, typename B, typename C> friend class Pool;
 };
 
 
-} //ConnectionPool
+}} //connection_pool, ember

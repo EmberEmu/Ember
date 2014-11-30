@@ -15,9 +15,11 @@
 #include <cppconn/prepared_statement.h>
 #include <memory>
 
-MySQL::MySQL(const std::string& user, const std::string& pass, const std::string& host,
-             unsigned short port, const std::string& db) : database(db), username(user),
-             password(pass), dsn(std::string("tcp://" + host + ":" + std::to_string(port))) {
+namespace ember { namespace drivers {
+
+MySQL::MySQL(std::string user, std::string pass, const std::string& host, unsigned short port,
+             std::string db) : database(db), username(std::move(user)), password(std::move(pass)),
+             dsn(std::string("tcp://" + host + ":" + std::to_string(port))) {
 	driver = get_driver_instance();
 }
 
@@ -54,3 +56,5 @@ void MySQL::thread_enter() const {
 void MySQL::thread_exit() const {
 	driver->threadEnd();
 }
+
+}} // drivers, ember

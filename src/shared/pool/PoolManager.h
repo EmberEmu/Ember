@@ -10,50 +10,65 @@
 
 #include "Policies.h"
 #include "Connection.h"
+#include "ConnectionPool.h"
+#include "../Spinlock.h"
 #include <vector>
 #include <cassert>
 #include <thread>
+#include <list>
+#include <exception>
 
-namespace ConnectionPool {
+namespace ember { namespace connection_pool {
 
-class ConnectionPool;
+namespace sc = std::chrono;
 
-template<typename ConType>
+template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class PoolManager {
-	ConnectionPool* pool;
-	unsigned int interval;
-	unsigned int max_idle;
-	std::thread manager;
+	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* ConnectionPool;
+	ConnectionPool pool_;
+	sc::seconds interval_, max_idle_;
+	std::thread manager_;
+	bool stop_ = false;
+	Spinlock exception_lock_;
+	std::exception_ptr exception_;
 
 	void close_excess_idle(std::vector<ConType>& connections) {
 		for(auto& c : connections) {
 			try {
-				driver.close(c);
-			} catch (...) {}
+				pool_->driver_.close(c);
+			} catch(...) {}
 		}
 	}
 
 	void refresh_idle(std::vector<ConnDetail<ConType>*>& connections) {
 		for(auto& c : connections) {
 			try {
-				c->idle = 0;
-				c->conn = driver.keep_alive(c->conn);
+				c->idle = sc::seconds(0);
+				c->conn = pool_->driver_.keep_alive(c->conn);
 				c->error = false;
-			} catch (...) {
+			} catch(...) {
 				c->error = true;
 			}
 
 			c->checked_out = false;
+			pool_->semaphore_.signal();
 		}
 	}
 
 	void close_errored() {
-		std::unique_lock<Spinlock> guard(pool.lock);
+		std::unique_lock<Spinlock> guard(pool_->lock_);
 
-		for(auto i = pool.begin(); i != pool.end();) {
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
 			if(i->error) {
-				i = pool.erase();
+				i = pool_->pool_.erase(i);
+			} else {
+				++i; 
 			}
+		}
+
+		//If the pool has grown too small, try to refill it
+		if(pool_->pool_.size() < pool_->min_) {
+			pool_->open_connections(pool_->min_ - pool_->pool_.size());
 		}
 	}
 
@@ -61,17 +76,23 @@ class PoolManager {
 		std::vector<ConnDetail<ConType>*> checked_out;
 		std::vector<ConType> removed;
 
-		std::unique_lock<Spinlock> guard(lock);
-		int removals = pool.size() - min;
+		std::unique_lock<Spinlock> guard(pool_->lock_);
 
-		for(auto i = pool.begin(); i != pool.end();) {
-			if(i->idle < max_idle) {
-				i->idle += interval;
+		int removals = pool_->pool_.size() - pool_->min_;
+
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
+			if(i->checked_out) {
+				++i;
+				continue;
+			}
+
+			if(i->idle < max_idle_) {
+				i->idle += interval_;
 				++i;
 			} else if(removals > 0) {
 				--removals;
 				removed.push_back(i->conn);
-				i = pool.erase(i);
+				i = pool_->pool_.erase(i);
 			} else {
 				i->checked_out = true;
 				checked_out.push_back(&*i);
@@ -79,47 +100,57 @@ class PoolManager {
 			}
 		}
 
-		lock.unlock();
+		pool_->lock_.unlock();
 
 		close_excess_idle(removed);
 		refresh_idle(checked_out);
-		//remove_errored();
+		close_errored();
 	}
 
 public:
-	PoolManager(ConnectionPool* pool) : pool(pool) {}
+	PoolManager(ConnectionPool pool) {
+		pool_ = pool;
+	}
+
+	void check_exceptions() {
+		std::unique_lock<Spinlock>(exception_lock_);
+
+		if(exception_) {
+			std::rethrow_exception(exception_);
+		}
+	}
 
 	void run() try {
-		driver.thread_enter();
+		pool_->driver_.thread_enter();
 
-		unsigned int last_check = 0;
-		const std::chrono::seconds sleep_time(1);
-
-		while(!stop) {
-			std::this_thread::sleep_for(sleep_time);
-			last_check += 1;
-
-			if(last_check >= interval) {
-				last_check = 0;
-				manage_connections();
-			}
+		while(!stop_) {
+			std::this_thread::sleep_for(interval_);
+			manage_connections();
 		}
 
-		driver.thread_exit();
+		pool_->driver_.thread_exit();
 	} catch(...) {
-		std::cout << "WHAT?";
+		std::unique_lock<Spinlock>(exception_lock_);
+		exception_ = std::current_exception();
 	}
 
 	void stop() {
-		stop = true;
-		manager.join();
+		if(manager_.joinable()) {
+			stop_ = true;
+			manager_.join();
+		}
 	}
 
-	void start(unsigned int interval = 10, unsigned int max_idle = 300) {
-		this->interval = interval;
-		this->max_idle = max_idle;
-		manager = std::thread(&Pool::run, this);
+	void start(sc::seconds interval, sc::seconds max_idle) {
+		interval_ = interval;
+		max_idle_ = max_idle;
+		
+		if(manager_.joinable()) {
+			throw exception("Attempted to start the pool manager twice!");
+		}
+
+		manager_ = std::thread(std::bind(&PoolManager::run, this));
 	}
 };
 
-} //ConnectionPool
+}} //connection_pool, ember

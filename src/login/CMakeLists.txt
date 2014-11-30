@@ -10,6 +10,7 @@ set(EXECUTABLE_SRC
 	../shared/LoadingAnimation.h
 	../shared/LoadingAnimation.cpp
 	../shared/rlutil.h
+	../shared/pool/drivers/DummyDriver.cpp
 	srp6/SRP6Server.h
 	srp6/SRP6Server.cpp
 	srp6/SRP6Util.h
