@@ -8,9 +8,11 @@
 
 #pragma once
 
-namespace ember { namespace drivers {
+namespace ember { 
 
 class DummyConnection;
+
+namespace drivers {
 
 class DummyDriver {
 	

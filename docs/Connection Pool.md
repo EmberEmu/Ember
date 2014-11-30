@@ -129,3 +129,23 @@ pool::Connection<ConnectionType> connection = pool.get_connection();
 pool.release_connection(connection);
 // do more work - do not use try to connection beyond this point
 ```
+
+# Closing the pool
+The pool can be closed implicitly by allowing it to go out of scope or explicitly by calling `close()`.
+
+All connections taken from the pool must be returned before closing/destroying the pool. If there are still connections checked out upon explicitly calling `close()`, an exception of type of `ember::connection_pool::active_connections` will be thrown, containing the number of still checked out connections. Checked out connections will not be closed. It is possible to recover from this exception, as long as connections are checked back in before destruction, although it is bad form and not guaranteed to work in the future.
+
+```cpp
+auto connection = pool->get_connection();
+pool->close(); // exception thrown
+// handle exception
+pool->return_connection(connection);
+pool->reset(); // (delete, out of scope, etc) no crash but should still be fixed
+```
+
+If there are connections checked out when the pool's destructor is called, it will assert, crashing the application. Working with connections where the parent pool has been destroyed is almost guaranteed to crash the application, whether immediately or in the distant future (at application exit, for instance). Asserting in the pool makes it easier to find the source of the error, rather than having to deal with access violations at some unknown point in time.
+
+```cpp
+auto connection = pool->get_connection();
+pool->reset(); // (delete, out of scope before connection, etc) assertion!
+```

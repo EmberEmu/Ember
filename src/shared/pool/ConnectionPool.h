@@ -12,6 +12,7 @@
 #include "PoolManager.h"
 #include "Policies.h"
 #include "Exception.h"
+#include <boost/assert.hpp>
 #include "../Spinlock.h"
 #include "../Semaphore.h"
 #include <boost/optional.hpp>
@@ -43,6 +44,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	mutable Spinlock lock_;
 	std::list<ConnDetail<ConType>> pool_;
 	Semaphore<std::mutex> semaphore_;
+	bool closed_ = false;
 
 	void open_connections(std::size_t num)  {
 		std::vector<std::future<ConType>> futures;
@@ -100,17 +102,44 @@ public:
 	}
 
 	~Pool() {
+		if(closed_) {
+			return;
+		}
+
 		manager_.stop();
 
 		for(auto& c : pool_) {
+			BOOST_ASSERT_MSG(!c.checked_out, 
+			                 "Closed connection pool without returning all connections.");
+
 			try {
 				driver_.close(c.conn);
 			} catch (...) { /* stop escapees */ }
 		}
 	}
 
-	void start() {
-		
+	void close() {
+		if(closed_) {
+			throw exception("Closed the same connection pool twice!");
+		}
+
+		closed_ = true;
+		int active = 0;
+
+		manager_.stop();
+
+		for(auto& c : pool_) {
+			if(c.checked_out) {
+				++active;
+				continue;
+			}
+
+			driver_.close(c.conn);
+		}
+
+		if(active) {
+			throw active_connections(active);
+		}
 	}
 
 	Connection<ConType> get_connection() {

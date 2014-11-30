@@ -25,4 +25,11 @@ public:
 	no_free_connections(std::string msg) : exception(msg) { };
 };
 
+class active_connections : public exception {
+public:
+	active_connections(int active) : exception("Attempted to close the pool with " + std::to_string(active) +
+		                                        " connection(s) still in use!") { }
+	active_connections(std::string msg) : exception(msg) { };
+};
+
 }} //connection_pool, ember

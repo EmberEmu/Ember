@@ -17,6 +17,8 @@
 #include <thread>
 #include <list>
 #include <exception>
+#include <mutex>
+#include <condition_variable>
 
 namespace ember { namespace connection_pool {
 
@@ -31,6 +33,8 @@ class PoolManager {
 	bool stop_ = false;
 	Spinlock exception_lock_;
 	std::exception_ptr exception_;
+	std::condition_variable cond_;
+	std::mutex cond_lock_;
 
 	void close_excess_idle(std::vector<ConType>& connections) {
 		for(auto& c : connections) {
@@ -122,9 +126,13 @@ public:
 
 	void run() try {
 		pool_->driver_.thread_enter();
+		std::unique_lock<std::mutex> lock(cond_lock_);
 
 		while(!stop_) {
-			std::this_thread::sleep_for(interval_);
+			if(cond_.wait_for(lock, interval_) == std::cv_status::no_timeout) {
+				break;
+			}
+
 			manage_connections();
 		}
 
@@ -137,6 +145,7 @@ public:
 	void stop() {
 		if(manager_.joinable()) {
 			stop_ = true;
+			cond_.notify_one();
 			manager_.join();
 		}
 	}
@@ -144,11 +153,6 @@ public:
 	void start(sc::seconds interval, sc::seconds max_idle) {
 		interval_ = interval;
 		max_idle_ = max_idle;
-		
-		if(manager_.joinable()) {
-			throw exception("Attempted to start the pool manager twice!");
-		}
-
 		manager_ = std::thread(std::bind(&PoolManager::run, this));
 	}
 };
