@@ -37,7 +37,7 @@ protected:
 class FixedSize {
 protected:
 	std::size_t grow(std::size_t size, std::size_t max) const {
-		throw std::exception("Database pool ran out of connections!");
+		return 0;
 	}
 };
 
@@ -45,7 +45,7 @@ class AggressiveGrowth {
 protected:
 	std::size_t grow(std::size_t size, std::size_t max) const {
 		if(max != 0 && size >= max) {
-			throw std::exception("Database pool ran out of connections!");
+			return 0;
 		}
 
 		std::size_t available = max - size;
@@ -63,7 +63,7 @@ class ExponentialGrowth {
 protected:
 	std::size_t grow(std::size_t size, std::size_t max) const {
 		if(max != 0 && size >= max) {
-			throw std::exception("Database pool ran out of connections!");
+			return 0;
 		}
 
 		std::size_t available = max - size;
@@ -81,7 +81,7 @@ class LinearGrowth {
 protected:
 	std::size_t grow(std::size_t size, std::size_t max) const {
 		if(max != 0 && size >= max) {
-			throw std::exception("Database pool ran out of connections!");
+			return 0;
 		}
 
 		return 1;

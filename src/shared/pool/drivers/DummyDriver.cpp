@@ -10,8 +10,8 @@
 #include "DummyConnection.h"
 #include <iostream>
 
-namespace ember {
-
+namespace ember { namespace drivers {
+	
 DummyDriver::DummyDriver() {
 	std::cout << "DummyDriver opened\n";
 }
@@ -48,4 +48,4 @@ void DummyDriver::thread_exit() const {
 	std::cout << "DummyDriver thread exit\n";
 }
 
-} //ember
+}} // drivers, ember

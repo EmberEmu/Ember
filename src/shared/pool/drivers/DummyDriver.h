@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace ember {
+namespace ember { namespace drivers {
 
 class DummyConnection;
 
@@ -25,4 +25,4 @@ public:
 	void thread_exit() const;
 };
 
-} //ember
+}} // drivers, ember

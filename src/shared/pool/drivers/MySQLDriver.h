@@ -17,14 +17,15 @@ class Connection;
 
 }
 
+namespace ember { namespace drivers {
+
 class MySQL {
-	std::string dsn, username, password;
-	const std::string database;
+	const std::string dsn, username, password, database;
 	sql::Driver* driver;
 
 public:
-	MySQL(const std::string& user, const std::string& password,
-		const std::string& host, unsigned short port, const std::string& db);
+	MySQL(std::string user, std::string password, const std::string& host,
+	      unsigned short port, std::string db);
 
 	sql::Connection* open() const;
 	sql::Connection* clean(sql::Connection* conn) const;
@@ -34,3 +35,5 @@ public:
 	void thread_enter() const;
 	void thread_exit() const;
 };
+
+}} //drivers, ember

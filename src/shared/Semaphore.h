@@ -40,7 +40,7 @@ public:
 
 		return !condition_.wait_for(guard, std::chrono::milliseconds(duration),
 			[this]() {
-				if (count_ != 0) {
+				if(count_ != 0) {
 					--count_;
 					return true;
 				}
@@ -51,6 +51,11 @@ public:
 	void signal() {
 		++count_;
 		condition_.notify_one();
+	}
+
+	void signal_all() {
+		++count_;
+		condition_.notify_all();
 	}
 };
 

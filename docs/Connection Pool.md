@@ -12,15 +12,22 @@ Here's a simple usage example:
 #include <pool/ConnectionPool.h>
 #include <pool/Policies.h>
 #include <pool/drivers/MySQL.h>
+#include <chrono>
+
+namespace sc = std::chrono;
+namespace pool = ember::connection_pool;
 
 void mysql_do_something(sql::Connection* connection) {
     // do something with the connection
 }
     
 int main() {
-    MySQL auth("root", "awfulpassword", "localhost", 3306, "login_db");
-    pool::Pool<MySQL, pool::CheckinClean, pool::ExponentialGrowth> pool(auth, 2, 50);
-    pool::Connection<sql::Connection*> connection = pool.get_connection();
+    ember::drivers::MySQL auth("root", "awfulpassword", "localhost", 3306, "login_db");
+    
+    pool::Pool<ember::drivers::MySQL, pool::CheckinClean, pool::ExponentialGrowth> pool
+              (auth /* driver object */, 2 /* min. pool size */, 50 /* max. pool size */, seconds(300) /* connection keep-alive time */);
+              
+    pool::Connection<sql::Connection*> connection = pool.get_connection(); // use 'auto connection' for easier driver swapping
     mysql_do_something(connection()); // or connection.get();
     // rest of the program...
     // ...
@@ -34,7 +41,7 @@ The driver implements basic functionality required for the pool to manage connec
 
 The pool requires a handle to the driver object, the minimum number of connections to keep open and the maximum number of connections that the pool can open during growth. The template arguments indicate the driver type to use with the pool, a policy that dictates how the pool should behave when a connection is returned to the pool and a policy that dictates how the pool should handle growth.
 
-Under the hood, the connection pool has a manager that runs in its own thread, periodically performing maintenance on the pool.
+Under the hood, the connection pool has a manager that runs in its own thread, periodically (default: 10 seconds) performing maintenance on the pool. The maintenance period can be set during the pool creation by passing an additional `std::chrono::seconds` argument as the final argument.
 
 # Acquiring connections
 There are several options for acquiring a connection from the pool.
