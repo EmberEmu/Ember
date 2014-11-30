@@ -117,7 +117,7 @@ public:
 	}
 
 	void check_exceptions() {
-		std::unique_lock<Spinlock>(exception_lock_);
+		std::unique_lock<Spinlock> lock(exception_lock_);
 
 		if(exception_) {
 			std::rethrow_exception(exception_);
@@ -138,7 +138,7 @@ public:
 
 		pool_->driver_.thread_exit();
 	} catch(...) {
-		std::unique_lock<Spinlock>(exception_lock_);
+		std::unique_lock<Spinlock> lock(exception_lock_);
 		exception_ = std::current_exception();
 	}
 

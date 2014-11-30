@@ -12,10 +12,10 @@
 #include "PoolManager.h"
 #include "Policies.h"
 #include "Exception.h"
-#include <boost/assert.hpp>
 #include "../Spinlock.h"
 #include "../Semaphore.h"
 #include <boost/optional.hpp>
+#include <boost/assert.hpp>
 #include <utility>
 #include <functional>
 #include <future>
@@ -95,7 +95,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	
 public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
-		 sc::seconds max_idle, sc::seconds interval = sc::seconds(10))
+	     sc::seconds max_idle, sc::seconds interval = sc::seconds(10))
 	     : driver_(driver), min_(min_size), max_(max_size), manager_(this) {
 		open_connections(min_);
 		manager_.start(interval, max_idle);
@@ -161,7 +161,7 @@ public:
 	Connection<ConType> wait_connection() {
 		boost::optional<Connection<ConType>> conn;
 		
-		while(!(conn(get_connection_attempt()))) {
+		while(!(conn = get_connection_attempt())) {
 			semaphore_.wait();
 		}
 
