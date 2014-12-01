@@ -63,6 +63,7 @@ public:
 
 	ConType operator()() { return detail_.get().conn; }
 	ConType operator->() { return detail_.get().conn; }
+	ConType operator*() { return detail_.get().conn; }
 
 	template<typename A, typename B, typename C> friend class Pool;
 };
