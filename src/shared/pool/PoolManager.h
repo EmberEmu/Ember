@@ -36,19 +36,25 @@ class PoolManager {
 	std::condition_variable cond_;
 	std::mutex cond_lock_;
 
-	void close_excess_idle(std::vector<ConType>& connections) {
-		for(auto& c : connections) {
-			try {
-				pool_->driver_.close(c);
-			} catch(...) {}
+	void close_excess_idle() {
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
+			if(i->sweep) {
+				try {
+					pool_->driver_.close(i->conn);
+				} catch(...) {}
+
+				i = pool_->pool_.erase(i);
+			} else {
+				++i;
+			}
 		}
 	}
 
 	void refresh_idle(std::vector<ConnDetail<ConType>*>& connections) {
 		for(auto& c : connections) {
 			try {
-				c->idle = sc::seconds(0);
 				c->conn = pool_->driver_.keep_alive(c->conn);
+				c->idle = sc::seconds(0);
 				c->error = false;
 			} catch(...) {
 				c->error = true;
@@ -64,6 +70,10 @@ class PoolManager {
 
 		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
 			if(i->error) {
+				try {
+					pool_->driver_.close(i->conn);
+				} catch(...) { }
+
 				i = pool_->pool_.erase(i);
 			} else {
 				++i; 
@@ -78,35 +88,29 @@ class PoolManager {
 
 	void manage_connections() {
 		std::vector<ConnDetail<ConType>*> checked_out;
-		std::vector<ConType> removed;
 
 		std::unique_lock<Spinlock> guard(pool_->lock_);
-
 		int removals = pool_->pool_.size() - pool_->min_;
 
-		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
-			if(i->checked_out) {
-				++i;
+		for(auto& conn : pool_->pool_) {
+			if(conn.checked_out) {
 				continue;
 			}
 
-			if(i->idle < max_idle_) {
-				i->idle += interval_;
-				++i;
+			if(conn.idle < max_idle_) {
+				conn.idle += interval_;
 			} else if(removals > 0) {
 				--removals;
-				removed.push_back(i->conn);
-				i = pool_->pool_.erase(i);
+				conn.checked_out = true;
+				conn.sweep = true;
 			} else {
-				i->checked_out = true;
-				checked_out.push_back(&*i);
-				++i;
+				conn.checked_out = true;
+				checked_out.push_back(&conn);
 			}
 		}
 
+		close_excess_idle();
 		pool_->lock_.unlock();
-
-		close_excess_idle(removed);
 		refresh_idle(checked_out);
 		close_errored();
 	}

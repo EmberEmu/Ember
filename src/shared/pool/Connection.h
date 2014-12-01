@@ -23,6 +23,7 @@ struct ConnDetail {
 	bool dirty = false;
 	bool checked_out = false;
 	bool error = false;
+	bool sweep = false;
 	sc::seconds idle = 0;
 };
 

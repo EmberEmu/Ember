@@ -197,15 +197,16 @@ public:
 	void return_connection(Connection<ConType>& connection) {
 		if(return_clean()) {
 			connection.detail_.get().conn = driver_.clean(connection.detail_.get().conn);
-			semaphore_.signal();
 		} else {
 			connection.detail_.get().dirty = true;
 		}
 
 		connection.released_ = true;
 		connection.detail_.get().checked_out = false;
+
 		driver_.thread_exit();
 		manager_.check_exceptions();
+		semaphore_.signal();
 	}
 
 	std::size_t size() {
@@ -217,7 +218,7 @@ public:
 			[](const ConnDetail<ConType>& c) { return c.dirty; });
 	}
 
-	bool checked_out() {
+	std::size_t checked_out() {
 		return std::count_if(pool_.begin(), pool_.end(),
 			[](const ConnDetail<ConType>& c) { return c.checked_out; });
 	}

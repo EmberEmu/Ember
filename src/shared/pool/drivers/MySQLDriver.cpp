@@ -34,6 +34,7 @@ sql::Connection* MySQL::open() const {
 
 void MySQL::close(sql::Connection* conn) const {
 	conn->close();
+	delete conn;
 }
 
 sql::Connection* MySQL::keep_alive(sql::Connection* conn) const try {
