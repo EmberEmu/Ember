@@ -11,7 +11,7 @@
 #include "Policies.h"
 #include "Connection.h"
 #include "ConnectionPool.h"
-#include "../Spinlock.h"
+#include "../threading/Spinlock.h"
 #include <vector>
 #include <cassert>
 #include <thread>
