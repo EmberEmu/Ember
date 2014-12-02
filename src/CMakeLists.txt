@@ -9,5 +9,11 @@ add_subdirectory(character)
 add_subdirectory(gateway)
 add_subdirectory(world)
 add_subdirectory(account)
+<<<<<<< HEAD
 #add_subdirectory(realmbridge)
 add_subdirectory(shared)
+=======
+add_subdirectory(shared)
+
+add_subdirectory(tools)
+>>>>>>> Initial DBC parser structure
