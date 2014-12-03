@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "DBCParser.h"
+#include "Parser.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
@@ -16,6 +16,7 @@
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
+namespace edbc = ember::dbc;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(const std::string& path);
@@ -25,12 +26,14 @@ int main(int argc, const char* argv[]) try {
 	const std::string def_path = args["definitions"].as<std::string>();
 	std::vector<std::string> paths = fetch_definitions(def_path);
 	
-	ember::dbc::Parser parser;
+	edbc::Parser parser;
 
 	for(auto& p : paths) {
 		parser.add_definition(p);
-		break;
 	}
+
+	std::vector<edbc::Definition> definitions = parser.finish();
+
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;

@@ -10,6 +10,7 @@
 
 #include "Exception.h"
 #include "Field.h"
+#include "Definition.h"
 #include <rapidxml.hpp>
 #include <string>
 #include <vector>
@@ -25,11 +26,11 @@ class Parser {
 		bool options;
 	};
 
-	std::map<std::string, std::string> aliases_;
-	std::map<std::string, std::vector<Field>> definitions_;
+	std::vector<Definition> definitions_;
+	bool finished_ = false;
 
 	void load_definition();
-	void parse(const std::string& parse);
+	Definition parse(const std::string& path);
 	Field parse_field(const std::string& dbc_name, rapidxml::xml_node<>* field);
 	void parse_field_property(Field& field, ProgressCheck& check,
 	                          rapidxml::xml_node<>* property);
@@ -40,6 +41,7 @@ class Parser {
 public:
 	void add_definition(const std::string& path);
 	void add_definition(const std::vector<std::string>& paths);
+	std::vector<Definition> finish();
 };
 
 }} //dbc, ember

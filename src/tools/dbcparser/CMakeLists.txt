@@ -7,10 +7,11 @@
 set(EXECUTABLE_NAME dbc-parser)
 set(EXECUTABLE_SRC
 	main.cpp
-	DBCParser.h
-	DBCParser.cpp
+	Parser.h
+	Parser.cpp
 	Field.h
 	Exception.h
+	Definition.h
 	)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
