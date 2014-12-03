@@ -27,21 +27,28 @@ int main(int argc, const char* argv[]) try {
 	std::vector<std::string> paths = fetch_definitions(def_path);
 	
 	edbc::Parser parser;
+	std::vector<edbc::Definition> definitions = parser.parse(paths);
 
-	for(auto& p : paths) {
-		parser.add_definition(p);
+	for(auto& d : definitions) {
+		std::cout << d.dbc_name;
+		
+		if(!d.alias.empty()) {
+			std::cout << " has an alias of " << d.alias;
+		}
+
+		std::cout << std::endl;
+		
+		for(auto& f : d.fields) {
+			std::cout << "\t" << f.type  << "\t" << f.name << std::endl;
+		}
 	}
-
-	std::vector<edbc::Definition> definitions = parser.finish();
-
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
 
 
-std::vector<std::string> fetch_definitions(const std::string& path)
-{
+std::vector<std::string> fetch_definitions(const std::string& path) {
 	if(!boost::filesystem::is_directory(path)) {
 		throw std::exception("Invalid path provided.");
 	}

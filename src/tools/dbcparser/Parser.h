@@ -26,11 +26,7 @@ class Parser {
 		bool options;
 	};
 
-	std::vector<Definition> definitions_;
-	bool finished_ = false;
-
-	void load_definition();
-	Definition parse(const std::string& path);
+	Definition do_parse(const std::string& path);
 	Field parse_field(const std::string& dbc_name, rapidxml::xml_node<>* field);
 	void parse_field_property(Field& field, ProgressCheck& check,
 	                          rapidxml::xml_node<>* property);
@@ -39,9 +35,9 @@ class Parser {
 	                         rapidxml::xml_node<>* property);
 
 public:
-	void add_definition(const std::string& path);
-	void add_definition(const std::vector<std::string>& paths);
-	std::vector<Definition> finish();
+	Definition parse(const std::string& path);
+	std::vector<Definition> parse(const std::vector<std::string>& paths);
+
 };
 
 }} //dbc, ember

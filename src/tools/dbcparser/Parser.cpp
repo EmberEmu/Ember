@@ -97,7 +97,7 @@ Field Parser::parse_field(const std::string& dbc_name, rxml::xml_node<>* field) 
 	return parsed_field;
 }
 
-Definition Parser::parse(const std::string& path) {
+Definition Parser::do_parse(const std::string& path) {
 	rxml::file<> definition(path.c_str());
     rapidxml::xml_document<> doc;
     doc.parse<0>(definition.data());
@@ -122,27 +122,22 @@ Definition Parser::parse(const std::string& path) {
 	return parsed_def;
 }
 
-std::vector<Definition> Parser::finish() {
-	if(finished_) {
-		throw exception("Cannot call finish multiple times!");
-	}
-
-	finished_ = true;
-	return std::move(definitions_);
-}
-
-void Parser::add_definition(const std::string& path) try {
-	definitions_.emplace_back(parse(path));
+Definition Parser::parse(const std::string& path) try {
+	return do_parse(path);
 } catch(std::exception& e) {
 	throw parse_error(path, e.what());
 } catch(...) {
 	throw parse_error(path, "Unknown exception type");
 }
 
-void Parser::add_definition(const std::vector<std::string>& paths) {
+std::vector<Definition> Parser::parse(const std::vector<std::string>& paths) {
+	std::vector<Definition> defs;
+
 	for(auto& p : paths) {
-		add_definition(p);
+		defs.emplace_back(do_parse(p));
 	}
+
+	return defs;
 }
 
 }} //dbc, ember
