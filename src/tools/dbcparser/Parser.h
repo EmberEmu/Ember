@@ -37,7 +37,6 @@ class Parser {
 public:
 	Definition parse(const std::string& path);
 	std::vector<Definition> parse(const std::vector<std::string>& paths);
-
 };
 
 }} //dbc, ember
