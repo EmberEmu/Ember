@@ -1,34 +1,10 @@
 <?xml version="1.0"?>
-<dbc>
-	<uint32 name="id">
-		<key type="primary" />
-	</uint32>
-
-	<int32 name="importance" />
-	<int32 name="icon" />
-
-	<uint32 name="faction">
-		<key type="foreign" parent="Faction" />
-	</uint32>
-
-	<float name="loc_x" />
-	<float name="loc_y" />
-	<float name="loc_z" />
-
-	<uint32 name="map">
-		<key type="foreign" parent="Map" />
-	</uint32>
-
-	<int32 name="flags" />
-
-	<uint32 name="area_table">
-		<key type="foreign" parent="AreaTable" />
-	</int32>
-
-	<string_ref_loc name="name" />
-	<string_ref_loc name="description" />
-	
-	<uint32 name="world_state">
-		<key type="foreign" parent="WorldStateUI" />
-	</uint32>
-</dbc>
+<AreaPOI>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+</AreaPOI>

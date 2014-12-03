@@ -12,6 +12,11 @@ set(EXECUTABLE_SRC
 	Field.h
 	Exception.h
 	Definition.h
+	Validator.h
+	Validator.cpp
+	Generator.h
+	Generator.cpp
+	Keywords.h
 	)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

@@ -1,26 +1,30 @@
 <?xml version="1.0"?>
-<dbc>
-	<uint32 name="id">
-		<key type="primary" />
-	</uint32>
-	
-	<string_ref name="name" />
+<AnimationData alias="test">
+	<field>
+		<type>uint32</type>
+		<name>id</type>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
 
-	<enum type="uint32" name="weapon_flags">
-		<option name="WEAPON_NOT_AFFECTED_BY_ANIMATION" value="0x00" />
-		<option name="SHEATHE_WEAPONS_AUTOMATICALLY" value="0x04" />
-		<option name="SHEATH_WEAPONS_AUTOMATICALLY" value="0x10" />
-		<option name="UNSHEATHE_WEAPONS" value="0x20" />
-	</enum>
-	
-	<int32 name="body_flags" />
-	<int32 name="flags" />
+	<field>
+		<type>enum32</type>
+		<name>weapon_flags</type>
+		<options>
+			<option name="WEAPON_NOT_AFFECTED_BY_ANIMATION" value="0x00" />
+			<option name="SHEATHE_WEAPONS_AUTOMATICALLY" value="0x04" />
+			<option name="SHEATH_WEAPONS_AUTOMATICALLY" value="0x10" />
+			<option name="UNSHEATHE_WEAPONS" value="0x20" />
+		</options>
+	</field>
 
-	<uint32 name="fallback">
-		<key type="foreign" parent="AnimationData" />
-	</uint32>
-
-	<uint32 name="behaviour">
-		<key type="foreign" parent="AnimationData" />
-	</uint32>
-</dbc>
+	<field>
+		<type>uint32</type>
+		<name>heh</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaPOI</type>
+		</key>
+	</field>
+</AnimationData>

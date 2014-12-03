@@ -8,16 +8,6 @@
 
 #pragma once
 
-#include "Field.h"
-#include <string>
-#include <vector>
-
 namespace ember { namespace dbc {
-
-struct Definition {
-	std::string dbc_name;
-	std::string alias;
-	std::vector<Field> fields;
-};
 
 }} //dbc, ember

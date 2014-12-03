@@ -70,7 +70,13 @@ void Parser::parse_field_property(Field& field, ProgressCheck& checker, rxml::xm
 	} else if(strcmp(property->name(), "key") == 0) {
 		if(!checker.key) {
 			parse_field_key(field.key, property);
+			field.is_key = true;
 			checker.key = true;
+
+			if(field.key.type == "foreign" && field.key.parent.empty()) {
+				throw exception("Foreign key found (" + field.name + ")"
+				                + " but no parent was specified");
+			}
 		} else {
 			throw exception("Multiple definitions of <key> in <field> not allowed");
 		}
@@ -92,6 +98,10 @@ Field Parser::parse_field(const std::string& dbc_name, rxml::xml_node<>* field) 
 
 	for(rxml::xml_node<>* node = field->first_node(); node; node = node->next_sibling()) {
 		parse_field_property(parsed_field, checker, node);
+	}
+
+	if(!checker.type || !checker.name) {
+		throw exception("A field must have at least a name and a type element");
 	}
 
 	return parsed_field;
@@ -133,8 +143,14 @@ Definition Parser::parse(const std::string& path) try {
 std::vector<Definition> Parser::parse(const std::vector<std::string>& paths) {
 	std::vector<Definition> defs;
 
-	for(auto& p : paths) {
-		defs.emplace_back(do_parse(p));
+	for(auto& path : paths) {
+		try {
+			defs.emplace_back(do_parse(path));
+		} catch(std::exception& e) {
+			throw parse_error(path, e.what());
+		} catch(...) {
+			throw parse_error(path, "Unknown exception type");
+		}
 	}
 
 	return defs;

@@ -7,6 +7,7 @@
  */
 
 #include "Parser.h"
+#include "Validator.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
@@ -42,6 +43,9 @@ int main(int argc, const char* argv[]) try {
 			std::cout << "\t" << f.type  << "\t" << f.name << std::endl;
 		}
 	}
+
+	edbc::Validator validator(definitions);
+	validator.validate();
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
