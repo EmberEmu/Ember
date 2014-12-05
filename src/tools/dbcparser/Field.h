@@ -24,8 +24,7 @@ struct Field {
 	std::string type;
 	std::string name;
 	std::string comment;
-	bool is_key;
-	Key key;
+	std::vector<Key> keys;
 	std::vector<std::pair<std::string, std::string>> options;
 };
 

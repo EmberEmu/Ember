@@ -17,8 +17,10 @@ namespace rxml = rapidxml;
 
 namespace ember { namespace dbc {
 
-void Parser::parse_field_key(Key& key, rxml::xml_node<>* property) {
+void Parser::parse_field_key(std::vector<Key>& keys, rxml::xml_node<>* property) {
 	auto attr = property->first_attribute("ignore-type-mismatch");
+	
+	Key key;
 
 	if(attr) {
 		if(strcmp(attr->value(), "true") == 0 || strcmp(attr->value(), "1") == 0) {
@@ -38,6 +40,8 @@ void Parser::parse_field_key(Key& key, rxml::xml_node<>* property) {
 			throw exception(std::string("Unexpected element in <key>: ") + node->name());
 		}
 	}
+
+	keys.emplace_back(key);
 }
 
 void Parser::parse_field_options(std::vector<std::pair<std::string, std::string>>& key,
@@ -79,18 +83,7 @@ void Parser::parse_field_property(Field& field, ProgressCheck& checker, rxml::xm
 			throw exception("Multiple definitions of <name> in <field> not allowed");
 		}
 	} else if(strcmp(property->name(), "key") == 0) {
-		if(!checker.key) {
-			parse_field_key(field.key, property);
-			field.is_key = true;
-			checker.key = true;
-
-			if(field.key.type == "foreign" && field.key.parent.empty()) {
-				throw exception("Foreign key found (" + field.name + ")"
-				                + " but no parent was specified");
-			}
-		} else {
-			throw exception("Multiple definitions of <key> in <field> not allowed");
-		}
+		parse_field_key(field.keys, property);
 	} else if(strcmp(property->name(), "options") == 0) {
 		if(!checker.options) {
 			parse_field_options(field.options, property);

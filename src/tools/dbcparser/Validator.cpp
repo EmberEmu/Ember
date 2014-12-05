@@ -34,9 +34,13 @@ private:
 
 boost::optional<const Field*> Validator::locate_fk_parent(const std::string& parent) {
 	for(auto& def : definitions_) {
-		if(def->dbc_name == parent) {
-			for(auto& field : def->fields) {
-				if(field.is_key && field.key.type == "primary") {
+		if(def->dbc_name != parent) { //!= for the sake of one less layer of nesting
+			continue;
+		}
+
+		for(auto& field : def->fields) {
+			for(auto& key : field.keys) {
+				if(key.type == "primary") {
 					return boost::optional<const Field*>(&field);
 				}
 			}
@@ -46,21 +50,21 @@ boost::optional<const Field*> Validator::locate_fk_parent(const std::string& par
 	return boost::optional<const Field*>();
 }
 
-void Validator::check_foreign_keys(const Definition* def) {
-	for(auto& field : def->fields) {
-		if(field.key.type == "foreign") {
-			boost::optional<const Field*> pk = locate_fk_parent(field.key.parent);
+void Validator::check_foreign_keys(const Field& field) {
+	for(auto& key : field.keys) {
+		if(key.type == "foreign") {
+			boost::optional<const Field*> pk = locate_fk_parent(key.parent);
 			TypeComponents components(extract_components(field.type));
 
 			if(!pk) {
-				throw exception(components.first + " references a primary key in "
-					            + field.key.parent + " that does not exist");
+				throw exception(field.name + " references a primary key in "
+				                + key.parent + " that does not exist");
 			}
 
-			if(!field.key.ignore_type_mismatch && (*pk)->type != components.first) {
-				throw exception("Foreign key " + def->dbc_name + ":" + field.name + " => "
-					            + field.key.parent + " types do not match. Expected "
-					            + components.first + ", found " + pk.get()->type);
+			if(!key.ignore_type_mismatch && (*pk)->type != components.first) {
+				throw exception(":" + field.name + " => "+ key.parent +
+				                " types do not match. Expected " + components.first +
+				                ", found " + pk.get()->type);
 			}
 		}
 	}
@@ -104,10 +108,14 @@ void Validator::check_multiple_definitions(const Definition* def,
 	}
 }
 
-void Validator::check_key_types(const Definition* def) {
-	for(auto& field : def->fields) {
-		if(field.is_key && (field.key.type != "primary" && field.key.type != "foreign")) {
-			throw exception(field.key.type + " is not a valid key type");
+void Validator::check_key_types(const Field& field) {
+	for(auto& key : field.keys) {
+		if(key.type != "primary" && key.type != "foreign") {
+			throw exception(key.type + " is not a valid key type" + " for " + field.name);
+		} else if(key.type == "foreign" && key.parent.empty()) {
+			throw exception(":" + field.name + " orphaned foreign key");
+		} else if(key.type == "primary" && !key.parent.empty()) {
+			throw exception(":" + field.name + " - primary key cannot have a parent");
 		}
 	}
 }
@@ -143,18 +151,45 @@ void Validator::check_types(const Definition* def) {
 	}
 }
 
+void Validator::check_dup_key_types(const Definition* def) {
+	bool has_primary = false;
+
+	for(auto& field : def->fields) {
+		bool has_foreign = false;
+
+		for(auto& key : field.keys) {
+			if(key.type == "primary") {
+				if(has_primary) {
+					throw exception(field.name + " - cannot have multiple primary keys");
+				}
+				has_primary = true;
+			}
+
+			if(key.type == "foreign") {
+				if(has_foreign) {
+					throw exception(field.name + " - cannot have multiple foreign keys in a single field");
+				}
+				has_foreign = true;
+			}
+		}
+	}
+}
+
 void Validator::validate() {
 	NameTester tester;
 	std::vector<std::string> names;
 
-	//msvc can't handle try/catch blocks inside range-for without nesting
 	for(auto& def : definitions_) {
-		try {
+		try { //msvc can't handle try/catch blocks inside range-for without nesting
 			check_types(def);
 			check_multiple_definitions(def, names);
 			check_naming_conventions(def, tester);
-			check_key_types(def);
-			check_foreign_keys(def);
+			check_dup_key_types(def);
+			
+			for(auto& field : def->fields) {
+				check_key_types(field);
+				check_foreign_keys(field);
+			}
 		} catch(std::exception& e) {
 			throw exception(def->dbc_name + ": " + e.what());
 		}

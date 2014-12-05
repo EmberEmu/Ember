@@ -28,8 +28,9 @@ class Validator {
 	void check_types(const Definition* def);
 	void check_naming_conventions(const Definition* def, const NameTester& check);
 	void check_multiple_definitions(const Definition* def, std::vector<std::string>& names);
-	void check_key_types(const Definition* def);
-	void check_foreign_keys(const Definition* def);
+	void check_key_types(const Field& def);
+	void check_foreign_keys(const Field& def);
+	void check_dup_key_types(const Definition* def);
 	boost::optional<const Field*> locate_fk_parent(const std::string& parent);
 
 public:
