@@ -18,6 +18,17 @@ namespace rxml = rapidxml;
 namespace ember { namespace dbc {
 
 void Parser::parse_field_key(Key& key, rxml::xml_node<>* property) {
+	auto attr = property->first_attribute("ignore-type-mismatch");
+
+	if(attr) {
+		if(strcmp(attr->value(), "true") == 0 || strcmp(attr->value(), "1") == 0) {
+			key.ignore_type_mismatch = true;
+		} else {
+			throw exception(std::string(attr->value() + std::string(" is not a valid attribute"
+			                " value for ignore-type-mismatch")));
+		}
+	}
+
 	for(rxml::xml_node<>* node = property->first_node(); node != 0; node = node->next_sibling()) {
 		if(strcmp(node->name(), "type") == 0) {
 			key.type = node->value();
@@ -31,6 +42,12 @@ void Parser::parse_field_key(Key& key, rxml::xml_node<>* property) {
 
 void Parser::parse_field_options(std::vector<std::pair<std::string, std::string>>& key,
                                  rxml::xml_node<>* property) {
+	if(property->first_attribute("ignore-type-mismatch")) {
+		//key.ignore_type_mismatch = true;
+		std::cout << "IGNORING MISMATCH";
+		std::exit(0);
+	}
+
 	for(rxml::xml_node<>* node = property->first_node(); node; node = node->next_sibling()) {
 		std::pair<std::string, std::string> kv;
 

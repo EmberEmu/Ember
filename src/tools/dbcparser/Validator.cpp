@@ -19,7 +19,7 @@ struct NameTester {
 
 	void operator()(const std::string& name) {
 		if(std::find(cpp_keywords.begin(), cpp_keywords.end(), name) != cpp_keywords.end()) {
-			throw exception(name + " is a reserved word and cannot be used a name");
+			throw exception(name + " is a reserved word and cannot be used as an identifier");
 		}
 
 		if(!std::regex_search(name, regex_)) {
@@ -51,11 +51,13 @@ void Validator::check_foreign_keys(const Definition* def) {
 			boost::optional<const Field*> pk = locate_fk_parent(field.key.parent);
 
 			if(!pk) {
-				throw exception(field.name + " in " + def->dbc_name + " references a primary key in "
+				throw exception(def->dbc_name + ":" + field.name + " references a primary key in "
 					            + field.key.parent + " that does not exist");
 			}
 
-			if(pk.get()->type != field.type) {
+			if(def->dbc_name == "Spell") continue;
+
+			if(!field.key.ignore_type_mismatch && (*pk)->type != field.type) {
 				throw exception("Foreign key " + def->dbc_name + ":" + field.name + " => "
 					            + field.key.parent + " types do not match. Expected "
 					            + field.type + ", found " + pk.get()->type);

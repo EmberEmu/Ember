@@ -17,11 +17,13 @@ namespace ember { namespace dbc {
 struct Key {
 	std::string type;
 	std::string parent;
+	bool ignore_type_mismatch;
 };
 
 struct Field {
 	std::string type;
 	std::string name;
+	std::string comment;
 	bool is_key;
 	Key key;
 	std::vector<std::pair<std::string, std::string>> options;
