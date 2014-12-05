@@ -1,3 +1,21 @@
 <?xml version="1.0"?>
 <ItemSubClassMask>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemSubClass</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>mask</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
 </ItemSubClassMask>

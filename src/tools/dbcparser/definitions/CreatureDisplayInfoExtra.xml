@@ -1,3 +1,145 @@
 <?xml version="1.0"?>
 <CreatureDisplayInfoExtra>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>skin</name>
+	</field>	
+
+	<field>
+		<type>int32</type>
+		<name>face</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hair_style</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hair_colour</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>facial_hair</name>
+	</field>
+
+	<!-- I think DBC files could use a bit more normalisation -->
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_6</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_7</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_8</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_item_display_9</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemDisplayInfo</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>bake_name</name>
+	</field>
 </CreatureDisplayInfoExtra>

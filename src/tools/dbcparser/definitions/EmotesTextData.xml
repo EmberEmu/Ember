@@ -1,3 +1,15 @@
 <?xml version="1.0"?>
 <EmotesTextData>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>text</name>
+	</field>
 </EmotesTextData>

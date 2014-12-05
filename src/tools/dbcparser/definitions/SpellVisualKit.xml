@@ -1,3 +1,235 @@
 <?xml version="1.0"?>
 <SpellVisualKit>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>start_anim</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>anim_kit</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>head_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>chest_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>base_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>left_hand_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>right_hand_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>breath_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>left_weapon_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>right_weapon_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>special_effect_1</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>special_effect_2</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>special_effect_3</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>world_effect</name>
+		<key>
+			<type>primary</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound</name>
+		<key>
+			<type>primary</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>shake</name>
+		<key>
+			<type>primary</type>
+			<parent>CameraShakes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_proc_1</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_proc_2</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_proc_3</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_proc_4</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_zero_1</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_zero_2</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_zero_3</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_zero_4</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_one_1</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_one_2</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_one_3</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_one_4</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_two_1</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_two_2</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_two_3</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>char_param_two_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
 </SpellVisualKit>

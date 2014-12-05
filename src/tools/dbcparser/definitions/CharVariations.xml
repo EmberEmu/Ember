@@ -1,3 +1,40 @@
 <?xml version="1.0"?>
 <CharVariations>
+	<field comment="todo - update parser to handle this">
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+			<!--<parent>ChrRaces</parent>-->
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>mask1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>mask2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown_2</name>
+	</field>
 </CharVariations>

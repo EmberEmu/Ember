@@ -1,3 +1,24 @@
 <?xml version="1.0"?>
 <EnvironmentalDamage>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>enum_</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_visual_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
 </EnvironmentalDamage>

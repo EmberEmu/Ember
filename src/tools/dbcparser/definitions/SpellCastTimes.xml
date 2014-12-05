@@ -1,3 +1,25 @@
 <?xml version="1.0"?>
 <SpellCastTimes>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>base</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>per_level_increase</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>minimum</name>
+	</field>
 </SpellCastTimes>

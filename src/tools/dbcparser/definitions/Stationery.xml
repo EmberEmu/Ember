@@ -1,3 +1,25 @@
 <?xml version="1.0"?>
 <Stationery>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
 </Stationery>

@@ -1,3 +1,103 @@
 <?xml version="1.0"?>
 <SkillLineAbility>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>skill_line</name>
+		<key>
+			<type>foreign</type>
+			<parent>SkillLine</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race_mask</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>class_mask</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>exclude_race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>exclude_class</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>superseded_by</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>acquire_method</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>trivial_skill_line_rank_high</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>trivial_skill_line_rank_low</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>character_points_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>character_points_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>num_skills_up</name>
+	</field>
 </SkillLineAbility>

@@ -1,3 +1,49 @@
 <?xml version="1.0"?>
 <DeathThudLookups>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>size_class</name>
+		<options>
+			<option name="small" value="0x00" />
+			<option name="medium" value="0x01" />
+			<option name="large" value="0x02" />
+			<option name="giant" value="0x03" />
+			<option name="colossal" value="0x04" />
+		</options>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>terrain_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>TerrainType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_entry</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_entry_water</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
 </DeathThudLookups>

@@ -1,3 +1,168 @@
 <?xml version="1.0"?>
 <EmotesText>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote</name>
+		<key>
+			<type>foreign</type>
+			<parent>Emotes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_6</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_7</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_8</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_9</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_10</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_11</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_12</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_13</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_14</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_15</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>emote_text_data_16</name>
+		<key>
+			<type>foreign</type>
+			<parent>EmotesTextData</parent>
+		</key>
+	</field>
 </EmotesText>

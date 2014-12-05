@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<GameObjectArtKit>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_variation_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_variation_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_variation_3</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>attach_model_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>attach_model_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>attach_model_3</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>attach_model_4</name>
+	</field>
+</GameObjectArtKit>

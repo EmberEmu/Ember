@@ -1,3 +1,25 @@
 <?xml version="1.0"?>
 <UnitBloodLevels>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>violence_level_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>violence_level_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>violence_level_3</name>
+	</field>
 </UnitBloodLevels>

@@ -1,3 +1,207 @@
 <?xml version="1.0"?>
 <Lock>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>type_1</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="item_required" value="0x01" />
+			<option name="locktype_reference" value="0x02" />
+		</options>		
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_5</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_6</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_7</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type_8</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_6</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_7</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>property_8</name>
+		<key>
+			<type>foreign</type>
+			<parent>LockType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_5</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_6</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_7</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>required_skill_8</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_5</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_6</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_7</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>action_8</name>
+	</field>
 </Lock>

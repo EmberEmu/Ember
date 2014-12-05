@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<SpamMessages>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>text</name>
+	</field>
+</SpamMessages>

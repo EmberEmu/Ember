@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<SpellMechanic>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>enchantment_type_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>enchantment_type_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>enchantment_type_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_points_min_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_points_min_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_points_min_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_points_max_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_points_max_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_points_max_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_arg_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_arg_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>effect_arg_3</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisuals</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+</SpellMechanic>

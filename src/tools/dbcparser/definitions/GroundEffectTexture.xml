@@ -1,3 +1,60 @@
 <?xml version="1.0"?>
 <GroundEffectTexture>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>doodad_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>GroundEffectDoodad</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>doodad_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>GroundEffectDoodad</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>doodad_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>GroundEffectDoodad</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>doodad_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>GroundEffectDoodad</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>density</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>terrain_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>TerrainType</parent>
+		</key>
+	</field>
 </GroundEffectTexture>

@@ -1,3 +1,20 @@
 <?xml version="1.0"?>
 <CharBaseInfo>
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>class_</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
 </CharBaseInfo>

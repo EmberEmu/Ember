@@ -1,3 +1,74 @@
 <?xml version="1.0"?>
 <WorldMapContinent>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>map</name>
+		<key>
+			<type>foreign</type>
+			<parent>Map</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>left_boundary</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>right_boundary</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>top_boundary</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>bottom_boundary</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>continent_offset_x</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>continent_offset_y</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>scale</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>taxi_min_x</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>taxi_min_y</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>taxi_max_x</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>taxi_max_y</name>
+	</field>
 </WorldMapContinent>

@@ -1,3 +1,44 @@
 <?xml version="1.0"?>
 <TransportAnimation>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>transport</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>time_index</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_x</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_y</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_z</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sequence</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
 </TransportAnimation>

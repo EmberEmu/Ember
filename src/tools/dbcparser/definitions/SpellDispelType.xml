@@ -1,3 +1,25 @@
 <?xml version="1.0"?>
-<SpellDispellType>
-</SpellDispellType>
+<SpellDispelType>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>mask</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>allow_immunity</name>
+	</field>
+</SpellDispelType>

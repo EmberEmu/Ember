@@ -1,3 +1,55 @@
 <?xml version="1.0"?>
 <CreatureFamily>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>min_scale</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>min_scale_level</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>max_scale</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>max_scale_level</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>pet_food_mask</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>pet_talent_type</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>category</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>icon_path</name>
+	</field>
 </CreatureFamily>

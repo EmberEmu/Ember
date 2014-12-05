@@ -1,3 +1,45 @@
 <?xml version="1.0"?>
 <ChatChannels>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>flags</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="initial" value="0x01" />
+			<option name="zone_dependency" value="0x02" />
+			<option name="global" value="0x04" />
+			<option name="trade" value="0x08" />
+			<option name="city_only" value="0x10" />
+			<option name="city_only_2" value="0x20" />
+			<option name="defence" value="0x10000" />
+			<option name="unselected" value="0x40000" />
+		</options>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>shortcut</name>
+	</field>
 </ChatChannels>

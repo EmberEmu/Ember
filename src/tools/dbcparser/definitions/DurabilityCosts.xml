@@ -1,3 +1,155 @@
 <?xml version="1.0"?>
 <DurabilityCosts>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_5</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_6</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_7</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_8</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_9</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_10</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_11</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_12</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_13</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_14</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_15</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_16</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_17</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_18</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_19</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_20</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass_cost_21</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_5</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_6</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_7</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>armour_subclass_cost_8</name>
+	</field>
 </DurabilityCosts>

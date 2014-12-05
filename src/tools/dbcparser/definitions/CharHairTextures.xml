@@ -1,3 +1,47 @@
 <?xml version="1.0"?>
 <CharHairTextures>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>variation</name>
+		<key>
+			<type>foreign</type>
+			<parent>CharVariations</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>geoset</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>show_scalp</name>
+	</field>
 </CharHairTextures>

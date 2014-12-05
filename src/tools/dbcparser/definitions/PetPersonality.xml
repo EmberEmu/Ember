@@ -1,3 +1,60 @@
 <?xml version="1.0"?>
 <PetPersonality>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>threshold_unhappy</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>threshold_content</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>threshold_happy</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>damage_unhappy</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>damage_content</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>damage_happy</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>modifier_unhappy</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>modifier_content</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>modifier_happy</name>
+	</field>
 </PetPersonality>

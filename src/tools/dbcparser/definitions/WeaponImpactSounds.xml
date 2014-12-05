@@ -1,3 +1,200 @@
 <?xml version="1.0"?>
 <WeaponImpactSounds>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>weapon_subclass</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>parry_sound_type</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_6</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_7</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_8</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_9</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_sound_10</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_6</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_7</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_8</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_9</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>crit_impact_sound_10</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
 </WeaponImpactSounds>

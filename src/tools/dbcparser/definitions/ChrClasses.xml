@@ -1,3 +1,52 @@
 <?xml version="1.0"?>
 <ChrClasses>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<name>int32</name>
+		<type>unknown1</type>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown2</name>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>power_type</name>
+		<options>
+			<option name="mana" value="0x00" />
+			<option name="rage" value="0x01" />
+			<option name="focus" value="0x02" />
+			<option name="energy" value="0x03" />
+			<option name="happiness" value="0x04" />
+		</options>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>filename</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>class_mask</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>hybrid_class</name>
+	</field>
 </ChrClasses>

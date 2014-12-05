@@ -1,3 +1,92 @@
 <?xml version="1.0"?>
 <CreatureDisplayInfo>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>model</name>
+		<key>
+			<type>foreign</type>
+			<parent>CreatureModelData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>CreatureSoundData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>extended_display_info</name>
+		<key>
+			<type>foreign</type>
+			<parent>CreatureDisplayInfoExtra</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>creature_model_scale</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>creature_model_alpha</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_variation_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_variation_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_variation_3</name>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>size_class</name>
+		<options>
+			<option name="small" value="0x00" />
+			<option name="medium" value="0x01" />
+			<option name="large" value="0x02" />
+			<option name="giant" value="0x03" />
+			<option name="colossal" value="0x04" />
+		</options>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>blood</name>
+		<key>
+			<type>foreign</type>
+			<parent>UnitBlood</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>npc_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>NPCSounds</parent>
+		</key>
+	</field>
 </CreatureDisplayInfo>

@@ -1,3 +1,89 @@
 <?xml version="1.0"?>
 <WMOAreaTable>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>wmo_id</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>name_set_id</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>wmo_group_id</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_provider_preferences</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundProviderPreferences</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_provider_preferences_underwater</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundProviderPreferences</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_ambience</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundAmbience</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>zone_music</name>
+		<key>
+			<type>foreign</type>
+			<parent>ZoneMusic</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>zone_intro_music</name>
+		<key>
+			<type>foreign</type>
+			<parent>ZoneIntroMusicTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
 </WMOAreaTable>

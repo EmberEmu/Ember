@@ -9,22 +9,41 @@
 	</field>
 
 	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
 		<type>enum32</type>
 		<name>weapon_flags</type>
 		<options>
-			<option name="WEAPON_NOT_AFFECTED_BY_ANIMATION" value="0x00" />
-			<option name="SHEATHE_WEAPONS_AUTOMATICALLY" value="0x04" />
-			<option name="SHEATH_WEAPONS_AUTOMATICALLY" value="0x10" />
-			<option name="UNSHEATHE_WEAPONS" value="0x20" />
+			<option name="weapon_not_affected_by_animation" value="0x00" />
+			<option name="sheathe_weapons_automatically" value="0x04" />
+			<option name="sheathe_weapons_automatically" value="0x10" />
+			<option name="unsheathe_weapons" value="0x20" />
 		</options>
 	</field>
 
 	<field>
+		<type>enum32</type>
+		<name>body_flags</name>
+	</field>
+
+	<field>
 		<type>uint32</type>
-		<name>heh</name>
+		<name>fallback</name>
 		<key>
 			<type>foreign</type>
-			<parent>AreaPOI</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>behaviour</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
 		</key>
 	</field>
 </AnimationData>

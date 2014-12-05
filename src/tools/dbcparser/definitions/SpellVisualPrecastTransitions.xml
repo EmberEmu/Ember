@@ -1,3 +1,20 @@
 <?xml version="1.0"?>
 <SpellVisualPrecastTransitions>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>load_animation</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>hold_animation</name>
+	</field>
 </SpellVisualPrecastTransitions>

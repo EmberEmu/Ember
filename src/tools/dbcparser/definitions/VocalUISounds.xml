@@ -1,3 +1,60 @@
 <?xml version="1.0"?>
 <VocalUISounds>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>vocal_ui_enum</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>normal_male_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>normal_female_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>pissed_male_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>pissed_female_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
 </VocalUISounds>

@@ -1,3 +1,70 @@
 <?xml version="1.0"?>
 <CharSections>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>section_type</name>
+		<options>
+			<option name="base_skin" value="0x00" />
+			<option name="face" value="0x01" />
+			<option name="facial_hair" value="0x02" />
+			<option name="hair" value="0x03" />
+			<option name="underwear" value="0x04" />
+		</options>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>variation_index</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>colour_index</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_name_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_name_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_name_3</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>playable</name>
+	</field>
 </CharSections>

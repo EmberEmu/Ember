@@ -1,3 +1,125 @@
 <?xml version="1.0"?>
 <SoundProviderPreferences>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>description</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>eax_environment_selection</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax_decay_time</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax2_environment_size</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax_environment_diffusion</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>eax2_room</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>eax2_room_hf</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax2_decay_hf_ratio</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>eax2_reflections</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax2_reflections_delay</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>eax2_reverb</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax2_reverb_delay</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax2_room_rolloff</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax2_air_absorption</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>eax3_room_lf</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_delay_lf_ratio</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_echo_time</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_echo_depth</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_modulation_time</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_modulation_depth</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_hf_reference</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>eax3_lf_reference</name>
+	</field>
 </SoundProviderPreferences>

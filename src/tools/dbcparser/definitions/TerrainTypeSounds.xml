@@ -1,3 +1,10 @@
 <?xml version="1.0"?>
 <TerrainTypeSounds>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
 </TerrainTypeSounds>

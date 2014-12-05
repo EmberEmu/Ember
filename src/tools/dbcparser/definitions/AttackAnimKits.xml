@@ -1,3 +1,42 @@
 <?xml version="1.0"?>
 <AttackAnimKits>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>animation_data</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>attack_anim_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>AttackAnimTypes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>flags</name>
+		<options>
+			<option name="main_hand" value="0x00" />
+			<option name="off_hand" value="0x01" />
+		</options>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown</name>
+	</field>
 </AttackAnimKits>

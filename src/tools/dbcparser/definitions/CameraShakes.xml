@@ -1,3 +1,45 @@
 <?xml version="1.0"?>
 <CameraShakes>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>shake_type</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>direction</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>amplitude</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>frequency</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>duration</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>phase</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>coefficient</name>
+	</field>
 </CameraShakes>

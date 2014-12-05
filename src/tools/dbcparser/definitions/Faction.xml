@@ -1,3 +1,166 @@
 <?xml version="1.0"?>
 <Faction>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>reputation_index</name>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_race_mask_1</name>
+		<options>
+			<option name="human" value="0x01" />
+			<option name="orc" value="0x02" />
+			<option name="dwarf" value="0x04" />
+			<option name="night_elf" value="0x08" />
+			<option name="undead" value="0x10" />
+			<option name="tauren" value="0x20" />
+			<option name="gnome" value="0x40" />
+			<option name="troll" value="0x80" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_race_mask_2</name>
+		<options>
+			<option name="human" value="0x01" />
+			<option name="orc" value="0x02" />
+			<option name="dwarf" value="0x04" />
+			<option name="night_elf" value="0x08" />
+			<option name="undead" value="0x10" />
+			<option name="tauren" value="0x20" />
+			<option name="gnome" value="0x40" />
+			<option name="troll" value="0x80" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_race_mask_3</name>
+		<options>
+			<option name="human" value="0x01" />
+			<option name="orc" value="0x02" />
+			<option name="dwarf" value="0x04" />
+			<option name="night_elf" value="0x08" />
+			<option name="undead" value="0x10" />
+			<option name="tauren" value="0x20" />
+			<option name="gnome" value="0x40" />
+			<option name="troll" value="0x80" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_race_mask_4</name>
+		<options>
+			<option name="human" value="0x01" />
+			<option name="orc" value="0x02" />
+			<option name="dwarf" value="0x04" />
+			<option name="night_elf" value="0x08" />
+			<option name="undead" value="0x10" />
+			<option name="tauren" value="0x20" />
+			<option name="gnome" value="0x40" />
+			<option name="troll" value="0x80" />
+		</options>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>reputation_base_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>reputation_base_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>reputation_base_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>reputation_base_4</name>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_mask_1</name>
+		<options>
+			<option name="visible_to_client" value="0x01" />
+			<option name="enable_at_war" value="0x02" />
+			<option name="hide_in_client" value="0x04" />
+			<option name="force_hide_in_client" value="0x08" />
+			<option name="force_at_peace" value="0x10" />
+			<option name="faction_inactive" value="0x20" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_mask_2</name>
+		<options>
+			<option name="visible_to_client" value="0x01" />
+			<option name="enable_at_war" value="0x02" />
+			<option name="hide_in_client" value="0x04" />
+			<option name="force_hide_in_client" value="0x08" />
+			<option name="force_at_peace" value="0x10" />
+			<option name="faction_inactive" value="0x20" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_mask_3</name>
+		<options>
+			<option name="visible_to_client" value="0x01" />
+			<option name="enable_at_war" value="0x02" />
+			<option name="hide_in_client" value="0x04" />
+			<option name="force_hide_in_client" value="0x08" />
+			<option name="force_at_peace" value="0x10" />
+			<option name="faction_inactive" value="0x20" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>reputation_mask_4</name>
+		<options>
+			<option name="visible_to_client" value="0x01" />
+			<option name="enable_at_war" value="0x02" />
+			<option name="hide_in_client" value="0x04" />
+			<option name="force_hide_in_client" value="0x08" />
+			<option name="force_at_peace" value="0x10" />
+			<option name="faction_inactive" value="0x20" />
+		</options>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>parent_faction</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>description</name>
+	</field>
 </Faction>

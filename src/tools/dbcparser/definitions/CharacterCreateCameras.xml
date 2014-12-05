@@ -1,3 +1,35 @@
 <?xml version="1.0"?>
 <CharacterCreateCameras>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field comment="todo">
+		<type>bool32</type>
+		<name>unknown</name>
+	</field>
+
+	<field comment="todo">
+		<type>bool32</type>
+		<name>unknown_2</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>unknown_3</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>unknown_4</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>unknown_5</name>
+	</field>
 </CharacterCreateCameras>

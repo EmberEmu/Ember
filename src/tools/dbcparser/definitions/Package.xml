@@ -1,3 +1,25 @@
 <?xml version="1.0"?>
 <Package>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>icon</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>cost</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
 </Package>

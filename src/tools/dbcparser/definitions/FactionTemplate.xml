@@ -1,3 +1,127 @@
 <?xml version="1.0"?>
 <FactionTemplate>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>flags</name>
+		<options>
+			<option name="pvp_flagged" value="0x800" />
+			<option name="attack_pvping_players" value="0x1000" />
+		</options>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>friend_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>enemy_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>enemies_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>enemies_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>enemies_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>enemies_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>friends_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>friends_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>friends_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>friends_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
 </FactionTemplate>

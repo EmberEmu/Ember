@@ -1,3 +1,37 @@
 <?xml version="1.0"?>
 <SpellEffectCameraShakes>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>camera_shake_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>CameraShakes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>camera_shake_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>CameraShakes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>camera_shake_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>CameraShakes</parent>
+		</key>
+	</field>
 </SpellEffectCameraShakes>

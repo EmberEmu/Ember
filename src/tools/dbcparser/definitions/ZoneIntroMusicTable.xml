@@ -1,3 +1,34 @@
 <?xml version="1.0"?>
 <ZoneIntroMusicTable>
+	<field>
+		<type>int32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>intro_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>priority_over_ambience</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>min_delay</name>
+	</field>
 </ZoneIntroMusicTable>

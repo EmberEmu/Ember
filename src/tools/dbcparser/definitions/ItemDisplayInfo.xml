@@ -1,3 +1,140 @@
 <?xml version="1.0"?>
 <ItemDisplayInfo>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>model_name_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>model_name_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>model_texture_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>model_texture_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>inventory_icon_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>inventory_icon_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>geoset_group_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>geoset_group_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>geoset_group_3</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_visual</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisual</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>group_sound_index</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemGroupSounds</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>helmet_geoset_vis_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>HelmetGeosetVisData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>helmet_geoset_vis_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>HelmetGeosetVisData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_3</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_4</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_5</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_6</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_7</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_8</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisuals</parent>
+		</key>
+	</field>
 </ItemDisplayInfo>

@@ -1,3 +1,46 @@
 <?xml version="1.0"?>
 <FootstepTerrainLookup>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>creature_foostep</name>
+		<key>
+			<type>foreign</type>
+			<parent>GroundEffectDoodad</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>terrain_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>TerrainType</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_entry</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_entry_splash</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
 </FootstepTerrainLookup>

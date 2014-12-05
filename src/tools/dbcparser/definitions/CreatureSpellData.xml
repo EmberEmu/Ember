@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<CreatureSpellData>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field comment="Time is measured in deciseconds">
+		<type>int32</type>
+		<name>cooldown_time_1</name>
+	</field>
+
+	<field comment="Time is measured in deciseconds">
+		<type>int32</type>
+		<name>cooldown_time_2</name>
+	</field>
+
+	<field comment="Time is measured in deciseconds">
+		<type>int32</type>
+		<name>cooldown_time_3</name>
+	</field>
+
+	<field comment="Time is measured in deciseconds">
+		<type>int32</type>
+		<name>cooldown_time_4</name>
+	</field>
+</CreatureSpellData>

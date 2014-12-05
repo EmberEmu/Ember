@@ -1,3 +1,30 @@
 <?xml version="1.0"?>
 <SpellVisualEffectName>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>filename</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>area_effect_size</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>scale</name>
+	</field>
 </SpellVisualEffectName>

@@ -1,3 +1,222 @@
 <?xml version="1.0"?>
 <CharStartOutfit>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>ubyte</type>
+		<name>race</name>
+		<key ignore-type-mismatch="true">
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>ubyte</type>
+		<name>class_</name>
+		<key ignore-type-mismatch="true">
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>enum8</type>
+		<name>sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</field>
+
+	<field>
+		<type>byte</type>
+		<name>outfit_id</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id1</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id2</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id3</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id4</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id5</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id6</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id7</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id8</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id9</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id10</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id11</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_id12</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id1</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id2</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id3</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id4</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id5</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id6</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id7</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id8</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id9</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id10</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id11</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>display_id12</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id1</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id2</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id3</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id4</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id5</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id6</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id7</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id8</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id9</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id10</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id11</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>inv_slot_id12</name>
+	</field>
 </CharStartOutfit>

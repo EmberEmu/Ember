@@ -1,3 +1,65 @@
 <?xml version="1.0"?>
 <ItemRandomProperties>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_item_enchantment_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellItemEnchantment</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_item_enchantment_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellItemEnchantment</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_item_enchantment_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellItemEnchantment</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_item_enchantment_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellItemEnchantment</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_item_enchantment_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellItemEnchantment</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>suffix</name>
+	</field>
 </ItemRandomProperties>

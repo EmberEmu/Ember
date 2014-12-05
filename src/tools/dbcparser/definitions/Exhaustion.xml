@@ -1,3 +1,40 @@
 <?xml version="1.0"?>
 <Exhaustion>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>experience</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>factor</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>outdoor_hours</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>inn_hours</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>state_name</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>threshold</name>
+	</field>
 </Exhaustion>

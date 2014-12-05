@@ -1,3 +1,39 @@
 <?xml version="1.0"?>
 <SpellShapeshiftForm>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>bonus_action_bar</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>creature_type</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_icon</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellIcon</parent>
+		</key>
+	</field>
 </SpellShapeshiftForm>

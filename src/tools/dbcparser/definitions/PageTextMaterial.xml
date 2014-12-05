@@ -1,3 +1,15 @@
 <?xml version="1.0"?>
 <PageTextMaterial>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
 </PageTextMaterial>

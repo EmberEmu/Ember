@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<GMSurveySurveys>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_6</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_7</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_8</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_9</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>question_10</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+</GMSurveySurveys>

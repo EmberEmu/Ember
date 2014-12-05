@@ -1,3 +1,17 @@
 <?xml version="1.0"?>
 <Cfg_Categories>
+	<field>
+		<type>uint32</type>
+		<name>tab</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>region</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
 </Cfg_Categories>

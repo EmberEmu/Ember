@@ -1,3 +1,55 @@
 <?xml version="1.0"?>
 <UnitBlood>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_front_small</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_front_large</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_back_small</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_back_large</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_1</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_2</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_3</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_4</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_5</name>
+	</field>
 </UnitBlood>

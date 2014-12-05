@@ -1,3 +1,15 @@
 <?xml version="1.0"?>
 <SpellCategory>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
 </SpellCategory>

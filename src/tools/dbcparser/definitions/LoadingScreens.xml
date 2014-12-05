@@ -1,3 +1,20 @@
 <?xml version="1.0"?>
 <LoadingScreens>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>file_path</name>
+	</field>
 </LoadingScreens>

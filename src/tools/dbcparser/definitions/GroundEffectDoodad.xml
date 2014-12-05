@@ -1,3 +1,20 @@
 <?xml version="1.0"?>
-<GroundEffectgDoodad>
-</GroundEffectgDoodad>
+<GroundEffectDoodad>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>internal_id</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>doodad_path</name>
+	</field>
+</GroundEffectDoodad>

@@ -1,3 +1,35 @@
 <?xml version="1.0"?>
 <HelmetGeosetVisData>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hide_geoset_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hide_geoset_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hide_geoset_3</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hide_geoset_4</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>hide_geoset_5</name>
+	</field>
 </HelmetGeosetVisData>

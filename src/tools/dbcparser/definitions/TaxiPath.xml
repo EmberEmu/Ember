@@ -1,3 +1,33 @@
 <?xml version="1.0"?>
 <TaxiPath>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>source_taxi_node</name>
+		<key>
+			<type>foreign</type>
+			<parent>TaxiNodes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>destination_taxi_node</name>
+		<key>
+			<type>foreign</type>
+			<parent>TaxiNodes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>cost</name>
+	</field>
 </TaxiPath>

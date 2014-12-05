@@ -1,3 +1,54 @@
 <?xml version="1.0"?>
 <ZoneMusic>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>set_name</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>silence_interval_min_day</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>silence_interval_min_night</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>silence_interval_max_day</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>silence_interval_max_night</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>day_sound_entry</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>night_sound_entry</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
 </ZoneMusic>

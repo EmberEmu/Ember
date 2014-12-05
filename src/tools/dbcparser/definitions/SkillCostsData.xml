@@ -1,3 +1,30 @@
 <?xml version="1.0"?>
 <SkillCostsData>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>skill_costs</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>cost_1</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>cost_2</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>cost_3</name>
+	</field>
 </SkillCostsData>

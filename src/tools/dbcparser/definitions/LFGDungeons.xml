@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<LFGDungeons>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>min_allowed_level</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>max_allowed_level</name>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>instance_type</name>
+		<options>
+			<option name="group_instance" value="0x01" />
+			<option name="raid_instance" value="0x02" />
+			<option name="world_zone" value="0x03" />
+			<option name="battleground" value="0x04" />
+		</options>
+	</field>
+
+	<field>
+		<type>enum32</type>
+		<name>faction</name>
+		<options>
+			<option name="neutral" value="-1" />
+			<option name="horde" value="0" />
+			<option name="alliance" value="1" />
+		</options>
+	</field>
+</LFGDungeons>

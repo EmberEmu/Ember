@@ -1,3 +1,55 @@
 <?xml version="1.0"?>
 <ItemVisuals>
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual_effects_1</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisualEffects</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual_effects_2</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisualEffects</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual_effects_3</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisualEffects</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual_effects_4</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisualEffects</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual_effects_5</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisualEffects</parent>
+		</key>
+	</field>
 </ItemVisuals>
