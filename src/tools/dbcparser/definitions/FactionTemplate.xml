@@ -54,8 +54,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>enemies_1</name>
+		<type>uint32[4]</type>
+		<name>enemies</name>
 		<key>
 			<type>foreign</type>
 			<parent>Faction</parent>
@@ -63,62 +63,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>enemies_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>Faction</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>enemies_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>Faction</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>enemies_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>Faction</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>friends_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>Faction</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>friends_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>Faction</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>friends_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>Faction</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>friends_4</name>
+		<type>uint32[4]</type>
+		<name>friends</name>
 		<key>
 			<type>foreign</type>
 			<parent>Faction</parent>

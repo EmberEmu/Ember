@@ -9,63 +9,23 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>enchantment_type_1</name>
+		<type>int32[3]</type>
+		<name>enchantment_type</name>
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>enchantment_type_2</name>
+		<type>int32[3]</type>
+		<name>effect_points_min</name>
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>enchantment_type_3</name>
+		<type>int32[3]</type>
+		<name>effect_points_max</name>
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>effect_points_min_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_points_min_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_points_min_3</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_points_max_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_points_max_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_points_max_3</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_arg_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_arg_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>effect_arg_3</name>
+		<type>int32[3]</type>
+		<name>effect_arg</name>
 	</field>
 
 	<field>

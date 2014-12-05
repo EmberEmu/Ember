@@ -72,17 +72,7 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>unknown_1</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>unknown_2</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>unknown_3</name>
+		<type>uint32[3]</type>
+		<name>unknown</name>
 	</field>
 </WorldStateUI>

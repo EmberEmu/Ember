@@ -9,37 +9,12 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>texture_variation_1</name>
+		<type>string_ref[3]</type>
+		<name>texture_variation</name>
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>texture_variation_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_variation_3</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>attach_model_1</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>attach_model_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>attach_model_3</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>attach_model_4</name>
+		<type>string_ref[4]</type>
+		<name>attach_model</name>
 	</field>
 </GameObjectArtKit>

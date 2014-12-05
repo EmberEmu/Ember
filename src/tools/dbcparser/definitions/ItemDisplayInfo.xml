@@ -9,48 +9,23 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>model_name_1</name>
+		<type>string_ref[2]</type>
+		<name>model_name</name>
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>model_name_2</name>
+		<type>string_ref[2]</type>
+		<name>model_texture</name>
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>model_texture_1</name>
+		<type>string_ref[2]</type>
+		<name>inventory_icon</name>
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>model_texture_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>inventory_icon_1</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>inventory_icon_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>geoset_group_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>geoset_group_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>geoset_group_3</name>
+		<type>int32[3]</type>
+		<name>geoset_group</name>
 	</field>
 
 	<field>
@@ -72,8 +47,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>helmet_geoset_vis_1</name>
+		<type>uint32[2]</type>
+		<name>helmet_geoset_vis</name>
 		<key>
 			<type>foreign</type>
 			<parent>HelmetGeosetVisData</parent>
@@ -81,52 +56,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>helmet_geoset_vis_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>HelmetGeosetVisData</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_1</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_3</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_4</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_5</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_6</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_7</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_8</name>
+		<type>string_ref[8]</type>
+		<name>textures</name>
 	</field>
 
 	<field>

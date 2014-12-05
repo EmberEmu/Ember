@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ZoneIntroMusicTable>
 	<field>
-		<type>int32</type>
+		<type>uint32</type>
 		<name>id</name>
 		<key>
 			<type>primary</type>

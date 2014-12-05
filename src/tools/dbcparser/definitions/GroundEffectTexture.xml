@@ -9,35 +9,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>doodad_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>GroundEffectDoodad</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>doodad_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>GroundEffectDoodad</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>doodad_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>GroundEffectDoodad</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>doodad_4</name>
+		<type>uint32[4]</type>
+		<name>doodad</name>
 		<key>
 			<type>foreign</type>
 			<parent>GroundEffectDoodad</parent>

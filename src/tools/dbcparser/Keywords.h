@@ -9,11 +9,11 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <hash_set>
 
 namespace ember { namespace dbc {
 
-std::vector<std::string> cpp_keywords {
+std::hash_set<std::string> cpp_keywords {
 	"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor"
 	"bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
 	"compl", "const", "constexpr", "const_cast", "continue", "decltype", "default",

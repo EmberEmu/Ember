@@ -46,18 +46,8 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>texture_variation_1</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_variation_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_variation_3</name>
+		<type>string_ref[3]</type>
+		<name>texture_variation</name>
 	</field>
 
 	<field>

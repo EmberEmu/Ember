@@ -9,35 +9,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>spell_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_4</name>
+		<type>uint32[4]</type>
+		<name>spell</name>
 		<key>
 			<type>foreign</type>
 			<parent>Spell</parent>
@@ -45,22 +18,7 @@
 	</field>
 
 	<field comment="Time is measured in deciseconds">
-		<type>int32</type>
+		<type>int32[4]</type>
 		<name>cooldown_time_1</name>
-	</field>
-
-	<field comment="Time is measured in deciseconds">
-		<type>int32</type>
-		<name>cooldown_time_2</name>
-	</field>
-
-	<field comment="Time is measured in deciseconds">
-		<type>int32</type>
-		<name>cooldown_time_3</name>
-	</field>
-
-	<field comment="Time is measured in deciseconds">
-		<type>int32</type>
-		<name>cooldown_time_4</name>
 	</field>
 </CreatureSpellData>

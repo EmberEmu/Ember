@@ -14,200 +14,28 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>item_1</name>
+		<type>uint32[10]</type>
+		<name>items</name>
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>item_2</name>
+		<type>uint32[7]</type>
+		<name>bank_item</name>
 	</field>
 
-	<field>
-		<type>uint32</type>
-		<name>item_3</name>
-	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>item_4</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_5</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_6</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_7</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_8</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_9</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_10</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_1</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_2</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_3</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_4</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_5</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_6</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>bank_item_7</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_1</name>
+		<type>uint32[8]</type>
+		<name>set_spell</name>
 		<key>
 			<type>foreign</type>
 			<parent>Spell</parent>
 		</key>
 	</field>
-
+	
 	<field>
-		<type>uint32</type>
-		<name>set_spell_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_5</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_6</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_7</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_spell_8</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_1</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_2</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_3</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_4</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_5</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_6</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_7</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>set_threshold_8</name>
+		<type>uint32[8]</type>
+		<name>set_threshold</name>
 	</field>
 
 	<field>

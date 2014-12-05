@@ -95,31 +95,14 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>special_effect_1</name>
+		<type>uint32[3]</type>
+		<name>special_effects</name>
 		<key>
 			<type>primary</type>
 			<parent>SpellVisualEffectName</parent>
 		</key>
 	</field>
 
-	<field>
-		<type>uint32</type>
-		<name>special_effect_2</name>
-		<key>
-			<type>primary</type>
-			<parent>SpellVisualEffectName</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>special_effect_3</name>
-		<key>
-			<type>primary</type>
-			<parent>SpellVisualEffectName</parent>
-		</key>
-	</field>
 
 	<field>
 		<type>uint32</type>
@@ -149,83 +132,23 @@
 	</field>
 
 	<field>
-		<type>float</type>
-		<name>char_proc_1</name>
+		<type>float[4]</type>
+		<name>char_proc</name>
 	</field>
 
 	<field>
-		<type>float</type>
-		<name>char_proc_2</name>
+		<type>float[4]</type>
+		<name>char_param_zero</name>
 	</field>
 
 	<field>
-		<type>float</type>
-		<name>char_proc_3</name>
+		<type>float[4]</type>
+		<name>char_param_one</name>
 	</field>
 
 	<field>
-		<type>float</type>
-		<name>char_proc_4</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_zero_1</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_zero_2</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_zero_3</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_zero_4</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_one_1</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_one_2</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_one_3</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_one_4</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_two_1</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_two_2</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_two_3</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>char_param_two_4</name>
+		<type>float[4]</type>
+		<name>char_param_two</name>
 	</field>
 
 	<field>

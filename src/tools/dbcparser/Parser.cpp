@@ -42,12 +42,6 @@ void Parser::parse_field_key(Key& key, rxml::xml_node<>* property) {
 
 void Parser::parse_field_options(std::vector<std::pair<std::string, std::string>>& key,
                                  rxml::xml_node<>* property) {
-	if(property->first_attribute("ignore-type-mismatch")) {
-		//key.ignore_type_mismatch = true;
-		std::cout << "IGNORING MISMATCH";
-		std::exit(0);
-	}
-
 	for(rxml::xml_node<>* node = property->first_node(); node; node = node->next_sibling()) {
 		std::pair<std::string, std::string> kv;
 
@@ -113,6 +107,12 @@ Field Parser::parse_field(const std::string& dbc_name, rxml::xml_node<>* field) 
 	Field parsed_field{};
 	ProgressCheck checker{};
 
+	auto attr = field->first_attribute("comment");
+
+	if(attr) {
+		parsed_field.comment = attr->value();
+	}
+
 	for(rxml::xml_node<>* node = field->first_node(); node; node = node->next_sibling()) {
 		parse_field_property(parsed_field, checker, node);
 	}
@@ -140,6 +140,16 @@ Definition Parser::do_parse(const std::string& path) {
 	
 	if(root->first_attribute("alias")) {
 		parsed_def.alias = root->first_attribute("alias")->value();
+	}
+
+	if(root->first_attribute("comment")) {
+		parsed_def.comment = root->first_attribute("comment")->value();
+	}
+
+	if(root->first_attribute("field_count_hint")) try {
+		parsed_def.field_count_hint = std::stoi(root->first_attribute("field_count_hint")->value());
+	} catch(std::exception& e) {
+		throw exception(std::string("On parsing field_count_hint: ") + e.what());
 	}
 
 	for(rxml::xml_node<>* node = root->first_node("field"); node; node = node->next_sibling()) {

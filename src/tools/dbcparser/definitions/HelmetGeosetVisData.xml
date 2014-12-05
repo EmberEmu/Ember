@@ -9,27 +9,7 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>hide_geoset_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>hide_geoset_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>hide_geoset_3</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>hide_geoset_4</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>hide_geoset_5</name>
+		<type>int32[5]</type>
+		<name>hide_geoset</name>
 	</field>
 </HelmetGeosetVisData>

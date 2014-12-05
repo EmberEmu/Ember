@@ -43,44 +43,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>light_params_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>LightParams</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>light_params_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>LightParams</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>light_params_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>LightParams</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>light_params_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>LightParams</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>light_params_5</name>
+		<type>uint32[5]</type>
+		<name>light_params</name>
 		<key>
 			<type>foreign</type>
 			<parent>LightParams</parent>

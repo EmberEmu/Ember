@@ -37,10 +37,20 @@ int main(int argc, const char* argv[]) try {
 			std::cout << " has an alias of " << d.alias;
 		}
 
+		if(!d.comment.empty()) {
+			std::cout << " // " << d.comment;
+		}
+
 		std::cout << std::endl;
 		
 		for(auto& f : d.fields) {
-			std::cout << "\t" << f.type  << "\t" << f.name << std::endl;
+			std::cout << "\t" << f.type << "\t" << f.name;
+
+			if(!f.comment.empty()) {
+				std::cout << " // " << f.comment;
+			}
+
+			std::cout << std::endl;
 		}
 	}
 

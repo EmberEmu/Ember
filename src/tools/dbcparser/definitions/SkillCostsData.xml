@@ -14,17 +14,7 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>cost_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>cost_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>cost_3</name>
+		<type>int32[3]</type>
+		<name>cost</name>
 	</field>
 </SkillCostsData>

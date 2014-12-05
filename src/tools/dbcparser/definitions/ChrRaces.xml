@@ -141,13 +141,8 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>facial_hair_customisation_1</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>facial_hair_customisation_2</name>
+		<type>string_ref[2]</type>
+		<name>facial_hair_customisation</name>
 	</field>
 
 	<field>

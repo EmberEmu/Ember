@@ -8,28 +8,13 @@
 		</key>
 	</field>
 
-	<field comment="todo">
-		<type>bool32</type>
+	<field>
+		<type>bool32[2]</type>
 		<name>unknown</name>
 	</field>
 
-	<field comment="todo">
-		<type>bool32</type>
+	<field>
+		<type>float[3]</type>
 		<name>unknown_2</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>unknown_3</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>unknown_4</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>unknown_5</name>
 	</field>
 </CharacterCreateCameras>

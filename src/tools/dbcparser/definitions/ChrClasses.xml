@@ -9,8 +9,8 @@
 	</field>
 
 	<field>
-		<name>int32</name>
-		<type>unknown1</type>
+		<type>int32</type>
+		<name>unknown1</name>
 	</field>
 
 	<field>

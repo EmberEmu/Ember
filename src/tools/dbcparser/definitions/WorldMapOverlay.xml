@@ -18,35 +18,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>area_table_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>AreaTable</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>area_table_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>AreaTable</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>area_table_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>AreaTable</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>area_table_4</name>
+		<type>uint32[4]</type>
+		<name>area_table</name>
 		<key>
 			<type>foreign</type>
 			<parent>AreaTable</parent>

@@ -51,82 +51,9 @@
 		<name>facial_hair</name>
 	</field>
 
-	<!-- I think DBC files could use a bit more normalisation -->
 	<field>
-		<type>uint32</type>
-		<name>npc_item_display_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_5</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_6</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_7</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_8</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>npc_item_display_9</name>
+		<type>uint32[9]</type>
+		<name>npc_item_display</name>
 		<key>
 			<type>foreign</type>
 			<parent>ItemDisplayInfo</parent>

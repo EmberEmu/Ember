@@ -8,18 +8,15 @@
 
 #pragma once
 
-#include "Field.h"
 #include <string>
-#include <vector>
+#include <hash_set>
 
 namespace ember { namespace dbc {
 
-struct Definition {
-	std::string dbc_name;
-	std::string alias;
-	std::vector<Field> fields;
-	std::string comment;
-	int field_count_hint;
+std::hash_set<std::string> types {
+	"int32", "uint32", "int16", "uint16", "int8", "uint8", "bool", "bool32",
+	"enum32", "enumu32", "string_ref", "string_ref_loc", "float", "double",
+	"enum8", "enumu8"
 };
 
 }} //dbc, ember

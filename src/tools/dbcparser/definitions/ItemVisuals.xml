@@ -9,44 +9,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>item_visual_effects_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemVisualEffects</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_visual_effects_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemVisualEffects</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_visual_effects_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemVisualEffects</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_visual_effects_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemVisualEffects</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>item_visual_effects_5</name>
+		<type>uint32[5]</type>
+		<name>item_visual_effects</name>
 		<key>
 			<type>foreign</type>
 			<parent>ItemVisualEffects</parent>

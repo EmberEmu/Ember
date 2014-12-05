@@ -28,8 +28,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>spell_rank_1</name>
+		<type>uint32[9]</type>
+		<name>spell_rank</name>
 		<key>
 			<type>foreign</type>
 			<parent>Spell</parent>
@@ -37,105 +37,13 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>spell_rank_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
+		<type>uint32[3]</type>
+		<name>prereq_talents</name>
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>spell_rank_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_rank_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_rank_5</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_rank_6</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_rank_7</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_rank_8</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>spell_rank_9</name>
-		<key>
-			<type>foreign</type>
-			<parent>Spell</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>prereq_talent_1</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>prereq_talent_2</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>prereq_talent_3</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>prereq_rank_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>prereq_rank_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>prereq_rank_3</name>
+		<type>int32[3]</type>
+		<name>prereq_ranks</name>
 	</field>
 
 	<field>

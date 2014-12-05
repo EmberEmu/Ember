@@ -18,83 +18,13 @@
 	</field>
 
 	<field>
-		<type>float</type>
-		<name>location_x_1</name>
+		<type>float[8]</type>
+		<name>location_x</name>
 	</field>
 
 	<field>
-		<type>float</type>
-		<name>location_x_2</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_x_3</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_x_4</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_x_5</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_x_6</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_x_7</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_x_8</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_1</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_2</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_3</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_4</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_5</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_6</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_7</name>
-	</field>
-
-	<field>
-		<type>float</type>
-		<name>location_y_8</name>
+		<type>float[8]</type>
+		<name>location_y</name>
 	</field>
 
 	<field>

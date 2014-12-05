@@ -87,13 +87,8 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>character_points_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>character_points_2</name>
+		<type>int32[2]</type>
+		<name>character_points</name>
 	</field>
 
 	<field>

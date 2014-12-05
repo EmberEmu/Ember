@@ -18,71 +18,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
+		<type>uint32[8]</type>
 		<name>cinematic_camera_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_3</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_4</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_5</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_6</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_7</name>
-		<key>
-			<type>foreign</type>
-			<parent>CinematicCamera</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>cinematic_camera_8</name>
 		<key>
 			<type>foreign</type>
 			<parent>CinematicCamera</parent>

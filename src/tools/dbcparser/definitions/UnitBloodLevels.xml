@@ -9,17 +9,7 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>violence_level_1</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>violence_level_2</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>violence_level_3</name>
+		<type>int32[3]</type>
+		<name>violence_level</name>
 	</field>
 </UnitBloodLevels>

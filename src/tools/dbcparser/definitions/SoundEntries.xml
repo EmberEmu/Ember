@@ -47,103 +47,13 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>file_1</name>
+		<type>string_ref[10]</type>
+		<name>file</name>
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>file_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_3</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_4</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_5</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_6</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_7</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_8</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_9</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>file_10</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_1</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_2</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_3</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_4</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_5</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_6</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_7</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_8</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_9</name>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>frequency_10</name>
+		<type>uint32[10]</type>
+		<name>frequency</name>
 	</field>
 
 	<field>

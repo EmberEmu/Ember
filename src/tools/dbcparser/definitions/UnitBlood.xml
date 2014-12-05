@@ -29,27 +29,7 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
-		<name>texture_1</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_2</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_3</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_4</name>
-	</field>
-
-	<field>
-		<type>string_ref</type>
-		<name>texture_5</name>
+		<type>string_ref[5]</type>
+		<name>texture</name>
 	</field>
 </UnitBlood>
