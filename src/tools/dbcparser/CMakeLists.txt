@@ -17,6 +17,9 @@ set(EXECUTABLE_SRC
 	Generator.h
 	Generator.cpp
 	Keywords.h
+	bprinter/table_printer.cpp
+	bprinter/table_printer.h
+	bprinter/impl/table_printer.tpp.h
 	)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

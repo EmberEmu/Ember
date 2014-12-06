@@ -131,7 +131,7 @@ TypeComponents Validator::extract_components(const std::string& type) {
 		if(!matches[2].str().empty()) {
 			try {
 				components.second = std::stoi(matches[2].str());
-			} catch(std::exception& e) {
+			} catch(std::exception) {
 				throw exception(matches[2].str() + " is not a valid array entry count"
 				                " for " + components.first);
 			}

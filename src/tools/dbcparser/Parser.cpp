@@ -10,8 +10,6 @@
 #include "Field.h"
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
-#include <iostream>
-#include <fstream>
 
 namespace rxml = rapidxml;
 
@@ -19,7 +17,6 @@ namespace ember { namespace dbc {
 
 void Parser::parse_field_key(std::vector<Key>& keys, rxml::xml_node<>* property) {
 	auto attr = property->first_attribute("ignore-type-mismatch");
-	
 	Key key;
 
 	if(attr) {

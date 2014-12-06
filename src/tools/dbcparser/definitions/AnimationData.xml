@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
-<AnimationData alias="test">
+<AnimationData>
 	<field>
 		<type>uint32</type>
 		<name>id</type>
 		<key>
 			<type>primary</type>
+		</key>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
 		</key>
 	</field>
 
