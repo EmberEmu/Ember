@@ -7,7 +7,6 @@
  */
 
 #include "Parser.h"
-#include "Validator.h"
 #include "bprinter/table_printer.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -33,8 +32,6 @@ int main(int argc, const char* argv[]) try {
 	
 	edbc::Parser parser;
 	std::vector<edbc::Definition> definitions = parser.parse(paths);
-	edbc::Validator validator(definitions);
-	validator.validate();
 
 	if(args.count("print-dbcs")) {
 		print_dbc_table(definitions);

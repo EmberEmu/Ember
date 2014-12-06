@@ -38,17 +38,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>mount_creature_display_info_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>CreatureDisplayInfo</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>mount_creature_display_info_2</name>
+		<type>uint32[2]</type>
+		<name>mount_creature_display_info</name>
 		<key>
 			<type>foreign</type>
 			<parent>CreatureDisplayInfo</parent>

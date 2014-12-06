@@ -7,6 +7,7 @@
  */
 
 #include "Parser.h"
+#include "Validator.h"
 #include "Field.h"
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
@@ -169,6 +170,9 @@ std::vector<Definition> Parser::parse(const std::vector<std::string>& paths) {
 			throw parse_error(path, "Unknown exception type");
 		}
 	}
+
+	Validator validator(defs);
+	validator.validate();
 
 	return defs;
 }
