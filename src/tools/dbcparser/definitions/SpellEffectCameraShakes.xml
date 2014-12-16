@@ -9,26 +9,8 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
-		<name>camera_shake_1</name>
-		<key>
-			<type>foreign</type>
-			<parent>CameraShakes</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>camera_shake_2</name>
-		<key>
-			<type>foreign</type>
-			<parent>CameraShakes</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>uint32</type>
-		<name>camera_shake_3</name>
+		<type>uint32[3]</type>
+		<name>camera_shake</name>
 		<key>
 			<type>foreign</type>
 			<parent>CameraShakes</parent>

@@ -8,14 +8,17 @@
 
 #pragma once
 
-#include <vector>
+#include <cstdint>
 #include <string>
 
 namespace ember { namespace dbc {
 
-struct Definition;
-
-void generate_common(const std::vector<Definition>& defs, const std::string& output);
-void generate_disk_source(const std::vector<Definition>& defs, const std::string& output);
+struct DBCHeader {
+	std::uint32_t magic;
+	std::uint32_t records;
+	std::uint32_t fields;
+	std::uint32_t record_size;
+	std::uint32_t string_block_len;
+};
 
 }} //dbc, ember

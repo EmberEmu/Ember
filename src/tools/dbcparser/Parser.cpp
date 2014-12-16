@@ -11,6 +11,7 @@
 #include "Field.h"
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
+#include <iostream>
 
 namespace rxml = rapidxml;
 
@@ -65,57 +66,83 @@ void Parser::parse_field_options(std::vector<std::pair<std::string, std::string>
 	}
 }
 
-void Parser::parse_field_property(Field& field, ProgressCheck& checker, rxml::xml_node<>* property) {
+template<>
+void Parser::parse_node(Field& field, ProgressCheck& checker, rxml::xml_node<>* property) {
+	parse_field_properties(field, checker, property);
+}
+
+template<>
+void Parser::parse_node(Type& field, ProgressCheck& checker, rxml::xml_node<>* property) {
+	parse_node_properties(field, checker, property);
+}
+
+void Parser::parse_field_properties(Field& field, ProgressCheck& checker, rxml::xml_node<>* property) {
+	if(strcmp(property->name(), "key") == 0) {
+		parse_field_key(field.keys, property);
+		return;
+	}
+
+	parse_node_properties(field, checker, property);
+}
+
+template<typename T>
+void Parser::parse_node_properties(T& field, ProgressCheck& checker, rxml::xml_node<>* property) {
 	if(strcmp(property->name(), "type") == 0) {
 		if(!checker.type) {
 			field.type = property->value();
 			checker.type = true;
-		} else {
-			throw exception("Multiple definitions of <type> in <field> not allowed");
+			return;
 		}
-	} else if(strcmp(property->name(), "name") == 0) {
+
+		throw exception("Multiple definitions of <type> not allowed");
+	}
+
+	if(strcmp(property->name(), "name") == 0) {
 		if(!checker.name) {
 			field.name = property->value();
 			checker.name = true;
-		} else {
-			throw exception("Multiple definitions of <name> in <field> not allowed");
+			return;
 		}
-	} else if(strcmp(property->name(), "key") == 0) {
-		parse_field_key(field.keys, property);
-	} else if(strcmp(property->name(), "options") == 0) {
+		
+		throw exception("Multiple definitions of <name> not allowed");
+	}
+	
+	if(strcmp(property->name(), "options") == 0) {
 		if(!checker.options) {
 			parse_field_options(field.options, property);
 			checker.options = true;
-		} else {
-			throw exception("Multiple definitions of <options> in <field> not allowed");
+			return;
 		}
-	} else {
-		throw exception(std::string("Unexpected element in <field>: ") + property->name());
+
+		throw exception("Multiple definitions of <options> not allowed");
 	}
+	
+	throw exception(std::string("Unexpected element in field/typedef: ") + property->name());
 }
 
-Field Parser::parse_field(const std::string& dbc_name, rxml::xml_node<>* field) {
-	Field parsed_field{};
+template <typename T>
+T Parser::get_parsed_node(const std::string& dbc_name, rxml::xml_node<>* root) {
+	T parsed{};
 	ProgressCheck checker{};
 
-	auto attr = field->first_attribute("comment");
+	auto attr = root->first_attribute("comment");
 
 	if(attr) {
-		parsed_field.comment = attr->value();
+		parsed.comment = attr->value();
 	}
 
-	for(rxml::xml_node<>* node = field->first_node(); node; node = node->next_sibling()) {
-		parse_field_property(parsed_field, checker, node);
+	for(rxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
+		parse_node(parsed, checker, node);
 	}
 
 	if(!checker.type || !checker.name) {
 		throw exception("A field must have at least a name and a type element");
 	}
 
-	return parsed_field;
+	return parsed;
 }
 
-Definition Parser::do_parse(const std::string& path) {
+Definition Parser::parse_definitions(const std::string& path) {
 	rxml::file<> definition(path.c_str());
     rapidxml::xml_document<> doc;
     doc.parse<0>(definition.data());
@@ -127,6 +154,7 @@ Definition Parser::do_parse(const std::string& path) {
 	Definition parsed_def;
 
 	auto root = doc.first_node();
+
 	parsed_def.dbc_name = root->name();
 	
 	if(root->first_attribute("alias")) {
@@ -143,15 +171,25 @@ Definition Parser::do_parse(const std::string& path) {
 		throw exception(std::string("On parsing field_count_hint: ") + e.what());
 	}
 
-	for(rxml::xml_node<>* node = root->first_node("field"); node; node = node->next_sibling()) {
-		parsed_def.fields.emplace_back(parse_field(parsed_def.dbc_name, node));
+	/* Two passes are performed to allow typedefs to be used before they've been defined within
+	   the DBC definition XML */
+	for(rxml::xml_node<>* node = root->first_node("typedef"); node; node = node->next_sibling("typedef")) {
+		parsed_def.types.emplace_back(get_parsed_node<Type>(parsed_def.dbc_name, node));
+	}
+
+	for(rxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
+		if(strcmp(node->name(), "field") == 0) {
+			parsed_def.fields.emplace_back(get_parsed_node<Field>(parsed_def.dbc_name, node));
+		} else if(strcmp(node->name(), "typedef") != 0) {
+			throw exception(std::string("Unknown node type, ") + node->name());
+		}
 	}
 
 	return parsed_def;
 }
 
 Definition Parser::parse(const std::string& path) try {
-	return do_parse(path);
+	return parse_definitions(path);
 } catch(std::exception& e) {
 	throw parse_error(path, e.what());
 } catch(...) {
@@ -163,7 +201,7 @@ std::vector<Definition> Parser::parse(const std::vector<std::string>& paths) {
 
 	for(auto& path : paths) {
 		try {
-			defs.emplace_back(do_parse(path));
+			defs.emplace_back(parse_definitions(path));
 		} catch(std::exception& e) {
 			throw parse_error(path, e.what());
 		} catch(...) {

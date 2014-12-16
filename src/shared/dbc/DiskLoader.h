@@ -8,14 +8,22 @@
 
 #pragma once
 
-#include <vector>
+#include "Loader.h"
+#include "Storage.h"
+#include <memory>
 #include <string>
 
 namespace ember { namespace dbc {
 
-struct Definition;
+class DiskLoader final : public Loader {
+	const std::string dir_path_;
 
-void generate_common(const std::vector<Definition>& defs, const std::string& output);
-void generate_disk_source(const std::vector<Definition>& defs, const std::string& output);
+	Storage load() const;
+
+public:
+	DiskLoader(std::string dir_path) : dir_path_(std::move(dir_path)) {}
+	~DiskLoader() override {}
+	Storage disk_representations() const override;
+};
 
 }} //dbc, ember

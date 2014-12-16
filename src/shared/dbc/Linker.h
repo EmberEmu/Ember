@@ -8,14 +8,12 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
+#include "Storage.h"
 
 namespace ember { namespace dbc {
 
-struct Definition;
+class Loader;
 
-void generate_common(const std::vector<Definition>& defs, const std::string& output);
-void generate_disk_source(const std::vector<Definition>& defs, const std::string& output);
+Storage link(const Loader& source);
 
 }} //dbc, ember

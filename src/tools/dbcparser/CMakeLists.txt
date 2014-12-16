@@ -16,7 +16,11 @@ set(EXECUTABLE_SRC
 	Validator.cpp
 	Generator.h
 	Generator.cpp
+	TypeUtils.cpp
 	Keywords.h
+	TypeUtils.h
+	Types.h
+	Types.cpp
 	bprinter/table_printer.cpp
 	bprinter/table_printer.h
 	bprinter/impl/table_printer.tpp.h

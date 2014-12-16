@@ -10,13 +10,11 @@
 
 #include <string>
 #include <hash_set>
+#include <map>
 
 namespace ember { namespace dbc {
 
-std::hash_set<std::string> types {
-	"int32", "uint32", "int16", "uint16", "int8", "uint8", "bool", "bool32",
-	"enum32", "enumu32", "string_ref", "string_ref_loc", "float", "double",
-	"enum8", "enumu8"
-};
+extern std::hash_set<std::string> types;
+extern std::map<std::string, std::string> type_map;
 
 }} //dbc, ember

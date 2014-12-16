@@ -86,7 +86,7 @@
 
 	<field>
 		<type>uint32</type>
-		<name>zone_music_intro_id</name>
+		<name>zone_music_intro</name>
 		<key>
 			<type>foreign</type>
 			<parent>ZoneIntroMusicTable</parent>

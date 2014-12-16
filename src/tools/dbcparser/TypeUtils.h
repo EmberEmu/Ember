@@ -8,16 +8,15 @@
 
 #pragma once
 
-#include <cstddef>
+#include <boost/optional.hpp>
+#include <utility>
+#include <string>
 
 namespace ember { namespace dbc {
 
-struct DBCHeader {
-	std::uint32_t magic;
-	std::uint32_t records;
-	std::uint32_t fields;
-	std::uint32_t record_size;
-	std::uint32_t string_block_size;
-};
+typedef std::pair<std::string, boost::optional<int>> TypeComponents;
+
+TypeComponents extract_components(const std::string& type);
+std::string pascal_to_underscore(std::string name);
 
 }} //dbc, ember

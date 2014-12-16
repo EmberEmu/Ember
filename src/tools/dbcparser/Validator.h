@@ -19,12 +19,9 @@ struct Definition;
 struct Field;
 struct NameTester;
 
-typedef std::pair<std::string, boost::optional<int>> TypeComponents;
-
 class Validator {
 	std::vector<const Definition*> definitions_;
 
-	TypeComponents extract_components(const std::string& type);
 	void check_types(const Definition* def);
 	void check_naming_conventions(const Definition* def, const NameTester& check);
 	void check_multiple_definitions(const Definition* def, std::vector<std::string>& names);

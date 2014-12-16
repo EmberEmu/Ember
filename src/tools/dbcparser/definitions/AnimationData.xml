@@ -6,10 +6,6 @@
 		<key>
 			<type>primary</type>
 		</key>
-		<key>
-			<type>foreign</type>
-			<parent>AnimationData</parent>
-		</key>
 	</field>
 
 	<field>

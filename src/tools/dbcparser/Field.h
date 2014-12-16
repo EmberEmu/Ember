@@ -20,6 +20,13 @@ struct Key {
 	bool ignore_type_mismatch;
 };
 
+struct Type {
+	std::string name;
+	std::string type;
+	std::string comment;
+	std::vector<std::pair<std::string, std::string>> options;
+};
+
 struct Field {
 	std::string type;
 	std::string name;

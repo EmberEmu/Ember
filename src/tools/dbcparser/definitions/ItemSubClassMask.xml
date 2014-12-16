@@ -2,7 +2,7 @@
 <ItemSubClassMask>
 	<field>
 		<type>uint32</type>
-		<name>id</name>
+		<name>subclass</name>
 		<key>
 			<type>foreign</type>
 			<parent>ItemSubClass</parent>

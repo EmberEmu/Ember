@@ -11,12 +11,14 @@
 #include "Field.h"
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace ember { namespace dbc {
 
 struct Definition {
 	std::string dbc_name;
 	std::string alias;
+	std::vector<Type> types;
 	std::vector<Field> fields;
 	std::string comment;
 	int field_count_hint;

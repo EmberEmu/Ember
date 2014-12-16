@@ -10,7 +10,7 @@
 
 	<field>
 		<type>uint32</type>
-		<name>creature_foostep</name>
+		<name>creature_footstep</name>
 		<key>
 			<type>foreign</type>
 			<parent>GroundEffectDoodad</parent>

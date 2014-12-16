@@ -48,7 +48,7 @@
 
 	<field>
 		<type>string_ref[10]</type>
-		<name>file</name>
+		<name>files</name>
 	</field>
 
 	<field>

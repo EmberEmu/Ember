@@ -11,6 +11,7 @@
 #include "Field.h"
 #include "Keywords.h"
 #include "Types.h"
+#include "TypeUtils.h"
 #include <regex>
 
 namespace ember { namespace dbc {
@@ -54,7 +55,7 @@ void Validator::check_foreign_keys(const Field& field) {
 	for(auto& key : field.keys) {
 		if(key.type == "foreign") {
 			boost::optional<const Field*> pk = locate_fk_parent(key.parent);
-			TypeComponents components(extract_components(field.type));
+			auto components(extract_components(field.type));
 
 			if(!pk) {
 				throw exception(field.name + " references a primary key in "
@@ -120,33 +121,12 @@ void Validator::check_key_types(const Field& field) {
 	}
 }
 
-TypeComponents Validator::extract_components(const std::string& type) {
-	TypeComponents components;
-	std::regex pattern(R"(([^[]+)(?:\[(.*)\])?)");
-	std::smatch matches;
-
-	if(std::regex_match(type, matches, pattern)) {	
-		components.first = matches[1].str();
-		
-		if(!matches[2].str().empty()) {
-			try {
-				components.second = std::stoi(matches[2].str());
-			} catch(std::exception) {
-				throw exception(matches[2].str() + " is not a valid array entry count"
-				                " for " + components.first);
-			}
-		}
-	}
-
-	return components;
-}
-
 void Validator::check_types(const Definition* def) {
 	for(auto& field : def->fields) {
-		auto component = extract_components(field.type);
+		auto components = extract_components(field.type);
 
-		if(types.find(component.first) == types.end()) {
-			throw exception(component.first + " is not a recognised type");
+		if(types.find(components.first) == types.end()) {
+			throw exception(components.first + " is not a recognised type");
 		}
 	}
 }

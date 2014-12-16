@@ -7,6 +7,7 @@
  */
 
 #include "Parser.h"
+#include "Generator.h"
 #include "bprinter/table_printer.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -24,6 +25,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(const std::string& path);
 void print_dbc_table(const std::vector<edbc::Definition>& defs);
 void print_dbc_fields(const std::string& dbc, const std::vector<edbc::Definition>& defs);
+void handle_options(const po::variables_map& args, const std::vector<edbc::Definition>& defs);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -33,16 +35,37 @@ int main(int argc, const char* argv[]) try {
 	edbc::Parser parser;
 	std::vector<edbc::Definition> definitions = parser.parse(paths);
 
-	if(args.count("print-dbcs")) {
-		print_dbc_table(definitions);
-	}
-
-	if(args.count("print-fields")) {
-		print_dbc_fields(args["print-fields"].as<std::string>(), definitions);
-	}
+	handle_options(args, definitions);
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
+}
+
+void handle_options(const po::variables_map& args, const std::vector<edbc::Definition>& defs) {
+	if(args["print-dbcs"].as<bool>()) {
+		print_dbc_table(defs);
+		return;
+	}
+
+	if(args.count("print-fields")) {
+		print_dbc_fields(args["print-fields"].as<std::string>(), defs);
+		return;
+	}
+
+	if(args["disk"].as<bool>() || args.count("database")) {
+		std::cout << "Generating shared files...";
+		edbc::generate_common(defs, args["output"].as<std::string>());
+		std::cout << " done" << std::endl;
+	}
+
+
+	if(args["disk"].as<bool>()) {
+		edbc::generate_disk_source(defs, args["output"].as<std::string>());
+	}
+
+	if(args.count("database")) {
+
+	}
 }
 
 void print_dbc_table(const std::vector<edbc::Definition>& defs) {
@@ -108,16 +131,16 @@ std::vector<std::string> fetch_definitions(const std::string& path) {
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description opt("Generic options");
 	opt.add_options()
-		("help", "Displays a list of available options")
+		("help,h", "Displays a list of available options")
 		("definitions,d", po::value<std::string>()->default_value("definitions"),
 			"Path to the DBC XML definitions")
-		("headers,h", po::bool_switch()->default_value(false),
-			"Generate header files")
-		("sql-schema,s", po::bool_switch()->default_value(false),
-			"Generate SQL data")
-		("sql-inserts,i", po::bool_switch()->default_value(false),
-			"Generate SQL data")
-		("print-dbcs", po::bool_switch()->default_value(false), //file bug Boost report
+		("output,o", po::value<std::string>()->default_value("output"),
+			"Directory to save output to")
+		("disk",  po::bool_switch(),
+			"Generate files required for loading DBC data from disk")
+		("database",po::value<std::string>(),
+			"Generate files required for loading DBC data from the database specified in the argument")
+		("print-dbcs", po::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")
 		("print-fields", po::value<std::string>(),
 			"Print out of a summary of a specific DBC definition's fields");
