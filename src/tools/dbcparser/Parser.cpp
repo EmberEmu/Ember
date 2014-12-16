@@ -7,7 +7,7 @@
  */
 
 #include "Parser.h"
-#include "Validator.h"
+//#include "Validator.h"
 #include "Field.h"
 #include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
@@ -209,8 +209,8 @@ std::vector<Definition> Parser::parse(const std::vector<std::string>& paths) {
 		}
 	}
 
-	Validator validator(defs);
-	validator.validate();
+	//Validator validator(defs);
+	//validator.validate();
 
 	return defs;
 }

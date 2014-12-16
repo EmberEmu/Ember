@@ -9,12 +9,42 @@
 #pragma once
 
 #include <string>
-#include <hash_set>
-#include <map>
+#include <vector>
+#include <memory>
 
 namespace ember { namespace dbc {
 
-extern std::hash_set<std::string> types;
-extern std::map<std::string, std::string> type_map;
+struct Key {
+	std::string type;
+	std::string parent;
+	bool ignore_type_mismatch;
+};
+
+struct Field {
+	std::string type;
+	std::string name;
+	std::string comment;
+	std::vector<Key> keys;
+};
+
+enum Types {
+	STRUCT, CLASS, ENUM
+};
+
+struct TypeBase {
+	Types type;
+	std::string name;
+	std::string comment;
+};
+
+struct Enum : TypeBase {
+	std::string underlying_type;
+	std::vector<std::pair<std::string, std::string>> options;
+};
+
+struct Struct : TypeBase {
+	std::vector<Field> fields;
+	std::vector<std::unique_ptr<TypeBase>> nested;
+};
 
 }} //dbc, ember

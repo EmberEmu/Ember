@@ -14,25 +14,6 @@
 
 namespace ember { namespace dbc {
 
-struct Key {
-	std::string type;
-	std::string parent;
-	bool ignore_type_mismatch;
-};
 
-struct Type {
-	std::string name;
-	std::string type;
-	std::string comment;
-	std::vector<std::pair<std::string, std::string>> options;
-};
-
-struct Field {
-	std::string type;
-	std::string name;
-	std::string comment;
-	std::vector<Key> keys;
-	std::vector<std::pair<std::string, std::string>> options;
-};
 
 }}
