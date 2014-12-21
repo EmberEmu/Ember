@@ -10,7 +10,7 @@
 
 #include "Exception.h"
 #include "Field.h"
-#include "Definition.h"
+#include "Types.h"
 #include <rapidxml.hpp>
 #include <string>
 #include <vector>
@@ -18,35 +18,32 @@
 namespace ember { namespace dbc {
 
 class Parser {
-	struct ProgressCheck {
+	struct UniqueCheck {
 		bool type;
 		bool name;
+		bool alias;
 		bool options;
 	};
 
-	Definition parse_definitions(const std::string& path);
+ 	types::Definition parse_file(const std::string& path);
+	types::Definition parse_doc_root(rapidxml::xml_node<>* node);
 
-	template <typename T>
-	T get_parsed_node(const std::string& dbc_name, rapidxml::xml_node<>* node);
+	types::Struct parse_struct(rapidxml::xml_node<>* root, int depth = 0);
+	void parse_struct_node(types::Struct& structure, UniqueCheck& check, rapidxml::xml_node<>* node);
+	
+	types::Field parse_field(rapidxml::xml_node<>* root);
+	void parse_field_node(types::Field& field, UniqueCheck& check, rapidxml::xml_node<>* node);
+	void parse_field_key(std::vector<types::Key>& keys, rapidxml::xml_node<>* node);
 
-	template <typename T>
-	void parse_node_properties(T& field, ProgressCheck& check,
-	                      rapidxml::xml_node<>* property);
+	types::Enum parse_enum(rapidxml::xml_node<>* root);
+	void parse_enum_node(types::Enum& structure, UniqueCheck& check, rapidxml::xml_node<>* node);
+	void parse_enum_options(std::vector<std::pair<std::string, std::string>>& key, rapidxml::xml_node<>* node);
 
-	template <typename T>
-	void parse_node(T& field, ProgressCheck& checker, rapidxml::xml_node<>* property);
-
-	void parse_field_properties(Field& field, ProgressCheck& checker,
-	                            rapidxml::xml_node<>* property);
-
-	void parse_field_options(std::vector<std::pair<std::string, std::string>>& key,
-	                         rapidxml::xml_node<>* property);
-
-	void parse_field_key(std::vector<Key>& keys, rapidxml::xml_node<>* property);
+	void assign_unique(std::string& type, bool& exists, rapidxml::xml_node<>* node);
 
 public:
-	Definition parse(const std::string& path);
-	std::vector<Definition> parse(const std::vector<std::string>& paths);
+	types::Definition parse(const std::string& path);
+	std::vector<types::Definition> parse(const std::vector<std::string>& paths);
 };
 
 }} //dbc, ember

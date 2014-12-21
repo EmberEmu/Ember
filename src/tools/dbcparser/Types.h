@@ -12,39 +12,50 @@
 #include <vector>
 #include <memory>
 
-namespace ember { namespace dbc {
+namespace ember { namespace dbc { namespace types {
+
+struct Base;
+
+enum Types {
+	STRUCT, ENUM
+};
+
+typedef std::vector<std::unique_ptr<Base>> Definition;
 
 struct Key {
-	std::string type;
+	std::string underlying_type;
 	std::string parent;
 	bool ignore_type_mismatch;
 };
 
 struct Field {
-	std::string type;
+	std::string underlying_type;
 	std::string name;
 	std::string comment;
 	std::vector<Key> keys;
 };
 
-enum Types {
-	STRUCT, CLASS, ENUM
-};
-
-struct TypeBase {
+struct Base {
 	Types type;
 	std::string name;
+	std::string alias;
 	std::string comment;
 };
 
-struct Enum : TypeBase {
+struct Enum : Base {
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
 };
 
-struct Struct : TypeBase {
+struct Struct : Base {
 	std::vector<Field> fields;
-	std::vector<std::unique_ptr<TypeBase>> nested;
+	std::vector<std::unique_ptr<Base>> children;
+
+	/* for msvc again */
+	Struct() = default;
+	Struct(Struct&& src) {
+		this->children = std::move(src.children);
+	}
 };
 
-}} //dbc, ember
+}}} //types, dbc, ember

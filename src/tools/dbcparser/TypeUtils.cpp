@@ -17,7 +17,7 @@
 namespace ember { namespace dbc {
 
 //todo, temporary home
-std::hash_set<std::string> types {
+std::hash_set<std::string> dbc_types {
 	"int32", "uint32", "int16", "uint16", "int8", "uint8", "bool", "bool32",
 	"enum32", "enumu32", "string_ref", "string_ref_loc", "float", "double",
 	"enum8", "enumu8"
@@ -45,6 +45,10 @@ std::map<std::string, std::string> type_map {
 		{ "double", "double" },
 };
 
+/* 
+ * Takes a string such as int[5] and splits it into the type (int)
+ * and an optional element count (5).
+ */
 TypeComponents extract_components(const std::string& type) {
 	TypeComponents components;
 	std::regex pattern(R"(([^[]+)(?:\[(.*)\])?)");
@@ -56,6 +60,10 @@ TypeComponents extract_components(const std::string& type) {
 		if(!matches[2].str().empty()) {
 			try {
 				components.second = std::stoi(matches[2].str());
+
+				if(components.second < 0) {
+					throw std::exception(); //todo
+				}
 			} catch(std::exception) {
 				throw exception(matches[2].str() + " is not a valid array entry count"
 					" for " + components.first);

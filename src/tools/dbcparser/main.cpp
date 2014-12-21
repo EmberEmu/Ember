@@ -23,9 +23,9 @@ namespace edbc = ember::dbc;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(const std::string& path);
-void print_dbc_table(const std::vector<edbc::Definition>& defs);
-void print_dbc_fields(const std::string& dbc, const std::vector<edbc::Definition>& defs);
-void handle_options(const po::variables_map& args, const std::vector<edbc::Definition>& defs);
+void print_dbc_table(const std::vector<edbc::types::Definition>& defs);
+void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Definition>& defs);
+void handle_options(const po::variables_map& args, const std::vector<edbc::types::Definition>& defs);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) try {
 	std::vector<std::string> paths = fetch_definitions(def_path);
 	
 	edbc::Parser parser;
-	std::vector<edbc::Definition> definitions = parser.parse(paths);
+	std::vector<edbc::types::Definition> definitions = parser.parse(paths);
 
 	handle_options(args, definitions);
 } catch(std::exception& e) {
@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) try {
 	return 1;
 }
 
-void handle_options(const po::variables_map& args, const std::vector<edbc::Definition>& defs) {
+void handle_options(const po::variables_map& args, const std::vector<edbc::types::Definition>& defs) {
 	if(args["print-dbcs"].as<bool>()) {
 		print_dbc_table(defs);
 		return;
@@ -68,8 +68,8 @@ void handle_options(const po::variables_map& args, const std::vector<edbc::Defin
 	}
 }
 
-void print_dbc_table(const std::vector<edbc::Definition>& defs) {
-	bprinter::TablePrinter printer(&std::cout);
+void print_dbc_table(const std::vector<edbc::types::Definition>& defs) {
+	/*bprinter::TablePrinter printer(&std::cout);
 	printer.AddColumn("DBC Name", 26);
 	printer.AddColumn("#", 4);
 	printer.AddColumn("Comment", 45);
@@ -77,11 +77,11 @@ void print_dbc_table(const std::vector<edbc::Definition>& defs) {
 
 	for(auto& d : defs) {
 		printer << d.dbc_name.substr(0, 26) << d.fields.size() << d.comment;
-	}
+	}*/
 }
 
-void print_dbc_fields(const std::string& dbc, const std::vector<edbc::Definition>& defs) {
-	auto def = std::find_if(defs.begin(), defs.end(), [dbc](const edbc::Definition& def) {
+void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Definition>& defs) {
+	/*auto def = std::find_if(defs.begin(), defs.end(), [dbc](const edbc::types::Base& def) {
 		return dbc == def.dbc_name;
 	});
 	
@@ -109,7 +109,7 @@ void print_dbc_fields(const std::string& dbc, const std::vector<edbc::Definition
 		}
 
 		printer << f.name << f.type << key << f.comment;
-	}
+	}*/
 }
 
 std::vector<std::string> fetch_definitions(const std::string& path) {

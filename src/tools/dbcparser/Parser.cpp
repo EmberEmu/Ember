@@ -9,7 +9,6 @@
 #include "Parser.h"
 //#include "Validator.h"
 #include "Field.h"
-#include <rapidxml.hpp>
 #include <rapidxml_utils.hpp>
 #include <iostream>
 
@@ -17,9 +16,9 @@ namespace rxml = rapidxml;
 
 namespace ember { namespace dbc {
 
-void Parser::parse_field_key(std::vector<Key>& keys, rxml::xml_node<>* property) {
+void Parser::parse_field_key(std::vector<types::Key>& keys, rxml::xml_node<>* property) {
 	auto attr = property->first_attribute("ignore-type-mismatch");
-	Key key;
+	types::Key key;
 
 	if(attr) {
 		if(strcmp(attr->value(), "true") == 0 || strcmp(attr->value(), "1") == 0) {
@@ -32,7 +31,7 @@ void Parser::parse_field_key(std::vector<Key>& keys, rxml::xml_node<>* property)
 
 	for(rxml::xml_node<>* node = property->first_node(); node != 0; node = node->next_sibling()) {
 		if(strcmp(node->name(), "type") == 0) {
-			key.type = node->value();
+			key.underlying_type = node->value();
 		} else if(strcmp(node->name(), "parent") == 0) {
 			key.parent = node->value();
 		} else {
@@ -43,13 +42,13 @@ void Parser::parse_field_key(std::vector<Key>& keys, rxml::xml_node<>* property)
 	keys.emplace_back(key);
 }
 
-void Parser::parse_field_options(std::vector<std::pair<std::string, std::string>>& key,
-                                 rxml::xml_node<>* property) {
+void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>& key,
+                                rxml::xml_node<>* property) {
 	for(rxml::xml_node<>* node = property->first_node(); node; node = node->next_sibling()) {
 		std::pair<std::string, std::string> kv;
 
 		if(strcmp(node->name(), "option") != 0) {
-			throw exception(std::string("Unexpected element in <options>: ") + node->name());
+			throw exception(std::string("Unexpected node in <options>: ") + node->name());
 		}
 
 		for(rxml::xml_attribute<>* attr = node->first_attribute(); attr; attr = attr->next_attribute()) {
@@ -66,64 +65,93 @@ void Parser::parse_field_options(std::vector<std::pair<std::string, std::string>
 	}
 }
 
-template<>
-void Parser::parse_node(Field& field, ProgressCheck& checker, rxml::xml_node<>* property) {
-	parse_field_properties(field, checker, property);
-}
+void Parser::parse_enum_node(types::Enum& type, UniqueCheck& check, rxml::xml_node<>* node) {
+	if(strcmp(node->name(), "name") == 0) {
+		assign_unique(type.name, check.name, node);
+		return;
+	} else if(strcmp(node->name(), "type") == 0) {
+		assign_unique(type.underlying_type, check.type, node);
+		return;
+	} else if(strcmp(node->name(), "alias") == 0) {
+		assign_unique(type.alias, check.alias, node);
+		return;
+	} else if(strcmp(node->name(), "options") == 0) {
+		if(check.options) {
+			throw exception("Multiple definitions of <options> not allowed");
+		}
 
-template<>
-void Parser::parse_node(Type& field, ProgressCheck& checker, rxml::xml_node<>* property) {
-	parse_node_properties(field, checker, property);
-}
-
-void Parser::parse_field_properties(Field& field, ProgressCheck& checker, rxml::xml_node<>* property) {
-	if(strcmp(property->name(), "key") == 0) {
-		parse_field_key(field.keys, property);
+		parse_enum_options(type.options, node);
+		check.options = true;
 		return;
 	}
 
-	parse_node_properties(field, checker, property);
+	throw exception(std::string("Unexpected node in <enum>: ") + node->name());
 }
 
-template<typename T>
-void Parser::parse_node_properties(T& field, ProgressCheck& checker, rxml::xml_node<>* property) {
-	if(strcmp(property->name(), "type") == 0) {
-		if(!checker.type) {
-			field.type = property->value();
-			checker.type = true;
-			return;
-		}
-
-		throw exception("Multiple definitions of <type> not allowed");
+void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xml_node<>* node) {
+	if(strcmp(node->name(), "name") == 0) {
+		assign_unique(type.name, check.name, node);
+		return;
+	} else if(strcmp(node->name(), "alias") == 0) {
+		assign_unique(type.alias, check.alias, node);
+		return;
+	} else if(strcmp(node->name(), "field") == 0) {
+		type.fields.emplace_back(parse_field(node));
+		return;
 	}
 
-	if(strcmp(property->name(), "name") == 0) {
-		if(!checker.name) {
-			field.name = property->value();
-			checker.name = true;
-			return;
-		}
-		
-		throw exception("Multiple definitions of <name> not allowed");
-	}
-	
-	if(strcmp(property->name(), "options") == 0) {
-		if(!checker.options) {
-			parse_field_options(field.options, property);
-			checker.options = true;
-			return;
-		}
-
-		throw exception("Multiple definitions of <options> not allowed");
-	}
-	
-	throw exception(std::string("Unexpected element in field/typedef: ") + property->name());
+	throw exception(std::string("Unexpected node in <struct>: ") + node->name());
 }
 
-template <typename T>
-T Parser::get_parsed_node(const std::string& dbc_name, rxml::xml_node<>* root) {
-	T parsed{};
-	ProgressCheck checker{};
+void Parser::assign_unique(std::string& type, bool& exists, rxml::xml_node<>* node) {
+	if(exists) {
+		throw exception(std::string("Multiple definitions of: ") + node->name());
+	}
+
+	type = node->value();
+	exists = true;
+}
+
+void Parser::parse_field_node(types::Field& field, UniqueCheck& check, 
+                              rxml::xml_node<>* node) {
+	if(strcmp(node->name(), "name") == 0) {
+		assign_unique(field.name, check.name, node);
+		return;
+	} else if(strcmp(node->name(), "type") == 0) {
+		assign_unique(field.underlying_type, check.type, node);
+		return;
+	} else if(strcmp(node->name(), "key") == 0) {
+		parse_field_key(field.keys, node);
+		return;
+	}
+
+	throw exception(std::string("Unknown node found in <field>: ") + node->name());
+}
+
+types::Field Parser::parse_field(rxml::xml_node<>* root) {
+	types::Field field;
+	UniqueCheck check{};
+
+	auto attr = root->first_attribute("comment");
+
+	if(attr) {
+		field.comment = attr->value();
+	}
+
+	for(rxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
+		parse_field_node(field, check, node);
+	}
+
+	if(!check.type || !check.name) {
+		throw exception("A <field> must have at least <name> and <type> nodes");
+	}
+
+	return field;
+}
+
+types::Enum Parser::parse_enum(rxml::xml_node<>* root) {
+	types::Enum parsed;
+	UniqueCheck check{};
 
 	auto attr = root->first_attribute("comment");
 
@@ -131,77 +159,96 @@ T Parser::get_parsed_node(const std::string& dbc_name, rxml::xml_node<>* root) {
 		parsed.comment = attr->value();
 	}
 
-	for(rxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
-		parse_node(parsed, checker, node);
+	for(rxml::xml_node<>* node = root; node; node = node->next_sibling()) {
+		parse_enum_node(parsed, check, node);
 	}
 
-	if(!checker.type || !checker.name) {
-		throw exception("A field must have at least a name and a type element");
+	if(!check.type || !check.name) {
+		throw exception("An <enum> must have at least <name> and <type> nodes");
 	}
 
 	return parsed;
 }
 
-Definition Parser::parse_definitions(const std::string& path) {
-	rxml::file<> definition(path.c_str());
-    rapidxml::xml_document<> doc;
-    doc.parse<0>(definition.data());
-
-	if(!doc.first_node()) {
-		throw exception("File appears to be empty");
+types::Struct Parser::parse_struct(rxml::xml_node<>* root, int depth) {
+	if(depth > 1) {
+		throw exception("Struct nesting is too deep");
 	}
 
-	Definition parsed_def;
+	types::Struct parsed;
+	UniqueCheck check{};
 
-	auto root = doc.first_node();
+	auto attr = root->first_attribute("comment");
 
-	parsed_def.dbc_name = root->name();
-	
-	if(root->first_attribute("alias")) {
-		parsed_def.alias = root->first_attribute("alias")->value();
+	if(attr) {
+		parsed.comment = attr->value();
 	}
 
-	if(root->first_attribute("comment")) {
-		parsed_def.comment = root->first_attribute("comment")->value();
-	}
-
-	if(root->first_attribute("field_count_hint")) try {
-		parsed_def.field_count_hint = std::stoi(root->first_attribute("field_count_hint")->value());
-	} catch(std::exception& e) {
-		throw exception(std::string("On parsing field_count_hint: ") + e.what());
-	}
-
-	/* Two passes are performed to allow typedefs to be used before they've been defined within
-	   the DBC definition XML */
-	for(rxml::xml_node<>* node = root->first_node("typedef"); node; node = node->next_sibling("typedef")) {
-		parsed_def.types.emplace_back(get_parsed_node<Type>(parsed_def.dbc_name, node));
-	}
-
-	for(rxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
-		if(strcmp(node->name(), "field") == 0) {
-			parsed_def.fields.emplace_back(get_parsed_node<Field>(parsed_def.dbc_name, node));
-		} else if(strcmp(node->name(), "typedef") != 0) {
-			throw exception(std::string("Unknown node type, ") + node->name());
+	for(rxml::xml_node<>* node = root; node; node = node->next_sibling()) {
+		if(strcmp(node->name(), "struct") == 0) {
+			parsed.children.emplace_back(
+				std::make_unique<types::Struct>(parse_struct(node->first_node(), depth + 1))
+			);
+		} else if(strcmp(node->name(), "enum") == 0) {
+			parse_enum(node->first_node());
+		} else {
+			parse_struct_node(parsed, check, node);
 		}
 	}
 
-	return parsed_def;
+	if(!check.name) {
+		throw exception("A <struct> must have at least a <name> node");
+	}
+
+	return parsed;
 }
 
-Definition Parser::parse(const std::string& path) try {
-	return parse_definitions(path);
+types::Definition Parser::parse_doc_root(rxml::xml_node<>* parent) {
+	types::Definition definition;
+
+	for(rxml::xml_node<>* node = parent; node; node = node->next_sibling()) {
+		if(strcmp(node->name(), "struct") == 0) {
+			definition.emplace_back(
+				std::make_unique<types::Struct>(parse_struct(node->first_node()))
+			);
+		} else if(strcmp(node->name(), "enum") == 0) {
+			definition.emplace_back(
+				std::make_unique<types::Enum>(parse_enum(node->first_node()))
+			);
+		}
+	}
+
+	return definition;
+}
+
+types::Definition Parser::parse_file(const std::string& path) {
+	rxml::file<> definition(path.c_str());
+    rxml::xml_document<> doc;
+    doc.parse<0>(definition.data());
+
+	auto root = doc.first_node();
+
+	if(!root) {
+		throw exception("File appears to be empty");
+	}
+
+	return parse_doc_root(root);
+}
+
+types::Definition Parser::parse(const std::string& path) try {
+	return parse_file(path);
 } catch(std::exception& e) {
 	throw parse_error(path, e.what());
 } catch(...) {
 	throw parse_error(path, "Unknown exception type");
 }
 
-std::vector<Definition> Parser::parse(const std::vector<std::string>& paths) {
-	std::vector<Definition> defs;
+std::vector<types::Definition> Parser::parse(const std::vector<std::string>& paths) {
+	std::vector<types::Definition> defs;
 
 	for(auto& path : paths) {
 		try {
-			defs.emplace_back(parse_definitions(path));
+			defs.emplace_back(parse_file(path));
 		} catch(std::exception& e) {
 			throw parse_error(path, e.what());
 		} catch(...) {
