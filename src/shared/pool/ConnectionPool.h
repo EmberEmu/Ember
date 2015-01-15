@@ -66,7 +66,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		manager_.check_exceptions();
 
 		auto pred = [](ConnDetail<ConType>& cd) {
-			if(!cd.checked_out && !cd.dirty && !cd.error) {
+			if(!cd.checked_out && !cd.dirty && !cd.error && !cd.sweep) {
 				cd.checked_out = true;
 				cd.idle = sc::seconds(0);
 				return true;

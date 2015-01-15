@@ -43,6 +43,7 @@ class PoolManager {
 					pool_->driver_.close(i->conn);
 				} catch(...) {}
 
+				std::lock_guard<Spinlock> guard(pool_->lock_);
 				i = pool_->pool_.erase(i);
 			} else {
 				++i;
@@ -66,14 +67,13 @@ class PoolManager {
 	}
 
 	void close_errored() {
-		std::unique_lock<Spinlock> guard(pool_->lock_);
-
 		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
 			if(i->error) {
 				try {
 					pool_->driver_.close(i->conn);
 				} catch(...) { }
 
+				std::lock_guard<Spinlock> guard(pool_->lock_);
 				i = pool_->pool_.erase(i);
 			} else {
 				++i; 
@@ -81,6 +81,7 @@ class PoolManager {
 		}
 
 		//If the pool has grown too small, try to refill it
+		std::lock_guard<Spinlock> guard(pool_->lock_);
 		if(pool_->pool_.size() < pool_->min_) {
 			pool_->open_connections(pool_->min_ - pool_->pool_.size());
 		}
@@ -88,7 +89,6 @@ class PoolManager {
 
 	void manage_connections() {
 		std::vector<ConnDetail<ConType>*> checked_out;
-
 		std::unique_lock<Spinlock> guard(pool_->lock_);
 		int removals = pool_->pool_.size() - pool_->min_;
 
@@ -109,8 +109,9 @@ class PoolManager {
 			}
 		}
 
-		close_excess_idle();
 		pool_->lock_.unlock();
+
+		close_excess_idle();
 		refresh_idle(checked_out);
 		close_errored();
 	}
@@ -121,7 +122,7 @@ public:
 	}
 
 	void check_exceptions() {
-		std::unique_lock<Spinlock> lock(exception_lock_);
+		std::lock_guard<Spinlock> lock(exception_lock_);
 
 		if(exception_) {
 			std::rethrow_exception(exception_);
@@ -142,7 +143,7 @@ public:
 
 		pool_->driver_.thread_exit();
 	} catch(...) {
-		std::unique_lock<Spinlock> lock(exception_lock_);
+		std::lock_guard<Spinlock> lock(exception_lock_);
 		exception_ = std::current_exception();
 	}
 
