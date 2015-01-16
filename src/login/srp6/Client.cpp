@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "SRP6Client.h"
+#include "Client.h"
 #include <botan/numthry.h>
 #include <botan/secmem.h>
 #include <botan/auto_rng.h>
@@ -19,7 +19,7 @@ using Botan::SecureVector;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
-namespace SRP6 {
+namespace ember { namespace srp6 {
 
 Client::Client(std::string identifier, std::string password, Generator gen, int key_size, bool srp6a)
                : Client(std::move(identifier), std::move(password), gen,
@@ -37,7 +37,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 
 SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>& salt, bool interleave) {
 	if(!(B % gen_.prime()) || B < 0) {
-		throw SRP6::exception("Server's ephemeral key is invalid!");
+		throw exception("Server's ephemeral key is invalid!");
 	}
 
 	B_ = B;
@@ -46,7 +46,7 @@ SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>&
 	BigInt u = detail::scrambler(A_, B, gen_.prime().bytes());
 
 	if(u <= 0) {
-		throw SRP6::exception("Scrambling parameter <= 0");
+		throw exception("Scrambling parameter <= 0");
 	}
 
 	BigInt x = detail::compute_x(identifier_, password_, salt);
@@ -59,4 +59,4 @@ BigInt Client::generate_proof(const SessionKey& key) const {
 	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B_, salt_);
 }
 
-} //SRP6
+}} //srp6, ember

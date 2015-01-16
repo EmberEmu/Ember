@@ -6,10 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "SRP6Generator.h"
+#include "Generator.h"
 #include <boost/assert.hpp>
 
-namespace SRP6 {
+namespace ember { namespace srp6 {
 
 Generator::Generator(GROUP group) {
 	switch(group) {
@@ -163,4 +163,4 @@ Generator::Generator(GROUP group) {
 	}
 }
 
-} //SRP6
+}} //srp6, ember

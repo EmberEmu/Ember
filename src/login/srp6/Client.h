@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include "SRP6Util.h"
-#include "SRP6Generator.h"
-#include "SRP6Exception.h"
+#include "Util.h"
+#include "Generator.h"
+#include "Exception.h"
 #include <botan/bigint.h>
 #include <string>
 
-namespace SRP6 {
+namespace ember { namespace srp6 {
 
 class Client {
 	const Generator gen_;
@@ -34,4 +34,4 @@ public:
 	inline const Botan::BigInt& public_ephemeral() const { return A_; }
 };
 
-} //SRP6
+}} //srp6, ember

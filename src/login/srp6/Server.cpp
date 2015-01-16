@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "SRP6Server.h"
+#include "Server.h"
 #include <botan/numthry.h>
 #include <botan/sha160.h>
 #include <botan/auto_rng.h>
@@ -18,7 +18,7 @@ using Botan::BigInt;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
-namespace SRP6 {
+namespace ember { namespace srp6 {
 
 Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6a)
               : v_(v), N_(gen.prime()), b_(b) {
@@ -35,7 +35,7 @@ Server::Server(const Generator& gen, const BigInt& v, int key_size, bool srp6a)
 
 SessionKey Server::session_key(const BigInt& A, bool interleave) {
 	if(!(A % N_) || A < 0) {
-		throw SRP6::exception("Client's ephemeral key is invalid!");
+		throw exception("Client's ephemeral key is invalid!");
 	}
 
 	A_ = A;
@@ -49,4 +49,4 @@ BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof)
 	return generate_server_proof(A_, client_proof, key);
 }
 
-} //SRP6
+}} //srp6, ember

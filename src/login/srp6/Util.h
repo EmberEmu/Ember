@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include "SRP6Generator.h"
+#include "Generator.h"
 #include <botan/bigint.h>
 #include <botan/auto_rng.h>
 #include <botan/secmem.h>
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstddef>
  
-namespace SRP6 {
+namespace ember { namespace srp6 {
 	
 BOOST_STRONG_TYPEDEF(Botan::SecureVector<Botan::byte>, SessionKey);
 
@@ -54,4 +54,4 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
                                     const SessionKey& key);
 
-} //SRP6
+}} //srp6, ember

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "SRP6Util.h"
+#include "Util.h"
 #include <botan/sha160.h>
 #include <botan/numthry.h>
 #include <botan/secmem.h>
@@ -15,7 +15,7 @@
 using Botan::byte;
 using Botan::SecureVector;
 
-namespace SRP6 {
+namespace ember { namespace srp6 {
 	
 namespace detail {
 
@@ -124,4 +124,4 @@ Botan::BigInt generate_verifier(const std::string& identifier, const std::string
 	return detail::generate(identifier, password, generator, salt);
 }
 
-} //SRP6
+}} //srp6, ember

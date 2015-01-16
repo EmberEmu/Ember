@@ -11,12 +11,12 @@ set(EXECUTABLE_SRC
 	../shared/LoadingAnimation.cpp
 	../shared/rlutil.h
 	../shared/pool/drivers/DummyDriver.cpp
-	srp6/SRP6Server.h
-	srp6/SRP6Server.cpp
-	srp6/SRP6Util.h
-	srp6/SRP6Util.cpp
-	srp6/SRP6Generator.h
-	srp6/SRP6Generator.cpp
+	srp6/Server.h
+	srp6/Server.cpp
+	srp6/Util.h
+	srp6/Util.cpp
+	srp6/Generator.h
+	srp6/Generator.cpp
 	main.cpp
 	)
 

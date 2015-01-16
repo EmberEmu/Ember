@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include "SRP6Util.h"
-#include "SRP6Generator.h"
-#include "SRP6Exception.h"
+#include "Util.h"
+#include "Generator.h"
+#include "Exception.h"
 #include <botan/bigint.h>
 
-namespace SRP6 {
+namespace ember { namespace srp6 {
 
 class Server {
 	const Botan::BigInt v_, N_, b_;
@@ -27,4 +27,4 @@ public:
 	Botan::BigInt generate_proof(const SessionKey& key, const Botan::BigInt& client_proof) const;
 };
 
-} //SRP6
+}} //srp6, ember

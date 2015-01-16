@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
  
-namespace SRP6 {
+namespace ember { namespace srp6 {
 
 class exception : public std::runtime_error {
 public:
@@ -19,4 +19,4 @@ public:
 	exception(std::string msg) : std::runtime_error(msg) { };
 };
 
-} //SRP6
+}} //srp6, ember
