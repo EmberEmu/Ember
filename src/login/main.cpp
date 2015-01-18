@@ -17,13 +17,12 @@
 
 namespace po = boost::program_options;
 
-void verify_port(int port);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
 	ember::print_banner("Login Daemon");
 	const po::variables_map arguments = parse_arguments(argc, argv);
-	//Botan::LibraryInitializer init("thread_safe");
+	Botan::LibraryInitializer init("thread_safe");
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -41,12 +40,12 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
 		("networking.ip,", po::value<std::string>()->default_value("0.0.0.0"))
-		("networking.port", po::value<int>()->default_value(3724)->notifier(&verify_port))
+		("networking.port", po::value<unsigned int>()->default_value(3724))
 		("database.username", po::value<std::string>()->required())
 		("database.password", po::value<std::string>())
 		("database.database", po::value<std::string>()->required())
 		("database.host", po::value<std::string>()->required())
-		("database.port", po::value<int>()->required()->notifier(&verify_port));
+		("database.port", po::value<unsigned int>()->required());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
@@ -69,10 +68,4 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::notify(options);
 
 	return std::move(options);
-}
-
-void verify_port(int port) {
-	if (port <= 0 || port > 65535) {
-		throw std::invalid_argument("Specified port outside of valid range (> 0 &  <= 65535)!");
-	}
 }
