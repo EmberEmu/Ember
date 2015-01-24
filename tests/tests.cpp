@@ -7,9 +7,9 @@
  */
 
 #include <gtest/gtest.h>
-#include <login/srp6/Server.h>
-#include <login/srp6/Client.h>
-#include <login/srp6/Generator.h>
+#include <srp6/Server.h>
+#include <srp6/Client.h>
+#include <srp6/Generator.h>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
 #include <memory>

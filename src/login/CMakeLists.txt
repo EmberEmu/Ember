@@ -7,16 +7,7 @@
 set(EXECUTABLE_NAME login)
 set(EXECUTABLE_SRC
 	../shared/Banner.cpp
-	../shared/LoadingAnimation.h
-	../shared/LoadingAnimation.cpp
 	../shared/rlutil.h
-	../shared/pool/drivers/DummyDriver.cpp
-	srp6/Server.h
-	srp6/Server.cpp
-	srp6/Util.h
-	srp6/Util.cpp
-	srp6/Generator.h
-	srp6/Generator.cpp
 	main.cpp
 	)
 
@@ -25,3 +16,4 @@ add_executable(login ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${EXECUTABLE_NAME} ${BOTAN_LIBRARY})
 target_link_libraries(${EXECUTABLE_NAME} logging)
+target_link_libraries(${EXECUTABLE_NAME} srp6)

@@ -11,6 +11,7 @@
 #include <logger/FileSink.h>
 #include <logger/SyslogSink.h>
 #include <logger/Utility.h>
+#include <shared/pool/ConnectionPool.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <botan/init.h>
@@ -78,7 +79,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		w.join();
 	}
 
-	LOG_INFO(logger) << "Login daemon shutting down" << LOG_SYNC;
+	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Client.h"
+#include <srp6/Client.h>
 #include <botan/numthry.h>
 #include <botan/secmem.h>
 #include <botan/auto_rng.h>

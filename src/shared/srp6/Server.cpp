@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Server.h"
+#include <srp6/Server.h>
 #include <botan/numthry.h>
 #include <botan/sha160.h>
 #include <botan/auto_rng.h>

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Util.h"
+#include <srp6/Util.h>
 #include <botan/sha160.h>
 #include <botan/numthry.h>
 #include <botan/secmem.h>

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Generator.h"
+#include <srp6/Generator.h>
 #include <botan/bigint.h>
 #include <botan/auto_rng.h>
 #include <botan/secmem.h>

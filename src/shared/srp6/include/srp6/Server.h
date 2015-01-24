@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "Util.h"
-#include "Generator.h"
-#include "Exception.h"
+#include <srp6/Util.h>
+#include <srp6/Generator.h>
+#include <srp6/Exception.h>
 #include <botan/bigint.h>
 
 namespace ember { namespace srp6 {

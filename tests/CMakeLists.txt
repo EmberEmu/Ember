@@ -6,16 +6,13 @@
 
 
 set(EXECUTABLE_SRC
-	${CMAKE_SOURCE_DIR}/src/login/srp6/Server.cpp
-	${CMAKE_SOURCE_DIR}/src/login/srp6/Util.cpp
-	${CMAKE_SOURCE_DIR}/src/login/srp6/Client.cpp
-	${CMAKE_SOURCE_DIR}/src/login/srp6/Generator.cpp
 	tests.cpp
-	)
+    )
 
 add_executable(unit_tests ${EXECUTABLE_SRC})
 target_link_libraries(unit_tests ${Boost_LIBRARIES})
 target_link_libraries(unit_tests ${BOTAN_LIBRARY})
+target_link_libraries(unit_tests srp6)
 target_include_directories(unit_tests PRIVATE ../src)
 target_link_libraries(unit_tests gtest gtest_main)
 add_test(unit_tests unit_tests)

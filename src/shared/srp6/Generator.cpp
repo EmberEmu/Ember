@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Generator.h"
+#include <srp6/Generator.h>
 #include <boost/assert.hpp>
 
 namespace ember { namespace srp6 {
