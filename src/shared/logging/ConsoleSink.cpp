@@ -44,7 +44,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<
 }
 
 void ConsoleSink::write(SEVERITY severity, const std::vector<char>& record) {
-	if(this->severity() >= severity) {
+	if(this->severity() > severity) {
 		return;
 	}
 
