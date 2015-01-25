@@ -58,7 +58,7 @@ SyslogSink::impl::impl(SEVERITY severity, std::string host, unsigned int port,
 	throw exception(e.what());
 }
 
-SyslogSink::impl::SYSLOG_SEVERITY SyslogSink::impl::severity_map(SEVERITY severity) {
+auto SyslogSink::impl::severity_map(SEVERITY severity) -> SYSLOG_SEVERITY {
 	switch(severity) {
 		case SEVERITY::FATAL:
 			return SyslogSink::impl::SYSLOG_SEVERITY::EMERGENCY;
