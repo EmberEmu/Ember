@@ -63,14 +63,17 @@ void Worker::run() {
 }
 
 void Worker::start() {
-	thread_ = std::thread(std::bind(&Worker::run, this));
+	thread_ = std::thread(&Worker::run, this);
 }
 
 void Worker::stop() {
-	stop_ = true;
-	sem_.signal();
-	thread_.join();
-	process_outstanding();
+	if(thread_.joinable()) {
+		stop_ = true;
+		sem_.signal();
+		thread_.join();
+		process_outstanding();
+		process_outstanding_sync();
+	}
 }
 
 }} //log, ember
