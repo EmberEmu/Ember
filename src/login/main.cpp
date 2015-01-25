@@ -11,7 +11,9 @@
 #include <logger/FileSink.h>
 #include <logger/SyslogSink.h>
 #include <logger/Utility.h>
-#include <shared/pool/ConnectionPool.h>
+#include <conpool/ConnectionPool.h>
+#include <conpool/Policies.h>
+#include <conpool/drivers/MySQLDriver.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <botan/init.h>
@@ -23,12 +25,14 @@
 #include <fstream>
 #include <string>
 
-namespace po = boost::program_options;
 namespace el = ember::log;
+namespace ep = ember::connection_pool;
+namespace po = boost::program_options;
 
-std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
-po::variables_map parse_arguments(int argc, const char* argv[]);
 void launch(const po::variables_map& args, el::Logger* logger);
+po::variables_map parse_arguments(int argc, const char* argv[]);
+ember::drivers::MySQL init_db_driver(const po::variables_map& args);
+std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -44,17 +48,25 @@ int main(int argc, const char* argv[]) try {
 
 	auto logger = init_logging(args);
 	el::set_global_logger(logger.get());
-	LOG_INFO(logger) << "Initialised logger successfully" << LOG_SYNC;
-
+	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 	launch(args, logger.get());
+	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
+	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
-	LOG_INFO(logger) << "Initialised Botan successfully" << LOG_SYNC;
+
+	auto driver = init_db_driver(args);
+	auto min_conns = args["database.min_connections"].as<unsigned short>();
+	auto max_conns = args["database.max_connections"].as<unsigned short>();
+	
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
+		pool(driver, min_conns, max_conns, std::chrono::seconds(300));
 
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
@@ -62,15 +74,15 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		concurrency = 2;
 	}
 
-	boost::asio::io_service service;
+	boost::asio::io_service service(concurrency);
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 	signals.async_wait(std::bind(&boost::asio::io_service::stop, &service));
 
 	std::vector<std::thread> workers;
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(std::bind(static_cast<size_t(boost::asio::io_service::*)()>
-			(&boost::asio::io_service::run), &service)); 
+		workers.emplace_back(static_cast<size_t(boost::asio::io_service::*)()>
+			(&boost::asio::io_service::run), &service); 
 	}
 
 	LOG_INFO(logger) << "Launched " << concurrency << " login workers" << LOG_SYNC;
@@ -78,8 +90,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	for(auto& w : workers) {
 		w.join();
 	}
-
-	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
@@ -99,12 +109,12 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
 		("networking.client_listen_ip,", po::value<std::string>()->default_value("0.0.0.0"))
-		("networking.client_listen_port", po::value<unsigned int>()->default_value(3724))
+		("networking.client_listen_port", po::value<unsigned short>()->default_value(3724))
 		("console_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.service_name,", po::value<std::string>()->required())
 		("remote_log.host,", po::value<std::string>()->required())
-		("remote_log.port,", po::value<unsigned int>()->required())
+		("remote_log.port,", po::value<unsigned short>()->required())
 		("file_log.verbosity,", po::value<std::string>()->required())
 		("file_log.path,", po::value<std::string>()->default_value("login.log"))
 		("file_log.timestamp_format,", po::value<std::string>())
@@ -114,10 +124,12 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("file_log.log_timestamp,", po::bool_switch()->required())
 		("file_log.log_severity,", po::bool_switch()->required())
 		("database.username", po::value<std::string>()->required())
-		("database.password", po::value<std::string>())
+		("database.password", po::value<std::string>()->default_value(""))
 		("database.database", po::value<std::string>()->required())
 		("database.host", po::value<std::string>()->required())
-		("database.port", po::value<unsigned int>()->required());
+		("database.port", po::value<unsigned short>()->required())
+		("database.min_connections", po::value<unsigned short>()->required())
+		("database.max_connections", po::value<unsigned short>()->required());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
@@ -142,17 +154,26 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return std::move(options);
 }
 
+ember::drivers::MySQL init_db_driver(const po::variables_map& args) {
+	auto user = args["database.username"].as<std::string>();
+	auto pass = args["database.password"].as<std::string>();
+	auto host = args["database.host"].as<std::string>();
+	auto port = args["database.port"].as<unsigned short>();
+	auto db = args["database.database"].as<std::string>();
+	return {user, pass, host, port, db};
+}
+
 std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::SEVERITY severity) {
-	std::string host = args["remote_log.host"].as<std::string>();
-	std::string service = args["remote_log.service_name"].as<std::string>();
-	unsigned int port = args["remote_log.port"].as<unsigned int>();
+	auto host = args["remote_log.host"].as<std::string>();
+	auto service = args["remote_log.service_name"].as<std::string>();
+	auto port = args["remote_log.port"].as<unsigned short>();
 	auto facility = el::SyslogSink::FACILITY::LOCAL_USE_0;
 	return std::make_unique<el::SyslogSink>(severity, host, port, facility, service);
 }
 
 std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::SEVERITY severity) {
-	std::string mode_str = args["file_log.mode"].as<std::string>();
-	std::string path = args["file_log.path"].as<std::string>();
+	auto mode_str = args["file_log.mode"].as<std::string>();
+	auto path = args["file_log.path"].as<std::string>();
 
 	if(mode_str != "append" && mode_str != "truncate") {
 		throw std::runtime_error("Invalid file logging mode supplied");

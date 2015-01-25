@@ -11,7 +11,7 @@
 #include "Policies.h"
 #include "Connection.h"
 #include "ConnectionPool.h"
-#include "../threading/Spinlock.h"
+#include <shared/threading/Spinlock.h>
 #include <vector>
 #include <cassert>
 #include <thread>
@@ -158,7 +158,7 @@ public:
 	void start(sc::seconds interval, sc::seconds max_idle) {
 		interval_ = interval;
 		max_idle_ = max_idle;
-		manager_ = std::thread(std::bind(&PoolManager::run, this));
+		manager_ = std::thread(&PoolManager::run, this);
 	}
 };
 

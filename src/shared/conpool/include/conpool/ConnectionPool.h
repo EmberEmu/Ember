@@ -12,8 +12,8 @@
 #include "PoolManager.h"
 #include "Policies.h"
 #include "Exception.h"
-#include "../threading/Spinlock.h"
-#include "../threading/Semaphore.h"
+#include <shared/threading/Spinlock.h>
+#include <shared/threading/Semaphore.h>
 #include <boost/optional.hpp>
 #include <boost/assert.hpp>
 #include <utility>

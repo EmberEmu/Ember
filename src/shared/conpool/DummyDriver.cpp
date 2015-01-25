@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "DummyDriver.h"
-#include "DummyConnection.h"
+#include <conpool/drivers/DummyDriver.h>
+#include <conpool/drivers/DummyConnection.h>
 #include <iostream>
 
 namespace ember { namespace drivers {

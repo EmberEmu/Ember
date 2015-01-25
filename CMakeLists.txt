@@ -8,6 +8,12 @@ cmake_minimum_required(VERSION 3.0.1)
 project(Ember)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin/lib)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18)
@@ -44,6 +50,8 @@ include_directories(${BOTAN_INCLUDE_DIRS})
 ##############################
 #     MySQL Connector C++    #
 ##############################
+find_package(MySQLConnectorCPP REQUIRED)
+include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 
 ##############################
 #         Google Test        #
