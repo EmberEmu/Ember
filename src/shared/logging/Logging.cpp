@@ -6,12 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
-#undef ERROR //preventing a conflict with wingdi.h (dragged in indirectly by ASIO)
+#include <logger/Logging.h>
 
 namespace ember { namespace log {
 
-enum class SEVERITY { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, DISABLED };
+namespace detail {
+
+Logger* logger_;
+
+} //detail
+
+Logger* get_logger() {
+	return detail::logger_;
+}
+
+void set_global_logger(Logger* logger) {
+	detail::logger_ = logger;
+}
 
 }} //log, ember

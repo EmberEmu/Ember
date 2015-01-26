@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(logging
+            Logging.cpp
             FileSink.cpp
             SyslogSink.cpp
             Logger.cpp

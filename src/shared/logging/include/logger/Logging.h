@@ -17,16 +17,11 @@ namespace ember { namespace log {
 
 namespace detail {
 
-Logger* logger_;
+extern Logger* logger_;
 
 } //detail
 
-Logger* get_logger() {
-	return detail::logger_;
-}
-
-void set_global_logger(Logger* logger) {
-	detail::logger_ = logger;
-}
+Logger* get_logger();
+void set_global_logger(Logger* logger);
 
 }} //log, ember
