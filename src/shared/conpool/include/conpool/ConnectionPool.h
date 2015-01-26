@@ -12,6 +12,7 @@
 #include "PoolManager.h"
 #include "Policies.h"
 #include "Exception.h"
+#include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
 #include <shared/threading/Semaphore.h>
 #include <boost/optional.hpp>
@@ -22,6 +23,7 @@
 #include <list>
 #include <cstddef>
 #include <exception>
+#include <string>
 #include <mutex>
 #include <chrono>
 
@@ -44,6 +46,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	mutable Spinlock lock_;
 	std::list<ConnDetail<ConType>> pool_;
 	Semaphore<std::mutex> semaphore_;
+	std::function<void(SEVERITY, std::string)> log_cb_;
 	bool closed_ = false;
 
 	void open_connections(std::size_t num)  {
@@ -114,8 +117,20 @@ public:
 
 			try {
 				driver_.close(c.conn);
-			} catch (...) { /* stop escapees */ }
+			} catch(std::exception& e) { 
+				if(log_cb_) {
+					log_cb_(SEVERITY::WARN, std::string("Closing pool, driver threw: ") + e.what());
+				}
+			} catch(...) {
+				if(log_cb_) {
+					log_cb_(SEVERITY::WARN, "Driver threw an unknown exception while closing pool");
+				}
+			}
 		}
+	}
+
+	void logging_callback(std::function<void(SEVERITY, std::string)> callback) {
+		log_cb_ = callback;
 	}
 
 	void close() {

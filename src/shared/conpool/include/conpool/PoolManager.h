@@ -11,6 +11,7 @@
 #include "Policies.h"
 #include "Connection.h"
 #include "ConnectionPool.h"
+#include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
 #include <vector>
 #include <cassert>
@@ -41,7 +42,16 @@ class PoolManager {
 			if(i->sweep) {
 				try {
 					pool_->driver_.close(i->conn);
-				} catch(...) {}
+				} catch(std::exception& e) { 
+					if(pool_->log_cb_) {
+						pool_->log_cb_(SEVERITY::WARN,
+					                   std::string("Connection close, driver threw: ") + e.what());
+					}
+				} catch(...) {
+					if(pool_->log_cb_) {
+						pool_->log_cb_(SEVERITY::WARN, "Driver threw unknown exception in close");
+					}
+				}
 
 				std::lock_guard<Spinlock> guard(pool_->lock_);
 				i = pool_->pool_.erase(i);
@@ -57,7 +67,16 @@ class PoolManager {
 				c->conn = pool_->driver_.keep_alive(c->conn);
 				c->idle = sc::seconds(0);
 				c->error = false;
+			} catch(std::exception& e) { 
+				if(pool_->log_cb_) {
+					pool_->log_cb_(SEVERITY::WARN,
+					               std::string("Connection keep-alive, driver threw: ") + e.what());
+				}
+				c->error = true;
 			} catch(...) {
+				if(pool_->log_cb_) {
+					pool_->log_cb_(SEVERITY::WARN, "Driver threw unknown exception in keep_alive");
+				}
 				c->error = true;
 			}
 
@@ -71,7 +90,16 @@ class PoolManager {
 			if(i->error) {
 				try {
 					pool_->driver_.close(i->conn);
-				} catch(...) { }
+				} catch(std::exception& e) { 
+					if(pool_->log_cb_) {
+						pool_->log_cb_(SEVERITY::WARN,
+						               std::string("Connection close, driver threw: ") + e.what());
+					}
+				} catch(...) {
+					if(pool_->log_cb_) {
+						pool_->log_cb_(SEVERITY::WARN, "Driver threw unknown exception in close");
+					}
+				}
 
 				std::lock_guard<Spinlock> guard(pool_->lock_);
 				i = pool_->pool_.erase(i);
@@ -88,6 +116,10 @@ class PoolManager {
 	}
 
 	void manage_connections() {
+		if(pool_->log_cb_) {
+			pool_->log_cb_(SEVERITY::INFO, "Hey, world!");
+		}
+
 		std::vector<ConnDetail<ConType>*> checked_out;
 		std::unique_lock<Spinlock> guard(pool_->lock_);
 		int removals = pool_->pool_.size() - pool_->min_;
