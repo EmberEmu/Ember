@@ -45,6 +45,7 @@ SyslogSink::impl::impl(SEVERITY severity, std::string host, unsigned int port,
                        FACILITY facility, std::string tag) try
                        : socket_(service_), host_(bai::host_name()), tag_(tag) {
 	facility_ = facility;
+	severity_ = severity;
 
 	if(tag.size() > 32) {
 		throw exception("Syslog tag size must be 32 characters or less");
