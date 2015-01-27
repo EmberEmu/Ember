@@ -29,13 +29,13 @@ template<typename ConType, typename Driver, typename ReusePolicy, typename Growt
 class PoolManager {
 	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* ConnectionPool;
 	ConnectionPool pool_;
+	Spinlock exception_lock_;
 	sc::seconds interval_, max_idle_;
 	std::thread manager_;
-	bool stop_ = false;
-	Spinlock exception_lock_;
 	std::exception_ptr exception_;
 	std::condition_variable cond_;
 	std::mutex cond_lock_;
+	bool stop_ = false;
 
 	void close_excess_idle() {
 		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
@@ -81,7 +81,10 @@ class PoolManager {
 			}
 
 			c->checked_out = false;
-			pool_->semaphore_.signal();
+
+			if(!c->error) {
+				pool_->semaphore_.signal();
+			}
 		}
 	}
 
@@ -130,7 +133,13 @@ class PoolManager {
 	void manage_connections() {
 		std::vector<ConnDetail<ConType>*> checked_out;
 		std::unique_lock<Spinlock> guard(pool_->lock_);
-		int removals = pool_->pool_.size() - pool_->min_;
+		std::size_t removals = pool_->pool_.size() - pool_->min_;
+
+		//If the pool falls below the minimum threshold, removals could
+		//underflow and cause the remaining connections to be sweeped
+		if(pool_->pool_.size() < pool_->min_) {
+			removals = 0;
+		}
 
 		for(auto& conn : pool_->pool_) {
 			if(conn.checked_out) {

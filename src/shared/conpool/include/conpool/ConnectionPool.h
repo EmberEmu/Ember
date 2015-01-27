@@ -69,7 +69,26 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		manager_.check_exceptions();
 
 		auto pred = [](ConnDetail<ConType>& cd) {
-			if(!cd.checked_out && !cd.dirty && !cd.error && !cd.sweep) {
+			if(!cd.checked_out && !cd.error && !cd.sweep) {
+				if(cd.dirty && !return_clean) {
+					try {
+						cd.conn = driver_.clean(connection.detail_.get().conn);
+						cd.dirty = false;
+					} catch(std::exception& e) {
+						if(log_cb_) {
+							log_cb_(SEVERITY::DEBUG,
+							        std::string("On connection clean: ") + e.what());
+						}
+						return false;
+					} catch(...) {
+						if(log_cb_) {
+							log_cb_(SEVERITY::DEBUG,
+							        "Unable to clean connection - unknown exception thrown");
+						}
+						return false;
+					}
+				}
+
 				cd.checked_out = true;
 				cd.idle = sc::seconds(0);
 				return true;
@@ -119,18 +138,16 @@ public:
 				driver_.close(c.conn);
 			} catch(std::exception& e) { 
 				if(log_cb_) {
-					log_cb_(SEVERITY::WARN, std::string("Closing pool, driver threw: ") + e.what());
+					log_cb_(SEVERITY::WARN, 
+					        std::string("Closing pool, driver threw: ") + e.what());
 				}
 			} catch(...) {
 				if(log_cb_) {
-					log_cb_(SEVERITY::WARN, "Driver threw an unknown exception while closing pool");
+					log_cb_(SEVERITY::WARN,
+					        "Driver threw an unknown exception while closing pool");
 				}
 			}
 		}
-	}
-
-	void logging_callback(std::function<void(SEVERITY, std::string)> callback) {
-		log_cb_ = callback;
 	}
 
 	void close() {
@@ -226,6 +243,10 @@ public:
 
 	std::size_t size() {
 		return pool_.size();
+	}
+
+	void logging_callback(std::function<void(SEVERITY, std::string)> callback) {
+		log_cb_ = callback;
 	}
 
 	bool dirty() {

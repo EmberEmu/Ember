@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <functional>
 #include <chrono>
+#include <mutex>
 
 namespace ember { namespace connection_pool {
 
@@ -30,6 +31,7 @@ struct ConnDetail {
 template<typename ConType>
 class Connection {
 	bool released_ = false;
+	std::mutex close_protect_;
 	mutable std::reference_wrapper<ConnDetail<ConType>> detail_;
 	typedef std::function<void(Connection<ConType>&)> FreeHandler;
 	FreeHandler fh_;
@@ -56,6 +58,15 @@ public:
 		released_ = src.released_;
 		detail_ = src.detail_;
 		return *this;
+	}
+
+	void close() {
+		std::lock_guard<std::mutex> guard(close_protect_);
+
+		if(!released) {
+			released = true;
+			fh_(*this);
+		}
 	}
 
 	Connection(const Connection<ConType>& src) = delete;

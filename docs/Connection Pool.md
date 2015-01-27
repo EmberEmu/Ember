@@ -139,7 +139,7 @@ All connections taken from the pool must be returned before closing/destroying t
 auto connection = pool->get_connection();
 pool->close(); // exception thrown
 // handle exception
-pool->return_connection(connection);
+connection.close(); // or pool->return_connection(connection);
 pool->reset(); // (delete, out of scope, etc) no crash but should still be fixed
 ```
 
