@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "LoginHandler.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
@@ -14,8 +15,11 @@
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/MySQLDriver.h>
+#include <srp6/Server.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/TCPServer.h>
+#include <shared/threading/ThreadPool.h>
 #include <botan/init.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
@@ -24,6 +28,7 @@
 #include <memory>
 #include <fstream>
 #include <string>
+#include <functional>
 
 namespace el = ember::log;
 namespace ep = ember::connection_pool;
@@ -33,6 +38,7 @@ void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 ember::drivers::MySQL init_db_driver(const po::variables_map& args);
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
+void pool_log_callback(ep::SEVERITY, const std::string& message, el::Logger* logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -49,8 +55,8 @@ int main(int argc, const char* argv[]) try {
 	auto logger = init_logging(args);
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
+
 	launch(args, logger.get());
-	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -66,15 +72,23 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
-		pool(driver, min_conns, max_conns, std::chrono::seconds(300));
-
+		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
+	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
+	
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
 		concurrency = 2;
+		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 
+	auto interface = args["network.interface"].as<std::string>();
+	auto port = args["network.port"].as<unsigned short>();
+
 	boost::asio::io_service service(concurrency);
+	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
+	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, logger);
+
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 	signals.async_wait(std::bind(&boost::asio::io_service::stop, &service));
 
@@ -86,10 +100,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	LOG_INFO(logger) << "Launched " << concurrency << " login workers" << LOG_SYNC;
+	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
 
 	for(auto& w : workers) {
 		w.join();
 	}
+
+	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
@@ -108,13 +125,15 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
-		("networking.client_listen_ip,", po::value<std::string>()->default_value("0.0.0.0"))
-		("networking.client_listen_port", po::value<unsigned short>()->default_value(3724))
+		("network.interface,", po::value<std::string>()->default_value("0.0.0.0"))
+		("network.port", po::value<unsigned short>()->default_value(3724))
 		("console_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.service_name,", po::value<std::string>()->required())
 		("remote_log.host,", po::value<std::string>()->required())
 		("remote_log.port,", po::value<unsigned short>()->required())
+		("realmbridge.host,", po::value<std::string>()->required())
+		("realmbridge.port,", po::value<unsigned short>()->required())
 		("file_log.verbosity,", po::value<std::string>()->required())
 		("file_log.path,", po::value<std::string>()->default_value("login.log"))
 		("file_log.timestamp_format,", po::value<std::string>())
@@ -215,4 +234,28 @@ std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args) 
 	}
 
 	return logger;
+}
+
+void pool_log_callback(ep::SEVERITY severity, const std::string& message, el::Logger* logger) {
+	switch(severity) {
+		case(ep::SEVERITY::DEBUG):
+			LOG_DEBUG(logger) << message << LOG_FLUSH;
+			break;
+		case(ep::SEVERITY::INFO):
+			LOG_INFO(logger) << message << LOG_FLUSH;
+			break;
+		case(ep::SEVERITY::WARN):
+			LOG_WARN(logger) << message << LOG_FLUSH;
+			break;
+		case(ep::SEVERITY::ERROR):
+			LOG_ERROR(logger) << message << LOG_FLUSH;
+			break;
+		case(ep::SEVERITY::FATAL):
+			LOG_FATAL(logger) << message << LOG_FLUSH;
+			break;
+		default:
+			//todo assert
+			LOG_WARN(logger) << "Unknown pool log callback severity" << LOG_FLUSH;
+			LOG_FATAL(logger) << message << LOG_FLUSH;
+	}	
 }

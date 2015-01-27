@@ -5,13 +5,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME login)
+
+set(EXECUTABLE_HDR
+    ../shared/Banner.h
+    ../shared/TCPServer.h
+    LoginHandler.h
+    )
+
 set(EXECUTABLE_SRC
 	../shared/Banner.cpp
+	LoginHandler.cpp
 	main.cpp
-	)
+    )
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
-add_executable(login ${EXECUTABLE_SRC} ${version_file})
+add_executable(login ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${EXECUTABLE_NAME} ${BOTAN_LIBRARY})
 target_link_libraries(${EXECUTABLE_NAME} ${MYSQLCCPP_LIBRARY})
