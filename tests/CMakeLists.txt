@@ -6,7 +6,7 @@
 
 
 set(EXECUTABLE_SRC
-	tests.cpp
+    srp6.cpp
     )
 
 add_executable(unit_tests ${EXECUTABLE_SRC})
