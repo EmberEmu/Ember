@@ -26,7 +26,7 @@ bool FileSink::file_exists(const std::string& name) try {
 }
 
 void FileSink::set_initial_rotation() {
-	decltype(rotations_) max = std::numeric_limits<decltype(rotations_)>::max();
+	auto max = std::numeric_limits<decltype(rotations_)>::max();
 
 	while(file_exists(file_name_ + std::to_string(rotations_)) && rotations_ < max) {
 		++rotations_;
