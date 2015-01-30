@@ -8,6 +8,8 @@
 
 #pragma once
 
+#undef ERROR 
+
 namespace ember { namespace connection_pool {
 
 enum class SEVERITY {
