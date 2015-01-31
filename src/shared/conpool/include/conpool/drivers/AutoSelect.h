@@ -17,9 +17,9 @@
 namespace ember { namespace drivers {
 
 #ifdef DB_MYSQL
-	typedef ember::drivers::MySQL DriverType;
+	typedef MySQL DriverType;
 #elif DB_POSTGRESQL
-	typedef ember::drivers::PostgreSQL DriverType;
+	typedef PostgreSQL DriverType;
 #endif
 
 }} //drivers, ember
