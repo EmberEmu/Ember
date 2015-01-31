@@ -63,8 +63,8 @@ public:
 	void close() {
 		std::lock_guard<std::mutex> guard(close_protect_);
 
-		if(!released) {
-			released = true;
+		if(!released_) {
+			released_ = true;
 			fh_(*this);
 		}
 	}

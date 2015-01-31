@@ -68,11 +68,11 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	boost::optional<Connection<ConType>> get_connection_attempt() {
 		manager_.check_exceptions();
 
-		auto pred = [](ConnDetail<ConType>& cd) {
+		auto pred = [&](ConnDetail<ConType>& cd) {
 			if(!cd.checked_out && !cd.error && !cd.sweep) {
-				if(cd.dirty && !return_clean) {
+				if(cd.dirty && !return_clean()) {
 					try {
-						cd.conn = driver_.clean(connection.detail_.get().conn);
+						cd.conn = driver_.clean(cd.conn);
 						cd.dirty = false;
 					} catch(std::exception& e) {
 						if(log_cb_) {
