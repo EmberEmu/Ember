@@ -41,9 +41,9 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	using GrowthPolicy::grow;
 
 	PoolManager<ConType, Driver, ReusePolicy, GrowthPolicy> manager_;
-	Driver driver_;
+	Driver& driver_;
 	std::size_t min_, max_;
-	mutable Spinlock lock_;
+	Spinlock lock_;
 	std::list<ConnDetail<ConType>> pool_;
 	Semaphore<std::mutex> semaphore_;
 	std::function<void(SEVERITY, std::string)> log_cb_;
@@ -53,9 +53,9 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		std::vector<std::future<ConType>> futures;
 
 		for(std::size_t i = 0; i < num; ++i) {
-			auto f = std::async([](Driver& driver) {
-				return driver.open();
-			}, driver_);
+			auto f = std::async([](Driver* driver) {
+				return driver->open();
+			}, &driver_);
 			futures.emplace_back(std::move(f));
 		}
 
@@ -241,7 +241,7 @@ public:
 		semaphore_.signal();
 	}
 
-	std::size_t size() {
+	std::size_t size() const {
 		return pool_.size();
 	}
 
@@ -249,14 +249,18 @@ public:
 		log_cb_ = callback;
 	}
 
-	bool dirty() {
+	bool dirty() const {
 		return std::count_if(pool_.begin(), pool_.end(),
 			[](const ConnDetail<ConType>& c) { return c.dirty; });
 	}
 
-	std::size_t checked_out() {
+	std::size_t checked_out() const {
 		return std::count_if(pool_.begin(), pool_.end(),
 			[](const ConnDetail<ConType>& c) { return c.checked_out; });
+	}
+
+	Driver* get_driver() const {
+		return &driver_;
 	}
 };
 
