@@ -48,4 +48,12 @@ void DummyDriver::thread_exit() const {
 	std::cout << "DummyDriver thread exit\n";
 }
 
+std::string DummyDriver::name() const {
+	return "DummyDriver";
+}
+
+std::string DummyDriver::version() const {
+	return "1.0";
+}
+
 }} // drivers, ember

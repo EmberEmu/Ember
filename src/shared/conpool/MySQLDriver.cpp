@@ -14,6 +14,7 @@
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
 #include <memory>
+#include <sstream>
 
 namespace ember { namespace drivers {
 
@@ -56,6 +57,17 @@ void MySQL::thread_enter() const {
 
 void MySQL::thread_exit() const {
 	driver->threadEnd();
+}
+
+std::string MySQL::name() const {
+	return driver->getName();
+}
+
+std::string MySQL::version() const {
+	std::stringstream ver;
+	ver << driver->getMajorVersion() << "." << driver->getMinorVersion() << "."
+	    << driver->getPatchVersion();
+	return ver.str();
 }
 
 }} // drivers, ember

@@ -34,6 +34,8 @@ public:
 	sql::Connection* keep_alive(sql::Connection* conn) const;
 	void thread_enter() const;
 	void thread_exit() const;
+	std::string name() const;
+	std::string version() const;
 };
 
 }} //drivers, ember

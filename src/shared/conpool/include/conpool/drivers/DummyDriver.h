@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace ember { 
 
 class DummyConnection;
@@ -25,6 +27,8 @@ public:
 	DummyConnection keep_alive(DummyConnection conn) const;
 	void thread_enter() const;
 	void thread_exit() const;
+	std::string name() const;
+	std::string version() const;
 };
 
 }} // drivers, ember
