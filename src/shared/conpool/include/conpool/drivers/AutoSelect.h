@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <shared/CompilerWarn.h>
+
 #ifdef DB_MYSQL
 	#include "MySQLDriver.h"
 #elif DB_POSTGRESQL
@@ -20,6 +22,8 @@ namespace ember { namespace drivers {
 	typedef MySQL DriverType;
 #elif DB_POSTGRESQL
 	typedef PostgreSQL DriverType;
+#else
+	#pragma message WARN("Cannot compile Ember without defining a DBMS!")
 #endif
 
 }} //drivers, ember

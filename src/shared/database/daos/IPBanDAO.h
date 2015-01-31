@@ -9,7 +9,7 @@
 #pragma once
 
 #ifdef DB_MYSQL
-	#include <shared/database/daos/mysql/UserDAO.h>
+	#include <shared/database/daos/mysql/IPBanDAO.h>
 #elif DB_POSTGRESQL
- 	#include <shared/database/daos/postgresql/UserDAO.h>
-#endif
+ 	#include <shared/database/daos/postgresql/IPBanDAO.h>
+#else
