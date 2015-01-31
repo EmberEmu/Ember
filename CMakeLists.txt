@@ -64,5 +64,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	option(gtest_force_shared_crt ON)
 endif()
 
+add_definitions(-DDB_MYSQL) #temporary!
+
 add_subdirectory(tests)
 add_subdirectory(src)

@@ -10,16 +10,22 @@
 
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
-#include <string>
+#include <boost/pool/pool.hpp>
+#include <boost/pool/pool_alloc.hpp>
+#include <memory>
+#include <functional>
 
 namespace ember {
 
 template<typename T>
 class TCPServer {
+	typedef std::function<std::shared_ptr<T>(boost::asio::ip::tcp::socket)> Create;
+
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::io_service& service_;
-	log::Logger* logger_;
+	log::Logger* logger_; 
+	Create create_;
 
 	void accept_connection() {
 		acceptor_.async_accept(socket_,
@@ -28,7 +34,7 @@ class TCPServer {
 					LOG_DEBUG(logger_) << "Accepted connection "
 					                   << socket_.remote_endpoint().address().to_string()
 					                   << ":" << socket_.remote_endpoint().port() << LOG_FLUSH;
-					std::make_shared<T>(std::move(socket_), service_)->start();
+					create_(std::move(socket_))->start();
 				}
 
 				accept_connection();
@@ -37,16 +43,19 @@ class TCPServer {
 	}
 
 public:
-	TCPServer(boost::asio::io_service& service, unsigned short port, log::Logger* logger)
-	          : acceptor_(service, bai::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+	TCPServer(boost::asio::io_service& service, unsigned short port, log::Logger* logger,
+	          Create create)
+	    	  : acceptor_(service, bai::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
 	            socket_(service), service_(service), logger_(logger) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 		accept_connection();
 	}
 
-	TCPServer(boost::asio::io_service& service, unsigned short port, std::string interface, log::Logger* logger)
-	          : acceptor_(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(interface), port)),
-	            service_(service), socket_(service), logger_(logger) {
+	TCPServer(boost::asio::io_service& service, unsigned short port, std::string interface,
+	          log::Logger* logger, Create create)
+	          : acceptor_(service,
+	            boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(interface), port)),
+	            service_(service), socket_(service), logger_(logger), create_(create) {
 		accept_connection();
 	}
 };

@@ -6,7 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "LoginHandler.h"
+#include "Authenticator.h"
+#include "GameVersion.h"
+#include "LoginHandlerBuilder.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
@@ -14,31 +16,38 @@
 #include <logger/Utility.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
-#include <conpool/drivers/MySQLDriver.h>
+#include <conpool/drivers/AutoSelect.h>
 #include <srp6/Server.h>
 #include <shared/Banner.h>
-#include <shared/Version.h>
 #include <shared/TCPServer.h>
+#include <shared/Version.h>
+#include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
+#include <shared/database/daos/UserDAO.h>
 #include <botan/init.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <thread>
-#include <memory>
 #include <fstream>
-#include <string>
 #include <functional>
+#include <memory>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace el = ember::log;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
+namespace ba = boost::asio;
 
+std::vector<ember::GameVersion> client_versions();
+unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 ember::drivers::MySQL init_db_driver(const po::variables_map& args);
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
 void pool_log_callback(ep::SEVERITY, const std::string& message, el::Logger* logger);
+void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger* logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -73,30 +82,39 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
 		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
-	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
+	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
+	                                std::placeholders::_2, logger));
 	
-	unsigned int concurrency = std::thread::hardware_concurrency();
-
-	if(!concurrency) {
-		concurrency = 2;
-		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
-	}
-
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
+	unsigned int concurrency = check_concurrency(logger);
 
-	boost::asio::io_service service(concurrency);
+	ember::ASIOAllocator allocator;
+	const auto allowed_clients = client_versions();
+	auto user_dao = ember::dal::user_dao(pool);
+
+	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao);
+	ba::io_service service(concurrency);
+
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, logger);
+	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, logger,
+		std::bind(&ember::LoginHandlerBuilder::create, &builder, std::placeholders::_1));
 
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+	ba::signal_set signals(service, SIGINT, SIGTERM);
 	signals.async_wait(std::bind(&boost::asio::io_service::stop, &service));
+	start_workers(concurrency, service, logger);
 
+	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
+} catch(std::exception& e) {
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+}
+
+void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger* logger) {
 	std::vector<std::thread> workers;
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<size_t(boost::asio::io_service::*)()>
-			(&boost::asio::io_service::run), &service); 
+		workers.emplace_back(static_cast<size_t(ba::io_service::*)()>
+			(&ba::io_service::run), &service); 
 	}
 
 	LOG_INFO(logger) << "Launched " << concurrency << " login workers" << LOG_SYNC;
@@ -105,10 +123,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	for(auto& w : workers) {
 		w.join();
 	}
+}
 
-	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
-} catch(std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+std::vector<ember::GameVersion> client_versions() {
+	return {{1, 12, 1, 5875}, {1, 12, 2, 6005}};
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
@@ -173,7 +191,18 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return std::move(options);
 }
 
-ember::drivers::MySQL init_db_driver(const po::variables_map& args) {
+unsigned int check_concurrency(el::Logger* logger) {
+	unsigned int concurrency = std::thread::hardware_concurrency();
+
+	if(!concurrency) {
+		concurrency = 2;
+		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
+	}
+
+	return concurrency;
+}
+
+ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
 	auto user = args["database.username"].as<std::string>();
 	auto pass = args["database.password"].as<std::string>();
 	auto host = args["database.host"].as<std::string>();
@@ -254,8 +283,7 @@ void pool_log_callback(ep::SEVERITY severity, const std::string& message, el::Lo
 			LOG_FATAL(logger) << message << LOG_FLUSH;
 			break;
 		default:
-			//todo assert
-			LOG_WARN(logger) << "Unknown pool log callback severity" << LOG_FLUSH;
-			LOG_FATAL(logger) << message << LOG_FLUSH;
+			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_FLUSH;
+			LOG_ERROR(logger) << message << LOG_FLUSH;
 	}	
 }
