@@ -9,6 +9,11 @@ add_library(srp6
             Util.cpp
             Client.cpp
             Server.cpp
+            include/srp6/Util.h
+            include/srp6/Server.h
+            include/srp6/Client.h
+            include/srp6/Generator.h
+            include/srp6/Exception.h
            )
 
 target_include_directories(srp6 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

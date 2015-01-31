@@ -13,6 +13,21 @@ add_library(logging
             Worker.cpp
             ConsoleSink.cpp
             Sink.cpp
-            concurrentqueue.h)
+            concurrentqueue.h
+            include/logger/LoggerImpl.h
+            include/logger/Semaphore.h
+            include/logger/FileSink.h
+            include/logger/HelperMacros.h
+            include/logger/SyslogSink.h
+            include/logger/Worker.h
+            include/logger/Logger.h
+            include/logger/Sink.h
+            include/logger/Utility.h
+            include/logger/ConsoleSink.h
+            include/logger/Exception.h
+            include/logger/FileWrapper.h
+            include/logger/Logging.h
+            include/logger/Severity.h
+)
 
 target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
