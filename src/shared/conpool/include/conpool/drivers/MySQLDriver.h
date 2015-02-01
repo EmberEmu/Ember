@@ -22,15 +22,15 @@ class PreparedStatement;
 
 namespace ember { namespace drivers {
 
-typedef std::unordered_map<std::string, sql::PreparedStatement*> QueryCache;
-
 class MySQL {
-	
+	typedef std::unordered_map<std::string, sql::PreparedStatement*> QueryCache;
 
 	const std::string dsn, username, password, database;
 	sql::Driver* driver;
 	mutable std::unordered_map<const sql::Connection*, QueryCache> cache_;
 	mutable std::mutex cache_lock_;
+
+	QueryCache* locate_cache(const sql::Connection* conn) const;
 
 public:
 	MySQL(std::string user, std::string password, const std::string& host,
@@ -45,8 +45,8 @@ public:
 	void thread_exit() const;
 	std::string name() const;
 	std::string version() const;
-	QueryCache* locate_cache(const sql::Connection* conn) const;
-	sql::PreparedStatement* lookup_statement(const sql::Connection* conn, const std::string& key) const;
+	sql::PreparedStatement* prepare_cached(sql::Connection* conn, const std::string& key);
+	sql::PreparedStatement* lookup_statement(const sql::Connection* conn, const std::string& key);
 	void cache_statement(const sql::Connection* conn, const std::string& key,
 	                     sql::PreparedStatement* value);
 };

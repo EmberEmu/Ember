@@ -15,7 +15,6 @@
 #include <cppconn/prepared_statement.h>
 #include <memory>
 #include <sstream>
-#include <iostream>
 
 namespace ember { namespace drivers {
 
@@ -80,7 +79,18 @@ std::string MySQL::version() const {
 	return ver.str();
 }
 
-sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, const std::string& key) const {
+sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, const std::string& key) {
+	auto stmt = lookup_statement(conn, key);
+	
+	if(!stmt) {
+		stmt = conn->prepareStatement(key);
+		cache_statement(conn, key, stmt);
+	}
+
+	return stmt;
+}
+
+sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, const std::string& key) {
 	auto conn_cache = locate_cache(conn);
 
 	if(!conn_cache) {
@@ -102,7 +112,7 @@ void MySQL::cache_statement(const sql::Connection* conn, const std::string& key,
 	cache_[conn][key] = value;
 }
 
-QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
+MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
 	std::lock_guard<std::mutex> lock(cache_lock_);
 	auto cache_it = cache_.find(conn);
 
