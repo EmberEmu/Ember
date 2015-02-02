@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <atomic>
 #include <condition_variable>
 #include <chrono>
 
@@ -16,23 +15,18 @@ namespace ember {
 
 template<typename Lock>
 class Semaphore {
-	std::atomic<unsigned int> count_;
+	unsigned int count_;
 	std::condition_variable condition_;
 	unsigned int max_;
 	Lock lock_;
 
-	bool increment_max_check(unsigned int increment) {
-		unsigned int curr = count_;
-		unsigned int new_count;
+	void increment_max_check(unsigned int increment) {
+		unsigned int old = count_;
+		count_ += increment;
 
-		do {
-			new_count = curr + increment;
-
-			if(new_count < curr || new_count > max_) { //check for overflow
-				return false;
-			}
-		} while(!count_.compare_exchange_weak(curr, new_count));
-		return true;
+		if(count_ < old || count_ > max_) { //check for overflow
+			count_ = max_;
+		}
 	}
 
 public:
@@ -55,7 +49,8 @@ public:
 	bool wait_for(std::chrono::milliseconds duration) {
 		std::unique_lock<Lock> guard(lock_);
 
-		//wait_for with a predicate is broken in VS2013 & VS2015 Preview - workaround! todo
+		//wait_for with a predicate is broken in VS2013 & VS2015 Preview - workaround!
+		//todo, submitted bug report, has now been fixed for VS2015 RTM
 		bool hack = false;
 
 		condition_.wait_for(guard, std::chrono::milliseconds(duration),
@@ -71,18 +66,16 @@ public:
 		return hack;
 	}
 
-	bool signal(unsigned int increment = 1) {
-		bool ret = increment_max_check(increment); 
+	void signal(unsigned int increment = 1) {
+		increment_max_check(increment); 
 		std::lock_guard<Lock> guard(lock_);
 		condition_.notify_one();
-		return ret;
 	}
 
-	bool signal_all(unsigned int increment = 1) {
-		bool ret = increment_max_check(increment);
+	void signal_all(unsigned int increment = 1) {
+		increment_max_check(increment);
 		std::lock_guard<Lock> guard(lock_);
 		condition_.notify_all();
-		return ret;
 	}
 };
 
