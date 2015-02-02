@@ -7,59 +7,103 @@
  */
 
 #include "LoginHandler.h"
+#include <shared/misc/PacketStream.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <logger/Logging.h>
+#include <boost/pool/pool.hpp>
+#include <boost/pool/pool_alloc.hpp>
 #include <vector>
 #include <thread>
 
 namespace ember {
 
 void LoginHandler::start() {
-	LOG_DEBUG(logger_) << "Initial state: " << (int)state_ << LOG_FLUSH;
-	read(sizeof(opcodes::ClientLoginChallenge::Header));
+	read();
 }
 
 void LoginHandler::process_login_challenge() {
-	auto packet = buffer_.data<opcodes::ClientLoginChallenge>();
+	auto packet = buffer_.data<protocol::ClientLoginChallenge>();
 
-	if(buffer_.size() < sizeof(opcodes::ClientLoginChallenge)
+	if(buffer_.size() < sizeof(protocol::ClientLoginChallenge)
 		|| packet->username + packet->username_len != buffer_.data<char>() + buffer_.size()) {
-		LOG_DEBUG(logger_) << "Bad login challenge packet" << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Malformed login challenge packet" << LOG_FLUSH;
+		socket_.close();
 		return;
 	}
 
-	/*;
-	
-	if(std::find(versions_.begin(), versions_.end(), version) == versions_.end()) {
-		LOG_DEBUG(logger_) << "Unhandled client version: " << version << LOG_FLUSH;
-	}*/
-	GameVersion version{ packet->major, packet->minor, packet->patch, packet->build };
-	auth_.verify_client_version(version);
+	//The username in the packet isn't null-terminated so don't try using it directly
+	std::string user(packet->username, packet->username_len);
+	GameVersion version{packet->major, packet->minor, packet->patch, packet->build};
 
-	read(sizeof(opcodes::ClientLoginProof));
+	LOG_DEBUG(logger_) << "Challenge: " << user << ", " << version << ", "
+	                   << socket_.remote_endpoint().address().to_string() << LOG_FLUSH;
+
+	//Should probably have a patcher to handle this
+	Authenticator::PATCH_STATE patch_level = auth_.verify_client_version(version);
+
+	if(patch_level != Authenticator::PATCH_STATE::OK) {
+		if(patch_level == Authenticator::PATCH_STATE::TOO_OLD) {
+			//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
+			//write(packet);
+		} else {
+			LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_FLUSH;
+			auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
+			PacketStream<Packet> stream(*packet);
+			stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_INVALID;
+			write(packet);
+		}
+	}
+
+	auto account_status = auth_.check_account(user);
+	
+	if(account_status == ember::Authenticator::ACCOUNT_STATUS::DAL_ERROR) {
+		LOG_ERROR(logger_) << "DAL failure "  << LOG_FLUSH;
+		auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
+		PacketStream<Packet> stream(*packet);
+		stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_DB_BUSY;
+		write(packet);
+	} else if(account_status == ember::Authenticator::ACCOUNT_STATUS::NOT_FOUND) {
+		LOG_DEBUG(logger_) << "Account not found " << LOG_FLUSH;
+		auto packet = std::make_shared<Packet>();
+		PacketStream<Packet> stream(*packet);
+		stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_UNKNOWN_ACCOUNT;
+		write(packet);
+	}
+
+	buffer_.clear();
+	read();
 }
 
 void LoginHandler::login_challenge_read() {
-	auto data = buffer_.data<opcodes::ClientLoginChallenge>();
+	auto data = buffer_.data<protocol::ClientLoginChallenge>();
 
-	if(data->header.opcode != opcodes::CLIENT::CMSG_LOGIN_CHALLENGE) {
-		LOG_DEBUG(logger_) << "Invalid opcode found - expected login challenge" << LOG_FLUSH;
+	//Ensure we've at least read the packet header before continuing
+	if(buffer_.size() < sizeof(protocol::ClientLoginChallenge::Header)) {
+		read();
 		return;
 	}
 
-	if(buffer_.size() != data->header.size + sizeof(data->header)) {
-		if(data->header.size < buffer_.free()) {
-			read(data->header.size);
+	//Ensure we've read the entire packet
+	std::size_t completed_size = data->header.size + sizeof(data->header);
+
+	if(buffer_.size() < completed_size) {
+		std::size_t remaining = completed_size - buffer_.size();
+		
+		if(remaining < buffer_.free()) {
+			read();
 		}
-	} else {
-		process_login_challenge();
+
+		return;
 	}
+
+	//Packet should be fine by this point
+	process_login_challenge();
 }
 
 void LoginHandler::handle_client_proof() {
-	auto data = buffer_.data<opcodes::ClientLoginProof>();
+	auto data = buffer_.data<protocol::ClientLoginProof>();
 
-	if(data->opcode != opcodes::CLIENT::CMSG_LOGIN_PROOF) {
+	if(data->opcode != protocol::CMSG_OPCODE::CMSG_LOGIN_PROOF) {
 		LOG_DEBUG(logger_) << "Invalid opcode found - expected login proof" << LOG_FLUSH;
 		return;
 	}
@@ -68,45 +112,59 @@ void LoginHandler::handle_client_proof() {
 }
 
 void LoginHandler::handle_packet() {
-	switch(state_) {
-		case opcodes::CLIENT::CMSG_LOGIN_CHALLENGE:
+	if(buffer_.size() < sizeof(protocol::CMSG_OPCODE)) {
+		read();
+	}
+
+	auto opcode = *static_cast<protocol::CMSG_OPCODE*>(buffer_.data());
+
+	switch(opcode) {
+		case protocol::CMSG_OPCODE::CMSG_LOGIN_CHALLENGE:
 			login_challenge_read();
 			break;
-		case opcodes::CLIENT::CMSG_LOGIN_PROOF:
-			handle_client_proof();
+		case protocol::CMSG_OPCODE::CMSG_RECONNECT_CHALLENGE:
+			LOG_DEBUG(logger_) << "Unhandled CMSG_RECONNECT_CHALLENGE" << LOG_FLUSH;
 			break;
-		case opcodes::CLIENT::CMSG_REQUEST_REALM__LIST:
+		case protocol::CMSG_OPCODE::CMSG_LOGIN_PROOF:
+			LOG_DEBUG(logger_) << "Unhandled CMSG_LOGIN_PROOF" << LOG_FLUSH;
+			break;
+		case protocol::CMSG_OPCODE::CMSG_RECONNECT_PROOF:
+			LOG_DEBUG(logger_) << "Unhandled CMSG_RECONNECT_PROOF" << LOG_FLUSH;
+			break;
+		case protocol::CMSG_OPCODE::CMSG_REQUEST_REALM__LIST:
+			LOG_DEBUG(logger_) << "Unhandled CMSG_RECONNECT_PROOF" << LOG_FLUSH;
+			break;
+		default:
+			LOG_DEBUG(logger_) << "Unhandled packet type" << LOG_FLUSH;
 			break;
 	}
 }
 
-void LoginHandler::read(std::size_t read) {
+void LoginHandler::read() {
 	auto self = shared_from_this();
 
-	timer_.expires_from_now(boost::posix_time::seconds(15));
+	timer_.expires_from_now(boost::posix_time::seconds(5));
 	timer_.async_wait(std::bind(&LoginHandler::close, self, std::placeholders::_1));
 	
-	boost::asio::async_read(socket_, boost::asio::buffer(buffer_.store(), read),
+	socket_.async_receive(boost::asio::buffer(buffer_.store(), buffer_.free()),
 		strand_.wrap(create_alloc_handler(allocator_,
 		[this, self](boost::system::error_code ec, std::size_t size) {
 			if(!ec) {
 				timer_.cancel();
 				buffer_.advance(size);
 				handle_packet();
-			} else {
-				LOG_DEBUG(logger_) << ec.message() << LOG_FLUSH;
 			}
 		}
 	)));
 }
 
-void LoginHandler::write(std::shared_ptr<std::vector<char>> buffer) {
+void LoginHandler::write(std::shared_ptr<Packet> buffer) {
 	auto self = shared_from_this();
 
 	boost::asio::async_write(socket_, boost::asio::buffer(*buffer),
 		strand_.wrap(create_alloc_handler(allocator_,
-		[this, self, buffer](boost::system::error_code ec, std::size_t size) {
-			if(!ec) {
+		[this, self, buffer](boost::system::error_code ec, std::size_t) {
+			if(ec) {
 				LOG_DEBUG(logger_) << ec.message() << LOG_FLUSH;
 			}
 		}
@@ -116,12 +174,6 @@ void LoginHandler::write(std::shared_ptr<std::vector<char>> buffer) {
 void LoginHandler::close(const boost::system::error_code& error) {
 	if(!error) {
 		socket_.close();
-	}
-}
-
-LoginHandler::~LoginHandler() {
-	if(!socket_.is_open()) {
-		return;
 	}
 }
 

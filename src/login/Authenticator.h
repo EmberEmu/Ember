@@ -8,15 +8,15 @@
 
 #pragma once
 
+#include "GameVersion.h"
 #include <srp6/Server.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace ember {
 
 namespace dal { class UserDAO; }
-
-struct GameVersion;
 
 class Authenticator {
 	dal::UserDAO& users_;
@@ -24,6 +24,9 @@ class Authenticator {
 	std::unique_ptr<srp6::Server> auth_;
 
 public:
+	enum class PATCH_STATE { OK, TOO_OLD, TOO_NEW };
+	enum class ACCOUNT_STATUS { OK, NOT_FOUND, DAL_ERROR };
+
 	Authenticator(dal::UserDAO& users, const std::vector<GameVersion>& versions)
 	              : versions_(versions), users_(users) { }
 
@@ -32,7 +35,8 @@ public:
 		auth_ = std::move(rhs.auth_);
 	}
 
-	void verify_client_version(const GameVersion& version);
+	PATCH_STATE verify_client_version(const GameVersion& version);
+	ACCOUNT_STATUS check_account(const std::string& username);
 };
 
 } //ember

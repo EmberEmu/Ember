@@ -10,7 +10,7 @@
 
 #include "GameVersion.h"
 #include "PacketBuffer.h"
-#include "Opcodes.h"
+#include "Protocol.h"
 #include "Authenticator.h"
 #include <logger/Logger.h>
 #include <shared/memory/ASIOAllocator.h>
@@ -29,9 +29,10 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	log::Logger* logger_;
 	PacketBuffer buffer_;
 	Authenticator auth_;
-	opcodes::CLIENT state_ = opcodes::CLIENT::CMSG_LOGIN_CHALLENGE;
+	protocol::CMSG_OPCODE state_;
+	bool new_session_ = true;
 
-	void read(std::size_t read);
+	void read();
 	void write(std::shared_ptr<std::vector<char>> buffer);
 	void handle_packet();
 	void login_challenge_read();
@@ -45,8 +46,6 @@ public:
 	             : socket_(std::move(socket)), allocator_(allocator), logger_(logger),
 	               timer_(socket_.get_io_service()), strand_(socket.get_io_service()),
 	               auth_(std::move(auth)) { }
-
-	~LoginHandler();
 
 	void start();
 };

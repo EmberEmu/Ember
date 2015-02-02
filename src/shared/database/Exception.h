@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,16 +8,15 @@
 
 #pragma once
 
-#include <shared/database/Exception.h>
-#include <shared/misc/User.h>
-#include <boost/optional.hpp>
+#include <stdexcept>
 #include <string>
-
+ 
 namespace ember { namespace dal {
 
-class UserDAO {
+class exception : public std::runtime_error {
 public:
-	virtual boost::optional<User> user(const std::string& username) = 0;
+	exception() : std::runtime_error("An unknown DAL exception occured!") { }
+	exception(std::string msg) : std::runtime_error(msg) { };
 };
 
 }} //dal, ember

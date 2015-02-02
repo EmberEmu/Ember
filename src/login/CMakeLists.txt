@@ -11,10 +11,11 @@ set(EXECUTABLE_HDR
     ../shared/TCPServer.h
     ../shared/memory/ASIOAllocator.h
     ../shared/database/daos/UserDAO.h
+    ../shared/misc/PacketStream.h
     LoginHandler.h
     LoginHandlerBuilder.h
     PacketBuffer.h
-    Opcodes.h
+    Protocol.h
     GameVersion.h
     Authenticator.h
     )

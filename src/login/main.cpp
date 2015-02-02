@@ -75,11 +75,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
 
-	auto driver = init_db_driver(args);
+	auto driver(init_db_driver(args));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 	
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	LOG_INFO(logger) << "Compiled with " << driver.name() << " (" << driver.version() << ")" << LOG_SYNC;
+	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
 		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,

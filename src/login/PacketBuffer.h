@@ -11,6 +11,7 @@
 #include <array>
 #include <cstdint>
 
+
 namespace ember {
 
 class PacketBuffer {
@@ -39,6 +40,7 @@ public:
 
 		if(free_ > old) {
 			//assert
+			std::exit(-1);
 		}
 	}
 
