@@ -112,16 +112,18 @@ class PoolManager {
 		}
 
 		//If the pool has grown too small, try to refill it
-		std::lock_guard<Spinlock> guard(pool_->lock_);
+		std::unique_lock<Spinlock> guard(pool_->lock_);
 		if(pool_->pool_.size() < pool_->min_) {
 			try {
 				pool_->open_connections(pool_->min_ - pool_->pool_.size());
 			} catch(std::exception& e) { 
+				guard.unlock();
 				if(pool_->log_cb_) {
 					pool_->log_cb_(SEVERITY::WARN,
 					               std::string("Failed to refill connection pool: ") + e.what());
 				}
 			} catch(...) {
+				guard.unlock();
 				if(pool_->log_cb_) {
 					pool_->log_cb_(SEVERITY::WARN,
 					               "Failed to refill connection pool - unknown exception caught");

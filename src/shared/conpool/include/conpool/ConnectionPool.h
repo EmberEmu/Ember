@@ -72,8 +72,12 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 			if(!cd.checked_out && !cd.error && !cd.sweep) {
 				if(cd.dirty && !return_clean()) {
 					try {
-						cd.conn = driver_.clean(cd.conn);
-						cd.dirty = false;
+						if(driver_.clean(cd.conn)) {
+							cd.dirty = false;
+						} else {
+							cd.sweep = true;
+							return false;
+						}
 					} catch(std::exception& e) {
 						if(log_cb_) {
 							log_cb_(SEVERITY::DEBUG,
@@ -228,7 +232,10 @@ public:
 
 	void return_connection(Connection<ConType>& connection) {
 		if(return_clean()) {
-			connection.detail_.get().conn = driver_.clean(connection.detail_.get().conn);
+			if(!driver_.clean(connection.detail_.get().conn)) {
+				connection.detail_.get().dirty = true;
+				connection.detail_.get().sweep = true;
+			}
 		} else {
 			connection.detail_.get().dirty = true;
 		}

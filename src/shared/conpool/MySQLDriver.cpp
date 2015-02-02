@@ -34,7 +34,10 @@ sql::Connection* MySQL::open() const {
 }
 
 void MySQL::close(sql::Connection* conn) const {
-	conn->close();
+	if(!conn->isClosed()) {
+		conn->close();
+	}
+
 	delete conn;
 
 	auto conn_cache = locate_cache(conn);
@@ -44,9 +47,12 @@ void MySQL::close(sql::Connection* conn) const {
 			stmt.second->close();
 			delete stmt.second;
 		}
+
+		close_cache(conn);
 	}
 }
 
+//todo - change this interface to bool
 sql::Connection* MySQL::keep_alive(sql::Connection* conn) const try {
 	conn->setAutoCommit(true);
 	std::unique_ptr<sql::Statement> stmt(conn->createStatement());
@@ -56,8 +62,8 @@ sql::Connection* MySQL::keep_alive(sql::Connection* conn) const try {
 	return open();
 }
 
-sql::Connection* MySQL::clean(sql::Connection* conn) const {
-	return conn;
+bool MySQL::clean(sql::Connection* conn) const {
+	return !conn->isClosed();
 }
 
 void MySQL::thread_enter() const {
@@ -121,6 +127,15 @@ MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
 	}
 
 	return &cache_it->second;
+}
+
+void MySQL::close_cache(const sql::Connection* conn) const {
+	std::lock_guard<std::mutex> lock(cache_lock_);
+	auto cache_it = cache_.find(conn);
+	
+	if(cache_it != cache_.end()) {
+		cache_.erase(cache_it);
+	}
 }
 
 }} // drivers, ember

@@ -31,13 +31,14 @@ class MySQL {
 	mutable std::mutex cache_lock_;
 
 	QueryCache* locate_cache(const sql::Connection* conn) const;
+	void close_cache(const sql::Connection* conn) const;
 
 public:
 	MySQL(std::string user, std::string password, const std::string& host,
 	      unsigned short port, std::string db);
 	
 	sql::Connection* open() const;
-	sql::Connection* clean(sql::Connection* conn) const;
+	bool clean(sql::Connection* conn) const;
 	void close(sql::Connection* conn) const;
 	void clear_state(sql::Connection* conn) const;
 	sql::Connection* keep_alive(sql::Connection* conn) const;
