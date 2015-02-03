@@ -35,7 +35,12 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 	}
 }
 
-SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>& salt, bool interleave) {
+SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, bool interleave,
+                               COMPLIANCE mode) {
+	if(interleave && mode == COMPLIANCE::RFC5054) {
+		throw exception("Interleaving is not compliant with RFC5054!");
+	}
+
 	if(!(B % gen_.prime()) || B < 0) {
 		throw exception("Server's ephemeral key is invalid!");
 	}
@@ -43,13 +48,13 @@ SessionKey Client::session_key(const BigInt& B, const SecureVector<Botan::byte>&
 	B_ = B;
 	salt_ = salt;
 
-	BigInt u = detail::scrambler(A_, B, gen_.prime().bytes());
+	BigInt u = detail::scrambler(A_, B, gen_.prime().bytes(), mode);
 
 	if(u <= 0) {
 		throw exception("Scrambling parameter <= 0");
 	}
 
-	BigInt x = detail::compute_x(identifier_, password_, salt);
+	BigInt x = detail::compute_x(identifier_, password_, salt, mode);
 	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
 	return interleave ? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
 		: SessionKey(Botan::BigInt::encode(S));

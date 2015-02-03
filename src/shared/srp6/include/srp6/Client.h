@@ -20,7 +20,7 @@ class Client {
 	const Generator gen_;
 	const Botan::BigInt v_, a_;
 	Botan::BigInt A_, B_, k_{ 3 };
-	Botan::SecureVector<Botan::byte> salt_;
+	Botan::BigInt salt_;
 	std::string identifier_, password_;
 
 public:
@@ -28,8 +28,8 @@ public:
 	       bool srp6a = false);
 	Client(std::string identifier, std::string password, Generator gen, Botan::BigInt a,
 	       bool srp6a = false);
-	SessionKey session_key(const Botan::BigInt& B, const Botan::SecureVector<Botan::byte>& salt,
-	                       bool interleave = true);
+	SessionKey session_key(const Botan::BigInt& B, const Botan::BigInt& salt,
+	                       bool interleave = true, COMPLIANCE mode = COMPLIANCE::GAME);
 	Botan::BigInt generate_proof(const SessionKey& key) const;
 	inline const Botan::BigInt& public_ephemeral() const { return A_; }
 };

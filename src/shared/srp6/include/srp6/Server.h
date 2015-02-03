@@ -23,7 +23,8 @@ public:
 	Server(const Generator& gen, const Botan::BigInt& v, const Botan::BigInt& b, bool srp6a = false);
 	Server(const Generator& gen, const Botan::BigInt& v, int key_size = 32, bool srp6a = false);
 	inline const Botan::BigInt& public_ephemeral() const { return B_; }
-	SessionKey session_key(const Botan::BigInt& A, bool interleave = true);
+	SessionKey session_key(const Botan::BigInt& A, bool interleave = true,
+	                       COMPLIANCE mode = COMPLIANCE::GAME);
 	Botan::BigInt generate_proof(const SessionKey& key, const Botan::BigInt& client_proof) const;
 };
 

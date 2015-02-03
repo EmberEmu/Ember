@@ -33,13 +33,17 @@ Server::Server(const Generator& gen, const BigInt& v, int key_size, bool srp6a)
                : Server(gen, v, BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
                  srp6a) { }
 
-SessionKey Server::session_key(const BigInt& A, bool interleave) {
+SessionKey Server::session_key(const BigInt& A, bool interleave, COMPLIANCE mode) {
+	if(interleave && mode == COMPLIANCE::RFC5054) {
+		throw exception("Interleaving is not compliant with RFC5054!");
+	}
+
 	if(!(A % N_) || A < 0) {
 		throw exception("Client's ephemeral key is invalid!");
 	}
 
 	A_ = A;
-	BigInt u = detail::scrambler(A, B_, N_.bytes());
+	BigInt u = detail::scrambler(A, B_, N_.bytes(), mode);
 	BigInt S = power_mod(A * power_mod(v_, u, N_), b_, N_);
 	return interleave? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
 		: SessionKey(Botan::BigInt::encode(S));

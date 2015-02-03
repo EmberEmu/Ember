@@ -30,6 +30,12 @@ SecureVector<byte> encode_flip(const Botan::BigInt& val) {
 	return res;
 }
 
+SecureVector<byte> encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
+	SecureVector<Botan::byte> res(Botan::BigInt::encode_1363(val, padding));
+	std::reverse(res.begin(), res.end());
+	return res;
+}
+
 SecureVector<byte> interleaved_hash(SecureVector<byte>& hash) {
 	//implemented as described in RFC2945
 	auto begin = std::find_if(hash.begin(), hash.end(), [](byte b) { return b; });
@@ -51,11 +57,19 @@ SecureVector<byte> interleaved_hash(SecureVector<byte>& hash) {
 	return final;
 }
 
-Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding) {
+Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
+                        COMPLIANCE mode) {
 	Botan::SHA_160 hasher;
-	hasher.update(Botan::BigInt::encode_1363(A, padding));
-	hasher.update(Botan::BigInt::encode_1363(B, padding));
-	return Botan::BigInt::decode(hasher.final());
+
+	if(mode == COMPLIANCE::RFC5054) {
+		hasher.update(Botan::BigInt::encode_1363(A, padding));
+		hasher.update(Botan::BigInt::encode_1363(B, padding));
+		return Botan::BigInt::decode(hasher.final());
+	} else {
+		hasher.update(encode_flip_1363(A, padding));
+		hasher.update(encode_flip_1363(B, padding));
+		return decode_flip(hasher.final());
+	}
 }
 
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
@@ -67,7 +81,7 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-                        const SecureVector<byte>& salt) {
+                        const Botan::BigInt& salt, COMPLIANCE mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	Botan::SHA_160 hasher;
 	hasher.update(identifier);
@@ -75,9 +89,15 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	hasher.update(password);
 	const SecureVector<byte> hash(hasher.final());
 
-	hasher.update(salt);
+	if(mode == COMPLIANCE::RFC5054) {
+		hasher.update(Botan::BigInt::encode(salt));
+	} else {
+		hasher.update(detail::encode_flip(salt));
+	}
+
 	hasher.update(hash);
-	return Botan::BigInt::decode(hasher.final());
+	return (mode == COMPLIANCE::RFC5054)? Botan::BigInt::decode(hasher.final())
+	                                    : detail::decode_flip(hasher.final());
 }
 
 } //detail
@@ -85,7 +105,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g,
                                     const Botan::BigInt& A, const Botan::BigInt& B,
-                                    const SecureVector<byte>& salt) {
+                                    const Botan::BigInt& salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
 	Botan::SHA_160 hasher;
 	SecureVector<byte> n_hash(hasher.process(detail::encode_flip(N)));
@@ -98,7 +118,7 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 
 	hasher.update(n_hash);
 	hasher.update(i_hash);
-	hasher.update(salt);
+	hasher.update(detail::encode_flip(salt));
 	hasher.update(detail::encode_flip(A));
 	hasher.update(detail::encode_flip(B));
 	hasher.update(key);
@@ -115,13 +135,14 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	return detail::decode_flip(hasher.final());
 }
 
-SecureVector<byte> generate_salt(std::size_t salt_len) {
-	return Botan::AutoSeeded_RNG().random_vec(salt_len);
+Botan::BigInt generate_salt(std::size_t salt_len) {
+	return Botan::BigInt::decode(Botan::AutoSeeded_RNG().random_vec(salt_len));
 }
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
-                                const Generator& generator, const SecureVector<byte>& salt) {
-	return detail::generate(identifier, password, generator, salt);
+                                const Generator& generator, const Botan::BigInt& salt,
+                                COMPLIANCE mode) {
+	return detail::generate(identifier, password, generator, salt, mode);
 }
 
 }} //srp6, ember
