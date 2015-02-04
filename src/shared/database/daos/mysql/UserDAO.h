@@ -30,20 +30,40 @@ public:
 		auto conn = pool_.get_connection();
 		auto driver = pool_.get_driver();
 
-		std::string query = "SELECT u.username, u.id, u.s, u.v, ub.user_id FROM users u LEFT JOIN "
-		                    "user_bans ub ON u.id = ub.user_id WHERE username = ?";
-
+		std::string query = "SELECT u.username, u.id, u.s, u.v, b.user_id as banned, "
+		                    "s.user_id as suspended FROM users u "
+		                    "LEFT JOIN bans b ON u.id = b.user_id "
+		                    "LEFT JOIN suspensions s ON u.id = s.user_id "
+		                    "WHERE username = ?";
+	
 		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
 		stmt->setString(1, username);
-
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			User user(res->getString("username"), res->getString("s"), res->getString("v"));
+			User user(res->getString("username"), res->getString("s"), res->getString("v"),
+			          res->getBoolean("banned"), res->getBoolean("suspended"));
 			return user;
 		}
 
 		return boost::optional<User>();
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	void record_last_login(const User& user, const std::string& ip) override final try {
+		auto conn = pool_.get_connection();
+		auto driver = pool_.get_driver();
+
+		std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
+		                    "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
+		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+		stmt->setString(1, user.username());
+		stmt->setString(2, ip);
+		
+		if(!stmt->executeUpdate()) {
+			throw exception("Unable to set last login for " + user.username());
+		}
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

@@ -18,6 +18,7 @@ namespace ember { namespace dal {
 class UserDAO {
 public:
 	virtual boost::optional<User> user(const std::string& username) = 0;
+	virtual void record_last_login(const User& user, const std::string& ip) = 0;
 };
 
 }} //dal, ember
