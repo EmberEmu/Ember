@@ -94,7 +94,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto allowed_clients = client_versions();
 	auto user_dao = ember::dal::user_dao(pool);
 
-	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao);
+	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
+	ember::ThreadPool tpool(concurrency);
+
+	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao, tpool);
 	ba::io_service service(concurrency);
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
@@ -102,7 +105,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		std::bind(&ember::LoginHandlerBuilder::create, &builder, std::placeholders::_1));
 
 	ba::signal_set signals(service, SIGINT, SIGTERM);
-	signals.async_wait(std::bind(&boost::asio::io_service::stop, &service));
+	signals.async_wait(std::bind(&ba::io_service::stop, &service));
+
 	start_workers(concurrency, service, logger);
 
 	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;

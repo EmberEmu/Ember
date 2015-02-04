@@ -1,5 +1,6 @@
 #pragma once
 
+#include <botan/secmem.h>
 #include <string>
 #include <vector>
 #include <boost/pool/pool.hpp>
@@ -16,13 +17,21 @@ class PacketStream {
 public:
 	PacketStream(T& buffer) : buffer_(buffer) {}
 
-	PacketStream& operator <<(const std::string& data) {
+	inline PacketStream& operator <<(const Botan::SecureVector<Botan::byte>& data) {
+		for(auto b : data) {
+			*this << b;
+		}
+
+		return *this;
+	}
+
+	inline PacketStream& operator <<(const std::string& data) {
 		std::copy(data.begin(), data.end(), std::back_inserter(buffer_));
 		return *this;
 	}
 
 	template<typename U>
-	PacketStream& operator <<(const U& data) {
+	inline PacketStream& operator <<(const U& data) {
 		const char* copy = static_cast<const char*>(static_cast<const void*>(&data));
 		std::copy(copy, copy + sizeof(data), std::back_inserter(buffer_));
 		return *this;

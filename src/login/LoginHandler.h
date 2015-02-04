@@ -13,6 +13,8 @@
 #include "Protocol.h"
 #include "Authenticator.h"
 #include <logger/Logger.h>
+#include <shared/threading/ThreadPool.h>
+#include <shared/misc/PacketStream.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <array>
@@ -23,12 +25,15 @@ namespace ember {
 
 class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	boost::asio::ip::tcp::socket socket_;
+	boost::asio::io_service& service_;
 	boost::asio::strand strand_;
 	boost::asio::deadline_timer timer_;
 	ASIOAllocator& allocator_;
 	log::Logger* logger_;
 	PacketBuffer buffer_;
 	Authenticator auth_;
+	ThreadPool& tpool_;
+	std::string username_;
 	protocol::CMSG_OPCODE state_;
 	bool new_session_ = true;
 
@@ -37,15 +42,17 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	void handle_packet();
 	void login_challenge_read();
 	void process_login_challenge();
-	void handle_client_proof();
+	void handle_login_proof();
 	void close(const boost::system::error_code& error);
+	void handle_login(Authenticator::ACCOUNT_STATUS status);
+	void send_server_challenge(PacketStream<Packet>& resp);
 
 public:
 	LoginHandler(boost::asio::ip::tcp::socket socket, ASIOAllocator& allocator,
-	             Authenticator auth, log::Logger* logger)
+	             Authenticator auth, ThreadPool& pool, log::Logger* logger)
 	             : socket_(std::move(socket)), allocator_(allocator), logger_(logger),
-	               timer_(socket_.get_io_service()), strand_(socket.get_io_service()),
-	               auth_(std::move(auth)) { }
+	               timer_(socket_.get_io_service()), strand_(socket_.get_io_service()),
+	               auth_(std::move(auth)), tpool_(pool), service_(socket_.get_io_service()) { }
 
 	void start();
 };

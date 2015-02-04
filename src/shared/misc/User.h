@@ -16,21 +16,34 @@ class User {
 	std::string user_;
 	std::string v_;
 	std::string s_;
+	bool banned_;
+	bool suspended_;
 
 public:
-	User(std::string username, std::string salt, std::string verifier)
-	    : user_(username), s_(std::move(salt)), v_(std::move(verifier)) { }
+	User(std::string username, std::string salt, std::string verifier, bool banned, bool suspended)
+	    : user_(username), s_(std::move(salt)), v_(std::move(verifier)) {
+		banned_ = banned;
+		suspended_ = suspended;
+	}
 
-	std::string verifier() {
+	std::string verifier() const {
 		return v_;
 	}
 
-	std::string salt() {
+	std::string salt() const {
 		return s_;
 	}
 
-	std::string username() {
+	std::string username() const {
 		return user_;
+	}
+
+	bool banned() const {
+		return banned_;
+	}
+
+	bool suspended() const {
+		return suspended_;
 	}
 };
 

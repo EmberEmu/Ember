@@ -12,6 +12,7 @@ set(EXECUTABLE_HDR
     ../shared/memory/ASIOAllocator.h
     ../shared/database/daos/UserDAO.h
     ../shared/misc/PacketStream.h
+    ../shared/threading/ThreadPool.h
     LoginHandler.h
     LoginHandlerBuilder.h
     PacketBuffer.h
@@ -21,6 +22,7 @@ set(EXECUTABLE_HDR
     )
 
 set(EXECUTABLE_SRC
+    ../shared/threading/ThreadPool.cpp
 	../shared/Banner.cpp
 	LoginHandler.cpp
     Authenticator.cpp

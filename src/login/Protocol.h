@@ -12,6 +12,10 @@
 
 namespace ember { namespace protocol {
 
+//The game can't handle any other values
+const std::uint8_t PRIME_LENGTH = 32;
+const std::uint8_t PUB_KEY_LENGTH = 32;
+
 enum class CMSG_OPCODE : std::uint8_t {
 	CMSG_LOGIN_CHALLENGE,
 	CMSG_LOGIN_PROOF,
@@ -53,8 +57,8 @@ enum class RESULT : std::uint8_t {
 
 struct ClientLoginProof {
 	CMSG_OPCODE opcode;
-	std::uint8_t a[32];
-	std::uint8_t m1[20];
+	std::uint8_t A[32];
+	std::uint8_t M1[20];
 	std::uint8_t crc_hash[20];
 	std::uint8_t key_count;
 	std::uint8_t unknown;
@@ -84,11 +88,11 @@ struct ServerLoginChallenge {
 	CMSG_OPCODE opcode;
 	RESULT error;
 	std::uint8_t unk2;
-	std::uint8_t b[32];
+	std::uint8_t B[32];
 	std::uint8_t g_len;
 	std::uint8_t g;
 	std::uint8_t n_len;
-	std::uint8_t n[32];
+	std::uint8_t N[32];
 	std::uint8_t s[32];
 	std::uint8_t unk3[16];
 	std::uint8_t unk4;

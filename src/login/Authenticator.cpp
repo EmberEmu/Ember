@@ -8,7 +8,9 @@
 
 #include "Authenticator.h"
 #include <srp6/Server.h>
+#include <srp6/Client.h>
 #include <shared/database/daos/UserDAO.h>
+#include <algorithm>
 
 namespace ember {
 
@@ -29,18 +31,62 @@ auto Authenticator::verify_client_version(const GameVersion& version) -> PATCH_S
 }
 
 auto Authenticator::check_account(const std::string& username) -> ACCOUNT_STATUS try {
-	boost::optional<User> user = users_.user(username);
+	user_ = users_.user(username);
 
-	if(!user) {
+	if(!user_) {
 		return ACCOUNT_STATUS::NOT_FOUND;
 	}
 
-	srp6::Generator gen(srp6::Generator::GROUP::_256_BIT);
-	auth_ = std::make_unique<srp6::Server>(gen, user->verifier());
+	auth_ = std::make_unique<srp6::Server>(gen_, user_->verifier());
 
 	return ACCOUNT_STATUS::OK;
 } catch(std::exception& e) {
+	std::cout << e.what() << std::endl; //<------------------------------------------------------------------------------------------------------------------------------------------------------ LOGGER
 	return ACCOUNT_STATUS::DAL_ERROR;
+}
+
+auto Authenticator::challenge_reply() -> ChallengeResponse {
+	return {auth_->public_ephemeral(), Botan::BigInt(user_->salt()), gen_};
+}
+
+auto Authenticator::proof_check(protocol::ClientLoginProof* proof) -> LoginResult {
+	//Usernames aren't required to be uppercase in the DB but the client requires it for calculations
+	std::string user_upper(user_->username());
+	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
+
+	//Need to reverse the order thanks to Botan's big-endian buffers
+	std::reverse(std::begin(proof->A), std::end(proof->A));
+	std::reverse(std::begin(proof->M1), std::end(proof->M1));
+
+	Botan::BigInt A(Botan::BigInt::decode(proof->A, sizeof(proof->A)));
+	Botan::BigInt M1(Botan::BigInt::decode(proof->M1, sizeof(proof->M1)));
+	srp6::SessionKey key(auth_->session_key(A, true, srp6::COMPLIANCE::GAME));
+
+	Botan::BigInt B = auth_->public_ephemeral();
+	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
+	                                                 A, B, Botan::BigInt(user_->salt()));
+
+	auto res = protocol::RESULT::FAIL_INCORRECT_PASSWORD;
+	
+	if(M1 == M1_S) {
+		if(user_->banned()) {
+			res = protocol::RESULT::FAIL_BANNED;
+		} else if(user_->suspended()) {
+			res = protocol::RESULT::FAIL_SUSPENDED;
+		/*} else if(time) {
+			res = protocol::RESULT::FAIL_NO_TIME;*/
+		/*} else if(parental_controls) {
+			res = protocol::RESULT::FAIL_PARENTAL_CONTROLS;*/
+		} else {
+			res = protocol::RESULT::SUCCESS;
+		}
+	}
+
+	return {res, auth_->generate_proof(key, M1)};
+}
+
+void Authenticator::set_logged_in(const std::string& ip) {
+	users_.record_last_login(*user_, ip);
 }
 
 } //ember
