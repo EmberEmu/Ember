@@ -53,7 +53,7 @@ void ThreadPool::run_catch() {
 	}
 }
 
-void ThreadPool::log_callback(LogCallback callback) {
+void ThreadPool::log_callback(const LogCallback& callback) {
 	std::lock_guard<std::mutex> guard(log_cb_lock_);
 	log_cb_ = callback;
 }

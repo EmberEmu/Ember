@@ -50,6 +50,9 @@ public:
 		auth_ = std::move(rhs.auth_);
 	}
 
+	Authenticator(const Authenticator&) = delete;
+	Authenticator& operator=(const Authenticator&) = delete;
+
 	PATCH_STATE verify_client_version(const GameVersion& version);
 	ACCOUNT_STATUS check_account(const std::string& username);
 	ChallengeResponse challenge_reply();

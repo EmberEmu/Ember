@@ -41,7 +41,7 @@ public:
 		service_.post(work);
 	}
 
-	void log_callback(LogCallback callback);
+	void log_callback(const LogCallback& callback);
 };
 
 } //ember

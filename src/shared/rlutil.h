@@ -140,7 +140,7 @@ namespace rlutil {
 		typedef std::string RLUTIL_STRING_T;
 	#endif // RLUTIL_STRING_T
 
-	inline void RLUTIL_PRINT(RLUTIL_STRING_T st) { std::cout << st; }
+	inline void RLUTIL_PRINT(RLUTIL_STRING_T& st) { std::cout << st; }
 
 #else // __cplusplus
 	#ifndef RLUTIL_STRING_T
