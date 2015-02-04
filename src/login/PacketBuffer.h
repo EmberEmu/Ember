@@ -11,7 +11,6 @@
 #include <array>
 #include <cstdint>
 
-
 namespace ember {
 
 class PacketBuffer {
@@ -62,7 +61,7 @@ public:
 		return static_cast<T*>(data());
 	}
 
-	PacketBuffer operator=(const PacketBuffer& rhs) = delete;
+	PacketBuffer& operator=(const PacketBuffer& rhs) = delete;
 	PacketBuffer::PacketBuffer(const PacketBuffer& rhs) = delete;
 	PacketBuffer::PacketBuffer() = default;
 };
