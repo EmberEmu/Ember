@@ -43,7 +43,7 @@ std::tm current_time() {
 	std::tm time;
 	auto sys_time = sc::system_clock::to_time_t(sc::system_clock::now());
 
-#ifdef _MSC_VER
+#if _MSC_VER && !__INTEL_COMPILER
 	localtime_s(&time, &sys_time);
 #else
 	localtime_r(&sys_time, &time);
