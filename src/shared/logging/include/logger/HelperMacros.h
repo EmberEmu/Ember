@@ -60,3 +60,7 @@
 
 #define LOG_FLUSH ember::log::flush; }
 #define LOG_SYNC ember::log::flush_sync; }
+
+#if _MSC_VER && !__INTEL_COMPILER //todo, VS2013 workaorund, remove in VS2015, I hope
+	#define __func__ __FUNCTION__
+#endif
