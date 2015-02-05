@@ -30,6 +30,9 @@ class Authenticator {
 	const std::vector<GameVersion>& versions_;
 	std::unique_ptr<srp6::Server> auth_;
 	srp6::Generator gen_ = srp6::Generator::GROUP::_256_BIT;
+	srp6::SessionKey sess_key_;
+	Botan::SecureVector<Botan::byte> rcon_chall_;
+	std::string rcon_user_;
 
 	struct ChallengeResponse {
 		Botan::BigInt B;
@@ -53,11 +56,17 @@ public:
 	Authenticator(const Authenticator&) = delete;
 	Authenticator& operator=(const Authenticator&) = delete;
 
-	PATCH_STATE verify_client_version(const GameVersion& version);
-	ACCOUNT_STATUS check_account(const std::string& username);
 	ChallengeResponse challenge_reply();
 	LoginResult proof_check(protocol::ClientLoginProof* proof);
+
 	void set_logged_in(const std::string& ip);
+	PATCH_STATE verify_client_version(const GameVersion& version);
+	ACCOUNT_STATUS check_account(const std::string& username);
+
+	bool begin_reconnect(const std::string& username);
+	bool reconnect_proof_check(protocol::ClientReconnectProof* proof);
+	void set_reconnect_challenge(Botan::SecureVector<Botan::byte> bytes);
+	void set_session_key();
 };
 
 } //ember

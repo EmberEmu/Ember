@@ -7,8 +7,8 @@
  */
 
 #include "LoginHandler.h"
-#include <shared/memory/ASIOAllocator.h>
 #include <logger/Logging.h>
+#include <shared/memory/ASIOAllocator.h>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <vector>
@@ -89,6 +89,25 @@ void LoginHandler::send_server_challenge(PacketStream<Packet>& stream) {
 	stream << std::uint8_t(0); //unknown
 }
 
+void LoginHandler::handle_reconnect(bool key_found) {
+	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+
+	if(!key_found) { return; }
+
+	auto rand = Botan::AutoSeeded_RNG().random_vec(16);
+	auth_.set_reconnect_challenge(rand);
+
+	auto resp = std::make_shared<Packet>();
+	PacketStream<Packet> stream(*resp);
+
+	stream << protocol::SMSG_OPCODE::SMSG_RECONNECT_CHALLENGE;
+    stream << protocol::RESULT::SUCCESS;
+	stream << rand;
+	stream << std::uint64_t(0) << std::uint64_t(0);
+    
+	write(resp);
+}
+
 void LoginHandler::handle_login(Authenticator::ACCOUNT_STATUS status) {	
 	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
 
@@ -107,13 +126,13 @@ void LoginHandler::handle_login(Authenticator::ACCOUNT_STATUS status) {
 			}
 			break;
 		case ember::Authenticator::ACCOUNT_STATUS::NOT_FOUND:
-			//leaks information on whether or not the account exists (could send challenge anyway?)
-			stream << protocol::RESULT::FAIL_UNKNOWN_ACCOUNT;
+			//leaks information on whether the account exists (could send challenge anyway?)
 			LOG_DEBUG(logger_) << "Account not found: " << username_ << LOG_FLUSH;
+			stream << protocol::RESULT::FAIL_UNKNOWN_ACCOUNT;
 			break;
 		case ember::Authenticator::ACCOUNT_STATUS::DAL_ERROR:
-			stream << protocol::RESULT::FAIL_DB_BUSY;
 			LOG_ERROR(logger_) << "DAL failure while retrieving details for " << username_ << LOG_FLUSH;
+			stream << protocol::RESULT::FAIL_DB_BUSY;
 			break;
 		default:
 			LOG_FATAL(logger_) << "Unhandled account state" << LOG_SYNC;
@@ -127,6 +146,7 @@ void LoginHandler::process_login_challenge() {
 	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
 
 	auto packet = buffer_.data<protocol::ClientLoginChallenge>();
+	auto opcode = packet->header.opcode;
 
 	if(buffer_.size() < sizeof(protocol::ClientLoginChallenge)
 		|| packet->username + packet->username_len != buffer_.data<char>() + buffer_.size()) {
@@ -147,10 +167,15 @@ void LoginHandler::process_login_challenge() {
 
 	if(patch_level == Authenticator::PATCH_STATE::OK) {
 		auto self = shared_from_this();
-
-		tpool_.run([this, self]() {
-			auto status = auth_.check_account(username_);
-			service_.dispatch(std::bind(&ember::LoginHandler::handle_login, self, status));
+		
+		tpool_.run([this, self, opcode]() {
+			if(opcode == protocol::CMSG_OPCODE::CMSG_LOGIN_CHALLENGE) {
+				auto status = auth_.check_account(username_);
+				service_.dispatch(std::bind(&ember::LoginHandler::handle_login, self, status));
+			} else if(opcode == protocol::CMSG_OPCODE::CMSG_RECONNECT_CHALLENGE) {
+				auto reply = auth_.begin_reconnect(username_);
+				service_.dispatch(std::bind(&ember::LoginHandler::handle_reconnect, self, reply));
+			}
 		});
 	} else if(patch_level == Authenticator::PATCH_STATE::TOO_OLD) {
 		//patch
@@ -194,8 +219,34 @@ void LoginHandler::login_challenge_read() {
 		return;
 	}
 
-	//Packet should be fine by this point
+	//Packet should be complete by this point
 	process_login_challenge();
+}
+
+void LoginHandler::handle_reconnect_proof() {
+	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+
+	if(buffer_.size() != sizeof(protocol::ClientReconnectProof)) {
+		LOG_DEBUG(logger_) << "Malformed reconnect proof from " << username_ << LOG_FLUSH;
+		return;
+	}
+
+	auto packet = buffer_.data<protocol::ClientReconnectProof>();
+	
+	if(!auth_.reconnect_proof_check(packet)) {
+		LOG_DEBUG(logger_) << "Failed to reconnect " << username_ << LOG_FLUSH;
+		return;
+	} else {
+		LOG_DEBUG(logger_) << "Successfully reconnected " << username_ << LOG_FLUSH;
+	}
+	
+	std::shared_ptr<Packet> resp = std::make_shared<Packet>();
+	PacketStream<Packet> stream(*resp);
+	
+	stream << protocol::SMSG_OPCODE::SMSG_RECONNECT_PROOF;
+	stream << std::uint8_t(0) << std::uint16_t(0);
+
+	write(resp);
 }
 
 void LoginHandler::handle_login_proof() {
@@ -226,6 +277,7 @@ void LoginHandler::handle_login_proof() {
 		tpool_.run([this, self, resp, ip]() {
 			try {
 				auth_.set_logged_in(ip);
+				auth_.set_session_key();
 				service_.dispatch(std::bind(&ember::LoginHandler::write, self, resp));
 			} catch(std::exception& e) {
 				LOG_ERROR(logger_) << "Unable to create session for " << username_ << ": "
@@ -251,7 +303,7 @@ void LoginHandler::handle_packet() {
 			login_challenge_read();
 			break;
 		case protocol::CMSG_OPCODE::CMSG_RECONNECT_CHALLENGE:
-			LOG_DEBUG(logger_) << "Unhandled CMSG_RECONNECT_CHALLENGE" << LOG_FLUSH;
+			login_challenge_read();
 			break;
 		case protocol::CMSG_OPCODE::CMSG_LOGIN_PROOF:
 			if(buffer_.size() < sizeof(protocol::ClientLoginProof)) {
@@ -261,13 +313,20 @@ void LoginHandler::handle_packet() {
 			}
 			break;
 		case protocol::CMSG_OPCODE::CMSG_RECONNECT_PROOF:
-			LOG_DEBUG(logger_) << "Unhandled CMSG_RECONNECT_PROOF" << LOG_FLUSH;
+			if(buffer_.size() < sizeof(protocol::ClientReconnectProof)) {
+				read();
+			} else {
+				handle_reconnect_proof();
+			}
+			break;
 			break;
 		case protocol::CMSG_OPCODE::CMSG_REQUEST_REALM__LIST:
 			LOG_DEBUG(logger_) << "Unhandled CMSG_REQUEST_REALM_LIST" << LOG_FLUSH;
+			read();
 			break;
 		default:
-			LOG_DEBUG(logger_) << "Unhandled packet type" << LOG_FLUSH;
+			LOG_DEBUG(logger_) << "Unknown packet type with opcode "
+			                   << static_cast<int>(opcode) << LOG_FLUSH;
 			break;
 	}
 }

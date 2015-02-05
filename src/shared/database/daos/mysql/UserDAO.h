@@ -35,7 +35,6 @@ public:
 		                    "LEFT JOIN bans b ON u.id = b.user_id "
 		                    "LEFT JOIN suspensions s ON u.id = s.user_id "
 		                    "WHERE username = ?";
-	
 		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -63,6 +62,41 @@ public:
 		
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to set last login for " + user.username());
+		}
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	std::string session_key(const std::string& username) override final try {
+		auto conn = pool_.get_connection();
+		auto driver = pool_.get_driver();
+
+		std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
+		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+		stmt->setString(1, username);
+		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+		if(res->next()) {
+			return res->getString("key");
+		}
+
+		return "";
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	void session_key(const std::string& username, const std::string& key) override final try {
+		auto conn = pool_.get_connection();
+		auto driver = pool_.get_driver();
+
+		std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
+		                    "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
+		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+		stmt->setString(1, username);
+		stmt->setString(2, key);
+		
+		if(!stmt->executeUpdate()) {
+			throw exception("Unable to set session key for " + username);
 		}
 	} catch(std::exception& e) {
 		throw exception(e.what());

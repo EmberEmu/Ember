@@ -45,6 +45,8 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	void handle_login_proof();
 	void close(const boost::system::error_code& error);
 	void handle_login(Authenticator::ACCOUNT_STATUS status);
+	void handle_reconnect_proof();
+	void handle_reconnect(bool key_found);
 	void send_server_challenge(PacketStream<Packet>& resp);
 
 public:

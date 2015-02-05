@@ -10,7 +10,9 @@
 #include <srp6/Server.h>
 #include <srp6/Client.h>
 #include <shared/database/daos/UserDAO.h>
+#include <botan/sha160.h>
 #include <algorithm>
+#include <sstream>
 
 namespace ember {
 
@@ -58,13 +60,14 @@ auto Authenticator::proof_check(protocol::ClientLoginProof* proof) -> LoginResul
 	std::reverse(std::begin(proof->A), std::end(proof->A));
 	std::reverse(std::begin(proof->M1), std::end(proof->M1));
 
-	Botan::BigInt A(Botan::BigInt::decode(proof->A, sizeof(proof->A)));
-	Botan::BigInt M1(Botan::BigInt::decode(proof->M1, sizeof(proof->M1)));
+	Botan::BigInt A(proof->A, sizeof(proof->A));
+	Botan::BigInt M1(proof->M1, sizeof(proof->M1));
 	srp6::SessionKey key(auth_->session_key(A, true, srp6::COMPLIANCE::GAME));
 
 	Botan::BigInt B = auth_->public_ephemeral();
 	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
 	                                                 A, B, Botan::BigInt(user_->salt()));
+	sess_key_ = key;
 
 	auto res = protocol::RESULT::FAIL_INCORRECT_PASSWORD;
 	
@@ -87,6 +90,41 @@ auto Authenticator::proof_check(protocol::ClientLoginProof* proof) -> LoginResul
 
 void Authenticator::set_logged_in(const std::string& ip) {
 	users_.record_last_login(*user_, ip);
+}
+
+void Authenticator::set_session_key() {
+	Botan::BigInt key(Botan::BigInt::decode(sess_key_));
+	std::stringstream keystr; keystr << key;
+	users_.session_key(user_->username(), keystr.str());
+}
+
+void Authenticator::set_reconnect_challenge(Botan::SecureVector<Botan::byte> bytes) {
+	rcon_chall_ = bytes;
+}
+
+bool Authenticator::begin_reconnect(const std::string& username) try {
+	rcon_user_ = username;
+	Botan::BigInt recovered_key = Botan::BigInt(users_.session_key(username));
+	sess_key_ = Botan::BigInt::encode(recovered_key);
+	return !sess_key_.t.empty();
+} catch(std::exception& e) {
+	// <--------------------------------------------------------------------------------- LOGGER
+	return false;
+}
+
+
+bool Authenticator::reconnect_proof_check(protocol::ClientReconnectProof* proof) {
+	Botan::BigInt client_proof(proof->R1, sizeof(proof->R1));
+
+	Botan::SHA_160 hasher;
+	hasher.update(rcon_user_);
+	hasher.update(Botan::BigInt::encode(client_proof));
+	hasher.update(rcon_chall_);
+	hasher.update(sess_key_);
+	auto res = hasher.final();
+	
+	//todo - change this to include std::end for R2 once on VS2015 RTM (C++14)
+	return std::equal(res.begin(), res.end(), std::begin(proof->R2));
 }
 
 } //ember

@@ -84,6 +84,14 @@ struct ClientLoginChallenge {
 	char username[1];
 };
 
+struct ClientReconnectProof {
+	CMSG_OPCODE opcode;
+	std::uint8_t R1[16];
+	std::uint8_t R2[20];
+	std::uint8_t R3[20];
+	std::uint8_t key_count;
+};
+
 struct ServerLoginChallenge {
 	CMSG_OPCODE opcode;
 	RESULT error;
