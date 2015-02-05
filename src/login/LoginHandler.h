@@ -24,6 +24,9 @@
 namespace ember {
 
 class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
+	enum STATE { INITIAL, LOGIN_CHALLENGE, LOGIN_PROOF,
+	             RECONN_CHALLENGE, RECONN_PROOF, REQUEST_REALMS };
+
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service& service_;
 	boost::asio::strand strand_;
@@ -35,19 +38,20 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	ThreadPool& tpool_;
 	std::string username_;
 	protocol::CMSG_OPCODE state_;
-	bool new_session_ = true;
+	bool initial_ = true;
 
 	void read();
 	void write(std::shared_ptr<std::vector<char>> buffer);
-	void handle_packet();
-	void login_challenge_read();
-	void process_login_challenge();
-	void handle_login_proof();
 	void close(const boost::system::error_code& error);
-	void handle_login(Authenticator::ACCOUNT_STATUS status);
-	void handle_reconnect_proof();
-	void handle_reconnect(bool key_found);
-	void send_server_challenge(PacketStream<Packet>& resp);
+
+	void handle_packet();
+	void read_challenge();
+	void process_challenge();
+	void build_login_challenge(PacketStream<Packet>& resp);
+	void send_login_challenge(Authenticator::ACCOUNT_STATUS status);
+	void send_login_proof();
+	void send_reconnect_challenge(bool key_found);
+	void send_reconnect_proof();
 
 public:
 	LoginHandler(boost::asio::ip::tcp::socket socket, ASIOAllocator& allocator,

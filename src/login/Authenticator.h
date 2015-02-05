@@ -65,7 +65,7 @@ public:
 
 	bool begin_reconnect(const std::string& username);
 	bool reconnect_proof_check(protocol::ClientReconnectProof* proof);
-	void set_reconnect_challenge(Botan::SecureVector<Botan::byte> bytes);
+	void set_reconnect_challenge(const Botan::SecureVector<Botan::byte>& bytes);
 	void set_session_key();
 };
 

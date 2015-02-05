@@ -43,7 +43,7 @@ auto Authenticator::check_account(const std::string& username) -> ACCOUNT_STATUS
 
 	return ACCOUNT_STATUS::OK;
 } catch(std::exception& e) {
-	std::cout << e.what() << std::endl; //<------------------------------------------------------------------------------------------------------------------------------------------------------ LOGGER
+	std::cout << e.what() << std::endl; //todo LOGGER!
 	return ACCOUNT_STATUS::DAL_ERROR;
 }
 
@@ -98,7 +98,7 @@ void Authenticator::set_session_key() {
 	users_.session_key(user_->username(), keystr.str());
 }
 
-void Authenticator::set_reconnect_challenge(Botan::SecureVector<Botan::byte> bytes) {
+void Authenticator::set_reconnect_challenge(const Botan::SecureVector<Botan::byte>& bytes) {
 	rcon_chall_ = bytes;
 }
 
@@ -108,7 +108,7 @@ bool Authenticator::begin_reconnect(const std::string& username) try {
 	sess_key_ = Botan::BigInt::encode(recovered_key);
 	return !sess_key_.t.empty();
 } catch(std::exception& e) {
-	// <--------------------------------------------------------------------------------- LOGGER
+	//todo LOGGER!
 	return false;
 }
 
