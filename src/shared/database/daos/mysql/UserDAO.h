@@ -15,27 +15,26 @@
 #include <conpool/drivers/MySQLDriver.h>
 #include <cppconn/prepared_statement.h>
 #include <memory>
-#include <iostream>
 
 namespace ember { namespace dal { 
 
 template<typename T>
 class MySQLUserDAO : public UserDAO {
 	T& pool_;
+	drivers::MySQL* driver_;
 
 public:
-	MySQLUserDAO(T& pool) : pool_(pool) { }
+	MySQLUserDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	boost::optional<User> user(const std::string& username) override final try {
-		auto conn = pool_.get_connection();
-		auto driver = pool_.get_driver();
-
 		std::string query = "SELECT u.username, u.id, u.s, u.v, b.user_id as banned, "
 		                    "s.user_id as suspended FROM users u "
 		                    "LEFT JOIN bans b ON u.id = b.user_id "
 		                    "LEFT JOIN suspensions s ON u.id = s.user_id "
 		                    "WHERE username = ?";
-		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+
+		auto conn = pool_.get_connection();
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
@@ -51,12 +50,11 @@ public:
 	}
 
 	void record_last_login(const User& user, const std::string& ip) override final try {
-		auto conn = pool_.get_connection();
-		auto driver = pool_.get_driver();
-
 		std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
 		                    "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
-		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+
+		auto conn = pool_.get_connection();
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, user.username());
 		stmt->setString(2, ip);
 		
@@ -68,11 +66,10 @@ public:
 	}
 
 	std::string session_key(const std::string& username) override final try {
-		auto conn = pool_.get_connection();
-		auto driver = pool_.get_driver();
-
 		std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
-		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+
+		auto conn = pool_.get_connection();
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
@@ -86,12 +83,11 @@ public:
 	}
 
 	void session_key(const std::string& username, const std::string& key) override final try {
-		auto conn = pool_.get_connection();
-		auto driver = pool_.get_driver();
-
 		std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
 		                    "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
-		sql::PreparedStatement* stmt = driver->prepare_cached(*conn, query);
+
+		auto conn = pool_.get_connection();
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		stmt->setString(2, key);
 		
