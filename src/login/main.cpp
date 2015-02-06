@@ -24,6 +24,8 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/database/daos/IPBanDAO.h>
+#include <shared/IPBanCache.h>
 #include <botan/init.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
@@ -90,18 +92,22 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto port = args["network.port"].as<unsigned short>();
 	unsigned int concurrency = check_concurrency(logger);
 
-	ember::ASIOAllocator allocator;
-	const auto allowed_clients = client_versions();
+	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto user_dao = ember::dal::user_dao(pool);
+	auto ip_ban_dao = ember::dal::ip_ban_dao(pool);
+	auto ip_ban_cache = ember::IPBanCache<ember::dal::IPBanDAO>(*ip_ban_dao);
 
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 	ember::ThreadPool tpool(concurrency);
+
+	const auto allowed_clients = client_versions();
+	ember::ASIOAllocator allocator;
 
 	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao, tpool);
 	ba::io_service service(concurrency);
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, logger,
+	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, ip_ban_cache, logger,
 		std::bind(&ember::LoginHandlerBuilder::create, &builder, std::placeholders::_1));
 
 	ba::signal_set signals(service, SIGINT, SIGTERM);

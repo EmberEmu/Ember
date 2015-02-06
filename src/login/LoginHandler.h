@@ -35,7 +35,7 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	log::Logger* logger_;
 	PacketBuffer buffer_;
 	Authenticator auth_;
-	ThreadPool& tpool_;
+	ThreadPool& async_;
 	std::string username_;
 	protocol::CMSG_OPCODE state_;
 	bool initial_ = true;
@@ -58,7 +58,7 @@ public:
 	             Authenticator auth, ThreadPool& pool, log::Logger* logger)
 	             : socket_(std::move(socket)), allocator_(allocator), logger_(logger),
 	               timer_(socket_.get_io_service()), strand_(socket_.get_io_service()),
-	               auth_(std::move(auth)), tpool_(pool), service_(socket_.get_io_service()) { }
+	               auth_(std::move(auth)), async_(pool), service_(socket_.get_io_service()) { }
 
 	void start();
 };

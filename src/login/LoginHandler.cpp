@@ -163,7 +163,7 @@ void LoginHandler::process_challenge() {
 	if(patch_level == Authenticator::PATCH_STATE::OK) {
 		auto self = shared_from_this();
 		
-		tpool_.run([this, self, opcode]() {
+		async_.run([this, self, opcode]() {
 			if(opcode == protocol::CMSG_OPCODE::CMSG_LOGIN_CHALLENGE) {
 				auto status = auth_.check_account(username_);
 				service_.dispatch(std::bind(&ember::LoginHandler::send_login_challenge, self, status));
@@ -271,7 +271,6 @@ void LoginHandler::send_login_proof() {
 	stream << result.first;
 
 	if(result.first == protocol::RESULT::SUCCESS) {
-		LOG_DEBUG(logger_) << username_ << " successfully authenticated" << LOG_FLUSH;
 		Botan::SecureVector<Botan::byte> m2 = Botan::BigInt::encode_1363(result.second, 20);
 		std::reverse(m2.begin(), m2.end());
 		stream << m2 << std::uint32_t(0); //proof << account flags
@@ -279,12 +278,13 @@ void LoginHandler::send_login_proof() {
 		auto self = shared_from_this();
 		std::string ip = socket_.remote_endpoint().address().to_string();
 
-		tpool_.run([this, self, resp, ip]() {
+		async_.run([this, self, resp, ip]() {
 			try {
 				auth_.set_logged_in(ip);
 				auth_.set_session_key();
 				state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM__LIST;
 				service_.dispatch(std::bind(&ember::LoginHandler::write, self, resp));
+				LOG_DEBUG(logger_) << username_ << " successfully authenticated" << LOG_FLUSH;
 			} catch(std::exception& e) {
 				LOG_ERROR(logger_) << "Unable to create session for " << username_ << ": "
 				                   << e.what() << LOG_FLUSH;

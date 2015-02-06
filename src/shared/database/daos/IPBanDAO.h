@@ -12,4 +12,4 @@
 	#include <shared/database/daos/mysql/IPBanDAO.h>
 #elif DB_POSTGRESQL
  	#include <shared/database/daos/postgresql/IPBanDAO.h>
-#else
+#endif

@@ -11,6 +11,8 @@ set(EXECUTABLE_HDR
     ../shared/TCPServer.h
     ../shared/memory/ASIOAllocator.h
     ../shared/database/daos/UserDAO.h
+    ../shared/database/daos/IPBanDAO.h
+    ../shared/IPBanCache.h
     ../shared/misc/PacketStream.h
     ../shared/threading/ThreadPool.h
     LoginHandler.h

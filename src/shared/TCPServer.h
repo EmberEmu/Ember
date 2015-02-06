@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/Logging.h>
+#include <shared/IPBanCache.h>
 #include <boost/asio.hpp>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
@@ -25,37 +26,42 @@ class TCPServer {
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::io_service& service_;
 	log::Logger* logger_; 
+	IPBanCache<dal::IPBanDAO>& ban_list_;
 	Create create_;
 
 	void accept_connection() {
 		acceptor_.async_accept(socket_,
 			[this](boost::system::error_code error) {
-				if(!error) {
-					LOG_DEBUG(logger_) << "Accepted connection "
-					                   << socket_.remote_endpoint().address().to_string()
+				if(error) {
+					return;
+				}
+				
+				if(!ban_list_.is_banned(socket_.remote_endpoint().address())) {
+					LOG_DEBUG(logger_) << "Accepted connection " << socket_.remote_endpoint().address().to_string()
 					                   << ":" << socket_.remote_endpoint().port() << LOG_FLUSH;
 					create_(std::move(socket_))->start();
+					accept_connection();
+				} else {
+					LOG_DEBUG(logger_) << "Rejected connection from banned IP range" << LOG_FLUSH;
 				}
-
-				accept_connection();
 			}
 		);
 	}
 
 public:
-	TCPServer(boost::asio::io_service& service, unsigned short port, log::Logger* logger,
-	          Create create)
+	TCPServer(boost::asio::io_service& service, unsigned short port, IPBanCache<dal::IPBanDAO>& bans,
+	          log::Logger* logger, Create create)
 	    	  : acceptor_(service, bai::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-	            socket_(service), service_(service), logger_(logger) {
+	            socket_(service), service_(service), logger_(logger), ban_list_(bans) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 		accept_connection();
 	}
 
 	TCPServer(boost::asio::io_service& service, unsigned short port, std::string interface,
-	          log::Logger* logger, Create create)
+	          IPBanCache<dal::IPBanDAO>& bans, log::Logger* logger, Create create)
 	          : acceptor_(service,
 	            boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(interface), port)),
-	            service_(service), socket_(service), logger_(logger), create_(create) {
+	            service_(service), socket_(service), logger_(logger), create_(create), ban_list_(bans) {
 		accept_connection();
 	}
 };
