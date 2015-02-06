@@ -12,8 +12,8 @@ set(EXECUTABLE_SRC
 	Field.h
 	Exception.h
 	Definition.h
-	#Validator.h
-	#Validator.cpp
+	Validator.h
+	Validator.cpp
 	#Generator.h
 	#Generator.cpp
 	TypeUtils.cpp

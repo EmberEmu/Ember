@@ -17,32 +17,34 @@
 namespace ember { namespace dbc {
 
 //todo, temporary home
-std::hash_set<std::string> dbc_types {
-	"int32", "uint32", "int16", "uint16", "int8", "uint8", "bool", "bool32",
-	"enum32", "enumu32", "string_ref", "string_ref_loc", "float", "double",
-	"enum8", "enumu8"
+std::map<std::string, std::pair<std::string, bool>> type_map {
+		 //type              //real type         //valid enum type?
+		{ "int8",           { "std::int8_t",     true  }},
+		{ "uint8",          { "std::uint8_t",    true  }},
+		{ "int16",          { "std::int16_t",    true  }},
+		{ "uint16",         { "std::uint16_t",   true  }},
+		{ "int32",          { "std::int32_t",    true  }},
+		{ "uint32",         { "std::uint32_t",   true  }},
+		{ "bool",           { "bool",            false }},
+		{ "bool32",         { "std::uint32_t",   false }},
+		{ "string_ref",     { "std::string",     false }},
+		{ "string_ref_loc", { "std::string",     false }},
+		{ "float",          { "float",           false }},
+		{ "double",         { "double",          false }}
 };
 
-//todo, temporary home
-std::map<std::string, std::string> type_map {
-		{ "int8", "std::int8_t" },
-		{ "uint8", "std::uint8_t" },
-		{ "int16", "std::int16_t" },
-		{ "uint16", "std::oint16_t" },
-		{ "int32", "std::int32_t" },
-		{ "uint32", "std::uint32_t" },
-		{ "bool", "bool" },
-		{ "bool32", "std::uint32_t" },
-		{ "enum8", "std::int8_t" },
-		{ "enumu8", "std::uint8_t" },
-		{ "enum16", "std::int16_t" },
-		{ "enumu16", "std::uint16_t" },
-		{ "enum32", "std::int32_t" },
-		{ "enumu32", "std::uint32_t" },
-		{ "string_ref", "std::string" },
-		{ "string_ref_loc", "std::string" },
-		{ "float", "float" },
-		{ "double", "double" },
+std::hash_set<std::string> cpp_keywords {
+	"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor"
+	"bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
+	"compl", "const", "constexpr", "const_cast", "continue", "decltype", "default",
+	"delete", "do", "double", "dynamic_cast", "else", "enum", "explicit", "export",
+	"extern", "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
+	"mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator",
+	"or", "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
+	"return", "short", "signed", "sizeof", "static", "static_assert", "static_cast",
+	"struct", "switch", "template", "this", "thread_local", "throw", "true", "try",
+	"typedef", "typeid", "typename", "union", "unsigned", "using", "virtual", "void",
+	"volatile", "wchar_t", "while", "xor", "xor_eq"
 };
 
 /* 

@@ -7,18 +7,16 @@
  */
 
 #include "Parser.h"
-//#include "Validator.h"
-#include "Field.h"
+#include "Validator.h"
 #include <rapidxml_utils.hpp>
-#include <iostream>
 
 namespace rxml = rapidxml;
 
 namespace ember { namespace dbc {
 
-void Parser::parse_field_key(std::vector<types::Key>& keys, rxml::xml_node<>* property) {
-	auto attr = property->first_attribute("ignore-type-mismatch");
+types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 	types::Key key;
+	auto attr = property->first_attribute("ignore-type-mismatch");
 
 	if(attr) {
 		if(strcmp(attr->value(), "true") == 0 || strcmp(attr->value(), "1") == 0) {
@@ -31,7 +29,7 @@ void Parser::parse_field_key(std::vector<types::Key>& keys, rxml::xml_node<>* pr
 
 	for(rxml::xml_node<>* node = property->first_node(); node != 0; node = node->next_sibling()) {
 		if(strcmp(node->name(), "type") == 0) {
-			key.underlying_type = node->value();
+			key.type = node->value();
 		} else if(strcmp(node->name(), "parent") == 0) {
 			key.parent = node->value();
 		} else {
@@ -39,7 +37,7 @@ void Parser::parse_field_key(std::vector<types::Key>& keys, rxml::xml_node<>* pr
 		}
 	}
 
-	keys.emplace_back(key);
+	return key;
 }
 
 void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>& key,
@@ -121,7 +119,7 @@ void Parser::parse_field_node(types::Field& field, UniqueCheck& check,
 		assign_unique(field.underlying_type, check.type, node);
 		return;
 	} else if(strcmp(node->name(), "key") == 0) {
-		parse_field_key(field.keys, node);
+		field.keys.emplace_back(parse_field_key(node));
 		return;
 	}
 
@@ -171,7 +169,7 @@ types::Enum Parser::parse_enum(rxml::xml_node<>* root) {
 }
 
 types::Struct Parser::parse_struct(rxml::xml_node<>* root, int depth) {
-	if(depth > 1) {
+	if(depth > MAX_PARSE_DEPTH) {
 		throw exception("Struct nesting is too deep");
 	}
 
@@ -190,7 +188,9 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, int depth) {
 				std::make_unique<types::Struct>(parse_struct(node->first_node(), depth + 1))
 			);
 		} else if(strcmp(node->name(), "enum") == 0) {
-			parse_enum(node->first_node());
+			parsed.children.emplace_back(
+				std::make_unique<types::Enum>(parse_enum(node->first_node()))
+			);
 		} else {
 			parse_struct_node(parsed, check, node);
 		}
@@ -256,8 +256,8 @@ std::vector<types::Definition> Parser::parse(const std::vector<std::string>& pat
 		}
 	}
 
-	//Validator validator(defs);
-	//validator.validate();
+	Validator validator(defs);
+	validator.validate();
 
 	return defs;
 }

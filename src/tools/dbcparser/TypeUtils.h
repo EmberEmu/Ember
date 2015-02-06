@@ -11,8 +11,8 @@
 #include <boost/optional.hpp>
 #include <utility>
 #include <string>
-#include <hash_set>
 #include <map>
+#include <hash_set>
 
 namespace ember { namespace dbc {
 
@@ -21,7 +21,7 @@ typedef std::pair<std::string, boost::optional<int>> TypeComponents;
 TypeComponents extract_components(const std::string& type);
 std::string pascal_to_underscore(std::string name);
 
-extern std::hash_set<std::string> types;
-extern std::map<std::string, std::string> type_map;
+extern std::map<std::string, std::pair<std::string, bool>> type_map;
+extern std::hash_set<std::string> cpp_keywords;
 
 }} //dbc, ember

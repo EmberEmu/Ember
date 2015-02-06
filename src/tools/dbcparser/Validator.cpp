@@ -7,73 +7,55 @@
  */
 
 #include "Validator.h"
-#include "Definition.h"
-#include "Field.h"
-#include "Keywords.h"
-#include "Types.h"
 #include "TypeUtils.h"
-#include <regex>
+#include <limits>
+#include <typeinfo>
+#include <cstdint>
+#include <iostream>
 
 namespace ember { namespace dbc {
 
-struct NameTester {
-	NameTester() : regex_("^[A-Za-z_][A-Za-z_0-9]*$") { }
-
-	void operator()(const std::string& name) const {
-		if(cpp_keywords.find(name) != cpp_keywords.end()) {
-			throw exception(name + " is a reserved word and cannot be used as an identifier");
-		}
-
-		if(!std::regex_match(name, regex_)) {
-			throw exception(name + " is not a valid C++ identifier");
-		}
-	}
-
-private:
-	const std::regex regex_;
-};
-
-boost::optional<const Field*> Validator::locate_fk_parent(const std::string& parent) {
-	for(auto& def : definitions_) {
-		if(def->dbc_name != parent) { //!= for the sake of one less layer of nesting
+boost::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
+	/*for(auto& def : definitions_) {
+		if(def-> != parent) { //!= for the sake of one less layer of nesting
 			continue;
 		}
 
 		for(auto& field : def->fields) {
 			for(auto& key : field.keys) {
 				if(key.type == "primary") {
-					return boost::optional<const Field*>(&field);
+					return boost::optional<const types::Field*>(&field);
 				}
 			}
 		}
-	}
+	}*/
 
-	return boost::optional<const Field*>();
+	return boost::optional<const types::Field*>();
 }
 
-void Validator::check_foreign_keys(const Field& field) {
+void Validator::check_foreign_keys(const types::Field& field) {
 	for(auto& key : field.keys) {
 		if(key.type == "foreign") {
-			boost::optional<const Field*> pk = locate_fk_parent(key.parent);
-			auto components(extract_components(field.type));
+			boost::optional<const types::Field*> pk = locate_fk_parent(key.parent);
+			auto components(extract_components(field.underlying_type));
 
 			if(!pk) {
 				throw exception(field.name + " references a primary key in "
 				                + key.parent + " that does not exist");
 			}
 
-			if(!key.ignore_type_mismatch && (*pk)->type != components.first) {
+			if(!key.ignore_type_mismatch && (*pk)->underlying_type != components.first) {
 				throw exception(":" + field.name + " => "+ key.parent +
 				                " types do not match. Expected " + components.first +
-				                ", found " + pk.get()->type);
+				                ", found " + pk.get()->underlying_type);
 			}
 		}
 	}
 }
 
-void Validator::check_naming_conventions(const Definition* def,
+void Validator::check_naming_conventions(const types::Definition* def,
                                          const NameTester& check) try {
-		check(def->dbc_name);
+		/*check(def->dbc_name);
 
 		if(!def->alias.empty()) {
 			check(def->alias);
@@ -81,14 +63,14 @@ void Validator::check_naming_conventions(const Definition* def,
 
 		for(auto& field : def->fields) {
 			check(field.name);
-		}
+		}*/
 } catch(std::exception& e) {
-	throw exception(def->dbc_name + ": " + e.what());
+	//throw exception(def->dbc_name + ": " + e.what());
 }
 
-void Validator::check_multiple_definitions(const Definition* def,
+void Validator::check_multiple_definitions(const types::Definition* def,
                                            std::vector<std::string>& names) {
-	if(std::find(names.begin(), names.end(), def->dbc_name) == names.end()) {
+	/*if(std::find(names.begin(), names.end(), def->dbc_name) == names.end()) {
 		names.emplace_back(def->dbc_name);
 
 		if(!def->alias.empty()) {
@@ -106,10 +88,10 @@ void Validator::check_multiple_definitions(const Definition* def,
 		} else {
 			throw exception("Multiple definitions of " + field.name);
 		}
-	}
+	}*/
 }
 
-void Validator::check_key_types(const Field& field) {
+void Validator::check_key_types(const types::Field& field) {
 	for(auto& key : field.keys) {
 		if(key.type != "primary" && key.type != "foreign") {
 			throw exception(key.type + " is not a valid key type" + " for " + field.name);
@@ -121,20 +103,10 @@ void Validator::check_key_types(const Field& field) {
 	}
 }
 
-void Validator::check_types(const Definition* def) {
-	for(auto& field : def->fields) {
-		auto components = extract_components(field.type);
-
-		if(types.find(components.first) == types.end()) {
-			throw exception(components.first + " is not a recognised type");
-		}
-	}
-}
-
-void Validator::check_dup_key_types(const Definition* def) {
+void Validator::check_dup_key_types(const types::Struct& def) {
 	bool has_primary = false;
 
-	for(auto& field : def->fields) {
+	for(auto& field : def.fields) {
 		bool has_foreign = false;
 
 		for(auto& key : field.keys) {
@@ -142,6 +114,7 @@ void Validator::check_dup_key_types(const Definition* def) {
 				if(has_primary) {
 					throw exception(field.name + " - cannot have multiple primary keys");
 				}
+
 				has_primary = true;
 			}
 
@@ -149,29 +122,231 @@ void Validator::check_dup_key_types(const Definition* def) {
 				if(has_foreign) {
 					throw exception(field.name + " - cannot have multiple foreign keys in a single field");
 				}
+
 				has_foreign = true;
 			}
 		}
 	}
 }
 
-void Validator::validate() {
-	NameTester tester;
-	std::vector<std::string> names;
+void Validator::add_user_type(TreeNode<std::string>& node, std::string type) {
+	if(std::find_if(node.children.begin(), node.children.end(),
+		[&type](TreeNode<std::string>& i) {
+			return i.t == type;  
+		}) != node.children.end()) {
+		throw exception("Multiple definitions of user-defined type: " + type); 
+	}
 
-	for(auto& def : definitions_) {
-		try { //msvc can't handle try/catch blocks inside range-for without nesting
-			check_types(def);
-			check_multiple_definitions(def, names);
-			check_naming_conventions(def, tester);
-			check_dup_key_types(def);
+	node.t = type;
+}
+
+void Validator::map_struct_types(TreeNode<std::string>& parent, const types::Struct& def) {	
+	tester_(def.name);
+	add_user_type(parent, def.name);
+
+	for(auto& child : def.children) {
+		TreeNode<std::string> node;
+
+		switch(child->type) {
+			case types::STRUCT:
+				map_struct_types(node, static_cast<types::Struct&>(*child));
+				break;
+			case types::ENUM:
+				add_user_type(node, static_cast<types::Enum&>(*child).name);
+				break;
+			default:
+				throw exception("Unhandled type");
+		}
+
+		parent.children.emplace_back(node);
+	}	
+}
+
+void Validator::recursive_type_parse(TreeNode<std::string>& parent, const types::Base& def) {
+	switch(def.type) {
+		case types::STRUCT:
+			map_struct_types(parent, static_cast<const types::Struct&>(def));
+			break;
+		case types::ENUM:
+			add_user_type(parent, def.name);
+			break;
+		default:
+			throw exception("Unhandled type");
+	}
+}
+
+void Validator::build_type_tree() {
+	for(auto& defs : definitions_) {
+		for(auto& def : *defs) {
+			TreeNode<std::string> node;
+			recursive_type_parse(node, *def);
+			types_.emplace_back(node);
+		}
+	}
+}
+
+void Validator::check_field_types(const types::Struct& def, const TreeNode<std::string>& types) {
+	for(auto& field : def.fields) {
+		auto components = extract_components(field.underlying_type);
+
+		if(type_map.find(components.first) != type_map.end()) {
+			return;
+		}
+
+		if(std::find_if(types.children.begin(), types.children.end(),
+			[&components](const TreeNode<std::string>& i) {
+			std::cout << "Found " << i.t << " looking for " << components.first << std::endl;
+				return i.t == components.first;
+			}) != types.children.end()) {
+			return;
+		}
 			
-			for(auto& field : def->fields) {
-				check_key_types(field);
-				check_foreign_keys(field);
+		throw exception(components.first + " is not a recognised type");
+	}
+}
+
+const TreeNode<std::string>& Validator::locate_type_node(const std::string& name,
+                                                   const TreeNode<std::string>& node) {
+	auto it = std::find_if(node.children.begin(), node.children.end(),
+		[&name](const TreeNode<std::string>& i) {
+			return i.t == name;
+		});
+
+	if(it == node.children.end()) {
+		throw exception("Unable to locate type in hierarchy: " + name);
+	}
+
+	return (*it);
+}
+
+void Validator::validate_struct(const types::Struct& def, const TreeNode<std::string>& types) {
+	check_dup_key_types(def);
+	check_field_types(def, types);
+	/*check_multiple_definitions(def, names);
+	check_naming_conventions(def, tester);*/
+
+	auto node = locate_type_node(def.name, types);
+
+	for(auto& field : def.fields) {
+		//check_key_types(field);
+		//check_foreign_keys(field);
+	}
+
+	for(auto& child : def.children) {
+
+		switch(child->type) {
+			case types::STRUCT:
+				validate_struct(static_cast<const types::Struct&>(*child), node);
+				break;
+			case types::ENUM:
+				validate_enum(static_cast<const types::Enum&>(*child));
+				break;
+			default:
+				throw exception("Unhandled type");
+				break;
+		}
+	}
+}
+
+template<typename T>
+void Validator::range_check(long long value) {
+	if(value < std::numeric_limits<T>::lowest() || value > std::numeric_limits<T>::max()) {
+		throw exception("Enum option value is out of bounds: " + std::to_string(value)
+		                 + " is not within the range of " + typeid(T).name());
+	}
+}
+
+void Validator::validate_enum_option_value(const std::string& type, const std::string& value) {
+	int base = value.find("0x") == std::string::npos? 10 : 16;
+	std::string set = base == 10? "0123456789" : "0123456789ABCDEFx";
+
+	if(value.find_first_not_of(set) != std::string::npos) {
+		throw exception(value + " is not a valid enum option value");
+	}
+	
+	long long parsed = std::stoll(value, 0, base);
+	
+	if(type == "int8") {
+		range_check<std::int8_t>(parsed);
+	} else if(type == "uint8") {
+		range_check<std::uint8_t>(parsed);
+	} else if(type == "int16") {
+		range_check<std::int16_t>(parsed);
+	} else if(type == "uint16") {
+		range_check<std::uint16_t>(parsed);
+	} else if(type == "int32") {
+		range_check<std::int32_t>(parsed);
+	} else if(type == "uint32") {
+		range_check<std::uint32_t>(parsed);
+	} else {
+		throw exception("Unhandled underlying enum type: " + type);
+	}
+}
+
+void Validator::validate_enum_options(const types::Enum& def) {
+	std::map<std::string, std::string> options;
+	
+	for(auto& option : def.options) {
+		validate_enum_option_value(def.underlying_type, option.second);
+
+		if(options.find(option.first) != options.end()) {
+			throw exception("Multiple definitions of " + option.first + " in " + def.name);
+		}
+
+		if(std::find_if(options.begin(), options.end(),
+			[option](std::pair<std::string, std::string> i) {
+				return i.second == option.second;
+		}) != options.end()) {
+			throw exception("Duplicate index found for " + option.first + " in " + def.name
+			                + ": " + option.second);
+		}
+
+		options[option.first] = option.second;
+	}
+}
+
+void Validator::validate_enum(const types::Enum& def) {
+	validate_enum_options(def);
+}
+
+void Validator::validate_definition(const types::Base& def) {
+	auto node = locate_type_node(def.name, types_[0]);
+
+	switch(def.type) {
+		case types::STRUCT:
+			validate_struct(static_cast<const types::Struct&>(def), node);
+			break;
+		case types::ENUM:
+			validate_enum(static_cast<const types::Enum&>(def));
+			break;
+		default:
+			throw exception("Unhandled type");
+			break;
+	}
+}
+
+void Validator::print_type_tree(const TreeNode<std::string>& types, int depth) {
+	std::cout << std::string(depth * 2, '-') << types.t << std::endl;
+
+	for(auto& children : types.children) {
+		print_type_tree(children, depth + 1);
+	}
+}
+
+void Validator::validate() {
+	build_type_tree();
+
+	for(auto& i : types_) {
+		print_type_tree(i);
+	}
+
+	for(auto& defs : definitions_) {
+		for(auto& def : *defs) {
+			try { //msvc can't handle try/catch blocks inside range-for without nesting
+				validate_definition(*def);
+			} catch(std::exception& e) {
+				throw exception(def->name + ": " + e.what());
 			}
-		} catch(std::exception& e) {
-			throw exception(def->dbc_name + ": " + e.what());
 		}
 	}
 }

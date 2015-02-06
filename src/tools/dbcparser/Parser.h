@@ -9,7 +9,6 @@
 #pragma once
 
 #include "Exception.h"
-#include "Field.h"
 #include "Types.h"
 #include <rapidxml.hpp>
 #include <string>
@@ -18,11 +17,10 @@
 namespace ember { namespace dbc {
 
 class Parser {
+	static const int MAX_PARSE_DEPTH = 3; //todo - ctor?
+
 	struct UniqueCheck {
-		bool type;
-		bool name;
-		bool alias;
-		bool options;
+		bool type, name, alias, options;
 	};
 
  	types::Definition parse_file(const std::string& path);
@@ -33,7 +31,7 @@ class Parser {
 	
 	types::Field parse_field(rapidxml::xml_node<>* root);
 	void parse_field_node(types::Field& field, UniqueCheck& check, rapidxml::xml_node<>* node);
-	void parse_field_key(std::vector<types::Key>& keys, rapidxml::xml_node<>* node);
+	types::Key parse_field_key(rapidxml::xml_node<>* node);
 
 	types::Enum parse_enum(rapidxml::xml_node<>* root);
 	void parse_enum_node(types::Enum& structure, UniqueCheck& check, rapidxml::xml_node<>* node);

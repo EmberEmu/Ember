@@ -136,9 +136,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 			"Path to the DBC XML definitions")
 		("output,o", po::value<std::string>()->default_value("output"),
 			"Directory to save output to")
-		("disk",  po::bool_switch(),
+		("disk", po::bool_switch(),
 			"Generate files required for loading DBC data from disk")
-		("database",po::value<std::string>(),
+		("database", po::value<std::string>(),
 			"Generate files required for loading DBC data from the database specified in the argument")
 		("print-dbcs", po::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")

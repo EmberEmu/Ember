@@ -23,7 +23,7 @@ enum Types {
 typedef std::vector<std::unique_ptr<Base>> Definition;
 
 struct Key {
-	std::string underlying_type;
+	std::string type;
 	std::string parent;
 	bool ignore_type_mismatch;
 };
@@ -36,6 +36,7 @@ struct Field {
 };
 
 struct Base {
+	Base(Types type_) : type(type_) {}
 	Types type;
 	std::string name;
 	std::string alias;
@@ -43,18 +44,33 @@ struct Base {
 };
 
 struct Enum : Base {
+	Enum() : Base(ENUM) {}
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
 };
 
 struct Struct : Base {
+	Struct() : Base(STRUCT) {}
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
 
-	/* for msvc again */
-	Struct() = default;
-	Struct(Struct&& src) {
-		this->children = std::move(src.children);
+	/* for msvc again - todo, remove in VS2015 */
+	void move_op(Struct& src) {
+		children = std::move(src.children);
+		alias = std::move(src.alias);
+		comment = std::move(src.comment);
+		fields = std::move(src.fields);
+		name = std::move(src.name);
+		type = src.type;
+	}
+
+	Struct(Struct&& src) : Base(STRUCT) {
+		move_op(src);
+	}
+
+	Struct& operator=(Struct&& src) {
+		move_op(src);
+		return *this;
 	}
 };
 

@@ -8,11 +8,14 @@
 
 #pragma once
 
-#include <string>
-#include <hash_set>
+#include <vector>
 
 namespace ember { namespace dbc {
 
+template<typename T>
+struct TreeNode {
+	T t;
+	std::vector<TreeNode> children;
+};
 
-
-}} //dbc, ember
+}}; //dbc, ember
