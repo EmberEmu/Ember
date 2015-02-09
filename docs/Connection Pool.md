@@ -149,3 +149,20 @@ If there are connections checked out when the pool's destructor is called, it wi
 auto connection = pool->get_connection();
 pool->reset(); // (delete, out of scope before connection, etc) assertion!
 ```
+
+# Logging
+To enable the pool's logging capabilities, provide it with a callback with the following signature:
+```cpp
+void(ember::connection_pool::SEVERITY, std::string message);
+```
+
+For example, as taken from Ember's codebase:
+```cpp
+//Registering the callback
+pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
+
+//The actual function
+void pool_log_callback(ep::SEVERITY severity, const std::string& message, el::Logger* logger) {
+    //handle message
+}
+```
