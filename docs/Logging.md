@@ -23,7 +23,7 @@ That's all there is to it.
 # Sinks
 In order to actually send anything to the logger, sinks must be created and assigned to the logger object. Sinks simply provide an output for the logging messages.
 
-Ember provides three sinks; console, file and remote (syslog). Each sinks requires different arguments in order to construct it.
+Ember provides three sinks; console, file and remote (syslog). Each sink requires different arguments in order to construct it.
 
 ### Console Sink
 To create a console sink, simply do:
@@ -33,7 +33,7 @@ To create a console sink, simply do:
 auto sink = std::make_unique<el::ConsoleSink>(el::SEVERITY::INFO);
 ```
 
-Other than setting the severity, the console sink offers no additional options.
+Other than setting the severity, the console sink offers no options.
 
 ### File Sink
 The file sink requires three arguments; severity, filename to write the logs to and a mode that indicates, in cases where the file already exists, whether to create a new file for logging or to append to an existing file. If instructed to create a new file, it will rename the existing file, not overwrite it.
@@ -57,7 +57,7 @@ sink->midnight_rotate(true); // whether to rotate the file at midnight
 ```
 
 ### Remote Sink
-The remote sink implements the UDP-based syslog protocol to allow log messages to be sent to remote messages. This could be useful when used in conjunction with third-party remote log viewers; for example, setting up email/text-message notifications if an error is encountered.
+The remote sink implements the UDP-based syslog protocol to allow log messages to be sent to remote machines. This could be useful when used in conjunction with third-party remote log viewers; for example, setting up email/text-message notifications if an error is encountered.
 
 The remote sink requires five arguments; severity, the host to send the logs to, the remote port, facility and service name. 
 
@@ -104,10 +104,10 @@ LOG_WARN_GLOB << "Hello, world! This is the global logger!" << LOG_ASYNC;
 ```
 
 # Performance Notes
-* When the message queue hit a certain size, the logger will begin writing log entries in batches rather than individually. This does not apply to the remote sink.
+* When the message queue hits a certain size, the logger will begin writing log entries in batches rather than individually. This does not apply to the remote sink.
 * File entries are written in binary mode rather than ASCII. This means that newline characters will not be converted to \r\n on Windows but this should not pose a problem for most text viewers.
 * The logger can only log as fast as its slowest sink, with the slowest sink being console output and the fastest being the file sink. This shouldn't be an issue unless you're doing a copious amount of logging (e.g. writing every packet on a busy realm, for some reason).
-* The LOG_SEVERITY macros will prevent any evaluation taking place if none of the registered sinks are interested in receiving messages of the specified severity. This means it's okay to have expensive function calls inside logging statements as they won't be evaluated unless needed.
+* The LOG_SEVERITY macros will prevent any evaluation taking place if none of the registered sinks are interested in receiving messages of the specified severity. This means it's okay to have expensive function calls inside logging statements as they won't be evaluated unless needed. The overhead of a log message that doesn't need to be sent to any sinks is a single integer comparison (regardless of number of sinks).
 * Formatting timestamps for file entries will significantly decrease throughput.
 * For maximum performance, use only a file sink with timestamp and severity logging disabled. In testing, this allowed logging at a rate that appeared to be limited by the throughput of the SSD being used to save the entries to.
 
