@@ -243,7 +243,7 @@ std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::SEVE
 
 	auto file_sink = std::make_unique<el::FileSink>(severity, path, mode);
 	file_sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
-	file_sink->log_severity(args["file_log.log_timestamp"].as<bool>());
+	file_sink->log_severity(args["file_log.log_severity"].as<bool>());
 	file_sink->log_date(args["file_log.log_timestamp"].as<bool>());
 	file_sink->time_format(args["file_log.timestamp_format"].as<std::string>());
 	file_sink->midnight_rotate(args["file_log.midnight_rotate"].as<bool>());
