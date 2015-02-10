@@ -14,7 +14,7 @@
 #include "Severity.h"
 #include "Logger.h"
 #include "concurrentqueue.h"
-#include "Semaphore.h"
+#include "../../threading/Semaphore.h"
 #include <string>
 #include <vector>
 #include <memory>

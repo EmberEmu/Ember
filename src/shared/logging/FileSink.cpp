@@ -151,7 +151,6 @@ void FileSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<cha
 		return;
 	}
 
-
 	std::vector<char> buffer;
 	buffer.reserve(size + (20 * records.size()));
 

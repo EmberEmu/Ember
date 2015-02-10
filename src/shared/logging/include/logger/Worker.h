@@ -10,8 +10,8 @@
 
 #include "Sink.h"
 #include "concurrentqueue.h"
-#include "Semaphore.h"
 #include "Logger.h"
+#include "../../threading/Semaphore.h"
 #include <vector>
 #include <mutex>
 #include <thread>
