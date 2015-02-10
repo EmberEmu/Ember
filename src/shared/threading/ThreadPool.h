@@ -22,9 +22,11 @@ namespace ember {
 #undef ERROR 
 
 class ThreadPool {
+public:
 	enum class SEVERITY { DEBUG, INFO, ERROR, FATAL };
 	typedef std::function<void(SEVERITY, std::string)> LogCallback;
 
+private:
 	boost::asio::io_service service_;
 	boost::asio::io_service::work work_;
 	std::vector<std::thread> workers_;

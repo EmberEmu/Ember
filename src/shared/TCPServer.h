@@ -52,7 +52,7 @@ public:
 	TCPServer(boost::asio::io_service& service, unsigned short port, IPBanCache<dal::IPBanDAO>& bans,
 	          log::Logger* logger, Create create)
 	    	  : acceptor_(service, bai::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-	            socket_(service), service_(service), logger_(logger), ban_list_(bans) {
+	            socket_(service), service_(service), logger_(logger), ban_list_(bans), create_(create) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 		accept_connection();
 	}

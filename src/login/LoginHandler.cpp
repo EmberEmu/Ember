@@ -101,7 +101,7 @@ void LoginHandler::handle_packet() {
 		} else {
 			read();
 		}
-	} else if(opcode == protocol::CMSG_OPCODE::CMSG_REQUEST_REALM__LIST) {
+	} else if(opcode == protocol::CMSG_OPCODE::CMSG_REQUEST_REALM_LIST) {
 		LOG_DEBUG(logger_) << "Unhandled CMSG_REQUEST_REALM_LIST" << LOG_FLUSH;
 		read();
 	} else {
@@ -282,7 +282,7 @@ void LoginHandler::send_login_proof() {
 			try {
 				auth_.set_logged_in(ip);
 				auth_.set_session_key();
-				state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM__LIST;
+				state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM_LIST;
 				service_.dispatch(std::bind(&ember::LoginHandler::write, self, resp));
 				LOG_DEBUG(logger_) << username_ << " successfully authenticated" << LOG_FLUSH;
 			} catch(std::exception& e) {
@@ -339,7 +339,7 @@ void LoginHandler::send_reconnect_proof() {
 	stream << protocol::SMSG_OPCODE::SMSG_RECONNECT_PROOF;
 	stream << std::uint8_t(0) << std::uint16_t(0);
 
-	state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM__LIST;
+	state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM_LIST;
 	write(resp);
 }
 

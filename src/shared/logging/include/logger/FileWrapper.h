@@ -3,27 +3,38 @@
 #include <cstdio>
 #include <string>
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 namespace ember { namespace log {
 
 class File {
-	std::FILE* file;
+	std::FILE* file_ = nullptr;
 
 public:
 	File(std::string const& path, std::string const &mode = std::string("r")) {
-		if(fopen_s(&file, path.c_str(), mode.c_str()) != 0) {
-			file = NULL;
-		}
+		file_ = std::fopen(path.c_str(), mode.c_str());
 	}
 
-	~File() { if(file) { fclose(file); } };
+	~File() { if(file_) { fclose(file_); } };
 	
-	operator FILE*() const { return file; }
+	operator FILE*() const { return file_; }
 	
 	int close() {
-		if(!file) return 0;
-		int ret = fclose(file); file = NULL; return ret;
+		if(!file_) return 0;
+		int ret = fclose(file_); 
+		file_ = nullptr;
+		return ret;
 	};
-	File(const File& that) = delete;
+
+	std::FILE* handle() {
+		return file_;
+	}
+
+	File(const File&) = delete;
+	File& operator=(const File&) = delete;
 };
 
 }} //log, ember
+
+#pragma warning(pop)

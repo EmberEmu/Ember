@@ -15,6 +15,9 @@
 #include <cstdio>
 #include <iostream>
 
+#pragma warning(push)
+#pragma warning(disable: 4996)
+
 namespace ember { namespace log {
 
 namespace fs = boost::filesystem;
@@ -193,3 +196,5 @@ void FileSink::write(SEVERITY severity, const std::vector<char>& record) {
 }
 
 }} //log, ember
+
+#pragma warning(pop)

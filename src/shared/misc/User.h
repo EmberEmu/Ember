@@ -21,7 +21,7 @@ class User {
 
 public:
 	User(std::string username, std::string salt, std::string verifier, bool banned, bool suspended)
-	    : user_(username), s_(std::move(salt)), v_(std::move(verifier)) {
+	    : user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)) {
 		banned_ = banned;
 		suspended_ = suspended;
 	}
