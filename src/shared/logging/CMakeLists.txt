@@ -15,7 +15,6 @@ add_library(logging
             Sink.cpp
             concurrentqueue.h
             include/logger/LoggerImpl.h
-            include/logger/Semaphore.h
             include/logger/FileSink.h
             include/logger/HelperMacros.h
             include/logger/SyslogSink.h
@@ -31,4 +30,4 @@ add_library(logging
             ../threading/Semaphore.h
 )
 
-target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)IC ${CMAKE_CURRENT_SOURCE_DIR}/include)

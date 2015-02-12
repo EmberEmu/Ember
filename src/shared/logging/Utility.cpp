@@ -30,6 +30,8 @@ SEVERITY severity_string(const std::string& severity) {
 		return SEVERITY::ERROR;
 	} else if(severity == "fatal") {
 		return SEVERITY::FATAL;
+	} else if(severity == "none" || severity == "disabled") {
+		return SEVERITY::DISABLED;
 	} else {
 		throw exception("Unknown severity passed to severity_string");
 	}
