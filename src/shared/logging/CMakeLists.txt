@@ -15,7 +15,6 @@ add_library(logging
             Sink.cpp
             concurrentqueue.h
             include/logger/LoggerImpl.h
-            include/logger/Semaphore.h
             include/logger/FileSink.h
             include/logger/HelperMacros.h
             include/logger/SyslogSink.h
