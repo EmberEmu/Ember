@@ -30,4 +30,4 @@ add_library(logging
             ../threading/Semaphore.h
 )
 
-target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)IC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include) ${CMAKE_CURRENT_SOURCE_DIR}/include)
