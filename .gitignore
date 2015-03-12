@@ -9,9 +9,7 @@
 # Build results
 
 [Dd]ebug/
-[Dd]ebug No-AC/
 [Rr]elease/
-[Rr]elease No-AC/
 x64/
 build/
 [Bb]in/
@@ -22,7 +20,6 @@ build/
 [Bb]uild[Ll]og.*
 
 *.Cppcat*
-*.i*
 *_i.c
 *_p.c
 *.ilk
