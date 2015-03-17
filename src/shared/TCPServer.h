@@ -38,11 +38,11 @@ class TCPServer {
 				
 				if(!ban_list_.is_banned(socket_.remote_endpoint().address())) {
 					LOG_DEBUG(logger_) << "Accepted connection " << socket_.remote_endpoint().address().to_string()
-					                   << ":" << socket_.remote_endpoint().port() << LOG_FLUSH;
+					                   << ":" << socket_.remote_endpoint().port() << LOG_ASYNC;
 					create_(std::move(socket_))->start();
 					accept_connection();
 				} else {
-					LOG_DEBUG(logger_) << "Rejected connection from banned IP range" << LOG_FLUSH;
+					LOG_DEBUG(logger_) << "Rejected connection from banned IP range" << LOG_ASYNC;
 				}
 			}
 		);

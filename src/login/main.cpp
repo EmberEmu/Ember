@@ -295,22 +295,22 @@ std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args) 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
 	switch(severity) {
 		case(ep::Severity::DEBUG):
-			LOG_DEBUG(logger) << message << LOG_FLUSH;
+			LOG_DEBUG(logger) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::INFO):
-			LOG_INFO(logger) << message << LOG_FLUSH;
+			LOG_INFO(logger) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::WARN):
-			LOG_WARN(logger) << message << LOG_FLUSH;
+			LOG_WARN(logger) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::ERROR):
-			LOG_ERROR(logger) << message << LOG_FLUSH;
+			LOG_ERROR(logger) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::FATAL):
-			LOG_FATAL(logger) << message << LOG_FLUSH;
+			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		default:
-			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_FLUSH;
-			LOG_ERROR(logger) << message << LOG_FLUSH;
+			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}	
 }

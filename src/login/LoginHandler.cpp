@@ -18,7 +18,7 @@
 namespace ember {
 
 void LoginHandler::start() {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	read();
 }
 
@@ -50,7 +50,7 @@ void LoginHandler::write(std::shared_ptr<Packet> buffer) {
 				buffer_.clear();
 				read();
 			} else {
-				LOG_DEBUG(logger_) << "On send: " << ec.message() << LOG_FLUSH;
+				LOG_DEBUG(logger_) << "On send: " << ec.message() << LOG_ASYNC;
 			}
 		}
 	)));
@@ -63,7 +63,7 @@ void LoginHandler::close(const boost::system::error_code& ec) {
 }
 
 void LoginHandler::handle_packet() {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(buffer_.size() < sizeof(protocol::ClientOpcodes)) {
 		read();
@@ -77,13 +77,13 @@ void LoginHandler::handle_packet() {
 			state_ = opcode;
 			initial_ = false;
 		} else {
-			LOG_DEBUG(logger_) << "Invalid initial state, connection dropped" << LOG_FLUSH;
+			LOG_DEBUG(logger_) << "Invalid initial state, connection dropped" << LOG_ASYNC;
 			return;
 		}
 	}
 
 	if(opcode != state_) {
-		LOG_DEBUG(logger_) << "States out of sync, connection dropped" << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "States out of sync, connection dropped" << LOG_ASYNC;
 		return;
 	}
 
@@ -103,15 +103,15 @@ void LoginHandler::handle_packet() {
 			read();
 		}
 	} else if(opcode == protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST) {
-		LOG_DEBUG(logger_) << "Unhandled CMSG_REQUEST_REALM_LIST" << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Unhandled CMSG_REQUEST_REALM_LIST" << LOG_ASYNC;
 		read();
 	} else {
-		LOG_DEBUG(logger_) << "Unhandled opcode  " << static_cast<int>(opcode) << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Unhandled opcode  " << static_cast<int>(opcode) << LOG_ASYNC;
 	}
 }
 
 void LoginHandler::read_challenge() {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto data = buffer_.data<protocol::ClientLoginChallenge>();
 
@@ -139,14 +139,14 @@ void LoginHandler::read_challenge() {
 }
 
 void LoginHandler::process_challenge() {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto packet = buffer_.data<protocol::ClientLoginChallenge>();
 	auto opcode = packet->header.opcode;
 
 	if(buffer_.size() < sizeof(protocol::ClientLoginChallenge)
 		|| packet->username + packet->username_len != buffer_.data<char>() + buffer_.size()) {
-		LOG_DEBUG(logger_) << "Malformed challenge packet" << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Malformed challenge packet" << LOG_ASYNC;
 		socket_.close();
 		return;
 	}
@@ -156,7 +156,7 @@ void LoginHandler::process_challenge() {
 	GameVersion version{packet->major, packet->minor, packet->patch, packet->build};
 
 	LOG_DEBUG(logger_) << "Challenge: " << username_ << ", " << version << ", "
-	                   << socket_.remote_endpoint().address().to_string() << LOG_FLUSH;
+	                   << socket_.remote_endpoint().address().to_string() << LOG_ASYNC;
 
 	//Should probably have a patcher to handle this
 	Authenticator::PatchState patch_level = auth_.verify_client_version(version);
@@ -178,7 +178,7 @@ void LoginHandler::process_challenge() {
 		//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
 		//write(packet);
 	} else if(patch_level == Authenticator::PatchState::TOO_NEW) {
-		LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
 		auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
 		PacketStream<Packet> stream(*packet);
 		stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)
@@ -193,7 +193,7 @@ void LoginHandler::process_challenge() {
 }
 
 void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {	
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto values = auth_.challenge_reply();
 
@@ -221,7 +221,7 @@ void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {
 }
 
 void LoginHandler::send_login_challenge(Authenticator::AccountStatus status) {	
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(*resp);
@@ -233,17 +233,17 @@ void LoginHandler::send_login_challenge(Authenticator::AccountStatus status) {
 			try {
 				build_login_challenge(stream);
 			} catch(std::exception& e) {
-				LOG_ERROR(logger_) << e.what() << " thrown during encoding for " << username_ << LOG_FLUSH;
+				LOG_ERROR(logger_) << e.what() << " thrown during encoding for " << username_ << LOG_ASYNC;
 				stream << protocol::ResultCodes::FAIL_DB_BUSY;
 			}
 			break;
 		case ember::Authenticator::AccountStatus::NOT_FOUND:
 			//leaks information on whether the account exists (could send challenge anyway?)
-			LOG_DEBUG(logger_) << "Account not found: " << username_ << LOG_FLUSH;
+			LOG_DEBUG(logger_) << "Account not found: " << username_ << LOG_ASYNC;
 			stream << protocol::ResultCodes::FAIL_UNKNOWN_ACCOUNT;
 			break;
 		case ember::Authenticator::AccountStatus::DAL_ERROR:
-			LOG_ERROR(logger_) << "DAL failure while retrieving details for " << username_ << LOG_FLUSH;
+			LOG_ERROR(logger_) << "DAL failure while retrieving details for " << username_ << LOG_ASYNC;
 			stream << protocol::ResultCodes::FAIL_DB_BUSY;
 			break;
 		default:
@@ -256,10 +256,10 @@ void LoginHandler::send_login_challenge(Authenticator::AccountStatus status) {
 }
 
 void LoginHandler::send_login_proof() {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(buffer_.size() != sizeof(protocol::ClientLoginProof)) {
-		LOG_DEBUG(logger_) << "Malformed login proof from " << username_ << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Malformed login proof from " << username_ << LOG_ASYNC;
 		return;
 	}
 
@@ -285,10 +285,10 @@ void LoginHandler::send_login_proof() {
 				auth_.set_session_key();
 				state_ = protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST;
 				service_.dispatch(std::bind(&ember::LoginHandler::write, self, resp));
-				LOG_DEBUG(logger_) << username_ << " successfully authenticated" << LOG_FLUSH;
+				LOG_DEBUG(logger_) << username_ << " successfully authenticated" << LOG_ASYNC;
 			} catch(std::exception& e) {
 				LOG_ERROR(logger_) << "Unable to create session for " << username_ << ": "
-				                   << e.what() << LOG_FLUSH;
+				                   << e.what() << LOG_ASYNC;
 			}
 		});
 	} else {
@@ -298,9 +298,11 @@ void LoginHandler::send_login_proof() {
 }
 
 void LoginHandler::send_reconnect_challenge(bool key_found) {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!key_found) { return; }
+	if(!key_found) {
+		return; 
+	}
 
 	auto rand = Botan::AutoSeeded_RNG().random_vec(16);
 	auth_.set_reconnect_challenge(rand);
@@ -318,20 +320,20 @@ void LoginHandler::send_reconnect_challenge(bool key_found) {
 }
 
 void LoginHandler::send_reconnect_proof() {
-	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(buffer_.size() != sizeof(protocol::ClientReconnectProof)) {
-		LOG_DEBUG(logger_) << "Malformed reconnect proof from " << username_ << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Malformed reconnect proof from " << username_ << LOG_ASYNC;
 		return;
 	}
 
 	auto packet = buffer_.data<protocol::ClientReconnectProof>();
 	
 	if(!auth_.reconnect_proof_check(packet)) {
-		LOG_DEBUG(logger_) << "Failed to reconnect " << username_ << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Failed to reconnect " << username_ << LOG_ASYNC;
 		return;
 	} else {
-		LOG_DEBUG(logger_) << "Successfully reconnected " << username_ << LOG_FLUSH;
+		LOG_DEBUG(logger_) << "Successfully reconnected " << username_ << LOG_ASYNC;
 	}
 	
 	std::shared_ptr<Packet> resp = std::make_shared<Packet>();

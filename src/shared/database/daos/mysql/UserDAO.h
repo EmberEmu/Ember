@@ -33,7 +33,7 @@ public:
 		                    "LEFT JOIN suspensions s ON u.id = s.user_id "
 		                    "WHERE username = ?";
 
-		auto conn = pool_.get_connection();
+		auto conn = pool_.wait_connection();
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -53,7 +53,7 @@ public:
 		std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
 		                    "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
 
-		auto conn = pool_.get_connection();
+		auto conn = pool_.wait_connection();
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, user.username());
 		stmt->setString(2, ip);
@@ -68,7 +68,7 @@ public:
 	std::string session_key(const std::string& username) override final try {
 		std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
 
-		auto conn = pool_.get_connection();
+		auto conn = pool_.wait_connection();
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -86,7 +86,7 @@ public:
 		std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
 		                    "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
 
-		auto conn = pool_.get_connection();
+		auto conn = pool_.wait_connection();
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		stmt->setString(2, key);

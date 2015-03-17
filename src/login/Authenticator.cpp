@@ -7,6 +7,7 @@
  */
 
 #include "Authenticator.h"
+#include <logger/Logging.h>
 #include <srp6/Server.h>
 #include <srp6/Client.h>
 #include <shared/database/daos/UserDAO.h>
@@ -43,7 +44,7 @@ auto Authenticator::check_account(const std::string& username) -> AccountStatus 
 
 	return AccountStatus::OK;
 } catch(std::exception& e) {
-	std::cout << e.what() << std::endl; //todo LOGGER!
+	LOG_ERROR_GLOB << e.what() << LOG_ASYNC;
 	return AccountStatus::DAL_ERROR;
 }
 
@@ -108,7 +109,7 @@ bool Authenticator::begin_reconnect(const std::string& username) try {
 	sess_key_ = Botan::BigInt::encode(recovered_key);
 	return !sess_key_.t.empty();
 } catch(std::exception& e) {
-	//todo LOGGER!
+	LOG_ERROR_GLOB << e.what() << LOG_ASYNC;
 	return false;
 }
 
