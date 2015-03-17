@@ -36,6 +36,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cstddef>
+#include <cstdint>
 
 namespace el = ember::log;
 namespace ep = ember::connection_pool;
@@ -88,14 +90,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
 	                                std::placeholders::_2, logger));
 	
-	auto interface = args["network.interface"].as<std::string>();
-	auto port = args["network.port"].as<unsigned short>();
-	unsigned int concurrency = check_concurrency(logger);
-
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto user_dao = ember::dal::user_dao(pool);
 	auto ip_ban_dao = ember::dal::ip_ban_dao(pool);
 	auto ip_ban_cache = ember::IPBanCache<ember::dal::IPBanDAO>(*ip_ban_dao);
+
+	unsigned int concurrency = check_concurrency(logger);
 
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 	ember::ThreadPool tpool(concurrency);
@@ -105,6 +105,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao, tpool);
 	ba::io_service service(concurrency);
+
+	auto interface = args["network.interface"].as<std::string>();
+	auto port = args["network.port"].as<unsigned short>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, ip_ban_cache, logger,
@@ -120,11 +123,16 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
+/*
+ * Start the worker threads that are responsible for handling login requests.
+ * This function blocks until all worker threads have finished, which should only
+ * happen when the login server receives a termination signal.
+ */
 void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger* logger) {
 	std::vector<std::thread> workers;
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<size_t(ba::io_service::*)()>
+		workers.emplace_back(static_cast<std::size_t(ba::io_service::*)()>
 			(&ba::io_service::run), &service); 
 	}
 
@@ -136,6 +144,10 @@ void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger
 	}
 }
 
+/* 
+ * This vector defines the client builds that are allowed to connect to the
+ * server. All builds in this list should be using the same protocol version.
+ */
 std::vector<ember::GameVersion> client_versions() {
 	return {{1, 12, 1, 5875}, {1, 12, 2, 6005}};
 }
@@ -201,7 +213,11 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 
 	return std::move(options);
 }
-
+/*
+ * The concurrency level returned is usually the number of logical cores
+ * in the machine but the standard doesn't guarantee that it won't be zero.
+ * In that case, we just set the minimum concurrency level to two.
+ */
 unsigned int check_concurrency(el::Logger* logger) {
 	unsigned int concurrency = std::thread::hardware_concurrency();
 

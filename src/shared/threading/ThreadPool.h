@@ -16,10 +16,11 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-namespace ember {
+#include <cstddef>
 
 #undef ERROR 
+
+namespace ember {
 
 class ThreadPool {
 public:
@@ -33,13 +34,13 @@ private:
 	std::size_t count_;
 	LogCallback log_cb_;
 	std::mutex log_cb_lock_;
-	void run_catch();
 
 public:
 	ThreadPool(std::size_t initial_count);
 	~ThreadPool();
 
-	template<typename T> void run(T work) {
+	template<typename T>
+	void run(T work) {
 		service_.post(work);
 	}
 

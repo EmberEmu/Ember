@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <logger/Logging.h>
 #include <array>
 #include <cstdint>
+#include <string>
 
 namespace ember {
 
@@ -37,9 +39,9 @@ public:
 		free_ -= bytes;
 		location_ += bytes;
 
-		if(free_ > old) {
-			//assert
-			std::exit(-1);
+		if(free_ < old) {
+			LOG_FATAL_GLOB << "Overflow in packet buffer: " << __FILE__ << ":" << __LINE__ << LOG_SYNC;
+			std::abort();
 		}
 	}
 
