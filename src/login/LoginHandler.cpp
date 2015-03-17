@@ -11,6 +11,7 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
+#include <boost/assert.hpp>
 #include <vector>
 #include <thread>
 
@@ -187,7 +188,7 @@ void LoginHandler::process_challenge() {
 	} else {
 		LOG_FATAL(logger_) << "Encountered an unknown version condition, "
 		                   << static_cast<int>(patch_level) << LOG_SYNC;
-		//assert
+		BOOST_ASSERT(false);
 	}
 }
 
@@ -247,7 +248,7 @@ void LoginHandler::send_login_challenge(Authenticator::ACCOUNT_STATUS status) {
 			break;
 		default:
 			LOG_FATAL(logger_) << "Unhandled account state" << LOG_SYNC;
-			//assert
+			BOOST_ASSERT(false);
 	}
 
 	state_ = protocol::CMSG_OPCODE::CMSG_LOGIN_PROOF;
