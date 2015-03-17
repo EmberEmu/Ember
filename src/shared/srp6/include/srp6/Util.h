@@ -19,7 +19,7 @@ namespace ember { namespace srp6 {
 	
 BOOST_STRONG_TYPEDEF(Botan::SecureVector<Botan::byte>, SessionKey);
 
-enum class COMPLIANCE { RFC5054, GAME };
+enum class Compliance { RFC5054, GAME };
 
 namespace detail {
 
@@ -29,17 +29,17 @@ Botan::SecureVector<Botan::byte> encode_flip_1363(const Botan::BigInt& val, std:
 Botan::BigInt decode_flip(Botan::SecureVector<Botan::byte>& val);
 Botan::BigInt decode_flip_copy(const Botan::SecureVector<Botan::byte>& val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
-                        COMPLIANCE mode);
+                        Compliance mode);
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-                        const Botan::BigInt& salt, COMPLIANCE mode);
+                        const Botan::BigInt& salt, Compliance mode);
 
 inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& x) {
 	return generator(x);
 }
 
 inline Botan::BigInt generate(const std::string& identifier, const std::string& password,
-                              const Generator& gen, const Botan::BigInt& salt, COMPLIANCE mode) {
+                              const Generator& gen, const Botan::BigInt& salt, Compliance mode) {
 	Botan::BigInt x = compute_x(identifier, password, salt, mode);
 	return compute_v(gen, x);
 }
@@ -49,7 +49,7 @@ inline Botan::BigInt generate(const std::string& identifier, const std::string& 
 Botan::BigInt generate_salt(std::size_t salt_len);
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
-                                const Generator& generator, const Botan::BigInt& salt, COMPLIANCE mode);
+                                const Generator& generator, const Botan::BigInt& salt, Compliance mode);
 
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,

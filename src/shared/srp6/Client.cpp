@@ -36,8 +36,8 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 }
 
 SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, bool interleave,
-                               COMPLIANCE mode) {
-	if(interleave && mode == COMPLIANCE::RFC5054) {
+                               Compliance mode) {
+	if(interleave && mode == Compliance::RFC5054) {
 		throw exception("Interleaving is not compliant with RFC5054!");
 	}
 

@@ -30,7 +30,7 @@ ThreadPool::~ThreadPool() {
 			std::lock_guard<std::mutex> guard(log_cb_lock_);
 
 			if(log_cb_) {
-				log_cb_(SEVERITY::FATAL, std::string("In thread pool dtor: ") + e.what());
+				log_cb_(Severity::FATAL, std::string("In thread pool dtor: ") + e.what());
 			}
 		}
 	}

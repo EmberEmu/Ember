@@ -34,14 +34,14 @@ namespace ember { namespace log {
 class Logger::impl {
 	friend class Logger;
 
-	SEVERITY severity_ = SEVERITY::DISABLED;
+	Severity severity_ = Severity::DISABLED;
 	std::vector<std::unique_ptr<Sink>> sinks_;
 	Worker worker_;
 
 	//Workarounds for lack of full thread_local support in VS2013
-	std::unordered_map<std::thread::id, std::pair<SEVERITY, std::vector<char>>> buffers_;
+	std::unordered_map<std::thread::id, std::pair<Severity, std::vector<char>>> buffers_;
 	std::unordered_map<std::thread::id, Semaphore<std::mutex>> sync_semaphores_;
-	static thread_local std::pair<SEVERITY, std::vector<char>>* t_buffer_;
+	static thread_local std::pair<Severity, std::vector<char>>* t_buffer_;
 	static thread_local Semaphore<std::mutex>* t_sem_;
 	std::mutex id_lock_;
 
@@ -54,7 +54,7 @@ class Logger::impl {
 
 	void finalise_sync() {
 		t_buffer_->second.push_back('\n');
-		auto r = std::make_tuple<SEVERITY, std::vector<char>, Semaphore<std::mutex>*>
+		auto r = std::make_tuple<Severity, std::vector<char>, Semaphore<std::mutex>*>
 					(std::move(t_buffer_->first), std::move(t_buffer_->second), std::move(t_sem_));
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
@@ -89,7 +89,7 @@ public:
 		return (*m)(*this);
 	}
 
-	impl& operator <<(SEVERITY severity) {
+	impl& operator <<(Severity severity) {
 		//Workaround for lack of full thread_local support in VS2013
 		if(t_buffer_ == nullptr) {
 			thread_enter();
@@ -139,7 +139,7 @@ public:
 		return *this;
 	}
 
-	SEVERITY severity() {
+	Severity severity() {
 		return severity_;
 	}
 
@@ -155,7 +155,7 @@ public:
 	impl& operator=(const impl&) = delete;
 };
 
-std::pair<SEVERITY, std::vector<char>>* Logger::impl::t_buffer_;
+std::pair<Severity, std::vector<char>>* Logger::impl::t_buffer_;
 Semaphore<std::mutex>* Logger::impl::t_sem_;
 
 }} //log, ember

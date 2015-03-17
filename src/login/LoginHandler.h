@@ -37,7 +37,7 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	Authenticator auth_;
 	ThreadPool& async_;
 	std::string username_;
-	protocol::CMSG_OPCODE state_;
+	protocol::ClientOpcodes state_;
 	bool initial_ = true;
 
 	void read();
@@ -48,7 +48,7 @@ class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
 	void read_challenge();
 	void process_challenge();
 	void build_login_challenge(PacketStream<Packet>& resp);
-	void send_login_challenge(Authenticator::ACCOUNT_STATUS status);
+	void send_login_challenge(Authenticator::AccountStatus status);
 	void send_login_proof();
 	void send_reconnect_challenge(bool key_found);
 	void send_reconnect_proof();

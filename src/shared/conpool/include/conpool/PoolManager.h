@@ -44,12 +44,12 @@ class PoolManager {
 					pool_->driver_.close(i->conn);
 				} catch(std::exception& e) { 
 					if(pool_->log_cb_) {
-						pool_->log_cb_(SEVERITY::WARN,
+						pool_->log_cb_(Severity::WARN,
 					                   std::string("Connection close, driver threw: ") + e.what());
 					}
 				} catch(...) {
 					if(pool_->log_cb_) {
-						pool_->log_cb_(SEVERITY::WARN, "Driver threw unknown exception in close");
+						pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
 					}
 				}
 
@@ -69,13 +69,13 @@ class PoolManager {
 				c->error = false;
 			} catch(std::exception& e) { 
 				if(pool_->log_cb_) {
-					pool_->log_cb_(SEVERITY::WARN,
+					pool_->log_cb_(Severity::WARN,
 					               std::string("Connection keep-alive, driver threw: ") + e.what());
 				}
 				c->error = true;
 			} catch(...) {
 				if(pool_->log_cb_) {
-					pool_->log_cb_(SEVERITY::WARN, "Driver threw unknown exception in keep_alive");
+					pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in keep_alive");
 				}
 				c->error = true;
 			}
@@ -95,12 +95,12 @@ class PoolManager {
 					pool_->driver_.close(i->conn);
 				} catch(std::exception& e) { 
 					if(pool_->log_cb_) {
-						pool_->log_cb_(SEVERITY::WARN,
+						pool_->log_cb_(Severity::WARN,
 						               std::string("Connection close, driver threw: ") + e.what());
 					}
 				} catch(...) {
 					if(pool_->log_cb_) {
-						pool_->log_cb_(SEVERITY::WARN, "Driver threw unknown exception in close");
+						pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
 					}
 				}
 
@@ -119,13 +119,13 @@ class PoolManager {
 			} catch(std::exception& e) { 
 				guard.unlock();
 				if(pool_->log_cb_) {
-					pool_->log_cb_(SEVERITY::WARN,
+					pool_->log_cb_(Severity::WARN,
 					               std::string("Failed to refill connection pool: ") + e.what());
 				}
 			} catch(...) {
 				guard.unlock();
 				if(pool_->log_cb_) {
-					pool_->log_cb_(SEVERITY::WARN,
+					pool_->log_cb_(Severity::WARN,
 					               "Failed to refill connection pool - unknown exception caught");
 				}
 			}
@@ -198,7 +198,7 @@ public:
 		exception_ = std::current_exception();
 
 		if(pool_->log_cb_) {
-			pool_->log_cb_(SEVERITY::DEBUG,
+			pool_->log_cb_(Severity::DEBUG,
 			              "Pool manager trapped exception - passing to next caller");
 		}
 	}
@@ -211,7 +211,7 @@ public:
 		}
 
 		if(pool_->log_cb_) {
-			pool_->log_cb_(SEVERITY::DEBUG, "Pool manager terminated");
+			pool_->log_cb_(Severity::DEBUG, "Pool manager terminated");
 		}
 	}
 

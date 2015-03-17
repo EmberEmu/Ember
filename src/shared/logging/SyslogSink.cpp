@@ -20,29 +20,29 @@ namespace bai = boost::asio::ip;
 namespace ember { namespace log {
 
 class SyslogSink::impl {
-	enum class SYSLOG_SEVERITY {
+	enum class SyslogSeverity {
 		EMERGENCY, ALERT, CRITICAL, ERROR_, WARNING, NOTICE, INFORMATIONAL, DEBUG
 	};
 
 	boost::asio::io_service service_;
 	bai::udp::socket socket_;
 	bai::udp::endpoint endpoint_;
-	SEVERITY severity_;
+	Severity severity_;
 	std::string host_;
 	std::string tag_;
-	FACILITY facility_;
+	Facility facility_;
 
 	std::string month_map(int month);
-	SYSLOG_SEVERITY severity_map(SEVERITY severity);
+	SyslogSeverity severity_map(Severity severity);
 
 public:
-	impl(SEVERITY severity, std::string host, unsigned int port, FACILITY facility, std::string tag);
-	void write(SEVERITY severity, const std::vector<char>& record);
-	void batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& record);
+	impl(Severity severity, std::string host, unsigned int port, Facility facility, std::string tag);
+	void write(Severity severity, const std::vector<char>& record);
+	void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& record);
 };
 
-SyslogSink::impl::impl(SEVERITY severity, std::string host, unsigned int port,
-                       FACILITY facility, std::string tag) try
+SyslogSink::impl::impl(Severity severity, std::string host, unsigned int port,
+                       Facility facility, std::string tag) try
                        : socket_(service_), host_(bai::host_name()), tag_(tag) {
 	facility_ = facility;
 	severity_ = severity;
@@ -59,22 +59,22 @@ SyslogSink::impl::impl(SEVERITY severity, std::string host, unsigned int port,
 	throw exception(e.what());
 }
 
-auto SyslogSink::impl::severity_map(SEVERITY severity) -> SYSLOG_SEVERITY {
+auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	switch(severity) {
-		case SEVERITY::FATAL:
-			return SyslogSink::impl::SYSLOG_SEVERITY::EMERGENCY;
-		case SEVERITY::ERROR:
-			return SyslogSink::impl::SYSLOG_SEVERITY::ERROR_;
-		case SEVERITY::WARN:
-			return SyslogSink::impl::SYSLOG_SEVERITY::WARNING;
-		case SEVERITY::INFO:
-			return SyslogSink::impl::SYSLOG_SEVERITY::INFORMATIONAL;
-		case SEVERITY::DEBUG:
-		case SEVERITY::TRACE:
-			return SyslogSink::impl::SYSLOG_SEVERITY::DEBUG;
+		case Severity::FATAL:
+			return SyslogSink::impl::SyslogSeverity::EMERGENCY;
+		case Severity::ERROR:
+			return SyslogSink::impl::SyslogSeverity::ERROR_;
+		case Severity::WARN:
+			return SyslogSink::impl::SyslogSeverity::WARNING;
+		case Severity::INFO:
+			return SyslogSink::impl::SyslogSeverity::INFORMATIONAL;
+		case Severity::DEBUG:
+		case Severity::TRACE:
+			return SyslogSink::impl::SyslogSeverity::DEBUG;
 		default:
 			BOOST_ASSERT_MSG(false, "SyslogSink encountered an unknown severity.");
-			return SyslogSink::impl::SYSLOG_SEVERITY::DEBUG;
+			return SyslogSink::impl::SyslogSeverity::DEBUG;
 	}
 }
 
@@ -98,7 +98,7 @@ std::string SyslogSink::impl::month_map(int month) {
 	}
 }
 
-void SyslogSink::impl::write(SEVERITY severity, const std::vector<char>& record) {
+void SyslogSink::impl::write(Severity severity, const std::vector<char>& record) {
 	if(severity < severity_) {
 		return;
 	}
@@ -125,24 +125,24 @@ void SyslogSink::impl::write(SEVERITY severity, const std::vector<char>& record)
 	socket_.send_to(segments, endpoint_, 0, err);
 }
 
-void SyslogSink::impl::batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) {
+void SyslogSink::impl::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
 	for(auto& r : records) {
 		write(r.first, r.second);
 	}
 }
 
-SyslogSink::SyslogSink(SEVERITY severity, std::string host, unsigned int port,
-                       FACILITY facility, std::string tag)
+SyslogSink::SyslogSink(Severity severity, std::string host, unsigned int port,
+                       Facility facility, std::string tag)
                        : Sink(severity),
                          pimpl_(std::make_unique<impl>(severity, host, port, facility, tag)) {}
 
 SyslogSink::~SyslogSink() = default;
 
-void SyslogSink::write(SEVERITY severity, const std::vector<char>& record) {
+void SyslogSink::write(Severity severity, const std::vector<char>& record) {
 	pimpl_->write(severity, record);
 }
 
-void SyslogSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) {
+void SyslogSink::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
 	pimpl_->batch_write(records);
 }
 

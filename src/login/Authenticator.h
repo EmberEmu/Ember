@@ -41,9 +41,9 @@ class Authenticator {
 	};
 
 public:
-	typedef std::pair<protocol::RESULT, Botan::BigInt> LoginResult;
-	enum class PATCH_STATE { OK, TOO_OLD, TOO_NEW };
-	enum class ACCOUNT_STATUS { OK, NOT_FOUND, DAL_ERROR };
+	typedef std::pair<protocol::ResultCodes, Botan::BigInt> LoginResult;
+	enum class PatchState { OK, TOO_OLD, TOO_NEW };
+	enum class AccountStatus { OK, NOT_FOUND, DAL_ERROR };
 
 	Authenticator(dal::UserDAO& users, const std::vector<GameVersion>& versions)
 	              : versions_(versions), users_(users) { }
@@ -60,8 +60,8 @@ public:
 	LoginResult proof_check(protocol::ClientLoginProof* proof);
 
 	void set_logged_in(const std::string& ip);
-	PATCH_STATE verify_client_version(const GameVersion& version);
-	ACCOUNT_STATUS check_account(const std::string& username);
+	PatchState verify_client_version(const GameVersion& version);
+	AccountStatus check_account(const std::string& username);
 
 	bool begin_reconnect(const std::string& username);
 	bool reconnect_proof_check(protocol::ClientReconnectProof* proof);

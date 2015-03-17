@@ -50,7 +50,7 @@ void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 ember::drivers::MySQL init_db_driver(const po::variables_map& args);
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
-void pool_log_callback(ep::SEVERITY, const std::string& message, el::Logger* logger);
+void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger* logger);
 
 /*
@@ -101,7 +101,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::ThreadPool tpool(concurrency);
 
 	const auto allowed_clients = client_versions();
-	ember::ASIOAllocator allocator;
+	ember::ASIOAllocator allocator; // todo - per-thread allocator
 
 	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao, tpool);
 	ba::io_service service(concurrency);
@@ -238,15 +238,15 @@ ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
 	return {user, pass, host, port, db};
 }
 
-std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::SEVERITY severity) {
+std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::Severity severity) {
 	auto host = args["remote_log.host"].as<std::string>();
 	auto service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<unsigned short>();
-	auto facility = el::SyslogSink::FACILITY::LOCAL_USE_0;
+	auto facility = el::SyslogSink::Facility::LOCAL_USE_0;
 	return std::make_unique<el::SyslogSink>(severity, host, port, facility, service);
 }
 
-std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::SEVERITY severity) {
+std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::Severity severity) {
 	auto mode_str = args["file_log.mode"].as<std::string>();
 	auto path = args["file_log.path"].as<std::string>();
 
@@ -254,8 +254,8 @@ std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::SEVE
 		throw std::runtime_error("Invalid file logging mode supplied");
 	}
 
-	el::FileSink::MODE mode = (mode_str == "append")? el::FileSink::MODE::APPEND :
-	                                                  el::FileSink::MODE::TRUNCATE;
+	el::FileSink::Mode mode = (mode_str == "append")? el::FileSink::Mode::APPEND :
+	                                                  el::FileSink::Mode::TRUNCATE;
 
 	auto file_sink = std::make_unique<el::FileSink>(severity, path, mode);
 	file_sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
@@ -266,47 +266,47 @@ std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::SEVE
 	return std::move(file_sink);
 }
 
-std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::SEVERITY severity) {
+std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::Severity severity) {
 	return std::make_unique<el::ConsoleSink>(severity);
 }
 
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args) {
 	auto logger = std::make_unique<el::Logger>();
-	el::SEVERITY severity;
+	el::Severity severity;
 
 	if((severity = el::severity_string(args["console_log.verbosity"].as<std::string>()))
-		!= el::SEVERITY::DISABLED) {
+		!= el::Severity::DISABLED) {
 		logger->add_sink(init_console_sink(args, severity));
 	}
 
 	if((severity = el::severity_string(args["file_log.verbosity"].as<std::string>()))
-		!= el::SEVERITY::DISABLED) {
+		!= el::Severity::DISABLED) {
 		logger->add_sink(init_file_sink(args, severity));
 	}
 
 	if((severity = el::severity_string(args["remote_log.verbosity"].as<std::string>()))
-		!= el::SEVERITY::DISABLED) {
+		!= el::Severity::DISABLED) {
 		logger->add_sink(init_remote_sink(args, severity));
 	}
 
 	return logger;
 }
 
-void pool_log_callback(ep::SEVERITY severity, const std::string& message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
 	switch(severity) {
-		case(ep::SEVERITY::DEBUG):
+		case(ep::Severity::DEBUG):
 			LOG_DEBUG(logger) << message << LOG_FLUSH;
 			break;
-		case(ep::SEVERITY::INFO):
+		case(ep::Severity::INFO):
 			LOG_INFO(logger) << message << LOG_FLUSH;
 			break;
-		case(ep::SEVERITY::WARN):
+		case(ep::Severity::WARN):
 			LOG_WARN(logger) << message << LOG_FLUSH;
 			break;
-		case(ep::SEVERITY::ERROR):
+		case(ep::Severity::ERROR):
 			LOG_ERROR(logger) << message << LOG_FLUSH;
 			break;
-		case(ep::SEVERITY::FATAL):
+		case(ep::Severity::FATAL):
 			LOG_FATAL(logger) << message << LOG_FLUSH;
 			break;
 		default:

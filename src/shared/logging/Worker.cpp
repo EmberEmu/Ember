@@ -18,7 +18,7 @@ Worker::~Worker() {
 }
 
 void Worker::process_outstanding_sync() {
-	std::tuple<SEVERITY, std::vector<char>, Semaphore<std::mutex>*> item;
+	std::tuple<Severity, std::vector<char>, Semaphore<std::mutex>*> item;
 
 	while(queue_sync_.try_dequeue(item)) {
 		for(auto& s : sinks_) {

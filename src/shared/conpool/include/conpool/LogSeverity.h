@@ -12,7 +12,7 @@
 
 namespace ember { namespace connection_pool {
 
-enum class SEVERITY {
+enum class Severity {
 	DEBUG, INFO, WARN, ERROR, FATAL
 };
 

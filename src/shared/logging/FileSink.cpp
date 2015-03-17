@@ -40,11 +40,11 @@ void FileSink::set_initial_rotation() {
 	}
 }
 
-FileSink::FileSink(SEVERITY severity, std::string file_name, MODE mode)
+FileSink::FileSink(Severity severity, std::string file_name, Mode mode)
                    : Sink(severity), file_name_format_(file_name) {
 	format_file_name();
 
-	if(mode == MODE::APPEND) {
+	if(mode == Mode::APPEND) {
 		boost::system::error_code ec;
 		std::uintmax_t size = fs::file_size(fs::path(file_name_), ec);
 
@@ -69,8 +69,8 @@ void FileSink::format_file_name() {
 	file_name_ = std::move(detail::put_time(time, file_name_format_));
 }
 
-void FileSink::open(MODE mode) {
-	if(mode == MODE::APPEND && !rotations_) {
+void FileSink::open(Mode mode) {
+	if(mode == Mode::APPEND && !rotations_) {
 		file_ = std::make_unique<File>(file_name_, "ab");
 	} else {
 		file_ = std::make_unique<File>(file_name_, "wb");
@@ -105,7 +105,7 @@ void FileSink::rotate() {
 	open();
 }
 
-std::string FileSink::generate_record_detail(SEVERITY severity, const std::tm& curr_time) {
+std::string FileSink::generate_record_detail(Severity severity, const std::tm& curr_time) {
 	std::string prepend;
 
 	if(log_date_) {
@@ -134,10 +134,10 @@ void FileSink::rotate_check(std::size_t buffer_size, const std::tm& curr_time) {
 	last_time_ = curr_time;
 }
 
-void FileSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) {
+void FileSink::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
 	std::tm curr_time = detail::current_time();
 	std::size_t size = 0;
-	SEVERITY severity = this->severity();
+	Severity severity = this->severity();
 	bool matches = false;
 
 	for(auto& r : records) {
@@ -172,7 +172,7 @@ void FileSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<cha
 	current_size_ += buffer_size;
 }
 
-void FileSink::write(SEVERITY severity, const std::vector<char>& record) {
+void FileSink::write(Severity severity, const std::vector<char>& record) {
 	if(this->severity() >= severity) {
 		return;
 	}

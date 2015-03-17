@@ -11,28 +11,28 @@
 #include "Severity.h"
 
 #define LOG_TRACE(logger) \
-	if(logger->severity() <= ember::log::SEVERITY::TRACE) { \
-		*logger << ember::log::SEVERITY::TRACE
+	if(logger->severity() <= ember::log::Severity::TRACE) { \
+		*logger << ember::log::Severity::TRACE
 
 #define LOG_DEBUG(logger) \
-	if(logger->severity() <= ember::log::SEVERITY::DEBUG) { \
-		*logger << ember::log::SEVERITY::DEBUG
+	if(logger->severity() <= ember::log::Severity::DEBUG) { \
+		*logger << ember::log::Severity::DEBUG
 
 #define LOG_INFO(logger) \
-	if(logger->severity() <= ember::log::SEVERITY::INFO) { \
-		*logger << ember::log::SEVERITY::INFO
+	if(logger->severity() <= ember::log::Severity::INFO) { \
+		*logger << ember::log::Severity::INFO
 
 #define LOG_WARN(logger) \
-	if(logger->severity() <= ember::log::SEVERITY::WARN) { \
-		*logger << ember::log::SEVERITY::WARN
+	if(logger->severity() <= ember::log::Severity::WARN) { \
+		*logger << ember::log::Severity::WARN
 
 #define LOG_ERROR(logger) \
-	if(logger->severity() <= ember::log::SEVERITY::ERROR) { \
-		*logger << ember::log::SEVERITY::ERROR
+	if(logger->severity() <= ember::log::Severity::ERROR) { \
+		*logger << ember::log::Severity::ERROR
 
 #define LOG_FATAL(logger) \
-	if(logger->severity() <= ember::log::SEVERITY::FATAL) { \
-		*logger << ember::log::SEVERITY::FATAL
+	if(logger->severity() <= ember::log::Severity::FATAL) { \
+		*logger << ember::log::Severity::FATAL
 
 #define LOG_TRACE_GLOB \
 	auto logger = ember::log::get_logger(); \

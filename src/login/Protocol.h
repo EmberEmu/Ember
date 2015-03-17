@@ -16,7 +16,7 @@ namespace ember { namespace protocol {
 const std::uint8_t PRIME_LENGTH = 32;
 const std::uint8_t PUB_KEY_LENGTH = 32;
 
-enum class CMSG_OPCODE : std::uint8_t {
+enum class ClientOpcodes : std::uint8_t {
 	CMSG_LOGIN_CHALLENGE,
 	CMSG_LOGIN_PROOF,
 	CMSG_RECONNECT_CHALLENGE,
@@ -24,7 +24,7 @@ enum class CMSG_OPCODE : std::uint8_t {
 	CMSG_REQUEST_REALM_LIST = 0x10,
 };
 
-enum class SMSG_OPCODE : std::uint8_t {
+enum class ServerOpcodes : std::uint8_t {
 	SMSG_LOGIN_CHALLENGE,
 	SMSG_LOGIN_PROOF,
 	SMSG_RECONNECT_CHALLENGE,
@@ -34,7 +34,7 @@ enum class SMSG_OPCODE : std::uint8_t {
 	SMSG_TRANSFER_DATA
 };
 
-enum class RESULT : std::uint8_t {
+enum class ResultCodes : std::uint8_t {
 	SUCCESS                     = 0x00,
 	FAIL_UNKNOWN0               = 0x01, 
 	FAIL_UNKNOWN1               = 0x02,
@@ -56,7 +56,7 @@ enum class RESULT : std::uint8_t {
 #pragma pack(push, 1)
 
 struct ClientLoginProof {
-	CMSG_OPCODE opcode;
+	ClientOpcodes opcode;
 	std::uint8_t A[32];
 	std::uint8_t M1[20];
 	std::uint8_t crc_hash[20];
@@ -66,8 +66,8 @@ struct ClientLoginProof {
 
 struct ClientLoginChallenge {
 	struct Header {
-		CMSG_OPCODE opcode;
-		RESULT error;
+		ClientOpcodes opcode;
+		ResultCodes error;
 		std::uint16_t size;
 	} header;
 	std::uint8_t game[4];
@@ -85,7 +85,7 @@ struct ClientLoginChallenge {
 };
 
 struct ClientReconnectProof {
-	CMSG_OPCODE opcode;
+	ClientOpcodes opcode;
 	std::uint8_t R1[16];
 	std::uint8_t R2[20];
 	std::uint8_t R3[20];
@@ -93,8 +93,8 @@ struct ClientReconnectProof {
 };
 
 struct ServerLoginChallenge {
-	CMSG_OPCODE opcode;
-	RESULT error;
+	ClientOpcodes opcode;
+	ResultCodes error;
 	std::uint8_t unk2;
 	std::uint8_t B[32];
 	std::uint8_t g_len;

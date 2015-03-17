@@ -14,9 +14,9 @@
 
 namespace ember { namespace log {
 
-void ConsoleSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) {
+void ConsoleSink::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
 	std::size_t size = 0;
-	SEVERITY sink_sev= this->severity();
+	Severity sink_sev= this->severity();
 	bool matches = false;
 
 	for(auto& r : records) {
@@ -43,7 +43,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<SEVERITY, std::vector<
 	fwrite(buffer.data(), buffer.size(), 1, stdout);
 }
 
-void ConsoleSink::write(SEVERITY severity, const std::vector<char>& record) {
+void ConsoleSink::write(Severity severity, const std::vector<char>& record) {
 	if(this->severity() > severity) {
 		return;
 	}

@@ -46,7 +46,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	Spinlock lock_;
 	std::list<ConnDetail<ConType>> pool_;
 	Semaphore<std::mutex> semaphore_;
-	std::function<void(SEVERITY, std::string)> log_cb_;
+	std::function<void(Severity, std::string)> log_cb_;
 	bool closed_ = false;
 
 	void open_connections(std::size_t num)  {
@@ -80,13 +80,13 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 						}
 					} catch(std::exception& e) {
 						if(log_cb_) {
-							log_cb_(SEVERITY::DEBUG,
+							log_cb_(Severity::DEBUG,
 							        std::string("On connection clean: ") + e.what());
 						}
 						return false;
 					} catch(...) {
 						if(log_cb_) {
-							log_cb_(SEVERITY::DEBUG,
+							log_cb_(Severity::DEBUG,
 							        "Unable to clean connection - unknown exception thrown");
 						}
 						return false;
@@ -142,12 +142,12 @@ public:
 				driver_.close(c.conn);
 			} catch(std::exception& e) { 
 				if(log_cb_) {
-					log_cb_(SEVERITY::WARN, 
+					log_cb_(Severity::WARN, 
 					        std::string("Closing pool, driver threw: ") + e.what());
 				}
 			} catch(...) {
 				if(log_cb_) {
-					log_cb_(SEVERITY::WARN,
+					log_cb_(Severity::WARN,
 					        "Driver threw an unknown exception while closing pool");
 				}
 			}
@@ -252,7 +252,7 @@ public:
 		return pool_.size();
 	}
 
-	void logging_callback(std::function<void(SEVERITY, std::string)> callback) {
+	void logging_callback(std::function<void(Severity, std::string)> callback) {
 		log_cb_ = callback;
 	}
 

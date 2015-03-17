@@ -65,15 +65,15 @@ void LoginHandler::close(const boost::system::error_code& ec) {
 void LoginHandler::handle_packet() {
 	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
 
-	if(buffer_.size() < sizeof(protocol::CMSG_OPCODE)) {
+	if(buffer_.size() < sizeof(protocol::ClientOpcodes)) {
 		read();
 	}
 
-	auto opcode = *static_cast<protocol::CMSG_OPCODE*>(buffer_.data());
+	auto opcode = *static_cast<protocol::ClientOpcodes*>(buffer_.data());
 
 	if(initial_) {
-		if(opcode == protocol::CMSG_OPCODE::CMSG_LOGIN_CHALLENGE
-			|| opcode == protocol::CMSG_OPCODE::CMSG_RECONNECT_CHALLENGE) {
+		if(opcode == protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE
+			|| opcode == protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE) {
 			state_ = opcode;
 			initial_ = false;
 		} else {
@@ -87,22 +87,22 @@ void LoginHandler::handle_packet() {
 		return;
 	}
 
-	if(opcode == protocol::CMSG_OPCODE::CMSG_LOGIN_CHALLENGE
-	   || opcode == protocol::CMSG_OPCODE::CMSG_RECONNECT_CHALLENGE) {
+	if(opcode == protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE
+	   || opcode == protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE) {
 		read_challenge();
-	} else if(opcode == protocol::CMSG_OPCODE::CMSG_LOGIN_PROOF) {
+	} else if(opcode == protocol::ClientOpcodes::CMSG_LOGIN_PROOF) {
 		if(buffer_.size() >= sizeof(protocol::ClientLoginProof)) {
 			send_login_proof();
 		} else {
 			read();
 		}
-	} else if(opcode == protocol::CMSG_OPCODE::CMSG_RECONNECT_PROOF) {
+	} else if(opcode == protocol::ClientOpcodes::CMSG_RECONNECT_PROOF) {
 		if(buffer_.size() >= sizeof(protocol::ClientReconnectProof)) {
 			send_reconnect_proof();
 		} else {
 			read();
 		}
-	} else if(opcode == protocol::CMSG_OPCODE::CMSG_REQUEST_REALM_LIST) {
+	} else if(opcode == protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST) {
 		LOG_DEBUG(logger_) << "Unhandled CMSG_REQUEST_REALM_LIST" << LOG_FLUSH;
 		read();
 	} else {
@@ -159,30 +159,30 @@ void LoginHandler::process_challenge() {
 	                   << socket_.remote_endpoint().address().to_string() << LOG_FLUSH;
 
 	//Should probably have a patcher to handle this
-	Authenticator::PATCH_STATE patch_level = auth_.verify_client_version(version);
+	Authenticator::PatchState patch_level = auth_.verify_client_version(version);
 
-	if(patch_level == Authenticator::PATCH_STATE::OK) {
+	if(patch_level == Authenticator::PatchState::OK) {
 		auto self = shared_from_this();
 		
 		async_.run([this, self, opcode]() {
-			if(opcode == protocol::CMSG_OPCODE::CMSG_LOGIN_CHALLENGE) {
+			if(opcode == protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE) {
 				auto status = auth_.check_account(username_);
 				service_.dispatch(std::bind(&ember::LoginHandler::send_login_challenge, self, status));
-			} else if(opcode == protocol::CMSG_OPCODE::CMSG_RECONNECT_CHALLENGE) {
+			} else if(opcode == protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE) {
 				auto reply = auth_.begin_reconnect(username_);
 				service_.dispatch(std::bind(&ember::LoginHandler::send_reconnect_challenge, self, reply));
 			}
 		});
-	} else if(patch_level == Authenticator::PATCH_STATE::TOO_OLD) {
+	} else if(patch_level == Authenticator::PatchState::TOO_OLD) {
 		//patch
 		//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
 		//write(packet);
-	} else if(patch_level == Authenticator::PATCH_STATE::TOO_NEW) {
+	} else if(patch_level == Authenticator::PatchState::TOO_NEW) {
 		LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_FLUSH;
 		auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
 		PacketStream<Packet> stream(*packet);
-		stream << protocol::SMSG_OPCODE::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)
-		       << protocol::RESULT::FAIL_VERSION_INVALID;
+		stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)
+		       << protocol::ResultCodes::FAIL_VERSION_INVALID;
 		initial_ = true;
 		write(packet);
 	} else {
@@ -210,7 +210,7 @@ void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {
 	std::reverse(salt.begin(), salt.end());
 	
 	//Do the stream writing after encoding the values so it's not in a bad state if there's an exception
-	stream << protocol::RESULT::SUCCESS;
+	stream << protocol::ResultCodes::SUCCESS;
 	stream << B;
 	stream << std::uint8_t(values.gen.generator().bytes());
 	stream << std::uint8_t(values.gen.generator().to_u32bit());
@@ -220,38 +220,38 @@ void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {
 	stream << std::uint8_t(0); //unknown
 }
 
-void LoginHandler::send_login_challenge(Authenticator::ACCOUNT_STATUS status) {	
+void LoginHandler::send_login_challenge(Authenticator::AccountStatus status) {	
 	LOG_TRACE(logger_) << __func__ << LOG_FLUSH;
 
 	auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(*resp);
 
-	stream << protocol::SMSG_OPCODE::SMSG_LOGIN_CHALLENGE << std::uint8_t(0);
+	stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0);
 
 	switch(status) {
-		case ember::Authenticator::ACCOUNT_STATUS::OK:
+		case ember::Authenticator::AccountStatus::OK:
 			try {
 				build_login_challenge(stream);
 			} catch(std::exception& e) {
 				LOG_ERROR(logger_) << e.what() << " thrown during encoding for " << username_ << LOG_FLUSH;
-				stream << protocol::RESULT::FAIL_DB_BUSY;
+				stream << protocol::ResultCodes::FAIL_DB_BUSY;
 			}
 			break;
-		case ember::Authenticator::ACCOUNT_STATUS::NOT_FOUND:
+		case ember::Authenticator::AccountStatus::NOT_FOUND:
 			//leaks information on whether the account exists (could send challenge anyway?)
 			LOG_DEBUG(logger_) << "Account not found: " << username_ << LOG_FLUSH;
-			stream << protocol::RESULT::FAIL_UNKNOWN_ACCOUNT;
+			stream << protocol::ResultCodes::FAIL_UNKNOWN_ACCOUNT;
 			break;
-		case ember::Authenticator::ACCOUNT_STATUS::DAL_ERROR:
+		case ember::Authenticator::AccountStatus::DAL_ERROR:
 			LOG_ERROR(logger_) << "DAL failure while retrieving details for " << username_ << LOG_FLUSH;
-			stream << protocol::RESULT::FAIL_DB_BUSY;
+			stream << protocol::ResultCodes::FAIL_DB_BUSY;
 			break;
 		default:
 			LOG_FATAL(logger_) << "Unhandled account state" << LOG_SYNC;
 			BOOST_ASSERT(false);
 	}
 
-	state_ = protocol::CMSG_OPCODE::CMSG_LOGIN_PROOF;
+	state_ = protocol::ClientOpcodes::CMSG_LOGIN_PROOF;
 	write(resp);
 }
 
@@ -268,10 +268,10 @@ void LoginHandler::send_login_proof() {
 	std::shared_ptr<Packet> resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(*resp);
 
-	stream << protocol::SMSG_OPCODE::SMSG_LOGIN_PROOF;
+	stream << protocol::ServerOpcodes::SMSG_LOGIN_PROOF;
 	stream << result.first;
 
-	if(result.first == protocol::RESULT::SUCCESS) {
+	if(result.first == protocol::ResultCodes::SUCCESS) {
 		Botan::SecureVector<Botan::byte> m2 = Botan::BigInt::encode_1363(result.second, 20);
 		std::reverse(m2.begin(), m2.end());
 		stream << m2 << std::uint32_t(0); //proof << account flags
@@ -283,7 +283,7 @@ void LoginHandler::send_login_proof() {
 			try {
 				auth_.set_logged_in(ip);
 				auth_.set_session_key();
-				state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM_LIST;
+				state_ = protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST;
 				service_.dispatch(std::bind(&ember::LoginHandler::write, self, resp));
 				LOG_DEBUG(logger_) << username_ << " successfully authenticated" << LOG_FLUSH;
 			} catch(std::exception& e) {
@@ -308,12 +308,12 @@ void LoginHandler::send_reconnect_challenge(bool key_found) {
 	auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(*resp);
 
-	stream << protocol::SMSG_OPCODE::SMSG_RECONNECT_CHALLENGE;
-    stream << protocol::RESULT::SUCCESS;
+	stream << protocol::ServerOpcodes::SMSG_RECONNECT_CHALLENGE;
+    stream << protocol::ResultCodes::SUCCESS;
 	stream << rand;
 	stream << std::uint64_t(0) << std::uint64_t(0);
     
-	state_ = protocol::CMSG_OPCODE::CMSG_RECONNECT_PROOF;
+	state_ = protocol::ClientOpcodes::CMSG_RECONNECT_PROOF;
 	write(resp);
 }
 
@@ -337,10 +337,10 @@ void LoginHandler::send_reconnect_proof() {
 	std::shared_ptr<Packet> resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(*resp);
 	
-	stream << protocol::SMSG_OPCODE::SMSG_RECONNECT_PROOF;
+	stream << protocol::ServerOpcodes::SMSG_RECONNECT_PROOF;
 	stream << std::uint8_t(0) << std::uint16_t(0);
 
-	state_ = protocol::CMSG_OPCODE::CMSG_REQUEST_REALM_LIST;
+	state_ = protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST;
 	write(resp);
 }
 

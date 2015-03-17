@@ -14,9 +14,9 @@ namespace ember { namespace log {
 
 class ConsoleSink : public Sink {
 public:
-	ConsoleSink(SEVERITY severity) : Sink(severity) {}
-	void write(SEVERITY severity, const std::vector<char>& record) override;
-	void batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) override;
+	ConsoleSink(Severity severity) : Sink(severity) {}
+	void write(Severity severity, const std::vector<char>& record) override;
+	void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) override;
 };
 
 }} //log, ember

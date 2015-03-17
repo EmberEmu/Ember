@@ -58,10 +58,10 @@ SecureVector<byte> interleaved_hash(SecureVector<byte>& hash) {
 }
 
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
-                        COMPLIANCE mode) {
+                        Compliance mode) {
 	Botan::SHA_160 hasher;
 
-	if(mode == COMPLIANCE::RFC5054) {
+	if(mode == Compliance::RFC5054) {
 		hasher.update(Botan::BigInt::encode_1363(A, padding));
 		hasher.update(Botan::BigInt::encode_1363(B, padding));
 		return Botan::BigInt::decode(hasher.final());
@@ -81,7 +81,7 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-                        const Botan::BigInt& salt, COMPLIANCE mode) {
+                        const Botan::BigInt& salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	Botan::SHA_160 hasher;
 	hasher.update(identifier);
@@ -89,14 +89,14 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	hasher.update(password);
 	const SecureVector<byte> hash(hasher.final());
 
-	if(mode == COMPLIANCE::RFC5054) {
+	if(mode == Compliance::RFC5054) {
 		hasher.update(Botan::BigInt::encode(salt));
 	} else {
 		hasher.update(detail::encode_flip(salt));
 	}
 
 	hasher.update(hash);
-	return (mode == COMPLIANCE::RFC5054)? Botan::BigInt::decode(hasher.final())
+	return (mode == Compliance::RFC5054)? Botan::BigInt::decode(hasher.final())
 	                                    : detail::decode_flip(hasher.final());
 }
 
@@ -141,7 +141,7 @@ Botan::BigInt generate_salt(std::size_t salt_len) {
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
                                 const Generator& generator, const Botan::BigInt& salt,
-                                COMPLIANCE mode) {
+                                Compliance mode) {
 	return detail::generate(identifier, password, generator, salt, mode);
 }
 

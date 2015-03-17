@@ -23,7 +23,7 @@ public:
 		password = "ABC";
 		gen = std::make_unique<srp::Generator>(srp::Generator::GROUP::_256_BIT);
 		salt = srp::generate_salt(32);
-		verifier = srp::generate_verifier(identifier, password, *gen, salt, srp::COMPLIANCE::GAME);
+		verifier = srp::generate_verifier(identifier, password, *gen, salt, srp::Compliance::GAME);
 		server = std::make_unique<srp::Server>(*gen, verifier);
 		client = std::make_unique<srp::Client>(identifier, password, *gen);
 	}
@@ -49,14 +49,14 @@ TEST(srp6a, RFC5054_TestVectors) {
 	ASSERT_EQ(expected_k, k) << "K was calculated incorrectly!";
 
 	Botan::BigInt expected_x("0x94B7555AABE9127CC58CCF4993DB6CF84D16C124");
-	Botan::BigInt x = srp::detail::compute_x(identifier, password, salt, srp::COMPLIANCE::RFC5054);
+	Botan::BigInt x = srp::detail::compute_x(identifier, password, salt, srp::Compliance::RFC5054);
 	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
 
 	Botan::BigInt expected_v("0x7E273DE8696FFC4F4E337D05B4B375BEB0DDE1569E8FA00A9886D8129BADA1F1822"
 	                         "223CA1A605B530E379BA4729FDC59F105B4787E5186F5C671085A1447B52A48CF1970"
 	                         "B4FB6F8400BBF4CEBFBB168152E08AB5EA53D15C1AFF87B2B9DA6E04E058AD51CC72B"
 	                         "FC9033B564E26480D78E955A5E29E7AB245DB2BE315E2099AFB");
-	Botan::BigInt v = srp::generate_verifier(identifier, password, gen, salt, srp::COMPLIANCE::RFC5054);
+	Botan::BigInt v = srp::generate_verifier(identifier, password, gen, salt, srp::Compliance::RFC5054);
 	ASSERT_EQ(expected_v, v) << "v was calculated incorrectly!";
 
 	Botan::BigInt test_a("0x60975527035CF2AD1989806F0407210BC81EDC04E2762A56AFD529DDDA2D4393");
@@ -83,7 +83,7 @@ TEST(srp6a, RFC5054_TestVectors) {
 
 	Botan::BigInt expected_u("0xCE38B9593487DA98554ED47D70A7AE5F462EF019");
 	Botan::BigInt u = srp::detail::scrambler(expected_A, expected_B, gen.prime().bytes(),
-	                                          srp::COMPLIANCE::RFC5054);
+	                                          srp::Compliance::RFC5054);
 	ASSERT_EQ(expected_u, u) << "Scrambling parameter did not match";
 
 	Botan::BigInt expected_key("0xB0DC82BABCF30674AE450C0287745E7990A3381F63B387AAF271A10D"
@@ -92,10 +92,10 @@ TEST(srp6a, RFC5054_TestVectors) {
 	                           "3499B200210DCC1F10EB33943CD67FC88A2F39A4BE5BEC4EC0A3212D"
 	                           "C346D7E474B29EDE8A469FFECA686E5A");
 	EXPECT_EQ(expected_key, Botan::BigInt::decode(client.session_key(expected_B, salt, false,
-	                                              srp::COMPLIANCE::RFC5054)))
+	                                              srp::Compliance::RFC5054)))
 		<< "Client key did not match expected value!";
 	EXPECT_EQ(expected_key, Botan::BigInt::decode(server.session_key(expected_A, false,
-	                                              srp::COMPLIANCE::RFC5054)))
+	                                              srp::Compliance::RFC5054)))
 		<< "Server key did not match expected value!";
 }
 

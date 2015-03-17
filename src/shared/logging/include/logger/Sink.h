@@ -14,17 +14,17 @@
 namespace ember { namespace log {
 
 class Sink {
-	SEVERITY severity_;
+	Severity severity_;
 
 public:
-	Sink(SEVERITY severity) {
+	Sink(Severity severity) {
 		severity_ = severity;
 	}
 
-	SEVERITY severity() { return severity_; }
-	void severity(SEVERITY severity) { severity_ = severity; }
-	virtual void write(SEVERITY severity, const std::vector<char>& record) = 0;
-	virtual void batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) = 0;
+	Severity severity() { return severity_; }
+	void severity(Severity severity) { severity_ = severity; }
+	virtual void write(Severity severity, const std::vector<char>& record) = 0;
+	virtual void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) = 0;
 };
 
 }} //log, ember

@@ -28,7 +28,7 @@ void Logger::add_sink(std::unique_ptr<Sink> sink) {
 	pimpl_->add_sink(std::move(sink));
 }
 
-SEVERITY Logger::severity() {
+Severity Logger::severity() {
 	return pimpl_->severity();
 }
 
@@ -40,7 +40,7 @@ Logger& Logger::operator <<(Logger& (*m)(Logger&)) {
 	return (*m)(*this);
 }
 
-Logger& Logger::operator <<(SEVERITY severity) {
+Logger& Logger::operator <<(Severity severity) {
 	*pimpl_ << severity;
 	return *this;
 }

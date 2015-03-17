@@ -12,6 +12,6 @@
 
 namespace ember { namespace log {
 
-enum class SEVERITY { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, DISABLED };
+enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, DISABLED };
 
 }} //log, ember

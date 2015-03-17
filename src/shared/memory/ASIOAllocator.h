@@ -13,8 +13,9 @@
 #include <boost/pool/pool_alloc.hpp>
 #include <mutex>
 
-namespace ember {
+// todo - create an allocator per-thread and remove the locks
 
+namespace ember {
 
 class ASIOAllocator {
 	const static std::size_t SMALL_SIZE_ = 64;

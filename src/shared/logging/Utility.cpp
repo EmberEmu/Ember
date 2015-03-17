@@ -17,21 +17,21 @@
 
 namespace ember { namespace log {
 
-SEVERITY severity_string(const std::string& severity) {
+Severity severity_string(const std::string& severity) {
 	if(severity == "trace") {
-		return SEVERITY::TRACE;
+		return Severity::TRACE;
 	} else if(severity == "debug") {
-		return SEVERITY::DEBUG;
+		return Severity::DEBUG;
 	} else if(severity == "info") {
-		return SEVERITY::INFO;
+		return Severity::INFO;
 	} else if(severity == "warning") {
-		return SEVERITY::WARN;
+		return Severity::WARN;
 	} else if(severity == "error") {
-		return SEVERITY::ERROR;
+		return Severity::ERROR;
 	} else if(severity == "fatal") {
-		return SEVERITY::FATAL;
+		return Severity::FATAL;
 	} else if(severity == "none" || severity == "disabled") {
-		return SEVERITY::DISABLED;
+		return Severity::DISABLED;
 	} else {
 		throw exception("Unknown severity passed to severity_string");
 	}
@@ -71,19 +71,19 @@ std::string put_time(const std::tm& time, const std::string& format) {
 	return buffer;
 }
 
-std::string severity_string(SEVERITY severity) {
+std::string severity_string(Severity severity) {
 	switch(severity) {
-		case SEVERITY::DEBUG:
+		case Severity::DEBUG:
 			return "[debug] ";
-		case SEVERITY::TRACE:
+		case Severity::TRACE:
 			return "[trace] ";
-		case SEVERITY::WARN:
+		case Severity::WARN:
 			return "[warning] ";
-		case SEVERITY::INFO:
+		case Severity::INFO:
 			return "[info] ";
-		case SEVERITY::FATAL:
+		case Severity::FATAL:
 			return "[fatal] ";
-		case SEVERITY::ERROR:
+		case Severity::ERROR:
 			return "[error] ";
 		default:
 			return "[unknown] ";

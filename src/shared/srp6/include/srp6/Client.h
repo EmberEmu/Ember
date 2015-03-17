@@ -29,7 +29,7 @@ public:
 	Client(std::string identifier, std::string password, Generator gen, Botan::BigInt a,
 	       bool srp6a = false);
 	SessionKey session_key(const Botan::BigInt& B, const Botan::BigInt& salt,
-	                       bool interleave = true, COMPLIANCE mode = COMPLIANCE::GAME);
+	                       bool interleave = true, Compliance mode = Compliance::GAME);
 	Botan::BigInt generate_proof(const SessionKey& key) const;
 	inline const Botan::BigInt& public_ephemeral() const { return A_; }
 };

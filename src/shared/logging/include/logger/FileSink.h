@@ -21,7 +21,7 @@ namespace ember { namespace log {
 
 class FileSink : public Sink {
 public:
-	enum class MODE { TRUNCATE, APPEND };
+	enum class Mode { TRUNCATE, APPEND };
 
 private:
 	std::unique_ptr<File> file_;
@@ -36,26 +36,26 @@ private:
 	bool midnight_rotate_ = false;
 	std::string time_format_ = "[%d/%m/%Y %H:%M:%S] ";
 
-	void open(MODE mode = MODE::TRUNCATE);
+	void open(Mode mode = Mode::TRUNCATE);
 	void rotate();
 	void rotate_check(std::size_t buffer_size, const std::tm& curr_time);
 	bool midnight_rollover(const std::tm& curr_time);
 	void format_file_name();
 	bool file_exists(const std::string& name);
 	void set_initial_rotation();
-	std::string generate_record_detail(SEVERITY severity, const std::tm& curr_time);
+	std::string generate_record_detail(Severity severity, const std::tm& curr_time);
 
 public:
-	FileSink(SEVERITY severity, std::string file_name, MODE mode);
+	FileSink(Severity severity, std::string file_name, Mode mode);
 
 	void log_severity(bool enable) { log_severity_ = enable; }
 	void log_date(bool enable) { log_date_ = enable;  }
 	void midnight_rotate(bool enable) { midnight_rotate_ = enable; }
-	void mode(MODE mode);
+	void mode(Mode mode);
 	void size_limit(std::uint32_t megabytes);
 	void time_format(const std::string& format);
-	void write(SEVERITY severity, const std::vector<char>& record) override;
-	void batch_write(const std::vector<std::pair<SEVERITY, std::vector<char>>>& records) override;
+	void write(Severity severity, const std::vector<char>& record) override;
+	void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) override;
 };
 
 
