@@ -335,13 +335,15 @@ bool LoginHandler::check_opcode(const PacketBuffer& buffer, protocol::ClientOpco
 LoginHandler& LoginHandler::operator=(LoginHandler&& rhs) {
 	login_auth_ = std::move(rhs.login_auth_);
 	reconn_auth_ = std::move(rhs.reconn_auth_);
+	source_ = std::move(rhs.source_);
 	return *this;
 }
 
 LoginHandler::LoginHandler(LoginHandler&& rhs)
                            : login_auth_(std::move(rhs.login_auth_)),
                              reconn_auth_(std::move(rhs.reconn_auth_)),
-                             patcher_(rhs.patcher_), user_src_(rhs.user_src_),
+							 source_(rhs.source_), patcher_(rhs.patcher_),
+                             user_src_(rhs.user_src_),
                              logger_(rhs.logger_) {}
 
 } // ember
