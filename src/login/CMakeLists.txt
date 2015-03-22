@@ -15,20 +15,26 @@ set(EXECUTABLE_HDR
     ../shared/IPBanCache.h
     ../shared/misc/PacketStream.h
     ../shared/threading/ThreadPool.h
-    LoginHandler.h
     LoginHandlerBuilder.h
+    LoginManager.h
+    LoginHandler.h
     PacketBuffer.h
+    Session.h
     Protocol.h
     GameVersion.h
     Authenticator.h
+    Actions.h
+    Patcher.h
     )
 
 set(EXECUTABLE_SRC
     ../shared/threading/ThreadPool.cpp
-	../shared/Banner.cpp
-	LoginHandler.cpp
+    ../shared/Banner.cpp
+    LoginHandler.cpp
+    LoginManager.cpp
     Authenticator.cpp
-	main.cpp
+    Patcher.cpp
+    main.cpp
     )
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

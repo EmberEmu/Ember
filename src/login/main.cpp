@@ -9,6 +9,8 @@
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "LoginHandlerBuilder.h"
+#include "LoginManager.h"
+#include "Patcher.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
@@ -19,7 +21,6 @@
 #include <conpool/drivers/AutoSelect.h>
 #include <srp6/Server.h>
 #include <shared/Banner.h>
-#include <shared/TCPServer.h>
 #include <shared/Version.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
@@ -98,20 +99,19 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	unsigned int concurrency = check_concurrency(logger);
 
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
-	ember::ThreadPool tpool(concurrency);
-
-	const auto allowed_clients = client_versions();
-	ember::ASIOAllocator allocator; // todo - per-thread allocator
-
-	ember::LoginHandlerBuilder builder(allocator, logger, allowed_clients, *user_dao, tpool);
-	ba::io_service service(concurrency);
+	ember::ThreadPool thread_pool(concurrency);
 
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
 
+	const auto allowed_clients = client_versions();
+	ember::Patcher patcher(allowed_clients, "temp");
+	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao);
+
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	ember::TCPServer<ember::LoginHandler> login_server(service, port, interface, ip_ban_cache, logger,
-		std::bind(&ember::LoginHandlerBuilder::create, &builder, std::placeholders::_1));
+	ba::io_service service(concurrency);
+	ember::LoginManager login_server(service, port, interface, ip_ban_cache, thread_pool, logger,
+		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1));
 
 	ba::signal_set signals(service, SIGINT, SIGTERM);
 	signals.async_wait(std::bind(&ba::io_service::stop, &service));

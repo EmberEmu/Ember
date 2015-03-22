@@ -14,107 +14,52 @@
 #include <botan/sha160.h>
 #include <algorithm>
 #include <sstream>
+#include <vector>
+#include <utility>
 
 namespace ember {
 
-auto Authenticator::verify_client_version(const GameVersion& version) -> PatchState {
-	if(std::find(versions_.begin(), versions_.end(), version) != versions_.end()) {
-		return PatchState::OK;
-	}
-
-	//Figure out whether any of the allowed client versions are newer than the client.
-	//If so, there's a chance that it can be patched.
-	for(auto v : versions_) {
-		if(v > version) {
-			return PatchState::TOO_OLD;
-		}
-	}
-
-	return PatchState::TOO_NEW;
+LoginAuthenticator::LoginAuthenticator(User user) : user_(std::move(user)) {
+	srp_ = std::make_unique<srp6::Server>(gen_, user_.verifier());
 }
 
-auto Authenticator::check_account(const std::string& username) -> AccountStatus try {
-	user_ = users_.user(username);
-
-	if(!user_) {
-		return AccountStatus::NOT_FOUND;
-	}
-
-	auth_ = std::make_unique<srp6::Server>(gen_, user_->verifier());
-
-	return AccountStatus::OK;
-} catch(std::exception& e) {
-	LOG_ERROR_GLOB << e.what() << LOG_ASYNC;
-	return AccountStatus::DAL_ERROR;
+auto LoginAuthenticator::challenge_reply() -> ChallengeResponse {
+	return {srp_->public_ephemeral(), Botan::BigInt(user_.salt()), gen_};
 }
 
-auto Authenticator::challenge_reply() -> ChallengeResponse {
-	return {auth_->public_ephemeral(), Botan::BigInt(user_->salt()), gen_};
-}
-
-auto Authenticator::proof_check(protocol::ClientLoginProof* proof) -> LoginResult {
-	//Usernames aren't required to be uppercase in the DB but the client requires it for calculations
-	std::string user_upper(user_->username());
+auto LoginAuthenticator::proof_check(protocol::ClientLoginProof* proof) -> ProofResult {
+	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
+	std::string user_upper(user_.username());
 	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
 
-	//Need to reverse the order thanks to Botan's big-endian buffers
+	// Need to reverse the order thanks to Botan's big-endian buffers
 	std::reverse(std::begin(proof->A), std::end(proof->A));
 	std::reverse(std::begin(proof->M1), std::end(proof->M1));
 
 	Botan::BigInt A(proof->A, sizeof(proof->A));
 	Botan::BigInt M1(proof->M1, sizeof(proof->M1));
-	srp6::SessionKey key(auth_->session_key(A, true, srp6::Compliance::GAME));
+	srp6::SessionKey key(srp_->session_key(A, true, srp6::Compliance::GAME));
 
-	Botan::BigInt B = auth_->public_ephemeral();
+	Botan::BigInt B = srp_->public_ephemeral();
 	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
-	                                                 A, B, Botan::BigInt(user_->salt()));
+	                                                 A, B, Botan::BigInt(user_.salt()));
 	sess_key_ = key;
-
-	auto res = protocol::ResultCodes::FAIL_INCORRECT_PASSWORD;
-	
-	if(M1 == M1_S) {
-		if(user_->banned()) {
-			res = protocol::ResultCodes::FAIL_BANNED;
-		} else if(user_->suspended()) {
-			res = protocol::ResultCodes::FAIL_SUSPENDED;
-		/*} else if(time) {
-			res = protocol::RESULT::FAIL_NO_TIME;*/
-		/*} else if(parental_controls) {
-			res = protocol::RESULT::FAIL_PARENTAL_CONTROLS;*/
-		} else {
-			res = protocol::ResultCodes::SUCCESS;
-		}
-	}
-
-	return {res, auth_->generate_proof(key, M1)};
+	return {M1 == M1_S, srp_->generate_proof(key, M1)};
 }
 
-void Authenticator::set_logged_in(const std::string& ip) {
-	users_.record_last_login(*user_, ip);
-}
-
-void Authenticator::set_session_key() {
+std::string LoginAuthenticator::session_key() {
 	Botan::BigInt key(Botan::BigInt::decode(sess_key_));
 	std::stringstream keystr; keystr << key;
-	users_.session_key(user_->username(), keystr.str());
+	return keystr.str();
 }
 
-void Authenticator::set_reconnect_challenge(const Botan::SecureVector<Botan::byte>& bytes) {
+ReconnectAuthenticator::ReconnectAuthenticator(const std::string& username, const std::string& session_key,
+                                               const Botan::SecureVector<Botan::byte>& bytes) {
 	rcon_chall_ = bytes;
+	sess_key_ = Botan::BigInt::encode(Botan::BigInt(session_key));
 }
 
-bool Authenticator::begin_reconnect(const std::string& username) try {
-	rcon_user_ = username;
-	Botan::BigInt recovered_key = Botan::BigInt(users_.session_key(username));
-	sess_key_ = Botan::BigInt::encode(recovered_key);
-	return !sess_key_.t.empty();
-} catch(std::exception& e) {
-	LOG_ERROR_GLOB << e.what() << LOG_ASYNC;
-	return false;
-}
-
-
-bool Authenticator::reconnect_proof_check(protocol::ClientReconnectProof* proof) {
+bool ReconnectAuthenticator::proof_check(const protocol::ClientReconnectProof* proof) {
 	Botan::BigInt client_proof(proof->R1, sizeof(proof->R1));
 
 	Botan::SHA_160 hasher;
@@ -124,8 +69,8 @@ bool Authenticator::reconnect_proof_check(protocol::ClientReconnectProof* proof)
 	hasher.update(sess_key_);
 	auto res = hasher.final();
 	
-	//todo - change this to include std::end for R2 once on VS2015 RTM (C++14)
+	// todo - change this to include std::end for R2 once on VS2015 RTM (C++14)
 	return std::equal(res.begin(), res.end(), std::begin(proof->R2));
 }
 
-} //ember
+} // ember

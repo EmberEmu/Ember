@@ -46,7 +46,7 @@ SessionKey Server::session_key(const BigInt& A, bool interleave, Compliance mode
 	BigInt u = detail::scrambler(A, B_, N_.bytes(), mode);
 	BigInt S = power_mod(A * power_mod(v_, u, N_), b_, N_);
 	return interleave? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
-		: SessionKey(Botan::BigInt::encode(S));
+	                   : SessionKey(Botan::BigInt::encode(S));
 }
 
 BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof) const {

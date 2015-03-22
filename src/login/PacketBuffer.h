@@ -26,11 +26,11 @@ public:
 		return BUFFER_SIZE;
 	}
 
-	std::size_t size() {
+	std::size_t size() const {
 		return BUFFER_SIZE - free_;
 	}
 
-	std::size_t free() {
+	std::size_t free() const {
 		return free_;
 	}
 
@@ -39,7 +39,7 @@ public:
 		free_ -= bytes;
 		location_ += bytes;
 
-		if(free_ < old) {
+		if(free_ > old) {
 			LOG_FATAL_GLOB << "Overflow in packet buffer: " << __FILE__ << ":" << __LINE__ << LOG_SYNC;
 			std::abort();
 		}
@@ -54,7 +54,11 @@ public:
 		return buffer_.data();
 	}
 
-	void* store() {
+	const void* data() const {
+		return buffer_.data();
+	}
+
+	void* store() const {
 		return location_;
 	}
 
@@ -63,6 +67,12 @@ public:
 		return static_cast<T*>(data());
 	}
 
+	template<typename T>
+	const T* data() const {
+		return static_cast<T*>(data());
+	}
+
+	
 	PacketBuffer::PacketBuffer(const PacketBuffer& rhs) = delete;
 	PacketBuffer& operator=(const PacketBuffer& rhs) = delete;
 	PacketBuffer::PacketBuffer(PacketBuffer&& rhs) = delete;

@@ -59,19 +59,19 @@ inline bool operator>(const GameVersion& lhs, const GameVersion& rhs) {
 }
 
 inline bool operator!=(const GameVersion& lhs, const GameVersion& rhs) {
-		return !(lhs == rhs);
+	return !(lhs == rhs);
 }
 
 inline bool operator<(const GameVersion& lhs, const GameVersion& rhs) {
-		return (lhs != rhs && !(lhs > rhs));
+	return (lhs != rhs && !(lhs > rhs));
 }
 
 inline bool operator<=(const GameVersion& lhs, const GameVersion& rhs) {
-		return (lhs < rhs || lhs == rhs);
+	return (lhs < rhs || lhs == rhs);
 }
 
 inline bool operator>=(const GameVersion& lhs, const GameVersion& rhs) {
-		return (lhs > rhs || lhs == rhs);
+	return (lhs > rhs || lhs == rhs);
 }
 
 } //ember

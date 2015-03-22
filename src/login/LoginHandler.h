@@ -8,59 +8,67 @@
 
 #pragma once
 
-#include "GameVersion.h"
+#include "Actions.h"
 #include "PacketBuffer.h"
-#include "Protocol.h"
 #include "Authenticator.h"
-#include <logger/Logger.h>
-#include <shared/threading/ThreadPool.h>
+#include "GameVersion.h"
+#include "Protocol.h"
+#include <logger/Logging.h>
+#include <shared/database/daos/UserDAO.h>
 #include <shared/misc/PacketStream.h>
-#include <shared/memory/ASIOAllocator.h>
-#include <boost/asio.hpp>
-#include <array>
+#include <botan/bigint.h>
+#include <functional>
 #include <memory>
-#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace ember {
 
-class LoginHandler : public std::enable_shared_from_this<LoginHandler> {
-	enum STATE { INITIAL, LOGIN_CHALLENGE, LOGIN_PROOF,
-	             RECONN_CHALLENGE, RECONN_PROOF, REQUEST_REALMS };
+class Patcher;
 
-	boost::asio::ip::tcp::socket socket_;
-	boost::asio::io_service& service_;
-	boost::asio::strand strand_;
-	boost::asio::deadline_timer timer_;
-	ASIOAllocator& allocator_;
+class LoginHandler {
+	enum class State {
+		INITIAL_CHALLENGE, LOGIN_PROOF, RECONN_PROOF, REQUEST_REALMS,
+		FETCHING_USER, FETCHING_SESSION, WRITING_SESSION, CLOSED
+	};
+
+	State state_ = State::INITIAL_CHALLENGE;
 	log::Logger* logger_;
-	PacketBuffer buffer_;
-	Authenticator auth_;
-	ThreadPool& async_;
-	std::string username_;
-	protocol::ClientOpcodes state_;
-	bool initial_ = true;
+	const Patcher& patcher_;
+	dal::UserDAO& user_src_;
+	boost::optional<User> user_;
+	Botan::BigInt server_proof_;
+	std::string source_, username_;
+	std::unique_ptr<LoginAuthenticator> login_auth_;
+	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 
-	void read();
-	void write(std::shared_ptr<std::vector<char>> buffer);
-	void close(const boost::system::error_code& error);
-
-	void handle_packet();
-	void read_challenge();
-	void process_challenge();
+	void send_realm_list(const PacketBuffer& buffer);
+	void process_challenge(const PacketBuffer& buffer);
+	void check_login_proof(PacketBuffer& buffer);
+	void send_reconnect_proof(const PacketBuffer& buffer);
+	void send_login_failure(protocol::ResultCodes result);
 	void build_login_challenge(PacketStream<Packet>& resp);
-	void send_login_challenge(Authenticator::AccountStatus status);
-	void send_login_proof();
-	void send_reconnect_challenge(bool key_found);
-	void send_reconnect_proof();
+	void send_login_challenge(FetchUserAction* action);
+	void send_login_success(StoreSessionAction* action);
+	void send_reconnect_challenge(FetchSessionKeyAction* action);
+
+	void accept_client(protocol::ClientOpcodes opcode);
+	void reject_client(const GameVersion& version);
+	void patch_client(const GameVersion& version);
+
+	bool check_opcode(const PacketBuffer& buffer, protocol::ClientOpcodes opcode);
 
 public:
-	LoginHandler(boost::asio::ip::tcp::socket socket, ASIOAllocator& allocator,
-	             Authenticator auth, ThreadPool& pool, log::Logger* logger)
-	             : socket_(std::move(socket)), allocator_(allocator), logger_(logger),
-	               timer_(socket_.get_io_service()), strand_(socket_.get_io_service()),
-	               auth_(std::move(auth)), async_(pool), service_(socket_.get_io_service()) { }
+	std::function<void(std::shared_ptr<Action> action)> on_action;
+	std::function<void(std::shared_ptr<Packet>)> on_send;
 
-	void start();
+	bool update_state(std::shared_ptr<Action> action);
+	bool update_state(PacketBuffer& buffer);
+
+	LoginHandler(std::string source, dal::UserDAO& users, const Patcher& patcher, log::Logger* logger)
+	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger) {}
+	LoginHandler& operator=(LoginHandler&&);
+	LoginHandler(LoginHandler&&);
 };
 
-} //ember
+} // ember

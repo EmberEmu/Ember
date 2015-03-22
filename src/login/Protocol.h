@@ -48,12 +48,16 @@ enum class ResultCodes : std::uint8_t {
 	FAIL_VERSION_UPDATE         = 0x0A,
 	FAIL_INVALID_SERVER         = 0x0B,
 	FAIL_SUSPENDED              = 0x0C,
-	FAIL_FAIL_NOACCESS          = 0x0D,
+	FAIL_NOACCESS               = 0x0D,
 	SUCCESS_SURVEY              = 0x0E,
 	FAIL_PARENTAL_CONTROL       = 0x0F,
 };
 
 #pragma pack(push, 1)
+
+struct RequestRealmList {
+	ClientOpcodes opcode;
+};
 
 struct ClientLoginProof {
 	ClientOpcodes opcode;

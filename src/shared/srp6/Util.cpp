@@ -97,7 +97,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 
 	hasher.update(hash);
 	return (mode == Compliance::RFC5054)? Botan::BigInt::decode(hasher.final())
-	                                    : detail::decode_flip(hasher.final());
+	                                      : detail::decode_flip(hasher.final());
 }
 
 } //detail
