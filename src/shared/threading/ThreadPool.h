@@ -9,7 +9,6 @@
 #pragma once
 
 #include <boost/asio/io_service.hpp>
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -18,7 +17,7 @@
 #include <vector>
 #include <cstddef>
 
-#undef ERROR 
+#undef ERROR
 
 namespace ember {
 
