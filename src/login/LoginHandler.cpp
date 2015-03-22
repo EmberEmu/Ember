@@ -225,7 +225,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		if(key) {
 			state_ = State::RECONN_PROOF;
 			stream << protocol::ResultCodes::SUCCESS;
-			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(*key, username_, rand);
+			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(username_, *key, rand);
 		} else {
 			stream << protocol::ResultCodes::FAIL_NOACCESS;
 		}
