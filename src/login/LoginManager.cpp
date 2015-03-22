@@ -181,10 +181,8 @@ bool LoginManager::check_challenge_completion(const PacketBuffer& buffer) {
 	}
 
 	// Packet should be complete by this point
-	auto packet = buffer.data<const protocol::ClientLoginChallenge>();
-
 	if(buffer.size() < sizeof(protocol::ClientLoginChallenge)
-		|| packet->username + packet->username_len != buffer.data<const char>() + buffer.size()) {
+		|| data->username + data->username_len != buffer.data<const char>() + buffer.size()) {
 		throw std::runtime_error("Malformed challenge packet");
 	}
 
