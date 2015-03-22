@@ -140,26 +140,19 @@ bool LoginManager::check_packet_completion(const PacketBuffer& buffer) {
 
 	auto opcode = *static_cast<const protocol::ClientOpcodes*>(buffer.data());
 
-	if(opcode == protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE
-	   || opcode == protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE) {
-		return check_challenge_completion(buffer);
-	} else if(opcode == protocol::ClientOpcodes::CMSG_LOGIN_PROOF) {
-		if(buffer.size() < sizeof(protocol::ClientLoginProof)) {
-			return false;
-		}
-	} else if(opcode == protocol::ClientOpcodes::CMSG_RECONNECT_PROOF) {
-		if(buffer.size() < sizeof(protocol::ClientReconnectProof)) {
-			return false;
-		}
-	} else if(opcode == protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST) {
-		if(buffer.size() < sizeof(protocol::RequestRealmList)) {
-			return false;
-		}
-	} else {
-		throw std::runtime_error("Unhandled opcode");
+	switch(opcode) {
+		case protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE:
+		case protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE:
+			return check_challenge_completion(buffer);
+		case protocol::ClientOpcodes::CMSG_LOGIN_PROOF:
+			return buffer.size() >= sizeof(protocol::ClientLoginProof);
+		case protocol::ClientOpcodes::CMSG_RECONNECT_PROOF:
+			return buffer.size() >= sizeof(protocol::ClientReconnectProof);
+		case protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST:
+			return buffer.size() >= sizeof(protocol::RequestRealmList);
+		default:
+			throw std::runtime_error("Unhandled opcode");
 	}
-
-	return true;
 }
 
 bool LoginManager::check_challenge_completion(const PacketBuffer& buffer) {
