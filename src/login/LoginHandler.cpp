@@ -22,7 +22,7 @@ bool LoginHandler::update_state(PacketBuffer& buffer) try {
 		case State::LOGIN_PROOF:
 			check_login_proof(buffer);
 			break;
-		case State::RECONN_PROOF:
+		case State::RECONNECT_PROOF:
 			send_reconnect_proof(buffer);
 			break;
 		case State::REQUEST_REALMS:
@@ -223,7 +223,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		boost::optional<std::string> key = action->get_result();
 		
 		if(key) {
-			state_ = State::RECONN_PROOF;
+			state_ = State::RECONNECT_PROOF;
 			stream << protocol::ResultCodes::SUCCESS;
 			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(username_, *key, rand);
 		} else {
