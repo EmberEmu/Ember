@@ -19,7 +19,6 @@
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
-#include <srp6/Server.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/memory/ASIOAllocator.h>
