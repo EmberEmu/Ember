@@ -34,14 +34,17 @@ class LoginAuthenticator {
 		srp6::Generator gen;
 	};
 
+	struct ProofResult {
+		bool match;
+		Botan::BigInt server_proof;
+	};
+
 	std::unique_ptr<srp6::Server> srp_;
 	srp6::Generator gen_ = srp6::Generator::GROUP::_256_BIT;
 	srp6::SessionKey sess_key_;
 	User user_;
 
 public:
-	typedef std::pair<bool, Botan::BigInt> ProofResult;
-
 	LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
 	ProofResult proof_check(protocol::ClientLoginProof* proof);

@@ -139,7 +139,7 @@ void LoginHandler::accept_client(protocol::ClientOpcodes opcode) {
 
 void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
-	state_ = State::INITIAL_CHALLENGE;
+	state_ = State::CLOSED;
 
 	auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
 	PacketStream<Packet> stream(*packet);
@@ -181,7 +181,7 @@ void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	state_ = State::INITIAL_CHALLENGE;
+	state_ = State::CLOSED;
 	
 	auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(*resp);
@@ -211,7 +211,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	state_ = State::INITIAL_CHALLENGE;
+	state_ = State::CLOSED;
 
 	auto rand = Botan::AutoSeeded_RNG().random_vec(16);
 	auto resp = std::make_shared<Packet>();
@@ -250,7 +250,7 @@ void LoginHandler::check_login_proof(PacketBuffer& buffer) {
 	auto proof = login_auth_->proof_check(buffer.data<protocol::ClientLoginProof>());
 	auto result = protocol::ResultCodes::FAIL_INCORRECT_PASSWORD;
 
-	if(proof.first) {
+	if(proof.match) {
 		if(user_->banned()) {
 			result = protocol::ResultCodes::FAIL_BANNED;
 		} else if(user_->suspended()) {
@@ -266,11 +266,11 @@ void LoginHandler::check_login_proof(PacketBuffer& buffer) {
 
 	if(result == protocol::ResultCodes::SUCCESS) {
 		state_ = State::WRITING_SESSION;
-		server_proof_ = proof.second;
+		server_proof_ = proof.server_proof;
 		auto action = std::make_shared<StoreSessionAction>(*user_, source_, login_auth_->session_key(), user_src_);
 		on_action(action);
 	} else {
-		state_ = State::INITIAL_CHALLENGE;
+		state_ = State::CLOSED;
 		send_login_failure(result);
 	}
 }
