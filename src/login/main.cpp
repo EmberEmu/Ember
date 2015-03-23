@@ -9,7 +9,8 @@
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "LoginHandlerBuilder.h"
-#include "LoginManager.h"
+#include "LoginPacketCheck.h"
+#include "NetworkHandler.h"
 #include "Patcher.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
@@ -109,8 +110,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	ba::io_service service(concurrency);
-	ember::LoginManager login_server(service, port, interface, ip_ban_cache, thread_pool, logger,
-		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1));
+
+	ember::NetworkHandler<ember::LoginHandler> login_server(service, port, interface,
+		ip_ban_cache, thread_pool, logger,
+		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
+		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
 	ba::signal_set signals(service, SIGINT, SIGTERM);
 	signals.async_wait(std::bind(&ba::io_service::stop, &service));

@@ -6,10 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
-
 namespace ember {
 
+class PacketBuffer;
 
+namespace protocol {
 
-} // ember
+bool check_packet_completion(const PacketBuffer& buffer);
+
+}} // protocol, ember

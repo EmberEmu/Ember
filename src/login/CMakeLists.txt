@@ -16,9 +16,11 @@ set(EXECUTABLE_HDR
     ../shared/misc/PacketStream.h
     ../shared/threading/ThreadPool.h
     LoginHandlerBuilder.h
-    LoginManager.h
+    LoginPacketCheck.h
+    NetworkHandler.h
     LoginHandler.h
     PacketBuffer.h
+    Handler.h
     Session.h
     Protocol.h
     GameVersion.h
@@ -31,7 +33,7 @@ set(EXECUTABLE_SRC
     ../shared/threading/ThreadPool.cpp
     ../shared/Banner.cpp
     LoginHandler.cpp
-    LoginManager.cpp
+    LoginPacketCheck.cpp
     Authenticator.cpp
     Patcher.cpp
     main.cpp

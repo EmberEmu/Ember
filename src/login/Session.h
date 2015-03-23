@@ -15,9 +15,10 @@
 
 namespace ember {
 
+template<typename T>
 struct Session {
 	PacketBuffer buffer;
-	LoginHandler handler;
+	T handler;
 	boost::asio::ip::tcp::socket socket;
 	boost::asio::strand strand;
 	boost::asio::deadline_timer timer;
