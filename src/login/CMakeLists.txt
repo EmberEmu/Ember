@@ -8,7 +8,6 @@ set(EXECUTABLE_NAME login)
 
 set(EXECUTABLE_HDR
     ../shared/Banner.h
-    ../shared/TCPServer.h
     ../shared/memory/ASIOAllocator.h
     ../shared/database/daos/UserDAO.h
     ../shared/database/daos/IPBanDAO.h
