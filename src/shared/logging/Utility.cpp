@@ -17,26 +17,6 @@
 
 namespace ember { namespace log {
 
-Severity severity_string(const std::string& severity) {
-	if(severity == "trace") {
-		return Severity::TRACE;
-	} else if(severity == "debug") {
-		return Severity::DEBUG;
-	} else if(severity == "info") {
-		return Severity::INFO;
-	} else if(severity == "warning") {
-		return Severity::WARN;
-	} else if(severity == "error") {
-		return Severity::ERROR;
-	} else if(severity == "fatal") {
-		return Severity::FATAL;
-	} else if(severity == "none" || severity == "disabled") {
-		return Severity::DISABLED;
-	} else {
-		throw exception("Unknown severity passed to severity_string");
-	}
-}
-
 namespace detail {
 
 namespace sc = std::chrono;
@@ -90,4 +70,26 @@ std::string severity_string(Severity severity) {
 	}
 }
 
-}}} //detail
+} // detail
+
+Severity severity_string(const std::string& severity) {
+	if(severity == "trace") {
+		return Severity::TRACE;
+	} else if(severity == "debug") {
+		return Severity::DEBUG;
+	} else if(severity == "info") {
+		return Severity::INFO;
+	} else if(severity == "warning") {
+		return Severity::WARN;
+	} else if(severity == "error") {
+		return Severity::ERROR;
+	} else if(severity == "fatal") {
+		return Severity::FATAL;
+	} else if(severity == "none" || severity == "disabled") {
+		return Severity::DISABLED;
+	} else {
+		throw exception("Unknown severity passed to severity_string");
+	}
+}
+
+}} // log, ember

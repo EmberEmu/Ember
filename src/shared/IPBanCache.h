@@ -70,8 +70,7 @@ public:
 			return false;
 		}
 
-		auto ip = boost::asio::ip::address::from_string(ip);
-		is_banned(ip);
+		return is_banned(boost::asio::ip::address::from_string(ip));
 	}
 
 	bool is_banned(const boost::asio::ip::address& ip) {

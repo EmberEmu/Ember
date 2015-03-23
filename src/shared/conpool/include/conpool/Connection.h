@@ -25,7 +25,7 @@ struct ConnDetail {
 	bool checked_out = false;
 	bool error = false;
 	bool sweep = false;
-	sc::seconds idle = 0;
+	sc::seconds idle = sc::seconds(0);
 };
 
 template<typename ConType>
