@@ -21,6 +21,7 @@ public:
 	virtual void record_last_login(const User& user, const std::string& ip) = 0;
 	virtual std::string session_key(const std::string& username) = 0;
 	virtual void session_key(const std::string& username, const std::string& key) = 0;
+	virtual ~UserDAO() = default;
 };
 
 }} //dal, ember

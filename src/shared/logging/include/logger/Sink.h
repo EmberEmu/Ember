@@ -25,6 +25,7 @@ public:
 	void severity(Severity severity) { severity_ = severity; }
 	virtual void write(Severity severity, const std::vector<char>& record) = 0;
 	virtual void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) = 0;
+	virtual ~Sink() = default;
 };
 
 }} //log, ember
