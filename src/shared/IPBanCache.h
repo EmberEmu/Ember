@@ -74,6 +74,10 @@ public:
 	}
 
 	bool is_banned(const boost::asio::ip::address& ip) {
+		if(entries_.empty()) {
+			return false;
+		}
+
 		if(ip.is_v6()) {
 			return check_ban(ip.to_v6());
 		} else {

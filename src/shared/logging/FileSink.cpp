@@ -13,7 +13,6 @@
 #include <boost/filesystem.hpp>
 #include <utility>
 #include <cstdio>
-#include <iostream>
 
 #pragma warning(push)
 #pragma warning(disable: 4996)
@@ -21,6 +20,28 @@
 namespace ember { namespace log {
 
 namespace fs = boost::filesystem;
+
+FileSink::FileSink(Severity severity, std::string file_name, Mode mode)
+                   : Sink(severity), file_name_format_(std::move(file_name)) {
+	format_file_name();
+
+	if(mode == Mode::APPEND) {
+		boost::system::error_code ec;
+		std::uintmax_t size = fs::file_size(fs::path(file_name_), ec);
+
+		// file_size returns -1 if the file doesn't exist
+		if(size == static_cast<std::uintmax_t>(-1)) {
+			size = 0;
+		} else if(ec) {
+			throw exception("Unable to determine initial log file size");
+		}
+
+		current_size_ = size;
+	}
+
+	open(mode);
+	set_initial_rotation();
+}
 
 bool FileSink::file_exists(const std::string& name) try {
 	return fs::exists(fs::path(name));
@@ -40,26 +61,6 @@ void FileSink::set_initial_rotation() {
 	}
 }
 
-FileSink::FileSink(Severity severity, std::string file_name, Mode mode)
-                   : Sink(severity), file_name_format_(file_name) {
-	format_file_name();
-
-	if(mode == Mode::APPEND) {
-		boost::system::error_code ec;
-		std::uintmax_t size = fs::file_size(fs::path(file_name_), ec);
-
-		if(file_exists(file_name_) && ec) {
-			std::cout << ec.message();
-			throw exception("Unable to determine initial log file size");
-		}
-
-		current_size_ = size;
-	}
-
-	open(mode);
-	set_initial_rotation();
-}
-
 void FileSink::time_format(const std::string& format) {
 	time_format_ = format;
 }
@@ -77,7 +78,7 @@ void FileSink::open(Mode mode) {
 	}
 
 	if(!file_) {
-		throw exception(std::string("Logger could not open ") + file_name_);
+		throw exception("Logger could not open " + file_name_);
 	}
 }
 
@@ -165,7 +166,7 @@ void FileSink::batch_write(const std::vector<std::pair<Severity, std::vector<cha
 	std::size_t buffer_size = buffer.size();
 	rotate_check(buffer_size, curr_time);
 
-	if(!fwrite(buffer.data(), buffer_size, 1, *file_)) {
+	if(!std::fwrite(buffer.data(), buffer_size, 1, *file_)) {
 		throw exception("Unable to write log record batch to file");
 	}
 
@@ -184,8 +185,8 @@ void FileSink::write(Severity severity, const std::vector<char>& record) {
 
 	rotate_check(prep_size + rec_size, curr_time);
 
-	std::size_t count = fwrite(prepend.c_str(), prep_size, 1, *file_);
-	count += fwrite(record.data(), rec_size, 1, *file_);
+	std::size_t count = std::fwrite(prepend.c_str(), prep_size, 1, *file_);
+	count += std::fwrite(record.data(), rec_size, 1, *file_);
 
 	if(count != 2) {
 		throw exception("Unable to write log record to file");
