@@ -53,10 +53,10 @@ std::string LoginAuthenticator::session_key() {
 	return keystr.str();
 }
 
-ReconnectAuthenticator::ReconnectAuthenticator(const std::string& username, const std::string& session_key,
-                                               const Botan::SecureVector<Botan::byte>& bytes) {
+ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const std::string& session_key,
+                                               const Botan::SecureVector<Botan::byte>& bytes)
+                                               : rcon_user_(std::move(username)) {
 	rcon_chall_ = bytes;
-	rcon_user_ = username;
 	sess_key_ = Botan::BigInt::encode(Botan::BigInt(session_key));
 }
 

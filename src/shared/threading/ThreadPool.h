@@ -30,7 +30,6 @@ private:
 	boost::asio::io_service service_;
 	boost::asio::io_service::work work_;
 	std::vector<std::thread> workers_;
-	std::size_t count_;
 	LogCallback log_cb_;
 	std::mutex log_cb_lock_;
 
