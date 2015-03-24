@@ -31,6 +31,7 @@ class NetworkHandler {
 	const int SOCKET_ACTIVITY_TIMEOUT = 300;
 	const CreateHandler create_handler_;
 	const CompletionChecker check_packet_completion_;
+
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::io_service& service_;
@@ -53,7 +54,7 @@ class NetworkHandler {
 			}
 
 			LOG_DEBUG(logger_) << "Accepted connection " << ip.to_string() << ":"
-							   << socket_.remote_endpoint().port() << LOG_ASYNC;
+			                   << socket_.remote_endpoint().port() << LOG_ASYNC;
 
 			start_session(std::move(socket_));
 			accept_connection();

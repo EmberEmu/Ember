@@ -101,7 +101,7 @@ void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
 
 	stream.swap(header.get());
 
-	stream << protocol::ServerOpcodes::SMSG_REQUEST_REALM__LIST;
+	stream << protocol::ServerOpcodes::SMSG_REQUEST_REALM_LIST;
 	stream << std::uint16_t(body->size());
 	
 	on_send(header);
@@ -352,7 +352,6 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 	
 	stream << protocol::ServerOpcodes::SMSG_RECONNECT_PROOF;
 	stream << protocol::ResultCodes::SUCCESS;
-	//stream << std::uint16_t(0);
 
 	state_ = State::REQUEST_REALMS;
 	on_send(resp);
