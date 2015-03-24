@@ -79,7 +79,6 @@ class NetworkHandler {
 	}
 
 	void read(std::shared_ptr<Session<T>> session) {
-		reset_timer(session);
 		auto& buffer = session->buffer;
 
 		session->socket.async_receive(boost::asio::buffer(buffer.store(), buffer.free()),
@@ -100,9 +99,7 @@ class NetworkHandler {
 		session->socket.async_send(boost::asio::buffer(*packet),
 			session->strand.wrap(create_alloc_handler(allocator_,
 			[this, packet, session](boost::system::error_code ec, std::size_t) {
-				if(!ec) {
-					reset_timer(session);
-				} else {
+				if(ec) {
 					session->timer.cancel();
 				}
 			}
@@ -155,10 +152,7 @@ class NetworkHandler {
 	}
 
 	void timeout(std::shared_ptr<Session<T>> session, const boost::system::error_code& ec) {
-		LOG_TRACE(logger_) << __func__ << LOG_SYNC;
-
 		if(!ec) {
-			LOG_TRACE(logger_) << "Yes" << LOG_SYNC;
 			close_session(session);
 		}
 	}
