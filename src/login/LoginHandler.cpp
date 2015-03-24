@@ -8,6 +8,7 @@
 
 #include "LoginHandler.h"
 #include "Patcher.h"
+#include <boost/range/adaptor/map.hpp>
 #include <utility>
 
 namespace ember {
@@ -80,19 +81,19 @@ void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
 	auto body = std::make_shared<Packet>();
 	PacketStream<Packet> stream(body.get());
 
-	auto realms = realm_list_.realms();
+	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	stream << std::uint32_t(0); // unknown 
 	stream << std::uint8_t(realms->size());
 
-	for(auto& r : *realms) {
-		stream << r.second.icon;
-		stream << r.second.flags;
-		stream << r.second.name << std::uint8_t(0);
-		stream << r.second.ip << std::uint8_t(0);
-		stream << r.second.population;
+	for(auto& realm : *realms | boost::adaptors::map_values) {
+		stream << realm.icon;
+		stream << realm.flags;
+		stream << realm.name << std::uint8_t(0);
+		stream << realm.ip << std::uint8_t(0);
+		stream << realm.population;
 		stream << std::uint8_t(0); // num chars
-		stream << r.second.timezone;
+		stream << realm.timezone;
 		stream << std::uint8_t(0); // unknown
 	}
 

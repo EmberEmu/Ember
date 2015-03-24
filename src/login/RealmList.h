@@ -16,9 +16,9 @@
 
 namespace ember {
 
-class RealmList {
-	typedef std::unordered_map<std::uint32_t, Realm> RealmMap;
+typedef std::unordered_map<std::uint32_t, Realm> RealmMap;
 
+class RealmList {
 	std::shared_ptr<const RealmMap> realms_;
 	std::mutex lock_;
 
