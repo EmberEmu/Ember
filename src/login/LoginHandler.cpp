@@ -76,7 +76,35 @@ void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
 		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
 	}
 
-	LOG_WARN(logger_) << "Unhandled realm list request" << LOG_ASYNC;
+	auto header = std::make_shared<Packet>();
+	auto body = std::make_shared<Packet>();
+	PacketStream<Packet> stream(body.get());
+
+	auto realms = realm_list_.realms();
+
+	stream << std::uint32_t(0); // unknown 
+	stream << std::uint8_t(realms->size());
+
+	for(auto& r : *realms) {
+		stream << r.second.icon;
+		stream << r.second.flags;
+		stream << r.second.name << std::uint8_t(0);
+		stream << r.second.ip << std::uint8_t(0);
+		stream << r.second.population;
+		stream << std::uint8_t(0); // num chars
+		stream << r.second.timezone;
+		stream << std::uint8_t(0); // unknown
+	}
+
+	stream << uint16_t(5); // unknown
+
+	stream.swap(header.get());
+
+	stream << protocol::ServerOpcodes::SMSG_REQUEST_REALM__LIST;
+	stream << std::uint16_t(body->size());
+	
+	on_send(header);
+	on_send(body);
 }
 
 void LoginHandler::process_challenge(const PacketBuffer& buffer) {
@@ -142,7 +170,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	state_ = State::CLOSED;
 
 	auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
-	PacketStream<Packet> stream(*packet);
+	PacketStream<Packet> stream(packet.get());
 
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)
 	       << protocol::ResultCodes::FAIL_VERSION_INVALID;
@@ -184,7 +212,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	state_ = State::CLOSED;
 	
 	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(*resp);
+	PacketStream<Packet> stream(resp.get());
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0);
 
 	try {
@@ -215,7 +243,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 
 	auto rand = Botan::AutoSeeded_RNG().random_vec(16);
 	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(*resp);
+	PacketStream<Packet> stream(resp.get());
 
 	stream << protocol::ServerOpcodes::SMSG_RECONNECT_CHALLENGE;
 	
@@ -279,7 +307,7 @@ void LoginHandler::send_login_failure(protocol::ResultCodes result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(*resp);
+	PacketStream<Packet> stream(resp.get());
 
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_PROOF;
 	stream << result;
@@ -294,7 +322,7 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 	std::reverse(m2.begin(), m2.end());
 
 	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(*resp);
+	PacketStream<Packet> stream(resp.get());
 
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_PROOF;
 	stream << protocol::ResultCodes::SUCCESS;
@@ -319,7 +347,7 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 	}
 	
 	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(*resp);
+	PacketStream<Packet> stream(resp.get());
 	
 	stream << protocol::ServerOpcodes::SMSG_RECONNECT_PROOF;
 	stream << std::uint8_t(0) << std::uint16_t(0);
@@ -332,6 +360,7 @@ bool LoginHandler::check_opcode(const PacketBuffer& buffer, protocol::ClientOpco
 	return *buffer.data<const protocol::ClientOpcodes>() == opcode;
 }
 
+// todo, remove in VS2015
 LoginHandler& LoginHandler::operator=(LoginHandler&& rhs) {
 	login_auth_ = std::move(rhs.login_auth_);
 	reconn_auth_ = std::move(rhs.reconn_auth_);
@@ -339,11 +368,12 @@ LoginHandler& LoginHandler::operator=(LoginHandler&& rhs) {
 	return *this;
 }
 
+// todo, remove in VS2015
 LoginHandler::LoginHandler(LoginHandler&& rhs)
                            : login_auth_(std::move(rhs.login_auth_)),
                              reconn_auth_(std::move(rhs.reconn_auth_)),
 							 source_(rhs.source_), patcher_(rhs.patcher_),
                              user_src_(rhs.user_src_),
-                             logger_(rhs.logger_) {}
+                             logger_(rhs.logger_), realm_list_(rhs.realm_list_) {}
 
 } // ember

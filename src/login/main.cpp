@@ -12,6 +12,7 @@
 #include "LoginPacketCheck.h"
 #include "NetworkHandler.h"
 #include "Patcher.h"
+#include "RealmList.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
@@ -24,8 +25,9 @@
 #include <shared/Version.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
-#include <shared/database/daos/UserDAO.h>
 #include <shared/database/daos/IPBanDAO.h>
+#include <shared/database/daos/RealmDAO.h>
+#include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
 #include <botan/init.h>
 #include <boost/asio.hpp>
@@ -93,8 +95,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto user_dao = ember::dal::user_dao(pool);
+	auto realm_dao = ember::dal::realm_dao(pool);
 	auto ip_ban_dao = ember::dal::ip_ban_dao(pool);
 	auto ip_ban_cache = ember::IPBanCache<ember::dal::IPBanDAO>(*ip_ban_dao);
+
+	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
+	ember::RealmList realm_list(realm_dao->get_realms());
 
 	unsigned int concurrency = check_concurrency(logger);
 
@@ -106,7 +112,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
-	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao);
+	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	ba::io_service service(concurrency);

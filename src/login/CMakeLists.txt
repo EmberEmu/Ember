@@ -24,6 +24,7 @@ set(EXECUTABLE_HDR
     Protocol.h
     GameVersion.h
     Authenticator.h
+    RealmList.h
     Actions.h
     Patcher.h
     )
@@ -33,6 +34,7 @@ set(EXECUTABLE_SRC
     ../shared/Banner.cpp
     LoginHandler.cpp
     LoginPacketCheck.cpp
+    RealmList.cpp
     Authenticator.cpp
     Patcher.cpp
     main.cpp

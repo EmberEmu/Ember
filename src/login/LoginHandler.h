@@ -12,6 +12,7 @@
 #include "PacketBuffer.h"
 #include "Authenticator.h"
 #include "GameVersion.h"
+#include "RealmList.h"
 #include "Protocol.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
@@ -34,6 +35,7 @@ class LoginHandler {
 	State state_ = State::INITIAL_CHALLENGE;
 	log::Logger* logger_;
 	const Patcher& patcher_;
+	const RealmList& realm_list_;
 	dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
@@ -64,8 +66,10 @@ public:
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(PacketBuffer& buffer);
 
-	LoginHandler(std::string source, dal::UserDAO& users, const Patcher& patcher, log::Logger* logger)
-	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger) {}
+	LoginHandler(std::string source, dal::UserDAO& users, const Patcher& patcher,
+	             log::Logger* logger, const RealmList& realm_list)
+	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger),
+	               realm_list_(realm_list) {}
 	LoginHandler& operator=(LoginHandler&&);
 	LoginHandler(LoginHandler&&);
 };
