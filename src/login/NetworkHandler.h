@@ -28,7 +28,7 @@ class NetworkHandler {
 	typedef std::function<T(std::string)> CreateHandler;
 	typedef std::function<bool(const PacketBuffer&)> CompletionChecker;
 
-	const int SOCKET_ACTIVITY_TIMEOUT = 60;
+	const int SOCKET_ACTIVITY_TIMEOUT = 300;
 	const CreateHandler create_handler_;
 	const CompletionChecker check_packet_completion_;
 	boost::asio::ip::tcp::socket socket_;
@@ -79,35 +79,31 @@ class NetworkHandler {
 	}
 
 	void read(std::shared_ptr<Session<T>> session) {
-		session->timer.async_wait(std::bind(&NetworkHandler::timeout, this, session, std::placeholders::_1));
-	
+		reset_timer(session);
 		auto& buffer = session->buffer;
 
 		session->socket.async_receive(boost::asio::buffer(buffer.store(), buffer.free()),
 			session->strand.wrap(create_alloc_handler(allocator_,
 			[this, session](boost::system::error_code ec, std::size_t size) {
 				if(!ec) {
-					session->timer.cancel();
+					reset_timer(session);
 					session->buffer.advance(size);
 					handle_packet(session);
 				} else {
-					close_session(session);
+					session->timer.cancel();
 				}
 			}
 		)));
 	}
 
 	void write(std::shared_ptr<Session<T>> session, std::shared_ptr<Packet> packet) {
-		session->timer.async_wait(std::bind(&NetworkHandler::timeout, this, session, std::placeholders::_1));
-
 		session->socket.async_send(boost::asio::buffer(*packet),
 			session->strand.wrap(create_alloc_handler(allocator_,
 			[this, packet, session](boost::system::error_code ec, std::size_t) {
 				if(!ec) {
-					session->timer.cancel();
+					reset_timer(session);
 				} else {
-					LOG_DEBUG(logger_) << "On send: " << ec.message() << LOG_ASYNC;
-					close_session(session);
+					session->timer.cancel();
 				}
 			}
 		)));
@@ -125,7 +121,7 @@ class NetworkHandler {
 	void execute_action(std::shared_ptr<Session<T>> session, std::shared_ptr<Action> action) {
 		pool_.run([session, action, this]() {
 			action->execute();
-			session->strand.dispatch(std::bind(&NetworkHandler::action_complete, this, session, action));
+			session->strand.post(std::bind(&NetworkHandler::action_complete, this, session, action));
 		});
 	}
 
@@ -152,8 +148,17 @@ class NetworkHandler {
 		session->socket.close();
 	}
 
+	void reset_timer(std::shared_ptr<Session<T>> session) {
+		session->timer.expires_from_now(boost::posix_time::seconds(SOCKET_ACTIVITY_TIMEOUT));
+		session->timer.async_wait(session->strand.wrap(std::bind(&NetworkHandler::timeout, this,
+		                          session, std::placeholders::_1)));
+	}
+
 	void timeout(std::shared_ptr<Session<T>> session, const boost::system::error_code& ec) {
+		LOG_TRACE(logger_) << __func__ << LOG_SYNC;
+
 		if(!ec) {
+			LOG_TRACE(logger_) << "Yes" << LOG_SYNC;
 			close_session(session);
 		}
 	}
