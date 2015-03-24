@@ -351,7 +351,8 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 	PacketStream<Packet> stream(resp.get());
 	
 	stream << protocol::ServerOpcodes::SMSG_RECONNECT_PROOF;
-	stream << std::uint8_t(0) << std::uint16_t(0);
+	stream << protocol::ResultCodes::SUCCESS;
+	//stream << std::uint16_t(0);
 
 	state_ = State::REQUEST_REALMS;
 	on_send(resp);

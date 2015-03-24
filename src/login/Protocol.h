@@ -57,6 +57,7 @@ enum class ResultCodes : std::uint8_t {
 
 struct RequestRealmList {
 	ClientOpcodes opcode;
+	std::uint32_t unknown;
 };
 
 struct ClientLoginProof {
