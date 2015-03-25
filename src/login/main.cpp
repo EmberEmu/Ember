@@ -13,16 +13,15 @@
 #include "NetworkHandler.h"
 #include "Patcher.h"
 #include "RealmList.h"
+#include "RealmHandler.h"
+#include "RealmPacketCheck.h"
 #include <logger/Logging.h>
-#include <logger/ConsoleSink.h>
-#include <logger/FileSink.h>
-#include <logger/SyslogSink.h>
-#include <logger/Utility.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/util/LogConfig.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/IPBanDAO.h>
@@ -38,6 +37,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <stdexcept>
 #include <vector>
 #include <cstddef>
 #include <cstdint>
@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) try {
 	ember::print_banner("Login Daemon");
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = init_logging(args);
+	auto logger = ember::util::init_logging(args);
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
@@ -107,20 +107,30 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 	ember::ThreadPool thread_pool(concurrency);
 
-	auto interface = args["network.interface"].as<std::string>();
-	auto port = args["network.port"].as<unsigned short>();
-
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
-
-	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	ba::io_service service(concurrency);
 
+	// Start login server
+	auto interface = args["network.interface"].as<std::string>();
+	auto port = args["network.port"].as<unsigned short>();
+
+	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	ember::NetworkHandler<ember::LoginHandler> login_server(service, port, interface,
 		ip_ban_cache, thread_pool, logger,
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
+
+	// Start realm listener
+	auto r_interface = args["realm_listen.interface"].as<std::string>();
+	auto r_port = args["realm_listen.port"].as<unsigned short>();
+
+	/*LOG_INFO(logger) << "Binding realm listener to " << r_interface << ":" << r_port << LOG_SYNC;
+	ember::NetworkHandler<ember::RealmHandler> realm_server(service, port, interface,
+		ip_ban_cache, thread_pool, logger,
+		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
+		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));*/
 
 	ba::signal_set signals(service, SIGINT, SIGTERM);
 	signals.async_wait(std::bind(&ba::io_service::stop, &service));
@@ -177,6 +187,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	config_opts.add_options()
 		("network.interface,", po::value<std::string>()->default_value("0.0.0.0"))
 		("network.port", po::value<unsigned short>()->default_value(3724))
+		("realm_listen.interface,", po::value<std::string>()->default_value("0.0.0.0"))
+		("realm_listen.port", po::value<unsigned short>()->default_value(3749))
 		("console_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.service_name,", po::value<std::string>()->required())
@@ -222,6 +234,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 
 	return std::move(options);
 }
+
 /*
  * The concurrency level returned is usually the number of logical cores
  * in the machine but the standard doesn't guarantee that it won't be zero.
@@ -245,60 +258,6 @@ ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
 	auto port = args["database.port"].as<unsigned short>();
 	auto db = args["database.database"].as<std::string>();
 	return {user, pass, host, port, db};
-}
-
-std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::Severity severity) {
-	auto host = args["remote_log.host"].as<std::string>();
-	auto service = args["remote_log.service_name"].as<std::string>();
-	auto port = args["remote_log.port"].as<unsigned short>();
-	auto facility = el::SyslogSink::Facility::LOCAL_USE_0;
-	return std::make_unique<el::SyslogSink>(severity, host, port, facility, service);
-}
-
-std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::Severity severity) {
-	auto mode_str = args["file_log.mode"].as<std::string>();
-	auto path = args["file_log.path"].as<std::string>();
-
-	if(mode_str != "append" && mode_str != "truncate") {
-		throw std::runtime_error("Invalid file logging mode supplied");
-	}
-
-	el::FileSink::Mode mode = (mode_str == "append")? el::FileSink::Mode::APPEND :
-	                                                  el::FileSink::Mode::TRUNCATE;
-
-	auto file_sink = std::make_unique<el::FileSink>(severity, path, mode);
-	file_sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
-	file_sink->log_severity(args["file_log.log_severity"].as<bool>());
-	file_sink->log_date(args["file_log.log_timestamp"].as<bool>());
-	file_sink->time_format(args["file_log.timestamp_format"].as<std::string>());
-	file_sink->midnight_rotate(args["file_log.midnight_rotate"].as<bool>());
-	return std::move(file_sink);
-}
-
-std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::Severity severity) {
-	return std::make_unique<el::ConsoleSink>(severity);
-}
-
-std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args) {
-	auto logger = std::make_unique<el::Logger>();
-	el::Severity severity;
-
-	if((severity = el::severity_string(args["console_log.verbosity"].as<std::string>()))
-		!= el::Severity::DISABLED) {
-		logger->add_sink(init_console_sink(args, severity));
-	}
-
-	if((severity = el::severity_string(args["file_log.verbosity"].as<std::string>()))
-		!= el::Severity::DISABLED) {
-		logger->add_sink(init_file_sink(args, severity));
-	}
-
-	if((severity = el::severity_string(args["remote_log.verbosity"].as<std::string>()))
-		!= el::Severity::DISABLED) {
-		logger->add_sink(init_remote_sink(args, severity));
-	}
-
-	return logger;
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {

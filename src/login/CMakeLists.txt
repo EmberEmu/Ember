@@ -14,10 +14,13 @@ set(EXECUTABLE_HDR
     ../shared/IPBanCache.h
     ../shared/misc/PacketStream.h
     ../shared/threading/ThreadPool.h
+    ../shared/util/LogConfig.h
     LoginHandlerBuilder.h
     LoginPacketCheck.h
+    RealmPacketCheck.h
     NetworkHandler.h
     LoginHandler.h
+    RealmHandler.h
     PacketBuffer.h
     Handler.h
     Session.h
@@ -32,8 +35,11 @@ set(EXECUTABLE_HDR
 set(EXECUTABLE_SRC
     ../shared/threading/ThreadPool.cpp
     ../shared/Banner.cpp
+    ../shared/util/LogConfig.cpp
     LoginHandler.cpp
     LoginPacketCheck.cpp
+    RealmPacketCheck.cpp
+    RealmHandler.cpp
     RealmList.cpp
     Authenticator.cpp
     Patcher.cpp
@@ -41,7 +47,7 @@ set(EXECUTABLE_SRC
     )
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
-add_executable(login ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
+add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${EXECUTABLE_NAME} ${BOTAN_LIBRARY})
 target_link_libraries(${EXECUTABLE_NAME} ${MYSQLCCPP_LIBRARY})
