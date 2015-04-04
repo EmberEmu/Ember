@@ -70,44 +70,6 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	return false;
 }
 
-void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	if(!check_opcode(buffer, protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST)) {
-		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
-	}
-
-	auto header = std::make_shared<Packet>();
-	auto body = std::make_shared<Packet>();
-	PacketStream<Packet> stream(body.get());
-
-	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
-
-	stream << std::uint32_t(0); // unknown 
-	stream << std::uint8_t(realms->size());
-
-	for(auto& realm : *realms | boost::adaptors::map_values) {
-		stream << realm.icon;
-		stream << realm.flags;
-		stream << realm.name << std::uint8_t(0);
-		stream << realm.ip << std::uint8_t(0);
-		stream << realm.population;
-		stream << std::uint8_t(0); // num chars
-		stream << realm.timezone;
-		stream << std::uint8_t(0); // unknown
-	}
-
-	stream << uint16_t(5); // unknown
-
-	stream.swap(header.get());
-
-	stream << protocol::ServerOpcodes::SMSG_REQUEST_REALM_LIST;
-	stream << std::uint16_t(body->size());
-	
-	on_send(header);
-	on_send(body);
-}
-
 void LoginHandler::process_challenge(const PacketBuffer& buffer) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -355,6 +317,44 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 
 	state_ = State::REQUEST_REALMS;
 	on_send(resp);
+}
+
+void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	if(!check_opcode(buffer, protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST)) {
+		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
+	}
+
+	auto header = std::make_shared<Packet>();
+	auto body = std::make_shared<Packet>();
+	PacketStream<Packet> stream(body.get());
+
+	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
+
+	stream << std::uint32_t(0); // unknown 
+	stream << std::uint8_t(realms->size());
+
+	for(auto& realm : *realms | boost::adaptors::map_values) {
+		stream << realm.icon;
+		stream << realm.flags;
+		stream << realm.name << std::uint8_t(0);
+		stream << realm.ip << std::uint8_t(0);
+		stream << realm.population;
+		stream << std::uint8_t(0); // num chars
+		stream << realm.timezone;
+		stream << std::uint8_t(0); // unknown
+	}
+
+	stream << uint16_t(5); // unknown
+
+	stream.swap(header.get());
+
+	stream << protocol::ServerOpcodes::SMSG_REQUEST_REALM_LIST;
+	stream << std::uint16_t(body->size());
+	
+	on_send(header);
+	on_send(body);
 }
 
 bool LoginHandler::check_opcode(const PacketBuffer& buffer, protocol::ClientOpcodes opcode) {

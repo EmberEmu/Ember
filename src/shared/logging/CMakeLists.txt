@@ -12,7 +12,6 @@ add_library(logging
             Utility.cpp
             Worker.cpp
             ConsoleSink.cpp
-            Sink.cpp
             concurrentqueue.h
             include/logger/LoggerImpl.h
             include/logger/FileSink.h
