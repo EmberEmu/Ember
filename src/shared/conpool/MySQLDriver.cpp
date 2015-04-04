@@ -38,8 +38,6 @@ void MySQL::close(sql::Connection* conn) const {
 		conn->close();
 	}
 
-	delete conn;
-
 	auto conn_cache = locate_cache(conn);
 
 	if(conn_cache) {
@@ -50,6 +48,8 @@ void MySQL::close(sql::Connection* conn) const {
 
 		close_cache(conn);
 	}
+
+	delete conn;
 }
 
 //todo - change this interface to bool
