@@ -19,7 +19,7 @@ namespace bai = boost::asio::ip;
 
 namespace ember { namespace log {
 
-class SyslogSink::impl {
+class SyslogSink::impl : public Sink {
 	enum class SyslogSeverity {
 		EMERGENCY, ALERT, CRITICAL, ERROR_, WARNING, NOTICE, INFORMATIONAL, DEBUG
 	};
@@ -27,7 +27,6 @@ class SyslogSink::impl {
 	boost::asio::io_service service_;
 	bai::udp::socket socket_;
 	bai::udp::endpoint endpoint_;
-	Severity severity_;
 	std::string host_;
 	std::string tag_;
 	Facility facility_;
@@ -36,16 +35,15 @@ class SyslogSink::impl {
 	SyslogSeverity severity_map(Severity severity);
 
 public:
-	impl(Severity severity, std::string host, unsigned int port, Facility facility, std::string tag);
-	void write(Severity severity, const std::vector<char>& record);
-	void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& record);
+	impl(Severity severity, Filter filter, std::string host, unsigned int port, Facility facility, std::string tag);
+	void write(Severity severity, Filter type, const std::vector<char>& record);
+	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& record);
 };
 
-SyslogSink::impl::impl(Severity severity, std::string host, unsigned int port,
+SyslogSink::impl::impl(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag) try
-                       : socket_(service_), host_(bai::host_name()), tag_(tag) {
+                       : Sink(severity, filter), socket_(service_), host_(bai::host_name()), tag_(tag) {
 	facility_ = facility;
-	severity_ = severity;
 
 	if(tag.size() > 32) {
 		throw exception("Syslog tag size must be 32 characters or less");
@@ -98,8 +96,8 @@ std::string SyslogSink::impl::month_map(int month) {
 	}
 }
 
-void SyslogSink::impl::write(Severity severity, const std::vector<char>& record) {
-	if(severity < severity_) {
+void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<char>& record) {
+	if(this->severity() >= severity || !(this->filter() & type)) {
 		return;
 	}
 	
@@ -109,7 +107,7 @@ void SyslogSink::impl::write(Severity severity, const std::vector<char>& record)
 
 	std::tm time = detail::current_time();
 	std::stringstream stream;
-	stream << std::string("Jan") << ((time.tm_mday < 10)? "  " : " " ) << time.tm_mday
+	stream << month_map(time.tm_mon) << ((time.tm_mday < 10)? "  " : " " ) << time.tm_mday
 	       << " " << time.tm_hour << ":" << time.tm_min << ":" << ((time.tm_sec < 10) ? "0" : "")
 	       << time.tm_sec << " " << host_ << " ";
 
@@ -125,24 +123,24 @@ void SyslogSink::impl::write(Severity severity, const std::vector<char>& record)
 	socket_.send_to(segments, endpoint_, 0, err);
 }
 
-void SyslogSink::impl::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
+void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	for(auto& r : records) {
-		write(r.first, r.second);
+		write(r.first.severity, r.first.type, r.second);
 	}
 }
 
-SyslogSink::SyslogSink(Severity severity, std::string host, unsigned int port,
+SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag)
-                       : Sink(severity),
-                         pimpl_(std::make_unique<impl>(severity, host, port, facility, tag)) {}
+                       : Sink(severity, filter),
+                         pimpl_(std::make_unique<impl>(severity, filter, host, port, facility, tag)) {}
 
 SyslogSink::~SyslogSink() = default;
 
-void SyslogSink::write(Severity severity, const std::vector<char>& record) {
-	pimpl_->write(severity, record);
+void SyslogSink::write(Severity severity, Filter type, const std::vector<char>& record) {
+	pimpl_->write(severity, type, record);
 }
 
-void SyslogSink::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
+void SyslogSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	pimpl_->batch_write(records);
 }
 

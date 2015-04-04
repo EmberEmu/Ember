@@ -10,21 +10,26 @@
 
 #include "Severity.h"
 #include <vector>
+#include <cstdint>
 
 namespace ember { namespace log {
 
 class Sink {
 	Severity severity_;
+	Filter filter_;
 
 public:
-	Sink(Severity severity) {
+	Sink(Severity severity, Filter filter) {
 		severity_ = severity;
+		filter_ = filter;
 	}
 
 	Severity severity() { return severity_; }
+	Filter filter() { return filter_; }
 	void severity(Severity severity) { severity_ = severity; }
-	virtual void write(Severity severity, const std::vector<char>& record) = 0;
-	virtual void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) = 0;
+	void filter(const Filter& filter) { filter_ = filter; }
+	virtual void write(Severity severity, Filter type, const std::vector<char>& record) = 0;
+	virtual void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) = 0;
 	virtual ~Sink() = default;
 };
 

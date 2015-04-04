@@ -35,13 +35,14 @@ class Logger::impl {
 	friend class Logger;
 
 	Severity severity_ = Severity::DISABLED;
+	Filter filter_ = Filter(0);
 	std::vector<std::unique_ptr<Sink>> sinks_;
 	Worker worker_;
 
 	//Workarounds for lack of full thread_local support in VS2013
-	std::unordered_map<std::thread::id, std::pair<Severity, std::vector<char>>> buffers_;
+	std::unordered_map<std::thread::id, std::pair<RecordDetail, std::vector<char>>> buffers_;
 	std::unordered_map<std::thread::id, Semaphore<std::mutex>> sync_semaphores_;
-	static thread_local std::pair<Severity, std::vector<char>>* t_buffer_;
+	static thread_local std::pair<RecordDetail, std::vector<char>>* t_buffer_;
 	static thread_local Semaphore<std::mutex>* t_sem_;
 	std::mutex id_lock_;
 
@@ -54,7 +55,7 @@ class Logger::impl {
 
 	void finalise_sync() {
 		t_buffer_->second.push_back('\n');
-		auto r = std::make_tuple<Severity, std::vector<char>, Semaphore<std::mutex>*>
+		auto r = std::make_tuple<RecordDetail, std::vector<char>, Semaphore<std::mutex>*>
 					(std::move(t_buffer_->first), std::move(t_buffer_->second), std::move(t_sem_));
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
@@ -86,6 +87,7 @@ public:
 	}
 
 	impl& operator <<(impl& (*m)(impl&)) {
+		t_buffer_->first.type = 1; // first bit represents the misc. record type
 		return (*m)(*this);
 	}
 
@@ -95,7 +97,13 @@ public:
 			thread_enter();
 		}
 
-		t_buffer_->first = severity;
+		t_buffer_->first.type = 1; // first bit represents the misc. record type
+		t_buffer_->first.severity = severity;
+		return *this;
+	}
+
+	impl& operator <<(Filter type) {
+		t_buffer_->first.type = type;
 		return *this;
 	}
 
@@ -143,11 +151,16 @@ public:
 		return severity_;
 	}
 
+	Filter filter() {
+		return filter_;
+	}
+
 	void add_sink(std::unique_ptr<Sink> sink) {
 		if(sink->severity() < severity_) {
 			severity_ = sink->severity();
 		}
 
+		filter_ |= sink->filter();
 		sinks_.emplace_back(std::move(sink));
 	}
 
@@ -155,7 +168,7 @@ public:
 	impl& operator=(const impl&) = delete;
 };
 
-std::pair<Severity, std::vector<char>>* Logger::impl::t_buffer_;
+std::pair<RecordDetail, std::vector<char>>* Logger::impl::t_buffer_;
 Semaphore<std::mutex>* Logger::impl::t_sem_;
 
 }} //log, ember

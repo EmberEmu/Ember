@@ -14,13 +14,14 @@
 
 namespace ember { namespace log {
 
-void ConsoleSink::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
+void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev= this->severity();
+	Filter sink_filter = this->filter();
 	bool matches = false;
 
 	for(auto& r : records) {
-		if(sink_sev <= r.first) {
+		if(sink_sev <= r.first.severity && (sink_filter & r.first.type)) {
 			size += r.second.size();
 			matches = true;
 		}
@@ -35,16 +36,18 @@ void ConsoleSink::batch_write(const std::vector<std::pair<Severity, std::vector<
 	std::string severity;
 
 	for(auto& r : records) {
-		severity = detail::severity_string(r.first);
-		std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
-		std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
+		if(sink_sev <= r.first.severity && (sink_filter & r.first.type)) {
+			severity = detail::severity_string(r.first.severity);
+			std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
+			std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
+		}
 	}
 
 	fwrite(buffer.data(), buffer.size(), 1, stdout);
 }
 
-void ConsoleSink::write(Severity severity, const std::vector<char>& record) {
-	if(this->severity() > severity) {
+void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>& record) {
+	if(this->severity() > severity || !(this->filter() & type)) {
 		return;
 	}
 

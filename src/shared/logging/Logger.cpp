@@ -32,6 +32,10 @@ Severity Logger::severity() {
 	return pimpl_->severity();
 }
 
+Filter Logger::filter() {
+	return pimpl_->filter();
+}
+
 void Logger::thread_exit() {
 	pimpl_->thread_exit();
 }
@@ -42,6 +46,11 @@ Logger& Logger::operator <<(Logger& (*m)(Logger&)) {
 
 Logger& Logger::operator <<(Severity severity) {
 	*pimpl_ << severity;
+	return *this;
+}
+
+Logger& Logger::operator <<(Filter type) {
+	*pimpl_ << type;
 	return *this;
 }
 

@@ -23,9 +23,9 @@
 namespace ember { namespace log {
 
 class Worker {
-	moodycamel::ConcurrentQueue<std::pair<Severity, std::vector<char>>> queue_;
-	moodycamel::ConcurrentQueue<std::tuple<Severity, std::vector<char>, Semaphore<std::mutex>*>> queue_sync_;
-	std::vector<std::pair<Severity, std::vector<char>>> dequeued_;
+	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::vector<char>>> queue_;
+	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::vector<char>, Semaphore<std::mutex>*>> queue_sync_;
+	std::vector<std::pair<RecordDetail, std::vector<char>>> dequeued_;
 	std::vector<std::unique_ptr<Sink>>& sinks_;
 	Semaphore<std::mutex> sem_;
 	std::thread thread_;

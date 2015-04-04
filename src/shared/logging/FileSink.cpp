@@ -21,8 +21,8 @@ namespace ember { namespace log {
 
 namespace fs = boost::filesystem;
 
-FileSink::FileSink(Severity severity, std::string file_name, Mode mode)
-                   : Sink(severity), file_name_format_(std::move(file_name)) {
+FileSink::FileSink(Severity severity, Filter filter, std::string file_name, Mode mode)
+                   : Sink(severity, filter), file_name_format_(std::move(file_name)) {
 	format_file_name();
 
 	if(mode == Mode::APPEND) {
@@ -135,14 +135,15 @@ void FileSink::rotate_check(std::size_t buffer_size, const std::tm& curr_time) {
 	last_time_ = curr_time;
 }
 
-void FileSink::batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) {
+void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	std::tm curr_time = detail::current_time();
 	std::size_t size = 0;
 	Severity severity = this->severity();
+	Filter filter = this->filter();
 	bool matches = false;
 
 	for(auto& r : records) {
-		if(severity <= r.first) {
+		if(severity <= r.first.severity && (filter & r.first.type)) {
 			size += r.second.size();
 			matches = true;
 		}
@@ -156,8 +157,8 @@ void FileSink::batch_write(const std::vector<std::pair<Severity, std::vector<cha
 	buffer.reserve(size + (20 * records.size()));
 
 	for(auto& r : records) {
-		if(severity <= r.first) {
-			std::string prepend = std::move(generate_record_detail(r.first, curr_time));
+		if(severity <= r.first.severity && (filter & r.first.type)) {
+			std::string prepend = std::move(generate_record_detail(r.first.severity, curr_time));
 			std::copy(prepend.begin(), prepend.end(), std::back_inserter(buffer));
 			std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
 		}
@@ -173,8 +174,8 @@ void FileSink::batch_write(const std::vector<std::pair<Severity, std::vector<cha
 	current_size_ += buffer_size;
 }
 
-void FileSink::write(Severity severity, const std::vector<char>& record) {
-	if(this->severity() >= severity) {
+void FileSink::write(Severity severity, Filter type, const std::vector<char>& record) {
+	if(this->severity() >= severity || !(this->filter() & type)) {
 		return;
 	}
 

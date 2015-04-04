@@ -18,11 +18,11 @@ Worker::~Worker() {
 }
 
 void Worker::process_outstanding_sync() {
-	std::tuple<Severity, std::vector<char>, Semaphore<std::mutex>*> item;
+	std::tuple<RecordDetail, std::vector<char>, Semaphore<std::mutex>*> item;
 
 	while(queue_sync_.try_dequeue(item)) {
 		for(auto& s : sinks_) {
-			s->write(std::get<0>(item), std::get<1>(item));
+			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item));
 		}
 		std::get<2>(item)->signal();
 	}
@@ -38,7 +38,7 @@ void Worker::process_outstanding() {
 	if(records < 5) {
 		for(auto& s : sinks_) {
 			for(auto& r : dequeued_) {
-				s->write(r.first, r.second);
+				s->write(r.first.severity, r.first.type, r.second);
 			}
 		}
 	} else {

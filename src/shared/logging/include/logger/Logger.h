@@ -8,12 +8,12 @@
 
 #pragma once 
 
+#include <logger/Severity.h>
 #include <memory>
 #include <string>
 
 namespace ember { namespace log {
 
-enum class Severity;
 class Sink;
 
 class Logger {
@@ -26,6 +26,7 @@ public:
 
 	Logger& operator <<(Logger& (*m)(Logger&));
 	Logger& operator <<(Severity severity);
+	Logger& operator <<(Filter record_type);
 	Logger& operator <<(float data);
 	Logger& operator <<(double data);
 	Logger& operator <<(bool data);
@@ -35,6 +36,7 @@ public:
 	Logger& operator <<(const char* data);
 	void add_sink(std::unique_ptr<Sink> sink);
 	Severity severity();
+	Filter filter();
 	void thread_exit();
 	void finalise();
 	void finalise_sync();

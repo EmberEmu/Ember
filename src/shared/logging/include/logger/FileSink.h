@@ -46,7 +46,7 @@ private:
 	std::string generate_record_detail(Severity severity, const std::tm& curr_time);
 
 public:
-	FileSink(Severity severity, std::string file_name, Mode mode);
+	FileSink(Severity severity, Filter filter, std::string file_name, Mode mode);
 
 	void log_severity(bool enable) { log_severity_ = enable; }
 	void log_date(bool enable) { log_date_ = enable;  }
@@ -54,8 +54,8 @@ public:
 	void mode(Mode mode);
 	void size_limit(std::uint32_t megabytes);
 	void time_format(const std::string& format);
-	void write(Severity severity, const std::vector<char>& record) override;
-	void batch_write(const std::vector<std::pair<Severity, std::vector<char>>>& records) override;
+	void write(Severity severity, Filter type, const std::vector<char>& record) override;
+	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };
 
 
