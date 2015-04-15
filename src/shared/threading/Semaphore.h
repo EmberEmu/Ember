@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <condition_variable>
 #include <chrono>
 
@@ -67,14 +68,14 @@ public:
 	}
 
 	void signal(unsigned int increment = 1) {
-		increment_max_check(increment); 
 		std::lock_guard<Lock> guard(lock_);
+		increment_max_check(increment); 
 		condition_.notify_one();
 	}
 
 	void signal_all(unsigned int increment = 1) {
-		increment_max_check(increment);
 		std::lock_guard<Lock> guard(lock_);
+		increment_max_check(increment);
 		condition_.notify_all();
 	}
 };
