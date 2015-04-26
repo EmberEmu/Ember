@@ -86,8 +86,8 @@ For example, with a MySQL connection:
 void foo(sql::Connection* connection) { ... }
 
 pool::Connection<sql::Connection*> connection = pool.get_connection();
-foo(connection()); // fine
 foo(connection.get()); // fine
+foo(*connection); // fine
 connection->setAutoCommit(true); // MySQL Connector-C++ functionality, fine
 ```
 
@@ -126,7 +126,7 @@ Connections do not need to be explicitly released - RAII is used to ensure that 
 ```cpp
 pool::Connection<ConnectionType> connection = pool.get_connection();
 // use connection
-pool.release_connection(connection);
+connection.release(); // or pool.release_connection(connection);
 // do more work - do not use try to connection beyond this point
 ```
 

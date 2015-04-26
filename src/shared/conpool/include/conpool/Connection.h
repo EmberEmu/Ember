@@ -60,7 +60,7 @@ public:
 		return *this;
 	}
 
-	void close() {
+	void release() {
 		std::lock_guard<std::mutex> guard(close_protect_);
 
 		if(!released_) {
@@ -72,7 +72,6 @@ public:
 	Connection(const Connection<ConType>& src) = delete;
 	Connection<ConType>& operator=(const Connection<ConType>& src) = delete;
 
-	ConType operator()() { return detail_.get().conn; }
 	ConType operator->() { return detail_.get().conn; }
 	ConType operator*() { return detail_.get().conn; }
 
