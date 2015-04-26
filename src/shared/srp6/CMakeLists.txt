@@ -5,10 +5,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(srp6
-            Generator.cpp
-            Util.cpp
-            Client.cpp
-            Server.cpp
+            src/Generator.cpp
+            src/Util.cpp
+            src/Client.cpp
+            src/Server.cpp
             include/srp6/Util.h
             include/srp6/Server.h
             include/srp6/Client.h

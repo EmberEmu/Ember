@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(conpool
-            MySQLDriver.cpp
+            src/MySQLDriver.cpp
             include/conpool/ConnectionPool.h
             include/conpool/PoolManager.h
             include/conpool/Connection.h

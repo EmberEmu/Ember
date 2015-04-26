@@ -5,14 +5,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(logging
-            Logging.cpp
-            FileSink.cpp
-            SyslogSink.cpp
-            Logger.cpp
-            Utility.cpp
-            Worker.cpp
-            ConsoleSink.cpp
-            concurrentqueue.h
+            src/Logging.cpp
+            src/FileSink.cpp
+            src/SyslogSink.cpp
+            src/Logger.cpp
+            src/Utility.cpp
+            src/Worker.cpp
+            src/ConsoleSink.cpp
+            src/concurrentqueue.h
             include/logger/LoggerImpl.h
             include/logger/FileSink.h
             include/logger/HelperMacros.h
