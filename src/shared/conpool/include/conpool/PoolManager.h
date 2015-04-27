@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -38,26 +38,26 @@ class PoolManager {
 	bool stop_ = false;
 
 	void close_excess_idle() {
-		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
-			if(i->sweep) {
-				try {
-					pool_->driver_.close(i->conn);
-				} catch(std::exception& e) { 
-					if(pool_->log_cb_) {
-						pool_->log_cb_(Severity::WARN,
-					                   std::string("Connection close, driver threw: ") + e.what());
-					}
-				} catch(...) {
-					if(pool_->log_cb_) {
-						pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
-					}
-				}
-
-				std::lock_guard<Spinlock> guard(pool_->lock_);
-				i = pool_->pool_.erase(i);
-			} else {
-				++i;
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end(); ++i) {
+			if(!i->sweep || i->empty_slot) {
+				continue;
 			}
+
+			try {
+				pool_->driver_.close(i->conn);
+			} catch(std::exception& e) { 
+				if(pool_->log_cb_) {
+					pool_->log_cb_(Severity::WARN,
+				                   std::string("Connection close, driver threw: ") + e.what());
+				}
+			} catch(...) {
+				if(pool_->log_cb_) {
+					pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
+				}
+			}
+			
+			i->reset();
+			--pool_->size_;
 		}
 	}
 
@@ -89,33 +89,34 @@ class PoolManager {
 	}
 
 	void close_errored() {
-		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end();) {
-			if(i->error) {
-				try {
-					pool_->driver_.close(i->conn);
-				} catch(std::exception& e) { 
-					if(pool_->log_cb_) {
-						pool_->log_cb_(Severity::WARN,
-						               std::string("Connection close, driver threw: ") + e.what());
-					}
-				} catch(...) {
-					if(pool_->log_cb_) {
-						pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
-					}
-				}
-
-				std::lock_guard<Spinlock> guard(pool_->lock_);
-				i = pool_->pool_.erase(i);
-			} else {
-				++i; 
+		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end(); ++i) {
+			if(!i->error || i->empty_slot) {
+				continue;
 			}
+
+			try {
+				pool_->driver_.close(i->conn);
+			} catch(std::exception& e) {
+				if(pool_->log_cb_) {
+					pool_->log_cb_(Severity::WARN,
+						            std::string("Connection close, driver threw: ") + e.what());
+				}
+			} catch(...) {
+				if(pool_->log_cb_) {
+					pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
+				}
+			}
+
+			i->reset();
+			--pool_->size_;
 		}
 
-		//If the pool has grown too small, try to refill it
+		// If the pool has grown too small, try to refill it
 		std::unique_lock<Spinlock> guard(pool_->lock_);
-		if(pool_->pool_.size() < pool_->min_) {
+
+		if(pool_->size_ < pool_->min_) {
 			try {
-				pool_->open_connections(pool_->min_ - pool_->pool_.size());
+				pool_->open_connections(pool_->min_ - pool_->size_);
 			} catch(std::exception& e) { 
 				guard.unlock();
 				if(pool_->log_cb_) {
@@ -139,12 +140,12 @@ class PoolManager {
 
 		//If the pool falls below the minimum threshold, removals could
 		//underflow and cause the remaining connections to be sweeped
-		if(pool_->pool_.size() < pool_->min_) {
+		if(pool_->size_ < pool_->min_) {
 			removals = 0;
 		}
 
 		for(auto& conn : pool_->pool_) {
-			if(conn.checked_out) {
+			if(conn.checked_out || conn.empty_slot) {
 				continue;
 			}
 

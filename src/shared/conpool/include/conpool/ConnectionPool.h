@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,6 +26,7 @@
 #include <string>
 #include <mutex>
 #include <chrono>
+#include <atomic>
 
 namespace ember { namespace connection_pool {
 
@@ -42,9 +43,10 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 
 	PoolManager<ConType, Driver, ReusePolicy, GrowthPolicy> manager_;
 	Driver& driver_;
-	std::size_t min_, max_;
+	const std::size_t min_, max_;
+	std::atomic<std::size_t> size_;
 	Spinlock lock_;
-	std::list<ConnDetail<ConType>> pool_;
+	std::vector<ConnDetail<ConType>> pool_;
 	Semaphore<std::mutex> semaphore_;
 	std::function<void(Severity, std::string)> log_cb_;
 	bool closed_ = false;
@@ -56,11 +58,20 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 			auto f = std::async([](Driver* driver) {
 				return driver->open();
 			}, &driver_);
+
 			futures.emplace_back(std::move(f));
 		}
 
+		auto pool_it = pool_.begin();
+
 		for(auto& f : futures) {
-			pool_.emplace_back(ConnDetail<ConType>(f.get()));
+			while(!pool_it->empty_slot) {
+				++pool_it;
+				BOOST_ASSERT_MSG(pool_it != pool_.end(), "Exceeded maximum database connection count.");
+			}
+
+			*pool_it = std::move(ConnDetail<ConType>(f.get()));
+			++size_;
 			semaphore_.signal();
 		}
 	}
@@ -69,7 +80,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		manager_.check_exceptions();
 
 		auto pred = [&](ConnDetail<ConType>& cd) {
-			if(!cd.checked_out && !cd.error && !cd.sweep) {
+			if(!cd.checked_out && !cd.error && !cd.sweep && !cd.empty_slot) {
 				if(cd.dirty && !return_clean()) {
 					try {
 						if(driver_.clean(cd.conn)) {
@@ -122,7 +133,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
 	     sc::seconds max_idle, sc::seconds interval = sc::seconds(10))
-	     : driver_(driver), min_(min_size), max_(max_size), manager_(this) {
+	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size) {
 		open_connections(min_);
 		manager_.start(interval, max_idle);
 	}
@@ -249,7 +260,7 @@ public:
 	}
 
 	std::size_t size() const {
-		return pool_.size();
+		return size_;
 	}
 
 	void logging_callback(std::function<void(Severity, std::string)> callback) {
