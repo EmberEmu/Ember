@@ -25,6 +25,7 @@ struct ConnDetail {
 	bool checked_out = false;
 	bool error = false;
 	bool sweep = false;
+	bool refresh = false;
 	sc::seconds idle = sc::seconds(0);
 
 	ConnDetail(const ConType& connection) : conn(connection), empty_slot(false) {}
@@ -32,7 +33,7 @@ struct ConnDetail {
 
 	void reset() {
 		empty_slot = true;
-		dirty = checked_out = error = sweep = false;
+		dirty = checked_out = error = sweep = refresh = false;
 	}
 };
 

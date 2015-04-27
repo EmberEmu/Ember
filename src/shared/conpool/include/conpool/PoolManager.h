@@ -37,81 +37,52 @@ class PoolManager {
 	std::mutex cond_lock_;
 	bool stop_ = false;
 
-	void close_excess_idle() {
-		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end(); ++i) {
-			if(!i->sweep || i->empty_slot) {
-				continue;
+	void close(ConnDetail<ConType>& conn) {
+		try {
+			pool_->driver_.close(conn.conn);
+		} catch(std::exception& e) { 
+			if(pool_->log_cb_) {
+				pool_->log_cb_(Severity::WARN,
+				                std::string("Connection close, driver threw: ") + e.what());
 			}
-
-			try {
-				pool_->driver_.close(i->conn);
-			} catch(std::exception& e) { 
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN,
-				                   std::string("Connection close, driver threw: ") + e.what());
-				}
-			} catch(...) {
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
-				}
+		} catch(...) {
+			if(pool_->log_cb_) {
+				pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
 			}
+		}
 			
-			i->reset();
-			--pool_->size_;
+		conn.reset();
+		--pool_->size_;
+	}
+
+	void refresh(ConnDetail<ConType>& conn) {
+		try {
+			conn.conn = pool_->driver_.keep_alive(conn.conn);
+			conn.idle = sc::seconds(0);
+			conn.error = false;
+		} catch(std::exception& e) { 
+			if(pool_->log_cb_) {
+				pool_->log_cb_(Severity::WARN,
+					            std::string("Connection keep-alive, driver threw: ") + e.what());
+			}
+			conn.error = true;
+		} catch(...) {
+			if(pool_->log_cb_) {
+				pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in keep_alive");
+			}
+			conn.error = true;
+		}
+
+		conn.refresh = false;
+		conn.checked_out = false;
+
+		if(!conn.error) {
+			pool_->semaphore_.signal();
 		}
 	}
 
-	void refresh_idle(std::vector<ConnDetail<ConType>*>& connections) {
-		for(auto& c : connections) {
-			try {
-				c->conn = pool_->driver_.keep_alive(c->conn);
-				c->idle = sc::seconds(0);
-				c->error = false;
-			} catch(std::exception& e) { 
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN,
-					               std::string("Connection keep-alive, driver threw: ") + e.what());
-				}
-				c->error = true;
-			} catch(...) {
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in keep_alive");
-				}
-				c->error = true;
-			}
-
-			c->checked_out = false;
-
-			if(!c->error) {
-				pool_->semaphore_.signal();
-			}
-		}
-	}
-
-	void close_errored() {
-		for(auto i = pool_->pool_.begin(); i != pool_->pool_.end(); ++i) {
-			if(!i->error || i->empty_slot) {
-				continue;
-			}
-
-			try {
-				pool_->driver_.close(i->conn);
-			} catch(std::exception& e) {
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN,
-						            std::string("Connection close, driver threw: ") + e.what());
-				}
-			} catch(...) {
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
-				}
-			}
-
-			i->reset();
-			--pool_->size_;
-		}
-
-		// If the pool has grown too small, try to refill it
+	// If the pool has grown too small, try to refill it
+	void refill() {
 		std::unique_lock<Spinlock> guard(pool_->lock_);
 
 		if(pool_->size_ < pool_->min_) {
@@ -133,15 +104,26 @@ class PoolManager {
 		}
 	}
 
-	void manage_connections() {
-		std::vector<ConnDetail<ConType>*> checked_out;
-		std::unique_lock<Spinlock> guard(pool_->lock_);
-		std::size_t removals = pool_->pool_.size() - pool_->min_;
+	void maintain_connections() {
+		for(auto& conn : pool_->pool_) {
+			if(conn.empty_slot) {
+				continue;
+			} else if(conn.refresh) {
+				refresh(conn);
+			} else if(conn.sweep || conn.error) {
+				close(conn);
+			}
+		}
 
-		//If the pool falls below the minimum threshold, removals could
-		//underflow and cause the remaining connections to be sweeped
-		if(pool_->size_ < pool_->min_) {
-			removals = 0;
+		refill();
+	}
+
+	void set_connection_flags() {
+		std::lock_guard<Spinlock> guard(pool_->lock_);
+		std::size_t excess_connections = 0;
+
+		if(pool_->size_ > pool_->min_) {
+			excess_connections = pool_->pool_.size() - pool_->min_;
 		}
 
 		for(auto& conn : pool_->pool_) {
@@ -151,21 +133,20 @@ class PoolManager {
 
 			if(conn.idle < max_idle_) {
 				conn.idle += interval_;
-			} else if(removals > 0) {
-				--removals;
+			} else if(excess_connections > 0) {
+				--excess_connections;
 				conn.checked_out = true;
 				conn.sweep = true;
 			} else {
 				conn.checked_out = true;
-				checked_out.push_back(&conn);
+				conn.refresh = true;
 			}
 		}
+	}
 
-		pool_->lock_.unlock();
-
-		close_excess_idle();
-		refresh_idle(checked_out);
-		close_errored();
+	void manage_pool() {
+		set_connection_flags();
+		maintain_connections();
 	}
 
 public:
@@ -190,7 +171,7 @@ public:
 				break;
 			}
 
-			manage_connections();
+			manage_pool();
 		}
 
 		pool_->driver_.thread_exit();
