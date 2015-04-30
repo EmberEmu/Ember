@@ -146,6 +146,10 @@ public:
 		manager_.stop();
 
 		for(auto& c : pool_) {
+			if(c.empty_slot) {
+				continue;
+			}
+
 			BOOST_ASSERT_MSG(!c.checked_out, 
 			                 "Closed connection pool without returning all connections.");
 
@@ -176,6 +180,10 @@ public:
 		manager_.stop();
 
 		for(auto& c : pool_) {
+			if(c.empty_slot) {
+				continue;
+			}
+
 			if(c.checked_out) {
 				++active;
 				continue;
