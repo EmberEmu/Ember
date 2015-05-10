@@ -91,14 +91,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 						}
 					} catch(std::exception& e) {
 						if(log_cb_) {
-							log_cb_(Severity::DEBUG,
-							        std::string("On connection clean: ") + e.what());
-						}
-						return false;
-					} catch(...) {
-						if(log_cb_) {
-							log_cb_(Severity::DEBUG,
-							        "Unable to clean connection - unknown exception thrown");
+							log_cb_(Severity::DEBUG, std::string("On connection clean: ") + e.what());
 						}
 						return false;
 					}
@@ -157,13 +150,7 @@ public:
 				driver_.close(c.conn);
 			} catch(std::exception& e) { 
 				if(log_cb_) {
-					log_cb_(Severity::WARN, 
-					        std::string("Closing pool, driver threw: ") + e.what());
-				}
-			} catch(...) {
-				if(log_cb_) {
-					log_cb_(Severity::WARN,
-					        "Driver threw an unknown exception while closing pool");
+					log_cb_(Severity::WARN, std::string("Closing pool, driver threw: ") + e.what());
 				}
 			}
 		}

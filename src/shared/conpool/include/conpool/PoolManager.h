@@ -43,11 +43,7 @@ class PoolManager {
 		} catch(std::exception& e) { 
 			if(pool_->log_cb_) {
 				pool_->log_cb_(Severity::WARN,
-				                std::string("Connection close, driver threw: ") + e.what());
-			}
-		} catch(...) {
-			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in close");
+				               std::string("Connection close, driver threw: ") + e.what());
 			}
 		}
 			
@@ -63,12 +59,7 @@ class PoolManager {
 		} catch(std::exception& e) { 
 			if(pool_->log_cb_) {
 				pool_->log_cb_(Severity::WARN,
-					            std::string("Connection keep-alive, driver threw: ") + e.what());
-			}
-			conn.error = true;
-		} catch(...) {
-			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::WARN, "Driver threw unknown exception in keep_alive");
+				               std::string("Connection keep-alive, driver threw: ") + e.what());
 			}
 			conn.error = true;
 		}
@@ -90,15 +81,10 @@ class PoolManager {
 				pool_->open_connections(pool_->min_ - pool_->size_);
 			} catch(std::exception& e) { 
 				guard.unlock();
+
 				if(pool_->log_cb_) {
 					pool_->log_cb_(Severity::WARN,
 					               std::string("Failed to refill connection pool: ") + e.what());
-				}
-			} catch(...) {
-				guard.unlock();
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN,
-					               "Failed to refill connection pool - unknown exception caught");
 				}
 			}
 		}
@@ -181,7 +167,7 @@ public:
 
 		if(pool_->log_cb_) {
 			pool_->log_cb_(Severity::DEBUG,
-			              "Pool manager trapped exception - passing to next caller");
+			               "Pool manager trapped exception - passing to next caller");
 		}
 	}
 
@@ -204,4 +190,4 @@ public:
 	}
 };
 
-}} //connection_pool, ember
+}} // connection_pool, ember
