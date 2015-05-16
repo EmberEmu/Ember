@@ -34,7 +34,7 @@ private:
 	std::mutex log_cb_lock_;
 
 public:
-	ThreadPool(std::size_t initial_count);
+	explicit ThreadPool(std::size_t initial_count);
 	~ThreadPool();
 
 	template<typename T>

@@ -18,12 +18,13 @@ class Sink {
 	Severity severity_;
 	Filter filter_;
 
-public:
+protected:
 	Sink(Severity severity, Filter filter) {
 		severity_ = severity;
 		filter_ = filter;
 	}
 
+public:
 	Severity severity() { return severity_; }
 	Filter filter() { return filter_; }
 	void severity(Severity severity) { severity_ = severity; }

@@ -23,11 +23,11 @@ class RealmList {
 	std::mutex lock_;
 
 public:
-	RealmList(std::vector<Realm> realms);
+	explicit RealmList(std::vector<Realm> realms);
 	RealmList() : realms_(std::make_shared<RealmMap>()){}
 	void add_realm(std::vector<Realm> realms);
 	void add_realm(Realm realm);
-	void RealmList::set_status(std::uint32_t id, bool online);
+	void set_status(std::uint32_t id, bool online);
 	void set_population(float population);
 	std::shared_ptr<const RealmMap> realms() const;
 };

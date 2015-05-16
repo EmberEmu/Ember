@@ -24,7 +24,7 @@ class Client {
 	std::string identifier_, password_;
 
 public:
-	Client(std::string identifier, std::string password, Generator gen, int key_size = 32,
+	Client(std::string identifier, std::string password, Generator gen, std::size_t key_size = 32,
 	       bool srp6a = false);
 	Client(std::string identifier, std::string password, Generator gen, Botan::BigInt a,
 	       bool srp6a = false);

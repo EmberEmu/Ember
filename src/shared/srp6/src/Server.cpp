@@ -29,7 +29,7 @@ Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6
 	B_ = (k_ * v_ + gen(b_)) % N_;
 }
 
-Server::Server(const Generator& gen, const BigInt& v, int key_size, bool srp6a)
+Server::Server(const Generator& gen, const BigInt& v, std::size_t key_size, bool srp6a)
                : Server(gen, v, BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
                  srp6a) { }
 

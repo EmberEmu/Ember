@@ -21,7 +21,7 @@ using Botan::AutoSeeded_RNG;
 
 namespace ember { namespace srp6 {
 
-Client::Client(std::string identifier, std::string password, Generator gen, int key_size, bool srp6a)
+Client::Client(std::string identifier, std::string password, Generator gen, std::size_t key_size, bool srp6a)
                : Client(std::move(identifier), std::move(password), gen,
                  BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(), srp6a) { }
 
@@ -30,7 +30,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
                  gen_(std::move(gen)), a_(a) {
 	A_ = gen(a_) /* % N */;
 
-	if (srp6a) {
+	if(srp6a) {
 		k_.swap(detail::compute_k(gen_.generator(), gen_.prime()));
 	}
 }

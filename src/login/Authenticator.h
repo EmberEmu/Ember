@@ -45,7 +45,7 @@ class LoginAuthenticator {
 	User user_;
 
 public:
-	LoginAuthenticator(User user);
+	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
 	ProofResult proof_check(protocol::ClientLoginProof* proof);
 	std::string session_key();

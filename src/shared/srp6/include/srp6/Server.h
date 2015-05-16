@@ -21,7 +21,7 @@ class Server {
 
 public:
 	Server(const Generator& gen, const Botan::BigInt& v, const Botan::BigInt& b, bool srp6a = false);
-	Server(const Generator& gen, const Botan::BigInt& v, int key_size = 32, bool srp6a = false);
+	Server(const Generator& gen, const Botan::BigInt& v, std::size_t key_size = 32, bool srp6a = false);
 	inline const Botan::BigInt& public_ephemeral() const { return B_; }
 	SessionKey session_key(const Botan::BigInt& A, bool interleave = true,
 	                       Compliance mode = Compliance::GAME);
