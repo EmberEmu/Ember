@@ -15,6 +15,7 @@
 #include <shared/IPBanCache.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
+#include <shared/misc/PacketStream.h>
 #include <boost/asio.hpp>
 #include <functional>
 #include <memory>
