@@ -59,55 +59,43 @@
 		*logger << ember::log::Severity::FATAL << ember::log::Filter(type)
 
 #define LOG_TRACE_GLOB \
-	auto logger = ember::log::get_logger(); \
-	LOG_TRACE(logger)
+	LOG_TRACE(ember::log::get_logger())
 
 #define LOG_DEBUG_GLOB \
-	auto logger = ember::log::get_logger(); \
-	LOG_DEBUG(logger)
+	LOG_DEBUG(ember::log::get_logger())
 
 #define LOG_INFO_GLOB \
-	auto logger = ember::log::get_logger(); \
-	LOG_INFO(logger)
+	LOG_INFO(ember::log::get_logger())
 
 #define LOG_WARN_GLOB \
-	auto logger = ember::log::get_logger(); \
-	LOG_WARN(logger)
+	LOG_WARN(ember::log::get_logger())
 
 #define LOG_ERROR_GLOB \
-	auto logger = ember::log::get_logger(); \
-	LOG_ERROR(logger)
+	LOG_ERROR(ember::log::get_logger())
 
 #define LOG_FATAL_GLOB \
-	auto logger = ember::log::get_logger(); \
-	LOG_FATAL(logger)
+	LOG_FATAL(ember::log::get_logger())
 
 #define LOG_TRACE_FILTER_GLOB(filter) \
-	auto logger = ember::log::get_logger(); \
-	LOG_TRACE_FILTER(logger, filter)
+	LOG_TRACE_FILTER(ember::log::get_logger(), filter)
 
 #define LOG_DEBUG_FILTER_GLOB(filter) \
-	auto logger = ember::log::get_logger(); \
-	LOG_DEBUG_FILTER(logger, filter)
+	LOG_DEBUG_FILTER(ember::log::get_logger(), filter)
 
 #define LOG_INFO_FILTER_GLOB(filter) \
-	auto logger = ember::log::get_logger(); \
-	LOG_INFO_FILTER(logger, filter)
+	LOG_INFO_FILTER(ember::log::get_logger(), filter)
 
 #define LOG_WARN_FILTER_GLOB(filter) \
-	auto logger = ember::log::get_logger(); \
-	LOG_WARN_FILTER(logger, filter)
+	LOG_WARN_FILTER(ember::log::get_logger(), filter)
 
 #define LOG_ERROR_FILTER_GLOB(filter) \
-	auto logger = ember::log::get_logger(); \
-	LOG_ERROR_FILTER(logger, filter)
+	LOG_ERROR_FILTER(ember::log::get_logger(), filter)
 
 #define LOG_FATAL_FILTER_GLOB(filter) \
-	auto logger = ember::log::get_logger(); \
-	LOG_FATAL_FILTER(logger, filter)
+	LOG_FATAL_FILTER(ember::log::get_logger(), filter)
 
 #define LOG_ASYNC ember::log::flush; }
-#define LOG_SYNC ember::log::flush_sync; }
+#define LOG_SYNC  ember::log::flush_sync; }
 
 #if _MSC_VER && !__INTEL_COMPILER //todo, VS2013 workaround, remove in VS2015, I hope
 	#define __func__ __FUNCTION__
