@@ -9,7 +9,6 @@
 #pragma once
 
 #include "PacketBuffer.h"
-#include "LoginHandler.h"
 #include <boost/asio.hpp>
 #include <cstddef>
 
@@ -23,7 +22,7 @@ struct Session {
 	boost::asio::strand strand;
 	boost::asio::deadline_timer timer;
 
-	Session(LoginHandler handler, boost::asio::ip::tcp::socket socket,
+	Session(T handler, boost::asio::ip::tcp::socket socket,
 	        boost::asio::io_service& service) : handler(std::move(handler)),
 	        timer(service), strand(service), socket(std::move(socket)) {}
 };
