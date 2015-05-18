@@ -71,9 +71,9 @@ class NetworkHandler {
 		auto session = std::make_shared<Session<T>>(std::move(create_handler_(address)),
 		                                            std::move(socket), service);
 
-		session->handler.on_action =
+		session->handler.execute_action =
 			std::bind(&NetworkHandler::execute_action, this, session, std::placeholders::_1);
-		session->handler.on_send =
+		session->handler.send =
 			std::bind(&NetworkHandler::write, this, session, std::placeholders::_1);
 
 		session->timer.expires_from_now(boost::posix_time::seconds(SOCKET_ACTIVITY_TIMEOUT));

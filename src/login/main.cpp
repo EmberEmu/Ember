@@ -80,8 +80,6 @@ int main(int argc, const char* argv[]) try {
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
-	LOG_INFO_GLOB << "Initialialising Botan..." << LOG_SYNC;
-	LOG_INFO_GLOB << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
 
 	auto driver(init_db_driver(args));

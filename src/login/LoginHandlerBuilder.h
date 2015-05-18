@@ -20,10 +20,10 @@ class LoginHandlerBuilder {
 	log::Logger* logger_;
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
-	dal::UserDAO& user_dao_;
+	const dal::UserDAO& user_dao_;
 
 public:
-	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, dal::UserDAO& user_dao,
+	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const dal::UserDAO& user_dao,
 	                    RealmList& realm_list)
 	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao),
 	                      realm_list_(realm_list) {}

@@ -26,12 +26,12 @@ public:
 
 class FetchSessionKeyAction : public Action {
 	const std::string username_;
-	dal::UserDAO& user_src_;
+	const dal::UserDAO& user_src_;
 	boost::optional<std::string> key_;
 	std::exception_ptr exception_;
 
 public:
-	FetchSessionKeyAction(std::string username, dal::UserDAO& user_src)
+	FetchSessionKeyAction(std::string username, const dal::UserDAO& user_src)
 	                      : username_(std::move(username)), user_src_(user_src) {}
 
 	virtual void execute() final override try {
@@ -52,11 +52,11 @@ public:
 class StoreSessionAction : public Action {
 	User user_;
 	const std::string ip_, key_;
-	dal::UserDAO& user_src_;
+	const dal::UserDAO& user_src_;
 	std::exception_ptr exception_;
 
 public:
-	StoreSessionAction(User user, std::string ip, std::string key, dal::UserDAO& user_src)
+	StoreSessionAction(User user, std::string ip, std::string key, const dal::UserDAO& user_src)
 	                   : user_(std::move(user)), ip_(std::move(ip)), key_(std::move(key)),
 	                     user_src_(user_src){}
 
@@ -78,12 +78,12 @@ public:
 
 class FetchUserAction : public Action {
 	const std::string username_;
-	dal::UserDAO& user_src_;
+	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	std::exception_ptr exception_;
 
 public:
-	FetchUserAction(std::string username, dal::UserDAO& user_src)
+	FetchUserAction(std::string username, const dal::UserDAO& user_src)
 	                : username_(std::move(username)), user_src_(user_src) {}
 
 	virtual void execute() final override try {

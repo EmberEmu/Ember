@@ -125,7 +125,7 @@ void LoginHandler::accept_client(protocol::ClientOpcodes opcode) {
 			BOOST_ASSERT(false, "Impossible accept_client condition");
 	}
 
-	on_action(action);
+	execute_action(action);
 }
 
 void LoginHandler::reject_client(const GameVersion& version) {
@@ -138,7 +138,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)
 	       << protocol::ResultCodes::FAIL_VERSION_INVALID;
 
-	on_send(packet);
+	send(packet);
 }
 
 void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {	
@@ -196,7 +196,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
 	}
 	
-	on_send(resp);
+	send(resp);
 }
 
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
@@ -228,7 +228,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	stream << rand;
 	stream << std::uint64_t(0) << std::uint64_t(0);
 
-	on_send(resp);
+	send(resp);
 }
 
 void LoginHandler::check_login_proof(PacketBuffer& buffer) {
@@ -259,7 +259,7 @@ void LoginHandler::check_login_proof(PacketBuffer& buffer) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
 		auto action = std::make_shared<StoreSessionAction>(*user_, source_, login_auth_->session_key(), user_src_);
-		on_action(action);
+		execute_action(action);
 	} else {
 		state_ = State::CLOSED;
 		send_login_failure(result);
@@ -275,7 +275,7 @@ void LoginHandler::send_login_failure(protocol::ResultCodes result) {
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_PROOF;
 	stream << result;
 
-	on_send(resp);
+	send(resp);
 }
 
 void LoginHandler::send_login_success(StoreSessionAction* action) {
@@ -292,7 +292,7 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 	stream << m2 << std::uint32_t(0); //proof << account flags
 
 	state_ = State::REQUEST_REALMS;
-	on_send(resp);
+	send(resp);
 }
 
 void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
@@ -316,7 +316,7 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 	stream << protocol::ResultCodes::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
-	on_send(resp);
+	send(resp);
 }
 
 void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
@@ -353,8 +353,8 @@ void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
 	stream << protocol::ServerOpcodes::SMSG_REQUEST_REALM_LIST;
 	stream << std::uint16_t(body->size());
 	
-	on_send(header);
-	on_send(body);
+	send(header);
+	send(body);
 }
 
 bool LoginHandler::check_opcode(const PacketBuffer& buffer, protocol::ClientOpcodes opcode) {

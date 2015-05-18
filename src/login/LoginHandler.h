@@ -36,7 +36,7 @@ class LoginHandler {
 	log::Logger* logger_;
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
-	dal::UserDAO& user_src_;
+	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
 	std::string source_, username_;
@@ -60,13 +60,13 @@ class LoginHandler {
 	bool check_opcode(const PacketBuffer& buffer, protocol::ClientOpcodes opcode);
 
 public:
-	std::function<void(std::shared_ptr<Action> action)> on_action;
-	std::function<void(std::shared_ptr<Packet>)> on_send;
+	std::function<void(std::shared_ptr<Action> action)> execute_action;
+	std::function<void(std::shared_ptr<Packet>)> send;
 
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(PacketBuffer& buffer);
 
-	LoginHandler(std::string source, dal::UserDAO& users, const Patcher& patcher,
+	LoginHandler(std::string source, const dal::UserDAO& users, const Patcher& patcher,
 	             log::Logger* logger, const RealmList& realm_list)
 	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger),
 	               realm_list_(realm_list) {}

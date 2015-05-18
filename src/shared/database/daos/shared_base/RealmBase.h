@@ -21,8 +21,8 @@ namespace dal {
 
 class RealmDAO {
 public:
-	virtual std::vector<Realm> get_realms() = 0;
-	virtual boost::optional<Realm> get_realm(int id) = 0;
+	virtual std::vector<Realm> get_realms() const = 0;
+	virtual boost::optional<Realm> get_realm(int id) const = 0;
 	virtual ~RealmDAO() = default;
 };
 

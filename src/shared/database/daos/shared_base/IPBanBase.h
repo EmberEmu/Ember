@@ -22,9 +22,9 @@ namespace dal {
 
 class IPBanDAO {
 public:
-	virtual boost::optional<int> get_mask(const std::string& ip) = 0;
-	virtual std::vector<IPEntry> all_bans() = 0;
-	virtual void ban(const IPEntry& ban) = 0;
+	virtual boost::optional<int> get_mask(const std::string& ip) const = 0;
+	virtual std::vector<IPEntry> all_bans() const = 0;
+	virtual void ban(const IPEntry& ban) const = 0;
 	virtual ~IPBanDAO() = default;
 };
 
