@@ -49,7 +49,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	std::vector<ConnDetail<ConType>> pool_;
 	Semaphore<std::mutex> semaphore_;
 	std::function<void(Severity, std::string)> log_cb_;
-	bool closed_ = false;
+	bool closed_;
 
 	void open_connections(std::size_t num)  {
 		std::vector<std::future<ConType>> futures;
@@ -126,7 +126,8 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
 	     sc::seconds max_idle, sc::seconds interval = sc::seconds(10))
-	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size) {
+	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size),
+		   size_(0), closed_(false) {
 		open_connections(min_);
 		manager_.start(interval, max_idle);
 	}
