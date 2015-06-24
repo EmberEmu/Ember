@@ -14,7 +14,7 @@
 namespace ember { namespace srp6 {
 
 struct Generator {
-	enum class GROUP {
+	enum class Group {
 		_256_BIT, _1024_BIT,
 		_1536_BIT, _2048_BIT,
 		_3072_BIT, _4096_BIT,
@@ -22,7 +22,7 @@ struct Generator {
 	};
 
 	explicit Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g_(g), N_(N) {}
-	Generator(GROUP group);
+	Generator(Group group);
 	inline Botan::BigInt prime() const { return N_; }
 	inline Botan::BigInt generator() const { return g_; }
 	inline Botan::BigInt operator()(const Botan::BigInt& x) const {

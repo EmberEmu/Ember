@@ -21,7 +21,7 @@ public:
 	virtual void SetUp() {
 		identifier = "CHAOSVEX";
 		password = "ABC";
-		gen = std::make_unique<srp::Generator>(srp::Generator::GROUP::_256_BIT);
+		gen = std::make_unique<srp::Generator>(srp::Generator::Group::_256_BIT);
 		salt = srp::generate_salt(32);
 		verifier = srp::generate_verifier(identifier, password, *gen, salt, srp::Compliance::GAME);
 		server = std::make_unique<srp::Server>(*gen, verifier);
@@ -42,7 +42,7 @@ TEST(srp6a, RFC5054_TestVectors) {
 	std::string identifier = "alice";
 	std::string password = "password123";
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
-	srp::Generator gen(srp::Generator::GROUP::_1024_BIT);
+	srp::Generator gen(srp::Generator::Group::_1024_BIT);
 	
 	Botan::BigInt expected_k("0x7556AA045AEF2CDD07ABAF0F665C3E818913186F");
 	Botan::BigInt k = srp::detail::compute_k(gen.generator(), gen.prime());
@@ -110,7 +110,7 @@ TEST_F(srp6SessionTest, SelfAuthentication) {
 	Botan::BigInt s_proof = server->generate_proof(s_key, c_proof);
 
 	Botan::BigInt expected_c_proof = srp::generate_client_proof(identifier, s_key, gen->prime(),
-	                                                             gen->generator(), A, B, salt);
+	                                                            gen->generator(), A, B, salt);
 	Botan::BigInt expected_s_proof = srp::generate_server_proof(A, c_proof, c_key);
 
 	EXPECT_EQ(expected_c_proof, c_proof) << "Server could not verify client proof!";

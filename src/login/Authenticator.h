@@ -40,7 +40,7 @@ class LoginAuthenticator {
 	};
 
 	std::unique_ptr<srp6::Server> srp_;
-	srp6::Generator gen_ = srp6::Generator::GROUP::_256_BIT;
+	srp6::Generator gen_ = srp6::Generator::Group::_256_BIT;
 	srp6::SessionKey sess_key_;
 	User user_;
 
