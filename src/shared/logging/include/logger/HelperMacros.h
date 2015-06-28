@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Severity.h"
+#include <logger/Severity.h>
 
 #define LOG_TRACE(logger) \
 	if(logger->severity() <= ember::log::Severity::TRACE) { \

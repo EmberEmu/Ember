@@ -7,7 +7,6 @@
  */
 
 #include <logger/Worker.h>
-#include <iostream>
 
 namespace ember { namespace log {
 

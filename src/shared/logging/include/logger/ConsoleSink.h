@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "Sink.h"
+#include <logger/Sink.h>
 
 namespace ember { namespace log {
 
-class ConsoleSink : public Sink {
+class ConsoleSink final : public Sink {
 public:
 	ConsoleSink(Severity severity, Filter filter) : Sink(severity, filter) {}
 	void write(Severity severity, Filter type, const std::vector<char>& record) override;

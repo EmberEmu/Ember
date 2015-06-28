@@ -19,7 +19,7 @@
 namespace ember { namespace dal {
 
 template<typename T>
-class MySQLIPBanDAO : public IPBanDAO {
+class MySQLIPBanDAO final : public IPBanDAO {
 	T& pool_;
 	drivers::MySQL* driver_;
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Severity.h"
+#include <logger/Severity.h>
 #include <vector>
 #include <cstdint>
 

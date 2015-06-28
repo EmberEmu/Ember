@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Sink.h"
+#include <logger/Sink.h>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -16,7 +16,7 @@
 
 namespace ember { namespace log {
 
-class SyslogSink : public Sink {
+class SyslogSink final : public Sink {
 	class impl;
 	std::unique_ptr<impl> pimpl_;
 

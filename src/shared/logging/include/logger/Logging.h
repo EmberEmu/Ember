@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "Logger.h"
-#include "HelperMacros.h"
+#include <logger/Logger.h>
+#include <logger/HelperMacros.h>
 #include <memory>
 #include <mutex>
 

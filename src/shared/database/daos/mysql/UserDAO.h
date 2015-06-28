@@ -19,7 +19,7 @@
 namespace ember { namespace dal { 
 
 template<typename T>
-class MySQLUserDAO : public UserDAO {
+class MySQLUserDAO final : public UserDAO {
 	T& pool_;
 	drivers::MySQL* driver_;
 

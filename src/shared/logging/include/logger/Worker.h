@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "Sink.h"
-#include "concurrentqueue.h"
-#include "Logger.h"
-#include "../../threading/Semaphore.h"
+#include <logger/Sink.h>
+#include <logger/concurrentqueue.h>
+#include <logger/Logger.h>
+#include "../../threading/Semaphore.h" // todo - move to shared lib
 #include <vector>
 #include <mutex>
 #include <thread>

@@ -8,13 +8,13 @@
 
 #pragma once 
 
-#include "HelperMacros.h"
-#include "Worker.h"
-#include "Sink.h"
-#include "Severity.h"
-#include "Logger.h"
-#include "concurrentqueue.h"
-#include "../../threading/Semaphore.h"
+#include <logger/HelperMacros.h>
+#include <logger/Worker.h>
+#include <logger/Sink.h>
+#include <logger/Severity.h>
+#include <logger/Logger.h>
+#include <logger/concurrentqueue.h>
+#include "../../threading/Semaphore.h" // todo - move to shared lib
 #include <string>
 #include <vector>
 #include <memory>

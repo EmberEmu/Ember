@@ -12,7 +12,7 @@ add_library(logging
             src/Utility.cpp
             src/Worker.cpp
             src/ConsoleSink.cpp
-            src/concurrentqueue.h
+            include/logger/concurrentqueue.h
             include/logger/LoggerImpl.h
             include/logger/FileSink.h
             include/logger/HelperMacros.h
