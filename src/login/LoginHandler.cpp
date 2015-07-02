@@ -122,7 +122,7 @@ void LoginHandler::accept_client(protocol::ClientOpcodes opcode) {
 			state_ = State::FETCHING_SESSION;
 			break;
 		default:
-			BOOST_ASSERT(false, "Impossible accept_client condition");
+			BOOST_ASSERT_MSG(false, "Impossible accept_client condition");
 	}
 
 	execute_action(action);

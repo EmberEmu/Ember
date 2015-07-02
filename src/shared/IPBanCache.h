@@ -11,6 +11,7 @@
 #include <shared/database/daos/shared_base/IPBanBase.h>
 #include <boost/asio/ip/address.hpp>
 #include <algorithm>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <utility>
@@ -22,19 +23,19 @@ class IPBanCache {
 	T& source_;
 
 	struct IPv4Entry {
-		std::uint32_t range;
-		std::uint32_t mask;
+		unsigned long range;
+		unsigned long mask;
 	};
 
 	std::vector<IPv4Entry> entries_;
 
-	bool check_ban(boost::asio::ip::address_v6& ip) {
+	bool check_ban(const boost::asio::ip::address_v6&& ip) {
 		//implement
 		return false;
 	}
 
-	bool check_ban(boost::asio::ip::address_v4& ip) {
-		std::uint32_t ip_long = ip.to_ulong();
+	bool check_ban(const boost::asio::ip::address_v4&& ip) {
+		unsigned long ip_long = ip.to_ulong();
 		
 		for(auto& e : entries_) {
 			if((ip_long & e.mask) == (e.range & e.mask)) {
@@ -52,7 +53,7 @@ class IPBanCache {
 			auto address = boost::asio::ip::address::from_string(res.first);
 
 			if(address.is_v6()) {
-				throw std::exception("IPv6 bans are not supported but the ban cache encountered one!");
+				throw std::runtime_error("IPv6 bans are not supported but the ban cache encountered one!");
 			}
 
 			std::uint32_t mask = ~(0xFFFFFFFFu >> res.second);

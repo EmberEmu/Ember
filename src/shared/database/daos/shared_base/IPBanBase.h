@@ -16,7 +16,7 @@
 
 namespace ember { 
 
-typedef std::pair<std::string, int> IPEntry;
+typedef std::pair<std::string, unsigned long> IPEntry;
 
 namespace dal {
 

@@ -35,7 +35,7 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			return res->getInt("cidr");
+			return res->getUInt("cidr");
 		}
 
 		return boost::optional<int>();
@@ -52,7 +52,7 @@ public:
 		std::vector<IPEntry> entries;
 
 		while(res->next()) {
-			entries.emplace_back(res->getString("ip"), res->getInt("cidr"));
+			entries.emplace_back(res->getString("ip"), res->getUInt("cidr"));
 		}
 
 		return entries;
@@ -66,7 +66,7 @@ public:
 		auto conn = pool_.wait_connection();
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, ban.first);
-		stmt->setInt(2, ban.second);
+		stmt->setUInt(2, ban.second);
 		stmt->executeQuery();
 	} catch(std::exception& e) {
 		throw exception(e.what());

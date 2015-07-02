@@ -17,6 +17,7 @@
 #include <shared/threading/ThreadPool.h>
 #include <shared/misc/PacketStream.h>
 #include <boost/asio.hpp>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <string>

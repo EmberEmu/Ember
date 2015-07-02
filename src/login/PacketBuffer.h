@@ -73,11 +73,11 @@ public:
 	}
 
 	
-	PacketBuffer::PacketBuffer(const PacketBuffer& rhs) = delete;
+	PacketBuffer(const PacketBuffer& rhs) = delete;
 	PacketBuffer& operator=(const PacketBuffer& rhs) = delete;
-	PacketBuffer::PacketBuffer(PacketBuffer&& rhs) = delete;
+	PacketBuffer(PacketBuffer&& rhs) = delete;
 	PacketBuffer& operator=(PacketBuffer&& rhs) = delete;
-	PacketBuffer::PacketBuffer() = default;
+	PacketBuffer() = default;
 };
 
 } //ember

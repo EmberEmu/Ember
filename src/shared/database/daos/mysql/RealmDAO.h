@@ -36,10 +36,11 @@ public:
 
 		while(res->next()) {
 			// todo - temp fix to workaround msvc crash
-			Realm temp{res->getInt("id"), res->getString("name"), res->getString("ip"),
+			Realm temp{res->getUInt("id"), res->getString("name"), res->getString("ip"),
 			           static_cast<float>(res->getDouble("population")),
-		               res->getInt("icon"), res->getInt("flags"),
-		               res->getInt("timezone")};
+		               static_cast<std::uint8_t>(res->getUInt("icon")),
+					   static_cast<std::uint8_t>(res->getUInt("flags")),
+		               static_cast<std::uint8_t>(res->getUInt("timezone"))};
 			realms.emplace_back(std::move(temp));
 		}
 
@@ -60,10 +61,11 @@ public:
 
 		if(res->next()) {
 			// todo - temp fix to workaround msvc crash
-			Realm temp{res->getInt("id"), res->getString("name"), res->getString("ip"),
+			Realm temp{res->getUInt("id"), res->getString("name"), res->getString("ip"),
 			           static_cast<float>(res->getDouble("population")),
-		               res->getInt("icon"), res->getInt("flags"),
-		               res->getInt("timezone")};
+		               static_cast<std::uint8_t>(res->getUInt("icon")),
+					   static_cast<std::uint8_t>(res->getUInt("flags")),
+		               static_cast<std::uint8_t>(res->getUInt("timezone"))};
 			return boost::optional<Realm>(std::move(temp));
 		}
 

@@ -32,9 +32,11 @@ namespace ember { namespace connection_pool {
 
 namespace sc = std::chrono;
 
+template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy> class PoolManager;
+
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class Pool : private ReusePolicy, private GrowthPolicy {
-	template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
+	template<typename ConType, Driver, ReusePolicy, GrowthPolicy>
 	friend class PoolManager;
 
 	using ConType = decltype(std::declval<Driver>().open());

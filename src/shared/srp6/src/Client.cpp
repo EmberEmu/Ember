@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <srp6/Client.h>
 #include <botan/numthry.h>
 #include <botan/secmem.h>

@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <logger/Utility.h>
 #include <logger/Exception.h>
 #include <time.h>

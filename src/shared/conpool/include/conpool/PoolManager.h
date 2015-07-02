@@ -25,6 +25,8 @@ namespace ember { namespace connection_pool {
 
 namespace sc = std::chrono;
 
+template<typename Driver, typename ReusePolicy, typename GrowthPolicy> class Pool;
+
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class PoolManager {
 	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* ConnectionPool;

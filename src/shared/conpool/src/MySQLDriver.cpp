@@ -7,6 +7,7 @@
  */
 
 #include <conpool/drivers/MySQLDriver.h>
+#include <mysql_driver.h>
 #include <cppconn/driver.h>
 #include <cppconn/connection.h>
 #include <cppconn/exception.h>
@@ -21,7 +22,7 @@ namespace ember { namespace drivers {
 MySQL::MySQL(std::string user, std::string pass, const std::string& host, unsigned short port,
              std::string db) : database(db), username(std::move(user)), password(std::move(pass)),
              dsn(std::string("tcp://" + host + ":" + std::to_string(port))) {
-	driver = get_driver_instance();
+	driver = sql::mysql::get_driver_instance();
 }
 
 sql::Connection* MySQL::open() const {
