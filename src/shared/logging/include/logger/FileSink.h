@@ -52,7 +52,7 @@ public:
 	void log_date(bool enable) { log_date_ = enable;  }
 	void midnight_rotate(bool enable) { midnight_rotate_ = enable; }
 	void mode(Mode mode);
-	void size_limit(std::uint32_t megabytes);
+	void size_limit(std::uintmax_t megabytes);
 	void time_format(const std::string& format);
 	void write(Severity severity, Filter type, const std::vector<char>& record) override;
 	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) override;

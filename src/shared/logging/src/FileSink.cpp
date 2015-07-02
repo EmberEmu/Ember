@@ -82,7 +82,7 @@ void FileSink::open(Mode mode) {
 	}
 }
 
-void FileSink::size_limit(unsigned int megabytes) {
+void FileSink::size_limit(std::uintmax_t megabytes) {
 	if(megabytes > 65536) {
 		throw exception("Cannot rotate files larger than 64GB");
 	}
