@@ -48,11 +48,6 @@ set(EXECUTABLE_SRC
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
-target_link_libraries(${EXECUTABLE_NAME} ${BOTAN_LIBRARY})
-target_link_libraries(${EXECUTABLE_NAME} ${MYSQLCCPP_LIBRARY})
-target_link_libraries(${EXECUTABLE_NAME} logging)
-target_link_libraries(${EXECUTABLE_NAME} srp6)
-target_link_libraries(${EXECUTABLE_NAME} conpool)
+target_link_libraries(${EXECUTABLE_NAME} conpool srp6 logging ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/login/ DESTINATION ${CMAKE_INSTALL_PREFIX})

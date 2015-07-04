@@ -30,6 +30,7 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.58.0 REQUIRED COMPONENTS program_options filesystem system)
+find_package(Threads REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
