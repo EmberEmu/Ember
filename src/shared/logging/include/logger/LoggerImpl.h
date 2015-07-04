@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once 
+#pragma once
 
 #include <logger/HelperMacros.h>
 #include <logger/Worker.h>
@@ -24,6 +24,7 @@
 #include <tuple>
 #include <condition_variable>
 #include <thread>
+#include <cstddef>
 #include <cstring>
 
 #ifdef _WIN32
@@ -87,6 +88,11 @@ public:
 		buffers_.erase(std::this_thread::get_id());
 	}
 
+	template<typename T>
+	void copy_to_stream(T& data) {
+
+	}
+
 	impl& operator <<(impl& (*m)(impl&)) {
 		t_buffer_->first.type = 1; // first bit represents the misc. record type
 		return (*m)(*this);
@@ -108,10 +114,48 @@ public:
 		return *this;
 	}
 
-	template<typename T>
-	impl& operator <<(T data) {
-		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
+	impl& operator <<(float data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(double data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(bool data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(int data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(unsigned int data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(long data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(unsigned long data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(unsigned long long data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
+	impl& operator <<(long long data) {
+		copy_to_stream(data);
 		return *this;
 	}
 
