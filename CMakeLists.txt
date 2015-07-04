@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Ember
+# Copyright (c) 2014, 2015 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,6 +22,8 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	endif()
 endif()
 
+find_package(Threads REQUIRED)
+
 ##############################
 #            Boost           #
 ##############################
@@ -30,7 +32,6 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.58.0 REQUIRED COMPONENTS program_options filesystem system)
-find_package(Threads REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
