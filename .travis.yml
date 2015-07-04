@@ -35,7 +35,7 @@ before_install:
 	- if [ "$CXX" == "clang++" ]; then echo "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main" | sudo tee -a /etc/apt/sources.list; fi
 	- if [ "$CXX" == "clang++" ]; then echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu precise main" | sudo tee -a /etc/apt/sources.list; fi
 
-	sudo apt-get update -qq
+	- sudo apt-get update -qq
 
 install:
 	- sudo apt-get install -y libmysqlcppconn-dev
