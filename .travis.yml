@@ -52,11 +52,11 @@ install:
     - tar xzvf boost_1_58_0.tar.gz
     - cd boost_1_58_0/
     - sudo ./bootstrap.sh --with-libraries=system,filesystem,program_options
-    - sudo ./b2 link=static install -j 2 cxxflags="-std=c++14"
+    - sudo ./b2 link=static install -d0 -j 2 cxxflags="-std=c++14"
     - cd ../
     - wget http://www.cmake.org/files/v3.2/cmake-3.2.3-Linux-x86_64.tar.gz
     - tar xzvf cmake-3.2.3-Linux-x86_64.tar.gz
-    - sudo cp -r cmake-3.2.3-Linux-x86_64/* /usr/local
+    - sudo cp -r cmake-3.2.3-Linux-x86_64/bin /usr/local/bin
 
 script:
     - mkdir build
