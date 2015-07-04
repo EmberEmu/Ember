@@ -27,11 +27,7 @@ public:
 	Logger& operator <<(Logger& (*m)(Logger&));
 	Logger& operator <<(Severity severity);
 	Logger& operator <<(Filter record_type);
-	Logger& operator <<(float data);
-	Logger& operator <<(double data);
-	Logger& operator <<(bool data);
-	Logger& operator <<(int data);
-	Logger& operator <<(unsigned int data);
+	template<typename T> Logger& operator <<(T data);
 	Logger& operator <<(const std::string& data);
 	Logger& operator <<(const char* data);
 	void add_sink(std::unique_ptr<Sink> sink);

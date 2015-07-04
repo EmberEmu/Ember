@@ -108,31 +108,8 @@ public:
 		return *this;
 	}
 
-	impl& operator <<(float data) {
-		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
-		return *this;
-	}
-
-	impl& operator <<(double data) {
-		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
-		return *this;
-	}
-
-	impl& operator <<(bool data) {
-		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
-		return *this;
-	}
-
-	impl& operator <<(int data) {
-		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
-		return *this;
-	}
-
-	impl& operator <<(unsigned int data) {
+	template<typename T>
+	impl& operator <<(T data) {
 		std::string conv = std::to_string(data);
 		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
 		return *this;

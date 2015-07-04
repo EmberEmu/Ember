@@ -52,27 +52,8 @@ Logger& Logger::operator <<(Filter type) {
 	return *this;
 }
 
-Logger& Logger::operator <<(float data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(double data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(bool data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(int data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(unsigned int data) {
+template<typename T>
+Logger& Logger::operator <<(T data) {
 	*pimpl_ << data;
 	return *this;
 }
