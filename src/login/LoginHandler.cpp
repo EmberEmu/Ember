@@ -132,7 +132,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
 	state_ = State::CLOSED;
 
-	auto packet = std::allocate_shared<Packet>(boost::fast_pool_allocator<Packet>());
+	auto packet = std::make_shared<Packet>();
 	PacketStream<Packet> stream(packet.get());
 
 	stream << protocol::ServerOpcodes::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)

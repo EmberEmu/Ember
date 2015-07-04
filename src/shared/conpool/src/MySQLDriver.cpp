@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ namespace ember { namespace drivers {
 MySQL::MySQL(std::string user, std::string pass, const std::string& host, unsigned short port,
              std::string db) : database(db), username(std::move(user)), password(std::move(pass)),
              dsn(std::string("tcp://" + host + ":" + std::to_string(port))) {
-	driver = sql::mysql::get_driver_instance();
+	driver = get_driver_instance();
 }
 
 sql::Connection* MySQL::open() const {
@@ -75,11 +75,13 @@ void MySQL::thread_exit() const {
 	driver->threadEnd();
 }
 
-std::string MySQL::name() const {
+std::string MySQL::name() {
+	auto driver = get_driver_instance();
 	return driver->getName();
 }
 
-std::string MySQL::version() const {
+std::string MySQL::version() {
+	auto driver = get_driver_instance();
 	std::stringstream ver;
 	ver << driver->getMajorVersion() << "." << driver->getMinorVersion() << "."
 	    << driver->getPatchVersion();

@@ -24,6 +24,7 @@
 #include <tuple>
 #include <condition_variable>
 #include <thread>
+#include <cstring>
 
 #ifdef _WIN32
 	#define thread_local __declspec(thread)
@@ -168,7 +169,7 @@ public:
 	impl& operator=(const impl&) = delete;
 };
 
-std::pair<RecordDetail, std::vector<char>>* Logger::impl::t_buffer_;
-Semaphore<std::mutex>* Logger::impl::t_sem_;
+thread_local std::pair<RecordDetail, std::vector<char>>* Logger::impl::t_buffer_;
+thread_local Semaphore<std::mutex>* Logger::impl::t_sem_;
 
 }} //log, ember

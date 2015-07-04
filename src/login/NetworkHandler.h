@@ -180,6 +180,10 @@ public:
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 		accept_connection();
 	}
+
+	~NetworkHandler() {
+		LOG_DEBUG(logger_) << "Network handler terminated" << LOG_SYNC;
+	}
 };
 
 } // ember

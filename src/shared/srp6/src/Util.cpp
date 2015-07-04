@@ -19,7 +19,7 @@ namespace ember { namespace srp6 {
 	
 namespace detail {
 
-Botan::BigInt decode_flip(SecureVector<byte>& val) {
+Botan::BigInt decode_flip(SecureVector<byte> val) {
 	std::reverse(val.begin(), val.end());
 	return Botan::BigInt::decode(val);
 }
@@ -36,7 +36,7 @@ SecureVector<byte> encode_flip_1363(const Botan::BigInt& val, std::size_t paddin
 	return res;
 }
 
-SecureVector<byte> interleaved_hash(SecureVector<byte>& hash) {
+SecureVector<byte> interleaved_hash(SecureVector<byte> hash) {
 	//implemented as described in RFC2945
 	auto begin = std::find_if(hash.begin(), hash.end(), [](byte b) { return b; });
 	begin = std::distance(begin, hash.end()) % 2 == 0? begin : begin + 1;

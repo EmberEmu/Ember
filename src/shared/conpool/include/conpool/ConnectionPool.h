@@ -36,7 +36,7 @@ template<typename ConType, typename Driver, typename ReusePolicy, typename Growt
 
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class Pool : private ReusePolicy, private GrowthPolicy {
-	template<typename ConType, Driver, ReusePolicy, GrowthPolicy>
+	template<typename, typename, typename, typename>
 	friend class PoolManager;
 
 	using ConType = decltype(std::declval<Driver>().open());

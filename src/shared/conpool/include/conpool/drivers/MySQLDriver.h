@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <mutex>
@@ -36,7 +37,14 @@ class MySQL {
 public:
 	MySQL(std::string user, std::string password, const std::string& host,
 	      unsigned short port, std::string db);
-	
+
+	MySQL(MySQL&& rhs) : dsn(std::move(rhs.dsn)), username(std::move(rhs.username)),
+	                     password(std::move(rhs.password)), database(std::move(rhs.database)),
+	                     cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
+
+	static std::string name();
+	static std::string version();
+
 	sql::Connection* open() const;
 	bool clean(sql::Connection* conn) const;
 	void close(sql::Connection* conn) const;
@@ -44,8 +52,6 @@ public:
 	sql::Connection* keep_alive(sql::Connection* conn) const;
 	void thread_enter() const;
 	void thread_exit() const;
-	std::string name() const;
-	std::string version() const;
 	sql::PreparedStatement* prepare_cached(sql::Connection* conn, const std::string& key);
 	sql::PreparedStatement* lookup_statement(const sql::Connection* conn, const std::string& key);
 	void cache_statement(const sql::Connection* conn, const std::string& key,

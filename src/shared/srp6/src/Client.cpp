@@ -11,6 +11,7 @@
 #include <botan/secmem.h>
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
+#include <algorithm>
 
 using Botan::BigInt;
 using Botan::SecureVector;
@@ -29,7 +30,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 	A_ = gen(a_) /* % N */;
 
 	if(srp6a) {
-		k_.swap(detail::compute_k(gen_.generator(), gen_.prime()));
+		k_ = std::move(detail::compute_k(gen_.generator(), gen_.prime()));
 	}
 }
 

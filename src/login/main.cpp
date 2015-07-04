@@ -29,8 +29,11 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
 #include <botan/init.h>
+#include <botan/version.h>
+#include <boost/version.hpp>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <iostream>
 #include <fstream>
 #include <functional>
@@ -47,6 +50,7 @@ namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 
+void print_lib_versions(el::Logger* logger);
 std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
@@ -72,6 +76,7 @@ int main(int argc, const char* argv[]) try {
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
+	print_lib_versions(logger.get());
 	launch(args, logger.get());
 } catch(std::exception& e) {
 	std::cerr << e.what();
@@ -82,11 +87,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
 
+	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
 	auto driver(init_db_driver(args));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
-	
-	LOG_INFO(logger) << "Compiled with " << driver.name() << " (" << driver.version() << ")" << LOG_SYNC;
+
 	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
 		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
@@ -101,6 +106,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	ember::RealmList realm_list(realm_dao->get_realms());
+	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realms"  << LOG_SYNC;
+
+	for(auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
+		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
+	}
 
 	unsigned int concurrency = check_concurrency(logger);
 
@@ -258,6 +268,16 @@ ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
 	auto port = args["database.port"].as<unsigned short>();
 	auto db = args["database.database"].as<std::string>();
 	return {user, pass, host, port, db};
+}
+
+void print_lib_versions(el::Logger* logger) {
+	LOG_INFO(logger) << "Compiled with library versions: " << LOG_SYNC;
+	LOG_INFO(logger)  << "- Boost " << BOOST_VERSION / 100000 << "."
+	                  << BOOST_VERSION / 100 % 1000 << "."
+	                  << BOOST_VERSION % 100 << LOG_SYNC;
+	LOG_INFO(logger) << "- " << Botan::version_string() << LOG_SYNC;
+	LOG_INFO(logger) << "- " << ember::drivers::DriverType::name()
+	                 << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {

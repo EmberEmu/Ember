@@ -3,8 +3,6 @@
 #include <botan/secmem.h>
 #include <string>
 #include <vector>
-#include <boost/pool/pool.hpp>
-#include <boost/pool/pool_alloc.hpp>
 
 namespace ember {
 

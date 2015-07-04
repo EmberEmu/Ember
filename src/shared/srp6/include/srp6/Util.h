@@ -23,11 +23,10 @@ enum class Compliance { RFC5054, GAME };
 
 namespace detail {
 
-Botan::SecureVector<Botan::byte> interleaved_hash(Botan::SecureVector<Botan::byte>& hash);
+Botan::SecureVector<Botan::byte> interleaved_hash(Botan::SecureVector<Botan::byte> hash);
 Botan::SecureVector<Botan::byte> encode_flip(const Botan::BigInt& val);
 Botan::SecureVector<Botan::byte> encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
-Botan::BigInt decode_flip(Botan::SecureVector<Botan::byte>& val);
-Botan::BigInt decode_flip_copy(const Botan::SecureVector<Botan::byte>& val);
+Botan::BigInt decode_flip(Botan::SecureVector<Botan::byte> val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
                         Compliance mode);
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);

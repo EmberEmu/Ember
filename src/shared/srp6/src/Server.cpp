@@ -11,6 +11,7 @@
 #include <botan/sha160.h>
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
+#include <algorithm>
 
 using Botan::BigInt;
 using Botan::power_mod;
@@ -21,7 +22,7 @@ namespace ember { namespace srp6 {
 Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6a)
               : v_(v), N_(gen.prime()), b_(b) {
 	if(srp6a) {
-		k_.swap(detail::compute_k(gen.generator(), N_));
+		k_ = std::move(detail::compute_k(gen.generator(), N_));
 	}
 
 	B_ = (k_ * v_ + gen(b_)) % N_;
