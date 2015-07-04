@@ -90,7 +90,8 @@ public:
 
 	template<typename T>
 	void copy_to_stream(T& data) {
-
+		std::string conv = std::to_string(data);
+		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
 	}
 
 	impl& operator <<(impl& (*m)(impl&)) {
