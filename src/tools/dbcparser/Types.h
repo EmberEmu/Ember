@@ -36,7 +36,7 @@ struct Field {
 };
 
 struct Base {
-	Base(Types type_) : type(type_) {}
+	explicit Base(Types type_) : type(type_) {}
 	Types type;
 	std::string name;
 	std::string alias;

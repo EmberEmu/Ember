@@ -70,7 +70,7 @@ class Validator {
 
 public:
 	Validator();
-	Validator(const std::vector<types::Definition>& definitions) {
+	explicit Validator(const std::vector<types::Definition>& definitions) {
 		for(auto& def : definitions) {
 			definitions_.emplace_back(&def);
 		}
