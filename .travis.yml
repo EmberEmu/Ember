@@ -15,6 +15,7 @@ branches:
   only:
     - master
     - development
+    - coverity_scan
 
 compiler:
   - gcc
@@ -25,9 +26,10 @@ env:
     - LIBSTDC_VERSION=4.9
     - GCC_VERSION=4.9
     - CLANG_VERSION=3.5
+    - secure: "QEjAwdyTIKC23olE3wKevwJT/wskkxedicR3BTsVIznC6gFhSilYDHQl7WZZnUygZpoCM2xGJVwb9d+CCultf5eLsJinJG3bR5wdAmtZeYcT8EwSVGqSexUQKxci/fxgISw/YTybIyT8j5f61tJ5/7bwouvhhBnYPlgcbU0QuzZRe4RD7F9bL9lzT18LeenecpnJseJFL9iUgRoiOYRQss7Zru1GcKfo89kWPdNsu8j49EqEpMQNRP9zQiyagGRwCVeTvDjd54mRedoUKciANiwKjjpqM0ZHZ9Ogpl44TV0EfPzT0jA10I46sliSYEoSNwvHx0JSAi02zXIJeww2rafYiCwiClXz7SWlJ2GAJVkUw7U12x0OJEArpyVrU7uJmPmFSuGNPI7F2mTM1OE80zN/iAUv6iARo7/Yo67ZOTSbl9YtFn5RpVA9fo0U+HSWAHZwIAHLn48BMwsgGjMPB0dqoEnc2jK7ayhMxxv+QoybQPXuAjy22kBEYjHuRpdglBJNkcFmgKprJOcqJR4/bkMv1XPPNptSPoXQgttoBCqQs+syFP13xFGtg7IUUBCnr6z5CiYktul9xTJWMUKFtpVjYJLk4lvkWSuW9ine4bZUvC3Yj9mcT2TjC2aN/inG9xZmGsQ/SnOgtt+Ou/6n8nPhnnuS7KN/A/CSEdzkhjo="
 
 before_install:
-    - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 
     - if [ "$CXX" == "clang++" ]; then echo "deb http://llvm.org/apt/precise/ llvm-toolchain-precise main" | sudo tee -a /etc/apt/sources.list; fi
     - if [ "$CXX" == "clang++" ]; then echo "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main" | sudo tee -a /etc/apt/sources.list; fi
@@ -43,30 +45,37 @@ install:
     - if [ "$CXX" == "g++" ]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} 100; fi
     - if [ "$CXX" == "g++" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION} 100; fi
 
+    - if [ "$CXX" == "clang++" ]; then sudo apt-get -qq install build-essential; fi
     - if [ "$CXX" == "clang++" ]; then sudo apt-get -qq -y --allow-unauthenticated install libstdc++-${LIBSTDC_VERSION}-dev; fi
     - if [ "$CXX" == "clang++" ]; then sudo apt-get -qq -y --allow-unauthenticated install clang-${CLANG_VERSION}; fi
-    - if [ "$CXX" == "clang++" ]; then sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 100; fi
-    - if [ "$CXX" == "clang++" ]; then sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 100; fi
+    - if [ "$CXX" == "clang++" ]; then sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${CLANG_VERSION} 1000; fi
+    - if [ "$CXX" == "clang++" ]; then sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${CLANG_VERSION} 1000; fi
+    - if [ "$CXX" == "clang++" ]; then clang --version; fi
+    - if [ "$CXX" == "clang++" ]; then export CC="clang-3.5"; fi
+    - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.5"; fi
 
     - wget -O boost_1_58_0.tar.gz http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download
-    - tar xzvf boost_1_58_0.tar.gz
+    - tar xzvf boost_1_58_0.tar.gz > /dev/null
     - cd boost_1_58_0/
-    - sudo ./bootstrap.sh --with-libraries=system,filesystem,program_options
+    - if [ "$CXX" == "g++" ]; then sudo ./bootstrap.sh --with-libraries=system,filesystem,program_options; fi
+    - if [ "$CXX" == "clang++-3.5" ]; then sudo ./bootstrap.sh --with-libraries=system,filesystem,program_options --with-toolset=clang; fi
     - sudo ./b2 link=static install -d0 -j 2 cxxflags="-std=c++14"
     - cd ../
     - wget http://www.cmake.org/files/v3.2/cmake-3.2.3-Linux-x86_64.tar.gz
     - tar xzvf cmake-3.2.3-Linux-x86_64.tar.gz
-    - sudo cp -r cmake-3.2.3-Linux-x86_64/bin /usr/local/bin
+    - sudo cp -fR cmake-3.2.3-Linux-x86_64/* /usr
+    - cmake --version
 
 script:
     - mkdir build
     - cd build
-    - cmake ../ -DCMAKE_BUILD_TYPE=Release -DBOTAN_ROOT_DOR=/usr/ -DBOTAN_INCLUDE_DIR=/usr/include/botan-1.10/ -DBOTAN_LIBRARY=/usr/lib/libbotan-1.10.so -DBOTAN_ROOT_DIR=/usr/
+    - cmake ../ -DCMAKE_BUILD_TYPE=Release -DBOTAN_ROOT_DIR=/usr/ -DBOTAN_INCLUDE_DIR=/usr/include/botan-1.10/ -DBOTAN_LIBRARY=/usr/lib/libbotan-1.10.so -DBOTAN_ROOT_DIR=/usr/
+    - make -j 2
     - ./bin/unit_tests
 
 notifications:
   irc:
     channels:
       - "irc.quakenet.org#ember"
-    on_success: always
+    on_success: never
     on_failure: always

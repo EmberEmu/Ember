@@ -23,6 +23,14 @@ Ember aims to support the following platforms as a minimum:
 - GCC 4.9.2
 - Clang 3.5
 
+###Build status:
+|  | master  | development |
+| :------------ |:---------------:|:---------------:|
+| Linux | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=master)](https://travis-ci.org/EmberEmu/Ember) | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=development)](https://travis-ci.org/EmberEmu/Ember) |
+| Windows | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | Soon |
+| Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
+
+
 ###Contributing:
 Contributors are always welcome. If you seek to get your hands dirty, take a peek at 'docs/Contributing.md' for advice on getting started.
 
