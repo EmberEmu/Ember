@@ -17,12 +17,9 @@ set(EXECUTABLE_HDR
     ../shared/util/LogConfig.h
     LoginHandlerBuilder.h
     LoginPacketCheck.h
-    RealmPacketCheck.h
     NetworkHandler.h
     LoginHandler.h
-    RealmHandler.h
     PacketBuffer.h
-    Handler.h
     Session.h
     Protocol.h
     GameVersion.h
@@ -38,8 +35,6 @@ set(EXECUTABLE_SRC
     ../shared/util/LogConfig.cpp
     LoginHandler.cpp
     LoginPacketCheck.cpp
-    RealmPacketCheck.cpp
-    RealmHandler.cpp
     RealmList.cpp
     Authenticator.cpp
     Patcher.cpp

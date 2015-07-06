@@ -13,8 +13,6 @@
 #include "NetworkHandler.h"
 #include "Patcher.h"
 #include "RealmList.h"
-#include "RealmHandler.h"
-#include "RealmPacketCheck.h"
 #include <logger/Logging.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
