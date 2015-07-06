@@ -1,43 +1,28 @@
 <?xml version="1.0"?>
 
 <struct>
-	<name>Foo</name>
-
-	<struct>
-		<name>Bar1</name>
-	</struct>
-
-	<struct>
-		<name>Baz1</name>
-	</struct>
-
-	<field>
-		<type>ChrRaces</type>
-		<name>fdfddf</name>
-	</field>
+	<name>Testing</name>
 </struct>
 
 <struct>
 	<name>ChrRaces</name>
 	<alias>test</alias>
-
 	<struct>
-		<name>Testing</name>
-
+		<name>Foo</name>
 		<struct>
-			<name>Test2</name>
+			<name>Bar</name>
 		</struct>
 
+
 		<field>
-			<name>Blah</name>
-			<type>Test2</type>
+			<type>Bar</type>
+			<name>id</name>
 		</field>
 	</struct>
 
 	<enum>
 		<type>uint32</type>
 		<name>Flags</name>
-
 		<options>
 			<option name="none" value="0x00" />
 			<option name="not_playable" value="0x01" />
@@ -106,8 +91,17 @@
 		<name>speed_modifier</name>
 	</field>
 
+	<enum>
+		<type>uint32</type>
+		<name>BaseLangs</name>
+		<options>
+			<option name="horde" value="0x01" />
+			<option name="alliance" value="0x07" />
+		</options>
+	</enum>
+
 	<field>
-		<type>enumu32</type>
+		<type>BaseLangs</type>
 		<name>base_language</name>
 	</field>
 

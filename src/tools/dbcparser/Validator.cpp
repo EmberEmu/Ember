@@ -9,9 +9,9 @@
 #include "Validator.h"
 #include "TypeUtils.h"
 #include <limits>
+#include <iostream>
 #include <typeinfo>
 #include <cstdint>
-#include <iostream>
 
 namespace ember { namespace dbc {
 
@@ -103,10 +103,10 @@ void Validator::check_key_types(const types::Field& field) {
 	}
 }
 
-void Validator::check_dup_key_types(const types::Struct& def) {
+void Validator::check_dup_key_types(const types::Struct* def) {
 	bool has_primary = false;
 
-	for(auto& field : def.fields) {
+	for(auto& field : def->fields) {
 		bool has_foreign = false;
 
 		for(auto& key : field.keys) {
@@ -129,117 +129,118 @@ void Validator::check_dup_key_types(const types::Struct& def) {
 	}
 }
 
-void Validator::add_user_type(TreeNode<std::string>& node, std::string type) {
-	if(std::find_if(node.children.begin(), node.children.end(),
-		[&type](TreeNode<std::string>& i) {
-			return i.t == type;  
-		}) != node.children.end()) {
+void Validator::add_user_type(TreeNode<std::string>* node, const std::string& type) {
+	if(std::find_if(node->children.begin(), node->children.end(),
+		[&type](const std::unique_ptr<TreeNode<std::string>>& i) {
+			return i->t == type;
+		}) != node->children.end()) {
+
 		throw exception("Multiple definitions of user-defined type: " + type); 
 	}
 
-	node.t = type;
+	node->t = type;
 }
 
-void Validator::map_struct_types(TreeNode<std::string>& parent, const types::Struct& def) {	
-	tester_(def.name);
-	add_user_type(parent, def.name);
+void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Struct* def) {	
+	tester_(def->name);
+	add_user_type(parent, def->name);
 
-	for(auto& child : def.children) {
-		TreeNode<std::string> node;
+	for(auto& child : def->children) {
+		auto node = std::make_unique<TreeNode<std::string>>();
 
 		switch(child->type) {
 			case types::STRUCT:
-				map_struct_types(node, static_cast<types::Struct&>(*child));
+				map_struct_types(node.get(), static_cast<types::Struct*>(child.get()));
 				break;
 			case types::ENUM:
-				add_user_type(node, static_cast<types::Enum&>(*child).name);
+				add_user_type(node.get(), static_cast<types::Enum*>(child.get())->name);
 				break;
 			default:
 				throw exception("Unhandled type");
 		}
 
-		parent.children.emplace_back(node);
+		node->parent = parent;
+		parent->children.emplace_back(std::move(node));
 	}	
 }
 
-void Validator::recursive_type_parse(TreeNode<std::string>& parent, const types::Base& def) {
-	switch(def.type) {
+void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types::Base* def) {
+	switch(def->type) {
 		case types::STRUCT:
-			map_struct_types(parent, static_cast<const types::Struct&>(def));
+			map_struct_types(parent, static_cast<const types::Struct*>(def));
 			break;
 		case types::ENUM:
-			add_user_type(parent, def.name);
+			add_user_type(parent, def->name);
 			break;
 		default:
 			throw exception("Unhandled type");
 	}
 }
 
-void Validator::build_type_tree() {
-	for(auto& defs : definitions_) {
-		for(auto& def : *defs) {
-			TreeNode<std::string> node;
-			recursive_type_parse(node, *def);
-			types_.emplace_back(node);
-		}
-	}
+/*
+ * Checks to see whether the given field is of a valid type. Valid 
+ * types are considered to be any that are children of the type tree root
+ * (except the one in which the field resides) as well as any that are
+ * sibling nodes of the field (same depth, shared parent).
+ *
+ * This check is pretty naïve but it's not worth refactoring everything and
+ * increasing the complexity to improve it.
+ */
+void Validator::check_field_types(const types::Struct* def, const TreeNode<std::string>* root) {
+	//for(auto& field : def.fields) {
+	//	auto components = extract_components(field.underlying_type);
+
+	//	if(type_map.find(components.first) != type_map.end()) {
+	//		std::cout << "Found " << components.first << " in type map" <<  std::endl;
+	//		return;
+	//	}
+
+	//	if(std::find_if(types.children.begin(), types.children.end(),
+	//		[&components](const TreeNode<std::string>& i) {
+	//		std::cout << "Found " << i.t << " looking for " << components.first << std::endl;
+	//			return i.t == components.first;
+	//		}) != types.children.end()) {
+	//		return;
+	//	}
+	//		
+	//	throw exception(components.first + " is not a recognised type");
+	//}
 }
 
-void Validator::check_field_types(const types::Struct& def, const TreeNode<std::string>& types) {
-	for(auto& field : def.fields) {
-		auto components = extract_components(field.underlying_type);
-
-		if(type_map.find(components.first) != type_map.end()) {
-			return;
-		}
-
-		if(std::find_if(types.children.begin(), types.children.end(),
-			[&components](const TreeNode<std::string>& i) {
-			std::cout << "Found " << i.t << " looking for " << components.first << std::endl;
-				return i.t == components.first;
-			}) != types.children.end()) {
-			return;
-		}
-			
-		throw exception(components.first + " is not a recognised type");
-	}
-}
-
-const TreeNode<std::string>& Validator::locate_type_node(const std::string& name,
-                                                   const TreeNode<std::string>& node) {
-	auto it = std::find_if(node.children.begin(), node.children.end(),
-		[&name](const TreeNode<std::string>& i) {
-			return i.t == name;
+const TreeNode<std::string>* Validator::locate_type_node(const std::string& name,
+                                                         const TreeNode<std::string>* node) {
+	auto it = std::find_if(node->children.begin(), node->children.end(),
+		[&name](const std::unique_ptr<TreeNode<std::string>>& i) {
+			return i->t == name;
 		});
 
-	if(it == node.children.end()) {
+	if(it == node->children.end()) {
 		throw exception("Unable to locate type in hierarchy: " + name);
 	}
 
-	return (*it);
+	throw exception("Unable to locate type in hierarchy: " + name);
 }
 
-void Validator::validate_struct(const types::Struct& def, const TreeNode<std::string>& types) {
+void Validator::validate_struct(const types::Struct* def, const TreeNode<std::string>* types) {
 	check_dup_key_types(def);
 	check_field_types(def, types);
-	/*check_multiple_definitions(def, names);
-	check_naming_conventions(def, tester);*/
+	//check_multiple_definitions(def, names);
+	//check_naming_conventions(def, tester_);
 
-	auto node = locate_type_node(def.name, types);
+	auto node = locate_type_node(def->name, types);
 
-	for(auto& field : def.fields) {
-		//check_key_types(field);
+	for(auto& field : def->fields) {
+		check_key_types(field);
 		//check_foreign_keys(field);
 	}
 
-	for(auto& child : def.children) {
-
+	for(auto& child : def->children) {
 		switch(child->type) {
 			case types::STRUCT:
-				validate_struct(static_cast<const types::Struct&>(*child), node);
+				validate_struct(static_cast<const types::Struct*>(child.get()), node);
 				break;
 			case types::ENUM:
-				validate_enum(static_cast<const types::Enum&>(*child));
+				validate_enum(static_cast<const types::Enum*>(child.get()));
 				break;
 			default:
 				throw exception("Unhandled type");
@@ -283,21 +284,21 @@ void Validator::validate_enum_option_value(const std::string& type, const std::s
 	}
 }
 
-void Validator::validate_enum_options(const types::Enum& def) {
+void Validator::validate_enum_options(const types::Enum* def) {
 	std::map<std::string, std::string> options;
 	
-	for(auto& option : def.options) {
-		validate_enum_option_value(def.underlying_type, option.second);
+	for(auto& option : def->options) {
+		validate_enum_option_value(def->underlying_type, option.second);
 
 		if(options.find(option.first) != options.end()) {
-			throw exception("Multiple definitions of " + option.first + " in " + def.name);
+			throw exception("Multiple definitions of " + option.first + " in " + def->name);
 		}
 
 		if(std::find_if(options.begin(), options.end(),
 			[option](std::pair<std::string, std::string> i) {
 				return i.second == option.second;
 		}) != options.end()) {
-			throw exception("Duplicate index found for " + option.first + " in " + def.name
+			throw exception("Duplicate index found for " + option.first + " in " + def->name
 			                + ": " + option.second);
 		}
 
@@ -305,19 +306,17 @@ void Validator::validate_enum_options(const types::Enum& def) {
 	}
 }
 
-void Validator::validate_enum(const types::Enum& def) {
+void Validator::validate_enum(const types::Enum* def) {
 	validate_enum_options(def);
 }
 
-void Validator::validate_definition(const types::Base& def) {
-	auto node = locate_type_node(def.name, types_[0]);
-
-	switch(def.type) {
+void Validator::validate_definition(const types::Base* def) {
+	switch(def->type) {
 		case types::STRUCT:
-			validate_struct(static_cast<const types::Struct&>(def), node);
+			validate_struct(static_cast<const types::Struct*>(def), &root_);
 			break;
 		case types::ENUM:
-			validate_enum(static_cast<const types::Enum&>(def));
+			validate_enum(static_cast<const types::Enum*>(def));
 			break;
 		default:
 			throw exception("Unhandled type");
@@ -325,25 +324,45 @@ void Validator::validate_definition(const types::Base& def) {
 	}
 }
 
-void Validator::print_type_tree(const TreeNode<std::string>& types, int depth) {
-	std::cout << std::string(depth * 2, '-') << types.t << std::endl;
+/*
+ * Loops over the parsed definition vectors and generates an incredibly crude type
+ * tree, consisting of any user-defined types (structs and enums). 
+ *
+ * The type tree is later used to figure out whether field types that reference
+ * user-defined types are valid. The type tree begins with an unnamed root node.
+*/
+void Validator::build_type_tree() {
+	root_.parent = nullptr;
 
-	for(auto& children : types.children) {
-		print_type_tree(children, depth + 1);
+	for(auto& defs : definitions_) { // for each XML definition file
+		for(auto& def : *defs) {     // for each 'root' type within that file (should probably change)
+			auto node = std::make_unique<TreeNode<std::string>>();
+			node->parent = &root_;
+			recursive_type_parse(node.get(), def.get());
+			root_.children.emplace_back(std::move(node));
+		}
+	}
+}
+
+void Validator::print_type_tree(const TreeNode<std::string>* types, std::size_t depth) {
+	std::cout << std::string(depth * 2, '-') << types->t << std::endl;
+
+	for(auto& children : types->children) {
+		print_type_tree(children.get(), depth + 1);
 	}
 }
 
 void Validator::validate() {
 	build_type_tree();
 
-	for(auto& i : types_) {
-		print_type_tree(i);
+	for(auto& i : root_.children) {
+		print_type_tree(i.get());
 	}
 
 	for(auto& defs : definitions_) {
 		for(auto& def : *defs) {
 			try { //msvc can't handle try/catch blocks inside range-for without nesting
-				validate_definition(*def);
+				validate_definition(def.get());
 			} catch(std::exception& e) {
 				throw exception(def->name + ": " + e.what());
 			}

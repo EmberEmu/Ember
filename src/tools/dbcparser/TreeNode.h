@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 namespace ember { namespace dbc {
@@ -15,7 +16,8 @@ namespace ember { namespace dbc {
 template<typename T>
 struct TreeNode {
 	T t;
-	std::vector<TreeNode> children;
+	TreeNode<T>* parent;
+	std::vector<std::unique_ptr<TreeNode<T>>> children;
 };
 
 }}; //dbc, ember
