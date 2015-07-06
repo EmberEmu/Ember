@@ -12,6 +12,7 @@
 #include <functional>
 #include <chrono>
 #include <mutex>
+#include <utility>
 
 namespace ember { namespace connection_pool {
 

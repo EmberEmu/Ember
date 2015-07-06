@@ -11,7 +11,7 @@
 #include <botan/secmem.h>
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
-#include <algorithm>
+#include <utility>
 
 using Botan::BigInt;
 using Botan::SecureVector;

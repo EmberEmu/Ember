@@ -1,6 +1,7 @@
 #pragma once
 
 #include <botan/secmem.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 

@@ -9,6 +9,7 @@
 #include "LoginHandler.h"
 #include "Patcher.h"
 #include <boost/range/adaptor/map.hpp>
+#include <stdexcept>
 #include <utility>
 
 namespace ember {

@@ -11,8 +11,9 @@
 #include <logger/Exception.h>
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
+#include <algorithm>
+#include <limits>
 #include <utility>
-#include <cstdio>
 
 #pragma warning(push)
 #pragma warning(disable: 4996)

@@ -13,6 +13,7 @@
 #include <botan/bigint.h>
 #include <botan/secmem.h>
 #include <memory>
+#include <string>
 
 namespace srp = ember::srp6;
 

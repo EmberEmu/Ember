@@ -12,6 +12,7 @@
 #include <shared/database/daos/UserDAO.h>
 #include <boost/optional.hpp>
 #include <string>
+#include <utility>
 
 namespace ember {
 

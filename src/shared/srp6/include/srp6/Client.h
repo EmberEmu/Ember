@@ -13,6 +13,7 @@
 #include <srp6/Exception.h>
 #include <botan/bigint.h>
 #include <string>
+#include <cstddef>
 
 namespace ember { namespace srp6 {
 

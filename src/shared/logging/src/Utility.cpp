@@ -8,10 +8,10 @@
 
 #include <logger/Utility.h>
 #include <logger/Exception.h>
-#include <time.h>
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <ctime>
 
 namespace ember { namespace log {
 

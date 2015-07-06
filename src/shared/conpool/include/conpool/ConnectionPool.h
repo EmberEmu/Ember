@@ -21,12 +21,13 @@
 #include <functional>
 #include <future>
 #include <list>
-#include <cstddef>
 #include <exception>
 #include <string>
 #include <mutex>
 #include <chrono>
 #include <atomic>
+#include <vector>
+#include <cstddef>
 
 namespace ember { namespace connection_pool {
 

@@ -9,8 +9,8 @@
 #pragma once
 
 #include <logger/Severity.h>
+#include <utility>
 #include <vector>
-#include <cstdint>
 
 namespace ember { namespace log {
 

@@ -12,17 +12,18 @@
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <mutex>
+#include <cstddef>
 
 // todo - create an allocator per-thread and remove the locks
 
 namespace ember {
 
 class ASIOAllocator {
-	const static std::size_t SMALL_SIZE_ = 64;
-	const static std::size_t MEDIUM_SIZE_ = 128;
-	const static std::size_t LARGE_SIZE_ = 256;
-	const static std::size_t HUGE_SIZE_ = 1024;
 	ember::Spinlock lock_;
+	const static std::size_t SMALL_SIZE_  = 64;
+	const static std::size_t MEDIUM_SIZE_ = 128;
+	const static std::size_t LARGE_SIZE_  = 256;
+	const static std::size_t HUGE_SIZE_   = 1024;
 
 	inline boost::pool<>* pool_select(std::size_t size) {
 		if(size <= SMALL_SIZE_) {

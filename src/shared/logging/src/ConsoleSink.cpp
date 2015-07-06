@@ -8,7 +8,9 @@
 
 #include <logger/ConsoleSink.h>
 #include <logger/Utility.h>
+#include <algorithm>
 #include <string>
+#include <cstdio>
 
 namespace ember { namespace log {
 
@@ -41,7 +43,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 		}
 	}
 
-	fwrite(buffer.data(), buffer.size(), 1, stdout);
+	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
 }
 
 void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>& record) {
@@ -51,7 +53,7 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 
 	std::string buffer = detail::severity_string(severity);
 	buffer.append(record.begin(), record.end());
-	fwrite(buffer.c_str(), buffer.size(), 1, stdout);
+	std::fwrite(buffer.c_str(), buffer.size(), 1, stdout);
 }
 
 }} //log, ember

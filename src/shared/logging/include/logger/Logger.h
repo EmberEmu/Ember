@@ -11,7 +11,6 @@
 #include <logger/Severity.h>
 #include <memory>
 #include <string>
-#include <cstddef>
 
 namespace ember { namespace log {
 

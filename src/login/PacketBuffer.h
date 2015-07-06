@@ -10,8 +10,8 @@
 
 #include <logger/Logging.h>
 #include <array>
-#include <cstdint>
 #include <string>
+#include <cstddef>
 
 namespace ember {
 

@@ -8,7 +8,7 @@
 
 #include <srp6/Generator.h>
 #include <boost/assert.hpp>
-#include <algorithm>
+#include <utility>
 
 namespace ember { namespace srp6 {
 

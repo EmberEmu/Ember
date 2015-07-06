@@ -13,13 +13,15 @@
 #include "ConnectionPool.h"
 #include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
+#include <chrono>
+#include <string>
 #include <vector>
-#include <cassert>
 #include <thread>
-#include <list>
 #include <exception>
 #include <mutex>
 #include <condition_variable>
+#include <cassert>
+#include <cstddef>
 
 namespace ember { namespace connection_pool {
 

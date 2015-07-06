@@ -12,6 +12,7 @@
 #include <logger/SyslogSink.h>
 #include <logger/Utility.h>
 #include <string>
+#include <stdexcept>
 #include <utility>
 
 namespace el = ember::log;

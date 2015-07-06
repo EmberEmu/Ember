@@ -1,7 +1,15 @@
+/*
+ * Copyright (c) 2015 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 #pragma once
 
-#include <cstdio>
 #include <string>
+#include <cstdio>
 
 #pragma warning(push)
 #pragma warning(disable: 4996)
@@ -12,7 +20,7 @@ class File {
 	std::FILE* file_ = nullptr;
 
 public:
-	File(std::string const& path, std::string const &mode = std::string("r")) {
+	File(const std::string& path, const std::string& mode = std::string("r")) {
 		file_ = std::fopen(path.c_str(), mode.c_str());
 	}
 

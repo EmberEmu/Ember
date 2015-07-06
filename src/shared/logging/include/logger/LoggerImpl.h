@@ -15,6 +15,7 @@
 #include <logger/Logger.h>
 #include <logger/concurrentqueue.h>
 #include "../../threading/Semaphore.h" // todo - move to shared lib
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <memory>

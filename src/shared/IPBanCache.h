@@ -10,11 +10,9 @@
 
 #include <shared/database/daos/shared_base/IPBanBase.h>
 #include <boost/asio/ip/address.hpp>
-#include <algorithm>
 #include <stdexcept>
-#include <thread>
 #include <vector>
-#include <utility>
+#include <cstdint>
 
 namespace ember {
 
@@ -87,4 +85,4 @@ public:
 	}
 };
 
-} //ember
+} // ember

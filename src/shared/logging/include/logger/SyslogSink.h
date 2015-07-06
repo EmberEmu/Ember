@@ -9,10 +9,10 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 namespace ember { namespace log {
 

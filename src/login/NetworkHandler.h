@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <cstddef>
 
 namespace ember {
 

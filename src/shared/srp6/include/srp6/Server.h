@@ -12,6 +12,7 @@
 #include <srp6/Generator.h>
 #include <srp6/Exception.h>
 #include <botan/bigint.h>
+#include <cstddef>
 
 namespace ember { namespace srp6 {
 

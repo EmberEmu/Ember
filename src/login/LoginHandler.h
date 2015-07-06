@@ -18,9 +18,11 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/misc/PacketStream.h>
 #include <botan/bigint.h>
+#include <boost/optional.hpp>
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace ember {
 
