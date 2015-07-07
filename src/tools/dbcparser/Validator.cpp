@@ -16,19 +16,19 @@
 namespace ember { namespace dbc {
 
 boost::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
-	/*for(auto& def : definitions_) {
-		if(def-> != parent) { //!= for the sake of one less layer of nesting
-			continue;
-		}
+	//for(auto& def : definitions_) {
+	//	if(def != parent) { //!= for the sake of one less layer of nesting
+	//		continue;
+	//	}
 
-		for(auto& field : def->fields) {
-			for(auto& key : field.keys) {
-				if(key.type == "primary") {
-					return boost::optional<const types::Field*>(&field);
-				}
-			}
-		}
-	}*/
+	//	for(auto& field : def->fields) {
+	//		for(auto& key : field.keys) {
+	//			if(key.type == "primary") {
+	//				return boost::optional<const types::Field*>(&field);
+	//			}
+	//		}
+	//	}
+	//}
 
 	return boost::optional<const types::Field*>();
 }
@@ -94,11 +94,15 @@ void Validator::check_multiple_definitions(const types::Definition* def,
 void Validator::check_key_types(const types::Field& field) {
 	for(auto& key : field.keys) {
 		if(key.type != "primary" && key.type != "foreign") {
+			if(key.type.empty()) {
+				throw exception(field.name + " did not specify a key type");
+			}
+
 			throw exception(key.type + " is not a valid key type" + " for " + field.name);
 		} else if(key.type == "foreign" && key.parent.empty()) {
-			throw exception(":" + field.name + " orphaned foreign key");
+			throw exception(field.name + " - orphaned foreign key");
 		} else if(key.type == "primary" && !key.parent.empty()) {
-			throw exception(":" + field.name + " - primary key cannot have a parent");
+			throw exception(field.name + " - primary key cannot have a parent");
 		}
 	}
 }
@@ -177,6 +181,30 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
 	}
 }
 
+bool Validator::recursive_ascent_field_type_check(const std::string& type,
+                                                  const TreeNode<std::string>* node,
+											      const TreeNode<std::string>* prev_node) {
+	// no parent found, must be trying to ascend from the root node
+	if(!node) {
+		return false;
+	}
+
+	// scan children of the current node
+	for(auto& child : node->children) {
+		// abort searching this level if we come across the node we backed out of
+		if(child.get() == prev_node) {
+			break;
+		}
+
+		if(child->t == type) {
+			return true; // found a type match
+		}
+	}
+
+	// go up a level, if this node has a parent
+	recursive_ascent_field_type_check(type, node->parent, node);
+}
+
 /*
  * Checks to see whether the given field is of a valid type. Valid 
  * types are considered to be any that are children of the type tree root
@@ -186,25 +214,23 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
  * This check is pretty naïve but it's not worth refactoring everything and
  * increasing the complexity to improve it.
  */
-void Validator::check_field_types(const types::Struct* def, const TreeNode<std::string>* root) {
-	//for(auto& field : def.fields) {
-	//	auto components = extract_components(field.underlying_type);
+void Validator::check_field_types(const types::Struct* def, const TreeNode<std::string>* curr_def) {
+	for(auto& field : def->fields) {
+		auto components = extract_components(field.underlying_type);
 
-	//	if(type_map.find(components.first) != type_map.end()) {
-	//		std::cout << "Found " << components.first << " in type map" <<  std::endl;
-	//		return;
-	//	}
+		// check to see whether type is an in-built type
+		if(type_map.find(components.first) != type_map.end()) {
+			continue;
+		}
 
-	//	if(std::find_if(types.children.begin(), types.children.end(),
-	//		[&components](const TreeNode<std::string>& i) {
-	//		std::cout << "Found " << i.t << " looking for " << components.first << std::endl;
-	//			return i.t == components.first;
-	//		}) != types.children.end()) {
-	//		return;
-	//	}
-	//		
-	//	throw exception(components.first + " is not a recognised type");
-	//}
+		// check the type tree
+		if(recursive_ascent_field_type_check(components.first, curr_def)) {
+			continue;
+		}
+
+		throw exception(components.first + " is not a recognised type. "
+		                "Ensure the type is defined before its use.");
+	}
 }
 
 const TreeNode<std::string>* Validator::locate_type_node(const std::string& name,
@@ -218,20 +244,20 @@ const TreeNode<std::string>* Validator::locate_type_node(const std::string& name
 		throw exception("Unable to locate type in hierarchy: " + name);
 	}
 
-	throw exception("Unable to locate type in hierarchy: " + name);
+	return it->get();
 }
 
 void Validator::validate_struct(const types::Struct* def, const TreeNode<std::string>* types) {
-	check_dup_key_types(def);
-	check_field_types(def, types);
+	auto node = locate_type_node(def->name, types);
+
 	//check_multiple_definitions(def, names);
 	//check_naming_conventions(def, tester_);
-
-	auto node = locate_type_node(def->name, types);
+	check_dup_key_types(def);
+	check_field_types(def, node);
 
 	for(auto& field : def->fields) {
 		check_key_types(field);
-		//check_foreign_keys(field);
+		check_foreign_keys(field);
 	}
 
 	for(auto& child : def->children) {
@@ -329,10 +355,12 @@ void Validator::validate_definition(const types::Base* def) {
  * tree, consisting of any user-defined types (structs and enums). 
  *
  * The type tree is later used to figure out whether field types that reference
- * user-defined types are valid. The type tree begins with an unnamed root node.
+ * user-defined types are valid. The type tree begins with a root node.
 */
 void Validator::build_type_tree() {
+	// todo - remove this bit with VS2015 move
 	root_.parent = nullptr;
+	root_.t = "_ROOT_";
 
 	for(auto& defs : definitions_) { // for each XML definition file
 		for(auto& def : *defs) {     // for each 'root' type within that file (should probably change)

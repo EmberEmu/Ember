@@ -7,18 +7,6 @@
 <struct>
 	<name>ChrRaces</name>
 	<alias>test</alias>
-	<struct>
-		<name>Foo</name>
-		<struct>
-			<name>Bar</name>
-		</struct>
-
-
-		<field>
-			<type>Bar</type>
-			<name>id</name>
-		</field>
-	</struct>
 
 	<enum>
 		<type>uint32</type>

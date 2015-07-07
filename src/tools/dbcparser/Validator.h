@@ -64,7 +64,9 @@ class Validator {
 	void check_dup_key_types(const types::Struct* def);
 	void validate_enum_options(const types::Enum* def);
 	void validate_enum_option_value(const std::string& type, const std::string& value);
-	void check_field_types(const types::Struct* def, const TreeNode<std::string>* types);
+	void check_field_types(const types::Struct* def, const TreeNode<std::string>* curr_def);
+	bool recursive_ascent_field_type_check(const std::string& type, const TreeNode<std::string>* node,
+	                                       const TreeNode<std::string>* prev_node = nullptr);
 	const TreeNode<std::string>* locate_type_node(const std::string& name, const TreeNode<std::string>* node);
 	template<typename T> void range_check(long long value);
 
