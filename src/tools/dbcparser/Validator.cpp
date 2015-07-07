@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,27 +53,50 @@ void Validator::check_foreign_keys(const types::Field& field) {
 	}
 }
 
-void Validator::check_multiple_definitions(const types::Definition* def,
-                                           std::vector<std::string>& names) {
-	/*if(std::find(names.begin(), names.end(), def->dbc_name) == names.end()) {
-		names.emplace_back(def->dbc_name);
+/*
+ * Does basic checking to ensure that each type name is unique and that each field/option
+ * within a type is unique to that type.
+ *
+ * It'd be smarter to do a check on the type tree for name collisions at each depth level
+ * rather than doing it here but it's a basic DBC parser and DBCs don't need this sort of
+ * thing.
+*/
+void Validator::check_multiple_definitions(const types::Base* def) {
+	if(std::find(names_.begin(), names_.end(), def->name) == names_.end()) {
+		names_.emplace_back(def->name);
 
 		if(!def->alias.empty()) {
-			names.emplace_back(def->alias);
+			names_.emplace_back(def->alias);
 		}
 	} else {
-		throw exception("Multiple definitions of " + def->dbc_name + " or its alias found");
+		throw exception("Multiple definitions of " + def->name + " or its alias found");
 	}
 
-	std::vector<std::string> f_names;
+	std::vector<std::string> sym_names;
 
-	for(auto& field : def->fields) {
-		if(std::find(f_names.begin(), f_names.end(), field.name) == f_names.end()) {
-			f_names.emplace_back(field.name);
-		} else {
-			throw exception("Multiple definitions of " + field.name);
+	if(def->type == types::STRUCT) {
+		auto def_s = static_cast<const types::Struct*>(def);
+
+		for(auto& symbol : def_s->children) {
+			if(std::find(sym_names.begin(), sym_names.end(), symbol->name) == sym_names.end()) {
+				sym_names.emplace_back(symbol->name);
+			} else {
+				throw exception("Multiple definitions of " + symbol->name);
+			}
 		}
-	}*/
+	} else if(def->type == types::ENUM) {
+		auto def_s = static_cast<const types::Enum*>(def);
+
+		for(auto& symbol : def_s->options) {
+			if(std::find(sym_names.begin(), sym_names.end(), symbol.first) == sym_names.end()) {
+				sym_names.emplace_back(symbol.first);
+			} else {
+				throw exception("Multiple definitions of " + symbol.first);
+			}
+		}
+	} else {
+		throw exception("Encountered an unknown type");
+	}
 }
 
 void Validator::check_key_types(const types::Field& field) {
@@ -235,7 +258,7 @@ const TreeNode<std::string>* Validator::locate_type_node(const std::string& name
 void Validator::validate_struct(const types::Struct* def, const TreeNode<std::string>* types) {
 	auto node = locate_type_node(def->name, types);
 
-	//check_multiple_definitions(def, names);
+	check_multiple_definitions(def);
 	name_check_(def->name);
 	
 	if(!def->alias.empty()) {

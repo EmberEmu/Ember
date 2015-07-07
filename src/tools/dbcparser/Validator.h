@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,9 +46,10 @@ class Validator {
 	NameTester name_check_;
 	TreeNode<std::string> root_;
 	std::vector<const types::Definition*> definitions_;
+	std::vector<std::string> names_;
 
 	void validate_definition(const types::Base* def);
-	void check_multiple_definitions(const types::Definition* def, std::vector<std::string>& names);
+	void check_multiple_definitions(const types::Base* def);
 	void check_key_types(const types::Field& def);
 	void check_foreign_keys(const types::Field& def);
 	boost::optional<const types::Field*> locate_fk_parent(const std::string& parent);
