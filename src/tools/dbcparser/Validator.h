@@ -43,12 +43,11 @@ private:
 typedef std::vector<std::string> TypeStore;
 
 class Validator {
-	NameTester tester_;
+	NameTester name_check_;
 	TreeNode<std::string> root_;
 	std::vector<const types::Definition*> definitions_;
 
 	void validate_definition(const types::Base* def);
-	void check_naming_conventions(const types::Definition* def, const NameTester& check);
 	void check_multiple_definitions(const types::Definition* def, std::vector<std::string>& names);
 	void check_key_types(const types::Field& def);
 	void check_foreign_keys(const types::Field& def);

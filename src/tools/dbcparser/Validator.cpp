@@ -53,21 +53,6 @@ void Validator::check_foreign_keys(const types::Field& field) {
 	}
 }
 
-void Validator::check_naming_conventions(const types::Definition* def,
-                                         const NameTester& check) try {
-		/*check(def->dbc_name);
-
-		if(!def->alias.empty()) {
-			check(def->alias);
-		}
-
-		for(auto& field : def->fields) {
-			check(field.name);
-		}*/
-} catch(std::exception& e) {
-	//throw exception(def->dbc_name + ": " + e.what());
-}
-
 void Validator::check_multiple_definitions(const types::Definition* def,
                                            std::vector<std::string>& names) {
 	/*if(std::find(names.begin(), names.end(), def->dbc_name) == names.end()) {
@@ -146,7 +131,7 @@ void Validator::add_user_type(TreeNode<std::string>* node, const std::string& ty
 }
 
 void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Struct* def) {	
-	tester_(def->name);
+	name_check_(def->name);
 	add_user_type(parent, def->name);
 
 	for(auto& child : def->children) {
@@ -251,11 +236,17 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 	auto node = locate_type_node(def->name, types);
 
 	//check_multiple_definitions(def, names);
-	//check_naming_conventions(def, tester_);
+	name_check_(def->name);
+	
+	if(!def->alias.empty()) {
+		name_check_(def->alias);
+	}
+
 	check_dup_key_types(def);
 	check_field_types(def, node);
 
 	for(auto& field : def->fields) {
+		name_check_(field.name);
 		check_key_types(field);
 		check_foreign_keys(field);
 	}
@@ -314,6 +305,7 @@ void Validator::validate_enum_options(const types::Enum* def) {
 	std::map<std::string, std::string> options;
 	
 	for(auto& option : def->options) {
+		name_check_(def->name);
 		validate_enum_option_value(def->underlying_type, option.second);
 
 		if(options.find(option.first) != options.end()) {
