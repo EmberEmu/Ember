@@ -15,20 +15,31 @@
 
 namespace ember { namespace dbc {
 
+/*
+ * Searches DBC definitions for the given foreign key. 
+ * Only child structs of the root node are considered for matches.
+ */
 boost::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
-	//for(auto& def : definitions_) {
-	//	if(def != parent) { //!= for the sake of one less layer of nesting
-	//		continue;
-	//	}
+	for(auto& defs : definitions_)
+		for(auto& def : *defs) {
+			if(def->name != parent) { //!= for the sake of one less layer of nesting
+				continue;
+			}
 
-	//	for(auto& field : def->fields) {
-	//		for(auto& key : field.keys) {
-	//			if(key.type == "primary") {
-	//				return boost::optional<const types::Field*>(&field);
-	//			}
-	//		}
-	//	}
-	//}
+			if(def->type != types::STRUCT) {
+				continue;
+			}
+			
+			auto def_s = static_cast<types::Struct*>(def.get());
+
+			for(auto& field : def_s->fields) {
+				for(auto& key : field.keys) {
+					if(key.type == "primary") {
+						return boost::optional<const types::Field*>(&field);
+					}
+				}
+			}
+	}
 
 	return boost::optional<const types::Field*>();
 }
@@ -189,6 +200,11 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
 	}
 }
 
+/*
+ * Recursively searches the type tree for the given type. Only types that are defined
+ * before the initial node will be found. This is to help ensure the generator does not
+ * attempt to produce code that references 'complete' types before they have been defined.
+*/
 bool Validator::recursive_ascent_field_type_check(const std::string& type,
                                                   const TreeNode<std::string>* node,
 											      const TreeNode<std::string>* prev_node) {
