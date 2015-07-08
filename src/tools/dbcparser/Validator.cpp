@@ -226,7 +226,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
 	}
 
 	// go up a level, if this node has a parent
-	recursive_ascent_field_type_check(type, node->parent, node);
+	return recursive_ascent_field_type_check(type, node->parent, node);
 }
 
 /*
@@ -417,10 +417,6 @@ void Validator::print_type_tree(const TreeNode<std::string>* types, std::size_t 
 
 void Validator::validate() {
 	build_type_tree();
-
-	for(auto& i : root_.children) {
-		print_type_tree(i.get());
-	}
 
 	for(auto& defs : definitions_) {
 		for(auto& def : *defs) {
