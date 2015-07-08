@@ -98,7 +98,8 @@ void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xm
 		return;
 	}
 
-	throw exception(std::string("Unexpected node in <struct>: ") + node->name());
+	std::string type_desc = type.dbc? "<dbc>" : "<struct>";
+	throw exception(std::string("Unexpected node in ") + type_desc + ": " + node->name());
 }
 
 void Parser::assign_unique(std::string& type, bool& exists, rxml::xml_node<>* node) {
@@ -168,12 +169,14 @@ types::Enum Parser::parse_enum(rxml::xml_node<>* root) {
 	return parsed;
 }
 
-types::Struct Parser::parse_struct(rxml::xml_node<>* root, int depth) {
+types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth) {
 	if(depth > MAX_PARSE_DEPTH) {
 		throw exception("Struct nesting is too deep");
 	}
 
 	types::Struct parsed;
+	parsed.dbc = dbc;
+
 	UniqueCheck check{};
 
 	auto attr = root->first_attribute("comment");
@@ -185,7 +188,7 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, int depth) {
 	for(rxml::xml_node<>* node = root; node; node = node->next_sibling()) {
 		if(strcmp(node->name(), "struct") == 0) {
 			parsed.children.emplace_back(
-				std::make_unique<types::Struct>(parse_struct(node->first_node(), depth + 1))
+				std::make_unique<types::Struct>(parse_struct(node->first_node(), false, depth + 1))
 			);
 		} else if(strcmp(node->name(), "enum") == 0) {
 			parsed.children.emplace_back(
@@ -197,7 +200,8 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, int depth) {
 	}
 
 	if(!check.name) {
-		throw exception("A <struct> must have at least a <name> node");
+		std::string type_desc = dbc? "<dbc>" : "<struct>";
+		throw exception("A " + type_desc + " must have at least a <name> node");
 	}
 
 	return parsed;
@@ -209,12 +213,18 @@ types::Definition Parser::parse_doc_root(rxml::xml_node<>* parent) {
 	for(rxml::xml_node<>* node = parent; node; node = node->next_sibling()) {
 		if(strcmp(node->name(), "struct") == 0) {
 			definition.emplace_back(
-				std::make_unique<types::Struct>(parse_struct(node->first_node()))
+				std::make_unique<types::Struct>(parse_struct(node->first_node(), false))
+			);
+		} else if(strcmp(node->name(), "dbc") == 0) {
+			definition.emplace_back(
+				std::make_unique<types::Struct>(parse_struct(node->first_node(), true))
 			);
 		} else if(strcmp(node->name(), "enum") == 0) {
 			definition.emplace_back(
 				std::make_unique<types::Enum>(parse_enum(node->first_node()))
 			);
+		} else {
+			throw exception("Unknown node type, " + std::string(node->name()));
 		}
 	}
 

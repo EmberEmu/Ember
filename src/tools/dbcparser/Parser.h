@@ -26,7 +26,7 @@ class Parser {
  	types::Definition parse_file(const std::string& path);
 	types::Definition parse_doc_root(rapidxml::xml_node<>* node);
 
-	types::Struct parse_struct(rapidxml::xml_node<>* root, int depth = 0);
+	types::Struct parse_struct(rapidxml::xml_node<>* root, bool dbc, int depth = 0);
 	void parse_struct_node(types::Struct& structure, UniqueCheck& check, rapidxml::xml_node<>* node);
 	
 	types::Field parse_field(rapidxml::xml_node<>* root);

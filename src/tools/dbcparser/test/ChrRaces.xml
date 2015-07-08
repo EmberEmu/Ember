@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 
-<struct>
-	<name>Testing</name>
-</struct>
-
-<struct>
+<dbc>
 	<name>ChrRaces</name>
 	<alias>test</alias>
 
@@ -167,4 +163,4 @@
 		<type>string_ref</type>
 		<name>hair_customisation</name>
 	</field>
-</struct>
+</dbc>

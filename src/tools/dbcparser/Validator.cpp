@@ -285,6 +285,10 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 	check_field_types(def, node);
 
 	for(auto& field : def->fields) {
+		if(!field.keys.empty() && !def->dbc) {
+			throw exception("Only DBC nodes may contain keys");
+		}
+
 		name_check_(field.name);
 		check_key_types(field);
 		check_foreign_keys(field);

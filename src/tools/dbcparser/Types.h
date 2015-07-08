@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,6 +53,7 @@ struct Struct : Base {
 	Struct() : Base(STRUCT) {}
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
+	bool dbc;
 
 	/* for msvc again - todo, remove in VS2015 */
 	void move_op(Struct& src) {
@@ -61,6 +62,7 @@ struct Struct : Base {
 		comment = std::move(src.comment);
 		fields = std::move(src.fields);
 		name = std::move(src.name);
+		dbc = src.dbc;
 		type = src.type;
 	}
 
