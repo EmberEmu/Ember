@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ZoneMusic>
+<dbc>
+	<name>ZoneMusic</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -50,5 +52,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-
-</ZoneMusic>
+</dbc>

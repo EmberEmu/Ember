@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<struct>
+<dbc>
 	<name>ChrRaces</name>
 	<alias>test</alias>
 
@@ -75,14 +75,19 @@
 		<name>speed_modifier</name>
 	</field>
 
-	<field>
-		<type>enumu32</type>
-		<name>base_language</name>
+	<enum>
+		<type>uint32</type>
+		<name>BaseLanguage</name>
 		<options>
 			<option name="horde" value="0x01" />
 			<option name="alliance" value="0x07" />
 		</options>
-	</field>
+	</enum>
+
+	<field>
+		<type>BaseLanguage</type>
+		<name>base_lang</name>
+	</field>	
 
 	<field>
 		<type>uint32</type>
@@ -158,4 +163,4 @@
 		<type>string_ref</type>
 		<name>hair_customisation</name>
 	</field>
-</struct>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemDisplayInfo>
+<dbc>
+	<name>ItemDisplayInfo</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -68,4 +70,4 @@
 			<parent>ItemVisuals</parent>
 		</key>
 	</field>
-</ItemDisplayInfo>
+</dbc>

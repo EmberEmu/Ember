@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WMOAreaTable>
+<dbc>
+	<name>WMOAreaTable</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -86,4 +88,4 @@
 		<type>string_ref</type>
 		<name>name</name>
 	</field>
-</WMOAreaTable>
+</dbc>

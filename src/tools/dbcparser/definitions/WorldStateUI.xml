@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<WorldStateUI>
+<dbc>
+	<name>WorldStateUI</name>
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -75,4 +76,4 @@
 		<type>uint32[3]</type>
 		<name>unknown</name>
 	</field>
-</WorldStateUI>
+</dbc>

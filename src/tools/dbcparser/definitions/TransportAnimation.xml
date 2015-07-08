@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TransportAnimation>
+<dbc>
+	<name>TransportAnimation</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -41,4 +43,4 @@
 			<parent>AnimationData</parent>
 		</key>
 	</field>
-</TransportAnimation>
+</dbc>

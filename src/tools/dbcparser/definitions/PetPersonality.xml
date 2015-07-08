@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<PetPersonality>
+<dbc>
+	<name>PetPersonality</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -57,4 +59,4 @@
 		<type>float</type>
 		<name>modifier_happy</name>
 	</field>
-</PetPersonality>
+</dbc>

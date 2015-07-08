@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CharacterCreateCameras>
+<dbc>
+	<name>CharacterCreateCameras</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>float[3]</type>
 		<name>unknown_2</name>
 	</field>
-</CharacterCreateCameras>
+</dbc>

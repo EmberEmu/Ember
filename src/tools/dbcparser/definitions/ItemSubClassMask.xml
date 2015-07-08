@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemSubClassMask>
+<dbc>
+	<name>ItemSubClassMask</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>subclass</name>
@@ -18,4 +20,4 @@
 		<type>string_ref_loc</type>
 		<name>name</name>
 	</field>
-</ItemSubClassMask>
+</dbc>

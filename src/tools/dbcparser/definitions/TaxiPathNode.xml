@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TaxiPathNode>
+<dbc>
+	<name>TaxiPathNode</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -55,4 +57,4 @@
 		<type>int32</type>
 		<name>delay</name>
 	</field>
-</TaxiPathNode>
+</dbc>

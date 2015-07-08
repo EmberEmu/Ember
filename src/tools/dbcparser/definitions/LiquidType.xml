@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<LiquidType>
+<dbc>
+	<name>LiquidType</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -13,14 +15,19 @@
 		<name>name</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>type</name>
+	<enum>
+		<type>int32</type>
+		<name>Type</name>
 		<options>
 			<option name="fire" value="0x00" />
 			<option name="slime" value="0x02" />
 			<option name="water" value="0x04" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Type</type>
+		<name>type</name>
 	</field>
 
 	<field>
@@ -31,4 +38,4 @@
 			<parent>Spell</parent>
 		</key>
 	</field>
-</LiquidType>
+</dbc>

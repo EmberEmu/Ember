@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CharSections>
+<dbc>
+	<name>CharSections</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,18 +19,23 @@
 		</key>
 	</field>
 
-	<field>
+	<enum>
 		<type>int32</type>
-		<name>sex</name>
+		<name>Sex</name>
 		<options>
 			<option name="male" value="0x00" />
 			<option name="female" value="0x01" />
 		</options>
-	</field>
+	</enum>
 
 	<field>
-		<type>enum32</type>
-		<name>section_type</name>
+		<type>Sex</type>
+		<name>sex</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>SelectionType</name>
 		<options>
 			<option name="base_skin" value="0x00" />
 			<option name="face" value="0x01" />
@@ -36,6 +43,11 @@
 			<option name="hair" value="0x03" />
 			<option name="underwear" value="0x04" />
 		</options>
+	</enum>
+
+	<field>
+		<type>SelectionType</type>
+		<name>type</name>
 	</field>
 
 	<field>
@@ -57,4 +69,4 @@
 		<type>bool32</type>
 		<name>playable</name>
 	</field>
-</CharSections>
+</dbc>

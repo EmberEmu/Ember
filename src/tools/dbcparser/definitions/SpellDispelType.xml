@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellDispelType>
+<dbc>
+	<name>SpellDispelType</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,4 +24,4 @@
 		<type>bool32</type>
 		<name>allow_immunity</name>
 	</field>
-</SpellDispelType>
+</dbc>

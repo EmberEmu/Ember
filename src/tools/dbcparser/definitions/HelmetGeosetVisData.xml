@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<HelmetGeosetVisData>
+<dbc>
+	<name>HelmetGeosetVisData</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>int32[5]</type>
 		<name>hide_geoset</name>
 	</field>
-</HelmetGeosetVisData>
+</dbc>

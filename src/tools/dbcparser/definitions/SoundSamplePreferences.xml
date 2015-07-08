@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SoundSamplePreferences>
+<dbc>
+	<name>SoundSamplePreferences</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>int32[16]</type>
 		<name>unknown</name>
 	</field>
-</SoundSamplePreferences>
+</dbc>

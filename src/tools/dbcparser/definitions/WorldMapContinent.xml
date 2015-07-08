@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WorldMapContinent>
+<dbc>
+	<name>WorldMapContinent</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -71,4 +73,4 @@
 		<type>float</type>
 		<name>taxi_max_y</name>
 	</field>
-</WorldMapContinent>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<LFGDungeons>
+<dbc>
+	<name>LFGDungeons</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -23,24 +25,34 @@
 		<name>max_allowed_level</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>instance_type</name>
+	<enum>
+		<type>int32</type>
+		<name>InstanceType</name>
 		<options>
 			<option name="group_instance" value="0x01" />
 			<option name="raid_instance" value="0x02" />
 			<option name="world_zone" value="0x03" />
 			<option name="battleground" value="0x04" />
 		</options>
-	</field>
+	</enum>
 
 	<field>
-		<type>enum32</type>
-		<name>faction</name>
+		<type>InstanceType</type>
+		<name>instance_type</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Faction</name>
 		<options>
 			<option name="neutral" value="-1" />
 			<option name="horde" value="0" />
 			<option name="alliance" value="1" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Faction</type>
+		<name>faction</name>
 	</field>
-</LFGDungeons>
+</dbc>

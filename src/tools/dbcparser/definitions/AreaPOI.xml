@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<AreaPOI>
+<dbc>
+	<name>AreaPOI</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -83,4 +85,4 @@
 			<parent>WorldStateUI</parent>
 		</key>
 	</field>
-</AreaPOI>
+</dbc>

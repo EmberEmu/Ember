@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WorldMapArea>
+<dbc>
+	<name>WorldMapArea</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -50,4 +52,4 @@
 		<type>float</type>
 		<name>location_bottom</name>
 	</field>
-</WorldMapArea>
+</name>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellDuration>
+<dbc>
+	<name>SpellDuration</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,4 +24,4 @@
 		<type>int32</type>
 		<name>max_duration</name>
 	</field>
-</SpellDuration>
+</dbc>

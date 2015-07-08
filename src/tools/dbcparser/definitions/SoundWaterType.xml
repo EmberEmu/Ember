@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SoundWaterType>
+<dbc>
+	<name>SoundWaterType</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,14 +19,19 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>fluid_speed</name>
+	<enum>
+		<type>int32</type>
+		<name>FluidSpeed</name>
 		<options>
 			<option name="still" value="0x00" />
 			<option name="slow" value="0x04" />
 			<option name="rapid" value="0x08" />
 		</options>
+	</enum>
+
+	<field>
+		<type>FluidSpeed</type>
+		<name>fluid_speed</name>
 	</field>
 
 	<field>
@@ -35,4 +42,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</SoundWaterType>
+</dbc>

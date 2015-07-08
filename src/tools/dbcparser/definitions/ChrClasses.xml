@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ChrClasses>
+<dbc>
+	<name>ChrClasses</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -18,9 +20,9 @@
 		<name>unknown2</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>power_type</name>
+	<enum>
+		<type>int32</type>
+		<name>PowerType</name>
 		<options>
 			<option name="mana" value="0x00" />
 			<option name="rage" value="0x01" />
@@ -28,7 +30,12 @@
 			<option name="energy" value="0x03" />
 			<option name="happiness" value="0x04" />
 		</options>
-	</field>
+	</enum>
+
+	<field>
+		<type>PowerType</type>
+		<name>power_type</name>
+	</field>	
 
 	<field>
 		<type>string_ref_loc</type>
@@ -49,4 +56,4 @@
 		<type>bool32</type>
 		<name>hybrid_class</name>
 	</field>
-</ChrClasses>
+</dbc>

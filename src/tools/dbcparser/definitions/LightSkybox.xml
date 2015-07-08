@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<LightSkybox>
+<dbc>
+	<name>LightSkybox</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>string_ref</type>
 		<name>skybox_model_path</name>
 	</field>
-</Lightbox>
+</dbc>

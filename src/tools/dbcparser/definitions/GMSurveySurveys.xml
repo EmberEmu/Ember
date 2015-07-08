@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<GMSurveySurveys>
+<dbc>
+	<name>GMSurveySurveys</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -16,4 +18,4 @@
 			<parent>GMSurveyQuestions</parent>
 		</key>
 	</field>
-</GMSurveySurveys>
+</dbc>

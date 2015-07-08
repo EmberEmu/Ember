@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Emotes>
+<dbc>
+	<name>Emotes</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,9 +24,9 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>emote_flags</name>
+	<enum>
+		<type>int32</type>
+		<name>EmoteFlags</name>
 		<options>
 			<option name="talk" value="0x08" />
 			<option name="question" value="0x10" />
@@ -32,16 +34,26 @@
 			<option name="shout" value="0x40" />
 			<option name="laugh" value="0x80" />
 		</options>
-	</field>
+	</enum>
 
 	<field>
-		<type>enum32</type>
-		<name>emote_spec_proc</name>
+		<type>EmoteFlags</type>
+		<name>flags</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>EmoteSpecProc</name>
 		<options>
 			<option name="no_loop" value="0x00" />
 			<option name="loop" value="0x01" />
 			<option name="loop_with_sound" value="0x02" />
 		</options>
+	</enum>
+
+	<field>
+		<type>EmoteSpecProc</type>
+		<name>spec_proc</name>
 	</field>
 
 	<field>
@@ -57,4 +69,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</Emotes>
+</dbc>

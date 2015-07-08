@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<GameObjectArtKit>
+<dbc>
+	<name>GameObjectArtKit</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>string_ref[4]</type>
 		<name>attach_model</name>
 	</field>
-</GameObjectArtKit>
+</dbc>

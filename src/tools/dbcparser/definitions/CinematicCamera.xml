@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CinematicCamera>
+<dbc>
+	<name>CinematicCamera</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -41,4 +43,4 @@
 		<type>float</type>
 		<name>rotation</name>
 	</field>
-</CinematicCamera>
+</dbc>

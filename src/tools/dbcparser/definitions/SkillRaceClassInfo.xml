@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SkillRaceClassInfo>
+<dbc>
+	<name>SkillRaceClassInfo</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -62,4 +64,4 @@
 			<parent>SkillCostsData</parent>
 		</key>
 	</field>
-</SkillRaceClassInfo>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TerrainTypeSounds>
+<dbc>
+	<name>TerrainTypeSounds</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -7,4 +9,4 @@
 			<type>primary</type>
 		</key>
 	</field>
-</TerrainTypeSounds>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<AttackAnimKits>
+<dbc>
+	<name>AttackAnimKits</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -26,17 +28,22 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>flags</name>
+	<enum>
+		<type>int32</type>
+		<name>AttackHand</name>
 		<options>
 			<option name="main_hand" value="0x00" />
 			<option name="off_hand" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>AttackHand</type>
+		<name>flags</name>
 	</field>
 
 	<field>
 		<type>int32</type>
 		<name>unknown</name>
 	</field>
-</AttackAnimKits>
+</dbc>

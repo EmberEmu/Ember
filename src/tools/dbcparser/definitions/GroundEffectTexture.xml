@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<GroundEffectTexture>
+<dbc>
+	<name>GroundEffectTexture</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -30,4 +32,4 @@
 			<parent>TerrainType</parent>
 		</key>
 	</field>
-</GroundEffectTexture>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CinematicSequences>
+<dbc>
+	<name>CinematicSequences</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -25,4 +27,4 @@
 			<parent>CinematicCamera</parent>
 		</key>
 	</field>
-</CinematicSequences>
+</dbc>

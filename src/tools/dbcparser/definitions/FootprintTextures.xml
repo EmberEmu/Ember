@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<FootprintTextures>
+<dbc>
+	<name>FootprintTextures</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>string_ref_loc</type>
 		<name>footstep_file_path</name>
 	</field>
-</FootprintTextures>
+</dbc>

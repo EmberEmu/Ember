@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Cfg_Categories>
+<dbc>
+	<name>Cfg_Categories</name>
+
 	<field>
 		<type>uint32</type>
 		<name>tab</name>
@@ -14,4 +16,4 @@
 		<type>string_ref_loc</type>
 		<name>name</name>
 	</field>
-</Cfg_Categories>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CreatureModelData>
+<dbc>
+	<name>CreatureModelData</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -18,9 +20,9 @@
 		<name>model_path</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>size_class</name>
+	<enum>
+		<type>int32</type>
+		<name>SizeClass</name>
 		<options>
 			<option name="small" value="0x00" />
 			<option name="medium" value="0x01" />
@@ -28,8 +30,13 @@
 			<option name="giant" value="0x03" />
 			<option name="colossal" value="0x04" />
 		</options>
-	</field>
+	</enum>
 
+	<field>
+		<type>SizeClass</type>
+		<name>size</name>
+	</field>
+	
 	<field>
 		<type>float</type>
 		<name>model_scale</name>
@@ -97,4 +104,4 @@
 		<type>float</type>
 		<name>mount_height</name>
 	</field>
-</CreatureModelData>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SkillLineAbility>
+<dbc>
+	<name>SkillLineAbility</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -95,4 +97,4 @@
 		<type>int32</type>
 		<name>num_skills_up</name>
 	</field>
-</SkillLineAbility>
+</dbc>

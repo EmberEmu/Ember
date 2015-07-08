@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<LightFloatBand>
+<dbc>
+	<name>LightFloatBand</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,4 +24,4 @@
 		<type>float[16]</type>
 		<name>data</name>
 	</field>
-</LightFloatBand>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SheatheSoundLookups>
+<dbc>
+	<name>SheatheSoundLookups</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -26,14 +28,19 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>item_env_types</name>
+	<enum>
+		<type>int32</type>
+		<name>ItemEnvTypes</name>
 		<options>
 			<option name="shield" value="0x00" />
 			<option name="metal weapon" value="0x01" />
 			<option name="wood weapon" value="0x02" />
 		</options>
+	</enum>
+
+	<field>
+		<type>ItemEnvTypes</type>
+		<name>item_env_types</name>
 	</field>
 
 	<field>
@@ -58,4 +65,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</SheatheSoundLookups>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<GroundEffectDoodad>
+<dbc>
+	<name>GroundEffectDoodad</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>string_ref</type>
 		<name>doodad_path</name>
 	</field>
-</GroundEffectDoodad>
+</dbc>

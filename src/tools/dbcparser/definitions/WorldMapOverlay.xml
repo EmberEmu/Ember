@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WorldMapOverlay>
+<dbc>
+	<name>WorldMapOverlay</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -80,4 +82,4 @@
 		<type>uint32</type>
 		<name>hit_rect_right</name>
 	</field>
-</WorldMapOverlay>
+</dbc>

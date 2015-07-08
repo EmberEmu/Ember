@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SkillTiers>
+<dbc>
+	<name>SkillTiers</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>int32[16]</type>
 		<name>value</name>
 	</field>
-</SkillTiers>
+</dbc>

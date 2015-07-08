@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemClass>
+<dbc>
+	<name>ItemClass</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,12 +19,17 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>flags</name>
+	<enum>
+		<type>int32</type>
+		<name>ItemClass</name>
 		<options>
 			<option name="item" value="0x00" />
 			<option name="weapon" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>ItemClass</type>
+		<name>item_class</name>
 	</field>
-</ItemClass>
+</dbc>

@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
-<GMSurveyCurrentSurvey>
-	<field>
-		<type>enum32</type>
-		<name>language</name>
+<dbc>
+	<name>GMSurveyCurrentSurvey</name>
+	
+	<enum>
+		<type>int32</type>
+		<name>Language</name>
 		<options>
 			<option name="english" value="0x00" />
 			<option name="korean" value="0x01" />
@@ -13,6 +15,11 @@
 			<option name="spanish_spain" value="0x06" />
 			<option name="spanish_latin_america" value="0x07" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Language</type>
+		<name>language</name>
 	</field>
 
 	<field>
@@ -23,4 +30,4 @@
 			<parent>GMSurveySurveys</parent>
 		</key>
 	</field>
-</GMSurveyCurrentSurvey>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<UnitBlood>
+<dbc>
+	<name>UnitBlood</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -32,4 +34,4 @@
 		<type>string_ref[5]</type>
 		<name>texture</name>
 	</field>
-</UnitBlood>
+</dbc>

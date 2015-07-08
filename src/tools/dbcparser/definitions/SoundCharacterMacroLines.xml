@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SoundCharacterMacroLines>
+<dbc>
+	<name>SoundCharacterMacroLines</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -13,13 +15,18 @@
 		<name>unknown</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>sex</name>
+	<enum>
+		<type>int32</type>
+		<name>Sex</name>
 		<options>
 			<option name="male" value="0x00" />
 			<option name="female" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
 	</field>
 
 	<field>
@@ -39,4 +46,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</SoundCharacterMacroLines>
+</dbc>

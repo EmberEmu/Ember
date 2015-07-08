@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<FactionGroup>
+<dbc>
+	<name>FactionGroup</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,4 +24,4 @@
 		<type>string_ref_loc</type>
 		<name>name</name>
 	</field>
-</FactionGroup>
+</dbc>

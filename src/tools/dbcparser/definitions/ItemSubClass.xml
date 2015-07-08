@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemSubClass>
+<dbc>
+	<name>ItemSubClass</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>item_class</name>
@@ -66,4 +68,4 @@
 		<type>string_ref_loc</type>
 		<name>verbose_name</name>
 	</field>
-</ItemSubClass>
+</dbc>

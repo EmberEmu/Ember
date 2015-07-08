@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ChatChannels>
+<dbc>
+	<name>ChatChannels</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -8,9 +10,9 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>flags</name>
+	<enum>
+		<type>int32</type>
+		<name>ChannelFlags</name>
 		<options>
 			<option name="none" value="0x00" />
 			<option name="initial" value="0x01" />
@@ -22,6 +24,11 @@
 			<option name="defence" value="0x10000" />
 			<option name="unselected" value="0x40000" />
 		</options>
+	</enum>
+
+	<field>
+		<type>ChannelFlags</type>
+		<name>flags</name>
 	</field>
 
 	<field>
@@ -42,4 +49,4 @@
 		<type>string_ref_loc</type>
 		<name>shortcut</name>
 	</field>
-</ChatChannels>
+</dbc>

@@ -319,7 +319,7 @@ void Validator::range_check(long long value) {
 
 void Validator::validate_enum_option_value(const std::string& type, const std::string& value) {
 	int base = value.find("0x") == std::string::npos? 10 : 16;
-	std::string set = base == 10? "0123456789" : "0123456789ABCDEFx";
+	std::string set = base == 10? "-0123456789" : "0123456789ABCDEFx";
 
 	if(value.find_first_not_of(set) != std::string::npos) {
 		throw exception(value + " is not a valid enum option value");

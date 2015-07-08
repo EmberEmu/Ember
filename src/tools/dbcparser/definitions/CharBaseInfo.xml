@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CharBaseInfo>
+<dbc>
+	<name>CharBaseInfo</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>race</name>
@@ -17,4 +19,4 @@
 			<parent>ChrClasses</parent>
 		</key>
 	</field>
-</CharBaseInfo>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SkillLine>
+<dbc>
+	<name>SkillLine</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -44,4 +46,4 @@
 			<parent>SpellIcon</parent>
 		</key>
 	</field>
-</SkillLine>
+</dbc>

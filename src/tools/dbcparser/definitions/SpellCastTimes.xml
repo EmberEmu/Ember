@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellCastTimes>
+<dbc>
+	<name>SpellCastTimes</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,4 +24,4 @@
 		<type>int32</type>
 		<name>minimum</name>
 	</field>
-</SpellCastTimes>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SoundProviderPreferences>
+<dbc>
+	<name>SoundProviderPreferences</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -122,4 +124,4 @@
 		<type>float</type>
 		<name>eax3_lf_reference</name>
 	</field>
-</SoundProviderPreferences>
+</dbc>

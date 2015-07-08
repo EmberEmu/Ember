@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CreatureFamily>
+<dbc>
+	<name>CreatureFamily</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -52,4 +54,4 @@
 		<type>string_ref</type>
 		<name>icon_path</name>
 	</field>
-</CreatureFamily>
+</dbc>

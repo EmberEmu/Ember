@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<LoadingScreens>
+<dbc>
+	<name>LoadingScreens</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>string_ref</type>
 		<name>file_path</name>
 	</field>
-</LoadingScreens>
+</dbc>

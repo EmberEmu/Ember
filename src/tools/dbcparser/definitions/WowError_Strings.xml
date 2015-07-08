@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WowError_Strings>
+<dbc>
+	<name>WowError_Strings</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>string_ref_loc</type>
 		<name>text</name>
 	</field>
-</WowError_Strings>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CameraShakes>
+<dbc>
+	<name>CameraShakes</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -42,4 +44,4 @@
 		<type>float</type>
 		<name>coefficient</name>
 	</field>
-</CameraShakes>
+</dbc>

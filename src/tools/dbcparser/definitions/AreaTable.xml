@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<AreaTable>
+<dbc>
+	<name>AreaTable</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -31,9 +33,9 @@
 		<name>area_bit</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>flags</name>
+	<enum>
+		<type>int32</type>
+		<name>AreaFlags</name>
 		<options>
 			<option name="area_flag_snow" value="0x01" />
 			<option name="area_flag_unk" value="0x02" />
@@ -46,6 +48,11 @@
 			<option name="area_flag_city" value="0x100" />
 			<option name="area_flag_test" value="0x200" />
 		</options>
+	</enum>
+
+	<field>
+		<type>AreaFlags</type>
+		<name>flags</name>
 	</field>
 
 	<field>
@@ -139,4 +146,4 @@
 			<parent>Light</parent>
 		</key>
 	</field>
-</AreaTable>
+</dbc>

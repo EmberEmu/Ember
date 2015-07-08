@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Spell>
+<dbc>
+	<name>Spell</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -477,4 +479,4 @@
 		<type>int32</type>
 		<name>required_aura_vision</name>
 	</field>
-</Spell>
+</dbc>

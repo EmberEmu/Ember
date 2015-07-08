@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<DurabilityQuality>
+<dbc>
+	<name>DurabilityQuality</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>float</type>
 		<name>data</name>
 	</field>
-</DurabilityQuality>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WorldSafeLocs>
+<dbc>
+	<name>WorldSafeLocs</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -36,4 +38,4 @@
 		<type>string_ref_loc</type>
 		<name>area_name</name>
 	</field>
-</WorldSafeLocs>
+</dbc>

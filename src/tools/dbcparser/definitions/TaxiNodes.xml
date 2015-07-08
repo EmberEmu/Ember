@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TaxiNodes>
+<dbc>
+	<name>TaxiNodes</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -45,4 +47,4 @@
 			<parent>CreatureDisplayInfo</parent>
 		</key>
 	</field>
-</TaxiNodes>
+</dbc>

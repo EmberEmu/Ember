@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Exhaustion>
+<dbc>
+	<name>Exhaustion</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -37,4 +39,4 @@
 		<type>float</type>
 		<name>threshold</name>
 	</field>
-</Exhaustion>
+</dbc>

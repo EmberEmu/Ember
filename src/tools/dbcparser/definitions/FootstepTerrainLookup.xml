@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<FootstepTerrainLookup>
+<dbc>
+	<name>FootstepTerrainLookup</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -43,4 +45,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</FootstepTerrainLookup>
+</dbc>

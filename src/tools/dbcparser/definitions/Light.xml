@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Light>
+<dbc>
+	<name>Light</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -50,4 +52,4 @@
 			<parent>LightParams</parent>
 		</key>
 	</field>
-</Light>
+</dbc>

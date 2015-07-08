@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CharStartOutfit>
+<dbc>
+	<name>CharStartOutfit</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -26,13 +28,18 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum8</type>
-		<name>sex</name>
+	<enum>
+		<type>int8</type>
+		<name>Sex</name>
 		<options>
 			<option name="male" value="0x00" />
 			<option name="female" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
 	</field>
 
 	<field>
@@ -54,4 +61,4 @@
 		<type>uint32[12]</type>
 		<name>inv_slot_id</name>
 	</field>
-</CharStartOutfit>
+</dbc>

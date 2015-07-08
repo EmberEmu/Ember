@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<PaperDollItemFrame>
+<dbc>
+	<name>PaperDollItemFrame</name>
+	
 	<field>
 		<type>string_ref</type>
 		<name>item_button_name</name>
@@ -14,4 +16,4 @@
 		<type>int32</type>
 		<name>slot_number</name>
 	</field>
-</PaperDollItemFrame>
+</dbc>

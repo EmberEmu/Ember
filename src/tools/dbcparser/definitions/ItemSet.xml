@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemSet>
+<dbc>
+	<name>ItemSet</name>
+	
 	<field>
 		<type>int32</type>
 		<name>id</name>
@@ -51,4 +53,4 @@
 		<type>uint32</type>
 		<name>required_skill_rank</name>
 	</field>
-</ItemSet>
+</dbc>

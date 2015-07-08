@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<NamesProfanity>
+<dbc>
+	<name>NamesProfanity</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>string_ref</type>
 		<name>name</name>
 	</field>
-</NamesProfanity>
+</dbc>

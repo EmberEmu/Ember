@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TalentTab>
+<dbc>
+	<name>TalentTab</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -49,4 +51,4 @@
 		<type>string_ref</type>
 		<name>background_file</name>
 	</field>
-</TalentTab>
+</dbc>

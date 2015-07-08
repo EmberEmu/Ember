@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemVisuals>
+<dbc>
+	<name>ItemVisuals</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -16,4 +18,4 @@
 			<parent>ItemVisualEffects</parent>
 		</key>
 	</field>
-</ItemVisuals>
+</dbc>

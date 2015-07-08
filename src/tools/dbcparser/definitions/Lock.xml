@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Lock>
+<dbc>
+	<name>Lock</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -8,14 +10,19 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32[8]</type>
-		<name>type</name>
+	<enum>
+		<type>int32</type>
+		<name>Type</name>
 		<options>
 			<option name="none" value="0x00" />
 			<option name="item_required" value="0x01" />
 			<option name="locktype_reference" value="0x02" />
 		</options>		
+	</enum>
+
+	<field>
+		<type>Type[8]</type>
+		<name>type</name>
 	</field>
 
 	<field>
@@ -36,4 +43,4 @@
 		<type>int32[8]</type>
 		<name>action</name>
 	</field>
-</Lock>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellCategory>
+<dbc>
+	<name>SpellCategory</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>int32</type>
 		<name>flags</name>
 	</field>
-</SpellCategory>
+</dbc>

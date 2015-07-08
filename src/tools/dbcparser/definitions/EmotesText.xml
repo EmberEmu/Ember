@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<EmotesText>
+<dbc>
+	<name>EmotesText</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -31,4 +33,4 @@
 		</key>
 	</field>
 
-</EmotesText>
+</dbc>

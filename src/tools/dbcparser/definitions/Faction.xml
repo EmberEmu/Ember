@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Faction>
+<dbc>
+	<name>Faction</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -13,9 +15,9 @@
 		<name>reputation_index</name>
 	</field>
 
-	<field>
-		<type>enum32[4]</type>
-		<name>reputation_race_mask</name>
+	<enum>
+		<type>int32</type>
+		<name>ReputationRaceMask</name>
 		<options>
 			<option name="human" value="0x01" />
 			<option name="orc" value="0x02" />
@@ -26,6 +28,11 @@
 			<option name="gnome" value="0x40" />
 			<option name="troll" value="0x80" />
 		</options>
+	</enum>
+
+	<field>
+		<type>ReputationRaceMask[4]</type>
+		<name>reputation_race_mask</name>
 	</field>
 
 	<field>
@@ -33,9 +40,9 @@
 		<name>reputation_base</name>
 	</field>
 
-	<field>
-		<type>enum32[4]</type>
-		<name>reputation_mask</name>
+	<enum>
+		<type>int32</type>
+		<name>ReputationMask</name>
 		<options>
 			<option name="visible_to_client" value="0x01" />
 			<option name="enable_at_war" value="0x02" />
@@ -44,6 +51,11 @@
 			<option name="force_at_peace" value="0x10" />
 			<option name="faction_inactive" value="0x20" />
 		</options>
+	</enum>
+
+	<field>
+		<type>ReputationMask[4]</type>
+		<name>reputation_mask</name>
 	</field>
 
 	<field>
@@ -64,4 +76,4 @@
 		<type>string_ref_loc</type>
 		<name>description</name>
 	</field>
-</Faction>
+</dbc>

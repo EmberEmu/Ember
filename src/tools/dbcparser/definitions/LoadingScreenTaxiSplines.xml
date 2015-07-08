@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<LoadingScreenTaxiSplines>
+<dbc>
+	<name>LoadingScreenTaxiSplines</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -31,4 +33,4 @@
 		<type>int32</type>
 		<name>leg_index</name>
 	</field>
-</LoadingScreenTaxiSplines>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<UnitBloodLevels>
+<dbc>
+	<name>UnitBloodLevels</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>int32[3]</type>
 		<name>violence_level</name>
 	</field>
-</UnitBloodLevels>
+</dbc>

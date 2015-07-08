@@ -1,21 +1,31 @@
 <?xml version="1.0"?>
-<CharVariations>
-	<field comment="todo - update parser to handle this">
+<dbc>
+	<name>CharVariations</name>
+	
+	<field>
 		<type>uint32</type>
 		<name>id</name>
 		<key>
 			<type>primary</type>
-			<!--<parent>ChrRaces</parent>-->
+		</key>
+		<key>
+			<type>foreign</key>
+			<parent>ChrRaces</parent>
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>sex</name>
+	<enum>
+		<type>int32</type>
+		<name>Sex</name>
 		<options>
 			<option name="male" value="0x00" />
 			<option name="female" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
 	</field>
 
 	<field>
@@ -32,4 +42,4 @@
 		<type>int32</type>
 		<name>unknown_2</name>
 	</field>
-</CharVariations>
+</dbc>

@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<CreatureSoundData>
+<dbc>
+	<name>CreatureSoundData</name>
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -252,4 +253,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</CreatureSoundData>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellVisualPrecastTransitions>
+<dbc>
+	<name>SpellVisualPrecastTransitions</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>string_ref</type>
 		<name>hold_animation</name>
 	</field>
-</SpellVisualPrecastTransitions>
+</dbc>

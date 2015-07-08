@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellChainEffects>
+<dbc>
+	<name>SpellChainEffects</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -42,4 +44,4 @@
 		<type>string_ref</type>
 		<name>texture</name>
 	</field>
-</SpellChainEffects>
+</dbc>

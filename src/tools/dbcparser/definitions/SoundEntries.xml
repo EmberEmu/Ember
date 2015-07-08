@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SoundEntries>
+<dbc>
+	<name>SoundEntries</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -8,9 +10,9 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>sound_type</name>
+	<enum>
+		<type>int32</type>
+		<name>SoundType</name>
 		<options>
 			<option name="unused" value="0x00" />
 			<option name="spells" value="0x01" />
@@ -39,7 +41,12 @@
 			<option name="narration" value="0x1F" />
 			<option name="zone_ambience" value="0x32" />
 		</options>
- 	</field>
+ 	</enum>
+
+ 	<field>
+		<type>SoundType</type>
+		<name>sound_type</name>
+	</field>
 
 	<field>
 		<type>string_ref</type>
@@ -85,4 +92,4 @@
 		<type>int32</type>
 		<name>sound_entries_advanced</name>
 	</field>
-</SoundEntries>
+</dbc>

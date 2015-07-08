@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<DeathThudLookups>
+<dbc>
+	<name>DeathThudLookups</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -8,9 +10,9 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>size_class</name>
+	<enum>
+		<type>int32</type>
+		<name>SizeClass</name>
 		<options>
 			<option name="small" value="0x00" />
 			<option name="medium" value="0x01" />
@@ -18,6 +20,11 @@
 			<option name="giant" value="0x03" />
 			<option name="colossal" value="0x04" />
 		</options>
+	</enum>
+
+	<field>
+		<type>SizeClass</type>
+		<name>size</name>
 	</field>
 
 	<field>
@@ -46,4 +53,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</DeathThudLookups>
+</dbc>

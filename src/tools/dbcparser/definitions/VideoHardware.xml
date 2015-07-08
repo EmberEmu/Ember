@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<VideoHardware>
+<dbc>
+	<name>VideoHardware</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>uint32[21]</type>
 		<name>unknown</name>
 	</field>
-</VideoHardware>
+</dbc>

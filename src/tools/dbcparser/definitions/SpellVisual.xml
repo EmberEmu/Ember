@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellVisual>
+<dbc>
+	<name>SpellVisual</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -122,4 +124,4 @@
 			<parent>SpellVisualKit</parent>
 		</key>
 	</field>
-</SpellVisual>
+</dbc>

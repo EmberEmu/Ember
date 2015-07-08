@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellIcon>
+<dbc>
+	<name>SpellIcon</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -12,4 +14,4 @@
 		<type>string_ref</type>
 		<name>texture_file</name>
 	</field>
-</SpellIcon>
+</dbc>

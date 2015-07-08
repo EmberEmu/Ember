@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<Startup_String>
+<dbc>
+	<name>Startup_String</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>string_ref_loc</type>
 		<name>startup_string</name>
 	</field>
-</Startup_String>
+</dbc>

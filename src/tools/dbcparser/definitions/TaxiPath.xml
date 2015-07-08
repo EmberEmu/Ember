@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TaxiPath>
+<dbc>
+	<name>TaxiPath</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -30,4 +32,4 @@
 		<type>int32</type>
 		<name>cost</name>
 	</field>
-</TaxiPath>
+</dbc>

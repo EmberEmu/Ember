@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellRadius>
+<dbc>
+	<name>SpellRadius</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -22,4 +24,4 @@
 		<type>float</type>
 		<name>radius_max</name>
 	</field>
-</SpellRadius>
+</dbc>

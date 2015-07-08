@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CharHairTextures>
+<dbc>
+	<name>CharHairTextures</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,13 +19,18 @@
 		</key>
 	</field>
 
-	<field>
+	<enum>
 		<type>int32</type>
-		<name>sex</name>
+		<name>Sex</name>
 		<options>
 			<option name="male" value="0x00" />
 			<option name="female" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
 	</field>
 
 	<field>
@@ -44,4 +51,4 @@
 		<type>bool32</type>
 		<name>show_scalp</name>
 	</field>
-</CharHairTextures>
+</dbc>

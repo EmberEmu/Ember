@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<SpellEffectCameraShakes>
+<dbc>
+	<name>SpellEffectCameraShakes</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -16,4 +18,4 @@
 			<parent>CameraShakes</parent>
 		</key>
 	</field>
-</SpellEffectCameraShakes>
+</dbc>

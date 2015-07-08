@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<AreaTrigger>
+<dbc>
+	<name>AreaTrigger</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -56,4 +58,4 @@
 		<type>float</type>
 		<name>box_yaw</name>
 	</field>
-</AreaTrigger>
+</dbc>

@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ItemRandomProperties>
+<dbc>
+	<name>ItemRandomProperties</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -26,4 +28,4 @@
 		<type>string_ref_loc</type>
 		<name>suffix</name>
 	</field>
-</ItemRandomProperties>
+</dbc>

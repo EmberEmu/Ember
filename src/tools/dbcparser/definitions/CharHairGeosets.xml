@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<CharHairGeosets>
+<dbc>
+	<name>CharHairGeosets</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,13 +19,18 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>sex</name>
+	<enum>
+		<type>int32</type>
+		<name>Sex</name>
 		<options>
 			<option name="male" value="0x00" />
 			<option name="female" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
 	</field>
 
 	<field>
@@ -40,12 +47,17 @@
 		<name>geoset</name>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>show_scalp</name>
+	<enum>
+		<type>int32</type>
+		<name>Scalp</name>
 		<options>
 			<option name="hair" value="0x00" />
 			<option name="bald" value="0x01" />
 		</options>
+	</enum>
+
+	<field>
+		<type>Scalp</type>
+		<name>show_scalp</name>
 	</field>
-</CharHairGeosets>
+</dbc>

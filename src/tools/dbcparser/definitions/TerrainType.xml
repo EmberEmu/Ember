@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<TerrainType>
+<dbc>
+	<name>TerrainType</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -44,4 +46,4 @@
 		<type>bool32</type>
 		<name>display_footsteps</name>
 	</field>
-</TerrainType>
+</dbc>

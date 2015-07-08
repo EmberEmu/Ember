@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WeaponSwingSounds2>
+<dbc>
+	<name>WeaponSwingSounds2</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -8,14 +10,19 @@
 		</key>
 	</field>
 
-	<field>
-		<type>enum32</type>
-		<name>swing_type</name>
+	<enum>
+		<type>int32</type>
+		<name>SwingType</name>
 		<options>
 			<option name="light" value="0x00" />
 			<option name="medium" value="0x01" />
 			<option name="heavy" value="0x02" />
 		</options>
+	</enum>
+
+	<field>
+		<type>SwingType</type>
+		<name>swing_type</name>
 	</field>
 
 	<field>
@@ -31,4 +38,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</WeaponSwingSounds2>
+</dbc>

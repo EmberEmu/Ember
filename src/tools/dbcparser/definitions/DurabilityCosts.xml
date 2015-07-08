@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<DurabilityCosts>
+<dbc>
+	<name>DurabilityCosts</name>
+	
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -17,4 +19,4 @@
 		<type>int32[8]</type>
 		<name>armour_subclass_cost</name>
 	</field>
-</DurabilityCosts>
+</dbc>

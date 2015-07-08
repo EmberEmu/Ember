@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<WeaponImpactSounds>
+<dbc>
+	<name>WeaponImpactSounds</name>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
@@ -35,4 +37,4 @@
 			<parent>SoundEntries</parent>
 		</key>
 	</field>
-</WeaponImpactSounds>
+</dbc>
