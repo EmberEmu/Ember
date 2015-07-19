@@ -134,7 +134,7 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	}
 
 	void execute_action(std::shared_ptr<Session<T>> session, std::shared_ptr<Action> action) {
-		auto shared_this = shared_from_this();
+		auto shared_this = this->shared_from_this();
 
 		pool_.run([session, action, this, shared_this] {
 			action->execute();
@@ -189,7 +189,7 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 		signals_.async_wait(std::bind(&NetworkHandler::shutdown, this));
 
 		for(unsigned int i = 0; i < concurrency_; ++i) {
-			workers_.emplace_back(static_cast<std::size_t(ba::io_service::*)()>
+			workers_.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
 				(&boost::asio::io_service::run), &service_); 
 		}
 	}
