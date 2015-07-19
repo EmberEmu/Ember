@@ -2,6 +2,7 @@
 
 #include <botan/secmem.h>
 #include <algorithm>
+#include <iterator>
 #include <string>
 #include <vector>
 

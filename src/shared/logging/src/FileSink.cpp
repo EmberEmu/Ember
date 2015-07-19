@@ -12,6 +12,7 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 #include <algorithm>
+#include <iterator>
 #include <limits>
 #include <utility>
 

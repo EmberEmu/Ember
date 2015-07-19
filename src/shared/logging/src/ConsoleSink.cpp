@@ -9,6 +9,7 @@
 #include <logger/ConsoleSink.h>
 #include <logger/Utility.h>
 #include <algorithm>
+#include <iterator>
 #include <string>
 #include <cstdio>
 
