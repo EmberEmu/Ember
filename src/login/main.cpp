@@ -20,7 +20,6 @@
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
-#include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -37,6 +36,7 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 #include <cstddef>
 #include <cstdint>
