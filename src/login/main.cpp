@@ -29,7 +29,6 @@
 #include <botan/init.h>
 #include <botan/version.h>
 #include <boost/version.hpp>
-#include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <iostream>
@@ -37,7 +36,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <thread>
 #include <stdexcept>
 #include <vector>
 #include <cstddef>
@@ -56,7 +54,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 ember::drivers::MySQL init_db_driver(const po::variables_map& args);
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
-void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger* logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -104,7 +101,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	ember::RealmList realm_list(realm_dao->get_realms());
-	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realms"  << LOG_SYNC;
+	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
 
 	for(auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
@@ -118,57 +115,23 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
-	ba::io_service service(concurrency);
 
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	ember::NetworkHandler<ember::LoginHandler> login_server(service, port, interface,
-		ip_ban_cache, thread_pool, logger,
+	auto login_server = std::make_shared<ember::NetworkHandler<ember::LoginHandler>>(
+		interface, port, concurrency, ip_ban_cache, thread_pool, logger,
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
-	// Start realm listener
-	auto r_interface = args["realm_listen.interface"].as<std::string>();
-	auto r_port = args["realm_listen.port"].as<unsigned short>();
-
-	/*LOG_INFO(logger) << "Binding realm listener to " << r_interface << ":" << r_port << LOG_SYNC;
-	ember::NetworkHandler<ember::RealmHandler> realm_server(service, port, interface,
-		ip_ban_cache, thread_pool, logger,
-		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
-		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));*/
-
-	ba::signal_set signals(service, SIGINT, SIGTERM);
-	signals.async_wait(std::bind(&ba::io_service::stop, &service));
-
-	start_workers(concurrency, service, logger);
-
+	login_server->run();
+	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
+	login_server->wait();
 	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-}
-
-/*
- * Start the worker threads that are responsible for handling login requests.
- * This function blocks until all worker threads have finished, which should only
- * happen when the login server receives a termination signal.
- */
-void start_workers(unsigned int concurrency, ba::io_service& service, el::Logger* logger) {
-	std::vector<std::thread> workers;
-
-	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<std::size_t(ba::io_service::*)()>
-			(&ba::io_service::run), &service); 
-	}
-
-	LOG_INFO(logger) << "Launched " << concurrency << " login workers" << LOG_SYNC;
-	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
-
-	for(auto& w : workers) {
-		w.join();
-	}
 }
 
 /* 

@@ -15,19 +15,21 @@
 #include <shared/IPBanCache.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
-#include <shared/misc/PacketStream.h>
 #include <boost/asio.hpp>
-#include <exception>
 #include <functional>
 #include <memory>
+#include <set>
 #include <string>
+#include <mutex>
 #include <utility>
-#include <cstddef>
+#include <vector>
+#include <thread>
+#include <atomic>
 
 namespace ember {
 
 template<typename T>
-class NetworkHandler {
+class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	typedef std::function<T(std::string)> CreateHandler;
 	typedef std::function<bool(const PacketBuffer&)> CompletionChecker;
 
@@ -35,9 +37,14 @@ class NetworkHandler {
 	const CreateHandler create_handler_;
 	const CompletionChecker check_packet_completion_;
 
-	boost::asio::ip::tcp::socket socket_;
+	std::vector<std::thread> workers_;
+	std::set<std::shared_ptr<Session<T>>> sessions_;
+	std::mutex sessions_lock_;
+	boost::asio::io_service service_;
+	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
-	boost::asio::io_service& service_;
+	boost::asio::ip::tcp::socket socket_;
+	unsigned int concurrency_;
 	log::Logger* logger_; 
 	IPBanCache<dal::IPBanDAO>& ban_list_;
 	ASIOAllocator allocator_; // todo - thread_local, VS2015
@@ -45,21 +52,24 @@ class NetworkHandler {
 
 	void accept_connection() {
 		acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
-			if(ec) {
+			if(!acceptor_.is_open()) {
 				return;
 			}
 
-			auto ip = socket_.remote_endpoint().address();
+			if(!ec) {
+				auto ip = socket_.remote_endpoint().address();
 
-			if(ban_list_.is_banned(ip)) {
-				LOG_DEBUG(logger_) << "Rejected connection from banned IP range" << LOG_ASYNC;
-				return;
+				if(ban_list_.is_banned(ip)) {
+					LOG_DEBUG(logger_) << "Rejected connection from banned IP range" << LOG_ASYNC;
+					return;
+				}
+
+				LOG_DEBUG(logger_) << "Accepted connection " << ip.to_string() << ":"
+				                   << socket_.remote_endpoint().port() << LOG_ASYNC;
+
+				start_session(std::move(socket_));
 			}
 
-			LOG_DEBUG(logger_) << "Accepted connection " << ip.to_string() << ":"
-			                   << socket_.remote_endpoint().port() << LOG_ASYNC;
-
-			start_session(std::move(socket_));
 			accept_connection();
 		});
 	}
@@ -79,6 +89,10 @@ class NetworkHandler {
 			std::bind(&NetworkHandler::write, this, session, std::placeholders::_1);
 
 		session->timer.expires_from_now(boost::posix_time::seconds(SOCKET_ACTIVITY_TIMEOUT));
+
+		std::lock_guard<std::mutex> guard(sessions_lock_);
+		sessions_.insert(session);
+
 		read(session);
 	}
 
@@ -92,8 +106,8 @@ class NetworkHandler {
 					reset_timer(session);
 					session->buffer.advance(size);
 					handle_packet(session);
-				} else {
-					session->timer.cancel();
+				} else if(ec != boost::asio::error::operation_aborted) {
+					close_session(session);
 				}
 			}
 		)));
@@ -103,8 +117,8 @@ class NetworkHandler {
 		session->socket.async_send(boost::asio::buffer(*packet),
 			session->strand.wrap(create_alloc_handler(allocator_,
 			[this, packet, session](boost::system::error_code ec, std::size_t) {
-				if(ec) {
-					session->timer.cancel();
+				if(ec && ec != boost::asio::error::operation_aborted) {
+					close_session(session);
 				}
 			}
 		)));
@@ -120,9 +134,13 @@ class NetworkHandler {
 	}
 
 	void execute_action(std::shared_ptr<Session<T>> session, std::shared_ptr<Action> action) {
-		pool_.run([session, action, this]() {
+		auto shared_this = shared_from_this();
+
+		pool_.run([session, action, this, shared_this] {
 			action->execute();
-			session->strand.post(std::bind(&NetworkHandler::action_complete, this, session, action));
+			session->strand.post([session, action, this, shared_this] {
+				action_complete(session, action);
+			});
 		});
 	}
 
@@ -144,6 +162,12 @@ class NetworkHandler {
 	}
 
 	void close_session(std::shared_ptr<Session<T>> session) {
+		close_socket(session);
+		std::lock_guard<std::mutex> guard(sessions_lock_);
+		sessions_.erase(session);
+	}
+
+	void close_socket(std::shared_ptr<Session<T>> session) {
 		boost::system::error_code ec;
 		session->socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		session->socket.close();
@@ -156,34 +180,54 @@ class NetworkHandler {
 	}
 
 	void timeout(std::shared_ptr<Session<T>> session, const boost::system::error_code& ec) {
-		if(!ec) {
+		if(!ec) { // if the connection timed out, otherwise timer was aborted (session close)
 			close_session(session);
 		}
 	}
 
-public:
-	NetworkHandler(boost::asio::io_service& service, unsigned short port, IPBanCache<dal::IPBanDAO>& bans,
-	               ThreadPool& pool, log::Logger* logger, CreateHandler create, CompletionChecker checker)
-	    	       : acceptor_(service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-	                socket_(service), service_(service), logger_(logger), ban_list_(bans), pool_(pool),
-	                create_handler_(create), check_packet_completion_(checker) {
-		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
-		accept_connection();
+	void start_service() {
+		signals_.async_wait(std::bind(&NetworkHandler::shutdown, this));
+
+		for(unsigned int i = 0; i < concurrency_; ++i) {
+			workers_.emplace_back(static_cast<std::size_t(ba::io_service::*)()>
+				(&boost::asio::io_service::run), &service_); 
+		}
 	}
 
-	NetworkHandler(boost::asio::io_service& service, unsigned short port, std::string interface,
+	void shutdown() {
+		acceptor_.close();
+
+		std::lock_guard<std::mutex> guard(sessions_lock_);
+				
+		for(auto& session : sessions_) {
+			close_socket(session);
+		}
+
+		sessions_.clear();
+		service_.stop();
+	}
+
+public:
+	NetworkHandler(std::string interface, unsigned short port, unsigned int concurrency,
 	               IPBanCache<dal::IPBanDAO>& bans, ThreadPool& pool, log::Logger* logger, 
 	               CreateHandler create, CompletionChecker checker)
-	               : acceptor_(service,
-	                boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(interface), port)),
-	                service_(service), socket_(service), logger_(logger), ban_list_(bans), pool_(pool),
-	                create_handler_(create), check_packet_completion_(checker) {
+	               : service_(concurrency), signals_(service_, SIGINT, SIGTERM),
+	                 acceptor_(service_, boost::asio::ip::tcp::endpoint(
+	                           boost::asio::ip::address::from_string(interface), port)),
+	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
+	                 create_handler_(create), check_packet_completion_(checker), concurrency_(concurrency) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 		accept_connection();
 	}
 
-	~NetworkHandler() {
-		LOG_DEBUG(logger_) << "Network handler terminated" << LOG_SYNC;
+	void run() {
+		start_service();
+	}
+
+	void wait() {
+		for(auto& worker : workers_) {
+			worker.join();
+		}
 	}
 };
 
