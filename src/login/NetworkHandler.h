@@ -24,7 +24,6 @@
 #include <utility>
 #include <vector>
 #include <thread>
-#include <atomic>
 
 namespace ember {
 
@@ -36,6 +35,7 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	const int SOCKET_ACTIVITY_TIMEOUT = 300;
 	const CreateHandler create_handler_;
 	const CompletionChecker check_packet_completion_;
+	const unsigned int concurrency_;
 
 	std::vector<std::thread> workers_;
 	std::set<std::shared_ptr<Session<T>>> sessions_;
@@ -44,7 +44,6 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
-	unsigned int concurrency_;
 	log::Logger* logger_; 
 	IPBanCache<dal::IPBanDAO>& ban_list_;
 	ASIOAllocator allocator_; // todo - thread_local, VS2015
