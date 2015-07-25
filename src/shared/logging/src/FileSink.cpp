@@ -78,7 +78,7 @@ void FileSink::open(Mode mode) {
 		file_ = std::make_unique<File>(file_name_, "wb");
 	}
 
-	if(!file_) {
+	if(!file_->handle()) {
 		throw exception("Logger could not open " + file_name_);
 	}
 }
@@ -129,8 +129,9 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 
 void FileSink::rotate_check(std::size_t buffer_size, const std::tm& curr_time) {
 	if((max_size_ && current_size_ + buffer_size > max_size_)
-	    || (midnight_rotate_ && (last_mday_ = curr_time.tm_mday) != curr_time.tm_mday)) {
+	    || (midnight_rotate_ && last_mday_ != curr_time.tm_mday)) {
 		rotate();
+		last_mday_ = curr_time.tm_mday;
 	}
 }
 
