@@ -7,7 +7,6 @@
  */
 
 #include <logger/FileSink.h>
-#include <logger/Utility.h>
 #include <logger/Exception.h>
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
@@ -130,11 +129,9 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 
 void FileSink::rotate_check(std::size_t buffer_size, const std::tm& curr_time) {
 	if((max_size_ && current_size_ + buffer_size > max_size_)
-		|| (midnight_rotate_ && last_time_.tm_mday != curr_time.tm_mday)) {
+	    || (midnight_rotate_ && (last_mday_ = curr_time.tm_mday) != curr_time.tm_mday)) {
 		rotate();
 	}
-
-	last_time_ = curr_time;
 }
 
 void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {

@@ -10,12 +10,13 @@
 
 #include <logger/Sink.h>
 #include <logger/FileWrapper.h>
+#include <logger/Utility.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include <cstdio>
 #include <cstdint>
-#include <ctime>
 
 namespace ember { namespace log {
 
@@ -25,7 +26,6 @@ public:
 
 private:
 	std::unique_ptr<File> file_;
-	std::tm last_time_;
 	std::string file_name_;
 	std::string file_name_format_;
 	std::uintmax_t  max_size_ = 0;
@@ -34,6 +34,7 @@ private:
 	bool log_severity_ = true;
 	bool log_date_ = false;
 	bool midnight_rotate_ = false;
+	int last_mday_ = detail::current_time().tm_mday;
 	std::string time_format_ = "[%d/%m/%Y %H:%M:%S] ";
 
 	void open(Mode mode = Mode::TRUNCATE);
