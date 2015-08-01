@@ -42,7 +42,7 @@ public:
 
 SyslogSink::impl::impl(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag) try
-                       : Sink(severity, filter), socket_(service_), host_(bai::host_name()), tag_(tag) {
+                       : Sink(severity, filter), socket_(service_), host_(bai::host_name()), tag_(std::move(tag)) {
 	facility_ = facility;
 
 	if(tag.size() > 32) {
@@ -132,7 +132,7 @@ void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std
 SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag)
                        : Sink(severity, filter),
-                         pimpl_(std::make_unique<impl>(severity, filter, host, port, facility, tag)) {}
+                         pimpl_(std::make_unique<impl>(severity, filter, host, port, facility, std::move(tag))) {}
 
 SyslogSink::~SyslogSink() = default;
 

@@ -11,6 +11,7 @@
 #include <logger/Sink.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include <cstdint>
 
