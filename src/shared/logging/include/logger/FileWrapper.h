@@ -16,7 +16,7 @@
 
 namespace ember { namespace log {
 
-class File {
+class File final {
 	std::FILE* file_ = nullptr;
 
 public:

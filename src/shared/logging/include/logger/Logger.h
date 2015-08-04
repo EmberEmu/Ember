@@ -16,7 +16,7 @@ namespace ember { namespace log {
 
 class Sink;
 
-class Logger {
+class Logger final {
 	class impl;
 	std::unique_ptr<impl> pimpl_;
 

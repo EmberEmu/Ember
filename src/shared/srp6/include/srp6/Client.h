@@ -17,7 +17,7 @@
 
 namespace ember { namespace srp6 {
 
-class Client {
+class Client final {
 	const Generator gen_;
 	const Botan::BigInt v_, a_;
 	Botan::BigInt A_, B_, k_{ 3 };

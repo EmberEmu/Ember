@@ -35,7 +35,7 @@
 
 namespace ember { namespace log {
 
-class Logger::impl {
+class Logger::impl final {
 	friend class Logger;
 
 	Severity severity_ = Severity::DISABLED;

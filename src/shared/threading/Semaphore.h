@@ -15,7 +15,7 @@
 namespace ember {
 
 template<typename Lock>
-class Semaphore {
+class Semaphore final {
 	unsigned int count_;
 	std::condition_variable condition_;
 	unsigned int max_;

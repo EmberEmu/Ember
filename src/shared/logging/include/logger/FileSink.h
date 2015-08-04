@@ -20,7 +20,7 @@
 
 namespace ember { namespace log {
 
-class FileSink final : public Sink {
+class FileSink : public Sink {
 public:
 	enum class Mode { TRUNCATE, APPEND };
 

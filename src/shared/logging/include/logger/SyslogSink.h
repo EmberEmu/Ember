@@ -17,7 +17,7 @@
 
 namespace ember { namespace log {
 
-class SyslogSink final : public Sink {
+class SyslogSink : public Sink {
 	class impl;
 	std::unique_ptr<impl> pimpl_;
 
@@ -35,8 +35,8 @@ public:
 	SyslogSink(log::Severity severity, Filter filter, std::string host, unsigned int port,
 	           Facility facility, std::string tag);
 	~SyslogSink();
-	void write(log::Severity severity, Filter type, const std::vector<char>& record) override final;
-	void batch_write(const std::vector<std::pair<log::RecordDetail, std::vector<char>>>& records) override final;
+	void write(log::Severity severity, Filter type, const std::vector<char>& record) override;
+	void batch_write(const std::vector<std::pair<log::RecordDetail, std::vector<char>>>& records) override;
 };
 
 }} //log, ember

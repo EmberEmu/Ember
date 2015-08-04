@@ -12,6 +12,7 @@
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
 #include <utility>
+#include <iostream>
 
 using Botan::BigInt;
 using Botan::power_mod;
@@ -26,6 +27,7 @@ Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6
 	}
 
 	B_ = (k_ * v_ + gen(b_)) % N_;
+	std::cout << b_ << std::endl;
 }
 
 Server::Server(const Generator& gen, const BigInt& v, std::size_t key_size, bool srp6a)

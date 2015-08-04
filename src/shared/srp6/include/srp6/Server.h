@@ -16,7 +16,7 @@
 
 namespace ember { namespace srp6 {
 
-class Server {
+class Server final {
 	const Botan::BigInt v_, N_, b_;
 	Botan::BigInt B_, A_, k_{ 3 };
 
