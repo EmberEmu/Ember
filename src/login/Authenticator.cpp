@@ -27,7 +27,7 @@ auto LoginAuthenticator::challenge_reply() -> ChallengeResponse {
 	return {srp_->public_ephemeral(), Botan::BigInt(user_.salt()), gen_};
 }
 
-auto LoginAuthenticator::proof_check(protocol::ClientLoginProof* proof) -> ProofResult {
+auto LoginAuthenticator::proof_check(protocol::ClientLoginProof* proof) -> ProofResult  try {
 	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
 	std::string user_upper(user_.username());
 	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
@@ -45,6 +45,8 @@ auto LoginAuthenticator::proof_check(protocol::ClientLoginProof* proof) -> Proof
 	                                                 A, B, Botan::BigInt(user_.salt()));
 	sess_key_ = key;
 	return {M1 == M1_S, srp_->generate_proof(key, M1)};
+} catch(srp6::exception& e) {
+	return {false, 0};
 }
 
 std::string LoginAuthenticator::session_key() {
