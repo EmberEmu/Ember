@@ -30,10 +30,10 @@ To create a console sink, simply do:
 ```cpp
 #include <logger/ConsoleSink.h>
 
-auto sink = std::make_unique<el::ConsoleSink>(el::SEVERITY::INFO);
+auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(-1));
 ```
 
-Other than setting the severity, the console sink offers no options.
+Other than setting the severity and filter value (-1 disables filtering), the console sink offers no options.
 
 ### File Sink
 The file sink requires three arguments; severity, filename to write the logs to and a mode that indicates, in cases where the file already exists, whether to create a new file for logging or to append to an existing file. If instructed to create a new file, it will rename the existing file, not overwrite it.
@@ -42,7 +42,7 @@ Creation example:
 ```cpp
 #include <logger/FileSink.h>
 
-auto sink = std::make_unique<el::FileSink>(el::SEVERITY::DEBUG, "my_log.log", el::FileSink::MODE::APPEND);
+auto sink = std::make_unique<el::FileSink>(el::Severity::DEBUG, el::Filter(-1), "my_log.log", el::FileSink::Mode::APPEND);
 ```
 
 Filenames may include formatters as specified by C++11's put_time function. See http://en.cppreference.com/w/cpp/io/manip/put_time.
@@ -67,7 +67,7 @@ Creation example:
 ```cpp
 #include <logger/SyslogSink.h>
 
-auto sink = std::make_unique<el::SyslogSink>(el::SEVERITY::ERROR, "localhost", 514, el::SyslogSink::FACILITY::LOCAL_USE_0, "login");
+auto sink = std::make_unique<el::SyslogSink>(el::Severity::ERROR, el::Filter(-1), "localhost", 514, el::SyslogSink::Facility::LOCAL_USE_0, "login");
 ```
 
 # Registering Sinks
@@ -75,7 +75,7 @@ After creating the desired sinks, they must be registered with the logger. This 
 
 For example:
 ```cpp
-auto sink = std::make_unique<el::ConsoleSink>(el::SEVERITY::INFO);
+auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(-1));
 auto logger = std::make_unique<el::Logger>();
 logger->add_sink(std::move(sink));
 ```
@@ -101,6 +101,43 @@ You can then use the LOG_SEVERITY_GLOB macros to perform logging:
 #include <logger/Logging.h>
 
 LOG_WARN_GLOB << "Hello, world! This is the global logger!" << LOG_ASYNC;
+```
+
+# Filtering
+Each logging sink can have a filter. A filter allows the end-user to configure which categories of messages they'd like to include/exclude.
+
+The filter is a 32-bit integer, with each bit representing a message category.
+
+Example usage:
+```cpp
+// define the filter values
+enum Filter {
+    RESERVED         = 1, // do not use
+    PLAYER_MOVE      = 2,
+    PLAYER_TRADE     = 4,
+    TRANSPORT_ARRIVE = 8,
+    TRANSPORT_DEPART = 16,
+    NPC_ACTION       = 32,
+    SERVER_ALERT     = 64,
+    ...
+};
+
+// set filter and create sink
+el::Filter(PLAYER_MOVE | SERVER_ALERT); // filter value is 66 (-1 will disable filtering)
+auto sink = std::make_unique<el::SyslogSink>(severity, filter, host, port, facility, service);
+```
+Note that this is only one possible way of defining and using filters. You may use other techniques (defines, bitfields, enum class, etc) if you prefer.
+
+To allow uncategorised messages to be filtered, all uncategorised log messages are implicitly given the category value of '1'. As such, '1' should be considered a reserved value (as shown above).
+
+To a log a message with a specified category:
+```cpp
+LOG_DEBUG_FILTER(logger, PLAYER_TRADE) << "Example message" << LOG_ASYNC;
+```
+
+With a global logger:
+```cpp
+LOG_DEBUG_FILTER_GLOB(PLAYER_TRADE) << "Example message" << LOG_ASYNC;
 ```
 
 # Performance Notes
