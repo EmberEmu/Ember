@@ -223,12 +223,12 @@ unsigned int check_concurrency(el::Logger* logger) {
 }
 
 void print_lib_versions(el::Logger* logger) {
-	LOG_INFO(logger) << "Compiled with library versions: " << LOG_SYNC;
-	LOG_INFO(logger)  << "- Boost " << BOOST_VERSION / 100000 << "."
+	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
+	LOG_DEBUG(logger)  << "- Boost " << BOOST_VERSION / 100000 << "."
 	                  << BOOST_VERSION / 100 % 1000 << "."
 	                  << BOOST_VERSION % 100 << LOG_SYNC;
-	LOG_INFO(logger) << "- " << Botan::version_string() << LOG_SYNC;
-	LOG_INFO(logger) << "- " << ember::drivers::DriverType::name()
+	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
+	LOG_DEBUG(logger) << "- " << ember::drivers::DriverType::name()
 	                 << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
 }
 
