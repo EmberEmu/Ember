@@ -207,7 +207,7 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	}
 
 public:
-	NetworkHandler(std::string interface, unsigned short port, unsigned int concurrency,
+	NetworkHandler(std::string interface, unsigned short port, bool tcp_no_delay, unsigned int concurrency,
 	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, 
 	               CreateHandler create, CompletionChecker checker)
 	               : service_(concurrency), signals_(service_, SIGINT, SIGTERM),
@@ -215,7 +215,7 @@ public:
 	                           boost::asio::ip::address::from_string(interface), port)),
 	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
 	                 create_handler_(create), check_packet_completion_(checker), concurrency_(concurrency) {
-		acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
+		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		accept_connection();
 	}
 

@@ -119,10 +119,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
+	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	auto login_server = std::make_shared<ember::NetworkHandler<ember::LoginHandler>>(
-		interface, port, concurrency, ip_ban_cache, thread_pool, logger,
+		interface, port, tcp_no_delay, concurrency, ip_ban_cache, thread_pool, logger,
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
@@ -158,6 +159,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	config_opts.add_options()
 		("network.interface,", po::value<std::string>()->default_value("0.0.0.0"))
 		("network.port", po::value<unsigned short>()->default_value(3724))
+		("network.tcp_no_delay", po::bool_switch()->default_value(true))
 		("realm_listen.interface,", po::value<std::string>()->default_value("0.0.0.0"))
 		("realm_listen.port", po::value<unsigned short>()->default_value(3749))
 		("console_log.verbosity,", po::value<std::string>()->required())
