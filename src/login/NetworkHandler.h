@@ -45,7 +45,7 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
 	log::Logger* logger_; 
-	IPBanCache<dal::IPBanDAO>& ban_list_;
+	IPBanCache& ban_list_;
 	ASIOAllocator allocator_; // todo - thread_local, VS2015
 	ThreadPool& pool_;
 
@@ -208,7 +208,7 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 
 public:
 	NetworkHandler(std::string interface, unsigned short port, unsigned int concurrency,
-	               IPBanCache<dal::IPBanDAO>& bans, ThreadPool& pool, log::Logger* logger, 
+	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, 
 	               CreateHandler create, CompletionChecker checker)
 	               : service_(concurrency), signals_(service_, SIGINT, SIGTERM),
 	                 acceptor_(service_, boost::asio::ip::tcp::endpoint(
