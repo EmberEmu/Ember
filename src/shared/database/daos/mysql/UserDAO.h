@@ -12,7 +12,7 @@
 #include <conpool/ConnectionPool.h>
 #include <mysql_connection.h>
 #include <cppconn/exception.h>
-#include <conpool/drivers/MySQLDriver.h>
+#include <conpool/drivers/MySQL/Driver.h>
 #include <cppconn/prepared_statement.h>
 #include <memory>
 

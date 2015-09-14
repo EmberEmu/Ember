@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <conpool/drivers/MySQLDriver.h>
+#include <conpool/drivers/MySQL/Driver.h>
 #include <mysql_driver.h>
 #include <cppconn/driver.h>
 #include <cppconn/connection.h>

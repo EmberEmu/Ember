@@ -5,7 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(conpool
-            src/MySQLDriver.cpp
+            src/MySQL/Driver.cpp
+            src/MySQL/Config.cpp
             include/conpool/ConnectionPool.h
             include/conpool/PoolManager.h
             include/conpool/Connection.h
@@ -13,7 +14,8 @@ add_library(conpool
             include/conpool/Exception.h
             include/conpool/LogSeverity.h
             include/conpool/drivers/AutoSelect.h
-            include/conpool/drivers/MySQLDriver.h
+            include/conpool/drivers/MySQL/Driver.h
+            include/conpool/drivers/MySQL/Config.h
            )
 
 target_include_directories(conpool PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
