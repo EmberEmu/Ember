@@ -225,7 +225,9 @@ public:
 
 	void wait() {
 		for(auto& worker : workers_) {
-			worker.join();
+			if(worker.joinable()) {
+				worker.join();
+			}
 		}
 	}
 };
