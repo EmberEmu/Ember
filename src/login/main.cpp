@@ -72,6 +72,7 @@ int main(int argc, const char* argv[]) try {
 
 	print_lib_versions(logger.get());
 	launch(args, logger.get());
+	LOG_INFO(logger) << "Login daemon terminated." << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -81,6 +82,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
 
+	unsigned int concurrency = check_concurrency(logger);
+
 	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
@@ -88,6 +91,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
 	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
+
+	if(max_conns != concurrency) {
+		LOG_WARN(logger) << "Max. database connection count may be non-optimal (use "
+		                 << concurrency << " to match logical core count)" << LOG_SYNC;
+	}
+
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
 		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
@@ -106,8 +115,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	for(auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
 	}
-
-	unsigned int concurrency = check_concurrency(logger);
 
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 	ember::ThreadPool thread_pool(concurrency);
@@ -135,7 +142,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
-/* 
+/*
  * This vector defines the client builds that are allowed to connect to the
  * server. All builds in this list should be using the same protocol version.
  */
@@ -224,12 +231,12 @@ unsigned int check_concurrency(el::Logger* logger) {
 
 void print_lib_versions(el::Logger* logger) {
 	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
-	LOG_DEBUG(logger)  << "- Boost " << BOOST_VERSION / 100000 << "."
+	LOG_DEBUG(logger) << "- Boost " << BOOST_VERSION / 100000 << "."
 	                  << BOOST_VERSION / 100 % 1000 << "."
 	                  << BOOST_VERSION % 100 << LOG_SYNC;
 	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
 	LOG_DEBUG(logger) << "- " << ember::drivers::DriverType::name()
-	                 << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
+	                  << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
