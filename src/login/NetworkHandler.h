@@ -216,6 +216,7 @@ public:
 	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
 	                 create_handler_(create), check_packet_completion_(checker), concurrency_(concurrency) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
+		acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
 		accept_connection();
 	}
 
