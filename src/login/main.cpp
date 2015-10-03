@@ -156,18 +156,17 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
-		("network.interface,", po::value<std::string>()->default_value("0.0.0.0"))
-		("network.port", po::value<unsigned short>()->default_value(3724))
-		("realm_listen.interface,", po::value<std::string>()->default_value("0.0.0.0"))
-		("realm_listen.port", po::value<unsigned short>()->default_value(3749))
+		("network.interface,", po::value<std::string>()->required())
+		("network.port", po::value<unsigned short>()->required())
 		("console_log.verbosity,", po::value<std::string>()->required())
+		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.verbosity,", po::value<std::string>()->required())
+		("remote_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.service_name,", po::value<std::string>()->required())
 		("remote_log.host,", po::value<std::string>()->required())
 		("remote_log.port,", po::value<unsigned short>()->required())
-		("realmbridge.host,", po::value<std::string>()->required())
-		("realmbridge.port,", po::value<unsigned short>()->required())
 		("file_log.verbosity,", po::value<std::string>()->required())
+		("file_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("file_log.path,", po::value<std::string>()->default_value("login.log"))
 		("file_log.timestamp_format,", po::value<std::string>())
 		("file_log.mode,", po::value<std::string>()->required())
@@ -227,7 +226,7 @@ ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
 	auto pass = args["database.password"].as<std::string>();
 	auto host = args["database.host"].as<std::string>();
 	auto port = args["database.port"].as<unsigned short>();
-	auto db = args["database.database"].as<std::string>();
+	auto db   = args["database.database"].as<std::string>();
 	return {user, pass, host, port, db};
 }
 

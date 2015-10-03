@@ -6,6 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "LogFilters.h"
+#include <conpool/ConnectionPool.h>
+#include <conpool/Policies.h>
+#include <conpool/drivers/AutoSelect.h>
 #include <logger/Logging.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
@@ -18,12 +22,19 @@
 #include <stdexcept>
 
 namespace el = ember::log;
-//namespace ep = ember::connection_pool;
+namespace ef = ember::filter;
+namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
+ember::drivers::MySQL init_db_driver(const po::variables_map& args);
+int fetch_realm(unsigned int id);
+
+int fetch_realm(unsigned int id) {
+	return 0;
+}
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -49,7 +60,14 @@ int main(int argc, const char* argv[]) try {
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
+	LOG_INFO(logger) << "Retrieving realm configuration..."<< LOG_SYNC;
 
+	auto realm_id = args["realm.id"].as<unsigned short>();
+	auto realm = fetch_realm(realm_id);
+
+	auto max_slots = args["realm.max-slots"].as<unsigned int>();
+	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
+	
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
@@ -68,17 +86,18 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
-		("network.interface,", po::value<std::string>()->default_value("0.0.0.0"))
-		("network.port", po::value<unsigned short>()->default_value(8085))
-		("realm_broadcast.interface,", po::value<std::string>()->default_value("0.0.0.0"))
-		("realm_broadcast.port", po::value<unsigned short>()->default_value(3749))
+		("realm.id,", po::value<unsigned int>()->required())
+		("realm.max-slots,", po::value<unsigned int>()->required())
+		("realm.reserved-slots,", po::value<unsigned int>()->required())
+		("network.interface,", po::value<unsigned int>()->required())
+		("network.interface,", po::value<std::string>()->required())
+		("network.port", po::value<unsigned short>()->required())
 		("console_log.verbosity,", po::value<std::string>()->required())
+		("remote_log.filter-mask,", po::value<unsigned int>()->required())
 		("remote_log.verbosity,", po::value<std::string>()->required())
 		("remote_log.service_name,", po::value<std::string>()->required())
 		("remote_log.host,", po::value<std::string>()->required())
 		("remote_log.port,", po::value<unsigned short>()->required())
-		("realmbridge.host,", po::value<std::string>()->required())
-		("realmbridge.port,", po::value<unsigned short>()->required())
 		("file_log.verbosity,", po::value<std::string>()->required())
 		("file_log.path,", po::value<std::string>()->default_value("gateway.log"))
 		("file_log.timestamp_format,", po::value<std::string>())
@@ -116,4 +135,13 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::notify(options);
 
 	return std::move(options);
+}
+
+ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
+	auto user = args["database.username"].as<std::string>();
+	auto pass = args["database.password"].as<std::string>();
+	auto host = args["database.host"].as<std::string>();
+	auto port = args["database.port"].as<unsigned short>();
+	auto db   = args["database.database"].as<std::string>();
+	return {user, pass, host, port, db};
 }
