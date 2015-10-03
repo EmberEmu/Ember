@@ -11,7 +11,7 @@
 #include <logger/Sink.h>
 #include <logger/concurrentqueue.h>
 #include <logger/Logger.h>
-#include "../../threading/Semaphore.h" // todo - move to shared lib
+#include <shared/threading/Semaphore.h>
 #include <vector>
 #include <mutex>
 #include <thread>

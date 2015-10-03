@@ -14,7 +14,7 @@
 #include <logger/Severity.h>
 #include <logger/Logger.h>
 #include <logger/concurrentqueue.h>
-#include "../../threading/Semaphore.h" // todo - move to shared lib
+#include <shared/threading/Semaphore.h>
 #include <algorithm>
 #include <iterator>
 #include <string>

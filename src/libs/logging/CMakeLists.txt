@@ -26,7 +26,7 @@ add_library(logging
             include/logger/FileWrapper.h
             include/logger/Logging.h
             include/logger/Severity.h
-            ../threading/Semaphore.h
 )
 
+target_link_libraries(logging shared)
 target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

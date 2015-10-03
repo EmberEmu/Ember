@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <shared/misc/User.h>
+#include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
 #include <boost/optional.hpp>
 #include <string>

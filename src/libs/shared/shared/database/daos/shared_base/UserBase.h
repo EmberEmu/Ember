@@ -9,7 +9,7 @@
 #pragma once
 
 #include <shared/database/Exception.h>
-#include <shared/misc/User.h>
+#include <shared/database/objects/User.h>
 #include <boost/optional.hpp>
 #include <string>
 

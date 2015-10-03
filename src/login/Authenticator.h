@@ -10,7 +10,7 @@
 
 #include "Protocol.h"
 #include <srp6/Server.h>
-#include <shared/misc/User.h>
+#include <shared/database/objects/User.h>
 #include <memory>
 #include <string>
 
