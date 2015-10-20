@@ -70,6 +70,8 @@ class PoolManager {
 
 		conn.refresh = false;
 		conn.checked_out = false;
+		std::atomic_thread_fence(std::memory_order_release);
+		pool_->pool_guards_[conn.id].store(false, std::memory_order_relaxed);
 
 		if(!conn.error) {
 			pool_->semaphore_.signal();

@@ -50,9 +50,20 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	std::atomic<std::size_t> size_;
 	Spinlock lock_;
 	std::vector<ConnDetail<ConType>> pool_;
+	std::vector<std::atomic<bool>> pool_guards_;
+
 	Semaphore<std::mutex> semaphore_;
 	std::function<void(Severity, std::string)> log_cb_;
 	bool closed_;
+
+	void set_connection_ids() {
+		unsigned int connection_id = 0;
+
+		for(auto& connection : pool_) {
+			connection.id = connection_id;
+			++connection_id;
+		}
+	}
 
 	void open_connections(std::size_t num)  {
 		std::vector<std::future<ConType>> futures;
@@ -86,7 +97,9 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		manager_.check_exceptions();
 
 		auto pred = [&](ConnDetail<ConType>& cd) {
-			if(!cd.checked_out && !cd.error && !cd.sweep && !cd.empty_slot) {
+			bool checked_out = pool_guards_[cd.id].load(std::memory_order_relaxed);
+
+			if(!checked_out && !cd.error && !cd.sweep && !cd.empty_slot) {
 				if(cd.dirty && !return_clean()) {
 					try {
 						if(driver_.clean(cd.conn)) {
@@ -105,6 +118,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 
 				cd.checked_out = true;
 				cd.idle = sc::seconds(0);
+				pool_guards_[cd.id].store(true, std::memory_order_relaxed);
 				return true;
 			}
 			return false;
@@ -133,7 +147,8 @@ public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
 	     sc::seconds max_idle, sc::seconds interval = sc::seconds(10))
 	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size),
-		   size_(0), closed_(false) {
+		   pool_guards_(max_size), size_(0), closed_(false) {
+		set_connection_ids();
 		open_connections(min_);
 		manager_.start(interval, max_idle);
 	}
@@ -255,6 +270,8 @@ public:
 
 		connection.released_ = true;
 		connection.detail_.get().checked_out = false;
+		std::atomic_thread_fence(std::memory_order_release);
+		pool_guards_[connection.detail_.get().id].store(false, std::memory_order_relaxed);
 
 		driver_.thread_exit();
 		manager_.check_exceptions();

@@ -21,6 +21,7 @@ namespace sc = std::chrono;
 template<typename ConType>
 struct ConnDetail {
 	ConType conn;
+	unsigned int id = 0;
 	bool empty_slot = true;
 	bool dirty = false;
 	bool checked_out = false;
