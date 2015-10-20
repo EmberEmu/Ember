@@ -77,11 +77,15 @@ class Logger::impl final {
 
 public:
 	impl() : worker_(sinks_) {
+#ifndef DEBUG_NO_THREADS
 		worker_.start();
+#endif
 	}
 
 	~impl() {
+#ifndef DEBUG_NO_THREADS
 		worker_.stop();
+#endif
 	}
 
 	//Workaround for lack of full thread_local support in VS2013

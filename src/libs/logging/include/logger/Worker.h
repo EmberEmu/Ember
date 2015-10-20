@@ -15,6 +15,7 @@
 #include <vector>
 #include <mutex>
 #include <thread>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -43,7 +44,12 @@ public:
 
 	void start();
 	void stop();
-	inline void signal() { sem_.signal(); }
+	inline void signal() { 
+		sem_.signal();
+#ifdef DEBUG_NO_THREADS
+		run();
+#endif
+	}
 };
 
 }} //log, ember

@@ -80,6 +80,9 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	}
 	
 	boost::optional<Connection<ConType>> get_connection_attempt() {
+#ifdef DEBUG_NO_THREADS
+		manager_.run();
+#endif
 		manager_.check_exceptions();
 
 		auto pred = [&](ConnDetail<ConType>& cd) {

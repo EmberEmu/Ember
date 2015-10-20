@@ -156,6 +156,7 @@ public:
 		pool_->driver_.thread_enter();
 		std::unique_lock<std::mutex> lock(cond_lock_);
 
+#ifndef DEBUG_NO_THREADS
 		while(!stop_) {
 			if(cond_.wait_for(lock, interval_) == std::cv_status::no_timeout) {
 				break;
@@ -163,6 +164,9 @@ public:
 
 			manage_pool();
 		}
+#else
+		manage_pool();
+#endif
 
 		pool_->driver_.thread_exit();
 	} catch(...) {
@@ -190,7 +194,9 @@ public:
 	void start(sc::seconds interval, sc::seconds max_idle) {
 		interval_ = interval;
 		max_idle_ = max_idle;
+#ifndef DEBUG_NO_THREADS
 		manager_ = std::thread(&PoolManager::run, this);
+#endif
 	}
 };
 

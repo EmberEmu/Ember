@@ -224,6 +224,10 @@ public:
 	}
 
 	void wait() {
+#ifdef DEBUG_NO_THREADS
+		service_.run();
+#endif
+
 		for(auto& worker : workers_) {
 			worker.join();
 		}

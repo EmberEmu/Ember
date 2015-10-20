@@ -79,10 +79,14 @@ int main(int argc, const char* argv[]) try {
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
+#ifdef DEBUG_NO_THREADS
+	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+#endif
+
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
 
-	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
+	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC; 
 	auto driver(init_db_driver(args));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
@@ -92,11 +96,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
 	                                std::placeholders::_2, logger));
-	
-	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
+
+	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
 	auto user_dao = ember::dal::user_dao(pool);
 	auto realm_dao = ember::dal::realm_dao(pool);
-	auto ip_ban_dao = ember::dal::ip_ban_dao(pool);
+	auto ip_ban_dao = ember::dal::ip_ban_dao(pool); 
 	auto ip_ban_cache = ember::IPBanCache<ember::dal::IPBanDAO>(*ip_ban_dao);
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
@@ -159,14 +163,14 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("network.interface,", po::value<std::string>()->required())
 		("network.port", po::value<unsigned short>()->required())
 		("console_log.verbosity,", po::value<std::string>()->required())
-		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
+		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(-1))
 		("remote_log.verbosity,", po::value<std::string>()->required())
-		("remote_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
+		("remote_log.filter-mask,", po::value<std::uint32_t>()->default_value(-1))
 		("remote_log.service_name,", po::value<std::string>()->required())
 		("remote_log.host,", po::value<std::string>()->required())
 		("remote_log.port,", po::value<unsigned short>()->required())
 		("file_log.verbosity,", po::value<std::string>()->required())
-		("file_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
+		("file_log.filter-mask,", po::value<std::uint32_t>()->default_value(-1))
 		("file_log.path,", po::value<std::string>()->default_value("login.log"))
 		("file_log.timestamp_format,", po::value<std::string>())
 		("file_log.mode,", po::value<std::string>()->required())
@@ -218,7 +222,11 @@ unsigned int check_concurrency(el::Logger* logger) {
 		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 
+#ifdef DEBUG_NO_THREADS
+	return 0;
+#else
 	return concurrency;
+#endif
 }
 
 ember::drivers::DriverType init_db_driver(const po::variables_map& args) {

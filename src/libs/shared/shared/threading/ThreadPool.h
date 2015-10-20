@@ -39,7 +39,11 @@ public:
 
 	template<typename T>
 	void run(T work) {
+#ifdef DEBUG_NO_THREADS
+		work();
+#else
 		service_.post(work);
+#endif
 	}
 
 	void log_callback(const LogCallback& callback);

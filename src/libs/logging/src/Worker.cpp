@@ -55,11 +55,15 @@ void Worker::process_outstanding() {
 }
 
 void Worker::run() {
+#ifndef DEBUG_NO_THREADS
 	while(!stop_) {
+#endif
 		sem_.wait();
 		process_outstanding();
 		process_outstanding_sync();
+#ifndef DEBUG_NO_THREADS
 	}
+#endif
 }
 
 void Worker::start() {
