@@ -30,7 +30,6 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
-#include <iostream>
 #include <fstream>
 #include <functional>
 #include <memory>

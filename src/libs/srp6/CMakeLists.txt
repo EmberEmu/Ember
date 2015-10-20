@@ -4,7 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(srp6
+set(LIBRARY_NAME srp6)
+
+add_library(${LIBRARY_NAME}
             src/Generator.cpp
             src/Util.cpp
             src/Client.cpp
@@ -16,4 +18,4 @@ add_library(srp6
             include/srp6/Exception.h
            )
 
-target_include_directories(srp6 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

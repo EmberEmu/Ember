@@ -4,7 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(logging
+set(LIBRARY_NAME logging)
+
+add_library(${LIBRARY_NAME}
             src/Logging.cpp
             src/FileSink.cpp
             src/SyslogSink.cpp
@@ -28,5 +30,5 @@ add_library(logging
             include/logger/Severity.h
 )
 
-target_link_libraries(logging shared ${Boost_LIBRARIES})
-target_include_directories(logging PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

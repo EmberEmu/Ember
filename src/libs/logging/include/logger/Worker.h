@@ -15,7 +15,6 @@
 #include <vector>
 #include <mutex>
 #include <thread>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <tuple>

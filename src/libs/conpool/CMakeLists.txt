@@ -4,7 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(conpool
+set(LIBRARY_NAME conpool)
+
+add_library(${LIBRARY_NAME}
             src/MySQLDriver.cpp
             include/conpool/ConnectionPool.h
             include/conpool/PoolManager.h
@@ -16,4 +18,5 @@ add_library(conpool
             include/conpool/drivers/MySQLDriver.h
            )
 
-target_include_directories(conpool PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${LIBRARY_NAME} shared)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
