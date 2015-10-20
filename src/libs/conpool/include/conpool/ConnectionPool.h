@@ -99,7 +99,13 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		auto pred = [&](ConnDetail<ConType>& cd) {
 			bool checked_out = pool_guards_[cd.id].load(std::memory_order_relaxed);
 
-			if(!checked_out && !cd.error && !cd.sweep && !cd.empty_slot) {
+			if(checked_out) {
+				return false;
+			}
+
+			std::atomic_thread_fence(std::memory_order_acquire);
+
+			if(!cd.error && !cd.sweep && !cd.empty_slot) {
 				if(cd.dirty && !return_clean()) {
 					try {
 						if(driver_.clean(cd.conn)) {
@@ -121,6 +127,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 				pool_guards_[cd.id].store(true, std::memory_order_relaxed);
 				return true;
 			}
+
 			return false;
 		};
 
