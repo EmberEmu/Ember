@@ -22,6 +22,12 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	endif()
 endif()
 
+option(disable_threads "Disable threading" OFF)
+
+if(disable_threads)
+	add_definitions(-DDEBUG_NO_THREADS)
+endif()
+
 find_package(Threads REQUIRED)
 
 ##############################
