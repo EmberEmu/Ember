@@ -62,7 +62,7 @@ void HealthMonitor::timer_tick(const boost::system::error_code& ec) {
 	set_timer();
 }
 
-void HealthMonitor::execute_source(Source& source, Severity severity, LogCallback log,
+void HealthMonitor::execute_source(Source& source, Severity severity, LogCallback& log,
                                    std::chrono::seconds& last_tick) {
 	last_tick += TIMER_FREQUENCY;
 

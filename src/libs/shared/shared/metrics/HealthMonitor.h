@@ -12,6 +12,7 @@
 #include <array>
 #include <chrono>
 #include <functional>
+#include <string>
 #include <mutex>
 #include <unordered_map>
 #include <tuple>
@@ -55,7 +56,6 @@ private:
 	Metrics& metrics_;
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
 	std::mutex source_lock_;
-	LogCallback log_;
 	std::unordered_map<Severity, unsigned int, GCCHashFix> counters_;
 	std::array<char, 1> buffer_;
 
@@ -63,7 +63,7 @@ private:
 	void set_timer();
 	void send_health_status();
 	void timer_tick(const boost::system::error_code& ec);
-	void execute_source(Source& source, Severity severity, LogCallback log,
+	void execute_source(Source& source, Severity severity, LogCallback& log,
 	                    std::chrono::seconds& last_tick);
 	std::string generate_message();
 
