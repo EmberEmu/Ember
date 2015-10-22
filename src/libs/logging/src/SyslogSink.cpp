@@ -26,7 +26,6 @@ class SyslogSink::impl : public Sink {
 
 	boost::asio::io_service service_;
 	bai::udp::socket socket_;
-	bai::udp::endpoint endpoint_;
 	std::string host_;
 	std::string tag_;
 	Facility facility_;
@@ -51,8 +50,7 @@ SyslogSink::impl::impl(Severity severity, Filter filter, std::string host, unsig
 
 	bai::udp::resolver resolver(service_);
 	bai::udp::resolver::query query(host, std::to_string(port));
-	endpoint_ = resolver.resolve(query)->endpoint();
-	socket_.open(endpoint_.protocol());
+	boost::asio::connect(socket_, resolver.resolve(query));
 } catch(std::exception& e) {
 	throw exception(e.what());
 }
@@ -120,7 +118,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<c
 	segments.emplace_back(record.data(), record.size());
 
 	boost::system::error_code err; //ignoring any send errors
-	socket_.send_to(segments, endpoint_, 0, err);
+	socket_.send(segments, 0, err);
 }
 
 void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {

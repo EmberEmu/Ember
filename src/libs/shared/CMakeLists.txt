@@ -49,6 +49,14 @@ set(UTIL_SRC
     shared/util/LogConfig.h
 )
 
+set(METRICS_SRC
+    shared/metrics/Metrics.h
+    shared/metrics/MetricsImpl.h
+    shared/metrics/MetricsImpl.cpp
+    shared/metrics/HealthMonitor.h
+    shared/metrics/HealthMonitor.cpp
+)
+
 set(LIBRARY_SRC
     ${DB_OBJECTS}
     ${SHARED_DAOS_SRC}
@@ -57,6 +65,7 @@ set(LIBRARY_SRC
     ${MEMORY_SRC}
     ${THREADING_SRC}
     ${UTIL_SRC}
+    ${METRICS_SRC}
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/PacketStream.h
@@ -74,6 +83,7 @@ source_group("PostgreSQL DAO" FILES ${POSTGRESQL_DAOS_SRC})
 source_group("Memory" FILES ${MEMORY_SRC})
 source_group("Threading" FILES ${THREADING_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
+source_group("Metrics" FILES ${METRICS_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
