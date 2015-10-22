@@ -24,6 +24,9 @@ namespace ember {
 
 class Metrics;
 
+// todo - workaround for GCC defect, awaiting fix (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970)
+struct GCCHashFix { template <typename T> std::size_t operator()(T t) const { return static_cast<std::size_t>(t); }};
+
 class HealthMonitor {
 public:
 	enum class Severity {
@@ -53,7 +56,7 @@ private:
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
 	std::mutex source_lock_;
 	LogCallback log_;
-	std::unordered_map<Severity, unsigned int> counters_;
+	std::unordered_map<Severity, unsigned int, GCCHashFix> counters_;
 	std::array<char, 1> buffer_;
 
 	void receive();

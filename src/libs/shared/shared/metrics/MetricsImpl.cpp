@@ -36,7 +36,7 @@ void MetricsImpl::gauge(const char* key, std::intmax_t value, bool adjust) {
 	format << key << ":";
 
 	if(adjust) {
-		format << (value >= 0)? "+" : "-";
+		format << (value >= 0? "+" : "-");
 	}
 
 	format << key << ":" << value << "|g";
