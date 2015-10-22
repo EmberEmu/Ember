@@ -17,7 +17,7 @@ namespace bai = boost::asio::ip;
 
 HealthMonitor::HealthMonitor(boost::asio::io_service& service, const std::string& interface,
                              std::uint16_t port, Metrics& metrics, std::chrono::seconds frequency)
-							 : timer_(service), strand_(service), metrics_(metrics), TIMER_FREQUENCY(frequency),
+                             : timer_(service), strand_(service), metrics_(metrics), TIMER_FREQUENCY(frequency),
                                socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)) {
 	set_timer();
 	receive();
