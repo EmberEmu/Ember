@@ -44,7 +44,7 @@ public:
 		bool triggered;
 	};
 
-	typedef std::function<void(Source, Severity, std::intmax_t)> LogCallback;
+	typedef std::function<void(const Source, Severity, std::intmax_t)> LogCallback;
 
 private:
 	const std::chrono::seconds TIMER_FREQUENCY;
