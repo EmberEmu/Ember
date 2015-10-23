@@ -63,8 +63,13 @@ sql::Connection* MySQL::keep_alive(sql::Connection* conn) const try {
 	return open();
 }
 
-bool MySQL::clean(sql::Connection* conn) const {
-	return !conn->isClosed();
+bool MySQL::clean(sql::Connection* conn) const try {
+	conn->setAutoCommit(true);
+	std::unique_ptr<sql::Statement> stmt(conn->createStatement());
+	stmt->execute("/* ping */");
+	return true;
+} catch(sql::SQLException&) {
+	return false;
 }
 
 void MySQL::thread_enter() const {

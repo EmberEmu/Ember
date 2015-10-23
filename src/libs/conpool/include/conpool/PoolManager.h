@@ -52,6 +52,8 @@ class PoolManager {
 		}
 			
 		conn.reset();
+		std::atomic_thread_fence(std::memory_order_release);
+		pool_->pool_guards_[conn.id].store(true, std::memory_order_relaxed);
 		--pool_->size_;
 	}
 
@@ -100,12 +102,10 @@ class PoolManager {
 		for(auto& conn : pool_->pool_) {
 			if(conn.empty_slot) {
 				continue;
+			} else if(conn.sweep || conn.error) {
+				close(conn);
 			} else if(conn.refresh) {
 				refresh(conn);
-			}
-
-			if(conn.sweep || conn.error) {
-				close(conn);
 			}
 		}
 
@@ -135,6 +135,9 @@ class PoolManager {
 				conn.checked_out = true;
 				conn.refresh = true;
 			}
+
+			std::atomic_thread_fence(std::memory_order_release);
+			pool_->pool_guards_[conn.id].store(conn.checked_out, std::memory_order_relaxed);
 		}
 	}
 
