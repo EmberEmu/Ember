@@ -16,6 +16,7 @@
 #include "Protocol.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/metrics/Metrics.h>
 #include <shared/PacketStream.h>
 #include <botan/bigint.h>
 #include <boost/optional.hpp>
@@ -39,6 +40,7 @@ class LoginHandler {
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_src_;
+	Metrics* metrics_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
 	std::string source_, username_;
@@ -69,9 +71,9 @@ public:
 	bool update_state(PacketBuffer& buffer);
 
 	LoginHandler(std::string source, const dal::UserDAO& users, const Patcher& patcher,
-	             log::Logger* logger, const RealmList& realm_list)
+	             log::Logger* logger, const RealmList& realm_list, Metrics* metrics)
 	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger),
-	               realm_list_(realm_list) {}
+	               realm_list_(realm_list), metrics_(metrics) {}
 	LoginHandler& operator=(LoginHandler&&);
 	LoginHandler(LoginHandler&&);
 };

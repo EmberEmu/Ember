@@ -191,9 +191,11 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 		}
 	} catch(dal::exception& e) {
 		LOG_ERROR(logger_) << "DAL failure for " << username_ << " " << e.what() << LOG_ASYNC;
+		metrics_->increment("login_failure_internal_error");
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
 	} catch(Botan::Exception& e) {
 		LOG_ERROR(logger_) << "Encoding failure for " << username_ << " " << e.what() << LOG_ASYNC;
+		metrics_->increment("login_failure_internal_error");
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
 	}
 	
@@ -223,6 +225,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		}
 	} catch(dal::exception& e) {
 		LOG_ERROR(logger_) << "Retrieving key for " << username_ << ": " << e.what() << LOG_ASYNC;
+		metrics_->increment("login_failure_internal_error");
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
 	}
 
@@ -269,6 +272,7 @@ void LoginHandler::check_login_proof(PacketBuffer& buffer) {
 
 void LoginHandler::send_login_failure(protocol::ResultCodes result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	metrics_->increment("login_failure");
 
 	auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(resp.get());
@@ -281,6 +285,7 @@ void LoginHandler::send_login_failure(protocol::ResultCodes result) {
 
 void LoginHandler::send_login_success(StoreSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	metrics_->increment("login_success");
 
 	Botan::SecureVector<Botan::byte> m2 = Botan::BigInt::encode_1363(server_proof_, 20);
 	std::reverse(m2.begin(), m2.end());
@@ -376,6 +381,7 @@ LoginHandler::LoginHandler(LoginHandler&& rhs)
                              reconn_auth_(std::move(rhs.reconn_auth_)),
 							 source_(rhs.source_), patcher_(rhs.patcher_),
                              user_src_(rhs.user_src_),
-                             logger_(rhs.logger_), realm_list_(rhs.realm_list_) {}
+                             logger_(rhs.logger_), realm_list_(rhs.realm_list_),
+                             metrics_(rhs.metrics_) {}
 
 } // ember
