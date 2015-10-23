@@ -13,10 +13,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstdint>
 
 namespace ember { 
 
-typedef std::pair<std::string, unsigned long> IPEntry;
+typedef std::pair<std::string, std::uint32_t> IPEntry;
 
 namespace dal {
 

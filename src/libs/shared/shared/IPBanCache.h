@@ -21,8 +21,8 @@ class IPBanCache {
 	T& source_;
 
 	struct IPv4Entry {
-		unsigned long range;
-		unsigned long mask;
+		std::uint32_t range;
+		std::uint32_t mask;
 	};
 
 	std::vector<IPv4Entry> entries_;
@@ -55,7 +55,7 @@ class IPBanCache {
 			}
 
 			std::uint32_t mask = ~(0xFFFFFFFFu >> res.second);
-			entries_.emplace_back(IPv4Entry{address.to_v4().to_ulong(), mask});
+			entries_.emplace_back(IPv4Entry{static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask});
 		}
 	}
 
