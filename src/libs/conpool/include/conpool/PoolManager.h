@@ -100,10 +100,10 @@ class PoolManager {
 		for(auto& conn : pool_->pool_) {
 			if(conn.empty_slot) {
 				continue;
-			} else if(conn.refresh) {
-				refresh(conn);
 			} else if(conn.sweep || conn.error) {
 				close(conn);
+			} else if(conn.refresh) {
+				refresh(conn);
 			}
 		}
 
