@@ -29,7 +29,7 @@ public:
 	std::vector<Realm> get_realms() const override final try {
 		std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms";
 
-		auto conn = pool_.get_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<Realm> realms;
@@ -53,7 +53,7 @@ public:
 		std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms "
 		                    "WHERE id = ?";
 
-		auto conn = pool_.get_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setInt(1, id);
 

@@ -14,6 +14,7 @@
 #include <cppconn/exception.h>
 #include <conpool/drivers/MySQLDriver.h>
 #include <cppconn/prepared_statement.h>
+#include <chrono>
 #include <memory>
 
 namespace ember { namespace dal { 
@@ -33,7 +34,7 @@ public:
 		                    "LEFT JOIN suspensions s ON u.id = s.user_id "
 		                    "WHERE username = ?";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -53,7 +54,7 @@ public:
 		std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
 		                    "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, user.username());
 		stmt->setString(2, ip);
@@ -68,7 +69,7 @@ public:
 	std::string session_key(const std::string& username) const override final try {
 		std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -86,7 +87,7 @@ public:
 		std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
 		                    "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		stmt->setString(2, key);

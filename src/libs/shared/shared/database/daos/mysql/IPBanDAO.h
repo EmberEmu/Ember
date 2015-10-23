@@ -29,7 +29,7 @@ public:
 	boost::optional<int> get_mask(const std::string& ip) const override final try {
 		std::string query = "SELECT cidr FROM ip_bans WHERE ip = ?";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, ip);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -46,7 +46,7 @@ public:
 	std::vector<IPEntry> all_bans() const override final try {
 		std::string query = "SELECT ip, cidr FROM ip_bans";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<IPEntry> entries;
@@ -63,7 +63,7 @@ public:
 	void ban(const IPEntry& ban) const override final try {
 		std::string query = "INSERT INTO ip_bans (ip, cidr) VALUES (?, ?)";
 
-		auto conn = pool_.wait_connection();
+		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, ban.first);
 		stmt->setUInt(2, ban.second);
