@@ -19,14 +19,14 @@
 namespace ember { namespace dal { 
 
 template<typename T>
-class MySQLRealmDAO : public RealmDAO {
+class MySQLRealmDAO final : public RealmDAO {
 	T& pool_;
 	drivers::MySQL* driver_;
 
 public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	std::vector<Realm> get_realms() const override final try {
+	std::vector<Realm> get_realms() const override try {
 		std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(60));
@@ -49,7 +49,7 @@ public:
 		throw exception(e.what());
 	}
 
-	boost::optional<Realm> get_realm(int id) const override final try {
+	boost::optional<Realm> get_realm(int id) const override try {
 		std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms "
 		                    "WHERE id = ?";
 

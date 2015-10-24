@@ -26,7 +26,7 @@ public:
 	virtual ~Action() = default;
 };
 
-class FetchSessionKeyAction : public Action {
+class FetchSessionKeyAction final : public Action {
 	const std::string username_;
 	const dal::UserDAO& user_src_;
 	boost::optional<std::string> key_;
@@ -36,7 +36,7 @@ public:
 	FetchSessionKeyAction(std::string username, const dal::UserDAO& user_src)
 	                      : username_(std::move(username)), user_src_(user_src) {}
 
-	virtual void execute() final override try {
+	virtual void execute() override try {
 		key_ = user_src_.session_key(username_);
 	} catch(dal::exception) {
 		exception_ = std::current_exception();
@@ -51,7 +51,7 @@ public:
 	}
 };
 
-class StoreSessionAction : public Action {
+class StoreSessionAction final : public Action {
 	User user_;
 	const std::string ip_, key_;
 	const dal::UserDAO& user_src_;
@@ -62,7 +62,7 @@ public:
 	                   : user_(std::move(user)), ip_(std::move(ip)), key_(std::move(key)),
 	                     user_src_(user_src){}
 
-	virtual void execute() final override try {
+	virtual void execute() override try {
 		user_src_.record_last_login(user_, ip_); // todo - transaction for both of these calls
 		user_src_.session_key(user_.username(), key_); // todo - user vs username, why?
 	} catch(dal::exception) {
@@ -84,7 +84,7 @@ public:
 	}
 };
 
-class FetchUserAction : public Action {
+class FetchUserAction final : public Action {
 	const std::string username_;
 	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
@@ -94,7 +94,7 @@ public:
 	FetchUserAction(std::string username, const dal::UserDAO& user_src)
 	                : username_(std::move(username)), user_src_(user_src) {}
 
-	virtual void execute() final override try {
+	virtual void execute() override try {
 		user_ = user_src_.user(username_);
 	} catch(dal::exception) {
 		exception_ = std::current_exception();

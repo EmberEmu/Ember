@@ -27,7 +27,7 @@ class MySQLUserDAO final : public UserDAO {
 public:
 	MySQLUserDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	boost::optional<User> user(const std::string& username) const override final try {
+	boost::optional<User> user(const std::string& username) const override try {
 		std::string query = "SELECT u.username, u.id, u.s, u.v, b.user_id as banned, "
 		                    "s.user_id as suspended FROM users u "
 		                    "LEFT JOIN bans b ON u.id = b.user_id "
@@ -50,7 +50,7 @@ public:
 		throw exception(e.what());
 	}
 
-	void record_last_login(const User& user, const std::string& ip) const override final try {
+	void record_last_login(const User& user, const std::string& ip) const override try {
 		std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
 		                    "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
 
@@ -66,7 +66,7 @@ public:
 		throw exception(e.what());
 	}
 
-	std::string session_key(const std::string& username) const override final try {
+	std::string session_key(const std::string& username) const override try {
 		std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(5));
@@ -83,7 +83,7 @@ public:
 		throw exception(e.what());
 	}
 
-	void session_key(const std::string& username, const std::string& key) const override final try {
+	void session_key(const std::string& username, const std::string& key) const override try {
 		std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
 		                    "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
 
