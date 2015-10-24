@@ -279,8 +279,13 @@ void LoginHandler::send_login_failure(protocol::ResultCodes result) {
 	send(resp);
 }
 
-void LoginHandler::send_login_success(StoreSessionAction* action) {
+void LoginHandler::send_login_success(StoreSessionAction* action) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	state_ = State::CLOSED;
+
+	// rethrows any exceptions that may have occurred during session write
+	action->rethrow_exception();
 
 	Botan::SecureVector<Botan::byte> m2 = Botan::BigInt::encode_1363(server_proof_, 20);
 	std::reverse(m2.begin(), m2.end());
@@ -294,6 +299,9 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 
 	state_ = State::REQUEST_REALMS;
 	send(resp);
+} catch(dal::exception& e) {
+	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
+	send_login_failure(protocol::ResultCodes::FAIL_DB_BUSY);
 }
 
 void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {

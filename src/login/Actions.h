@@ -11,6 +11,7 @@
 #include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
 #include <boost/optional.hpp>
+#include <exception>
 #include <string>
 #include <utility>
 
@@ -37,7 +38,7 @@ public:
 
 	virtual void execute() final override try {
 		key_ = user_src_.session_key(username_);
-	} catch(std::exception) {
+	} catch(dal::exception) {
 		exception_ = std::current_exception();
 	}
 
@@ -62,10 +63,16 @@ public:
 	                     user_src_(user_src){}
 
 	virtual void execute() final override try {
-		user_src_.record_last_login(user_, ip_);
+		user_src_.record_last_login(user_, ip_); // todo - transaction for both of these calls
 		user_src_.session_key(user_.username(), key_); // todo - user vs username, why?
-	} catch(std::exception) {
+	} catch(dal::exception) {
 		exception_ = std::current_exception();
+	}
+
+	void rethrow_exception() {
+		if(exception_) {
+			std::rethrow_exception(exception_);
+		}
 	}
 
 	boost::optional<User> get_result() {
@@ -89,7 +96,7 @@ public:
 
 	virtual void execute() final override try {
 		user_ = user_src_.user(username_);
-	} catch(std::exception) {
+	} catch(dal::exception) {
 		exception_ = std::current_exception();
 	}
 
