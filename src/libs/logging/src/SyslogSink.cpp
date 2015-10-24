@@ -27,7 +27,7 @@ class SyslogSink::impl : public Sink {
 	boost::asio::io_service service_;
 	bai::udp::socket socket_;
 	std::string host_;
-	std::string tag_;
+	std::string tag_; 
 	Facility facility_;
 
 	std::string month_map(int month);
@@ -95,7 +95,7 @@ std::string SyslogSink::impl::month_map(int month) {
 }
 
 void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<char>& record) {
-	if(this->severity() >= severity || !(this->filter() & type)) {
+	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
 	

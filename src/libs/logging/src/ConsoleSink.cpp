@@ -22,7 +22,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 	bool matches = false;
 
 	for(auto& r : records) {
-		if(sink_sev <= r.first.severity && (sink_filter & r.first.type)) {
+		if(sink_sev <= r.first.severity && !(sink_filter & r.first.type)) {
 			size += r.second.size();
 			matches = true;
 		}
@@ -37,7 +37,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 	std::string severity;
 
 	for(auto& r : records) {
-		if(sink_sev <= r.first.severity && (sink_filter & r.first.type)) {
+		if(sink_sev <= r.first.severity && !(sink_filter & r.first.type)) {
 			severity = detail::severity_string(r.first.severity);
 			std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
 			std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
@@ -48,7 +48,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 }
 
 void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>& record) {
-	if(this->severity() > severity || !(this->filter() & type)) {
+	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
 

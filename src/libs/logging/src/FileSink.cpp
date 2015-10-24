@@ -143,7 +143,7 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 	bool matches = false;
 
 	for(auto& r : records) {
-		if(severity <= r.first.severity && (filter & r.first.type)) {
+		if(severity <= r.first.severity && !(filter & r.first.type)) {
 			size += r.second.size();
 			matches = true;
 		}
@@ -157,7 +157,7 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 	buffer.reserve(size + (20 * records.size()));
 
 	for(auto& r : records) {
-		if(severity <= r.first.severity && (filter & r.first.type)) {
+		if(severity <= r.first.severity && !(filter & r.first.type)) {
 			std::string prepend = std::move(generate_record_detail(r.first.severity, curr_time));
 			std::copy(prepend.begin(), prepend.end(), std::back_inserter(buffer));
 			std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
@@ -175,7 +175,7 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 }
 
 void FileSink::write(Severity severity, Filter type, const std::vector<char>& record) {
-	if(this->severity() >= severity || !(this->filter() & type)) {
+	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
 

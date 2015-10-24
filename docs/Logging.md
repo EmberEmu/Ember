@@ -104,7 +104,7 @@ LOG_WARN_GLOB << "Hello, world! This is the global logger!" << LOG_ASYNC;
 ```
 
 # Filtering
-Each logging sink can have a filter. A filter allows the end-user to configure which categories of messages they'd like to include/exclude.
+Each logging sink can have a filter. A filter allows the end-user to configure which categories of messages they'd like to include/exclude. The filter mask works as a blacklist - that is, a filter value of zero will allow all messages through and any set bits will block the corresponding message category.
 
 The filter is a 32-bit integer, with each bit representing a message category.
 
@@ -123,7 +123,7 @@ enum Filter {
 };
 
 // set filter and create sink
-el::Filter(PLAYER_MOVE | SERVER_ALERT); // filter value is 66 (-1 will disable filtering)
+el::Filter(PLAYER_MOVE | SERVER_ALERT); // filter value is 66
 auto sink = std::make_unique<el::SyslogSink>(severity, filter, host, port, facility, service);
 ```
 Note that this is only one possible way of defining and using filters. You may use other techniques (defines, bitfields, enum class, etc) if you prefer.

@@ -35,27 +35,27 @@
 		*logger << ember::log::Severity::FATAL
 
 #define LOG_TRACE_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::TRACE && (logger->filter() & type)) { \
+	if(logger->severity() <= ember::log::Severity::TRACE && !(logger->filter() & type)) { \
 		*logger << ember::log::Severity::TRACE << ember::log::Filter(type)
 
 #define LOG_DEBUG_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::DEBUG && (logger->filter() & type)) { \
+	if(logger->severity() <= ember::log::Severity::DEBUG && !(logger->filter() & type)) { \
 		*logger << ember::log::Severity::DEBUG << ember::log::Filter(type)
 
 #define LOG_INFO_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::INFO && (logger->filter() & type)) { \
+	if(logger->severity() <= ember::log::Severity::INFO && !(logger->filter() & type)) { \
 		*logger << ember::log::Severity::INFO << ember::log::Filter(type)
 
 #define LOG_WARN_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::WARN && (logger->filter() & type)) { \
+	if(logger->severity() <= ember::log::Severity::WARN && !(logger->filter() & type)) { \
 		*logger << ember::log::Severity::WARN << ember::log::Filter(type)
 
 #define LOG_ERROR_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::ERROR && (logger->filter() & type)) { \
+	if(logger->severity() <= ember::log::Severity::ERROR && !(logger->filter() & type)) { \
 		*logger << ember::log::Severity::ERROR << ember::log::Filter(type)
 
 #define LOG_FATAL_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::FATAL && (logger->filter() & type)) { \
+	if(logger->severity() <= ember::log::Severity::FATAL && !(logger->filter() & type)) { \
 		*logger << ember::log::Severity::FATAL << ember::log::Filter(type)
 
 #define LOG_TRACE_GLOB \

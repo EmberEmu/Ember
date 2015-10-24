@@ -7,6 +7,7 @@
  */
 
 #include "Authenticator.h"
+#include "FilterType.h"
 #include "GameVersion.h"
 #include "LoginHandlerBuilder.h"
 #include "LoginPacketCheck.h"
@@ -162,14 +163,14 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("network.interface,", po::value<std::string>()->required())
 		("network.port", po::value<unsigned short>()->required())
 		("console_log.verbosity,", po::value<std::string>()->required())
-		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(-1))
+		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.verbosity,", po::value<std::string>()->required())
-		("remote_log.filter-mask,", po::value<std::uint32_t>()->default_value(-1))
+		("remote_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.service_name,", po::value<std::string>()->required())
 		("remote_log.host,", po::value<std::string>()->required())
 		("remote_log.port,", po::value<unsigned short>()->required())
 		("file_log.verbosity,", po::value<std::string>()->required())
-		("file_log.filter-mask,", po::value<std::uint32_t>()->default_value(-1))
+		("file_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("file_log.path,", po::value<std::string>()->default_value("login.log"))
 		("file_log.timestamp_format,", po::value<std::string>())
 		("file_log.mode,", po::value<std::string>()->required())
@@ -248,24 +249,26 @@ void print_lib_versions(el::Logger* logger) {
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+	using ember::LF_DB_CONN_POOL;
+
 	switch(severity) {
 		case(ep::Severity::DEBUG):
-			LOG_DEBUG(logger) << message << LOG_ASYNC;
+			LOG_DEBUG_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::INFO):
-			LOG_INFO(logger) << message << LOG_ASYNC;
+			LOG_INFO_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::WARN):
-			LOG_WARN(logger) << message << LOG_ASYNC;
+			LOG_WARN_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::ERROR):
-			LOG_ERROR(logger) << message << LOG_ASYNC;
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
 		case(ep::Severity::FATAL):
-			LOG_FATAL(logger) << message << LOG_ASYNC;
+			LOG_FATAL_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
 		default:
-			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
-			LOG_ERROR(logger) << message << LOG_ASYNC;
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 	}	
 }
