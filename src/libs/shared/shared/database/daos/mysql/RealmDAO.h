@@ -27,7 +27,7 @@ public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<Realm> get_realms() const override try {
-		std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms";
+		const std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -50,8 +50,8 @@ public:
 	}
 
 	boost::optional<Realm> get_realm(int id) const override try {
-		std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms "
-		                    "WHERE id = ?";
+		const std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms "
+		                          "WHERE id = ?";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

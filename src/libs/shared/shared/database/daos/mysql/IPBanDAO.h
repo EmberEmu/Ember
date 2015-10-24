@@ -26,8 +26,8 @@ class MySQLIPBanDAO final : public IPBanDAO {
 public:
 	MySQLIPBanDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	boost::optional<int> get_mask(const std::string& ip) const override try {
-		std::string query = "SELECT cidr FROM ip_bans WHERE ip = ?";
+	boost::optional<std::uint32_t> get_mask(const std::string& ip) const override try {
+		const std::string query = "SELECT cidr FROM ip_bans WHERE ip = ?";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -38,13 +38,13 @@ public:
 			return res->getUInt("cidr");
 		}
 
-		return boost::optional<int>();
+		return boost::optional<std::uint32_t>();
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}
 
 	std::vector<IPEntry> all_bans() const override try {
-		std::string query = "SELECT ip, cidr FROM ip_bans";
+		const std::string query = "SELECT ip, cidr FROM ip_bans";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -61,7 +61,7 @@ public:
 	}
 
 	void ban(const IPEntry& ban) const override try {
-		std::string query = "INSERT INTO ip_bans (ip, cidr) VALUES (?, ?)";
+		const std::string query = "INSERT INTO ip_bans (ip, cidr) VALUES (?, ?)";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(60));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

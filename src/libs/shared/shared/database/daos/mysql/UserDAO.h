@@ -28,11 +28,11 @@ public:
 	MySQLUserDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	boost::optional<User> user(const std::string& username) const override try {
-		std::string query = "SELECT u.username, u.id, u.s, u.v, b.user_id as banned, "
-		                    "s.user_id as suspended FROM users u "
-		                    "LEFT JOIN bans b ON u.id = b.user_id "
-		                    "LEFT JOIN suspensions s ON u.id = s.user_id "
-		                    "WHERE username = ?";
+		const std::string query = "SELECT u.username, u.id, u.s, u.v, b.user_id as banned, "
+		                          "s.user_id as suspended FROM users u "
+		                          "LEFT JOIN bans b ON u.id = b.user_id "
+		                          "LEFT JOIN suspensions s ON u.id = s.user_id "
+		                          "WHERE username = ?";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -51,8 +51,8 @@ public:
 	}
 
 	void record_last_login(const User& user, const std::string& ip) const override try {
-		std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
-		                    "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
+		const std::string query = "INSERT INTO login_history (user_id, ip) VALUES "
+		                          "((SELECT id AS user_id FROM users WHERE username = ?), ?)";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -67,7 +67,7 @@ public:
 	}
 
 	std::string session_key(const std::string& username) const override try {
-		std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
+		const std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -84,8 +84,8 @@ public:
 	}
 
 	void session_key(const std::string& username, const std::string& key) const override try {
-		std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
-		                    "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
+		const std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
+		                          "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
 
 		auto conn = pool_.wait_connection(std::chrono::seconds(5));
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
