@@ -38,7 +38,6 @@ before_install:
     - sudo apt-get update -qq
 
 install:
-    - sudo apt-get install -y libmysqlcppconn-dev
     - sudo apt-get install -y libbotan1.10-dev
 
     - if [ "$CXX" == "g++" ]; then sudo apt-get install -qq -y g++-${GCC_VERSION}; fi
@@ -65,6 +64,14 @@ install:
     - tar xzvf cmake-3.2.3-Linux-x86_64.tar.gz
     - sudo cp -fR cmake-3.2.3-Linux-x86_64/* /usr
     - cmake --version
+    - wget -O mysqlconn.tar.gz https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.6.tar.gz
+    - tar xzvf mysqlconn.tar.gz > /dev/null
+    - cd mysql-connector-c++-1.1.6/
+    - cmake .
+    - make clean
+    - make
+    - sudo make install
+    - cd ../
 
 script:
     - mkdir build
