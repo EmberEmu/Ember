@@ -53,21 +53,16 @@ void MySQL::close(sql::Connection* conn) const {
 	delete conn;
 }
 
-//todo - change this interface to bool
-sql::Connection* MySQL::keep_alive(sql::Connection* conn) const try {
-	conn->setAutoCommit(true);
-	std::unique_ptr<sql::Statement> stmt(conn->createStatement());
-	stmt->execute("/* ping */");
-	return conn;
-} catch(sql::SQLException&) {
-	return open();
-}
-
-bool MySQL::clean(sql::Connection* conn) const try {
-	conn->setAutoCommit(true);
+bool MySQL::keep_alive(sql::Connection* conn) const try {
 	std::unique_ptr<sql::Statement> stmt(conn->createStatement());
 	stmt->execute("/* ping */");
 	return true;
+} catch(sql::SQLException&) {
+	return false;
+}
+
+bool MySQL::clean(sql::Connection* conn) const try {
+	return conn->isValid();
 } catch(sql::SQLException&) {
 	return false;
 }

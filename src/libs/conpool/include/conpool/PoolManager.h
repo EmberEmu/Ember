@@ -59,15 +59,15 @@ class PoolManager {
 
 	void refresh(ConnDetail<ConType>& conn) {
 		try {
-			conn.conn = pool_->driver_.keep_alive(conn.conn);
+			conn.error = !pool_->driver_.keep_alive(conn.conn);
 			conn.idle = sc::seconds(0);
-			conn.error = false;
 		} catch(std::exception& e) { 
+			conn.error = true;
+
 			if(pool_->log_cb_) {
 				pool_->log_cb_(Severity::WARN,
 				               std::string("Connection keep-alive, driver threw: ") + e.what());
 			}
-			conn.error = true;
 		}
 
 		conn.refresh = false;
