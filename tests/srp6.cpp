@@ -84,7 +84,7 @@ TEST(srp6a, RFC5054_TestVectors) {
 
 	Botan::BigInt expected_u("0xCE38B9593487DA98554ED47D70A7AE5F462EF019");
 	Botan::BigInt u = srp::detail::scrambler(expected_A, expected_B, gen.prime().bytes(),
-	                                          srp::Compliance::RFC5054);
+	                                         srp::Compliance::RFC5054);
 	ASSERT_EQ(expected_u, u) << "Scrambling parameter did not match";
 
 	Botan::BigInt expected_key("0xB0DC82BABCF30674AE450C0287745E7990A3381F63B387AAF271A10D"
@@ -92,11 +92,9 @@ TEST(srp6a, RFC5054_TestVectors) {
 	                           "41BB59B6D5979B5C00A172B4A2A5903A0BDCAF8A709585EB2AFAFA8F"
 	                           "3499B200210DCC1F10EB33943CD67FC88A2F39A4BE5BEC4EC0A3212D"
 	                           "C346D7E474B29EDE8A469FFECA686E5A");
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(client.session_key(expected_B, salt, false,
-	                                              srp::Compliance::RFC5054)))
+	EXPECT_EQ(expected_key, Botan::BigInt::decode(client.session_key(expected_B, salt, srp::Compliance::RFC5054)))
 		<< "Client key did not match expected value!";
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(server.session_key(expected_A, false,
-	                                              srp::Compliance::RFC5054)))
+	EXPECT_EQ(expected_key, Botan::BigInt::decode(server.session_key(expected_A, srp::Compliance::RFC5054)))
 		<< "Server key did not match expected value!";
 }
 

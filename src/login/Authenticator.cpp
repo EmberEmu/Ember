@@ -38,7 +38,7 @@ auto LoginAuthenticator::proof_check(protocol::ClientLoginProof* proof) -> Proof
 
 	Botan::BigInt A(proof->A, sizeof(proof->A));
 	Botan::BigInt M1(proof->M1, sizeof(proof->M1));
-	srp6::SessionKey key(srp_->session_key(A, true, srp6::Compliance::GAME));
+	srp6::SessionKey key(srp_->session_key(A));
 
 	Botan::BigInt B = srp_->public_ephemeral();
 	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
@@ -46,7 +46,8 @@ auto LoginAuthenticator::proof_check(protocol::ClientLoginProof* proof) -> Proof
 	sess_key_ = key;
 	return {M1 == M1_S, srp_->generate_proof(key, M1)};
 } catch(srp6::exception& e) {
-	return {false, 0};
+	// todo - log?
+	return { false, 0 };
 }
 
 std::string LoginAuthenticator::session_key() {

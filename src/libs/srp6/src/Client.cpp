@@ -34,10 +34,12 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 	}
 }
 
-SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, bool interleave,
-                               Compliance mode) {
-	if(interleave && mode == Compliance::RFC5054) {
-		throw exception("Interleaving is not compliant with RFC5054!");
+SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, Compliance mode,
+                               bool interleave_override) {
+	bool interleave = (mode == Compliance::GAME);
+	
+	if(interleave_override) {
+		interleave = !interleave;
 	}
 
 	if(!(B % gen_.prime()) || B < 0) {

@@ -32,9 +32,11 @@ Server::Server(const Generator& gen, const BigInt& v, std::size_t key_size, bool
                : Server(gen, v, BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
                  srp6a) { }
 
-SessionKey Server::session_key(const BigInt& A, bool interleave, Compliance mode) {
-	if(interleave && mode == Compliance::RFC5054) {
-		throw exception("Interleaving is not compliant with RFC5054!");
+SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave_override) {
+	bool interleave = (mode == Compliance::GAME);
+	
+	if(interleave_override) {
+		interleave = !interleave;
 	}
 
 	if(!(A % N_) || A < 0) {
