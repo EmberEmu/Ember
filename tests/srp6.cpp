@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -116,9 +116,32 @@ TEST_F(srp6SessionTest, SelfAuthentication) {
 	EXPECT_EQ(expected_s_proof, s_proof) << "Client could not verify server proof!";
 }
 
-//todo
+/* 
+ * Simulates an actual authentication session by seeding the server with
+ * the parameters that were used for an actual successful login
+ */
 TEST_F(srp6SessionTest, GameAuthentication) {
-	EXPECT_EQ(1, 1) << "Failed to authenticate with game client!";
+	// Server's secret value, client's public value, client proof, server proof
+	Botan::BigInt b("18593985542940560649451045851874319089347482848983190581196134045699448046190");
+	Botan::BigInt A("59852229564408135463856204462249479723343699701058170755060257585995770179058");
+	Botan::BigInt M1("1198251478626595859038225880380336340559256984824");
+	Botan::BigInt M2("859932068100996518188190846072995264590638975226");
+
+	// User values from the database
+	Botan::BigInt salt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C");
+	Botan::BigInt verifier("0x37A75AE5BCF38899C75D28688C78434CB690657B5D8D77463668B83D0062A186");
+
+	// Start server
+	srp::Generator gen = srp::Generator::Group::_256_BIT;
+	srp::Server server(gen, verifier, b);
+
+	srp::SessionKey key = server.session_key(A);
+	Botan::BigInt M1_S = srp::generate_client_proof("CHAOSVEX", key, gen.prime(), gen.generator(),
+	                                                A, server.public_ephemeral(), salt);
+	Botan::BigInt M2_S = server.generate_proof(key, M1);
+	
+	EXPECT_EQ(M1, M1_S) << "Server's calculated client proof did not match the replayed proof!";
+	EXPECT_EQ(M2, M2_S) << "Server's proof did not match the replayed proof!";
 }
 
 TEST_F(srp6SessionTest, ServerZeroEphemeral) {
