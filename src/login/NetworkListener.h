@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "Actions.h"
-#include "PacketBuffer.h"
 #include "NetworkSession.h"
 #include "Session.h"
 #include <logger/Logger.h>
@@ -29,10 +27,10 @@
 namespace ember {
 
 class NetworkListener {
-	std::vector<std::thread> workers_;
 	std::set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
 	boost::asio::io_service& service_;
+	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
 	log::Logger* logger_; 
@@ -194,19 +192,15 @@ class NetworkListener {
 	}
 
 public:
-	NetworkHandler(std::string interface, unsigned short port, bool tcp_no_delay, unsigned int concurrency,
-	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, 
-	               CreateHandler create, CompletionChecker checker)
+	NetworkListener(boost::asio::io_service& service, std::string interface, unsigned short port, bool tcp_no_delay,
+	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, CreateHandler create)
 	               : acceptor_(service_, boost::asio::ip::tcp::endpoint(
 	                           boost::asio::ip::address::from_string(interface), port)),
 	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
-	                 create_handler_(create), check_packet_completion_(checker), concurrency_(concurrency) {
+	                 create_handler_(create), signals_(service_, SIGINT, SIGTERM)) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
-		accept_connection();
-	}
-
-	void run() {
+		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));
 		accept_connection();
 	}
 

@@ -9,16 +9,17 @@
 #pragma once
 
 #include "NetworkSession.h"
+#include <memory>
 #include <set>
 
 namespace ember {
 
 class SessionManager {
-	std::set<SharedNetSession> sessions_;
+	std::set<std::shared_ptr<NetworkSession>> sessions_;
 
 public:
-	void start(SharedNetSession session);
-	void stop(SharedNetSession session);
+	void start(std::shared_ptr<NetworkSession> session);
+	void stop(std::shared_ptr<NetworkSession> session);
 	void stop_all();
 };
 

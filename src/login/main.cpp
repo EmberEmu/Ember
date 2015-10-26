@@ -124,8 +124,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
 
 	// Start ASIO
-	boost::asio::io_service service(concurrency);		
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+	boost::asio::io_service service(concurrency);
 	std::vector<std::thread> workers;
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
@@ -144,21 +143,17 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
-	// Register shutdown handler
-	signals.async_wait([&]() {
-		LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
-		login_server->shutdown();
-		// metrics->shutdown();
-		// health_reporter->shutdown();
-		
-		for(auto& worker : workers) {
-			worker.join();
-		}
-	}); 
+	service.dispatch([logger]() {
+		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
+	});
 
-	login_server->run();
-	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
 	service.run();
+
+	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
+
+	for(auto& worker : workers) {
+		worker.join();
+	}
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }

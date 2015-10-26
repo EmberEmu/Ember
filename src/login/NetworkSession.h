@@ -10,17 +10,18 @@
 
 #include <spark/BufferChain.h>
 #include <boost/asio.hpp>
+#include <chrono>
 #include <memory>
 
 namespace ember {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const int SOCKET_ACTIVITY_TIMEOUT = 300;
+	std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
 
 	spark::BufferChain<1024> inbound_buffer_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
-	boost::asio::deadline_timer timer_;
+	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	void read(std::shared_ptr<Session<T>> session) {
 		auto& buffer = session->buffer;
@@ -51,7 +52,9 @@ public:
 
 	}
 
-	typedef std::shared_ptr<NetworkSession> SharedNetSession;
+	void stop() {
+
+	}
 };
 
 } // ember

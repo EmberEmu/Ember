@@ -12,16 +12,22 @@
 
 namespace ember {
 
-void SessionManager::start(SharedNetSession session) {
-
+void SessionManager::start(std::shared_ptr<NetworkSession> session) {
+	sessions_.insert(session);
+	session->start();
 }
 
-void SessionManager::stop(SharedNetSession session) {
-
+void SessionManager::stop(std::shared_ptr<NetworkSession> session) {
+	sessions_.erase(session);
+	session->stop();
 }
 
 void SessionManager::stop_all() {
+	for(auto& session : sessions_) {
+		session->stop();
+	}
 
+	sessions_.clear();
 }
 
 
