@@ -4,7 +4,6 @@
 // The full design is also described in excruciating detail at:
 //    http://moodycamel.com/blog/2014/detailed-design-of-a-lock-free-queue
 
-
 // Simplified BSD license:
 // Copyright (c) 2013-2015, Cameron Desrochers.
 // All rights reserved.
@@ -258,8 +257,17 @@ struct ConcurrentQueueDefaultTraits
 #ifndef MCDBGQ_USE_RELACY
 	// Memory allocation can be customized if needed.
 	// malloc should return nullptr on failure, and handle alignment like std::malloc.
+#if defined(malloc) || defined(free)
+	// Gah, this is 2015, stop defining macros that break standard code already!
+	// Work around malloc/free being special macros:
+	static inline void* WORKAROUND_malloc(size_t size) { return malloc(size); }
+	static inline void WORKAROUND_free(void* ptr) { return free(ptr); }
+	static inline void* (malloc)(size_t size) { return WORKAROUND_malloc(size); }
+	static inline void (free)(void* ptr) { return WORKAROUND_free(ptr); }
+#else
 	static inline void* malloc(size_t size) { return std::malloc(size); }
 	static inline void free(void* ptr) { return std::free(ptr); }
+#endif
 #else
 	// Debug versions when running under the Relacy race detector (ignore
 	// these in user code)
@@ -293,7 +301,7 @@ namespace details
 		ProducerToken* token;
 		
 		ConcurrentQueueProducerTypelessBase()
-			: inactive(false), token(nullptr)
+			: next(nullptr), inactive(false), token(nullptr)
 		{
 		}
 	};
@@ -409,7 +417,7 @@ namespace details
 		return *it;
 	}
 	
-#if defined(__APPLE__) || defined(__clang__) || !defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#if defined(__clang__) || !defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
 	template<typename T> struct is_trivially_destructible : std::is_trivially_destructible<T> { };
 #else
 	template<typename T> struct is_trivially_destructible : std::has_trivial_destructor<T> { };
@@ -500,7 +508,7 @@ struct ProducerToken
 	template<typename T, typename Traits>
 	explicit ProducerToken(BlockingConcurrentQueue<T, Traits>& queue);
 	
-	explicit ProducerToken(ProducerToken&& other) MOODYCAMEL_NOEXCEPT
+	ProducerToken(ProducerToken&& other) MOODYCAMEL_NOEXCEPT
 		: producer(other.producer)
 	{
 		other.producer = nullptr;
@@ -565,7 +573,7 @@ struct ConsumerToken
 	template<typename T, typename Traits>
 	explicit ConsumerToken(BlockingConcurrentQueue<T, Traits>& q);
 	
-	explicit ConsumerToken(ConsumerToken&& other) MOODYCAMEL_NOEXCEPT
+	ConsumerToken(ConsumerToken&& other) MOODYCAMEL_NOEXCEPT
 		: initialOffset(other.initialOffset), lastKnownGlobalOffset(other.lastKnownGlobalOffset), itemsConsumedFromCurrent(other.itemsConsumedFromCurrent), currentProducer(other.currentProducer), desiredProducer(other.desiredProducer)
 	{
 	}
@@ -722,7 +730,7 @@ public:
 						hash->entries[i].~ImplicitProducerKVP();
 					}
 					hash->~ImplicitProducerHash();
-					Traits::free(hash);
+					(Traits::free)(hash);
 				}
 				hash = prev;
 			}
@@ -1094,7 +1102,7 @@ public:
 	{
 		if (token.desiredProducer == nullptr || token.lastKnownGlobalOffset != globalExplicitConsumerOffset.load(std::memory_order_relaxed)) {
 			if (!update_current_producer_after_rotation(token)) {
-				return false;
+				return 0;
 			}
 		}
 		
@@ -1400,7 +1408,7 @@ private:
 	struct Block
 	{
 		Block()
-			: elementsCompletelyDequeued(0), freeListRefs(0), freeListNext(nullptr), shouldBeOnFreeList(false), dynamicallyAllocated(true)
+			: next(nullptr), elementsCompletelyDequeued(0), freeListRefs(0), freeListNext(nullptr), shouldBeOnFreeList(false), dynamicallyAllocated(true)
 		{
 #if MCDBGQ_TRACKMEM
 			owner = nullptr;
@@ -1505,7 +1513,7 @@ private:
 		}
 		
 		inline T* operator[](index_t idx) MOODYCAMEL_NOEXCEPT { return reinterpret_cast<T*>(elements) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
-		inline T const* operator[](index_t idx) const MOODYCAMEL_NOEXCEPT { return reinterpret_cast<T*>(elements) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
+		inline T const* operator[](index_t idx) const MOODYCAMEL_NOEXCEPT { return reinterpret_cast<T const*>(elements) + static_cast<size_t>(idx & static_cast<index_t>(BLOCK_SIZE - 1)); }
 		
 	public:
 		Block* next;
@@ -1669,11 +1677,14 @@ private:
 			if (this->tailBlock != nullptr) {
 				auto block = this->tailBlock;
 				do {
-					auto next = block->next;
+					auto nextBlock = block->next;
 					if (block->dynamicallyAllocated) {
 						destroy(block);
 					}
-					block = next;
+					else {
+						this->parent->add_block_to_free_list(block);
+					}
+					block = nextBlock;
 				} while (block != this->tailBlock);
 			}
 			
@@ -1682,7 +1693,7 @@ private:
 			while (header != nullptr) {
 				auto prev = static_cast<BlockIndexHeader*>(header->prev);
 				header->~BlockIndexHeader();
-				Traits::free(header);
+				(Traits::free)(header);
 				header = prev;
 			}
 		}
@@ -2190,7 +2201,7 @@ private:
 			
 			// Create the new block
 			pr_blockIndexSize <<= 1;
-			auto newRawPtr = static_cast<char*>(Traits::malloc(sizeof(BlockIndexHeader) + std::alignment_of<BlockIndexEntry>::value - 1 + sizeof(BlockIndexEntry) * pr_blockIndexSize));
+			auto newRawPtr = static_cast<char*>((Traits::malloc)(sizeof(BlockIndexHeader) + std::alignment_of<BlockIndexEntry>::value - 1 + sizeof(BlockIndexEntry) * pr_blockIndexSize));
 			if (newRawPtr == nullptr) {
 				pr_blockIndexSize >>= 1;		// Reset to allow graceful retry
 				return false;
@@ -2281,9 +2292,9 @@ private:
 			bool forceFreeLastBlock = index != tail;		// If we enter the loop, then the last (tail) block will not be freed
 			while (index != tail) {
 				if ((index & static_cast<index_t>(BLOCK_SIZE - 1)) == 0 || block == nullptr) {
-					if (block != nullptr && block->dynamicallyAllocated) {
+					if (block != nullptr) {
 						// Free the old block
-						this->parent->destroy(block);
+						this->parent->add_block_to_free_list(block);
 					}
 					
 					block = get_block_index_entry_for_index(index)->value.load(std::memory_order_relaxed);
@@ -2295,8 +2306,8 @@ private:
 			// Even if the queue is empty, there's still one block that's not on the free list
 			// (unless the head index reached the end of it, in which case the tail will be poised
 			// to create a new block).
-			if (this->tailBlock != nullptr && (forceFreeLastBlock || (tail & static_cast<index_t>(BLOCK_SIZE - 1)) != 0) && this->tailBlock->dynamicallyAllocated) {
-				this->parent->destroy(this->tailBlock);
+			if (this->tailBlock != nullptr && (forceFreeLastBlock || (tail & static_cast<index_t>(BLOCK_SIZE - 1)) != 0)) {
+				this->parent->add_block_to_free_list(this->tailBlock);
 			}
 			
 			// Destroy block index
@@ -2308,7 +2319,7 @@ private:
 				do {
 					auto prev = localBlockIndex->prev;
 					localBlockIndex->~BlockIndexHeader();
-					Traits::free(localBlockIndex);
+					(Traits::free)(localBlockIndex);
 					localBlockIndex = prev;
 				} while (localBlockIndex != nullptr);
 			}
@@ -2785,7 +2796,7 @@ private:
 			auto prev = blockIndex.load(std::memory_order_relaxed);
 			size_t prevCapacity = prev == nullptr ? 0 : prev->capacity;
 			auto entryCount = prev == nullptr ? nextBlockIndexCapacity : prevCapacity;
-			auto raw = static_cast<char*>(Traits::malloc(
+			auto raw = static_cast<char*>((Traits::malloc)(
 				sizeof(BlockIndexHeader) +
 				std::alignment_of<BlockIndexEntry>::value - 1 + sizeof(BlockIndexEntry) * entryCount +
 				std::alignment_of<BlockIndexEntry*>::value - 1 + sizeof(BlockIndexEntry*) * nextBlockIndexCapacity));
@@ -3115,7 +3126,7 @@ private:
 		std::atomic<details::thread_id_t> key;
 		ImplicitProducer* value;		// No need for atomicity since it's only read by the thread that sets it in the first place
 		
-		ImplicitProducerKVP() { }
+		ImplicitProducerKVP() : value(nullptr) { }
 		
 		ImplicitProducerKVP(ImplicitProducerKVP&& other) MOODYCAMEL_NOEXCEPT
 		{
@@ -3275,7 +3286,7 @@ private:
 					while (newCount >= (newCapacity >> 1)) {
 						newCapacity <<= 1;
 					}
-					auto raw = static_cast<char*>(Traits::malloc(sizeof(ImplicitProducerHash) + std::alignment_of<ImplicitProducerKVP>::value - 1 + sizeof(ImplicitProducerKVP) * newCapacity));
+					auto raw = static_cast<char*>((Traits::malloc)(sizeof(ImplicitProducerHash) + std::alignment_of<ImplicitProducerKVP>::value - 1 + sizeof(ImplicitProducerKVP) * newCapacity));
 					if (raw == nullptr) {
 						// Allocation failed
 						implicitProducerHashCount.fetch_add(-1, std::memory_order_relaxed);
@@ -3399,7 +3410,7 @@ private:
 	static inline U* create_array(size_t count)
 	{
 		assert(count > 0);
-		auto p = static_cast<U*>(Traits::malloc(sizeof(U) * count));
+		auto p = static_cast<U*>((Traits::malloc)(sizeof(U) * count));
 		if (p == nullptr) {
 			return nullptr;
 		}
@@ -3418,21 +3429,21 @@ private:
 			for (size_t i = count; i != 0; ) {
 				(p + --i)->~U();
 			}
-			Traits::free(p);
+			(Traits::free)(p);
 		}
 	}
 	
 	template<typename U>
 	static inline U* create()
 	{
-		auto p = Traits::malloc(sizeof(U));
+		auto p = (Traits::malloc)(sizeof(U));
 		return p != nullptr ? new (p) U : nullptr;
 	}
 	
 	template<typename U, typename A1>
 	static inline U* create(A1&& a1)
 	{
-		auto p = Traits::malloc(sizeof(U));
+		auto p = (Traits::malloc)(sizeof(U));
 		return p != nullptr ? new (p) U(std::forward<A1>(a1)) : nullptr;
 	}
 	
@@ -3442,7 +3453,7 @@ private:
 		if (p != nullptr) {
 			p->~U();
 		}
-		Traits::free(p);
+		(Traits::free)(p);
 	}
 
 private:
