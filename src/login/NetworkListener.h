@@ -9,6 +9,7 @@
 #pragma once
 
 #include "NetworkSession.h"
+#include "SessionManager.h"
 #include "Session.h"
 #include <logger/Logger.h>
 #include <shared/IPBanCache.h>
@@ -33,6 +34,7 @@ class NetworkListener {
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
+	SessionManager sessions_;
 	log::Logger* logger_; 
 	IPBanCache& ban_list_;
 	ASIOAllocator allocator_; // todo - thread_local, VS2015
@@ -199,7 +201,7 @@ public:
 	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
 	                 create_handler_(create), signals_(service_, SIGINT, SIGTERM)) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
-		acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
+		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));
 		accept_connection();
 	}
