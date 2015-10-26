@@ -30,7 +30,8 @@ set(EXECUTABLE_HDR
     ../shared/util/LogConfig.h
     PacketHandler.h
     GruntHandler.h
-    LoginHandlerBuilder.h
+    LoginSessionBuilder.h
+    LoginSession.h
     LoginPacketCheck.h
     NetworkListener.h
     NetworkSession.h

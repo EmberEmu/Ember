@@ -9,12 +9,14 @@
 #pragma once
 
 #include <spark/Buffer.h>
+#include <memory>
 
 namespace ember {
 
 class PacketHandler {
 public:
 	virtual void handle_packet(spark::Buffer& buffer) = 0;
+	virtual ~PacketHandler() = default;
 };
 
 } // ember

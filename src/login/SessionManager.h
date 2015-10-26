@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include "NetworkSession.h"
 #include <memory>
 #include <mutex>
 #include <set>
 
 namespace ember {
+
+class NetworkSession;
 
 class SessionManager {
 	std::set<std::shared_ptr<NetworkSession>> sessions_;

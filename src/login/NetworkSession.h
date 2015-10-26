@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "LoginSessionBuilder.h"
+#include "PacketHandler.h"
 #include "SessionManager.h"
 #include <logger/Logger.h>
 #include <spark/BufferChain.h>
@@ -19,18 +21,20 @@
 
 namespace ember {
 
-class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
+class NetworkSession final : public std::enable_shared_from_this<NetworkSession> {
+	typedef std::function<std::unique_ptr<PacketHandler>(NetworkSession&)> HandlerCreate;
+
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
+	std::unique_ptr<PacketHandler> handler_;
 	spark::BufferChain<1024> inbound_buffer_;
-	SessionManager sessions_;
+	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_; 
-	ThreadPool& pool_;
 
 	void read() {
 		auto self(shared_from_this());
@@ -68,20 +72,21 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 	}
 
-	void action_complete(std::shared_ptr<NetworkSession> session, std::shared_ptr<Action> action) try {
-		/*if(!session->handler.update_state(action)) {
-			sessions_.stop(session);
-		}*/
-	} catch(std::exception& e) {
-		LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-		sessions_.stop(session);
-	}
+	//void action_complete(std::shared_ptr<NetworkSession> session, std::shared_ptr<Action> action) try {
+	//	/*if(!session->handler.update_state(action)) {
+	//		sessions_.stop(session);
+	//	}*/
+	//} catch(std::exception& e) {
+	//	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
+	//	sessions_.stop(session);
+	//}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, ThreadPool& pool,
-	               log::Logger* logger)
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
+	               HandlerCreate handler_create, log::Logger* logger)
 	: sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	  strand_(socket.get_io_service()), pool_(pool), logger_(logger) { }
+	  strand_(socket.get_io_service()), logger_(logger),
+	  handler_(std::move(handler_create(*this))) { }
 
 	void start() {
 		read();
@@ -93,18 +98,18 @@ public:
 		socket_.close();
 	}
 
-	void execute_action(std::shared_ptr<Action> action) {
-		auto self(shared_from_this());
+	//void execute_action(std::shared_ptr<Action> action) {
+	//	auto self(shared_from_this());
 
-		pool_.run([action, this, self] {
-			action->execute();
-			strand_.post([action, this, self] {
-				action_complete(self, action);
-			});
-		});
-	}
+	//	pool_.run([action, this, self] {
+	//		action->execute();
+	//		strand_.post([action, this, self] {
+	//			action_complete(self, action);
+	//		});
+	//	});
+	//}
 
-	void write(std::shared_ptr<Packet> packet) {
+	void write(std::shared_ptr<char> packet) {
 		//session->tbuffer.write(packet->data(), packet->size());
 		//LOG_WARN(logger_) << "Packet size: " << packet->size() << LOG_SYNC;
 		//LOG_WARN(logger_) << "Chain size: " << session->tbuffer.size() << LOG_SYNC;

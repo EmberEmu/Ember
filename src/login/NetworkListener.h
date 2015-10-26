@@ -15,15 +15,18 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <string>
-
+#
 namespace ember {
 
 class NetworkListener {
+	typedef std::function<std::unique_ptr<PacketHandler>(NetworkSession&)> HandlerCreate;
+
 	boost::asio::io_service& service_;
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
 
+	const HandlerCreate handler_create_;
 	SessionManager sessions_;
 	log::Logger* logger_; 
 	IPBanCache& ban_list_;
@@ -57,18 +60,19 @@ class NetworkListener {
 	void start_session(boost::asio::ip::tcp::socket socket) {
 		LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-		auto session = std::make_shared<NetworkSession>>(std::move(create_handler_(address)),
-		                                            std::move(socket), service);
+		auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket),
+		                                                handler_create_, logger_);
 		sessions_.start(session);
 	}
 
 public:
-	NetworkListener(boost::asio::io_service& service, std::string interface, unsigned short port, bool tcp_no_delay,
-	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger)
-	               : acceptor_(service_, boost::asio::ip::tcp::endpoint(
+	NetworkListener(boost::asio::io_service& service, std::string interface, unsigned short port,
+	                bool tcp_no_delay, HandlerCreate handler_create, IPBanCache& bans,
+	                ThreadPool& pool, log::Logger* logger)
+	                : acceptor_(service_, boost::asio::ip::tcp::endpoint(
 	                           boost::asio::ip::address::from_string(interface), port)),
-	                 service_(service), socket_(service_), logger_(logger), ban_list_(bans),
-	                 signals_(service_, SIGINT, SIGTERM) {
+	                  service_(service), socket_(service_), logger_(logger), ban_list_(bans),
+	                  signals_(service_, SIGINT, SIGTERM), handler_create_(handler_create) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));
