@@ -47,6 +47,7 @@ namespace po = boost::program_options;
 namespace ba = boost::asio;
 
 void print_lib_versions(el::Logger* logger);
+void shutdown_test(std::vector<std::thread> workers);
 std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
@@ -123,6 +124,18 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::Patcher patcher(allowed_clients, "temp");
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
 
+	// Start ASIO
+	boost::asio::io_service service(concurrency);		
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+	std::vector<std::thread> workers;
+
+	for(unsigned int i = 0; i < concurrency; ++i) {
+		workers.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
+			(&boost::asio::io_service::run), &service); 
+	}
+
+	signals.async_wait(std::bind(&shutdown_test, workers));
+
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
@@ -130,18 +143,29 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	auto login_server = std::make_shared<ember::NetworkHandler<ember::LoginHandler>>(
-		interface, port, tcp_no_delay, concurrency, ip_ban_cache, thread_pool, logger,
+		service, interface, port, tcp_no_delay, ip_ban_cache, thread_pool, logger,
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
 	login_server->run();
 	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
-	login_server->wait();
+	service.run();
 	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
+void shutdown_test(std::vector<std::thread> workers) {
+	// network->shutdown();
+	// metrics->shutdown();
+	// health_reporter->shutdown();
+
+	for(auto& worker : workers) {
+		if(worker.joinable()) {
+			worker.join();
+		}
+	}
+}
 /*
  * This vector defines the client builds that are allowed to connect to the
  * server. All builds in this list should be using the same protocol version.

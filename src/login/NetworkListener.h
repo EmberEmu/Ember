@@ -34,8 +34,7 @@ class NetworkListener {
 	std::vector<std::thread> workers_;
 	std::set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
-	boost::asio::io_service service_;
-	boost::asio::signal_set signals_;
+	boost::asio::io_service& service_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
 	log::Logger* logger_; 
@@ -196,13 +195,21 @@ class NetworkListener {
 		}
 	}
 
-	void start_service() {
-		signals_.async_wait(std::bind(&NetworkHandler::shutdown, this));
+public:
+	NetworkHandler(std::string interface, unsigned short port, bool tcp_no_delay, unsigned int concurrency,
+	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, 
+	               CreateHandler create, CompletionChecker checker)
+	               : acceptor_(service_, boost::asio::ip::tcp::endpoint(
+	                           boost::asio::ip::address::from_string(interface), port)),
+	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
+	                 create_handler_(create), check_packet_completion_(checker), concurrency_(concurrency) {
+		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
+		acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
+		accept_connection();
+	}
 
-		for(unsigned int i = 0; i < concurrency_; ++i) {
-			workers_.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
-				(&boost::asio::io_service::run), &service_); 
-		}
+	void run() {
+		accept_connection();
 	}
 
 	void shutdown() {
@@ -215,33 +222,6 @@ class NetworkListener {
 		}
 
 		sessions_.clear();
-		service_.stop();
-	}
-
-public:
-	NetworkHandler(std::string interface, unsigned short port, bool tcp_no_delay, unsigned int concurrency,
-	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, 
-	               CreateHandler create, CompletionChecker checker)
-	               : service_(concurrency), signals_(service_, SIGINT, SIGTERM),
-	                 acceptor_(service_, boost::asio::ip::tcp::endpoint(
-	                           boost::asio::ip::address::from_string(interface), port)),
-	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
-	                 create_handler_(create), check_packet_completion_(checker), concurrency_(concurrency) {
-		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
-		acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
-		accept_connection();
-	}
-
-	void run() {
-		start_service();
-	}
-
-	void wait() {
-		for(auto& worker : workers_) {
-			if(worker.joinable()) {
-				worker.join();
-			}
-		}
 	}
 };
 
