@@ -10,12 +10,14 @@
 
 #include "NetworkSession.h"
 #include <memory>
+#include <mutex>
 #include <set>
 
 namespace ember {
 
 class SessionManager {
 	std::set<std::shared_ptr<NetworkSession>> sessions_;
+	std::mutex sessions_lock_;
 
 public:
 	void start(std::shared_ptr<NetworkSession> session);
