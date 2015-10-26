@@ -47,7 +47,6 @@ namespace po = boost::program_options;
 namespace ba = boost::asio;
 
 void print_lib_versions(el::Logger* logger);
-void shutdown_test(std::vector<std::thread> workers);
 std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
@@ -134,7 +133,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 			(&boost::asio::io_service::run), &service); 
 	}
 
-	signals.async_wait(std::bind(&shutdown_test, workers));
 
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
@@ -147,25 +145,25 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
+	// register shutdown handler
+	signals.async_wait([&]() {
+		LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
+		login_server->shutdown();
+		// metrics->shutdown();
+		// health_reporter->shutdown();
+		
+		for(auto& worker : workers) {
+			worker.join();
+		}
+	}); 
+
 	login_server->run();
 	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
 	service.run();
-	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
-void shutdown_test(std::vector<std::thread> workers) {
-	// network->shutdown();
-	// metrics->shutdown();
-	// health_reporter->shutdown();
-
-	for(auto& worker : workers) {
-		if(worker.joinable()) {
-			worker.join();
-		}
-	}
-}
 /*
  * This vector defines the client builds that are allowed to connect to the
  * server. All builds in this list should be using the same protocol version.
