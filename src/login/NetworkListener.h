@@ -14,14 +14,7 @@
 #include <shared/IPBanCache.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
-#include <functional>
-#include <memory>
-#include <set>
 #include <string>
-#include <mutex>
-#include <utility>
-#include <vector>
-#include <thread>
 
 namespace ember {
 
@@ -30,6 +23,7 @@ class NetworkListener {
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
+
 	SessionManager sessions_;
 	log::Logger* logger_; 
 	IPBanCache& ban_list_;
@@ -45,7 +39,8 @@ class NetworkListener {
 				auto ip = socket_.remote_endpoint().address();
 
 				if(ban_list_.is_banned(ip)) {
-					LOG_DEBUG(logger_) << "Rejected connection from banned IP range" << LOG_ASYNC;
+					LOG_DEBUG(logger_) << "Rejected connection " << ip.to_string()
+					                   << " from banned IP range" << LOG_ASYNC;
 					return;
 				}
 
@@ -62,49 +57,18 @@ class NetworkListener {
 	void start_session(boost::asio::ip::tcp::socket socket) {
 		LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-		auto& service = socket.get_io_service();
-		auto address = socket.remote_endpoint().address().to_string();
-
-		auto session = std::make_shared<Session<T>>(std::move(create_handler_(address)),
+		auto session = std::make_shared<NetworkSession>>(std::move(create_handler_(address)),
 		                                            std::move(socket), service);
-
-		session->handler.execute_action =
-			std::bind(&NetworkHandler::execute_action, this, session, std::placeholders::_1);
-		session->handler.send =
-			std::bind(&NetworkHandler::write, this, session, std::placeholders::_1);
-
-		session->timer.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-
-		std::lock_guard<std::mutex> guard(sessions_lock_);
-		sessions_.insert(session);
-
-		read(session);
-	}
-
-	void handle_packet(std::shared_ptr<Session<T>> session) try {
-		LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-		if(check_packet_completion_(session->buffer)) {
-			if(!session->handler.update_state(session->buffer)) {
-				close_session(session);
-			}
-
-			session->buffer.clear();
-		}
-
-		read(session);
-	} catch(std::exception& e) {
-		LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-		close_session(session);
+		sessions_.start(session);
 	}
 
 public:
 	NetworkListener(boost::asio::io_service& service, std::string interface, unsigned short port, bool tcp_no_delay,
-	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger, CreateHandler create)
+	               IPBanCache& bans, ThreadPool& pool, log::Logger* logger)
 	               : acceptor_(service_, boost::asio::ip::tcp::endpoint(
 	                           boost::asio::ip::address::from_string(interface), port)),
-	                 socket_(service_), logger_(logger), ban_list_(bans), pool_(pool),
-	                 create_handler_(create), signals_(service_, SIGINT, SIGTERM)) {
+	                 service_(service), socket_(service_), logger_(logger), ban_list_(bans),
+	                 signals_(service_, SIGINT, SIGTERM) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));

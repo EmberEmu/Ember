@@ -138,10 +138,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	auto login_server = std::make_shared<ember::NetworkHandler<ember::LoginHandler>>(
-		service, interface, port, tcp_no_delay, ip_ban_cache, thread_pool, logger,
-		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
-		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
+	ember::NetworkListener server(service, interface, port, tcp_no_delay, ip_ban_cache,
+	                              thread_pool, logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
