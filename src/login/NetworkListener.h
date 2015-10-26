@@ -29,8 +29,6 @@
 namespace ember {
 
 class NetworkListener {
-	const unsigned int concurrency_;
-
 	std::vector<std::thread> workers_;
 	std::set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
@@ -80,7 +78,7 @@ class NetworkListener {
 		session->handler.send =
 			std::bind(&NetworkHandler::write, this, session, std::placeholders::_1);
 
-		session->timer.expires_from_now(boost::posix_time::seconds(SOCKET_ACTIVITY_TIMEOUT));
+		session->timer.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
 
 		std::lock_guard<std::mutex> guard(sessions_lock_);
 		sessions_.insert(session);
@@ -184,7 +182,7 @@ class NetworkListener {
 	}
 
 	void reset_timer(std::shared_ptr<Session<T>> session) {
-		session->timer.expires_from_now(boost::posix_time::seconds(SOCKET_ACTIVITY_TIMEOUT));
+		session->timer.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
 		session->timer.async_wait(session->strand.wrap(std::bind(&NetworkHandler::timeout, this,
 		                          session, std::placeholders::_1)));
 	}

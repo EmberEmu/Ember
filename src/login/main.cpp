@@ -133,7 +133,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 			(&boost::asio::io_service::run), &service); 
 	}
 
-
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
@@ -145,7 +144,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
 		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
 
-	// register shutdown handler
+	// Register shutdown handler
 	signals.async_wait([&]() {
 		LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
 		login_server->shutdown();

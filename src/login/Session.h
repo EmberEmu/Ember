@@ -11,6 +11,7 @@
 #include "PacketBuffer.h"
 #include <spark/BufferChain.h>
 #include <boost/asio.hpp>
+#include <chrono>
 #include <utility>
 
 namespace ember {
@@ -22,7 +23,7 @@ struct Session {
 	T handler;
 	boost::asio::ip::tcp::socket socket;
 	boost::asio::strand strand;
-	boost::asio::deadline_timer timer;
+	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer;
 
 	Session(T handler, boost::asio::ip::tcp::socket socket,
 	        boost::asio::io_service& service) : handler(std::move(handler)),
