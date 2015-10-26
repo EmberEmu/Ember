@@ -10,7 +10,7 @@
 #include "GameVersion.h"
 #include "LoginHandlerBuilder.h"
 #include "LoginPacketCheck.h"
-#include "NetworkHandler.h"
+#include "NetworkListener.h"
 #include "Patcher.h"
 #include "RealmList.h"
 #include <logger/Logging.h>

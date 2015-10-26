@@ -9,6 +9,7 @@
 #pragma once
 
 #include "PacketBuffer.h"
+#include <spark/BufferChain.h>
 #include <boost/asio.hpp>
 #include <utility>
 
@@ -17,6 +18,7 @@ namespace ember {
 template<typename T>
 struct Session {
 	PacketBuffer buffer;
+	spark::BufferChain<1024> tbuffer;
 	T handler;
 	boost::asio::ip::tcp::socket socket;
 	boost::asio::strand strand;

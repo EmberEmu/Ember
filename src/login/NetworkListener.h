@@ -10,6 +10,7 @@
 
 #include "Actions.h"
 #include "PacketBuffer.h"
+#include "NetworkSession.h"
 #include "Session.h"
 #include <logger/Logger.h>
 #include <shared/IPBanCache.h>
@@ -27,18 +28,11 @@
 
 namespace ember {
 
-template<typename T>
-class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
-	typedef std::function<T(std::string)> CreateHandler;
-	typedef std::function<bool(const PacketBuffer&)> CompletionChecker;
-
-	const int SOCKET_ACTIVITY_TIMEOUT = 300;
-	const CreateHandler create_handler_;
-	const CompletionChecker check_packet_completion_;
+class NetworkListener {
 	const unsigned int concurrency_;
 
 	std::vector<std::thread> workers_;
-	std::set<std::shared_ptr<Session<T>>> sessions_;
+	std::set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
 	boost::asio::io_service service_;
 	boost::asio::signal_set signals_;
@@ -97,6 +91,13 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 
 	void read(std::shared_ptr<Session<T>> session) {
 		auto& buffer = session->buffer;
+		//auto tail = session->buffer_chain_.tail();
+
+		//// if the buffer chain has no more space left, allocate & attach new node
+		//if(!tail->free()) {
+		//	tail = session->buffer_chain_.allocate();
+		//	session->buffer_chain_.attach(tail);
+		//}
 
 		session->socket.async_receive(boost::asio::buffer(buffer.store(), buffer.free()),
 			session->strand.wrap(create_alloc_handler(allocator_,
@@ -113,10 +114,21 @@ class NetworkHandler : public std::enable_shared_from_this<NetworkHandler<T>> {
 	}
 
 	void write(std::shared_ptr<Session<T>> session, std::shared_ptr<Packet> packet) {
-		session->socket.async_send(boost::asio::buffer(*packet),
+		session->tbuffer.write(packet->data(), packet->size());
+		LOG_WARN(logger_) << "Packet size: " << packet->size() << LOG_SYNC;
+		LOG_WARN(logger_) << "Chain size: " << session->tbuffer.size() << LOG_SYNC;
+		session->socket.async_send(session->tbuffer,
 			session->strand.wrap(create_alloc_handler(allocator_,
-			[this, packet, session](boost::system::error_code ec, std::size_t) {
-				if(ec && ec != boost::asio::error::operation_aborted) {
+			[this, packet, session](boost::system::error_code ec, std::size_t size) {
+		LOG_WARN(logger_) << "Send size: " << size << LOG_SYNC;
+
+				if(!ec) {
+					session->tbuffer.skip(size);
+
+					if(session->tbuffer.size()) {
+						// do additional write
+					}
+				} else if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session(session);
 				}
 			}
