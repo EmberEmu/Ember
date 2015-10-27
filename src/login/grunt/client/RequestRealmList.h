@@ -9,15 +9,25 @@
 #pragma once
 
 #include "Opcodes.h"
+#include "../Packet.h"
+#include "../Exceptions.h"
 #include <cstdint>
 
 namespace ember { namespace grunt { namespace client {
 
-class RequestRealmList {
+class RequestRealmList : public Packet {
+public:
+	static const std::size_t WIRE_LENGTH = 5;
+
 	Opcode opcode;
 	std::uint32_t unknown;
 
-public:
+	State deserialise(spark::Buffer& buffer) override {
+		spark::BinaryStream stream(buffer);
+		stream >> opcode;
+		stream >> unknown;
+		return State::DONE;
+	}
 };
 
 }}} // client, grunt, ember

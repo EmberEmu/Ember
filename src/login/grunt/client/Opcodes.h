@@ -18,6 +18,7 @@ enum class Opcode : std::uint8_t {
 	CMSG_RECONNECT_CHALLENGE,
 	CMSG_RECONNECT_PROOF,
 	CMSG_REQUEST_REALM_LIST = 0x10,
+	// todo - additional opcodes
 };
 
 }}} // client, grunt, ember

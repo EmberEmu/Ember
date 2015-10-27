@@ -71,27 +71,21 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			return;
 		}
 
-		auto& ip = socket_.remote_endpoint();
 		LOG_DEBUG(logger_) << "Idle timeout triggered on "
-		                   << ip.address().to_string() << ":" << ip.port()
+		                   << remote_address() << ":" << remote_port()
 		                   << LOG_ASYNC;
 
 		close_session();
 	}
 
-	void stop() try {
-		auto& ip = socket_.remote_endpoint();
-
-		// todo - add filter mask to all network messages
-		LOG_DEBUG(logger_) << "Closing connection to "
-		                   << ip.address().to_string() << ":" << ip.port()
+	void stop() {
+		LOG_DEBUG(logger_) << "Closing connection to " // todo - add filter mask to all network messages
+		                   << remote_address() << ":" << remote_port()
 		                   << LOG_SYNC;
 
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		socket_.close();
-	} catch(std::exception& e) {
-		std::cout << e.what() << "\n";
 	}
 
 public:
@@ -102,6 +96,14 @@ public:
 	virtual void start() {
 		set_timer();
 		read();
+	}
+
+	std::string remote_address() {
+		return socket_.remote_endpoint().address().to_string();
+	}
+
+	std::uint16_t remote_port() {
+		return socket_.remote_endpoint().port();
 	}
 
 	virtual void close_session() {

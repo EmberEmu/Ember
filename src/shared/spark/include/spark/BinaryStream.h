@@ -66,7 +66,7 @@ public:
 		buffer_.read(&dest[0], size); // check back in a decade - non-const data should be added by then
 	}
 
-	void get(char* dest, std::size_t size) {
+	void get(void* dest, std::size_t size) {
 		buffer_.read(dest, size);
 	}
 };

@@ -21,8 +21,21 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 
 	switch(opcode) {
 		case client::Opcode::CMSG_LOGIN_CHALLENGE:
+		case client::Opcode::CMSG_RECONNECT_CHALLENGE:
 			curr_packet_ = std::make_unique<client::LoginChallenge>();
 			wire_length = client::LoginChallenge::WIRE_LENGTH;
+			break;
+		case client::Opcode::CMSG_LOGIN_PROOF:
+			curr_packet_ = std::make_unique<client::LoginProof>();
+			wire_length = client::LoginProof::WIRE_LENGTH;
+			break;
+		case client::Opcode::CMSG_RECONNECT_PROOF:
+			curr_packet_ = std::make_unique<client::ReconnectProof>();
+			wire_length = client::ReconnectProof::WIRE_LENGTH;
+			break;
+		case client::Opcode::CMSG_REQUEST_REALM_LIST:
+			curr_packet_ = std::make_unique<client::RequestRealmList>();
+			wire_length = client::RequestRealmList::WIRE_LENGTH;
 			break;
 		default:
 			throw bad_packet("Unknown opcode encountered!");

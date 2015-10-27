@@ -23,13 +23,13 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 			process_challenge(packet);
 			break;
 		case State::LOGIN_PROOF:
-			//check_login_proof(buffer);
+			check_login_proof(packet);
 			break;
 		case State::RECONNECT_PROOF:
-			//send_reconnect_proof(buffer);
+			send_reconnect_proof(packet);
 			break;
 		case State::REQUEST_REALMS:
-			//send_realm_list(buffer);
+			send_realm_list(packet);
 			break;
 		case State::CLOSED:
 			return false;
@@ -212,10 +212,10 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	PacketStream<Packet> stream(resp.get());
 
 	stream << protocol::ServerOpcodes::SMSG_RECONNECT_CHALLENGE;
-	
+
 	try {
 		boost::optional<std::string> key = action->get_result();
-		
+
 		if(key) {
 			state_ = State::RECONNECT_PROOF;
 			stream << protocol::ResultCodes::SUCCESS;
@@ -226,7 +226,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	} catch(dal::exception& e) {
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "Retrieving key for " << action->username()
-		                   << ": " << e.what() << LOG_ASYNC;
+			<< ": " << e.what() << LOG_ASYNC;
 	}
 
 	stream << rand;
@@ -235,14 +235,16 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	send(resp);
 }
 
-void LoginHandler::check_login_proof(PacketBuffer& buffer) {
+void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!check_opcode(buffer, protocol::ClientOpcodes::CMSG_LOGIN_PROOF)) {
+	auto proof_packet = dynamic_cast<const grunt::client::LoginProof*>(packet);
+
+	if(!proof_packet) {
 		throw std::runtime_error("Expected CMSG_LOGIN_PROOF");
 	}
 
-	auto proof = login_auth_->proof_check(buffer.data<protocol::ClientLoginProof>());
+	auto proof = login_auth_->proof_check(proof_packet);
 	auto result = protocol::ResultCodes::FAIL_INCORRECT_PASSWORD;
 
 	if(proof.match) {
@@ -250,10 +252,10 @@ void LoginHandler::check_login_proof(PacketBuffer& buffer) {
 			result = protocol::ResultCodes::FAIL_BANNED;
 		} else if(user_->suspended()) {
 			result = protocol::ResultCodes::FAIL_SUSPENDED;
-		/*} else if(time) {
-			res = protocol::RESULT::FAIL_NO_TIME;
-		} else if(parental_controls) {
-			res = protocol::RESULT::FAIL_PARENTAL_CONTROLS;*/
+			/*} else if(time) {
+				res = protocol::RESULT::FAIL_NO_TIME;
+				} else if(parental_controls) {
+				res = protocol::RESULT::FAIL_PARENTAL_CONTROLS;*/
 		} else {
 			result = protocol::ResultCodes::SUCCESS;
 		}
@@ -299,14 +301,16 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 	send(resp);
 }
 
-void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
+void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!check_opcode(buffer, protocol::ClientOpcodes::CMSG_RECONNECT_PROOF)) {
+	auto proof = dynamic_cast<const grunt::client::ReconnectProof*>(packet);
+
+	if(!proof) {
 		throw std::runtime_error("Expected CMSG_RECONNECT_PROOF");
 	}
 
-	if(reconn_auth_->proof_check(buffer.data<const protocol::ClientReconnectProof>())) {
+	if(reconn_auth_->proof_check(proof)) {
 		LOG_DEBUG(logger_) << "Successfully reconnected " << reconn_auth_->username() << LOG_ASYNC;
 	} else {
 		LOG_DEBUG(logger_) << "Failed to reconnect " << reconn_auth_->username() << LOG_ASYNC;
@@ -323,10 +327,10 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 	send(resp);
 }
 
-void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
+void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!check_opcode(buffer, protocol::ClientOpcodes::CMSG_REQUEST_REALM_LIST)) {
+	if(!dynamic_cast<const grunt::client::RequestRealmList*>(packet)) {
 		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
 	}
 
@@ -361,15 +365,10 @@ void LoginHandler::send_realm_list(const PacketBuffer& buffer) {
 	send(body);
 }
 
-bool LoginHandler::check_opcode(const PacketBuffer& buffer, protocol::ClientOpcodes opcode) {
-	return *buffer.data<const protocol::ClientOpcodes>() == opcode;
-}
-
 // todo, remove in VS2015
 LoginHandler& LoginHandler::operator=(LoginHandler&& rhs) {
 	login_auth_ = std::move(rhs.login_auth_);
 	reconn_auth_ = std::move(rhs.reconn_auth_);
-	source_ = std::move(rhs.source_);
 	return *this;
 }
 

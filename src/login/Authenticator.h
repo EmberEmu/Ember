@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Protocol.h"
+#include "grunt/Packets.h"
 #include <srp6/Server.h>
 #include <shared/misc/User.h>
 #include <memory>
@@ -24,7 +24,7 @@ class ReconnectAuthenticator {
 public:
 	ReconnectAuthenticator(std::string username, const std::string& session_key,
 	                       const Botan::SecureVector<Botan::byte>& bytes);
-	bool proof_check(const protocol::ClientReconnectProof* proof);
+	bool proof_check(const grunt::client::ReconnectProof* proof);
 	std::string username() { return rcon_user_; } // todo
 };
 
@@ -48,7 +48,7 @@ class LoginAuthenticator {
 public:
 	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
-	ProofResult proof_check(protocol::ClientLoginProof* proof);
+	ProofResult proof_check(const grunt::client::LoginProof* proof);
 	std::string session_key();
 };
 
