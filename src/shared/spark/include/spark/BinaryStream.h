@@ -56,7 +56,7 @@ public:
 
 	template<typename T>
 	BinaryStream& operator >>(T& data) {
-		static_assert(std::is_trivially_copyable<T>::value, "Cannot safely copy this type");
+		//static_assert(std::is_trivially_copyable<T>::value, "Cannot safely copy this type");
 		buffer_.read(reinterpret_cast<char*>(&data), sizeof(T));
 		return *this;
 	}

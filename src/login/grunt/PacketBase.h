@@ -8,13 +8,17 @@
 
 #pragma once
 
-#include "PacketHandler.h"
+#include <spark/Buffer.h>
 
-namespace ember {
+namespace ember { namespace grunt {
 
-class GruntHandler final : public PacketHandler {
-public:
-	void handle_packet(spark::Buffer& buffer) override;
+struct PacketBase {
+	enum class State {
+		INITIAL, CALL_AGAIN, DONE
+	};
+
+	virtual State deserialise(spark::Buffer& buffer) = 0;
+	virtual ~PacketBase() = default;
 };
 
-} // ember
+}} // grunt, ember

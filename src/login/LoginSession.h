@@ -10,6 +10,7 @@
 
 #include "NetworkSession.h"
 #include "LoginHandler.h"
+#include "grunt/Handler.h"
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
 #include <shared/threading/ThreadPool.h>
@@ -25,9 +26,10 @@ class LoginSession final : public NetworkSession {
 
 public:
 	ThreadPool& pool_;
-
 	LoginHandler handler_;
 	log::Logger* logger_;
+	grunt::Handler grunt_handler_;
+	SessionManager& sessions_;
 
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);

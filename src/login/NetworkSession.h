@@ -73,6 +73,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		LOG_DEBUG(logger_) << "Idle timeout triggered on "
 		                   << ip.address().to_string() << ":" << ip.port()
 						   << LOG_ASYNC;
+
 		sessions_.stop(shared_from_this());
 	}
 
@@ -97,10 +98,6 @@ public:
 	virtual void start() {
 		set_timer();
 		read();
-	}
-
-	virtual void close_session() {
-		sessions_.stop(shared_from_this());
 	}
 
 	virtual void handle_packet(spark::Buffer& buffer) = 0;

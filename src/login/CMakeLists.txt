@@ -7,7 +7,11 @@
 set(EXECUTABLE_NAME login)
 
 set(GRUNT_SRC
+    grunt/Exceptions.h
     grunt/ResultCodes.h
+    grunt/Handler.h
+    grunt/Handler.cpp
+    grunt/PacketBase.h
     grunt/client/LoginChallenge.h
     grunt/client/LoginProof.h
     grunt/client/Opcodes.h
@@ -29,7 +33,6 @@ set(EXECUTABLE_HDR
     ../shared/threading/ThreadPool.h
     ../shared/util/LogConfig.h
     PacketHandler.h
-    GruntHandler.h
     SessionBuilders.h
     LoginSession.h
     LoginPacketCheck.h
@@ -50,7 +53,6 @@ set(EXECUTABLE_SRC
     ../shared/threading/ThreadPool.cpp
     ../shared/Banner.cpp
     ../shared/util/LogConfig.cpp
-    GruntHandler.cpp
     LoginHandler.cpp
     LoginPacketCheck.cpp
     SessionManager.cpp

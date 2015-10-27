@@ -17,11 +17,18 @@ namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                       log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
-						   : handler_(builder.create(*this)), logger_(logger), pool_(pool),
+						   : handler_(builder.create(*this)), logger_(logger), pool_(pool), sessions_(sessions),
                              NetworkSession(sessions, std::move(socket), logger) { }
 
-void LoginSession::handle_packet(spark::Buffer& buffer) {
-	LOG_WARN(logger_) << "Handling packet" << LOG_ASYNC;
+void LoginSession::handle_packet(spark::Buffer& buffer) try {
+	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
+
+	if(packet) {
+		LOG_DEBUG(logger_) << "Packet done" << LOG_ASYNC;	
+	}
+} catch(grunt::bad_packet& e) {
+	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
+	sessions_.stop(shared_from_this());
 }
 
 void LoginSession::execute_async(std::shared_ptr<Action> action) {
@@ -36,12 +43,12 @@ void LoginSession::execute_async(std::shared_ptr<Action> action) {
 }
 
 void LoginSession::async_completion(std::shared_ptr<Action> action) try {
-	/*if(!session->handler.update_state(action)) {
-		sessions_.stop(session);
-	}*/
+	if(!handler_.update_state(action)) {
+		//close_session();
+	}
 } catch(std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	close_session();
+	//close_session();
 }
 
 } // ember
