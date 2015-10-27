@@ -32,6 +32,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_; 
+	bool stopped = false;
 
 	void read() {
 		auto self(shared_from_this());
@@ -49,14 +50,10 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				if(!ec) {
 					set_timer();
 					inbound_buffer_.advance_write_cursor(size);
-
-					if(handle_packet(inbound_buffer_)) {
-						read();
-					} else {
-						sessions_.stop(shared_from_this());
-					}
+					handle_packet(inbound_buffer_);
+					read();
 				} else if(ec != boost::asio::error::operation_aborted) {
-					sessions_.stop(shared_from_this());
+					close_session();
 				}
 			}
 		)));
@@ -78,7 +75,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		                   << ip.address().to_string() << ":" << ip.port()
 						   << LOG_ASYNC;
 
-		sessions_.stop(shared_from_this());
+		close_session();
 	}
 
 	void stop() {
@@ -91,7 +88,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-		socket_.close(ec);
+		socket_.close();
 	}
 
 public:
@@ -105,10 +102,13 @@ public:
 	}
 
 	virtual void close_session() {
-		sessions_.stop(shared_from_this());
+		if(!stopped) {
+			sessions_.stop(shared_from_this());
+			stopped = true;
+		}
 	}
 
-	virtual bool handle_packet(spark::Buffer& buffer) = 0;
+	virtual void handle_packet(spark::Buffer& buffer) = 0;
 	virtual void execute_async(std::shared_ptr<Action> action) = 0;
 
 	void write(std::shared_ptr<char> packet) {

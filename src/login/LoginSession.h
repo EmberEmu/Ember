@@ -33,7 +33,7 @@ public:
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
 
-	bool handle_packet(spark::Buffer& buffer) override;
+	void handle_packet(spark::Buffer& buffer) override;
 	void execute_async(std::shared_ptr<Action> action) override;
 };
 

@@ -20,17 +20,16 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 						   : handler_(builder.create(*this)), logger_(logger), pool_(pool),
                              NetworkSession(sessions, std::move(socket), logger) { }
 
-bool LoginSession::handle_packet(spark::Buffer& buffer) try {
+void LoginSession::handle_packet(spark::Buffer& buffer) try {
 	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
 		LOG_DEBUG(logger_) << "Packet done" << LOG_ASYNC;	
 	}
 
-	return true;
 } catch(grunt::bad_packet& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	return false;
+	close_session();
 }
 
 void LoginSession::execute_async(std::shared_ptr<Action> action) {
