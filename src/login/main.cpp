@@ -8,8 +8,8 @@
 
 #include "Authenticator.h"
 #include "GameVersion.h"
-#include "LoginSessionBuilder.h"
-#include "LoginPacketCheck.h"
+#include "SessionBuilders.h"
+#include "LoginHandlerBuilder.h"
 #include "NetworkListener.h"
 #include "Patcher.h"
 #include "RealmList.h"
