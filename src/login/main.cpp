@@ -121,7 +121,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
-	ember::LoginSessionBuilder builder(logger, patcher, *user_dao, realm_list);
+	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
+	ember::LoginSessionBuilder s_builder(builder);
 
 	// Start ASIO
 	boost::asio::io_service service(concurrency);
@@ -138,9 +139,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	ember::NetworkListener server(service, interface, port, tcp_no_delay,
-	                              std::bind(&ember::LoginSessionBuilder::create, builder),
-	                              ip_ban_cache, thread_pool, logger);
+	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
+	                              ip_ban_cache, logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;

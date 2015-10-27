@@ -375,7 +375,7 @@ LoginHandler::LoginHandler(LoginHandler&& rhs)
                            : login_auth_(std::move(rhs.login_auth_)),
                              reconn_auth_(std::move(rhs.reconn_auth_)),
 							 source_(rhs.source_), patcher_(rhs.patcher_),
-                             user_src_(rhs.user_src_),
+							 user_src_(rhs.user_src_), session_(rhs.session_),
                              logger_(rhs.logger_), realm_list_(rhs.realm_list_) {}
 
 } // ember

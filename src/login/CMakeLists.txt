@@ -53,6 +53,7 @@ set(EXECUTABLE_SRC
     LoginHandler.cpp
     LoginPacketCheck.cpp
     SessionManager.cpp
+    LoginSession.cpp
     RealmList.cpp
     Authenticator.cpp
     Patcher.cpp

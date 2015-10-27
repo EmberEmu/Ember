@@ -27,6 +27,7 @@
 namespace ember {
 
 class Patcher;
+class NetworkSession;
 
 class LoginHandler {
 	enum class State {
@@ -41,7 +42,9 @@ class LoginHandler {
 	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
-	std::string source_, username_;
+	NetworkSession& session_;
+	std::string source_ = "temp"; // todo
+	std::string username_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 
@@ -68,9 +71,9 @@ public:
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(PacketBuffer& buffer);
 
-	LoginHandler(std::string source, const dal::UserDAO& users, const Patcher& patcher,
+	LoginHandler(NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
 	             log::Logger* logger, const RealmList& realm_list)
-	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger),
+	             : session_(session), user_src_(users), patcher_(patcher), logger_(logger),
 	               realm_list_(realm_list) {}
 	LoginHandler& operator=(LoginHandler&&);
 	LoginHandler(LoginHandler&&);

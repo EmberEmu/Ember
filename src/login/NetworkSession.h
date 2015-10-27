@@ -21,16 +21,13 @@
 
 namespace ember {
 
-class NetworkSession final : public std::enable_shared_from_this<NetworkSession> {
-	typedef std::function<std::unique_ptr<PacketHandler>(NetworkSession&)> HandlerCreate;
-
+class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
-	std::unique_ptr<PacketHandler> handler_;
 	spark::BufferChain<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
@@ -82,11 +79,9 @@ class NetworkSession final : public std::enable_shared_from_this<NetworkSession>
 	//}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	               HandlerCreate handler_create, log::Logger* logger)
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	: sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	  strand_(socket.get_io_service()), logger_(logger),
-	  handler_(std::move(handler_create(*this))) { }
+	  strand_(socket.get_io_service()), logger_(logger) { }
 
 	void start() {
 		read();
@@ -98,6 +93,7 @@ public:
 		socket_.close();
 	}
 
+	virtual void handle_packet(spark::Buffer& buffer) = 0;
 	//void execute_action(std::shared_ptr<Action> action) {
 	//	auto self(shared_from_this());
 
