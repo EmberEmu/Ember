@@ -64,9 +64,15 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 	void timeout(const boost::system::error_code& ec) {
-		if(!ec) { // if the connection timed out, otherwise timer was aborted (session close)
-			stop();
+		if(ec) { // if ec is set, the timer was aborted (session close / refreshed)
+			return;
 		}
+
+		auto& ip = socket_.remote_endpoint();
+		LOG_DEBUG(logger_) << "Idle timeout triggered on "
+		                   << ip.address().to_string() << ":" << ip.port()
+						   << LOG_ASYNC;
+		sessions_.stop(shared_from_this());
 	}
 
 	//void action_complete(std::shared_ptr<NetworkSession> session, std::shared_ptr<Action> action) try {
@@ -84,10 +90,18 @@ public:
 	  strand_(socket.get_io_service()), logger_(logger) { }
 
 	void start() {
+		set_timer();
 		read();
 	}
 
 	void stop() {
+		auto& ip = socket_.remote_endpoint();
+
+		// todo - add filter mask to all network messages
+		LOG_DEBUG(logger_) << "Closing connection to "
+		                   << ip.address().to_string() << ":" << ip.port()
+						   << LOG_ASYNC;
+
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		socket_.close();
