@@ -11,7 +11,6 @@
 #include "Handler.h"
 #include "Packets.h"
 #include <spark/Buffer.h>
-#include <iostream>
 
 namespace ember { namespace grunt {
 

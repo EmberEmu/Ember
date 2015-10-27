@@ -110,6 +110,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	ember::RealmList realm_list(realm_dao->get_realms());
+
 	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
 
 	for(auto& realm : *realm_list.realms() | boost::adaptors::map_values) {

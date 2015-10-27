@@ -19,7 +19,10 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
                            log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
                            : handler_(builder.create(*this, remote_address() + ":" + std::to_string(remote_port()))),
                              logger_(logger), pool_(pool),
-                             NetworkSession(sessions, std::move(socket), logger) { }
+                             NetworkSession(sessions, std::move(socket), logger) {
+	handler_.send = std::bind(&LoginSession::write, this, std::placeholders::_1);
+	handler_.execute_action = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
+}
 
 bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
@@ -39,6 +42,7 @@ void LoginSession::execute_async(std::shared_ptr<Action> action) {
 
 	pool_.run([action, this, self] {
 		action->execute();
+
 		strand().post([action, this, self] {
 			async_completion(action);
 		});
@@ -47,7 +51,7 @@ void LoginSession::execute_async(std::shared_ptr<Action> action) {
 
 void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 	if(!handler_.update_state(action)) {
-		close_session();
+		close_session(); // todo change
 	}
 } catch(std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;

@@ -12,6 +12,7 @@
 #include "SessionManager.h"
 #include <logger/Logging.h>
 #include <spark/BufferChain.h>
+#include <shared/misc/PacketStream.h> // temp
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <chrono>
@@ -79,13 +80,17 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 	void stop() {
-		LOG_DEBUG(logger_) << "Closing connection to " // todo - add filter mask to all network messages
-		                   << remote_address() << ":" << remote_port()
-		                   << LOG_SYNC;
+		auto self(shared_from_this());
 
-		boost::system::error_code ec; // we don't care about any errors
-		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-		socket_.close();
+		strand().post([this, self]() {
+			LOG_DEBUG(logger_) << "Closing connection to " // todo - add filter mask to all network messages
+							   << remote_address() << ":" << remote_port()
+							   << LOG_SYNC;
+
+			boost::system::error_code ec; // we don't care about any errors
+			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			socket_.close();
+		});
 	}
 
 public:
@@ -110,31 +115,26 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	virtual bool handle_packet(spark::Buffer& buffer) = 0;
+	void write(std::shared_ptr<Packet> packet) {
+		auto self(shared_from_this());
 
-	void write(std::shared_ptr<char> packet) {
-		//session->tbuffer.write(packet->data(), packet->size());
-		//LOG_WARN(logger_) << "Packet size: " << packet->size() << LOG_SYNC;
-		//LOG_WARN(logger_) << "Chain size: " << session->tbuffer.size() << LOG_SYNC;
-		//session->socket.async_send(session->tbuffer,
-		//	session->strand.wrap(create_alloc_handler(allocator_,
-		//	[this, packet, session](boost::system::error_code ec, std::size_t size) {
-		//LOG_WARN(logger_) << "Send size: " << size << LOG_SYNC;
+		if(!socket_.is_open()) {
+			return;
+		}
 
-		//		if(!ec) {
-		//			session->tbuffer.skip(size);
-
-		//			if(session->tbuffer.size()) {
-		//				// do additional write
-		//			}
-		//		} else if(ec && ec != boost::asio::error::operation_aborted) {
-		//			close_session(session);
-		//		}
-		//	}
-		//)));
+		socket_.async_send(boost::asio::buffer(*packet),
+			strand_.wrap(create_alloc_handler(allocator_,
+			[this, packet, self](boost::system::error_code ec, std::size_t) {
+				if(ec && ec != boost::asio::error::operation_aborted) {
+					close_session();
+				}
+			}
+		)));
 	}
 
 	boost::asio::strand& strand() { return strand_;  }
+
+	virtual bool handle_packet(spark::Buffer& buffer) = 0;
 	virtual ~NetworkSession() = default;
 
 	friend class SessionManager;

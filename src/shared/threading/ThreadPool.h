@@ -45,4 +45,4 @@ public:
 	void log_callback(const LogCallback& callback);
 };
 
-} //ember
+} // ember
