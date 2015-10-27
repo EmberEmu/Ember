@@ -37,7 +37,6 @@ void Handler::handle_continuation(spark::Buffer& buffer) {
 
 	if((state_ == State::INITIAL_READ && buffer.size() >= wire_length)
 		|| state_ == State::CONTINUATION) {
-		std::cout << "Attempting to deserialise\n";
 		state = curr_packet_->deserialise(buffer);
 	}
 
@@ -53,10 +52,8 @@ void Handler::handle_continuation(spark::Buffer& buffer) {
 boost::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	switch(state_) {
 		case State::NEW_PACKET:
-			std::cout << "New packet\n";
 			handle_new_packet(buffer);
 		case State::CONTINUATION:
-			std::cout << "Continue\n";
 			handle_continuation(buffer);
 			break;
 	}
