@@ -10,7 +10,7 @@
 
 #include "PacketHandler.h"
 #include "SessionManager.h"
-#include <logger/Logger.h>
+#include <logger/Logging.h>
 #include <spark/BufferChain.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ThreadPool.h>
@@ -48,7 +48,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				if(!ec) {
 					set_timer();
 					inbound_buffer_.advance_write_cursor(size);
-					//handle_packet(session);
+					handle_packet(inbound_buffer_);
+					read();
 				} else if(ec != boost::asio::error::operation_aborted) {
 					sessions_.stop(shared_from_this());
 				}
@@ -125,6 +126,8 @@ public:
 		//	}
 		//)));
 	}
+
+	virtual ~NetworkSession() = default;
 };
 
 } // ember

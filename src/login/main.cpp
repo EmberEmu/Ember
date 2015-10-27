@@ -125,12 +125,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::LoginSessionBuilder s_builder(builder);
 
 	// Start login server
-	boost::asio::io_service service(concurrency);
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
 	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
+	boost::asio::io_service service(concurrency);
+
 	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
 	                              ip_ban_cache, logger);
 

@@ -16,11 +16,11 @@ namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                       log::Logger* logger, const LoginHandlerBuilder& builder)
-	         	           : handler_(builder.create(*this)),
+						   : handler_(builder.create(*this)), logger_(logger),
                              NetworkSession(sessions, std::move(socket), logger) { }
 
 void LoginSession::handle_packet(spark::Buffer& buffer) {
-
+	LOG_WARN(logger_) << "Handling packet" << LOG_ASYNC;
 }
 
 } // ember

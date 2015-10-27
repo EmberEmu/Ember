@@ -11,6 +11,7 @@
 #include "NetworkSession.h"
 #include "LoginHandler.h"
 #include <spark/Buffer.h>
+#include <logger/Logging.h>
 #include <memory>
 
 namespace ember {
@@ -20,6 +21,7 @@ class LoginHandlerBuilder;
 class LoginSession final : public NetworkSession {
 public:
 	LoginHandler handler_;
+	log::Logger* logger_;
 
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	             log::Logger* logger, const LoginHandlerBuilder& builder);
