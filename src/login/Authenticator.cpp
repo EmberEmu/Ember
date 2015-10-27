@@ -41,7 +41,7 @@ auto LoginAuthenticator::proof_check(const grunt::client::LoginProof* proof) -> 
 	sess_key_ = key;
 	return { proof->M1 == M1_S, srp_->generate_proof(key, proof->M1) };
 } catch(srp6::exception& e) {
-	return {false, 0};
+	return { false, 0 };
 }
 
 std::string LoginAuthenticator::session_key() {

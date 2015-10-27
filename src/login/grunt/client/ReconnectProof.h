@@ -17,9 +17,9 @@
 namespace ember { namespace grunt { namespace client {
 
 class ReconnectProof final : public Packet {
-	const unsigned int R1_LENGTH = 16;
-	const unsigned int R2_LENGTH = 20;
-	const unsigned int R3_LENGTH = 20;
+	static const std::size_t R1_LENGTH = 16;
+	static const std::size_t R2_LENGTH = 20;
+	static const std::size_t R3_LENGTH = 20;
 
 public:
 	static const std::size_t WIRE_LENGTH = 58;
@@ -32,21 +32,24 @@ public:
 
 	State deserialise(spark::Buffer& buffer) override {
 		spark::BinaryStream stream(buffer);
-		Botan::byte buff[20];
 
 		stream >> opcode;
 
-		stream.get(buff, R1_LENGTH); // R1
-		std::reverse(std::begin(buff), std::end(buff));
-		R1 = Botan::BigInt(buff, R1_LENGTH);
+		// could just use one buffer but this is safer from silly mistakes
+		Botan::byte r1_buff[R1_LENGTH];
+		stream.get(r1_buff, R1_LENGTH);
+		std::reverse(std::begin(r1_buff), std::end(r1_buff));
+		R1 = Botan::BigInt(r1_buff, R1_LENGTH);
 
-		stream.get(buff, R2_LENGTH); // R2
-		std::reverse(std::begin(buff), std::end(buff));
-		R1 = Botan::BigInt(buff, R2_LENGTH);
+		Botan::byte r2_buff[R2_LENGTH];
+		stream.get(r2_buff, R2_LENGTH);
+		std::reverse(std::begin(r2_buff), std::end(r2_buff));
+		R1 = Botan::BigInt(r2_buff, R2_LENGTH);
 
-		stream.get(buff, R3_LENGTH); // R3
-		std::reverse(std::begin(buff), std::end(buff));
-		R1 = Botan::BigInt(buff, R3_LENGTH);
+		Botan::byte r3_buff[R3_LENGTH];
+		stream.get(r3_buff, R3_LENGTH);
+		std::reverse(std::begin(r3_buff), std::end(r3_buff));
+		R1 = Botan::BigInt(r3_buff, R3_LENGTH);
 
 		stream >> key_count;
 

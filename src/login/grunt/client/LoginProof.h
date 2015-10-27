@@ -17,9 +17,9 @@
 namespace ember { namespace grunt { namespace client {
 
 class LoginProof : public Packet {
-	const unsigned int A_LENGTH = 32;
-	const unsigned int M1_LENGTH = 20;
-	const unsigned int M2_LENGTH = 20;
+	static const unsigned int A_LENGTH = 32;
+	static const unsigned int M1_LENGTH = 20;
+	static const unsigned int M2_LENGTH = 20;
 
 public:
 	static const std::size_t WIRE_LENGTH = 75;
@@ -36,19 +36,21 @@ public:
 		
 		stream >> opcode;
 
-		Botan::byte buff[32];
+		// could just use one buffer but this is safer from silly mistakes
+		Botan::byte a_buff[A_LENGTH];
+		stream.get(a_buff, A_LENGTH);
+		std::reverse(std::begin(a_buff), std::end(a_buff));
+		A = Botan::BigInt(a_buff, A_LENGTH);
 
-		stream.get(buff, A_LENGTH); // A
-		std::reverse(std::begin(buff), std::end(buff));
-		A = Botan::BigInt(buff, A_LENGTH);
+		Botan::byte m1_buff[M1_LENGTH];
+		stream.get(m1_buff, M1_LENGTH);
+		std::reverse(std::begin(m1_buff), std::end(m1_buff));
+		M1 = Botan::BigInt(m1_buff, M1_LENGTH);
 
-		stream.get(buff, M1_LENGTH); // M1
-		std::reverse(std::begin(buff), std::end(buff));
-		M1 = Botan::BigInt(buff, M1_LENGTH);
-
-		stream.get(buff, M2_LENGTH); // crc_hash
-		std::reverse(std::begin(buff), std::end(buff));
-		crc_hash = Botan::BigInt(buff, M2_LENGTH);
+		Botan::byte m2_buff[M2_LENGTH];
+		stream.get(m2_buff, M2_LENGTH); 
+		std::reverse(std::begin(m2_buff), std::end(m2_buff));
+		crc_hash = Botan::BigInt(m2_buff, M2_LENGTH);
 
 		stream >> key_count;
 		stream >> unknown;
