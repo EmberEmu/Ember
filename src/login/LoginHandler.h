@@ -46,7 +46,6 @@ class LoginHandler {
 	Botan::BigInt server_proof_;
 	const NetworkSession& session_;
 	std::string source_ = "temp"; // todo
-	std::string username_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 
@@ -60,7 +59,7 @@ class LoginHandler {
 	void send_login_success(StoreSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 
-	void accept_client(protocol::ClientOpcodes opcode);
+	void accept_client(grunt::client::Opcode opcode, const std::string& username);
 	void reject_client(const GameVersion& version);
 	void patch_client(const GameVersion& version);
 

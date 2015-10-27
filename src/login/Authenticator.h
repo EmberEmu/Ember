@@ -25,6 +25,7 @@ public:
 	ReconnectAuthenticator(std::string username, const std::string& session_key,
 	                       const Botan::SecureVector<Botan::byte>& bytes);
 	bool proof_check(const protocol::ClientReconnectProof* proof);
+	std::string username() { return rcon_user_; } // todo
 };
 
 class LoginAuthenticator {

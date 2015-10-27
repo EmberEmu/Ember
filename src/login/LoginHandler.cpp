@@ -81,21 +81,18 @@ void LoginHandler::process_challenge(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMSG_*_CHALLENGE");
 	}
 
-	// The username in the packet isn't null-terminated, so don't try using it directly
-	username_ = challenge->username;
-
-	LOG_DEBUG(logger_) << "Challenge: " << username_ << ", " << challenge->version << ", "
-	                   << source_ << LOG_ASYNC;
-
 	if(challenge->game != grunt::client::LoginChallenge::WoW) {
 		throw std::runtime_error("Invalid game magic!");
 	}
+
+	LOG_DEBUG(logger_) << "Challenge: " << challenge->username << ", "
+	                   << challenge->version << ", " << source_ << LOG_ASYNC;
 
 	Patcher::PatchLevel patch_level = patcher_.check_version(challenge->version);
 
 	switch(patch_level) {
 		case Patcher::PatchLevel::OK:
-			//accept_client(challenge->opcode);
+			accept_client(challenge->opcode, challenge->username);
 			break;
 		case Patcher::PatchLevel::TOO_NEW:
 		case Patcher::PatchLevel::TOO_OLD:
@@ -113,16 +110,16 @@ void LoginHandler::patch_client(const GameVersion& version) {
 	//write(packet);
 }
 
-void LoginHandler::accept_client(protocol::ClientOpcodes opcode) {
+void LoginHandler::accept_client(grunt::client::Opcode opcode, const std::string& username) {
 	std::shared_ptr<Action> action;
 
 	switch(opcode) {
-		case protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE:
-			action = std::make_shared<FetchUserAction>(username_, user_src_);
+		case grunt::client::Opcode::CMSG_LOGIN_CHALLENGE:
+			action = std::make_shared<FetchUserAction>(username, user_src_);
 			state_ = State::FETCHING_USER;
 			break;
-		case protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE:
-			action = std::make_shared<FetchSessionKeyAction>(username_, user_src_);
+		case grunt::client::Opcode::CMSG_RECONNECT_CHALLENGE:
+			action = std::make_shared<FetchSessionKeyAction>(username, user_src_);
 			state_ = State::FETCHING_SESSION;
 			break;
 		default:
@@ -189,15 +186,17 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 			state_ = State::LOGIN_PROOF;
 		} else {
 			// leaks information on whether the account exists (could send challenge anyway?)
-			LOG_DEBUG(logger_) << "Account not found: " << username_ << LOG_ASYNC;
+			LOG_DEBUG(logger_) << "Account not found: " << action->username() << LOG_ASYNC;
 			stream << protocol::ResultCodes::FAIL_UNKNOWN_ACCOUNT;
 		}
 	} catch(dal::exception& e) {
-		LOG_ERROR(logger_) << "DAL failure for " << username_ << " " << e.what() << LOG_ASYNC;
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
+		LOG_ERROR(logger_) << "DAL failure for " << action->username()
+		                   << " " << e.what() << LOG_ASYNC;
 	} catch(Botan::Exception& e) {
-		LOG_ERROR(logger_) << "Encoding failure for " << username_ << " " << e.what() << LOG_ASYNC;
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
+		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
+		                   << " " << e.what() << LOG_ASYNC;
 	}
 	
 	send(resp);
@@ -220,13 +219,14 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		if(key) {
 			state_ = State::RECONNECT_PROOF;
 			stream << protocol::ResultCodes::SUCCESS;
-			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(username_, *key, rand);
+			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(action->username(), *key, rand);
 		} else {
 			stream << protocol::ResultCodes::FAIL_NOACCESS;
 		}
 	} catch(dal::exception& e) {
-		LOG_ERROR(logger_) << "Retrieving key for " << username_ << ": " << e.what() << LOG_ASYNC;
 		stream << protocol::ResultCodes::FAIL_DB_BUSY;
+		LOG_ERROR(logger_) << "Retrieving key for " << action->username()
+		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
 	stream << rand;
@@ -307,9 +307,9 @@ void LoginHandler::send_reconnect_proof(const PacketBuffer& buffer) {
 	}
 
 	if(reconn_auth_->proof_check(buffer.data<const protocol::ClientReconnectProof>())) {
-		LOG_DEBUG(logger_) << "Successfully reconnected " << username_ << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "Successfully reconnected " << reconn_auth_->username() << LOG_ASYNC;
 	} else {
-		LOG_DEBUG(logger_) << "Failed to reconnect " << username_ << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "Failed to reconnect " << reconn_auth_->username() << LOG_ASYNC;
 		return;
 	}
 	
