@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "grunt/Packets.h"
 #include "LoginHandler.h"
 #include "Patcher.h"
 #include <boost/range/adaptor/map.hpp>
@@ -14,21 +15,21 @@
 
 namespace ember {
 
-bool LoginHandler::update_state(PacketBuffer& buffer) try {
+bool LoginHandler::update_state(const grunt::Packet* packet) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	switch(state_) {
 		case State::INITIAL_CHALLENGE:
-			process_challenge(buffer);
+			process_challenge(packet);
 			break;
 		case State::LOGIN_PROOF:
-			check_login_proof(buffer);
+			//check_login_proof(buffer);
 			break;
 		case State::RECONNECT_PROOF:
-			send_reconnect_proof(buffer);
+			//send_reconnect_proof(buffer);
 			break;
 		case State::REQUEST_REALMS:
-			send_realm_list(buffer);
+			//send_realm_list(buffer);
 			break;
 		case State::CLOSED:
 			return false;
@@ -71,35 +72,37 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	return false;
 }
 
-void LoginHandler::process_challenge(const PacketBuffer& buffer) {
+void LoginHandler::process_challenge(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!check_opcode(buffer, protocol::ClientOpcodes::CMSG_LOGIN_CHALLENGE)
-		&& !check_opcode(buffer, protocol::ClientOpcodes::CMSG_RECONNECT_CHALLENGE)) {
+	auto challenge = dynamic_cast<const grunt::client::LoginChallenge*>(packet);
+
+	if(!challenge) {
 		throw std::runtime_error("Expected CMSG_*_CHALLENGE");
 	}
 
-	auto packet = buffer.data<const protocol::ClientLoginChallenge>();
-
 	// The username in the packet isn't null-terminated, so don't try using it directly
-	username_ = std::string(packet->username, packet->username_len);
-	GameVersion version{packet->major, packet->minor, packet->patch, packet->build};
+	username_ = challenge->username;
 
-	LOG_DEBUG(logger_) << "Challenge: " << username_ << ", " << version << ", "
+	LOG_DEBUG(logger_) << "Challenge: " << username_ << ", " << challenge->version << ", "
 	                   << source_ << LOG_ASYNC;
 
-	Patcher::PatchLevel patch_level = patcher_.check_version(version);
+	if(challenge->game != grunt::client::LoginChallenge::WoW) {
+		throw std::runtime_error("Invalid game magic!");
+	}
+
+	Patcher::PatchLevel patch_level = patcher_.check_version(challenge->version);
 
 	switch(patch_level) {
 		case Patcher::PatchLevel::OK:
-			accept_client(packet->header.opcode);
+			//accept_client(challenge->opcode);
 			break;
 		case Patcher::PatchLevel::TOO_NEW:
 		case Patcher::PatchLevel::TOO_OLD:
-			reject_client(version);
+			reject_client(challenge->version);
 			break;
 		case Patcher::PatchLevel::PATCH_AVAILABLE:
-			patch_client(version);
+			patch_client(challenge->version);
 			break;
 	}
 }

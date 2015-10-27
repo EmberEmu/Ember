@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include "client/Opcodes.h"
-#include "client/LoginChallenge.h"
 #include "Handler.h"
+#include "Packets.h"
 #include <spark/Buffer.h>
 #include <iostream>
 
@@ -33,16 +32,16 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 }
 
 void Handler::handle_continuation(spark::Buffer& buffer) {
-	PacketBase::State state = curr_packet_->deserialise(buffer);
+	Packet::State state = curr_packet_->deserialise(buffer);
 
 	if((state_ == State::INITIAL_READ && buffer.size() >= wire_length)
 		|| state_ == State::CONTINUATION) {
 		state = curr_packet_->deserialise(buffer);
 	}
 
-	if(state == PacketBase::State::DONE) {
+	if(state == Packet::State::DONE) {
 		state_ = State::NEW_PACKET;
-	} else if(state == PacketBase::State::CALL_AGAIN) {
+	} else if(state == Packet::State::CALL_AGAIN) {
 		state_ = State::CONTINUATION;
 	} else {
 		throw bad_packet("Bad packet state!"); // todo, assert

@@ -20,16 +20,17 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 						   : handler_(builder.create(*this)), logger_(logger), pool_(pool),
                              NetworkSession(sessions, std::move(socket), logger) { }
 
-void LoginSession::handle_packet(spark::Buffer& buffer) try {
+bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
-		LOG_DEBUG(logger_) << "Packet done" << LOG_ASYNC;	
+		handler_.update_state(packet->get());
 	}
 
+	return true;
 } catch(grunt::bad_packet& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	close_session();
+	return false;
 }
 
 void LoginSession::execute_async(std::shared_ptr<Action> action) {
@@ -45,11 +46,11 @@ void LoginSession::execute_async(std::shared_ptr<Action> action) {
 
 void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 	if(!handler_.update_state(action)) {
-		// todo
+		close_session();
 	}
 } catch(std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	// todo
+	close_session();
 }
 
 } // ember

@@ -8,17 +8,10 @@
 
 #pragma once
 
-#include <spark/Buffer.h>
-
-namespace ember { namespace grunt {
-
-struct PacketBase {
-	enum class State {
-		INITIAL, CALL_AGAIN, DONE
-	};
-
-	virtual State deserialise(spark::Buffer& buffer) = 0;
-	virtual ~PacketBase() = default;
-};
-
-}} // grunt, ember
+#include "client/LoginChallenge.h"
+#include "client/LoginProof.h"
+#include "client/ReconnectProof.h"
+#include "client/RequestRealmList.h"
+#include "server/LoginChallenge.h"
+#include "server/LoginProof.h"
+#include "server/RealmList.h"

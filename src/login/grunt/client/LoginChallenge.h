@@ -9,9 +9,10 @@
 #pragma once
 
 #include "Opcodes.h"
-#include "../PacketBase.h"
+#include "../Packet.h"
 #include "../Exceptions.h"
 #include "../ResultCodes.h"
+#include "../../GameVersion.h"
 #include <spark/Buffer.h>
 #include <spark/BinaryStream.h>
 #include <string>
@@ -19,24 +20,38 @@
 
 namespace ember { namespace grunt { namespace client {
 
-class LoginChallenge final : public PacketBase {
-	const std::size_t MAX_USERNAME_LEN = 11;
+class LoginChallenge final : public Packet {
+	const std::size_t MAX_USERNAME_LEN = 16;
 	State state_ = State::INITIAL;
 
 public:
+	enum Game : std::uint32_t {
+		WoW = 'WoW'
+	};
+
+	enum Platform : std::uint32_t {
+		x86 = 'x86'
+	};
+
+	enum OperatingSystem : std::uint32_t {
+		Windows = 'Win'
+	};
+
+	enum Country : std::uint32_t {
+		enGB = 'enGB',
+		enUS = 'enUS'
+	};
+
 	static const std::size_t WIRE_LENGTH = 34;
 
-	Opcode opcode = Opcode::CMSG_LOGIN_CHALLENGE; // todo
+	Opcode opcode;
 	ResultCode error = ResultCode::SUCCESS; // todo
 	std::uint16_t size;
-	std::uint8_t game[4];
-	std::uint8_t major;
-	std::uint8_t minor;
-	std::uint8_t patch;
-	std::uint16_t build;
-	std::uint8_t platform[4];
-	std::uint8_t os[4];
-	std::uint8_t country[4];
+	Game game; // todo
+	GameVersion version;
+	Platform platform; // todo
+	OperatingSystem os; // todo
+	Country country; // todo
 	std::uint32_t timezone_bias;
 	std::uint32_t ip;
 	std::uint8_t username_len;
@@ -44,16 +59,17 @@ public:
 
 	void deserialise_body(spark::Buffer& buffer) {
 		spark::BinaryStream stream(buffer);
+		opcode = Opcode::CMSG_LOGIN_CHALLENGE;
 		//stream >> opcode; // todo
 		buffer.skip(1); // todo
 		//stream >> error; // todo
 		buffer.skip(1); // todo
 		stream >> size;
 		stream >> game;
-		stream >> major;
-		stream >> minor;
-		stream >> patch;
-		stream >> build;
+		stream >> version.major;
+		stream >> version.minor;
+		stream >> version.patch;
+		stream >> version.build;
 		stream >> platform;
 		stream >> os;
 		stream >> country;

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "PacketBase.h"
+#include "Packets.h"
 #include "Exceptions.h"
 #include <spark/Buffer.h>
 #include <boost/optional.hpp>
@@ -16,7 +16,7 @@
 
 namespace ember { namespace grunt {
 
-typedef std::unique_ptr<PacketBase> PacketHandle;
+typedef std::unique_ptr<Packet> PacketHandle;
 
 class Handler {
 	enum State {

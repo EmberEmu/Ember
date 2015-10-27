@@ -14,6 +14,8 @@
 #include "GameVersion.h"
 #include "RealmList.h"
 #include "Protocol.h"
+#include "grunt/Packets.h"
+#include "grunt/Handler.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/misc/PacketStream.h>
@@ -49,7 +51,7 @@ class LoginHandler {
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 
 	void send_realm_list(const PacketBuffer& buffer);
-	void process_challenge(const PacketBuffer& buffer);
+	void process_challenge(const grunt::Packet* packet);
 	void check_login_proof(PacketBuffer& buffer);
 	void send_reconnect_proof(const PacketBuffer& buffer);
 	void send_login_failure(protocol::ResultCodes result);
@@ -69,7 +71,7 @@ public:
 	std::function<void(std::shared_ptr<Packet>)> send;
 
 	bool update_state(std::shared_ptr<Action> action);
-	bool update_state(PacketBuffer& buffer);
+	bool update_state(const grunt::Packet* packet);
 
 	LoginHandler(const NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
 	             log::Logger* logger, const RealmList& realm_list)

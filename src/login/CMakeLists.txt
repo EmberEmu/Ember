@@ -11,7 +11,8 @@ set(GRUNT_SRC
     grunt/ResultCodes.h
     grunt/Handler.h
     grunt/Handler.cpp
-    grunt/PacketBase.h
+    grunt/Packets.h
+    grunt/Packet.h
     grunt/client/LoginChallenge.h
     grunt/client/LoginProof.h
     grunt/client/Opcodes.h

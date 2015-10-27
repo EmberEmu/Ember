@@ -19,8 +19,6 @@
 
 namespace ember {
 
-class Action;
-
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
 
@@ -32,7 +30,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_; 
-	bool stopped = false;
 
 	void read() {
 		auto self(shared_from_this());
@@ -50,8 +47,12 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				if(!ec) {
 					set_timer();
 					inbound_buffer_.advance_write_cursor(size);
-					handle_packet(inbound_buffer_);
-					read();
+					
+					if(handle_packet(inbound_buffer_)) {
+						read();
+					} else {
+						close_session();
+					}
 				} else if(ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
@@ -73,22 +74,24 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		auto& ip = socket_.remote_endpoint();
 		LOG_DEBUG(logger_) << "Idle timeout triggered on "
 		                   << ip.address().to_string() << ":" << ip.port()
-						   << LOG_ASYNC;
+		                   << LOG_ASYNC;
 
 		close_session();
 	}
 
-	void stop() {
+	void stop() try {
 		auto& ip = socket_.remote_endpoint();
 
 		// todo - add filter mask to all network messages
 		LOG_DEBUG(logger_) << "Closing connection to "
 		                   << ip.address().to_string() << ":" << ip.port()
-						   << LOG_SYNC;
+		                   << LOG_SYNC;
 
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		socket_.close();
+	} catch(std::exception& e) {
+		std::cout << e.what() << "\n";
 	}
 
 public:
@@ -102,14 +105,10 @@ public:
 	}
 
 	virtual void close_session() {
-		if(!stopped) {
-			sessions_.stop(shared_from_this());
-			stopped = true;
-		}
+		sessions_.stop(shared_from_this());
 	}
 
-	virtual void handle_packet(spark::Buffer& buffer) = 0;
-	virtual void execute_async(std::shared_ptr<Action> action) = 0;
+	virtual bool handle_packet(spark::Buffer& buffer) = 0;
 
 	void write(std::shared_ptr<char> packet) {
 		//session->tbuffer.write(packet->data(), packet->size());
