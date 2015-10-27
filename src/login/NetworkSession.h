@@ -13,12 +13,13 @@
 #include <logger/Logging.h>
 #include <spark/BufferChain.h>
 #include <shared/memory/ASIOAllocator.h>
-#include <shared/threading/ThreadPool.h>
 #include <boost/asio.hpp>
 #include <chrono>
 #include <memory>
 
 namespace ember {
+
+class Action;
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
@@ -75,25 +76,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		sessions_.stop(shared_from_this());
 	}
 
-	//void action_complete(std::shared_ptr<NetworkSession> session, std::shared_ptr<Action> action) try {
-	//	/*if(!session->handler.update_state(action)) {
-	//		sessions_.stop(session);
-	//	}*/
-	//} catch(std::exception& e) {
-	//	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	//	sessions_.stop(session);
-	//}
-
-public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
-	: sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	  strand_(socket.get_io_service()), logger_(logger) { }
-
-	void start() {
-		set_timer();
-		read();
-	}
-
 	void stop() {
 		auto& ip = socket_.remote_endpoint();
 
@@ -107,17 +89,22 @@ public:
 		socket_.close();
 	}
 
-	virtual void handle_packet(spark::Buffer& buffer) = 0;
-	//void execute_action(std::shared_ptr<Action> action) {
-	//	auto self(shared_from_this());
+public:
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
+	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
+	                 strand_(socket.get_io_service()), logger_(logger) { }
 
-	//	pool_.run([action, this, self] {
-	//		action->execute();
-	//		strand_.post([action, this, self] {
-	//			action_complete(self, action);
-	//		});
-	//	});
-	//}
+	virtual void start() {
+		set_timer();
+		read();
+	}
+
+	virtual void close_session() {
+		sessions_.stop(shared_from_this());
+	}
+
+	virtual void handle_packet(spark::Buffer& buffer) = 0;
+	virtual void execute_async(std::shared_ptr<Action> action) = 0;
 
 	void write(std::shared_ptr<char> packet) {
 		//session->tbuffer.write(packet->data(), packet->size());
@@ -141,7 +128,10 @@ public:
 		//)));
 	}
 
+	boost::asio::strand& strand() { return strand_;  }
 	virtual ~NetworkSession() = default;
+
+	friend class SessionManager;
 };
 
 } // ember

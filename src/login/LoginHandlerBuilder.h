@@ -29,7 +29,7 @@ public:
 	                    RealmList& realm_list) : logger_(logger), patcher_(patcher),
 	                    user_dao_(user_dao), realm_list_(realm_list) {}
 
-	LoginHandler create(NetworkSession& net_session) const {
+	LoginHandler create(const NetworkSession& net_session) const {
 		return { net_session, user_dao_, patcher_, logger_, realm_list_ };
 	}
 };

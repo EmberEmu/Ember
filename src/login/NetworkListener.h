@@ -15,7 +15,7 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <string>
-#
+
 namespace ember {
 
 class NetworkListener {

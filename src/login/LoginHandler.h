@@ -42,7 +42,7 @@ class LoginHandler {
 	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
-	NetworkSession& session_;
+	const NetworkSession& session_;
 	std::string source_ = "temp"; // todo
 	std::string username_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
@@ -71,7 +71,7 @@ public:
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(PacketBuffer& buffer);
 
-	LoginHandler(NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
+	LoginHandler(const NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
 	             log::Logger* logger, const RealmList& realm_list)
 	             : session_(session), user_src_(users), patcher_(patcher), logger_(logger),
 	               realm_list_(realm_list) {}

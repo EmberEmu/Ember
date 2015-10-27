@@ -19,6 +19,7 @@ namespace bai = boost::asio::ip;
 
 class LoginHandlerBuilder;
 class SessionManager;
+class ThreadPool;
 
 class NetworkSessionBuilder {
 public:
@@ -28,13 +29,15 @@ public:
 
 class LoginSessionBuilder : public NetworkSessionBuilder {
 	const LoginHandlerBuilder& builder_;
+	ThreadPool& pool_;
 
 public:
-	LoginSessionBuilder(LoginHandlerBuilder& builder) : builder_(builder) { }
+	LoginSessionBuilder(const LoginHandlerBuilder& builder, ThreadPool& pool)
+	                    : builder_(builder), pool_(pool) { }
 
 	std::shared_ptr<NetworkSession> create(SessionManager& sessions, bai::tcp::socket socket,
 	                                       log::Logger* logger) const override {
-		return std::make_shared<LoginSession>(sessions, std::move(socket), logger, builder_);
+		return std::make_shared<LoginSession>(sessions, std::move(socket), logger, pool_, builder_);
 	}
 };
 

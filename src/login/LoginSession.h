@@ -12,21 +12,28 @@
 #include "LoginHandler.h"
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
+#include <shared/threading/ThreadPool.h>
 #include <memory>
 
 namespace ember {
 
 class LoginHandlerBuilder;
+class ThreadPool;
 
 class LoginSession final : public NetworkSession {
+	void async_completion(std::shared_ptr<Action> action);
+
 public:
+	ThreadPool& pool_;
+
 	LoginHandler handler_;
 	log::Logger* logger_;
 
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	             log::Logger* logger, const LoginHandlerBuilder& builder);
+	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	void handle_packet(spark::Buffer& buffer) override;
+	void execute_async(std::shared_ptr<Action> action) override;
 };
 
 } // ember

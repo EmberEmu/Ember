@@ -122,7 +122,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
-	ember::LoginSessionBuilder s_builder(builder);
+	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
