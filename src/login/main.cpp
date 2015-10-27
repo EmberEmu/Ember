@@ -72,7 +72,7 @@ int main(int argc, const char* argv[]) try {
 
 	print_lib_versions(logger.get());
 	launch(args, logger.get());
-	LOG_INFO(logger) << "Login daemon terminated." << LOG_SYNC;
+	LOG_INFO(logger) << "Login daemon terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -124,16 +124,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
 	ember::LoginSessionBuilder s_builder(builder);
 
-	// Start ASIO
-	boost::asio::io_service service(concurrency);
-	std::vector<std::thread> workers;
-
-	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
-			(&boost::asio::io_service::run), &service); 
-	}
-
 	// Start login server
+	boost::asio::io_service service(concurrency);
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
 	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
@@ -145,6 +137,14 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
 	});
+	
+	// Spawn worker threads for ASIO
+	std::vector<std::thread> workers;
+
+	for(unsigned int i = 0; i < concurrency; ++i) {
+		workers.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
+			(&boost::asio::io_service::run), &service); 
+	}
 
 	service.run();
 
