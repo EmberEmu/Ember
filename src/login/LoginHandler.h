@@ -9,7 +9,6 @@
 #pragma once
 
 #include "Actions.h"
-#include "PacketBuffer.h"
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "RealmList.h"

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "PacketHandler.h"
 #include "SessionManager.h"
 #include <logger/Logging.h>
 #include <spark/BufferChain.h>

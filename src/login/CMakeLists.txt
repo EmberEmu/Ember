@@ -33,15 +33,12 @@ set(EXECUTABLE_HDR
     ../shared/misc/PacketStream.h
     ../shared/threading/ThreadPool.h
     ../shared/util/LogConfig.h
-    PacketHandler.h
     SessionBuilders.h
     LoginSession.h
-    LoginPacketCheck.h
     NetworkListener.h
     NetworkSession.h
     LoginHandler.h
     LoginHandlerBuilder.h
-    PacketBuffer.h
     Protocol.h
     GameVersion.h
     Authenticator.h
@@ -55,7 +52,6 @@ set(EXECUTABLE_SRC
     ../shared/Banner.cpp
     ../shared/util/LogConfig.cpp
     LoginHandler.cpp
-    LoginPacketCheck.cpp
     SessionManager.cpp
     LoginSession.cpp
     RealmList.cpp
