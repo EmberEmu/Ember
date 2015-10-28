@@ -14,6 +14,7 @@
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace grunt { namespace client {
 
@@ -37,7 +38,7 @@ public:
 		stream >> opcode;
 		stream >> unknown;
 		be::little_to_native_inplace(unknown);
-		return State::DONE;
+		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) {

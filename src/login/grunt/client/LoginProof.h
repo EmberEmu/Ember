@@ -12,8 +12,10 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <botan/botan.h>
+#include <botan/bigint.h>
+#include <botan/secmem.h>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace grunt { namespace client {
 

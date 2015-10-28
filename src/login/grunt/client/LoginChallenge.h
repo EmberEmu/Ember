@@ -17,6 +17,7 @@
 #include <boost/endian/conversion.hpp>
 #include <string>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace grunt { namespace client {
 
@@ -86,7 +87,7 @@ public:
 
 	enum OperatingSystem : std::uint32_t {
 		Windows = 'Win',
-		OSX     = 'OSX' // is this correct?
+		OSX     = 'OSX'
 	};
 
 	enum ClientLocale : std::uint32_t {

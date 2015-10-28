@@ -12,8 +12,10 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <botan/botan.h>
+#include <botan/bigint.h>
+#include <botan/secmem.h>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace grunt { namespace client {
 
@@ -58,7 +60,7 @@ public:
 
 		stream >> key_count;
 
-		return State::DONE;
+		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) override {
