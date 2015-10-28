@@ -20,9 +20,12 @@
 
 namespace ember { namespace grunt { namespace client {
 
+namespace be = boost::endian;
+
 class LoginChallenge final : public Packet {
 	static const std::size_t MAX_USERNAME_LEN = 16;
 	static const std::size_t WIRE_LENGTH = 34;
+	static const std::size_t HEADER_LENGTH = 4; // todo - double check
 
 	State state_ = State::INITIAL;
 
@@ -30,14 +33,14 @@ class LoginChallenge final : public Packet {
 		stream >> opcode;
 		stream >> error;
 		stream.skip(2); // skip the size field - we don't need it
-		stream >> game;
+		stream >> magic;
 		stream >> version.major;
 		stream >> version.minor;
 		stream >> version.patch;
 		stream >> version.build;
 		stream >> platform;
 		stream >> os;
-		stream >> country;
+		stream >> locale;
 		stream >> timezone_bias;
 		stream >> ip;
 
@@ -51,12 +54,13 @@ class LoginChallenge final : public Packet {
 		username.resize(username_len);
 
 		// handle endianness
-		boost::endian::little_to_native_inplace(game);
-		boost::endian::little_to_native_inplace(platform);
-		boost::endian::little_to_native_inplace(os);
-		boost::endian::little_to_native_inplace(country);
-		boost::endian::little_to_native_inplace(timezone_bias);
-		boost::endian::little_to_native_inplace(ip);
+		be::little_to_native_inplace(magic);
+		be::little_to_native_inplace(version.build);
+		be::little_to_native_inplace(platform);
+		be::little_to_native_inplace(os);
+		be::little_to_native_inplace(locale);
+		be::little_to_native_inplace(timezone_bias);
+		be::little_to_native_inplace(ip);
 	}
 
 	void read_username(spark::BinaryStream& stream) {
@@ -71,32 +75,37 @@ class LoginChallenge final : public Packet {
 
 public:
 	// todo - use constexpr func when switched to VS2015 - this is implementation defined behaviour!
-	enum Game : std::uint32_t {
+	enum PacketMagic : std::uint32_t {
 		WoW = 'WoW'
 	};
 
 	enum Platform : std::uint32_t {
 		x86 = 'x86',
-		PPC = 'PPC'  // is this correct?
+		PPC = 'PPC'
 	};
 
 	enum OperatingSystem : std::uint32_t {
 		Windows = 'Win',
-		MacOS = 'Mac' // is this correct?
+		OSX     = 'OSX' // is this correct?
 	};
 
-	enum Country : std::uint32_t {
-		enGB = 'enGB',
-		enUS = 'enUS'
+	enum ClientLocale : std::uint32_t {
+		enGB = 'enGB', enUS = 'enUS',
+		esMX = 'esMX', ptBR = 'ptBR',
+		frFR = 'frFR', deDE = 'deDE',
+		esES = 'esES', ptPT = 'ptPT',
+		itIT = 'itIT', ruRU = 'ruRU',
+		koKR = 'koKR', zhTW = 'zhTW',
+		enTW = 'enTW', enCN = 'enCN',
 	};
 
 	Opcode opcode;
 	ResultCode error;
-	Game game;
+	PacketMagic magic;
 	GameVersion version;
 	Platform platform;
 	OperatingSystem os;
-	Country country;
+	ClientLocale locale;
 	std::uint32_t timezone_bias;
 	std::uint32_t ip;
 	std::string username;
@@ -118,8 +127,26 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
-		// todo
+	void write_to_stream(spark::BinaryStream& stream) override {
+		if(username.length() > MAX_USERNAME_LEN) {
+			throw bad_packet("Provided username was too long!"); // todo
+		}
+
+		stream << opcode;
+		stream << error;
+		stream << be::little_to_native((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
+		stream << be::native_to_little(magic);
+		stream << version.major;
+		stream << version.minor;
+		stream << version.patch;
+		stream << be::native_to_little(version.build);
+		stream << be::native_to_little(platform);
+		stream << be::native_to_little(os);
+		stream << be::native_to_little(locale);
+		stream << be::native_to_little(timezone_bias);
+		stream << be::native_to_little(ip);
+		stream << static_cast<std::uint8_t>(username.length());
+		stream.put(username.data(), username.length());
 	}
 };
 

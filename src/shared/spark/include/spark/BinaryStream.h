@@ -37,7 +37,7 @@ public:
 		return *this;
 	}
 
-	void put(const char* data, std::size_t size) {
+	void put(const void* data, std::size_t size) {
 		buffer_.write(data, size);
 	}
 

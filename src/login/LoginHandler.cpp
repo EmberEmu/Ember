@@ -81,7 +81,7 @@ void LoginHandler::process_challenge(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMSG_*_CHALLENGE");
 	}
 
-	if(challenge->game != grunt::client::LoginChallenge::WoW) {
+	if(challenge->magic != grunt::client::LoginChallenge::WoW) {
 		throw std::runtime_error("Invalid game magic!");
 	}
 

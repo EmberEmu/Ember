@@ -23,7 +23,7 @@ class LoginProof : public Packet {
 	static const std::size_t WIRE_LENGTH = 75; 
 	static const unsigned int A_LENGTH = 32;
 	static const unsigned int M1_LENGTH = 20;
-	static const unsigned int M2_LENGTH = 20;
+	static const unsigned int CRC_LENGTH = 20;
 
 public:
 	Opcode opcode;
@@ -53,15 +53,34 @@ public:
 		std::reverse(std::begin(m1_buff), std::end(m1_buff));
 		M1 = Botan::BigInt(m1_buff, M1_LENGTH);
 
-		Botan::byte m2_buff[M2_LENGTH];
-		stream.get(m2_buff, M2_LENGTH); 
-		std::reverse(std::begin(m2_buff), std::end(m2_buff));
-		crc_hash = Botan::BigInt(m2_buff, M2_LENGTH);
+		Botan::byte crc_buff[CRC_LENGTH];
+		stream.get(crc_buff, CRC_LENGTH); 
+		std::reverse(std::begin(crc_buff), std::end(crc_buff));
+		crc_hash = Botan::BigInt(crc_buff, CRC_LENGTH);
 
 		stream >> key_count;
 		stream >> unknown;
 
 		return State::DONE;
+	}
+
+	void write_to_stream(spark::BinaryStream& stream) override {
+		stream << opcode;
+
+		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
+		std::reverse(std::begin(bytes), std::end(bytes));
+		stream.put(bytes.begin(), bytes.size());
+
+		bytes = Botan::BigInt::encode_1363(M1, M1_LENGTH);
+		std::reverse(std::begin(bytes), std::end(bytes));
+		stream.put(bytes.begin(), bytes.size());
+
+		bytes = Botan::BigInt::encode_1363(crc_hash, CRC_LENGTH);
+		std::reverse(std::begin(bytes), std::end(bytes));
+		stream.put(bytes.begin(), bytes.size());
+
+		stream << key_count;
+		stream << unknown;
 	}
 };
 

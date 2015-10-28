@@ -18,6 +18,7 @@ struct Packet {
 	};
 
 	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
+	virtual void write_to_stream(spark::BinaryStream& stream) = 0;
 	virtual ~Packet() = default;
 };
 

@@ -60,6 +60,24 @@ public:
 
 		return State::DONE;
 	}
+
+	void write_to_stream(spark::BinaryStream& stream) override {
+		 stream << opcode;
+
+		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(R1, R1_LENGTH);
+		std::reverse(std::begin(bytes), std::end(bytes));
+		stream.put(bytes.begin(), bytes.size());
+
+		bytes = Botan::BigInt::encode_1363(R2, R2_LENGTH);
+		std::reverse(std::begin(bytes), std::end(bytes));
+		stream.put(bytes.begin(), bytes.size());
+
+		bytes = Botan::BigInt::encode_1363(R3, R3_LENGTH);
+		std::reverse(std::begin(bytes), std::end(bytes));
+		stream.put(bytes.begin(), bytes.size());
+
+		stream << key_count;
+	}
 };
 
 }}} // client, grunt, ember
