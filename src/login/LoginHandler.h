@@ -52,7 +52,7 @@ class LoginHandler {
 	void process_challenge(const grunt::Packet* packet);
 	void check_login_proof(const grunt::Packet* packet);
 	void send_reconnect_proof(const grunt::Packet* packet);
-	void send_login_failure(protocol::ResultCodes result);
+	void send_login_failure(grunt::ResultCode result);
 	void build_login_challenge(PacketStream<Packet>& resp);
 	void send_login_challenge(FetchUserAction* action);
 	void send_login_success(StoreSessionAction* action);
