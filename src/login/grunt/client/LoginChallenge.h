@@ -13,8 +13,7 @@
 #include "../Exceptions.h"
 #include "../ResultCodes.h"
 #include "../../GameVersion.h"
-#include <spark/Buffer.h>
-#include <spark/BinaryStream.h>
+#include <boost/endian/conversion.hpp>
 #include <string>
 #include <cstdint>
 
@@ -25,8 +24,7 @@ class LoginChallenge final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void deserialise_body(spark::Buffer& buffer) {
-		spark::BinaryStream stream(buffer);
+	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> error;
 		stream >> size;
@@ -49,13 +47,20 @@ class LoginChallenge final : public Packet {
 		}
 
 		username.resize(username_len);
+
+		// handle endianness
+		boost::endian::little_to_native_inplace(size);
+		boost::endian::little_to_native_inplace(game);
+		boost::endian::little_to_native_inplace(platform);
+		boost::endian::little_to_native_inplace(os);
+		boost::endian::little_to_native_inplace(country);
+		boost::endian::little_to_native_inplace(timezone_bias);
+		boost::endian::little_to_native_inplace(ip);
 	}
 
-	void deserialise_username(spark::Buffer& buffer) {
-		spark::BinaryStream stream(buffer);
-
-		// does the buffer hold enough bytes to complete the username?
-		if(buffer.size() >= username.size()) {
+	void read_username(spark::BinaryStream& stream) {
+		// does the stream hold enough bytes to complete the username?
+		if(stream.size() >= username.size()) {
 			stream.get(username, username.size());
 			state_ = State::DONE;
 		} else {
@@ -64,16 +69,19 @@ class LoginChallenge final : public Packet {
 	}
 
 public:
+	// todo - use constexpr func when switched to VS2015 - this is implementation defined behaviour!
 	enum Game : std::uint32_t {
 		WoW = 'WoW'
 	};
 
 	enum Platform : std::uint32_t {
-		x86 = 'x86'
+		x86 = 'x86',
+		PPC = 'PPC'  // is this correct?
 	};
 
 	enum OperatingSystem : std::uint32_t {
-		Windows = 'Win'
+		Windows = 'Win',
+		MacOS = 'Mac' // is this correct?
 	};
 
 	enum Country : std::uint32_t {
@@ -95,15 +103,19 @@ public:
 	std::uint32_t ip;
 	std::string username;
 
-	State deserialise(spark::Buffer& buffer) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		if(state_ == State::INITIAL) {
-			deserialise_body(buffer);
-			deserialise_username(buffer);
+			read_body(stream);
+			read_username(stream);
 		} else {
-			deserialise_username(buffer);
+			read_username(stream);
 		}
 
 		return state_;
+	}
+
+	void write_to_stream(spark::BinaryStream& stream) {
+		// todo
 	}
 };
 

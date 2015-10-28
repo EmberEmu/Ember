@@ -30,9 +30,7 @@ public:
 	Botan::BigInt R3;
 	std::uint8_t key_count;
 
-	State deserialise(spark::Buffer& buffer) override {
-		spark::BinaryStream stream(buffer);
-
+	State read_from_stream(spark::BinaryStream& stream) override {
 		stream >> opcode;
 
 		// could just use one buffer but this is safer from silly mistakes

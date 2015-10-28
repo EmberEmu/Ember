@@ -11,6 +11,7 @@
 #include "Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
+#include <boost/endian/conversion.hpp>
 #include <cstdint>
 
 namespace ember { namespace grunt { namespace client {
@@ -22,11 +23,16 @@ public:
 	Opcode opcode;
 	std::uint32_t unknown;
 
-	State deserialise(spark::Buffer& buffer) override {
-		spark::BinaryStream stream(buffer);
+	State read_from_stream(spark::BinaryStream& stream) override {
 		stream >> opcode;
 		stream >> unknown;
+		boost::endian::little_to_native_inplace(unknown);
 		return State::DONE;
+	}
+
+	void write_to_stream(spark::BinaryStream& stream) {
+		stream << opcode;
+		stream << boost::endian::little_to_native(unknown);
 	}
 };
 

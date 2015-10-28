@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/Buffer.h>
+#include <spark/BinaryStream.h>
 
 namespace ember { namespace grunt {
 
@@ -17,7 +17,7 @@ struct Packet {
 		INITIAL, CALL_AGAIN, DONE
 	};
 
-	virtual State deserialise(spark::Buffer& buffer) = 0;
+	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
 	virtual ~Packet() = default;
 };
 

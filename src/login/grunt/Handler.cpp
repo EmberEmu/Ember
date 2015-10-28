@@ -44,11 +44,12 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 }
 
 void Handler::handle_continuation(spark::Buffer& buffer) {
-	Packet::State state = curr_packet_->deserialise(buffer);
+	spark::BinaryStream stream(buffer);
+	Packet::State state = curr_packet_->read_from_stream(stream);
 
 	if((state_ == State::INITIAL_READ && buffer.size() >= wire_length)
 		|| state_ == State::CONTINUATION) {
-		state = curr_packet_->deserialise(buffer);
+		state = curr_packet_->read_from_stream(stream);
 	}
 
 	if(state == Packet::State::DONE) {

@@ -69,6 +69,11 @@ public:
 	void get(void* dest, std::size_t size) {
 		buffer_.read(dest, size);
 	}
+
+	// misc functions
+	std::size_t size() {
+		return buffer_.size();
+	}
 };
 
 }} // spark, ember
