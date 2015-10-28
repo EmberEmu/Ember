@@ -17,13 +17,15 @@
 namespace ember { namespace grunt { namespace client {
 
 class LoginProof : public Packet {
+	State state_ = State::INITIAL;
+
+	static const std::size_t WIRE_LENGTH = 75; 
+
 	static const unsigned int A_LENGTH = 32;
 	static const unsigned int M1_LENGTH = 20;
 	static const unsigned int M2_LENGTH = 20;
 
 public:
-	static const std::size_t WIRE_LENGTH = 75;
-
 	Opcode opcode;
 	Botan::BigInt A;
 	Botan::BigInt M1;
@@ -32,6 +34,10 @@ public:
 	std::uint8_t unknown;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+			return State::CALL_AGAIN;
+		}
+
 		stream >> opcode;
 
 		// could just use one buffer but this is safer from silly mistakes

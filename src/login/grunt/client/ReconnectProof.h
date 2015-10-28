@@ -17,13 +17,13 @@
 namespace ember { namespace grunt { namespace client {
 
 class ReconnectProof final : public Packet {
+	static const std::size_t WIRE_LENGTH = 58;
 	static const std::size_t R1_LENGTH = 16;
 	static const std::size_t R2_LENGTH = 20;
 	static const std::size_t R3_LENGTH = 20;
+	State state_ = State::INITIAL;
 
 public:
-	static const std::size_t WIRE_LENGTH = 58;
-
 	Opcode opcode;
 	Botan::BigInt R1;
 	Botan::BigInt R2;
@@ -31,6 +31,10 @@ public:
 	std::uint8_t key_count;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+			return State::CALL_AGAIN;
+		}
+
 		stream >> opcode;
 
 		// could just use one buffer but this is safer from silly mistakes

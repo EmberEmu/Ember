@@ -17,13 +17,18 @@
 namespace ember { namespace grunt { namespace client {
 
 class RequestRealmList : public Packet {
-public:
 	static const std::size_t WIRE_LENGTH = 5;
+	State state_ = State::INITIAL;
 
+public:
 	Opcode opcode;
 	std::uint32_t unknown;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+			return State::CALL_AGAIN;
+		}
+
 		stream >> opcode;
 		stream >> unknown;
 		boost::endian::little_to_native_inplace(unknown);

@@ -20,15 +20,14 @@ typedef std::unique_ptr<Packet> PacketHandle;
 
 class Handler {
 	enum State {
-		NEW_PACKET, INITIAL_READ, CONTINUATION
+		NEW_PACKET, READ
 	};
 
 	PacketHandle curr_packet_;
 	State state_ = State::NEW_PACKET;
-	std::size_t wire_length = 0;
 
 	void handle_new_packet(spark::Buffer& buffer);
-	void handle_continuation(spark::Buffer& buffer);
+	void handle_read(spark::Buffer& buffer);
 
 public:
 	boost::optional<PacketHandle> try_deserialise(spark::Buffer& buffer);

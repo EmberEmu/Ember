@@ -20,7 +20,8 @@
 namespace ember { namespace grunt { namespace client {
 
 class LoginChallenge final : public Packet {
-	const std::size_t MAX_USERNAME_LEN = 16;
+	static const std::size_t MAX_USERNAME_LEN = 16;
+	static const std::size_t WIRE_LENGTH = 34;
 
 	State state_ = State::INITIAL;
 
@@ -89,8 +90,6 @@ public:
 		enUS = 'enUS'
 	};
 
-	static const std::size_t WIRE_LENGTH = 34;
-
 	Opcode opcode;
 	ResultCode error;
 	std::uint16_t size;
@@ -104,6 +103,10 @@ public:
 	std::string username;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+			return State::CALL_AGAIN;
+		}
+
 		if(state_ == State::INITIAL) {
 			read_body(stream);
 			read_username(stream);
