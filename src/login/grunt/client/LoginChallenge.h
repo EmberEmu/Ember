@@ -13,6 +13,7 @@
 #include "../Exceptions.h"
 #include "../ResultCodes.h"
 #include "../../GameVersion.h"
+#include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <string>
 #include <cstdint>
@@ -28,7 +29,7 @@ class LoginChallenge final : public Packet {
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> error;
-		stream >> size;
+		stream.skip(2); // skip the size field - we don't need it
 		stream >> game;
 		stream >> version.major;
 		stream >> version.minor;
@@ -50,7 +51,6 @@ class LoginChallenge final : public Packet {
 		username.resize(username_len);
 
 		// handle endianness
-		boost::endian::little_to_native_inplace(size);
 		boost::endian::little_to_native_inplace(game);
 		boost::endian::little_to_native_inplace(platform);
 		boost::endian::little_to_native_inplace(os);
@@ -92,7 +92,6 @@ public:
 
 	Opcode opcode;
 	ResultCode error;
-	std::uint16_t size;
 	Game game;
 	GameVersion version;
 	Platform platform;
@@ -103,6 +102,8 @@ public:
 	std::string username;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
 			return State::CALL_AGAIN;
 		}
@@ -110,7 +111,7 @@ public:
 		if(state_ == State::INITIAL) {
 			read_body(stream);
 			read_username(stream);
-		} else {
+		} else if(state_ == State::CALL_AGAIN) {
 			read_username(stream);
 		}
 

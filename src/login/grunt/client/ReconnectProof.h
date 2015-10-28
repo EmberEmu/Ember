@@ -11,6 +11,7 @@
 #include "Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
+#include <boost/assert.hpp>
 #include <botan/botan.h>
 #include <cstdint>
 
@@ -31,6 +32,8 @@ public:
 	std::uint8_t key_count;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
 			return State::CALL_AGAIN;
 		}

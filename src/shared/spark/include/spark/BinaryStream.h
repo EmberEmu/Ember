@@ -70,9 +70,14 @@ public:
 		buffer_.read(dest, size);
 	}
 
-	// misc functions
+	/**  Misc functions **/ 
+
 	std::size_t size() {
 		return buffer_.size();
+	}
+
+	void skip(std::size_t count) {
+		buffer_.skip(count);
 	}
 };
 

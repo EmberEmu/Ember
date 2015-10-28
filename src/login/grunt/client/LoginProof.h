@@ -11,6 +11,7 @@
 #include "Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
+#include <boost/assert.hpp>
 #include <botan/botan.h>
 #include <cstdint>
 
@@ -20,7 +21,6 @@ class LoginProof : public Packet {
 	State state_ = State::INITIAL;
 
 	static const std::size_t WIRE_LENGTH = 75; 
-
 	static const unsigned int A_LENGTH = 32;
 	static const unsigned int M1_LENGTH = 20;
 	static const unsigned int M2_LENGTH = 20;
@@ -34,6 +34,8 @@ public:
 	std::uint8_t unknown;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
 			return State::CALL_AGAIN;
 		}

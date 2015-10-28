@@ -11,6 +11,7 @@
 #include "Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
+#include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <cstdint>
 
@@ -25,6 +26,8 @@ public:
 	std::uint32_t unknown;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
+		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
 			return State::CALL_AGAIN;
 		}
