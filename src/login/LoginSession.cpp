@@ -61,7 +61,8 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 
 void LoginSession::write_chain(std::shared_ptr<grunt::Packet> packet) { // todo - change to unique_ptr in VS2015 (binding bug)
 	auto chain = std::make_shared<spark::BufferChain<1024>>();
-	packet->write_to_stream(spark::BinaryStream(*chain));
+	spark::BinaryStream stream(*chain);
+	packet->write_to_stream(stream);
 	NetworkSession::write_chain(chain);
 }
 
