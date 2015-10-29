@@ -11,9 +11,10 @@
 #include <shared/CompilerWarn.h>
 
 #ifdef DB_MYSQL
-	#include "MySQLDriver.h"
+	#include <conpool/drivers/MySQL/Driver.h>
+	#include <conpool/drivers/MySQL/Config.h>
 #elif DB_POSTGRESQL
-	#include "PostgreSQLDriver.h"
+	#include <conpool/drivers/PostgreSQL/Config.h>
 #endif
 
 namespace ember { namespace drivers {

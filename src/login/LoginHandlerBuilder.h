@@ -8,13 +8,16 @@
 
 #pragma once
 
-#include "GameVersion.h"
 #include "LoginHandler.h"
-#include "RealmList.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
+#include <memory>
+#include <utility>
 
 namespace ember {
+
+class Patcher;
+class RealmList;
 
 class LoginHandlerBuilder {
 	log::Logger* logger_;
@@ -24,12 +27,11 @@ class LoginHandlerBuilder {
 
 public:
 	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const dal::UserDAO& user_dao,
-	                    RealmList& realm_list)
-	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao),
-	                      realm_list_(realm_list) {}
+	                    RealmList& realm_list) : logger_(logger), patcher_(patcher),
+	                    user_dao_(user_dao), realm_list_(realm_list) {}
 
-	LoginHandler create(const std::string& source) {
-		return LoginHandler(source, user_dao_, patcher_, logger_, realm_list_);
+	LoginHandler create(const NetworkSession& net_session, std::string source) const {
+		return { net_session, user_dao_, patcher_, logger_, realm_list_, std::move(source) };
 	}
 };
 

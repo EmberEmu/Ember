@@ -6,14 +6,33 @@
 
 set(EXECUTABLE_NAME login)
 
+set(GRUNT_SRC
+    grunt/Exceptions.h
+    grunt/ResultCodes.h
+    grunt/Handler.h
+    grunt/Handler.cpp
+    grunt/Packets.h
+    grunt/Packet.h
+    grunt/client/LoginChallenge.h
+    grunt/client/LoginProof.h
+    grunt/client/Opcodes.h
+    grunt/client/ReconnectProof.h
+    grunt/client/RequestRealmList.h
+    grunt/server/LoginChallenge.h
+    grunt/server/ReconnectChallenge.h
+    grunt/server/LoginProof.h
+    grunt/server/ReconnectProof.h
+    grunt/server/RealmList.h
+    grunt/server/Opcodes.h
+)
+
 set(EXECUTABLE_HDR
-    LoginHandlerBuilder.h
-    LoginPacketCheck.h
-    NetworkHandler.h
+    SessionBuilders.h
+    LoginSession.h
+    NetworkListener.h
+    NetworkSession.h
     LoginHandler.h
-    PacketBuffer.h
-    Session.h
-    Protocol.h
+    LoginHandlerBuilder.h
     GameVersion.h
     Authenticator.h
     RealmList.h
@@ -23,15 +42,18 @@ set(EXECUTABLE_HDR
 
 set(EXECUTABLE_SRC
     LoginHandler.cpp
-    LoginPacketCheck.cpp
+    SessionManager.cpp
+    LoginSession.cpp
     RealmList.cpp
     Authenticator.cpp
     Patcher.cpp
     main.cpp
     )
 
+source_group("Grunt Protocol" FILES ${GRUNT_SRC})
+
 include_directories(${CMAKE_SOURCE_DIR}/src)
-add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} conpool srp6 logging shared ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${GRUNT_SRC} ${version_file})
+target_link_libraries(${EXECUTABLE_NAME} spark conpool srp6 logging shared ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/login/ DESTINATION ${CMAKE_INSTALL_PREFIX})

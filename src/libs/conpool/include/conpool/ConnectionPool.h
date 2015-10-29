@@ -156,6 +156,15 @@ public:
 	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size),
 		   pool_guards_(max_size), size_(0), closed_(false) {
 		set_connection_ids();
+
+		if(!max_size) {
+			throw exception("Max. database connections cannot be zero");
+		}
+
+		if(min_size > max_size) {
+			throw exception("Min. database connections must be <= max.");
+		}
+
 		open_connections(min_);
 		manager_.start(interval, max_idle);
 	}

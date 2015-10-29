@@ -16,9 +16,8 @@
 
 namespace ember {
 
-template<typename T>
 class IPBanCache {
-	T& source_;
+	dal::IPBanDAO& source_;
 
 	struct IPv4Entry {
 		std::uint32_t range;
@@ -60,7 +59,7 @@ class IPBanCache {
 	}
 
 public:
-	IPBanCache(T& source) : source_(source) {
+	IPBanCache(dal::IPBanDAO& source) : source_(source) {
 		load_bans();
 	}
 

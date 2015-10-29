@@ -9,11 +9,11 @@
 #pragma once
 
 #include "Actions.h"
-#include "PacketBuffer.h"
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "RealmList.h"
-#include "Protocol.h"
+#include "grunt/Packets.h"
+#include "grunt/Handler.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/PacketStream.h>
@@ -27,6 +27,7 @@
 namespace ember {
 
 class Patcher;
+class NetworkSession;
 
 class LoginHandler {
 	enum class State {
@@ -41,37 +42,36 @@ class LoginHandler {
 	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
-	std::string source_, username_;
+	const NetworkSession& session_;
+	const std::string source_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 
-	void send_realm_list(const PacketBuffer& buffer);
-	void process_challenge(const PacketBuffer& buffer);
-	void check_login_proof(PacketBuffer& buffer);
-	void send_reconnect_proof(const PacketBuffer& buffer);
-	void send_login_failure(protocol::ResultCodes result);
-	void build_login_challenge(PacketStream<Packet>& resp);
+	void send_realm_list(const grunt::Packet* packet);
+	void process_challenge(const grunt::Packet* packet);
+	void check_login_proof(const grunt::Packet* packet);
+	void send_reconnect_proof(const grunt::Packet* packet);
+	void send_login_failure(grunt::ResultCode result);
+	void build_login_challenge(grunt::server::LoginChallenge* packet);
 	void send_login_challenge(FetchUserAction* action);
 	void send_login_success(StoreSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 
-	void accept_client(protocol::ClientOpcodes opcode);
+	void accept_client(grunt::client::Opcode opcode, const std::string& username);
 	void reject_client(const GameVersion& version);
 	void patch_client(const GameVersion& version);
 
-	bool check_opcode(const PacketBuffer& buffer, protocol::ClientOpcodes opcode);
-
 public:
-	std::function<void(std::shared_ptr<Action> action)> execute_action;
-	std::function<void(std::shared_ptr<Packet>)> send;
+	std::function<void(std::shared_ptr<Action> action)> execute_async;
+	std::function<void(std::shared_ptr<grunt::Packet>)> send;
 
 	bool update_state(std::shared_ptr<Action> action);
-	bool update_state(PacketBuffer& buffer);
+	bool update_state(const grunt::Packet* packet);
 
-	LoginHandler(std::string source, const dal::UserDAO& users, const Patcher& patcher,
-	             log::Logger* logger, const RealmList& realm_list)
-	             : source_(std::move(source)), user_src_(users), patcher_(patcher), logger_(logger),
-	               realm_list_(realm_list) {}
+	LoginHandler(const NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
+	             log::Logger* logger, const RealmList& realm_list, std::string source)
+	             : session_(session), user_src_(users), patcher_(patcher), logger_(logger),
+	               realm_list_(realm_list), source_(std::move(source)) {}
 	LoginHandler& operator=(LoginHandler&&);
 	LoginHandler(LoginHandler&&);
 };

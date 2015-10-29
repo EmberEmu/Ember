@@ -7,7 +7,8 @@
 set(LIBRARY_NAME conpool)
 
 add_library(${LIBRARY_NAME}
-            src/MySQLDriver.cpp
+            src/MySQL/Driver.cpp
+            src/MySQL/Config.cpp
             include/conpool/ConnectionPool.h
             include/conpool/PoolManager.h
             include/conpool/Connection.h
@@ -15,7 +16,8 @@ add_library(${LIBRARY_NAME}
             include/conpool/Exception.h
             include/conpool/LogSeverity.h
             include/conpool/drivers/AutoSelect.h
-            include/conpool/drivers/MySQLDriver.h
+            include/conpool/drivers/MySQL/Driver.h
+            include/conpool/drivers/MySQL/Config.h
            )
 
 target_link_libraries(${LIBRARY_NAME} shared)

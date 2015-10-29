@@ -69,8 +69,8 @@ set(LIBRARY_SRC
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/PacketStream.h
-    shared/Realm.h
     shared/rlutil.h
+    shared/Realm.h
     shared/Banner.cpp
     shared/Banner.h
     shared/Version.h

@@ -49,6 +49,11 @@ protected:
 		}
 
 		std::size_t available = max - size;
+
+		if(!size) {
+			size = 1;
+		}
+
 		std::size_t desired = size / 2;
 
 		if(max != 0 && desired > available) {
@@ -68,6 +73,10 @@ protected:
 
 		std::size_t available = max - size;
 		std::size_t desired = size * 2;
+
+		if(!desired) {
+			desired = 1;
+		}
 
 		if(max != 0 && desired > available) {
 			desired = available;

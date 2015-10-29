@@ -49,6 +49,10 @@ public:
 
 		return std::move(key_);
 	}
+
+	std::string username() {
+		return username_;
+	}
 };
 
 class StoreSessionAction final : public Action {
@@ -106,6 +110,10 @@ public:
 		}
 
 		return std::move(user_);
+	}
+
+	std::string username() {
+		return username_;
 	}
 };
 

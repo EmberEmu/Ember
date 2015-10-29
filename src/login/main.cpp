@@ -9,9 +9,9 @@
 #include "Authenticator.h"
 #include "FilterType.h"
 #include "GameVersion.h"
+#include "SessionBuilders.h"
 #include "LoginHandlerBuilder.h"
-#include "LoginPacketCheck.h"
-#include "NetworkHandler.h"
+#include "NetworkListener.h"
 #include "Patcher.h"
 #include "RealmList.h"
 #include <logger/Logging.h>
@@ -51,7 +51,6 @@ std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-ember::drivers::MySQL init_db_driver(const po::variables_map& args);
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
@@ -73,6 +72,7 @@ int main(int argc, const char* argv[]) try {
 
 	print_lib_versions(logger.get());
 	launch(args, logger.get());
+	LOG_INFO(logger) << "Login daemon terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -86,12 +86,21 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
 
-	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC; 
-	auto driver(init_db_driver(args));
+	unsigned int concurrency = check_concurrency(logger);
+
+	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
+	auto db_config_path = args["database.config_path"].as<std::string>();
+	auto driver(ember::drivers::init_db_driver(db_config_path));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
 	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
+
+	if(max_conns != concurrency) {
+		LOG_WARN(logger) << "Max. database connection count may be non-optimal (use "
+		                 << concurrency << " to match logical core count)" << LOG_SYNC;
+	}
+
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
 		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
@@ -101,17 +110,16 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto user_dao = ember::dal::user_dao(pool);
 	auto realm_dao = ember::dal::realm_dao(pool);
 	auto ip_ban_dao = ember::dal::ip_ban_dao(pool); 
-	auto ip_ban_cache = ember::IPBanCache<ember::dal::IPBanDAO>(*ip_ban_dao);
+	auto ip_ban_cache = ember::IPBanCache(*ip_ban_dao);
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	ember::RealmList realm_list(realm_dao->get_realms());
+
 	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
 
 	for(auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
 	}
-
-	unsigned int concurrency = check_concurrency(logger);
 
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 	ember::ThreadPool thread_pool(concurrency);
@@ -119,26 +127,43 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
 	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
+	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
 	// Start login server
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<unsigned short>();
+	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
-	auto login_server = std::make_shared<ember::NetworkHandler<ember::LoginHandler>>(
-		interface, port, concurrency, ip_ban_cache, thread_pool, logger,
-		std::bind(&ember::LoginHandlerBuilder::create, builder, std::placeholders::_1),
-		std::bind(&ember::protocol::check_packet_completion, std::placeholders::_1));
+	boost::asio::io_service service(concurrency);
 
-	login_server->run();
-	LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
-	login_server->wait();
+	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
+	                              ip_ban_cache, logger);
+
+	service.dispatch([logger]() {
+		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
+	});
+	
+	// Spawn worker threads for ASIO
+	std::vector<std::thread> workers;
+
+	for(unsigned int i = 0; i < concurrency; ++i) {
+		workers.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
+			(&boost::asio::io_service::run), &service); 
+	}
+
+	service.run();
+
 	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
+
+	for(auto& worker : workers) {
+		worker.join();
+	}
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
-/* 
+/*
  * This vector defines the client builds that are allowed to connect to the
  * server. All builds in this list should be using the same protocol version.
  */
@@ -151,6 +176,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
+		("database.config_path,d", po::value<std::string>(),
+			"Path to the database configuration file")
 		("config,c", po::value<std::string>()->default_value("login.conf"),
 			"Path to the configuration file");
 
@@ -162,6 +189,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	config_opts.add_options()
 		("network.interface,", po::value<std::string>()->required())
 		("network.port", po::value<unsigned short>()->required())
+		("network.tcp_no_delay", po::bool_switch()->default_value(true))
 		("console_log.verbosity,", po::value<std::string>()->required())
 		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.verbosity,", po::value<std::string>()->required())
@@ -178,11 +206,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("file_log.midnight_rotate,", po::bool_switch()->required())
 		("file_log.log_timestamp,", po::bool_switch()->required())
 		("file_log.log_severity,", po::bool_switch()->required())
-		("database.username", po::value<std::string>()->required())
-		("database.password", po::value<std::string>()->default_value(""))
-		("database.database", po::value<std::string>()->required())
-		("database.host", po::value<std::string>()->required())
-		("database.port", po::value<unsigned short>()->required())
+		("database.config_path", po::value<std::string>()->required())
 		("database.min_connections", po::value<unsigned short>()->required())
 		("database.max_connections", po::value<unsigned short>()->required());
 
@@ -229,23 +253,14 @@ unsigned int check_concurrency(el::Logger* logger) {
 #endif
 }
 
-ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
-	auto user = args["database.username"].as<std::string>();
-	auto pass = args["database.password"].as<std::string>();
-	auto host = args["database.host"].as<std::string>();
-	auto port = args["database.port"].as<unsigned short>();
-	auto db   = args["database.database"].as<std::string>();
-	return {user, pass, host, port, db};
-}
-
 void print_lib_versions(el::Logger* logger) {
-	LOG_INFO(logger) << "Compiled with library versions: " << LOG_SYNC;
-	LOG_INFO(logger)  << "- Boost " << BOOST_VERSION / 100000 << "."
+	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
+	LOG_DEBUG(logger) << "- Boost " << BOOST_VERSION / 100000 << "."
 	                  << BOOST_VERSION / 100 % 1000 << "."
 	                  << BOOST_VERSION % 100 << LOG_SYNC;
-	LOG_INFO(logger) << "- " << Botan::version_string() << LOG_SYNC;
-	LOG_INFO(logger) << "- " << ember::drivers::DriverType::name()
-	                 << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
+	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
+	LOG_DEBUG(logger) << "- " << ember::drivers::DriverType::name()
+	                  << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {

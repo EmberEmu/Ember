@@ -6,14 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
+#include <conpool/drivers/MySQL/Driver.h>
+#include <string>
 
-namespace ember {
+namespace ember { namespace drivers {
 
-class PacketBuffer;
+ember::drivers::MySQL init_db_driver(const std::string& config_path);
 
-namespace protocol {
-
-bool check_packet_completion(const PacketBuffer& buffer);
-
-}} // protocol, ember
+}} // drivers, ember
