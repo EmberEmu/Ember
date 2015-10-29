@@ -11,7 +11,6 @@
 #include "FilterType.h"
 #include <shared/threading/ThreadPool.h>
 #include <memory>
-#include <shared/util/FormatPacket.h>
 
 namespace ember {
 

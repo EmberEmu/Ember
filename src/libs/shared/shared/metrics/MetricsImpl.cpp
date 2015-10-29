@@ -25,6 +25,7 @@ void MetricsImpl::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
+
 }
 
 void MetricsImpl::increment(const char* key, std::intmax_t value) {
