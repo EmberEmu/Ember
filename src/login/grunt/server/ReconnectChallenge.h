@@ -19,7 +19,7 @@
 
 namespace ember { namespace grunt { namespace server {
 
-class ReconnectChallenge : public Packet {
+class ReconnectChallenge final : public Packet {
 	const static std::size_t WIRE_LENGTH = 34;
 	const static std::size_t RAND_LENGTH = 16;
 
@@ -32,7 +32,7 @@ public:
 	std::uint64_t unknown = 0;
 	std::uint64_t unknown2 = 0;
 
-	State read_from_stream(spark::BinaryStream& stream) {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -51,7 +51,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
+	void write_to_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "SMSG_RECONNECT_CHALLENGE rand != RAND_LEN");
 
 		stream << opcode;

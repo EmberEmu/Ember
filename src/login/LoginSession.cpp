@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include "LoginSession.h"
 #include "LoginHandlerBuilder.h"
 #include <shared/threading/ThreadPool.h>

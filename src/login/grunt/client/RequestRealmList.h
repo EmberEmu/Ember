@@ -20,7 +20,7 @@ namespace ember { namespace grunt { namespace client {
 
 namespace be = boost::endian;
 
-class RequestRealmList : public Packet {
+class RequestRealmList final : public Packet {
 	static const std::size_t WIRE_LENGTH = 5;
 	State state_ = State::INITIAL;
 
@@ -41,7 +41,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
+	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
 		stream << be::native_to_little(unknown);
 	}

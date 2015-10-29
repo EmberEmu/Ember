@@ -19,7 +19,7 @@
 
 namespace ember { namespace grunt { namespace client {
 
-class LoginProof : public Packet {
+class LoginProof final : public Packet {
 	State state_ = State::INITIAL;
 
 	static const std::size_t WIRE_LENGTH = 75; 

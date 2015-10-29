@@ -13,6 +13,7 @@
 #include "../ResultCodes.h"
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <cstdint>
 #include <cstddef>
@@ -21,7 +22,7 @@ namespace ember { namespace grunt { namespace server {
 
 namespace be = boost::endian;
 
-class LoginProof : public Packet {
+class LoginProof final : public Packet {
 	static const std::size_t HEADER_LENGTH = 2;
 	static const std::size_t BODY_LENGTH = 24;
 	static const std::size_t PROOF_LENGTH = 20;
@@ -61,7 +62,7 @@ public:
 	Botan::BigInt M2;
 	std::uint32_t account_flags;
 
-	State read_from_stream(spark::BinaryStream& stream) {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < HEADER_LENGTH) {
@@ -73,12 +74,15 @@ public:
 				read_head(stream); // intentional fall-through
 			case State::CALL_AGAIN:
 				read_body(stream);
+				break;
+			default:
+				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 		
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
+	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
 		stream << result;
 

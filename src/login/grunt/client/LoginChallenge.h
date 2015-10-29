@@ -118,11 +118,13 @@ public:
 			return State::CALL_AGAIN;
 		}
 
-		if(state_ == State::INITIAL) {
-			read_body(stream);
-			read_username(stream);
-		} else if(state_ == State::CALL_AGAIN) {
-			read_username(stream);
+		switch(state_) {
+			case State::INITIAL:
+				read_body(stream);
+			case State::CALL_AGAIN: // intentional fall-through
+				read_username(stream);
+			default:
+				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 
 		return state_;

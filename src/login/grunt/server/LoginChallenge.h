@@ -18,7 +18,7 @@
 
 namespace ember { namespace grunt { namespace server {
 
-class LoginChallenge : public Packet {
+class LoginChallenge final : public Packet {
 	static const std::size_t WIRE_LENGTH = 120;
 	static const std::uint8_t SALT_LENGTH = 32;
 	static const std::size_t UNKNOWN_RAND_BYTES_LENGTH = 16;
@@ -41,8 +41,8 @@ public:
 	Botan::SecureVector<Botan::byte> unk3;
 	std::uint8_t unk4 = 0;
 
-	// todo - early abort
-	State read_from_stream(spark::BinaryStream& stream) {
+	// todo - early abort (wire length change)
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -82,7 +82,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
+	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
 		stream << unk1;
 		stream << result;

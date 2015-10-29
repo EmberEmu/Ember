@@ -12,6 +12,7 @@
 #include "../Packet.h"
 #include "../ResultCodes.h"
 #include <shared/Realm.h>
+#include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <cstdint>
 #include <cstddef>
@@ -25,7 +26,7 @@ namespace ember { namespace grunt { namespace server {
 
 namespace be = boost::endian;
 
-class RealmList : public Packet {
+class RealmList final : public Packet {
 	static const std::size_t WIRE_LENGTH = 3; // header size 
 	static const std::size_t ZERO_REALM_BODY_WIRE_LENGTH = 7; // unknown through to unknown2
 	static const std::size_t MINIMUM_REALM_ENTRY_WIRE_LENGTH = 14; // if the realm had a single-byte name
@@ -35,14 +36,6 @@ class RealmList : public Packet {
 	State state_ = State::INITIAL;
 	std::uint16_t size;
 	std::uint8_t realm_count;
-
-public:
-	typedef std::pair<Realm, std::uint8_t> RealmListEntry;
-
-	Opcode opcode;
-	std::uint32_t unknown = 0;
-	std::vector<RealmListEntry> realms;
-	std::uint16_t unknown2 = 5;
 
 	// todo - need a mechanism for writing to an earlier point in the stream to avoid
 	// having to calculate the size in advance
@@ -132,7 +125,15 @@ public:
 		state_ = State::DONE;
 	}
 
-	State read_from_stream(spark::BinaryStream& stream) {
+public:
+	typedef std::pair<Realm, std::uint8_t> RealmListEntry;
+
+	Opcode opcode;
+	std::uint32_t unknown = 0;
+	std::vector<RealmListEntry> realms;
+	std::uint16_t unknown2 = 5;
+
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -145,12 +146,14 @@ public:
 			case State::CALL_AGAIN:
 				parse_body(stream);
 				break;
+			default:
+				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
+	void write_to_stream(spark::BinaryStream& stream) override {
 		if(realms.size() > MAX_REALM_ENTRIES) {
 			throw bad_packet("Attempted to send too many realm list entries!");
 		}

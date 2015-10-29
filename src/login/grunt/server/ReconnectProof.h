@@ -16,7 +16,7 @@
 
 namespace ember { namespace grunt { namespace server {
 
-class ReconnectProof : public Packet {
+class ReconnectProof final : public Packet {
 	static const std::size_t WIRE_LENGTH = 2;
 
 	State state_ = State::INITIAL;
@@ -25,7 +25,7 @@ public:
 	Opcode opcode;
 	ResultCode result;
 
-	State read_from_stream(spark::BinaryStream& stream) {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -38,7 +38,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) {
+	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
 		stream << result;
 	}
