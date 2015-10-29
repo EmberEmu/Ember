@@ -16,6 +16,7 @@ branches:
     - master
     - development
     - coverity_scan
+    - travis
 
 compiler:
   - gcc
