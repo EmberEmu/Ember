@@ -33,6 +33,7 @@ class NetworkListener {
 
 	void accept_connection() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 		acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
 			if(!acceptor_.is_open()) {
 				return;
@@ -42,13 +43,15 @@ class NetworkListener {
 				auto ip = socket_.remote_endpoint().address();
 
 				if(ban_list_.is_banned(ip)) {
-					LOG_DEBUG_FILTER(logger_, LF_NETWORK) << "Rejected connection " << ip.to_string()
-					                                      << " from banned IP range" << LOG_ASYNC;
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Rejected connection " << ip.to_string()
+						<< " from banned IP range" << LOG_ASYNC;
 					return;
 				}
 
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK) << "Accepted connection " << ip.to_string() << ":"
-				                                      << socket_.remote_endpoint().port() << LOG_ASYNC;
+				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+					<< "Accepted connection " << ip.to_string() << ":"
+					<< socket_.remote_endpoint().port() << LOG_ASYNC;
 
 				start_session(std::move(socket_));
 			}
@@ -59,6 +62,7 @@ class NetworkListener {
 
 	void start_session(boost::asio::ip::tcp::socket socket) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 		auto session = session_create_.create(sessions_, std::move(socket), logger_);
 		sessions_.start(session);
 	}
@@ -79,6 +83,7 @@ public:
 
 	void shutdown() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 		acceptor_.close();
 		sessions_.stop_all();
 	}
