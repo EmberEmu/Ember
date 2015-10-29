@@ -172,6 +172,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 			response->result = grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
 		}
 	} catch(dal::exception& e) {
+<<<<<<< HEAD
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "DAL failure for " << action->username()
 		                   << " " << e.what() << LOG_ASYNC;
@@ -179,6 +180,15 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
 		                   << " " << e.what() << LOG_ASYNC;
+=======
+		LOG_ERROR(logger_) << "DAL failure for " << username_ << " " << e.what() << LOG_ASYNC;
+		metrics_->increment("login_failure_internal_error");
+		stream << protocol::ResultCodes::FAIL_DB_BUSY;
+	} catch(Botan::Exception& e) {
+		LOG_ERROR(logger_) << "Encoding failure for " << username_ << " " << e.what() << LOG_ASYNC;
+		metrics_->increment("login_failure_internal_error");
+		stream << protocol::ResultCodes::FAIL_DB_BUSY;
+>>>>>>> metrics
 	}
 	
 	send(response);
@@ -204,9 +214,15 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 			response->result = grunt::ResultCode::FAIL_NOACCESS;
 		}
 	} catch(dal::exception& e) {
+<<<<<<< HEAD
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "Retrieving key for " << action->username()
 		                   << ": " << e.what() << LOG_ASYNC;
+=======
+		LOG_ERROR(logger_) << "Retrieving key for " << username_ << ": " << e.what() << LOG_ASYNC;
+		metrics_->increment("login_failure_internal_error");
+		stream << protocol::ResultCodes::FAIL_DB_BUSY;
+>>>>>>> metrics
 	}
 
 	send(response);
@@ -251,6 +267,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 
 void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	metrics_->increment("login_failure");
 
 	auto response = std::make_shared<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
@@ -259,31 +276,10 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	send(std::move(response));
 }
 
-void LoginHandler::send_login_success(StoreSessionAction* action) try {
+void LoginHandler::send_login_success(StoreSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	metrics_->increment("login_success");
 
-<<<<<<< HEAD
-	state_ = State::CLOSED;
-
-	// rethrows any exceptions that may have occurred during session write
-	action->rethrow_exception();
-
-	Botan::SecureVector<Botan::byte> m2 = Botan::BigInt::encode_1363(server_proof_, 20);
-	std::reverse(m2.begin(), m2.end());
-
-	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
-
-	stream << protocol::ServerOpcodes::SMSG_LOGIN_PROOF;
-	stream << protocol::ResultCodes::SUCCESS;
-	stream << m2 << std::uint32_t(0); //proof << account flags
-
-	state_ = State::REQUEST_REALMS;
-	send(resp);
-} catch(dal::exception& e) {
-	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	send_login_failure(protocol::ResultCodes::FAIL_DB_BUSY);
-=======
 	auto response = std::make_shared<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
@@ -292,7 +288,6 @@ void LoginHandler::send_login_success(StoreSessionAction* action) try {
 
 	state_ = State::REQUEST_REALMS;
 	send(std::move(response));
->>>>>>> login-refactor
 }
 
 void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
@@ -350,7 +345,13 @@ LoginHandler::LoginHandler(LoginHandler&& rhs)
                            : login_auth_(std::move(rhs.login_auth_)),
                              reconn_auth_(std::move(rhs.reconn_auth_)),
 							 source_(rhs.source_), patcher_(rhs.patcher_),
+<<<<<<< HEAD
 							 user_src_(rhs.user_src_), session_(rhs.session_),
                              logger_(rhs.logger_), realm_list_(rhs.realm_list_) {}
+=======
+                             user_src_(rhs.user_src_),
+                             logger_(rhs.logger_), realm_list_(rhs.realm_list_),
+                             metrics_(rhs.metrics_) {}
+>>>>>>> metrics
 
 } // ember

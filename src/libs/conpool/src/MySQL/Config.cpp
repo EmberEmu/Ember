@@ -6,10 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <conpool/drivers/MySQL/Driver.h>
+#include <conpool/drivers/MySQL/Config.h>
 #include <boost/program_options.hpp>
 #include <string>
 #include <fstream>
+#include <cstdint>
 
 namespace ember { namespace drivers {
 
@@ -25,7 +26,7 @@ po::variables_map parse_arguments(const std::string& config_path) {
 		("mysql.password", po::value<std::string>()->default_value(""))
 		("mysql.database", po::value<std::string>()->required())
 		("mysql.host", po::value<std::string>()->required())
-		("mysql.port", po::value<unsigned short>()->required());
+		("mysql.port", po::value<std::uint16_t>()->required());
 
 	po::variables_map options;
 	std::ifstream ifs(config_path);
@@ -48,7 +49,7 @@ ember::drivers::MySQL init_db_driver(const std::string& config_path) {
 	auto user = args["mysql.username"].as<std::string>();
 	auto pass = args["mysql.password"].as<std::string>();
 	auto host = args["mysql.host"].as<std::string>();
-	auto port = args["mysql.port"].as<unsigned short>();
+	auto port = args["mysql.port"].as<std::uint16_t>();
 	auto db = args["mysql.database"].as<std::string>();
 	return {user, pass, host, port, db};
 }

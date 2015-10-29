@@ -11,8 +11,12 @@
 #include "LoginHandler.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
-#include <shared/metrics/Metrics.h>
+<<<<<<< HEAD
+#include <memory>
 #include <utility>
+=======
+#include <shared/metrics/Metrics.h>
+>>>>>>> metrics
 
 namespace ember {
 
@@ -24,14 +28,24 @@ class LoginHandlerBuilder {
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_dao_;
+	Metrics* metrics_;
 
 public:
 	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const dal::UserDAO& user_dao,
+<<<<<<< HEAD
 	                    RealmList& realm_list) : logger_(logger), patcher_(patcher),
 	                    user_dao_(user_dao), realm_list_(realm_list) {}
 
 	LoginHandler create(const NetworkSession& net_session, std::string source) const {
 		return { net_session, user_dao_, patcher_, logger_, realm_list_, std::move(source) };
+=======
+	                    RealmList& realm_list, Metrics* metrics)
+	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao),
+	                      realm_list_(realm_list), metrics_(metrics) {}
+
+	LoginHandler create(const std::string& source) {
+		return LoginHandler(source, user_dao_, patcher_, logger_, realm_list_, metrics_);
+>>>>>>> metrics
 	}
 };
 

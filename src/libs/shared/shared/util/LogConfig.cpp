@@ -26,7 +26,7 @@ namespace {
 std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::Severity severity) {
 	auto host = args["remote_log.host"].as<std::string>();
 	auto service = args["remote_log.service_name"].as<std::string>();
-	auto port = args["remote_log.port"].as<unsigned short>();
+	auto port = args["remote_log.port"].as<std::uint16_t>();
 	auto facility = el::SyslogSink::Facility::LOCAL_USE_0;
 	auto filter = args["remote_log.filter-mask"].as<std::uint32_t>();
 	return std::make_unique<el::SyslogSink>(severity, el::Filter(filter), host, port, facility, service);
