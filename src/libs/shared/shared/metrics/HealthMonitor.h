@@ -51,6 +51,7 @@ private:
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
+	boost::asio::signal_set signals_;
 	boost::asio::strand strand_;
 
 	Metrics& metrics_;
@@ -66,6 +67,7 @@ private:
 	void execute_source(Source& source, Severity severity, LogCallback& log,
 	                    std::chrono::seconds& last_tick);
 	std::string generate_message();
+	void shutdown();
 
 public:
 	HealthMonitor(boost::asio::io_service& service, const std::string& interface,

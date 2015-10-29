@@ -18,9 +18,17 @@ namespace bai = boost::asio::ip;
 HealthMonitor::HealthMonitor(boost::asio::io_service& service, const std::string& interface,
                              std::uint16_t port, Metrics& metrics, std::chrono::seconds frequency)
                              : timer_(service), strand_(service), metrics_(metrics), TIMER_FREQUENCY(frequency),
-                               socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)) {
+                               socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)),
+                               signals_(service, SIGINT, SIGTERM) {
+	signals_.async_wait(std::bind(&HealthMonitor::shutdown, this));
 	set_timer();
 	receive();
+}
+
+void HealthMonitor::shutdown() {
+	boost::system::error_code ec; // we don't care about any errors
+	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.close(ec);
 }
 
 void HealthMonitor::receive() {

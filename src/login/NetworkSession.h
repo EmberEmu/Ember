@@ -90,7 +90,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 			boost::system::error_code ec; // we don't care about any errors
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-			socket_.close();
+			socket_.close(ec);
 		});
 	}
 

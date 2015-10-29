@@ -17,10 +17,12 @@
 namespace ember {
 
 class MetricsImpl final : public Metrics {
+	boost::asio::signal_set signals_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
 
 	void send(std::string message);
+	void shutdown();
 
 public:
 	MetricsImpl(boost::asio::io_service& service, const std::string& host, std::uint16_t port);
