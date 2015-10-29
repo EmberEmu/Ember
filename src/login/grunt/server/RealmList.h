@@ -44,6 +44,22 @@ public:
 	std::vector<RealmListEntry> realms;
 	std::uint16_t unknown2;
 
+	// todo - need a mechanism for writing to an earlier point in the stream to avoid
+	// having to calculate the size in advance
+	std::uint16_t calculate_size() {
+		std::uint16_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH +
+		                     (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
+
+		for(auto& entry : realms) {
+			std::size_t old_size = packet_size;
+			packet_size += entry.first.name.size();
+
+			if(packet_size < old_size) {
+				throw bad_packet("Overflow detected during realm list serialisation");
+			}
+		}
+	}
+
 	void read_size(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> size;
@@ -131,22 +147,6 @@ public:
 		return state_;
 	}
 
-	// todo - need a mechanism for writing to an earlier point in the stream to avoid
-	// having to calculate the size in advance
-	std::uint16_t calculate_size() {
-		std::uint16_t size = ZERO_REALM_BODY_WIRE_LENGTH +
-		                     (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
-
-		for(auto& entry : realms) {
-			std::size_t old_size = size;
-			size += entry.first.name.size();
-
-			if(size < old_size) {
-				throw bad_packet("Overflow detected during realm list serialisation");
-			}
-		}
-	}
-
 	void write_to_stream(spark::BinaryStream& stream) {
 		if(realms.size() > MAX_REALM_ENTRIES) {
 			throw bad_packet("Attempted to send too many realm list entries!");
@@ -164,7 +164,7 @@ public:
 			stream << realm.name.data() << std::uint8_t(0); // todo - specialise for string
 			stream << realm.ip.data() << std::uint8_t(0);
 			stream << be::native_to_little(realm.population);
-			stream << entry.second;
+			stream << entry.second; // number of characters
 			stream << realm.timezone;
 			stream << std::uint8_t(0); // unknown
 		}
