@@ -16,6 +16,8 @@
 #include <boost/asio.hpp>
 #include <chrono>
 #include <memory>
+#include <string>
+#include <cstdint>
 
 namespace ember {
 

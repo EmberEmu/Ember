@@ -43,13 +43,14 @@ public:
 
 	/**  Deserialisation **/
 
+	// terminates when it hits a null-byte or consumes all data in the buffer
 	BinaryStream& operator >>(std::string& dest) {
 		char byte;
 
 		do { // not overly efficient
 			buffer_.read(&byte, 1);
 			dest.push_back(byte);
-		} while(byte);
+		} while(byte && buffer_.size() > 0);
 		
 		return *this;
 	}

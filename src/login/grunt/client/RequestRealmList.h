@@ -43,7 +43,7 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) {
 		stream << opcode;
-		stream << be::little_to_native(unknown);
+		stream << be::native_to_little(unknown);
 	}
 };
 

@@ -21,6 +21,7 @@ set(GRUNT_SRC
     grunt/server/LoginChallenge.h
     grunt/server/LoginProof.h
     grunt/server/RealmList.h
+	grunt/server/RealmListEntry.h
     grunt/server/Opcodes.h
 )
 

@@ -135,7 +135,7 @@ public:
 
 		stream << opcode;
 		stream << error;
-		stream << be::little_to_native((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
+		stream << be::native_to_little((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
 		stream << be::native_to_little(magic);
 		stream << version.major;
 		stream << version.minor;
