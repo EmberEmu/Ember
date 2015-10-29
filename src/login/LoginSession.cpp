@@ -8,6 +8,7 @@
 
 #include "LoginSession.h"
 #include "LoginHandlerBuilder.h"
+#include "FilterType.h"
 #include <shared/threading/ThreadPool.h>
 #include <memory>
 #include <shared/util/FormatPacket.h>
@@ -24,6 +25,8 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 }
 
 bool LoginSession::handle_packet(spark::Buffer& buffer) try {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
@@ -32,11 +35,13 @@ bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 
 	return true;
 } catch(grunt::bad_packet& e) {
-	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_NETWORK) << e.what() << LOG_ASYNC;
 	return false;
 }
 
 void LoginSession::execute_async(std::shared_ptr<Action> action) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	auto self(shared_from_this());
 
 	pool_.run([action, this, self] {
@@ -49,6 +54,8 @@ void LoginSession::execute_async(std::shared_ptr<Action> action) {
 }
 
 void LoginSession::async_completion(std::shared_ptr<Action> action) try {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	if(!handler_.update_state(action)) {
 		close_session(); // todo change
 	}
@@ -58,6 +65,8 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 }
 
 void LoginSession::write_chain(std::shared_ptr<grunt::Packet> packet) { // todo - change to unique_ptr in VS2015 (binding bug)
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	auto chain = std::make_shared<spark::BufferChain<1024>>();
 	spark::BinaryStream stream(*chain);
 	packet->write_to_stream(stream);

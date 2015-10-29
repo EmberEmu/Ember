@@ -295,6 +295,8 @@ void print_lib_versions(el::Logger* logger) {
 void health_monitor_log_callback(const ember::HealthMonitor::Source& source,
                                  ember::HealthMonitor::Severity severity,
                                  std::intmax_t value, el::Logger* logger) {
+	using ember::LF_HEALTH_REPORT;
+
 	std::stringstream message;
 	message << source.key << ":" << "v:" << value << ":t:" << source.threshold << " - ";
 
@@ -306,19 +308,19 @@ void health_monitor_log_callback(const ember::HealthMonitor::Source& source,
 
 	switch(severity) {
 		case ember::HealthMonitor::Severity::FATAL:
-			LOG_FATAL(logger) << message.str() << LOG_SYNC;
+			LOG_FATAL_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
 			break;
 		case ember::HealthMonitor::Severity::ERROR:
-			LOG_ERROR(logger) << message.str() << LOG_SYNC;
+			LOG_ERROR_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
 			break;
 		case ember::HealthMonitor::Severity::WARN:
-			LOG_WARN(logger) << message.str() << LOG_SYNC;
+			LOG_WARN_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
 			break;
 		case ember::HealthMonitor::Severity::INFO:
-			LOG_INFO(logger) << message.str() << LOG_SYNC;
+			LOG_INFO_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
 			break;
 		case ember::HealthMonitor::Severity::DEBUG:
-			LOG_DEBUG(logger) << message.str() << LOG_SYNC;
+			LOG_DEBUG_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
 			break;
 	}
 }

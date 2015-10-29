@@ -9,6 +9,7 @@
 #pragma once
 
 #include "SessionManager.h"
+#include "FilterType.h"
 #include <logger/Logging.h>
 #include <spark/BufferChain.h>
 #include <shared/PacketStream.h> // temp
@@ -73,9 +74,9 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			return;
 		}
 
-		LOG_DEBUG(logger_) << "Idle timeout triggered on "
-		                   << remote_address() << ":" << remote_port()
-		                   << LOG_ASYNC;
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK) << "Idle timeout triggered on "
+		                                      << remote_address() << ":" << remote_port()
+		                                      << LOG_ASYNC;
 
 		close_session();
 	}
@@ -84,9 +85,9 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		auto self(shared_from_this());
 
 		strand_.post([this, self] {
-			LOG_DEBUG(logger_) << "Closing connection to " // todo - add filter mask to all network messages
-							   << remote_address() << ":" << remote_port()
-							   << LOG_SYNC;
+			LOG_DEBUG_FILTER(logger_, LF_NETWORK) << "Closing connection to "
+							                      << remote_address() << ":" << remote_port()
+							                      << LOG_ASYNC;
 
 			boost::system::error_code ec; // we don't care about any errors
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
@@ -147,7 +148,6 @@ public:
 				chain->skip(size);
 
 				if(ec && ec != boost::asio::error::operation_aborted) {
-					LOG_FATAL(logger_) << ec.message() << LOG_SYNC;
 					close_session();
 				} else if(!ec && chain->size()) {
 					write_chain(chain); 
