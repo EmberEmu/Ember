@@ -42,7 +42,6 @@ set(EXECUTABLE_HDR
     NetworkSession.h
     LoginHandler.h
     LoginHandlerBuilder.h
-    Protocol.h
     GameVersion.h
     Authenticator.h
     RealmList.h

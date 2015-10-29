@@ -20,15 +20,17 @@ namespace ember { namespace grunt { namespace server {
 
 class LoginChallenge : public Packet {
 	static const std::size_t WIRE_LENGTH = 120;
-	static const std::uint8_t PRIME_LENGTH = 32;
-	static const std::uint8_t PUB_KEY_LENGTH = 32;
 	static const std::uint8_t SALT_LENGTH = 32;
+	static const std::size_t UNKNOWN_RAND_BYTES_LENGTH = 16;
 
 	State state_ = State::INITIAL;
 
 public:
+	static const std::uint8_t PRIME_LENGTH = 32;
+	static const std::uint8_t PUB_KEY_LENGTH = 32;
+
 	Opcode opcode;
-	std::uint8_t unk1; // todo - double check
+	std::uint8_t unk1 = 0;
 	ResultCode result;
 	Botan::BigInt B;
 	std::uint8_t g_len;
@@ -36,8 +38,8 @@ public:
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	std::uint8_t unk3[16];
-	std::uint8_t unk4;
+	Botan::SecureVector<Botan::byte> unk3;
+	std::uint8_t unk4 = 0;
 
 	// todo - early abort
 	State read_from_stream(spark::BinaryStream& stream) {
@@ -50,6 +52,10 @@ public:
 		stream >> opcode;
 		stream >> unk1;
 		stream >> result;
+
+		if(result != grunt::ResultCode::SUCCESS) {
+			return (state_ = State::DONE); // rest of the fields won't be sent
+		}
 		
 		Botan::byte b_buff[PUB_KEY_LENGTH];
 		stream.get(b_buff, PUB_KEY_LENGTH);
@@ -70,7 +76,7 @@ public:
 		std::reverse(std::begin(s_buff), std::end(s_buff));
 		s = Botan::BigInt(b_buff, SALT_LENGTH);
 
-		stream.get(unk3, sizeof(unk3));
+		stream.get(unk3.begin(), unk3.size());
 		stream >> unk4;
 
 		return (state_ = State::DONE);
@@ -80,6 +86,10 @@ public:
 		stream << opcode;
 		stream << unk1;
 		stream << result;
+
+		if(result != grunt::ResultCode::SUCCESS) {
+			return; // don't send the rest of the fields
+		}
 		
 		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
@@ -97,7 +107,8 @@ public:
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
-		stream.put(unk3, sizeof(unk3));
+		unk3.resize(UNKNOWN_RAND_BYTES_LENGTH);
+		stream.put(unk3.begin(), unk3.size());
 		stream << unk4;
 	}
 };

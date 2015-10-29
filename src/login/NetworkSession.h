@@ -49,7 +49,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				if(!ec) {
 					set_timer();
 					inbound_buffer_.advance_write_cursor(size);
-					
+
 					if(handle_packet(inbound_buffer_)) {
 						read();
 					} else {
@@ -134,25 +134,26 @@ public:
 	}
 
 	template<std::size_t BlockSize>
-	void write_chain(spark::BufferChain<BlockSize>& chain) {
+	void write_chain(std::shared_ptr<spark::BufferChain<BlockSize>> chain) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
 			return;
 		}
 
-		strand_.dispatch([this, self, &chain] {
-			socket_.async_send(chain,
+		socket_.async_send(*chain,
 			strand_.wrap(create_alloc_handler(allocator_,
-			[this, self, &chain](boost::system::error_code ec, std::size_t size) {
-				chain.advance_write_cursor(size);
+			[this, self, chain](boost::system::error_code ec, std::size_t size) {
+				chain->skip(size);
 
 				if(ec && ec != boost::asio::error::operation_aborted) {
+					LOG_FATAL(logger_) << ec.message() << LOG_SYNC;
 					close_session();
+				} else if(!ec && chain->size()) {
+					write_chain(chain); 
 				}
 			}
-			)));
-		});
+		)));
 	}
 
 	boost::asio::strand& strand() { return strand_;  }

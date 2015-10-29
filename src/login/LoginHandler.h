@@ -12,7 +12,6 @@
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "RealmList.h"
-#include "Protocol.h" // todo - remove
 #include "grunt/Packets.h"
 #include "grunt/Handler.h"
 #include <logger/Logging.h>
@@ -63,9 +62,8 @@ class LoginHandler {
 	void patch_client(const GameVersion& version);
 
 public:
-	std::function<void(std::shared_ptr<Action> action)> execute_action;
-	std::function<void(std::shared_ptr<Packet>)> send;
-	std::function<void(std::unique_ptr<grunt::Packet>)> send_test;
+	std::function<void(std::shared_ptr<Action> action)> execute_async;
+	std::function<void(std::shared_ptr<grunt::Packet>)> send;
 
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(const grunt::Packet* packet);

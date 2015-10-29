@@ -28,7 +28,7 @@ namespace be = boost::endian;
 class RealmList : public Packet {
 	static const std::size_t WIRE_LENGTH = 3; // header size 
 	static const std::size_t ZERO_REALM_BODY_WIRE_LENGTH = 7; // unknown through to unknown2
-	static const std::size_t MINIMUM_REALM_ENTRY_WIRE_LENGTH = 15; // if the realm had a single-byte name
+	static const std::size_t MINIMUM_REALM_ENTRY_WIRE_LENGTH = 14; // if the realm had a single-byte name
 	static const std::size_t MAX_ALLOWED_LENGTH = 4096;
 	static const std::size_t MAX_REALM_ENTRIES = 255; // std::numeric_limits<decltype(realm_count)>::max(); - todo change in VS2015
 
@@ -40,24 +40,27 @@ public:
 	typedef std::pair<Realm, std::uint8_t> RealmListEntry;
 
 	Opcode opcode;
-	std::uint32_t unknown;
+	std::uint32_t unknown = 0;
 	std::vector<RealmListEntry> realms;
-	std::uint16_t unknown2;
+	std::uint16_t unknown2 = 5;
 
 	// todo - need a mechanism for writing to an earlier point in the stream to avoid
 	// having to calculate the size in advance
 	std::uint16_t calculate_size() {
-		std::uint16_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH +
-		                     (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
+		std::uint16_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 
+		                            (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
 
 		for(auto& entry : realms) {
 			std::size_t old_size = packet_size;
 			packet_size += entry.first.name.size();
+			packet_size += entry.first.ip.size();
 
 			if(packet_size < old_size) {
 				throw bad_packet("Overflow detected during realm list serialisation");
 			}
 		}
+
+		return packet_size;
 	}
 
 	void read_size(spark::BinaryStream& stream) {

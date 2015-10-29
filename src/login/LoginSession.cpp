@@ -12,6 +12,7 @@
 #include "LoginHandlerBuilder.h"
 #include <shared/threading/ThreadPool.h>
 #include <memory>
+#include <shared/util/FormatPacket.h>
 
 namespace ember {
 
@@ -20,9 +21,8 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
                            : handler_(builder.create(*this, remote_address() + ":" + std::to_string(remote_port()))),
                              logger_(logger), pool_(pool),
                              NetworkSession(sessions, std::move(socket), logger) {
-	handler_.send = std::bind(&LoginSession::write, this, std::placeholders::_1);
-	handler_.send_test = std::bind(&LoginSession::write_chain, this, std::placeholders::_1);
-	handler_.execute_action = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
+	handler_.send = std::bind(&LoginSession::write_chain, this, std::placeholders::_1);
+	handler_.execute_async = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
 }
 
 bool LoginSession::handle_packet(spark::Buffer& buffer) try {
@@ -59,9 +59,10 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 	close_session();
 }
 
-void LoginSession::write_chain(grunt::PacketHandle& packet) { // todo - remove & in VS2015!
-	packet->write_to_stream(spark::BinaryStream(outbound_buffer_));
-	NetworkSession::write_chain(outbound_buffer_);
+void LoginSession::write_chain(std::shared_ptr<grunt::Packet> packet) { // todo - change to unique_ptr in VS2015 (binding bug)
+	auto chain = std::make_shared<spark::BufferChain<1024>>();
+	packet->write_to_stream(spark::BinaryStream(*chain));
+	NetworkSession::write_chain(chain);
 }
 
 } // ember

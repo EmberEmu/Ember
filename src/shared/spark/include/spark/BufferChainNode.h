@@ -54,18 +54,18 @@ struct BufferBlock {
 		return read_len;
 	}
 
-	std::size_t read(char* destination, std::size_t length) {
+	std::size_t read(char* destination, std::size_t length, bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
 		read_offset += read_len;
 
-		if(read_offset == write_offset) {
+		if(read_offset == write_offset && allow_optimise) {
 			reset();
 		}
 
 		return read_len;
 	}
 
-	std::size_t skip(std::size_t length) {
+	std::size_t skip(std::size_t length, bool allow_optimise = false) {
 		std::size_t skip_len = BlockSize - read_offset;
 
 		if(skip_len > length) {
@@ -74,7 +74,7 @@ struct BufferBlock {
 
 		read_offset += skip_len;
 
-		if(read_offset == write_offset) {
+		if(read_offset == write_offset && allow_optimise) {
 			reset();
 		}
 

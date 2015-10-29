@@ -126,70 +126,30 @@ void LoginHandler::accept_client(grunt::client::Opcode opcode, const std::string
 			BOOST_ASSERT_MSG(false, "Impossible accept_client condition");
 	}
 
-	execute_action(action);
+	execute_async(action);
 }
 
 void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
 	state_ = State::CLOSED;
 
-	auto packet = std::make_shared<Packet>();
-	PacketStream<Packet> stream(packet.get());
-
-	stream << grunt::server::Opcode::SMSG_LOGIN_CHALLENGE << std::uint8_t(0)
-	       << grunt::ResultCode::FAIL_VERSION_INVALID;
-
-	send(packet);
+	auto response = std::make_shared<grunt::server::LoginChallenge>();
+	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
+	response->result = grunt::ResultCode::FAIL_VERSION_INVALID;
+	send(response);
 }
 
 void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) {	
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto values = login_auth_->challenge_reply();
-
-	// Server's public ephemeral key
-	auto B = Botan::BigInt::encode_1363(values.B, protocol::PUB_KEY_LENGTH);
-	std::reverse(B.begin(), B.end()); // Botan's buffers are big-endian, client is little-endian
-
-	// Safe prime
-	auto N = Botan::BigInt::encode_1363(values.gen.prime(), protocol::PRIME_LENGTH);
-	std::reverse(N.begin(), N.end());
-	
-	/// Salt
-	auto salt = Botan::BigInt::encode(values.salt);
-	std::reverse(salt.begin(), salt.end());
-	
-	// Do the stream writing after encoding the values so it's not in a bad state if there's an exception
-	stream << grunt::ResultCode::SUCCESS;
-	stream << B;
-	stream << std::uint8_t(values.gen.generator().bytes());
-	stream << std::uint8_t(values.gen.generator().to_u32bit());
-	stream << std::uint8_t(protocol::PRIME_LENGTH);
-	stream << N << salt;
-	stream << (Botan::AutoSeeded_RNG()).random_vec(16); // Random bytes, for some reason
-	stream << std::uint8_t(0); // unknown
-
-		Opcode opcode;
-	std::uint8_t unk1; // todo - double check
-	ResultCode result;
-	Botan::BigInt B;
-	std::uint8_t g_len;
-	std::uint8_t g;
-	std::uint8_t n_len;
-	Botan::BigInt N;
-	Botan::BigInt s;
-	std::uint8_t unk3[16];
-	std::uint8_t unk4;
-
-	packet->result = grunt::ResultCode::SUCCESS;
 	packet->B = values.B;
-	packet->g = values.gen.generator();
-	packet->g_len = values.gen.generator().to_u32bit(); // TODO - WRONG ORDER?
-	packet->n_len = protocol::PRIME_LENGTH;
+	packet->g_len = values.gen.generator().bytes();
+	packet->g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
+	packet->n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet->N = values.gen.prime();
 	packet->s = values.salt;
-	//packet->unk3 = ;
-	//packet->unk4 = ;
+	packet->unk3 = Botan::AutoSeeded_RNG().random_vec(16);;
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
@@ -197,9 +157,9 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 
 	state_ = State::CLOSED;
 	
-	auto response = std::make_unique<grunt::server::LoginChallenge>();
+	auto response = std::make_shared<grunt::server::LoginChallenge>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
-	response->unk1 = 0;
+	response->result = grunt::ResultCode::SUCCESS;
 
 	try {
 		if((user_ = action->get_result())) {
@@ -221,7 +181,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 		                   << " " << e.what() << LOG_ASYNC;
 	}
 	
-	send_test(std::move(response));
+	send(response);
 }
 
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
@@ -229,32 +189,27 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 
 	state_ = State::CLOSED;
 
-	auto rand = Botan::AutoSeeded_RNG().random_vec(16);
-	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
-
-	stream << grunt::server::Opcode::SMSG_RECONNECT_CHALLENGE;
+	auto response = std::make_shared<grunt::server::ReconnectChallenge>();
+	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_CHALLENGE;
+	response->result = grunt::ResultCode::SUCCESS;
+	response->rand = Botan::AutoSeeded_RNG().random_vec(16);
 
 	try {
 		boost::optional<std::string> key = action->get_result();
 
 		if(key) {
 			state_ = State::RECONNECT_PROOF;
-			stream << grunt::ResultCode::SUCCESS;
-			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(action->username(), *key, rand);
+			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(action->username(), *key, response->rand);
 		} else {
-			stream << grunt::ResultCode::FAIL_NOACCESS;
+			response->result = grunt::ResultCode::FAIL_NOACCESS;
 		}
 	} catch(dal::exception& e) {
-		stream << grunt::ResultCode::FAIL_DB_BUSY;
+		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "Retrieving key for " << action->username()
-			<< ": " << e.what() << LOG_ASYNC;
+		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
-	stream << rand;
-	stream << std::uint64_t(0) << std::uint64_t(0);
-
-	send(resp);
+	send(response);
 }
 
 void LoginHandler::check_login_proof(const grunt::Packet* packet) {
@@ -287,7 +242,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
 		auto action = std::make_shared<StoreSessionAction>(*user_, source_, login_auth_->session_key(), user_src_);
-		execute_action(action);
+		execute_async(action);
 	} else {
 		state_ = State::CLOSED;
 		send_login_failure(result);
@@ -297,24 +252,24 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_unique<grunt::server::LoginProof>();
+	auto response = std::make_shared<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
 	response->result = result;
 
-	send_test(std::move(response));
+	send(std::move(response));
 }
 
 void LoginHandler::send_login_success(StoreSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_unique<grunt::server::LoginProof>();
+	auto response = std::make_shared<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 	response->M2 = server_proof_;
 	response->account_flags = 0;
 
 	state_ = State::REQUEST_REALMS;
-	send_test(std::move(response));
+	send(std::move(response));
 }
 
 void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
@@ -333,12 +288,12 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 		return;
 	}
 
-	auto response = std::make_unique<grunt::server::ReconnectProof>();
+	auto response = std::make_shared<grunt::server::ReconnectProof>();
 	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
-	send_test(std::move(response));
+	send(std::move(response));
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {
@@ -348,35 +303,16 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
 	}
 
-	auto header = std::make_shared<Packet>();
-	auto body = std::make_shared<Packet>();
-	PacketStream<Packet> stream(body.get());
-
+	auto response = std::make_shared<grunt::server::RealmList>();
+	response->opcode = grunt::server::Opcode::SMSG_REQUEST_REALM_LIST;
+	
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
-	stream << std::uint32_t(0); // unknown 
-	stream << std::uint8_t(realms->size());
-	static int i = 0;
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		stream << realm.icon;
-		stream << realm.flags;
-		stream << realm.name << std::to_string(i) << std::uint8_t(0);
-		stream << realm.ip << std::uint8_t(0);
-		stream << realm.population;
-		stream << std::uint8_t(0); // num chars
-		stream << realm.timezone;
-		stream << std::uint8_t(0); // unknown
+		response->realms.emplace_back(realm, 0);
 	}
-	++i;
-	stream << uint16_t(5); // unknown
 
-	stream.swap(header.get());
-
-	stream << grunt::server::Opcode::SMSG_REQUEST_REALM_LIST;
-	stream << std::uint16_t(body->size());
-	
-	send(header);
-	send(body);
+	send(response);
 }
 
 // todo, remove in VS2015

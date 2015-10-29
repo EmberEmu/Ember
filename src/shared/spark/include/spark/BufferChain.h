@@ -30,10 +30,8 @@ class BufferChain final : public Buffer {
 	}
 
 	void unlink_node(BufferChainNode* node) {
-		auto* next = node->next;
-		auto* prev = node->prev;
-		next->prev = prev;
-		prev->next = next;
+		node->next->prev = node->prev;
+		node->prev->next = node->next;
 	}
 
 	BufferBlock<BlockSize>* buffer_from_node(BufferChainNode* node) const {
@@ -113,7 +111,8 @@ public:
 
 		while(remaining) {
 			auto buffer = buffer_from_node(root_.next);
-			remaining -= buffer->read(static_cast<char*>(destination) + length - remaining, remaining);
+			remaining -= buffer->read(static_cast<char*>(destination) + length - remaining, remaining, 
+			                          root_.next == root_.prev);
 
 			if(remaining) {
 				unlink_node(root_.next);
@@ -166,19 +165,18 @@ public:
 		return buffers;
 	}
 
+
 	void skip(std::size_t length) {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
 		std::size_t remaining = length;
-		auto head = root_.next;
 
 		while(remaining) {
-			auto buffer = buffer_from_node(head);
-			remaining -= buffer->skip(remaining);
+			auto buffer = buffer_from_node(root_.next);
+			remaining -= buffer->skip(remaining, root_.next == root_.prev);
 
 			if(remaining) {
-				unlink_node(head);
+				unlink_node(root_.next);
 				deallocate(buffer);
-				head = root_.next;
 			}
 		}
 
@@ -279,12 +277,11 @@ public:
 			return *this;
 		}
 
-		const_iterator operator++(int) {
+	/*	const_iterator operator++(int) {
 			const_iterator current(*this);
-			chain_.skip(chain_.buffer_from_node(curr_node_)->size());
 			curr_node_ = curr_node_->next;
 			return current;
-		}
+		}*/
 
 		boost::asio::const_buffer operator*() const {
 			auto buffer = chain_.buffer_from_node(curr_node_);

@@ -29,14 +29,13 @@ public:
 	LoginHandler handler_;
 	log::Logger* logger_;
 	grunt::Handler grunt_handler_;
-	spark::BufferChain<1024> outbound_buffer_;
 
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::Buffer& buffer) override;
 	void execute_async(std::shared_ptr<Action> action);
-	void write_chain(grunt::PacketHandle& packet); // todo - remove & in VS2015!
+	void write_chain(std::shared_ptr<grunt::Packet> packet); // todo - see todo on the definition
 };
 
 } // ember

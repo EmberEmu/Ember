@@ -215,3 +215,55 @@ TEST(BufferChainTest, ReadIterator) {
 
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
 }
+
+TEST(BufferChainTest, ASIOIteratorRegressionTest) {
+	spark::BufferChain<1> chain;
+
+	// 119 bytes (size of 1.12.1 LoginChallenge packet)
+	std::string input("Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+	                  " Etiam sagittis pulvinar massa nec pellentesque. Integer metus.");
+
+	chain.write(input.data(), input.length());
+	ASSERT_EQ(119, chain.size()) << "Chain size was incorrect";
+
+	auto it = chain.begin();
+	std::size_t bytes_sent = 0;
+
+	// do first read
+	for(std::size_t i = 0; it != chain.end() && i != 64; ++i, ++it) {
+		bytes_sent += it.get_buffer().second;
+	}
+
+	chain.skip(bytes_sent);
+	ASSERT_EQ(64, bytes_sent) << "First read length was incorrect";
+	ASSERT_EQ(55, chain.size()) << "Chain size was incorrect";
+
+	auto it_s = chain.begin();
+	bytes_sent = 0;
+
+	// do second read
+	for(std::size_t i = 0; it_s != chain.end() && i != 64; ++i, ++it_s) {
+		bytes_sent += it_s.get_buffer().second;
+	}
+
+	chain.skip(bytes_sent);
+	ASSERT_EQ(55, bytes_sent) << "Second read length was incorrect";
+	ASSERT_EQ(0, chain.size()) << "Chain size was incorrect";
+
+	//chain.clear();
+	input = "xy"; // two bytes - size of LoginProof if failed login
+	chain.write(input.data(), input.length());
+	ASSERT_EQ(2, chain.size()) << "Chain size was incorrect";
+
+	auto it_t = chain.begin();
+	bytes_sent = 0;
+
+	// do third read
+	for(std::size_t i = 0; it_t != chain.end() && i != 64; ++i, ++it_t) {
+		bytes_sent += it_t.get_buffer().second;
+	}
+
+	chain.skip(bytes_sent);
+	ASSERT_EQ(2, bytes_sent) << "Regression found - read length was incorrect";
+	ASSERT_EQ(0, chain.size()) << "Chain size was incorrect";
+}
