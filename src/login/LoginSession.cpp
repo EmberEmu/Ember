@@ -21,6 +21,7 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
                              logger_(logger), pool_(pool),
                              NetworkSession(sessions, std::move(socket), logger) {
 	handler_.send = std::bind(&LoginSession::write, this, std::placeholders::_1);
+	handler_.send_test = std::bind(&LoginSession::write_chain, this, std::placeholders::_1);
 	handler_.execute_action = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
 }
 
@@ -56,6 +57,11 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 } catch(std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	close_session();
+}
+
+void LoginSession::write_chain(grunt::PacketHandle& packet) { // todo - remove & in VS2015!
+	packet->write_to_stream(spark::BinaryStream(outbound_buffer_));
+	NetworkSession::write_chain(outbound_buffer_);
 }
 
 } // ember

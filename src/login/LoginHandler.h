@@ -53,7 +53,7 @@ class LoginHandler {
 	void check_login_proof(const grunt::Packet* packet);
 	void send_reconnect_proof(const grunt::Packet* packet);
 	void send_login_failure(grunt::ResultCode result);
-	void build_login_challenge(PacketStream<Packet>& resp);
+	void build_login_challenge(grunt::server::LoginChallenge* packet);
 	void send_login_challenge(FetchUserAction* action);
 	void send_login_success(StoreSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
@@ -65,6 +65,7 @@ class LoginHandler {
 public:
 	std::function<void(std::shared_ptr<Action> action)> execute_action;
 	std::function<void(std::shared_ptr<Packet>)> send;
+	std::function<void(std::unique_ptr<grunt::Packet>)> send_test;
 
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(const grunt::Packet* packet);

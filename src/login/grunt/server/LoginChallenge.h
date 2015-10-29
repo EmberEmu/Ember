@@ -19,7 +19,7 @@
 namespace ember { namespace grunt { namespace server {
 
 class LoginChallenge : public Packet {
-	static const std::size_t WIRE_LENGTH = 119;
+	static const std::size_t WIRE_LENGTH = 120;
 	static const std::uint8_t PRIME_LENGTH = 32;
 	static const std::uint8_t PUB_KEY_LENGTH = 32;
 	static const std::uint8_t SALT_LENGTH = 32;
@@ -28,8 +28,8 @@ class LoginChallenge : public Packet {
 
 public:
 	Opcode opcode;
-	ResultCode error;
-	std::uint8_t unk2;
+	std::uint8_t unk1; // todo - double check
+	ResultCode result;
 	Botan::BigInt B;
 	std::uint8_t g_len;
 	std::uint8_t g;
@@ -48,7 +48,8 @@ public:
 		}
 
 		stream >> opcode;
-		stream >> error;
+		stream >> unk1;
+		stream >> result;
 		
 		Botan::byte b_buff[PUB_KEY_LENGTH];
 		stream.get(b_buff, PUB_KEY_LENGTH);
@@ -77,7 +78,8 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) {
 		stream << opcode;
-		stream << error;
+		stream << unk1;
+		stream << result;
 		
 		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));

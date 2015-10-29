@@ -151,4 +151,6 @@ public:
 	}
 };
 
+typedef LoginChallenge ReconnectChallenge;
+
 }}} // client, grunt, ember

@@ -142,7 +142,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	send(packet);
 }
 
-void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {	
+void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) {	
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto values = login_auth_->challenge_reply();
@@ -168,6 +168,28 @@ void LoginHandler::build_login_challenge(PacketStream<Packet>& stream) {
 	stream << N << salt;
 	stream << (Botan::AutoSeeded_RNG()).random_vec(16); // Random bytes, for some reason
 	stream << std::uint8_t(0); // unknown
+
+		Opcode opcode;
+	std::uint8_t unk1; // todo - double check
+	ResultCode result;
+	Botan::BigInt B;
+	std::uint8_t g_len;
+	std::uint8_t g;
+	std::uint8_t n_len;
+	Botan::BigInt N;
+	Botan::BigInt s;
+	std::uint8_t unk3[16];
+	std::uint8_t unk4;
+
+	packet->result = grunt::ResultCode::SUCCESS;
+	packet->B = values.B;
+	packet->g = values.gen.generator();
+	packet->g_len = values.gen.generator().to_u32bit(); // TODO - WRONG ORDER?
+	packet->n_len = protocol::PRIME_LENGTH;
+	packet->N = values.gen.prime();
+	packet->s = values.salt;
+	//packet->unk3 = ;
+	//packet->unk4 = ;
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
@@ -175,31 +197,31 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 
 	state_ = State::CLOSED;
 	
-	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
-	stream << grunt::server::Opcode::SMSG_LOGIN_CHALLENGE << std::uint8_t(0);
+	auto response = std::make_unique<grunt::server::LoginChallenge>();
+	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
+	response->unk1 = 0;
 
 	try {
 		if((user_ = action->get_result())) {
 			login_auth_ = std::make_unique<LoginAuthenticator>(*user_);
-			build_login_challenge(stream);
+			build_login_challenge(response.get());
 			state_ = State::LOGIN_PROOF;
 		} else {
 			// leaks information on whether the account exists (could send challenge anyway?)
 			LOG_DEBUG(logger_) << "Account not found: " << action->username() << LOG_ASYNC;
-			stream << grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
+			response->result = grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
 		}
 	} catch(dal::exception& e) {
-		stream << grunt::ResultCode::FAIL_DB_BUSY;
+		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "DAL failure for " << action->username()
 		                   << " " << e.what() << LOG_ASYNC;
 	} catch(Botan::Exception& e) {
-		stream << grunt::ResultCode::FAIL_DB_BUSY;
+		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
 		                   << " " << e.what() << LOG_ASYNC;
 	}
 	
-	send(resp);
+	send_test(std::move(response));
 }
 
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
@@ -275,30 +297,24 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
+	auto response = std::make_unique<grunt::server::LoginProof>();
+	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
+	response->result = result;
 
-	stream << grunt::server::Opcode::SMSG_LOGIN_PROOF;
-	stream << result;
-
-	send(resp);
+	send_test(std::move(response));
 }
 
 void LoginHandler::send_login_success(StoreSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	Botan::SecureVector<Botan::byte> m2 = Botan::BigInt::encode_1363(server_proof_, 20);
-	std::reverse(m2.begin(), m2.end());
-
-	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
-
-	stream << grunt::server::Opcode::SMSG_LOGIN_PROOF;
-	stream << grunt::ResultCode::SUCCESS;
-	stream << m2 << std::uint32_t(0); //proof << account flags
+	auto response = std::make_unique<grunt::server::LoginProof>();
+	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
+	response->result = grunt::ResultCode::SUCCESS;
+	response->M2 = server_proof_;
+	response->account_flags = 0;
 
 	state_ = State::REQUEST_REALMS;
-	send(resp);
+	send_test(std::move(response));
 }
 
 void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
@@ -316,15 +332,13 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 		LOG_DEBUG(logger_) << "Failed to reconnect " << reconn_auth_->username() << LOG_ASYNC;
 		return;
 	}
-	
-	auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
-	
-	stream << grunt::server::Opcode::SMSG_RECONNECT_PROOF;
-	stream << grunt::ResultCode::SUCCESS;
+
+	auto response = std::make_unique<grunt::server::ReconnectProof>();
+	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_PROOF;
+	response->result = grunt::ResultCode::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
-	send(resp);
+	send_test(std::move(response));
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {
@@ -342,18 +356,18 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 
 	stream << std::uint32_t(0); // unknown 
 	stream << std::uint8_t(realms->size());
-
+	static int i = 0;
 	for(auto& realm : *realms | boost::adaptors::map_values) {
 		stream << realm.icon;
 		stream << realm.flags;
-		stream << realm.name << std::uint8_t(0);
+		stream << realm.name << std::to_string(i) << std::uint8_t(0);
 		stream << realm.ip << std::uint8_t(0);
 		stream << realm.population;
 		stream << std::uint8_t(0); // num chars
 		stream << realm.timezone;
 		stream << std::uint8_t(0); // unknown
 	}
-
+	++i;
 	stream << uint16_t(5); // unknown
 
 	stream.swap(header.get());

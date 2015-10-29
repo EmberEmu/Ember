@@ -15,3 +15,5 @@
 #include "server/LoginChallenge.h"
 #include "server/LoginProof.h"
 #include "server/RealmList.h"
+#include "server/ReconnectChallenge.h"
+#include "server/ReconnectProof.h"

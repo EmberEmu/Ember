@@ -83,7 +83,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	void stop() {
 		auto self(shared_from_this());
 
-		strand().post([this, self]() {
+		strand_.post([this, self] {
 			LOG_DEBUG(logger_) << "Closing connection to " // todo - add filter mask to all network messages
 							   << remote_address() << ":" << remote_port()
 							   << LOG_SYNC;
@@ -131,6 +131,28 @@ public:
 				}
 			}
 		)));
+	}
+
+	template<std::size_t BlockSize>
+	void write_chain(spark::BufferChain<BlockSize>& chain) {
+		auto self(shared_from_this());
+
+		if(!socket_.is_open()) {
+			return;
+		}
+
+		strand_.dispatch([this, self, &chain] {
+			socket_.async_send(chain,
+			strand_.wrap(create_alloc_handler(allocator_,
+			[this, self, &chain](boost::system::error_code ec, std::size_t size) {
+				chain.advance_write_cursor(size);
+
+				if(ec && ec != boost::asio::error::operation_aborted) {
+					close_session();
+				}
+			}
+			)));
+		});
 	}
 
 	boost::asio::strand& strand() { return strand_;  }

@@ -22,10 +22,38 @@ namespace ember { namespace grunt { namespace server {
 namespace be = boost::endian;
 
 class LoginProof : public Packet {
-	static const std::size_t WIRE_LENGTH = 26;
+	static const std::size_t HEADER_LENGTH = 2;
+	static const std::size_t BODY_LENGTH = 24;
 	static const std::size_t PROOF_LENGTH = 20;
 
 	State state_ = State::INITIAL;
+
+	void read_head(spark::BinaryStream& stream) {
+		stream >> opcode;
+		stream >> result;
+	}
+
+	void read_body(spark::BinaryStream& stream) {
+		// no need to keep reading - the other fields aren't set
+		if(result != grunt::ResultCode::SUCCESS) {
+			state_ = State::DONE;
+			return;
+		}
+
+		// must be SMSG_LOGIN_PROOF, so read the rest of the packet
+		if(stream.size() < BODY_LENGTH) {
+			state_ = State::CALL_AGAIN;
+			return;
+		}
+		
+		Botan::byte m2_buff[PROOF_LENGTH];
+		stream.get(m2_buff, PROOF_LENGTH);
+		std::reverse(std::begin(m2_buff), std::end(m2_buff));
+		M2 = Botan::BigInt(m2_buff, PROOF_LENGTH);
+
+		stream >> account_flags;
+		be::little_to_native_inplace(account_flags);
+	}
 
 public:
 	Opcode opcode;
@@ -36,27 +64,28 @@ public:
 	State read_from_stream(spark::BinaryStream& stream) {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+		if(state_ == State::INITIAL && stream.size() < HEADER_LENGTH) {
 			return State::CALL_AGAIN;
 		}
+
+		switch(state_) {
+			case State::INITIAL:
+				read_head(stream); // intentional fall-through
+			case State::CALL_AGAIN:
+				read_body(stream);
+		}
 		
-		stream >> opcode;
-		stream >> result;
-
-		Botan::byte m2_buff[PROOF_LENGTH];
-		stream.get(m2_buff, PROOF_LENGTH);
-		std::reverse(std::begin(m2_buff), std::end(m2_buff));
-		M2 = Botan::BigInt(m2_buff, PROOF_LENGTH);
-
-		stream >> account_flags;
-		be::little_to_native_inplace(account_flags);
-
-		return (state_ = State::DONE);
+		return state_;
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) {
 		stream << opcode;
 		stream << result;
+
+		// no need to stream the rest of the members
+		if(result != grunt::ResultCode::SUCCESS) {
+			return;
+		}
 
 		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
