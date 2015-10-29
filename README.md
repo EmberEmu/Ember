@@ -23,10 +23,9 @@ This table lists the compilers that Ember actively supports as well as the minim
 
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
-|  MSVC | 19 (VS2015) | 18 (VS2013) |
+| MSVC  | 19 (VS2015) | 18 (VS2013) |
 | Clang |     3.7     |     3.4     |
-|   GCC |     5.1     |     5.0     |
-
+| GCC   |     5.1     |     5.0     |
 
 ###Build status:
 |  | master  | development |
