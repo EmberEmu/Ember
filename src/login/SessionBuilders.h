@@ -12,6 +12,7 @@
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <memory>
+#include <utility>
 
 namespace ember {
 
@@ -25,9 +26,10 @@ class NetworkSessionBuilder {
 public:
 	virtual std::shared_ptr<NetworkSession> create(SessionManager& sessions, bai::tcp::socket socket,
 	                                               log::Logger* logger) const = 0;
+	virtual ~NetworkSessionBuilder() = default;
 };
 
-class LoginSessionBuilder : public NetworkSessionBuilder {
+class LoginSessionBuilder final : public NetworkSessionBuilder {
 	const LoginHandlerBuilder& builder_;
 	ThreadPool& pool_;
 
