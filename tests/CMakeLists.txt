@@ -10,13 +10,13 @@ set(EXECUTABLE_SRC
     BufferChain.cpp
     Buffer.cpp
     BinaryStream.cpp
+    GruntHandler.cpp
+    GruntProtocol.cpp
+    LoginHandler.cpp
+    Patcher.cpp
     )
 
 add_executable(unit_tests ${EXECUTABLE_SRC})
-target_link_libraries(unit_tests ${Boost_LIBRARIES})
-target_link_libraries(unit_tests ${BOTAN_LIBRARY})
-target_link_libraries(unit_tests srp6)
-target_link_libraries(unit_tests spark)
+target_link_libraries(unit_tests gtest gtest_main shared spark srp6 ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(unit_tests PRIVATE ../src)
-target_link_libraries(unit_tests gtest gtest_main)
 add_test(unit_tests unit_tests)

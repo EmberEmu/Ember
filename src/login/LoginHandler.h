@@ -74,8 +74,6 @@ public:
 	             const RealmList& realm_list, std::string source, Metrics& metrics)
 	             : user_src_(users), patcher_(patcher), logger_(logger),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics) {}
-	LoginHandler& operator=(LoginHandler&&);
-	LoginHandler(LoginHandler&&);
 };
 
 } // ember

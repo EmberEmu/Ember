@@ -321,19 +321,4 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	send(response);
 }
 
-// todo, remove in VS2015
-LoginHandler& LoginHandler::operator=(LoginHandler&& rhs) {
-	login_auth_ = std::move(rhs.login_auth_);
-	reconn_auth_ = std::move(rhs.reconn_auth_);
-	return *this;
-}
-
-// todo, remove in VS2015
-LoginHandler::LoginHandler(LoginHandler&& rhs)
-                           : login_auth_(std::move(rhs.login_auth_)),
-                             reconn_auth_(std::move(rhs.reconn_auth_)),
-                             source_(rhs.source_), patcher_(rhs.patcher_),
-                             user_src_(rhs.user_src_), logger_(rhs.logger_),
-                             realm_list_(rhs.realm_list_), metrics_(rhs.metrics_) { }
-
 } // ember
