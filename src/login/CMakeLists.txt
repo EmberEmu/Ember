@@ -27,17 +27,20 @@ set(GRUNT_SRC
 )
 
 set(EXECUTABLE_HDR
+    Actions.h
     SessionBuilders.h
     LoginSession.h
     NetworkListener.h
     NetworkSession.h
     LoginHandler.h
     LoginHandlerBuilder.h
+    SessionManager.h
     GameVersion.h
     Authenticator.h
     RealmList.h
     Actions.h
     Patcher.h
+    FilterType.h
     )
 
 set(EXECUTABLE_SRC
