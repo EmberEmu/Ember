@@ -11,6 +11,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <cstdint>
 
 namespace ember {
 
@@ -24,6 +25,7 @@ public:
 	void start(std::shared_ptr<NetworkSession> session);
 	void stop(std::shared_ptr<NetworkSession> session);
 	void stop_all();
+	std::size_t count() const;
 };
 
 } // ember

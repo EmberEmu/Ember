@@ -32,5 +32,9 @@ void SessionManager::stop_all() {
 	sessions_.clear();
 }
 
+std::size_t SessionManager::count() const {
+	return sessions_.size();
+}
+
 
 } // ember

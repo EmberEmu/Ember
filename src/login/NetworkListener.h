@@ -16,6 +16,7 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <string>
+#include <cstdint>
 
 namespace ember {
 
@@ -86,6 +87,10 @@ public:
 
 		acceptor_.close();
 		sessions_.stop_all();
+	}
+
+	std::size_t connection_count() const {
+		return sessions_.count();
 	}
 };
 
