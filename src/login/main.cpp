@@ -125,24 +125,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
 	}
 
+	// Start ASIO services
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
+
 	ember::ThreadPool thread_pool(concurrency);
-
-	const auto allowed_clients = client_versions();
-	ember::Patcher patcher(allowed_clients, "temp");
-	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list);
-	ember::LoginSessionBuilder s_builder(builder, thread_pool);
-
-	// Start login server
-	auto interface = args["network.interface"].as<std::string>();
-	auto port = args["network.port"].as<std::uint16_t>();
-	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
-
-	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
 	boost::asio::io_service service(concurrency);
-
-	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
-	                              ip_ban_cache, logger);
 
 	// Start metrics client
 	auto metrics = std::make_unique<ember::Metrics>();
@@ -162,6 +149,21 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		LOG_INFO(logger) << "Starting health monitoring service..." << LOG_SYNC;
 		health_monitor = std::make_unique<ember::HealthMonitor>(service, "0.0.0.0", 3900, *metrics);
 	}
+
+	// Start login server
+	const auto allowed_clients = client_versions();
+	ember::Patcher patcher(allowed_clients, "temp");
+	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list, *metrics);
+	ember::LoginSessionBuilder s_builder(builder, thread_pool);
+
+	auto interface = args["network.interface"].as<std::string>();
+	auto port = args["network.port"].as<std::uint16_t>();
+	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
+
+	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
+
+	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
+	                              ip_ban_cache, logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;

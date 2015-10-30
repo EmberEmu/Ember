@@ -21,6 +21,7 @@ namespace ember {
 
 class LoginHandlerBuilder;
 class ThreadPool;
+class Metrics;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);

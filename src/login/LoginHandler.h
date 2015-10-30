@@ -29,6 +29,7 @@ namespace ember {
 
 class Patcher;
 class NetworkSession;
+class Metrics;
 
 class LoginHandler {
 	enum class State {
@@ -37,6 +38,7 @@ class LoginHandler {
 	};
 
 	State state_ = State::INITIAL_CHALLENGE;
+	Metrics& metrics_;
 	log::Logger* logger_;
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
@@ -70,9 +72,9 @@ public:
 	bool update_state(const grunt::Packet* packet);
 
 	LoginHandler(const NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
-	             log::Logger* logger, const RealmList& realm_list, std::string source)
+	             log::Logger* logger, const RealmList& realm_list, std::string source, Metrics& metrics)
 	             : session_(session), user_src_(users), patcher_(patcher), logger_(logger),
-	               realm_list_(realm_list), source_(std::move(source)) {}
+	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics) {}
 	LoginHandler& operator=(LoginHandler&&);
 	LoginHandler(LoginHandler&&);
 };

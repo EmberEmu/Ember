@@ -168,15 +168,18 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 			state_ = State::LOGIN_PROOF;
 		} else {
 			// leaks information on whether the account exists (could send challenge anyway?)
-			LOG_DEBUG(logger_) << "Account not found: " << action->username() << LOG_ASYNC;
 			response->result = grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
+			metrics_.increment("login_failure");
+			LOG_DEBUG(logger_) << "Account not found: " << action->username() << LOG_ASYNC;
 		}
 	} catch(dal::exception& e) {
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << action->username()
 		                   << " " << e.what() << LOG_ASYNC;
 	} catch(Botan::Exception& e) {
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
 		                   << " " << e.what() << LOG_ASYNC;
 	}
@@ -205,6 +208,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		}
 	} catch(dal::exception& e) {
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "Retrieving key for " << action->username()
 		                   << ": " << e.what() << LOG_ASYNC;
 	}
@@ -251,6 +255,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 
 void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	metrics_.increment("login_failure");
 
 	auto response = std::make_shared<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
@@ -261,6 +266,7 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 
 void LoginHandler::send_login_success(StoreSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	metrics_.increment("login_success");
 
 	auto response = std::make_shared<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
@@ -328,6 +334,7 @@ LoginHandler::LoginHandler(LoginHandler&& rhs)
                              reconn_auth_(std::move(rhs.reconn_auth_)),
 							 source_(rhs.source_), patcher_(rhs.patcher_),
 							 user_src_(rhs.user_src_), session_(rhs.session_),
-                             logger_(rhs.logger_), realm_list_(rhs.realm_list_) {}
+                             logger_(rhs.logger_), realm_list_(rhs.realm_list_),
+                             metrics_(rhs.metrics_) {}
 
 } // ember
