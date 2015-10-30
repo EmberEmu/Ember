@@ -16,7 +16,9 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <string>
+#include <utility>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember {
 

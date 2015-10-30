@@ -32,8 +32,8 @@ public:
 	                    RealmList& realm_list, Metrics& metrics) : logger_(logger), patcher_(patcher),
 	                    user_dao_(user_dao), realm_list_(realm_list), metrics_(metrics) {}
 
-	LoginHandler create(const NetworkSession& net_session, std::string source) const {
-		return { net_session, user_dao_, patcher_, logger_, realm_list_, std::move(source), metrics_ };
+	LoginHandler create(std::string source) const {
+		return { user_dao_, patcher_, logger_, realm_list_, std::move(source), metrics_ };
 	}
 };
 

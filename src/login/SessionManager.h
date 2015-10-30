@@ -11,7 +11,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
-#include <cstdint>
+#include <cstddef>
 
 namespace ember {
 

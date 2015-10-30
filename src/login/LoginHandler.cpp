@@ -299,7 +299,7 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	response->result = grunt::ResultCode::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
-	send(std::move(response));
+	send(response);
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {
@@ -332,9 +332,8 @@ LoginHandler& LoginHandler::operator=(LoginHandler&& rhs) {
 LoginHandler::LoginHandler(LoginHandler&& rhs)
                            : login_auth_(std::move(rhs.login_auth_)),
                              reconn_auth_(std::move(rhs.reconn_auth_)),
-							 source_(rhs.source_), patcher_(rhs.patcher_),
-							 user_src_(rhs.user_src_), session_(rhs.session_),
-                             logger_(rhs.logger_), realm_list_(rhs.realm_list_),
-                             metrics_(rhs.metrics_) {}
+                             source_(rhs.source_), patcher_(rhs.patcher_),
+                             user_src_(rhs.user_src_), logger_(rhs.logger_),
+                             realm_list_(rhs.realm_list_), metrics_(rhs.metrics_) { }
 
 } // ember

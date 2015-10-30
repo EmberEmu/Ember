@@ -45,7 +45,6 @@ class LoginHandler {
 	const dal::UserDAO& user_src_;
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
-	const NetworkSession& session_;
 	const std::string source_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
@@ -71,9 +70,9 @@ public:
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(const grunt::Packet* packet);
 
-	LoginHandler(const NetworkSession& session, const dal::UserDAO& users, const Patcher& patcher,
-	             log::Logger* logger, const RealmList& realm_list, std::string source, Metrics& metrics)
-	             : session_(session), user_src_(users), patcher_(patcher), logger_(logger),
+	LoginHandler(const dal::UserDAO& users, const Patcher& patcher, log::Logger* logger,
+	             const RealmList& realm_list, std::string source, Metrics& metrics)
+	             : user_src_(users), patcher_(patcher), logger_(logger),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics) {}
 	LoginHandler& operator=(LoginHandler&&);
 	LoginHandler(LoginHandler&&);

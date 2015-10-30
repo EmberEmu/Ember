@@ -7,8 +7,11 @@
  */
 
 #include <shared/metrics/MetricsImpl.h>
+#include <functional>
 #include <memory>
 #include <sstream>
+#include <utility>
+#include <cstddef>
 
 namespace ember {
 

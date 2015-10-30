@@ -12,12 +12,13 @@
 #include "FilterType.h"
 #include <logger/Logging.h>
 #include <spark/BufferChain.h>
-#include <shared/PacketStream.h> // temp
+#include <shared/PacketStream.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <chrono>
 #include <memory>
 #include <string>
+#include <utility>
 #include <cstdint>
 
 namespace ember {
