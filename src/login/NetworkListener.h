@@ -63,17 +63,16 @@ class NetworkListener {
 
 	void start_session(boost::asio::ip::tcp::socket socket) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
 		auto session = session_create_.create(sessions_, std::move(socket), logger_);
 		sessions_.start(session);
 	}
 
 public:
-	NetworkListener(boost::asio::io_service& service, std::string interface, unsigned short port,
+	NetworkListener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger* logger)
 	                : acceptor_(service_, boost::asio::ip::tcp::endpoint(
-	                           boost::asio::ip::address::from_string(interface), port)),
+	                            boost::asio::ip::address::from_string(interface), port)),
 	                  service_(service), socket_(service_), logger_(logger), ban_list_(bans),
 	                  signals_(service_, SIGINT, SIGTERM), session_create_(session_create) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
@@ -84,7 +83,6 @@ public:
 
 	void shutdown() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
 		acceptor_.close();
 		sessions_.stop_all();
 	}
