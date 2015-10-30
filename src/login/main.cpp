@@ -147,7 +147,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	if(args["health_monitor.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Starting health monitoring service..." << LOG_SYNC;
-		health_monitor = std::make_unique<ember::HealthMonitor>(service, "0.0.0.0", 3900, *metrics);
+		health_monitor = std::make_unique<ember::HealthMonitor>(
+			service, args["health_monitor.interface"].as<std::string>(),
+			args["health_monitor.port"].as<std::uint16_t>(), *metrics
+		);
 	}
 
 	// Start login server
