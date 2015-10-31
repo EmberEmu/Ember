@@ -53,8 +53,8 @@ set(METRICS_SRC
     shared/metrics/Metrics.h
     shared/metrics/MetricsImpl.h
     shared/metrics/MetricsImpl.cpp
-    shared/metrics/HealthMonitor.h
-    shared/metrics/HealthMonitor.cpp
+    shared/metrics/Monitor.h
+    shared/metrics/Monitor.cpp
 )
 
 set(LIBRARY_SRC

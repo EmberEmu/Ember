@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <shared/metrics/HealthMonitor.h>
+#include <shared/metrics/Monitor.h>
 #include <shared/metrics/Metrics.h>
 #include <memory>
 #include <sstream>
@@ -15,24 +15,24 @@ namespace ember {
 
 namespace bai = boost::asio::ip;
 
-HealthMonitor::HealthMonitor(boost::asio::io_service& service, const std::string& interface,
+Monitor::Monitor(boost::asio::io_service& service, const std::string& interface,
                              std::uint16_t port, Metrics& metrics, std::chrono::seconds frequency)
                              : timer_(service), strand_(service), metrics_(metrics), TIMER_FREQUENCY(frequency),
                                socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)),
                                signals_(service, SIGINT, SIGTERM) {
-	signals_.async_wait(std::bind(&HealthMonitor::shutdown, this));
+	signals_.async_wait(std::bind(&Monitor::shutdown, this));
 	set_timer();
 	receive();
 }
 
-void HealthMonitor::shutdown() {
+void Monitor::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
 	timer_.cancel(ec);;
 }
 
-void HealthMonitor::receive() {
+void Monitor::receive() {
 	socket_.async_receive_from(boost::asio::buffer(buffer_), endpoint_, 
 		strand_.wrap([this](const boost::system::error_code& ec, std::size_t) {
 			if(!ec || ec == boost::asio::error::message_size
@@ -43,20 +43,20 @@ void HealthMonitor::receive() {
 	}));
 }
 
-void HealthMonitor::send_health_status() {
+void Monitor::send_health_status() {
 	auto message = std::make_shared<std::string>(generate_message());
 
 	socket_.async_send_to(boost::asio::buffer(*message), endpoint_,
 		strand_.wrap([message](const boost::system::error_code&, std::size_t) { }));
 }
 
-void HealthMonitor::add_source(Source source, Severity severity, LogCallback log_callback) {
+void Monitor::add_source(Source source, Severity severity, LogCallback log_callback) {
 	source.triggered = false;
 	std::lock_guard<std::mutex> guard(source_lock_);
 	sources_.emplace_back(source, severity, log_callback, std::chrono::seconds(0));
 }
 
-void HealthMonitor::timer_tick(const boost::system::error_code& ec) {
+void Monitor::timer_tick(const boost::system::error_code& ec) {
 	if(ec) { // timer was cancelled
 		return;
 	}
@@ -71,7 +71,7 @@ void HealthMonitor::timer_tick(const boost::system::error_code& ec) {
 	set_timer();
 }
 
-void HealthMonitor::execute_source(Source& source, Severity severity, LogCallback& log,
+void Monitor::execute_source(Source& source, Severity severity, LogCallback& log,
                                    std::chrono::seconds& last_tick) {
 	last_tick += TIMER_FREQUENCY;
 
@@ -97,7 +97,7 @@ void HealthMonitor::execute_source(Source& source, Severity severity, LogCallbac
 	metrics_.gauge(source.key.c_str(), value);
 }
 
-std::string HealthMonitor::generate_message() {
+std::string Monitor::generate_message() {
 	std::lock_guard<std::mutex> guard(source_lock_);
 	std::stringstream message;
 
@@ -120,9 +120,9 @@ std::string HealthMonitor::generate_message() {
 	return message.str();
 }
 
-void HealthMonitor::set_timer() {
+void Monitor::set_timer() {
 	timer_.expires_from_now(TIMER_FREQUENCY);
-	timer_.async_wait(std::bind(&HealthMonitor::timer_tick, this, std::placeholders::_1));
+	timer_.async_wait(std::bind(&Monitor::timer_tick, this, std::placeholders::_1));
 }
 
 } // ember

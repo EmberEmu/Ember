@@ -10,6 +10,7 @@
 #include "GameVersion.h"
 #include "SessionBuilders.h"
 #include "LoginHandlerBuilder.h"
+#include "MonitorCallbacks.h"
 #include "NetworkListener.h"
 #include "Patcher.h"
 #include "RealmList.h"
@@ -21,7 +22,7 @@
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/metrics/MetricsImpl.h>
-#include <shared/metrics/HealthMonitor.h>
+#include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -54,8 +55,6 @@ void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
-void health_monitor_log_callback(const ember::HealthMonitor::Source& source,
-	ember::HealthMonitor::Severity severity, std::intmax_t value, el::Logger* logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -130,7 +129,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::ThreadPool thread_pool(concurrency);
 	boost::asio::io_service service(concurrency);
 
-	// Start metrics client
+	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();
 
 	if(args["metrics.enabled"].as<bool>()) {
@@ -138,17 +137,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		metrics = std::make_unique<ember::MetricsImpl>(
 			service, args["metrics.statsd_host"].as<std::string>(),
 			args["metrics.statsd_port"].as<std::uint16_t>()
-		);
-	}
-
-	// Start health monitoring
-	std::unique_ptr<ember::HealthMonitor> health_monitor;
-
-	if(args["health_monitor.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Starting health monitoring service..." << LOG_SYNC;
-		health_monitor = std::make_unique<ember::HealthMonitor>(
-			service, args["health_monitor.interface"].as<std::string>(),
-			args["health_monitor.port"].as<std::uint16_t>(), *metrics
 		);
 	}
 
@@ -166,6 +154,21 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
 	                              ip_ban_cache, logger);
+
+	// Start monitoring service
+	std::unique_ptr<ember::Monitor> monitor;
+
+	if(args["monitor.enabled"].as<bool>()) {
+		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
+
+		monitor = std::make_unique<ember::Monitor>(
+			service, args["monitor.interface"].as<std::string>(),
+			args["monitor.port"].as<std::uint16_t>(), *metrics
+		);
+
+		ember::install_net_monitor(*monitor, server, logger);
+		ember::install_pool_monitor(*monitor, pool, logger);
+	}
 
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
@@ -239,9 +242,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("metrics.enabled", po::bool_switch()->required())
 		("metrics.statsd_host", po::value<std::string>()->required())
 		("metrics.statsd_port", po::value<std::uint16_t>()->required())
-		("health_monitor.enabled", po::bool_switch()->required())
-		("health_monitor.interface", po::value<std::string>()->required())
-		("health_monitor.port", po::value<std::uint16_t>()->required());
+		("monitor.enabled", po::bool_switch()->required())
+		("monitor.interface", po::value<std::string>()->required())
+		("monitor.port", po::value<std::uint16_t>()->required());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
@@ -294,39 +297,6 @@ void print_lib_versions(el::Logger* logger) {
 	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
 	LOG_DEBUG(logger) << "- " << ember::drivers::DriverType::name()
 	                  << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
-}
-
-void health_monitor_log_callback(const ember::HealthMonitor::Source& source,
-                                 ember::HealthMonitor::Severity severity,
-                                 std::intmax_t value, el::Logger* logger) {
-	using ember::LF_HEALTH_REPORT;
-
-	std::stringstream message;
-	message << source.key << ":" << "v:" << value << ":t:" << source.threshold << " - ";
-
-	if(source.triggered) {
-		message << source.message;
-	} else {
-		message << "Incident has been resolved.";
-	}
-
-	switch(severity) {
-		case ember::HealthMonitor::Severity::FATAL:
-			LOG_FATAL_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
-			break;
-		case ember::HealthMonitor::Severity::ERROR:
-			LOG_ERROR_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
-			break;
-		case ember::HealthMonitor::Severity::WARN:
-			LOG_WARN_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
-			break;
-		case ember::HealthMonitor::Severity::INFO:
-			LOG_INFO_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
-			break;
-		case ember::HealthMonitor::Severity::DEBUG:
-			LOG_DEBUG_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
-			break;
-	}
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {

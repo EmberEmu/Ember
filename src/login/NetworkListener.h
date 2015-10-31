@@ -9,6 +9,7 @@
 #pragma once
 
 #include "NetworkSession.h"
+#include "SessionBuilders.h"
 #include "SessionManager.h"
 #include "FilterType.h"
 #include <logger/Logger.h>

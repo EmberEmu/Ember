@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#pragma once
+
 #include <logger/Logging.h>
 #include <boost/program_options.hpp>
 #include <memory>
