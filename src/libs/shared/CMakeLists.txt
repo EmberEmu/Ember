@@ -74,6 +74,7 @@ set(LIBRARY_SRC
     shared/Banner.cpp
     shared/Banner.h
     shared/Version.h
+    ${version_file}
 )
 
 source_group("Database Objects" FILES ${DB_OBJECTS})
