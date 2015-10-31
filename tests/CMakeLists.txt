@@ -17,6 +17,6 @@ set(EXECUTABLE_SRC
     )
 
 add_executable(unit_tests ${EXECUTABLE_SRC})
-target_link_libraries(unit_tests gtest gtest_main shared spark srp6 ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(unit_tests gtest gtest_main liblogin shared spark srp6 ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(unit_tests PRIVATE ../src)
 add_test(unit_tests unit_tests)

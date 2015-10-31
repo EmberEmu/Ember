@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME login)
+set(LIBRARY_NAME    liblogin)
 
 set(GRUNT_SRC
     grunt/Exceptions.h
@@ -26,7 +27,7 @@ set(GRUNT_SRC
     grunt/server/Opcodes.h
 )
 
-set(EXECUTABLE_HDR
+set(LIBRARY_HDR
     Actions.h
     SessionBuilders.h
     LoginSession.h
@@ -43,20 +44,22 @@ set(EXECUTABLE_HDR
     FilterType.h
     )
 
-set(EXECUTABLE_SRC
+set(LIBRARY_SRC
     LoginHandler.cpp
     SessionManager.cpp
     LoginSession.cpp
     RealmList.cpp
     Authenticator.cpp
     Patcher.cpp
-    main.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
-add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${GRUNT_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} spark conpool srp6 logging shared ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC} ${version_file})
+target_link_libraries(${LIBRARY_NAME} spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+
+add_executable(${EXECUTABLE_NAME} main.cpp)
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark conpool srp6 logging shared ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/login/ DESTINATION ${CMAKE_INSTALL_PREFIX})
