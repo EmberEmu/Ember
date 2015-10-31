@@ -9,6 +9,7 @@
 #include "Handler.h"
 #include "Packets.h"
 #include <spark/Buffer.h>
+#include <boost/assert.hpp>
 
 namespace ember { namespace grunt {
 

@@ -24,9 +24,9 @@ void monitor_log_callback(const Monitor::Source& source, Monitor::Severity sever
 template<typename T>
 void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger* logger) {
 	Monitor::Source source{ "db_pool_size", std::bind(&T::size, &pool),
-		std::chrono::seconds(30), 100,
+		std::chrono::seconds(30), 0,
 		[](std::intmax_t value, std::intmax_t threshold) {
-			return value < threshold;
+			return value == threshold;
 		},
 		"Database connection pool is empty!",
 	};
