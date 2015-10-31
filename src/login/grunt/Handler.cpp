@@ -41,12 +41,15 @@ void Handler::handle_read(spark::Buffer& buffer) {
 	spark::BinaryStream stream(buffer);
 	Packet::State state = curr_packet_->read_from_stream(stream);
 
-	if(state == Packet::State::DONE) {
-		state_ = State::NEW_PACKET;
-	} else if(state == Packet::State::CALL_AGAIN) {
-		state_ = State::READ;
-	} else {
-		throw bad_packet("Bad packet state!"); // todo, assert
+	switch(state) {
+		case Packet::State::DONE:
+			state_ = State::NEW_PACKET;
+			break;
+		case Packet::State::CALL_AGAIN:
+			state_ = State::READ;
+			break;
+		default:
+			BOOST_ASSERT_MSG(false, "Unreachable condition hit!");
 	}
 }
 
