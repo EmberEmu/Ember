@@ -73,12 +73,16 @@ public:
 
 	/**  Misc functions **/ 
 
-	std::size_t size() {
+	std::size_t size() const {
 		return buffer_.size();
 	}
 
 	void skip(std::size_t count) {
 		buffer_.skip(count);
+	}
+
+	void clear() {
+		buffer_.clear();
 	}
 };
 
