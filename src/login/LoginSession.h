@@ -25,6 +25,7 @@ class Metrics;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);
+
 public:
 	ThreadPool& pool_;
 	LoginHandler handler_;

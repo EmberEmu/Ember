@@ -10,7 +10,10 @@
 #include "LoginHandlerBuilder.h"
 #include "FilterTypes.h"
 #include <shared/threading/ThreadPool.h>
+#include <exception>
+#include <functional>
 #include <memory>
+#include <utility>
 
 namespace ember {
 

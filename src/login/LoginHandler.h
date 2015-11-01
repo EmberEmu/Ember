@@ -17,7 +17,6 @@
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
-#include <shared/PacketStream.h>
 #include <botan/bigint.h>
 #include <boost/optional.hpp>
 #include <functional>
