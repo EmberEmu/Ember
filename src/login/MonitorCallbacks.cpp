@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "FilterTypes.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
 #include <sstream>
@@ -41,19 +42,19 @@ void monitor_log_callback(const Monitor::Source& source, Monitor::Severity sever
 
 	switch(severity) {
 		case Monitor::Severity::FATAL:
-			LOG_FATAL_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
+			LOG_FATAL_FILTER(logger, LF_MONITORING) << message.str() << LOG_ASYNC;
 			break;
 		case Monitor::Severity::ERROR:
-			LOG_ERROR_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
+			LOG_ERROR_FILTER(logger, LF_MONITORING) << message.str() << LOG_ASYNC;
 			break;
 		case Monitor::Severity::WARN:
-			LOG_WARN_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
+			LOG_WARN_FILTER(logger, LF_MONITORING) << message.str() << LOG_ASYNC;
 			break;
 		case Monitor::Severity::INFO:
-			LOG_INFO_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
+			LOG_INFO_FILTER(logger, LF_MONITORING) << message.str() << LOG_ASYNC;
 			break;
 		case Monitor::Severity::DEBUG:
-			LOG_DEBUG_FILTER(logger, LF_HEALTH_REPORT) << message.str() << LOG_ASYNC;
+			LOG_DEBUG_FILTER(logger, LF_MONITORING) << message.str() << LOG_ASYNC;
 			break;
 	}
 }

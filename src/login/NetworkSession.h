@@ -9,7 +9,7 @@
 #pragma once
 
 #include "SessionManager.h"
-#include "FilterType.h"
+#include "FilterTypes.h"
 #include <logger/Logging.h>
 #include <spark/BufferChain.h>
 #include <shared/PacketStream.h>

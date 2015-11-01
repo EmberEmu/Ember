@@ -41,7 +41,7 @@ set(LIBRARY_HDR
     RealmList.h
     Actions.h
     Patcher.h
-    FilterType.h
+    FilterTypes.h
     MonitorCallbacks.h
     )
 

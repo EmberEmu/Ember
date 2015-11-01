@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "FilterType.h"
+#include "FilterTypes.h"
 #include "GameVersion.h"
 #include "SessionBuilders.h"
 #include "LoginHandlerBuilder.h"
@@ -150,7 +150,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto port = args["network.port"].as<std::uint16_t>();
 	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO(logger) << "Binding server to " << interface << ":" << port << LOG_SYNC;
+	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
 	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
 	                              ip_ban_cache, logger);

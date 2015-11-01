@@ -8,7 +8,7 @@
 
 #include "LoginSession.h"
 #include "LoginHandlerBuilder.h"
-#include "FilterType.h"
+#include "FilterTypes.h"
 #include <shared/threading/ThreadPool.h>
 #include <memory>
 

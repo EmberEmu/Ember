@@ -11,7 +11,7 @@
 #include "NetworkSession.h"
 #include "SessionBuilders.h"
 #include "SessionManager.h"
-#include "FilterType.h"
+#include "FilterTypes.h"
 #include <logger/Logger.h>
 #include <shared/IPBanCache.h>
 #include <shared/memory/ASIOAllocator.h>
