@@ -315,7 +315,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		response->realms.emplace_back(realm, 0);
+		response->realms.push_back({ realm, 0 });
 	}
 
 	send(std::move(response));

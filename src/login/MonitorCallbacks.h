@@ -39,6 +39,4 @@ void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger* logger) 
 	);
 }
 
-
-
 } // ember

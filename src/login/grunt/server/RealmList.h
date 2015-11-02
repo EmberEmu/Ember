@@ -31,29 +31,25 @@ class RealmList final : public Packet {
 	static const std::size_t ZERO_REALM_BODY_WIRE_LENGTH = 7; // unknown through to unknown2
 	static const std::size_t MINIMUM_REALM_ENTRY_WIRE_LENGTH = 14; // if the realm had a single-byte name
 	static const std::size_t MAX_ALLOWED_LENGTH = 4096;
-	static const std::size_t MAX_REALM_ENTRIES = 255; // std::numeric_limits<decltype(realm_count)>::max(); - todo change in VS2015
+	static const std::size_t MAX_REALM_ENTRIES = 255;
 
 	State state_ = State::INITIAL;
 	std::uint16_t size;
 	std::uint8_t realm_count;
 
-	// todo - need a mechanism for writing to an earlier point in the stream to avoid
-	// having to calculate the size in advance
 	std::uint16_t calculate_size() {
-		std::uint16_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 
-		                            (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
+		std::size_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 
+		                          (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
 
 		for(auto& entry : realms) {
-			std::size_t old_size = packet_size;
-			packet_size += entry.first.name.size();
-			packet_size += entry.first.ip.size();
-
-			if(packet_size < old_size) {
-				throw bad_packet("Overflow detected during realm list serialisation");
-			}
+			packet_size += entry.realm.name.size();
+			packet_size += entry.realm.ip.size();
 		}
 
-		return packet_size;
+		BOOST_ASSERT_MSG(packet_size <= std::numeric_limits<std::uint16_t>::max(),
+		                 "Realm packet too large!");
+
+		return static_cast<std::uint16_t>(packet_size);
 	}
 
 	void read_size(spark::BinaryStream& stream) {
@@ -112,7 +108,7 @@ class RealmList final : public Packet {
 			be::little_to_native_inplace(realm.icon);
 			be::little_to_native_inplace(realm.population);
 
-			realms.emplace_back(realm, num_chars);
+			realms.emplace_back(RealmListEntry{ realm, num_chars });
 		}
 
 		if(!stream.size()) {
@@ -126,7 +122,10 @@ class RealmList final : public Packet {
 	}
 
 public:
-	typedef std::pair<Realm, std::uint8_t> RealmListEntry;
+	struct RealmListEntry {
+		Realm realm;
+		std::uint8_t characters;
+	};
 
 	Opcode opcode;
 	std::uint32_t unknown = 0;
@@ -164,13 +163,13 @@ public:
 		stream << static_cast<std::uint8_t>(realms.size());
 
 		for(auto& entry : realms) {
-			auto realm = entry.first;
+			auto& realm = entry.realm;
 			stream << be::native_to_little(realm.icon);
 			stream << realm.flags;
 			stream << realm.name.data() << std::uint8_t(0); // todo - specialise for string
 			stream << realm.ip.data() << std::uint8_t(0);
 			stream << be::native_to_little(realm.population);
-			stream << entry.second; // number of characters
+			stream << entry.characters;
 			stream << realm.timezone;
 			stream << std::uint8_t(0); // unknown
 		}
