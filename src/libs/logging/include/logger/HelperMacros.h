@@ -96,3 +96,10 @@
 
 #define LOG_ASYNC ember::log::flush; }
 #define LOG_SYNC  ember::log::flush_sync; }
+
+// used to generate decorated output (e.g. 'namespace::func' vs simply 'func')
+#if _MSC_VER && !__INTEL_COMPILER
+	#define __func__ __FUNCTION__
+#elif __clang__ || __GNUC__
+	#define __func__ __PRETTY_FUNCTION__
+#endif

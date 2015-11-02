@@ -29,10 +29,6 @@
 #include <cstddef>
 #include <cstring>
 
-#ifdef _WIN32
-	#define thread_local __declspec(thread)
-#endif
-
 namespace ember { namespace log {
 
 class Logger::impl final {
@@ -43,36 +39,24 @@ class Logger::impl final {
 	std::vector<std::unique_ptr<Sink>> sinks_;
 	Worker worker_;
 
-	//Workarounds for lack of full thread_local support in VS2013
-	std::unordered_map<std::thread::id, std::pair<RecordDetail, std::vector<char>>> buffers_;
-	std::unordered_map<std::thread::id, Semaphore<std::mutex>> sync_semaphores_;
-	static thread_local std::pair<RecordDetail, std::vector<char>>* t_buffer_;
-	static thread_local Semaphore<std::mutex>* t_sem_;
-	std::mutex id_lock_;
+	static thread_local std::pair<RecordDetail, std::vector<char>> buffer_;
+	static thread_local Semaphore<std::mutex> sem_;
 
 	void finalise() {
-		t_buffer_->second.push_back('\n');
-		worker_.queue_.enqueue(std::move(*t_buffer_));
+		buffer_.second.push_back('\n');
+		worker_.queue_.enqueue(std::move(buffer_));
 		worker_.signal();
-		t_buffer_->second.reserve(64);
+		buffer_.second.reserve(64);
 	}
 
 	void finalise_sync() {
-		t_buffer_->second.push_back('\n');
+		buffer_.second.push_back('\n');
 		auto r = std::make_tuple<RecordDetail, std::vector<char>, Semaphore<std::mutex>*>
-					(std::move(t_buffer_->first), std::move(t_buffer_->second), std::move(t_sem_));
+					(std::move(buffer_.first), std::move(buffer_.second), &sem_);
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
-		t_buffer_->second.reserve(64);
-		t_sem_->wait();
-	}
-
-	//Workaround for lack of full thread_local support in VS2013
-	void thread_enter() {
-		auto id = std::this_thread::get_id();
-		std::lock_guard<std::mutex> guard(id_lock_);
-		t_buffer_ = &buffers_[id];
-		t_sem_ = &sync_semaphores_[id];
+		buffer_.second.reserve(64);
+		sem_.wait();
 	}
 
 public:
@@ -88,36 +72,25 @@ public:
 #endif
 	}
 
-	//Workaround for lack of full thread_local support in VS2013
-	void thread_exit() {
-		std::lock_guard<std::mutex> guard(id_lock_);
-		buffers_.erase(std::this_thread::get_id());
-	}
-
 	template<typename T>
 	void copy_to_stream(T& data) {
 		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(t_buffer_->second));
+		std::copy(conv.begin(), conv.end(), std::back_inserter(buffer_.second));
 	}
 
 	impl& operator <<(impl& (*m)(impl&)) {
-		t_buffer_->first.type = 1; // first bit represents the misc. record type
+		buffer_.first.type = 1; // first bit represents the misc. record type
 		return (*m)(*this);
 	}
 
 	impl& operator <<(Severity severity) {
-		//Workaround for lack of full thread_local support in VS2013
-		if(t_buffer_ == nullptr) {
-			thread_enter();
-		}
-
-		t_buffer_->first.type = 1; // first bit represents the misc. record type
-		t_buffer_->first.severity = severity;
+		buffer_.first.type = 1; // first bit represents the misc. record type
+		buffer_.first.severity = severity;
 		return *this;
 	}
 
 	impl& operator <<(Filter type) {
-		t_buffer_->first.type = type;
+		buffer_.first.type = type;
 		return *this;
 	}
 
@@ -167,12 +140,12 @@ public:
 	}
 
 	impl& operator <<(const std::string& data) {
-		std::copy(data.begin(), data.end(), std::back_inserter(t_buffer_->second));
+		std::copy(data.begin(), data.end(), std::back_inserter(buffer_.second));
 		return *this;
 	}
 
 	impl& operator <<(const char* data) {
-		std::copy(data, data + std::strlen(data), std::back_inserter(t_buffer_->second));
+		std::copy(data, data + std::strlen(data), std::back_inserter(buffer_.second));
 		return *this;
 	}
 
@@ -197,7 +170,7 @@ public:
 	impl& operator=(const impl&) = delete;
 };
 
-thread_local std::pair<RecordDetail, std::vector<char>>* Logger::impl::t_buffer_;
-thread_local Semaphore<std::mutex>* Logger::impl::t_sem_;
+thread_local std::pair<RecordDetail, std::vector<char>> Logger::impl::buffer_;
+thread_local Semaphore<std::mutex> Logger::impl::sem_;
 
 }} //log, ember

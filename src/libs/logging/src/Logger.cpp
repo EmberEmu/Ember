@@ -34,10 +34,6 @@ Filter Logger::filter() {
 	return pimpl_->filter();
 }
 
-void Logger::thread_exit() {
-	pimpl_->thread_exit();
-}
-
 Logger& Logger::operator <<(Logger& (*m)(Logger&)) {
 	return (*m)(*this);
 }

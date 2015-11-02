@@ -41,7 +41,6 @@ public:
 	void add_sink(std::unique_ptr<Sink> sink);
 	Severity severity();
 	Filter filter();
-	void thread_exit();
 	void finalise();
 	void finalise_sync();
 
