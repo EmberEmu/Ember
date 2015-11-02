@@ -47,6 +47,7 @@ namespace el = ember::log;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
+using namespace std::chrono_literals;
 
 void print_lib_versions(el::Logger* logger);
 std::vector<ember::GameVersion> client_versions();
@@ -104,7 +105,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
-		pool(driver, min_conns, max_conns, std::chrono::seconds(30));
+		pool(driver, min_conns, max_conns, 30s);
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
 	                                std::placeholders::_2, logger));
 

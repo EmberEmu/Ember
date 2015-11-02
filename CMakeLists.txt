@@ -17,8 +17,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin/lib)
 set(CMAKE_CXX_STANDARD 14)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18)
-		message(FATAL_ERROR "You need VS2013 or newer to compile Ember on Windows!")
+	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19)
+		message(FATAL_ERROR "You need VS2015 or newer to compile Ember on Windows!")
 	endif()
 endif()
 

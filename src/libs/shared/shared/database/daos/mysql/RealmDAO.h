@@ -18,6 +18,8 @@
 
 namespace ember { namespace dal { 
 
+using namespace std::chrono_literals;
+
 template<typename T>
 class MySQLRealmDAO final : public RealmDAO {
 	T& pool_;
@@ -29,7 +31,7 @@ public:
 	std::vector<Realm> get_realms() const override try {
 		const std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms";
 
-		auto conn = pool_.wait_connection(std::chrono::seconds(60));
+		auto conn = pool_.wait_connection(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<Realm> realms;
@@ -53,7 +55,7 @@ public:
 		const std::string query = "SELECT id, name, ip, icon, flags, timezone, population FROM realms "
 		                          "WHERE id = ?";
 
-		auto conn = pool_.wait_connection(std::chrono::seconds(60));
+		auto conn = pool_.wait_connection(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setInt(1, id);
 

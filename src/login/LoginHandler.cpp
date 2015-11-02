@@ -133,10 +133,10 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
 	state_ = State::CLOSED;
 
-	auto response = std::make_shared<grunt::server::LoginChallenge>();
+	auto response = std::make_unique<grunt::server::LoginChallenge>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::FAIL_VERSION_INVALID;
-	send(response);
+	send(std::move(response));
 }
 
 void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) {	
@@ -157,7 +157,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 
 	state_ = State::CLOSED;
 	
-	auto response = std::make_shared<grunt::server::LoginChallenge>();
+	auto response = std::make_unique<grunt::server::LoginChallenge>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
 
@@ -184,7 +184,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 		                   << " " << e.what() << LOG_ASYNC;
 	}
 	
-	send(response);
+	send(std::move(response));
 }
 
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
@@ -192,7 +192,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 
 	state_ = State::CLOSED;
 
-	auto response = std::make_shared<grunt::server::ReconnectChallenge>();
+	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
 	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
 	response->rand = Botan::AutoSeeded_RNG().random_vec(16);
@@ -213,7 +213,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
-	send(response);
+	send(std::move(response));
 }
 
 void LoginHandler::check_login_proof(const grunt::Packet* packet) {
@@ -257,7 +257,7 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	metrics_.increment("login_failure");
 
-	auto response = std::make_shared<grunt::server::LoginProof>();
+	auto response = std::make_unique<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
 	response->result = result;
 
@@ -268,7 +268,7 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	metrics_.increment("login_success");
 
-	auto response = std::make_shared<grunt::server::LoginProof>();
+	auto response = std::make_unique<grunt::server::LoginProof>();
 	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 	response->M2 = server_proof_;
@@ -294,12 +294,12 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 		return;
 	}
 
-	auto response = std::make_shared<grunt::server::ReconnectProof>();
+	auto response = std::make_unique<grunt::server::ReconnectProof>();
 	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
-	send(response);
+	send(std::move(response));
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {
@@ -309,7 +309,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
 	}
 
-	auto response = std::make_shared<grunt::server::RealmList>();
+	auto response = std::make_unique<grunt::server::RealmList>();
 	response->opcode = grunt::server::Opcode::SMSG_REQUEST_REALM_LIST;
 	
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
@@ -318,7 +318,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		response->realms.emplace_back(realm, 0);
 	}
 
-	send(response);
+	send(std::move(response));
 }
 
 } // ember

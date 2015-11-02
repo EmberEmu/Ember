@@ -26,6 +26,8 @@
 namespace ember { namespace connection_pool {
 
 namespace sc = std::chrono;
+using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy> class Pool;
 
@@ -46,8 +48,7 @@ class PoolManager {
 			pool_->driver_.close(conn.conn);
 		} catch(std::exception& e) { 
 			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::WARN,
-				               std::string("Connection close, driver threw: ") + e.what());
+				pool_->log_cb_(Severity::WARN, "Connection close, driver threw: "s + e.what());
 			}
 		}
 			
@@ -60,13 +61,12 @@ class PoolManager {
 	void refresh(ConnDetail<ConType>& conn) {
 		try {
 			conn.error = !pool_->driver_.keep_alive(conn.conn);
-			conn.idle = sc::seconds(0);
+			conn.idle = 0s;
 		} catch(std::exception& e) { 
 			conn.error = true;
 
 			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::WARN,
-				               std::string("Connection keep-alive, driver threw: ") + e.what());
+				pool_->log_cb_(Severity::WARN, "Connection keep-alive, driver threw: "s + e.what());
 			}
 		}
 
@@ -91,8 +91,7 @@ class PoolManager {
 				guard.unlock();
 
 				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN,
-					               std::string("Failed to refill connection pool: ") + e.what());
+					pool_->log_cb_(Severity::WARN, "Failed to refill connection pool: "s + e.what());
 				}
 			}
 		}
@@ -181,8 +180,7 @@ public:
 		exception_ = std::current_exception();
 
 		if(pool_->log_cb_) {
-			pool_->log_cb_(Severity::DEBUG,
-			               "Pool manager trapped exception - passing to next caller");
+			pool_->log_cb_(Severity::DEBUG, "Pool manager trapped exception - passing to next caller");
 		}
 	}
 

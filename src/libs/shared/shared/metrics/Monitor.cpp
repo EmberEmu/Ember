@@ -13,6 +13,7 @@
 
 namespace ember {
 
+using namespace std::chrono_literals;
 namespace bai = boost::asio::ip;
 
 Monitor::Monitor(boost::asio::io_service& service, const std::string& interface,
@@ -53,7 +54,7 @@ void Monitor::send_health_status() {
 void Monitor::add_source(Source source, Severity severity, LogCallback log_callback) {
 	source.triggered = false;
 	std::lock_guard<std::mutex> guard(source_lock_);
-	sources_.emplace_back(source, severity, log_callback, std::chrono::seconds(0));
+	sources_.emplace_back(source, severity, log_callback, 0s);
 }
 
 void Monitor::timer_tick(const boost::system::error_code& ec) {
@@ -78,7 +79,7 @@ void Monitor::execute_source(Source& source, Severity severity, LogCallback& log
 	if(last_tick < source.frequency) {
 		return; // too soon!
 	} else {
-		last_tick = std::chrono::seconds::zero();
+		last_tick = 0s;
 	}
 
 	auto value = source.callback();

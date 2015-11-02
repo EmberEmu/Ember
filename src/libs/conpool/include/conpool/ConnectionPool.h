@@ -32,6 +32,8 @@
 namespace ember { namespace connection_pool {
 
 namespace sc = std::chrono;
+using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy> class PoolManager;
 
@@ -116,14 +118,14 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 						}
 					} catch(std::exception& e) {
 						if(log_cb_) {
-							log_cb_(Severity::DEBUG, std::string("On connection clean: ") + e.what());
+							log_cb_(Severity::DEBUG, "On connection clean: "s + e.what());
 						}
 						return false;
 					}
 				}
 
 				cd.checked_out = true;
-				cd.idle = sc::seconds(0);
+				cd.idle = 0s;
 				pool_guards_[cd.id].store(true, std::memory_order_relaxed);
 				return true;
 			}
@@ -152,7 +154,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	
 public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
-	     sc::seconds max_idle, sc::seconds interval = sc::seconds(10))
+	     sc::seconds max_idle, sc::seconds interval = 60s)
 	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size),
 		   pool_guards_(max_size), size_(0), closed_(false) {
 		set_connection_ids();
@@ -181,14 +183,13 @@ public:
 				continue;
 			}
 
-			BOOST_ASSERT_MSG(!c.checked_out, 
-			                 "Closed connection pool without returning all connections.");
+			BOOST_ASSERT_MSG(!c.checked_out, "Closed connection pool without returning all connections.");
 
 			try {
 				driver_.close(c.conn);
 			} catch(std::exception& e) { 
 				if(log_cb_) {
-					log_cb_(Severity::WARN, std::string("Closing pool, driver threw: ") + e.what());
+					log_cb_(Severity::WARN, "Closing pool, driver threw: "s + e.what());
 				}
 			}
 		}

@@ -15,6 +15,8 @@
 
 namespace ember {
 
+using namespace std::chrono_literals;
+
 class NetworkListener;
 
 void install_net_monitor(Monitor& monitor, const NetworkListener& server, log::Logger* logger);
@@ -24,7 +26,7 @@ void monitor_log_callback(const Monitor::Source& source, Monitor::Severity sever
 template<typename T>
 void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger* logger) {
 	Monitor::Source source{ "db_pool_size", std::bind(&T::size, &pool),
-		std::chrono::seconds(30), 0,
+		30s, 0,
 		[](std::intmax_t value, std::intmax_t threshold) {
 			return value == threshold;
 		},

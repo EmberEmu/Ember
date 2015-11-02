@@ -16,8 +16,8 @@ namespace ember {
 
 template<typename Lock>
 class Semaphore final {
-	unsigned int count_;
 	std::condition_variable condition_;
+	unsigned int count_;
 	unsigned int max_;
 	Lock lock_;
 
@@ -50,21 +50,14 @@ public:
 	bool wait_for(std::chrono::milliseconds duration) {
 		std::unique_lock<Lock> guard(lock_);
 
-		//wait_for with a predicate is broken in VS2013 & VS2015 Preview - workaround!
-		//todo, submitted bug report, has now been fixed for VS2015 RTM
-		bool hack = false;
-
-		condition_.wait_for(guard, std::chrono::milliseconds(duration),
-			[this, &hack]() {
+		return condition_.wait_for(guard, duration,
+			[this]() {
 				if(count_ != 0) {
 					--count_;
-					hack = true;
 					return true;
 				}
 				return false;
 			});
-
-		return hack;
 	}
 
 	void signal(unsigned int increment = 1) {

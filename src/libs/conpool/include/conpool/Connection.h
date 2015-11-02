@@ -17,6 +17,7 @@
 namespace ember { namespace connection_pool {
 
 namespace sc = std::chrono;
+using namespace std::chrono_literals;
 
 template<typename ConType>
 struct ConnDetail {
@@ -28,7 +29,7 @@ struct ConnDetail {
 	bool error = false;
 	bool sweep = false;
 	bool refresh = false;
-	sc::seconds idle = sc::seconds(0);
+	sc::seconds idle = 0s;
 
 	ConnDetail(const ConType& connection) : conn(connection), empty_slot(false) {}
 	ConnDetail() = default;

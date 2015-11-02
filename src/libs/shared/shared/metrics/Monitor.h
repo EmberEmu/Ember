@@ -23,6 +23,8 @@
 
 namespace ember {
 
+using namespace std::chrono_literals;
+
 class Metrics;
 
 // todo - workaround for GCC defect, awaiting fix (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970)
@@ -71,8 +73,7 @@ private:
 
 public:
 	Monitor(boost::asio::io_service& service, const std::string& interface,
-	              std::uint16_t port, Metrics& metrics,
-	              std::chrono::seconds frequency = std::chrono::seconds(5));
+	        std::uint16_t port, Metrics& metrics, std::chrono::seconds frequency = 5s);
 
 	void add_source(Source source, Severity severity, LogCallback log_callback);
 };

@@ -37,7 +37,7 @@ public:
 
 	bool handle_packet(spark::Buffer& buffer) override;
 	void execute_async(std::shared_ptr<Action> action);
-	void write_chain(std::shared_ptr<grunt::Packet> packet); // todo - see todo on the definition
+	void write_chain(grunt::PacketHandle);
 };
 
 } // ember

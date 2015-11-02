@@ -66,7 +66,7 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 	close_session();
 }
 
-void LoginSession::write_chain(std::shared_ptr<grunt::Packet> packet) { // todo - change to unique_ptr in VS2015 (binding bug)
+void LoginSession::write_chain(grunt::PacketHandle packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	auto chain = std::make_shared<spark::BufferChain<1024>>();

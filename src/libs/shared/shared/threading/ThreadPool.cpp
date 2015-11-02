@@ -11,6 +11,8 @@
 
 namespace ember {
 
+using namespace std::string_literals;
+
 ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_) {
 	for(std::size_t i = 0; i < initial_count; ++i) {
 		workers_.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
@@ -22,7 +24,7 @@ ThreadPool::~ThreadPool() {
 	service_.stop();
 
 	for(auto& worker : workers_) {
-		try { //todo move when VS2015 is out - VS2013 bug
+		try { // todo move when VS201? is out - apparently they didn't fix this in VS2015 either
 			worker.join();
 		} catch(std::exception& e) {
 			BOOST_ASSERT_MSG(false, e.what());
@@ -30,7 +32,7 @@ ThreadPool::~ThreadPool() {
 			std::lock_guard<std::mutex> guard(log_cb_lock_);
 
 			if(log_cb_) {
-				log_cb_(Severity::FATAL, std::string("In thread pool dtor: ") + e.what());
+				log_cb_(Severity::FATAL, "In thread pool dtor: "s + e.what());
 			}
 		}
 	}

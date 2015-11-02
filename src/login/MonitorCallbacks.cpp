@@ -13,9 +13,11 @@
 
 namespace ember {
 
+using namespace std::chrono_literals;
+
 void install_net_monitor(Monitor& monitor, const NetworkListener& server, log::Logger* logger) {
 	Monitor::Source source{ "network_connections", std::bind(&NetworkListener::connection_count, &server),
-		std::chrono::seconds(10), 1000,
+		10s, 1000,
 		[](std::intmax_t value, std::intmax_t threshold) {
 			return value > threshold;
 		},

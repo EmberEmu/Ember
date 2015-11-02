@@ -64,7 +64,7 @@ class LoginHandler {
 
 public:
 	std::function<void(std::shared_ptr<Action> action)> execute_async;
-	std::function<void(std::shared_ptr<grunt::Packet>)> send;
+	std::function<void(grunt::PacketHandle)> send;
 
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(const grunt::Packet* packet);
