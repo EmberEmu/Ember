@@ -6,3 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#pragma once
+
+static char request_realm_list[] = { 0x10, 0x00, 0x00, 0x00, 0x00 };
