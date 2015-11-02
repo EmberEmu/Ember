@@ -84,6 +84,10 @@ public:
 	void clear() {
 		buffer_.clear();
 	}
+
+	bool empty() {
+		return buffer_.empty();
+	}
 };
 
 }} // spark, ember

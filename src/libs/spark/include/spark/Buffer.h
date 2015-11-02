@@ -26,6 +26,7 @@ public:
 	virtual void reserve(std::size_t length) = 0;
 	virtual std::size_t size() const = 0;
 	virtual void clear() = 0;
+	virtual bool empty() = 0;
 };
 
 }} // spark, ember

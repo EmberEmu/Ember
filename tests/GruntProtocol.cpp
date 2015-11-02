@@ -40,7 +40,7 @@ TEST(GruntProtocol, CMSG_RECONNECT_PROOF) {
 }
 
 TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
-	std::size_t packet_size = sizeof(request_realm_list);
+	const std::size_t packet_size = sizeof(request_realm_list);
 
 	// write the packet bytes into chain
 	spark::BufferChain<1024> chain;
@@ -52,17 +52,17 @@ TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
 	packet.read_from_stream(stream);
 
 	// verify the deserialisation results
-	ASSERT_EQ(0, chain.size()) << "Read too short";
+	ASSERT_TRUE(chain.empty()) << "Read too short";
 	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
 	ASSERT_EQ(packet_size, chain.size()) << "Write too short";
 
-	auto buffer = std::make_unique<char[]>(packet_size);
-	chain.read(buffer.get(), chain.size());
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
 
-	ASSERT_EQ(0, memcmp(buffer.get(), request_realm_list, packet_size))
+	ASSERT_EQ(0, memcmp(buffer, request_realm_list, packet_size))
 		<< "Serialisation failed (input != output)";
 }
 

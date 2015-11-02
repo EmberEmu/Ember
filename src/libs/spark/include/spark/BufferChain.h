@@ -105,7 +105,7 @@ public:
 	BufferChain(const BufferChain& rhs) { copy(rhs); }
 	BufferChain& operator=(const BufferChain& rhs) { clear(); copy(rhs); return *this;  }
 
-	void read(void* destination, std::size_t length) {
+	void read(void* destination, std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
 		std::size_t remaining = length;
 
@@ -123,7 +123,7 @@ public:
 		size_ -= length;
 	}
 
-	void copy(void* destination, std::size_t length) const {
+	void copy(void* destination, std::size_t length) const override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer copy too large!");
 		std::size_t remaining = length;
 		auto head = root_.next;
@@ -166,7 +166,7 @@ public:
 	}
 
 
-	void skip(std::size_t length) {
+	void skip(std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
 		std::size_t remaining = length;
 
@@ -183,7 +183,7 @@ public:
 		size_ -= length;
 	}
 
-	void write(const void* source, std::size_t length) {
+	void write(const void* source, std::size_t length) override {
 		std::size_t remaining = length;
 		BufferChainNode* tail = root_.prev;
 
@@ -205,7 +205,7 @@ public:
 		size_ += length;
 	}
 
-	void reserve(std::size_t length) {
+	void reserve(std::size_t length) override {
 		std::size_t remaining = length;
 		BufferChainNode* tail = root_.prev;
 
@@ -227,7 +227,7 @@ public:
 		size_ += length;
 	}
 
-	std::size_t size() const {
+	std::size_t size() const override {
 		return size_;
 	}
 
@@ -256,7 +256,7 @@ public:
 		size_ += size;
 	}
 
-	void clear() {
+	void clear() override {
 		BufferChainNode* head;
 
 		while((head = root_.next) != &root_) {
@@ -265,6 +265,10 @@ public:
 		}
 
 		size_ = 0;
+	}
+
+	bool empty() override {
+		return !size_;
 	}
 
 	class const_iterator {
