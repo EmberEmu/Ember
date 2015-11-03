@@ -61,11 +61,11 @@ install:
     - if [ "$CXX" == "clang++-3.7" ]; then sudo ./bootstrap.sh --with-libraries=system,filesystem,program_options --with-toolset=clang; fi
     - sudo ./b2 link=static install -d0 -j 2 cxxflags="-std=c++14"
     - cd ../
-    - wget http://www.cmake.org/files/v3.2/cmake-3.2.3-Linux-x86_64.tar.gz
+    - wget --no-check-certificate http://www.cmake.org/files/v3.2/cmake-3.2.3-Linux-x86_64.tar.gz
     - tar xzvf cmake-3.2.3-Linux-x86_64.tar.gz
     - sudo cp -fR cmake-3.2.3-Linux-x86_64/* /usr
     - cmake --version
-    - wget -O mysqlconn.tar.gz https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.6.tar.gz
+    - wget --no-check-certificate -O mysqlconn.tar.gz https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-1.1.6.tar.gz
     - tar xzvf mysqlconn.tar.gz > /dev/null
     - cd mysql-connector-c++-1.1.6/
     - cmake .
