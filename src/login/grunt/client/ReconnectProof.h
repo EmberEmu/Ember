@@ -14,6 +14,7 @@
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <array>
 #include <cstdint>
 #include <cstddef>
 
@@ -21,16 +22,13 @@ namespace ember { namespace grunt { namespace client {
 
 class ReconnectProof final : public Packet {
 	static const std::size_t WIRE_LENGTH = 58;
-	static const std::size_t R1_LENGTH = 16;
-	static const std::size_t R2_LENGTH = 20;
-	static const std::size_t R3_LENGTH = 20;
 	State state_ = State::INITIAL;
 
 public:
 	Opcode opcode;
-	Botan::BigInt R1;
-	Botan::BigInt R2;
-	Botan::BigInt R3;
+	std::array<Botan::byte, 16> R1;
+	std::array<Botan::byte, 20> R2;
+	std::array<Botan::byte, 20> R3;
 	std::uint8_t key_count;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
@@ -41,43 +39,19 @@ public:
 		}
 
 		stream >> opcode;
-
-		// could just use one buffer but this is safer from silly mistakes
-		Botan::byte r1_buff[R1_LENGTH];
-		stream.get(r1_buff, R1_LENGTH);
-		std::reverse(std::begin(r1_buff), std::end(r1_buff));
-		R1 = Botan::BigInt(r1_buff, R1_LENGTH);
-
-		Botan::byte r2_buff[R2_LENGTH];
-		stream.get(r2_buff, R2_LENGTH);
-		std::reverse(std::begin(r2_buff), std::end(r2_buff));
-		R1 = Botan::BigInt(r2_buff, R2_LENGTH);
-
-		Botan::byte r3_buff[R3_LENGTH];
-		stream.get(r3_buff, R3_LENGTH);
-		std::reverse(std::begin(r3_buff), std::end(r3_buff));
-		R1 = Botan::BigInt(r3_buff, R3_LENGTH);
-
+		stream.get(R1.data(), R1.size());
+		stream.get(R2.data(), R2.size());
+		stream.get(R3.data(), R3.size());
 		stream >> key_count;
 
 		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) override {
-		 stream << opcode;
-
-		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(R1, R1_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
-
-		bytes = Botan::BigInt::encode_1363(R2, R2_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
-
-		bytes = Botan::BigInt::encode_1363(R3, R3_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
-
+		stream << opcode;
+		stream.put(R1.data(), R1.size());
+		stream.put(R2.data(), R2.size());
+		stream.put(R3.data(), R3.size());
 		stream << key_count;
 	}
 };

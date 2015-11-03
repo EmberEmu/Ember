@@ -60,14 +60,11 @@ ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const std::
 bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof* proof) {
 	Botan::SHA_160 hasher;
 	hasher.update(rcon_user_);
-	hasher.update(Botan::BigInt::encode(proof->R1));
+	hasher.update(proof->R1.data(), proof->R1.size());
 	hasher.update(rcon_chall_);
 	hasher.update(sess_key_);
 	auto res = hasher.final();
-	
-	// todo - change this to include std::end for R2 once on VS2015 RTM (C++14)
-	//return std::equal(res.begin(), res.end(), std::begin(proof->R2)); // todo
-	return true;
+	return std::equal(res.begin(), res.end(), std::begin(proof->R2), std::end(proof->R2));
 }
 
 } // ember

@@ -144,7 +144,7 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 
 	auto values = login_auth_->challenge_reply();
 	packet->B = values.B;
-	packet->g_len = values.gen.generator().bytes();
+	packet->g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
 	packet->g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
 	packet->n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet->N = values.gen.prime();
