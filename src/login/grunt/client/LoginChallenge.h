@@ -101,7 +101,7 @@ public:
 	};
 
 	Opcode opcode;
-	ResultCode error;
+	std::uint8_t error; // todo - nobody seems to know what this is, look into it at some point
 	PacketMagic magic;
 	GameVersion version;
 	Platform platform;
@@ -135,9 +135,11 @@ public:
 			throw bad_packet("Provided username was too long!"); // todo
 		}
 
+		auto size = static_cast<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
+
 		stream << opcode;
 		stream << error;
-		stream << be::native_to_little((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
+		stream << be::native_to_little(size);
 		stream << be::native_to_little(magic);
 		stream << version.major;
 		stream << version.minor;
