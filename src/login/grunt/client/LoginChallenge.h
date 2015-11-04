@@ -61,7 +61,7 @@ class LoginChallenge final : public Packet {
 		be::little_to_native_inplace(os);
 		be::little_to_native_inplace(locale);
 		be::little_to_native_inplace(timezone_bias);
-		be::little_to_native_inplace(ip);
+		be::big_to_native_inplace(ip);
 	}
 
 	void read_username(spark::BinaryStream& stream) {
@@ -147,7 +147,7 @@ public:
 		stream << be::native_to_little(os);
 		stream << be::native_to_little(locale);
 		stream << be::native_to_little(timezone_bias);
-		stream << be::native_to_little(ip);
+		stream << be::native_to_big(ip);
 		stream << static_cast<std::uint8_t>(username.length());
 		stream.put(username.data(), username.length());
 	}
