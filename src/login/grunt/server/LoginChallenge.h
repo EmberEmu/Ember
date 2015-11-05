@@ -19,9 +19,8 @@
 namespace ember { namespace grunt { namespace server {
 
 class LoginChallenge final : public Packet {
-	static const std::size_t WIRE_LENGTH = 120;
+	static const std::size_t WIRE_LENGTH = 119;
 	static const std::uint8_t SALT_LENGTH = 32;
-	static const std::size_t UNKNOWN_RAND_BYTES_LENGTH = 16;
 
 	State state_ = State::INITIAL;
 
@@ -30,15 +29,15 @@ public:
 	static const std::uint8_t PUB_KEY_LENGTH = 32;
 
 	Opcode opcode;
-	std::uint8_t unk1 = 0;
 	ResultCode result;
+	std::uint8_t unk1 = 0;
 	Botan::BigInt B;
 	std::uint8_t g_len;
 	std::uint8_t g;
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	Botan::SecureVector<Botan::byte> unk3;
+	std::array<Botan::byte, 16> unk3;
 	std::uint8_t unk4 = 0;
 
 	// todo - early abort (wire length change)
@@ -50,8 +49,8 @@ public:
 		}
 
 		stream >> opcode;
-		stream >> unk1;
 		stream >> result;
+		stream >> unk1;
 
 		if(result != grunt::ResultCode::SUCCESS) {
 			return (state_ = State::DONE); // rest of the fields won't be sent
@@ -74,9 +73,9 @@ public:
 		Botan::byte s_buff[SALT_LENGTH];
 		stream.get(s_buff, SALT_LENGTH);
 		std::reverse(std::begin(s_buff), std::end(s_buff));
-		s = Botan::BigInt(b_buff, SALT_LENGTH);
+		s = Botan::BigInt(s_buff, SALT_LENGTH);
 
-		stream.get(unk3.begin(), unk3.size());
+		stream.get(unk3.data(), unk3.size());
 		stream >> unk4;
 
 		return (state_ = State::DONE);
@@ -84,8 +83,8 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
-		stream << unk1;
 		stream << result;
+		stream << unk1;
 
 		if(result != grunt::ResultCode::SUCCESS) {
 			return; // don't send the rest of the fields
@@ -107,8 +106,7 @@ public:
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
-		unk3.resize(UNKNOWN_RAND_BYTES_LENGTH);
-		stream.put(unk3.begin(), unk3.size());
+		stream.put(unk3.data(), unk3.size());
 		stream << unk4;
 	}
 };

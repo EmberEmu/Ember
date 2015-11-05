@@ -149,7 +149,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 	packet->n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet->N = values.gen.prime();
 	packet->s = values.salt;
-	packet->unk3 = Botan::AutoSeeded_RNG().random_vec(16);;
+	auto rand = Botan::AutoSeeded_RNG().random_vec(16);;
+	std::copy(rand.begin(), rand.end(), packet->unk3.data());
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {

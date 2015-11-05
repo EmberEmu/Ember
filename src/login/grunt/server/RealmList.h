@@ -101,8 +101,8 @@ class RealmList final : public Packet {
 			}
 
 			stream >> realm.population;
-			stream >> realm.timezone;
 			stream >> num_chars;
+			stream >> realm.timezone;
 			stream.skip(1); // unknown byte, just skip it
 
 			be::little_to_native_inplace(realm.icon);
@@ -166,8 +166,8 @@ public:
 			auto& realm = entry.realm;
 			stream << be::native_to_little(realm.icon);
 			stream << realm.flags;
-			stream << realm.name.data() << std::uint8_t(0); // todo - specialise for string
-			stream << realm.ip.data() << std::uint8_t(0);
+			stream << realm.name;
+			stream << realm.ip;
 			stream << be::native_to_little(realm.population);
 			stream << entry.characters;
 			stream << realm.timezone;

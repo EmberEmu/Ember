@@ -32,6 +32,13 @@ public:
 		return *this;
 	}
 
+	BinaryStream& operator <<(const std::string& data) {
+		buffer_.write(&data[0], data.size());
+		char term = '\0';
+		buffer_.write(&term, 1);
+		return *this;
+	}
+
 	BinaryStream& operator <<(const char* data) {
 		buffer_.write(data, std::strlen(data));
 		return *this;
@@ -49,7 +56,9 @@ public:
 
 		do { // not overly efficient
 			buffer_.read(&byte, 1);
-			dest.push_back(byte);
+			if(byte) {
+				dest.push_back(byte);
+			}
 		} while(byte && buffer_.size() > 0);
 		
 		return *this;

@@ -9,8 +9,12 @@
 #include "GruntPacketDumps.h"
 #include <spark/BufferChain.h>
 #include <login/grunt/Packets.h>
+#include <boost/asio/ip/address.hpp>
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
+#include <tuple>
+#include <cstdint>
 
  /*
  * These tests verify that the serialisation & deserialisation of the Grunt login protocol
@@ -26,17 +30,117 @@
  */
 
 using namespace ember;
+using namespace std::string_literals;
 
 TEST(GruntProtocol, CMSG_LOGIN_CHALLENGE) {
+	const std::size_t packet_size = sizeof(client_login_challenge);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(client_login_challenge, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::client::LoginChallenge();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	GameVersion version { 1, 12, 1, 5875 };
+	auto ip = boost::asio::ip::address_v4::from_string("10.0.0.5").to_ulong();
+
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
+	ASSERT_EQ(version, packet.version)
+		<< "Deserialisation failed (field: client version)";
+	ASSERT_EQ("CHAOSVEX"s, packet.username)
+		<< "Deserialisation failed (field: username)";
+	ASSERT_EQ(0, packet.timezone_bias)
+		<< "Deserialisation failed (field: timezone bias)";
+	ASSERT_EQ(grunt::client::LoginChallenge::Platform::x86, packet.platform)
+		<< "Deserialisation failed (field: platform)";
+	ASSERT_EQ(grunt::client::LoginChallenge::OperatingSystem::Windows, packet.os)
+		<< "Deserialisation failed (field: operating system)";
+	ASSERT_EQ(grunt::client::LoginChallenge::PacketMagic::WoW, packet.magic)
+		<< "Deserialisation failed (field: magic)";
+	ASSERT_EQ(grunt::client::LoginChallenge::ClientLocale::enUS, packet.locale)
+		<< "Deserialisation failed (field: locale)";
+	ASSERT_EQ(ip, packet.ip)
+		<< "Deserialisation failed (field: IP)";
+	ASSERT_EQ(3, packet.error)
+		<< "Deserialisation failed (field: result)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, client_login_challenge, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, CMSG_LOGIN_PROOF) {
+	const std::size_t packet_size = sizeof(client_login_proof);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(client_login_proof, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::client::LoginProof();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
+	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, client_login_proof, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, CMSG_RECONNECT_PROOF) {
+	const std::size_t packet_size = sizeof(client_reconnect_proof);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(client_reconnect_proof, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::client::ReconnectProof();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	char r1_expected[16];
+	char r2_expected[20];
+	char r3_expected[20];
+	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
+
+	ASSERT_EQ(0, std::memcmp(r1_expected, packet.R1.data(), packet.R1.size()))
+		<< "Deserialisation failed (field: R1)";
+	ASSERT_EQ(0, std::memcmp(r2_expected, packet.R2.data(), packet.R2.size()))
+		<< "Deserialisation failed (field: R2)";
+	ASSERT_EQ(0, std::memcmp(r3_expected, packet.R3.data(), packet.R3.size()))
+		<< "Deserialisation failed (field: R3)";
+	ASSERT_EQ(0, packet.key_count) << "Deserialisation failed (field: key count)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, client_reconnect_proof, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
@@ -52,12 +156,12 @@ TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
 	packet.read_from_stream(stream);
 
 	// verify the deserialisation results
-	ASSERT_TRUE(chain.empty()) << "Read too short";
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
-	ASSERT_EQ(packet_size, chain.size()) << "Write too short";
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
 
 	char buffer[packet_size];
 	chain.read(buffer, chain.size());
@@ -67,21 +171,183 @@ TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
 }
 
 TEST(GruntProtocol, SMSG_LOGIN_CHALLENGE) {
+	const std::size_t packet_size = sizeof(server_login_challenge);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	chain.write(server_login_challenge, packet_size);
+
+	// deserialise the packet
+	spark::BinaryStream stream(chain);
+	auto packet = grunt::server::LoginChallenge();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
+	ASSERT_EQ(Botan::BigInt("0x153a794dba6475ef8b2cfdbb8fc88d40edc0effea638842829d4d2c4baba84f1"), packet.B)
+		<< "Deserialisation failed (field: B [public ephemeral])";
+	ASSERT_EQ(7, packet.g) << "Deserialisation failed (field: g [generator])";
+	ASSERT_EQ(1, packet.g_len) << "Deserialisation failed (field: g length)";
+	ASSERT_EQ(Botan::BigInt("0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"), packet.N)
+		<< "Deserialisation failed (field: N [safe prime])";
+	ASSERT_EQ(32, packet.n_len) << "Deserialisation failed (field: N length)";
+	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(Botan::BigInt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C"), packet.s)
+		<< "Deserialisation failed (field: salt)";
+	ASSERT_EQ(0, packet.unk1) << "Deserialisation failed (field: unknown 1)";
+	//ASSERT_EQ(0, packet.unk3) << "Deserialisation failed (field: unknown 3)";
+	ASSERT_EQ(0, packet.unk4) << "Deserialisation failed (field: unknown 4)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, server_login_challenge, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, SMSG_LOGIN_PROOF) {
+	const std::size_t packet_size = sizeof(server_login_proof);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(server_login_proof, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::server::LoginProof();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
+	ASSERT_EQ(0, packet.account_flags) << "Deserialisation failed (field: account flags)";
+	ASSERT_EQ(Botan::BigInt("0xa3fbd672a092de7650fb0733419ebf59bcae644a"), packet.M2)
+		<< "Deserialisation failed (field: M2)";
+	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(0, packet.account_flags) << "Deserialisation failed (field: unknown)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, server_login_proof, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, SMSG_REALM_LIST) {
+	const std::size_t packet_size = sizeof(realm_list);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(realm_list, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::server::RealmList();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
+	ASSERT_EQ(2, packet.realms.size()) << "Deserialisation failed (invalid realm count)";
+
+	// test first realm entry
+	grunt::server::RealmList::RealmListEntry entry = packet.realms[0];
+	auto realm = entry.realm;
+	auto chars = entry.characters;
+
+	ASSERT_EQ(2, realm.flags) << "Deserialisation failed (invalid realm flags)";
+	ASSERT_EQ(1, realm.icon) << "Deserialisation failed (invalid realm icon)";
+	ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
+	ASSERT_EQ("Ember"s, realm.name) << "Deserialisation failed (invalid realm name)";
+	ASSERT_EQ(0.0f, realm.population) << "Deserialisation failed (invalid realm population)";
+	ASSERT_EQ(0, chars) << "Deserialisation failed (invalid character count)";
+
+	//test second realm entry
+	entry = packet.realms[1];
+	realm = entry.realm;
+	chars = entry.characters;
+
+	ASSERT_EQ(1, realm.flags) << "Deserialisation failed (invalid realm flags)";
+	ASSERT_EQ(0, realm.icon) << "Deserialisation failed (invalid realm icon)";
+	ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
+	ASSERT_EQ("Ember Test"s, realm.name) << "Deserialisation failed (invalid realm name)";
+	ASSERT_EQ(1.4f, realm.population) << "Deserialisation failed (invalid realm population)";
+	ASSERT_EQ(0, chars) << "Deserialisation failed (invalid character count)";
+
+	// check the other fields
+	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(5, packet.unknown2) << "Deserialisation failed (field: unknown)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, realm_list, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, SMSG_RECONNECT_CHALLENGE) {
+	const std::size_t packet_size = sizeof(server_reconnect_challenge);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(server_reconnect_challenge, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::server::ReconnectChallenge();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
+	//ASSERT_EQ(0, packet.rand) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(0, packet.unknown2) << "Deserialisation failed (field: unknown)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, server_reconnect_challenge, packet_size))
+		<< "Serialisation failed (input != output)";
 }
 
 TEST(GruntProtocol, SMSG_RECONNECT_PROOF) {
+	const std::size_t packet_size = sizeof(server_reconnect_proof);
 
+	// write the packet bytes into chain
+	spark::BufferChain<1024> chain;
+	spark::BinaryStream stream(chain);
+	chain.write(server_reconnect_proof, packet_size);
+
+	// deserialise the packet
+	auto packet = grunt::server::ReconnectProof();
+	packet.read_from_stream(stream);
+
+	// verify the deserialisation results
+	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
+	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+
+	// serialise back to the stream and verify that the output matches the original packet
+	packet.write_to_stream(stream);
+	ASSERT_EQ(packet_size, chain.size()) << "Write length incorrect";
+
+	char buffer[packet_size];
+	chain.read(buffer, chain.size());
+
+	ASSERT_EQ(0, memcmp(buffer, server_reconnect_proof, packet_size))
+		<< "Serialisation failed (input != output)";
 }
