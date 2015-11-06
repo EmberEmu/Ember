@@ -9,7 +9,6 @@ add_library(spark
             include/spark/BufferChain.h
             include/spark/BufferChainNode.h
             include/spark/BinaryStream.h
-            include/spark/BufferChainReadIterator.h
             dummy.cpp
 )
 

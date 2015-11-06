@@ -281,11 +281,11 @@ public:
 			return *this;
 		}
 
-	/*	const_iterator operator++(int) {
+		const_iterator operator++(int) {
 			const_iterator current(*this);
 			curr_node_ = curr_node_->next;
 			return current;
-		}*/
+		}
 
 		boost::asio::const_buffer operator*() const {
 			auto buffer = chain_.buffer_from_node(curr_node_);
