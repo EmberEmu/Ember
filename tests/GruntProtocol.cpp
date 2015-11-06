@@ -119,16 +119,22 @@ TEST(GruntProtocol, CMSG_RECONNECT_PROOF) {
 	packet.read_from_stream(stream);
 
 	// verify the deserialisation results
-	char r1_expected[16];
-	char r2_expected[20];
-	char r3_expected[20];
+	std::array<Botan::byte, 16> r1_expected = { 0x39, 0xb1, 0xd1, 0xe4, 0x49, 0x13, 0x80, 0x9d,
+	                                            0x92, 0x17, 0x56, 0x8e, 0xa5, 0x7b, 0x24, 0x3d };
+	std::array<Botan::byte, 20> r2_expected = { 0xc0, 0x4e, 0x35, 0xe6, 0xfe, 0xb2, 0x1a, 0x84,
+	                                            0x98, 0xc4, 0x8e, 0x6c, 0x2d, 0x7f, 0x42, 0x56,
+	                                            0xb6, 0x4c, 0x98, 0x24 };
+	std::array<Botan::byte, 20> r3_expected = { 0x0d, 0xbe, 0x94, 0xaf, 0x7f, 0x46, 0x94, 0xa2,
+	                                            0x3f, 0xe7, 0xdf, 0xe5, 0x99, 0xbf, 0xe7, 0x88,
+	                                            0x86, 0x02, 0x5f, 0x92 };
+
 	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
 
-	ASSERT_EQ(0, std::memcmp(r1_expected, packet.R1.data(), packet.R1.size()))
+	ASSERT_EQ(r1_expected, packet.R1)
 		<< "Deserialisation failed (field: R1)";
-	ASSERT_EQ(0, std::memcmp(r2_expected, packet.R2.data(), packet.R2.size()))
+	ASSERT_EQ(r2_expected, packet.R2)
 		<< "Deserialisation failed (field: R2)";
-	ASSERT_EQ(0, std::memcmp(r3_expected, packet.R3.data(), packet.R3.size()))
+	ASSERT_EQ(r3_expected, packet.R3)
 		<< "Deserialisation failed (field: R3)";
 	ASSERT_EQ(0, packet.key_count) << "Deserialisation failed (field: key count)";
 
@@ -308,8 +314,10 @@ TEST(GruntProtocol, SMSG_RECONNECT_CHALLENGE) {
 	packet.read_from_stream(stream);
 
 	// verify the deserialisation results
+	std::array<Botan::byte, 16> rand{ 0xdd, 0x26, 0xe7, 0x5f, 0x44, 0x24, 0xcf, 0xdd, 0x51, 0x89,
+	                                  0x41, 0xd2, 0x02, 0x78, 0xd1, 0x84 };
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	//ASSERT_EQ(0, packet.rand) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(rand, packet.rand) << "Deserialisation failed (field: unknown)";
 	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: unknown)";
 	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
 	ASSERT_EQ(0, packet.unknown2) << "Deserialisation failed (field: unknown)";

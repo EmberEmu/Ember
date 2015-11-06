@@ -108,7 +108,7 @@ public:
 	OperatingSystem os;
 	ClientLocale locale;
 	std::uint32_t timezone_bias;
-	std::uint32_t ip;
+	std::uint32_t ip; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;
 
 	State read_from_stream(spark::BinaryStream& stream) override {

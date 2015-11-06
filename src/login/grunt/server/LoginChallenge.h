@@ -37,7 +37,7 @@ public:
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	std::array<Botan::byte, 16> unk3;
+	std::array<Botan::byte, 16> crc_salt;
 	std::uint8_t unk4 = 0;
 
 	// todo - early abort (wire length change)
@@ -75,7 +75,7 @@ public:
 		std::reverse(std::begin(s_buff), std::end(s_buff));
 		s = Botan::BigInt(s_buff, SALT_LENGTH);
 
-		stream.get(unk3.data(), unk3.size());
+		stream.get(crc_salt.data(), crc_salt.size());
 		stream >> unk4;
 
 		return (state_ = State::DONE);
@@ -106,7 +106,7 @@ public:
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
-		stream.put(unk3.data(), unk3.size());
+		stream.put(crc_salt.data(), crc_salt.size());
 		stream << unk4;
 	}
 };

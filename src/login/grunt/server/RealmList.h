@@ -21,7 +21,6 @@
  * The parsing for this packet is pretty verbose but I'm assuming that the data
  * from the server may be invalid (unlikely but better safe than sorry)
  */
-
 namespace ember { namespace grunt { namespace server {
 
 namespace be = boost::endian;
@@ -64,7 +63,6 @@ class RealmList final : public Packet {
 		state_ = State::CALL_AGAIN;
 	}
 
-	// todo - test this because there's no way it's going to work first time
 	void parse_body(spark::BinaryStream& stream) {
 		if(stream.size() < size) {
 			return;

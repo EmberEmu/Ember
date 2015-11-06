@@ -28,7 +28,7 @@ class ReconnectChallenge final : public Packet {
 public:
 	Opcode opcode;
 	ResultCode result;
-	Botan::SecureVector<Botan::byte> rand;
+	std::array<Botan::byte, RAND_LENGTH> rand; // so many bytes, so little understood - todo, research
 	std::uint64_t unknown = 0;
 	std::uint64_t unknown2 = 0;
 
@@ -41,10 +41,7 @@ public:
 		
 		stream >> opcode;
 		stream >> result;
-
-		rand.resize(RAND_LENGTH);
-		stream.get(rand.begin(), RAND_LENGTH);
-
+		stream.get(rand.data(), rand.size());
 		stream >> unknown;
 		stream >> unknown2;
 
@@ -52,11 +49,11 @@ public:
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "SMSG_RECONNECT_CHALLENGE rand != RAND_LEN");
+		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "SMSG_RECONNECT_CHALLENGE rand != RAND_LENGTH");
 
 		stream << opcode;
 		stream << result;
-		stream.put(rand.begin(), rand.size());
+		stream.put(rand.data(), rand.size());
 		stream << unknown;
 		stream << unknown2;
 	}

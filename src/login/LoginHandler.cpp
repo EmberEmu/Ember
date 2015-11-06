@@ -149,8 +149,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 	packet->n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet->N = values.gen.prime();
 	packet->s = values.salt;
-	auto rand = Botan::AutoSeeded_RNG().random_vec(16);;
-	std::copy(rand.begin(), rand.end(), packet->unk3.data());
+	auto crc_salt = Botan::AutoSeeded_RNG().random_vec(16);
+	std::copy(crc_salt.begin(), crc_salt.end(), packet->crc_salt.data());
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
@@ -196,14 +196,15 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
 	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
-	response->rand = Botan::AutoSeeded_RNG().random_vec(16);
+	auto rand = Botan::AutoSeeded_RNG().random_vec(response->rand.size());
+	std::copy(rand.begin(), rand.end(), response->rand.data());
 
 	try {
 		boost::optional<std::string> key = action->get_result();
 
 		if(key) {
 			state_ = State::RECONNECT_PROOF;
-			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(action->username(), *key, response->rand);
+			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(action->username(), *key, rand);
 		} else {
 			response->result = grunt::ResultCode::FAIL_NOACCESS;
 		}
