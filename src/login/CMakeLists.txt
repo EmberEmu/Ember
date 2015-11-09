@@ -14,9 +14,9 @@ set(GRUNT_SRC
     grunt/Handler.cpp
     grunt/Packets.h
     grunt/Packet.h
+    grunt/Opcodes.h
     grunt/client/LoginChallenge.h
     grunt/client/LoginProof.h
-    grunt/client/Opcodes.h
     grunt/client/ReconnectProof.h
     grunt/client/RequestRealmList.h
     grunt/server/LoginChallenge.h
@@ -24,7 +24,6 @@ set(GRUNT_SRC
     grunt/server/LoginProof.h
     grunt/server/ReconnectProof.h
     grunt/server/RealmList.h
-    grunt/server/Opcodes.h
 )
 
 set(LIBRARY_HDR

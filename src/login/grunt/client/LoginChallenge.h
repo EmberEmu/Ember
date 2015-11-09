@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Opcodes.h"
+#include "../Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include "../ResultCodes.h"

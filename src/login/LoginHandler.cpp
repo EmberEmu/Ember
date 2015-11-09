@@ -78,7 +78,7 @@ void LoginHandler::process_challenge(const grunt::Packet* packet) {
 	auto challenge = dynamic_cast<const grunt::client::LoginChallenge*>(packet);
 
 	if(!challenge) {
-		throw std::runtime_error("Expected CMSG_*_CHALLENGE");
+		throw std::runtime_error("Expected CMD_LOGIN/RECONNECT_CHALLENGE");
 	}
 
 	if(challenge->magic != grunt::client::LoginChallenge::WoW) {
@@ -110,15 +110,15 @@ void LoginHandler::patch_client(const GameVersion& version) {
 	//write(packet);
 }
 
-void LoginHandler::accept_client(grunt::client::Opcode opcode, const std::string& username) {
+void LoginHandler::accept_client(grunt::Opcode opcode, const std::string& username) {
 	std::shared_ptr<Action> action;
 
 	switch(opcode) {
-		case grunt::client::Opcode::CMSG_LOGIN_CHALLENGE:
+		case grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE:
 			action = std::make_shared<FetchUserAction>(username, user_src_);
 			state_ = State::FETCHING_USER;
 			break;
-		case grunt::client::Opcode::CMSG_RECONNECT_CHALLENGE:
+		case grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
 			action = std::make_shared<FetchSessionKeyAction>(username, user_src_);
 			state_ = State::FETCHING_SESSION;
 			break;
@@ -134,7 +134,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	state_ = State::CLOSED;
 
 	auto response = std::make_unique<grunt::server::LoginChallenge>();
-	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
+	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::FAIL_VERSION_INVALID;
 	send(std::move(response));
 }
@@ -159,7 +159,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	state_ = State::CLOSED;
 	
 	auto response = std::make_unique<grunt::server::LoginChallenge>();
-	response->opcode = grunt::server::Opcode::SMSG_LOGIN_CHALLENGE;
+	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
 
 	try {
@@ -194,7 +194,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	state_ = State::CLOSED;
 
 	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
-	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_CHALLENGE;
+	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
 	auto rand = Botan::AutoSeeded_RNG().random_vec(response->rand.size());
 	std::copy(rand.begin(), rand.end(), response->rand.data());
@@ -224,7 +224,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	auto proof_packet = dynamic_cast<const grunt::client::LoginProof*>(packet);
 
 	if(!proof_packet) {
-		throw std::runtime_error("Expected CMSG_LOGIN_PROOF");
+		throw std::runtime_error("Expected CMD_AUTH_LOGIN_PROOF");
 	}
 
 	auto proof = login_auth_->proof_check(proof_packet);
@@ -260,7 +260,7 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	metrics_.increment("login_failure");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
-	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
+	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
 	response->result = result;
 
 	send(std::move(response));
@@ -271,7 +271,7 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 	metrics_.increment("login_success");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
-	response->opcode = grunt::server::Opcode::SMSG_LOGIN_PROOF;
+	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 	response->M2 = server_proof_;
 	response->account_flags = 0;
@@ -286,7 +286,7 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	auto proof = dynamic_cast<const grunt::client::ReconnectProof*>(packet);
 
 	if(!proof) {
-		throw std::runtime_error("Expected CMSG_RECONNECT_PROOF");
+		throw std::runtime_error("Expected CMD_AUTH_RECONNECT_PROOF");
 	}
 
 	if(reconn_auth_->proof_check(proof)) {
@@ -297,7 +297,7 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	}
 
 	auto response = std::make_unique<grunt::server::ReconnectProof>();
-	response->opcode = grunt::server::Opcode::SMSG_RECONNECT_PROOF;
+	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
@@ -308,11 +308,11 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!dynamic_cast<const grunt::client::RequestRealmList*>(packet)) {
-		throw std::runtime_error("Expected CMSG_REQUEST_REALM_LIST");
+		throw std::runtime_error("Expected CMD_REALM_LIST");
 	}
 
 	auto response = std::make_unique<grunt::server::RealmList>();
-	response->opcode = grunt::server::Opcode::SMSG_REQUEST_REALM_LIST;
+	response->opcode = grunt::Opcode::CMD_REALM_LIST;
 	
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 

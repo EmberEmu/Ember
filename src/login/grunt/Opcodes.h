@@ -10,16 +10,16 @@
 
 #include <cstdint>
 
-namespace ember { namespace grunt { namespace server {
+namespace ember { namespace grunt {
 
 enum class Opcode : std::uint8_t {
-	SMSG_LOGIN_CHALLENGE,
-	SMSG_LOGIN_PROOF,
-	SMSG_RECONNECT_CHALLENGE,
-	SMSG_RECONNECT_PROOF,
-	SMSG_REQUEST_REALM_LIST   = 0x10,
-	SMSG_TRANSFER_INITIATE    = 0x30,
-	SMSG_TRANSFER_DATA
+	CMD_AUTH_LOGIN_CHALLENGE,
+	CMD_AUTH_LOGON_PROOF,
+	CMD_AUTH_RECONNECT_CHALLENGE,
+	CMD_AUTH_RECONNECT_PROOF,
+	CMD_REALM_LIST                = 0x10,
+	CMD_XFER_INITIATE             = 0x30,
+	CMD_XFER_DATA
 };
 
-}}} // server, grunt, ember
+}} // grunt, ember

@@ -58,7 +58,7 @@ class LoginHandler {
 	void send_login_success(StoreSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 
-	void accept_client(grunt::client::Opcode opcode, const std::string& username);
+	void accept_client(grunt::Opcode opcode, const std::string& username);
 	void reject_client(const GameVersion& version);
 	void patch_client(const GameVersion& version);
 

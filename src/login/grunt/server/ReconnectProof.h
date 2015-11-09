@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Opcodes.h"
+#include "../Opcodes.h"
 #include "../Packet.h"
 #include "../ResultCodes.h"
 #include <cstdint>

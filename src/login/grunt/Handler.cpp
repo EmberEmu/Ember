@@ -14,21 +14,21 @@
 namespace ember { namespace grunt {
 
 void Handler::handle_new_packet(spark::Buffer& buffer) {
-	client::Opcode opcode;
+	Opcode opcode;
 	buffer.copy(&opcode, sizeof(opcode));
 
 	switch(opcode) {
-		case client::Opcode::CMSG_LOGIN_CHALLENGE:
-		case client::Opcode::CMSG_RECONNECT_CHALLENGE:
+		case Opcode::CMD_AUTH_LOGIN_CHALLENGE:
+		case Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
 			curr_packet_ = std::make_unique<client::LoginChallenge>();
 			break;
-		case client::Opcode::CMSG_LOGIN_PROOF:
+		case Opcode::CMD_AUTH_LOGON_PROOF:
 			curr_packet_ = std::make_unique<client::LoginProof>();
 			break;
-		case client::Opcode::CMSG_RECONNECT_PROOF:
+		case Opcode::CMD_AUTH_RECONNECT_PROOF:
 			curr_packet_ = std::make_unique<client::ReconnectProof>();
 			break;
-		case client::Opcode::CMSG_REQUEST_REALM_LIST:
+		case Opcode::CMD_REALM_LIST:
 			curr_packet_ = std::make_unique<client::RequestRealmList>();
 			break;
 		default:
