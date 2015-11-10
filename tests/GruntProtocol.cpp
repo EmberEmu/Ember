@@ -32,7 +32,7 @@
 using namespace ember;
 using namespace std::string_literals;
 
-TEST(GruntProtocol, CMSG_LOGIN_CHALLENGE) {
+TEST(GruntProtocol, ClientLoginChallenge) {
 	const std::size_t packet_size = sizeof(client_login_challenge);
 
 	// write the packet bytes into chain
@@ -79,7 +79,7 @@ TEST(GruntProtocol, CMSG_LOGIN_CHALLENGE) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, CMSG_LOGIN_PROOF) {
+TEST(GruntProtocol, ClientLoginProof) {
 	const std::size_t packet_size = sizeof(client_login_proof);
 
 	// write the packet bytes into chain
@@ -106,7 +106,7 @@ TEST(GruntProtocol, CMSG_LOGIN_PROOF) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, CMSG_RECONNECT_PROOF) {
+TEST(GruntProtocol, ClientReconnectProof) {
 	const std::size_t packet_size = sizeof(client_reconnect_proof);
 
 	// write the packet bytes into chain
@@ -149,7 +149,7 @@ TEST(GruntProtocol, CMSG_RECONNECT_PROOF) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
+TEST(GruntProtocol, ClientRequestRealmList) {
 	const std::size_t packet_size = sizeof(request_realm_list);
 
 	// write the packet bytes into chain
@@ -176,7 +176,7 @@ TEST(GruntProtocol, CMSG_REQUEST_REALM_LIST) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, SMSG_LOGIN_CHALLENGE) {
+TEST(GruntProtocol, ServerLoginChallenge) {
 	const std::size_t packet_size = sizeof(server_login_challenge);
 
 	// write the packet bytes into chain
@@ -215,7 +215,7 @@ TEST(GruntProtocol, SMSG_LOGIN_CHALLENGE) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, SMSG_LOGIN_PROOF) {
+TEST(GruntProtocol, ServerLoginProof) {
 	const std::size_t packet_size = sizeof(server_login_proof);
 
 	// write the packet bytes into chain
@@ -246,7 +246,7 @@ TEST(GruntProtocol, SMSG_LOGIN_PROOF) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, SMSG_REALM_LIST) {
+TEST(GruntProtocol, ServerRealmList) {
 	const std::size_t packet_size = sizeof(realm_list);
 
 	// write the packet bytes into chain
@@ -301,7 +301,7 @@ TEST(GruntProtocol, SMSG_REALM_LIST) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, SMSG_RECONNECT_CHALLENGE) {
+TEST(GruntProtocol, ServerReconnectChallenge) {
 	const std::size_t packet_size = sizeof(server_reconnect_challenge);
 
 	// write the packet bytes into chain
@@ -333,7 +333,7 @@ TEST(GruntProtocol, SMSG_RECONNECT_CHALLENGE) {
 		<< "Serialisation failed (input != output)";
 }
 
-TEST(GruntProtocol, SMSG_RECONNECT_PROOF) {
+TEST(GruntProtocol, ServerReconnectProof) {
 	const std::size_t packet_size = sizeof(server_reconnect_proof);
 
 	// write the packet bytes into chain
