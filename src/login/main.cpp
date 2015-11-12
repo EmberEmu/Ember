@@ -19,7 +19,6 @@
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <shared/Banner.h>
-#include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
