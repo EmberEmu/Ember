@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/BufferChain.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <spark/SessionManager.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
@@ -30,7 +30,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	ReadState state_;
-	spark::BufferChain<4096> inbound_buffer_;
+	spark::ChainedBuffer<4096> inbound_buffer_;
 	SessionManager& sessions_;
 	log::Logger* logger_; 
 	log::Filter filter_;
@@ -116,7 +116,7 @@ public:
 	}
 
 	template<std::size_t BlockSize>
-	void write_chain(std::shared_ptr<spark::BufferChain<BlockSize>> chain) {
+	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {

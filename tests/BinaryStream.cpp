@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/BufferChain.h>
 #include <spark/BinaryStream.h>
 #include <gtest/gtest.h>
 

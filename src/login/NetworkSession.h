@@ -11,7 +11,7 @@
 #include "SessionManager.h"
 #include "FilterTypes.h"
 #include <logger/Logging.h>
-#include <spark/BufferChain.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <shared/PacketStream.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
@@ -30,7 +30,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
-	spark::BufferChain<1024> inbound_buffer_;
+	spark::ChainedBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_; 
@@ -136,7 +136,7 @@ public:
 	}
 
 	template<std::size_t BlockSize>
-	void write_chain(std::shared_ptr<spark::BufferChain<BlockSize>> chain) {
+	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {

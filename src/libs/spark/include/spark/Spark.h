@@ -9,5 +9,5 @@
 #pragma once
 
 #include <spark/Service.h>
-#include <spark/BufferChain.h>
+#include <spark/ChainedBuffer.h>
 #include <spark/BinaryStream.h>

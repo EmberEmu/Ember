@@ -12,7 +12,6 @@
 #include "LoginHandler.h"
 #include "grunt/Handler.h"
 #include <spark/Buffer.h>
-#include <spark/BufferChain.h>
 #include <logger/Logging.h>
 #include <shared/threading/ThreadPool.h>
 #include <memory>

@@ -69,7 +69,7 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 void LoginSession::write_chain(grunt::PacketHandle packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto chain = std::make_shared<spark::BufferChain<1024>>();
+	auto chain = std::make_shared<spark::ChainedBuffer<1024>>();
 	spark::BinaryStream stream(*chain);
 	packet->write_to_stream(stream);
 	NetworkSession::write_chain(chain);

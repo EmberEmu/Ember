@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/BufferChainNode.h>
+#include <spark/buffers/ChainedNode.h>
 #include <gtest/gtest.h>
 #include <memory>
 

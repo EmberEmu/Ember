@@ -13,8 +13,8 @@ add_library(${LIBRARY_NAME}
             src/Client.cpp
             src/Router.cpp
             include/spark/Buffer.h
-            include/spark/BufferChain.h
-            include/spark/BufferChainNode.h
+            include/spark/buffers/ChainedBuffer.h
+            include/spark/buffers/ChainedNode.h
             include/spark/BinaryStream.h
             include/spark/Spark.h
             include/spark/Service.h

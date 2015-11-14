@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "BufferChainNode.h"
 #include <boost/assert.hpp>
 #include <vector>
 #include <utility>

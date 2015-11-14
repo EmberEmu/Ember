@@ -14,9 +14,9 @@
 
 namespace ember { namespace spark {
 
-struct BufferChainNode {
-	BufferChainNode* next;
-	BufferChainNode* prev;
+struct ChainedNode {
+	ChainedNode* next;
+	ChainedNode* prev;
 };
 
 template<typename std::size_t BlockSize>
@@ -24,7 +24,7 @@ struct BufferBlock {
 	std::array<char, BlockSize> storage;
 	std::size_t read_offset = 0;
 	std::size_t write_offset = 0;
-	BufferChainNode node;
+	ChainedNode node;
 
 	void reset() {
 		read_offset = 0;

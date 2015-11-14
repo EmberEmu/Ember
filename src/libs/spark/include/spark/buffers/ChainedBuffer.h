@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "BufferChainNode.h"
-#include "Buffer.h"
+#include <spark/buffers/ChainedNode.h>
+#include <spark/Buffer.h>
 #include <boost/assert.hpp>
 #include <boost/asio/buffer.hpp>
 #include <vector>
@@ -19,32 +19,32 @@
 namespace ember { namespace spark {
 
 template<typename std::size_t BlockSize = 1024>
-class BufferChain final : public Buffer {
-	BufferChainNode root_;
+class ChainedBuffer final : public Buffer {
+	ChainedNode root_;
 	std::size_t size_;
 
-	void link_tail_node(BufferChainNode* node) {
+	void link_tail_node(ChainedNode* node) {
 		node->next = &root_;
 		node->prev = root_.prev;
 		root_.prev = root_.prev->next = node;
 	}
 
-	void unlink_node(BufferChainNode* node) {
+	void unlink_node(ChainedNode* node) {
 		node->next->prev = node->prev;
 		node->prev->next = node->next;
 	}
 
-	BufferBlock<BlockSize>* buffer_from_node(BufferChainNode* node) const {
+	BufferBlock<BlockSize>* buffer_from_node(ChainedNode* node) const {
 		return reinterpret_cast<BufferBlock<BlockSize>*>(std::size_t(node)
 			- offsetof(BufferBlock<BlockSize>, node));
 	}
 
-	BufferBlock<BlockSize>* buffer_from_node(const BufferChainNode* node) const {
+	BufferBlock<BlockSize>* buffer_from_node(const ChainedNode* node) const {
 		return reinterpret_cast<BufferBlock<BlockSize>*>(std::size_t(node)
 			- offsetof(BufferBlock<BlockSize>, node));
 	}
 
-	void move(BufferChain& rhs) {
+	void move(ChainedBuffer& rhs) {
 		if(this == &rhs) { // self-assignment
 			return;
 		}
@@ -61,8 +61,8 @@ class BufferChain final : public Buffer {
 		rhs.root_.prev = &rhs.root_;
 	}
 
-	void copy(const BufferChain& rhs) {
-		const BufferChainNode* head = rhs.root_.next;
+	void copy(const ChainedBuffer& rhs) {
+		const ChainedNode* head = rhs.root_.next;
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
@@ -89,21 +89,21 @@ class BufferChain final : public Buffer {
 	}
 
 public:
-	BufferChain() { // todo - change in VS2015
+	ChainedBuffer() { // todo - change in VS2015
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
 		attach(allocate());
 	}
 
-	~BufferChain() {
+	~ChainedBuffer() {
 		clear();
 	}
 
-	BufferChain& operator=(BufferChain&& rhs) { move(rhs); return *this;  }
-	BufferChain(BufferChain&& rhs) {  move(rhs); }
-	BufferChain(const BufferChain& rhs) { copy(rhs); }
-	BufferChain& operator=(const BufferChain& rhs) { clear(); copy(rhs); return *this;  }
+	ChainedBuffer& operator=(ChainedBuffer&& rhs) { move(rhs); return *this;  }
+	ChainedBuffer(ChainedBuffer&& rhs) {  move(rhs); }
+	ChainedBuffer(const ChainedBuffer& rhs) { copy(rhs); }
+	ChainedBuffer& operator=(const ChainedBuffer& rhs) { clear(); copy(rhs); return *this;  }
 
 	void read(void* destination, std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
@@ -185,7 +185,7 @@ public:
 
 	void write(const void* source, std::size_t length) override {
 		std::size_t remaining = length;
-		BufferChainNode* tail = root_.prev;
+		ChainedNode* tail = root_.prev;
 
 		while(remaining) {
 			BufferBlock<BlockSize>* buffer;
@@ -207,7 +207,7 @@ public:
 
 	void reserve(std::size_t length) override {
 		std::size_t remaining = length;
-		BufferChainNode* tail = root_.prev;
+		ChainedNode* tail = root_.prev;
 
 		while(remaining) {
 			BufferBlock<BlockSize>* buffer;
@@ -257,7 +257,7 @@ public:
 	}
 
 	void clear() override {
-		BufferChainNode* head;
+		ChainedNode* head;
 
 		while((head = root_.next) != &root_) {
 			unlink_node(head);
@@ -273,7 +273,7 @@ public:
 
 	class const_iterator {
 	public:
-		const_iterator(const BufferChain<BlockSize>& chain, const BufferChainNode* curr_node)
+		const_iterator(const ChainedBuffer<BlockSize>& chain, const ChainedNode* curr_node)
 		               : chain_(chain), curr_node_(curr_node) {}
 
 		const_iterator& operator++() {
@@ -310,8 +310,8 @@ public:
 #endif
 
 	private:
-		const BufferChain<BlockSize>& chain_;
-		const BufferChainNode* curr_node_;
+		const ChainedBuffer<BlockSize>& chain_;
+		const ChainedNode* curr_node_;
 	};
 
 	const_iterator begin() const {
