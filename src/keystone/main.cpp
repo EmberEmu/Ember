@@ -45,7 +45,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
-	LOG_INFO(logger) << "Login daemon terminated" << LOG_SYNC;
+	LOG_INFO(logger) << "Keystone daemon terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -58,6 +58,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	boost::asio::io_service service;
 
+	// Start Spark networking
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<std::uint16_t>();
 
@@ -74,6 +75,25 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		);
 	}
 
+	// Start monitoring service
+	std::unique_ptr<ember::Monitor> monitor;
+
+	if(args["monitor.enabled"].as<bool>()) {
+		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
+
+		monitor = std::make_unique<ember::Monitor>(
+			service, args["monitor.interface"].as<std::string>(),
+			args["monitor.port"].as<std::uint16_t>(), *metrics
+		);
+	}
+
+	service.dispatch([logger]() {
+		LOG_INFO(logger) << "Keystone daemon started successfully" << LOG_SYNC;
+	});
+
+	service.run();
+
+	LOG_INFO(logger) << "Keystone daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
@@ -85,7 +105,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("help", "Displays a list of available options")
 		("database.config_path,d", po::value<std::string>(),
 		 "Path to the database configuration file")
-		("config,c", po::value<std::string>()->default_value("login.conf"),
+		("config,c", po::value<std::string>()->default_value("keystone.conf"),
 		 "Path to the configuration file");
 
 	po::positional_options_description pos;

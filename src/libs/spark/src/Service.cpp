@@ -7,12 +7,29 @@
  */
 
 #include <spark/Service.h>
+#include <spark/Listener.h>
 
 namespace ember { namespace spark {
 
-Service::Service(boost::asio::io_service& service, std::string host, std::uint16_t port,
+Service::Service(boost::asio::io_service& service, const std::string& interface, std::uint16_t port,
                  log::Logger* logger, log::Filter filter)
-                 : service_(service), filter_(filter) {
+                 : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
+                   listener_(service, interface, port, sessions_, logger, filter) {
+	signals_.async_wait(std::bind(&Service::shutdown, this));
+}
+
+void Service::shutdown() {
+	LOG_DEBUG_FILTER(logger_, filter_) << "Spark service shutting down..." << LOG_ASYNC;
+	listener_.shutdown();
+	sessions_.stop_all();
+}
+
+void Service::connect(const std::string& host, std::uint16_t port) {
+
+}
+
+Router* Service::router() {
+	return &router_;
 }
 
 }}

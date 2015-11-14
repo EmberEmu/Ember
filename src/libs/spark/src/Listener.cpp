@@ -9,15 +9,18 @@
 #pragma once
 
 #include <spark/Listener.h>
+#include <spark/NetworkSession.h>
+#include <spark/SessionManager.h>
 
 namespace ember { namespace spark {
 
-Listener::Listener(boost::asio::io_service& service, log::Logger* logger, log::Filter filter)
-                   : service_(service), acceptor_(service), socket_(service),
-                     signals_(service_, SIGINT, SIGTERM), logger_(logger), filter_(filter) {
+Listener::Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port, 
+                   SessionManager& sessions, log::Logger* logger, log::Filter filter)
+                   : service_(service), acceptor_(service, boost::asio::ip::tcp::endpoint(
+                     boost::asio::ip::address::from_string(interface), port)),
+                     socket_(service), sessions_(sessions), logger_(logger), filter_(filter) {
 	acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-	signals_.async_wait(std::bind(&Listener::shutdown, this));
 	accept_connection();
 }
 
@@ -33,14 +36,20 @@ void Listener::accept_connection() {
 			auto ip = socket_.remote_endpoint().address();
 
 			LOG_DEBUG_FILTER(logger_, filter_)
-				<< "Accepted connection " << ip.to_string() << ":"
+				<< "Accepted Spark connection from " << ip.to_string() << ":"
 				<< socket_.remote_endpoint().port() << LOG_ASYNC;
 
-			//start_session(std::move(socket_));
+			start_session(std::move(socket_));
 		}
 
 		accept_connection();
 	});
+}
+
+void Listener::start_session(boost::asio::ip::tcp::socket socket) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), logger_, filter_);
+	sessions_.start(session);
 }
 
 void Listener::shutdown() {

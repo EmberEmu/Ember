@@ -8,7 +8,10 @@ set(LIBRARY_NAME spark)
 
 add_library(${LIBRARY_NAME}
             src/Service.cpp
+            src/SessionManager.cpp
             src/Listener.cpp
+            src/Client.cpp
+            src/Router.cpp
             include/spark/Buffer.h
             include/spark/BufferChain.h
             include/spark/BufferChainNode.h
@@ -16,6 +19,10 @@ add_library(${LIBRARY_NAME}
             include/spark/Spark.h
             include/spark/Service.h
             include/spark/Listener.h
+            include/spark/Client.h
+            include/spark/Router.h
+            include/spark/NetworkSession.h
+            include/spark/SessionManager.h
 )
 
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})

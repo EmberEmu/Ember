@@ -13,20 +13,25 @@
 
 namespace ember { namespace spark {
 
+class SessionManager;
+
 class Listener {
 	boost::asio::io_service& service_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
-	boost::asio::signal_set signals_;
 
+	SessionManager& sessions_;
 	log::Logger* logger_;
 	log::Filter filter_;
 
 	void accept_connection();
-	void shutdown();
+	void start_session(boost::asio::ip::tcp::socket socket);
 
 public:
-	Listener(boost::asio::io_service& service, log::Logger* logger, log::Filter filter);
+	Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
+	         SessionManager& sessions, log::Logger* logger, log::Filter filter);
+
+	void shutdown();
 };
 
 }} // spark, ember
