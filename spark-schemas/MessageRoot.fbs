@@ -1,13 +1,22 @@
-include "Handshake.fbs";
+/*
+ * Copyright (c) 2015 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 include "ServiceTypes.fbs";
+include "Core.fbs";
 
 namespace ember.messaging;
 
-union Data { Foo, Bar }
+union Data { Ping, Pong, Banner }
 
 table MessageRoot {
 	service:Service;
-	data:Data;	
+	tracking_id:[byte];
+	data:Data;
 }
 
 root_type MessageRoot;

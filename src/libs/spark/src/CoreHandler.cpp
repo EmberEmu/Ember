@@ -6,19 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
-#include <spark/Router.h>
-#include <unordered_map>
+#include <spark/CoreHandler.h>
+#include <spark/temp/Core_generated.h>
 
 namespace ember { namespace spark {
 
-class Router {
-	std::unordered_map<int, int> handlers_;
+CoreHandler::CoreHandler(log::Logger* logger, log::Filter filter)
+                         : logger_(logger), filter_(filter) { }
 
-public:
-	void register_inbound();
-	void register_outbound();
-};
+void CoreHandler::handle_message(messaging::MessageRoot* message) {
+	
+}
 
-}} // spark, ember
+}}

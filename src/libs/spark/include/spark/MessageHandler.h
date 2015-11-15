@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
 #include <vector>
 #include <cstdint>
@@ -32,7 +31,6 @@ private:
 
 public:
 	MessageHandler(Mode mode, log::Logger* logger, log::Filter filter);
-
 	bool handle_message(const std::vector<std::uint8_t>& net_buffer);
 };
 

@@ -8,16 +8,18 @@
 
 #pragma once
 
-#include <spark/Router.h>
+#include <logger/Logging.h>
+#include <spark/temp/MessageRoot_generated.h>
 
 namespace ember { namespace spark {
 
-void Router::register_inbound() {
+class CoreHandler {
+	log::Logger* logger_;
+	log::Filter filter_;
 
-}
+public:
+	CoreHandler(log::Logger* logger, log::Filter filter);
+	void handle_message(messaging::MessageRoot* message);
+};
 
-void Router::register_outbound() {
-
-}
-
-}} // spark, ember
+}}

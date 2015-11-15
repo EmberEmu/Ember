@@ -10,9 +10,11 @@ add_library(${LIBRARY_NAME}
             src/Service.cpp
             src/SessionManager.cpp
             src/Listener.cpp
-            src/Client.cpp
-            src/Router.cpp
             src/MessageHandler.cpp
+            src/CoreHandler.cpp
+            src/HandlerMap.cpp
+            include/spark/HandlerMap.h
+            include/spark/CoreHandler.h
             include/spark/MessageHandler.h
             include/spark/Buffer.h
             include/spark/buffers/ChainedBuffer.h
@@ -21,8 +23,6 @@ add_library(${LIBRARY_NAME}
             include/spark/Spark.h
             include/spark/Service.h
             include/spark/Listener.h
-            include/spark/Client.h
-            include/spark/Router.h
             include/spark/NetworkSession.h
             include/spark/SessionManager.h
 )

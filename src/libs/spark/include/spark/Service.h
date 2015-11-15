@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <spark/Router.h>
+#include <spark/CoreHandler.h>
+#include <spark/HandlerMap.h>
 #include <spark/SessionManager.h>
 #include <spark/Listener.h>
 #include <logger/Logger.h>
@@ -21,13 +22,17 @@ namespace ember { namespace spark {
 class Service {
 	boost::asio::io_service& service_;
 	boost::asio::signal_set signals_;
+	boost::asio::ip::tcp::socket socket_;
 
-	Router router_;
 	Listener listener_;
 	SessionManager sessions_;
+	CoreHandler core_handler_;
+	HandlerMap handlers_;
 	log::Logger* logger_;
 	log::Filter filter_;
 	
+	void start_session(boost::asio::ip::tcp::socket socket);
+	void default_handler(ember::messaging::MessageRoot* message);
 	void shutdown();
 
 public:
@@ -35,7 +40,6 @@ public:
 	        log::Logger* logger, log::Filter filter);
 
 	void connect(const std::string& host, std::uint16_t port);
-	Router* router();
 };
 
 }} // spark, ember
