@@ -66,6 +66,7 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 	close_session();
 }
 
+// todo use a single chain here and create a write queue instead
 void LoginSession::write_chain(grunt::PacketHandle packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 

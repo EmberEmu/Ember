@@ -30,7 +30,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
-	spark::BufferChain<1024> inbound_buffer_;
+	spark::BufferChain<1> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_; 
@@ -45,7 +45,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			inbound_buffer_.attach(tail);
 		}
 
-		socket_.async_receive(boost::asio::buffer(tail->data(), tail->free()),
+		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 			strand_.wrap(create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(!ec) {

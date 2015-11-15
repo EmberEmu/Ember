@@ -25,6 +25,8 @@ class Metrics;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);
+	void write_chain(grunt::PacketHandle packet);
+	void execute_async(std::shared_ptr<Action> action);
 
 public:
 	ThreadPool& pool_;
@@ -36,8 +38,6 @@ public:
 	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::Buffer& buffer) override;
-	void execute_async(std::shared_ptr<Action> action);
-	void write_chain(grunt::PacketHandle);
 };
 
 } // ember
