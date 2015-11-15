@@ -19,7 +19,7 @@ Service::Service(boost::asio::io_service& service, const std::string& interface,
 }
 
 void Service::shutdown() {
-	LOG_DEBUG_FILTER(logger_, filter_) << "Spark service shutting down..." << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Service shutting down..." << LOG_ASYNC;
 	listener_.shutdown();
 	sessions_.stop_all();
 }

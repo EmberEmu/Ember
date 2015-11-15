@@ -1,0 +1,13 @@
+include "Handshake.fbs";
+include "ServiceTypes.fbs";
+
+namespace ember.messaging;
+
+union Data { Foo, Bar }
+
+table MessageRoot {
+	service:Service;
+	data:Data;	
+}
+
+root_type MessageRoot;

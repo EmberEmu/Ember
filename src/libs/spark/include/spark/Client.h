@@ -15,14 +15,22 @@ namespace ember { namespace spark {
 
 namespace bai = boost::asio::ip;
 
+class SessionManager;
+
 class Client {
 	boost::asio::io_service& service_;
 	bai::tcp::socket socket_;
+	SessionManager& sessions_;
+	log::Logger* logger_;
+	log::Filter filter_;
 
 	void connect(bai::tcp::resolver::iterator endpoint_it);
 
 public:
-	Client(boost::asio::io_service& service, bai::tcp::resolver::iterator endpoint_it);
+	Client(boost::asio::io_service& service, bai::tcp::resolver::iterator endpoint_it,
+	       SessionManager& sessions, log::Logger* logger, log::Filter filter);
+
+	void start_session(bai::tcp::socket socket);
 };
 
 }} // spark, ember

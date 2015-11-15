@@ -270,6 +270,10 @@ public:
 	bool empty() override {
 		return !size_;
 	}
+	
+	constexpr std::size_t block_size() const {
+		return BlockSize;
+	}
 
 	class const_iterator {
 	public:

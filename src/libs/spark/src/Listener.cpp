@@ -48,7 +48,8 @@ void Listener::accept_connection() {
 
 void Listener::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
-	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), logger_, filter_);
+	MessageHandler m_handler(MessageHandler::Mode::SERVER, logger_, filter_);
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_, filter_);
 	sessions_.start(session);
 }
 

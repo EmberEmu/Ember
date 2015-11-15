@@ -63,6 +63,12 @@ find_package(MySQLConnectorCPP REQUIRED)
 include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 
 ##############################
+#         FlatBuffers        #
+##############################
+find_package(FlatBuffers REQUIRED)
+include_directories(${FLATBUFFERS_INCLUDE_DIR})
+
+##############################
 #         Google Test        #
 ##############################
 ADD_SUBDIRECTORY(deps/gtest-1.7.0)

@@ -8,20 +8,28 @@
 
 #pragma once
 
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/MessageHandler.h>
 #include <spark/SessionManager.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
+#include <boost/endian/conversion.hpp>
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
+	const std::size_t HEADER_LENGTH = 1;
+	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024; // 1MB
+	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
 
 	enum class ReadState { HEADER, BODY };
 
@@ -30,32 +38,56 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	ReadState state_;
-	spark::ChainedBuffer<4096> inbound_buffer_;
+	std::size_t body_read_size;
+	std::vector<std::uint8_t> in_buff_;
 	SessionManager& sessions_;
+	MessageHandler handler_;
 	log::Logger* logger_; 
 	log::Filter filter_;
 
-	void read() {
-		auto self(shared_from_this());
-		auto tail = inbound_buffer_.tail();
+	bool process_header() {
+		std::copy(in_buff_.begin(), in_buff_.begin() + HEADER_LENGTH, &body_read_size);
+		boost::endian::little_to_native_inplace(body_read_size);
 
-		// if the buffer chain has no more space left, allocate & attach new node
-		if(!tail->free()) {
-			tail = inbound_buffer_.allocate();
-			inbound_buffer_.attach(tail);
+		if(body_read_size > MAX_MESSAGE_LENGTH) {
+			LOG_WARN_FILTER(logger_, filter_)
+				<< "[spark] Peer at " << remote_address() << ":"
+				<< remote_port() << " attempted to send a message of "
+				<< body_read_size << " bytes" << LOG_ASYNC;
+
+			return false;
 		}
 
-		boost::asio::async_read(socket_, boost::asio::buffer(tail->data(), tail->free()),
+		if(body_read_size > in_buff_.size()) {
+			in_buff_.resize(body_read_size);
+		}
+
+		return true;
+	}
+
+	void read() {
+		auto self(shared_from_this());
+		
+		std::size_t read_size = state_ == ReadState::HEADER? HEADER_LENGTH : body_read_size;
+
+		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_.data(), read_size),
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(!ec) {
 					set_timer();
-					inbound_buffer_.advance_write_cursor(size);
 
-					/*if(handle_packet(inbound_buffer_)) {
+					if(state_ == ReadState::HEADER) { // handle header
+						if(process_header()) {
+							state_ = ReadState::BODY;
+							read();
+						} else {
+							close_session();
+						}
+					} else if(handler_.handle_message(in_buff_)) { // handle body
+						state_ = ReadState::HEADER;
 						read();
 					} else {
 						close_session();
-					}*/
+					}
 				} else if(ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
@@ -75,7 +107,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "Lost connection to Spark peer at " << remote_address() << ":"
+			<< "[spark] Lost connection to peer at " << remote_address() << ":"
 			<< remote_port() << " (idle timeout) " << LOG_ASYNC;
 
 		close_session();
@@ -83,7 +115,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	void stop() {
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "Closing Spark connection to " << remote_address()
+			<< "[spark] Closing connection to " << remote_address()
 			<< ":" << remote_port() << LOG_ASYNC;
 
 		boost::system::error_code ec; // we don't care about any errors
@@ -92,11 +124,11 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
 	               log::Logger* logger, log::Filter filter)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	                 strand_(socket.get_io_service()), logger_(logger), filter_(filter),
-	                 state_(ReadState::HEADER) { }
+	                 handler_(handler), strand_(socket.get_io_service()), logger_(logger), filter_(filter),
+	                 state_(ReadState::HEADER), in_buff_(1000) { }
 
 	void start() {
 		set_timer();
@@ -116,7 +148,7 @@ public:
 	}
 
 	template<std::size_t BlockSize>
-	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
+	void write(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
@@ -133,6 +165,8 @@ public:
 			}
 		);
 	}
+
+	virtual ~NetworkSession() = default;
 
 	friend class SessionManager;
 };

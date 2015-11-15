@@ -31,7 +31,7 @@ class Service {
 	void shutdown();
 
 public:
-	Service(boost::asio::io_service& service, const std::string& host, std::uint16_t port,
+	Service(boost::asio::io_service& service, const std::string& interface, std::uint16_t port,
 	        log::Logger* logger, log::Filter filter);
 
 	void connect(const std::string& host, std::uint16_t port);

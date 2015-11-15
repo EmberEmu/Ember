@@ -12,6 +12,8 @@ add_library(${LIBRARY_NAME}
             src/Listener.cpp
             src/Client.cpp
             src/Router.cpp
+            src/MessageHandler.cpp
+            include/spark/MessageHandler.h
             include/spark/Buffer.h
             include/spark/buffers/ChainedBuffer.h
             include/spark/buffers/ChainedNode.h
