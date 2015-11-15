@@ -46,8 +46,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		set_timer();
-
-		socket_.async_receive(boost::asio::buffer(tail->data(), tail->free()),
+		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 			strand_.wrap(create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(stopped_) {

@@ -197,9 +197,9 @@ void ClientConnection::handle_ping(spark::Buffer& buffer) {
 		return;
 	}
 
-	auto response = std::make_shared<protocol::SMSG_PONG>();
+	/*auto response = std::make_shared<protocol::SMSG_PONG>();
 	response->ping = packet.ping;
-	send(protocol::ServerOpcodes::SMSG_PONG, response);
+	send(protocol::ServerOpcodes::SMSG_PONG, response);*/
 }
 
 bool ClientConnection::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
@@ -275,17 +275,22 @@ void ClientConnection::completion_check(spark::Buffer& buffer) {
 }
 
 void ClientConnection::handle_packet(spark::Buffer& buffer) {
-	if(read_state_ == ReadState::HEADER) {
-		parse_header(buffer);
-	}
+	while(!buffer.empty()) {
+		if(read_state_ == ReadState::HEADER) {
+			parse_header(buffer);
+		}
 
-	if(read_state_ == ReadState::BODY) {
-		completion_check(buffer);
-	}
+		if(read_state_ == ReadState::BODY) {
+			completion_check(buffer);
+		}
 
-	if(read_state_ == ReadState::DONE) {
-		read_state_ = ReadState::HEADER;
-		dispatch_packet(buffer);
+		if(read_state_ == ReadState::DONE) {
+			dispatch_packet(buffer);
+			read_state_ = ReadState::HEADER;
+			continue;
+		}
+
+		break;
 	}
 }
 
@@ -376,7 +381,7 @@ void ClientConnection::read() {
 		inbound_buffer_.attach(tail);
 	}
 
-	socket_.async_receive(boost::asio::buffer(tail->data(), tail->free()),
+	socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 		create_alloc_handler(allocator_,
 		[this, self](boost::system::error_code ec, std::size_t size) {
 			if(stopped_) {

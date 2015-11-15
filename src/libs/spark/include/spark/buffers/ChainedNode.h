@@ -111,8 +111,12 @@ struct BufferBlock {
 		return size;
 	}
 
-	char* data() {
+	const char* read_data() const {
 		return storage.data() + read_offset;
+	}
+
+	char* write_data() {
+		return storage.data() + write_offset;
 	}
 };
 
