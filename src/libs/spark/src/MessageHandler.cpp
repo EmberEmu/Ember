@@ -20,13 +20,14 @@ bool MessageHandler::handle_message(const std::vector<std::uint8_t>& net_buffer)
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
 	flatbuffers::Verifier verifier(net_buffer.data(), net_buffer.size());
-	auto root = ember::messaging::GetMessageRoot(net_buffer.data());
 
 	if(!ember::messaging::VerifyMessageRootBuffer(verifier)) {
-		LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Message failed validation, dropping peer" << LOG_ASYNC;
+		LOG_DEBUG_FILTER(logger_, filter_)
+			<< "[spark] Message failed validation, dropping peer" << LOG_ASYNC;
 		return false;
 	}
 	
+	auto root = ember::messaging::GetMessageRoot(net_buffer.data());
 	return true;
 }
 
