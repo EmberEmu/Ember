@@ -289,7 +289,7 @@ public:
 
 		boost::asio::const_buffer operator*() const {
 			auto buffer = chain_.buffer_from_node(curr_node_);
-			return boost::asio::const_buffer(buffer->data(), buffer->size());
+			return boost::asio::const_buffer(buffer->read_data(), buffer->size());
 		}
 
 		bool operator==(const const_iterator& rhs) const {
@@ -303,9 +303,9 @@ public:
 		const_iterator& operator=(const_iterator&) = delete;
 
 #ifdef BUFFER_CHAIN_DEBUG
-		std::pair<char*, std::size_t> get_buffer() {
+		std::pair<const char*, std::size_t> get_buffer() {
 			auto buffer = chain_.buffer_from_node(curr_node_);
-			return std::make_pair<char*, std::size_t>(buffer->data(), buffer->size());
+			return std::make_pair<const char*, std::size_t>(buffer->read_data(), buffer->size());
 		}
 #endif
 

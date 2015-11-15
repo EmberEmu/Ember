@@ -30,7 +30,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
-	spark::BufferChain<1> inbound_buffer_;
+	spark::BufferChain<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_; 

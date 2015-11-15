@@ -73,7 +73,7 @@ TEST(BufferChainTest, ReserveFetchConsistency) {
 	std::size_t offset = 0;
 
 	for(auto& buffer : buffers) {
-		std::memcpy(buffer->data(), text + offset, buffer->size());
+		std::memcpy(buffer->storage.data(), text + offset, buffer->size());
 		offset += buffer->size();
 
 		if(offset > text_len || !offset) {
@@ -210,7 +210,7 @@ TEST(BufferChainTest, ReadIterator) {
 	
 	for(auto i = chain.begin(), j = chain.end(); i != j; ++i) {
 		auto buffer = i.get_buffer();
-		std::copy(buffer.first , buffer.first + buffer.second, std::back_inserter(output));
+		std::copy(buffer.first, buffer.first + buffer.second, std::back_inserter(output));
 	}
 
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
