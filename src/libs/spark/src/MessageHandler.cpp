@@ -9,6 +9,8 @@
 #include <spark/MessageHandler.h>
 #include <flatbuffers/flatbuffers.h>
 #include <spark/temp/MessageRoot_generated.h>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ember { namespace spark {
 
@@ -29,10 +31,12 @@ bool MessageHandler::handle_message(const std::vector<std::uint8_t>& net_buffer)
 	auto message = messaging::GetMessageRoot(net_buffer.data());
 
 	if(message->data_type() == messaging::Data_Banner) {
-		const messaging::Banner* banner =
-			(const messaging::Banner*)message->data();
+		const messaging::Banner* banner = (const messaging::Banner*)message->data();
+		boost::uuids::uuid remote_id;
+		std::copy(banner->server_uuid()->begin(), banner->server_uuid()->end(), remote_id.data);
+	
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Banner: " << banner->description()->c_str() << LOG_ASYNC;
+			<< "[spark] Remote UUID: " << boost::uuids::to_string(remote_id) << LOG_ASYNC;
 	}
 
 	return true;

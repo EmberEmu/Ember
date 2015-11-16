@@ -24,7 +24,7 @@
 namespace ember {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
@@ -33,7 +33,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	spark::ChainedBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
-	log::Logger* logger_; 
+	log::Logger* logger_;
+	bool stopped_;
 
 	void read() {
 		auto self(shared_from_this());
@@ -45,11 +46,18 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			inbound_buffer_.attach(tail);
 		}
 
+		set_timer();
+
 		socket_.async_receive(boost::asio::buffer(tail->data(), tail->free()),
 			strand_.wrap(create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
+				if(stopped_) {
+					return;
+				}
+
+				timer_.cancel();
+
 				if(!ec) {
-					set_timer();
 					inbound_buffer_.advance_write_cursor(size);
 
 					if(handle_packet(inbound_buffer_)) {
@@ -66,12 +74,11 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	void set_timer() {
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(strand_.wrap(std::bind(&NetworkSession::timeout, this,
-		                                         std::placeholders::_1)));
+		timer_.async_wait(strand_.wrap(std::bind(&NetworkSession::timeout, this, std::placeholders::_1)));
 	}
 
 	void timeout(const boost::system::error_code& ec) {
-		if(ec) { // if ec is set, the timer was aborted (session close / refreshed)
+		if(ec || stopped_) { // if ec is set, the timer was aborted (session close / refreshed)
 			return;
 		}
 
@@ -90,19 +97,20 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				<< "Closing connection to " << remote_address()
 				<< ":" << remote_port() << LOG_ASYNC;
 
+			stopped_ = true;
 			boost::system::error_code ec; // we don't care about any errors
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 			socket_.close(ec);
+			timer_.cancel();
 		});
 	}
 
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	                 strand_(socket.get_io_service()), logger_(logger) { }
+	                 strand_(socket.get_io_service()), logger_(logger), stopped_(false) { }
 
 	virtual void start() {
-		set_timer();
 		read();
 	}
 

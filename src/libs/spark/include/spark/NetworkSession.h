@@ -27,14 +27,12 @@
 namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 3 };
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024; // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
-
 	enum class ReadState { HEADER, BODY };
 
 	boost::asio::ip::tcp::socket socket_;
-	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	ReadState state_;
@@ -44,6 +42,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	MessageHandler handler_;
 	log::Logger* logger_; 
 	log::Filter filter_;
+	bool stopped_;
 
 	bool process_header() {
 		std::copy(in_buff_.data(), in_buff_.data() + sizeof(body_read_size), &body_read_size);
@@ -67,14 +66,19 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	void read() {
 		auto self(shared_from_this());
+		set_timer();
 		
 		std::size_t read_size = state_ == ReadState::HEADER? sizeof(body_read_size) : body_read_size;
 
 		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size),
 			[this, self](boost::system::error_code ec, std::size_t size) {
-				if(!ec) {
-					set_timer(); 
+				if(stopped_) {
+					return;
+				}
 
+				timer_.cancel();
+
+				if(!ec) {
 					if(state_ == ReadState::HEADER) { // handle header
 						if(process_header()) {
 							state_ = ReadState::BODY;
@@ -89,6 +93,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 						close_session();
 					}
 				} else if(ec != boost::asio::error::operation_aborted) {
+					LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Read handler: " << ec.message() << LOG_ASYNC;
 					close_session();
 				}
 			}
@@ -96,18 +101,12 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 	void set_timer() {
-		auto self(shared_from_this());
-
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(strand_.wrap(
-			[this, self](const boost::system::error_code& ec) {
-				timeout(ec);
-			})
-		);
+		timer_.async_wait(std::bind(&NetworkSession::timeout, this, std::placeholders::_1));
 	}
 
 	void timeout(const boost::system::error_code& ec) {
-		if(ec) { // if ec is set, the timer was aborted (session close / refreshed)
+		if(ec || stopped_) { // if ec is set, the timer was aborted (session close / refreshed)
 			return;
 		}
 
@@ -123,20 +122,22 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			<< "[spark] Closing connection to " << remote_address()
 			<< ":" << remote_port() << LOG_ASYNC;
 
+		stopped_ = true;
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		socket_.close(ec);
+		timer_.cancel();
 	}
 
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
 	               log::Logger* logger, log::Filter filter)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	                 handler_(handler), strand_(socket.get_io_service()), logger_(logger), filter_(filter),
-	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) { }
+	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
+	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) {
+	}
 
 	void start() {
-		set_timer();
 		read();
 	}
 
@@ -168,6 +169,7 @@ public:
 			return;
 		}
 
+		boost::endian::native_to_little_inplace(size);
 		auto size_ptr = std::make_shared<decltype(body_read_size)>(size);
 
 		std::vector<boost::asio::const_buffer> buffers {
