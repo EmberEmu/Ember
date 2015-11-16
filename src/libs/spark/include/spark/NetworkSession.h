@@ -16,6 +16,7 @@
 #include <boost/endian/conversion.hpp>
 #include <flatbuffers/flatbuffers.h>
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -27,8 +28,8 @@
 namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 3 };
-	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024; // 1MB
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
+	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
 	enum class ReadState { HEADER, BODY };
 
@@ -50,8 +51,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 		if(body_read_size > MAX_MESSAGE_LENGTH) {
 			LOG_WARN_FILTER(logger_, filter_)
-				<< "[spark] Peer at " << remote_address() << ":"
-				<< remote_port() << " attempted to send a message of "
+				<< "[spark] Peer at " << remote_host()
+				<< " attempted to send a message of "
 				<< body_read_size << " bytes" << LOG_ASYNC;
 
 			return false;
@@ -93,7 +94,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 						close_session();
 					}
 				} else if(ec != boost::asio::error::operation_aborted) {
-					LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Read handler: " << ec.message() << LOG_ASYNC;
 					close_session();
 				}
 			}
@@ -111,16 +111,16 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Lost connection to peer at " << remote_address() << ":"
-			<< remote_port() << " (idle timeout) " << LOG_ASYNC;
+			<< "[spark] Lost connection to peer at "
+			<< remote_host() << " (idle timeout) " << LOG_ASYNC;
 
 		close_session();
 	}
 
 	void stop() {
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Closing connection to " << remote_address()
-			<< ":" << remote_port() << LOG_ASYNC;
+			<< "[spark] Closing connection to "
+			<< remote_host() << LOG_ASYNC;
 
 		stopped_ = true;
 		boost::system::error_code ec; // we don't care about any errors
@@ -134,8 +134,7 @@ public:
 	               log::Logger* logger, log::Filter filter)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
 	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
-	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) {
-	}
+	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) { }
 
 	void start() {
 		read();
@@ -145,12 +144,9 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	std::string remote_address() {
-		return socket_.remote_endpoint().address().to_string();
-	}
-
-	std::uint16_t remote_port() {
-		return socket_.remote_endpoint().port();
+	std::string remote_host() {
+		return socket_.remote_endpoint().address().to_string() + 
+			std::to_string(socket_.remote_endpoint().port());
 	}
 
 	void write(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {
@@ -172,13 +168,13 @@ public:
 		boost::endian::native_to_little_inplace(size);
 		auto size_ptr = std::make_shared<decltype(body_read_size)>(size);
 
-		std::vector<boost::asio::const_buffer> buffers {
-			{ size_ptr.get(), sizeof(body_read_size) },
-			{ fbb->GetBufferPointer(), fbb->GetSize() }
+		std::array<boost::asio::const_buffer, 2> buffers {
+			boost::asio::const_buffer { size_ptr.get(), sizeof(body_read_size) },
+			boost::asio::const_buffer { fbb->GetBufferPointer(), fbb->GetSize() }
 		};
 
 		socket_.async_send(buffers,
-			[this, self, fbb](boost::system::error_code ec, std::size_t size) {
+			[this, self, fbb](boost::system::error_code ec, std::size_t /*size*/) {
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
