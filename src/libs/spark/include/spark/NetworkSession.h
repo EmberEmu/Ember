@@ -28,7 +28,7 @@
 namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 1 };
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
 	enum class ReadState { HEADER, BODY };
@@ -66,31 +66,27 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 	void handle_read(boost::system::error_code ec) {
-		timer_.cancel();
-
-		if(!ec) {
-			// handle header
-			if(state_ == ReadState::HEADER) {
-				if(process_header()) {
-					state_ = ReadState::BODY;
-					read();
-				} else {
-					close_session();
-				}
-
-				return;
-			}
-
-			// handle payload
-			if(handler_.handle_message(in_buff_)) {
-				state_ = ReadState::HEADER;
-				read();
-			} else { // error handling body
+		if(ec) {
+			if(ec != boost::asio::error::operation_aborted) {
 				close_session();
 			}
-		} else if(ec != boost::asio::error::operation_aborted) {
-			close_session();
+
+			return;
 		}
+
+		if(state_ == ReadState::HEADER) {
+			if(process_header()) {
+				state_ = ReadState::BODY;
+				read();
+				return;
+			}
+		} else if(handler_.handle_message(in_buff_)) {
+			state_ = ReadState::HEADER;
+			read();
+			return;
+		}
+
+		close_session();
 	}
 
 	void read() {
@@ -102,6 +98,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size),
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(!stopped_) {
+					timer_.cancel();
 					handle_read(ec);
 				}
 			}
