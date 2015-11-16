@@ -12,9 +12,8 @@
 
 namespace ember { namespace spark {
 
-MessageHandler::MessageHandler(Mode mode, log::Logger* logger, log::Filter filter)
-                               : mode_(mode), logger_(logger), filter_(filter) {
-}
+MessageHandler::MessageHandler(log::Logger* logger, log::Filter filter)
+                               : logger_(logger), filter_(filter) { }
 
 bool MessageHandler::handle_message(const std::vector<std::uint8_t>& net_buffer) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
@@ -27,7 +26,14 @@ bool MessageHandler::handle_message(const std::vector<std::uint8_t>& net_buffer)
 		return false;
 	}
 	
-	auto root = messaging::GetMessageRoot(net_buffer.data());
+	auto message = messaging::GetMessageRoot(net_buffer.data());
+
+	if(message->data_type() == messaging::Data_Banner) {
+		const messaging::Banner* banner =
+			(const messaging::Banner*)message->data();
+		LOG_DEBUG_FILTER(logger_, filter_)
+			<< "[spark] Banner: " << banner->description()->c_str() << LOG_ASYNC;
+	}
 
 	return true;
 }

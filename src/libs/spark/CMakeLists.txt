@@ -13,6 +13,7 @@ add_library(${LIBRARY_NAME}
             src/MessageHandler.cpp
             src/CoreHandler.cpp
             src/HandlerMap.cpp
+            include/spark/Link.h
             include/spark/HandlerMap.h
             include/spark/CoreHandler.h
             include/spark/MessageHandler.h

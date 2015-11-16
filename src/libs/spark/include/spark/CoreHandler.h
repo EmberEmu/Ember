@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <logger/Logging.h>
+#include <spark/Link.h>
 #include <spark/temp/MessageRoot_generated.h>
+#include <logger/Logging.h>
 
 namespace ember { namespace spark {
 
@@ -19,7 +20,8 @@ class CoreHandler {
 
 public:
 	CoreHandler(log::Logger* logger, log::Filter filter);
-	void handle_message(messaging::MessageRoot* message);
+	void handle_message(const Link& link, messaging::MessageRoot* message);
+	void handle_event(const Link& link, LinkState state);
 };
 
 }}

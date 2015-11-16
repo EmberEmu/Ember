@@ -10,22 +10,27 @@
 
 namespace ember { namespace spark {
 
-HandlerMap::HandlerMap(Handler default_handler) : def_handler_(default_handler) { }
+HandlerMap::HandlerMap(MsgHandler default_handler) : def_handler_(default_handler) { }
 
-void HandlerMap::register_handler(Handler handler, messaging::Service service_type) {
+void HandlerMap::register_handler(MsgHandler handler, LinkStateHandler l_handler, messaging::Service service_type) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
-	handlers_[service_type] = handler;
+	handlers_[service_type] = { handler, l_handler };
 }
 
-void HandlerMap::remove_handler(Handler handler, messaging::Service service_type) {
+void HandlerMap::remove_handler(messaging::Service service_type) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
 	handlers_.erase(service_type);
 }
 
-auto HandlerMap::handler(messaging::Service service_type) const -> const Handler& {
+auto HandlerMap::handler(messaging::Service service_type) const -> const MsgHandler {
 	std::shared_lock<std::shared_timed_mutex> guard(lock_);
-	auto& handler = handlers_.at(service_type);
-	return handler? handler : def_handler_;
+	auto it = handlers_.find(service_type);
+
+	if(it != handlers_.end()) {
+		return it->second.first;
+	}
+
+	return def_handler_;
 }
 
 }} // spark, ember

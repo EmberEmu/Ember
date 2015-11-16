@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/Link.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <functional>
 #include <shared_mutex>
@@ -15,18 +16,21 @@
 
 namespace ember { namespace spark {
 
-class HandlerMap {
-	typedef std::function<void(messaging::MessageRoot*)> Handler;
+typedef std::function<void(const Link& link, messaging::MessageRoot*)> MsgHandler;
+typedef std::function<void(const Link& link, LinkState state)> LinkStateHandler;
 
-	std::unordered_map<messaging::Service, Handler> handlers_;
-	Handler def_handler_;
+class HandlerMap {
+	typedef std::pair<MsgHandler, LinkStateHandler> HandlerPair;
+
+	std::unordered_map<messaging::Service, HandlerPair> handlers_;
+	MsgHandler def_handler_;
 	mutable std::shared_timed_mutex lock_;
 
 public:
-	HandlerMap(Handler default_handler);
-	void register_handler(Handler handler, messaging::Service service_type);
-	void remove_handler(Handler handler, messaging::Service service_type);
-	const Handler& handler(messaging::Service service_type) const;
+	HandlerMap(MsgHandler default_handler);
+	void register_handler(MsgHandler handler, LinkStateHandler l_handler, messaging::Service service_type);
+	void remove_handler(messaging::Service service_type);
+	const MsgHandler handler(messaging::Service service_type) const;
 };
 
 }} // spark, ember

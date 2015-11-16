@@ -15,22 +15,16 @@
 namespace ember { namespace spark {
 
 class MessageHandler {
-public:
-	enum class Mode {
-		CLIENT, SERVER
-	};
 
-private:
 	enum class State {
 		HANDSHAKING, NEGOTIATING, FORWARDING
 	} state_ = State::HANDSHAKING;
 
-	Mode mode_;
 	log::Logger* logger_;
 	log::Filter filter_;
 
 public:
-	MessageHandler(Mode mode, log::Logger* logger, log::Filter filter);
+	MessageHandler(log::Logger* logger, log::Filter filter);
 	bool handle_message(const std::vector<std::uint8_t>& net_buffer);
 };
 

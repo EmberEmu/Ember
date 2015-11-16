@@ -36,7 +36,7 @@ void Listener::accept_connection() {
 			auto ip = socket_.remote_endpoint().address();
 
 			LOG_DEBUG_FILTER(logger_, filter_)
-				<< "Accepted Spark connection from " << ip.to_string() << ":"
+				<< "[spark] Accepted connection from " << ip.to_string() << ":"
 				<< socket_.remote_endpoint().port() << LOG_ASYNC;
 
 			start_session(std::move(socket_));
@@ -48,13 +48,13 @@ void Listener::accept_connection() {
 
 void Listener::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
-	MessageHandler m_handler(MessageHandler::Mode::SERVER, logger_, filter_);
+	MessageHandler m_handler(logger_, filter_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_, filter_);
 	sessions_.start(session);
 }
 
 void Listener::shutdown() {
-	LOG_DEBUG_FILTER(logger_, filter_) << "Spark listener shutting down..." << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Listener shutting down..." << LOG_ASYNC;
 	acceptor_.close();
 }
 

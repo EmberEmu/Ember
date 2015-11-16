@@ -14,6 +14,7 @@
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/endian/conversion.hpp>
+#include <flatbuffers/flatbuffers.h>
 #include <algorithm>
 #include <chrono>
 #include <memory>
@@ -27,7 +28,6 @@ namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
-	const std::size_t HEADER_LENGTH = 1;
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024; // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
 
@@ -38,7 +38,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	ReadState state_;
-	std::size_t body_read_size;
+	std::uint32_t body_read_size;
 	std::vector<std::uint8_t> in_buff_;
 	SessionManager& sessions_;
 	MessageHandler handler_;
@@ -46,7 +46,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	log::Filter filter_;
 
 	bool process_header() {
-		std::copy(in_buff_.begin(), in_buff_.begin() + HEADER_LENGTH, &body_read_size);
+		std::copy(in_buff_.data(), in_buff_.data() + sizeof(body_read_size), &body_read_size);
 		boost::endian::little_to_native_inplace(body_read_size);
 
 		if(body_read_size > MAX_MESSAGE_LENGTH) {
@@ -68,12 +68,12 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	void read() {
 		auto self(shared_from_this());
 		
-		std::size_t read_size = state_ == ReadState::HEADER? HEADER_LENGTH : body_read_size;
+		std::size_t read_size = state_ == ReadState::HEADER? sizeof(body_read_size) : body_read_size;
 
-		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_.data(), read_size),
+		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size),
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(!ec) {
-					set_timer();
+					set_timer(); 
 
 					if(state_ == ReadState::HEADER) { // handle header
 						if(process_header()) {
@@ -128,7 +128,7 @@ public:
 	               log::Logger* logger, log::Filter filter)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
 	                 handler_(handler), strand_(socket.get_io_service()), logger_(logger), filter_(filter),
-	                 state_(ReadState::HEADER), in_buff_(1000) { }
+	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) { }
 
 	void start() {
 		set_timer();
@@ -147,18 +147,31 @@ public:
 		return socket_.remote_endpoint().port();
 	}
 
-	template<std::size_t BlockSize>
-	void write(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
+	void write(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
 			return;
 		}
 
-		socket_.async_send(*chain,
-			[this, self, chain](boost::system::error_code ec, std::size_t size) {
-				chain->skip(size);
+		auto size = static_cast<decltype(body_read_size)>(fbb->GetSize());
 
+		if(size > MAX_MESSAGE_LENGTH) {
+			LOG_DEBUG_FILTER(logger_, filter_)
+				<< "[spark] Attempted to send a message larger than permitted size ("
+				<< MAX_MESSAGE_LENGTH << " bytes)" << LOG_ASYNC;
+			return;
+		}
+
+		auto size_ptr = std::make_shared<decltype(body_read_size)>(size);
+
+		std::vector<boost::asio::const_buffer> buffers {
+			{ size_ptr.get(), sizeof(body_read_size) },
+			{ fbb->GetBufferPointer(), fbb->GetSize() }
+		};
+
+		socket_.async_send(buffers,
+			[this, self, fbb](boost::system::error_code ec, std::size_t size) {
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
