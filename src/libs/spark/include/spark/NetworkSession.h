@@ -96,9 +96,14 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 	void set_timer() {
+		auto self(shared_from_this());
+
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(strand_.wrap(std::bind(&NetworkSession::timeout, this,
-		                                         std::placeholders::_1)));
+		timer_.async_wait(strand_.wrap(
+			[this, self](const boost::system::error_code& ec) {
+				timeout(ec);
+			})
+		);
 	}
 
 	void timeout(const boost::system::error_code& ec) {
