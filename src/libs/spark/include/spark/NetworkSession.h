@@ -65,6 +65,34 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		return true;
 	}
 
+	void handle_read(boost::system::error_code ec) {
+		timer_.cancel();
+
+		if(!ec) {
+			// handle header
+			if(state_ == ReadState::HEADER) {
+				if(process_header()) {
+					state_ = ReadState::BODY;
+					read();
+				} else {
+					close_session();
+				}
+
+				return;
+			}
+
+			// handle payload
+			if(handler_.handle_message(in_buff_)) {
+				state_ = ReadState::HEADER;
+				read();
+			} else { // error handling body
+				close_session();
+			}
+		} else if(ec != boost::asio::error::operation_aborted) {
+			close_session();
+		}
+	}
+
 	void read() {
 		auto self(shared_from_this());
 		set_timer();
@@ -73,28 +101,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size),
 			[this, self](boost::system::error_code ec, std::size_t size) {
-				if(stopped_) {
-					return;
-				}
-
-				timer_.cancel();
-
-				if(!ec) {
-					if(state_ == ReadState::HEADER) { // handle header
-						if(process_header()) {
-							state_ = ReadState::BODY;
-							read();
-						} else {
-							close_session();
-						}
-					} else if(handler_.handle_message(in_buff_)) { // handle body
-						state_ = ReadState::HEADER;
-						read();
-					} else {
-						close_session();
-					}
-				} else if(ec != boost::asio::error::operation_aborted) {
-					close_session();
+				if(!stopped_) {
+					handle_read(ec);
 				}
 			}
 		);
