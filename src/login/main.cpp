@@ -177,7 +177,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	// Spawn worker threads for ASIO
 	std::vector<std::thread> workers;
 
-	for(unsigned int i = 0; i < concurrency; ++i) {
+	// start from one to take the main thread into account
+	for(unsigned int i = 1; i < concurrency; ++i) {
 		workers.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
 			(&boost::asio::io_service::run), &service); 
 	}
