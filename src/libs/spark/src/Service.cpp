@@ -20,11 +20,13 @@ namespace bai = boost::asio::ip;
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
-                   listener_(service, interface, port, sessions_, link_, logger, filter),
+                   listener_(service, interface, port, sessions_, handlers_, link_, logger, filter),
                    core_handler_(logger, filter), socket_(service),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
                    handlers_(std::bind(&Service::default_handler, this,
-                             std::placeholders::_1, std::placeholders::_2)) {
+                             std::placeholders::_1, std::placeholders::_2),
+                             std::bind(&Service::default_link_state_handler, this,
+                            std::placeholders::_1, std::placeholders::_2)) {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
 	handlers_.register_handler(
@@ -41,14 +43,17 @@ void Service::shutdown() {
 }
 
 void Service::start_session(boost::asio::ip::tcp::socket socket) {
-	MessageHandler m_handler(link_, logger_, filter_);
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
+	MessageHandler m_handler(handlers_, link_, true, logger_, filter_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket),
                                                     m_handler, logger_, filter_);
 	sessions_.start(session);
-	m_handler.start(*session);
 }
 
 void Service::connect(const std::string& host, std::uint16_t port) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
 	bai::tcp::resolver resolver(service_);
 	auto endpoint_it = resolver.resolve({ host, std::to_string(port) });
 
@@ -56,21 +61,22 @@ void Service::connect(const std::string& host, std::uint16_t port) {
 		[this, host, port](boost::system::error_code ec, bai::tcp::resolver::iterator it) {
 			if(!ec) {
 				start_session(std::move(socket_)); 
-			} else {
-				LOG_DEBUG_FILTER(logger_, filter_)
-					<< "[spark] Unable to establish connection to "
-					<< host << ":" << port
-					<< LOG_ASYNC;
 			}
+
+			LOG_DEBUG_FILTER(logger_, filter_)
+				<< "[spark] " << (ec? "Unable to establish" : "Established")
+				<< " connection to " << host << ":" << port << LOG_ASYNC;
 		}
 	);
 }
 
+void Service::default_link_state_handler(const Link& link, LinkState state) {
+	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Unhandled link event! " << LOG_ASYNC;
+}
+
 void Service::default_handler(const Link& link, const messaging::MessageRoot* message) {
-	LOG_DEBUG_FILTER(logger_, filter_)
-		<< "[spark] Unhandled message of type "
-		<< messaging::EnumNameData(message->data_type())
-		<< LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Unhandled message of type "
+		<< messaging::EnumNameData(message->data_type()) << LOG_ASYNC;
 }
 
 void Service::send(const Link& link, messaging::MessageRoot* message) {
@@ -83,6 +89,10 @@ void Service::send_tracked(const Link& link, messaging::MessageRoot* message, Ms
 
 void Service::broadcast(messaging::Service service, messaging::MessageRoot* message) {
 
+}
+
+HandlerMap* Service::handlers() {
+	return &handlers_;
 }
 
 }} // spark, ember

@@ -1,5 +1,5 @@
 namespace ember.messaging;
 
-enum Service : byte {
+enum Service : uint {
 	Core, Keystone, Login
 }

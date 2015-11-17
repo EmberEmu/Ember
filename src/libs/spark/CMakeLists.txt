@@ -13,6 +13,7 @@ add_library(${LIBRARY_NAME}
             src/MessageHandler.cpp
             src/CoreHandler.cpp
             src/HandlerMap.cpp
+            src/Utility.cpp
             include/spark/Link.h
             include/spark/HandlerMap.h
             include/spark/CoreHandler.h
@@ -26,6 +27,7 @@ add_library(${LIBRARY_NAME}
             include/spark/Listener.h
             include/spark/NetworkSession.h
             include/spark/SessionManager.h
+            include/spark/Utility.h
 )
 
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})

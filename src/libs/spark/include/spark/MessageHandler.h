@@ -17,6 +17,7 @@
 namespace ember { namespace spark {
 
 class NetworkSession;
+class HandlerMap;
 
 class MessageHandler {
 	enum class State {
@@ -25,6 +26,7 @@ class MessageHandler {
 
 	Link peer_;
 	const Link& self_;
+	const HandlerMap& handlers_;
 	log::Logger* logger_;
 	log::Filter filter_;
 	bool initiator_;
@@ -35,7 +37,8 @@ class MessageHandler {
 	void send_negotiation(NetworkSession& net);
 
 public:
-	MessageHandler(const Link& link, log::Logger* logger, log::Filter filter);
+	MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
+	               log::Logger* logger, log::Filter filter);
 
 	bool handle_message(NetworkSession& net, const std::vector<std::uint8_t>& buffer);
 	void start(NetworkSession& net);

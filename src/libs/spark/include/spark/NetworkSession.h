@@ -142,6 +142,7 @@ public:
 	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) { }
 
 	void start() {
+		handler_.start(*this);
 		read();
 	}
 
@@ -150,7 +151,7 @@ public:
 	}
 
 	std::string remote_host() {
-		return socket_.remote_endpoint().address().to_string() + 
+		return socket_.remote_endpoint().address().to_string() + ":" +
 			std::to_string(socket_.remote_endpoint().port());
 	}
 

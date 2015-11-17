@@ -7,33 +7,43 @@
  */
 
 #include <spark/MessageHandler.h>
+#include <spark/HandlerMap.h>
 #include <spark/NetworkSession.h>
+#include <spark/Utility.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <spark/temp/Core_generated.h>
+#include <spark/temp/ServiceTypes_generated.h>
 #include <flatbuffers/flatbuffers.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ember { namespace spark {
 
-MessageHandler::MessageHandler(const Link& link, log::Logger* logger, log::Filter filter)
-                               : self_(link), initiator_(false), logger_(logger), filter_(filter) { }
+MessageHandler::MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
+                               log::Logger* logger, log::Filter filter)
+                               : handlers_(handlers), self_(link), initiator_(initiator),
+                                 logger_(logger), filter_(filter) { }
 
-bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message) {
-	/*if(message->data_type() != messaging::Data_Negotiate) {
-		LOG_WARN_FILTER(logger_, filter_)
-			<< "[spark] Unable to establish link, peer did not send banner: "
-			<< net.remote_host() << LOG_ASYNC;
-		return false;
-	}*/
-
-	return true;
-}
 
 void MessageHandler::send_negotiation(NetworkSession& net) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
+	auto services = handlers_.outbound_services();
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	std::array<uint8_t, 2> test {1, 2};
+	auto in = fbb->CreateVector(test.data(), test.size());
+	auto out = fbb->CreateVector(test.data(), test.size());
+
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
+		messaging::Data::Data_Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
+
+	fbb->Finish(msg);
+	net.write(fbb);
 }
 
 void MessageHandler::send_banner(NetworkSession& net) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto desc = fbb->CreateString(self_.description);
 	auto uuid = fbb->CreateVector(self_.uuid.begin(), self_.uuid.size());
@@ -46,9 +56,11 @@ void MessageHandler::send_banner(NetworkSession& net) {
 }
 
 bool MessageHandler::establish_link(NetworkSession& net, const messaging::MessageRoot* message) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
 	if(message->data_type() != messaging::Data_Banner) {
 		LOG_WARN_FILTER(logger_, filter_)
-			<< "[spark] Unable to establish link, peer did not send banner: "
+			<< "[spark] Link failed, peer did not send banner: "
 			<< net.remote_host() << LOG_ASYNC;
 		return false;
 	}
@@ -58,7 +70,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 	if(!banner->server_uuid() || banner->server_uuid()->size() != boost::uuids::uuid::static_size()
 	   || !banner->description()) {
 		LOG_WARN_FILTER(logger_, filter_)
-			<< "[spark] Unable to establish link, incompatible banner: "
+			<< "[spark] Link failed, incompatible banner: "
 			<< net.remote_host() << LOG_ASYNC;
 		return false;
 	}
@@ -77,6 +89,35 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 	}
 
 	state_ = State::NEGOTIATING;
+	return true;
+}
+
+bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
+	if(message->data_type() != messaging::Data_Negotiate) {
+		LOG_WARN_FILTER(logger_, filter_)
+			<< "[spark] Link failed, peer did not negotiate: "
+			<< net.remote_host() << LOG_ASYNC;
+		return false;
+	}
+
+	auto protocols = static_cast<const messaging::Negotiate*>(message->data());
+	
+	if(!protocols->proto_in() || !protocols->proto_out()) {
+		LOG_WARN_FILTER(logger_, filter_)
+			<< "[spark] Link failed, incompatible negotiation: "
+			<< net.remote_host() << LOG_ASYNC;
+		return false;
+	}
+
+	//std::vector<messaging::Service> in(protocols->proto_in()->begin(), protocols->proto_in()->end());
+
+	if(!initiator_) {
+		send_negotiation(net);
+	}
+
+	state_ = State::FORWARDING;
 	return true;
 }
 
@@ -106,8 +147,11 @@ bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::
 }
 
 void MessageHandler::start(NetworkSession& net) {
-	send_banner(net);
-	initiator_ = true;
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	
+	if(initiator_) {
+		send_banner(net);
+	}
 }
 
 }} // spark, ember

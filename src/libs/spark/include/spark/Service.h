@@ -37,6 +37,7 @@ class Service {
 	
 	void start_session(boost::asio::ip::tcp::socket socket);
 	void default_handler(const Link& link, const messaging::MessageRoot* message);
+	void default_link_state_handler(const Link& link, LinkState state);
 	void initiate_handshake(NetworkSession* session);
 	void shutdown();
 
@@ -48,6 +49,7 @@ public:
 	void send(const Link& link, messaging::MessageRoot* message);
 	void send_tracked(const Link& link, messaging::MessageRoot* message, MsgHandler callback);
 	void broadcast(messaging::Service service, messaging::MessageRoot* message);
+	HandlerMap* handlers();
 };
 
 }} // spark, ember
