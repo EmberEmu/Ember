@@ -17,7 +17,7 @@
 
 namespace ember { namespace spark {
 
-typedef std::function<void(const Link& link, messaging::MessageRoot*)> MsgHandler;
+typedef std::function<void(const Link& link, const messaging::MessageRoot*)> MsgHandler;
 typedef std::function<void(const Link& link, LinkState state)> LinkStateHandler;
 
 // todo, rename?
@@ -31,7 +31,7 @@ class HandlerMap {
 	mutable std::shared_timed_mutex lock_;
 
 public:
-	HandlerMap(MsgHandler default_handler, LinkStateHandler default_link_handler);
+	HandlerMap(MsgHandler default_handler);
 	void register_handler(MsgHandler handler, LinkStateHandler l_handler, messaging::Service service_type);
 	void remove_handler(messaging::Service service_type);
 	const MsgHandler& message_handler(messaging::Service service_type) const;

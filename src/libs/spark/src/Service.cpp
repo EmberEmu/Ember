@@ -24,9 +24,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                    core_handler_(logger, filter), socket_(service),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
                    handlers_(std::bind(&Service::default_handler, this,
-                             std::placeholders::_1, std::placeholders::_2),
-                             std::bind(&Service::default_link_state_handler, this,
-                            std::placeholders::_1, std::placeholders::_2)) {
+                             std::placeholders::_1, std::placeholders::_2)) {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
 	handlers_.register_handler(

@@ -10,8 +10,8 @@
 
 namespace ember { namespace spark {
 
-HandlerMap::HandlerMap(MsgHandler default_handler, LinkStateHandler default_link_handler)
-                       : def_handler_(default_handler), def_link_handler_(default_link_handler) { }
+HandlerMap::HandlerMap(MsgHandler default_handler)
+                       : def_handler_(default_handler) { }
 
 void HandlerMap::register_handler(MsgHandler handler, LinkStateHandler l_handler, messaging::Service service_type) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
@@ -50,7 +50,7 @@ std::vector<messaging::Service> HandlerMap::inbound_services() const {
 	std::vector<messaging::Service> services;
 
 	for(auto& handler : handlers_) {
-		services.emplace_back(handler.first);
+		//services.emplace_back(handler.first);
 	}
 
 	return services;
@@ -63,7 +63,7 @@ std::vector<messaging::Service> HandlerMap::outbound_services() const {
 
 void HandlerMap::register_outbound(messaging::Service service) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
-	outbound_services_.emplace_back(service);
+	//outbound_services_.emplace_back(service);
 }
 
 }} // spark, ember

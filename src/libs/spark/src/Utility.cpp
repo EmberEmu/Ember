@@ -7,12 +7,10 @@
  */
 
 #include <spark/Utility.h>
-#include <spark/temp/ServiceTypes_generated.h>
-#include <type_traits>
 
 namespace ember { namespace spark { namespace detail {
 
-std::vector<ServicesType> services_to_uint8(const std::vector<messaging::Service>& services) {
+std::vector<ServicesType> services_to_underlying(const std::vector<messaging::Service>& services) {
 	std::vector<ServicesType> ret;
 
 	for(auto& service : services) {
@@ -22,7 +20,7 @@ std::vector<ServicesType> services_to_uint8(const std::vector<messaging::Service
 	return ret;
 }
 
-std::vector<messaging::Service> uint8_to_services(const std::vector<ServicesType>& services) {
+std::vector<messaging::Service> underlying_to_services(const std::vector<ServicesType>& services) {
 	std::vector<messaging::Service> ret;
 
 	for(auto& service : services) {

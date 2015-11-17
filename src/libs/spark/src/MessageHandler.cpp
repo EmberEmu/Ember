@@ -16,6 +16,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ember { namespace spark {
 
@@ -30,9 +31,8 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 
 	auto services = handlers_.outbound_services();
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	std::array<uint8_t, 2> test {1, 2};
-	auto in = fbb->CreateVector(test.data(), test.size());
-	auto out = fbb->CreateVector(test.data(), test.size());
+	auto in = fbb->CreateVector(detail::services_to_underlying(handlers_.inbound_services()));
+	auto out = fbb->CreateVector(detail::services_to_underlying(handlers_.outbound_services()));
 
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
@@ -111,11 +111,36 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 		return false;
 	}
 
-	//std::vector<messaging::Service> in(protocols->proto_in()->begin(), protocols->proto_in()->end());
+	// vectors of enums are very annoying to use in FlatBuffers :(
+	std::vector<std::int32_t> in(protocols->proto_in()->begin(), protocols->proto_in()->end());
+	std::vector<std::int32_t> out(protocols->proto_out()->begin(), protocols->proto_out()->end());
+	auto local_in = handlers_.inbound_services();
+	auto local_out = handlers_.outbound_services();
+
+	std::sort(in.begin(), in.end());
+	std::sort(out.begin(), out.end());
+	std::sort(local_in.begin(), local_in.end());
+	std::sort(local_out.begin(), local_out.end());
+
+	std::vector<std::int32_t> in_matches, out_matches;
+	std::set_intersection(in.begin(), in.end(), local_out.begin(), local_out.end(), std::back_inserter(in_matches));
+	std::set_intersection(out.begin(), out.end(), local_in.begin(), local_in.end(), std::back_inserter(in_matches));
+
+	// todo, exclude core
+	if(in.empty() && out.empty()) {
+		/*LOG_DEBUG_FILTER(logger_, filter_)
+			<< "[spark] Peer did not match any supported protocols: "
+			<< net.remote_host() << LOG_ASYNC;
+		return false;*/
+	}
 
 	if(!initiator_) {
 		send_negotiation(net);
 	}
+
+	LOG_INFO_FILTER(logger_, filter_)
+		<< "[spark] Established link: " << peer_.description << ":"
+		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
 	state_ = State::FORWARDING;
 	return true;
@@ -140,6 +165,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::
 		case State::NEGOTIATING:
 			return negotiate_protocols(net, message);
 		case State::FORWARDING:
+			handlers_.message_handler(message->service())(self_, message);
 			return true;
 	}
 

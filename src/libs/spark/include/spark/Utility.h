@@ -14,7 +14,7 @@
 
 namespace ember { namespace spark { namespace detail {
 
-typedef std::underlying_type<messaging::Service>::type ServicesType;
+typedef std::uint32_t ServicesType;
 
 // utility functions to workaround FlatBuffers' lack of proper C++11 support
 std::vector<ServicesType> services_to_underlying(const std::vector<messaging::Service>& services);

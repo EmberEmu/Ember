@@ -14,7 +14,7 @@ namespace ember { namespace spark {
 CoreHandler::CoreHandler(log::Logger* logger, log::Filter filter)
                          : logger_(logger), filter_(filter) { }
 
-void CoreHandler::handle_message(const Link& link, messaging::MessageRoot* message) {
+void CoreHandler::handle_message(const Link& link, const messaging::MessageRoot* message) {
 	
 }
 

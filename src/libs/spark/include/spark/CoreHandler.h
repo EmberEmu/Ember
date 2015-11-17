@@ -20,7 +20,7 @@ class CoreHandler {
 
 public:
 	CoreHandler(log::Logger* logger, log::Filter filter);
-	void handle_message(const Link& link, messaging::MessageRoot* message);
+	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_event(const Link& link, LinkState state);
 };
 
