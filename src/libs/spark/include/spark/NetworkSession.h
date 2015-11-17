@@ -28,7 +28,7 @@
 namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 1 };
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
 	enum class ReadState { HEADER, BODY };
@@ -80,7 +80,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				read();
 				return;
 			}
-		} else if(handler_.handle_message(in_buff_)) {
+		} else if(handler_.handle_message(*this, in_buff_)) {
 			state_ = ReadState::HEADER;
 			read();
 			return;

@@ -15,7 +15,7 @@ table Ping {
 }
 
 table Pong {
-	timestamp:ulong;	
+	timestamp:ulong;
 }
 
 table Banner {

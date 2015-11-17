@@ -26,11 +26,10 @@ class Service {
 	boost::asio::io_service& service_;
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::socket socket_;
-	boost::uuids::uuid server_uuid;
 
 	Listener listener_;
 	SessionManager sessions_;
-	std::string description_;
+	Link link_;
 	CoreHandler core_handler_;
 	HandlerMap handlers_;
 	log::Logger* logger_;

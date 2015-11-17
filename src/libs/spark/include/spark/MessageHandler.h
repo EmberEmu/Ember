@@ -8,24 +8,37 @@
 
 #pragma once
 
+#include <spark/Link.h>
+#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <vector>
 #include <cstdint>
 
 namespace ember { namespace spark {
 
-class MessageHandler {
+class NetworkSession;
 
+class MessageHandler {
 	enum class State {
 		HANDSHAKING, NEGOTIATING, FORWARDING
 	} state_ = State::HANDSHAKING;
 
+	Link peer_;
+	const Link& self_;
 	log::Logger* logger_;
 	log::Filter filter_;
+	bool initiator_;
+
+	bool negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message);
+	bool establish_link(NetworkSession& net, const messaging::MessageRoot* message);
+	void send_banner(NetworkSession& net);
+	void send_negotiation(NetworkSession& net);
 
 public:
-	MessageHandler(log::Logger* logger, log::Filter filter);
-	bool handle_message(const std::vector<std::uint8_t>& net_buffer);
+	MessageHandler(const Link& link, log::Logger* logger, log::Filter filter);
+
+	bool handle_message(NetworkSession& net, const std::vector<std::uint8_t>& buffer);
+	void start(NetworkSession& net);
 };
 
 }} // spark, ember

@@ -11,7 +11,7 @@ include "Core.fbs";
 
 namespace ember.messaging;
 
-union Data { Ping, Pong, Banner }
+union Data { Ping, Pong, Banner, Negotiate }
 
 table MessageRoot {
 	service:Service;
