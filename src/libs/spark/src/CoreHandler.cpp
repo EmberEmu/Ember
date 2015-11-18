@@ -62,8 +62,7 @@ void CoreHandler::handle_pong(const Link& link, const messaging::MessageRoot* me
 	}
 }
 
-void CoreHandler::send_ping(const Link& link) {
-	auto time = sc::duration_cast<sc::milliseconds>(sc::steady_clock::now().time_since_epoch()).count();
+void CoreHandler::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Ping, messaging::CreatePing(*fbb, time).Union());
@@ -84,10 +83,15 @@ void CoreHandler::trigger_pings(const boost::system::error_code& ec) {
 		return;
 	}
 
+	// generate the time once for all pings
+	// not quite as accurate as per-ping but slightly more efficient
+	auto time = sc::duration_cast<sc::milliseconds>(
+		sc::steady_clock::now().time_since_epoch()).count();
+
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto& link : peers_) {
-		send_ping(link);
+		send_ping(link, time);
 	}
 
 	set_timer();

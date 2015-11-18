@@ -33,7 +33,7 @@ class CoreHandler {
 
 	void handle_ping(const Link& link, const messaging::MessageRoot* message);
 	void handle_pong(const Link& link, const messaging::MessageRoot* message);
-	void send_ping(const Link& link);
+	void send_ping(const Link& link, std::uint64_t time);
 	void send_pong(const Link& link, std::uint64_t time);
 	void trigger_pings(const boost::system::error_code& ec);
 	void set_timer();
