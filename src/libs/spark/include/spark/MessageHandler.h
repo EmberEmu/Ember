@@ -39,6 +39,7 @@ class MessageHandler {
 public:
 	MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
 	               log::Logger* logger, log::Filter filter);
+	~MessageHandler();
 
 	bool handle_message(NetworkSession& net, const std::vector<std::uint8_t>& buffer);
 	void start(NetworkSession& net);

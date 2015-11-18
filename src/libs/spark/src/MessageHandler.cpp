@@ -184,4 +184,16 @@ void MessageHandler::start(NetworkSession& net) {
 	}
 }
 
+MessageHandler::~MessageHandler() {
+	if(state_ != State::FORWARDING) {
+		return;
+	}
+
+	auto in_services = handlers_.inbound_services();
+
+	for(auto& service : in_services) {
+		handlers_.link_state_handler(service)(self_, LinkState::LINK_DOWN);
+	}
+}
+
 }} // spark, ember
