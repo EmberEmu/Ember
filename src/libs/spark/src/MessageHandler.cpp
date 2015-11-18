@@ -112,38 +112,53 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	}
 
 	// vectors of enums are very annoying to use in FlatBuffers :(
-	std::vector<std::int32_t> in(protocols->proto_in()->begin(), protocols->proto_in()->end());
-	std::vector<std::int32_t> out(protocols->proto_out()->begin(), protocols->proto_out()->end());
-	auto local_in = handlers_.services(HandlerMap::Mode::SERVER);
-	auto local_out = handlers_.services(HandlerMap::Mode::CLIENT);
+	std::vector<std::int32_t> remote_servers(protocols->proto_in()->begin(), protocols->proto_in()->end());
+	std::vector<std::int32_t> remote_clients(protocols->proto_out()->begin(), protocols->proto_out()->end());
+	auto our_servers = handlers_.services(HandlerMap::Mode::SERVER);
+	auto our_clients = handlers_.services(HandlerMap::Mode::CLIENT);
 
-	std::sort(in.begin(), in.end());
-	std::sort(out.begin(), out.end());
-	std::sort(local_in.begin(), local_in.end());
-	std::sort(local_out.begin(), local_out.end());
+	std::sort(our_servers.begin(), our_servers.end());
+	std::sort(our_clients.begin(), our_clients.end());
+	std::sort(remote_servers.begin(), remote_servers.end());
+	std::sort(remote_clients.begin(), remote_clients.end());
 
-	std::vector<std::int32_t> in_matches, out_matches;
-	std::set_intersection(in.begin(), in.end(), local_out.begin(), local_out.end(), std::back_inserter(in_matches));
-	std::set_intersection(out.begin(), out.end(), local_in.begin(), local_in.end(), std::back_inserter(in_matches));
+	// match our clients to their servers
+	std::set_intersection(our_clients.begin(), our_clients.end(),
+	                      remote_servers.begin(), remote_servers.end(),
+	                      std::inserter(matches_, matches_.begin()));
 
-	if(in.empty() && out.empty()) {
+	// match their clients to our servers
+	std::set_intersection(remote_clients.begin(), remote_clients.end(),
+	                      our_servers.begin(), our_servers.end(),
+	                      std::inserter(matches_, matches_.begin()));
+
+	// we don't care about matches for core service
+	auto matches = std::count_if(matches_.begin(), matches_.end(),
+		[](std::int32_t service) {
+			return service != static_cast<std::int32_t>(messaging::Service::Service_Core);
+		}
+	);
+
+	if(!matches) {
 		LOG_DEBUG_FILTER(logger_, filter_)
 			<< "[spark] Peer did not match any supported protocols: "
 			<< net.remote_host() << LOG_ASYNC;
-		//return false;
+		return false;
 	}
 
 	if(!initiator_) {
 		send_negotiation(net);
 	}
 
+	links_.register_link(peer_, net.shared_from_this());
+
 	LOG_INFO_FILTER(logger_, filter_)
 		<< "[spark] Established link: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
-	// send the 'link up' event to handlers
-	for(auto& service : local_in) {
-		handlers_.link_state_handler(service)(self_, LinkState::LINK_UP);
+	// send the 'link up' event handlers for all matched services
+	for(auto& service : matches_) {
+		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_UP);
 	}
 
 	state_ = State::FORWARDING;
@@ -169,7 +184,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::
 		case State::NEGOTIATING:
 			return negotiate_protocols(net, message);
 		case State::FORWARDING:
-			handlers_.message_handler(message->service())(self_, message);
+			handlers_.message_handler(message->service())(peer_, message);
 			return true;
 	}
 
@@ -189,11 +204,9 @@ MessageHandler::~MessageHandler() {
 		return;
 	}
 
-	auto in_services = handlers_.services(HandlerMap::Mode::BOTH);
-
 	// send the link down event to any handlers
-	for(auto& service : in_services) {
-		handlers_.link_state_handler(service)(self_, LinkState::LINK_DOWN);
+	for(auto& service : matches_) {
+		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_DOWN);
 	}
 }
 

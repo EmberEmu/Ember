@@ -11,6 +11,7 @@
 #include <spark/Link.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
+#include <set>
 #include <vector>
 #include <cstdint>
 
@@ -31,6 +32,7 @@ class MessageHandler {
 	log::Logger* logger_;
 	log::Filter filter_;
 	LinkMap& links_;
+	std::set<std::int32_t> matches_;
 	bool initiator_;
 
 	bool negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message);

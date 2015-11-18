@@ -24,7 +24,11 @@ public:
 	}
 
 	void handle_link_event(const spark::Link& link, spark::LinkState event) {
-		LOG_INFO(logger_) << "Received an event!" << LOG_ASYNC;
+		if(event == spark::LinkState::LINK_UP) {
+			LOG_INFO(logger_) << "Link to server up!" << LOG_ASYNC;
+		} else {
+			LOG_INFO(logger_) << "Link to server down!" << LOG_ASYNC;
+		}
 	}
 };
 

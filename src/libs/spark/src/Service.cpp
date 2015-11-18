@@ -23,8 +23,8 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                    listener_(service, interface, port, sessions_, links_, handlers_, link_, logger, filter),
                    core_handler_(this, logger, filter), socket_(service),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
-                   handlers_(std::bind(&Service::default_handler, this,
-                             std::placeholders::_1, std::placeholders::_2)) {
+                   handlers_(std::bind(&CoreHandler::handle_message, &core_handler_,
+                                       std::placeholders::_1, std::placeholders::_2)) {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
 	handlers_.register_handler(
@@ -74,13 +74,9 @@ void Service::connect(const std::string& host, std::uint16_t port) {
 	});
 }
 
-void Service::default_link_state_handler(const Link& link, LinkState state) {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Unhandled link event! " << LOG_ASYNC;
-}
-
 void Service::default_handler(const Link& link, const messaging::MessageRoot* message) {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Unhandled message of type "
-		<< messaging::EnumNameData(message->data_type()) << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Peer sent an unknown service type, ID: "
+		<< message->data_type() << LOG_ASYNC;
 }
 
 auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
