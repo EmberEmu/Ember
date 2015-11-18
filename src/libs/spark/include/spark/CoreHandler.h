@@ -11,12 +11,18 @@
 #include <spark/Link.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
+#include <chrono>
 
 namespace ember { namespace spark {
 
 class CoreHandler {
 	log::Logger* logger_;
 	log::Filter filter_;
+
+	void handle_ping(const Link& link, const messaging::MessageRoot* message);
+	void handle_pong(const Link& link, const messaging::MessageRoot* message);
+	void send_ping(const Link& link);
+	void send_pong(const Link& link, std::uint64_t time);
 
 public:
 	CoreHandler(log::Logger* logger, log::Filter filter);

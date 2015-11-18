@@ -44,9 +44,10 @@ void test_func(ember::spark::Service* spark) {
 void launch(const po::variables_map& args, el::Logger* logger) try {
 	ba::io_service service;
 	ember::spark::Service spark("Test Program", service, "0.0.0.0", 6001, logger, el::Filter(1));
-	std::thread t(std::bind(&test_func, &spark));
+	//std::thread t(std::bind(&test_func, &spark));
+	spark.connect("::1", 6000);
 	service.run();
-	t.join();
+	//t.join();
 } catch(std::exception& e) {
 	MessageBox(NULL, e.what(), 0, 0);
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;

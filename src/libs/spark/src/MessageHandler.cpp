@@ -126,12 +126,11 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	std::set_intersection(in.begin(), in.end(), local_out.begin(), local_out.end(), std::back_inserter(in_matches));
 	std::set_intersection(out.begin(), out.end(), local_in.begin(), local_in.end(), std::back_inserter(in_matches));
 
-	// todo, exclude core
 	if(in.empty() && out.empty()) {
-		/*LOG_DEBUG_FILTER(logger_, filter_)
+		LOG_DEBUG_FILTER(logger_, filter_)
 			<< "[spark] Peer did not match any supported protocols: "
 			<< net.remote_host() << LOG_ASYNC;
-		return false;*/
+		//return false;
 	}
 
 	if(!initiator_) {
@@ -141,6 +140,11 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	LOG_INFO_FILTER(logger_, filter_)
 		<< "[spark] Established link: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
+
+	// send the 'link up' event to handlers
+	for(auto& service : local_in) {
+		handlers_.link_state_handler(service)(self_, LinkState::LINK_UP);
+	}
 
 	state_ = State::FORWARDING;
 	return true;
