@@ -6,5 +6,5 @@
 
 set(EXECUTABLE_NAME sparktest)
 
-add_executable(${EXECUTABLE_NAME} main.cpp)
+add_executable(${EXECUTABLE_NAME} main.cpp TestService.cpp)
 target_link_libraries(${EXECUTABLE_NAME} spark conpool logging shared ${Boost_LIBRARIES})

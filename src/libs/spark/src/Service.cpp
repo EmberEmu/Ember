@@ -20,8 +20,8 @@ namespace bai = boost::asio::ip;
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
-                   listener_(service, interface, port, sessions_, handlers_, link_, logger, filter),
-                   core_handler_(logger, filter), socket_(service),
+                   listener_(service, interface, port, sessions_, links_, handlers_, link_, logger, filter),
+                   core_handler_(this, logger, filter), socket_(service),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
                    handlers_(std::bind(&Service::default_handler, this,
                              std::placeholders::_1, std::placeholders::_2)) {
@@ -43,7 +43,7 @@ void Service::shutdown() {
 void Service::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
-	MessageHandler m_handler(handlers_, link_, true, logger_, filter_);
+	MessageHandler m_handler(handlers_, links_, link_, true, logger_, filter_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket),
                                                     m_handler, logger_, filter_);
 	sessions_.start(session);
@@ -83,16 +83,23 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 		<< messaging::EnumNameData(message->data_type()) << LOG_ASYNC;
 }
 
-void Service::send(const Link& link, messaging::MessageRoot* message) {
+auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
+	auto net = (links_.get(link)).lock();
 
+	if(net) {
+		net->write(fbb);
+		return Result::OK;
+	}
+
+	return Result::LINK_GONE;
 }
 
-void Service::send_tracked(const Link& link, messaging::MessageRoot* message, MsgHandler callback) {
-
+auto Service::send_tracked(const Link& link, BufferHandler fbb, MsgHandler callback) const -> Result {
+	return Result::OK;
 }
 
-void Service::broadcast(messaging::Service service, messaging::MessageRoot* message) {
-
+auto Service::broadcast(messaging::Service service, BufferHandler fbb) const -> Result {
+	return Result::OK;
 }
 
 HandlerMap* Service::handlers() {

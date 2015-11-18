@@ -7,6 +7,7 @@
  */
 
 #include <spark/CoreHandler.h>
+#include <spark/Service.h>
 #include <spark/temp/Core_generated.h>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -14,8 +15,8 @@ namespace ember { namespace spark {
 
 namespace sc = std::chrono;
 
-CoreHandler::CoreHandler(log::Logger* logger, log::Filter filter)
-                         : logger_(logger), filter_(filter) { }
+CoreHandler::CoreHandler(const Service* service, log::Logger* logger, log::Filter filter)
+                         : service_(service), logger_(logger), filter_(filter) { }
 
 void CoreHandler::handle_message(const Link& link, const messaging::MessageRoot* message) {
 	switch(message->data_type()) {
@@ -57,7 +58,7 @@ void CoreHandler::send_ping(const Link& link) {
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Ping, messaging::CreatePing(*fbb, time).Union());
 	fbb->Finish(msg);
-	// send
+	service_->send(link, fbb);
 }
 
 void CoreHandler::send_pong(const Link& link, std::uint64_t time) {
@@ -65,7 +66,7 @@ void CoreHandler::send_pong(const Link& link, std::uint64_t time) {
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Pong, messaging::CreatePong(*fbb, time).Union());
 	fbb->Finish(msg);
-	// send
+	service_->send(link, fbb);
 }
 
 }} // spark, ember

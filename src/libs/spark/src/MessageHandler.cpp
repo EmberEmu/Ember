@@ -7,6 +7,7 @@
  */
 
 #include <spark/MessageHandler.h>
+#include <spark/LinkMap.h>
 #include <spark/HandlerMap.h>
 #include <spark/NetworkSession.h>
 #include <spark/Utility.h>
@@ -20,9 +21,9 @@
 
 namespace ember { namespace spark {
 
-MessageHandler::MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
+MessageHandler::MessageHandler(const HandlerMap& handlers, LinkMap& links, const Link& link, bool initiator,
                                log::Logger* logger, log::Filter filter)
-                               : handlers_(handlers), self_(link), initiator_(initiator),
+                               : handlers_(handlers), links_(links), self_(link), initiator_(initiator),
                                  logger_(logger), filter_(filter) { }
 
 

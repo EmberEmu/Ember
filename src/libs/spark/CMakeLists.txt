@@ -14,6 +14,8 @@ add_library(${LIBRARY_NAME}
             src/CoreHandler.cpp
             src/HandlerMap.cpp
             src/Utility.cpp
+            src/LinkMap.cpp
+            include/spark/LinkMap.h
             include/spark/Link.h
             include/spark/HandlerMap.h
             include/spark/CoreHandler.h

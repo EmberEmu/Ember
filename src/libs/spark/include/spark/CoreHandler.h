@@ -15,7 +15,10 @@
 
 namespace ember { namespace spark {
 
+class Service;
+
 class CoreHandler {
+	const Service* service_;
 	log::Logger* logger_;
 	log::Filter filter_;
 
@@ -25,7 +28,7 @@ class CoreHandler {
 	void send_pong(const Link& link, std::uint64_t time);
 
 public:
-	CoreHandler(log::Logger* logger, log::Filter filter);
+	CoreHandler(const Service* service, log::Logger* logger, log::Filter filter);
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_event(const Link& link, LinkState state);
 };

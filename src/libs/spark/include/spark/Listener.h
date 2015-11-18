@@ -14,6 +14,7 @@
 namespace ember { namespace spark {
 
 struct Link;
+class LinkMap;
 class SessionManager;
 class HandlerMap;
 
@@ -25,6 +26,7 @@ class Listener {
 	SessionManager& sessions_;
 	log::Logger* logger_;
 	log::Filter filter_;
+	LinkMap& links_;
 	const Link& link_;
 	const HandlerMap& handlers_;
 
@@ -33,8 +35,8 @@ class Listener {
 
 public:
 	Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
-	         SessionManager& sessions, const HandlerMap& handlers, const Link& link,
-             log::Logger* logger, log::Filter filter);
+	         SessionManager& sessions, LinkMap& links, const HandlerMap& handlers,
+	         const Link& link, log::Logger* logger, log::Filter filter);
 
 	void shutdown();
 };
