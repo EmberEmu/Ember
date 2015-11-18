@@ -21,7 +21,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, links_, handlers_, link_, logger, filter),
-                   core_handler_(this, logger, filter), socket_(service),
+                   core_handler_(service_, this, logger, filter), socket_(service),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
                    handlers_(std::bind(&CoreHandler::handle_message, &core_handler_,
                                        std::placeholders::_1, std::placeholders::_2)) {
@@ -36,6 +36,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
 
 void Service::shutdown() {
 	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Service shutting down..." << LOG_ASYNC;
+	core_handler_.shutdown();
 	listener_.shutdown();
 	sessions_.stop_all();
 }
@@ -82,12 +83,12 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 	auto net = (links_.get(link)).lock();
 
-	if(net) {
-		net->write(fbb);
-		return Result::OK;
+	if(!net) {
+		return Result::LINK_GONE;
 	}
 
-	return Result::LINK_GONE;
+	net->write(fbb);
+	return Result::OK;
 } catch(std::out_of_range) {
 	return Result::LINK_GONE;
 }

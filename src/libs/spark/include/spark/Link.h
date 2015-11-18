@@ -22,4 +22,8 @@ struct Link {
 	std::string description;
 };
 
+inline bool operator==(const Link& lhs, const Link& rhs) {
+	return lhs.description == rhs.description && rhs.uuid == lhs.uuid;
+}
+
 }} // spark, ember

@@ -208,6 +208,8 @@ MessageHandler::~MessageHandler() {
 	for(auto& service : matches_) {
 		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_DOWN);
 	}
+
+	links_.unregister_link(peer_);
 }
 
 }} // spark, ember

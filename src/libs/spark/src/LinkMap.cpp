@@ -23,7 +23,7 @@ void LinkMap::unregister_link(const Link& link) {
 	links_.erase(link.uuid);
 }
 
-std::weak_ptr<NetworkSession> LinkMap::get(const Link& link) try const {
+std::weak_ptr<NetworkSession> LinkMap::get(const Link& link) const {
 	std::shared_lock<std::shared_timed_mutex> guard(lock_);
 	return links_.at(link.uuid);
 }

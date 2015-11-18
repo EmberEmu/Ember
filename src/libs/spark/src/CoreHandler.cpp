@@ -10,13 +10,17 @@
 #include <spark/Service.h>
 #include <spark/temp/Core_generated.h>
 #include <boost/uuid/uuid_io.hpp>
+#include <functional>
 
 namespace ember { namespace spark {
 
 namespace sc = std::chrono;
 
-CoreHandler::CoreHandler(const Service* service, log::Logger* logger, log::Filter filter)
-                         : service_(service), logger_(logger), filter_(filter) { }
+CoreHandler::CoreHandler(boost::asio::io_service& io_service, const Service* service,
+                         log::Logger* logger, log::Filter filter)
+                         : timer_(io_service), service_(service), logger_(logger), filter_(filter) {
+	set_timer();
+}
 
 void CoreHandler::handle_message(const Link& link, const messaging::MessageRoot* message) {
 	switch(message->data_type()) {
@@ -34,7 +38,13 @@ void CoreHandler::handle_message(const Link& link, const messaging::MessageRoot*
 }
 
 void CoreHandler::handle_event(const Link& link, LinkState state) {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Core received link state event" << LOG_ASYNC;
+	std::lock_guard<std::mutex> guard(lock_);
+
+	if(state == LinkState::LINK_UP) {
+		peers_.emplace_front(link);
+	} else {
+		peers_.remove(link);
+	}
 }
 
 void CoreHandler::handle_ping(const Link& link, const messaging::MessageRoot* message) {
@@ -67,6 +77,29 @@ void CoreHandler::send_pong(const Link& link, std::uint64_t time) {
 		messaging::Data::Data_Pong, messaging::CreatePong(*fbb, time).Union());
 	fbb->Finish(msg);
 	service_->send(link, fbb);
+}
+
+void CoreHandler::trigger_pings(const boost::system::error_code& ec) {
+	if(ec) { // if ec is set, the timer was aborted
+		return;
+	}
+
+	std::lock_guard<std::mutex> guard(lock_);
+
+	for(auto& link : peers_) {
+		send_ping(link);
+	}
+
+	set_timer();
+}
+
+void CoreHandler::set_timer() {
+	timer_.expires_from_now(PING_FREQUENCY);
+	timer_.async_wait(std::bind(&CoreHandler::trigger_pings, this, std::placeholders::_1));
+}
+
+void CoreHandler::shutdown() {
+	timer_.cancel();
 }
 
 }} // spark, ember
