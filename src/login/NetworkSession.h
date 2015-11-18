@@ -15,6 +15,7 @@
 #include <shared/PacketStream.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -33,7 +34,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	spark::BufferChain<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
-	log::Logger* logger_; 
+	const std::string remote_address_;
+	log::Logger* logger_;
 
 	void read() {
 		auto self(shared_from_this());
@@ -81,8 +83,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Idle timeout triggered on " << remote_address() << ":"
-			<< remote_port() << LOG_ASYNC;
+			<< "Idle timeout triggered on " << remote_address() << LOG_ASYNC;
 
 		close_session();
 	}
@@ -92,8 +93,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 		strand_.post([this, self] {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-				<< "Closing connection to " << remote_address()
-				<< ":" << remote_port() << LOG_ASYNC;
+				<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
 			boost::system::error_code ec; // we don't care about any errors
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
@@ -104,7 +104,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	                 strand_(socket.get_io_service()), logger_(logger) { }
+	                 strand_(socket.get_io_service()), logger_(logger),
+	                 remote_address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
 
 	virtual void start() {
 		set_timer();
@@ -112,11 +113,7 @@ public:
 	}
 
 	std::string remote_address() {
-		return socket_.remote_endpoint().address().to_string();
-	}
-
-	std::uint16_t remote_port() {
-		return socket_.remote_endpoint().port();
+		return remote_address_;
 	}
 
 	virtual void close_session() {
