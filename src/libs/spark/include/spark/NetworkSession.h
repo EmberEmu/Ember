@@ -46,9 +46,9 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	bool stopped_;
 
 	bool process_header() {
-		std::copy(in_buff_.data(), in_buff_.data() + sizeof(body_read_size), &body_read_size);
+		std::memcpy(&body_read_size, in_buff_.data(), sizeof(body_read_size));
 		boost::endian::little_to_native_inplace(body_read_size);
-
+	
 		if(body_read_size > MAX_MESSAGE_LENGTH) {
 			LOG_WARN_FILTER(logger_, filter_)
 				<< "[spark] Peer at " << remote_host()
@@ -59,6 +59,11 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		if(body_read_size > in_buff_.size()) {
+			LOG_WARN_FILTER(logger_, filter_)
+				<< "[spark] Peer at " << remote_host()
+				<< " attempted to send a message of "
+				<< body_read_size << " bytes" << LOG_ASYNC;
+
 			in_buff_.resize(body_read_size);
 		}
 
@@ -80,7 +85,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				read();
 				return;
 			}
-		} else if(handler_.handle_message(*this, in_buff_)) {
+		} else if(this) {
 			state_ = ReadState::HEADER;
 			read();
 			return;
