@@ -49,23 +49,29 @@ void Service::start_session(boost::asio::ip::tcp::socket socket) {
 	sessions_.start(session);
 }
 
-void Service::connect(const std::string& host, std::uint16_t port) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
-
+void Service::do_connect(const std::string& host, std::uint16_t port) {
 	bai::tcp::resolver resolver(service_);
 	auto endpoint_it = resolver.resolve({ host, std::to_string(port) });
 
 	boost::asio::async_connect(socket_, endpoint_it,
 		[this, host, port](boost::system::error_code ec, bai::tcp::resolver::iterator it) {
 			if(!ec) {
-				start_session(std::move(socket_)); 
+				start_session(std::move(socket_));
 			}
 
 			LOG_DEBUG_FILTER(logger_, filter_)
-				<< "[spark] " << (ec? "Unable to establish" : "Established")
+				<< "[spark] " << (ec ? "Unable to establish" : "Established")
 				<< " connection to " << host << ":" << port << LOG_ASYNC;
 		}
 	);
+}
+
+void Service::connect(const std::string& host, std::uint16_t port) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
+	service_.post([this, host, port] {
+		do_connect(host, port);
+	});
 }
 
 void Service::default_link_state_handler(const Link& link, LinkState state) {

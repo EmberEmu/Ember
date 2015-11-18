@@ -41,6 +41,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	std::vector<std::uint8_t> in_buff_;
 	SessionManager& sessions_;
 	MessageHandler handler_;
+	const std::string remote_;
 	log::Logger* logger_; 
 	log::Filter filter_;
 	bool stopped_;
@@ -85,7 +86,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				read();
 				return;
 			}
-		} else if(this) {
+		} else if(handler_.handle_message(*this, in_buff_)) {
 			state_ = ReadState::HEADER;
 			read();
 			return;
@@ -111,8 +112,14 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 	void set_timer() {
+		auto self(shared_from_this());
+
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(std::bind(&NetworkSession::timeout, this, std::placeholders::_1));
+		timer_.async_wait(
+			[this, self](const boost::system::error_code& ec) {
+				timeout(ec);
+			}
+		);
 	}
 
 	void timeout(const boost::system::error_code& ec) {
@@ -121,16 +128,15 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Lost connection to peer at "
-			<< remote_host() << " (idle timeout) " << LOG_ASYNC;
+			<< "[spark] Lost connection to peer at " << remote_host()
+			<< " (idle timeout) " << LOG_ASYNC;
 
 		close_session();
 	}
 
 	void stop() {
 		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Closing connection to "
-			<< remote_host() << LOG_ASYNC;
+			<< "[spark] Closing connection to " << remote_host() << LOG_ASYNC;
 
 		stopped_ = true;
 		boost::system::error_code ec; // we don't care about any errors
@@ -144,7 +150,9 @@ public:
 	               log::Logger* logger, log::Filter filter)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
 	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
-	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH) { }
+	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH),
+	                 remote_(socket_.remote_endpoint().address().to_string()
+							 + ":" + std::to_string(socket_.remote_endpoint().port())) { }
 
 	void start() {
 		handler_.start(*this);
@@ -156,8 +164,7 @@ public:
 	}
 
 	std::string remote_host() {
-		return socket_.remote_endpoint().address().to_string() + ":" +
-			std::to_string(socket_.remote_endpoint().port());
+		return remote_;
 	}
 
 	void write(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {

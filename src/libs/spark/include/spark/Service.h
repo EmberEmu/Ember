@@ -35,6 +35,7 @@ class Service {
 	log::Logger* logger_;
 	log::Filter filter_;
 	
+	void do_connect(const std::string& host, std::uint16_t port);
 	void start_session(boost::asio::ip::tcp::socket socket);
 	void default_handler(const Link& link, const messaging::MessageRoot* message);
 	void default_link_state_handler(const Link& link, LinkState state);
