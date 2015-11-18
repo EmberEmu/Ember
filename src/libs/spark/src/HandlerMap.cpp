@@ -13,9 +13,10 @@ namespace ember { namespace spark {
 HandlerMap::HandlerMap(MsgHandler default_handler)
                        : def_handler_(default_handler) { }
 
-void HandlerMap::register_handler(MsgHandler handler, LinkStateHandler l_handler, messaging::Service service_type) {
+void HandlerMap::register_handler(MsgHandler handler, LinkStateHandler l_handler,
+                                  messaging::Service service_type, Mode mode) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
-	handlers_[service_type] = { handler, l_handler };
+	handlers_[service_type] = { mode, handler, l_handler };
 }
 
 void HandlerMap::remove_handler(messaging::Service service_type) {
@@ -28,7 +29,7 @@ const LinkStateHandler& HandlerMap::link_state_handler(messaging::Service servic
 	auto it = handlers_.find(service_type);
 
 	if(it != handlers_.end()) {
-		return it->second.second;
+		return it->second.link_handler;
 	}
 
 	return def_link_handler_;
@@ -39,31 +40,23 @@ const MsgHandler& HandlerMap::message_handler(messaging::Service service_type) c
 	auto it = handlers_.find(service_type);
 
 	if(it != handlers_.end()) {
-		return it->second.first;
+		return it->second.msg_handler;
 	}
 
 	return def_handler_;
 }
 
-std::vector<messaging::Service> HandlerMap::inbound_services() const {
+std::vector<messaging::Service> HandlerMap::services(Mode mode) const {
 	std::shared_lock<std::shared_timed_mutex> guard(lock_);
 	std::vector<messaging::Service> services;
 
 	for(auto& handler : handlers_) {
-		services.emplace_back(handler.first);
+		if(handler.second.mode == mode || handler.second.mode == Mode::BOTH) {
+			services.emplace_back(handler.first);
+		}
 	}
 
 	return services;
-}
-
-std::vector<messaging::Service> HandlerMap::outbound_services() const {
-	std::shared_lock<std::shared_timed_mutex> guard(lock_);
-	return outbound_services_;
-}
-
-void HandlerMap::register_outbound(messaging::Service service) {
-	std::unique_lock<std::shared_timed_mutex> guard(lock_);
-	outbound_services_.emplace_back(service);
 }
 
 }} // spark, ember

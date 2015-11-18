@@ -30,10 +30,9 @@ MessageHandler::MessageHandler(const HandlerMap& handlers, LinkMap& links, const
 void MessageHandler::send_negotiation(NetworkSession& net) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
-	auto services = handlers_.outbound_services();
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto in = fbb->CreateVector(detail::services_to_underlying(handlers_.inbound_services()));
-	auto out = fbb->CreateVector(detail::services_to_underlying(handlers_.outbound_services()));
+	auto in = fbb->CreateVector(detail::services_to_underlying(handlers_.services(HandlerMap::Mode::SERVER)));
+	auto out = fbb->CreateVector(detail::services_to_underlying(handlers_.services(HandlerMap::Mode::CLIENT)));
 
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
@@ -115,8 +114,8 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	// vectors of enums are very annoying to use in FlatBuffers :(
 	std::vector<std::int32_t> in(protocols->proto_in()->begin(), protocols->proto_in()->end());
 	std::vector<std::int32_t> out(protocols->proto_out()->begin(), protocols->proto_out()->end());
-	auto local_in = handlers_.inbound_services();
-	auto local_out = handlers_.outbound_services();
+	auto local_in = handlers_.services(HandlerMap::Mode::SERVER);
+	auto local_out = handlers_.services(HandlerMap::Mode::CLIENT);
 
 	std::sort(in.begin(), in.end());
 	std::sort(out.begin(), out.end());
@@ -190,8 +189,9 @@ MessageHandler::~MessageHandler() {
 		return;
 	}
 
-	auto in_services = handlers_.inbound_services();
+	auto in_services = handlers_.services(HandlerMap::Mode::BOTH);
 
+	// send the link down event to any handlers
 	for(auto& service : in_services) {
 		handlers_.link_state_handler(service)(self_, LinkState::LINK_DOWN);
 	}

@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "TestService.h"
 #include "FilterTypes.h"
 #include <logger/Logging.h>
 #include <spark/Service.h>
@@ -63,6 +64,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto port = args["network.port"].as<std::uint16_t>();
 
 	ember::spark::Service spark("Keystone", service, interface, port, logger, el::Filter(ember::LF_SPARK));
+	ember::TestService test(spark, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();

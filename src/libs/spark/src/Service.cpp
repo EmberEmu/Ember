@@ -30,7 +30,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
 	handlers_.register_handler(
 		std::bind(&CoreHandler::handle_message, &core_handler_, std::placeholders::_1, std::placeholders::_2),
 		std::bind(&CoreHandler::handle_event, &core_handler_, std::placeholders::_1, std::placeholders::_2),
-		messaging::Service::Service_Core
+		messaging::Service::Service_Core, HandlerMap::Mode::BOTH
 	);
 }
 

@@ -21,5 +21,5 @@ add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 set_target_properties(${LIBRARY_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
 
-add_executable(${EXECUTABLE_NAME} main.cpp)
+add_executable(${EXECUTABLE_NAME} main.cpp TestService.h)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark conpool logging shared ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
