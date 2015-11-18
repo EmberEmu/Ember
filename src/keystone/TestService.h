@@ -36,7 +36,8 @@ public:
 		auto time = sc::duration_cast<sc::milliseconds>(sc::steady_clock::now().time_since_epoch()).count();
 		auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 		auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
-			messaging::Data::Data_Ping, messaging::CreatePing(*fbb, 0).Union());
+			messaging::Data::Data_Ping, messaging::CreatePing(*fbb, time).Union());
+		fbb->Finish(msg);
 		service_.send(link, fbb);
 	}
 };

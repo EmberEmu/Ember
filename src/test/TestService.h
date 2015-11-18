@@ -3,6 +3,9 @@
 #include <spark/Spark.h>
 #include <logger/Logging.h>
 #include <functional>
+#include <chrono>
+
+namespace sc = std::chrono;
 
 namespace ember {
 

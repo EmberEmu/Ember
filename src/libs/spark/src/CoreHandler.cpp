@@ -48,7 +48,7 @@ void CoreHandler::handle_pong(const Link& link, const messaging::MessageRoot* me
 
 	if(pong->timestamp()) {
 		LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Ping time: "
-			<< (time - pong->timestamp()) << "ms" << LOG_ASYNC;
+				<< (time - pong->timestamp()) << "ms" << LOG_ASYNC;
 	}
 }
 

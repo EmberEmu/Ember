@@ -79,7 +79,7 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 		<< message->data_type() << LOG_ASYNC;
 }
 
-auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
+auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 	auto net = (links_.get(link)).lock();
 
 	if(net) {
@@ -88,14 +88,20 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
 	}
 
 	return Result::LINK_GONE;
+} catch(std::out_of_range) {
+	return Result::LINK_GONE;
 }
 
-auto Service::send_tracked(const Link& link, BufferHandler fbb, MsgHandler callback) const -> Result {
+auto Service::send_tracked(const Link& link, BufferHandler fbb, MsgHandler callback) const -> Result try {
 	return Result::OK;
+} catch(std::out_of_range) {
+	return Result::LINK_GONE;
 }
 
-auto Service::broadcast(messaging::Service service, BufferHandler fbb) const -> Result {
+auto Service::broadcast(messaging::Service service, BufferHandler fbb) const -> Result try {
 	return Result::OK;
+} catch(std::out_of_range) {
+	return Result::LINK_GONE;
 }
 
 HandlerMap* Service::handlers() {
