@@ -11,17 +11,17 @@ add_library(${LIBRARY_NAME}
             src/SessionManager.cpp
             src/Listener.cpp
             src/MessageHandler.cpp
-            src/CoreHandler.cpp
+            src/HeartbeatService.cpp
             src/HandlerMap.cpp
             src/Utility.cpp
             src/LinkMap.cpp
-            src/TrackedHandler.cpp
+            src/TrackingService.cpp
             include/spark/Common.h
-            include/spark/TrackedHandler.h
+            include/spark/TrackingService.h
             include/spark/LinkMap.h
             include/spark/Link.h
             include/spark/HandlerMap.h
-            include/spark/CoreHandler.h
+            include/spark/HeartbeatService.h
             include/spark/MessageHandler.h
             include/spark/Buffer.h
             include/spark/buffers/ChainedBuffer.h

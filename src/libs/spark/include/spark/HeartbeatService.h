@@ -21,7 +21,7 @@ namespace ember { namespace spark {
 
 class Service;
 
-class CoreHandler {
+class HeartbeatService {
 	const std::chrono::seconds PING_FREQUENCY { 20 };
 
 	const Service* service_;
@@ -39,7 +39,7 @@ class CoreHandler {
 	void handle_pong(const Link& link, const messaging::MessageRoot* message);
 
 public:
-	CoreHandler(boost::asio::io_service& io_service, const Service* service,
+	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
 	            log::Logger* logger, log::Filter filter);
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_event(const Link& link, LinkState state);

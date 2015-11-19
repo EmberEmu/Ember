@@ -22,7 +22,7 @@
 
 namespace ember { namespace spark {
 
-class TrackedHandler {
+class TrackingService {
 	struct Request {
 		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link, TrackingHandler handler)
 		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
@@ -44,7 +44,7 @@ class TrackedHandler {
 	void timeout(boost::uuids::uuid id, const boost::system::error_code& ec);
 
 public:
-	TrackedHandler(boost::asio::io_service& service, log::Logger* logger, log::Filter filter);
+	TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter);
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_event(const Link& link, LinkState state);
 	void register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,

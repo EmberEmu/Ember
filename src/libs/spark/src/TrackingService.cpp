@@ -8,17 +8,17 @@
 
 #pragma once
 
-#include <spark/TrackedHandler.h>
+#include <spark/TrackingService.h>
 #include <boost/optional.hpp>
 
 namespace sc = std::chrono;
 
 namespace ember { namespace spark {
 
-TrackedHandler::TrackedHandler(boost::asio::io_service& service, log::Logger* logger, log::Filter filter)
+TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter)
                                : service_(service), logger_(logger), filter_(filter) { }
 
-void TrackedHandler::handle_message(const Link& link, const messaging::MessageRoot* message) try {
+void TrackingService::handle_message(const Link& link, const messaging::MessageRoot* message) try {
 	auto recv_id = message->tracking_id();
 
 	if(recv_id->size() != boost::uuids::uuid::static_size()) {
@@ -45,21 +45,21 @@ void TrackedHandler::handle_message(const Link& link, const messaging::MessageRo
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }
 
-void TrackedHandler::handle_event(const Link& link, LinkState state) {
+void TrackingService::handle_event(const Link& link, LinkState state) {
 	// we don't care about this
 }
 
-void TrackedHandler::register_tracked(const Link& link, boost::uuids::uuid id,
+void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
 									  TrackingHandler handler, sc::milliseconds timeout) {
 	auto request = std::make_unique<Request>(service_, id, link, handler);
-	request->timer.async_wait(std::bind(&TrackedHandler::timeout, this, id, std::placeholders::_1));
+	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, std::placeholders::_1));
 	request->timer.expires_from_now(timeout);
 
 	std::lock_guard<std::mutex> guard(lock_);
 	handlers_[id] = std::move(request);
 }
 
-void TrackedHandler::timeout(boost::uuids::uuid id, const boost::system::error_code& ec) {
+void TrackingService::timeout(boost::uuids::uuid id, const boost::system::error_code& ec) {
 	if(ec) { // timer was cancelled
 		return;
 	}
@@ -73,7 +73,7 @@ void TrackedHandler::timeout(boost::uuids::uuid id, const boost::system::error_c
 	handler->handler(boost::optional<const messaging::MessageRoot*>());
 }
 
-void TrackedHandler::shutdown() {
+void TrackingService::shutdown() {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto& handler : handlers_) {

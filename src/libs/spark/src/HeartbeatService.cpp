@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/CoreHandler.h>
+#include <spark/HeartbeatService.h>
 #include <spark/Service.h>
 #include <spark/temp/Core_generated.h>
 #include <boost/uuid/uuid_io.hpp>
@@ -16,13 +16,13 @@ namespace ember { namespace spark {
 
 namespace sc = std::chrono;
 
-CoreHandler::CoreHandler(boost::asio::io_service& io_service, const Service* service,
+HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Service* service,
                          log::Logger* logger, log::Filter filter)
                          : timer_(io_service), service_(service), logger_(logger), filter_(filter) {
 	set_timer();
 }
 
-void CoreHandler::handle_message(const Link& link, const messaging::MessageRoot* message) {
+void HeartbeatService::handle_message(const Link& link, const messaging::MessageRoot* message) {
 	switch(message->data_type()) {
 		case messaging::Data_Ping:
 			handle_ping(link, message);
@@ -37,7 +37,7 @@ void CoreHandler::handle_message(const Link& link, const messaging::MessageRoot*
 	}
 }
 
-void CoreHandler::handle_event(const Link& link, LinkState state) {
+void HeartbeatService::handle_event(const Link& link, LinkState state) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(state == LinkState::LINK_UP) {
@@ -47,12 +47,12 @@ void CoreHandler::handle_event(const Link& link, LinkState state) {
 	}
 }
 
-void CoreHandler::handle_ping(const Link& link, const messaging::MessageRoot* message) {
+void HeartbeatService::handle_ping(const Link& link, const messaging::MessageRoot* message) {
 	auto ping = static_cast<const messaging::Ping*>(message->data());
 	send_pong(link, ping->timestamp());
 }
 
-void CoreHandler::handle_pong(const Link& link, const messaging::MessageRoot* message) {
+void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoot* message) {
 	auto pong = static_cast<const messaging::Pong*>(message->data());
 	auto time = sc::duration_cast<sc::milliseconds>(sc::steady_clock::now().time_since_epoch()).count();
 
@@ -62,7 +62,7 @@ void CoreHandler::handle_pong(const Link& link, const messaging::MessageRoot* me
 	}
 }
 
-void CoreHandler::send_ping(const Link& link, std::uint64_t time) {
+void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Ping, messaging::CreatePing(*fbb, time).Union());
@@ -70,7 +70,7 @@ void CoreHandler::send_ping(const Link& link, std::uint64_t time) {
 	service_->send(link, fbb);
 }
 
-void CoreHandler::send_pong(const Link& link, std::uint64_t time) {
+void HeartbeatService::send_pong(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
 		messaging::Data::Data_Pong, messaging::CreatePong(*fbb, time).Union());
@@ -78,7 +78,7 @@ void CoreHandler::send_pong(const Link& link, std::uint64_t time) {
 	service_->send(link, fbb);
 }
 
-void CoreHandler::trigger_pings(const boost::system::error_code& ec) {
+void HeartbeatService::trigger_pings(const boost::system::error_code& ec) {
 	if(ec) { // if ec is set, the timer was aborted
 		return;
 	}
@@ -97,12 +97,12 @@ void CoreHandler::trigger_pings(const boost::system::error_code& ec) {
 	set_timer();
 }
 
-void CoreHandler::set_timer() {
+void HeartbeatService::set_timer() {
 	timer_.expires_from_now(PING_FREQUENCY);
-	timer_.async_wait(std::bind(&CoreHandler::trigger_pings, this, std::placeholders::_1));
+	timer_.async_wait(std::bind(&HeartbeatService::trigger_pings, this, std::placeholders::_1));
 }
 
-void CoreHandler::shutdown() {
+void HeartbeatService::shutdown() {
 	timer_.cancel();
 }
 

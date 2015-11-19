@@ -21,30 +21,30 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, links_, handlers_, link_, logger, filter),
-                   core_handler_(service_, this, logger, filter), socket_(service), 
-                   tracked_handler_(service_, logger, filter),
+                   hb_service_(service_, this, logger, filter), socket_(service), 
+                   track_service__(service_, logger, filter),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
-                   handlers_(std::bind(&CoreHandler::handle_message, &core_handler_,
+                   handlers_(std::bind(&HeartbeatService::handle_message, &hb_service_,
                                        std::placeholders::_1, std::placeholders::_2)) {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
 	handlers_.register_handler(
-		std::bind(&CoreHandler::handle_message, &core_handler_, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&CoreHandler::handle_event, &core_handler_, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&HeartbeatService::handle_message, &hb_service_, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&HeartbeatService::handle_event, &hb_service_, std::placeholders::_1, std::placeholders::_2),
 		messaging::Service::Service_Core, HandlerMap::Mode::BOTH
 	);
 
 	handlers_.register_handler(
-		std::bind(&TrackedHandler::handle_message, &tracked_handler_, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&TrackedHandler::handle_event, &tracked_handler_, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&TrackingService::handle_message, &track_service__, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&TrackingService::handle_event, &track_service__, std::placeholders::_1, std::placeholders::_2),
 		messaging::Service::Service_Tracking, HandlerMap::Mode::CLIENT
 	);
 }
 
 void Service::shutdown() {
 	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Service shutting down..." << LOG_ASYNC;
-	tracked_handler_.shutdown();
-	core_handler_.shutdown();
+	track_service__.shutdown();
+	hb_service_.shutdown();
 	listener_.shutdown();
 	sessions_.stop_all();
 }
@@ -103,7 +103,7 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 
 auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
                            BufferHandler fbb, TrackingHandler callback) -> Result {
-	tracked_handler_.register_tracked(link, id, callback, std::chrono::seconds(5));
+	track_service__.register_tracked(link, id, callback, std::chrono::seconds(5));
 	return send(link, fbb);
 }
 

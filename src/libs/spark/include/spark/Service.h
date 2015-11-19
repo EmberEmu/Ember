@@ -9,8 +9,8 @@
 #pragma once
 
 #include <spark/Common.h>
-#include <spark/CoreHandler.h>
-#include <spark/TrackedHandler.h>
+#include <spark/HeartbeatService.h>
+#include <spark/TrackingService.h>
 #include <spark/HandlerMap.h>
 #include <spark/Link.h>
 #include <spark/LinkMap.h>
@@ -39,8 +39,8 @@ class Service {
 	Listener listener_;
 	HandlerMap handlers_;
 	SessionManager sessions_;
-	CoreHandler core_handler_;
-	TrackedHandler tracked_handler_;
+	HeartbeatService hb_service_;
+	TrackingService track_service__;
 	log::Logger* logger_;
 	log::Filter filter_;
 	
