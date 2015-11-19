@@ -15,7 +15,8 @@ union Data { Ping, Pong, Banner, Negotiate }
 
 table MessageRoot {
 	service:Service;
-	tracking_id:[byte];
+	tracking_id:[ubyte];
+	tracking_ttl:byte;
 	data:Data;
 }
 

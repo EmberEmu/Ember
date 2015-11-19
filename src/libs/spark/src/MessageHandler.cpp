@@ -34,7 +34,7 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 	auto in = fbb->CreateVector(detail::services_to_underlying(handlers_.services(HandlerMap::Mode::SERVER)));
 	auto out = fbb->CreateVector(detail::services_to_underlying(handlers_.services(HandlerMap::Mode::CLIENT)));
 
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
 		messaging::Data::Data_Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
 
 	fbb->Finish(msg);
@@ -48,7 +48,7 @@ void MessageHandler::send_banner(NetworkSession& net) {
 	auto desc = fbb->CreateString(self_.description);
 	auto uuid = fbb->CreateVector(self_.uuid.begin(), self_.uuid.size());
 
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
 		messaging::Data::Data_Banner, messaging::CreateBanner(*fbb, desc, uuid).Union());
 
 	fbb->Finish(msg);
@@ -166,7 +166,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 }
 
 void MessageHandler::dispatch_message(const messaging::MessageRoot* message) {
-	if(message->tracking_id()) {
+	if(message->tracking_id() && message->tracking_ttl()) {
 		handlers_.message_handler(messaging::Service::Service_Tracking)(peer_, message);
 	} else {
 		handlers_.message_handler(message->service())(peer_, message);

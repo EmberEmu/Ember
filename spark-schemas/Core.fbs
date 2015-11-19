@@ -27,3 +27,9 @@ table Negotiate {
 	proto_in:[Service];
 	proto_out:[Service];
 }
+
+table Announce {
+	description:string;
+	host:string;
+	port:ushort;	
+}

@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2015 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+namespace ember.messaging;
+
+enum SessionStatus {
+	OK, SESSION_ALREADY_EXISTS, SESSION_NOT_FOUND
+}
+
+enum DisconnectSessionReason {
+	ACCOUNT_SUSPENDED, ACCOUNT_BANNED, PLAYER_KICKED,
+	INTERNAL_LINK_LOST
+}
+
+table RegisterSession {
+	session_key:[ubyte];
+	account_id:uint;
+}
+
+table LocateSession {
+	session_key:[ubyte];
+}
+
+table DisconnectSession {
+	session_key:[ubyte];
+	reason:DisconnectSessionReason;
+}
+
+table SessionResponse {
+	found:SessionStatus;
+}

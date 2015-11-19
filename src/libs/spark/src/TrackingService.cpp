@@ -19,6 +19,8 @@ TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* 
                                : service_(service), logger_(logger), filter_(filter) { }
 
 void TrackingService::handle_message(const Link& link, const messaging::MessageRoot* message) try {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
 	auto recv_id = message->tracking_id();
 
 	if(recv_id->size() != boost::uuids::uuid::static_size()) {
@@ -51,9 +53,11 @@ void TrackingService::handle_event(const Link& link, LinkState state) {
 
 void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
 									  TrackingHandler handler, sc::milliseconds timeout) {
+	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+
 	auto request = std::make_unique<Request>(service_, id, link, handler);
-	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, std::placeholders::_1));
 	request->timer.expires_from_now(timeout);
+	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, std::placeholders::_1));
 
 	std::lock_guard<std::mutex> guard(lock_);
 	handlers_[id] = std::move(request);

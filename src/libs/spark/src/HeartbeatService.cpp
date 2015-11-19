@@ -64,7 +64,7 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 
 void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
 		messaging::Data::Data_Ping, messaging::CreatePing(*fbb, time).Union());
 	fbb->Finish(msg);
 	service_->send(link, fbb);
@@ -72,7 +72,7 @@ void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 
 void HeartbeatService::send_pong(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0,
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
 		messaging::Data::Data_Pong, messaging::CreatePong(*fbb, time).Union());
 	fbb->Finish(msg);
 	service_->send(link, fbb);
