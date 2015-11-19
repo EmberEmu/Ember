@@ -33,6 +33,12 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
 		std::bind(&CoreHandler::handle_event, &core_handler_, std::placeholders::_1, std::placeholders::_2),
 		messaging::Service::Service_Core, HandlerMap::Mode::BOTH
 	);
+
+	handlers_.register_handler(
+		std::bind(&TrackedHandler::handle_message, &tracked_handler_, std::placeholders::_1, std::placeholders::_2),
+		std::bind(&TrackedHandler::handle_event, &tracked_handler_, std::placeholders::_1, std::placeholders::_2),
+		messaging::Service::Service_Tracking, HandlerMap::Mode::CLIENT
+	);
 }
 
 void Service::shutdown() {
