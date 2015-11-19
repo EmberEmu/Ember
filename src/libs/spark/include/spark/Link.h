@@ -27,7 +27,7 @@ struct Link {
 };
 
 inline bool operator==(const Link& lhs, const Link& rhs) {
-	return lhs.description == rhs.description && rhs.uuid == lhs.uuid;
+	return rhs.uuid == lhs.uuid;
 }
 
 inline bool operator!=(const Link& lhs, const Link& rhs) {

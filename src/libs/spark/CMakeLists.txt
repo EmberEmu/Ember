@@ -15,6 +15,8 @@ add_library(${LIBRARY_NAME}
             src/HandlerMap.cpp
             src/Utility.cpp
             src/TrackingService.cpp
+            src/ServicesMap.cpp
+            include/spark/ServicesMap.h
             include/spark/Common.h
             include/spark/TrackingService.h
             include/spark/Link.h
