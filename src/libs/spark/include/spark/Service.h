@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <spark/Common.h>
 #include <spark/CoreHandler.h>
+#include <spark/TrackedHandler.h>
 #include <spark/HandlerMap.h>
 #include <spark/Link.h>
 #include <spark/LinkMap.h>
@@ -32,14 +34,15 @@ class Service {
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::socket socket_;
 
-	Listener listener_;
-	SessionManager sessions_;
 	Link link_;
-	CoreHandler core_handler_;
+	LinkMap links_;
+	Listener listener_;
 	HandlerMap handlers_;
+	SessionManager sessions_;
+	CoreHandler core_handler_;
+	TrackedHandler tracked_handler_;
 	log::Logger* logger_;
 	log::Filter filter_;
-	LinkMap links_;
 	
 	void do_connect(const std::string& host, std::uint16_t port);
 	void start_session(boost::asio::ip::tcp::socket socket);
@@ -57,7 +60,8 @@ public:
 	void connect(const std::string& host, std::uint16_t port);
 
 	Result send(const Link& link, BufferHandler fbb) const;
-	Result send_tracked(const Link& link, BufferHandler fbb, MsgHandler callback) const;
+	Result send_tracked(const Link& link, boost::uuids::uuid id,
+	                    BufferHandler fbb, TrackingHandler callback);
 	Result broadcast(messaging::Service service, BufferHandler fbb) const;
 	HandlerMap* handlers();
 };

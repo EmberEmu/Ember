@@ -35,6 +35,7 @@ class MessageHandler {
 	std::set<std::int32_t> matches_;
 	bool initiator_;
 
+	void dispatch_message(const messaging::MessageRoot* message);
 	bool negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message);
 	bool establish_link(NetworkSession& net, const messaging::MessageRoot* message);
 	void send_banner(NetworkSession& net);

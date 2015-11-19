@@ -31,12 +31,12 @@ class CoreHandler {
 	log::Filter filter_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
-	void handle_ping(const Link& link, const messaging::MessageRoot* message);
-	void handle_pong(const Link& link, const messaging::MessageRoot* message);
+	void set_timer();
 	void send_ping(const Link& link, std::uint64_t time);
 	void send_pong(const Link& link, std::uint64_t time);
 	void trigger_pings(const boost::system::error_code& ec);
-	void set_timer();
+	void handle_ping(const Link& link, const messaging::MessageRoot* message);
+	void handle_pong(const Link& link, const messaging::MessageRoot* message);
 
 public:
 	CoreHandler(boost::asio::io_service& io_service, const Service* service,

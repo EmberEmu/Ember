@@ -21,7 +21,8 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, links_, handlers_, link_, logger, filter),
-                   core_handler_(service_, this, logger, filter), socket_(service),
+                   core_handler_(service_, this, logger, filter), socket_(service), 
+                   tracked_handler_(service_, logger, filter),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
                    handlers_(std::bind(&CoreHandler::handle_message, &core_handler_,
                                        std::placeholders::_1, std::placeholders::_2)) {
@@ -36,6 +37,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
 
 void Service::shutdown() {
 	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Service shutting down..." << LOG_ASYNC;
+	tracked_handler_.shutdown();
 	core_handler_.shutdown();
 	listener_.shutdown();
 	sessions_.stop_all();
@@ -93,10 +95,10 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 	return Result::LINK_GONE;
 }
 
-auto Service::send_tracked(const Link& link, BufferHandler fbb, MsgHandler callback) const -> Result try {
-	return Result::OK;
-} catch(std::out_of_range) {
-	return Result::LINK_GONE;
+auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
+                           BufferHandler fbb, TrackingHandler callback) -> Result {
+	tracked_handler_.register_tracked(link, id, callback, std::chrono::seconds(5));
+	return send(link, fbb);
 }
 
 auto Service::broadcast(messaging::Service service, BufferHandler fbb) const -> Result try {

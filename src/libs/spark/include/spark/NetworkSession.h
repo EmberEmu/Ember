@@ -152,7 +152,7 @@ public:
 	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
 	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH),
 	                 remote_(socket_.remote_endpoint().address().to_string()
-							 + ":" + std::to_string(socket_.remote_endpoint().port())) { }
+	                         + ":" + std::to_string(socket_.remote_endpoint().port())) { }
 
 	void start() {
 		handler_.start(*this);

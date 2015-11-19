@@ -8,17 +8,16 @@
 
 #pragma once
 
+#include <spark/Common.h>
 #include <spark/Link.h>
 #include <spark/temp/MessageRoot_generated.h>
+#include <spark/temp/ServiceTypes_generated.h>
 #include <functional>
 #include <shared_mutex>
 #include <unordered_map>
 #include <vector>
 
 namespace ember { namespace spark {
-
-typedef std::function<void(const Link& link, const messaging::MessageRoot*)> MsgHandler;
-typedef std::function<void(const Link& link, LinkState state)> LinkStateHandler;
 
 // todo, rename?
 class HandlerMap {

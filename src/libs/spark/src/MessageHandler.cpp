@@ -165,6 +165,14 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	return true;
 }
 
+void MessageHandler::dispatch_message(const messaging::MessageRoot* message) {
+	if(message->tracking_id()) {
+		handlers_.message_handler(messaging::Service::Service_Tracking)(peer_, message);
+	} else {
+		handlers_.message_handler(message->service())(peer_, message);
+	}
+}
+
 bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::uint8_t>& buffer) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
@@ -184,7 +192,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::
 		case State::NEGOTIATING:
 			return negotiate_protocols(net, message);
 		case State::FORWARDING:
-			handlers_.message_handler(message->service())(peer_, message);
+			dispatch_message(message);
 			return true;
 	}
 

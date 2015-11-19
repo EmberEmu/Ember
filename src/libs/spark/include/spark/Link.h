@@ -26,4 +26,8 @@ inline bool operator==(const Link& lhs, const Link& rhs) {
 	return lhs.description == rhs.description && rhs.uuid == lhs.uuid;
 }
 
+inline bool operator!=(const Link& lhs, const Link& rhs) {
+	return !(lhs == rhs);
+}
+
 }} // spark, ember
