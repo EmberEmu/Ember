@@ -39,13 +39,13 @@ po::variables_map parse_arguments(const std::string& config_path) {
 	po::store(po::parse_config_file(ifs, config_opts), options);
 	po::notify(options);
 
-	return std::move(options);
+	return options;
 }
 
 } // unnamed
 
 ember::drivers::MySQL init_db_driver(const std::string& config_path) {
-	auto args = parse_arguments(config_path);
+	auto args = std::move(parse_arguments(config_path));
 	auto user = args["mysql.username"].as<std::string>();
 	auto pass = args["mysql.password"].as<std::string>();
 	auto host = args["mysql.host"].as<std::string>();

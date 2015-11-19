@@ -91,6 +91,41 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 			semaphore_.signal();
 		}
 	}
+
+	bool find_free_connection(ConnDetail<ConType>& cd) {
+		bool checked_out = pool_guards_[cd.id].load(std::memory_order_relaxed);
+
+		if(checked_out) {
+			return false;
+		}
+
+		std::atomic_thread_fence(std::memory_order_acquire);
+
+		if(!cd.error && !cd.sweep && !cd.empty_slot) {
+			if(cd.dirty && !return_clean()) {
+				try {
+					if(driver_.clean(cd.conn)) {
+						cd.dirty = false;
+					} else {
+						cd.sweep = true;
+						return false;
+					}
+				} catch(std::exception& e) {
+					if(log_cb_) {
+						log_cb_(Severity::DEBUG, "On connection clean: "s + e.what());
+					}
+					return false;
+				}
+			}
+
+			cd.checked_out = true;
+			cd.idle = 0s;
+			pool_guards_[cd.id].store(true, std::memory_order_relaxed);
+			return true;
+		}
+
+		return false;
+	}
 	
 	boost::optional<Connection<ConType>> get_connection_attempt() {
 #ifdef DEBUG_NO_THREADS
@@ -134,11 +169,17 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		};
 
 		std::unique_lock<Spinlock> guard(lock_);
-		auto res = std::find_if(pool_.begin(), pool_.end(), pred);
+
+		auto res = std::find_if(pool_.begin(), pool_.end(), [&](auto& arg) {
+			return find_free_connection(arg);
+		});
 
 		if(res == pool_.end()) {
 			open_connections(grow(size(), max_));
-			res = std::find_if(pool_.begin(), pool_.end(), pred);
+
+			res = std::find_if(pool_.begin(), pool_.end(), [&](auto& arg) {
+				return find_free_connection(arg);
+			});
 			
 			if(res == pool_.end()) {
 				return boost::optional<Connection<ConType>>();
@@ -157,7 +198,6 @@ public:
 	     sc::seconds max_idle, sc::seconds interval = 60s)
 	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size),
 		   pool_guards_(max_size), size_(0), closed_(false) {
-		set_connection_ids();
 
 		if(!max_size) {
 			throw exception("Max. database connections cannot be zero");
@@ -167,6 +207,7 @@ public:
 			throw exception("Min. database connections must be <= max.");
 		}
 
+		set_connection_ids();
 		open_connections(min_);
 		manager_.start(interval, max_idle);
 	}

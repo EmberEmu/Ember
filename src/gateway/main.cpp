@@ -47,7 +47,7 @@ int fetch_realm(unsigned int id) {
 int main(int argc, const char* argv[]) try {
 	ember::print_banner("Realm Gateway");
 
-	const po::variables_map args = parse_arguments(argc, argv);
+	const po::variables_map args = std::move(parse_arguments(argc, argv));
 
 	auto logger = ember::util::init_logging(args);
 	el::set_global_logger(logger.get());
@@ -134,7 +134,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::store(po::parse_config_file(ifs, config_opts), options);
 	po::notify(options);
 
-	return std::move(options);
+	return options;
 }
 
 ember::drivers::DriverType init_db_driver(const po::variables_map& args) {

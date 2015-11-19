@@ -29,8 +29,8 @@ public:
 	static const std::uint8_t PUB_KEY_LENGTH = 32;
 
 	Opcode opcode;
-	ResultCode result;
 	std::uint8_t unk1 = 0;
+	ResultCode result;
 	Botan::BigInt B;
 	std::uint8_t g_len;
 	std::uint8_t g;
@@ -49,8 +49,8 @@ public:
 		}
 
 		stream >> opcode;
-		stream >> result;
 		stream >> unk1;
+		stream >> result;
 
 		if(result != grunt::ResultCode::SUCCESS) {
 			return (state_ = State::DONE); // rest of the fields won't be sent
@@ -83,8 +83,8 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
-		stream << result;
 		stream << unk1;
+		stream << result;
 
 		if(result != grunt::ResultCode::SUCCESS) {
 			return; // don't send the rest of the fields

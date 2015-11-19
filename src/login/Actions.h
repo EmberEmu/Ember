@@ -18,9 +18,6 @@
 namespace ember {
 
 class Action {
-protected:
-	Action() = default;
-
 public:
 	virtual void execute() = 0;
 	virtual ~Action() = default;

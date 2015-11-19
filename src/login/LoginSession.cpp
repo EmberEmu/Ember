@@ -32,7 +32,7 @@ bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
-		handler_.update_state(packet->get());
+		return handler_.update_state(packet->get());
 	}
 
 	return true;
