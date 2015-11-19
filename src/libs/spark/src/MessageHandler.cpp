@@ -7,7 +7,6 @@
  */
 
 #include <spark/MessageHandler.h>
-#include <spark/LinkMap.h>
 #include <spark/HandlerMap.h>
 #include <spark/NetworkSession.h>
 #include <spark/Utility.h>
@@ -21,9 +20,9 @@
 
 namespace ember { namespace spark {
 
-MessageHandler::MessageHandler(const HandlerMap& handlers, LinkMap& links, const Link& link, bool initiator,
+MessageHandler::MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
                                log::Logger* logger, log::Filter filter)
-                               : handlers_(handlers), links_(links), self_(link), initiator_(initiator),
+                               : handlers_(handlers), self_(link), initiator_(initiator),
                                  logger_(logger), filter_(filter) { }
 
 
@@ -77,6 +76,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 
 	std::copy(banner->server_uuid()->begin(), banner->server_uuid()->end(), peer_.uuid.data);
 	peer_.description = banner->description()->str();
+	peer_.net = std::weak_ptr<NetworkSession>(net.shared_from_this());
 
 	LOG_DEBUG_FILTER(logger_, filter_)
 		<< "[spark] Peer banner: " << peer_.description << ":"
@@ -150,8 +150,6 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 		send_negotiation(net);
 	}
 
-	links_.register_link(peer_, net.shared_from_this());
-
 	LOG_INFO_FILTER(logger_, filter_)
 		<< "[spark] Established link: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
@@ -216,8 +214,6 @@ MessageHandler::~MessageHandler() {
 	for(auto& service : matches_) {
 		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_DOWN);
 	}
-
-	links_.unregister_link(peer_);
 }
 
 }} // spark, ember

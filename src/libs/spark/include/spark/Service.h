@@ -13,7 +13,6 @@
 #include <spark/TrackingService.h>
 #include <spark/HandlerMap.h>
 #include <spark/Link.h>
-#include <spark/LinkMap.h>
 #include <spark/SessionManager.h>
 #include <spark/NetworkSession.h>
 #include <spark/Listener.h>
@@ -35,7 +34,6 @@ class Service {
 	boost::asio::ip::tcp::socket socket_;
 
 	Link link_;
-	LinkMap links_;
 	Listener listener_;
 	HandlerMap handlers_;
 	SessionManager sessions_;

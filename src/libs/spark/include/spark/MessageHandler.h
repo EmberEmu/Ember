@@ -31,7 +31,6 @@ class MessageHandler {
 	const HandlerMap& handlers_;
 	log::Logger* logger_;
 	log::Filter filter_;
-	LinkMap& links_;
 	std::set<std::int32_t> matches_;
 	bool initiator_;
 
@@ -42,7 +41,7 @@ class MessageHandler {
 	void send_negotiation(NetworkSession& net);
 
 public:
-	MessageHandler(const HandlerMap& handlers, LinkMap& links, const Link& link, bool initiator,
+	MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
 	               log::Logger* logger, log::Filter filter);
 	~MessageHandler();
 

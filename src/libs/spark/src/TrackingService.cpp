@@ -10,13 +10,14 @@
 
 #include <spark/TrackingService.h>
 #include <boost/optional.hpp>
+#include <algorithm>
 
 namespace sc = std::chrono;
 
 namespace ember { namespace spark {
 
 TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter)
-                               : service_(service), logger_(logger), filter_(filter) { }
+                                 : service_(service), logger_(logger), filter_(filter) { }
 
 void TrackingService::handle_message(const Link& link, const messaging::MessageRoot* message) try {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;

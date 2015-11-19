@@ -14,11 +14,9 @@ add_library(${LIBRARY_NAME}
             src/HeartbeatService.cpp
             src/HandlerMap.cpp
             src/Utility.cpp
-            src/LinkMap.cpp
             src/TrackingService.cpp
             include/spark/Common.h
             include/spark/TrackingService.h
-            include/spark/LinkMap.h
             include/spark/Link.h
             include/spark/HandlerMap.h
             include/spark/HeartbeatService.h
