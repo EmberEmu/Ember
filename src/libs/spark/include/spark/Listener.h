@@ -17,6 +17,7 @@ struct Link;
 class LinkMap;
 class SessionManager;
 class HandlerMap;
+class ServicesMap;
 
 class Listener {
 	boost::asio::io_service& service_;
@@ -28,13 +29,14 @@ class Listener {
 	log::Filter filter_;
 	const Link& link_;
 	const HandlerMap& handlers_;
+	ServicesMap& services_;
 
 	void accept_connection();
 	void start_session(boost::asio::ip::tcp::socket socket);
 
 public:
 	Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
-	         SessionManager& sessions, const HandlerMap& handlers,
+	         SessionManager& sessions, const HandlerMap& handlers, ServicesMap& services,
 	         const Link& link, log::Logger* logger, log::Filter filter);
 
 	void shutdown();

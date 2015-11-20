@@ -20,10 +20,10 @@
 
 namespace ember { namespace spark {
 
-MessageHandler::MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
-                               log::Logger* logger, log::Filter filter)
+MessageHandler::MessageHandler(const HandlerMap& handlers, ServicesMap& services, const Link& link,
+                               bool initiator, log::Logger* logger, log::Filter filter)
                                : handlers_(handlers), self_(link), initiator_(initiator),
-                                 logger_(logger), filter_(filter) { }
+                                 logger_(logger), filter_(filter), services_(services) { }
 
 
 void MessageHandler::send_negotiation(NetworkSession& net) {
@@ -154,6 +154,17 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 		<< "[spark] Established link: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
+	// register peer's services to allow for broadcasting
+	for(auto& service : remote_clients) {
+		services_.register_peer_service(peer_, static_cast<messaging::Service>(service),
+		                                ServicesMap::Mode::CLIENT);
+	}
+
+	for(auto& service : remote_servers) {
+		services_.register_peer_service(peer_, static_cast<messaging::Service>(service),
+										ServicesMap::Mode::SERVER);
+	}
+
 	// send the 'link up' event handlers for all matched services
 	for(auto& service : matches_) {
 		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_UP);
@@ -209,6 +220,8 @@ MessageHandler::~MessageHandler() {
 	if(state_ != State::FORWARDING) {
 		return;
 	}
+
+	services_.remove_peer(peer_);
 
 	// send the link down event to any handlers
 	for(auto& service : matches_) {

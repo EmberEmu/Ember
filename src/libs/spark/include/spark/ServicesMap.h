@@ -19,12 +19,12 @@ namespace ember { namespace spark {
 class ServicesMap {
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_servers_;
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_clients_;
-	std::mutex lock_;
+	mutable std::mutex lock_;
 
 public:
 	enum class Mode { CLIENT, SERVER };
 
-	std::vector<Link> peer_services(messaging::Service service, Mode type);
+	std::vector<Link> peer_services(messaging::Service service, Mode type) const;
 	void register_peer_service(const Link& link, messaging::Service service, Mode type);
 	void remove_peer(const Link& link);
 };

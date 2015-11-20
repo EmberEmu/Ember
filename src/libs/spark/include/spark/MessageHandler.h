@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/Link.h>
+#include <spark/ServicesMap.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <set>
@@ -29,6 +30,7 @@ class MessageHandler {
 	Link peer_;
 	const Link& self_;
 	const HandlerMap& handlers_;
+	ServicesMap& services_;
 	log::Logger* logger_;
 	log::Filter filter_;
 	std::set<std::int32_t> matches_;
@@ -41,8 +43,8 @@ class MessageHandler {
 	void send_negotiation(NetworkSession& net);
 
 public:
-	MessageHandler(const HandlerMap& handlers, const Link& link, bool initiator,
-	               log::Logger* logger, log::Filter filter);
+	MessageHandler(const HandlerMap& handlers, ServicesMap& services, const Link& link,
+	               bool initiator, log::Logger* logger, log::Filter filter);
 	~MessageHandler();
 
 	bool handle_message(NetworkSession& net, const std::vector<std::uint8_t>& buffer);

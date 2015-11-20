@@ -11,6 +11,7 @@
 #include <spark/Common.h>
 #include <spark/HeartbeatService.h>
 #include <spark/TrackingService.h>
+#include <spark/ServicesMap.h>
 #include <spark/HandlerMap.h>
 #include <spark/Link.h>
 #include <spark/SessionManager.h>
@@ -36,6 +37,7 @@ class Service {
 	Link link_;
 	Listener listener_;
 	HandlerMap handlers_;
+	ServicesMap services_;
 	SessionManager sessions_;
 	HeartbeatService hb_service_;
 	TrackingService track_service__;
@@ -60,7 +62,7 @@ public:
 	Result send(const Link& link, BufferHandler fbb) const;
 	Result send_tracked(const Link& link, boost::uuids::uuid id,
 	                    BufferHandler fbb, TrackingHandler callback);
-	Result broadcast(messaging::Service service, BufferHandler fbb) const;
+	Result broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const;
 	HandlerMap* handlers();
 };
 

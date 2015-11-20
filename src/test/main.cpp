@@ -26,6 +26,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
+	if(true) {	LOG_ERROR(logger) << "mm" << LOG_ASYNC; }
 	LOG_INFO(logger) << "Bye" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();

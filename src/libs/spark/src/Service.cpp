@@ -20,7 +20,7 @@ namespace bai = boost::asio::ip;
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
-                   listener_(service, interface, port, sessions_, handlers_, link_, logger, filter),
+                   listener_(service, interface, port, sessions_, handlers_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), socket_(service), 
                    track_service__(service_, logger, filter),
 	               link_ { boost::uuids::random_generator()(), std::move(description) },
@@ -52,7 +52,7 @@ void Service::shutdown() {
 void Service::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
-	MessageHandler m_handler(handlers_, link_, true, logger_, filter_);
+	MessageHandler m_handler(handlers_, services_, link_, true, logger_, filter_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket),
                                                     m_handler, logger_, filter_);
 	sessions_.start(session);
@@ -107,10 +107,22 @@ auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
 	return send(link, fbb);
 }
 
-auto Service::broadcast(messaging::Service service, BufferHandler fbb) const -> Result try {
+auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
+                        BufferHandler fbb) const -> Result { // todo, merge enum, rename
+	auto& links = services_.peer_services(service, mode);
+
+	for(auto& link : links) {
+		auto shared_net = link.net.lock();
+		
+		/* The weak_ptr should never fail to lock as the link will be removed from the
+		   services map before the network session shared_ptr goes out of scope */
+		if(shared_net) {
+			shared_net->write(fbb);
+		} else {
+			//LOG_ERROR(logger_) << "mm" << LOG_ASYNC;
+		}
+	}
 	return Result::OK;
-} catch(std::out_of_range) {
-	return Result::LINK_GONE;
 }
 
 HandlerMap* Service::handlers() {
