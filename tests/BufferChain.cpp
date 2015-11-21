@@ -176,7 +176,6 @@ TEST(ChainedBufferTest, CopyChain) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	ASSERT_EQ(sizeof(int) * 2, chain2.size()) << "Chain size is incorrect";
 
-	
 	chain2.read(&output, sizeof(int));
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }

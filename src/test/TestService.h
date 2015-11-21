@@ -33,7 +33,7 @@ public:
 		fbb->Finish(msg);
 
 		service_.send_tracked(link, id, fbb,
-							  std::bind(&TestService::tracking_cb, this, link, std::placeholders::_1));
+			std::bind(&TestService::tracking_cb, this, link, std::placeholders::_1));
 
 	}
 
@@ -56,7 +56,7 @@ public:
 		fbb->Finish(msg1);
 
 		LOG_INFO(logger_) << "Sending test tracked reply" << LOG_ASYNC;
-		service_.send(link, fbb);
+		//service_.broadcast(messaging::Service::Service_Keystone, fbb);
 	}
 
 	void handle_link_event(const spark::Link& link, spark::LinkState event) {

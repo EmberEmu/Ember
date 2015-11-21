@@ -175,6 +175,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 }
 
 void MessageHandler::dispatch_message(const messaging::MessageRoot* message) {
+	// if there's a tracking UUID set in the message, route it through the tracking service
 	if(message->tracking_id() && message->tracking_ttl()) {
 		handlers_.message_handler(messaging::Service::Service_Tracking)(peer_, message);
 	} else {

@@ -40,10 +40,15 @@ void HeartbeatService::handle_message(const Link& link, const messaging::Message
 void HeartbeatService::handle_event(const Link& link, LinkState state) {
 	std::lock_guard<std::mutex> guard(lock_);
 
-	if(state == LinkState::LINK_UP) {
-		peers_.emplace_front(link);
-	} else {
-		peers_.remove(link);
+	switch(state) {
+		case LinkState::LINK_UP:
+			peers_.emplace_front(link);
+			break;
+		case LinkState::LINK_DOWN:
+			peers_.remove(link);
+			break;
+		default:
+			// todo, handle
 	}
 }
 
@@ -57,8 +62,11 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 	auto time = sc::duration_cast<sc::milliseconds>(sc::steady_clock::now().time_since_epoch()).count();
 
 	if(pong->timestamp()) {
-		LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Ping time: "
-				<< (time - pong->timestamp()) << "ms" << LOG_ASYNC;
+		auto latency = time - pong->timestamp();
+
+		if(latency > 1000) { // todo, don't hardcode this
+			//
+		}
 	}
 }
 

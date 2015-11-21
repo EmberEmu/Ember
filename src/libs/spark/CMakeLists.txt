@@ -16,12 +16,6 @@ add_library(${LIBRARY_NAME}
             src/Utility.cpp
             src/TrackingService.cpp
             src/ServicesMap.cpp
-            src/Multicast.cpp
-            src/multicast/Sender.cpp
-            src/multicast/Receiver.cpp
-            include/spark/Multicast.h
-            include/spark/multicast/Sender.h
-            include/spark/multicast/Receiver.h
             include/spark/ServicesMap.h
             include/spark/Common.h
             include/spark/TrackingService.h
