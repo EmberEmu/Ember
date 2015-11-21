@@ -8,7 +8,6 @@ add_subdirectory(login)
 add_subdirectory(gateway)
 add_subdirectory(world)
 add_subdirectory(account)
-add_subdirectory(keystone)
 add_subdirectory(libs)
 
 add_subdirectory(test)

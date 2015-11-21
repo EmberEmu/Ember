@@ -65,7 +65,7 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 		auto latency = time - pong->timestamp();
 
 		if(latency > 1000) { // todo, don't hardcode this
-			//
+			// todo
 		}
 	}
 }
