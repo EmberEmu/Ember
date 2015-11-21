@@ -16,8 +16,8 @@ add_library(${LIBRARY_NAME}
             src/Utility.cpp
             src/TrackingService.cpp
             src/ServicesMap.cpp
-            src/mdns/Responder.cpp
-            include/spark/mdns/Responder.h
+            src/ServiceDiscovery.cpp
+            include/spark/ServiceDiscovery.h
             include/spark/ServicesMap.h
             include/spark/Common.h
             include/spark/TrackingService.h

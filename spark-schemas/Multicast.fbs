@@ -1,0 +1,41 @@
+/*
+ * Copyright (c) 2015 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+include "ServiceTypes.fbs";
+
+namespace ember.multicast;
+
+enum Flag { 
+    QUERY,
+    RESPONSE
+};
+
+table LocateService {
+	flag:Flag;
+	type:Service;
+	known_hosts:[string]
+}
+
+table ResolveHost {
+	host:string;
+}
+
+table ResolveHostResponse {
+	host:string;
+	ip:string;
+	port:ushort;
+	ttl:ushort;
+}
+
+union Data { LocateService, ResolveHost, ResolveHostResponse }
+
+table MessageRoot {
+	data:Data;
+}
+
+root_type MessageRoot;
