@@ -47,8 +47,6 @@ void HeartbeatService::handle_event(const Link& link, LinkState state) {
 		case LinkState::LINK_DOWN:
 			peers_.remove(link);
 			break;
-		default:
-			// todo, handle
 	}
 }
 

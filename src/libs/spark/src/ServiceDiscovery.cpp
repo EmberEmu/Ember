@@ -7,18 +7,21 @@
  */
 
 #include <spark/ServiceDiscovery.h>
+#include <spark/temp/Multicast_generated.h>
+#include <boost/lexical_cast.hpp>
 
 namespace bai = boost::asio::ip;
-using namespace std::chrono_literals;
+namespace mcast = ember::messaging::multicast;
 
 namespace ember { namespace spark {
 
 ServiceDiscovery::ServiceDiscovery(std::string desired_hostname, boost::asio::io_service& service,
-                                   bai::address interface, bai::address mcast_address, std::uint16_t port,
+                                   bai::address interface, std::uint16_t port,           // Spark TCP details
+                                   bai::address mcast_address, std::uint16_t mcast_port, // Spark UDP multicast details
                                    log::Logger* logger, log::Filter filter)
                                    : hostname_(std::move(desired_hostname)), socket_(service),
                                      logger_(logger), filter_(filter), service_(service) {
-	boost::asio::ip::udp::endpoint listen_endpoint(interface, port);
+	boost::asio::ip::udp::endpoint listen_endpoint(interface, mcast_port);
 
 	socket_.open(listen_endpoint.protocol());
 	socket_.set_option(bai::udp::socket::reuse_address(true));
@@ -28,6 +31,12 @@ ServiceDiscovery::ServiceDiscovery(std::string desired_hostname, boost::asio::io
 	receive();
 }
 
+void ServiceDiscovery::receive() {
+	socket_.async_receive_from(boost::asio::buffer(buffer_.data(), buffer_.size()), remote_ep_,
+		std::bind(&ServiceDiscovery::handle_receive, this,
+		          std::placeholders::_1, std::placeholders::_2)
+	);
+}
 
 void ServiceDiscovery::handle_receive(const boost::system::error_code& ec, std::size_t size) {
 	if(ec && ec == boost::asio::error::operation_aborted) {
@@ -41,27 +50,40 @@ void ServiceDiscovery::handle_receive(const boost::system::error_code& ec, std::
 	receive();
 }
 
-void ServiceDiscovery::receive() {
-	socket_.async_receive_from(buffer_, endpoint_,
-		std::bind(&ServiceDiscovery::handle_receive, this, std::placeholders::_1, std::placeholders::_2)
-	);
-}
-
 void ServiceDiscovery::handle_packet(std::size_t size) {
 	flatbuffers::Verifier verifier(buffer_.data(), size);
 
-	if(!multicast::VerifyMessageRootBuffer(verifier)) {
+	if(!mcast::VerifyMessageRootBuffer(verifier)) {
 		LOG_DEBUG_FILTER(logger_, filter_)
 			<< "[spark] Multicast message failed validation" << LOG_ASYNC;
 		return;
 	}
 
-	auto message = multicast::GetMessageRoot(buffer_.data());
+	auto message = mcast::GetMessageRoot(buffer_.data());
+
+	switch(message->data_type()) {
+		case mcast::Data::Data_Locate:
+			handle_locate(static_cast<const mcast::Locate*>(message->data()));
+			break;
+		case mcast::Data_LocateAnswer:
+			handle_locate_answer(static_cast<const mcast::LocateAnswer*>(message->data()));
+			break;
+		case mcast::Data::Data_Resolve:
+			handle_resolve_query(message);
+			break;
+		case mcast::Data::Data_ResolveAnswer:
+			handle_resolve_answer(static_cast<const mcast::ResolveAnswer*>(message->data()));
+			break;
+		default:
+			LOG_WARN_FILTER(logger_, filter_)
+				<< "[spark] Received an unknown multicast packet type from "
+				<< boost::lexical_cast<std::string>(remote_ep_.address()) << LOG_ASYNC;
+	}
 }
 
 void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {
 	socket_.async_send_to(boost::asio::buffer(fbb->GetBufferPointer(), fbb->GetSize()), endpoint_,
-		[this, fbb](boost::system::error_code& ec) {
+		[this, fbb](const boost::system::error_code& ec, std::size_t /*size*/) {
 			if(ec) {
 				LOG_WARN_FILTER(logger_, filter_)
 					<< "[spark] Error on sending service discovery packet: "
@@ -91,20 +113,31 @@ void ServiceDiscovery::register_service(messaging::Service service) {
 	services_.emplace_back(service);
 
 	auto timer = std::make_shared<Timer>(service_);
-	unannounced_timer_tick(timer, service, 0);
+	unannounced_timer_set(timer, service, 0);
 }
 
-void ServiceDiscovery::unannounced_timer_tick(std::shared_ptr<Timer> timer, messaging::Service service,
-                                              std::uint8_t ticks) {
+void ServiceDiscovery::unannounced_timer_set(std::shared_ptr<Timer> timer, messaging::Service service,
+                                             std::uint8_t ticks) {
 	std::chrono::milliseconds jitter(1); // todo
-	timer->expires_from_now(1s + jitter);
+	timer->expires_from_now(ANNOUNCE_REPEAT_DELAY + jitter);
 	timer->async_wait(std::bind(&ServiceDiscovery::unsolicited_announce, this,
-								std::placeholders::_1, service, timer, ticks));
+								std::placeholders::_1, timer, service, ticks));
 }
 
 std::string ServiceDiscovery::hostname() const {
 	std::lock_guard<std::mutex> guard(lock_);
 	return hostname_;
+}
+
+void ServiceDiscovery::send_resolve_answer() {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto hostname = fbb->CreateString(hostname_);
+	auto ip = fbb->CreateString(interface_.to_string());
+	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_ResolveAnswer,
+		mcast::CreateResolveAnswer(*fbb, hostname, ip, port_,
+			static_cast<std::uint16_t>(CACHE_TTL.count())).Union());
+	fbb->Finish(msg);
+	send(fbb);
 }
 
 void ServiceDiscovery::unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
@@ -113,11 +146,74 @@ void ServiceDiscovery::unsolicited_announce(const boost::system::error_code& ec,
 		return;
 	}
 
-	announce(service);
-	unannounced_timer_tick(timer, service, ticks);
+	send_announce(service);
+	unannounced_timer_set(timer, service, ++ticks);
 }
 
-void ServiceDiscovery::announce(messaging::Service service) {
+void ServiceDiscovery::send_announce(messaging::Service service) {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_Locate,
+		mcast::CreateLocate(*fbb, service).Union());
+	fbb->Finish(msg);
+	send(fbb);
+}
+
+void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
+	auto it = std::find(services_.begin(), services_.end(), message->type());
+
+	if(it == services_.end()) {
+		return; // we have no services of interest to the querier
+	}
+
+	// check to see whether querier is already aware of us
+	auto kh = message->known_hosts();
+
+	if(kh) {
+		auto kh_it = std::find_if(kh->begin(), kh->end(), [&](const auto& host) {
+			return host->c_str() == this->hostname_; // this-> is a GCC bug workaround
+		});
+
+		if(kh_it == kh->end()) {
+			return; // the querier already knows about us, don't bother broadcasting
+		}
+	}
+
+	send_announce(message->type());
+}
+
+void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
+
+}
+
+void ServiceDiscovery::handle_resolve_query(const mcast::MessageRoot* message) {
+
+}
+
+void ServiceDiscovery::handle_resolve_answer(const mcast::ResolveAnswer* message) {
+	if(!message->host() || !message->ip() || message->port()) {
+		LOG_WARN_FILTER(logger_, filter_)
+			<< "[spark] Received an incompatible resolve answer" << LOG_ASYNC;
+		return;
+	}
+
+	// does this hostname conflict with ours?
+	if(message->host()->c_str() == hostname_) {
+		auto ip_str = message->ip()->str();
+		auto peer_ip = boost::asio::ip::address::from_string(ip_str);
+
+		if(resolve_hostname_conflict(peer_ip)) {
+
+		}
+	}
+
+	// does this hostname conflict with any cached entries?
+}
+
+void ServiceDiscovery::send_resolve_query() {
+
+}
+
+bool ServiceDiscovery::resolve_hostname_conflict(bai::address address) {
 
 }
 

@@ -8,31 +8,30 @@
 
 include "ServiceTypes.fbs";
 
-namespace ember.multicast;
+namespace ember.messaging.multicast;
 
-enum Flag { 
-    QUERY,
-    RESPONSE
-};
-
-table LocateService {
-	flag:Flag;
+table Locate {
 	type:Service;
-	known_hosts:[string]
+	known_hosts:[string];
 }
 
-table ResolveHost {
+table LocateAnswer {
+	host:string;
+	type:Service;
+}
+
+table Resolve {
 	host:string;
 }
 
-table ResolveHostResponse {
+table ResolveAnswer {
 	host:string;
 	ip:string;
 	port:ushort;
 	ttl:ushort;
 }
 
-union Data { LocateService, ResolveHost, ResolveHostResponse }
+union Data { Locate, LocateAnswer, Resolve, ResolveAnswer }
 
 table MessageRoot {
 	data:Data;
