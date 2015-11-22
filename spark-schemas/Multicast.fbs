@@ -10,6 +10,14 @@ include "ServiceTypes.fbs";
 
 namespace ember.messaging.multicast;
 
+table Test {
+	
+}
+
+union ServiceData {
+	Test
+}
+
 table Locate {
 	type:Service;
 	known_hosts:[string];
@@ -18,20 +26,10 @@ table Locate {
 table LocateAnswer {
 	host:string;
 	type:Service;
+	data:ServiceData;
 }
 
-table Resolve {
-	host:string;
-}
-
-table ResolveAnswer {
-	host:string;
-	ip:string;
-	port:ushort;
-	ttl:ushort;
-}
-
-union Data { Locate, LocateAnswer, Resolve, ResolveAnswer }
+union Data { Locate, LocateAnswer }
 
 table MessageRoot {
 	data:Data;

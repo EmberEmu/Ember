@@ -68,12 +68,6 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 		case mcast::Data_LocateAnswer:
 			handle_locate_answer(static_cast<const mcast::LocateAnswer*>(message->data()));
 			break;
-		case mcast::Data::Data_Resolve:
-			handle_resolve_query(message);
-			break;
-		case mcast::Data::Data_ResolveAnswer:
-			handle_resolve_answer(static_cast<const mcast::ResolveAnswer*>(message->data()));
-			break;
 		default:
 			LOG_WARN_FILTER(logger_, filter_)
 				<< "[spark] Received an unknown multicast packet type from "
@@ -129,16 +123,6 @@ std::string ServiceDiscovery::hostname() const {
 	return hostname_;
 }
 
-void ServiceDiscovery::send_resolve_answer() {
-	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto hostname = fbb->CreateString(hostname_);
-	auto ip = fbb->CreateString(interface_.to_string());
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_ResolveAnswer,
-		mcast::CreateResolveAnswer(*fbb, hostname, ip, port_,
-			static_cast<std::uint16_t>(CACHE_TTL.count())).Union());
-	fbb->Finish(msg);
-	send(fbb);
-}
 
 void ServiceDiscovery::unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
                                             messaging::Service service, std::uint8_t ticks) {
@@ -182,38 +166,6 @@ void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 }
 
 void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
-
-}
-
-void ServiceDiscovery::handle_resolve_query(const mcast::MessageRoot* message) {
-
-}
-
-void ServiceDiscovery::handle_resolve_answer(const mcast::ResolveAnswer* message) {
-	if(!message->host() || !message->ip() || message->port()) {
-		LOG_WARN_FILTER(logger_, filter_)
-			<< "[spark] Received an incompatible resolve answer" << LOG_ASYNC;
-		return;
-	}
-
-	// does this hostname conflict with ours?
-	if(message->host()->c_str() == hostname_) {
-		auto ip_str = message->ip()->str();
-		auto peer_ip = boost::asio::ip::address::from_string(ip_str);
-
-		if(resolve_hostname_conflict(peer_ip)) {
-
-		}
-	}
-
-	// does this hostname conflict with any cached entries?
-}
-
-void ServiceDiscovery::send_resolve_query() {
-
-}
-
-bool ServiceDiscovery::resolve_hostname_conflict(bai::address address) {
 
 }
 

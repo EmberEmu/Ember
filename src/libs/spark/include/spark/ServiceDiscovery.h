@@ -59,19 +59,14 @@ class ServiceDiscovery {
 	// incoming packet handlers
 	void receive();
 	void handle_packet(std::size_t size);
-	void handle_resolve_query(const messaging::multicast::MessageRoot* message);
-	void handle_resolve_answer(const messaging::multicast::ResolveAnswer* message);
 	void handle_locate(const messaging::multicast::Locate* message);
 	void handle_locate_answer(const messaging::multicast::LocateAnswer* message);
 
 	// packet senders
 	void send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb);
-	void send_resolve_query();
-	void send_resolve_answer();
 	void send_announce(messaging::Service service);
 
 	void handle_receive(const boost::system::error_code& ec, std::size_t size);
-	bool resolve_hostname_conflict(boost::asio::ip::address peer);
 	void unannounced_timer_set(std::shared_ptr<Timer> timer, messaging::Service service, std::uint8_t ticks);
 	void unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
 	                          messaging::Service service, std::uint8_t count);
