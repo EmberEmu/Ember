@@ -91,10 +91,6 @@ void ServiceDiscovery::locate_service(messaging::Service service, LocateCallback
 
 }
 
-void ServiceDiscovery::resolve_host(const std::string& host, ResolveCallback cb) {
-
-}
-
 void ServiceDiscovery::register_service(messaging::Service service) {
 	std::lock_guard<std::mutex> guard(lock_);
 
@@ -117,12 +113,6 @@ void ServiceDiscovery::unannounced_timer_set(std::shared_ptr<Timer> timer, messa
 	timer->async_wait(std::bind(&ServiceDiscovery::unsolicited_announce, this,
 								std::placeholders::_1, timer, service, ticks));
 }
-
-std::string ServiceDiscovery::hostname() const {
-	std::lock_guard<std::mutex> guard(lock_);
-	return hostname_;
-}
-
 
 void ServiceDiscovery::unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
                                             messaging::Service service, std::uint8_t ticks) {

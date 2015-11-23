@@ -78,9 +78,7 @@ public:
 	                 log::Logger* logger, log::Filter filter);
 
 	void locate_service(messaging::Service service, LocateCallback cb);
-	void resolve_host(const std::string& host, ResolveCallback cb);
 	void register_service(messaging::Service);
-	std::string hostname() const;
 };
 
 
