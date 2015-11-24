@@ -34,6 +34,7 @@
 #include <boost/range/adaptor/map.hpp>
 #include <fstream>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <stdexcept>
@@ -53,7 +54,6 @@ std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-std::unique_ptr<ember::log::Logger> init_logging(const po::variables_map& args);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
 /*
