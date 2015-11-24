@@ -27,9 +27,10 @@ class HeartbeatService {
 	const Service* service_;
 	std::forward_list<Link> peers_;
 	std::mutex lock_;
+	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+
 	log::Logger* logger_;
 	log::Filter filter_;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	void set_timer();
 	void send_ping(const Link& link, std::uint64_t time);

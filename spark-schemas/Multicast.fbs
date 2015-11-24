@@ -24,7 +24,9 @@ table Locate {
 }
 
 table LocateAnswer {
-	host:string;
+	ip:string;
+	port:ushort;
+	std::string description;
 	type:Service;
 	data:ServiceData;
 }

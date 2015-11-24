@@ -7,6 +7,7 @@
  */
 
 #include <spark/ServiceDiscovery.h>
+#include <spark/ServiceListener.h>
 #include <spark/temp/Multicast_generated.h>
 #include <boost/lexical_cast.hpp>
 
@@ -87,21 +88,20 @@ void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb)
 	);
 }
 
-void ServiceDiscovery::locate_service(messaging::Service service, LocateCallback cb) {
-
+void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
+	std::lock_guard<std::mutex> guard(lock_);
+	auto& vec = listeners_[listener->service()];
+	std::remove(vec.begin(), vec.end(), listener);
 }
 
-void ServiceDiscovery::register_service(messaging::Service service) {
+std::unique_ptr<ServiceListener> ServiceDiscovery::test(messaging::Service service, LocateCallback cb) {
+	auto listener = std::make_unique<ServiceListener>(this, service, cb);
 	std::lock_guard<std::mutex> guard(lock_);
+	listeners_[service].emplace_back(listener.get());
+	return listener;
+}
 
-	auto it = std::find(services_.begin(), services_.end(), service);
-
-	if(it != services_.end()) {
-		throw std::runtime_error("Attempted to register a duplicate service");
-	}
-
-	services_.emplace_back(service);
-
+void ServiceDiscovery::locate_service(messaging::Service service) {
 	auto timer = std::make_shared<Timer>(service_);
 	unannounced_timer_set(timer, service, 0);
 }
@@ -133,12 +133,6 @@ void ServiceDiscovery::send_announce(messaging::Service service) {
 }
 
 void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
-	auto it = std::find(services_.begin(), services_.end(), message->type());
-
-	if(it == services_.end()) {
-		return; // we have no services of interest to the querier
-	}
-
 	// check to see whether querier is already aware of us
 	auto kh = message->known_hosts();
 
@@ -156,7 +150,19 @@ void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 }
 
 void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
+	if(message->type() == messaging::Service::Service_Reserved
+	   || !message->ip() || !message->port()) {
+		LOG_WARN_FILTER(logger_, filter_)
+			<< "[spark] Received incompatible locate answer " << LOG_ASYNC;
+		return;
+	}
 
+	std::lock_guard<std::mutex> guard(lock_);
+	auto& listeners = listeners_[message->type()];
+
+	for(auto& listener : listeners) {
+		listener->cb_(message);
+	}
 }
 
 }} // multicast, spark, ember

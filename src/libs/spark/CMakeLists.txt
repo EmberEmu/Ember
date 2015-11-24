@@ -17,6 +17,8 @@ add_library(${LIBRARY_NAME}
             src/TrackingService.cpp
             src/ServicesMap.cpp
             src/ServiceDiscovery.cpp
+            src/ServiceListener.cpp
+            include/spark/ServiceListener.h
             include/spark/ServiceDiscovery.h
             include/spark/ServicesMap.h
             include/spark/Common.h

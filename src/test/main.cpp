@@ -26,22 +26,13 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
-	if(true) {	LOG_ERROR(logger) << "mm" << LOG_ASYNC; }
+
 	LOG_INFO(logger) << "Bye" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
 
-void test_func(ember::spark::Service* spark) {
-	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-	for(;;) {
-		spark->connect("::1", 6000);
-		spark->connect("::1", 6000);
-		spark->connect("::1", 6000);
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
-	}
-}
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
 	ba::io_service service;

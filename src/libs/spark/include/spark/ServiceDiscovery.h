@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/Common.h>
 #include <spark/temp/ServiceTypes_generated.h>
 #include <spark/temp/Multicast_generated.h>
 #include <logger/Logging.h>
@@ -19,18 +20,16 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember { namespace spark {
 
-struct Endpoint;
-
 using namespace std::chrono_literals;
 
 typedef boost::asio::basic_waitable_timer<std::chrono::steady_clock> Timer;
-typedef std::function<void(const Endpoint*)> ResolveCallback;
-typedef std::function<void(std::string)> LocateCallback;
+class ServiceListener;
 
 class ServiceDiscovery {
 	static const std::size_t BUFFER_SIZE = 1024;
@@ -50,11 +49,13 @@ class ServiceDiscovery {
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_, remote_ep_;
 	std::array<std::uint8_t, BUFFER_SIZE> buffer_;
-	std::unordered_map<std::string, std::unique_ptr<Endpoint>> cache_;
-	std::vector<messaging::Service> services_;
+	std::unordered_map<messaging::Service, std::vector<const ServiceListener*>> listeners_;
 	mutable std::mutex lock_;
+
 	log::Logger* logger_;
 	log::Filter filter_;
+
+	void remove_listener(const ServiceListener* listener);
 
 	// incoming packet handlers
 	void receive();
@@ -66,6 +67,7 @@ class ServiceDiscovery {
 	void send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb);
 	void send_announce(messaging::Service service);
 
+	void locate_service(messaging::Service);
 	void handle_receive(const boost::system::error_code& ec, std::size_t size);
 	void unannounced_timer_set(std::shared_ptr<Timer> timer, messaging::Service service, std::uint8_t ticks);
 	void unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
@@ -78,7 +80,9 @@ public:
 	                 log::Logger* logger, log::Filter filter);
 
 	void locate_service(messaging::Service service, LocateCallback cb);
-	void register_service(messaging::Service);
+	std::unique_ptr<ServiceListener> test(messaging::Service service, LocateCallback cb);
+
+	friend class ServiceListener;
 };
 
 
