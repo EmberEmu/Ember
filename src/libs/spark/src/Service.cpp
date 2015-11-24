@@ -23,7 +23,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                    listener_(service, interface, port, sessions_, handlers_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), socket_(service), 
                    track_service__(service_, logger, filter),
-	               link_ { boost::uuids::random_generator()(), std::move(description) },
+                   link_ { boost::uuids::random_generator()(), std::move(description) },
                    handlers_(std::bind(&HeartbeatService::handle_message, &hb_service_,
                                        std::placeholders::_1, std::placeholders::_2)) {
 	signals_.async_wait(std::bind(&Service::shutdown, this));

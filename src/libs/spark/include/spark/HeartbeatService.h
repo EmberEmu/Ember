@@ -40,7 +40,7 @@ class HeartbeatService {
 
 public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
-	            log::Logger* logger, log::Filter filter);
+	                 log::Logger* logger, log::Filter filter);
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_event(const Link& link, LinkState state);
 	void shutdown();

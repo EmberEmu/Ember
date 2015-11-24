@@ -53,7 +53,7 @@ void TrackingService::handle_event(const Link& link, LinkState state) {
 }
 
 void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
-									  TrackingHandler handler, sc::milliseconds timeout) {
+                                       TrackingHandler handler, sc::milliseconds timeout) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
 	auto request = std::make_unique<Request>(service_, id, link, handler);

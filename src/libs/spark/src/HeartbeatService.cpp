@@ -17,8 +17,8 @@ namespace ember { namespace spark {
 namespace sc = std::chrono;
 
 HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Service* service,
-                         log::Logger* logger, log::Filter filter)
-                         : timer_(io_service), service_(service), logger_(logger), filter_(filter) {
+                                   log::Logger* logger, log::Filter filter) : timer_(io_service),
+                                   service_(service), logger_(logger), filter_(filter) {
 	set_timer();
 }
 
