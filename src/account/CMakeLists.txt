@@ -8,11 +8,12 @@ set(EXECUTABLE_NAME account)
 set(LIBRARY_NAME    libaccount)
 
 set(LIBRARY_HDR
-
+    FilterTypes.h
+    Listener.h
     )
 
 set(LIBRARY_SRC
-
+    Listener.cpp
     )
 
 

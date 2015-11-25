@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/Common.h>
+#include <spark/ServiceDiscovery.h>
 #include <spark/HeartbeatService.h>
 #include <spark/TrackingService.h>
 #include <spark/ServicesMap.h>
@@ -39,8 +40,10 @@ class Service {
 	HandlerMap handlers_;
 	ServicesMap services_;
 	SessionManager sessions_;
+	ServiceDiscovery discovery_;
 	HeartbeatService hb_service_;
 	TrackingService track_service__;
+
 	log::Logger* logger_;
 	log::Filter filter_;
 	
@@ -55,7 +58,8 @@ public:
 	enum class Result { OK, LINK_GONE };
 
 	Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-	        std::uint16_t port, log::Logger* logger, log::Filter filter);
+	        std::uint16_t port, const std::string& mcast_group, std::uint16_t mcast_port,
+	        log::Logger* logger, log::Filter filter);
 
 	void connect(const std::string& host, std::uint16_t port);
 

@@ -33,16 +33,8 @@ class ServiceListener;
 
 class ServiceDiscovery {
 	static const std::size_t BUFFER_SIZE = 1024;
-	const std::chrono::seconds CACHE_TTL { 5s };
 	const std::chrono::seconds ANNOUNCE_REPEAT_DELAY { 2s };
 
-	struct Endpoint {
-		boost::asio::deadline_timer ttl_timer;
-		std::string address;
-		std::uint16_t port;
-	};
-
-	std::string hostname_;
 	boost::asio::ip::address interface_;
 	std::uint16_t port_;
 	boost::asio::io_service& service_;
@@ -74,7 +66,7 @@ class ServiceDiscovery {
 	                          messaging::Service service, std::uint8_t count);
 
 public:
-	ServiceDiscovery(std::string desired_hostname, boost::asio::io_service& service,
+	ServiceDiscovery(boost::asio::io_service& service,
 	                 boost::asio::ip::address interface, std::uint16_t port, 
 	                 boost::asio::ip::address mcast_group, std::uint16_t mcast_port,
 	                 log::Logger* logger, log::Filter filter);
