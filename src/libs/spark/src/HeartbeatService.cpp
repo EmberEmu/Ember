@@ -37,7 +37,7 @@ void HeartbeatService::handle_message(const Link& link, const messaging::Message
 	}
 }
 
-void HeartbeatService::handle_event(const Link& link, LinkState state) {
+void HeartbeatService::handle_link_event(const Link& link, LinkState state) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	switch(state) {

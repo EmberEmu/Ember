@@ -93,7 +93,7 @@ void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
 	std::remove(vec.begin(), vec.end(), listener);
 }
 
-std::unique_ptr<ServiceListener> ServiceDiscovery::test(messaging::Service service, LocateCallback cb) {
+std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service, LocateCallback cb) {
 	auto listener = std::make_unique<ServiceListener>(this, service, cb);
 	std::lock_guard<std::mutex> guard(lock_);
 	listeners_[service].emplace_back(listener.get());
@@ -101,29 +101,6 @@ std::unique_ptr<ServiceListener> ServiceDiscovery::test(messaging::Service servi
 }
 
 void ServiceDiscovery::locate_service(messaging::Service service) {
-	auto timer = std::make_shared<Timer>(service_);
-	unannounced_timer_set(timer, service, 0);
-}
-
-void ServiceDiscovery::unannounced_timer_set(std::shared_ptr<Timer> timer, messaging::Service service,
-                                             std::uint8_t ticks) {
-	std::chrono::milliseconds jitter(1); // todo
-	timer->expires_from_now(ANNOUNCE_REPEAT_DELAY + jitter);
-	timer->async_wait(std::bind(&ServiceDiscovery::unsolicited_announce, this,
-								std::placeholders::_1, timer, service, ticks));
-}
-
-void ServiceDiscovery::unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
-                                            messaging::Service service, std::uint8_t ticks) {
-	if(ec || ticks >= 2) {
-		return;
-	}
-
-	send_announce(service);
-	unannounced_timer_set(timer, service, ++ticks);
-}
-
-void ServiceDiscovery::send_announce(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_Locate,
 		mcast::CreateLocate(*fbb, service).Union());
@@ -131,18 +108,23 @@ void ServiceDiscovery::send_announce(messaging::Service service) {
 	send(fbb);
 }
 
+void ServiceDiscovery::send_announce(messaging::Service service) {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto ip = fbb->CreateString(interface_.to_string());
+	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_LocateAnswer,
+		mcast::CreateLocateAnswer(*fbb, ip, port_, service).Union());
+	fbb->Finish(msg);
+	send(fbb);
+}
+
 void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
-	// check to see whether querier is already aware of us
-	auto kh = message->known_hosts();
+	// check to see if we a matching service registered
+	std::unique_lock<std::mutex> guard(lock_);
 
-	if(kh) {
-		auto kh_it = std::find_if(kh->begin(), kh->end(), [&](const auto& host) {
-			return host->c_str() == this->hostname_; // this-> is a GCC bug workaround
-		});
+	auto it = std::find(services_.begin(), services_.end(), message->type());
 
-		if(kh_it == kh->end()) {
-			return; // the querier already knows about us, don't bother broadcasting
-		}
+	if(it == services_.end()) {
+		return; // no matching services
 	}
 
 	send_announce(message->type());
@@ -162,6 +144,17 @@ void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) 
 	for(auto& listener : listeners) {
 		listener->cb_(message);
 	}
+}
+
+void ServiceDiscovery::register_service(messaging::Service service) {
+	std::lock_guard<std::mutex> guard(lock_);
+	services_.emplace_back(service);
+	send_announce(service);
+}
+
+void ServiceDiscovery::remove_service(messaging::Service service) {
+	std::lock_guard<std::mutex> guard(lock_);
+	std::remove(services_.begin(), services_.end(), service);
 }
 
 }} // multicast, spark, ember

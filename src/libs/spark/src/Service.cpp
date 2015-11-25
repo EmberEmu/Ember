@@ -18,27 +18,16 @@ namespace ember { namespace spark {
 namespace bai = boost::asio::ip;
 
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-                 std::uint16_t port, log::Logger* logger, log::Filter filter)
+                 std::uint16_t port, std::string mcast_group, std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, handlers_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), socket_(service), 
                    track_service__(service_, logger, filter),
-                   link_ { boost::uuids::random_generator()(), std::move(description) },
-                   handlers_(std::bind(&HeartbeatService::handle_message, &hb_service_,
-                                       std::placeholders::_1, std::placeholders::_2)) {
+                   link_ { boost::uuids::random_generator()(), std::move(description) } {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
-	handlers_.register_handler(
-		std::bind(&HeartbeatService::handle_message, &hb_service_, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&HeartbeatService::handle_event, &hb_service_, std::placeholders::_1, std::placeholders::_2),
-		messaging::Service::Service_Core, HandlerMap::Mode::BOTH
-	);
-
-	handlers_.register_handler(
-		std::bind(&TrackingService::handle_message, &track_service__, std::placeholders::_1, std::placeholders::_2),
-		std::bind(&TrackingService::handle_event, &track_service__, std::placeholders::_1, std::placeholders::_2),
-		messaging::Service::Service_Tracking, HandlerMap::Mode::CLIENT
-	);
+	handlers_.register_handler(&hb_service_, messaging::Service::Service_Core, EventDispatcher::Mode::BOTH);
+	handlers_.register_handler(&track_service__, messaging::Service::Service_Tracking, EventDispatcher::Mode::CLIENT);
 }
 
 void Service::shutdown() {
@@ -123,10 +112,6 @@ auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
 		}
 	}
 	return Result::OK;
-}
-
-HandlerMap* Service::handlers() {
-	return &handlers_;
 }
 
 }} // spark, ember

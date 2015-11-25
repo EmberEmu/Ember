@@ -20,13 +20,11 @@ union ServiceData {
 
 table Locate {
 	type:Service;
-	known_hosts:[string];
 }
 
 table LocateAnswer {
 	ip:string;
 	port:ushort;
-	std::string description;
 	type:Service;
 	data:ServiceData;
 }

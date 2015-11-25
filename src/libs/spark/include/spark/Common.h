@@ -25,8 +25,6 @@ class ServiceDiscovery;
 //namespace messaging { struct MessageRoot; }
 
 typedef std::function<void(boost::optional<const messaging::MessageRoot*>)> TrackingHandler;
-typedef std::function<void(const Link& link, const messaging::MessageRoot*)> MsgHandler;
-typedef std::function<void(const Link& link, LinkState state)> LinkStateHandler;
 typedef std::function<void(const Endpoint*)> ResolveCallback;
 typedef std::function<void(const messaging::multicast::LocateAnswer*)> LocateCallback;
 

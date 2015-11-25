@@ -13,7 +13,7 @@
 #include <spark/HeartbeatService.h>
 #include <spark/TrackingService.h>
 #include <spark/ServicesMap.h>
-#include <spark/HandlerMap.h>
+#include <spark/EventDispatcher.h>
 #include <spark/Link.h>
 #include <spark/SessionManager.h>
 #include <spark/NetworkSession.h>
@@ -37,10 +37,9 @@ class Service {
 
 	Link link_;
 	Listener listener_;
-	HandlerMap handlers_;
+	EventDispatcher handlers_;
 	ServicesMap services_;
 	SessionManager sessions_;
-	ServiceDiscovery discovery_;
 	HeartbeatService hb_service_;
 	TrackingService track_service__;
 
@@ -58,7 +57,7 @@ public:
 	enum class Result { OK, LINK_GONE };
 
 	Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-	        std::uint16_t port, const std::string& mcast_group, std::uint16_t mcast_port,
+	        std::uint16_t port, std::string mcast_group, std::uint16_t mcast_port,
 	        log::Logger* logger, log::Filter filter);
 
 	void connect(const std::string& host, std::uint16_t port);
@@ -67,7 +66,6 @@ public:
 	Result send_tracked(const Link& link, boost::uuids::uuid id,
 	                    BufferHandler fbb, TrackingHandler callback);
 	Result broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const;
-	HandlerMap* handlers();
 };
 
 }} // spark, ember

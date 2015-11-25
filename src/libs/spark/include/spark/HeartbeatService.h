@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/Link.h>
+#include <spark/EventHandler.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
@@ -21,7 +22,7 @@ namespace ember { namespace spark {
 
 class Service;
 
-class HeartbeatService {
+class HeartbeatService : public EventHandler {
 	const std::chrono::seconds PING_FREQUENCY { 20 };
 
 	const Service* service_;
@@ -42,8 +43,10 @@ class HeartbeatService {
 public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
 	                 log::Logger* logger, log::Filter filter);
+	~HeartbeatService();
+
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
-	void handle_event(const Link& link, LinkState state);
+	void handle_link_event(const Link& link, LinkState state);
 	void shutdown();
 };
 

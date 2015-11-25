@@ -14,4 +14,16 @@ Listener::Listener(spark::Service& service) : service_(service) {
 	
 }
 
+Listener::~Listener() {
+
+}
+
+void Listener::handle_message(const spark::Link& link, const messaging::MessageRoot* msg) {
+
+}
+
+void Listener::handle_link_event(const spark::Link& link, spark::LinkState event) {
+
+}
+
 } // ember

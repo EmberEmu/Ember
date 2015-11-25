@@ -33,7 +33,6 @@ class ServiceListener;
 
 class ServiceDiscovery {
 	static const std::size_t BUFFER_SIZE = 1024;
-	const std::chrono::seconds ANNOUNCE_REPEAT_DELAY { 2s };
 
 	boost::asio::ip::address interface_;
 	std::uint16_t port_;
@@ -41,6 +40,7 @@ class ServiceDiscovery {
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_, remote_ep_;
 	std::array<std::uint8_t, BUFFER_SIZE> buffer_;
+	std::vector<messaging::Service> services_;
 	std::unordered_map<messaging::Service, std::vector<const ServiceListener*>> listeners_;
 	mutable std::mutex lock_;
 
@@ -71,8 +71,9 @@ public:
 	                 boost::asio::ip::address mcast_group, std::uint16_t mcast_port,
 	                 log::Logger* logger, log::Filter filter);
 
-	void locate_service(messaging::Service service, LocateCallback cb);
-	std::unique_ptr<ServiceListener> test(messaging::Service service, LocateCallback cb);
+	void register_service(messaging::Service service);
+	void remove_service(messaging::Service service);
+	std::unique_ptr<ServiceListener> listener(messaging::Service service, LocateCallback cb);
 
 	friend class ServiceListener;
 };

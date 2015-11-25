@@ -7,7 +7,7 @@
  */
 
 #include <spark/MessageHandler.h>
-#include <spark/HandlerMap.h>
+#include <spark/EventDispatcher.h>
 #include <spark/NetworkSession.h>
 #include <spark/Utility.h>
 #include <spark/temp/MessageRoot_generated.h>
@@ -20,9 +20,9 @@
 
 namespace ember { namespace spark {
 
-MessageHandler::MessageHandler(const HandlerMap& handlers, ServicesMap& services, const Link& link,
+MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger, log::Filter filter)
-                               : handlers_(handlers), self_(link), initiator_(initiator),
+                               : dispatcher_(dispatcher), self_(link), initiator_(initiator),
                                  logger_(logger), filter_(filter), services_(services) { }
 
 
@@ -30,8 +30,8 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto in = fbb->CreateVector(detail::services_to_underlying(handlers_.services(HandlerMap::Mode::SERVER)));
-	auto out = fbb->CreateVector(detail::services_to_underlying(handlers_.services(HandlerMap::Mode::CLIENT)));
+	auto in = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER)));
+	auto out = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT)));
 
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
 		messaging::Data::Data_Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
@@ -114,8 +114,8 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	// vectors of enums are very annoying to use in FlatBuffers :(
 	std::vector<std::int32_t> remote_servers(protocols->proto_in()->begin(), protocols->proto_in()->end());
 	std::vector<std::int32_t> remote_clients(protocols->proto_out()->begin(), protocols->proto_out()->end());
-	auto our_servers = handlers_.services(HandlerMap::Mode::SERVER);
-	auto our_clients = handlers_.services(HandlerMap::Mode::CLIENT);
+	auto our_servers = dispatcher_.services(EventDispatcher::Mode::SERVER);
+	auto our_clients = dispatcher_.services(EventDispatcher::Mode::CLIENT);
 
 	std::sort(our_servers.begin(), our_servers.end());
 	std::sort(our_clients.begin(), our_clients.end());
@@ -167,7 +167,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 
 	// send the 'link up' event handlers for all matched services
 	for(auto& service : matches_) {
-		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_UP);
+		dispatcher_.dispatch_link_event(static_cast<messaging::Service>(service), peer_, LinkState::LINK_UP);
 	}
 
 	state_ = State::FORWARDING;
@@ -177,9 +177,9 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 void MessageHandler::dispatch_message(const messaging::MessageRoot* message) {
 	// if there's a tracking UUID set in the message, route it through the tracking service
 	if(message->tracking_id() && message->tracking_ttl()) {
-		handlers_.message_handler(messaging::Service::Service_Tracking)(peer_, message);
+		dispatcher_.dispatch_message(messaging::Service::Service_Tracking, peer_, message);
 	} else {
-		handlers_.message_handler(message->service())(peer_, message);
+		dispatcher_.dispatch_message(message->service(), peer_, message);
 	}
 }
 
@@ -226,7 +226,7 @@ MessageHandler::~MessageHandler() {
 
 	// send the link down event to any handlers
 	for(auto& service : matches_) {
-		handlers_.link_state_handler(static_cast<messaging::Service>(service))(peer_, LinkState::LINK_DOWN);
+		dispatcher_.dispatch_link_event(static_cast<messaging::Service>(service), peer_, LinkState::LINK_DOWN);
 	}
 }
 

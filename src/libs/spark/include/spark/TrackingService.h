@@ -10,19 +10,20 @@
 
 #include <spark/Common.h>
 #include <spark/Link.h>
+#include <spark/EventHandler.h>
 #include <spark/temp/MessageRoot_generated.h>
-#include <spark/HandlerMap.h> // todo, move typedef?
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <memory>
+#include <unordered_map>
 #include <mutex>
 
 namespace ember { namespace spark {
 
-class TrackingService {
+class TrackingService : public EventHandler {
 	struct Request {
 		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link, TrackingHandler handler)
 		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
@@ -45,8 +46,9 @@ class TrackingService {
 
 public:
 	TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter);
+
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
-	void handle_event(const Link& link, LinkState state);
+	void handle_link_event(const Link& link, LinkState state);
 	void register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
 	                      std::chrono::milliseconds timeout);
 	void shutdown();

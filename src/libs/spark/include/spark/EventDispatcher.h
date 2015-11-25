@@ -9,42 +9,36 @@
 #pragma once
 
 #include <spark/Common.h>
+#include <spark/EventHandler.h>
 #include <spark/Link.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <spark/temp/ServiceTypes_generated.h>
-#include <functional>
+#include <forward_list>
 #include <shared_mutex>
 #include <unordered_map>
 #include <vector>
 
 namespace ember { namespace spark {
 
-// todo, rename?
-class HandlerMap {
+class EventDispatcher {
 public:
 	enum class Mode { CLIENT, SERVER, BOTH };
 
 private:
-	struct Handlers {
+	struct Handler {
 		Mode mode;
-		MsgHandler msg_handler;
-		LinkStateHandler link_handler;
+		EventHandler* handler;
 	};
 
-	std::unordered_map<messaging::Service, Handlers> handlers_;
-	MsgHandler def_handler_;
-	LinkStateHandler def_link_handler_;
+	std::unordered_map<messaging::Service, Handler> handlers_;
 	mutable std::shared_timed_mutex lock_;
 
-
 public:
-	HandlerMap(MsgHandler default_handler);
-	void register_handler(MsgHandler handler, LinkStateHandler l_handler,
-	                      messaging::Service service_type, Mode mode);
-	void remove_handler(messaging::Service service_type);
-	const MsgHandler& message_handler(messaging::Service service_type) const;
-	const LinkStateHandler& link_state_handler(messaging::Service service_type) const;
 	std::vector<messaging::Service> services(Mode mode) const;
+	void register_handler(EventHandler* handler, messaging::Service service, Mode mode);
+	void remove_handler(EventHandler* handler);
+	void dispatch_link_event(messaging::Service service, const Link& link, LinkState state) const;
+	void dispatch_message(messaging::Service service, const Link& link, const messaging::MessageRoot* message) const;
 };
 
 }} // spark, ember

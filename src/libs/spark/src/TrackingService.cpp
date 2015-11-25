@@ -48,7 +48,7 @@ void TrackingService::handle_message(const Link& link, const messaging::MessageR
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }
 
-void TrackingService::handle_event(const Link& link, LinkState state) {
+void TrackingService::handle_link_event(const Link& link, LinkState state) {
 	// we don't care about this
 }
 

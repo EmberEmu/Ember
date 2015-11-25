@@ -12,19 +12,20 @@ add_library(${LIBRARY_NAME}
             src/Listener.cpp
             src/MessageHandler.cpp
             src/HeartbeatService.cpp
-            src/HandlerMap.cpp
+            src/EventDispatcher.cpp
             src/Utility.cpp
             src/TrackingService.cpp
             src/ServicesMap.cpp
             src/ServiceDiscovery.cpp
             src/ServiceListener.cpp
+            include/spark/EventHandler.h
             include/spark/ServiceListener.h
             include/spark/ServiceDiscovery.h
             include/spark/ServicesMap.h
             include/spark/Common.h
             include/spark/TrackingService.h
             include/spark/Link.h
-            include/spark/HandlerMap.h
+            include/spark/EventDispatcher.h
             include/spark/HeartbeatService.h
             include/spark/MessageHandler.h
             include/spark/Buffer.h

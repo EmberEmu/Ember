@@ -15,7 +15,7 @@
 namespace ember { namespace spark {
 
 Listener::Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port, 
-                   SessionManager& sessions, const HandlerMap& handlers, ServicesMap& services,
+                   SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,
                    const Link& link, log::Logger* logger, log::Filter filter)
                    : service_(service), acceptor_(service, boost::asio::ip::tcp::endpoint(
                      boost::asio::ip::address::from_string(interface), port)), link_(link),
