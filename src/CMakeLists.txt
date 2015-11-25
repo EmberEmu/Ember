@@ -9,5 +9,3 @@ add_subdirectory(gateway)
 add_subdirectory(world)
 add_subdirectory(account)
 add_subdirectory(libs)
-
-add_subdirectory(test)
