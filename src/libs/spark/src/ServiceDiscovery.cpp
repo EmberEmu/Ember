@@ -157,4 +157,4 @@ void ServiceDiscovery::remove_service(messaging::Service service) {
 	std::remove(services_.begin(), services_.end(), service);
 }
 
-}} // multicast, spark, ember
+}} // spark, ember
