@@ -9,6 +9,7 @@
 #include "FilterTypes.h"
 #include "GameVersion.h"
 #include "SessionBuilders.h"
+#include "SessionService.h"
 #include "LoginHandlerBuilder.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
@@ -18,6 +19,8 @@
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
+#include <spark/Service.h>
+#include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>
 #include <shared/util/LogConfig.h>
 #include <shared/metrics/MetricsImpl.h>
@@ -43,6 +46,7 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace es = ember::spark;
 namespace el = ember::log;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -123,11 +127,25 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
 	}
 
-	// Start ASIO services
+	// Start ASIO service
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 
 	ember::ThreadPool thread_pool(concurrency);
 	boost::asio::io_service service(concurrency);
+
+	// Start Spark services
+	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
+	auto s_interface = args["spark.interface"].as<std::string>();
+	auto s_port = args["spark.port"].as<std::uint16_t>();
+	auto mcast_group = args["spark.multicast_group"].as<std::string>();
+	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
+	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+
+	es::Service spark("login", service, s_interface, s_port, logger, spark_filter);
+	es::ServiceDiscovery discovery(service, s_interface, s_port, mcast_group, mcast_port,
+	                               logger, spark_filter);
+
+	ember::SessionService session_service(spark, discovery, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();
@@ -218,6 +236,10 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
+		("spark.interface,", po::value<std::string>()->required())
+		("spark.port", po::value<std::uint16_t>()->required())
+		("spark.multicast_group", po::value<std::string>()->required())
+		("spark.multicast_port", po::value<std::uint16_t>()->required())
 		("network.interface,", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::bool_switch()->default_value(true))

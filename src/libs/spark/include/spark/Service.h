@@ -37,7 +37,7 @@ class Service {
 
 	Link link_;
 	Listener listener_;
-	EventDispatcher handlers_;
+	EventDispatcher dispatcher_;
 	ServicesMap services_;
 	SessionManager sessions_;
 	HeartbeatService hb_service_;
@@ -60,8 +60,8 @@ public:
 	        std::uint16_t port, log::Logger* logger, log::Filter filter);
 	~Service();
 
+	EventDispatcher* dispatcher();
 	void connect(const std::string& host, std::uint16_t port);
-
 	Result send(const Link& link, BufferHandler fbb) const;
 	Result send_tracked(const Link& link, boost::uuids::uuid id,
 	                    BufferHandler fbb, TrackingHandler callback);

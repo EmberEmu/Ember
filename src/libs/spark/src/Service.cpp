@@ -20,14 +20,14 @@ namespace bai = boost::asio::ip;
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
-                   listener_(service, interface, port, sessions_, handlers_, services_, link_, logger, filter),
+                   listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), socket_(service), 
                    track_service_(service_, logger, filter),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
-	handlers_.register_handler(&hb_service_, messaging::Service::Service_Core, EventDispatcher::Mode::BOTH);
-	handlers_.register_handler(&track_service_, messaging::Service::Service_Tracking, EventDispatcher::Mode::CLIENT);
+	dispatcher_.register_handler(&hb_service_, messaging::Service::Service_Core, EventDispatcher::Mode::BOTH);
+	dispatcher_.register_handler(&track_service_, messaging::Service::Service_Tracking, EventDispatcher::Mode::CLIENT);
 }
 
 void Service::shutdown() {
@@ -41,7 +41,7 @@ void Service::shutdown() {
 void Service::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
-	MessageHandler m_handler(handlers_, services_, link_, true, logger_, filter_);
+	MessageHandler m_handler(dispatcher_, services_, link_, true, logger_, filter_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket),
                                                     m_handler, logger_, filter_);
 	sessions_.start(session);
@@ -114,9 +114,13 @@ auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
 	return Result::OK;
 }
 
+EventDispatcher* Service::dispatcher() {
+	return &dispatcher_;
+}
+
 Service::~Service() {
-	handlers_.remove_handler(&hb_service_);
-	handlers_.remove_handler(&track_service_);
+	dispatcher_.remove_handler(&hb_service_);
+	dispatcher_.remove_handler(&track_service_);
 }
 
 }} // spark, ember

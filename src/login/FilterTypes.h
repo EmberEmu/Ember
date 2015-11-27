@@ -14,7 +14,8 @@ enum FilterType {
 	LF_RESERVED = 1, // do not use explicitly
 	LF_MONITORING = 2,
 	LF_DB_CONN_POOL = 4,
-	LF_NETWORK = 8
+	LF_NETWORK = 8,
+	LF_SPARK = 16
 };
 
 } //ember
