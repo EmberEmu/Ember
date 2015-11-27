@@ -64,10 +64,10 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 	auto message = mcast::GetMessageRoot(buffer_.data());
 
 	switch(message->data_type()) {
-		case mcast::Data::Data_Locate:
+		case mcast::Data::Locate:
 			handle_locate(static_cast<const mcast::Locate*>(message->data()));
 			break;
-		case mcast::Data_LocateAnswer:
+		case mcast::Data::LocateAnswer:
 			handle_locate_answer(static_cast<const mcast::LocateAnswer*>(message->data()));
 			break;
 		default:
@@ -104,7 +104,7 @@ std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service s
 
 void ServiceDiscovery::locate_service(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_Locate,
+	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Locate,
 		mcast::CreateLocate(*fbb, service).Union());
 	fbb->Finish(msg);
 	send(fbb);
@@ -113,7 +113,7 @@ void ServiceDiscovery::locate_service(messaging::Service service) {
 void ServiceDiscovery::send_announce(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto ip = fbb->CreateString(address_);
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_LocateAnswer,
+	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::LocateAnswer,
 		mcast::CreateLocateAnswer(*fbb, ip, port_, service).Union());
 	fbb->Finish(msg);
 	send(fbb);
@@ -133,7 +133,7 @@ void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 }
 
 void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
-	if(message->type() == messaging::Service::Service_Reserved
+	if(message->type() == messaging::Service::Reserved
 	   || !message->ip() || !message->port()) {
 		LOG_WARN_FILTER(logger_, filter_)
 			<< "[spark] Received incompatible locate answer " << LOG_ASYNC;

@@ -8,11 +8,11 @@
 
 namespace ember.messaging;
 
-enum SessionStatus {
-	OK, SESSION_ALREADY_EXISTS, SESSION_NOT_FOUND
+enum SessionStatus : ubyte {
+	OK, SESSION_EXISTS, SESSION_NOT_FOUND
 }
 
-enum DisconnectSessionReason {
+enum DisconnectSessionReason : ubyte {
 	ACCOUNT_SUSPENDED, ACCOUNT_BANNED, PLAYER_KICKED,
 	INTERNAL_LINK_LOST
 }

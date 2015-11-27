@@ -24,10 +24,10 @@ HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Se
 
 void HeartbeatService::handle_message(const Link& link, const messaging::MessageRoot* message) {
 	switch(message->data_type()) {
-		case messaging::Data_Ping:
+		case messaging::Data::Ping:
 			handle_ping(link, message);
 			break;
-		case messaging::Data_Pong:
+		case messaging::Data::Pong:
 			handle_pong(link, message);
 			break;
 		default:
@@ -70,16 +70,16 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 
 void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
-		messaging::Data::Data_Ping, messaging::CreatePing(*fbb, time).Union());
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Core, 0, 0,
+		messaging::Data::Ping, messaging::CreatePing(*fbb, time).Union());
 	fbb->Finish(msg);
 	service_->send(link, fbb);
 }
 
 void HeartbeatService::send_pong(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
-		messaging::Data::Data_Pong, messaging::CreatePong(*fbb, time).Union());
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Core, 0, 0,
+		messaging::Data::Pong, messaging::CreatePong(*fbb, time).Union());
 	fbb->Finish(msg);
 	service_->send(link, fbb);
 }

@@ -1,5 +1,5 @@
 namespace ember.messaging;
 
-enum Service : uint {
-	Reserved, Core, Tracking, Keystone, Login
+enum Service : int {
+	Reserved, Core, Tracking, Keystone, Account
 }

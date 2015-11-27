@@ -29,6 +29,9 @@ public:
 
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+
+	void handle_tracked_message(const spark::Link& link, const messaging::MessageRoot* msg);
+	void write_session(std::uint32_t account_id, char key);
 };
 
 } //ember

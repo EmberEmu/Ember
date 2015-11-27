@@ -12,6 +12,7 @@
 #include <spark/Listener.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>
+#include <type_traits>
 
 namespace ember { namespace spark {
 
@@ -26,8 +27,8 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
-	dispatcher_.register_handler(&hb_service_, messaging::Service::Service_Core, EventDispatcher::Mode::BOTH);
-	dispatcher_.register_handler(&track_service_, messaging::Service::Service_Tracking, EventDispatcher::Mode::CLIENT);
+	dispatcher_.register_handler(&hb_service_, messaging::Service::Core, EventDispatcher::Mode::BOTH);
+	dispatcher_.register_handler(&track_service_, messaging::Service::Tracking, EventDispatcher::Mode::CLIENT);
 }
 
 void Service::shutdown() {
@@ -74,7 +75,7 @@ void Service::connect(const std::string& host, std::uint16_t port) {
 
 void Service::default_handler(const Link& link, const messaging::MessageRoot* message) {
 	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Peer sent an unknown service type, ID: "
-		<< message->data_type() << LOG_ASYNC;
+		<< static_cast<std::underlying_type<messaging::Data>::type>(message->data_type()) << LOG_ASYNC;
 }
 
 auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {

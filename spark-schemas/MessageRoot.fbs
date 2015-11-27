@@ -6,12 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+include "Account.fbs";
 include "ServiceTypes.fbs";
 include "Core.fbs";
 
 namespace ember.messaging;
 
-union Data { Ping, Pong, Banner, Negotiate }
+union Data { Ping, Pong, Banner, Negotiate,
+             SessionResponse, DisconnectSession, LocateSession, RegisterSession }
 
 table MessageRoot {
 	service:Service;

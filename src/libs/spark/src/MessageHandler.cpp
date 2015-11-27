@@ -33,8 +33,8 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 	auto in = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER)));
 	auto out = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT)));
 
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
-		messaging::Data::Data_Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Core, 0, 0,
+		messaging::Data::Negotiate, messaging::CreateNegotiate(*fbb, in, out).Union());
 
 	fbb->Finish(msg);
 	net.write(fbb);
@@ -47,8 +47,8 @@ void MessageHandler::send_banner(NetworkSession& net) {
 	auto desc = fbb->CreateString(self_.description);
 	auto uuid = fbb->CreateVector(self_.uuid.begin(), self_.uuid.size());
 
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Service_Core, 0, 0,
-		messaging::Data::Data_Banner, messaging::CreateBanner(*fbb, desc, uuid).Union());
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Core, 0, 0,
+		messaging::Data::Banner, messaging::CreateBanner(*fbb, desc, uuid).Union());
 
 	fbb->Finish(msg);
 	net.write(fbb);
@@ -57,7 +57,7 @@ void MessageHandler::send_banner(NetworkSession& net) {
 bool MessageHandler::establish_link(NetworkSession& net, const messaging::MessageRoot* message) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
-	if(message->data_type() != messaging::Data_Banner) {
+	if(message->data_type() != messaging::Data::Banner) {
 		LOG_WARN_FILTER(logger_, filter_)
 			<< "[spark] Link failed, peer did not send banner: "
 			<< net.remote_host() << LOG_ASYNC;
@@ -95,7 +95,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
-	if(message->data_type() != messaging::Data_Negotiate) {
+	if(message->data_type() != messaging::Data::Negotiate) {
 		LOG_WARN_FILTER(logger_, filter_)
 			<< "[spark] Link failed, peer did not negotiate: "
 			<< net.remote_host() << LOG_ASYNC;
@@ -112,10 +112,12 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	}
 
 	// vectors of enums are very annoying to use in FlatBuffers :(
-	std::vector<std::int32_t> remote_servers(protocols->proto_in()->begin(), protocols->proto_in()->end());
-	std::vector<std::int32_t> remote_clients(protocols->proto_out()->begin(), protocols->proto_out()->end());
-	auto our_servers = dispatcher_.services(EventDispatcher::Mode::SERVER);
-	auto our_clients = dispatcher_.services(EventDispatcher::Mode::CLIENT);
+	std::vector<std::underlying_type<messaging::Service>::type>
+		remote_servers(protocols->proto_in()->begin(), protocols->proto_in()->end());
+	std::vector<std::underlying_type<messaging::Service>::type>
+		remote_clients(protocols->proto_out()->begin(), protocols->proto_out()->end());
+	auto our_servers = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER));
+	auto our_clients = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT));
 
 	std::sort(our_servers.begin(), our_servers.end());
 	std::sort(our_clients.begin(), our_clients.end());
@@ -134,8 +136,8 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 
 	// we don't care about matches for core service
 	auto matches = std::count_if(matches_.begin(), matches_.end(),
-		[](std::int32_t service) {
-			return service != static_cast<std::int32_t>(messaging::Service::Service_Core);
+		[](auto service) {
+			return service != static_cast<std::underlying_type<messaging::Service>::type>(messaging::Service::Core);
 		}
 	);
 
@@ -177,7 +179,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 void MessageHandler::dispatch_message(const messaging::MessageRoot* message) {
 	// if there's a tracking UUID set in the message, route it through the tracking service
 	if(message->tracking_id() && message->tracking_ttl()) {
-		dispatcher_.dispatch_message(messaging::Service::Service_Tracking, peer_, message);
+		dispatcher_.dispatch_message(messaging::Service::Tracking, peer_, message);
 	} else {
 		dispatcher_.dispatch_message(message->service(), peer_, message);
 	}
