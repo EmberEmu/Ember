@@ -78,7 +78,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 	peer_.description = banner->description()->str();
 	peer_.net = std::weak_ptr<NetworkSession>(net.shared_from_this());
 
-	LOG_DEBUG_FILTER(logger_, filter_)
+	LOG_TRACE_FILTER(logger_, filter_)
 		<< "[spark] Peer banner: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 

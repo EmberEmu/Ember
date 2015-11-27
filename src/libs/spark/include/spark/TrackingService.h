@@ -42,7 +42,7 @@ class TrackingService : public EventHandler {
 	log::Filter filter_;
 	std::mutex lock_;
 
-	void timeout(boost::uuids::uuid id, const boost::system::error_code& ec);
+	void timeout(boost::uuids::uuid id, Link link, const boost::system::error_code& ec);
 
 public:
 	TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter);

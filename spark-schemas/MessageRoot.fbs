@@ -13,7 +13,7 @@ include "Core.fbs";
 namespace ember.messaging;
 
 union Data { Ping, Pong, Banner, Negotiate,
-             SessionResponse, DisconnectSession, LocateSession, RegisterSession }
+             account.Response, account.RegisterKey, account.Disconnect, account.KeyLookup, account.KeyLookupResp }
 
 table MessageRoot {
 	service:Service;

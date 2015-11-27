@@ -6,36 +6,31 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-namespace ember.messaging.account;
+namespace ember.messaging;
 
-enum Status : ubyte {
-	OK, UNKNOWN_ERROR, SESSION_NOT_FOUND
+enum SessionStatus {
+	OK, SESSION_ALREADY_EXISTS, SESSION_NOT_FOUND
 }
 
-enum DisconnectReason : ubyte {
+enum DisconnectSessionReason {
 	ACCOUNT_SUSPENDED, ACCOUNT_BANNED, PLAYER_KICKED,
 	INTERNAL_LINK_LOST
 }
 
-table RegisterKey {
-	account_id:uint;
-	key:[ubyte];
-}
-
-table KeyLookup {
+table RegisterSession {
+	session_key:[ubyte];
 	account_id:uint;
 }
 
-table KeyLookupResp {
-	account_id:uint;
-	key:[ubyte];	
+table LocateSession {
+	session_key:[ubyte];
 }
 
-table Disconnect {
-	account_id:uint;
-	reason:DisconnectReason;
+table DisconnectSession {
+	session_key:[ubyte];
+	reason:DisconnectSessionReason;
 }
 
-table Response {
-	status:Status;
+table SessionResponse {
+	status:SessionStatus;
 }

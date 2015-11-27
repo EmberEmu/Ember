@@ -12,6 +12,7 @@
 #include <spark/temp/MessageRoot_generated.h>
 #include <spark/temp/Multicast_generated.h>
 #include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <cstdint>
 
@@ -24,7 +25,8 @@ class ServiceDiscovery;
 
 //namespace messaging { struct MessageRoot; }
 
-typedef std::function<void(boost::optional<const messaging::MessageRoot*>)> TrackingHandler;
+typedef std::function<void(const spark::Link&, const boost::uuids::uuid&,
+	boost::optional<const messaging::MessageRoot*>)> TrackingHandler;
 typedef std::function<void(const Endpoint*)> ResolveCallback;
 typedef std::function<void(const messaging::multicast::LocateAnswer*)> LocateCallback;
 

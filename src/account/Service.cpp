@@ -11,22 +11,40 @@
 
 namespace ember {
 
-Service::Service(spark::Service& spark, log::Logger* logger) : spark_(spark), logger_(logger) { 
-	spark_.dispatcher()->register_handler(this, messaging::Service::Service_Login,
-	                                      spark::EventDispatcher::Mode::SERVER);
+Service::Service(spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger)
+                 : spark_(spark), discovery_(discovery), logger_(logger) {
+	spark_.dispatcher()->register_handler(this, messaging::Service::Account, spark::EventDispatcher::Mode::SERVER);
+	discovery_.register_service(messaging::Service::Account);
 }
 
 Service::~Service() {
+	discovery_.remove_service(messaging::Service::Account);
 	spark_.dispatcher()->remove_handler(this);
 }
 
 void Service::handle_message(const spark::Link& link, const messaging::MessageRoot* msg) {
-	LOG_DEBUG(logger_) << "Message" << LOG_ASYNC;
+	switch(msg->data_type()) {
+		case messaging::Data::RegisterSession:
+			register_session(link, static_cast<const messaging::RegisterSession*>(msg->data()));
+			break;
+		case messaging::Data::LocateSession:
+			locate_session(link, static_cast<const messaging::LocateSession*>(msg->data()));
+			break;
+		default:
+			LOG_DEBUG(logger_) << "Service received unhandled message type" << LOG_ASYNC;
+	}
+}
+
+void Service::register_session(const spark::Link& link, const messaging::RegisterSession* msg) {
+
+}
+
+void Service::locate_session(const spark::Link& link, const messaging::LocateSession* msg) {
+
 }
 
 void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
 	LOG_DEBUG(logger_) << "Link" << LOG_ASYNC;
 }
-
 
 } //ember

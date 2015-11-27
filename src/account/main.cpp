@@ -72,11 +72,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
-	es::Service spark("account-daemon", service, s_address, s_port, logger, spark_filter);
+	es::Service spark("account", service, s_address, s_port, logger, spark_filter);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
-	discovery.register_service(ember::messaging::Service::Service_Login);
-	ember::Service net_service(spark, logger);
+
+	ember::Service net_service(spark, discovery, logger);
 
 	service.run();
 

@@ -42,7 +42,7 @@ void TrackingService::handle_message(const Link& link, const messaging::MessageR
 			<< "[spark] Tracked message receipient != sender" << LOG_ASYNC;
 	}
 
-	handler->handler(boost::optional<const messaging::MessageRoot*>(message));
+	handler->handler(link, uuid, boost::optional<const messaging::MessageRoot*>(message));
 } catch(std::out_of_range) {
 	LOG_DEBUG_FILTER(logger_, filter_)
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
@@ -58,13 +58,13 @@ void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
 
 	auto request = std::make_unique<Request>(service_, id, link, handler);
 	request->timer.expires_from_now(timeout);
-	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, std::placeholders::_1));
+	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, link, std::placeholders::_1));
 
 	std::lock_guard<std::mutex> guard(lock_);
 	handlers_[id] = std::move(request);
 }
 
-void TrackingService::timeout(boost::uuids::uuid id, const boost::system::error_code& ec) {
+void TrackingService::timeout(boost::uuids::uuid id, Link link, const boost::system::error_code& ec) {
 	if(ec) { // timer was cancelled
 		return;
 	}
@@ -75,7 +75,7 @@ void TrackingService::timeout(boost::uuids::uuid id, const boost::system::error_
 	handlers_.erase(id);
 	guard.unlock();
 
-	handler->handler(boost::optional<const messaging::MessageRoot*>());
+	handler->handler(link, id, boost::optional<const messaging::MessageRoot*>());
 }
 
 void TrackingService::shutdown() {
