@@ -17,18 +17,18 @@ namespace mcast = ember::messaging::multicast;
 namespace ember { namespace spark {
 
 ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
-                                   const std::string& interface, std::uint16_t port,           // Spark TCP details
-                                   const std::string& mcast_group, std::uint16_t mcast_port,   // Spark UDP multicast details
-                                   log::Logger* logger, log::Filter filter)
-                                   : interface_(bai::address::from_string(interface)),
+                                   std::string address, std::uint16_t port,
+                                   const std::string& mcast_iface, const std::string& mcast_group,
+								   std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
+                                   : address_(std::move(address)), port_(port),
                                      socket_(service), logger_(logger), filter_(filter),
-                                     service_(service) {
-	boost::asio::ip::udp::endpoint listen_endpoint(interface_, mcast_port);
+                                     service_(service), endpoint_(bai::address::from_string(mcast_group), mcast_port) {
+	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
 	socket_.open(listen_endpoint.protocol());
 	socket_.set_option(bai::udp::socket::reuse_address(true));
 	socket_.bind(listen_endpoint);
-
+	
 	socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
 	receive();
 }
@@ -112,7 +112,7 @@ void ServiceDiscovery::locate_service(messaging::Service service) {
 
 void ServiceDiscovery::send_announce(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto ip = fbb->CreateString(interface_.to_string());
+	auto ip = fbb->CreateString(address_);
 	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Data_LocateAnswer,
 		mcast::CreateLocateAnswer(*fbb, ip, port_, service).Union());
 	fbb->Finish(msg);

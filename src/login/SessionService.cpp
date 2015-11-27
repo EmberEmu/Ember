@@ -7,6 +7,7 @@
  */
 
 #include "SessionService.h"
+#include <functional>
 
 namespace ember {
 
@@ -14,6 +15,9 @@ SessionService::SessionService(spark::Service& spark, spark::ServiceDiscovery& s
                                : spark_(spark), s_disc_(s_disc), logger_(logger) {
 	spark_.dispatcher()->register_handler(this, messaging::Service::Service_Login,
 	                                      spark::EventDispatcher::Mode::CLIENT);
+	listener_ = std::move(s_disc_.listener(messaging::Service::Service_Login,
+	                      std::bind(&SessionService::service_located, this, std::placeholders::_1)));
+	listener_->search();
 }
 
 SessionService::~SessionService() {
@@ -26,6 +30,11 @@ void SessionService::handle_message(const spark::Link& link, const messaging::Me
 
 void SessionService::handle_link_event(const spark::Link& link, spark::LinkState event) {
 	LOG_DEBUG(logger_) << "Link" << LOG_ASYNC;
+}
+
+void SessionService::service_located(const messaging::multicast::LocateAnswer* message) {
+	LOG_DEBUG(logger_) << "Found service" << LOG_ASYNC;
+	spark_.connect(message->ip()->str(), message->port());
 }
 
 } //ember

@@ -135,15 +135,16 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start Spark services
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
-	auto s_interface = args["spark.interface"].as<std::string>();
+	auto s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 	auto mcast_group = args["spark.multicast_group"].as<std::string>();
+	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
-	es::Service spark("login", service, s_interface, s_port, logger, spark_filter);
-	es::ServiceDiscovery discovery(service, s_interface, s_port, mcast_group, mcast_port,
-	                               logger, spark_filter);
+	es::Service spark("login", service, s_address, s_port, logger, spark_filter);
+	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
+	                               mcast_port, logger, spark_filter);
 
 	ember::SessionService session_service(spark, discovery, logger);
 
@@ -236,8 +237,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
-		("spark.interface,", po::value<std::string>()->required())
+		("spark.address,", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
+		("spark.multicast_interface,", po::value<std::string>()->required())
 		("spark.multicast_group", po::value<std::string>()->required())
 		("spark.multicast_port", po::value<std::uint16_t>()->required())
 		("network.interface,", po::value<std::string>()->required())

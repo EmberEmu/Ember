@@ -11,13 +11,17 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <logger/Logging.h>
+#include <memory>
 
 namespace ember {
 
-class SessionService : public spark::EventHandler {
+class SessionService final : public spark::EventHandler {
 	spark::Service& spark_;
 	spark::ServiceDiscovery& s_disc_;
 	log::Logger* logger_;
+	std::unique_ptr<spark::ServiceListener> listener_;
+	
+	void service_located(const messaging::multicast::LocateAnswer* message);
 
 public:
 	SessionService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);

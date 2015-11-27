@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/Common.h>
+#include <spark/ServiceListener.h>
 #include <spark/temp/ServiceTypes_generated.h>
 #include <spark/temp/Multicast_generated.h>
 #include <logger/Logging.h>
@@ -26,15 +27,10 @@
 
 namespace ember { namespace spark {
 
-using namespace std::chrono_literals;
-
-typedef boost::asio::basic_waitable_timer<std::chrono::steady_clock> Timer;
-class ServiceListener;
-
 class ServiceDiscovery {
 	static const std::size_t BUFFER_SIZE = 1024;
 
-	boost::asio::ip::address interface_;
+	std::string address_;
 	std::uint16_t port_;
 	boost::asio::io_service& service_;
 	boost::asio::ip::udp::socket socket_;
@@ -61,15 +57,12 @@ class ServiceDiscovery {
 
 	void locate_service(messaging::Service);
 	void handle_receive(const boost::system::error_code& ec, std::size_t size);
-	void unannounced_timer_set(std::shared_ptr<Timer> timer, messaging::Service service, std::uint8_t ticks);
-	void unsolicited_announce(const boost::system::error_code& ec, std::shared_ptr<Timer> timer,
-	                          messaging::Service service, std::uint8_t count);
 
 public:
 	ServiceDiscovery(boost::asio::io_service& service,
-	                 const std::string& interface, std::uint16_t port, 
-					 const std::string& mcast_group, std::uint16_t mcast_port,
-	                 log::Logger* logger, log::Filter filter);
+	                 std::string address, std::uint16_t port, 
+					 const std::string& mcast_iface, const std::string& mcast_group,
+	                 std::uint16_t mcast_port, log::Logger* logger, log::Filter filter);
 
 	void register_service(messaging::Service service);
 	void remove_service(messaging::Service service);
