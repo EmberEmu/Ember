@@ -43,7 +43,6 @@ class HeartbeatService : public EventHandler {
 public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
 	                 log::Logger* logger, log::Filter filter);
-	~HeartbeatService();
 
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_link_event(const Link& link, LinkState state);

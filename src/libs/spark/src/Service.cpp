@@ -22,17 +22,17 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, handlers_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), socket_(service), 
-                   track_service__(service_, logger, filter),
+                   track_service_(service_, logger, filter),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
 
 	handlers_.register_handler(&hb_service_, messaging::Service::Service_Core, EventDispatcher::Mode::BOTH);
-	handlers_.register_handler(&track_service__, messaging::Service::Service_Tracking, EventDispatcher::Mode::CLIENT);
+	handlers_.register_handler(&track_service_, messaging::Service::Service_Tracking, EventDispatcher::Mode::CLIENT);
 }
 
 void Service::shutdown() {
 	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Service shutting down..." << LOG_ASYNC;
-	track_service__.shutdown();
+	track_service_.shutdown();
 	hb_service_.shutdown();
 	listener_.shutdown();
 	sessions_.stop_all();
@@ -92,7 +92,7 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 
 auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
                            BufferHandler fbb, TrackingHandler callback) -> Result {
-	track_service__.register_tracked(link, id, callback, std::chrono::seconds(5));
+	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
 	return send(link, fbb);
 }
 
@@ -112,6 +112,11 @@ auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
 		}
 	}
 	return Result::OK;
+}
+
+Service::~Service() {
+	handlers_.remove_handler(&hb_service_);
+	handlers_.remove_handler(&track_service_);
 }
 
 }} // spark, ember

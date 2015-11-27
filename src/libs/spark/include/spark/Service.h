@@ -41,7 +41,7 @@ class Service {
 	ServicesMap services_;
 	SessionManager sessions_;
 	HeartbeatService hb_service_;
-	TrackingService track_service__;
+	TrackingService track_service_;
 
 	log::Logger* logger_;
 	log::Filter filter_;
@@ -58,6 +58,7 @@ public:
 
 	Service(std::string description, boost::asio::io_service& service, const std::string& interface,
 	        std::uint16_t port, log::Logger* logger, log::Filter filter);
+	~Service();
 
 	void connect(const std::string& host, std::uint16_t port);
 
