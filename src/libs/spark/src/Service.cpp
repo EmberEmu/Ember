@@ -18,7 +18,7 @@ namespace ember { namespace spark {
 namespace bai = boost::asio::ip;
 
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-                 std::uint16_t port, std::string mcast_group, std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
+                 std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, handlers_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), socket_(service), 

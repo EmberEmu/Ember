@@ -57,8 +57,7 @@ public:
 	enum class Result { OK, LINK_GONE };
 
 	Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-	        std::uint16_t port, std::string mcast_group, std::uint16_t mcast_port,
-	        log::Logger* logger, log::Filter filter);
+	        std::uint16_t port, log::Logger* logger, log::Filter filter);
 
 	void connect(const std::string& host, std::uint16_t port);
 
