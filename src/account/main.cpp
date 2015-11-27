@@ -30,6 +30,7 @@
 #include <cstdint>
 
 namespace el = ember::log;
+namespace es = ember::spark;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 
@@ -68,9 +69,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto port = args["spark.port"].as<std::uint16_t>();
 	auto mcast_group = args["spark.multicast_group"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
+	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
-	ember::spark::Service spark("account-daemon", service, interface, port, mcast_group, mcast_port,
-	                            logger, el::Filter(ember::FilterType::LF_SPARK));
+	es::Service spark("account-daemon", service, interface, port, logger, spark_filter);
+	es::ServiceDiscovery discovery(service, interface, port, mcast_group, mcast_port, logger, spark_filter);
 
 	service.run();
 

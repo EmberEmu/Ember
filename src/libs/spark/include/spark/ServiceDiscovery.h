@@ -67,8 +67,8 @@ class ServiceDiscovery {
 
 public:
 	ServiceDiscovery(boost::asio::io_service& service,
-	                 boost::asio::ip::address interface, std::uint16_t port, 
-	                 boost::asio::ip::address mcast_group, std::uint16_t mcast_port,
+	                 const std::string& interface, std::uint16_t port, 
+					 const std::string& mcast_group, std::uint16_t mcast_port,
 	                 log::Logger* logger, log::Filter filter);
 
 	void register_service(messaging::Service service);

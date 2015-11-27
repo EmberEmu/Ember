@@ -17,17 +17,19 @@ namespace mcast = ember::messaging::multicast;
 namespace ember { namespace spark {
 
 ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
-                                   bai::address interface, std::uint16_t port,           // Spark TCP details
-                                   bai::address mcast_address, std::uint16_t mcast_port, // Spark UDP multicast details
+                                   const std::string& interface, std::uint16_t port,           // Spark TCP details
+                                   const std::string& mcast_group, std::uint16_t mcast_port,   // Spark UDP multicast details
                                    log::Logger* logger, log::Filter filter)
-                                   : socket_(service), logger_(logger), filter_(filter), service_(service) {
-	boost::asio::ip::udp::endpoint listen_endpoint(interface, mcast_port);
+                                   : interface_(bai::address::from_string(interface)),
+                                     socket_(service), logger_(logger), filter_(filter),
+                                     service_(service) {
+	boost::asio::ip::udp::endpoint listen_endpoint(interface_, mcast_port);
 
 	socket_.open(listen_endpoint.protocol());
 	socket_.set_option(bai::udp::socket::reuse_address(true));
 	socket_.bind(listen_endpoint);
 
-	socket_.set_option(bai::multicast::join_group(mcast_address));
+	socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
 	receive();
 }
 
