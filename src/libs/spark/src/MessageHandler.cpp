@@ -184,8 +184,6 @@ void MessageHandler::dispatch_message(const messaging::MessageRoot* message) {
 }
 
 bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::uint8_t>& buffer) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
-
 	flatbuffers::Verifier verifier(buffer.data(), buffer.size());
 
 	if(!messaging::VerifyMessageRootBuffer(verifier)) {
