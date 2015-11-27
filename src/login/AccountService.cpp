@@ -52,7 +52,7 @@ void AccountService::service_located(const messaging::multicast::LocateAnswer* m
 }
 
 void AccountService::handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                           boost::optional<const em::MessageRoot*> opt_msg, StartCB cb) {
+                                           boost::optional<const em::MessageRoot*> opt_msg, RegisterCB cb) {
 	if(!opt_msg || (*opt_msg)->data_type() != messaging::Data::Response) {
 		cb(Result::SERVER_LINK_FAILURE);
 		return;
@@ -85,7 +85,7 @@ void AccountService::handle_locate_reply(const spark::Link& link, const boost::u
 	cb(Result::OK, Botan::BigInt(key->data(), key->size()));
 }
 
-void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) {
+void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
@@ -102,7 +102,7 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) {
 }
 
 
-void AccountService::register_session(std::uint32_t account_id, const srp6::SessionKey& key, StartCB cb) {
+void AccountService::register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());

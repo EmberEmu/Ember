@@ -22,7 +22,7 @@ class AccountService final : public spark::EventHandler {
 public:
 	enum class Result { OK, SERVER_LINK_FAILURE };
 
-	typedef std::function<void(Result)> StartCB;
+	typedef std::function<void(Result)> RegisterCB;
 	typedef std::function<void(Result, boost::optional<Botan::BigInt>)> LocateCB;
 
 private:
@@ -30,12 +30,12 @@ private:
 	spark::ServiceDiscovery& s_disc_;
 	log::Logger* logger_;
 	std::unique_ptr<spark::ServiceListener> listener_;
-	boost::uuids::random_generator generate_uuid; // functor
+	mutable boost::uuids::random_generator generate_uuid; // functor
 	spark::Link link_;
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 	void handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> opt_msg, StartCB cb);
+	                           boost::optional<const messaging::MessageRoot*> opt_msg, RegisterCB cb);
 	void handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
 	                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb);
 
@@ -46,8 +46,8 @@ public:
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 
-	void register_session(std::uint32_t account_id, const srp6::SessionKey& key, StartCB cb);
-	void locate_session(std::uint32_t account_id, LocateCB cb);
+	void register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const;
+	void locate_session(std::uint32_t account_id, LocateCB cb) const;
 };
 
 } //ember
