@@ -44,15 +44,15 @@ void ServicesMap::remove_peer(const Link& link) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto& list : peer_servers_) {
-		std::remove_if(list.second.begin(), list.second.end(), [&](const auto& arg) {
+		list.second.erase_after(std::remove_if(list.second.begin(), list.second.end(), [&](const auto& arg) {
 			return link == arg;
-		});
+		}), list.second.end());
 	}
 
 	for(auto& list : peer_clients_) {
-		std::remove_if(list.second.begin(), list.second.end(), [&](const auto& arg) {
+		list.second.erase_after(std::remove_if(list.second.begin(), list.second.end(), [&](const auto& arg) {
 			return link == arg;
-		});
+		}), list.second.end());
 	}
 }
 

@@ -15,6 +15,7 @@
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/optional.hpp>
+#include <functional>
 #include <memory>
 
 namespace ember {

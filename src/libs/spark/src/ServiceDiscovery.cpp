@@ -92,7 +92,7 @@ void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb)
 void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
 	std::lock_guard<std::mutex> guard(lock_);
 	auto& vec = listeners_[listener->service()];
-	std::remove(vec.begin(), vec.end(), listener);
+	vec.erase(std::remove(vec.begin(), vec.end(), listener), vec.end());
 }
 
 std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service, LocateCallback cb) {
@@ -156,7 +156,7 @@ void ServiceDiscovery::register_service(messaging::Service service) {
 
 void ServiceDiscovery::remove_service(messaging::Service service) {
 	std::lock_guard<std::mutex> guard(lock_);
-	std::remove(services_.begin(), services_.end(), service);
+	services_.erase(std::remove(services_.begin(), services_.end(), service), services_.end());
 }
 
 }} // spark, ember

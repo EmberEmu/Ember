@@ -7,9 +7,7 @@
  */
 
 #include "AccountService.h"
-#include <spark/temp/Account_generated.h>
 #include <boost/uuid/uuid.hpp>
-#include <functional>
 
 namespace em = ember::messaging;
 

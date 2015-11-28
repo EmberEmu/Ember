@@ -50,7 +50,8 @@ void Service::start_session(boost::asio::ip::tcp::socket socket) {
 
 void Service::do_connect(const std::string& host, std::uint16_t port) {
 	bai::tcp::resolver resolver(service_);
-	auto endpoint_it = resolver.resolve({ host, std::to_string(port) });
+	auto port_str = std::to_string(port);
+	auto endpoint_it = resolver.resolve({ host, port_str });
 
 	boost::asio::async_connect(socket_, endpoint_it,
 		[this, host, port](boost::system::error_code ec, bai::tcp::resolver::iterator it) {
