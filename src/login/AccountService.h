@@ -14,6 +14,7 @@
 #include <logger/Logging.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/optional.hpp>
 #include <memory>
 
 namespace ember {
@@ -35,9 +36,9 @@ private:
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 	void handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> opt_msg, RegisterCB cb);
+	                           boost::optional<const messaging::MessageRoot*> opt_msg, RegisterCB cb) const;
 	void handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb);
+	                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb) const;
 
 public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);

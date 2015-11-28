@@ -16,8 +16,7 @@ namespace em = ember::messaging;
 namespace ember {
 
 AccountService::AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger)
-                               : spark_(spark), s_disc_(s_disc), logger_(logger),
-                                 generate_uuid(boost::uuids::random_generator()) {
+                               : spark_(spark), s_disc_(s_disc), logger_(logger) {
 	spark_.dispatcher()->register_handler(this, messaging::Service::Account, spark::EventDispatcher::Mode::CLIENT);
 
 	listener_ = std::move(s_disc_.listener(messaging::Service::Account,
@@ -52,7 +51,7 @@ void AccountService::service_located(const messaging::multicast::LocateAnswer* m
 }
 
 void AccountService::handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                           boost::optional<const em::MessageRoot*> opt_msg, RegisterCB cb) {
+                                           boost::optional<const em::MessageRoot*> opt_msg, RegisterCB cb) const {
 	if(!opt_msg || (*opt_msg)->data_type() != messaging::Data::Response) {
 		cb(Result::SERVER_LINK_FAILURE);
 		return;
@@ -68,7 +67,7 @@ void AccountService::handle_register_reply(const spark::Link& link, const boost:
 }
 
 void AccountService::handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb) {
+                                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb) const {
 	if(!opt_msg || (*opt_msg)->data_type() != messaging::Data::KeyLookup) {
 		cb(Result::SERVER_LINK_FAILURE, Botan::BigInt());
 		return;
@@ -92,7 +91,6 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 1,
 		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account_id).Union());
 	fbb->Finish(msg);
-
 	auto track_cb = std::bind(&AccountService::handle_locate_reply, this, std::placeholders::_1,
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 

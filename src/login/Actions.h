@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include "AccountService.h"
 #include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
 #include <boost/optional.hpp>
 #include <exception>
+#include <future>
 #include <string>
 #include <utility>
 
@@ -24,6 +26,39 @@ protected:
 public:
 	virtual void execute() = 0;
 	virtual ~Action() = default;
+};
+
+class TestAction final : public Action {
+	std::promise<int> result_;
+	const AccountService& account_svc_;
+	std::uint32_t account_id;
+	std::exception_ptr exception_;
+	int temp_;
+
+	void callback(AccountService::Result result, boost::optional<Botan::BigInt> key) {
+		result_.set_value(52);
+	}
+
+	std::future<int> locate() {
+		account_svc_.locate_session(5, std::bind(&TestAction::callback, this,
+			std::placeholders::_1, std::placeholders::_2));
+		return result_.get_future();
+	}
+
+public:
+	TestAction(const AccountService& account_svc, std::uint32_t acct_id)
+	           : account_svc_(account_svc), account_id(account_id) { }
+
+	virtual void execute() override try {
+		std::future<int> foo = locate();
+		temp_ = foo.get();
+	} catch(std::exception) {
+		exception_ = std::current_exception();
+	}
+
+	int get_result() {
+		return temp_;
+	}
 };
 
 class FetchSessionKeyAction final : public Action {

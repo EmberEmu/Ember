@@ -93,8 +93,15 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 
 auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
                            BufferHandler fbb, TrackingHandler callback) -> Result {
+	auto net = link.net.lock();
+
+	if(!net) {
+		return Result::LINK_GONE;
+	}
+
 	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
-	return send(link, fbb);
+	net->write(fbb);
+	return Result::OK;
 }
 
 auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,

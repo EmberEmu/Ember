@@ -13,8 +13,6 @@
 #include <spark/temp/Multicast_generated.h>
 #include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <string>
-#include <cstdint>
 
 namespace ember { namespace spark {
 

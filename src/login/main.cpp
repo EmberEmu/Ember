@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Actions.h" // temp
 #include "FilterTypes.h"
 #include "GameVersion.h"
 #include "SessionBuilders.h"
@@ -237,30 +238,30 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
-		("spark.address,", po::value<std::string>()->required())
+		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
-		("spark.multicast_interface,", po::value<std::string>()->required())
+		("spark.multicast_interface", po::value<std::string>()->required())
 		("spark.multicast_group", po::value<std::string>()->required())
 		("spark.multicast_port", po::value<std::uint16_t>()->required())
-		("network.interface,", po::value<std::string>()->required())
+		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::bool_switch()->default_value(true))
-		("console_log.verbosity,", po::value<std::string>()->required())
-		("console_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.verbosity,", po::value<std::string>()->required())
-		("remote_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.service_name,", po::value<std::string>()->required())
-		("remote_log.host,", po::value<std::string>()->required())
-		("remote_log.port,", po::value<std::uint16_t>()->required())
-		("file_log.verbosity,", po::value<std::string>()->required())
-		("file_log.filter-mask,", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path,", po::value<std::string>()->default_value("login.log"))
-		("file_log.timestamp_format,", po::value<std::string>())
-		("file_log.mode,", po::value<std::string>()->required())
-		("file_log.size_rotate,", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate,", po::bool_switch()->required())
-		("file_log.log_timestamp,", po::bool_switch()->required())
-		("file_log.log_severity,", po::bool_switch()->required())
+		("console_log.verbosity", po::value<std::string>()->required())
+		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("remote_log.verbosity", po::value<std::string>()->required())
+		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", po::value<std::string>()->required())
+		("remote_log.host", po::value<std::string>()->required())
+		("remote_log.port", po::value<std::uint16_t>()->required())
+		("file_log.verbosity", po::value<std::string>()->required())
+		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("file_log.path", po::value<std::string>()->default_value("login.log"))
+		("file_log.timestamp_format", po::value<std::string>())
+		("file_log.mode", po::value<std::string>()->required())
+		("file_log.size_rotate", po::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", po::bool_switch()->required())
+		("file_log.log_timestamp", po::bool_switch()->required())
+		("file_log.log_severity", po::bool_switch()->required())
 		("database.config_path", po::value<std::string>()->required())
 		("database.min_connections", po::value<unsigned short>()->required())
 		("database.max_connections", po::value<unsigned short>()->required())
