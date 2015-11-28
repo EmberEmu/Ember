@@ -15,8 +15,7 @@ namespace ember {
 
 AccountService::AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger)
                                : spark_(spark), s_disc_(s_disc), logger_(logger) {
-	spark_.dispatcher()->register_handler(this, messaging::Service::Account, spark::EventDispatcher::Mode::CLIENT);
-
+	spark_.dispatcher()->register_handler(this, em::Service::Account, spark::EventDispatcher::Mode::CLIENT);
 	listener_ = std::move(s_disc_.listener(messaging::Service::Account,
 	                      std::bind(&AccountService::service_located, this, std::placeholders::_1)));
 	listener_->search();
@@ -38,13 +37,13 @@ void AccountService::handle_link_event(const spark::Link& link, spark::LinkState
 			link_ = link;
 			break;
 		case spark::LinkState::LINK_DOWN:
-			LOG_WARN(logger_) << "Link to account server lost" << LOG_ASYNC;
+			LOG_INFO(logger_) << "Link to account server closed" << LOG_ASYNC;
 			break;
 	}
 }
 
 void AccountService::service_located(const messaging::multicast::LocateAnswer* message) {
-	LOG_DEBUG(logger_) << "Found service" << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Located account service at" << message->ip()->str() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());
 }
 
@@ -116,4 +115,4 @@ void AccountService::register_session(std::uint32_t account_id, const srp6::Sess
 	}
 }
 
-} //ember
+} // ember

@@ -49,8 +49,11 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	switch(state_) {
-		case State::FETCHING_USER:
+		case State::FETCHING_USER_LOGIN:
 			send_login_challenge(static_cast<FetchUserAction*>(action.get()));
+			break;
+		case State::FETCHING_USER_RECONNECT:
+			fetch_session_key(static_cast<FetchUserAction*>(action.get()));
 			break;
 		case State::FETCHING_SESSION:
 			send_reconnect_challenge(static_cast<FetchSessionKeyAction*>(action.get()));
@@ -92,7 +95,7 @@ void LoginHandler::process_challenge(const grunt::Packet* packet) {
 
 	switch(patch_level) {
 		case Patcher::PatchLevel::OK:
-			accept_client(challenge->opcode, challenge->username);
+			fetch_user(challenge->opcode, challenge->username);
 			break;
 		case Patcher::PatchLevel::TOO_NEW:
 		case Patcher::PatchLevel::TOO_OLD:
@@ -110,22 +113,35 @@ void LoginHandler::patch_client(const GameVersion& version) {
 	//write(packet);
 }
 
-void LoginHandler::accept_client(grunt::Opcode opcode, const std::string& username) {
-	std::shared_ptr<Action> action;
+void LoginHandler::fetch_user(grunt::Opcode opcode, const std::string& username) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	switch(opcode) {
 		case grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE:
-			action = std::make_shared<FetchUserAction>(username, user_src_);
-			state_ = State::FETCHING_USER;
+			state_ = State::FETCHING_USER_LOGIN;
 			break;
 		case grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
-			action = std::make_shared<FetchSessionKeyAction>(username, user_src_);
-			state_ = State::FETCHING_SESSION;
+			state_ = State::FETCHING_USER_RECONNECT;
 			break;
 		default:
-			BOOST_ASSERT_MSG(false, "Impossible accept_client condition");
+			state_ = State::CLOSED;
+			BOOST_ASSERT_MSG(false, "Impossible fetch_user condition");
 	}
 
+	auto action = std::make_shared<FetchUserAction>(username, user_src_);
+	execute_async(action);
+}
+
+void LoginHandler::fetch_session_key(FetchUserAction* action_res) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	if(!(user_ = action_res->get_result())) {
+		LOG_DEBUG(logger_) << "Account not found: " << action_res->username() << LOG_ASYNC;
+		return;
+	}
+
+	state_ = State::FETCHING_SESSION;
+	auto action = std::make_shared<FetchSessionKeyAction>(acct_svc_, user_->id());
 	execute_async(action);
 }
 
@@ -199,20 +215,18 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	auto rand = Botan::AutoSeeded_RNG().random_vec(response->rand.size());
 	std::copy(rand.begin(), rand.end(), response->rand.data());
 
-	try {
-		boost::optional<std::string> key = action->get_result();
+	auto res = action->get_result();
 
-		if(key) {
+	if(res.first == AccountService::Result::OK) {
+		if(res.second) {
 			state_ = State::RECONNECT_PROOF;
-			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(action->username(), *key, rand);
+			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), *res.second, rand);
 		} else {
 			response->result = grunt::ResultCode::FAIL_NOACCESS;
 		}
-	} catch(dal::exception& e) {
+	} else{
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
-		LOG_ERROR(logger_) << "Retrieving key for " << action->username()
-		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
 	send(std::move(response));
@@ -247,7 +261,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
-		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, 6, login_auth_->session_key());
+		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->id(), login_auth_->session_key());
 		execute_async(action);
 	} else {
 		state_ = State::CLOSED;
@@ -297,8 +311,10 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	}
 
 	if(reconn_auth_->proof_check(proof)) {
+		metrics_.increment("login_success");
 		LOG_DEBUG(logger_) << "Successfully reconnected " << reconn_auth_->username() << LOG_ASYNC;
 	} else {
+		metrics_.increment("login_failure");
 		LOG_DEBUG(logger_) << "Failed to reconnect " << reconn_auth_->username() << LOG_ASYNC;
 		return;
 	}

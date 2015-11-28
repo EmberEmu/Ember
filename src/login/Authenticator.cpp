@@ -48,11 +48,11 @@ srp6::SessionKey LoginAuthenticator::session_key() {
 	return sess_key_;
 }
 
-ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const std::string& session_key,
+ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
                                                const Botan::SecureVector<Botan::byte>& bytes)
                                                : rcon_user_(std::move(username)) {
 	rcon_chall_ = bytes;
-	sess_key_ = Botan::BigInt::encode(Botan::BigInt(session_key));
+	sess_key_ = Botan::BigInt::encode(session_key);
 }
 
 bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof* proof) {

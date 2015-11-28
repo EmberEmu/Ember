@@ -22,7 +22,7 @@ class ReconnectAuthenticator {
 	srp6::SessionKey sess_key_;
 
 public:
-	ReconnectAuthenticator(std::string username, const std::string& session_key,
+	ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
 	                       const Botan::SecureVector<Botan::byte>& bytes);
 	bool proof_check(const grunt::client::ReconnectProof* proof);
 	std::string username() { return rcon_user_; } // todo

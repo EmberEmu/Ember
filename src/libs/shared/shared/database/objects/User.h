@@ -14,6 +14,7 @@
 namespace ember {
 
 class User {
+	std::uint32_t id_;
 	std::string user_;
 	std::string v_;
 	std::string s_;
@@ -21,10 +22,15 @@ class User {
 	bool suspended_;
 
 public:
-	User(std::string username, std::string salt, std::string verifier, bool banned, bool suspended)
-	    : user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)) {
+	User(std::uint32_t id, std::string username, std::string salt, std::string verifier,
+	     bool banned, bool suspended) : id_(id), user_(std::move(username)),
+	     s_(std::move(salt)), v_(std::move(verifier)) {
 		banned_ = banned;
 		suspended_ = suspended;
+	}
+
+	std::uint32_t id() const {
+		return id_;
 	}
 
 	std::string verifier() const {

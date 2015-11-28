@@ -13,7 +13,7 @@
 
 namespace ember {
 
-class Service : public spark::EventHandler {
+class Service final : public spark::EventHandler {
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
@@ -29,4 +29,4 @@ public:
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 };
 
-} //ember
+} // ember

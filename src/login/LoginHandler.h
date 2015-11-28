@@ -34,7 +34,8 @@ class Metrics;
 class LoginHandler {
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
-		FETCHING_USER, FETCHING_SESSION, WRITING_SESSION, CLOSED
+		FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT, FETCHING_SESSION,
+		WRITING_SESSION, CLOSED
 	};
 
 	State state_ = State::INITIAL_CHALLENGE;
@@ -60,7 +61,8 @@ class LoginHandler {
 	void send_login_success(RegisterSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 
-	void accept_client(grunt::Opcode opcode, const std::string& username);
+	void fetch_user(grunt::Opcode opcode, const std::string& username);
+	void fetch_session_key(FetchUserAction* action);
 	void reject_client(const GameVersion& version);
 	void patch_client(const GameVersion& version);
 

@@ -52,4 +52,4 @@ public:
 	void locate_session(std::uint32_t account_id, LocateCB cb) const;
 };
 
-} //ember
+} // ember

@@ -42,8 +42,8 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			User user(res->getString("username"), res->getString("s"), res->getString("v"),
-			          res->getBoolean("banned"), res->getBoolean("suspended"));
+			User user(res->getUInt("id"), res->getString("username"), res->getString("s"),
+			          res->getString("v"), res->getBoolean("banned"), res->getBoolean("suspended"));
 			return user;
 		}
 
