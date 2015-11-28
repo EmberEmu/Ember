@@ -56,7 +56,7 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 			send_reconnect_challenge(static_cast<FetchSessionKeyAction*>(action.get()));
 			break;
 		case State::WRITING_SESSION:
-			send_login_success(static_cast<StoreSessionAction*>(action.get()));
+			send_login_success(static_cast<RegisterSessionAction*>(action.get()));
 			break;
 		case State::CLOSED:
 			return false;
@@ -229,7 +229,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 
 	auto proof = login_auth_->proof_check(proof_packet);
 	auto result = grunt::ResultCode::FAIL_INCORRECT_PASSWORD;
-
+	
 	if(proof.match) {
 		if(user_->banned()) {
 			result = grunt::ResultCode::FAIL_BANNED;
@@ -247,7 +247,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
-		auto action = std::make_shared<StoreSessionAction>(*user_, source_, login_auth_->session_key(), user_src_);
+		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, 6, login_auth_->session_key());
 		execute_async(action);
 	} else {
 		state_ = State::CLOSED;
@@ -266,17 +266,24 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	send(std::move(response));
 }
 
-void LoginHandler::send_login_success(StoreSessionAction* action) {
+void LoginHandler::send_login_success(RegisterSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	metrics_.increment("login_success");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
 	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
-	response->result = grunt::ResultCode::SUCCESS;
-	response->M2 = server_proof_;
-	response->account_flags = 0;
 
-	state_ = State::REQUEST_REALMS;
+	if(action->get_result() == AccountService::Result::OK) {
+		metrics_.increment("login_success");
+		response->result = grunt::ResultCode::SUCCESS;
+		response->M2 = server_proof_;
+		response->account_flags = 0;
+		state_ = State::REQUEST_REALMS;
+	} else {
+		metrics_.increment("login_internal_failure");
+		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		state_ = State::REQUEST_REALMS;
+	}
+
 	send(std::move(response));
 }
 

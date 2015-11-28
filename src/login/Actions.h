@@ -16,7 +16,7 @@
 #include <future>
 #include <string>
 #include <utility>
-
+#include <iostream>
 namespace ember {
 
 class Action {
@@ -28,36 +28,39 @@ public:
 	virtual ~Action() = default;
 };
 
-class TestAction final : public Action {
-	std::promise<int> result_;
+class RegisterSessionAction final : public Action {
 	const AccountService& account_svc_;
-	std::uint32_t account_id;
+	std::uint32_t account_id_;
+	srp6::SessionKey key_;
+
+	std::promise<AccountService::Result> promise_;
+	AccountService::Result res_;
 	std::exception_ptr exception_;
-	int temp_;
 
-	void callback(AccountService::Result result, boost::optional<Botan::BigInt> key) {
-		result_.set_value(52);
-	}
+	std::future<AccountService::Result> do_register() {
+		account_svc_.register_session(account_id_, key_, [&](AccountService::Result res) {
+			promise_.set_value(res);
+		});
 
-	std::future<int> locate() {
-		account_svc_.locate_session(5, std::bind(&TestAction::callback, this,
-			std::placeholders::_1, std::placeholders::_2));
-		return result_.get_future();
+		return promise_.get_future();
 	}
 
 public:
-	TestAction(const AccountService& account_svc, std::uint32_t acct_id)
-	           : account_svc_(account_svc), account_id(account_id) { }
+	RegisterSessionAction(const AccountService& account_svc, std::uint32_t account_id, srp6::SessionKey key)
+	                      : account_svc_(account_svc), account_id_(account_id), key_(key) { }
 
 	virtual void execute() override try {
-		std::future<int> foo = locate();
-		temp_ = foo.get();
+		res_ = do_register().get();
 	} catch(std::exception) {
 		exception_ = std::current_exception();
 	}
 
-	int get_result() {
-		return temp_;
+	AccountService::Result get_result() {
+		if(exception_) {
+			std::rethrow_exception(exception_);
+		}
+
+		return res_;
 	}
 };
 
@@ -90,38 +93,38 @@ public:
 	}
 };
 
-class StoreSessionAction final : public Action {
-	User user_;
-	const std::string ip_, key_;
-	const dal::UserDAO& user_src_;
-	std::exception_ptr exception_;
-
-public:
-	StoreSessionAction(User user, std::string ip, std::string key, const dal::UserDAO& user_src)
-	                   : user_(std::move(user)), ip_(std::move(ip)), key_(std::move(key)),
-	                     user_src_(user_src){}
-
-	virtual void execute() override try {
-		user_src_.record_last_login(user_, ip_); // todo - transaction for both of these calls
-		user_src_.session_key(user_.username(), key_); // todo - user vs username, why?
-	} catch(dal::exception) {
-		exception_ = std::current_exception();
-	}
-
-	void rethrow_exception() {
-		if(exception_) {
-			std::rethrow_exception(exception_);
-		}
-	}
-
-	boost::optional<User> get_result() {
-		if(exception_) {
-			std::rethrow_exception(exception_);
-		}
-
-		return std::move(user_);
-	}
-};
+//class StoreSessionAction final : public Action {
+//	User user_;
+//	const std::string ip_, key_;
+//	const dal::UserDAO& user_src_;
+//	std::exception_ptr exception_;
+//
+//public:
+//	StoreSessionAction(User user, std::string ip, std::string key, const dal::UserDAO& user_src)
+//	                   : user_(std::move(user)), ip_(std::move(ip)), key_(std::move(key)),
+//	                     user_src_(user_src){}
+//
+//	virtual void execute() override try {
+//		user_src_.record_last_login(user_, ip_); // todo - transaction for both of these calls
+//		user_src_.session_key(user_.username(), key_); // todo - user vs username, why?
+//	} catch(dal::exception) {
+//		exception_ = std::current_exception();
+//	}
+//
+//	void rethrow_exception() {
+//		if(exception_) {
+//			std::rethrow_exception(exception_);
+//		}
+//	}
+//
+//	boost::optional<User> get_result() {
+//		if(exception_) {
+//			std::rethrow_exception(exception_);
+//		}
+//
+//		return std::move(user_);
+//	}
+//};
 
 class FetchUserAction final : public Action {
 	const std::string username_;

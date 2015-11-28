@@ -18,8 +18,8 @@ class Service : public spark::EventHandler {
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
 
-	void register_session(const spark::Link& link, const messaging::RegisterSession* msg);
-	void locate_session(const spark::Link& link, const messaging::LocateSession* msg);
+	void register_session(const spark::Link& link, const messaging::MessageRoot* msg);
+	void locate_session(const spark::Link& link, const messaging::MessageRoot* msg);
 
 public:
 	Service(spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);

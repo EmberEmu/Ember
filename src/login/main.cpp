@@ -6,10 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "AccountService.h"
 #include "FilterTypes.h"
 #include "GameVersion.h"
 #include "SessionBuilders.h"
-#include "AccountService.h"
 #include "LoginHandlerBuilder.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
@@ -146,7 +146,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::AccountService acct_srv(spark, discovery, logger);
+	ember::AccountService acct_svc(spark, discovery, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();
@@ -162,7 +162,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	// Start login server
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
-	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, realm_list, *metrics);
+	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, acct_svc, realm_list, *metrics);
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
 	auto interface = args["network.interface"].as<std::string>();

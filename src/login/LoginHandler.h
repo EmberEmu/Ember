@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Actions.h"
+#include "AccountService.h"
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "RealmList.h"
@@ -45,6 +46,7 @@ class LoginHandler {
 	boost::optional<User> user_;
 	Botan::BigInt server_proof_;
 	const std::string source_;
+	const AccountService& acct_svc_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 
@@ -55,7 +57,7 @@ class LoginHandler {
 	void send_login_failure(grunt::ResultCode result);
 	void build_login_challenge(grunt::server::LoginChallenge* packet);
 	void send_login_challenge(FetchUserAction* action);
-	void send_login_success(StoreSessionAction* action);
+	void send_login_success(RegisterSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 
 	void accept_client(grunt::Opcode opcode, const std::string& username);
@@ -69,9 +71,9 @@ public:
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(const grunt::Packet* packet);
 
-	LoginHandler(const dal::UserDAO& users, const Patcher& patcher, log::Logger* logger,
-	             const RealmList& realm_list, std::string source, Metrics& metrics)
-	             : user_src_(users), patcher_(patcher), logger_(logger),
+	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
+	             log::Logger* logger, const RealmList& realm_list, std::string source, Metrics& metrics)
+	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics) {}
 };
 

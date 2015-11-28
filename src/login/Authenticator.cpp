@@ -44,10 +44,8 @@ auto LoginAuthenticator::proof_check(const grunt::client::LoginProof* proof) -> 
 	return { false, 0 };
 }
 
-std::string LoginAuthenticator::session_key() {
-	Botan::BigInt key(Botan::BigInt::decode(sess_key_));
-	std::stringstream keystr; keystr << key;
-	return keystr.str();
+srp6::SessionKey LoginAuthenticator::session_key() {
+	return sess_key_;
 }
 
 ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const std::string& session_key,

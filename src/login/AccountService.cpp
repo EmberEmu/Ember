@@ -67,7 +67,7 @@ void AccountService::handle_register_reply(const spark::Link& link, const boost:
 void AccountService::handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
                                          boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb) const {
 	if(!opt_msg || (*opt_msg)->data_type() != messaging::Data::KeyLookup) {
-		cb(Result::SERVER_LINK_FAILURE, Botan::BigInt());
+		cb(Result::SERVER_LINK_FAILURE, boost::optional<Botan::BigInt>());
 		return;
 	}
 
@@ -86,14 +86,15 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 1,
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
 		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account_id).Union());
 	fbb->Finish(msg);
+
 	auto track_cb = std::bind(&AccountService::handle_locate_reply, this, std::placeholders::_1,
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(Result::SERVER_LINK_FAILURE, Botan::BigInt());
+		cb(Result::SERVER_LINK_FAILURE, boost::optional<Botan::BigInt>());
 	}
 }
 
@@ -103,7 +104,7 @@ void AccountService::register_session(std::uint32_t account_id, const srp6::Sess
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto f_key = fbb->CreateVector(key.t.begin(), key.t.size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 1,
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
 		em::Data::RegisterKey, em::account::CreateRegisterKey(*fbb, account_id, f_key).Union());
 	fbb->Finish(msg);
 

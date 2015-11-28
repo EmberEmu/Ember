@@ -24,23 +24,36 @@ Service::~Service() {
 
 void Service::handle_message(const spark::Link& link, const messaging::MessageRoot* msg) {
 	switch(msg->data_type()) {
-		case messaging::Data::RegisterSession:
-			register_session(link, static_cast<const messaging::RegisterSession*>(msg->data()));
+		case messaging::Data::RegisterKey:
+			register_session(link, msg);
 			break;
-		case messaging::Data::LocateSession:
-			locate_session(link, static_cast<const messaging::LocateSession*>(msg->data()));
+		case messaging::Data::KeyLookup:
+			locate_session(link, msg);
 			break;
 		default:
 			LOG_DEBUG(logger_) << "Service received unhandled message type" << LOG_ASYNC;
 	}
 }
 
-void Service::register_session(const spark::Link& link, const messaging::RegisterSession* msg) {
+void Service::register_session(const spark::Link& link, const messaging::MessageRoot* msg) {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto uuid = fbb->CreateVector(msg->tracking_id()->data(), msg->tracking_id()->size());
+	auto resp = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid, 1,
+		messaging::Data::Response, messaging::account::CreateResponse(*fbb, messaging::account::Status::OK).Union());
+	fbb->Finish(resp);
 
+	spark_.send(link, fbb);
 }
 
-void Service::locate_session(const spark::Link& link, const messaging::LocateSession* msg) {
+void Service::locate_session(const spark::Link& link, const messaging::MessageRoot* msg) {
+	/*auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto uuid = generate_uuid();
+	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, msg->, 1,
+		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account_id).Union());
+	fbb->Finish(msg);
 
+	spark_.send(link, fbb);*/
 }
 
 void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {

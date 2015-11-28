@@ -49,7 +49,7 @@ public:
 	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
 	ProofResult proof_check(const grunt::client::LoginProof* proof);
-	std::string session_key();
+	srp6::SessionKey session_key();
 };
 
 } //ember
