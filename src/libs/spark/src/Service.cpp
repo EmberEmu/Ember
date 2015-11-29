@@ -79,7 +79,7 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 		<< static_cast<std::underlying_type<messaging::Data>::type>(message->data_type()) << LOG_ASYNC;
 }
 
-auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
+auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {

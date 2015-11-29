@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Sessions.h"
+#include <spark/temp/Account_generated.h>
 #include <spark/Service.h>
 #include <logger/Logging.h>
 
@@ -23,9 +24,10 @@ class Service final : public spark::EventHandler {
 
 	void register_session(const spark::Link& link, const messaging::MessageRoot* root);
 	void locate_session(const spark::Link& link, const messaging::MessageRoot* root);
-	void send_locate_reply(const spark::Link& link, const messaging::MessageRoot* root);
+	void send_locate_reply(const spark::Link& link, const messaging::MessageRoot* root,
+	                       const boost::optional<Botan::BigInt>& key);
 	void send_register_reply(const spark::Link& link, const messaging::MessageRoot* root,
-							 em::account::Status status);
+							 messaging::account::Status status);
 	void set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
 	                       flatbuffers::FlatBufferBuilder* fbb);
 

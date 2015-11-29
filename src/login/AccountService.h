@@ -14,7 +14,6 @@
 #include <logger/Logging.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/optional.hpp>
 #include <functional>
 #include <memory>
 
@@ -22,10 +21,8 @@ namespace ember {
 
 class AccountService final : public spark::EventHandler {
 public:
-	enum class Result { OK, SERVER_LINK_FAILURE };
-
-	typedef std::function<void(Result)> RegisterCB;
-	typedef std::function<void(Result, boost::optional<Botan::BigInt>)> LocateCB;
+	typedef std::function<void(messaging::account::Status)> RegisterCB;
+	typedef std::function<void(messaging::account::Status, Botan::BigInt)> LocateCB;
 
 private:
 	spark::Service& spark_;
@@ -37,15 +34,15 @@ private:
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 	void handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> opt_msg, RegisterCB cb) const;
+	                           boost::optional<const messaging::MessageRoot*> root, RegisterCB cb) const;
 	void handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb) const;
+	                         boost::optional<const messaging::MessageRoot*> root, LocateCB cb) const;
 
 public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
 	~AccountService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;
+	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 
 	void register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const;

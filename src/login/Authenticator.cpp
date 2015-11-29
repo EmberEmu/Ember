@@ -51,6 +51,8 @@ srp6::SessionKey LoginAuthenticator::session_key() {
 ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
                                                const Botan::SecureVector<Botan::byte>& bytes)
                                                : rcon_user_(std::move(username)) {
+	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
+	std::transform(rcon_user_.begin(), rcon_user_.end(), rcon_user_.begin(), ::toupper);
 	rcon_chall_ = bytes;
 	sess_key_ = Botan::BigInt::encode(session_key);
 }

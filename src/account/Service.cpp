@@ -45,7 +45,7 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 	bool res = sessions_.register_session(msg->account_id(), key);
 
 	if(!res) {
-		em::account::Status::ALREADY_LOGGED_IN;
+		status = em::account::Status::ALREADY_LOGGED_IN;
 	}
 
 	send_register_reply(link, root, status);
@@ -53,13 +53,15 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 
 void Service::locate_session(const spark::Link& link, const em::MessageRoot* root) {
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
+	auto session = sessions_.lookup_session(msg->account_id());
+	send_locate_reply(link, root, session);
 }
 
 void Service::send_register_reply(const spark::Link& link, const em::MessageRoot* root,
                                   em::account::Status status) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::account::ResponseBuilder rb(*fbb);
-	rb.add_status(em::account::Status::OK);
+	rb.add_status(status);
 	auto data_offset = rb.Finish();
 
 	em::MessageRootBuilder mrb(*fbb);
@@ -74,12 +76,21 @@ void Service::send_register_reply(const spark::Link& link, const em::MessageRoot
 	spark_.send(link, fbb);
 }
 
-void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* root) {
+void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* root,
+                                const boost::optional<Botan::BigInt>& key) {
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::account::KeyLookupRespBuilder klb(*fbb);
-	klb.add_status(em::account::Status::OK);
+
+	if(key) {
+		auto encoded_key = Botan::BigInt::encode(*key);
+		klb.add_key(fbb->CreateVector(encoded_key.begin(), encoded_key.size()));
+		klb.add_status(em::account::Status::OK);
+	} else {
+		klb.add_status(em::account::Status::SESSION_NOT_FOUND);
+	}
+
 	klb.add_account_id(msg->account_id());
 	auto data_offset = klb.Finish();
 

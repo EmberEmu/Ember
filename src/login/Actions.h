@@ -33,12 +33,12 @@ class RegisterSessionAction final : public Action {
 	std::uint32_t account_id_;
 	srp6::SessionKey key_;
 
-	std::promise<AccountService::Result> promise_;
-	AccountService::Result res_;
+	std::promise<messaging::account::Status> promise_;
+	messaging::account::Status res_;
 	std::exception_ptr exception_;
 
-	std::future<AccountService::Result> do_register() {
-		account_svc_.register_session(account_id_, key_, [&](AccountService::Result res) {
+	std::future<messaging::account::Status> do_register() {
+		account_svc_.register_session(account_id_, key_, [&](messaging::account::Status res) {
 			promise_.set_value(res);
 		});
 
@@ -55,7 +55,7 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	AccountService::Result get_result() {
+	messaging::account::Status get_result() {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}
@@ -70,13 +70,12 @@ class FetchSessionKeyAction final : public Action {
 	Botan::BigInt key_;
 	std::exception_ptr exception_;
 
-	std::promise<std::pair<AccountService::Result, boost::optional<Botan::BigInt>>> promise_;
-	std::pair<AccountService::Result, boost::optional<Botan::BigInt>> res_;
+	std::promise<std::pair<messaging::account::Status, Botan::BigInt>> promise_;
+	std::pair<messaging::account::Status, Botan::BigInt> res_;
 
 	auto do_fetch() {
-		account_svc_.locate_session(account_id_, [&](AccountService::Result res,
-		                                             boost::optional<Botan::BigInt> key) {
-			
+		account_svc_.locate_session(account_id_, [&](messaging::account::Status res,
+		                                             Botan::BigInt key) {
 			promise_.set_value({res, key});
 		});
 

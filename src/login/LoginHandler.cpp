@@ -217,18 +217,17 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 
 	auto res = action->get_result();
 
-	if(res.first == AccountService::Result::OK) {
-		if(res.second) {
-			state_ = State::RECONNECT_PROOF;
-			reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), *res.second, rand);
-		} else {
-			response->result = grunt::ResultCode::FAIL_NOACCESS;
-		}
-	} else{
-		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+	if(res.first == messaging::account::Status::OK) {
+		state_ = State::RECONNECT_PROOF;
+		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, rand);
+	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
+		metrics_.increment("login_failure");
+		response->result = grunt::ResultCode::FAIL_NOACCESS;
+	} else {
 		metrics_.increment("login_internal_failure");
+		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 	}
-
+	
 	send(std::move(response));
 }
 
@@ -283,15 +282,19 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 void LoginHandler::send_login_success(RegisterSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	auto result = action->get_result();
 	auto response = std::make_unique<grunt::server::LoginProof>();
 	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
 
-	if(action->get_result() == AccountService::Result::OK) {
+	if(result == messaging::account::Status::OK) {
 		metrics_.increment("login_success");
 		response->result = grunt::ResultCode::SUCCESS;
 		response->M2 = server_proof_;
 		response->account_flags = 0;
 		state_ = State::REQUEST_REALMS;
+	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
+		metrics_.increment("login_failure");
+		response->result = grunt::ResultCode::FAIL_ALREADY_ONLINE;
 	} else {
 		metrics_.increment("login_internal_failure");
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;

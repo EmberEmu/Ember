@@ -25,7 +25,7 @@ AccountService::~AccountService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void AccountService::handle_message(const spark::Link& link, const em::MessageRoot* msg) {
+void AccountService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
 	// we only care about tracked messages at the moment
 	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
 }
@@ -48,37 +48,32 @@ void AccountService::service_located(const messaging::multicast::LocateAnswer* m
 }
 
 void AccountService::handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                           boost::optional<const em::MessageRoot*> opt_msg, RegisterCB cb) const {
-	if(!opt_msg || (*opt_msg)->data_type() != messaging::Data::Response) {
-		cb(Result::SERVER_LINK_FAILURE);
+                                           boost::optional<const em::MessageRoot*> root, RegisterCB cb) const {
+	if(!root || (*root)->data_type() != messaging::Data::Response) {
+		cb(em::account::Status::SERVER_LINK_ERROR);
 		return;
 	}
 
-	auto message = static_cast<const em::account::Response*>((*opt_msg)->data());
-
-	if(message->status() == em::account::Status::OK) {
-		cb(Result::OK);
-	} else {
-		cb(Result::SERVER_LINK_FAILURE);
-	}
+	auto message = static_cast<const em::account::Response*>((*root)->data());
+	cb(message->status());
 }
 
 void AccountService::handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                         boost::optional<const messaging::MessageRoot*> opt_msg, LocateCB cb) const {
-	if(!opt_msg || (*opt_msg)->data_type() != messaging::Data::KeyLookup) {
-		cb(Result::SERVER_LINK_FAILURE, boost::optional<Botan::BigInt>());
+                                         boost::optional<const messaging::MessageRoot*> root, LocateCB cb) const {
+	if(!root || (*root)->data_type() != messaging::Data::KeyLookupResp) {
+		cb(em::account::Status::SERVER_LINK_ERROR, 0);
 		return;
 	}
 
-	auto message = static_cast<const messaging::account::KeyLookupResp*>((*opt_msg)->data());
+	auto message = static_cast<const messaging::account::KeyLookupResp*>((*root)->data());
 	auto key = message->key();
 
 	if(!key) {
-		cb(Result::OK, boost::optional<Botan::BigInt>());
+		cb(message->status(), 0);
 		return;
 	}
 
-	cb(Result::OK, Botan::BigInt(key->data(), key->size()));
+	cb(message->status(), Botan::BigInt::decode(key->data(), key->size()));
 }
 
 void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const {
@@ -93,7 +88,7 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(Result::SERVER_LINK_FAILURE, boost::optional<Botan::BigInt>());
+		cb(em::account::Status::SERVER_LINK_ERROR, 0);
 	}
 }
 
@@ -111,7 +106,7 @@ void AccountService::register_session(std::uint32_t account_id, const srp6::Sess
 					          std::placeholders::_2, std::placeholders::_3, cb);
 	
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(Result::SERVER_LINK_FAILURE);
+		cb(em::account::Status::SERVER_LINK_ERROR);
 	}
 }
 

@@ -10,6 +10,7 @@
 #include "FilterTypes.h"
 //#include "MonitorCallbacks.h"
 #include "Service.h"
+#include "Sessions.h"
 #include <spark/Spark.h>
 #include <logger/Logging.h>
 #include <conpool/ConnectionPool.h>
@@ -76,7 +77,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::Service net_service(spark, discovery, logger);
+	ember::Sessions sessions(true);
+	ember::Service net_service(sessions, spark, discovery, logger);
 
 	service.run();
 
