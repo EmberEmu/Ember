@@ -31,6 +31,8 @@ void AccountService::handle_message(const spark::Link& link, const em::MessageRo
 }
 
 void AccountService::handle_link_event(const spark::Link& link, spark::LinkState event) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	switch(event) {
 		case spark::LinkState::LINK_UP:
 			LOG_INFO(logger_) << "Link to account server established" << LOG_ASYNC;
@@ -49,6 +51,8 @@ void AccountService::service_located(const messaging::multicast::LocateAnswer* m
 
 void AccountService::handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
                                            boost::optional<const em::MessageRoot*> root, RegisterCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	if(!root || (*root)->data_type() != messaging::Data::Response) {
 		cb(em::account::Status::SERVER_LINK_ERROR);
 		return;
@@ -60,6 +64,8 @@ void AccountService::handle_register_reply(const spark::Link& link, const boost:
 
 void AccountService::handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
                                          boost::optional<const messaging::MessageRoot*> root, LocateCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	if(!root || (*root)->data_type() != messaging::Data::KeyLookupResp) {
 		cb(em::account::Status::SERVER_LINK_ERROR, 0);
 		return;
@@ -77,6 +83,8 @@ void AccountService::handle_locate_reply(const spark::Link& link, const boost::u
 }
 
 void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
@@ -94,6 +102,8 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const
 
 
 void AccountService::register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());

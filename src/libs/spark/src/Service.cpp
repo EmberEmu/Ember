@@ -49,6 +49,7 @@ void Service::start_session(boost::asio::ip::tcp::socket socket) {
 }
 
 void Service::do_connect(const std::string& host, std::uint16_t port) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	bai::tcp::resolver resolver(service_);
 	auto port_str = std::to_string(port);
 	auto endpoint_it = resolver.resolve({ host, port_str });
@@ -80,6 +81,7 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 }
 
 auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -92,6 +94,7 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
 
 auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
                            BufferHandler fbb, TrackingHandler callback) -> Result {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -105,19 +108,22 @@ auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
 
 auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
                         BufferHandler fbb) const -> Result { // todo, merge enum, rename
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto& links = services_.peer_services(service, mode);
 
 	for(auto& link : links) {
-		auto shared_net = link.net.lock();
-		
 		/* The weak_ptr should never fail to lock as the link will be removed from the
 		   services map before the network session shared_ptr goes out of scope */
+		auto shared_net = link.net.lock();
+		
 		if(shared_net) {
 			shared_net->write(fbb);
 		} else {
-			//LOG_ERROR(logger_) << "mm" << LOG_ASYNC;
+			LOG_WARN_FILTER(logger_, filter_)
+				<< "[spark] Unable to lock weak_ptr in a broadcast" << LOG_ASYNC;
 		}
 	}
+
 	return Result::OK;
 }
 
