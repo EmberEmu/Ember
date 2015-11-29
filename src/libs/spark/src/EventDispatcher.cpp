@@ -29,20 +29,24 @@ void EventDispatcher::remove_handler(EventHandler* handler) {
 }
 
 void EventDispatcher::dispatch_link_event(messaging::Service service,
-                                          const Link& link, LinkState state) const try {
+                                          const Link& link, LinkState state) const {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
-	handlers_.at(service).handler->handle_link_event(link, state);
-} catch(std::out_of_range) {
-	// todo
+	auto it = handlers_.find(service);
+
+	if(it != handlers_.end()) {
+		it->second.handler->handle_link_event(link, state);
+	}
 }
 
 void EventDispatcher::dispatch_message(messaging::Service service, const Link& link,
-                                       const messaging::MessageRoot* message) const try {
+                                       const messaging::MessageRoot* message) const {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
-	handlers_.at(service).handler->handle_message(link, message);
-} catch(std::out_of_range) {
-	// todo
-}
+	auto it = handlers_.find(service);
+
+	if(it != handlers_.end()) {
+		it->second.handler->handle_message(link, message);
+	}
+} 
 
 std::vector<messaging::Service> EventDispatcher::services(Mode mode) const {
 	std::shared_lock<std::shared_timed_mutex> guard(lock_);

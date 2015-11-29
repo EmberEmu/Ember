@@ -88,8 +88,6 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result try {
 
 	net->write(fbb);
 	return Result::OK;
-} catch(std::out_of_range) {
-	return Result::LINK_GONE;
 }
 
 auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
