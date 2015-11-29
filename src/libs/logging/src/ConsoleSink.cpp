@@ -8,6 +8,7 @@
 
 #include <logger/ConsoleSink.h>
 #include <logger/Utility.h>
+#include <shared/rlutil.h>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -16,8 +17,18 @@
 namespace ember { namespace log {
 
 void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+	if(!colour_) {
+		do_batch_write(records);
+	} else { // we can't do batch output if we need to colour each individual log record
+		for(auto& r : records) {
+			write(r.first.severity, r.first.type, r.second);
+		}
+	}
+}
+
+void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	std::size_t size = 0;
-	Severity sink_sev= this->severity();
+	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
@@ -52,9 +63,34 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 		return;
 	}
 
+	if(colour_) {
+		set_colour(severity);
+	}
+
 	std::string buffer = detail::severity_string(severity);
 	buffer.append(record.begin(), record.end());
 	std::fwrite(buffer.c_str(), buffer.size(), 1, stdout);
+}
+
+#undef ERROR // todo, replace rlutil so ERROR doesn't leak from Windows.h
+
+void ConsoleSink::set_colour(Severity severity) {
+	switch(severity) {
+		case Severity::FATAL:
+		case Severity::ERROR:
+		case Severity::WARN:
+			rlutil::setColor(rlutil::LIGHTRED);
+			break;
+		case Severity::INFO:
+			rlutil::setColor(rlutil::WHITE);
+			break;
+		case Severity::DEBUG:
+			rlutil::setColor(rlutil::LIGHTCYAN);
+			break;
+		case Severity::TRACE:
+			rlutil::setColor(rlutil::DARKGREY);
+			break;
+	}
 }
 
 }} //log, ember

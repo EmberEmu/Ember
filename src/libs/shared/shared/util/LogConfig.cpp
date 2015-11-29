@@ -55,7 +55,8 @@ std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::Seve
 
 std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
-	return std::make_unique<el::ConsoleSink>(severity, el::Filter(filter));
+	auto colourise = args["console_log.colours"].as<bool>();
+	return std::make_unique<el::ConsoleSink>(severity, el::Filter(filter), colourise);
 }
 
 } // unnamed

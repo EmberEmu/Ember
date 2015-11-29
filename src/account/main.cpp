@@ -114,6 +114,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("spark.multicast_port", po::value<std::uint16_t>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", po::bool_switch()->required())
 		("remote_log.verbosity", po::value<std::string>()->required())
 		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.service_name", po::value<std::string>()->required())
