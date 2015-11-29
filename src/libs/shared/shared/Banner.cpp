@@ -8,33 +8,34 @@
 
 #include "Banner.h"
 #include "Version.h"
-#include "rlutil.h"
+#include "util/ConsoleColour.h"
 #include <iostream>
 
 namespace ember {
 
 void print_banner(const std::string& display_name) {
-	rlutil::saveColor();
+	auto old_colour = util::save_output_colour();
 
-	rlutil::setColor(rlutil::DARKGREY);
+	util::set_output_colour(util::Colour::DARK_GREY);
 	std::cout << "\n"
 		R"(                                      d8b)" << "\n";
-	rlutil::setColor(rlutil::GREY);
+	util::set_output_colour(util::Colour::GREY);
 	std::cout <<
 		R"(                                      ?88)" << "\n";
-	rlutil::setColor(rlutil::YELLOW);
+	util::set_output_colour(util::Colour::YELLOW);
 	std::cout <<
 		R"(                                       88b)" << "\n"
 		R"(       )         d8888b  88bd8b,d88b   888888b  d8888b  88bd88b)" << "\n";
-	rlutil::setColor(rlutil::LIGHTRED);
+	util::set_output_colour(util::Colour::LIGHT_RED);
 	std::cout <<
 		R"(      ) \       d8b_,dP  88P'`?8P'?8b  88P `?8bd8b_,dP  88P'  `)" << "\n";
-	rlutil::setColor(rlutil::RED);
+	util::set_output_colour(util::Colour::RED);
 	std::cout <<
 		R"(     / ) (      88b     d88  d88  88P d88,  d8888b     d88)" << "\n"
 		R"(     \(_)/      `?888P'd88' d88'  88bd88'`?88P'`?888P'd88')" << "\n\n";
 
-	rlutil::resetColor();
+	util::set_output_colour(old_colour);
+
 	std::cout << display_name << ", v" << version::VERSION << " (" << version::GIT_HASH << ")\n\n";
 }
 

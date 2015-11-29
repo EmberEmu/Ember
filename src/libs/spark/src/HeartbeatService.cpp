@@ -63,8 +63,9 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 		auto latency = std::chrono::milliseconds(time - pong->timestamp());
 
 		if(latency > LATENCY_WARN_THRESHOLD) {
-			LOG_WARN(logger_, filter_) << "[spark] Detected high latency to " << link.description
-			                           << ":" << boost::uuids::to_string(link.uuid) << LOG_ASYNC;
+			LOG_WARN_FILTER(logger_, filter_)
+				<< "[spark] Detected high latency to " << link.description
+				<< ":" << boost::uuids::to_string(link.uuid) << LOG_ASYNC;
 		}
 	}
 }

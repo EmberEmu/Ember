@@ -47,6 +47,8 @@ set(UTIL_SRC
     shared/util/FormatPacket.h
     shared/util/LogConfig.cpp
     shared/util/LogConfig.h
+    shared/util/ConsoleColour.h
+    shared/util/ConsoleColour.cpp
 )
 
 set(METRICS_SRC
@@ -69,7 +71,6 @@ set(LIBRARY_SRC
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/PacketStream.h
-    shared/rlutil.h
     shared/Realm.h
     shared/Banner.cpp
     shared/Banner.h

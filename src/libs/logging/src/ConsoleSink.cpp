@@ -8,7 +8,7 @@
 
 #include <logger/ConsoleSink.h>
 #include <logger/Utility.h>
-#include <shared/rlutil.h>
+#include <shared/util/ConsoleColour.h>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -63,13 +63,20 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 		return;
 	}
 
+	util::Colour old_colour;
+
 	if(colour_) {
+		old_colour = util::save_output_colour();
 		set_colour(severity);
 	}
 
 	std::string buffer = detail::severity_string(severity);
 	buffer.append(record.begin(), record.end());
 	std::fwrite(buffer.c_str(), buffer.size(), 1, stdout);
+
+	if(colour_) {
+		util::set_output_colour(old_colour);
+	}
 }
 
 #undef ERROR // todo, replace rlutil so ERROR doesn't leak from Windows.h
@@ -79,16 +86,16 @@ void ConsoleSink::set_colour(Severity severity) {
 		case Severity::FATAL:
 		case Severity::ERROR:
 		case Severity::WARN:
-			rlutil::setColor(rlutil::LIGHTRED);
+			util::set_output_colour(util::Colour::LIGHT_RED);
 			break;
 		case Severity::INFO:
-			rlutil::setColor(rlutil::WHITE);
+			util::set_output_colour(util::Colour::WHITE);
 			break;
 		case Severity::DEBUG:
-			rlutil::setColor(rlutil::LIGHTCYAN);
+			util::set_output_colour(util::Colour::LIGHT_CYAN);
 			break;
 		case Severity::TRACE:
-			rlutil::setColor(rlutil::DARKGREY);
+			util::set_output_colour(util::Colour::DARK_GREY);
 			break;
 	}
 }
