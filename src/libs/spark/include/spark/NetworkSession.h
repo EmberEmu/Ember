@@ -34,6 +34,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	enum class ReadState { HEADER, BODY };
 
 	boost::asio::ip::tcp::socket socket_;
+	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	ReadState state_;
@@ -101,25 +102,25 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		
 		std::size_t read_size = state_ == ReadState::HEADER? sizeof(body_read_size) : body_read_size;
 
-		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size),
+		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size), strand_.wrap(
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(!stopped_) {
 					timer_.cancel();
 					handle_read(ec);
 				}
 			}
-		);
+		));
 	}
 
 	void set_timer() {
 		auto self(shared_from_this());
 
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(
+		timer_.async_wait(strand_.wrap(
 			[this, self](const boost::system::error_code& ec) {
 				timeout(ec);
 			}
-		);
+		));
 	}
 
 	void timeout(const boost::system::error_code& ec) {
@@ -151,6 +152,7 @@ public:
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
 	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
 	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH),
+	                 strand_(socket_.get_io_service()),
 	                 remote_(socket_.remote_endpoint().address().to_string()
 	                         + ":" + std::to_string(socket_.remote_endpoint().port())) { }
 
@@ -191,13 +193,13 @@ public:
 			boost::asio::const_buffer { fbb->GetBufferPointer(), fbb->GetSize() }
 		};
 
-		socket_.async_send(buffers,
+		socket_.async_send(buffers, strand_.wrap(
 			[this, self, fbb](boost::system::error_code ec, std::size_t /*size*/) {
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
 			}
-		);
+		));
 	}
 
 	virtual ~NetworkSession() = default;

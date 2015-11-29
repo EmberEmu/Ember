@@ -81,7 +81,6 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 }
 
 auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -94,7 +93,6 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
 
 auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
                            BufferHandler fbb, TrackingHandler callback) -> Result {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto net = link.net.lock();
 
 	if(!net) {
