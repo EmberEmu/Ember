@@ -60,10 +60,11 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 	auto time = sc::duration_cast<sc::milliseconds>(sc::steady_clock::now().time_since_epoch()).count();
 
 	if(pong->timestamp()) {
-		auto latency = time - pong->timestamp();
+		auto latency = std::chrono::milliseconds(time - pong->timestamp());
 
-		if(latency > 1000) { // todo, don't hardcode this
-			// todo
+		if(latency > LATENCY_WARN_THRESHOLD) {
+			LOG_WARN(logger_, filter_) << "[spark] Detected high latency to " << link.description
+			                           << ":" << boost::uuids::to_string(link.uuid) << LOG_ASYNC;
 		}
 	}
 }

@@ -24,6 +24,7 @@ class Service;
 
 class HeartbeatService : public EventHandler {
 	const std::chrono::seconds PING_FREQUENCY { 20 };
+	const std::chrono::milliseconds LATENCY_WARN_THRESHOLD { 1000 };
 
 	const Service* service_;
 	std::forward_list<Link> peers_;

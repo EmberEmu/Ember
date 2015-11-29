@@ -105,7 +105,7 @@ auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
 }
 
 auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
-                        BufferHandler fbb) const -> Result { // todo, merge enum, rename
+                        BufferHandler fbb) const -> Result {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto& links = services_.peer_services(service, mode);
 
