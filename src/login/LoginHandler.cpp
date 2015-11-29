@@ -193,12 +193,12 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << action->username()
-		                   << " " << e.what() << LOG_ASYNC;
+		                   << ": " << e.what() << LOG_ASYNC;
 	} catch(Botan::Exception& e) {
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
-		                   << " " << e.what() << LOG_ASYNC;
+		                   << ": " << e.what() << LOG_ASYNC;
 	}
 	
 	send(std::move(response));
