@@ -80,6 +80,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::Sessions sessions(true);
 	ember::Service net_service(sessions, spark, discovery, logger);
 
+	service.dispatch([logger]() {
+		LOG_INFO(logger) << "Account daemon started successfully" << LOG_SYNC;
+	});
+
 	service.run();
 
 	LOG_INFO(logger) << "Account daemon shutting down..." << LOG_SYNC;
