@@ -79,8 +79,6 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 	}
 }
 
-#undef ERROR // todo, replace rlutil so ERROR doesn't leak from Windows.h
-
 void ConsoleSink::set_colour(Severity severity) {
 	switch(severity) {
 		case Severity::FATAL:

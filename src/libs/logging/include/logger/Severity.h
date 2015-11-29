@@ -11,8 +11,6 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstdint>
 
-#undef ERROR //preventing a conflict with wingdi.h (dragged in indirectly by ASIO)
-
 namespace ember { namespace log {
 
 enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, DISABLED };
