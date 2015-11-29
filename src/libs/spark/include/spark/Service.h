@@ -51,7 +51,6 @@ class Service {
 	void default_handler(const Link& link, const messaging::MessageRoot* message);
 	void default_link_state_handler(const Link& link, LinkState state);
 	void initiate_handshake(NetworkSession* session);
-	void shutdown();
 
 public:
 	enum class Result { OK, LINK_GONE };
@@ -66,6 +65,7 @@ public:
 	Result send_tracked(const Link& link, boost::uuids::uuid id,
 	                    BufferHandler fbb, TrackingHandler callback);
 	Result broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const;
+	void shutdown();
 };
 
 }} // spark, ember
