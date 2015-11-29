@@ -298,7 +298,6 @@ void LoginHandler::send_login_success(RegisterSessionAction* action) {
 	} else {
 		metrics_.increment("login_internal_failure");
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
-		state_ = State::REQUEST_REALMS;
 	}
 
 	send(std::move(response));
