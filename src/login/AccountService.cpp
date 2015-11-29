@@ -43,7 +43,7 @@ void AccountService::handle_link_event(const spark::Link& link, spark::LinkState
 }
 
 void AccountService::service_located(const messaging::multicast::LocateAnswer* message) {
-	LOG_DEBUG(logger_) << "Located account service at" << message->ip()->str() << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Located account service at " << message->ip()->str() << LOG_ASYNC; // todo
 	spark_.connect(message->ip()->str(), message->port());
 }
 

@@ -9,7 +9,7 @@
 namespace ember.messaging.account;
 
 enum Status : ubyte {
-	OK, UNKNOWN_ERROR, SESSION_NOT_FOUND
+	OK, SERVER_LINK_ERROR, ILLFORMED_MESSAGE, UNKNOWN_ERROR, ALREADY_LOGGED_IN, SESSION_NOT_FOUND
 }
 
 enum DisconnectReason : ubyte {
@@ -27,6 +27,7 @@ table KeyLookup {
 }
 
 table KeyLookupResp {
+	status:Status;
 	account_id:uint;
 	key:[ubyte];	
 }

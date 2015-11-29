@@ -8,21 +8,29 @@
 
 #pragma once
 
+#include "Sessions.h"
 #include <spark/Service.h>
 #include <logger/Logging.h>
 
 namespace ember {
 
 class Service final : public spark::EventHandler {
+	Sessions& sessions_;
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
 
-	void register_session(const spark::Link& link, const messaging::MessageRoot* msg);
-	void locate_session(const spark::Link& link, const messaging::MessageRoot* msg);
+
+	void register_session(const spark::Link& link, const messaging::MessageRoot* root);
+	void locate_session(const spark::Link& link, const messaging::MessageRoot* root);
+	void send_locate_reply(const spark::Link& link, const messaging::MessageRoot* root);
+	void send_register_reply(const spark::Link& link, const messaging::MessageRoot* root,
+							 em::account::Status status);
+	void set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
+	                       flatbuffers::FlatBufferBuilder* fbb);
 
 public:
-	Service(spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
+	Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
 	~Service();
 
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;

@@ -13,8 +13,8 @@ namespace em = ember::messaging;
 
 namespace ember {
 
-Service::Service(spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger)
-                 : spark_(spark), discovery_(discovery), logger_(logger) {
+Service::Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger)
+                 : sessions_(sessions), spark_(spark), discovery_(discovery), logger_(logger) {
 	spark_.dispatcher()->register_handler(this, em::Service::Account, spark::EventDispatcher::Mode::SERVER);
 	discovery_.register_service(em::Service::Account);
 }
@@ -37,28 +37,75 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 	}
 }
 
-void Service::register_session(const spark::Link& link, const em::MessageRoot* msg) {
+void Service::register_session(const spark::Link& link, const em::MessageRoot* root) {
+	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
+	auto status = em::account::Status::OK;
+	
+	Botan::BigInt key(msg->key()->data(), msg->key()->size());
+	bool res = sessions_.register_session(msg->account_id(), key);
+
+	if(!res) {
+		em::account::Status::ALREADY_LOGGED_IN;
+	}
+
+	send_register_reply(link, root, status);
+}
+
+void Service::locate_session(const spark::Link& link, const em::MessageRoot* root) {
+	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
+}
+
+void Service::send_register_reply(const spark::Link& link, const em::MessageRoot* root,
+                                  em::account::Status status) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto uuid = fbb->CreateVector(msg->tracking_id()->data(), msg->tracking_id()->size());
-	auto resp = em::CreateMessageRoot(*fbb, em::Service::Account, uuid, 1,
-		em::Data::Response, em::account::CreateResponse(*fbb, em::account::Status::OK).Union());
-	fbb->Finish(resp);
+	em::account::ResponseBuilder rb(*fbb);
+	rb.add_status(em::account::Status::OK);
+	auto data_offset = rb.Finish();
+
+	em::MessageRootBuilder mrb(*fbb);
+	mrb.add_service(em::Service::Account);
+	mrb.add_data_type(em::Data::Response);
+	mrb.add_data(data_offset.Union());
+	set_tracking_data(root, mrb, fbb.get());
+
+	auto mloc = mrb.Finish();
+	fbb->Finish(mloc);
+
 	spark_.send(link, fbb);
 }
 
-void Service::locate_session(const spark::Link& link, const em::MessageRoot* msg) {
+void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* root) {
+	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = em::CreateMessageRoot(*fbb, em::Service::Account, msg->, 1,
-		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account_id).Union());
-	fbb->Finish(msg);
+	em::account::KeyLookupRespBuilder klb(*fbb);
+	klb.add_status(em::account::Status::OK);
+	klb.add_account_id(msg->account_id());
+	auto data_offset = klb.Finish();
+
+	em::MessageRootBuilder mrb(*fbb);
+	mrb.add_service(em::Service::Account);
+	mrb.add_data_type(em::Data::KeyLookupResp);
+	mrb.add_data(data_offset.Union());
+	set_tracking_data(root, mrb, fbb.get());
+
+	auto mloc = mrb.Finish();
+	fbb->Finish(mloc);
 
 	spark_.send(link, fbb);
 }
 
 void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
 	LOG_DEBUG(logger_) << "Link" << LOG_ASYNC;
+}
+
+void Service::set_tracking_data(const em::MessageRoot* root, em::MessageRootBuilder& mrb,
+								flatbuffers::FlatBufferBuilder* fbb) {
+	if(root->tracking_id()) {
+		auto id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
+		mrb.add_tracking_id(id);
+		mrb.add_tracking_ttl(1);
+	}
 }
 
 } // ember
