@@ -38,6 +38,7 @@ class ServiceDiscovery {
 	std::array<std::uint8_t, BUFFER_SIZE> buffer_;
 	std::vector<messaging::Service> services_;
 	std::unordered_map<messaging::Service, std::vector<const ServiceListener*>> listeners_;
+	boost::asio::signal_set signals_;
 	mutable std::mutex lock_;
 
 	log::Logger* logger_;
@@ -67,6 +68,7 @@ public:
 	void register_service(messaging::Service service);
 	void remove_service(messaging::Service service);
 	std::unique_ptr<ServiceListener> listener(messaging::Service service, LocateCallback cb);
+	void shutdown();
 
 	friend class ServiceListener;
 };

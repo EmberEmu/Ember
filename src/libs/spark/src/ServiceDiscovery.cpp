@@ -22,6 +22,7 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
 								   std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
                                    : address_(std::move(address)), port_(port),
                                      socket_(service), logger_(logger), filter_(filter),
+                                     signals_(service, SIGINT, SIGTERM),
                                      service_(service), endpoint_(bai::address::from_string(mcast_group), mcast_port) {
 	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
@@ -30,7 +31,16 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
 	socket_.bind(listen_endpoint);
 	
 	socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
+	signals_.async_wait(std::bind(&ServiceDiscovery::shutdown, this));
+
 	receive();
+}
+
+void ServiceDiscovery::shutdown() {
+	LOG_DEBUG(logger_, filter_) << "[spark] Discovery service shutting down..." << LOG_ASYNC;
+	boost::system::error_code ec; // we don't care about any errors
+	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.close(ec);
 }
 
 void ServiceDiscovery::receive() {
