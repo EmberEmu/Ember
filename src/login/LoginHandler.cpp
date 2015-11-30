@@ -223,9 +223,12 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response->result = grunt::ResultCode::FAIL_NOACCESS;
+		LOG_DEBUG(logger_) << "Reconnect failed (" << user_->username() << ", reason)" << LOG_ASYNC;
 	} else {
 		metrics_.increment("login_internal_failure");
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(res.first)
+		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
 	
 	send(std::move(response));
@@ -270,6 +273,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 
 void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Rejected login (" << user_->username() << ", reason)" << LOG_SYNC; // todo, 'smart' enum
 	metrics_.increment("login_failure");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
@@ -298,7 +302,12 @@ void LoginHandler::send_login_success(RegisterSessionAction* action) {
 	} else {
 		metrics_.increment("login_internal_failure");
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(result)
+		                   << " from peer during login" << LOG_ASYNC;
 	}
+
+	LOG_DEBUG(logger_) << "Login result for " << user_->username() << ": "
+	                   << messaging::account::EnumNameStatus(result) << LOG_SYNC;
 
 	send(std::move(response));
 }
@@ -317,7 +326,7 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 		LOG_DEBUG(logger_) << "Successfully reconnected " << reconn_auth_->username() << LOG_ASYNC;
 	} else {
 		metrics_.increment("login_failure");
-		LOG_DEBUG(logger_) << "Failed to reconnect " << reconn_auth_->username() << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "Failed to reconnect (bad proof) " << reconn_auth_->username() << LOG_ASYNC;
 		return;
 	}
 

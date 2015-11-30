@@ -19,6 +19,7 @@ namespace ember { namespace util {
 namespace {
 
 #if defined(_WIN32)
+
 WORD colour_attribute(Colour colour) {
 	WORD attribute = 0;
 	
@@ -69,6 +70,7 @@ WORD colour_attribute(Colour colour) {
 
 	return attribute;
 }
+
 #else
 
 std::string ansi_sequence(Colour colour) {
