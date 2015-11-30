@@ -14,27 +14,27 @@
 namespace ember {
 
 void print_banner(const std::string& display_name) {
-	auto old_colour = util::save_output_colour();
+	util::ConsoleColour console;
 
-	util::set_output_colour(util::Colour::DARK_GREY);
+	console.set(util::Colour::DARK_GREY);
 	std::cout << "\n"
 		R"(                                      d8b)" << "\n";
-	util::set_output_colour(util::Colour::GREY);
+	console.set(util::Colour::GREY);
 	std::cout <<
 		R"(                                      ?88)" << "\n";
-	util::set_output_colour(util::Colour::YELLOW);
+	console.set(util::Colour::YELLOW);
 	std::cout <<
 		R"(                                       88b)" << "\n"
 		R"(       )         d8888b  88bd8b,d88b   888888b  d8888b  88bd88b)" << "\n";
-	util::set_output_colour(util::Colour::LIGHT_RED);
+	console.set(util::Colour::LIGHT_RED);
 	std::cout <<
 		R"(      ) \       d8b_,dP  88P'`?8P'?8b  88P `?8bd8b_,dP  88P'  `)" << "\n";
-	util::set_output_colour(util::Colour::RED);
+	console.set(util::Colour::RED);
 	std::cout <<
 		R"(     / ) (      88b     d88  d88  88P d88,  d8888b     d88)" << "\n"
 		R"(     \(_)/      `?888P'd88' d88'  88bd88'`?88P'`?888P'd88')" << "\n\n";
 
-	util::set_output_colour(old_colour);
+	console.reset();
 
 	std::cout << display_name << ", v" << version::VERSION << " (" << version::GIT_HASH << ")\n\n";
 }

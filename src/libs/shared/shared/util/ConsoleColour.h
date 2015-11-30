@@ -20,4 +20,25 @@ enum class Colour : unsigned int {
 void set_output_colour(Colour colour);
 Colour save_output_colour();
 
+class ConsoleColour {
+	Colour original_;
+
+public:
+	ConsoleColour::ConsoleColour() {
+		original_ = save_output_colour();
+	}
+
+	ConsoleColour::~ConsoleColour() {
+		reset();
+	}
+
+	void ConsoleColour::set(Colour colour) {
+		set_output_colour(colour);
+	}
+
+	void ConsoleColour::reset() {
+		set_output_colour(original_);
+	}
+};
+
 }} // util, ember
