@@ -30,10 +30,13 @@ To create a console sink, simply do:
 ```cpp
 #include <logger/ConsoleSink.h>
 
-auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(-1));
+auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(0));
 ```
 
-Other than setting the severity and filter value (-1 disables filtering), the console sink offers no options.
+The console sink has the ability to colourise the output. To enable this option, simply do:
+```cpp
+sink->colourise(true); // false by default
+```
 
 ### File Sink
 The file sink requires three arguments; severity, filename to write the logs to and a mode that indicates, in cases where the file already exists, whether to create a new file for logging or to append to an existing file. If instructed to create a new file, it will rename the existing file, not overwrite it.
