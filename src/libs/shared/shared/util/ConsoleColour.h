@@ -24,19 +24,19 @@ class ConsoleColour {
 	Colour original_;
 
 public:
-	ConsoleColour::ConsoleColour() {
+	ConsoleColour() {
 		original_ = save_output_colour();
 	}
 
-	ConsoleColour::~ConsoleColour() {
+	~ConsoleColour() {
 		reset();
 	}
 
-	void ConsoleColour::set(Colour colour) {
+	void set(Colour colour) {
 		set_output_colour(colour);
 	}
 
-	void ConsoleColour::reset() {
+	void reset() {
 		set_output_colour(original_);
 	}
 };
