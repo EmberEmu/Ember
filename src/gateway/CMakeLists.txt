@@ -7,7 +7,7 @@
 set(EXECUTABLE_NAME gateway)
 
 set(EXECUTABLE_HDR
-    LogFilters.h
+    FilterTypes.h
     )
 
 set(EXECUTABLE_SRC

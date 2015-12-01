@@ -107,8 +107,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		                 << concurrency << " to match logical core count)" << LOG_SYNC;
 	}
 
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth>
-		pool(driver, min_conns, max_conns, 30s);
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
 	                                std::placeholders::_2, logger));
 

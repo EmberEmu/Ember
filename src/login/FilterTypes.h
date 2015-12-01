@@ -18,4 +18,4 @@ enum FilterType {
 	LF_SPARK = 16
 };
 
-} //ember
+} // ember

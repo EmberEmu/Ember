@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <cstdint>
+namespace ember {
 
-namespace ember { namespace filter {
-
-enum LogFilter : std::uint32_t {
-	LOG_RESERVED_    = 1,
-	LOG_INIT         = 2,
-	LOG_NETWORK      = 4
+enum FilterType {
+	LF_RESERVED = 1, // do not use explicitly
+	LF_MONITORING = 2,
+	LF_DB_CONN_POOL = 4,
+	LF_NETWORK = 8,
+	LF_SPARK = 16
 };
 
-}} // filter, ember
+} // ember

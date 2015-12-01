@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "LogFilters.h"
+#include "FilterTypes.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -14,27 +14,28 @@
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
+#include <shared/database/daos/RealmDAO.h>
+#include <shared/database/daos/UserDAO.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <stdexcept>
 
+#undef ERROR // temp
+
 namespace el = ember::log;
-namespace ef = ember::filter;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
+using namespace std::chrono_literals;
 
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 ember::drivers::MySQL init_db_driver(const po::variables_map& args);
-int fetch_realm(unsigned int id);
-
-int fetch_realm(unsigned int id) {
-	return 0;
-}
+void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -54,20 +55,41 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
+	LOG_INFO(logger) << "Realm gateway terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
-	LOG_INFO(logger) << "Retrieving realm configuration..."<< LOG_SYNC;
+	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
+	auto db_config_path = args["database.config_path"].as<std::string>();
+	auto driver(ember::drivers::init_db_driver(db_config_path));
 
-	auto realm_id = args["realm.id"].as<unsigned short>();
-	auto realm = fetch_realm(realm_id);
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	auto min_conns = args["database.min_connections"].as<unsigned short>();
+	auto max_conns = args["database.max_connections"].as<unsigned short>();
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
+	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
+									std::placeholders::_2, logger));
+
+	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
+	auto user_dao = ember::dal::user_dao(pool);
+	auto realm_dao = ember::dal::realm_dao(pool);
+
+	LOG_INFO(logger) << "Retrieving realm information..."<< LOG_SYNC;
+	auto realm = realm_dao->get_realm(args["realm.id"].as<unsigned int>());
+	
+	if(!realm) {
+		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
+	}
+
+	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
 
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
 	
+	LOG_INFO(logger) << "Realm gateway shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
@@ -86,33 +108,43 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
-		("realm.id,", po::value<unsigned int>()->required())
-		("realm.max-slots,", po::value<unsigned int>()->required())
-		("realm.reserved-slots,", po::value<unsigned int>()->required())
-		("network.interface,", po::value<unsigned int>()->required())
-		("network.interface,", po::value<std::string>()->required())
-		("network.port", po::value<unsigned short>()->required())
-		("console_log.verbosity,", po::value<std::string>()->required())
-		("remote_log.filter-mask,", po::value<unsigned int>()->required())
-		("remote_log.verbosity,", po::value<std::string>()->required())
-		("remote_log.service_name,", po::value<std::string>()->required())
-		("remote_log.host,", po::value<std::string>()->required())
-		("remote_log.port,", po::value<unsigned short>()->required())
-		("file_log.verbosity,", po::value<std::string>()->required())
-		("file_log.path,", po::value<std::string>()->default_value("gateway.log"))
-		("file_log.timestamp_format,", po::value<std::string>())
-		("file_log.mode,", po::value<std::string>()->required())
-		("file_log.size_rotate,", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate,", po::bool_switch()->required())
-		("file_log.log_timestamp,", po::bool_switch()->required())
-		("file_log.log_severity,", po::bool_switch()->required())
-		("database.username", po::value<std::string>()->required())
-		("database.password", po::value<std::string>()->default_value(""))
-		("database.database", po::value<std::string>()->required())
-		("database.host", po::value<std::string>()->required())
-		("database.port", po::value<unsigned short>()->required())
+		("realm.id", po::value<unsigned int>()->required())
+		("realm.max-slots", po::value<unsigned int>()->required())
+		("realm.reserved-slots", po::value<unsigned int>()->required())
+		("spark.address", po::value<std::string>()->required())
+		("spark.port", po::value<std::uint16_t>()->required())
+		("spark.multicast_interface", po::value<std::string>()->required())
+		("spark.multicast_group", po::value<std::string>()->required())
+		("spark.multicast_port", po::value<std::uint16_t>()->required())
+		("network.interface", po::value<std::string>()->required())
+		("network.port", po::value<std::uint16_t>()->required())
+		("network.tcp_no_delay", po::bool_switch()->default_value(true))
+		("console_log.verbosity", po::value<std::string>()->required())
+		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", po::bool_switch()->required())
+		("remote_log.verbosity", po::value<std::string>()->required())
+		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", po::value<std::string>()->required())
+		("remote_log.host", po::value<std::string>()->required())
+		("remote_log.port", po::value<std::uint16_t>()->required())
+		("file_log.verbosity", po::value<std::string>()->required())
+		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("file_log.path", po::value<std::string>()->default_value("gateway.log"))
+		("file_log.timestamp_format", po::value<std::string>())
+		("file_log.mode", po::value<std::string>()->required())
+		("file_log.size_rotate", po::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", po::bool_switch()->required())
+		("file_log.log_timestamp", po::bool_switch()->required())
+		("file_log.log_severity", po::bool_switch()->required())
+		("database.config_path", po::value<std::string>()->required())
 		("database.min_connections", po::value<unsigned short>()->required())
-		("database.max_connections", po::value<unsigned short>()->required());
+		("database.max_connections", po::value<unsigned short>()->required())
+		("metrics.enabled", po::bool_switch()->required())
+		("metrics.statsd_host", po::value<std::string>()->required())
+		("metrics.statsd_port", po::value<std::uint16_t>()->required())
+		("monitor.enabled", po::bool_switch()->required())
+		("monitor.interface", po::value<std::string>()->required())
+		("monitor.port", po::value<std::uint16_t>()->required());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
@@ -144,4 +176,29 @@ ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
 	auto port = args["database.port"].as<unsigned short>();
 	auto db   = args["database.database"].as<std::string>();
 	return {user, pass, host, port, db};
+}
+
+void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+	using ember::LF_DB_CONN_POOL;
+
+	switch(severity) {
+		case(ep::Severity::DEBUG) :
+			LOG_DEBUG_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::INFO) :
+			LOG_INFO_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::WARN) :
+			LOG_WARN_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::ERROR) :
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::FATAL) :
+			LOG_FATAL_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		default:
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+	}
 }
