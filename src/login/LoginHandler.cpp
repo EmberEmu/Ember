@@ -59,7 +59,7 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 			send_reconnect_challenge(static_cast<FetchSessionKeyAction*>(action.get()));
 			break;
 		case State::WRITING_SESSION:
-			send_login_success(static_cast<RegisterSessionAction*>(action.get()));
+			send_login_proof(static_cast<RegisterSessionAction*>(action.get()));
 			break;
 		case State::CLOSED:
 			return false;
@@ -223,7 +223,8 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response->result = grunt::ResultCode::FAIL_NOACCESS;
-		LOG_DEBUG(logger_) << "Reconnect failed (" << user_->username() << ", reason)" << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "Reconnect failed, session not found for "
+		                   << user_->username() << LOG_ASYNC;
 	} else {
 		metrics_.increment("login_internal_failure");
 		response->result = grunt::ResultCode::FAIL_DB_BUSY;
@@ -267,11 +268,11 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 		execute_async(action);
 	} else {
 		state_ = State::CLOSED;
-		send_login_failure(result);
+		send_login_proof_failure(result);
 	}
 }
 
-void LoginHandler::send_login_failure(grunt::ResultCode result) {
+void LoginHandler::send_login_proof_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	LOG_DEBUG(logger_) << "Rejected login (" << user_->username() << ", "
 	                   << grunt::to_string(result) << ")" << LOG_SYNC;
@@ -285,7 +286,7 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	send(std::move(response));
 }
 
-void LoginHandler::send_login_success(RegisterSessionAction* action) {
+void LoginHandler::send_login_proof(RegisterSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto result = action->get_result();
