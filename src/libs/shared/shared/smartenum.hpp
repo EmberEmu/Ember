@@ -23,6 +23,7 @@
 */
 
 #pragma once
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -31,6 +32,21 @@
 
 namespace smart_enum
 {
+    inline int determine_base(std::string& rightHandSide)
+    {
+        std::transform(rightHandSide.begin(), rightHandSide.end(), rightHandSide.begin(), ::tolower);
+
+        int base = 0;
+
+        if(rightHandSide.compare(0, 2, "0b") == 0)
+        { 
+            rightHandSide = rightHandSide.substr(2, rightHandSide.size() - 2);
+            base = 2;
+        }
+
+        return base;
+    }
+
     inline std::string trimWhitespace(std::string str)
     {
         // trim trailing whitespace
@@ -82,18 +98,8 @@ namespace smart_enum
             size_t equalSignPos = currentEnumEntry.find('=');
             if(equalSignPos != std::string::npos)
             {
-                std::string rightHandSide = currentEnumEntry.substr(equalSignPos + 1);
-				rightHandSide = trimWhitespace(rightHandSide);
-
-				int base = 10;
-
-				if(rightHandSide.compare(0, 2, "0x") == 0) {
-					base = 16; 
-				} else if(rightHandSide.compare(0, 1, "0") == 0) {
-					base = 7;
-				}
-
-                currentEnumValue = std::stoi(rightHandSide, 0, base);
+                std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
+                currentEnumValue = std::stoi(rightHandSide, 0, determine_base(rightHandSide));
                 currentEnumEntry.erase(equalSignPos);
             }
     
@@ -121,8 +127,8 @@ namespace smart_enum
             size_t equalSignPos = currentEnumEntry.find('=');
             if(equalSignPos != std::string::npos)
             {
-                std::string rightHandSide = currentEnumEntry.substr(equalSignPos + 1);
-                currentEnumValue = std::stoi(rightHandSide);
+                std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
+                currentEnumValue = std::stoi(rightHandSide, 0, determine_base(rightHandSide));
                 currentEnumEntry.erase(equalSignPos);
             }
     
