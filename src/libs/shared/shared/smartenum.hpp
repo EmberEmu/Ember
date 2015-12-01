@@ -144,8 +144,8 @@ namespace smart_enum
 }
 
 #define smart_enum(Type, Underlying, ...) enum Type : Underlying { __VA_ARGS__}; \
-    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap(#__VA_ARGS__);\
-    static std::vector<Type> Type##_list = smart_enum::makeEnumList<Type>(#__VA_ARGS__);\
+    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying>(#__VA_ARGS__);\
+    static std::vector<Type> Type##_list = smart_enum::makeEnumList<Underlying, Type>(#__VA_ARGS__);\
     \
     inline const std::string& Type##_to_string(Type value) \
     { \
