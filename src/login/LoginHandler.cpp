@@ -273,7 +273,9 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 
 void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	LOG_DEBUG(logger_) << "Rejected login (" << user_->username() << ", reason)" << LOG_SYNC; // todo, 'smart' enum
+	LOG_DEBUG(logger_) << "Rejected login (" << user_->username() << ", "
+	                   << grunt::to_string(result) << ")" << LOG_SYNC;
+
 	metrics_.increment("login_failure");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
