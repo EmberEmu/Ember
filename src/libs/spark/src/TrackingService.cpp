@@ -40,6 +40,7 @@ void TrackingService::handle_message(const Link& link, const messaging::MessageR
 	if(link != handler->link) {
 		LOG_WARN_FILTER(logger_, filter_)
 			<< "[spark] Tracked message receipient != sender" << LOG_ASYNC;
+		return;
 	}
 
 	handler->handler(link, uuid, boost::optional<const messaging::MessageRoot*>(message));

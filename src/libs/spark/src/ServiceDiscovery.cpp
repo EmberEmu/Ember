@@ -19,7 +19,7 @@ namespace ember { namespace spark {
 ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
                                    std::string address, std::uint16_t port,
                                    const std::string& mcast_iface, const std::string& mcast_group,
-								   std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
+                                   std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
                                    : address_(std::move(address)), port_(port),
                                      socket_(service), logger_(logger), filter_(filter),
                                      signals_(service, SIGINT, SIGTERM),
