@@ -40,7 +40,7 @@ namespace smart_enum
 
         if(rightHandSide.compare(0, 2, "0b") == 0)
         { 
-            rightHandSide = rightHandSide.substr(2, rightHandSide.size() - 2);
+            rightHandSide = rightHandSide.substr(2, std::string::npos);
             base = 2;
         }
 
