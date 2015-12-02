@@ -25,6 +25,8 @@ Service::~Service() {
 }
 
 void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	switch(msg->data_type()) {
 		case em::Data::RegisterKey:
 			register_session(link, msg);
@@ -38,6 +40,8 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 }
 
 void Service::register_session(const spark::Link& link, const em::MessageRoot* root) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
 	auto status = em::account::Status::OK;
 	
@@ -52,6 +56,8 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 }
 
 void Service::locate_session(const spark::Link& link, const em::MessageRoot* root) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 	auto session = sessions_.lookup_session(msg->account_id());
 	send_locate_reply(link, root, session);
@@ -59,6 +65,8 @@ void Service::locate_session(const spark::Link& link, const em::MessageRoot* roo
 
 void Service::send_register_reply(const spark::Link& link, const em::MessageRoot* root,
                                   em::account::Status status) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::account::ResponseBuilder rb(*fbb);
 	rb.add_status(status);
@@ -77,6 +85,8 @@ void Service::send_register_reply(const spark::Link& link, const em::MessageRoot
 
 void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* root,
                                 const boost::optional<Botan::BigInt>& key) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
