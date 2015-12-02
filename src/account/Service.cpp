@@ -45,7 +45,7 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
 	auto status = em::account::Status::OK;
 	
-	if(msg->key()) {
+	if(msg->key() && msg->account_id()) {
 		Botan::BigInt key(msg->key()->data(), msg->key()->size());
 
 		if(!sessions_.register_session(msg->account_id(), key)) {
@@ -62,7 +62,12 @@ void Service::locate_session(const spark::Link& link, const em::MessageRoot* roo
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
-	auto session = sessions_.lookup_session(msg->account_id());
+	auto session = boost::optional<Botan::BigInt>();
+	
+	if(msg->account_id) {
+		session = sessions_.lookup_session(msg->account_id());
+	}
+
 	send_locate_reply(link, root, session);
 }
 
