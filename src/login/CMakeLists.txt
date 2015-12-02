@@ -43,6 +43,7 @@ set(LIBRARY_HDR
     FilterTypes.h
     MonitorCallbacks.h
     AccountService.h
+    RealmService.h
     )
 
 set(LIBRARY_SRC
@@ -54,6 +55,7 @@ set(LIBRARY_SRC
     Patcher.cpp
     MonitorCallbacks.cpp
     AccountService.cpp
+    RealmService.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

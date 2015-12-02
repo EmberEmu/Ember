@@ -28,7 +28,14 @@ void RealmService::handle_message(const spark::Link& link, const em::MessageRoot
 }
 
 void RealmService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-
+	switch(event) {
+		case spark::LinkState::LINK_UP:
+			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
+			break;
+		case spark::LinkState::LINK_DOWN:
+			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
+			break;
+	}
 }
 
 } // ember

@@ -38,6 +38,17 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 	}
 }
 
+void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
+	switch(event) {
+		case spark::LinkState::LINK_UP:
+			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
+			break;
+		case spark::LinkState::LINK_DOWN:
+			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
+			break;
+	}
+}
+
 void Service::register_session(const spark::Link& link, const em::MessageRoot* root) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -119,17 +130,6 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 
 	fbb->Finish(mloc);
 	spark_.send(link, fbb);
-}
-
-void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
-			break;
-	}
 }
 
 void Service::set_tracking_data(const em::MessageRoot* root, em::MessageRootBuilder& mrb,
