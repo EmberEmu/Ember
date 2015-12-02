@@ -22,7 +22,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                  std::uint16_t port, log::Logger* logger, log::Filter filter)
                  : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
                    listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger, filter),
-                   hb_service_(service_, this, logger, filter), socket_(service), 
+                   hb_service_(service_, this, logger, filter), 
                    track_service_(service_, logger, filter),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
 	signals_.async_wait(std::bind(&Service::shutdown, this));
@@ -53,11 +53,12 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 	bai::tcp::resolver resolver(service_);
 	auto port_str = std::to_string(port);
 	auto endpoint_it = resolver.resolve({ host, port_str });
+	auto socket = std::make_shared<boost::asio::ip::tcp::socket>(service_);
 
-	boost::asio::async_connect(socket_, endpoint_it,
-		[this, host, port](boost::system::error_code ec, bai::tcp::resolver::iterator it) {
+	boost::asio::async_connect(*socket, endpoint_it,
+		[this, host, port, socket](boost::system::error_code ec, bai::tcp::resolver::iterator it) {
 			if(!ec) {
-				start_session(std::move(socket_));
+				start_session(std::move(*socket));
 			}
 
 			LOG_DEBUG_FILTER(logger_, filter_)
@@ -69,10 +70,7 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 
 void Service::connect(const std::string& host, std::uint16_t port) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
-
-	service_.post([this, host, port] {
-		do_connect(host, port);
-	});
+	do_connect(host, port);
 }
 
 void Service::default_handler(const Link& link, const messaging::MessageRoot* message) {

@@ -33,7 +33,6 @@ class Service {
 
 	boost::asio::io_service& service_;
 	boost::asio::signal_set signals_;
-	boost::asio::ip::tcp::socket socket_;
 
 	Link link_;
 	Listener listener_;
