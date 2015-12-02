@@ -64,7 +64,7 @@ void Service::locate_session(const spark::Link& link, const em::MessageRoot* roo
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 	auto session = boost::optional<Botan::BigInt>();
 	
-	if(msg->account_id) {
+	if(msg->account_id()) {
 		session = sessions_.lookup_session(msg->account_id());
 	}
 
