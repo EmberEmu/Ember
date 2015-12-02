@@ -34,7 +34,6 @@ using namespace std::chrono_literals;
 
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-ember::drivers::MySQL init_db_driver(const po::variables_map& args);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
 /*
@@ -166,15 +165,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::notify(options);
 
 	return std::move(options);
-}
-
-ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
-	auto user = args["database.username"].as<std::string>();
-	auto pass = args["database.password"].as<std::string>();
-	auto host = args["database.host"].as<std::string>();
-	auto port = args["database.port"].as<unsigned short>();
-	auto db   = args["database.database"].as<std::string>();
-	return {user, pass, host, port, db};
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
