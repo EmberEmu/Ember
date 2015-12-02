@@ -134,7 +134,7 @@ void Service::handle_link_event(const spark::Link& link, spark::LinkState event)
 }
 
 void Service::set_tracking_data(const em::MessageRoot* root, em::MessageRootBuilder& mrb,
-								flatbuffers::FlatBufferBuilder* fbb) {
+                                flatbuffers::FlatBufferBuilder* fbb) {
 	if(root->tracking_id()) {
 		auto id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
 		mrb.add_tracking_id(id);

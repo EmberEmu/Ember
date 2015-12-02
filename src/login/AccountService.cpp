@@ -113,7 +113,7 @@ void AccountService::register_session(std::uint32_t account_id, const srp6::Sess
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&AccountService::handle_register_reply, this, std::placeholders::_1,
-					          std::placeholders::_2, std::placeholders::_3, cb);
+	                          std::placeholders::_2, std::placeholders::_3, cb);
 	
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
 		cb(em::account::Status::SERVER_LINK_ERROR);

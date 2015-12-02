@@ -70,8 +70,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
-	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1,
-									std::placeholders::_2, logger));
+	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto user_dao = ember::dal::user_dao(pool);
