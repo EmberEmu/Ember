@@ -45,11 +45,14 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
 	auto status = em::account::Status::OK;
 	
-	Botan::BigInt key(msg->key()->data(), msg->key()->size());
-	bool res = sessions_.register_session(msg->account_id(), key);
+	if(msg->key()) {
+		Botan::BigInt key(msg->key()->data(), msg->key()->size());
 
-	if(!res) {
-		status = em::account::Status::ALREADY_LOGGED_IN;
+		if(!sessions_.register_session(msg->account_id(), key)) {
+			status = em::account::Status::ALREADY_LOGGED_IN;
+		}
+	} else {
+		status = em::account::Status::ILLFORMED_MESSAGE;
 	}
 
 	send_register_reply(link, root, status);
