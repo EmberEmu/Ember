@@ -7,6 +7,8 @@
  */
 
 #include "FilterTypes.h"
+#include "RealmService.h"
+#include <spark/Spark.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -27,6 +29,7 @@
 #undef ERROR // temp
 
 namespace el = ember::log;
+namespace es = ember::spark;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
@@ -84,9 +87,31 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
 
+	boost::asio::io_service service;
+
+	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
+	auto s_address = args["spark.address"].as<std::string>();
+	auto s_port = args["spark.port"].as<std::uint16_t>();
+	auto mcast_group = args["spark.multicast_group"].as<std::string>();
+	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
+	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
+	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+
+	es::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
+	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
+								   mcast_port, logger, spark_filter);
+
+	ember::RealmService realm_svc(spark, discovery, logger);
+
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
 	
+	service.dispatch([logger]() {
+		LOG_INFO(logger) << "Gateway started successfully" << LOG_SYNC;
+	});
+
+	service.run();
+
 	LOG_INFO(logger) << "Realm gateway shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;

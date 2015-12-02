@@ -10,6 +10,7 @@
 
 #include "Sessions.h"
 #include <spark/temp/Account_generated.h>
+#include <spark/temp/MessageRoot_generated.h>
 #include <spark/Service.h>
 #include <logger/Logging.h>
 

@@ -7,7 +7,6 @@
  */
 
 #include "Service.h"
-#include <spark/temp/MessageRoot_generated.h>
 
 namespace em = ember::messaging;
 
