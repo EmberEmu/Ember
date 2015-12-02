@@ -5,17 +5,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME gateway)
+set(LIBRARY_NAME    libgateway)
 
-set(EXECUTABLE_HDR
+set(LIBRARY_HDR
     FilterTypes.h
+    RealmService.h
     )
 
-set(EXECUTABLE_SRC
-    main.cpp
+set(LIBRARY_SRC
+    RealmService.cpp
     )
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
-add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} conpool logging shared ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+target_link_libraries(${LIBRARY_NAME} spark logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+
+add_executable(${EXECUTABLE_NAME} main.cpp)
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark conpool logging shared ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/login/ DESTINATION ${CMAKE_INSTALL_PREFIX})
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs DESTINATION ${CMAKE_INSTALL_PREFIX})
