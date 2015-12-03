@@ -99,7 +99,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	es::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-								   mcast_port, logger, spark_filter);
+	                               mcast_port, logger, spark_filter);
 
 	ember::RealmService realm_svc(spark, discovery, logger);
 
