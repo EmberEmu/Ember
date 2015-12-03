@@ -31,21 +31,14 @@ void RealmList::add_realm(Realm realm) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	auto copy = std::make_shared<RealmMap>(*realms_);
-	copy->emplace(realm.id, std::move(realm));
+	(*copy)[realm.id] = realm;
 
 	realms_ = copy;
 }
-	
-void RealmList::set_status(std::uint32_t id, bool online) {
+
+Realm RealmList::get_realm(std::uint32_t id) const {
 	std::lock_guard<std::mutex> guard(lock_);
-
-	auto copy = std::make_shared<RealmMap>(*realms_);
-}
-
-void RealmList::set_population(float population) {
-	std::lock_guard<std::mutex> guard(lock_);
-
-	auto copy = std::make_shared<RealmMap>(*realms_);
+	return realms_->at(id);
 }
 
 auto RealmList::realms() const -> std::shared_ptr<const RealmMap> {

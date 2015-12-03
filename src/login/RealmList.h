@@ -21,15 +21,14 @@ typedef std::unordered_map<std::uint32_t, Realm> RealmMap;
 
 class RealmList {
 	std::shared_ptr<const RealmMap> realms_;
-	std::mutex lock_;
+	mutable std::mutex lock_;
 
 public:
 	explicit RealmList(std::vector<Realm> realms);
 	RealmList() : realms_(std::make_shared<RealmMap>()){}
 	void add_realm(std::vector<Realm> realms);
 	void add_realm(Realm realm);
-	void set_status(std::uint32_t id, bool online);
-	void set_population(float population);
+	Realm get_realm(std::uint32_t id) const;
 	std::shared_ptr<const RealmMap> realms() const;
 };
 

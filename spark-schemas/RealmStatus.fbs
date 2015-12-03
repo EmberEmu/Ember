@@ -12,3 +12,18 @@ enum Status : ubyte {
 	UNKNOWN_ERROR, OK
 }
 
+table RequestRealmStatus {
+	// nothing!
+}
+
+table RealmStatus {
+	id:uint;
+	name:string;
+	ip:string;
+	population:float;
+	type:uint;
+	flags:ubyte;
+	timezone:ubyte;
+}
+
+

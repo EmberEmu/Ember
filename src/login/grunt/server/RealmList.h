@@ -84,7 +84,7 @@ class RealmList final : public Packet {
 			Realm realm;
 			std::uint8_t num_chars;
 
-			stream >> realm.icon;
+			stream >> realm.type;
 			stream >> realm.flags;
 			stream >> realm.name;
 
@@ -103,7 +103,7 @@ class RealmList final : public Packet {
 			stream >> realm.timezone;
 			stream.skip(1); // unknown byte, just skip it
 
-			be::little_to_native_inplace(realm.icon);
+			be::little_to_native_inplace(realm.type);
 			be::little_to_native_inplace(realm.population);
 
 			realms.emplace_back(RealmListEntry{ realm, num_chars });
@@ -162,7 +162,7 @@ public:
 
 		for(auto& entry : realms) {
 			auto& realm = entry.realm;
-			stream << be::native_to_little(realm.icon);
+			stream << be::native_to_little(realm.type);
 			stream << realm.flags;
 			stream << realm.name;
 			stream << realm.ip;

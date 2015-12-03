@@ -101,12 +101,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::RealmService realm_svc(spark, discovery, logger);
+	ember::RealmService realm_svc(*realm, spark, discovery, logger);
 
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
 	
-	service.dispatch([logger]() {
+	service.dispatch([&, logger]() {
+		realm_svc.set_realm_online();
 		LOG_INFO(logger) << "Gateway started successfully" << LOG_SYNC;
 	});
 

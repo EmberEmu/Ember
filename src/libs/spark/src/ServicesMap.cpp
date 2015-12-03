@@ -15,15 +15,13 @@ namespace ember { namespace spark {
 std::vector<Link> ServicesMap::peer_services(messaging::Service service, Mode type) const {
 	std::lock_guard<std::mutex> guard(lock_);
 
-	switch(type) {
-		case Mode::CLIENT:
-			return std::vector<Link>(peer_clients_.at(service).begin(), peer_clients_.at(service).end());
-			break;
-		case Mode::SERVER:
-			return std::vector<Link>(peer_servers_.at(service).begin(), peer_clients_.at(service).end());
-			break;
-	}
+	auto& map = type == Mode::CLIENT? peer_clients_ : peer_servers_;
+	auto it = map.find(service);
 
+	if(it != map.end()) {
+		return std::vector<Link>(it->second.begin(), it->second.end());
+	}
+	
 	return std::vector<Link>();
 }
 

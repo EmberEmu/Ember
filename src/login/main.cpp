@@ -147,7 +147,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	                               mcast_port, logger, spark_filter);
 
 	ember::AccountService acct_svc(spark, discovery, logger);
-	ember::RealmService realm_svc(spark, discovery, logger);
+	ember::RealmService realm_svc(realm_list, spark, discovery, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();
