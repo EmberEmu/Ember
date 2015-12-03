@@ -18,15 +18,15 @@
 
 namespace ember {
 
-class RealmService : public spark::EventHandler {
+class RealmService final : public spark::EventHandler {
 	Realm realm_;
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
 	
-	std::unique_ptr<flatbuffers::FlatBufferBuilder> build_realm_status(const messaging::MessageRoot* root = nullptr);
-	void broadcast_realm_status();
-	void send_realm_status(const spark::Link& link, const messaging::MessageRoot* root);
+	std::unique_ptr<flatbuffers::FlatBufferBuilder> build_realm_status(const messaging::MessageRoot* root = nullptr) const;
+	void broadcast_realm_status() const;
+	void send_realm_status(const spark::Link& link, const messaging::MessageRoot* root) const;
 
 public:
 	RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);

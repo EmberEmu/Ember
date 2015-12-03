@@ -41,13 +41,13 @@ void RealmService::set_realm_offline() {
 	broadcast_realm_status();
 }
 
-void RealmService::send_realm_status(const spark::Link& link, const em::MessageRoot* root) {
+void RealmService::send_realm_status(const spark::Link& link, const em::MessageRoot* root) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto fbb = build_realm_status(root);
 	spark_.send(link, std::move(fbb));
 }
 
-std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status(const em::MessageRoot* root) {
+std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status(const em::MessageRoot* root) const {
 	auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
 	em::realm::RealmStatusBuilder rsb(*fbb);
 	rsb.add_id(realm_.id);
@@ -58,7 +58,6 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status
 	rsb.add_timezone(realm_.timezone);
 	rsb.add_type(realm_.type);
 	auto data_offset = rsb.Finish();
-
 
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::RealmStatus);
@@ -71,11 +70,10 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status
 
 	auto mloc = mrb.Finish();
 	fbb->Finish(mloc);
-
 	return fbb;
 }
 
-void RealmService::broadcast_realm_status() {
+void RealmService::broadcast_realm_status() const {
 	auto fbb = build_realm_status();
 	spark_.broadcast(em::Service::RealmStatus, spark::ServicesMap::Mode::CLIENT, std::move(fbb));
 }

@@ -8,7 +8,6 @@
 
 #include "RealmService.h"
 #include "RealmList.h"
-#include <boost/uuid/uuid.hpp>
 
 namespace em = ember::messaging;
 

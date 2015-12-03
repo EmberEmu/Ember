@@ -28,7 +28,7 @@
 
 namespace ember { namespace spark {
 
-class Service {
+class Service final {
 	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandler;
 
 	boost::asio::io_service& service_;
