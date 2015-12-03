@@ -29,7 +29,7 @@ public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<Realm> get_realms() const override try {
-		const std::string query = "SELECT id, name, ip, type, flags, timezone, population FROM realms";
+		const std::string query = "SELECT id, name, ip, type, flags, zone, population FROM realms";
 
 		auto conn = pool_.wait_connection(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -42,7 +42,7 @@ public:
 			           static_cast<float>(res->getDouble("population")),
 		               static_cast<Realm::Type>(res->getUInt("type")),
 					   static_cast<Realm::Flag>(res->getUInt("flags")),
-		               static_cast<std::uint8_t>(res->getUInt("timezone"))};
+		               static_cast<Realm::Zone>(res->getUInt("zone"))};
 			realms.emplace_back(std::move(temp));
 		}
 
@@ -52,7 +52,7 @@ public:
 	}
 
 	boost::optional<Realm> get_realm(int id) const override try {
-		const std::string query = "SELECT id, name, ip, type, flags, timezone, population FROM realms "
+		const std::string query = "SELECT id, name, ip, type, flags, zone, population FROM realms "
 		                          "WHERE id = ?";
 
 		auto conn = pool_.wait_connection(60s);
@@ -67,7 +67,7 @@ public:
 			           static_cast<float>(res->getDouble("population")),
 		               static_cast<Realm::Type>(res->getUInt("type")),
 					   static_cast<Realm::Flag>(res->getUInt("flags")),
-		               static_cast<std::uint8_t>(res->getUInt("timezone"))};
+		               static_cast<Realm::Zone>(res->getUInt("zone"))};
 			return boost::optional<Realm>(std::move(temp));
 		}
 

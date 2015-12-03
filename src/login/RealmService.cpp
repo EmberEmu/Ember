@@ -52,7 +52,7 @@ void RealmService::handle_realm_status(const spark::Link& link, const em::Messag
 	realm.population = msg->population();
 	realm.type = static_cast<Realm::Type>(msg->type());
 	realm.flags = static_cast<Realm::Flag>(msg->flags());
-	realm.timezone = msg->timezone();
+	realm.zone = static_cast<Realm::Zone>(msg->zone());
 	realms_.add_realm(realm);
 
 	LOG_INFO(logger_) << "Updated realm information for " << realm.name << LOG_ASYNC;
@@ -85,6 +85,7 @@ void RealmService::service_located(const messaging::multicast::LocateAnswer* mes
 void RealmService::mark_realm_offline(const spark::Link& link) {
 	auto it = known_realms_.find(link.uuid);
 
+	// if we connected but didn't receive a valid status message, return
 	if(it == known_realms_.end()) {
 		return;
 	}

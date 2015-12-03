@@ -100,7 +100,7 @@ class RealmList final : public Packet {
 
 			stream >> realm.population;
 			stream >> num_chars;
-			stream >> realm.timezone;
+			stream >> realm.zone;
 			stream.skip(1); // unknown byte, just skip it
 
 			be::little_to_native_inplace(realm.type);
@@ -168,7 +168,7 @@ public:
 			stream << realm.ip;
 			stream << be::native_to_little(realm.population);
 			stream << entry.characters;
-			stream << realm.timezone;
+			stream << realm.zone;
 			stream << std::uint8_t(0); // unknown
 		}
 

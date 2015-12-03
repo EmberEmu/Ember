@@ -55,7 +55,7 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status
 	rsb.add_ip(fbb->CreateString(realm_.ip));
 	rsb.add_flags(realm_.flags);
 	rsb.add_population(realm_.population);
-	rsb.add_timezone(realm_.timezone);
+	rsb.add_zone(realm_.zone);
 	rsb.add_type(realm_.type);
 	auto data_offset = rsb.Finish();
 

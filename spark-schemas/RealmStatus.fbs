@@ -23,7 +23,7 @@ table RealmStatus {
 	population:float;
 	type:uint;
 	flags:ubyte;
-	timezone:ubyte;
+	zone:ubyte;
 }
 
 

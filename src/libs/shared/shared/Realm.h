@@ -30,12 +30,23 @@ struct Realm {
 		PvE, PvP, RP = 6, RPPvP = 8,
 	};
 
+	enum Zone : std::uint8_t { // these are probably wrong
+		ANY,
+		UNITED_States,
+		KOREA,
+		ENGLISH,
+		TAIWAN,
+		CHINA,
+		TEST_SERVER = 99,
+		QA_SERVER = 101,
+	};
+
 	std::uint32_t id;
 	std::string name, ip;
 	float population;
 	Type type;
 	Flag flags;
-	std::uint8_t timezone;
+	Zone zone;
 };
 
 } //ember

@@ -43,8 +43,7 @@ void Service::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
 
 	MessageHandler m_handler(dispatcher_, services_, link_, true, logger_, filter_);
-	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket),
-                                                    m_handler, logger_, filter_);
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_, filter_);
 	sessions_.start(session);
 }
 
@@ -62,7 +61,7 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 			}
 
 			LOG_DEBUG_FILTER(logger_, filter_)
-				<< "[spark] " << (ec ? "Unable to establish" : "Established")
+				<< "[spark] " << (ec? "Unable to establish" : "Established")
 				<< " connection to " << host << ":" << port << LOG_ASYNC;
 		}
 	);
