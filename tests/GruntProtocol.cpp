@@ -268,7 +268,8 @@ TEST(GruntProtocol, ServerRealmList) {
 	auto chars = entry.characters;
 
 	ASSERT_EQ(2, realm.flags) << "Deserialisation failed (invalid realm flags)";
-	ASSERT_EQ(1, realm.icon) << "Deserialisation failed (invalid realm icon)";
+	ASSERT_EQ(1, realm.type) << "Deserialisation failed (invalid realm type)";
+	ASSERT_EQ(1, realm.zone) << "Deserialisation failed (invalid realm zone)";
 	ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
 	ASSERT_EQ("Ember"s, realm.name) << "Deserialisation failed (invalid realm name)";
 	ASSERT_EQ(0.0f, realm.population) << "Deserialisation failed (invalid realm population)";
@@ -280,7 +281,8 @@ TEST(GruntProtocol, ServerRealmList) {
 	chars = entry.characters;
 
 	ASSERT_EQ(1, realm.flags) << "Deserialisation failed (invalid realm flags)";
-	ASSERT_EQ(0, realm.icon) << "Deserialisation failed (invalid realm icon)";
+	ASSERT_EQ(0, realm.type) << "Deserialisation failed (invalid realm type)";
+	ASSERT_EQ(1, realm.zone) << "Deserialisation failed (invalid realm zone)";
 	ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
 	ASSERT_EQ("Ember Test"s, realm.name) << "Deserialisation failed (invalid realm name)";
 	ASSERT_EQ(1.4f, realm.population) << "Deserialisation failed (invalid realm population)";
