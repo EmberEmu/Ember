@@ -24,9 +24,9 @@ class RealmService : public spark::EventHandler {
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
 	
-	std::unique_ptr<flatbuffers::FlatBufferBuilder> build_realm_status();
+	std::unique_ptr<flatbuffers::FlatBufferBuilder> build_realm_status(const messaging::MessageRoot* root = nullptr);
 	void broadcast_realm_status();
-	void send_realm_status(const spark::Link& link);
+	void send_realm_status(const spark::Link& link, const messaging::MessageRoot* root);
 
 public:
 	RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);

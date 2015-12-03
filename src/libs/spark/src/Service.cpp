@@ -102,8 +102,7 @@ auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
 	return Result::OK;
 }
 
-auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
-                        BufferHandler fbb) const -> Result {
+void Service::broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto& links = services_.peer_services(service, mode);
 
@@ -115,12 +114,18 @@ auto Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
 		if(shared_net) {
 			shared_net->write(fbb);
 		} else {
-			LOG_WARN_FILTER(logger_, filter_)
-				<< "[spark] Unable to lock weak_ptr in a broadcast" << LOG_ASYNC;
+			LOG_WARN_FILTER(logger_, filter_) << "[spark] Unable to lock weak_ptr!" << LOG_ASYNC;
 		}
 	}
+}
 
-	return Result::OK;
+void Service::set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
+                                flatbuffers::FlatBufferBuilder* fbb) {
+	if(root->tracking_id()) {
+		auto id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
+		mrb.add_tracking_id(id);
+		mrb.add_tracking_ttl(1);
+	}
 }
 
 EventDispatcher* Service::dispatcher() {

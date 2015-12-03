@@ -9,9 +9,9 @@
 #pragma once
 
 #include "Sessions.h"
+#include <spark/Service.h>
 #include <spark/temp/Account_generated.h>
 #include <spark/temp/MessageRoot_generated.h>
-#include <spark/Service.h>
 #include <logger/Logging.h>
 
 namespace ember {
@@ -28,9 +28,7 @@ class Service final : public spark::EventHandler {
 	void send_locate_reply(const spark::Link& link, const messaging::MessageRoot* root,
 	                       const boost::optional<Botan::BigInt>& key);
 	void send_register_reply(const spark::Link& link, const messaging::MessageRoot* root,
-							 messaging::account::Status status);
-	void set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
-	                       flatbuffers::FlatBufferBuilder* fbb);
+	                         messaging::account::Status status);
 
 public:
 	Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);

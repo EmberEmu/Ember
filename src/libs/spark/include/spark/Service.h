@@ -63,7 +63,9 @@ public:
 	Result send(const Link& link, BufferHandler fbb) const;
 	Result send_tracked(const Link& link, boost::uuids::uuid id,
 	                    BufferHandler fbb, TrackingHandler callback);
-	Result broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const;
+	void broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const;
+	void set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
+	                       flatbuffers::FlatBufferBuilder* fbb);
 	void shutdown();
 };
 
