@@ -78,7 +78,8 @@ void RealmService::handle_link_event(const spark::Link& link, spark::LinkState e
 }
 
 void RealmService::service_located(const messaging::multicast::LocateAnswer* message) {
-	LOG_DEBUG(logger_) << "Located realm gateway at " << message->ip()->str() << LOG_ASYNC; // todo
+	LOG_DEBUG(logger_) << "Located realm gateway at " << message->ip()->str()
+	                   << ":" << message->port() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());
 }
 
@@ -105,7 +106,7 @@ void RealmService::request_realm_status(const spark::Link& link) {
 	fbb->Finish(msg);
 
 	if(spark_.send(link, fbb) != spark::Service::Result::OK) {
-		LOG_DEBUG(logger_) << "Failed" << LOG_ASYNC; // todo
+		LOG_DEBUG(logger_) << "Realm status request failed, " << link.description << LOG_ASYNC;
 	}
 }
 

@@ -45,7 +45,8 @@ void AccountService::handle_link_event(const spark::Link& link, spark::LinkState
 }
 
 void AccountService::service_located(const messaging::multicast::LocateAnswer* message) {
-	LOG_DEBUG(logger_) << "Located account service at " << message->ip()->str() << LOG_ASYNC; // todo
+	LOG_DEBUG(logger_) << "Located account service at " << message->ip()->str() 
+	                   << ":" << message->port() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());
 }
 
@@ -99,7 +100,6 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const
 		cb(em::account::Status::SERVER_LINK_ERROR, 0);
 	}
 }
-
 
 void AccountService::register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
