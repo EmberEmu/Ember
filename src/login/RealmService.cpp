@@ -31,6 +31,8 @@ void RealmService::handle_message(const spark::Link& link, const em::MessageRoot
 		case em::Data::RealmStatus:
 			handle_realm_status(link, root);
 			break;
+		default:
+			LOG_DEBUG(logger_) << "Unhandled realm status message from " << link.description << LOG_ASYNC;
 	}
 }
 
@@ -40,9 +42,10 @@ void RealmService::handle_realm_status(const spark::Link& link, const em::Messag
 	auto msg = static_cast<const em::realm::RealmStatus*>(root->data());
 
 	if(!msg->name() || !msg->id() || !msg->ip()) {
-		LOG_DEBUG(logger_) << "Failed" << LOG_ASYNC; // todo
+		LOG_WARN(logger_) << "Incompatible realm status update from " << link.description << LOG_ASYNC;
 	}
 
+	// update everything rather than bothering to only set changed fields
 	Realm realm;
 	realm.id = msg->id();
 	realm.ip = msg->ip()->str();
@@ -53,6 +56,9 @@ void RealmService::handle_realm_status(const spark::Link& link, const em::Messag
 	realm.timezone = msg->timezone();
 	realms_.add_realm(realm);
 
+	LOG_INFO(logger_) << "Updated realm information for " << realm.name << LOG_ASYNC;
+
+	// keep track of this link's realm ID so we can mark it as offline if it disappears
 	known_realms_[link.uuid] = msg->id();
 }
 
@@ -86,6 +92,8 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 	Realm realm = realms_.get_realm(it->second);
 	realm.flags = static_cast<Realm::Flag>(realm.flags | Realm::Flag::OFFLINE);
 	realms_.add_realm(realm);
+
+	LOG_INFO(logger_) << "Set gateway for " << realm.name <<  " to offline" << LOG_ASYNC;
 }
 
 void RealmService::request_realm_status(const spark::Link& link) {
@@ -93,7 +101,7 @@ void RealmService::request_realm_status(const spark::Link& link) {
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::RealmStatus, 0, 0,
-		em::Data::RequestRealmStatus, em::realm::CreateRequestRealmStatus(*fbb).Union());
+	                                         em::Data::RequestRealmStatus, 0);
 	fbb->Finish(msg);
 
 	if(spark_.send(link, fbb) != spark::Service::Result::OK) {
