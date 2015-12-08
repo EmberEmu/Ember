@@ -41,6 +41,8 @@ set(THREADING_SRC
     shared/threading/Spinlock.h
     shared/threading/ThreadPool.cpp
     shared/threading/ThreadPool.h
+    shared/threading/Affinity.h
+    shared/threading/Affinity.cpp
 )
 
 set(UTIL_SRC
