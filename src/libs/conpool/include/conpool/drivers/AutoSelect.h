@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <shared/CompilerWarn.h>
-
 #ifdef DB_MYSQL
 	#include <conpool/drivers/MySQL/Driver.h>
 	#include <conpool/drivers/MySQL/Config.h>
