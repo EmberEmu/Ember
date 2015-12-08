@@ -24,7 +24,7 @@ namespace ember { namespace drivers {
 #elif DB_POSTGRESQL
 	typedef PostgreSQL DriverType;
 #else
-	#pragma message WARN("Cannot compile Ember without defining a DBMS!")
+	static_assert(false, "Cannot compile Ember without defining a DBMS!")
 #endif
 
 }} //drivers, ember
