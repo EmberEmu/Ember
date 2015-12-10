@@ -140,6 +140,9 @@ With a global logger:
 LOG_DEBUG_FILTER_GLOB(PLAYER_TRADE) << "Example message" << LOG_ASYNC;
 ```
 
+# Thread Safety
+Logger objects and all sinks are entirely thread safe. It is also safe to create multiple logger instances within a single process, even when using console sinks (assuming C++11).
+
 # Performance Notes
 * When the message queue hits a certain size, the logger will begin writing log entries in batches rather than individually. This does not apply to the remote sink.
 * File entries are written in binary mode rather than ASCII. This means that newline characters will not be converted to \r\n on Windows but this should not pose a problem for most text viewers.
