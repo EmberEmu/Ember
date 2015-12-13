@@ -51,7 +51,7 @@ public:
 
 	virtual void execute() override try {
 		res_ = do_register().get();
-	} catch(std::exception) {
+	} catch(const std::exception&) {
 		exception_ = std::current_exception();
 	}
 
@@ -88,7 +88,7 @@ public:
 
 	virtual void execute() override try {
 		res_ = do_fetch().get();
-	} catch(std::exception) {
+	} catch(const std::exception&) {
 		exception_ = std::current_exception();
 	}
 
@@ -113,7 +113,7 @@ public:
 
 	virtual void execute() override try {
 		user_ = user_src_.user(username_);
-	} catch(dal::exception) {
+	} catch(const dal::exception&) {
 		exception_ = std::current_exception();
 	}
 
