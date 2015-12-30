@@ -10,10 +10,13 @@ set(LIBRARY_NAME    libgateway)
 set(LIBRARY_HDR
     FilterTypes.h
     RealmService.h
+    ServicePool.h
+    NetworkListener.h
     )
 
 set(LIBRARY_SRC
     RealmService.cpp
+    ServicePool.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

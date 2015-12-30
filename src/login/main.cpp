@@ -172,8 +172,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
-	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder,
-	                              ip_ban_cache, logger);
+	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger);
 
 	// Start monitoring service
 	std::unique_ptr<ember::Monitor> monitor;

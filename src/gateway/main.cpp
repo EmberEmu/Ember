@@ -7,7 +7,9 @@
  */
 
 #include "FilterTypes.h"
+#include "ServicePool.h"
 #include "RealmService.h"
+#include "NetworkListener.h"
 #include <spark/Spark.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -36,6 +38,7 @@ namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
 void launch(const po::variables_map& args, el::Logger* logger);
+unsigned int check_concurrency(el::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
@@ -64,6 +67,10 @@ int main(int argc, const char* argv[]) try {
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
+#ifdef DEBUG_NO_THREADS
+	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+#endif
+
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
@@ -87,7 +94,18 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
 
-	boost::asio::io_service service;
+	// Determine concurrency level
+	unsigned int concurrency = check_concurrency(logger);
+
+	if(args.count("misc.concurrency")) {
+		concurrency = args["misc.concurrency"].as<unsigned int>();
+	}
+
+	// Start ASIO service pool
+	LOG_INFO(logger) << "Starting service pool with " << concurrency << " threads..." << LOG_SYNC;
+	ember::ServicePool s_pool(concurrency);
+
+	boost::asio::io_service service; // todo, remove
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
@@ -106,12 +124,22 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
 	
+	// Start network listener
+	auto interface = args["network.interface"].as<std::string>();
+	auto port = args["network.port"].as<std::uint16_t>();
+	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
+
+	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
+
+	ember::NetworkListener server(s_pool, interface, port, tcp_no_delay, logger);
+
 	service.dispatch([&, logger]() {
 		realm_svc.set_realm_online();
 		LOG_INFO(logger) << "Gateway started successfully" << LOG_SYNC;
 	});
 
-	service.run();
+	service.run(); // todo, remove
+	s_pool.run();
 
 	LOG_INFO(logger) << "Realm gateway shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
@@ -132,6 +160,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
+		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())
 		("realm.max-slots", po::value<unsigned int>()->required())
 		("realm.reserved-slots", po::value<unsigned int>()->required())
@@ -217,4 +246,24 @@ void pool_log_callback(ep::Severity severity, const std::string& message, el::Lo
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 	}
+}
+
+/*
+ * The concurrency level returned is usually the number of logical cores
+ * in the machine but the standard doesn't guarantee that it won't be zero.
+ * In that case, we just set the minimum concurrency level to two.
+ */
+unsigned int check_concurrency(el::Logger* logger) {
+	unsigned int concurrency = std::thread::hardware_concurrency();
+
+	if(!concurrency) {
+		concurrency = 2;
+		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
+	}
+
+#ifdef DEBUG_NO_THREADS
+	return 0;
+#else
+	return concurrency;
+#endif
 }
