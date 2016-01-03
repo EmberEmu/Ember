@@ -28,14 +28,12 @@
 namespace ember { namespace spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 16; // 16KB
 	enum class ReadState { HEADER, BODY };
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	ReadState state_;
 	std::uint32_t body_read_size;
@@ -98,42 +96,18 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	void read() {
 		auto self(shared_from_this());
-		set_timer();
 		
 		std::size_t read_size = state_ == ReadState::HEADER? sizeof(body_read_size) : body_read_size;
 
 		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size), strand_.wrap(
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(!stopped_) {
-					timer_.cancel();
 					handle_read(ec);
 				}
 			}
 		));
 	}
 
-	void set_timer() {
-		auto self(shared_from_this());
-
-		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(strand_.wrap(
-			[this, self](const boost::system::error_code& ec) {
-				timeout(ec);
-			}
-		));
-	}
-
-	void timeout(const boost::system::error_code& ec) {
-		if(ec || stopped_) { // if ec is set, the timer was aborted (session close / refreshed)
-			return;
-		}
-
-		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Lost connection to peer at " << remote_host()
-			<< " (idle timeout) " << LOG_ASYNC;
-
-		close_session();
-	}
 
 	void stop() {
 		LOG_DEBUG_FILTER(logger_, filter_)
@@ -143,13 +117,12 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		socket_.close(ec);
-		timer_.cancel();
 	}
 
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
 	               log::Logger* logger, log::Filter filter)
-	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
+	               : sessions_(sessions), socket_(std::move(socket)),
 	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
 	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH),
 	                 strand_(socket_.get_io_service()),
