@@ -96,7 +96,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	void read() {
 		auto self(shared_from_this());
-		
 		std::size_t read_size = state_ == ReadState::HEADER? sizeof(body_read_size) : body_read_size;
 
 		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size), strand_.wrap(
@@ -143,8 +142,6 @@ public:
 	}
 
 	void write(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {
-		auto self(shared_from_this());
-
 		if(!socket_.is_open()) {
 			return;
 		}
@@ -159,12 +156,14 @@ public:
 		}
 
 		boost::endian::native_to_little_inplace(size);
-		auto size_ptr = std::make_shared<decltype(body_read_size)>(size);
+		auto size_ptr = std::make_shared<decltype(body_read_size)>(size); // todo, remove the need for an allocation
 
 		std::array<boost::asio::const_buffer, 2> buffers {
 			boost::asio::const_buffer { size_ptr.get(), sizeof(body_read_size) },
 			boost::asio::const_buffer { fbb->GetBufferPointer(), fbb->GetSize() }
 		};
+
+		auto self(shared_from_this());
 
 		socket_.async_send(buffers, strand_.wrap(
 			[this, self, fbb](boost::system::error_code ec, std::size_t /*size*/) {

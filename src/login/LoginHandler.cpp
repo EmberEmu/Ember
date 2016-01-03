@@ -275,7 +275,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 void LoginHandler::send_login_proof_failure(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	LOG_DEBUG(logger_) << "Rejected login (" << user_->username() << ", "
-	                   << grunt::to_string(result) << ")" << LOG_SYNC;
+	                   << grunt::to_string(result) << ")" << LOG_ASYNC;
 
 	metrics_.increment("login_failure");
 
@@ -310,7 +310,7 @@ void LoginHandler::send_login_proof(RegisterSessionAction* action) {
 	}
 
 	LOG_DEBUG(logger_) << "Login result for " << user_->username() << ": "
-	                   << messaging::account::EnumNameStatus(result) << LOG_SYNC;
+	                   << messaging::account::EnumNameStatus(result) << LOG_ASYNC;
 
 	send(std::move(response));
 }
