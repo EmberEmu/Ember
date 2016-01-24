@@ -12,6 +12,7 @@
 #include <spark/Buffer.h>
 #include <boost/assert.hpp>
 #include <boost/asio/buffer.hpp>
+#include <algorithm>
 #include <vector>
 #include <utility>
 #include <cstddef>
@@ -77,15 +78,15 @@ class ChainedBuffer final : public Buffer {
 	}
 	
 	void offset_buffers(std::vector<BufferBlock<BlockSize>*>& buffers, std::size_t offset) {
-		for(auto i = buffers.begin(); i != buffers.end();) {
-			if((*i)->size() > offset) {
-				(*i)->read_offset += offset;
-				(*i)->write_offset -= offset;
-				break;
+		buffers.erase(std::remove_if(buffers.begin(), buffers.end(), [&](BufferBlock<BlockSize>* block) {
+			if(block->size() > offset) {
+				block->read_offset += offset;
+				block->write_offset -= offset;
+				return false;
 			} else {
-				i = buffers.erase(i);
+				return true;
 			}
-		}
+		}), buffers.end());
 	}
 
 public:

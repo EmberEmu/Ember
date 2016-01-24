@@ -135,10 +135,7 @@ MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
 void MySQL::close_cache(const sql::Connection* conn) const {
 	std::lock_guard<std::mutex> lock(cache_lock_);
 	auto cache_it = cache_.find(conn);
-	
-	if(cache_it != cache_.end()) {
-		cache_.erase(cache_it);
-	}
+	cache_.erase(conn);
 }
 
 }} // drivers, ember
