@@ -301,6 +301,10 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
  * In that case, we just set the minimum concurrency level to two.
  */
 unsigned int check_concurrency(el::Logger* logger) {
+#ifdef DEBUG_NO_THREADS
+	return 0;
+#endif
+
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
@@ -308,11 +312,7 @@ unsigned int check_concurrency(el::Logger* logger) {
 		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 
-#ifdef DEBUG_NO_THREADS
-	return 0;
-#else
 	return concurrency;
-#endif
 }
 
 void print_lib_versions(el::Logger* logger) {
