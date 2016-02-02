@@ -67,39 +67,6 @@ public:
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}
-
-	std::string session_key(const std::string& username) const override try {
-		const std::string query = "SELECT `key` FROM session_keys WHERE username = ?";
-
-		auto conn = pool_.wait_connection(5s);
-		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
-		stmt->setString(1, username);
-		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-
-		if(res->next()) {
-			return res->getString("key");
-		}
-
-		return "";
-	} catch(std::exception& e) {
-		throw exception(e.what());
-	}
-
-	void session_key(const std::string& username, const std::string& key) const override try {
-		const std::string query = "INSERT INTO session_keys (username, `key`) VALUES (?, ?) "
-		                          "ON DUPLICATE KEY UPDATE `key` = VALUES(`key`)";
-
-		auto conn = pool_.wait_connection(5s);
-		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
-		stmt->setString(1, username);
-		stmt->setString(2, key);
-		
-		if(!stmt->executeUpdate()) {
-			throw exception("Unable to set session key for " + username);
-		}
-	} catch(std::exception& e) {
-		throw exception(e.what());
-	}
 };
 
 template<typename T>
