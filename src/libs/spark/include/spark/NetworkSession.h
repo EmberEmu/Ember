@@ -156,7 +156,10 @@ public:
 		}
 
 		boost::endian::native_to_little_inplace(size);
-		auto size_ptr = std::make_shared<decltype(body_read_size)>(size); // todo, remove the need for an allocation
+
+		// todo - remove this allocation - waiting for a better solution than can be achieved
+		// with the current FlatBuffers custom allocator design
+		auto size_ptr = std::make_shared<decltype(body_read_size)>(size);
 
 		std::array<boost::asio::const_buffer, 2> buffers {
 			boost::asio::const_buffer { size_ptr.get(), sizeof(body_read_size) },
@@ -166,7 +169,7 @@ public:
 		auto self(shared_from_this());
 
 		socket_.async_send(buffers, strand_.wrap(
-			[this, self, fbb](boost::system::error_code ec, std::size_t /*size*/) {
+			[this, self, fbb, size_ptr](boost::system::error_code ec, std::size_t /*size*/) {
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
