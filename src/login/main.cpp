@@ -33,6 +33,7 @@
 #include <shared/IPBanCache.h>
 #include <botan/init.h>
 #include <botan/version.h>
+#include <boost/asio/io_service.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
