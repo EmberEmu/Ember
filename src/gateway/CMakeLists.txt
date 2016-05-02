@@ -8,14 +8,18 @@ set(EXECUTABLE_NAME gateway)
 set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
+    SessionManager.h
     ClientStates.h
     FilterTypes.h
     RealmService.h
     ServicePool.h
     NetworkListener.h
+    ClientConnection.h
     )
 
 set(LIBRARY_SRC
+    SessionManager.cpp
+    ClientConnection.cpp
     RealmService.cpp
     ServicePool.cpp
     )
