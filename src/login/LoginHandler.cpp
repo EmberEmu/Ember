@@ -18,7 +18,10 @@ namespace ember {
 bool LoginHandler::update_state(const grunt::Packet* packet) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	switch(state_) {
+	State prev_state = state_;
+	state_ = State::CLOSED;
+
+	switch(prev_state) {
 		case State::INITIAL_CHALLENGE:
 			process_challenge(packet);
 			break;
@@ -48,7 +51,10 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	switch(state_) {
+	State prev_state = state_;
+	state_ = State::CLOSED;
+
+	switch(prev_state) {
 		case State::FETCHING_USER_LOGIN:
 			send_login_challenge(static_cast<FetchUserAction*>(action.get()));
 			break;
@@ -147,7 +153,6 @@ void LoginHandler::fetch_session_key(FetchUserAction* action_res) {
 
 void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
-	state_ = State::CLOSED;
 
 	auto response = std::make_unique<grunt::server::LoginChallenge>();
 	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
@@ -172,8 +177,6 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	state_ = State::CLOSED;
-	
 	auto response = std::make_unique<grunt::server::LoginChallenge>();
 	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
@@ -206,8 +209,6 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	state_ = State::CLOSED;
 
 	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
 	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
@@ -267,7 +268,6 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->id(), login_auth_->session_key());
 		execute_async(action);
 	} else {
-		state_ = State::CLOSED;
 		send_login_proof_failure(result);
 	}
 }
