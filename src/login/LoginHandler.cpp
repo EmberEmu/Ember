@@ -357,6 +357,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		response->realms.push_back({ realm, 0 });
 	}
 
+	state_ = State::REQUEST_REALMS;
 	send(std::move(response));
 }
 
