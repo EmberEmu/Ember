@@ -8,6 +8,7 @@ set(EXECUTABLE_NAME gateway)
 set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
+    ClientStates.h
     FilterTypes.h
     RealmService.h
     ServicePool.h
