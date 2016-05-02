@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(login)
+add_subdirectory(social)
 add_subdirectory(gateway)
 add_subdirectory(world)
 add_subdirectory(account)
