@@ -8,19 +8,52 @@
 
 #include "ServicePool.h"
 #include <shared/threading/Affinity.h>
+#include <stdexcept>
+
 
 namespace ember {
 
-ServicePool::ServicePool(unsigned int size) {
+ServicePool::ServicePool(std::size_t pool_size) : pool_size_(pool_size), next_service_(0) {
+	if(pool_size == 0) {
+		throw std::runtime_error("Cannot have an empty ASIO IO service pool!");
+	}
 
+	for(std::size_t i = 0; i < pool_size; ++i) {
+		auto io_service = std::make_shared<boost::asio::io_service>();
+		auto work = std::make_shared<boost::asio::io_service::work>(*io_service);
+		services_.emplace_back(io_service);
+		work_.emplace_back(work);
+	}
 }
 
-boost::asio::io_service* ServicePool::get_service() {
-	return nullptr;
+boost::asio::io_service& ServicePool::get_service() {
+	auto& service = *services_[next_service_++];
+	next_service_ %= pool_size_;
+	return service;
 }
 
 void ServicePool::run() {
+	std::vector<std::thread> threads;
 
+	for(std::size_t i = 0; i < pool_size_; ++i) {
+		threads.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
+							 (&boost::asio::io_service::run), services_[i]);
+	}
+
+	// blocks until the worker threads exit
+	for(auto& thread : threads) {
+		thread.join();
+	}
+}
+
+void ServicePool::stop() {
+	for(auto& service : services_) {
+		service->stop();
+	}
+}
+
+std::size_t ServicePool::size() const {
+	return pool_size_;
 }
 
 } // ember

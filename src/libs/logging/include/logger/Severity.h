@@ -11,6 +11,8 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstdint>
 
+#undef ERROR
+
 namespace ember { namespace log {
 
 enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, DISABLED };

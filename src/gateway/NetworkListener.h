@@ -42,13 +42,6 @@ class NetworkListener {
 			if(!ec) {
 				auto ip = socket_.remote_endpoint().address();
 
-				if(ban_list_.is_banned(ip)) {
-					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-						<< "Rejected connection " << ip.to_string()
-						<< " from banned IP range" << LOG_ASYNC;
-					return;
-				}
-
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 					<< "Accepted connection " << ip.to_string() << ":"
 					<< socket_.remote_endpoint().port() << LOG_ASYNC;

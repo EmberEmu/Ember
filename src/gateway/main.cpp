@@ -103,9 +103,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start ASIO service pool
 	LOG_INFO(logger) << "Starting service pool with " << concurrency << " threads..." << LOG_SYNC;
-	ember::ServicePool s_pool(concurrency);
-
-	boost::asio::io_service service; // todo, remove
+	ember::ServicePool service_pool(concurrency);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
@@ -115,6 +113,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
+	auto& service = service_pool.get_service();
 	es::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
@@ -131,15 +130,14 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
-	ember::NetworkListener server(s_pool, interface, port, tcp_no_delay, logger);
+	ember::NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
 	service.dispatch([&, logger]() {
 		realm_svc.set_realm_online();
 		LOG_INFO(logger) << "Gateway started successfully" << LOG_SYNC;
 	});
 
-	service.run(); // todo, remove
-	s_pool.run();
+	service_pool.run();
 
 	LOG_INFO(logger) << "Realm gateway shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
