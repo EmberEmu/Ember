@@ -8,18 +8,19 @@ set(EXECUTABLE_NAME social)
 set(LIBRARY_NAME    libsocial)
 
 set(LIBRARY_HDR
-
+    MonitorCallbacks.h
+    FilterTypes.h
     )
 
 set(LIBRARY_SRC
-    dummy.cpp
+    MonitorCallbacks.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME})
+target_link_libraries(${LIBRARY_NAME} logging shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs DESTINATION ${CMAKE_INSTALL_PREFIX})
