@@ -83,8 +83,8 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) override {
 		stream << opcode;
-		stream << result;
 		stream << unk1;
+		stream << result;
 
 		if(result != grunt::ResultCode::SUCCESS) {
 			return; // don't send the rest of the fields
