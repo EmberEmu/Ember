@@ -12,7 +12,6 @@
 #include "FilterTypes.h"
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
-#include <shared/PacketStream.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <chrono>
@@ -124,23 +123,6 @@ public:
 
 	virtual void close_session() {
 		sessions_.stop(shared_from_this());
-	}
-
-	void write(std::shared_ptr<Packet> packet) {
-		auto self(shared_from_this());
-
-		if(!socket_.is_open()) {
-			return;
-		}
-
-		socket_.async_send(boost::asio::buffer(*packet),
-			strand_.wrap(create_alloc_handler(allocator_,
-			[this, packet, self](boost::system::error_code ec, std::size_t) {
-				if(ec && ec != boost::asio::error::operation_aborted) {
-					close_session();
-				}
-			}
-		)));
 	}
 
 	template<std::size_t BlockSize>

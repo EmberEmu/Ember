@@ -72,7 +72,6 @@ set(LIBRARY_SRC
     ${METRICS_SRC}
     shared/CompilerWarn.h
     shared/IPBanCache.h
-    shared/PacketStream.h
     shared/Realm.h
     shared/Banner.cpp
     shared/Banner.h

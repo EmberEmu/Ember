@@ -50,7 +50,7 @@ public:
 
 	void start();
 	boost::asio::ip::tcp::socket& socket();
-	void close_session();
+	void close_session();	
 	bool handle_packet(spark::Buffer& buffer);
 
 	template<std::size_t BlockSize>
