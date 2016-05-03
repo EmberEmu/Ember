@@ -9,3 +9,5 @@ add_subdirectory(logging)
 add_subdirectory(srp6)
 add_subdirectory(conpool)
 add_subdirectory(spark)
+
+add_subdirectory(game_protocol)

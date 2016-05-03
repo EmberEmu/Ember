@@ -8,14 +8,4 @@
 
 #pragma once
 
-namespace ember {
-
-enum class ClientStates {
-	INITIAL_CONNECTION,
-	AUTHENTICATING,
-	IN_QUEUE,
-	CHARACTER_LIST,
-	IN_WORLD
-};
-
-} // ember
+#include <game_protocol/server/SMSG_AUTH_CHALLENGE.h>
