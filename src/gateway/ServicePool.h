@@ -11,7 +11,7 @@
 #include <boost/asio.hpp>
 #include <memory>
 #include <vector>
-#include <cstdint>
+#include <cstddef>
 
 namespace ember {
 

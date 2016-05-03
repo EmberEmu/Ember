@@ -10,7 +10,6 @@
 #include <shared/threading/Affinity.h>
 #include <stdexcept>
 
-
 namespace ember {
 
 ServicePool::ServicePool(std::size_t pool_size) : pool_size_(pool_size), next_service_(0) {
@@ -34,10 +33,12 @@ boost::asio::io_service& ServicePool::get_service() {
 
 void ServicePool::run() {
 	std::vector<std::thread> threads;
+	auto core_count = std::thread::hardware_concurrency();
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
 		threads.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
-							 (&boost::asio::io_service::run), services_[i]);
+			(&boost::asio::io_service::run), services_[i]);
+		set_affinity(threads[i], i % core_count);
 	}
 
 	// blocks until the worker threads exit
