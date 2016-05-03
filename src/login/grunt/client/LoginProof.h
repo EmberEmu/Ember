@@ -66,7 +66,7 @@ public:
 		return State::DONE;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 
 		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);

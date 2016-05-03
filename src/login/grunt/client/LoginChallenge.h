@@ -130,7 +130,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		if(username.length() > MAX_USERNAME_LEN) {
 			throw bad_packet("Provided username was too long!"); // todo
 		}

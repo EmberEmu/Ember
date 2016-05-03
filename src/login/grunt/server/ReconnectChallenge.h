@@ -48,7 +48,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "SMSG_RECONNECT_CHALLENGE rand != RAND_LENGTH");
 
 		stream << opcode;

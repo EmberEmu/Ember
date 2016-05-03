@@ -82,7 +82,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << result;
 

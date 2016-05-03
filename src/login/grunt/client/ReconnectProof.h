@@ -47,7 +47,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 		stream.put(R1.data(), R1.size());
 		stream.put(R2.data(), R2.size());

@@ -41,7 +41,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << be::native_to_little(unknown);
 	}

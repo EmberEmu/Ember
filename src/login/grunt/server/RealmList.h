@@ -36,7 +36,7 @@ class RealmList final : public Packet {
 	std::uint16_t size;
 	std::uint8_t realm_count;
 
-	std::uint16_t calculate_size() {
+	std::uint16_t calculate_size() const {
 		std::size_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 
 		                          (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
 
@@ -150,7 +150,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		if(realms.size() > MAX_REALM_ENTRIES) {
 			throw bad_packet("Attempted to send too many realm list entries!");
 		}
