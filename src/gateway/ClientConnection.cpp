@@ -13,24 +13,89 @@
 namespace ember {
 
 void ClientConnection::send_auth_challenge() {
-	auto packet = std::make_unique<protocol::SMSG_AUTH_CHALLENGE>();
-	auto chain = std::make_shared<spark::ChainedBuffer<1024>>();
-	spark::BinaryStream stream(*chain);
-	packet->write_to_stream(stream);
-	write_chain(chain);
+	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
+	packet->seed = 600;
+
+	state_ = ClientStates::AUTHENTICATING;
+	send(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE, packet);
+}
+
+void ClientConnection::handle_authentication(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	if(packet_header_.opcode != protocol::ClientOpcodes::CMD_AUTH_LOGIN_CHALLENGE) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Expected CMSG_AUTH_CHALLENGE, dropping "
+			<< remote_address() << remote_port() << LOG_ASYNC;
+		close_session();
+		return;
+	}
+
+	//bool error;
+	//boost::optional<protocol::PacketHandle> packet = handler_.try_deserialise(  , &error);
+
+	//if(packet) {
+
+	//}
+
+	//return error;
+}
+
+void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
+	switch(state_) {
+		case ClientStates::AUTHENTICATING:
+			handle_authentication(buffer);
+			break;
+		case ClientStates::IN_QUEUE:
+			break;
+		case ClientStates::CHARACTER_LIST:
+			break;
+		case ClientStates::IN_WORLD:
+			break;
+		default:
+			// assert
+			break;
+	}
+}
+
+void ClientConnection::parse_header(spark::Buffer& buffer) {
+	if(buffer.size() < sizeof(protocol::ClientHeader)) {
+		return;
+	}
+
+	buffer.read(&packet_header_.size, sizeof(protocol::ClientHeader::size));
+	buffer.copy(&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
+
+	if(authenticated_) {
+		//protocol::decrypt_client_header(header);
+	}
+
+	read_state_ = ReadState::BODY;
+}
+
+void ClientConnection::completion_check(spark::Buffer& buffer) {
+	if(buffer.size() < packet_header_.size) {
+		return;
+	}
+
+	read_state_ = ReadState::DONE;
 }
 
 bool ClientConnection::handle_packet(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	bool error;
-	boost::optional<protocol::PacketHandle> packet = handler_.try_deserialise(buffer, &error);
-
-	if(packet) {
-
+	if(read_state_ == ReadState::HEADER) {
+		parse_header(buffer);
 	}
 
-	return error;
+	if(read_state_ == ReadState::BODY) {
+		completion_check(buffer);
+	}
+
+	if(read_state_ == ReadState::DONE) {
+		dispatch_packet(buffer);
+		read_state_ = ReadState::HEADER;
+	}
+
+	return true; // temp
 }
 
 void ClientConnection::start() {
@@ -54,27 +119,33 @@ void ClientConnection::close_session() {
 	sessions_.stop(shared_from_this());
 }
 
-// todo - post through to socket's io_service & remove strand
-template<std::size_t BlockSize>
-void ClientConnection::write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
+void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet) {
+	auto self(shared_from_this());
+
+	service_.dispatch([this, self, opcode, packet]() {
+		spark::BinaryStream stream(outbound_buffer_);
+		stream << boost::endian::native_to_big(packet->size() + sizeof(opcode)) << opcode;
+		packet->write_to_stream(stream);
+		write();
+	});
+}
+
+void ClientConnection::write() {
 	auto self(shared_from_this());
 
 	if(!socket_.is_open()) {
 		return;
 	}
 
-	socket_.async_send(*chain,
-		strand_.wrap(create_alloc_handler(allocator_,
-		[this, self, chain](boost::system::error_code ec, std::size_t size) {
-			chain->skip(size);
+	socket_.async_send(outbound_buffer_, create_alloc_handler(allocator_,
+		[this, self](boost::system::error_code ec, std::size_t size) {
+			outbound_buffer_.skip(size);
 
 			if(ec && ec != boost::asio::error::operation_aborted) {
 				close_session();
-			} else if(!ec && chain->size()) {
-				write_chain(chain); 
 			}
 		}
-	)));
+	));
 }
 
 void ClientConnection::read() {
@@ -88,7 +159,7 @@ void ClientConnection::read() {
 	}
 
 	socket_.async_receive(boost::asio::buffer(tail->data(), tail->free()),
-		strand_.wrap(create_alloc_handler(allocator_,
+		create_alloc_handler(allocator_,
 		[this, self](boost::system::error_code ec, std::size_t size) {
 			if(stopped_) {
 				return;
@@ -106,13 +177,13 @@ void ClientConnection::read() {
 				close_session();
 			}
 		}
-	)));
+	));
 }
 
 void ClientConnection::stop() {
 	auto self(shared_from_this());
 
-	strand_.post([this, self] {
+	socket_.get_io_service().post([this, self] {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Closing connection to " << remote_address()
 			<< ":" << remote_port() << LOG_ASYNC;

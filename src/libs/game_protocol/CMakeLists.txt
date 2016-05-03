@@ -13,6 +13,7 @@ add_library(${LIBRARY_NAME}
             include/game_protocol/Packet.h
             include/game_protocol/Packets.h
             include/game_protocol/ResultCodes.h
+            include/game_protocol/PacketHeaders.h
 )
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})

@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include <game_protocol/Opcodes.h>
 #include <game_protocol/Packet.h>
-#include <game_protocol/ResultCodes.h>
 #include <boost/endian/conversion.hpp>
 #include <cstdint>
 #include <cstddef>
@@ -20,12 +18,11 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class SMSG_AUTH_CHALLENGE final : public Packet {
-	static const std::size_t WIRE_LENGTH = 6;
+	static const std::size_t WIRE_LENGTH = 4;
 
 	State state_ = State::INITIAL;
 
 public:
-	ServerOpcodes opcode = ServerOpcodes::SMSG_AUTH_CHALLENGE;
 	std::uint32_t seed = 3211;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
@@ -35,19 +32,18 @@ public:
 			return State::CALL_AGAIN;
 		}
 
-		stream >> opcode;
 		stream >> seed;
-		//be::big_to_native_inplace(opcode);
-		//be::little_to_native_inplace(seed);
+		be::little_to_native_inplace(seed);
 
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
-		
-		stream << be::native_to_big(std::uint16_t(6));
-		stream << be::native_to_little(std::uint16_t(opcode));
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << be::native_to_little(seed);
+	}
+
+	std::uint16_t size() const override {
+		return WIRE_LENGTH;
 	}
 };
 

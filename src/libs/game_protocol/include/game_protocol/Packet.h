@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/BinaryStream.h>
+#include <cstdint>
 
 namespace ember { namespace protocol {
 
@@ -18,7 +19,8 @@ struct Packet {
 	};
 
 	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
-	virtual void write_to_stream(spark::BinaryStream& stream) = 0;
+	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;
+	virtual std::uint16_t size() const = 0;
 	virtual ~Packet() = default;
 };
 
