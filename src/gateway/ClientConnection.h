@@ -32,6 +32,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	ClientStates state_;
 	protocol::Handler handler_;
 	spark::ChainedBuffer<1024> inbound_buffer_;
+	spark::ChainedBuffer<1024> outbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	log::Logger* logger_;
@@ -50,7 +51,6 @@ public:
 	void start();
 	boost::asio::ip::tcp::socket& socket();
 	void close_session();
-	void write(std::shared_ptr<Packet> packet);
 	bool handle_packet(spark::Buffer& buffer);
 
 	template<std::size_t BlockSize>

@@ -55,24 +55,6 @@ void ClientConnection::close_session() {
 }
 
 // todo - post through to socket's io_service & remove strand
-void ClientConnection::write(std::shared_ptr<Packet> packet) {
-	auto self(shared_from_this());
-
-	if(!socket_.is_open()) {
-		return;
-	}
-
-	socket_.async_send(boost::asio::buffer(*packet),
-		strand_.wrap(create_alloc_handler(allocator_,
-			[this, packet, self](boost::system::error_code ec, std::size_t) {
-				if(ec && ec != boost::asio::error::operation_aborted) {
-					close_session();
-				}
-			}
-	)));
-}
-
-// todo - post through to socket's io_service & remove strand
 template<std::size_t BlockSize>
 void ClientConnection::write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
 	auto self(shared_from_this());
