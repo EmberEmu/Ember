@@ -8,6 +8,7 @@
 
 #include "FilterTypes.h"
 #include "ServicePool.h"
+#include "AccountService.h"
 #include "RealmService.h"
 #include "NetworkListener.h"
 #include <spark/Spark.h>
@@ -82,7 +83,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
-	auto user_dao = ember::dal::user_dao(pool);
+	auto user_dao = ember::dal::user_dao(pool); // todo, remove?
 	auto realm_dao = ember::dal::realm_dao(pool);
 
 	LOG_INFO(logger) << "Retrieving realm information..."<< LOG_SYNC;
@@ -119,6 +120,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	                               mcast_port, logger, spark_filter);
 
 	ember::RealmService realm_svc(*realm, spark, discovery, logger);
+	ember::AccountService acct_svc(spark, discovery, logger);
 
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();

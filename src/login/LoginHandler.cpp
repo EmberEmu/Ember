@@ -147,7 +147,7 @@ void LoginHandler::fetch_session_key(FetchUserAction* action_res) {
 	}
 
 	state_ = State::FETCHING_SESSION;
-	auto action = std::make_shared<FetchSessionKeyAction>(acct_svc_, user_->id());
+	auto action = std::make_shared<FetchSessionKeyAction>(acct_svc_, user_->username());
 	execute_async(action);
 }
 
@@ -253,10 +253,10 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 			result = grunt::ResultCode::FAIL_BANNED;
 		} else if(user_->suspended()) {
 			result = grunt::ResultCode::FAIL_SUSPENDED;
-			/*} else if(time) {
-				res = grunt::ResultCode::FAIL_NO_TIME;
-				} else if(parental_controls) {
-				res = grunt::ResultCode::FAIL_PARENTAL_CONTROLS;*/
+		/*} else if(time) {
+			res = grunt::ResultCode::FAIL_NO_TIME;
+		} else if(parental_controls) {
+			res = grunt::ResultCode::FAIL_PARENTAL_CONTROLS;*/
 		} else {
 			result = grunt::ResultCode::SUCCESS;
 		}
@@ -265,7 +265,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
-		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->id(), login_auth_->session_key());
+		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->username(), login_auth_->session_key());
 		execute_async(action);
 	} else {
 		send_login_proof_failure(result);

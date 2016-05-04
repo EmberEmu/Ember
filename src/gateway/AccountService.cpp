@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015-2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -90,7 +90,7 @@ void AccountService::locate_session(std::string account, LocateCB cb) const {
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
-		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, fbb->CreateString(account)).Union());
+		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&AccountService::handle_locate_reply, this, std::placeholders::_1,
@@ -98,25 +98,6 @@ void AccountService::locate_session(std::string account, LocateCB cb) const {
 
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
 		cb(em::account::Status::SERVER_LINK_ERROR, 0);
-	}
-}
-
-void AccountService::register_session(std::string account, const srp6::SessionKey& key, RegisterCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto f_key = fbb->CreateVector(key.t.begin(), key.t.size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
-		em::Data::RegisterKey, em::account::CreateRegisterKey(*fbb, fbb->CreateString(account), f_key).Union());
-	fbb->Finish(msg);
-
-	auto track_cb = std::bind(&AccountService::handle_register_reply, this, std::placeholders::_1,
-	                          std::placeholders::_2, std::placeholders::_3, cb);
-	
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(em::account::Status::SERVER_LINK_ERROR);
 	}
 }
 

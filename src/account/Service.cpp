@@ -55,10 +55,10 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
 	auto status = em::account::Status::OK;
 	
-	if(msg->key() && msg->account_id()) {
+	if(msg->key() && msg->account_name()) {
 		Botan::BigInt key(msg->key()->data(), msg->key()->size());
 
-		if(!sessions_.register_session(msg->account_id(), key)) {
+		if(!sessions_.register_session(msg->account_name()->str(), key)) {
 			status = em::account::Status::ALREADY_LOGGED_IN;
 		}
 	} else {
@@ -74,8 +74,8 @@ void Service::locate_session(const spark::Link& link, const em::MessageRoot* roo
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 	auto session = boost::optional<Botan::BigInt>();
 	
-	if(msg->account_id()) {
-		session = sessions_.lookup_session(msg->account_id());
+	if(msg->account_name()) {
+		session = sessions_.lookup_session(msg->account_name()->str());
 	}
 
 	send_locate_reply(link, root, session);
@@ -118,7 +118,7 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 		klb.add_status(em::account::Status::SESSION_NOT_FOUND);
 	}
 
-	klb.add_account_id(msg->account_id());
+	klb.add_account_name(fbb->CreateString(msg->account_name()));
 	auto data_offset = klb.Finish();
 
 	em::MessageRootBuilder mrb(*fbb);

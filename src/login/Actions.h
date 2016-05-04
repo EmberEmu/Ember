@@ -16,7 +16,7 @@
 #include <future>
 #include <string>
 #include <utility>
-#include <iostream>
+
 namespace ember {
 
 class Action {
@@ -30,7 +30,7 @@ public:
 
 class RegisterSessionAction final : public Action {
 	const AccountService& account_svc_;
-	std::uint32_t account_id_;
+	std::string account_;
 	srp6::SessionKey key_;
 
 	std::promise<messaging::account::Status> promise_;
@@ -38,7 +38,7 @@ class RegisterSessionAction final : public Action {
 	std::exception_ptr exception_;
 
 	std::future<messaging::account::Status> do_register() {
-		account_svc_.register_session(account_id_, key_, [&](messaging::account::Status res) {
+		account_svc_.register_session(account_, key_, [&](messaging::account::Status res) {
 			promise_.set_value(res);
 		});
 
@@ -46,8 +46,8 @@ class RegisterSessionAction final : public Action {
 	}
 
 public:
-	RegisterSessionAction(const AccountService& account_svc, std::uint32_t account_id, srp6::SessionKey key)
-	                      : account_svc_(account_svc), account_id_(account_id), key_(key) { }
+	RegisterSessionAction(const AccountService& account_svc, std::string account, srp6::SessionKey key)
+	                      : account_svc_(account_svc), account_(account), key_(key) { }
 
 	virtual void execute() override try {
 		res_ = do_register().get();
@@ -66,7 +66,7 @@ public:
 
 class FetchSessionKeyAction final : public Action {
 	const AccountService& account_svc_;
-	std::uint32_t account_id_;
+	std::string account_;
 	Botan::BigInt key_;
 	std::exception_ptr exception_;
 
@@ -74,8 +74,8 @@ class FetchSessionKeyAction final : public Action {
 	std::pair<messaging::account::Status, Botan::BigInt> res_;
 
 	auto do_fetch() {
-		account_svc_.locate_session(account_id_, [&](messaging::account::Status res,
-		                                             Botan::BigInt key) {
+		account_svc_.locate_session(account_, [&](messaging::account::Status res,
+		                            Botan::BigInt key) {
 			promise_.set_value({res, key});
 		});
 
@@ -83,8 +83,8 @@ class FetchSessionKeyAction final : public Action {
 	}
 
 public:
-	FetchSessionKeyAction(const AccountService& account_svc, std::uint32_t account_id)
-	                      : account_svc_(account_svc), account_id_(account_id) {}
+	FetchSessionKeyAction(const AccountService& account_svc, std::string account)
+	                      : account_svc_(account_svc), account_(account) {}
 
 	virtual void execute() override try {
 		res_ = do_fetch().get();

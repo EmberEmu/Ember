@@ -11,13 +11,12 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/temp/MessageRoot_generated.h>
-#include <srp6/Util.h>
+//#include <srp6/Util.h>
 #include <logger/Logging.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>
 #include <memory>
-#include <string>
 
 namespace ember {
 
@@ -47,7 +46,7 @@ public:
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 
-	void register_session(std::string account, const srp6::SessionKey& key, RegisterCB cb) const;
+	void locate_session(std::uint32_t account_id, LocateCB cb) const;
 	void locate_session(std::string account, LocateCB cb) const;
 };
 
