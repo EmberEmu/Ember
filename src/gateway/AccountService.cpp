@@ -90,7 +90,7 @@ void AccountService::locate_session(std::string account, LocateCB cb) const {
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
-		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account).Union());
+		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, fbb->CreateString(account)).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&AccountService::handle_locate_reply, this, std::placeholders::_1,
