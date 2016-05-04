@@ -83,8 +83,18 @@ void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUT
 		return;
 	}
 
-	// queue stuff
-	queue_service_temp->enqueue(shared_from_this());
+	crypto_.set_key((char*)k_bytes.begin());
+	authenticated_ = true;
+
+	/* 
+	 * Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
+	 * but that doesn't seem to be true - if this bugs out, check that out
+	 */
+	if(2 > 1) { // add server population check
+		state_ = ClientStates::IN_QUEUE;
+		queue_service_temp->enqueue(shared_from_this());
+		return;
+	}
 
 	/*auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(resp.get());
@@ -155,7 +165,8 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 	buffer.read(&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
 
 	if(authenticated_) {
-		//protocol::decrypt_client_header(header);
+		crypto_.decrypt((char*)&packet_header_.size, sizeof(protocol::ClientHeader::size));
+		crypto_.decrypt((char*)&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
 	}
 
 	read_state_ = ReadState::BODY;
@@ -204,6 +215,16 @@ std::uint16_t ClientConnection::remote_port() {
 }
 
 void ClientConnection::close_session() {
+	switch(state_) {
+		case ClientStates::CHARACTER_LIST:
+		case ClientStates::IN_WORLD:
+			queue_service_temp->decrement();
+			break;
+		case ClientStates::IN_QUEUE:
+			queue_service_temp->dequeue(shared_from_this());
+			break;
+	}
+
 	sessions_.stop(shared_from_this());
 }
 
@@ -211,8 +232,15 @@ void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<prot
 	auto self(shared_from_this());
 
 	service_.dispatch([this, self, opcode, packet]() {
+		std::uint16_t size = boost::endian::native_to_big(std::uint16_t(packet->size() + sizeof(opcode)));
+
+		if(authenticated_) {
+			crypto_.encrypt((char*)&size, sizeof(protocol::ServerHeader::size));
+			crypto_.encrypt((char*)&opcode, sizeof(protocol::ServerHeader::opcode));
+		}
+
 		spark::SafeBinaryStream stream(outbound_buffer_);
-		stream << boost::endian::native_to_big(std::uint16_t(packet->size() + sizeof(opcode))) << opcode;
+		stream << size << opcode;
 		packet->write_to_stream(stream);
 		write();
 	});

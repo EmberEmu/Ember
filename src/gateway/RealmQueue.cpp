@@ -35,7 +35,7 @@ void RealmQueue::update_clients(const boost::system::error_code& ec) {
 
 void RealmQueue::send_position(std::size_t position, std::shared_ptr<ClientConnection> client) {
 	auto packet = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	packet->result = protocol::ResultCode::AUTH_OK;
+	packet->result = protocol::ResultCode::AUTH_WAIT_QUEUE;
 	packet->queue_position = position;
 	client->send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, packet);
 }
@@ -61,6 +61,15 @@ void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 
 void RealmQueue::decrement() {
 	std::lock_guard<std::mutex> guard(lock_);
+
+	if(queue_.empty()) {
+		return;
+	}
+
+	auto client = queue_.front();
+	queue_.pop_front();
+
+	// finish auth
 
 	if(queue_.empty()) {
 		timer_.cancel();

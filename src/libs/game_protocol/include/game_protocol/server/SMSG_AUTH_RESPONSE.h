@@ -26,6 +26,9 @@ public:
 	ResultCode result;
 	std::uint32_t queue_position;
 
+	// not part of the packet data
+	bool initial_queue_ = false;
+
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
@@ -43,7 +46,14 @@ public:
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
 		stream << be::native_to_little(result);
 
+		// find a better way of doing this
 		if(result == ResultCode::AUTH_WAIT_QUEUE) {
+			if(initial_queue_) {
+				stream << std::uint32_t(0);	// billing time remaining
+				stream << std::uint8_t(0);	// billing plan flags
+				stream << std::uint32_t(0);	// billing time rested
+			}
+
 			stream << queue_position;
 		}
 	}

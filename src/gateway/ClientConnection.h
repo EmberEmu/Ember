@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ClientStates.h"
+#include "PacketCrypto.h"
 #include "SessionManager.h"
 #include "FilterTypes.h"
 #include <botan/bigint.h>
@@ -45,6 +46,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	bool stopped_;
 	bool authenticated_;
 	std::uint32_t auth_seed_;
+	PacketCrypto crypto_;
 
 	protocol::ClientHeader packet_header_;
 
@@ -65,7 +67,8 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)
 	                 : state_(ClientStates::INITIAL_CONNECTION), sessions_(sessions), socket_(service),
-	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service) { }
+	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service),
+	                   authenticated_(false) { }
 
 	void start();
 	void close_session();

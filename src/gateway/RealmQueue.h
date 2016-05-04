@@ -21,7 +21,7 @@ namespace ember {
 class ClientConnection;
 
 class RealmQueue {
-	const std::chrono::milliseconds TIMER_FREQUENCY { 100 };
+	const std::chrono::milliseconds TIMER_FREQUENCY { 250 };
 
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 	std::list<std::shared_ptr<ClientConnection>> queue_;
