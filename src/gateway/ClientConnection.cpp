@@ -84,6 +84,7 @@ void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUT
 	}
 
 	// queue stuff
+	queue_service_temp->enqueue(shared_from_this());
 
 	/*auto resp = std::make_shared<Packet>();
 	PacketStream<Packet> stream(resp.get());

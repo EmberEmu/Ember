@@ -6,7 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "temp.h"
+
 #include "FilterTypes.h"
+#include "RealmQueue.h"
 #include "ServicePool.h"
 #include "AccountService.h"
 #include "RealmService.h"
@@ -28,8 +31,6 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
-
-#include "temp.h"
 
 #undef ERROR // temp
 
@@ -120,7 +121,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	ember::RealmService realm_svc(*realm, spark, discovery, logger);
 	ember::AccountService acct_svc(spark, discovery, logger);
+
+	// temp stuff
 	acct_serv = &acct_svc;
+	ember::RealmQueue queue_service(service_pool.get_service());
+	queue_service_temp = &queue_service;
+
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
 	
