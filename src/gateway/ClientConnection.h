@@ -11,6 +11,7 @@
 #include "ClientStates.h"
 #include "SessionManager.h"
 #include "FilterTypes.h"
+#include <botan/bigint.h>
 #include <game_protocol/Packet.h>
 #include <game_protocol/Packets.h> // todo, fdecls
 #include <game_protocol/PacketHeaders.h> // todo, remove
@@ -23,6 +24,8 @@
 #include <string>
 #include <utility>
 #include <cstdint>
+
+#include "temp.h"
 
 namespace ember {
 
@@ -41,6 +44,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	log::Logger* logger_;
 	bool stopped_;
 	bool authenticated_;
+	std::uint32_t auth_seed_;
 
 	protocol::ClientHeader packet_header_;
 
@@ -54,7 +58,9 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
 	void dispatch_packet(spark::Buffer& buffer);
-	void prove_session(const protocol::CMSG_AUTH_SESSION& packet);
+	void fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet);
+	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
+	void send_auth_fail(protocol::ResultCode result);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)

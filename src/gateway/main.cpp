@@ -29,6 +29,8 @@
 #include <string>
 #include <stdexcept>
 
+#include "temp.h"
+
 #undef ERROR // temp
 
 namespace el = ember::log;
@@ -118,7 +120,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	ember::RealmService realm_svc(*realm, spark, discovery, logger);
 	ember::AccountService acct_svc(spark, discovery, logger);
-
+	acct_serv = &acct_svc;
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
 	

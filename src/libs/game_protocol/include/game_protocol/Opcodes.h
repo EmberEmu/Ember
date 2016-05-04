@@ -13,7 +13,8 @@
 namespace ember { namespace protocol {
 
 enum class ServerOpcodes : std::uint16_t { // todo, temp
-	SMSG_AUTH_CHALLENGE = 0x1EC
+	SMSG_AUTH_CHALLENGE = 0x1EC,
+	SMSG_AUTH_RESPONSE = 0x1EE
 };
 
 enum class ClientOpcodes : std::uint32_t { // todo, temp

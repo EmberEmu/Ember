@@ -34,7 +34,6 @@ public:
 	std::uint32_t build;
 	std::uint8_t locale;
 	std::string username;
-	Botan::SecureVector<Botan::byte> sha;
 	// addon stuff
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
@@ -45,9 +44,8 @@ public:
 		stream >> username;
 		stream >> seed;
 
-		Botan::byte digest_buff[DIGEST_LENGTH];
-		stream.get(digest_buff, DIGEST_LENGTH);
-		digest.copy(digest_buff, DIGEST_LENGTH);
+		digest.resize(DIGEST_LENGTH);
+		stream.get(digest.begin(), DIGEST_LENGTH);
 		
 		// TODO, HANDLE ADDON DATA
 		stream.skip(stream.size());

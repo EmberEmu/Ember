@@ -109,15 +109,17 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::account::KeyLookupRespBuilder klb(*fbb);
+	em::account::Status status;
 
 	if(key) {
 		auto encoded_key = Botan::BigInt::encode(*key);
 		klb.add_key(fbb->CreateVector(encoded_key.begin(), encoded_key.size()));
-		klb.add_status(em::account::Status::OK);
+		status = em::account::Status::OK;
 	} else {
-		klb.add_status(em::account::Status::SESSION_NOT_FOUND);
+		status = em::account::Status::SESSION_NOT_FOUND;
 	}
 
+	klb.add_status(status);
 	klb.add_account_name(fbb->CreateString(msg->account_name()));
 	auto data_offset = klb.Finish();
 
@@ -130,6 +132,9 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 
 	fbb->Finish(mloc);
 	spark_.send(link, fbb);
+
+	LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_name()->str() << " -> "
+		<< em::account::EnumNameStatus(status) << LOG_ASYNC;
 }
 
 } // ember

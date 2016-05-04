@@ -16,6 +16,7 @@ set(LIBRARY_HDR
     NetworkListener.h
     ClientConnection.h
     AccountService.h
+    temp.h
     )
 
 set(LIBRARY_SRC
@@ -24,6 +25,7 @@ set(LIBRARY_SRC
     RealmService.cpp
     ServicePool.cpp
     AccountService.cpp
+    temp.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

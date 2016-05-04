@@ -9,20 +9,99 @@
 #include "ClientConnection.h"
 #include <game_protocol/Packets.h>
 #include <spark/SafeBinaryStream.h>
+#include <botan/bigint.h>
+#include <botan/sha160.h>
+
+#undef ERROR // temp
+
+namespace em = ember::messaging;
 
 namespace ember {
 
 void ClientConnection::send_auth_challenge() {
 	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
-	packet->seed = 600; // todo, obviously
+	packet->seed = auth_seed_ = 600; // todo, obviously
 
 	send(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE, packet);
 	state_ = ClientStates::AUTHENTICATING;
 }
 
-void ClientConnection::prove_session(const protocol::CMSG_AUTH_SESSION& packet) {
+void ClientConnection::fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 	LOG_DEBUG(logger_) << "Received session proof from " << packet.username << LOG_ASYNC;
+
+	auto self = shared_from_this();
+
+	acct_serv->locate_session(packet.username,
+		[this, self, packet](em::account::Status remote_res, Botan::BigInt key) {
+			service_.post([this, self, packet, remote_res, key]() {
+				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+					<< "Account server returned " << em::account::EnumNameStatus(remote_res)
+					<< " for " << packet.username << LOG_ASYNC;
+
+				if(remote_res != em::account::Status::OK) {
+					protocol::ResultCode result;
+
+					switch(remote_res) {
+						case em::account::Status::ALREADY_LOGGED_IN:
+							result = protocol::ResultCode::AUTH_ALREADY_ONLINE;
+							break;
+						case em::account::Status::SESSION_NOT_FOUND:
+							result = protocol::ResultCode::AUTH_UNKNOWN_ACCOUNT;
+							break;
+						default:
+							LOG_ERROR_FILTER(logger_, LF_NETWORK) << "Received "
+								<< em::account::EnumNameStatus(remote_res)
+								<< " from account server" << LOG_ASYNC;
+							result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
+					}
+
+					send_auth_fail(result);
+				} else {
+					prove_session(key, packet);
+				}
+			});
+	});
+}
+
+void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
+	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
+	std::uint32_t unknown = 0;
+
+	Botan::SHA_160 hasher;
+	hasher.update(packet.username);
+	hasher.update((Botan::byte*)&unknown, 4);
+	hasher.update((Botan::byte*)&packet.seed, 4);
+	hasher.update((Botan::byte*)&auth_seed_, 4);
+	hasher.update(k_bytes);
+	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
+
+	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
+
+	if(calc_hash != packet.digest) {
+		send_auth_fail(protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
+		return;
+	}
+
+	// queue stuff
+
+	/*auto resp = std::make_shared<Packet>();
+	PacketStream<Packet> stream(resp.get());
+	stream << boost::endian::native_to_big(std::uint16_t(12)) << grunt::server::Opcode::SMSG_AUTH << std::uint8_t(12)
+		<< std::uint32_t(0) << std::uint8_t(0) << std::uint32_t(0);
+	crypt_.encrypt(resp->data());
+	write(resp);
+	state_ = State::AUTHED;*/
+}
+
+void ClientConnection::send_auth_fail(protocol::ResultCode result) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	// not convinced that this packet is correct
+	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
+	response->result = result;
+	send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
+	close_session();
 }
 
 void ClientConnection::handle_authentication(spark::Buffer& buffer) {
@@ -46,7 +125,7 @@ void ClientConnection::handle_authentication(spark::Buffer& buffer) {
 		return;
 	}
 
-	prove_session(packet);
+	fetch_session_key(packet);
 }
 
 void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
@@ -132,7 +211,7 @@ void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<prot
 
 	service_.dispatch([this, self, opcode, packet]() {
 		spark::SafeBinaryStream stream(outbound_buffer_);
-		stream << boost::endian::native_to_big(packet->size() + sizeof(opcode)) << opcode;
+		stream << boost::endian::native_to_big(std::uint16_t(packet->size() + sizeof(opcode))) << opcode;
 		packet->write_to_stream(stream);
 		write();
 	});

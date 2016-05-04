@@ -11,6 +11,8 @@
 namespace ember {
 
 bool Sessions::register_session(std::string account, Botan::BigInt key) {
+	std::transform(account.begin(), account.end(), account.begin(), ::tolower);
+
 	std::lock_guard<std::mutex> guard(lock_);
 
 	auto it = sessions_.find(account);
@@ -24,6 +26,8 @@ bool Sessions::register_session(std::string account, Botan::BigInt key) {
 }
 
 boost::optional<Botan::BigInt> Sessions::lookup_session(std::string account) {
+	std::transform(account.begin(), account.end(), account.begin(), ::tolower);
+
 	std::lock_guard<std::mutex> guard(lock_);
 	auto it = sessions_.find(account);
 
