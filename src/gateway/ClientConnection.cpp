@@ -8,22 +8,27 @@
 
 #include "ClientConnection.h"
 #include <game_protocol/Packets.h>
-#include <spark/Spark.h>
+#include <spark/SafeBinaryStream.h>
 
 namespace ember {
 
 void ClientConnection::send_auth_challenge() {
 	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
-	packet->seed = 600;
+	packet->seed = 600; // todo, obviously
 
-	state_ = ClientStates::AUTHENTICATING;
 	send(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE, packet);
+	state_ = ClientStates::AUTHENTICATING;
+}
+
+void ClientConnection::prove_session(const protocol::CMSG_AUTH_SESSION& packet) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Received session proof from " << packet.username << LOG_ASYNC;
 }
 
 void ClientConnection::handle_authentication(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	if(packet_header_.opcode != protocol::ClientOpcodes::CMD_AUTH_LOGIN_CHALLENGE) {
+	if(packet_header_.opcode != protocol::ClientOpcodes::CMSG_AUTH_SESSION) {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Expected CMSG_AUTH_CHALLENGE, dropping "
 			<< remote_address() << remote_port() << LOG_ASYNC;
@@ -31,14 +36,17 @@ void ClientConnection::handle_authentication(spark::Buffer& buffer) {
 		return;
 	}
 
-	//bool error;
-	//boost::optional<protocol::PacketHandle> packet = handler_.try_deserialise(  , &error);
+	spark::SafeBinaryStream stream(buffer);
+	protocol::CMSG_AUTH_SESSION packet;
 
-	//if(packet) {
+	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Authentication packet parse failed, disconnecting" << LOG_ASYNC;
+		close_session();
+		return;
+	}
 
-	//}
-
-	//return error;
+	prove_session(packet);
 }
 
 void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
@@ -64,7 +72,7 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 	}
 
 	buffer.read(&packet_header_.size, sizeof(protocol::ClientHeader::size));
-	buffer.copy(&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
+	buffer.read(&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
 
 	if(authenticated_) {
 		//protocol::decrypt_client_header(header);
@@ -74,7 +82,7 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 }
 
 void ClientConnection::completion_check(spark::Buffer& buffer) {
-	if(buffer.size() < packet_header_.size) {
+	if(buffer.size() < packet_header_.size - sizeof(protocol::ClientHeader::opcode)) {
 		return;
 	}
 
@@ -123,7 +131,7 @@ void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<prot
 	auto self(shared_from_this());
 
 	service_.dispatch([this, self, opcode, packet]() {
-		spark::BinaryStream stream(outbound_buffer_);
+		spark::SafeBinaryStream stream(outbound_buffer_);
 		stream << boost::endian::native_to_big(packet->size() + sizeof(opcode)) << opcode;
 		packet->write_to_stream(stream);
 		write();

@@ -29,7 +29,7 @@ bool Handler::handle_new_packet(spark::Buffer& buffer) {
 }
 
 void Handler::handle_read(spark::Buffer& buffer) {
-	spark::BinaryStream stream(buffer);
+	spark::SafeBinaryStream stream(buffer);
 	Packet::State state = curr_packet_->read_from_stream(stream);
 
 	switch(state) {

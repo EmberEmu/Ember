@@ -15,7 +15,8 @@ enum class ClientStates {
 	AUTHENTICATING,
 	IN_QUEUE,
 	CHARACTER_LIST,
-	IN_WORLD
+	IN_WORLD,
+	CLOSED
 };
 
 } // ember

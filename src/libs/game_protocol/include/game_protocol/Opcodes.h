@@ -13,17 +13,11 @@
 namespace ember { namespace protocol {
 
 enum class ServerOpcodes : std::uint16_t { // todo, temp
-	SMSG_AUTH_CHALLENGE = 492
+	SMSG_AUTH_CHALLENGE = 0x1EC
 };
 
 enum class ClientOpcodes : std::uint32_t { // todo, temp
-	CMD_AUTH_LOGIN_CHALLENGE,
-	CMD_AUTH_LOGON_PROOF,
-	CMD_AUTH_RECONNECT_CHALLENGE,
-	CMD_AUTH_RECONNECT_PROOF,
-	CMD_REALM_LIST = 0x10,
-	CMD_XFER_INITIATE = 0x30,
-	CMD_XFER_DATA
+	CMSG_AUTH_SESSION = 0x1ED
 };
 
 }} // grunt, ember

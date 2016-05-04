@@ -8,18 +8,18 @@
 
 #pragma once
 
-#include <spark/BinaryStream.h>
+#include <spark/SafeBinaryStream.h>
 #include <cstdint>
 
 namespace ember { namespace protocol {
 
 struct Packet {
 	enum class State {
-		INITIAL, CALL_AGAIN, DONE
+		INITIAL, CALL_AGAIN, DONE, ERRORED
 	};
 
-	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
-	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;
+	virtual State read_from_stream(spark::SafeBinaryStream& stream) = 0;
+	virtual void write_to_stream(spark::SafeBinaryStream& stream) const = 0;
 	virtual std::uint16_t size() const = 0;
 	virtual ~Packet() = default;
 };

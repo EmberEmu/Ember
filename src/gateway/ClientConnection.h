@@ -12,13 +12,13 @@
 #include "SessionManager.h"
 #include "FilterTypes.h"
 #include <game_protocol/Packet.h>
-#include <game_protocol/PacketHeaders.h>
+#include <game_protocol/Packets.h> // todo, fdecls
+#include <game_protocol/PacketHeaders.h> // todo, remove
 #include <game_protocol/Handler.h>
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
-#include <chrono>
 #include <memory>
 #include <string>
 #include <utility>
@@ -54,6 +54,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
 	void dispatch_packet(spark::Buffer& buffer);
+	void prove_session(const protocol::CMSG_AUTH_SESSION& packet);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)

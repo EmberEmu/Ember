@@ -9,3 +9,4 @@
 #pragma once
 
 #include <game_protocol/server/SMSG_AUTH_CHALLENGE.h>
+#include <game_protocol/client/CMSG_AUTH_SESSION.h>
