@@ -29,6 +29,7 @@ void ClientConnection::send_auth_challenge() {
 
 void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
 	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
+	crypto_.set_key(k_bytes);
 	std::uint32_t unknown = 0;
 
 	Botan::SHA_160 hasher;
@@ -44,7 +45,6 @@ void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUT
 		return;
 	}
 
-	crypto_.set_key((char*)k_bytes.begin());
 	authenticated_ = true;
 
 	auto auth_success = [this]() {
@@ -256,8 +256,8 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 	buffer.read(&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
 
 	if(authenticated_) {
-		crypto_.decrypt((char*)&packet_header_.size, sizeof(protocol::ClientHeader::size));
-		crypto_.decrypt((char*)&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
+		crypto_.decrypt(reinterpret_cast<std::uint8_t*>(&packet_header_.size), sizeof(protocol::ClientHeader::size));
+		crypto_.decrypt(reinterpret_cast<std::uint8_t*>(&packet_header_.opcode), sizeof(protocol::ClientHeader::opcode));
 	}
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << ":" << remote_port() << " -> "
@@ -323,12 +323,12 @@ void ClientConnection::close_session() {
 void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet) {
 	auto self(shared_from_this());
 
-	service_.dispatch([this, self, opcode, packet]() {
+	service_.dispatch([this, self, opcode, packet]() mutable {
 		std::uint16_t size = boost::endian::native_to_big(std::uint16_t(packet->size() + sizeof(opcode)));
 
 		if(authenticated_) {
-			crypto_.encrypt((char*)&size, sizeof(protocol::ServerHeader::size));
-			crypto_.encrypt((char*)&opcode, sizeof(protocol::ServerHeader::opcode));
+			crypto_.encrypt(reinterpret_cast<std::uint8_t*>(&size), sizeof(protocol::ServerHeader::size));
+			crypto_.encrypt(reinterpret_cast<std::uint8_t*>(&opcode), sizeof(protocol::ServerHeader::opcode));
 		}
 
 		spark::SafeBinaryStream stream(outbound_buffer_);

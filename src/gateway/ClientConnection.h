@@ -53,6 +53,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	void read();
 	void write();
 	void stop();
+	void close_session();
 
 	void handle_packet(spark::Buffer& buffer);
 	void send_auth_challenge();
@@ -82,7 +83,6 @@ public:
 	                   authenticated_(false) { }
 
 	void start();
-	void close_session();
 	void send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet);
 	boost::asio::ip::tcp::socket& socket();
 	

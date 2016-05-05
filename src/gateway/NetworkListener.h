@@ -48,8 +48,8 @@ class NetworkListener {
 				auto ip = next_connection_->socket().remote_endpoint().address();
 
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Accepted connection " << ip.to_string() << ":"
-					<< next_connection_->socket().remote_endpoint().port() << LOG_ASYNC;
+					<< "Accepted connection " << next_connection_->remote_address() << ":"
+					<< next_connection_->remote_port() << LOG_ASYNC;
 
 				sessions_.start(next_connection_);
 			}

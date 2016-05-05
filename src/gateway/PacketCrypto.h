@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <botan/bigint.h>
+#include <array>
 #include <cstdint>
 #include <cstddef>
 #include <cstring>
@@ -15,32 +17,32 @@
 namespace ember {
 
 class PacketCrypto {
-	char key_[40];
-	std::uint8_t _send_i = 0;
-	std::uint8_t _send_j = 0;
-	std::uint8_t _recv_i = 0;
-	std::uint8_t _recv_j = 0;
+	Botan::SecureVector<Botan::byte> key_;
+	std::uint8_t send_i_ = 0;
+	std::uint8_t send_j_ = 0;
+	std::uint8_t recv_i_ = 0;
+	std::uint8_t recv_j_ = 0;
 
 public:
-	void set_key(const char* key) {
-		memcpy(key_, key, 40);
+	void set_key(const Botan::SecureVector<Botan::byte>& key) {
+		key_ = key;
 	}
 
-	void encrypt(char* data, std::size_t length) {
+	void encrypt(std::uint8_t* data, std::size_t length) {
 		for(std::size_t t = 0; t < length; t++) {
-			_send_i %= 40;
-			std::uint8_t x = (data[t] ^ key_[_send_i]) + _send_j;
-			++_send_i;
-			data[t] = _send_j = x;
+			send_i_ %= key_.size();
+			std::uint8_t x = (data[t] ^ key_[send_i_]) + send_j_;
+			++send_i_;
+			data[t] = send_j_ = x;
 		}
 	}
 
-	void decrypt(char* data, std::size_t length) {
+	void decrypt(std::uint8_t* data, std::size_t length) {
 		for(std::size_t t = 0; t < length; t++) {
-			_recv_i %= 40;
-			std::uint8_t x = (data[t] - _recv_j) ^ key_[_recv_i];
-			++_recv_i;
-			_recv_j = data[t];
+			recv_i_ %= key_.size();
+			std::uint8_t x = (data[t] - recv_j_) ^ key_[recv_i_];
+			++recv_i_;
+			recv_j_ = data[t];
 			data[t] = x;
 		}
 	}
