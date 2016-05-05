@@ -54,8 +54,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	void write();
 	void stop();
 
-	bool handle_packet(spark::Buffer& buffer);
-	void handle_authentication(spark::Buffer& buffer);
+	void handle_packet(spark::Buffer& buffer);
 	void send_auth_challenge();
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
@@ -63,6 +62,17 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	void fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet);
 	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
 	void send_auth_fail(protocol::ResultCode result);
+	void send_auth_success();
+
+	// state handlers
+	void handle_in_queue(spark::Buffer& buffer);
+	void handle_character_list(spark::Buffer& buffer);
+	void handle_in_world(spark::Buffer& buffer);
+	void handle_authentication(spark::Buffer& buffer);
+
+	// packet handlers
+	void handle_ping(spark::Buffer& buffer);
+	void handle_keep_alive(spark::Buffer& buffer);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)

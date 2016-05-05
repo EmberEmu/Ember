@@ -21,12 +21,12 @@ void RealmQueue::update_clients(const boost::system::error_code& ec) {
 	if(ec) { // if ec is set, the timer was aborted (shutdown)
 		return;
 	}
-	std::lock_guard<std::mutex> guard(lock_);
 
+	std::lock_guard<std::mutex> guard(lock_);
 	std::size_t position = 1;
 
-	for(auto& client : queue_) {
-		send_position(position, client);
+	for(auto& entry : queue_) {
+		send_position(position, entry.client);
 		++position;
 	}
 
@@ -40,19 +40,24 @@ void RealmQueue::send_position(std::size_t position, std::shared_ptr<ClientConne
 	client->send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, packet);
 }
 
-void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client) {
+void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(queue_.empty()) {
 		set_timer();
 	}
 
-	queue_.push_back(client);
+	queue_.emplace_back(QueueEntry{client, callback});
 }
 
 void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 	std::lock_guard<std::mutex> guard(lock_);
-	queue_.remove(client);
+
+	for(auto i = queue_.begin(); i != queue_.end(); ++i) {
+		if(i->client == client) {
+			queue_.erase(i);
+		}
+	}
 
 	if(queue_.empty()) {
 		timer_.cancel();
@@ -66,10 +71,10 @@ void RealmQueue::decrement() {
 		return;
 	}
 
-	auto client = queue_.front();
+	auto entry = queue_.front();
 	queue_.pop_front();
 
-	// finish auth
+	entry.callback();
 
 	if(queue_.empty()) {
 		timer_.cancel();

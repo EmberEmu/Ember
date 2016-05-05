@@ -26,6 +26,92 @@ void ClientConnection::send_auth_challenge() {
 	state_ = ClientStates::AUTHENTICATING;
 }
 
+
+void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
+	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
+	std::uint32_t unknown = 0;
+
+	Botan::SHA_160 hasher;
+	hasher.update(packet.username);
+	hasher.update((Botan::byte*)&unknown, sizeof(unknown));
+	hasher.update((Botan::byte*)&packet.seed, sizeof(packet.seed));
+	hasher.update((Botan::byte*)&auth_seed_, sizeof(auth_seed_));
+	hasher.update(k_bytes);
+	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
+
+	if(calc_hash != packet.digest) {
+		send_auth_fail(protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
+		return;
+	}
+
+	crypto_.set_key((char*)k_bytes.begin());
+	authenticated_ = true;
+
+	auto auth_success = [this]() {
+		state_ = ClientStates::CHARACTER_LIST;
+		send_auth_success();
+		// send_addon_data();
+	};
+
+	/* 
+	 * Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
+	 * but that doesn't seem to be true - if this bugs out, check that out
+	 */
+	if(false) {
+		state_ = ClientStates::IN_QUEUE;
+
+		queue_service_temp->enqueue(shared_from_this(), [this, auth_success, packet]() {
+			LOG_DEBUG(logger_) << packet.username << " removed from queue" << LOG_ASYNC;
+			auth_success();
+		});
+
+		LOG_DEBUG(logger_) << packet.username << " added to queue" << LOG_ASYNC;
+		return;
+	}
+
+	auth_success();
+}
+
+void ClientConnection::send_auth_success() {
+	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
+	response->result = protocol::ResultCode::AUTH_OK;
+	send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
+}
+
+void ClientConnection::send_auth_fail(protocol::ResultCode result) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	// not convinced that this packet is correct
+	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
+	response->result = result;
+	send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
+	close_session();
+}
+
+void ClientConnection::handle_authentication(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	if(packet_header_.opcode != protocol::ClientOpcodes::CMSG_AUTH_SESSION) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Expected CMSG_AUTH_CHALLENGE, dropping "
+			<< remote_address() << remote_port() << LOG_ASYNC;
+		close_session();
+		return;
+	}
+
+	spark::SafeBinaryStream stream(buffer);
+	protocol::CMSG_AUTH_SESSION packet;
+
+	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Authentication packet parse failed, disconnecting" << LOG_ASYNC;
+		close_session();
+		return;
+	}
+
+	fetch_session_key(packet);
+}
+
 void ClientConnection::fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 	LOG_DEBUG(logger_) << "Received session proof from " << packet.username << LOG_ASYNC;
@@ -64,79 +150,45 @@ void ClientConnection::fetch_session_key(const protocol::CMSG_AUTH_SESSION& pack
 	});
 }
 
-void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
-	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
-	std::uint32_t unknown = 0;
-
-	Botan::SHA_160 hasher;
-	hasher.update(packet.username);
-	hasher.update((Botan::byte*)&unknown, 4);
-	hasher.update((Botan::byte*)&packet.seed, 4);
-	hasher.update((Botan::byte*)&auth_seed_, 4);
-	hasher.update(k_bytes);
-	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
-
-	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-
-	if(calc_hash != packet.digest) {
-		send_auth_fail(protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
-		return;
+void ClientConnection::handle_character_list(spark::Buffer& buffer) {
+	switch(packet_header_.opcode) {
+		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
+			//handle_char_enum(buffer);
+			break;
+		case protocol::ClientOpcodes::CMSG_CHAR_CREATE:
+			//handle_char_create(buffer);
+			break;
+		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
+			//handle_char_delete(buffer);
+			break;
+		// case enter world
 	}
-
-	crypto_.set_key((char*)k_bytes.begin());
-	authenticated_ = true;
-
-	/* 
-	 * Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
-	 * but that doesn't seem to be true - if this bugs out, check that out
-	 */
-	if(2 > 1) { // add server population check
-		state_ = ClientStates::IN_QUEUE;
-		queue_service_temp->enqueue(shared_from_this());
-		return;
-	}
-
-	/*auto resp = std::make_shared<Packet>();
-	PacketStream<Packet> stream(resp.get());
-	stream << boost::endian::native_to_big(std::uint16_t(12)) << grunt::server::Opcode::SMSG_AUTH << std::uint8_t(12)
-		<< std::uint32_t(0) << std::uint8_t(0) << std::uint32_t(0);
-	crypt_.encrypt(resp->data());
-	write(resp);
-	state_ = State::AUTHED;*/
 }
 
-void ClientConnection::send_auth_fail(protocol::ResultCode result) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+void ClientConnection::handle_in_world(spark::Buffer& buffer) {
 
-	// not convinced that this packet is correct
-	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	response->result = result;
-	send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
-	close_session();
 }
 
-void ClientConnection::handle_authentication(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	if(packet_header_.opcode != protocol::ClientOpcodes::CMSG_AUTH_SESSION) {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Expected CMSG_AUTH_CHALLENGE, dropping "
-			<< remote_address() << remote_port() << LOG_ASYNC;
-		close_session();
-		return;
+void ClientConnection::handle_in_queue(spark::Buffer& buffer) {
+	switch(packet_header_.opcode) {
+		case protocol::ClientOpcodes::CMSG_PING:
+			handle_ping(buffer);
+			break;
+		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE:
+			handle_keep_alive(buffer);
+			break;
+		default:
+			// ??
+			break;
 	}
+}
 
-	spark::SafeBinaryStream stream(buffer);
-	protocol::CMSG_AUTH_SESSION packet;
+void ClientConnection::handle_ping(spark::Buffer& buffer) {
 
-	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Authentication packet parse failed, disconnecting" << LOG_ASYNC;
-		close_session();
-		return;
-	}
+}
 
-	fetch_session_key(packet);
+void ClientConnection::handle_keep_alive(spark::Buffer& buffer) {
+
 }
 
 void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
@@ -145,10 +197,13 @@ void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
 			handle_authentication(buffer);
 			break;
 		case ClientStates::IN_QUEUE:
+			handle_in_queue(buffer);
 			break;
 		case ClientStates::CHARACTER_LIST:
+			handle_character_list(buffer);
 			break;
 		case ClientStates::IN_WORLD:
+			handle_in_world(buffer);
 			break;
 		default:
 			// assert
@@ -157,7 +212,10 @@ void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
 }
 
 void ClientConnection::parse_header(spark::Buffer& buffer) {
-	if(buffer.size() < sizeof(protocol::ClientHeader)) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	// ClientHeader struct is not packed - do not use it for this check
+	if(buffer.size() < sizeof(protocol::ClientHeader::opcode) + sizeof(protocol::ClientHeader::size)) {
 		return;
 	}
 
@@ -168,6 +226,9 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 		crypto_.decrypt((char*)&packet_header_.size, sizeof(protocol::ClientHeader::size));
 		crypto_.decrypt((char*)&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
 	}
+
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << ":" << remote_port() << " -> "
+		<< protocol::to_string(packet_header_.opcode) << LOG_ASYNC;
 
 	read_state_ = ReadState::BODY;
 }
@@ -180,7 +241,7 @@ void ClientConnection::completion_check(spark::Buffer& buffer) {
 	read_state_ = ReadState::DONE;
 }
 
-bool ClientConnection::handle_packet(spark::Buffer& buffer) {
+void ClientConnection::handle_packet(spark::Buffer& buffer) {
 	if(read_state_ == ReadState::HEADER) {
 		parse_header(buffer);
 	}
@@ -190,11 +251,9 @@ bool ClientConnection::handle_packet(spark::Buffer& buffer) {
 	}
 
 	if(read_state_ == ReadState::DONE) {
-		dispatch_packet(buffer);
 		read_state_ = ReadState::HEADER;
+		dispatch_packet(buffer);
 	}
-
-	return true; // temp
 }
 
 void ClientConnection::start() {
@@ -283,12 +342,8 @@ void ClientConnection::read() {
 
 			if(!ec) {
 				inbound_buffer_.advance_write_cursor(size);
-
-				if(handle_packet(inbound_buffer_)) {
-					read();
-				} else {
-					close_session();
-				}
+				handle_packet(inbound_buffer_);
+				read();
 			} else if(ec != boost::asio::error::operation_aborted) {
 				close_session();
 			}

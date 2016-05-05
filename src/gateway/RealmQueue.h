@@ -12,6 +12,7 @@
 #include <boost/asio/io_service.hpp>
 #include <chrono>
 #include <list>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <cstddef>
@@ -21,10 +22,17 @@ namespace ember {
 class ClientConnection;
 
 class RealmQueue {
+	typedef std::function<void()> LeaveQueueCB;
+
+	struct QueueEntry {
+		std::shared_ptr<ClientConnection> client;
+		LeaveQueueCB callback;
+	};
+
 	const std::chrono::milliseconds TIMER_FREQUENCY { 250 };
 
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
-	std::list<std::shared_ptr<ClientConnection>> queue_;
+	std::list<QueueEntry> queue_;
 	std::mutex lock_;
 
 	void send_position(std::size_t position, std::shared_ptr<ClientConnection> client);
@@ -34,7 +42,7 @@ class RealmQueue {
 public:
 	RealmQueue::RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
-	void enqueue(std::shared_ptr<ClientConnection> client);
+	void enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback);
 	void dequeue(std::shared_ptr<ClientConnection> client);
 	void decrement();
 	void shutdown();

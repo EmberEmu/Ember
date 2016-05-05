@@ -36,7 +36,7 @@ public:
 	}
 
 	void decrypt(char* data, std::size_t length) {
-		for (std::size_t t = 0; t < length; t++) {
+		for(std::size_t t = 0; t < length; t++) {
 			_recv_i %= 40;
 			std::uint8_t x = (data[t] - _recv_j) ^ key_[_recv_i];
 			++_recv_i;
