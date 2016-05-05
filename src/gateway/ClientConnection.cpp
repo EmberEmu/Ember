@@ -99,16 +99,13 @@ void ClientConnection::handle_authentication(spark::Buffer& buffer) {
 		return;
 	}
 
-	spark::SafeBinaryStream stream(buffer);
 	protocol::CMSG_AUTH_SESSION packet;
 
-	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Authentication packet parse failed, disconnecting" << LOG_ASYNC;
-		close_session();
+	if(!packet_deserialise(packet, buffer)) {
 		return;
 	}
 
+	// todo - check game build
 	fetch_session_key(packet);
 }
 
@@ -152,6 +149,12 @@ void ClientConnection::fetch_session_key(const protocol::CMSG_AUTH_SESSION& pack
 
 void ClientConnection::handle_character_list(spark::Buffer& buffer) {
 	switch(packet_header_.opcode) {
+		case protocol::ClientOpcodes::CMSG_PING:
+			handle_ping(buffer);
+			break;
+		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE:
+			handle_keep_alive(buffer);
+			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
 			//handle_char_enum(buffer);
 			break;
@@ -166,6 +169,7 @@ void ClientConnection::handle_character_list(spark::Buffer& buffer) {
 }
 
 void ClientConnection::handle_in_world(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 }
 
@@ -183,12 +187,41 @@ void ClientConnection::handle_in_queue(spark::Buffer& buffer) {
 	}
 }
 
-void ClientConnection::handle_ping(spark::Buffer& buffer) {
 
+void ClientConnection::handle_ping(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	protocol::CMSG_PING packet;
+
+	if(!packet_deserialise(packet, buffer)) {
+		return;
+	}
+
+	auto response = std::make_shared<protocol::SMSG_PONG>();
+	response->ping = packet.ping;
+	send(protocol::ServerOpcodes::SMSG_PONG, response);
+}
+
+bool ClientConnection::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
+	spark::SafeBinaryStream stream(buffer);
+
+	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Parsing of " << protocol::to_string(packet_header_.opcode)
+			<< " failed" << LOG_ASYNC;
+
+		//if(close_on_failure) {
+			close_session();
+		//}
+		
+		return false;
+	}
+
+	return true;
 }
 
 void ClientConnection::handle_keep_alive(spark::Buffer& buffer) {
-
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 }
 
 void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
@@ -214,7 +247,7 @@ void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
 void ClientConnection::parse_header(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	// ClientHeader struct is not packed - do not use it for this check
+	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
 	if(buffer.size() < sizeof(protocol::ClientHeader::opcode) + sizeof(protocol::ClientHeader::size)) {
 		return;
 	}

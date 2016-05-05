@@ -63,6 +63,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
 	void send_auth_fail(protocol::ResultCode result);
 	void send_auth_success();
+	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 
 	// state handlers
 	void handle_in_queue(spark::Buffer& buffer);

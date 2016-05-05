@@ -19,12 +19,14 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class SMSG_AUTH_RESPONSE final : public Packet {
-
 	State state_ = State::INITIAL;
 
 public:
 	ResultCode result;
 	std::uint32_t queue_position;
+	std::uint32_t billing_time;
+	std::uint8_t billing_flags;
+	std::uint32_t billing_rested;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -35,6 +37,18 @@ public:
 			stream >> queue_position;
 		}
 
+		if(result == ResultCode::AUTH_OK) {
+			stream >> billing_time;
+			stream >> billing_flags;
+			stream >> billing_rested;
+		}
+
+		be::little_to_native_inplace(result);
+		be::little_to_native_inplace(queue_position);
+		be::little_to_native_inplace(billing_time);
+		be::native_to_little_inplace(billing_flags);
+		be::native_to_little_inplace(billing_rested);
+
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
 		return State::ERRORED;
@@ -44,13 +58,13 @@ public:
 		stream << be::native_to_little(result);
 
 		if(result == ResultCode::AUTH_WAIT_QUEUE) {
-			stream << queue_position;
+			stream << be::native_to_little(queue_position);
 		}
 
 		if(result == ResultCode::AUTH_OK) {
-			stream << std::uint32_t(0);	// billing time remaining
-			stream << std::uint8_t(0);	// billing plan flags
-			stream << std::uint32_t(0);	// billing time rested
+			stream << be::native_to_little(billing_time);
+			stream << be::native_to_little(billing_flags);
+			stream << be::native_to_little(billing_rested);
 		}
 	}
 
@@ -62,7 +76,9 @@ public:
 		}
 
 		if(result == ResultCode::AUTH_OK) {
-			size += 9; // billing time stuff, hacky
+			size += sizeof(billing_time);
+			size += sizeof(billing_flags);
+			size += sizeof(billing_rested);
 		}
 
 		return size;
