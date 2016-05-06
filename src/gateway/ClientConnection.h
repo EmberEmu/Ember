@@ -45,6 +45,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	log::Logger* logger_;
 	bool stopped_;
 	bool authenticated_;
+	bool write_in_progress_;
 	std::uint32_t auth_seed_;
 	PacketCrypto crypto_;
 
@@ -80,7 +81,7 @@ public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)
 	                 : state_(ClientStates::INITIAL_CONNECTION), sessions_(sessions), socket_(service),
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service),
-	                   authenticated_(false) { }
+	                   authenticated_(false), write_in_progress_(false) { }
 
 	void start();
 	void send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet);

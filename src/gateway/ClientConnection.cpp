@@ -334,7 +334,11 @@ void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<prot
 		spark::SafeBinaryStream stream(outbound_buffer_);
 		stream << size << opcode;
 		packet->write_to_stream(stream);
-		write();
+
+		if(!write_in_progress_) {
+			write_in_progress_ = true;
+			write();
+		}
 	});
 }
 
@@ -351,6 +355,12 @@ void ClientConnection::write() {
 
 			if(ec && ec != boost::asio::error::operation_aborted) {
 				close_session();
+			} else if(!outbound_buffer_.empty()) {
+				// data was buffered at some point between the last send and this handler being invoked
+				write();
+			} else {
+				// all done!
+				write_in_progress_ = false;
 			}
 		}
 	));
@@ -387,7 +397,7 @@ void ClientConnection::read() {
 void ClientConnection::stop() {
 	auto self(shared_from_this());
 
-	socket_.get_io_service().post([this, self] {
+	socket_.get_io_service().dispatch([this, self] {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Closing connection to " << remote_address()
 			<< ":" << remote_port() << LOG_ASYNC;
