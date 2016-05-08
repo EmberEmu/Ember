@@ -17,6 +17,10 @@ void RealmQueue::set_timer() {
 	timer_.async_wait(std::bind(&RealmQueue::update_clients, this, std::placeholders::_1));
 }
 
+/* Periodically update clients with their current queue position
+ * This is done with a timer rather than as players leave the queue/server
+ * in order to reduce network traffic with longer queues where queue positions
+ * are changing rapidly */
 void RealmQueue::update_clients(const boost::system::error_code& ec) {
 	if(ec) { // if ec is set, the timer was aborted (shutdown)
 		return;
@@ -50,6 +54,8 @@ void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB 
 	queue_.emplace_back(QueueEntry{client, callback});
 }
 
+/* Signals that a currently queued player has decided to disconnect rather
+ * hang around in the queue */
 void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 	std::lock_guard<std::mutex> guard(lock_);
 
@@ -64,6 +70,8 @@ void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 	}
 }
 
+/* Signals that a player occupying a server slot has disconnected, thus
+ * allowing the player at the front of the queue to connect */
 void RealmQueue::decrement() {
 	std::lock_guard<std::mutex> guard(lock_);
 

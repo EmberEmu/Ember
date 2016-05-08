@@ -26,7 +26,6 @@ void ClientConnection::send_auth_challenge() {
 	state_ = ClientStates::AUTHENTICATING;
 }
 
-
 void ClientConnection::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
 	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
 	crypto_.set_key(k_bytes);
@@ -186,7 +185,6 @@ void ClientConnection::handle_in_queue(spark::Buffer& buffer) {
 			break;
 	}
 }
-
 
 void ClientConnection::handle_ping(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;

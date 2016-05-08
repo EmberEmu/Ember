@@ -15,6 +15,7 @@
 #include <logger/Logger.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
 #include <string>
 #include <utility>
 #include <cstdint>
@@ -45,11 +46,9 @@ class NetworkListener {
 			}
 
 			if(!ec) {
-				auto ip = next_connection_->socket().remote_endpoint().address();
-
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Accepted connection " << next_connection_->remote_address() << ":"
-					<< next_connection_->remote_port() << LOG_ASYNC;
+					<< "Accepted connection "
+					<< boost::lexical_cast<std::string>(next_connection_->socket().remote_endpoint()) << LOG_ASYNC;
 
 				sessions_.start(next_connection_);
 			}
