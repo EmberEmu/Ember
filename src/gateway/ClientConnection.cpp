@@ -189,7 +189,7 @@ void ClientConnection::handle_in_queue(spark::Buffer& buffer) {
 
 
 void ClientConnection::handle_ping(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_SYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_PING packet;
 
@@ -245,7 +245,7 @@ void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
 }
 
 void ClientConnection::parse_header(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_SYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
 	const std::size_t header_wire_size
@@ -263,7 +263,7 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 	stream >> packet_header_.size >> packet_header_.opcode;
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << ":" << remote_port() << " -> "
-		<< protocol::to_string(packet_header_.opcode) << LOG_SYNC;
+		<< protocol::to_string(packet_header_.opcode) << LOG_ASYNC;
 
 	read_state_ = ReadState::BODY;
 }
