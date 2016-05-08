@@ -18,8 +18,6 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class SMSG_AUTH_CHALLENGE final : public Packet {
-	static const std::size_t WIRE_LENGTH = 4;
-
 	State state_ = State::INITIAL;
 
 public:
@@ -27,10 +25,6 @@ public:
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
-
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
-		}
 
 		stream >> seed;
 		be::little_to_native_inplace(seed);
@@ -40,10 +34,6 @@ public:
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
 		stream << be::native_to_little(seed);
-	}
-
-	std::uint16_t size() const override {
-		return WIRE_LENGTH;
 	}
 };
 

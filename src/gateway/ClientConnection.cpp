@@ -189,7 +189,7 @@ void ClientConnection::handle_in_queue(spark::Buffer& buffer) {
 
 
 void ClientConnection::handle_ping(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_SYNC;
 
 	protocol::CMSG_PING packet;
 
@@ -197,9 +197,9 @@ void ClientConnection::handle_ping(spark::Buffer& buffer) {
 		return;
 	}
 
-	/*auto response = std::make_shared<protocol::SMSG_PONG>();
+	auto response = std::make_shared<protocol::SMSG_PONG>();
 	response->ping = packet.ping;
-	send(protocol::ServerOpcodes::SMSG_PONG, response);*/
+	send(protocol::ServerOpcodes::SMSG_PONG, response);
 }
 
 bool ClientConnection::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
@@ -245,23 +245,25 @@ void ClientConnection::dispatch_packet(spark::Buffer& buffer) {
 }
 
 void ClientConnection::parse_header(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_SYNC;
 
 	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
-	if(buffer.size() < sizeof(protocol::ClientHeader::opcode) + sizeof(protocol::ClientHeader::size)) {
+	const std::size_t header_wire_size
+		= sizeof(protocol::ClientHeader::size) + sizeof(protocol::ClientHeader::opcode);
+
+	if(buffer.size() < header_wire_size) {
 		return;
 	}
 
-	buffer.read(&packet_header_.size, sizeof(protocol::ClientHeader::size));
-	buffer.read(&packet_header_.opcode, sizeof(protocol::ClientHeader::opcode));
-
 	if(authenticated_) {
-		crypto_.decrypt(reinterpret_cast<std::uint8_t*>(&packet_header_.size), sizeof(protocol::ClientHeader::size));
-		crypto_.decrypt(reinterpret_cast<std::uint8_t*>(&packet_header_.opcode), sizeof(protocol::ClientHeader::opcode));
+		crypto_.decrypt(buffer, header_wire_size);
 	}
 
+	spark::SafeBinaryStream stream(inbound_buffer_);
+	stream >> packet_header_.size >> packet_header_.opcode;
+
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << ":" << remote_port() << " -> "
-		<< protocol::to_string(packet_header_.opcode) << LOG_ASYNC;
+		<< protocol::to_string(packet_header_.opcode) << LOG_SYNC;
 
 	read_state_ = ReadState::BODY;
 }
@@ -325,20 +327,30 @@ void ClientConnection::close_session() {
 	sessions_.stop(shared_from_this());
 }
 
+// todo, remove the need for the opcode arguments
 void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet) {
 	auto self(shared_from_this());
 
 	service_.dispatch([this, self, opcode, packet]() mutable {
-		std::uint16_t size = boost::endian::native_to_big(std::uint16_t(packet->size() + sizeof(opcode)));
+		spark::Buffer& buffer(outbound_buffer_);
+		spark::SafeBinaryStream stream(buffer);
+		const std::size_t write_index = buffer.size(); // the current write index
+
+		stream << std::uint16_t(0) << opcode << *packet;
+
+		// calculate the size of the packet that we just streamed and then update the buffer
+		const boost::endian::big_uint16_at final_size =
+			static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
+
+		// todo - could implement iterators to make this slightly nicer
+		buffer[write_index + 0] = final_size.data()[0];
+		buffer[write_index + 1] = final_size.data()[1];
 
 		if(authenticated_) {
-			crypto_.encrypt(reinterpret_cast<std::uint8_t*>(&size), sizeof(protocol::ServerHeader::size));
-			crypto_.encrypt(reinterpret_cast<std::uint8_t*>(&opcode), sizeof(protocol::ServerHeader::opcode));
+			const std::size_t header_wire_size =
+				sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
+			crypto_.encrypt(buffer, write_index, header_wire_size);
 		}
-
-		spark::SafeBinaryStream stream(outbound_buffer_);
-		stream << size << opcode;
-		packet->write_to_stream(stream);
 
 		if(!write_in_progress_) {
 			write_in_progress_ = true;

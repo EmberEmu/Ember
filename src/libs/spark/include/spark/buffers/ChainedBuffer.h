@@ -166,7 +166,6 @@ public:
 		return buffers;
 	}
 
-
 	void skip(std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
 		std::size_t remaining = length;
@@ -274,6 +273,26 @@ public:
 	
 	constexpr std::size_t block_size() const {
 		return BlockSize;
+	}
+
+	char& operator[](const std::size_t index) const {
+		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
+
+		auto head = root_.next;
+		auto buffer = buffer_from_node(head);
+		std::size_t offset_index = index + buffer->read_offset;
+		auto node_index = static_cast<std::size_t>(offset_index / BlockSize);
+
+		for(std::size_t i = 0; i < node_index; ++i) {
+			head = head->next;
+		}
+
+		buffer = buffer_from_node(head);
+		return (*buffer)[offset_index % BlockSize];
+	}
+
+	char& operator[](const std::size_t index) {
+		return const_cast<char&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
 	}
 
 	class const_iterator {

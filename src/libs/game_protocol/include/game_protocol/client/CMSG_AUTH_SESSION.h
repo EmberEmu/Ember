@@ -66,10 +66,6 @@ public:
 		stream << be::native_to_little(seed);
 		stream.put(digest.begin(), digest.size());
 	}
-
-	std::uint16_t size() const override {
-		return 0; // todo
-	}
 };
 
 }} // protocol, ember

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/Buffer.h>
 #include <botan/bigint.h>
 #include <array>
 #include <cstdint>
@@ -28,22 +29,24 @@ public:
 		key_ = key;
 	}
 
-	void encrypt(std::uint8_t* data, std::size_t length) {
-		for(std::size_t t = 0; t < length; t++) {
+	void encrypt(spark::Buffer& data, std::size_t offset, std::size_t length) {
+		for(std::size_t t = 0; t < length; ++t) {
 			send_i_ %= key_.size();
-			std::uint8_t x = (data[t] ^ key_[send_i_]) + send_j_;
+			char& byte = data[offset + t]; // todo - type change
+			std::uint8_t x = (byte ^ key_[send_i_]) + send_j_;
 			++send_i_;
-			data[t] = send_j_ = x;
+			byte = send_j_ = x;
 		}
 	}
 
-	void decrypt(std::uint8_t* data, std::size_t length) {
-		for(std::size_t t = 0; t < length; t++) {
+	void decrypt(spark::Buffer& data, std::size_t length) {
+		for(std::size_t t = 0; t < length; ++t) {
 			recv_i_ %= key_.size();
-			std::uint8_t x = (data[t] - recv_j_) ^ key_[recv_i_];
+			char& byte = data[t]; // todo - type change
+			std::uint8_t x = (byte - recv_j_) ^ key_[recv_i_];
 			++recv_i_;
-			recv_j_ = data[t];
-			data[t] = x;
+			recv_j_ = byte;
+			byte = x;
 		}
 	}
 };

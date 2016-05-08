@@ -39,10 +39,6 @@ public:
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
 		stream << be::native_to_little(ping);
 	}
-
-	std::uint16_t size() const override {
-		return sizeof(ping);
-	}
 };
 
 }} // protocol, ember

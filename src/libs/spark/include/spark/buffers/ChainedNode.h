@@ -118,6 +118,14 @@ struct BufferBlock {
 	char* write_data() {
 		return storage.data() + write_offset;
 	}
+
+	char& operator[](const std::size_t index) {
+		return *(storage.data() + index);
+	}
+
+	char& operator[](const std::size_t index) const {
+		return *(storage.data() + index);
+	}
 };
 
 }} // spark, ember

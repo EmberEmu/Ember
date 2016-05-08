@@ -67,22 +67,6 @@ public:
 			stream << be::native_to_little(billing_rested);
 		}
 	}
-
-	std::uint16_t size() const override {
-		std::uint16_t size = sizeof(result);
-
-		if(result == ResultCode::AUTH_WAIT_QUEUE) {
-			size += sizeof(queue_position);
-		}
-
-		if(result == ResultCode::AUTH_OK) {
-			size += sizeof(billing_time);
-			size += sizeof(billing_flags);
-			size += sizeof(billing_rested);
-		}
-
-		return size;
-	}
 };
 
 }} // protocol, ember

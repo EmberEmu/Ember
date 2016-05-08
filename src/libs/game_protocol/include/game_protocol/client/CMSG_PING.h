@@ -43,10 +43,6 @@ public:
 		stream << be::native_to_little(ping);
 		stream << be::native_to_little(latency);
 	}
-
-	std::uint16_t size() const override {
-		return sizeof(ping) + sizeof(latency);
-	}
 };
 
 }} // protocol, ember
