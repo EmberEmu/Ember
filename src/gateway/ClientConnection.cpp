@@ -276,7 +276,7 @@ void ClientConnection::completion_check(spark::Buffer& buffer) {
 	read_state_ = ReadState::DONE;
 }
 
-void ClientConnection::handle_packet(spark::Buffer& buffer) {
+void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 	while(!buffer.empty()) {
 		if(read_state_ == ReadState::HEADER) {
 			parse_header(buffer);
@@ -294,37 +294,6 @@ void ClientConnection::handle_packet(spark::Buffer& buffer) {
 
 		break;
 	}
-}
-
-void ClientConnection::start() {
-	send_auth_challenge();
-	read();
-}
-
-boost::asio::ip::tcp::socket& ClientConnection::socket() {
-	return socket_;
-}
-
-std::string ClientConnection::remote_address() {
-	return socket_.remote_endpoint().address().to_string();
-}
-
-std::uint16_t ClientConnection::remote_port() {
-	return socket_.remote_endpoint().port();
-}
-
-void ClientConnection::close_session() {
-	switch(state_) {
-		case ClientStates::CHARACTER_LIST:
-		case ClientStates::IN_WORLD:
-			queue_service_temp->decrement();
-			break;
-		case ClientStates::IN_QUEUE:
-			queue_service_temp->dequeue(shared_from_this());
-			break;
-	}
-
-	sessions_.stop(shared_from_this());
 }
 
 // todo, remove the need for the opcode arguments
@@ -402,7 +371,7 @@ void ClientConnection::read() {
 
 			if(!ec) {
 				inbound_buffer_.advance_write_cursor(size);
-				handle_packet(inbound_buffer_);
+				process_buffered_data(inbound_buffer_);
 				read();
 			} else if(ec != boost::asio::error::operation_aborted) {
 				close_session();
@@ -411,10 +380,15 @@ void ClientConnection::read() {
 	));
 }
 
+void ClientConnection::start() {
+	send_auth_challenge();
+	read();
+}
+
 void ClientConnection::stop() {
 	auto self(shared_from_this());
 
-	socket_.get_io_service().dispatch([this, self] {
+	service_.dispatch([this, self] {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Closing connection to " << remote_address()
 			<< ":" << remote_port() << LOG_ASYNC;
@@ -424,6 +398,32 @@ void ClientConnection::stop() {
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		socket_.close(ec);
 	});
+}
+
+void ClientConnection::close_session() {
+	switch(state_) {
+		case ClientStates::CHARACTER_LIST:
+		case ClientStates::IN_WORLD:
+			queue_service_temp->decrement();
+			break;
+		case ClientStates::IN_QUEUE:
+			queue_service_temp->dequeue(shared_from_this());
+			break;
+	}
+
+	sessions_.stop(shared_from_this());
+}
+
+boost::asio::ip::tcp::socket& ClientConnection::socket() {
+	return socket_;
+}
+
+std::string ClientConnection::remote_address() {
+	return socket_.remote_endpoint().address().to_string();
+}
+
+std::uint16_t ClientConnection::remote_port() {
+	return socket_.remote_endpoint().port();
 }
 
 } // ember

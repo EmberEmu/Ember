@@ -37,43 +37,48 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	ClientStates state_;
+	PacketCrypto crypto_;
 	protocol::Handler handler_;
+	protocol::ClientHeader packet_header_;
 	spark::ChainedBuffer<1024> inbound_buffer_;
 	spark::ChainedBuffer<4096> outbound_buffer_;
 	SessionManager& sessions_;
-	ASIOAllocator allocator_; // temp - should be passed in
+	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
 	bool stopped_;
 	bool authenticated_;
 	bool write_in_progress_;
 	std::uint32_t auth_seed_;
-	PacketCrypto crypto_;
 
-	protocol::ClientHeader packet_header_;
-
+	// socket I/O
 	void read();
 	void write();
+
+	// session management
 	void stop();
 	void close_session();
 
-	void handle_packet(spark::Buffer& buffer);
-	void send_auth_challenge();
+	// deserialisation & dispatching
+	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
 	void dispatch_packet(spark::Buffer& buffer);
-	void fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet);
-	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
-	void send_auth_fail(protocol::ResultCode result);
-	void send_auth_success();
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 
+	// authentication functions
+	void send_auth_challenge();
+	void send_auth_success();
+	void send_auth_fail(protocol::ResultCode result);
+	void fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet);
+	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
+
 	// state handlers
+	void handle_authentication(spark::Buffer& buffer);
 	void handle_in_queue(spark::Buffer& buffer);
 	void handle_character_list(spark::Buffer& buffer);
 	void handle_in_world(spark::Buffer& buffer);
-	void handle_authentication(spark::Buffer& buffer);
 
-	// packet handlers
+	// opcode handlers
 	void handle_ping(spark::Buffer& buffer);
 	void handle_keep_alive(spark::Buffer& buffer);
 
