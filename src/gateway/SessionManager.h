@@ -16,16 +16,18 @@
 namespace ember {
 
 class ClientConnection;
+class ConnectionStats;
 
 class SessionManager {
 	std::set<std::shared_ptr<ClientConnection>> sessions_;
-	std::mutex sessions_lock_;
+	mutable std::mutex sessions_lock_;
 
 public:
 	void start(std::shared_ptr<ClientConnection> session);
 	void stop(std::shared_ptr<ClientConnection> session);
 	void stop_all();
 	std::size_t count() const;
+	ConnectionStats aggregate_stats() const;
 };
 
 } // ember

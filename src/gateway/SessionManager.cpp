@@ -8,6 +8,7 @@
 
 #include "SessionManager.h"
 #include "ClientConnection.h"
+#include "ConnectionStats.h"
 
 namespace ember {
 
@@ -34,6 +35,25 @@ void SessionManager::stop_all() {
 
 std::size_t SessionManager::count() const {
 	return sessions_.size();
+}
+
+ConnectionStats SessionManager::aggregate_stats() const {
+	std::lock_guard<std::mutex> guard(sessions_lock_);
+	ConnectionStats ag_stats;
+
+	for(auto& session : sessions_) {
+		auto stats = session->stats();
+		ag_stats.bytes_in += stats.bytes_in;
+		ag_stats.bytes_out += stats.bytes_out;
+		ag_stats.latency += stats.latency;
+		ag_stats.messages_in += stats.messages_in;
+		ag_stats.messages_out += stats.messages_out;
+		ag_stats.packets_in += stats.packets_in;
+		ag_stats.packets_out += stats.packets_out;
+	}
+
+	ag_stats.latency /= count(); // average latency
+	return ag_stats;
 }
 
 

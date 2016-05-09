@@ -20,6 +20,8 @@ set(LIBRARY_HDR
     ClientHandler.h
     PacketCrypto.h
     ConnectionStats.h
+    ServerConfig.h
+    QoS.h
     temp.h
     )
 
@@ -31,6 +33,7 @@ set(LIBRARY_SRC
     AccountService.cpp
     RealmQueue.cpp
     ClientHandler.cpp
+    QoS.cpp
     temp.cpp
     )
 
