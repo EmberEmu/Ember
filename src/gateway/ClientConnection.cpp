@@ -8,7 +8,7 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
-#include <game_protocol/Packets.h>
+#include <game_protocol/client/CMSG_PING.h>
 
 #undef ERROR // temp
 
@@ -57,6 +57,7 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 		}
 
 		if(read_state_ == ReadState::DONE) {
+			++stats_.messages_in;
 			handler_.handle_packet(packet_header_, buffer);
 			read_state_ = ReadState::HEADER;
 			continue;
@@ -95,6 +96,8 @@ void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<prot
 			write_in_progress_ = true;
 			write();
 		}
+
+		++stats_.messages_out;
 	});
 }
 
@@ -107,6 +110,9 @@ void ClientConnection::write() {
 
 	socket_.async_send(outbound_buffer_, create_alloc_handler(allocator_,
 		[this, self](boost::system::error_code ec, std::size_t size) {
+			stats_.bytes_out += size;
+			++stats_.packets_out;
+
 			outbound_buffer_.skip(size);
 
 			if(ec && ec != boost::asio::error::operation_aborted) {
@@ -140,6 +146,9 @@ void ClientConnection::read() {
 			}
 
 			if(!ec) {
+				stats_.bytes_in += size;
+				++stats_.packets_in;
+
 				inbound_buffer_.advance_write_cursor(size);
 				process_buffered_data(inbound_buffer_);
 				read();
@@ -185,6 +194,18 @@ boost::asio::ip::tcp::socket& ClientConnection::socket() {
 
 std::string ClientConnection::remote_address() {
 	return socket_.remote_endpoint().address().to_string() + ":" + std::to_string(socket_.remote_endpoint().port());
+}
+
+const ConnectionStats& ClientConnection::stats() const {
+	return stats_;
+}
+
+void ClientConnection::latency(std::size_t latency) {
+	stats_.latency = latency;
+}
+
+void ClientConnection::compression_level(unsigned int level) {
+	// todo
 }
 
 } // ember

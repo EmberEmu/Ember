@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ClientHandler.h"
+#include "ConnectionStats.h"
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include <game_protocol/Packet.h>
@@ -34,6 +35,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service& service_;
 
+	ConnectionStats stats_;
 	ClientHandler handler_;
 	PacketCrypto crypto_;
 	protocol::ClientHeader packet_header_;
@@ -68,6 +70,10 @@ public:
 	void close_session();
 
 	void set_authenticated(const Botan::BigInt& key);
+	void compression_level(unsigned int level);
+	void latency(std::size_t latency);
+
+	const ConnectionStats& stats() const;
 
 	void send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet);
 	boost::asio::ip::tcp::socket& socket();
