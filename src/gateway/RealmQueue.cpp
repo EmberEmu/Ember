@@ -15,7 +15,9 @@ namespace ember {
 void RealmQueue::set_timer() {
 	timer_.expires_from_now(TIMER_FREQUENCY);
 	timer_.async_wait([this](const boost::system::error_code& ec) {
-		update_clients(ec);
+		if(!ec) { // if ec is set, the timer was aborted (shutdown)
+			update_clients();
+		}
 	});
 }
 
@@ -23,11 +25,7 @@ void RealmQueue::set_timer() {
  * This is done with a timer rather than as players leave the queue/server
  * in order to reduce network traffic with longer queues where queue positions
  * are changing rapidly */
-void RealmQueue::update_clients(const boost::system::error_code& ec) {
-	if(ec) { // if ec is set, the timer was aborted (shutdown)
-		return;
-	}
-
+void RealmQueue::update_clients() {
 	std::lock_guard<std::mutex> guard(lock_);
 	std::size_t position = 1;
 

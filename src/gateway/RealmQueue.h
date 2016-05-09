@@ -36,7 +36,7 @@ class RealmQueue {
 	std::mutex lock_;
 
 	void send_position(std::size_t position, std::shared_ptr<ClientConnection> client);
-	void update_clients(const boost::system::error_code& ec);
+	void update_clients();
 	void set_timer();
 
 public:
