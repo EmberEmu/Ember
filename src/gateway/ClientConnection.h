@@ -12,8 +12,6 @@
 #include "ConnectionStats.h"
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
-#include <game_protocol/Packet.h>
-#include <game_protocol/Packets.h> // todo, fdecls
 #include <game_protocol/PacketHeaders.h> // todo, remove
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>

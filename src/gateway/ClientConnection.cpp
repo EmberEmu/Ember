@@ -8,7 +8,6 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
-#include <game_protocol/client/CMSG_PING.h>
 
 #undef ERROR // temp
 
