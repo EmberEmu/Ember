@@ -44,14 +44,18 @@ void RealmQueue::send_position(std::size_t position, std::shared_ptr<ClientConne
 	client->send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, packet);
 }
 
-void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback) {
+void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback, int priority) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(queue_.empty()) {
 		set_timer();
 	}
 
-	queue_.emplace_back(QueueEntry{client, callback});
+	queue_.emplace_back(QueueEntry{priority, client, callback});
+
+	// guaranteed to be a stable sort - not the most efficient way to have queue priority
+	// but allows for multiple priority levels without multiple hard-coded queues
+	queue_.sort();
 }
 
 /* Signals that a currently queued player has decided to disconnect rather

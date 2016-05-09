@@ -25,8 +25,17 @@ class RealmQueue {
 	typedef std::function<void()> LeaveQueueCB;
 
 	struct QueueEntry {
+		int priority;
 		std::shared_ptr<ClientConnection> client;
 		LeaveQueueCB callback;
+
+		bool operator>(const QueueEntry& rhs) const {
+			return rhs.priority > priority;
+		}
+
+		bool operator<(const QueueEntry& rhs) const {
+			return rhs.priority < priority;
+		}
 	};
 
 	const std::chrono::milliseconds TIMER_FREQUENCY { 250 };
@@ -42,7 +51,7 @@ class RealmQueue {
 public:
 	RealmQueue::RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
-	void enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback);
+	void enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback, int priority = 0);
 	void dequeue(std::shared_ptr<ClientConnection> client);
 	void decrement();
 	void shutdown();

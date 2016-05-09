@@ -16,7 +16,7 @@
 namespace ember {
 
 class ClientConnection;
-class ConnectionStats;
+struct ConnectionStats;
 
 class SessionManager {
 	std::set<std::shared_ptr<ClientConnection>> sessions_;
