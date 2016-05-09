@@ -80,10 +80,9 @@ void RealmQueue::decrement() {
 		return;
 	}
 
-	auto entry = queue_.front();
-	queue_.pop_front();
-
+	auto& entry = queue_.front();
 	entry.callback();
+	queue_.pop_front();
 
 	if(queue_.empty()) {
 		timer_.cancel();
