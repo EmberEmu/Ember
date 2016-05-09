@@ -24,6 +24,15 @@ namespace ember {
 void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& buffer) {
 	header_ = &header;
 
+	// handle ping & keep-alive as special cases
+	switch(header.opcode) {
+		case protocol::ClientOpcodes::CMSG_PING:
+			handle_ping(buffer);
+			return;
+		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE: // no response required
+			return;
+	}
+
 	switch(state_) {
 		case ClientStates::AUTHENTICATING:
 			handle_authentication(buffer);
@@ -38,7 +47,7 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			handle_in_world(buffer);
 			break;
 		default:
-			// assert
+			connection_.close_session();
 			break;
 	}
 }
@@ -146,6 +155,10 @@ void ClientHandler::send_auth_fail(protocol::ResultCode result) {
 
 void ClientHandler::handle_authentication(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	// prevent the client from sending another authentication message
+	// while we're waiting on a remote service to send the key
+	state_ = ClientStates::AUTHENTICATING_REMOTE_WAIT;
 
 	if(header_->opcode != protocol::ClientOpcodes::CMSG_AUTH_SESSION) {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
