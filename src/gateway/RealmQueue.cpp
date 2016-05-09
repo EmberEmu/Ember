@@ -14,7 +14,9 @@ namespace ember {
 
 void RealmQueue::set_timer() {
 	timer_.expires_from_now(TIMER_FREQUENCY);
-	timer_.async_wait(std::bind(&RealmQueue::update_clients, this, std::placeholders::_1));
+	timer_.async_wait([this](const boost::system::error_code& ec) {
+		update_clients(ec);
+	});
 }
 
 /* Periodically update clients with their current queue position

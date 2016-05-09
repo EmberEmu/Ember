@@ -7,6 +7,7 @@
  */
 
 #include "ClientConnection.h"
+#include "SessionManager.h"
 #include <game_protocol/Packets.h>
 
 #undef ERROR // temp

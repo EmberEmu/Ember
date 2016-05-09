@@ -10,7 +10,6 @@
 
 #include "ClientHandler.h"
 #include "PacketCrypto.h"
-#include "SessionManager.h"
 #include "FilterTypes.h"
 #include <game_protocol/Packet.h>
 #include <game_protocol/Packets.h> // todo, fdecls
@@ -26,6 +25,8 @@
 #include <cstdint>
 
 namespace ember {
+
+class SessionManager;
 
 class ClientConnection final : public std::enable_shared_from_this<ClientConnection> {
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
@@ -71,6 +72,8 @@ public:
 	void send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet);
 	boost::asio::ip::tcp::socket& socket();
 	std::string remote_address();
+
+	friend class SessionManager;
 };
 
 } // ember
