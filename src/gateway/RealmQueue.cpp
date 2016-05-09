@@ -62,6 +62,7 @@ void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 	for(auto i = queue_.begin(); i != queue_.end(); ++i) {
 		if(i->client == client) {
 			queue_.erase(i);
+			break;
 		}
 	}
 
@@ -90,6 +91,7 @@ void RealmQueue::decrement() {
 }
 
 void RealmQueue::shutdown() {
+	std::lock_guard<std::mutex> guard(lock_);
 	timer_.cancel();
 }
 
