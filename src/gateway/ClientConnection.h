@@ -8,37 +8,33 @@
 
 #pragma once
 
-#include "ClientStates.h"
+#include "ClientHandler.h"
 #include "PacketCrypto.h"
 #include "SessionManager.h"
 #include "FilterTypes.h"
-#include <botan/bigint.h>
 #include <game_protocol/Packet.h>
 #include <game_protocol/Packets.h> // todo, fdecls
 #include <game_protocol/PacketHeaders.h> // todo, remove
-#include <game_protocol/Handler.h>
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <shared/memory/ASIOAllocator.h>
+#include <botan/bigint.h>
 #include <boost/asio.hpp>
 #include <memory>
 #include <string>
 #include <utility>
 #include <cstdint>
 
-#include "temp.h"
-
 namespace ember {
 
 class ClientConnection final : public std::enable_shared_from_this<ClientConnection> {
+	enum class ReadState { HEADER, BODY, DONE } read_state_;
+
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service& service_;
 
-	enum class ReadState { HEADER, BODY, DONE } read_state_;
-
-	ClientStates state_;
+	ClientHandler handler_;
 	PacketCrypto crypto_;
-	protocol::Handler handler_;
 	protocol::ClientHeader packet_header_;
 	spark::ChainedBuffer<1024> inbound_buffer_;
 	spark::ChainedBuffer<4096> outbound_buffer_;
@@ -48,7 +44,6 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 	bool stopped_;
 	bool authenticated_;
 	bool write_in_progress_;
-	std::uint32_t auth_seed_;
 
 	// socket I/O
 	void read();
@@ -56,46 +51,26 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 
 	// session management
 	void stop();
-	void close_session();
 
-	// deserialisation & dispatching
+	// packet reassembly & dispatching
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
-	void dispatch_packet(spark::Buffer& buffer);
-	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
-
-	// authentication functions
-	void send_auth_challenge();
-	void send_auth_success();
-	void send_auth_fail(protocol::ResultCode result);
-	void fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet);
-	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
-
-	// state handlers
-	void handle_authentication(spark::Buffer& buffer);
-	void handle_in_queue(spark::Buffer& buffer);
-	void handle_character_list(spark::Buffer& buffer);
-	void handle_in_world(spark::Buffer& buffer);
-
-	// opcode handlers
-	void handle_ping(spark::Buffer& buffer);
-	void handle_keep_alive(spark::Buffer& buffer);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)
-	                 : state_(ClientStates::INITIAL_CONNECTION), sessions_(sessions), socket_(service),
+	                 : sessions_(sessions), socket_(service),
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service),
-	                   authenticated_(false), write_in_progress_(false) { }
+	                   authenticated_(false), write_in_progress_(false), handler_(*this, logger) { }
 
 	void start();
+	void close_session();
+
+	void set_authenticated(const Botan::BigInt& key);
+
 	void send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet);
 	boost::asio::ip::tcp::socket& socket();
-	
 	std::string remote_address();
-	std::uint16_t remote_port();
-
-	friend class SessionManager;
 };
 
 } // ember

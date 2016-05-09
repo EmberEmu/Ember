@@ -17,6 +17,7 @@ set(LIBRARY_HDR
     ClientConnection.h
     AccountService.h
     RealmQueue.h
+    ClientHandler.h
     temp.h
     )
 
@@ -27,6 +28,7 @@ set(LIBRARY_SRC
     ServicePool.cpp
     AccountService.cpp
     RealmQueue.cpp
+    ClientHandler.cpp
     temp.cpp
     )
 
