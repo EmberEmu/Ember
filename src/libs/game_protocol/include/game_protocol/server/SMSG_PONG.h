@@ -22,14 +22,14 @@ class SMSG_PONG final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	std::uint32_t ping;
+	std::uint32_t sequence_id;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		stream >> ping;
+		stream >> sequence_id;
 
-		be::little_to_native_inplace(ping);
+		be::little_to_native_inplace(sequence_id);
 
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
@@ -37,7 +37,7 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << be::native_to_little(ping);
+		stream << be::native_to_little(sequence_id);
 	}
 };
 
