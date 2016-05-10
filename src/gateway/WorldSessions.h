@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) 2016 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+#include <memory>
+#include <map>
+
+namespace ember {
+
+class WorldConnection;
+
+class WorldSessions {
+	struct WorldID {
+		unsigned int realm_id;
+		unsigned int map_id;
+		unsigned int instance_id;
+	};
+
+	std::map<WorldID, std::shared_ptr<WorldConnection>> connections_; // todo, change, concurrent
+
+public:
+	void add_world(WorldID id, std::shared_ptr<WorldConnection> connection);
+	void remove_world(WorldID id);
+	void remove_world(std::shared_ptr<WorldConnection> connection);
+	std::shared_ptr<WorldConnection> locate_world(WorldID id);
+};
+
+} // ember

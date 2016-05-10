@@ -22,6 +22,9 @@ set(LIBRARY_HDR
     ConnectionStats.h
     ServerConfig.h
     QoS.h
+    WorldConnection.h
+    WorldSessions.h
+    WorldClients.h
     temp.h
     )
 
@@ -34,6 +37,9 @@ set(LIBRARY_SRC
     RealmQueue.cpp
     ClientHandler.cpp
     QoS.cpp
+    WorldConnection.cpp
+    WorldSessions.cpp
+    WorldClients.cpp
     temp.cpp
     )
 
