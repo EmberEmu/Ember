@@ -37,9 +37,6 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 		case ClientStates::AUTHENTICATING:
 			handle_authentication(buffer);
 			break;
-		case ClientStates::IN_QUEUE:
-			handle_in_queue(buffer);
-			break;
 		case ClientStates::CHARACTER_LIST:
 			handle_character_list(buffer);
 			break;
@@ -47,7 +44,7 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			handle_in_world(buffer);
 			break;
 		default:
-			connection_.close_session();
+			// unexpected packet?
 			break;
 	}
 }
@@ -218,12 +215,6 @@ void ClientHandler::fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet)
 
 void ClientHandler::handle_character_list(spark::Buffer& buffer) {
 	switch(header_->opcode) {
-		case protocol::ClientOpcodes::CMSG_PING:
-			handle_ping(buffer);
-			break;
-		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE:
-			handle_keep_alive(buffer);
-			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
 			//handle_char_enum(buffer);
 			break;
@@ -240,24 +231,6 @@ void ClientHandler::handle_character_list(spark::Buffer& buffer) {
 void ClientHandler::handle_in_world(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-}
-
-void ClientHandler::handle_in_queue(spark::Buffer& buffer) {
-	switch(header_->opcode) {
-		case protocol::ClientOpcodes::CMSG_PING:
-			handle_ping(buffer);
-			break;
-		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE:
-			handle_keep_alive(buffer);
-			break;
-		default:
-			// ??
-			break;
-	}
-}
-
-void ClientHandler::handle_keep_alive(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 }
 
 void ClientHandler::start() {

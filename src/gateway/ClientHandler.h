@@ -39,13 +39,11 @@ class ClientHandler final {
 
 	// state handlers
 	void handle_authentication(spark::Buffer& buffer);
-	void handle_in_queue(spark::Buffer& buffer);
 	void handle_character_list(spark::Buffer& buffer);
 	void handle_in_world(spark::Buffer& buffer);
 
 	// opcode handlers
 	void handle_ping(spark::Buffer& buffer);
-	void handle_keep_alive(spark::Buffer& buffer);
 
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 
