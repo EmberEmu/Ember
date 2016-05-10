@@ -7,6 +7,7 @@
  */
 
 include "Account.fbs";
+include "Character.fbs";
 include "RealmStatus.fbs";
 include "ServiceTypes.fbs";
 include "Core.fbs";
@@ -15,7 +16,8 @@ namespace ember.messaging;
 
 union Data { Ping, Pong, Banner, Negotiate,
              account.Response, account.RegisterKey, account.Disconnect, account.KeyLookup, account.KeyLookupResp,
-             realm.RealmStatus, realm.RequestRealmStatus }
+             realm.RealmStatus, realm.RequestRealmStatus,
+             character.CharResponse, character.RetrieveResponse, character.Retrieve, character.Rename, character.Delete, character.Create }
 
 table MessageRoot {
 	service:Service;

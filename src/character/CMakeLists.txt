@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Ember
+# Copyright (c) 2016 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,12 @@ set(EXECUTABLE_NAME character)
 set(LIBRARY_NAME    libcharacter)
 
 set(LIBRARY_HDR
-
+    Service.h
+    FilterTypes.h
     )
 
 set(LIBRARY_SRC
-
+    Service.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

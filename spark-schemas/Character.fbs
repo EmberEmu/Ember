@@ -37,29 +37,29 @@ table Character {
 	pet_family:uint;
 }
 
-table CharacterList {
+table RetrieveResponse {
 	status:Status;
 	characters:[Character];
 }
 
-table RetrieveCharacters {
+table Retrieve {
 	account_name:string;
 	realm_id:uint;
 }
 
-table RenameCharacter {
-	account_name:string;
-	realm_id:uint;
-	character_id:uint;
-}
-
-table DeleteCharacter {
+table Rename {
 	account_name:string;
 	realm_id:uint;
 	character_id:uint;
 }
 
-table CreateCharacter {
+table Delete {
+	account_name:string;
+	realm_id:uint;
+	character_id:uint;
+}
+
+table Create {
 	account_id:uint;
 	realm_id:uint;
 	name:string;
@@ -74,6 +74,6 @@ table CreateCharacter {
     outfitid:ubyte;
 }
 
-table Response {
+table CharResponse {
 	status:Status;
 }
