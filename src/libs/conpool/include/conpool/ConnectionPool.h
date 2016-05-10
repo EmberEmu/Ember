@@ -56,7 +56,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 
 	Semaphore<std::mutex> semaphore_;
 	std::function<void(Severity, std::string)> log_cb_;
-	bool closed_;
+	std::atomic_bool closed_;
 
 	void set_connection_ids() {
 		unsigned int connection_id = 0;

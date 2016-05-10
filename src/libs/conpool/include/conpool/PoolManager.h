@@ -13,6 +13,7 @@
 #include "ConnectionPool.h"
 #include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
+#include <atomic>
 #include <chrono>
 #include <string>
 #include <vector>
@@ -41,7 +42,7 @@ class PoolManager {
 	std::exception_ptr exception_;
 	std::condition_variable cond_;
 	std::mutex cond_lock_;
-	bool stop_ = false;
+	std::atomic_bool stop_ { false };
 
 	void close(ConnDetail<ConType>& conn) {
 		try {

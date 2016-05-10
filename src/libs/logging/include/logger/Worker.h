@@ -12,6 +12,7 @@
 #include <logger/concurrentqueue.h>
 #include <logger/Logger.h>
 #include <shared/threading/Semaphore.h>
+#include <atomic>
 #include <vector>
 #include <mutex>
 #include <thread>
@@ -29,7 +30,7 @@ class Worker final {
 	std::vector<std::unique_ptr<Sink>>& sinks_;
 	Semaphore<std::mutex> sem_;
 	std::thread thread_;
-	bool stop_ = false;
+	std::atomic_bool stop_ { false };
 
 	void process_outstanding();
 	void process_outstanding_sync();
