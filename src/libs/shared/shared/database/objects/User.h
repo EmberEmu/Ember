@@ -10,6 +10,7 @@
 
 #include <string>
 #include <utility>
+#include <cstdint>
 
 namespace ember {
 
