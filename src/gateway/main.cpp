@@ -12,6 +12,7 @@
 #include "RealmQueue.h"
 #include "ServicePool.h"
 #include "AccountService.h"
+#include "CharacterService.h"
 #include "RealmService.h"
 #include "NetworkListener.h"
 #include <spark/Spark.h>
@@ -121,8 +122,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	ember::RealmService realm_svc(*realm, spark, discovery, logger);
 	ember::AccountService acct_svc(spark, discovery, logger);
+	ember::CharacterService char_svc(spark, discovery, logger);
 
 	// temp stuff
+	char_serv_temp = &char_svc;
 	acct_serv = &acct_svc;
 	ember::RealmQueue queue_service(service_pool.get_service());
 	queue_service_temp = &queue_service;

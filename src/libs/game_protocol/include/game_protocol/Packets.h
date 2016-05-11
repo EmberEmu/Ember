@@ -11,6 +11,8 @@
 #include <game_protocol/server/SMSG_AUTH_CHALLENGE.h>
 #include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
 #include <game_protocol/server/SMSG_PONG.h>
+#include <game_protocol/server/SMSG_CHAR_ENUM.h>
+#include <game_protocol/server/SMSG_CHAR_CREATE.h>
 
 #include <game_protocol/client/CMSG_AUTH_SESSION.h>
 #include <game_protocol/client/CMSG_PING.h>

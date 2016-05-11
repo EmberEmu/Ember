@@ -108,6 +108,7 @@ void ClientHandler::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_S
 	}
 
 	connection_.set_authenticated(key);
+	account_name_ = packet.username;
 
 	auto auth_success = [this]() {
 		state_ = ClientStates::CHARACTER_LIST;
@@ -213,17 +214,102 @@ void ClientHandler::fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet)
 	});
 }
 
+void ClientHandler::send_character_list_fail() {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
+	response->result = protocol::ResultCode::AUTH_UNAVAILABLE;
+	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_CREATE, response);
+}
+
+void ClientHandler::send_character_list(std::vector<Character> characters) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	auto response = std::make_shared<protocol::SMSG_CHAR_ENUM>();
+	response->characters = characters;
+	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_ENUM, response);
+}
+
+void ClientHandler::handle_char_enum(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	auto self = connection_.shared_from_this();
+
+	char_serv_temp->retrieve_characters(account_name_,
+		[this, self](em::character::Status status, std::vector<Character> characters) {
+			if(status == em::character::Status::OK) {
+				send_character_list(characters);
+			} else {
+				send_character_list_fail();
+			}
+	});
+}
+
+void ClientHandler::send_character_delete() {
+	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
+	response->result = protocol::ResultCode::CHAR_DELETE_SUCCESS;
+	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_DELETE, response);
+}
+
+void ClientHandler::send_character_create() {
+	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
+	response->result = protocol::ResultCode::CHAR_CREATE_SUCCESS;
+	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_CREATE, response);
+}
+
+void ClientHandler::handle_char_create(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	protocol::CMSG_CHAR_CREATE packet;
+
+	if(!packet_deserialise(packet, buffer)) {
+		return;
+	}
+
+	auto self = connection_.shared_from_this();
+
+	char_serv_temp->create_character(account_name_, *packet.character,
+		[this, self](em::character::Status status) {
+			//if(status == em::character::Status::OK) {
+				send_character_create();
+			//}
+	});
+}
+
+void ClientHandler::handle_char_delete(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	protocol::CMSG_CHAR_DELETE packet;
+
+	if(!packet_deserialise(packet, buffer)) {
+		return;
+	}
+
+	auto self = connection_.shared_from_this();
+
+	char_serv_temp->delete_character(account_name_, packet.id,
+		[this, self](em::character::Status status) {
+			if(status == em::character::Status::OK) {
+				send_character_delete();
+			}
+		}
+	);
+}
+
 void ClientHandler::handle_character_list(spark::Buffer& buffer) {
 	switch(header_->opcode) {
 		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
-			//handle_char_enum(buffer);
+			handle_char_enum(buffer);
 			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_CREATE:
-			//handle_char_create(buffer);
+			handle_char_create(buffer);
 			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
-			//handle_char_delete(buffer);
+			handle_char_delete(buffer);
 			break;
+		/*case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
+			handle_char_rename(buffer);
+			break;*/
 		// case enter world
 	}
 }

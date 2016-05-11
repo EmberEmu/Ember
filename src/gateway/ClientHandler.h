@@ -29,6 +29,7 @@ class ClientHandler final {
 
 	ClientStates state_;
 	std::uint32_t auth_seed_;
+	std::string account_name_;
 
 	// authentication functions
 	void send_auth_challenge();
@@ -44,6 +45,16 @@ class ClientHandler final {
 
 	// opcode handlers
 	void handle_ping(spark::Buffer& buffer);
+	void handle_char_enum(spark::Buffer& buffer);
+	void handle_char_create(spark::Buffer& buffer);
+	void handle_char_delete(spark::Buffer& buffer);
+	//void handle_char_rename(spark::Buffer& buffer);
+
+	// misc
+	void send_character_list(std::vector<Character> characters);
+	void send_character_create();
+	void send_character_delete();
+	void send_character_list_fail();
 
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 

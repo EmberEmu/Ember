@@ -21,7 +21,7 @@ class SMSG_AUTH_CHALLENGE final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	std::uint32_t seed = 3211;
+	std::uint32_t seed;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

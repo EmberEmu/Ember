@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/database/daos/CharacterDAO.h>
 #include <spark/Service.h>
 #include <spark/temp/Character_generated.h>
 #include <spark/temp/MessageRoot_generated.h>
@@ -16,6 +17,7 @@
 namespace ember {
 
 class Service final : public spark::EventHandler {
+	dal::CharacterDAO& character_dao_;
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
@@ -25,12 +27,14 @@ class Service final : public spark::EventHandler {
 	void rename_character(const spark::Link& link, const messaging::MessageRoot* root);
 	void delete_character(const spark::Link& link, const messaging::MessageRoot* root);
 
-	void send_character_list(const spark::Link& link, const messaging::MessageRoot* root);
+	void send_character_list(const spark::Link& link, const messaging::MessageRoot* root,
+	                         std::vector<Character> characters);
 	void send_response(const spark::Link& link, const messaging::MessageRoot* root,
 	                   messaging::character::Status status);
 
 public:
-	Service(spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
+	Service(dal::CharacterDAO& character_dao, spark::Service& spark, spark::ServiceDiscovery& discovery,
+	        log::Logger* logger);
 	~Service();
 
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;

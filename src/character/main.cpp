@@ -16,8 +16,7 @@
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
-#include <shared/database/daos/RealmDAO.h>
-#include <shared/database/daos/UserDAO.h>
+#include <shared/database/daos/CharacterDAO.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
@@ -78,25 +77,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
-	auto realm_dao = ember::dal::realm_dao(pool);
+	auto character_dao = ember::dal::character_dao(pool);
 
-	LOG_INFO(logger) << "Retrieving realm information..."<< LOG_SYNC;
-	auto realm = realm_dao->get_realm(args["realm.id"].as<unsigned int>());
-	
-	if(!realm) {
-		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
-	}
-
-	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
-
-	// Determine concurrency level
-	unsigned int concurrency = check_concurrency(logger);
-
-	if(args.count("misc.concurrency")) {
-		concurrency = args["misc.concurrency"].as<unsigned int>();
-	}
-
-	// Start ASIO service pool
+	boost::asio::io_service service;
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
@@ -110,22 +93,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::CharacterService char_svc(*realm, spark, discovery, logger);
-
-	auto max_slots = args["realm.max-slots"].as<unsigned int>();
-	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
-	
-	// Start network listener
-	auto interface = args["network.interface"].as<std::string>();
-	auto port = args["network.port"].as<std::uint16_t>();
-	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
-
+	ember::Service char_service(*character_dao, spark, discovery, logger);
 
 	service.dispatch([&, logger]() {
 		LOG_INFO(logger) << "Character daemon started successfully" << LOG_SYNC;
 	});
 
-	service_pool.run();
+	service.run();
 
 	LOG_INFO(logger) << "Character daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
@@ -137,7 +111,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
-		("config,c", po::value<std::string>()->default_value("gateway.conf"),
+		("config,c", po::value<std::string>()->default_value("character.conf"),
 			"Path to the configuration file");
 
 	po::positional_options_description pos; 
@@ -146,19 +120,11 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
-		("misc.concurrency", po::value<unsigned int>())
-		("realm.id", po::value<unsigned int>()->required())
-		("realm.max-slots", po::value<unsigned int>()->required())
-		("realm.reserved-slots", po::value<unsigned int>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("spark.multicast_interface", po::value<std::string>()->required())
 		("spark.multicast_group", po::value<std::string>()->required())
 		("spark.multicast_port", po::value<std::uint16_t>()->required())
-		("network.interface", po::value<std::string>()->required())
-		("network.port", po::value<std::uint16_t>()->required())
-		("network.tcp_no_delay", po::bool_switch()->default_value(true))
-		("network.compression", po::value<std::uint8_t>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", po::bool_switch()->required())

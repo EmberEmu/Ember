@@ -11,6 +11,7 @@
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <boost/endian/conversion.hpp>
+#include <string>
 #include <cstdint>
 #include <cstddef>
 
@@ -18,17 +19,17 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class CMSG_CHAR_DELETE final : public Packet {
+class SMSG_CHAR_CREATE final : public Packet {
 
 	State state_ = State::INITIAL;
 
 public:
-	std::uint64_t id;
-
+	ResultCode result;
+	
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		stream >> id;
+		stream >> result;
 
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
@@ -36,7 +37,7 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << id;
+		stream << be::native_to_little(result);
 	}
 };
 
