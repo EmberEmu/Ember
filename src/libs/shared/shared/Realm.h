@@ -14,6 +14,13 @@
 namespace ember {
 
 struct Realm {
+	enum CreationSetting : std::uint8_t {
+		ENABLED,
+		DISABLED,
+		QUEUED,
+		EXISTING_ONLY
+	};
+
 	enum Flag : std::uint8_t {
 		NONE         = 0x00,
 		INVALID      = 0x01,
@@ -47,6 +54,7 @@ struct Realm {
 	Type type;
 	Flag flags;
 	Zone zone;
+	CreationSetting creation_setting;
 };
 
 } //ember

@@ -13,9 +13,12 @@
 #include <game_protocol/server/SMSG_PONG.h>
 #include <game_protocol/server/SMSG_CHAR_ENUM.h>
 #include <game_protocol/server/SMSG_CHAR_CREATE.h>
+#include <game_protocol/server/SMSG_CHARACTER_LOGIN_FAILED.h>
+#include <game_protocol/server/SMSG_LOGOUT_COMPLETE.h>
 
 #include <game_protocol/client/CMSG_AUTH_SESSION.h>
 #include <game_protocol/client/CMSG_PING.h>
 #include <game_protocol/client/CMSG_CHAR_CREATE.h>
 #include <game_protocol/client/CMSG_CHAR_DELETE.h>
 #include <game_protocol/client/CMSG_CHAR_ENUM.h>
+#include <game_protocol/client/CMSG_PLAYER_LOGIN.h>

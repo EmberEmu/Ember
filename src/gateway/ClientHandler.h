@@ -16,6 +16,7 @@
 #include <logger/Logging.h>
 #include <botan/bigint.h>
 #include <cstdint>
+#include <vector>
 
 namespace ember {
 
@@ -55,6 +56,7 @@ class ClientHandler final {
 	void send_character_create();
 	void send_character_delete();
 	void send_character_list_fail();
+	void handle_login(spark::Buffer& buffer);
 
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 

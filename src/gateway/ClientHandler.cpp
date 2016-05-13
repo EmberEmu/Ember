@@ -296,6 +296,20 @@ void ClientHandler::handle_char_delete(spark::Buffer& buffer) {
 	);
 }
 
+void ClientHandler::handle_login(spark::Buffer& buffer) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	protocol::CMSG_PLAYER_LOGIN packet;
+
+	if(!packet_deserialise(packet, buffer)) {
+		return;
+	}
+
+	/*auto response = std::make_shared<protocol::SMSG_CHARACTER_LOGIN_FAILED>();
+	response->reason = 1;
+	connection_.send(protocol::ServerOpcodes::SMSG_CHARACTER_LOGIN_FAILED, response);*/
+}
+
 void ClientHandler::handle_character_list(spark::Buffer& buffer) {
 	switch(header_->opcode) {
 		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
@@ -306,6 +320,9 @@ void ClientHandler::handle_character_list(spark::Buffer& buffer) {
 			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
 			handle_char_delete(buffer);
+			break;
+		case protocol::ClientOpcodes::CMSG_PLAYER_LOGIN:
+			handle_login(buffer);
 			break;
 		/*case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
 			handle_char_rename(buffer);
