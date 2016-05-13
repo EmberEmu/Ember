@@ -26,6 +26,9 @@ set(LIBRARY_HDR
     WorldSessions.h
     WorldClients.h
     CharacterService.h
+    states/Authentication.h
+    states/CharacterList.h
+    states/WorldForwarder.h
     temp.h
     )
 
@@ -42,6 +45,9 @@ set(LIBRARY_SRC
     WorldSessions.cpp
     WorldClients.cpp
     CharacterService.cpp
+    states/Authentication.cpp
+    states/CharacterList.cpp
+    states/WorldForwarder.cpp
     temp.cpp
     )
 

@@ -9,6 +9,9 @@
 #pragma once
 
 #include "ClientStates.h"
+#include "states/Authentication.h"
+#include "states/CharacterList.h"
+#include "states/WorldForwarder.h"
 #include <game_protocol/Packet.h>
 #include <game_protocol/Packets.h> // todo, fdecls
 #include <game_protocol/PacketHeaders.h> // todo, remove
@@ -28,19 +31,17 @@ class ClientHandler final {
 	protocol::ClientHeader* header_;
 	log::Logger* logger_;
 
-	ClientStates state_;
+	// no base to avoid vtable lookups for every packet
+	ClientState state_;
+	Authentication auth_state_;
+	CharacterList list_state_;
+	WorldForwarder world_state_;
+
 	std::uint32_t auth_seed_;
 	std::string account_name_;
 
-	// authentication functions
-	void send_auth_challenge();
-	void send_auth_success();
-	void send_auth_fail(protocol::ResultCode result);
-	void fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet);
-	void prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
-
 	// state handlers
-	void handle_authentication(spark::Buffer& buffer);
+
 	void handle_character_list(spark::Buffer& buffer);
 	void handle_in_world(spark::Buffer& buffer);
 
@@ -58,13 +59,14 @@ class ClientHandler final {
 	void send_character_list_fail();
 	void handle_login(spark::Buffer& buffer);
 
-	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
-
 public:
 	explicit ClientHandler(ClientConnection& connection, log::Logger* logger)
-		: connection_(connection), logger_(logger) { }
+		: connection_(connection), logger_(logger), state_(ClientState::AUTHENTICATING),
+	      auth_state_(*this, connection, logger), list_state_(*this), world_state_(*this) { }
 	~ClientHandler();
 
+	void update_state(ClientState state) { state_ = state; }
+	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
 	void start(); // todo - remove?
 };

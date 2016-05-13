@@ -21,6 +21,10 @@ namespace em = ember::messaging;
 
 namespace ember {
 
+void ClientHandler::start() {
+	auth_state_.send_auth_challenge();
+}
+
 void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& buffer) {
 	header_ = &header;
 
@@ -33,18 +37,33 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			return;
 	}
 
+	ClientState saved_state = state_;
+
 	switch(state_) {
-		case ClientStates::AUTHENTICATING:
-			handle_authentication(buffer);
+		case ClientState::AUTHENTICATING:
+			auth_state_.update(header, buffer);
 			break;
-		case ClientStates::CHARACTER_LIST:
+		case ClientState::IN_QUEUE:
+			state_ = ClientState::UNEXPECTED_PACKET;
+			break;
+		case ClientState::CHARACTER_LIST:
 			handle_character_list(buffer);
 			break;
-		case ClientStates::IN_WORLD:
+		case ClientState::IN_WORLD:
 			handle_in_world(buffer);
 			break;
-		default:
-			// unexpected packet?
+	}
+
+	switch(state_) {
+		case ClientState::UNEXPECTED_PACKET:
+			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+				<< to_string(saved_state) << " state received unexpected opcode "
+				<< protocol::to_string(header.opcode) << ", skipping" << LOG_ASYNC;
+			buffer.skip(header.size - sizeof(header.opcode));
+			state_ = saved_state; // restore previous state
+			break;
+		case ClientState::REQUEST_CLOSE:
+			connection_.close_session();
 			break;
 	}
 }
@@ -80,138 +99,6 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 	connection_.latency(packet.latency);
 	response->sequence_id = packet.sequence_id;
 	connection_.send(protocol::ServerOpcodes::SMSG_PONG, response);
-}
-
-void ClientHandler::send_auth_challenge() {
-	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
-	packet->seed = auth_seed_ = 600; // todo, obviously
-
-	connection_.send(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE, packet);
-	state_ = ClientStates::AUTHENTICATING;
-}
-
-void ClientHandler::prove_session(Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
-	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
-	std::uint32_t unknown = 0;
-
-	Botan::SHA_160 hasher;
-	hasher.update(packet.username);
-	hasher.update((Botan::byte*)&unknown, sizeof(unknown));
-	hasher.update((Botan::byte*)&packet.seed, sizeof(packet.seed));
-	hasher.update((Botan::byte*)&auth_seed_, sizeof(auth_seed_));
-	hasher.update(k_bytes);
-	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
-
-	if(calc_hash != packet.digest) {
-		send_auth_fail(protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
-		return;
-	}
-
-	connection_.set_authenticated(key);
-	account_name_ = packet.username;
-
-	auto auth_success = [this]() {
-		state_ = ClientStates::CHARACTER_LIST;
-		send_auth_success();
-		// send_addon_data();
-	};
-
-	/* 
-	 * Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
-	 * but that doesn't seem to be true - if this bugs out, check that out
-	 */
-	if(false) {
-		state_ = ClientStates::IN_QUEUE;
-
-		queue_service_temp->enqueue(connection_.shared_from_this(), [this, auth_success, packet]() {
-			LOG_DEBUG(logger_) << packet.username << " removed from queue" << LOG_ASYNC;
-			auth_success();
-		});
-
-		LOG_DEBUG(logger_) << packet.username << " added to queue" << LOG_ASYNC;
-		return;
-	}
-
-	auth_success();
-}
-
-void ClientHandler::send_auth_success() {
-	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	response->result = protocol::ResultCode::AUTH_OK;
-	connection_.send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
-}
-
-void ClientHandler::send_auth_fail(protocol::ResultCode result) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	// not convinced that this packet is correct
-	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	response->result = result;
-	connection_.send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
-	connection_.close_session();
-}
-
-void ClientHandler::handle_authentication(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	// prevent the client from sending another authentication message
-	// while we're waiting on a remote service to send the key
-	state_ = ClientStates::AUTHENTICATING_REMOTE_WAIT;
-
-	if(header_->opcode != protocol::ClientOpcodes::CMSG_AUTH_SESSION) {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Expected CMSG_AUTH_CHALLENGE, dropping "
-			<< connection_.remote_address() << LOG_ASYNC;
-		connection_.close_session();
-		return;
-	}
-
-	protocol::CMSG_AUTH_SESSION packet;
-
-	if(!packet_deserialise(packet, buffer)) {
-		return;
-	}
-
-	// todo - check game build
-	fetch_session_key(packet);
-}
-
-void ClientHandler::fetch_session_key(const protocol::CMSG_AUTH_SESSION& packet) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-	LOG_DEBUG(logger_) << "Received session proof from " << packet.username << LOG_ASYNC;
-
-	auto self = connection_.shared_from_this();
-
-	acct_serv->locate_session(packet.username,
-		[this, self, packet](em::account::Status remote_res, Botan::BigInt key) {
-			connection_.socket().get_io_service().post([this, self, packet, remote_res, key]() {
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Account server returned " << em::account::EnumNameStatus(remote_res)
-					<< " for " << packet.username << LOG_ASYNC;
-
-				if(remote_res != em::account::Status::OK) {
-					protocol::ResultCode result;
-
-					switch(remote_res) {
-						case em::account::Status::ALREADY_LOGGED_IN:
-							result = protocol::ResultCode::AUTH_ALREADY_ONLINE;
-							break;
-						case em::account::Status::SESSION_NOT_FOUND:
-							result = protocol::ResultCode::AUTH_UNKNOWN_ACCOUNT;
-							break;
-						default:
-							LOG_ERROR_FILTER(logger_, LF_NETWORK) << "Received "
-								<< em::account::EnumNameStatus(remote_res)
-								<< " from account server" << LOG_ASYNC;
-							result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
-					}
-
-					send_auth_fail(result);
-				} else {
-					prove_session(key, packet);
-				}
-			});
-	});
 }
 
 void ClientHandler::send_character_list_fail() {
@@ -336,18 +223,14 @@ void ClientHandler::handle_in_world(spark::Buffer& buffer) {
 
 }
 
-void ClientHandler::start() {
-	send_auth_challenge();
-}
-
 ClientHandler::~ClientHandler() {
 	switch(state_) {
-		case ClientStates::CHARACTER_LIST:
-		case ClientStates::IN_WORLD:
-			queue_service_temp->decrement();
-			break;
-		case ClientStates::IN_QUEUE:
+		case ClientState::IN_QUEUE:
 			queue_service_temp->dequeue(connection_.shared_from_this());
+			break;
+		case ClientState::CHARACTER_LIST:
+		case ClientState::IN_WORLD:
+			queue_service_temp->decrement();
 			break;
 	}
 }

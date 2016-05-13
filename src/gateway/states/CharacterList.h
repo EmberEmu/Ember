@@ -8,20 +8,19 @@
 
 #pragma once
 
-#include <shared/smartenum.hpp>
+#include <game_protocol/PacketHeaders.h>
+#include <spark/Buffer.h>
 
 namespace ember {
 
-smart_enum_class(ClientState, int,
-	// valid states
-	AUTHENTICATING,
-	IN_QUEUE,
-	CHARACTER_LIST,
-	IN_WORLD,
+class ClientHandler;
 
-	// error states
-	UNEXPECTED_PACKET,
-	REQUEST_CLOSE
-)
+class CharacterList final {
+	ClientHandler& handler_;
+	
+public:
+	CharacterList(ClientHandler& handler) : handler_(handler) {}
+	void update(protocol::ClientHeader& header, spark::Buffer& buffer);
+};
 
 } // ember
