@@ -140,6 +140,11 @@ With a global logger:
 LOG_DEBUG_FILTER_GLOB(PLAYER_TRADE) << "Example message" << LOG_ASYNC;
 ```
 
+# Compile-Time Disabling
+If desired, logging statements can be removed from the produced binary entirely via defines. To remove *all* logging statements, define "NO_LOGGING". To selectively remove statements for a severity, define "NO_SEVERITY_LOGGING" where SEVERITY is replaced with the severity to remove.
+
+Note that the disabling macros prepend the logging statements with an *if(false)* conditional to allow for the compiler to optimise-out. If optimisations are disabled, the compiler may not remove all traces of the logging statements.
+
 # Thread Safety
 Logger objects and all sinks are entirely thread safe. It is also safe to create multiple logger instances within a single process, even when using console sinks (assuming C++11).
 
