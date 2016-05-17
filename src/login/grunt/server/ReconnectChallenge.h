@@ -26,7 +26,7 @@ class ReconnectChallenge final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
 	ResultCode result;
 	std::array<Botan::byte, RAND_LENGTH> rand; // so many bytes, so little understood - todo, research
 	std::uint64_t unknown = 0;

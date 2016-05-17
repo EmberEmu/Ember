@@ -28,7 +28,7 @@ class LoginProof final : public Packet {
 	static const unsigned int CRC_LENGTH = 20;
 
 public:
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_AUTH_LOGON_PROOF;
 	Botan::BigInt A;
 	Botan::BigInt M1;
 	Botan::BigInt crc_hash;

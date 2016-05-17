@@ -22,7 +22,7 @@ class ReconnectProof final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_AUTH_RECONNECT_PROOF;
 	ResultCode result;
 
 	State read_from_stream(spark::BinaryStream& stream) override {

@@ -28,7 +28,7 @@ public:
 	static const std::uint8_t PRIME_LENGTH = 32;
 	static const std::uint8_t PUB_KEY_LENGTH = 32;
 
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	std::uint8_t unk1 = 0;
 	ResultCode result;
 	Botan::BigInt B;

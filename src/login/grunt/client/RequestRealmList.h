@@ -25,7 +25,7 @@ class RequestRealmList final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_REALM_LIST;
 	std::uint32_t unknown;
 
 	State read_from_stream(spark::BinaryStream& stream) override {

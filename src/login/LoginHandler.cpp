@@ -134,7 +134,6 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	state_ = State::CLOSED;
 
 	auto response = std::make_unique<grunt::server::LoginChallenge>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::FAIL_VERSION_INVALID;
 	send(std::move(response));
 }
@@ -159,7 +158,6 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	state_ = State::CLOSED;
 	
 	auto response = std::make_unique<grunt::server::LoginChallenge>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
 
 	try {
@@ -194,7 +192,6 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	state_ = State::CLOSED;
 
 	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
-	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
 	auto rand = Botan::AutoSeeded_RNG().random_vec(response->rand.size());
 	std::copy(rand.begin(), rand.end(), response->rand.data());
@@ -260,7 +257,6 @@ void LoginHandler::send_login_failure(grunt::ResultCode result) {
 	metrics_.increment("login_failure");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
 	response->result = result;
 
 	send(std::move(response));
@@ -271,7 +267,6 @@ void LoginHandler::send_login_success(StoreSessionAction* action) {
 	metrics_.increment("login_success");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 	response->M2 = server_proof_;
 	response->account_flags = 0;
@@ -297,7 +292,6 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	}
 
 	auto response = std::make_unique<grunt::server::ReconnectProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
@@ -312,8 +306,6 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	}
 
 	auto response = std::make_unique<grunt::server::RealmList>();
-	response->opcode = grunt::Opcode::CMD_REALM_LIST;
-	
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {

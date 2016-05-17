@@ -100,7 +100,7 @@ public:
 		enTW = 'enTW', enCN = 'enCN',
 	};
 
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	std::uint8_t error; // todo - nobody seems to know what this is, look into it at some point
 	PacketMagic magic;
 	GameVersion version;

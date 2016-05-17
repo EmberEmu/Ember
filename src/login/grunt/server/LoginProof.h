@@ -57,7 +57,7 @@ class LoginProof final : public Packet {
 	}
 
 public:
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_AUTH_LOGON_PROOF;
 	ResultCode result;
 	Botan::BigInt M2;
 	std::uint32_t account_flags;

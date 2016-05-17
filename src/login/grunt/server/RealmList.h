@@ -125,7 +125,7 @@ public:
 		std::uint8_t characters;
 	};
 
-	Opcode opcode;
+	Opcode opcode = Opcode::CMD_REALM_LIST;
 	std::uint32_t unknown = 0;
 	std::vector<RealmListEntry> realms;
 	std::uint16_t unknown2 = 5;
