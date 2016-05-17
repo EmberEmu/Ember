@@ -12,8 +12,8 @@
 
 namespace ember { namespace queue {
 
-void enter(ClientContext* context);
-void update(ClientContext* context);
-void exit(ClientContext* context);
+void enter(ClientContext* ctx);
+void update(ClientContext* ctx);
+void exit(ClientContext* ctx);
 
 }} // queue, ember

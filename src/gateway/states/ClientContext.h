@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../ClientStates.h"
+#include "ClientStates.h"
 #include <spark/Buffer.h>
 #include <game_protocol/PacketHeaders.h>
 #include <string>

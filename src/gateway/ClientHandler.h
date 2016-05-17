@@ -9,7 +9,7 @@
 #pragma once
 
 #include "states/ClientContext.h"
-#include "ClientStates.h"
+#include "states/ClientStates.h"
 #include "states/Authentication.h"
 #include "states/CharacterList.h"
 #include "states/WorldForwarder.h"

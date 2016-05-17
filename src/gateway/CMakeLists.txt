@@ -9,7 +9,6 @@ set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
     SessionManager.h
-    ClientStates.h
     FilterTypes.h
     RealmService.h
     ServicePool.h
@@ -26,6 +25,7 @@ set(LIBRARY_HDR
     WorldSessions.h
     WorldClients.h
     CharacterService.h
+    states/ClientStates.h
     states/Authentication.h
     states/CharacterList.h
     states/WorldForwarder.h

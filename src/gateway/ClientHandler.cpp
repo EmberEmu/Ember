@@ -12,8 +12,6 @@
 #include <game_protocol/Packets.h>
 #include <spark/SafeBinaryStream.h>
 
-#include "temp.h" // todo
-
 #undef ERROR // temp
 
 namespace ember {
@@ -78,23 +76,6 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 	connection_.send(protocol::ServerOpcodes::SMSG_PONG, response);
 }
 
-
-
-//void ClientHandler::handle_login(spark::Buffer& buffer) {
-//	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-//
-//	protocol::CMSG_PLAYER_LOGIN packet;
-//
-//	if(!packet_deserialise(packet, buffer)) {
-//		return;
-//	}
-//
-//	/*auto response = std::make_shared<protocol::SMSG_CHARACTER_LOGIN_FAILED>();
-//	response->reason = 1;
-//	connection_.send(protocol::ServerOpcodes::SMSG_CHARACTER_LOGIN_FAILED, response);*/
-//}
-
-
 void ClientHandler::handle_in_world(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
@@ -109,15 +90,6 @@ ClientHandler::ClientHandler(ClientConnection& connection, log::Logger* logger)
 
 ClientHandler::~ClientHandler() {
 	exit_states[context_.state](&context_);
-//	//switch(state_) {
-//	//	case ClientState::IN_QUEUE:
-//	//		queue_service_temp->dequeue(connection_.shared_from_this());
-//	//		break;
-//	//	case ClientState::CHARACTER_LIST:
-//	//	case ClientState::IN_WORLD:
-//	//		queue_service_temp->decrement();
-//	//		break;
-//	//}
 }
 
 } // ember
