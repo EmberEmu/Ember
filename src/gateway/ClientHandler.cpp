@@ -38,7 +38,7 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 	update_states[context_.state](&context_);
 
 	if(prev_state != context_.state) {
-		exit_states[context_.state](&context_);
+		exit_states[prev_state](&context_);
 		enter_states[context_.state](&context_);
 	}
 }
