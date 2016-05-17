@@ -109,7 +109,7 @@ void handle_char_delete(ClientContext* ctx) {
 } // unnamed
 
 void enter(ClientContext* ctx) {
-
+	// don't care
 }
 
 void update(ClientContext* ctx) {

@@ -7,19 +7,22 @@
  */
 
 #include "InQueue.h"
+#include "../ClientHandler.h"
+#include "../ClientConnection.h"
+#include "../temp.h"
 
 namespace ember { namespace queue {
 
-void enter(ClientContext* context) {
-
+void enter(ClientContext* ctx) {
+	// don't care
 }
 
-void update(ClientContext* context) {
-
+void update(ClientContext* ctx) {
+	// don't care
 }
 
-void exit(ClientContext* context) {
-
+void exit(ClientContext* ctx) {
+	queue_service_temp->dequeue(ctx->connection->shared_from_this());
 }
 
 }} // queue, ember
