@@ -19,12 +19,13 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class SMSG_CHAR_ENUM final : public Packet {
-
+class SMSG_CHAR_ENUM final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 
 public:
+	SMSG_CHAR_ENUM() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_ENUM) { }
+
 	std::vector<Character> characters;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

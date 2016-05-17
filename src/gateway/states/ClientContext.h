@@ -20,7 +20,6 @@ class ClientHandler;
 class ClientConnection;
 
 struct ClientContext {
-	bool auth_done;
 	protocol::ClientHeader* header;
 	spark::Buffer* buffer;
 	ClientState state;
@@ -30,6 +29,7 @@ struct ClientContext {
 	std::string account_name;
 	std::uint32_t auth_seed;
 	//std::shared_ptr<WorldConnection> world_conn;
+	bool auth_done;
 };
 
 } // ember

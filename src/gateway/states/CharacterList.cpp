@@ -7,14 +7,15 @@
  */
 
 #include "CharacterList.h"
+#include "../ClientHandler.h"
+#include "../ClientConnection.h"
 #include "../FilterTypes.h"
 #include <logger/Logging.h>
 #include <game_protocol/Packets.h>
 #include <game_protocol/Opcodes.h>
 #include <spark/temp/Account_generated.h>
-#include "../ClientHandler.h"
-#include "../ClientConnection.h"
 #include <memory>
+#include <vector>
 
 #include "../temp.h"
 
@@ -29,7 +30,7 @@ void send_character_list_fail(ClientContext* ctx) {
 
 	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
 	response->result = protocol::ResultCode::AUTH_UNAVAILABLE;
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_CHAR_CREATE, response);
+	ctx->connection->send(response);
 }
 
 void send_character_list(ClientContext* ctx, std::vector<Character> characters) {
@@ -37,7 +38,7 @@ void send_character_list(ClientContext* ctx, std::vector<Character> characters) 
 
 	auto response = std::make_shared<protocol::SMSG_CHAR_ENUM>();
 	response->characters = characters;
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_CHAR_ENUM, response);
+	ctx->connection->send(response);
 }
 
 void handle_char_enum(ClientContext* ctx) {
@@ -58,13 +59,13 @@ void handle_char_enum(ClientContext* ctx) {
 void send_character_delete(ClientContext* ctx) {
 	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
 	response->result = protocol::ResultCode::CHAR_DELETE_SUCCESS;
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_CHAR_DELETE, response);
+	ctx->connection->send(response);
 }
 
 void send_character_create(ClientContext* ctx) {
 	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
 	response->result = protocol::ResultCode::CHAR_CREATE_SUCCESS;
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_CHAR_CREATE, response);
+	ctx->connection->send(response);
 }
 
 void handle_char_create(ClientContext* ctx) {

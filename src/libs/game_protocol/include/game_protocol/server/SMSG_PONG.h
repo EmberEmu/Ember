@@ -18,10 +18,12 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class SMSG_PONG final : public Packet {
+class SMSG_PONG final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
+	SMSG_PONG() : ServerPacket(protocol::ServerOpcodes::SMSG_PONG) { }
+
 	std::uint32_t sequence_id;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {

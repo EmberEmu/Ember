@@ -8,6 +8,8 @@
 
 #include "WorldForwarder.h"
 
+#include "../temp.h"
+
 namespace ember { namespace world {
 
 void enter(ClientContext* context) {
@@ -19,7 +21,7 @@ void update(ClientContext* context) {
 }
 
 void exit(ClientContext* context) {
-
+	queue_service_temp->decrement();
 }
 
 }} // world, ember

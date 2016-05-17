@@ -17,10 +17,12 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class SMSG_AUTH_CHALLENGE final : public Packet {
+class SMSG_AUTH_CHALLENGE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
+	SMSG_AUTH_CHALLENGE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE) { }
+
 	std::uint32_t seed;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

@@ -18,10 +18,12 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class SMSG_AUTH_RESPONSE final : public Packet {
+class SMSG_AUTH_RESPONSE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
+	SMSG_AUTH_RESPONSE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE) { }
+
 	ResultCode result;
 	std::uint32_t queue_position;
 	std::uint32_t billing_time;

@@ -44,7 +44,6 @@ void handle_authentication(ClientContext* ctx) {
 		ctx->auth_done = true;
 	}
 
-	LOG_WARN_GLOB << (int)ctx << LOG_SYNC;
 	protocol::CMSG_AUTH_SESSION packet;
 
 	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
@@ -96,7 +95,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 void send_auth_challenge(ClientContext* ctx) {
 	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
 	packet->seed = ctx->auth_seed = 600; // todo, obviously
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE, packet);
+	ctx->connection->send(packet);
 }
 
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
@@ -149,7 +148,7 @@ void send_auth_success(ClientContext* ctx) {
 
 	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
 	response->result = protocol::ResultCode::AUTH_OK;
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
+	ctx->connection->send(response);
 }
 
 void send_auth_fail(ClientContext* ctx, protocol::ResultCode result) {
@@ -159,7 +158,7 @@ void send_auth_fail(ClientContext* ctx, protocol::ResultCode result) {
 	// not convinced that this packet is correct
 	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
 	response->result = result;
-	ctx->connection->send(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE, response);
+	ctx->connection->send(response);
 }
 
 } // unnamed

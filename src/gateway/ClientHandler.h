@@ -9,17 +9,10 @@
 #pragma once
 
 #include "states/ClientContext.h"
-#include "states/ClientStates.h"
-#include "states/Authentication.h"
-#include "states/CharacterList.h"
-#include "states/WorldForwarder.h"
 #include <game_protocol/Packet.h>
 #include <game_protocol/PacketHeaders.h> // todo, remove
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
-#include <botan/bigint.h>
-#include <cstdint>
-#include <vector>
 
 namespace ember {
 
@@ -39,7 +32,7 @@ public:
 
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
-	void start(); // todo - remove?
+	void start();
 };
 
 } // ember

@@ -73,7 +73,7 @@ public:
 
 	const ConnectionStats& stats() const;
 
-	void send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet);
+	void send(std::shared_ptr<protocol::ServerPacket> packet);
 	boost::asio::ip::tcp::socket& socket();
 	std::string remote_address();
 

@@ -18,11 +18,13 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class SMSG_LOGOUT_COMPLETE final : public Packet {
+class SMSG_LOGOUT_COMPLETE final : public ServerPacket {
 
 	State state_ = State::INITIAL;
 
 public:
+	SMSG_LOGOUT_COMPLETE() : ServerPacket(protocol::ServerOpcodes::SMSG_LOGOUT_COMPLETE) {}
+
 	ResultCode result;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {

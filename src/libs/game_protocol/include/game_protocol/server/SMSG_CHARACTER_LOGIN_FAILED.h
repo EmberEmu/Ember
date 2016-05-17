@@ -18,11 +18,13 @@ namespace ember { namespace protocol {
 
 namespace be = boost::endian;
 
-class SMSG_CHARACTER_LOGIN_FAILED final : public Packet {
+class SMSG_CHARACTER_LOGIN_FAILED final : public ServerPacket {
 
 	State state_ = State::INITIAL;
 
 public:
+	SMSG_CHARACTER_LOGIN_FAILED() : ServerPacket(protocol::ServerOpcodes::SMSG_CHARACTER_LOGIN_FAILED) { }
+
 	std::uint8_t reason;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {

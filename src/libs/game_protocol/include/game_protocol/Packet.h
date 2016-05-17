@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <game_protocol/Opcodes.h>
 #include <spark/SafeBinaryStream.h>
 #include <cstdint>
 
@@ -23,7 +24,13 @@ struct Packet {
 	virtual ~Packet() = default;
 };
 
-inline spark::SafeBinaryStream& operator<<(spark::SafeBinaryStream& out, const Packet& packet) {
+struct ServerPacket : public Packet {
+	ServerOpcodes opcode;
+	ServerPacket(protocol::ServerOpcodes opcode) : opcode(opcode) { }
+};
+
+// todo, overload this properly
+inline spark::SafeBinaryStream& operator<<(spark::SafeBinaryStream& out, const ServerPacket& packet) {
 	packet.write_to_stream(out);
 	return out;
 }

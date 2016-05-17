@@ -66,16 +66,15 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 	}
 }
 
-// todo, remove the need for the opcode arguments
-void ClientConnection::send(protocol::ServerOpcodes opcode, std::shared_ptr<protocol::Packet> packet) {
+void ClientConnection::send(std::shared_ptr<protocol::ServerPacket> packet) {
 	auto self(shared_from_this());
 
-	service_.dispatch([this, self, opcode, packet]() mutable {
+	service_.dispatch([this, self, packet]() mutable {
 		spark::Buffer& buffer(outbound_buffer_);
 		spark::SafeBinaryStream stream(buffer);
 		const std::size_t write_index = buffer.size(); // the current write index
 
-		stream << std::uint16_t(0) << opcode << *packet;
+		stream << std::uint16_t(0) << packet->opcode << *packet;
 
 		// calculate the size of the packet that we just streamed and then update the buffer
 		const boost::endian::big_uint16_at final_size =
