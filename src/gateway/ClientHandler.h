@@ -31,7 +31,6 @@ class ClientHandler final {
 	protocol::ClientHeader* header_;
 	log::Logger* logger_;
 
-	void handle_in_world(spark::Buffer& buffer);
 	void handle_ping(spark::Buffer& buffer);
 
 public:

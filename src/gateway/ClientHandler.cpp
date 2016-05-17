@@ -43,6 +43,7 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 	}
 }
 
+// todo, this should go somewhere else
 bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
 	spark::SafeBinaryStream stream(buffer);
 
@@ -74,11 +75,6 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 	connection_.latency(packet.latency);
 	response->sequence_id = packet.sequence_id;
 	connection_.send(protocol::ServerOpcodes::SMSG_PONG, response);
-}
-
-void ClientHandler::handle_in_world(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, log::Logger* logger)
