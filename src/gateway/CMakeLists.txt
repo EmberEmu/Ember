@@ -29,6 +29,9 @@ set(LIBRARY_HDR
     states/Authentication.h
     states/CharacterList.h
     states/WorldForwarder.h
+    states/InQueue.h
+    states/ClientContext.h
+    states/StateLUT.cpp
     temp.h
     )
 
@@ -48,6 +51,8 @@ set(LIBRARY_SRC
     states/Authentication.cpp
     states/CharacterList.cpp
     states/WorldForwarder.cpp
+    states/InQueue.cpp
+    states/StateLUT.cpp
     temp.cpp
     )
 

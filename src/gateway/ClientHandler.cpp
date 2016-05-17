@@ -8,25 +8,23 @@
 
 #include "ClientHandler.h"
 #include "ClientConnection.h"
+#include "states/StateLUT.h"
+#include <game_protocol/Packets.h>
 #include <spark/SafeBinaryStream.h>
-#include <spark/temp/Account_generated.h>
-#include <botan/bigint.h>
-#include <botan/sha160.h>
 
 #include "temp.h" // todo
 
 #undef ERROR // temp
 
-namespace em = ember::messaging;
-
 namespace ember {
 
 void ClientHandler::start() {
-	auth_state_.send_auth_challenge();
+	enter_states[context_.state](&context_);
 }
 
 void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& buffer) {
-	header_ = &header;
+	context_.header = &header;
+	context_.buffer = &buffer;
 
 	// handle ping & keep-alive as special cases
 	switch(header.opcode) {
@@ -37,34 +35,13 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			return;
 	}
 
-	ClientState saved_state = state_;
+	ClientState prev_state = context_.state;
 
-	switch(state_) {
-		case ClientState::AUTHENTICATING:
-			auth_state_.update(header, buffer);
-			break;
-		case ClientState::IN_QUEUE:
-			state_ = ClientState::UNEXPECTED_PACKET;
-			break;
-		case ClientState::CHARACTER_LIST:
-			handle_character_list(buffer);
-			break;
-		case ClientState::IN_WORLD:
-			handle_in_world(buffer);
-			break;
-	}
+	update_states[context_.state](&context_);
 
-	switch(state_) {
-		case ClientState::UNEXPECTED_PACKET:
-			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-				<< to_string(saved_state) << " state received unexpected opcode "
-				<< protocol::to_string(header.opcode) << ", skipping" << LOG_ASYNC;
-			buffer.skip(header.size - sizeof(header.opcode));
-			state_ = saved_state; // restore previous state
-			break;
-		case ClientState::REQUEST_CLOSE:
-			connection_.close_session();
-			break;
+	if(prev_state != context_.state) {
+		exit_states[context_.state](&context_);
+		enter_states[context_.state](&context_);
 	}
 }
 
@@ -101,138 +78,46 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 	connection_.send(protocol::ServerOpcodes::SMSG_PONG, response);
 }
 
-void ClientHandler::send_character_list_fail() {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
-	response->result = protocol::ResultCode::AUTH_UNAVAILABLE;
-	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_CREATE, response);
-}
 
-void ClientHandler::send_character_list(std::vector<Character> characters) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+//void ClientHandler::handle_login(spark::Buffer& buffer) {
+//	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+//
+//	protocol::CMSG_PLAYER_LOGIN packet;
+//
+//	if(!packet_deserialise(packet, buffer)) {
+//		return;
+//	}
+//
+//	/*auto response = std::make_shared<protocol::SMSG_CHARACTER_LOGIN_FAILED>();
+//	response->reason = 1;
+//	connection_.send(protocol::ServerOpcodes::SMSG_CHARACTER_LOGIN_FAILED, response);*/
+//}
 
-	auto response = std::make_shared<protocol::SMSG_CHAR_ENUM>();
-	response->characters = characters;
-	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_ENUM, response);
-}
-
-void ClientHandler::handle_char_enum(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	auto self = connection_.shared_from_this();
-
-	char_serv_temp->retrieve_characters(account_name_,
-		[this, self](em::character::Status status, std::vector<Character> characters) {
-			if(status == em::character::Status::OK) {
-				send_character_list(characters);
-			} else {
-				send_character_list_fail();
-			}
-	});
-}
-
-void ClientHandler::send_character_delete() {
-	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
-	response->result = protocol::ResultCode::CHAR_DELETE_SUCCESS;
-	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_DELETE, response);
-}
-
-void ClientHandler::send_character_create() {
-	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
-	response->result = protocol::ResultCode::CHAR_CREATE_SUCCESS;
-	connection_.send(protocol::ServerOpcodes::SMSG_CHAR_CREATE, response);
-}
-
-void ClientHandler::handle_char_create(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	protocol::CMSG_CHAR_CREATE packet;
-
-	if(!packet_deserialise(packet, buffer)) {
-		return;
-	}
-
-	auto self = connection_.shared_from_this();
-
-	char_serv_temp->create_character(account_name_, *packet.character,
-		[this, self](em::character::Status status) {
-			//if(status == em::character::Status::OK) {
-				send_character_create();
-			//}
-	});
-}
-
-void ClientHandler::handle_char_delete(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	protocol::CMSG_CHAR_DELETE packet;
-
-	if(!packet_deserialise(packet, buffer)) {
-		return;
-	}
-
-	auto self = connection_.shared_from_this();
-
-	char_serv_temp->delete_character(account_name_, packet.id,
-		[this, self](em::character::Status status) {
-			if(status == em::character::Status::OK) {
-				send_character_delete();
-			}
-		}
-	);
-}
-
-void ClientHandler::handle_login(spark::Buffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-
-	protocol::CMSG_PLAYER_LOGIN packet;
-
-	if(!packet_deserialise(packet, buffer)) {
-		return;
-	}
-
-	/*auto response = std::make_shared<protocol::SMSG_CHARACTER_LOGIN_FAILED>();
-	response->reason = 1;
-	connection_.send(protocol::ServerOpcodes::SMSG_CHARACTER_LOGIN_FAILED, response);*/
-}
-
-void ClientHandler::handle_character_list(spark::Buffer& buffer) {
-	switch(header_->opcode) {
-		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
-			handle_char_enum(buffer);
-			break;
-		case protocol::ClientOpcodes::CMSG_CHAR_CREATE:
-			handle_char_create(buffer);
-			break;
-		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
-			handle_char_delete(buffer);
-			break;
-		case protocol::ClientOpcodes::CMSG_PLAYER_LOGIN:
-			handle_login(buffer);
-			break;
-		/*case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
-			handle_char_rename(buffer);
-			break;*/
-		// case enter world
-	}
-}
 
 void ClientHandler::handle_in_world(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 }
 
+ClientHandler::ClientHandler(ClientConnection& connection, log::Logger* logger)
+                             : context_{}, connection_(connection), logger_(logger) { 
+	context_.state = ClientState::AUTHENTICATING;
+	context_.connection = &connection_;
+	context_.handler = this;
+}
+
 ClientHandler::~ClientHandler() {
-	switch(state_) {
-		case ClientState::IN_QUEUE:
-			queue_service_temp->dequeue(connection_.shared_from_this());
-			break;
-		case ClientState::CHARACTER_LIST:
-		case ClientState::IN_WORLD:
-			queue_service_temp->decrement();
-			break;
-	}
+	exit_states[context_.state](&context_);
+//	//switch(state_) {
+//	//	case ClientState::IN_QUEUE:
+//	//		queue_service_temp->dequeue(connection_.shared_from_this());
+//	//		break;
+//	//	case ClientState::CHARACTER_LIST:
+//	//	case ClientState::IN_WORLD:
+//	//		queue_service_temp->decrement();
+//	//		break;
+//	//}
 }
 
 } // ember

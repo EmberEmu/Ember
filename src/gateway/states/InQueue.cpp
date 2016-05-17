@@ -6,14 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
+#include "InQueue.h"
 
-#include "ClientContext.h"
+namespace ember { namespace queue {
 
-namespace ember { namespace world {
+void enter(ClientContext* context) {
 
-void enter(ClientContext* context);
-void update(ClientContext* context);
-void exit(ClientContext* context);
+}
 
-}} // world, ember
+void update(ClientContext* context) {
+
+}
+
+void exit(ClientContext* context) {
+
+}
+
+}} // queue, ember

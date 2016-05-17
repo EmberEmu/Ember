@@ -10,10 +10,10 @@
 
 #include "ClientContext.h"
 
-namespace ember { namespace world {
+namespace ember { namespace queue {
 
 void enter(ClientContext* context);
 void update(ClientContext* context);
 void exit(ClientContext* context);
 
-}} // world, ember
+}} // queue, ember

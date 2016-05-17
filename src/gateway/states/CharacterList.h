@@ -8,19 +8,12 @@
 
 #pragma once
 
-#include <game_protocol/PacketHeaders.h>
-#include <spark/Buffer.h>
+#include "ClientContext.h"
 
-namespace ember {
+namespace ember { namespace character_list {
 
-class ClientHandler;
+void enter(ClientContext* context);
+void update(ClientContext* context);
+void exit(ClientContext* context);
 
-class CharacterList final {
-	ClientHandler& handler_;
-	
-public:
-	CharacterList(ClientHandler& handler) : handler_(handler) {}
-	void update(protocol::ClientHeader& header, spark::Buffer& buffer);
-};
-
-} // ember
+}} // character_list, ember

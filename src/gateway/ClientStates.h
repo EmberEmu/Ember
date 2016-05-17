@@ -12,16 +12,13 @@
 
 namespace ember {
 
-smart_enum_class(ClientState, int,
+smart_enum(ClientState, int,
 	// valid states
 	AUTHENTICATING,
 	IN_QUEUE,
 	CHARACTER_LIST,
 	IN_WORLD,
-
-	// error states
-	UNEXPECTED_PACKET,
-	REQUEST_CLOSE
+	TRANSFER_INITIATED
 )
 
 } // ember
