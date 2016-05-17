@@ -12,6 +12,6 @@
 
 namespace ember {
 
-void set_affinity(std::thread& thread, unsigned short core);
+void set_affinity(std::thread& thread, unsigned int core);
 
 } // ember

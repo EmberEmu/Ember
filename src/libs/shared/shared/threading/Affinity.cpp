@@ -23,7 +23,7 @@
 
 namespace ember {
 
-void set_affinity(std::thread& thread, unsigned short core) {	
+void set_affinity(std::thread& thread, unsigned int core) {	
 #ifdef _WIN32
 	if(SetThreadAffinityMask(thread.native_handle(), 1u << core) == 0) {
 		throw std::runtime_error("Unable to set thread affinity, error code " + std::to_string(GetLastError()));

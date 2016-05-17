@@ -14,21 +14,21 @@
 
 namespace ember { 
 
-const enter_state update_states[] = {
+const state_func update_states[] = {
 	&authentication::update,
 	&queue::update,
 	&character_list::update,
 	&world::update
 };
 
-const exit_state exit_states[] = {
+const state_func exit_states[] = {
 	&authentication::exit,
 	&queue::exit,
 	&character_list::exit,
 	&world::exit
 };
 
-const update_state enter_states[] = {
+const state_func enter_states[] = {
 	&authentication::enter,
 	&queue::enter,
 	&character_list::enter,

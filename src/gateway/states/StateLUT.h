@@ -12,12 +12,10 @@ namespace ember {
 
 struct ClientContext;
 
-typedef void(*enter_state)(ClientContext*);
-typedef void(*exit_state)(ClientContext*);
-typedef void(*update_state)(ClientContext*);
+typedef void(*state_func)(ClientContext*);
 
-extern const enter_state update_states[];
-extern const exit_state exit_states[];
-extern const update_state enter_states[];
+extern const state_func update_states[];
+extern const state_func exit_states[];
+extern const state_func enter_states[];
 
 } // ember
