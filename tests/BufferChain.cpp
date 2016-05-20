@@ -73,7 +73,7 @@ TEST(ChainedBufferTest, ReserveFetchConsistency) {
 	std::size_t offset = 0;
 
 	for(auto& buffer : buffers) {
-		std::memcpy(buffer->data(), text + offset, buffer->size());
+		std::memcpy(const_cast<char*>(buffer->read_data()), text + offset, buffer->size());
 		offset += buffer->size();
 
 		if(offset > text_len || !offset) {
@@ -124,7 +124,7 @@ TEST(ChainedBufferTest, AttachTail) {
 
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	chain.skip(32); // skip first block
-	chain.attach(buffer);
+	chain.push_back(buffer);
 	chain.advance_write_cursor(written);
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 
@@ -140,7 +140,7 @@ TEST(ChainedBufferTest, RetrieveTail) {
 	std::string text("This string is < 32 bytes"); // could this fail on exotic platforms?
 	chain.write(text.data(), text.length());
 
-	auto tail = chain.tail();
+	auto tail = chain.back();
 	ASSERT_EQ(0, std::memcmp(text.data(), tail->storage.data(), text.length())) << "Tail data is incorrect";
 }
 

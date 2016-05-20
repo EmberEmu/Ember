@@ -37,12 +37,12 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	void read() {
 		auto self(shared_from_this());
-		auto tail = inbound_buffer_.tail();
+		auto tail = inbound_buffer_.back();
 
 		// if the buffer chain has no more space left, allocate & attach new node
 		if(!tail->free()) {
 			tail = inbound_buffer_.allocate();
-			inbound_buffer_.attach(tail);
+			inbound_buffer_.push_back(tail);
 		}
 
 		set_timer();

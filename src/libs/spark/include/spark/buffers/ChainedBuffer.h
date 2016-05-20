@@ -94,7 +94,7 @@ public:
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
-		attach(allocate());
+		push_back(allocate());
 	}
 
 	~ChainedBuffer() {
@@ -231,11 +231,21 @@ public:
 		return size_;
 	}
 
-	BufferBlock<BlockSize>* tail() {
+	BufferBlock<BlockSize>* back() {
 		return buffer_from_node(root_.prev);
 	}
 
-	void attach(BufferBlock<BlockSize>* buffer) {
+	BufferBlock<BlockSize>* front() {
+		return buffer_from_node(root_.next);
+	}
+
+	void pop_front() {
+		auto buffer = buffer_from_node(root_.next);
+		size -= buffer->size();
+		unlink_node(root_.next);
+	}
+
+	void push_back(BufferBlock<BlockSize>* buffer) {
 		link_tail_node(&buffer->node);
 		size_ += buffer->write_offset;
 	}
@@ -329,7 +339,7 @@ public:
 #ifdef BUFFER_CHAIN_DEBUG
 		std::pair<char*, std::size_t> get_buffer() {
 			auto buffer = chain_.buffer_from_node(curr_node_);
-			return std::make_pair<char*, std::size_t>(buffer->data(), buffer->size());
+			return std::make_pair<char*, std::size_t>(const_cast<char*>(buffer->read_data()), buffer->size());
 		}
 #endif
 
