@@ -7,8 +7,7 @@
 set(LIBRARY_NAME game_protocol)
 
 add_library(${LIBRARY_NAME}
-            src/Handler.cpp
-            include/game_protocol/Handler.h
+            src/Dummy.cpp
             include/game_protocol/Opcodes.h
             include/game_protocol/Packet.h
             include/game_protocol/Packets.h
