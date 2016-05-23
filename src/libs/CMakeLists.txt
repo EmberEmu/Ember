@@ -11,3 +11,4 @@ add_subdirectory(conpool)
 add_subdirectory(spark)
 
 add_subdirectory(game_protocol)
+add_subdirectory(taskmaster)
