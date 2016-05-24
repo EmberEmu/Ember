@@ -154,8 +154,9 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		guard.unlock();
 		driver_.thread_enter();
 
-		return Connection<ConType>(std::bind(&Pool::return_connection,
-			this, std::placeholders::_1), *res);
+		return Connection<ConType>([this](Connection<ConType>& arg) {
+			this->return_connection(arg);
+		}, *res);
 	}
 	
 public:
