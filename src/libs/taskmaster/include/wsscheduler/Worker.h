@@ -6,9 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
- #pragma once
+#pragma once
 
- namespace ember { namespace task {
+#include <thread>
 
+namespace ember { namespace task { namespace ws {
 
- }} // task, ember
+class Worker {
+	
+
+public:
+	
+};
+
+}}} // ws, task, ember

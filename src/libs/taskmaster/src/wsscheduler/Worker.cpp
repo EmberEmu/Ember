@@ -6,9 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
- #pragma once
+#include <wsscheduler/Worker.h>
 
- namespace ember { namespace task {
+namespace ember { namespace task { namespace ws {
 
 
- }} // task, ember
+
+}}} // ws, task, ember

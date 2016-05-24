@@ -6,10 +6,24 @@
 
 set(LIBRARY_NAME taskmaster)
 
-add_library(${LIBRARY_NAME}
-            include/Task.h
-            include/Scheduler.h
-            src/Scheduler.cpp
-           )
+set(NDSCHEDULER_SRC
+    include/ndscheduler/Scheduler.h
+    src/ndscheduler/Scheduler.cpp
+)
+
+set(WSSCHEDULER_SRC
+    include/wsscheduler/Task.h
+    include/wsscheduler/Scheduler.h
+    src/wsscheduler/Scheduler.cpp
+    include/wsscheduler/Worker.h
+    src/wsscheduler/Worker.cpp
+)
+
+set(LIBRARY_SRC ${NDSCHEDULER_SRC} ${WSSCHEDULER_SRC})
+
+source_group("ND Scheduler" FILES ${NDSCHEDULER_SRC})
+source_group("WS Scheduler" FILES ${WSSCHEDULER_SRC})
+
+add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

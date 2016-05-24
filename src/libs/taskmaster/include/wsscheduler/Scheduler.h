@@ -6,9 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
- #include <task/Scheduler.h>
+#pragma once
 
- namespace ember { namespace task {
+#include <vector>
+#include <cstddef>
 
+namespace ember { namespace task { namespace ws {
 
- }} // task, ember
+class Worker;
+
+class Scheduler {
+	std::vector<Worker> workers_;
+
+public:
+	Scheduler(std::size_t workers);
+};
+
+}}} // ws, task, ember
