@@ -19,8 +19,10 @@ namespace ember { namespace connection_pool {
 namespace sc = std::chrono;
 using namespace std::chrono_literals;
 
+const int CACHELINE_SIZE = 64; // todo, use preprocessor?
+
 template<typename ConType>
-struct ConnDetail {
+struct alignas(CACHELINE_SIZE) ConnDetail {
 	ConType conn;
 	unsigned int id = 0;
 	bool empty_slot = true;

@@ -133,41 +133,6 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 #endif
 		manager_.check_exceptions();
 
-		auto pred = [&](ConnDetail<ConType>& cd) {
-			bool checked_out = pool_guards_[cd.id].load(std::memory_order_relaxed);
-
-			if(checked_out) {
-				return false;
-			}
-
-			std::atomic_thread_fence(std::memory_order_acquire);
-
-			if(!cd.error && !cd.sweep && !cd.empty_slot) {
-				if(cd.dirty && !return_clean()) {
-					try {
-						if(driver_.clean(cd.conn)) {
-							cd.dirty = false;
-						} else {
-							cd.sweep = true;
-							return false;
-						}
-					} catch(std::exception& e) {
-						if(log_cb_) {
-							log_cb_(Severity::DEBUG, "On connection clean: "s + e.what());
-						}
-						return false;
-					}
-				}
-
-				cd.checked_out = true;
-				cd.idle = 0s;
-				pool_guards_[cd.id].store(true, std::memory_order_relaxed);
-				return true;
-			}
-
-			return false;
-		};
-
 		std::unique_lock<Spinlock> guard(lock_);
 
 		auto res = std::find_if(pool_.begin(), pool_.end(), [&](auto& arg) {
