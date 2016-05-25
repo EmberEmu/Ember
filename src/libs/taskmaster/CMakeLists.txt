@@ -17,6 +17,8 @@ set(WSSCHEDULER_SRC
     src/wsscheduler/Scheduler.cpp
     include/wsscheduler/Worker.h
     src/wsscheduler/Worker.cpp
+    include/wsscheduler/Dequeue.h
+    src/wsscheduler/Dequeue.cpp
 )
 
 set(LIBRARY_SRC ${NDSCHEDULER_SRC} ${WSSCHEDULER_SRC})
@@ -26,4 +28,5 @@ source_group("WS Scheduler" FILES ${WSSCHEDULER_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 
+target_link_libraries(${LIBRARY_NAME} shared)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

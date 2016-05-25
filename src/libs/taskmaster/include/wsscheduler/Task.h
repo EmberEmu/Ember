@@ -9,13 +9,19 @@
 #pragma once
 
 #include <boost/serialization/strong_typedef.hpp>
-
-BOOST_STRONG_TYPEDEF(int, TaskID);
+#include <atomic>
 
 namespace ember { namespace task { namespace ws {
 
+BOOST_STRONG_TYPEDEF(int, TaskID);
+
 struct Task {
 	TaskID id;
+	TaskID parent;
+	TaskID dependency;
+	int affinity;
+	int open_items;
+	int priority;
 };
 
 }}} // ws, task, ember

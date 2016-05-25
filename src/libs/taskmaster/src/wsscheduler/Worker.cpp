@@ -7,9 +7,24 @@
  */
 
 #include <wsscheduler/Worker.h>
+#include <thread>
 
 namespace ember { namespace task { namespace ws {
 
+Worker::Worker() {
 
+}
+
+void Worker::steal_work() {
+
+}
+
+void Worker::next_task() {
+
+}
+
+void Worker::add_work() {
+
+}
 
 }}} // ws, task, ember

@@ -6,17 +6,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <wsscheduler/Scheduler.h>
-#include <wsscheduler/Worker.h>
+#include <wsscheduler/Dequeue.h>
+#include <mutex>
 
 namespace ember { namespace task { namespace ws {
 
-Scheduler::Scheduler(std::size_t workers) : workers_(workers) {
-
+void Dequeue::try_pop_front() {
+	std::lock_guard<Spinlock> guard(lock_);
 }
 
-void Scheduler::steal_work(std::size_t victim) {
+void Dequeue::try_pop_back() {
+	std::lock_guard<Spinlock> guard(lock_);
+}
 
+void Dequeue::push_back() {
+	std::lock_guard<Spinlock> guard(lock_);
+}
+
+std::size_t Dequeue::size() {
+	return size_;
 }
 
 }}} // ws, task, ember

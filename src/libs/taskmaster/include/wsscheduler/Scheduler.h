@@ -19,7 +19,11 @@ class Scheduler {
 	std::vector<Worker> workers_;
 
 public:
-	Scheduler(std::size_t workers);
+	explicit Scheduler(std::size_t workers);
+
+	void add_work_begin();
+	void add_work_finish();
+	void steal_work(std::size_t victim);
 };
 
 }}} // ws, task, ember

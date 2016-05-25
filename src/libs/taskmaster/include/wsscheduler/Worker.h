@@ -8,15 +8,23 @@
 
 #pragma once
 
+#include <wsscheduler/Dequeue.h>
 #include <thread>
 
 namespace ember { namespace task { namespace ws {
 
 class Worker {
-	
+	std::thread thread_;
+	Dequeue work_queue;
+
+	void next_task();
 
 public:
-	
+	Worker();
+
+	void add_work();
+	void steal_work();
 };
+
 
 }}} // ws, task, ember
