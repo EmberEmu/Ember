@@ -8,18 +8,20 @@
 
 #pragma once
 
-#include <wsscheduler/Common.h>
+#include <boost/serialization/strong_typedef.hpp>
 #include <atomic>
+#include <memory>
+
+typedef std::unique_ptr<std::atomic<int>> Counter;
 
 namespace ember { namespace task { namespace ws {
 
-struct Task {
-	TaskID id;
-	TaskID parent;
-	TaskID dependency;
-	int affinity;
-	int open_items;
-	int priority;
-};
+class Scheduler;
+
+#define TASK_ENTRY_POINT(func_name) \
+	void func_name(ts::Scheduler* scheduler, void* arg)
+
+BOOST_STRONG_TYPEDEF(int, TaskID);
+typedef void (*Task)(Scheduler*, void*);
 
 }}} // ws, task, ember

@@ -7,7 +7,6 @@
  */
 
 #include <wsscheduler/Scheduler.h>
-#include <wsscheduler/Worker.h>
 
 namespace ember { namespace task { namespace ws {
 
@@ -17,6 +16,10 @@ Scheduler::Scheduler(std::size_t workers) : workers_(workers) {
 
 void Scheduler::steal_work(std::size_t victim) {
 
+}
+
+void Scheduler::run_job(Task task) {
+	task(this, NULL);
 }
 
 }}} // ws, task, ember

@@ -12,6 +12,7 @@ set(NDSCHEDULER_SRC
 )
 
 set(WSSCHEDULER_SRC
+    include/wsscheduler/Common.h
     include/wsscheduler/Task.h
     include/wsscheduler/Scheduler.h
     src/wsscheduler/Scheduler.cpp

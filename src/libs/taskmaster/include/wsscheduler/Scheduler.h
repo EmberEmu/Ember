@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <wsscheduler/Worker.h>
+#include <wsscheduler/Common.h>
 #include <vector>
 #include <cstddef>
 
@@ -21,8 +23,8 @@ class Scheduler {
 public:
 	explicit Scheduler(std::size_t workers);
 
-	void add_work_begin();
-	void add_work_finish();
+	void run_job(Task task);
+	
 	void steal_work(std::size_t victim);
 };
 
