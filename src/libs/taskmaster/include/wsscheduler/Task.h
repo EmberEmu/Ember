@@ -14,12 +14,11 @@
 namespace ember { namespace task { namespace ws {
 
 struct Task {
-	TaskID id;
-	TaskID parent;
-	TaskID dependency;
-	int affinity;
-	int open_items;
-	int priority;
+	TaskPtr execute;
+	void* arg;
+	//std::atomic<int> open_count;
 };
+
+typedef std::unique_ptr<Task> TaskHandle
 
 }}} // ws, task, ember

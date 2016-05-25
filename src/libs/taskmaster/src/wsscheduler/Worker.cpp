@@ -8,11 +8,37 @@
 
 #include <wsscheduler/Worker.h>
 #include <thread>
+#include <iostream>
 
 namespace ember { namespace task { namespace ws {
 
-Worker::Worker() {
+Worker::~Worker() {
+	if(stopped_) {
+		return;
+	}
 
+	stop();
+}
+
+void Worker::run() {
+	while(!stopped_) {
+		
+	}
+
+	LOG_INFO(logger_) << "Bye" << LOG_SYNC;
+}
+
+void Worker::start(log::Logger* logger) {
+	logger_ = logger;
+	thread_ = std::thread(&Worker::run, this);
+}
+
+void Worker::stop() {
+	stopped_ = true;
+
+	if(thread_.joinable()) {
+		thread_.join();
+	}
 }
 
 void Worker::steal_work() {

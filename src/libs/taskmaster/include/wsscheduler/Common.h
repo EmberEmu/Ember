@@ -12,7 +12,6 @@
 #include <atomic>
 #include <memory>
 
-typedef std::unique_ptr<std::atomic<int>> Counter;
 
 namespace ember { namespace task { namespace ws {
 
@@ -22,6 +21,7 @@ class Scheduler;
 	void func_name(ts::Scheduler* scheduler, void* arg)
 
 BOOST_STRONG_TYPEDEF(int, TaskID);
-typedef void (*Task)(Scheduler*, void*);
+typedef void (*TaskPtr)(Scheduler*, void*);
+typedef std::atomic<int> Counter;
 
 }}} // ws, task, ember

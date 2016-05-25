@@ -10,6 +10,8 @@
 
 #include <wsscheduler/Worker.h>
 #include <wsscheduler/Common.h>
+#include <wsscheduler/Task.h>
+#include <logger/Logging.h>
 #include <vector>
 #include <cstddef>
 
@@ -19,13 +21,17 @@ class Worker;
 
 class Scheduler {
 	std::vector<Worker> workers_;
+	log::Logger* logger_;
+	bool stopped_ = false;
 
 public:
-	explicit Scheduler(std::size_t workers);
+	Scheduler(std::size_t workers, log::Logger* logger);
+	~Scheduler();
 
 	void run_job(Task task);
-	
+	void run_jobs(Task* tasks, std::size_t count, Counter& counter);
 	void steal_work(std::size_t victim);
+	void stop();
 };
 
 }}} // ws, task, ember

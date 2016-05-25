@@ -9,6 +9,7 @@
 #pragma once
 
 #include <wsscheduler/Dequeue.h>
+#include <logger/Logging.h>
 #include <thread>
 
 namespace ember { namespace task { namespace ws {
@@ -16,14 +17,19 @@ namespace ember { namespace task { namespace ws {
 class Worker {
 	std::thread thread_;
 	Dequeue work_queue;
+	log::Logger* logger_;
+	std::atomic_bool stopped_ = false;
 
+	void run();
 	void next_task();
 
 public:
-	Worker();
+	~Worker();
 
+	void start(log::Logger* logger);
 	void add_work();
 	void steal_work();
+	void stop();
 };
 
 
