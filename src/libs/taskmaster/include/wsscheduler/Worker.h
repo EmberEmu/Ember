@@ -9,27 +9,41 @@
 #pragma once
 
 #include <wsscheduler/Dequeue.h>
+#include <wsscheduler/Task.h>
+#include <shared/threading/Semaphore.h>
+#include <shared/threading/Spinlock.h>
 #include <logger/Logging.h>
 #include <thread>
 
 namespace ember { namespace task { namespace ws {
 
-class Worker {
-	std::thread thread_;
-	Dequeue work_queue;
-	log::Logger* logger_;
-	std::atomic_bool stopped_ = false;
+class Scheduler;
 
+class Worker {
+	Scheduler& scheduler_;
+	std::thread thread_;
+	Dequeue<Task> work_queue;
+	log::Logger* logger_;
+	
 	void run();
 	void next_task();
+	void run_tasks();
 
 public:
+	Worker(Scheduler& scheduler, log::Logger* logger);
 	~Worker();
 
-	void start(log::Logger* logger);
 	void add_work();
 	void steal_work();
 	void stop();
+
+	Worker(Worker&& rhs) : scheduler_(rhs.scheduler_) {
+		thread_ = std::move(rhs.thread_);
+		//work_queue = std::move(rhs.work_queue);
+		logger_ = rhs.logger_;
+	}
+
+	friend class Scheduler;
 };
 
 

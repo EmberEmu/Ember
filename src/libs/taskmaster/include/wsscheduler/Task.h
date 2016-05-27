@@ -9,16 +9,14 @@
 #pragma once
 
 #include <wsscheduler/Common.h>
-#include <atomic>
 
 namespace ember { namespace task { namespace ws {
 
 struct Task {
 	TaskPtr execute;
 	void* arg;
-	//std::atomic<int> open_count;
 };
 
-typedef std::unique_ptr<Task> TaskHandle
+typedef std::unique_ptr<Task> TaskHandle;
 
 }}} // ws, task, ember

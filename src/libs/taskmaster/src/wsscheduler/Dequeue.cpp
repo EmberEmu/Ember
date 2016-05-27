@@ -9,22 +9,5 @@
 #include <wsscheduler/Dequeue.h>
 #include <mutex>
 
-namespace ember { namespace task { namespace ws {
 
-void Dequeue::try_pop_front() {
-	std::lock_guard<Spinlock> guard(lock_);
-}
 
-void Dequeue::try_pop_back() {
-	std::lock_guard<Spinlock> guard(lock_);
-}
-
-void Dequeue::push_back() {
-	std::lock_guard<Spinlock> guard(lock_);
-}
-
-std::size_t Dequeue::size() {
-	return size_;
-}
-
-}}} // ws, task, ember

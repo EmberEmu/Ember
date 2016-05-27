@@ -10,9 +10,10 @@
 
 namespace ember { namespace task { namespace ws {
 
-Scheduler::Scheduler(std::size_t workers, log::Logger* logger) : workers_(workers), logger_(logger) {
-	for(auto& worker : workers_) {
-		worker.start(logger);
+Scheduler::Scheduler(std::size_t workers, log::Logger* logger)
+                     : idle_workers_(workers), logger_(logger) {
+	for(std::size_t i = 0; i < workers; ++i) {
+		workers_.emplace_back(*this, logger);
 	}
 }
 
@@ -21,12 +22,6 @@ Scheduler::~Scheduler() {
 }
 
 void Scheduler::stop() {
-	if(stopped_) {
-		return;
-	}
-
-	stopped_ = true;
-
 	for(auto& worker : workers_) {
 		worker.stop();
 	}
@@ -36,11 +31,16 @@ void Scheduler::steal_work(std::size_t victim) {
 
 }
 
-void Scheduler::run_job(Task task) {
+void Scheduler::submit_task(Task task) {
+	for(auto& worker : workers_) {
+		idle_workers_.wait();
+	}
+
+	semaphore_.signal_all(workers_.size());
 	task.execute(this, task.arg);
 }
 
-void Scheduler::run_jobs(Task* tasks, std::size_t count, Counter& counter) {
+void Scheduler::submit_tasks(Task* tasks, std::size_t count, Counter& counter) {
 	for(std::size_t i = 0; i < count; ++i) {
 		tasks[i].execute(this, tasks[i].arg);
 	}

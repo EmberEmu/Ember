@@ -10,21 +10,53 @@
 
 #include <shared/threading/Spinlock.h>
 #include <atomic>
+#include <deque> // todo
+#include <mutex>
 #include <cstddef>
 
 namespace ember { namespace task { namespace ws {
 
+template<typename T>
 class Dequeue {
+	std::deque<T> container_; // temp
 	Spinlock lock_;
 	std::atomic<std::size_t> size_;
 
 public:
-	void try_pop_front();
-	void try_pop_back();
+	bool try_pop_front(T& element) {
+		std::lock_guard<Spinlock> guard(lock_);
+		
+		if(container_.empty()) {
+			return false;
+		}
 
-	void push_back(/* Work work*/);
+		element = container_.front();
+		container_.pop_front();
 
-	std::size_t size();
+		return true;
+	}
+
+	bool try_pop_back(T& element) {
+		std::lock_guard<Spinlock> guard(lock_);
+
+		if(container_.empty()) {
+			return false;
+		}
+
+		element = container_.back();
+		container_.pop_back();
+
+		return true;
+	}
+
+	void push_back(T element) {
+		std::lock_guard<Spinlock> guard(lock_);
+		container_.emplace_back(std::move(element));
+	}
+
+	std::size_t size() {
+		return size_;
+	}
 };
 
 }}} // ws, task, ember

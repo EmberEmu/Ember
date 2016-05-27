@@ -45,15 +45,5 @@ int main() {
 	ts::Scheduler scheduler(cores - 1, logger.get());
 
 	//scheduler.run_job(root_job, counter);
-
-	int test_data[100] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-	ts::Task tasks[100];
-	ts::Counter counter = 100;
-
-	for(int i = 0; i < 100; ++i) {
-		tasks[i] = ts::Task{test_task, &test_data[i]};
-	}
-
-	scheduler.run_jobs(tasks, 100, counter);
 	//scheduler.wait(counter);
 }
