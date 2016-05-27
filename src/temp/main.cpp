@@ -9,6 +9,7 @@ using namespace ember;
 
 TASK_ENTRY_POINT(job_one) {
 	LOG_INFO_GLOB << __func__ << LOG_SYNC;
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
 TASK_ENTRY_POINT(job_two) {
@@ -21,6 +22,10 @@ TASK_ENTRY_POINT(job_three) {
 
 TASK_ENTRY_POINT(root_job) {
 	LOG_INFO_GLOB << __func__ << LOG_SYNC;
+	std::this_thread::sleep_for(std::chrono::seconds(10));
+	auto task = scheduler.create_task(job_one);
+	scheduler.run(task);
+	scheduler.wait(task);
 	//scheduler->run_job(job_one);
 	//scheduler->run_job(job_two);
 	//scheduler->run_job(job_three);
@@ -42,5 +47,7 @@ int main() {
 	auto cores = std::thread::hardware_concurrency();
 
 	ts::Scheduler scheduler(cores - 1, logger.get());
-
+	auto task = scheduler.create_task(root_job);
+	scheduler.run(task);
+	scheduler.wait(task);
 }

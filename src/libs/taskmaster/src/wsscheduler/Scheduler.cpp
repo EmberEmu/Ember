@@ -7,13 +7,15 @@
  */
 
 #include <wsscheduler/Scheduler.h>
+#include <shared/util/xoroshiro128plus.h>
 
 namespace ember { namespace task { namespace ws {
 
 thread_local int Scheduler::worker_id_;
 
 Scheduler::Scheduler(std::size_t workers, log::Logger* logger)
-                     : queues_(workers), logger_(logger) {
+                     : WORKER_COUNT_(workers + 1), queues_(workers + 1),
+                       stopped_(false), logger_(logger) {
 	worker_id_ = 0; // main thread's ID
 
 	for(std::size_t i = 0; i < workers; ++i) {
@@ -26,6 +28,8 @@ Scheduler::~Scheduler() {
 }
 
 void Scheduler::stop() {
+	stopped_ = true;
+
 	for(auto& worker : workers_) {
 		if(worker.joinable()) {
 			worker.join();
@@ -39,11 +43,48 @@ void Scheduler::spawn_worker(int index) {
 }
 
 void Scheduler::start_worker() {
+	while(!stopped_) {
+		Task* task = fetch_task();
 
+		if(task) {
+			execute(task);
+		} else {
+			std::this_thread::yield();
+		}
+	}
+}
+
+Task* Scheduler::fetch_task() {
+	Dequeue* queue = local_queue();
+	Task* task = queue->try_pop_back();
+
+	if(task) {
+		return task;
+	}
+
+	// local queue empty, try to steal some work
+	auto victim_id = rng::xorshift::next() % WORKER_COUNT_;
+
+	for(std::size_t i = 0; i < WORKER_COUNT_; ++i) {
+		++victim_id %= WORKER_COUNT_;
+
+		// might be faster to remove this TLS access
+		if(victim_id == worker_id_) {
+			continue;
+		}
+
+		Task* task = queues_[victim_id].try_steal();
+
+		if(task) {
+			return task;
+		}
+	}
+
+	return nullptr;
 }
 
 Task* Scheduler::create_task(TaskFunc func, Task* parent) {
-	auto task = new Task();
+	auto task = new Task(); // todo
 	task->parent = parent;
 	task->execute = func;
 	task->counter = 1;
@@ -55,7 +96,7 @@ Task* Scheduler::create_task(TaskFunc func, Task* parent) {
 	return task;
 }
 
-Dequeue<Task*>* Scheduler::local_queue() {
+Dequeue* Scheduler::local_queue() {
 	return &queues_[worker_id_];
 }
 
@@ -65,15 +106,11 @@ void Scheduler::run(Task* task) {
 }
 
 bool Scheduler::completion_check(Task* task) {
-	return task->counter? true : false; // shut msvc up
-}
-
-Task* Scheduler::fetch_task() {
-	return nullptr;
+	return task->counter? false : true; // shut msvc up
 }
 
 void Scheduler::wait(Task* task) {
-	while(!completion_check(task)) {
+	while(task->counter != 0) {
 		Task* next = fetch_task();
 
 		if(next) {
@@ -88,7 +125,7 @@ void Scheduler::execute(Task* task) {
 }
 
 void Scheduler::finish(Task* task) {
-
+	--task->counter;
 }
  
 }}} // ws, task, ember

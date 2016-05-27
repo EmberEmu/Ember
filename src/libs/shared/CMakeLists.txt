@@ -50,6 +50,8 @@ set(THREADING_SRC
 )
 
 set(UTIL_SRC
+    shared/util/xoroshiro128plus.h
+    shared/util/xoroshiro128plus.cpp
     shared/util/FormatPacket.h
     shared/util/LogConfig.cpp
     shared/util/LogConfig.h

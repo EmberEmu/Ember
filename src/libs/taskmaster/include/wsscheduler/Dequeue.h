@@ -13,32 +13,44 @@
 #include <deque> // todo
 #include <mutex>
 #include <cstddef>
-#include <iostream>
+
 namespace ember { namespace task { namespace ws {
 
-template<typename T>
+struct Task;
+// todo, etc
 class Dequeue {
-	std::deque<T> container_; // temp
-	Spinlock lock_;
+	std::deque<Task*> container_; // temp
+	std::mutex lock_;
 	std::atomic<std::size_t> size_;
 
 public:
-	bool try_steal(T& element) {
-		
+	Task* try_steal() {
+		std::lock_guard<std::mutex> guard(lock_);
 
-		return true;
+		if(container_.empty()) {
+			return nullptr;
+		}
+
+		Task* task = container_.front();
+		container_.pop_front();
+		return task;
 	}
 
-	bool try_pop_back(T& element) {
-		std::lock_guard<Spinlock> guard(lock_);
+	Task* try_pop_back() {
+		std::lock_guard<std::mutex> guard(lock_);
 
+		if(container_.empty()) {
+			return nullptr;
+		}
 
-		return true;
+		Task* task = container_.back();
+		container_.pop_back();
+		return task;
 	}
 
-	void push_back(T element) {
-		std::lock_guard<Spinlock> guard(lock_);
-
+	void push_back(Task* task) {
+		std::lock_guard<std::mutex> guard(lock_);
+		container_.push_back(task);
 	}
 
 	std::size_t size() {

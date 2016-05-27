@@ -23,16 +23,18 @@ namespace ember { namespace task { namespace ws {
 class Worker;
 
 class Scheduler {
-	static thread_local int worker_id_;
+	thread_local static int worker_id_;
+	const std::size_t WORKER_COUNT_;
 
-	std::vector<Dequeue<Task*>> queues_;
+	std::vector<Dequeue> queues_;
 	std::vector<std::thread> workers_;
+	std::atomic_bool stopped_;
 
 	log::Logger* logger_;
 
 	void spawn_worker(int index);
 	void start_worker();
-	Dequeue<Task*>* local_queue();
+	Dequeue* local_queue();
 
 	bool completion_check(Task* task);
 	void execute(Task* task);
