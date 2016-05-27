@@ -13,7 +13,7 @@
 #include <deque> // todo
 #include <mutex>
 #include <cstddef>
-
+#include <iostream>
 namespace ember { namespace task { namespace ws {
 
 template<typename T>
@@ -23,15 +23,8 @@ class Dequeue {
 	std::atomic<std::size_t> size_;
 
 public:
-	bool try_pop_front(T& element) {
-		std::lock_guard<Spinlock> guard(lock_);
+	bool try_steal(T& element) {
 		
-		if(container_.empty()) {
-			return false;
-		}
-
-		element = container_.front();
-		container_.pop_front();
 
 		return true;
 	}
@@ -39,19 +32,13 @@ public:
 	bool try_pop_back(T& element) {
 		std::lock_guard<Spinlock> guard(lock_);
 
-		if(container_.empty()) {
-			return false;
-		}
-
-		element = container_.back();
-		container_.pop_back();
 
 		return true;
 	}
 
 	void push_back(T element) {
 		std::lock_guard<Spinlock> guard(lock_);
-		container_.emplace_back(std::move(element));
+
 	}
 
 	std::size_t size() {

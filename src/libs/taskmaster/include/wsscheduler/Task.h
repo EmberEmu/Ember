@@ -9,12 +9,17 @@
 #pragma once
 
 #include <wsscheduler/Common.h>
+#include <atomic>
 
 namespace ember { namespace task { namespace ws {
 
-struct Task {
-	TaskPtr execute;
-	void* arg;
+const int CACHELINE_SIZE = 64;
+
+struct alignas(CACHELINE_SIZE) Task {
+	Task* parent;
+	TaskFunc execute;
+	void* args;
+	std::atomic<int> counter;
 };
 
 typedef std::unique_ptr<Task> TaskHandle;

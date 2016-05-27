@@ -29,5 +29,5 @@ source_group("WS Scheduler" FILES ${WSSCHEDULER_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 
-target_link_libraries(${LIBRARY_NAME} logger shared)
+target_link_libraries(${LIBRARY_NAME} logging shared)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

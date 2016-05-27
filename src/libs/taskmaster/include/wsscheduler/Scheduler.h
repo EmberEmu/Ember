@@ -14,6 +14,7 @@
 #include <shared/threading/Semaphore.h>
 #include <logger/Logging.h>
 #include <atomic>
+#include <thread>
 #include <vector>
 #include <cstddef>
 
@@ -22,21 +23,31 @@ namespace ember { namespace task { namespace ws {
 class Worker;
 
 class Scheduler {
-	std::vector<Worker> workers_;
-	Semaphore<Spinlock> semaphore_;
-	Semaphore<Spinlock> idle_workers_;
-	std::atomic_bool root_completed_ = false;
-	std::atomic_bool stopped_ = false;
+	static thread_local int worker_id_;
+
+	std::vector<Dequeue<Task*>> queues_;
+	std::vector<std::thread> workers_;
+
 	log::Logger* logger_;
+
+	void spawn_worker(int index);
+	void start_worker();
+	Dequeue<Task*>* local_queue();
+
+	bool completion_check(Task* task);
+	void execute(Task* task);
+	void finish(Task* task);
+	Task* fetch_task();
 
 public:
 	Scheduler(std::size_t workers, log::Logger* logger);
 	~Scheduler();
 
-	void submit_task(Task task);
-	void submit_tasks(Task* tasks, std::size_t count, Counter& counter);
-	void steal_work(std::size_t victim);
 	void stop();
+
+	Task* create_task(TaskFunc func, Task* parent = nullptr);
+	void run(Task* task);
+	void wait(Task* task);
 
 	friend class Worker;
 };

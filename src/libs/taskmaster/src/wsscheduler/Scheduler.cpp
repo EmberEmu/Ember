@@ -10,10 +10,14 @@
 
 namespace ember { namespace task { namespace ws {
 
+thread_local int Scheduler::worker_id_;
+
 Scheduler::Scheduler(std::size_t workers, log::Logger* logger)
-                     : idle_workers_(workers), logger_(logger) {
+                     : queues_(workers), logger_(logger) {
+	worker_id_ = 0; // main thread's ID
+
 	for(std::size_t i = 0; i < workers; ++i) {
-		workers_.emplace_back(*this, logger);
+		workers_.emplace_back(&Scheduler::spawn_worker, this, i + 1);
 	}
 }
 
@@ -23,29 +27,68 @@ Scheduler::~Scheduler() {
 
 void Scheduler::stop() {
 	for(auto& worker : workers_) {
-		worker.stop();
+		if(worker.joinable()) {
+			worker.join();
+		}
 	}
 }
 
-void Scheduler::steal_work(std::size_t victim) {
+void Scheduler::spawn_worker(int index) {
+	worker_id_ = index;
+	start_worker();
+}
+
+void Scheduler::start_worker() {
 
 }
 
-void Scheduler::submit_task(Task task) {
-	for(auto& worker : workers_) {
-		idle_workers_.wait();
+Task* Scheduler::create_task(TaskFunc func, Task* parent) {
+	auto task = new Task();
+	task->parent = parent;
+	task->execute = func;
+	task->counter = 1;
+
+	if(parent) {
+		++parent->counter;
 	}
 
-	semaphore_.signal_all(workers_.size());
-	task.execute(this, task.arg);
+	return task;
 }
 
-void Scheduler::submit_tasks(Task* tasks, std::size_t count, Counter& counter) {
-	for(std::size_t i = 0; i < count; ++i) {
-		tasks[i].execute(this, tasks[i].arg);
+Dequeue<Task*>* Scheduler::local_queue() {
+	return &queues_[worker_id_];
+}
+
+void Scheduler::run(Task* task) {
+	auto queue = local_queue();
+	queue->push_back(task);
+}
+
+bool Scheduler::completion_check(Task* task) {
+	return task->counter? true : false; // shut msvc up
+}
+
+Task* Scheduler::fetch_task() {
+	return nullptr;
+}
+
+void Scheduler::wait(Task* task) {
+	while(!completion_check(task)) {
+		Task* next = fetch_task();
+
+		if(next) {
+			execute(next);
+		}
 	}
-
-	counter = 0;
 }
 
+void Scheduler::execute(Task* task) {
+	task->execute(*this, task->args);
+	finish(task);
+}
+
+void Scheduler::finish(Task* task) {
+
+}
+ 
 }}} // ws, task, ember

@@ -18,10 +18,9 @@ namespace ember { namespace task { namespace ws {
 class Scheduler;
 
 #define TASK_ENTRY_POINT(func_name) \
-	void func_name(ts::Scheduler* scheduler, void* arg)
+	void func_name(ts::Scheduler& scheduler, void* arg)
 
-BOOST_STRONG_TYPEDEF(int, TaskID);
-typedef void (*TaskPtr)(Scheduler*, void*);
+typedef void (*TaskFunc)(Scheduler&, void*);
 typedef std::atomic<int> Counter;
 
 }}} // ws, task, ember

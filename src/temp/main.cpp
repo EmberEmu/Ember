@@ -24,7 +24,6 @@ TASK_ENTRY_POINT(root_job) {
 	//scheduler->run_job(job_one);
 	//scheduler->run_job(job_two);
 	//scheduler->run_job(job_three);
-	LOG_INFO_GLOB << __func__ << LOG_SYNC;
 }
 
 TASK_ENTRY_POINT(test_task) {
@@ -44,6 +43,4 @@ int main() {
 
 	ts::Scheduler scheduler(cores - 1, logger.get());
 
-	//scheduler.run_job(root_job, counter);
-	//scheduler.wait(counter);
 }
