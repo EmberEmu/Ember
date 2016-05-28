@@ -16,11 +16,12 @@
 namespace ember { namespace task { namespace ws {
 
 class Scheduler;
+struct Task;
 
 #define TASK_ENTRY_POINT(func_name) \
-	void func_name(ts::Scheduler& scheduler, void* arg)
+	void func_name(ts::Scheduler& scheduler, ts::Task* task, void* arg)
 
-typedef void (*TaskFunc)(Scheduler&, void*);
+typedef void (*TaskFunc)(Scheduler&, Task*, void*);
 typedef std::atomic<int> Counter;
 
 }}} // ws, task, ember

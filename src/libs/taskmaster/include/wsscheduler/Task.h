@@ -22,6 +22,4 @@ struct alignas(CACHELINE_SIZE) Task {
 	std::atomic<int> counter;
 };
 
-typedef std::unique_ptr<Task> TaskHandle;
-
 }}} // ws, task, ember

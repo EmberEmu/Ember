@@ -16,6 +16,7 @@
 #include <atomic>
 #include <thread>
 #include <vector>
+#include <memory>
 #include <cstddef>
 
 namespace ember { namespace task { namespace ws {
@@ -23,10 +24,14 @@ namespace ember { namespace task { namespace ws {
 class Worker;
 
 class Scheduler {
+	thread_local static std::size_t allocated_tasks_;
 	thread_local static int worker_id_;
+	
 	const std::size_t WORKER_COUNT_;
+	const std::size_t MAX_TASKS_;
 
 	std::vector<Dequeue> queues_;
+	std::vector<std::vector<Task>> task_pool_;
 	std::vector<std::thread> workers_;
 	std::atomic_bool stopped_;
 
@@ -42,7 +47,7 @@ class Scheduler {
 	Task* fetch_task();
 
 public:
-	Scheduler(std::size_t workers, log::Logger* logger);
+	Scheduler(std::size_t workers, std::size_t max_tasks, log::Logger* logger);
 	~Scheduler();
 
 	void stop();
