@@ -19,7 +19,6 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class CMSG_PLAYER_LOGIN final : public Packet {
-
 	State state_ = State::INITIAL;
 
 public:

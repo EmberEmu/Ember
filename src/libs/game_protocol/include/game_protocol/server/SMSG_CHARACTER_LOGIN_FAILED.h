@@ -19,7 +19,6 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class SMSG_CHARACTER_LOGIN_FAILED final : public ServerPacket {
-
 	State state_ = State::INITIAL;
 
 public:

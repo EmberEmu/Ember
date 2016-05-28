@@ -19,7 +19,6 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class SMSG_LOGOUT_COMPLETE final : public ServerPacket {
-
 	State state_ = State::INITIAL;
 
 public:

@@ -20,7 +20,6 @@ namespace ember { namespace protocol {
 namespace be = boost::endian;
 
 class SMSG_CHAR_CREATE final : public ServerPacket {
-
 	State state_ = State::INITIAL;
 
 public:
