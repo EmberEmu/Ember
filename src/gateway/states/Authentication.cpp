@@ -28,8 +28,7 @@ namespace ember {
 namespace {
 
 void send_auth_challenge(ClientContext* ctx);
-void send_auth_success(ClientContext* ctx);
-void send_auth_fail(ClientContext* ctx, protocol::ResultCode result);
+void send_auth_result(ClientContext* ctx, protocol::ResultCode result);
 void handle_authentication(ClientContext* ctx);
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
@@ -60,8 +59,8 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 
 	auto self = ctx->connection->shared_from_this();
 
-	acct_serv->locate_session(packet.username,
-							  [self, ctx, packet](em::account::Status remote_res, Botan::BigInt key) {
+	acct_serv->locate_session(packet.username, [self, ctx, packet](em::account::Status remote_res,
+	                                                               Botan::BigInt key) {
 		ctx->connection->socket().get_io_service().post([self, ctx, packet, remote_res, key]() {
 			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 				<< "Account server returned " << em::account::EnumNameStatus(remote_res)
@@ -84,7 +83,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 						result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
 				}
 
-				send_auth_fail(ctx, result);
+				send_auth_result(ctx, result);
 			} else {
 				prove_session(ctx, key, packet);
 			}
@@ -111,7 +110,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
 
 	if(calc_hash != packet.digest) {
-		send_auth_fail(ctx, protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
+		send_auth_result(ctx, protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
 		return;
 	}
 
@@ -119,7 +118,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	ctx->account_name = packet.username;
 
 	auto auth_success = [](ClientContext* ctx) {
-		send_auth_success(ctx);
+		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
 		// send_addon_data();
 	};
 
@@ -142,20 +141,10 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	auth_success(ctx);
 }
 
-void send_auth_success(ClientContext* ctx) {
+void send_auth_result(ClientContext* ctx, protocol::ResultCode result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-	ctx->state = ClientState::CHARACTER_LIST;
 
-	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	response->result = protocol::ResultCode::AUTH_OK;
-	ctx->connection->send(response);
-}
-
-void send_auth_fail(ClientContext* ctx, protocol::ResultCode result) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-	//ctx->state = ClientState::REQUEST_CLOSE;
-
-	// not convinced that this packet is correct
+	// not convinced that this packet is correct, apart from for AUTH_OK
 	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
 	response->result = result;
 	ctx->connection->send(response);
