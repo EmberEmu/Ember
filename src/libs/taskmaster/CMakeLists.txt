@@ -15,10 +15,8 @@ set(WSSCHEDULER_SRC
     include/wsscheduler/Common.h
     include/wsscheduler/Task.h
     include/wsscheduler/Scheduler.h
-    include/wsscheduler/Worker.h
     include/wsscheduler/Dequeue.h
     src/wsscheduler/Scheduler.cpp
-    src/wsscheduler/Worker.cpp
     src/wsscheduler/Dequeue.cpp
 )
 
