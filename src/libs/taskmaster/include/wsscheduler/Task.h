@@ -10,9 +10,11 @@
 
 #include <wsscheduler/Common.h>
 #include <atomic>
+#include <array>
 
 namespace ember { namespace task { namespace ws {
 
+const int MAX_CONTINUATIONS = 16;
 const int CACHELINE_SIZE = 64;
 
 struct alignas(CACHELINE_SIZE) Task {
@@ -20,6 +22,8 @@ struct alignas(CACHELINE_SIZE) Task {
 	TaskFunc execute;
 	void* args;
 	std::atomic<int> counter;
+	std::atomic<int> continuation_count;
+	std::array<Task*, MAX_CONTINUATIONS> continuations;
 };
 
-}}} // ws, task, ember
+}}} // ws, task, emberAh,

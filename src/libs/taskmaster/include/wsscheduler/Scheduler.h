@@ -53,6 +53,7 @@ public:
 	void stop();
 
 	Task* create_task(TaskFunc func, Task* parent = nullptr);
+	void add_continuation(Task* ancestor, Task* continuation);
 	void run(Task* task);
 	void wait(Task* task);
 

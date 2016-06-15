@@ -137,6 +137,16 @@ void Scheduler::finish(Task* task) {
 	if(task->counter == 0 && task->parent) {
 		finish(task->parent);
 	}
+
+	// run any continuations
+	for(int i = 0; i < task->continuation_count; ++i) {
+		run(task->continuations[i]);
+	}
+}
+
+void Scheduler::add_continuation(Task* ancestor, Task* continuation) {
+	auto count = ++ancestor->continuation_count;
+	ancestor->continuations[count - 1] = continuation;
 }
  
 }}} // ws, task, ember
