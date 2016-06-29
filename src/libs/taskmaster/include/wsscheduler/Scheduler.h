@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <wsscheduler/Worker.h>
+#include <wsscheduler/Dequeue.h>
 #include <wsscheduler/Common.h>
 #include <wsscheduler/Task.h>
 #include <shared/threading/Semaphore.h>
@@ -41,9 +41,14 @@ class Scheduler {
 	void start_worker();
 	Dequeue* local_queue();
 
+	TaskID create_task(TaskFunc func, Task* parent);
+	void add_continuation(Task* ancestor, Task* continuation);
 	bool completion_check(Task* task);
 	void execute(Task* task);
 	void finish(Task* task);
+	void run(Task* task);
+	void wait(Task* task);
+	
 	Task* fetch_task();
 
 public:
@@ -52,10 +57,28 @@ public:
 
 	void stop();
 
-	Task* create_task(TaskFunc func, Task* parent = nullptr);
-	void add_continuation(Task* ancestor, Task* continuation);
-	void run(Task* task);
-	void wait(Task* task);
+	/*
+	* Wrapper functions to avoid having to expose Task structures to users
+	*/
+	inline TaskID create_task(TaskFunc func) {
+		return create_task(func, nullptr);
+	}
+
+	inline TaskID create_task(TaskFunc func, TaskID parent) {
+		return create_task(func, reinterpret_cast<Task*>(parent.t));
+	}
+
+	inline void add_continuation(TaskID ancestor, TaskID continuation) {
+		add_continuation(reinterpret_cast<Task*>(ancestor.t), reinterpret_cast<Task*>(continuation.t));
+	}
+
+	inline void run(TaskID task) {
+		run(reinterpret_cast<Task*>(task.t));
+	}
+
+	inline void wait(TaskID task) {
+		wait(reinterpret_cast<Task*>(task.t));
+	}
 
 	friend class Worker;
 };

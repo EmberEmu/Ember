@@ -11,17 +11,19 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <atomic>
 #include <memory>
-
+#include <cstdint>
 
 namespace ember { namespace task { namespace ws {
 
 class Scheduler;
 struct Task;
 
-#define TASK_ENTRY_POINT(func_name) \
-	void func_name(ts::Scheduler& scheduler, ts::Task* task, void* arg)
+BOOST_STRONG_TYPEDEF(std::uintptr_t, TaskID);
 
-typedef void (*TaskFunc)(Scheduler&, Task*, void*);
+#define TASK_ENTRY_POINT(func_name) \
+	void func_name(ts::Scheduler& scheduler, ts::TaskID task, void* arg)
+
+typedef void (*TaskFunc)(Scheduler&, TaskID, void*);
 typedef std::atomic<int> Counter;
 
 }}} // ws, task, ember

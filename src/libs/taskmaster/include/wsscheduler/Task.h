@@ -14,7 +14,7 @@
 
 namespace ember { namespace task { namespace ws {
 
-const int MAX_CONTINUATIONS = 16;
+const int MAX_CONTINUATIONS = 32;
 const int CACHELINE_SIZE = 64;
 
 struct alignas(CACHELINE_SIZE) Task {
@@ -26,4 +26,4 @@ struct alignas(CACHELINE_SIZE) Task {
 	std::array<Task*, MAX_CONTINUATIONS> continuations;
 };
 
-}}} // ws, task, emberAh,
+}}} // ws, task, ember

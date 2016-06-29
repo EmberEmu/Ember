@@ -8,6 +8,7 @@
 
 #include <wsscheduler/Scheduler.h>
 #include <shared/util/xoroshiro128plus.h>
+#include <boost/assert.hpp>
 
 namespace ember { namespace task { namespace ws {
 
@@ -70,7 +71,7 @@ Task* Scheduler::fetch_task() {
 	}
 
 	// local queue empty, try to steal some work
-	auto victim_id = rng::xorshift::next() % WORKER_COUNT_;
+	auto victim_id = static_cast<unsigned int>(rng::xorshift::next() % WORKER_COUNT_);
 
 	for(std::size_t i = 0; i < WORKER_COUNT_; ++i) {
 		// might be faster to remove this TLS access
@@ -90,7 +91,7 @@ Task* Scheduler::fetch_task() {
 	return nullptr;
 }
 
-Task* Scheduler::create_task(TaskFunc func, Task* parent) {
+TaskID Scheduler::create_task(TaskFunc func, Task* parent) {
 	auto task = &task_pool_[worker_id_][allocated_tasks_++ % (MAX_TASKS_)];
 	task->parent = parent;
 	task->execute = func;
@@ -99,8 +100,8 @@ Task* Scheduler::create_task(TaskFunc func, Task* parent) {
 	if(parent) {
 		++parent->counter;
 	}
-
-	return task;
+	
+	return TaskID(reinterpret_cast<std::uintptr_t>(task));
 }
 
 Dequeue* Scheduler::local_queue() {
@@ -127,7 +128,7 @@ void Scheduler::wait(Task* task) {
 }
 
 void Scheduler::execute(Task* task) {
-	task->execute(*this, task, task->args);
+	task->execute(*this, TaskID(reinterpret_cast<std::uintptr_t>(task)), task->args);
 	finish(task);
 }
 
@@ -146,7 +147,8 @@ void Scheduler::finish(Task* task) {
 
 void Scheduler::add_continuation(Task* ancestor, Task* continuation) {
 	auto count = ++ancestor->continuation_count;
+	BOOST_ASSERT_MSG(count <= ancestor->continuations.size(), "Exceeded continuation limit");
 	ancestor->continuations[count - 1] = continuation;
 }
- 
+
 }}} // ws, task, ember
