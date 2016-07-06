@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -81,6 +81,10 @@ void FileSink::open(Mode mode) {
 	if(!file_->handle()) {
 		throw exception("Logger could not open " + file_name_);
 	}
+
+	// LOG_SYNC guarantees that messages will be flushed before continuining
+	// execution, so buffering needs to be disabled
+	std::setbuf(*file_, nullptr);
 }
 
 void FileSink::size_limit(std::uintmax_t megabytes) {
