@@ -44,6 +44,13 @@ FileSink::FileSink(Severity severity, Filter filter, std::string file_name, Mode
 	set_initial_rotation();
 }
 
+FileSink::~FileSink() {
+	// logger is being closed, not much we can do about this
+	if(file_->close() != 0) {
+		std::fprintf(stderr, "Log file did not close cleanly - buffered messages may have been lost");
+	}
+}
+
 bool FileSink::file_exists(const std::string& name) try {
 	return fs::exists(fs::path(name));
 } catch(boost::filesystem::filesystem_error& e) {
@@ -84,15 +91,13 @@ void FileSink::open(Mode mode) {
 }
 
 void FileSink::size_limit(std::uintmax_t megabytes) {
-	if(megabytes > 65536) {
-		throw exception("Cannot rotate files larger than 64GB");
-	}
-
 	max_size_ = megabytes * 1024 * 1024;
 }
 
 void FileSink::rotate() {
-	file_->close();
+	if(file_->close() != 0) {
+		throw exception("Unable to close log file during rotation - buffered messages may have been lost");
+	}
 
 	std::string rotated_name = file_name_ + std::to_string(rotations_);
 

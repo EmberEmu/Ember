@@ -29,8 +29,8 @@ public:
 	operator FILE*() const { return file_; }
 	
 	int close() {
-		if(!file_) return 0;
-		int ret = fclose(file_); 
+		if(!file_) return EOF;
+		int ret = fclose(file_);
 		file_ = nullptr;
 		return ret;
 	};

@@ -47,6 +47,7 @@ private:
 
 public:
 	FileSink(Severity severity, Filter filter, std::string file_name, Mode mode);
+	~FileSink();
 
 	void log_severity(bool enable) { log_severity_ = enable; }
 	void log_date(bool enable) { log_date_ = enable;  }
