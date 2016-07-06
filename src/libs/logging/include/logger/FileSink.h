@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -40,7 +40,6 @@ private:
 	void open(Mode mode = Mode::TRUNCATE);
 	void rotate();
 	void rotate_check(std::size_t buffer_size, const std::tm& curr_time);
-	bool midnight_rollover(const std::tm& curr_time);
 	void format_file_name();
 	bool file_exists(const std::string& name);
 	void set_initial_rotation();
@@ -52,10 +51,9 @@ public:
 	void log_severity(bool enable) { log_severity_ = enable; }
 	void log_date(bool enable) { log_date_ = enable;  }
 	void midnight_rotate(bool enable) { midnight_rotate_ = enable; }
-	void mode(Mode mode);
 	void size_limit(std::uintmax_t megabytes);
 	void time_format(const std::string& format);
-	void write(Severity severity, Filter type, const std::vector<char>& record) override;
+	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush) override;
 	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };
 

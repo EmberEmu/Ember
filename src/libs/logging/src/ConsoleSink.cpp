@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 
 #include <logger/ConsoleSink.h>
+#include <logger/Exception.h>
 #include <logger/Utility.h>
 #include <algorithm>
 #include <iterator>
@@ -47,7 +48,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
 }
 
-void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>& record) {
+void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
@@ -55,6 +56,12 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 	std::string buffer = detail::severity_string(severity);
 	buffer.append(record.begin(), record.end());
 	std::fwrite(buffer.c_str(), buffer.size(), 1, stdout);
+
+	if(flush) {
+		if(std::fflush(stdout) != 0) {
+			throw exception("Unable to flush log record to console");
+		}
+	}
 }
 
 }} //log, ember

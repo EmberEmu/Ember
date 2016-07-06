@@ -9,19 +9,13 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <cstdio>
 
 namespace ember { namespace log {
 
 class ConsoleSink : public Sink {
 public:
-	ConsoleSink(Severity severity, Filter filter) : Sink(severity, filter) {
-		// LOG_SYNC guarantees that messages will be flushed before continuining
-		// execution, so buffering needs to be disabled
-		std::setbuf(stdout, nullptr);
-	}
-
-	void write(Severity severity, Filter type, const std::vector<char>& record) override;
+	ConsoleSink(Severity severity, Filter filter) : Sink(severity, filter) {}
+	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush) override;
 	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };
 

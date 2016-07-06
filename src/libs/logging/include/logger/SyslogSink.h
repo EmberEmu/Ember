@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ public:
 	SyslogSink(log::Severity severity, Filter filter, std::string host, unsigned int port,
 	           Facility facility, std::string tag);
 	~SyslogSink();
-	void write(log::Severity severity, Filter type, const std::vector<char>& record) override;
+	void write(log::Severity severity, Filter type, const std::vector<char>& record, bool flush) override;
 	void batch_write(const std::vector<std::pair<log::RecordDetail, std::vector<char>>>& records) override;
 };
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ class SyslogSink::impl : public Sink {
 
 public:
 	impl(Severity severity, Filter filter, std::string host, unsigned int port, Facility facility, std::string tag);
-	void write(Severity severity, Filter type, const std::vector<char>& record);
+	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush);
 	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& record);
 };
 
@@ -94,7 +94,7 @@ std::string SyslogSink::impl::month_map(int month) {
 	}
 }
 
-void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<char>& record) {
+void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
 	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
@@ -123,7 +123,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<c
 
 void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	for(auto& r : records) {
-		write(r.first.severity, r.first.type, r.second);
+		write(r.first.severity, r.first.type, r.second, false);
 	}
 }
 
@@ -134,8 +134,8 @@ SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsig
 
 SyslogSink::~SyslogSink() = default;
 
-void SyslogSink::write(Severity severity, Filter type, const std::vector<char>& record) {
-	pimpl_->write(severity, type, record);
+void SyslogSink::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
+	pimpl_->write(severity, type, record, flush);
 }
 
 void SyslogSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ void Worker::process_outstanding_sync() {
 
 	while(queue_sync_.try_dequeue(item)) {
 		for(auto& s : sinks_) {
-			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item));
+			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item), true);
 		}
 		std::get<2>(item)->signal();
 	}
@@ -38,7 +38,7 @@ void Worker::process_outstanding() {
 	if(records < 5) {
 		for(auto& s : sinks_) {
 			for(auto& r : dequeued_) {
-				s->write(r.first.severity, r.first.type, r.second);
+				s->write(r.first.severity, r.first.type, r.second, false);
 			}
 		}
 	} else {
