@@ -33,7 +33,7 @@ std::map<std::string, std::pair<std::string, bool>> type_map {
 		{ "double",         { "double",          false }}
 };
 
-std::hash_set<std::string> cpp_keywords {
+std::unordered_set<std::string> cpp_keywords {
 	"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor"
 	"bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
 	"compl", "const", "constexpr", "const_cast", "continue", "decltype", "default",

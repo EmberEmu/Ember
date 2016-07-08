@@ -12,7 +12,7 @@
 #include <utility>
 #include <string>
 #include <map>
-#include <hash_set>
+#include <unordered_set>
 
 namespace ember { namespace dbc {
 
@@ -22,6 +22,6 @@ TypeComponents extract_components(const std::string& type);
 std::string pascal_to_underscore(std::string name);
 
 extern std::map<std::string, std::pair<std::string, bool>> type_map;
-extern std::hash_set<std::string> cpp_keywords;
+extern std::unordered_set<std::string> cpp_keywords;
 
 }} //dbc, ember
