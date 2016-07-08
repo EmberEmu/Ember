@@ -14,6 +14,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <iostream>
+
 namespace ember { namespace dbc {
 
 std::string parent_alias(const std::vector<types::Definition>& defs, const std::string& parent) {
@@ -28,6 +30,15 @@ std::string parent_alias(const std::vector<types::Definition>& defs, const std::
 	}
 */
 	return parent; //couldn't find parent, will just assume the validator caught the problem, if any
+}
+
+void save_output(const std::string& path, const std::string& name, const std::string& output) {
+	std::ofstream ofs(path + "\\" + name);
+	ofs << output;
+
+	if(!ofs.is_open() || !ofs.good()) {
+		throw std::runtime_error(name + " could not be written");
+	}
 }
 
 std::stringstream read_template(const std::string& template_file) {
@@ -75,7 +86,7 @@ void generate_linker(const std::vector<types::Definition>& defs, const std::stri
 				if(array) {
 					curr_field << (pack_loop_format? "" : "\n") << (double_spaced || first_field? "" : "\n")
 						<< "\t\t" << "for(std::size_t j = 0; j < "
-						<< "sizeof(i." << f.name << ") / sizeof(" << type_map[components.first].second << ");"
+						<< "sizeof(i." << f.name << ") / sizeof(" << type_map[components.first].first << ");"
 						<< " ++j) { " << std::endl;
 				} else {
 					curr_field << (!pack_loop_format? "\n" : "");
@@ -117,7 +128,8 @@ void generate_linker(const std::vector<types::Definition>& defs, const std::stri
 	}
 
 	std::string replace_pattern("$1" + functions.str() + "$2" + calls.str() + "$3");
-	//std::cout << std::regex_replace(buffer.str(), pattern, replace_pattern);
+	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
+	save_output(output, "Linker.cpp", out);
 }
 
 void generate_disk_loader(const std::vector<types::Definition>& defs, const std::string& output) {
@@ -178,7 +190,8 @@ void generate_disk_loader(const std::vector<types::Definition>& defs, const std:
 	}
 
 	std::string replace_pattern("$1" + functions.str() + "$2" + calls.str() + "$3");
-	//std::cout << std::regex_replace(buffer.str(), pattern, replace_pattern);
+	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
+	save_output(output, "DiskLoader.cpp", out);
 }
 
 void generate_disk_defs(const std::vector<types::Definition>& defs, const std::string& output) {
@@ -197,10 +210,10 @@ void generate_disk_defs(const std::vector<types::Definition>& defs, const std::s
 
 			for(auto& f : dbc->fields) {
 				auto components = extract_components(f.underlying_type);
-				std::string field = "TEMPORARY" + f.name;
+				std::string field = "todo " + f.name;;
 
 				if(components.second) {
-					field =  field + "[" + std::to_string(*components.second) + "]";
+					field += "[" + std::to_string(*components.second) + "]";
 				}
 
 				definitions << "\t" << field << ";" << std::endl;
@@ -211,7 +224,8 @@ void generate_disk_defs(const std::vector<types::Definition>& defs, const std::s
 	}
 
 	std::string replace_pattern("$1" + definitions.str() + "$2");
-	//std::cout << std::regex_replace(buffer.str(), pattern, replace_pattern);
+	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
+	save_output(output, "DiskDefs.h", out);
 }
 
 bool is_enum(const std::string& type) {
@@ -251,7 +265,7 @@ void generate_memory_defs(const std::vector<types::Definition>& defs, const std:
 						}
 					}
 
-					definitions << "\t" << type_map[components.first].second << " " << f.name << (key? "_id" : "")
+					definitions << "\t" << type_map[components.first].first << " " << f.name << (key? "_id" : "")
 						<< (array? "[" + std::to_string(*components.second) + "]" : "") << ";" << std::endl;
 				}
 			}
@@ -261,7 +275,8 @@ void generate_memory_defs(const std::vector<types::Definition>& defs, const std:
 	}
 
 	std::string replace_pattern("$1" + forward_decls.str() + "$2" + definitions.str() + "$3");
-	//std::cout << std::regex_replace(buffer.str(), pattern, replace_pattern);
+	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
+	save_output(output, "MemoryDefs.h", out);
 }
 
 void generate_storage(const std::vector<types::Definition>& defs, const std::string& output) {
@@ -283,7 +298,8 @@ void generate_storage(const std::vector<types::Definition>& defs, const std::str
 	}
 
 	std::string replace_pattern("$1" + declarations.str() + "$2" + moves.str() + "$3");
-	//std::cout << std::regex_replace(buffer.str(), pattern, replace_pattern);
+	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
+	save_output(output, "Storage.h", out);
 }
 
 void generate_common(const std::vector<types::Definition>& defs, const std::string& output) {

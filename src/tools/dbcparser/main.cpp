@@ -53,9 +53,9 @@ void handle_options(const po::variables_map& args, const std::vector<edbc::types
 	}
 
 	if(args["disk"].as<bool>() || args.count("database")) {
-		std::cout << "Generating shared files...";
+		std::cout << "Generating shared files...\n";
 		edbc::generate_common(defs, args["output"].as<std::string>());
-		std::cout << " done" << std::endl;
+		std::cout << "Files generated." << std::endl;
 	}
 
 
