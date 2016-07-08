@@ -249,8 +249,6 @@ types::Definition Parser::parse(const std::string& path) try {
 	return parse_file(path);
 } catch(std::exception& e) {
 	throw parse_error(path, e.what());
-} catch(...) {
-	throw parse_error(path, "Unknown exception type");
 }
 
 std::vector<types::Definition> Parser::parse(const std::vector<std::string>& paths) {
@@ -261,8 +259,6 @@ std::vector<types::Definition> Parser::parse(const std::vector<std::string>& pat
 			defs.emplace_back(parse_file(path));
 		} catch(std::exception& e) {
 			throw parse_error(path, e.what());
-		} catch(...) {
-			throw parse_error(path, "Unknown exception type");
 		}
 	}
 
