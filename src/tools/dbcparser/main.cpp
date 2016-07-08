@@ -62,30 +62,44 @@ void handle_options(const po::variables_map& args, const std::vector<edbc::types
 	if(args["disk"].as<bool>()) {
 		//edbc::generate_disk_source(defs, args["output"].as<std::string>());
 	}
-
-	if(args.count("database")) {
-
-	}
 }
 
-void print_dbc_table(const std::vector<edbc::types::Definition>& defs) {
-	/*bprinter::TablePrinter printer(&std::cout);
+void print_dbc_table(const std::vector<edbc::types::Definition>& groups) {
+	bprinter::TablePrinter printer(&std::cout);
 	printer.AddColumn("DBC Name", 26);
 	printer.AddColumn("#", 4);
 	printer.AddColumn("Comment", 45);
 	printer.PrintHeader();
 
-	for(auto& d : defs) {
-		printer << d.dbc_name.substr(0, 26) << d.fields.size() << d.comment;
-	}*/
+	for(auto& group : groups) {
+		for(auto& def : group) {
+			if(def->type == edbc::types::STRUCT) {
+				auto dbc = static_cast<edbc::types::Struct*>(def.get());
+				printer << dbc->name.substr(0, 26) << dbc->fields.size() << dbc->comment;
+			}
+		}
+	}
 }
 
-void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Definition>& defs) {
-	/*auto def = std::find_if(defs.begin(), defs.end(), [dbc](const edbc::types::Base& def) {
-		return dbc == def.dbc_name;
-	});
+edbc::types::Struct* locate_dbc(const std::string& dbc, const std::vector<edbc::types::Definition>& groups) {
+	// this is pretty gross
+	for(auto& group : groups) {
+		for(auto& def : group) {
+			if(def->name == dbc) {
+				if(def->type == edbc::types::STRUCT) {
+					return static_cast<edbc::types::Struct*>(def.get());
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Definition>& groups) {
+	auto def = locate_dbc(dbc, groups);
 	
-	if(def == defs.end()) {
+	if(!def) {
 		throw std::invalid_argument(dbc + " - no such definition to print");
 	}
 
@@ -108,8 +122,8 @@ void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Def
 				break;
 		}
 
-		printer << f.name << f.type << key << f.comment;
-	}*/
+		printer << f.name << f.underlying_type << key << f.comment;
+	}
 }
 
 std::vector<std::string> fetch_definitions(const std::string& path) {
@@ -138,8 +152,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 			"Directory to save output to")
 		("disk", po::bool_switch(),
 			"Generate files required for loading DBC data from disk")
-		("database", po::value<std::string>(),
-			"Generate files required for loading DBC data from the database specified in the argument")
 		("print-dbcs", po::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")
 		("print-fields", po::value<std::string>(),
