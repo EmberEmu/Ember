@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,7 +7,7 @@
  */
 
 #include "Parser.h"
-//#include "Generator.h"
+#include "Generator.h"
 #include "bprinter/table_printer.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -54,13 +54,13 @@ void handle_options(const po::variables_map& args, const std::vector<edbc::types
 
 	if(args["disk"].as<bool>() || args.count("database")) {
 		std::cout << "Generating shared files...";
-		//edbc::generate_common(defs, args["output"].as<std::string>());
+		edbc::generate_common(defs, args["output"].as<std::string>());
 		std::cout << " done" << std::endl;
 	}
 
 
 	if(args["disk"].as<bool>()) {
-		//edbc::generate_disk_source(defs, args["output"].as<std::string>());
+		edbc::generate_disk_source(defs, args["output"].as<std::string>());
 	}
 }
 

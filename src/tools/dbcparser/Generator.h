@@ -8,14 +8,13 @@
 
 #pragma once
 
+#include "Types.h"
 #include <vector>
 #include <string>
 
 namespace ember { namespace dbc {
 
-struct Definition;
-
-void generate_common(const std::vector<Definition>& defs, const std::string& output);
-void generate_disk_source(const std::vector<Definition>& defs, const std::string& output);
+void generate_common(const std::vector<types::Definition>& defs, const std::string& output);
+void generate_disk_source(const std::vector<types::Definition>& defs, const std::string& output);
 
 }} //dbc, ember

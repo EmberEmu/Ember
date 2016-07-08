@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -207,7 +207,7 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
 */
 bool Validator::recursive_ascent_field_type_check(const std::string& type,
                                                   const TreeNode<std::string>* node,
-											      const TreeNode<std::string>* prev_node) {
+                                                  const TreeNode<std::string>* prev_node) {
 	// no parent found, must be trying to ascend from the root node
 	if(!node) {
 		return false;
