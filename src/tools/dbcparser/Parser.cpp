@@ -207,8 +207,8 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth) 
 	return parsed;
 }
 
-types::Definition Parser::parse_doc_root(rxml::xml_node<>* parent) {
-	types::Definition definition;
+types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
+	types::Definitions definition;
 
 	for(rxml::xml_node<>* node = parent; node; node = node->next_sibling()) {
 		if(strcmp(node->name(), "struct") == 0) {
@@ -228,10 +228,10 @@ types::Definition Parser::parse_doc_root(rxml::xml_node<>* parent) {
 		}
 	}
 
-	return definition;
+	return std::move(definition);
 }
 
-types::Definition Parser::parse_file(const std::string& path) {
+types::Definitions Parser::parse_file(const std::string& path) {
 	rxml::file<> definition(path.c_str());
     rxml::xml_document<> doc;
     doc.parse<0>(definition.data());
@@ -245,25 +245,30 @@ types::Definition Parser::parse_file(const std::string& path) {
 	return parse_doc_root(root);
 }
 
-types::Definition Parser::parse(const std::string& path) try {
+types::Definitions Parser::parse(const std::string& path) try {
 	return parse_file(path);
 } catch(std::exception& e) {
 	throw parse_error(path, e.what());
 }
 
-std::vector<types::Definition> Parser::parse(const std::vector<std::string>& paths) {
-	std::vector<types::Definition> defs;
+types::Definitions Parser::parse(const std::vector<std::string>& paths) {
+	types::Definitions defs;
 
 	for(auto& path : paths) {
 		try {
-			defs.emplace_back(parse_file(path));
+			auto parsed = parse_file(path);
+			
+			defs.insert(parsed.end(),
+				std::make_move_iterator(parsed.begin()),
+				std::make_move_iterator(parsed.end())
+			);
 		} catch(std::exception& e) {
 			throw parse_error(path, e.what());
 		}
 	}
 
-	Validator validator(defs);
-	validator.validate();
+	Validator validator;
+	validator.validate(defs);
 
 	return defs;
 }

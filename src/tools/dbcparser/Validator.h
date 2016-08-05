@@ -18,6 +18,7 @@
 #include <map>
 #include <memory>
 #include <regex>
+#include <utility>
 #include <cstddef>
 
 namespace ember { namespace dbc {
@@ -45,7 +46,7 @@ typedef std::vector<std::string> TypeStore;
 class Validator {
 	NameTester name_check_;
 	TreeNode<std::string> root_;
-	std::vector<const types::Definition*> definitions_;
+	const types::Definitions* definitions_;
 	std::vector<std::string> names_;
 
 	void validate_definition(const types::Base* def);
@@ -73,19 +74,11 @@ class Validator {
 	void print_type_tree(const TreeNode<std::string>* types, std::size_t depth = 0);
 
 public:
-	Validator() = default;
-
-	explicit Validator(const std::vector<types::Definition>& definitions) {
-		for(auto& def : definitions) {
-			definitions_.emplace_back(&def);
-		}
+	void add_definition(const types::Definitions& definition) {
+		//definitions_.emplace_back(&definition);
 	}
 
-	void add_definition(const types::Definition& definition) {
-		definitions_.emplace_back(&definition);
-	}
-
-	void validate();
+	void validate(const types::Definitions& definitions_);
 };
 
 }} //dbc, ember

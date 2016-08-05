@@ -14,7 +14,7 @@
 
 namespace ember { namespace dbc {
 
-void generate_common(const std::vector<types::Definition>& defs, const std::string& output);
-void generate_disk_source(const std::vector<types::Definition>& defs, const std::string& output);
+void generate_common(const types::Definitions& defs, const std::string& output);
+void generate_disk_source(const types::Definitions& defs, const std::string& output);
 
 }} //dbc, ember

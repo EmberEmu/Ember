@@ -23,9 +23,9 @@ namespace edbc = ember::dbc;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(const std::string& path);
-void print_dbc_table(const std::vector<edbc::types::Definition>& defs);
-void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Definition>& defs);
-void handle_options(const po::variables_map& args, const std::vector<edbc::types::Definition>& defs);
+void print_dbc_table(const edbc::types::Definitions& defs);
+void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& defs);
+void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) try {
 	std::vector<std::string> paths = fetch_definitions(def_path);
 	
 	edbc::Parser parser;
-	std::vector<edbc::types::Definition> definitions = parser.parse(paths);
+	auto definitions = parser.parse(paths);
 
 	handle_options(args, definitions);
 } catch(std::exception& e) {
@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) try {
 	return 1;
 }
 
-void handle_options(const po::variables_map& args, const std::vector<edbc::types::Definition>& defs) {
+void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs) {
 	if(args["print-dbcs"].as<bool>()) {
 		print_dbc_table(defs);
 		return;
@@ -64,31 +64,26 @@ void handle_options(const po::variables_map& args, const std::vector<edbc::types
 	}
 }
 
-void print_dbc_table(const std::vector<edbc::types::Definition>& groups) {
+void print_dbc_table(const edbc::types::Definitions& defs) {
 	bprinter::TablePrinter printer(&std::cout);
 	printer.AddColumn("DBC Name", 26);
 	printer.AddColumn("#", 4);
 	printer.AddColumn("Comment", 45);
 	printer.PrintHeader();
 
-	for(auto& group : groups) {
-		for(auto& def : group) {
-			if(def->type == edbc::types::STRUCT) {
-				auto dbc = static_cast<edbc::types::Struct*>(def.get());
-				printer << dbc->name.substr(0, 26) << dbc->fields.size() << dbc->comment;
-			}
+	for(auto& def : defs) {
+		if(def->type == edbc::types::STRUCT) {
+			auto dbc = static_cast<edbc::types::Struct*>(def.get());
+			printer << dbc->name.substr(0, 26) << dbc->fields.size() << dbc->comment;
 		}
 	}
 }
 
-edbc::types::Struct* locate_dbc(const std::string& dbc, const std::vector<edbc::types::Definition>& groups) {
-	// this is pretty gross
-	for(auto& group : groups) {
-		for(auto& def : group) {
-			if(def->name == dbc) {
-				if(def->type == edbc::types::STRUCT) {
-					return static_cast<edbc::types::Struct*>(def.get());
-				}
+edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Definitions& defs) {
+	for(auto& def : defs) {
+		if(def->name == dbc) {
+			if(def->type == edbc::types::STRUCT) {
+				return static_cast<edbc::types::Struct*>(def.get());
 			}
 		}
 	}
@@ -96,7 +91,7 @@ edbc::types::Struct* locate_dbc(const std::string& dbc, const std::vector<edbc::
 	return nullptr;
 }
 
-void print_dbc_fields(const std::string& dbc, const std::vector<edbc::types::Definition>& groups) {
+void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& groups) {
 	auto def = locate_dbc(dbc, groups);
 	
 	if(!def) {

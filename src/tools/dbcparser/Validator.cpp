@@ -20,25 +20,24 @@ namespace ember { namespace dbc {
  * Only child structs of the root node are considered for matches.
  */
 boost::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
-	for(auto& defs : definitions_)
-		for(auto& def : *defs) {
-			if(def->name != parent) { //!= for the sake of one less layer of nesting
-				continue;
-			}
+	for(auto& def : *definitions_) {
+		if(def->name != parent) { //!= for the sake of one less layer of nesting
+			continue;
+		}
 
-			if(def->type != types::STRUCT) {
-				continue;
-			}
+		if(def->type != types::STRUCT) {
+			continue;
+		}
 			
-			auto def_s = static_cast<types::Struct*>(def.get());
+		auto def_s = static_cast<types::Struct*>(def.get());
 
-			for(auto& field : def_s->fields) {
-				for(auto& key : field.keys) {
-					if(key.type == "primary") {
-						return boost::optional<const types::Field*>(&field);
-					}
+		for(auto& field : def_s->fields) {
+			for(auto& key : field.keys) {
+				if(key.type == "primary") {
+					return boost::optional<const types::Field*>(&field);
 				}
 			}
+		}
 	}
 
 	return boost::optional<const types::Field*>();
@@ -397,13 +396,11 @@ void Validator::build_type_tree() {
 	root_.parent = nullptr;
 	root_.t = "_ROOT_";
 
-	for(auto& defs : definitions_) { // for each XML definition file
-		for(auto& def : *defs) {     // for each 'root' type within that file (should probably change)
-			auto node = std::make_unique<TreeNode<std::string>>();
-			node->parent = &root_;
-			recursive_type_parse(node.get(), def.get());
-			root_.children.emplace_back(std::move(node));
-		}
+	for(auto& def : *definitions_) {
+		auto node = std::make_unique<TreeNode<std::string>>();
+		node->parent = &root_;
+		recursive_type_parse(node.get(), def.get());
+		root_.children.emplace_back(std::move(node));
 	}
 }
 
@@ -415,16 +412,16 @@ void Validator::print_type_tree(const TreeNode<std::string>* types, std::size_t 
 	}
 }
 
-void Validator::validate() {
+void Validator::validate(const types::Definitions& definitions) {
+	definitions_ = &definitions;
+
 	build_type_tree();
 
-	for(auto& defs : definitions_) {
-		for(auto& def : *defs) {
-			try { //msvc can't handle try/catch blocks inside range-for without nesting
-				validate_definition(def.get());
-			} catch(std::exception& e) {
-				throw exception(def->name + ": " + e.what());
-			}
+	for(auto& def : *definitions_) {
+		try { //msvc can't handle try/catch blocks inside range-for without nesting
+			validate_definition(def.get());
+		} catch(std::exception& e) {
+			throw exception(def->name + ": " + e.what());
 		}
 	}
 }

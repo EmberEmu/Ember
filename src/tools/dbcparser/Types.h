@@ -20,7 +20,7 @@ enum Types {
 	STRUCT, ENUM
 };
 
-typedef std::vector<std::unique_ptr<Base>> Definition;
+typedef std::vector<std::unique_ptr<Base>> Definitions;
 
 struct Key {
 	std::string type;

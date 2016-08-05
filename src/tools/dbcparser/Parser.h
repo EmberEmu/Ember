@@ -23,8 +23,8 @@ class Parser {
 		bool type, name, alias, options;
 	};
 
- 	types::Definition parse_file(const std::string& path);
-	types::Definition parse_doc_root(rapidxml::xml_node<>* node);
+ 	types::Definitions parse_file(const std::string& path);
+	types::Definitions parse_doc_root(rapidxml::xml_node<>* node);
 
 	types::Struct parse_struct(rapidxml::xml_node<>* root, bool dbc, int depth = 0);
 	void parse_struct_node(types::Struct& structure, UniqueCheck& check, rapidxml::xml_node<>* node);
@@ -40,8 +40,8 @@ class Parser {
 	void assign_unique(std::string& type, bool& exists, rapidxml::xml_node<>* node);
 
 public:
-	types::Definition parse(const std::string& path);
-	std::vector<types::Definition> parse(const std::vector<std::string>& paths);
+	types::Definitions parse(const std::string& path);
+	types::Definitions parse(const std::vector<std::string>& paths);
 };
 
 }} //dbc, ember
