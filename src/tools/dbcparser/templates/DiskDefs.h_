@@ -18,9 +18,7 @@
 
 namespace ember { namespace dbc { namespace disk {
 
-struct StringRefLoc; // defined in StringRefLoc.xml
 typedef std::uint32_t string_ref;
-typedef StringRefLoc string_ref_loc;
 typedef std::uint32_t uint32;
 typedef std::int32_t  int32;
 typedef std::uint16_t uint16;
@@ -30,6 +28,20 @@ typedef std::int8_t   int8;
 typedef std::uint32_t bool32;
 
 #pragma pack(push, 1)
+
+struct StringRefLoc {
+	string_ref enGB;
+	string_ref koKR;
+	string_ref frFR;
+	string_ref deDE;
+	string_ref enCN;
+	string_ref enTW;
+	string_ref esES;
+	string_ref esMX;
+	std::uint32_t flags;
+};
+
+typedef StringRefLoc string_ref_loc;
 
 <%TEMPLATE_DBC_DEFINITIONS%>
 

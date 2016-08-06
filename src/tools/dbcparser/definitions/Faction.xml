@@ -1,19 +1,6 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>Faction</name>
-	
-	<field>
-		<type>uint32</type>
-		<name>id</name>
-		<key>
-			<type>primary</type>
-		</key>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>reputation_index</name>
-	</field>
 
 	<enum>
 		<type>int32</type>
@@ -30,19 +17,9 @@
 		</options>
 	</enum>
 
-	<field>
-		<type>ReputationRaceMask[4]</type>
-		<name>reputation_race_mask</name>
-	</field>
-
-	<field>
-		<type>int32[4]</type>
-		<name>reputation_base</name>
-	</field>
-
 	<enum>
 		<type>int32</type>
-		<name>ReputationMask</name>
+		<name>ReputationFlags</name>
 		<options>
 			<option name="visible_to_client" value="0x01" />
 			<option name="enable_at_war" value="0x02" />
@@ -52,10 +29,38 @@
 			<option name="faction_inactive" value="0x20" />
 		</options>
 	</enum>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
 
 	<field>
-		<type>ReputationMask[4]</type>
-		<name>reputation_mask</name>
+		<type>int32</type>
+		<name>reputation_index</name>
+	</field>
+
+	<field>
+		<type>ReputationRaceMask[4]</type>
+		<name>reputation_race_mask</name>
+	</field>
+
+	<field>
+		<type>int32[4]</type>
+		<name>reputation_class_mask</name>
+	</field>
+
+	<field>
+		<type>int32[4]</type>
+		<name>reputation_base</name>
+	</field>
+
+	<field>
+		<type>ReputationFlags[4]</type>
+		<name>reputation_flags</name>
 	</field>
 
 	<field>

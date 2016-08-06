@@ -250,7 +250,7 @@
 
 	<field>
 		<type>uint32</type>
-		<name>item_class</name>
+		<name>equipped_item_class</name>
 		<key>
 			<type>foreign</type>
 			<parent>ItemClass</parent>
@@ -259,7 +259,7 @@
 
 	<field>
 		<type>uint32</type>
-		<name>item_subclass</name>
+		<name>equipped_item_subclass</name>
 		<key>
 			<type>foreign</type>
 			<parent>ItemSubClass</parent>
@@ -268,7 +268,7 @@
 
 	<field>
 		<type>int32</type>
-		<name>inventory_slots</name>
+		<name>equipped_item_inventory_type</name>
 	</field>
 
 	<field>
@@ -293,7 +293,7 @@
 
 	<field>
 		<type>float[3]</type>
-		<name>effect_recall_points_per_level</name>
+		<name>effect_real_points_per_level</name>
 	</field>
 
 	<field>
@@ -302,7 +302,7 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
+		<type>int32[3]</type>
 		<name>effect_mechanic</name>
 		<key>
 			<type>foreign</type>
@@ -321,7 +321,7 @@
 	</field>
 
 	<field>
-		<type>uint32[3]</type>
+		<type>int32[3]</type>
 		<name>effect_radius</name>
 		<key>
 			<type>foreign</type>
@@ -364,7 +364,7 @@
 	</field>
 
 	<field>
-		<type>uint32[3]</type>
+		<type>int32[3]</type>
 		<name>effect_trigger_spell</name>
 		<key>
 			<type>foreign</type>
@@ -383,7 +383,7 @@
 	</field>
 
 	<field>
-		<type>uint32</type>
+		<type>int32</type>
 		<name>spell_icon</name>
 		<key>
 			<type>foreign</type>
@@ -397,13 +397,28 @@
 	</field>
 
 	<field>
+		<type>int32</type>
+		<name>spell_priority</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown_flag</name>
+	</field>
+
+	<field>
 		<type>string_ref_loc</type>
 		<name>name</name>
 	</field>
 
 	<field>
 		<type>string_ref_loc</type>
-		<name>subtext</name>
+		<name>name_subtext</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>description</name>
 	</field>
 
 	<field>
@@ -453,6 +468,11 @@
 	<field>
 		<type>int32</type>
 		<name>defence_type</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>prevention_type</name>
 	</field>
 
 	<field>

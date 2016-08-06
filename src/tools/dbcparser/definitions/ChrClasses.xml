@@ -11,13 +11,13 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>unknown1</name>
+		<type>uint32</type>
+		<name>player_class</name>
 	</field>
 
 	<field>
 		<type>int32</type>
-		<name>unknown2</name>
+		<name>damage_bonus_stat</name>
 	</field>
 
 	<enum>
@@ -36,6 +36,11 @@
 		<type>PowerType</type>
 		<name>power_type</name>
 	</field>	
+
+	<field>
+		<type>string_ref</type>
+		<name>pet_name_token</name>
+	</field>
 
 	<field>
 		<type>string_ref_loc</type>

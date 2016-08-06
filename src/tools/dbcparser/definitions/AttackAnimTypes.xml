@@ -11,7 +11,7 @@
 	</field>
 
 	<field>
-		<type>string_ref_loc</type>
+		<type>string_ref</type>
 		<name>name</name>
 	</field>
 </dbc>

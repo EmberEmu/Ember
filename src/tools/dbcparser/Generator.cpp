@@ -95,7 +95,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 		call << "\t" << "detail::link_" << store_name << "(storage);" << std::endl;
 		
 		func << "void link_" << store_name << "(Storage& storage) {" << std::endl;
-		func << "\t" << "for(auto& def : storage." << store_name << ") {" << std::endl;
+		func << "\t" << "for(auto& i : storage." << store_name << ") {" << std::endl;
 
 		for(auto& f : dbc->fields) {
 			std::stringstream curr_field;
@@ -171,6 +171,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		bool double_spaced = false;
 		std::string primary_key;
 
+		calls << "std::cout << \"" << "detail::load_" << store_name << "(storage, dir_path_)\" << std::endl;" << std::endl;
 		calls << "\t" << "detail::load_" << store_name << "(storage, dir_path_);" << std::endl;
 
 		functions << "void load_" << store_name << "(Storage& storage, const std::string& dir_path) {"
@@ -184,6 +185,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 							
 		functions << "\t" << "for(std::uint32_t i = 0; i < dbc.header->records; ++i) {" << std::endl;
 		functions << "\t\t" << dbc.name << " entry{};" << std::endl;
+		
+		bool is_primary_foreign = false;
 		
 		for(auto& f : dbc.fields) {
 			auto components = extract_components(f.underlying_type);
@@ -209,14 +212,22 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 
 			std::stringstream cast;
 			bool id_suffix = false;
+			bool foreign = false;
+			bool primary = false;
 
 			for(auto& k : f.keys) {
 				if(k.type == "foreign") {
 					id_suffix = true;
+					foreign = true;
 				}
 
 				if(k.type == "primary") {
 					primary_key = f.name;
+					primary = true;
+				}
+
+				if(primary && foreign) {
+					is_primary_foreign = true;
 				}
 			}
 
@@ -258,7 +269,15 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			}
 		}
 
-		std::string id = primary_key.empty()? "i" : "entry." + primary_key;
+		std::string prefix;
+
+		if(is_primary_foreign) {
+			prefix = "dbc.records[i].";
+		} else {
+			prefix = "entry.";
+		}
+
+		std::string id = primary_key.empty()? "i" : prefix + primary_key;
 		functions << "\t\t" << "storage." << store_name << ".emplace_back(" << id << ", entry);" << std::endl;
 		functions << "\t" << "}" << std::endl;
 		functions << "}" << std::endl << std::endl;

@@ -11,41 +11,8 @@
 	</field>
 
 	<field>
-		<type>int32[3]</type>
-		<name>enchantment_type</name>
-	</field>
-
-	<field>
-		<type>int32[3]</type>
-		<name>effect_points_min</name>
-	</field>
-
-	<field>
-		<type>int32[3]</type>
-		<name>effect_points_max</name>
-	</field>
-
-	<field>
-		<type>int32[3]</type>
-		<name>effect_arg</name>
-	</field>
-
-	<field>
 		<type>string_ref_loc</type>
-		<name>name</name>
+		<name>state_name</name>
 	</field>
 
-	<field>
-		<type>uint32</type>
-		<name>item_visual</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemVisuals</parent>
-		</key>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>flags</name>
-	</field>
 </dbc>
