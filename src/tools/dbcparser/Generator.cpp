@@ -18,20 +18,24 @@
 
 namespace ember { namespace dbc {
 
+void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent);
+void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent);
+void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, int indent);
 void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent);
+void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent);
 
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
-	/*for(auto& def : defs) {
-		if(i.dbc_name == parent) {
-			if(!i.alias.empty()) {
-				return i.alias;
+	for(auto& def : defs) {
+		if(def->name == parent) {
+			if(!def->alias.empty()) {
+				return def->alias;
 			} else {
 				return pascal_to_underscore(parent);
 			}
 		}
 	}
-*/
+
 	return parent; //couldn't find parent, will just assume the validator caught the problem, if any
 }
 
@@ -193,31 +197,59 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 	save_output(output, "DiskLoader.cpp", out);
 }
 
+void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
+	for(auto& child : def.children) {
+		switch(child->type) { // no default for compiler warning
+			case types::STRUCT:
+				generate_disk_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
+				break;
+			case types::ENUM:
+				generate_disk_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
+				break;
+		}
+	}
+}
+
+void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
+	std::string tab("\t", indent);
+
+	definitions << tab << "struct " << def.name << " {" << std::endl;
+
+	generate_disk_struct_recursive(def, definitions, indent);
+
+	for(auto& f : def.fields) {
+		auto components = extract_components(f.underlying_type);
+		std::string field = components.first + " " + f.name;
+
+		if(components.second) {
+			field += "[" + std::to_string(*components.second) + "]";
+		}
+
+		definitions << tab << "\t" << field << ";" << std::endl;
+	}
+
+	definitions << tab << "};" << std::endl << std::endl;
+}
+
+void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
+	std::string tab("\t", indent);
+	definitions << tab << "typedef " << def.underlying_type << " " << def.name << ";" << "\n";
+}
+
 void generate_disk_defs(const types::Definitions& defs, const std::string& output) {
 	std::stringstream buffer(read_template("DiskDefs.h_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
 	std::stringstream definitions;
 
 	for(auto& def : defs) {
-		if(def->type != types::STRUCT) {
-			continue;
+		if(def->type == types::STRUCT) {
+			generate_disk_struct(static_cast<types::Struct&>(*def), definitions, 0);
+		} else if(def->type == types::ENUM) {
+			auto& enum_def = static_cast<types::Enum&>(*def);
+			generate_disk_enum(enum_def, definitions, 0);
+		} else {
+			// todo
 		}
-
-		auto dbc = static_cast<types::Struct*>(def.get());
-		definitions << "struct " << dbc->name << " {" << std::endl;
-
-		for(auto& f : dbc->fields) {
-			auto components = extract_components(f.underlying_type);
-			std::string field = "todo " + f.name;;
-
-			if(components.second) {
-				field += "[" + std::to_string(*components.second) + "]";
-			}
-
-			definitions << "\t" << field << ";" << std::endl;
-		}
-
-		definitions << "};" << std::endl << std::endl;
 	}
 
 	std::string replace_pattern("$1" + definitions.str() + "$2");
@@ -328,7 +360,7 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
 			generate_memory_enum(enum_def, definitions, 0);
 		} else {
-			// ??
+			// todo
 		}
 	}
 
@@ -348,6 +380,12 @@ void generate_storage(const types::Definitions& defs, const std::string& output)
 		}
 
 		auto dbc = static_cast<types::Struct*>(def.get());
+
+		// ensure this is actually a DBC definition rather than a user-defined struct
+		if(!dbc->dbc) {
+			continue;
+		}
+
 		std::string store_name = dbc->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
 		declarations << "\tDBCMap<" << dbc->name << "> " << store_name << ";\n";
 		moves << "\t\t" << store_name << " = std::move(" << store_name << ");\n";
@@ -370,4 +408,4 @@ void generate_disk_source(const types::Definitions& defs, const std::string& out
 
 }
 
-}} //dbc, ember
+}} // dbc, ember

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,8 +25,8 @@ typedef std::int32_t  int32;
 typedef std::uint16_t uint16;
 typedef std::int16_t  int16;
 typedef std::uint8_t  uint8;
-typedef std::int8_t   int8; 
-typedef std::uint32_t bool32;         
+typedef std::int8_t   int8;
+typedef std::uint32_t bool32;
 
 <%TEMPLATE_DBC_DEFINITIONS%>
 

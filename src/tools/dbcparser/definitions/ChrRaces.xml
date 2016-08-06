@@ -2,7 +2,6 @@
 
 <dbc>
 	<name>ChrRaces</name>
-	<alias>test</alias>
 
 	<enum>
 		<type>uint32</type>
