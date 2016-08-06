@@ -168,19 +168,38 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.is_initialized();
 			bool str_offset = components.first.find("string_ref") != std::string::npos;
+			std::string type;
 			
+			if(type_map.find(components.first) != type_map.end()) {
+				type = type_map[components.first].first;
+			} else {
+				type = components.first;
+			}
+
 			if(array) {
 				functions << (double_spaced? "" : "\n") << "\t\t"
 					<< "for(std::size_t j = 0; j < sizeof(dbc.records[i]."
-					<< f.name << " / sizeof(" << type_map[components.first].second
-					<< ")); ++j) {" << std::endl;
+					<< f.name << ") / sizeof(" << type << "); ++j) {" << std::endl;
 			}
 
 			double_spaced = array;
 
+			std::stringstream cast;
+
+			for(auto& k : f.keys) {
+				if(k.type == "foreign") {
+					cast << "reinterpret_cast<" << k.parent << "*" << ">(";
+					break;
+				}
+			}
+
+			if(cast.str().empty() && type_map.find(components.first) == type_map.end()) {
+				cast << "static_cast<decltype(entry." << f.name << ")>(";
+			}
+
 			functions << (array? "\t" : "") << "\t\t" << "entry." << f.name 
-				<< (array? "[j]" : "") << " = " << (str_offset? "dbc.strings + " : "")
-				<< "dbc.records[i]." << f.name << (array? "[j]" : "") <<  ";" <<  std::endl;
+				<< (array? "[j]" : "") << " = " << cast.str() << (str_offset? "dbc.strings + " : "")
+				<< "dbc.records[i]." << f.name << (array? "[j]" : "") << (cast.str().empty()? "" : ")") <<  ";" <<  std::endl;
 
 			if(array) {
 				functions << "\t\t" << "}" << std::endl << std::endl;
