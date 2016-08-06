@@ -45,7 +45,7 @@ const MappedDBC<T> get_offsets(const void* start) {
 
 <%TEMPLATE_DISK_LOAD_FUNCTIONS%>
 
-} //detail
+} // detail
 
 Storage DiskLoader::load() const {
 	Storage storage;
@@ -57,4 +57,4 @@ Storage DiskLoader::disk_representations() const {
 	return load();
 }
 
-}} //dbc, ember
+}} // dbc, ember

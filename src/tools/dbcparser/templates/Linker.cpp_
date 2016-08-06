@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,12 +20,13 @@ namespace ember { namespace dbc {
 namespace detail {
 
 <%TEMPLATE_LINKING_FUNCTIONS%>
-} //detail
 
-Storage link(Loader& loader) {
+} // detail
+
+Storage link(const Loader& loader) {
 	Storage storage = loader.disk_representations();
 <%TEMPLATE_LINKING_FUNCTION_CALLS%>
 	return storage;
 }
 
-}} //dbc, ember
+}} // dbc, ember

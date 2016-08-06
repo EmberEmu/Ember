@@ -22,4 +22,4 @@ namespace ember { namespace dbc {
 <%TEMPLATE_MEMORY_FORWARD_DECL%>
 <%TEMPLATE_MEMORY_DEFINITIONS%>
 
-}} //dbc, ember
+}} // dbc, ember

@@ -25,6 +25,20 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent);
 
+boost::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
+	for(auto& f : base.children) {
+		if(f->name == type_name) {
+			return base.name;
+		}
+	}
+
+	if(base.parent == nullptr) {
+		return boost::optional<std::string>();
+	}
+
+	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
+}
+
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
 	for(auto& def : defs) {
 		if(def->name == parent) {
@@ -150,6 +164,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		auto& dbc = static_cast<types::Struct&>(*def);
 		std::string store_name = dbc.alias.empty()? pascal_to_underscore(dbc.name) : dbc.alias;
 		bool double_spaced = false;
+		std::string primary_key;
+
 		calls << "\t" << "detail::load_" << store_name << "(storage, dir_path_);" << std::endl;
 
 		functions << "void load_" << store_name << "(Storage& storage, const std::string& dir_path) {"
@@ -168,10 +184,12 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.is_initialized();
 			bool str_offset = components.first.find("string_ref") != std::string::npos;
+			bool type_found = false;
 			std::string type;
-			
+
 			if(type_map.find(components.first) != type_map.end()) {
 				type = type_map[components.first].first;
+				type_found = true;
 			} else {
 				type = components.first;
 			}
@@ -179,25 +197,30 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			if(array) {
 				functions << (double_spaced? "" : "\n") << "\t\t"
 					<< "for(std::size_t j = 0; j < sizeof(dbc.records[i]."
-					<< f.name << ") / sizeof(" << type << "); ++j) {" << std::endl;
+					<< f.name << ") / sizeof(" << (type_found? "" : dbc.name + "::") << type << "); ++j) {" << std::endl;
 			}
 
 			double_spaced = array;
 
 			std::stringstream cast;
+			bool id_suffix = false;
 
 			for(auto& k : f.keys) {
 				if(k.type == "foreign") {
-					cast << "reinterpret_cast<" << k.parent << "*" << ">(";
-					break;
+					id_suffix = true;
+				}
+
+				if(k.type == "primary") {
+					primary_key = f.name;
 				}
 			}
 
 			if(cast.str().empty() && type_map.find(components.first) == type_map.end()) {
-				cast << "static_cast<decltype(entry." << f.name << ")>(";
+				auto t = locate_type(dbc, type);
+				cast << "static_cast<" << *t << "::" << type << ">(";
 			}
 
-			functions << (array? "\t" : "") << "\t\t" << "entry." << f.name 
+			functions << (array? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix? "_id" : "")
 				<< (array? "[j]" : "") << " = " << cast.str() << (str_offset? "dbc.strings + " : "")
 				<< "dbc.records[i]." << f.name << (array? "[j]" : "") << (cast.str().empty()? "" : ")") <<  ";" <<  std::endl;
 
@@ -206,7 +229,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			}
 		}
 
-		functions << "\t\t" << "storage." << store_name << ".emplace_back(entry);" << std::endl;
+		std::string id = primary_key.empty()? "i" : "entry." + primary_key;
+		functions << "\t\t" << "storage." << store_name << ".emplace_back(" << id << ", entry);" << std::endl;
 		functions << "\t" << "}" << std::endl;
 		functions << "}" << std::endl << std::endl;
 	}

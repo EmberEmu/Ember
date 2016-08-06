@@ -85,7 +85,7 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
+		<type>string_ref_loc</type>
 		<name>name</name>
 	</field>
 </dbc>

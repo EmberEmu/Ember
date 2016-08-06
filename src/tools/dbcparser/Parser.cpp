@@ -148,8 +148,10 @@ types::Field Parser::parse_field(rxml::xml_node<>* root) {
 	return field;
 }
 
-types::Enum Parser::parse_enum(rxml::xml_node<>* root) {
+types::Enum Parser::parse_enum(rxml::xml_node<>* root, types::Base* parent) {
 	types::Enum parsed;
+	parsed.parent = parent;
+
 	UniqueCheck check{};
 
 	auto attr = root->first_attribute("comment");
@@ -169,13 +171,14 @@ types::Enum Parser::parse_enum(rxml::xml_node<>* root) {
 	return parsed;
 }
 
-types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth) {
+types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth, types::Base* parent) {
 	if(depth > MAX_PARSE_DEPTH) {
 		throw exception("Struct nesting is too deep");
 	}
 
 	types::Struct parsed;
 	parsed.dbc = dbc;
+	parsed.parent = parent;
 
 	UniqueCheck check{};
 
@@ -188,11 +191,11 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth) 
 	for(rxml::xml_node<>* node = root; node; node = node->next_sibling()) {
 		if(strcmp(node->name(), "struct") == 0) {
 			parsed.children.emplace_back(
-				std::make_unique<types::Struct>(parse_struct(node->first_node(), false, depth + 1))
+				std::make_unique<types::Struct>(parse_struct(node->first_node(), false, depth + 1, &parsed))
 			);
 		} else if(strcmp(node->name(), "enum") == 0) {
 			parsed.children.emplace_back(
-				std::make_unique<types::Enum>(parse_enum(node->first_node()))
+				std::make_unique<types::Enum>(parse_enum(node->first_node(), &parsed))
 			);
 		} else {
 			parse_struct_node(parsed, check, node);

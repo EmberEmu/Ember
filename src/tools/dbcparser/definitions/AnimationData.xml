@@ -37,6 +37,11 @@
 	</field>
 
 	<field>
+		<type>int32</type>
+		<name>unknown</name>
+	</field>
+
+	<field>
 		<type>uint32</type>
 		<name>fallback</name>
 		<key>
