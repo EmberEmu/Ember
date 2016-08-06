@@ -28,7 +28,7 @@ std::map<std::string, std::pair<std::string, bool>> type_map {
 		{ "bool",           { "bool",            false }},
 		{ "bool32",         { "std::uint32_t",   false }},
 		{ "string_ref",     { "std::string",     false }},
-		{ "string_ref_loc", { "std::string",     false }},
+		{ "string_ref_loc", { "StringRefLoc",    false }},
 		{ "float",          { "float",           false }},
 		{ "double",         { "double",          false }}
 };

@@ -18,8 +18,9 @@
 
 namespace ember { namespace dbc { namespace disk {
 
+struct StringRefLoc; // defined in StringRefLoc.xml
 typedef std::uint32_t string_ref;
-typedef std::uint32_t string_ref_loc;
+typedef StringRefLoc string_ref_loc;
 typedef std::uint32_t uint32;
 typedef std::int32_t  int32;
 typedef std::uint16_t uint16;

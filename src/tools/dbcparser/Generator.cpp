@@ -162,6 +162,11 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		}
 		
 		auto& dbc = static_cast<types::Struct&>(*def);
+
+		if(!dbc.dbc) {
+			continue;
+		}
+
 		std::string store_name = dbc.alias.empty()? pascal_to_underscore(dbc.name) : dbc.alias;
 		bool double_spaced = false;
 		std::string primary_key;
@@ -183,7 +188,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		for(auto& f : dbc.fields) {
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.is_initialized();
-			bool str_offset = components.first.find("string_ref") != std::string::npos;
+			bool str_offset = (components.first == "string_ref");
 			bool type_found = false;
 			std::string type;
 
@@ -220,9 +225,33 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				cast << "static_cast<" << *t << "::" << type << ">(";
 			}
 
-			functions << (array? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix? "_id" : "")
-				<< (array? "[j]" : "") << " = " << cast.str() << (str_offset? "dbc.strings + " : "")
-				<< "dbc.records[i]." << f.name << (array? "[j]" : "") << (cast.str().empty()? "" : ")") <<  ";" <<  std::endl;
+			// hardcoded, bad, like the rest of this file
+			std::vector<std::string> locales = { 
+				"enGB", "koKR", "frFR", "deDE", "enCN", "enTW", "esES", "esMX"
+			};
+
+			if(components.first == "string_ref_loc") {
+				functions << "\n" << (array ? "\t" : "") << "\t\t // string_ref_loc block\n";
+
+				for(auto& locale : locales) {
+					functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id." : ".") << locale
+						<< (array ? "[j]" : "") << " = " << "dbc.strings + dbc.records[i]." << f.name << "." << locale << ";" << std::endl;
+				}
+
+				functions << "\n";
+			} else {
+				functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id" : "")
+					<< (array ? "[j]" : "") << " = " << cast.str();
+			}
+
+
+			if(components.first == "string_ref") {
+				functions << "dbc.strings + ";
+			}
+			
+			if(components.first != "string_ref_loc") {
+				functions << "dbc.records[i]." << f.name << (array ? "[j]" : "") << (cast.str().empty() ? "" : ")") << ";" << std::endl;
+			}
 
 			if(array) {
 				functions << "\t\t" << "}" << std::endl << std::endl;
@@ -254,6 +283,11 @@ void generate_disk_struct_recursive(const types::Struct& def, std::stringstream&
 }
 
 void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
+	// only load DBCs, not shared structs
+	if(!def.dbc) {
+		return;
+	}
+
 	std::string tab("\t", indent);
 
 	definitions << tab << "struct " << def.name << " {" << std::endl;
