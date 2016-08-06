@@ -19,7 +19,7 @@
 namespace ember { namespace dbc {
 
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
-	/*for(auto& i : defs) {
+	/*for(auto& def : defs) {
 		if(i.dbc_name == parent) {
 			if(!i.alias.empty()) {
 				return i.alias;
@@ -58,13 +58,13 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_LINKING_FUNCTIONS%>([^]+)<%TEMPLATE_LINKING_FUNCTION_CALLS%>([^]+))");
 	std::stringstream functions, calls;
 
-	for(auto& i : defs) {
-		if(i->type != types::STRUCT) {
+	for(auto& def : defs) {
+		if(def->type != types::STRUCT) {
 			continue;
 		}
 			
-		auto dbc = static_cast<types::Struct*>(i.get());
-		std::string store_name = i->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
+		auto dbc = static_cast<types::Struct*>(def.get());
+		std::string store_name = def->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
 		std::stringstream call, func;
 		bool write_func = false;
 		bool double_spaced = false;
@@ -74,7 +74,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 		call << "\t" << "detail::link_" << store_name << "(storage);" << std::endl;
 		
 		func << "void link_" << store_name << "(Storage& storage) {" << std::endl;
-		func << "\t" << "for(auto& i : storage." << store_name << ") {" << std::endl;
+		func << "\t" << "for(auto& def : storage." << store_name << ") {" << std::endl;
 
 		for(auto& f : dbc->fields) {
 			std::stringstream curr_field;
@@ -135,29 +135,29 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
 	std::stringstream functions, calls;
 
-	for(auto& i : defs) {
-		if(i->type != types::STRUCT) {
+	for(auto& def : defs) {
+		if(def->type != types::STRUCT) {
 			continue;
 		}
-
-		auto dbc = static_cast<types::Struct*>(i.get());
-		std::string store_name = dbc->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
+		
+		auto& dbc = static_cast<types::Struct&>(*def);
+		std::string store_name = dbc.alias.empty()? pascal_to_underscore(dbc.name) : dbc.alias;
 		bool double_spaced = false;
 		calls << "\t" << "detail::load_" << store_name << "(storage, dir_path_);" << std::endl;
 
 		functions << "void load_" << store_name << "(Storage& storage, const std::string& dir_path) {"
 			<< std::endl;
-		functions << "\t" << "bi::file_mapping file(std::string(dir_path + \"" << dbc->name
+		functions << "\t" << "bi::file_mapping file(std::string(dir_path + \"" << dbc.name
 			<< ".dbc\").c_str(), bi::read_only);" << std::endl;
 		functions << "\t" << "bi::mapped_region region(file, bi::read_only);"
 			<< std::endl;
-		functions << "\t" << "auto dbc = get_offsets<disk::" << dbc->name <<
+		functions << "\t" << "auto dbc = get_offsets<disk::" << dbc.name <<
 			">(region.get_address());" << std::endl << std::endl;
 							
 		functions << "\t" << "for(std::uint32_t i = 0; i < dbc.header->records; ++i) {" << std::endl;
-		functions << "\t\t" << dbc->name << " entry{};" << std::endl;
+		functions << "\t\t" << dbc.name << " entry{};" << std::endl;
 		
-		for(auto& f : dbc->fields) {
+		for(auto& f : dbc.fields) {
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.is_initialized();
 			bool str_offset = components.first.find("string_ref") != std::string::npos;
@@ -195,12 +195,12 @@ void generate_disk_defs(const types::Definitions& defs, const std::string& outpu
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
 	std::stringstream definitions;
 
-	for(auto& i : defs) {
-		if(i->type != types::STRUCT) {
+	for(auto& def : defs) {
+		if(def->type != types::STRUCT) {
 			continue;
 		}
 
-		auto dbc = static_cast<types::Struct*>(i.get());
+		auto dbc = static_cast<types::Struct*>(def.get());
 		definitions << "struct " << dbc->name << " {" << std::endl;
 
 		for(auto& f : dbc->fields) {
@@ -226,44 +226,75 @@ bool is_enum(const std::string& type) {
 	return type.find("enum") != std::string::npos;
 }
 
+// todo - add .comment to output?
+void generate_memory_enum(const types::Enum& def, std::stringstream& definitions) {
+	definitions << "enum class " << def.name << " : " << def.underlying_type << " {" << std::endl;
+
+	for(auto i = def.options.begin(); i != def.options.end(); ++i) {
+		definitions << "\t" << i->first << " = " << i->second <<
+			(i != def.options.end() - 1? ", " : "") << std::endl;
+	}
+
+	definitions << "};" << std::endl << std::endl;
+}
+
+void generate_memory_struct(const types::Struct& def, std::stringstream& definitions) {
+	definitions << "struct " << def.name << " {" << std::endl;
+	
+	for(auto& child : def.children) {
+		if(child->type == types::STRUCT) {
+			generate_memory_struct(static_cast<types::Struct&>(*child), definitions);
+		} else if(child->type == types::ENUM) {
+			generate_memory_enum(static_cast<types::Enum&>(*child), definitions);
+		} else {
+			// duped logic - fix
+		}
+	}
+
+	for(auto& f : def.fields) {
+		auto components = extract_components(f.underlying_type);
+		bool array = components.second.is_initialized();
+		bool key = false;
+
+		for(auto& k : f.keys) {
+			if(k.type == "foreign") {
+				definitions << "\t" + k.parent << "* " << f.name
+					<< (array ? "[" + std::to_string(*components.second) + "]" : "")
+					<< ";" << std::endl;
+				key = true;
+				break;
+			}
+		}
+
+		std::string type = type_map[components.first].first;
+
+		if(type.empty()) {
+			type = components.first;
+		}
+
+		definitions << "\t" << type << " " << f.name << (key ? "_id" : "")
+			<< (array ? "[" + std::to_string(*components.second) + "]" : "") << ";" << std::endl;
+	}
+
+	definitions << "};" << std::endl << std::endl;
+}
+
 void generate_memory_defs(const types::Definitions& defs, const std::string& output) {
 	std::stringstream buffer(read_template("MemoryDefs.h_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_MEMORY_FORWARD_DECL%>([^]+)<%TEMPLATE_MEMORY_DEFINITIONS%>([^]+))");
 	std::stringstream forward_decls, definitions;
 
-	for(auto& i : defs) {
-		if(i->type != types::STRUCT) {
-			continue;
+	for(auto& def : defs) {
+		if(def->type == types::STRUCT) {
+			forward_decls << "struct " << def->name << ";" << std::endl;
+			generate_memory_struct(static_cast<types::Struct&>(*def), definitions);
+		} else if(def->type == types::ENUM) {
+			auto& enum_def = static_cast<types::Enum&>(*def);
+			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
+			generate_memory_enum(enum_def, definitions);
+		} else {
+			// ??
 		}
-
-		auto dbc = static_cast<types::Struct*>(i.get());
-		forward_decls << "struct " << dbc->name << ";" << std::endl;
-		definitions << "struct " << dbc->name << " {" << std::endl;
-
-		for(auto& f : dbc->fields) {
-			auto components = extract_components(f.underlying_type);
-			bool array = components.second.is_initialized();
-			bool key = false;
-
-			if(is_enum(components.first)) {
-				//definitions << "enum class " << f.
-			} else {
-				for(auto& k : f.keys) {
-					if(k.type == "foreign") {
-						definitions << "\t" + k.parent << "* " << f.name
-							<< (array? "[" + std::to_string(*components.second) + "]" : "")
-							<< ";" << std::endl;
-						key = true;
-						break;
-					}
-				}
-
-				definitions << "\t" << type_map[components.first].first << " " << f.name << (key? "_id" : "")
-					<< (array? "[" + std::to_string(*components.second) + "]" : "") << ";" << std::endl;
-			}
-		}
-
-		definitions << "};" << std::endl << std::endl;
 	}
 
 	std::string replace_pattern("$1" + forward_decls.str() + "$2" + definitions.str() + "$3");
@@ -276,12 +307,12 @@ void generate_storage(const types::Definitions& defs, const std::string& output)
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>([^]+)<%TEMPLATE_MOVES%>([^]+))");
 	std::stringstream declarations, moves;
 
-	for(auto& i : defs) {
-		if(i->type != types::STRUCT) {
+	for(auto& def : defs) {
+		if(def->type != types::STRUCT) {
 			continue;
 		}
 
-		auto dbc = static_cast<types::Struct*>(i.get());
+		auto dbc = static_cast<types::Struct*>(def.get());
 		std::string store_name = dbc->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
 		declarations << "\tDBCMap<" << dbc->name << "> " << store_name << ";\n";
 		moves << "\t\t" << store_name << " = std::move(" << store_name << ");\n";

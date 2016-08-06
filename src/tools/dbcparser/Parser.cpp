@@ -258,7 +258,7 @@ types::Definitions Parser::parse(const std::vector<std::string>& paths) {
 		try {
 			auto parsed = parse_file(path);
 			
-			defs.insert(parsed.end(),
+			defs.insert(defs.end(),
 				std::make_move_iterator(parsed.begin()),
 				std::make_move_iterator(parsed.end())
 			);
