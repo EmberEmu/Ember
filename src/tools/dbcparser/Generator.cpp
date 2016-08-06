@@ -226,26 +226,42 @@ bool is_enum(const std::string& type) {
 	return type.find("enum") != std::string::npos;
 }
 
-// todo - add .comment to output?
-void generate_memory_enum(const types::Enum& def, std::stringstream& definitions) {
-	definitions << "enum class " << def.name << " : " << def.underlying_type << " {" << std::endl;
+void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
+	std::string tab("\t", indent);
+
+	definitions << tab << "enum class " << def.name << " : " << def.underlying_type << " {";
+
+	if(!def.comment.empty()) { // todo, fix
+		definitions << " // " << def.comment;
+	}
+
+	definitions << std::endl;
 
 	for(auto i = def.options.begin(); i != def.options.end(); ++i) {
-		definitions << "\t" << i->first << " = " << i->second <<
+		std::string name = i->first;
+		std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+
+		definitions << tab << "\t" << name << " = " << i->second <<
 			(i != def.options.end() - 1? ", " : "") << std::endl;
 	}
 
-	definitions << "};" << std::endl << std::endl;
+	definitions << tab << "};" << std::endl << std::endl;
 }
 
-void generate_memory_struct(const types::Struct& def, std::stringstream& definitions) {
-	definitions << "struct " << def.name << " {" << std::endl;
+void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
+	definitions << "struct " << def.name << " {";
 	
+	if(!def.comment.empty()) { // todo, fix
+		definitions << " // " << def.comment;
+	}
+
+	definitions << std::endl;
+
 	for(auto& child : def.children) {
 		if(child->type == types::STRUCT) {
-			generate_memory_struct(static_cast<types::Struct&>(*child), definitions);
+			generate_memory_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
 		} else if(child->type == types::ENUM) {
-			generate_memory_enum(static_cast<types::Enum&>(*child), definitions);
+			generate_memory_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
 		} else {
 			// duped logic - fix
 		}
@@ -273,7 +289,13 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 		}
 
 		definitions << "\t" << type << " " << f.name << (key ? "_id" : "")
-			<< (array ? "[" + std::to_string(*components.second) + "]" : "") << ";" << std::endl;
+			<< (array ? "[" + std::to_string(*components.second) + "]" : "") << ";";
+
+		if(!f.comment.empty()) { // todo, fix
+			definitions << " // " << f.comment;
+		}
+
+		definitions << std::endl;
 	}
 
 	definitions << "};" << std::endl << std::endl;
@@ -287,11 +309,11 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 	for(auto& def : defs) {
 		if(def->type == types::STRUCT) {
 			forward_decls << "struct " << def->name << ";" << std::endl;
-			generate_memory_struct(static_cast<types::Struct&>(*def), definitions);
+			generate_memory_struct(static_cast<types::Struct&>(*def), definitions, 0);
 		} else if(def->type == types::ENUM) {
 			auto& enum_def = static_cast<types::Enum&>(*def);
 			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
-			generate_memory_enum(enum_def, definitions);
+			generate_memory_enum(enum_def, definitions, 0);
 		} else {
 			// ??
 		}
