@@ -28,6 +28,10 @@ typedef std::uint8_t  uint8;
 typedef std::int8_t   int8;
 typedef std::uint32_t bool32;
 
+#pragma pack(push, 1)
+
 <%TEMPLATE_DBC_DEFINITIONS%>
 
-}}} //detail, dbc, ember
+#pragma pack(pop)
+
+}}} // disk, dbc, ember
