@@ -18,6 +18,9 @@
 
 namespace ember { namespace dbc {
 
+void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent);
+void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent);
+
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
 	/*for(auto& def : defs) {
 		if(i.dbc_name == parent) {
@@ -229,7 +232,7 @@ bool is_enum(const std::string& type) {
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
 	std::string tab("\t", indent);
 
-	definitions << tab << "enum class " << def.name << " : " << def.underlying_type << " {";
+	definitions << tab << "enum class " << def.name << " : " << type_map[def.underlying_type].first << " {";
 
 	if(!def.comment.empty()) { // todo, fix
 		definitions << " // " << def.comment;
@@ -248,8 +251,23 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 	definitions << tab << "};" << std::endl << std::endl;
 }
 
+void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
+	for(auto& child : def.children) {
+		switch(child->type) { // no default for compiler warning
+			case types::STRUCT:
+				generate_memory_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
+				break;
+			case types::ENUM:
+				generate_memory_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
+				break;
+		}
+	}
+}
+
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
-	definitions << "struct " << def.name << " {";
+	std::string tab("\t", indent);
+
+	definitions << tab << "struct " << def.name << " {";
 	
 	if(!def.comment.empty()) { // todo, fix
 		definitions << " // " << def.comment;
@@ -257,15 +275,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 	definitions << std::endl;
 
-	for(auto& child : def.children) {
-		if(child->type == types::STRUCT) {
-			generate_memory_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
-		} else if(child->type == types::ENUM) {
-			generate_memory_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
-		} else {
-			// duped logic - fix
-		}
-	}
+	generate_memory_struct_recursive(def, definitions, indent);
 
 	for(auto& f : def.fields) {
 		auto components = extract_components(f.underlying_type);
@@ -274,21 +284,24 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 		for(auto& k : f.keys) {
 			if(k.type == "foreign") {
-				definitions << "\t" + k.parent << "* " << f.name
+				definitions << tab << "\t" + k.parent << "* " << f.name
 					<< (array ? "[" + std::to_string(*components.second) + "]" : "")
 					<< ";" << std::endl;
 				key = true;
 				break;
 			}
 		}
+		
+		definitions << tab << "\t";
 
-		std::string type = type_map[components.first].first;
-
-		if(type.empty()) {
-			type = components.first;
+		// if the type isn't in the type map, just assume that it's a user-defined struct/enum
+		if(type_map.find(components.first) != type_map.end()) {
+			definitions << type_map[components.first].first;
+		} else {
+			definitions << components.first;
 		}
 
-		definitions << "\t" << type << " " << f.name << (key ? "_id" : "")
+		definitions << " " << f.name << (key ? "_id" : "")
 			<< (array ? "[" + std::to_string(*components.second) + "]" : "") << ";";
 
 		if(!f.comment.empty()) { // todo, fix
@@ -298,7 +311,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 		definitions << std::endl;
 	}
 
-	definitions << "};" << std::endl << std::endl;
+	definitions << tab << "};" << std::endl << std::endl;
 }
 
 void generate_memory_defs(const types::Definitions& defs, const std::string& output) {

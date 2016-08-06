@@ -33,8 +33,8 @@
 		<name>ItemEnvTypes</name>
 		<options>
 			<option name="shield" value="0x00" />
-			<option name="metal weapon" value="0x01" />
-			<option name="wood weapon" value="0x02" />
+			<option name="metal_weapon" value="0x01" />
+			<option name="wood_weapon" value="0x02" />
 		</options>
 	</enum>
 

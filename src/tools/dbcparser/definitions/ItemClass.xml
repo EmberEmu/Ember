@@ -21,7 +21,7 @@
 
 	<enum>
 		<type>int32</type>
-		<name>ItemClass</name>
+		<name>Class</name>
 		<options>
 			<option name="item" value="0x00" />
 			<option name="weapon" value="0x01" />
@@ -29,7 +29,7 @@
 	</enum>
 
 	<field>
-		<type>ItemClass</type>
+		<type>Class</type>
 		<name>item_class</name>
 	</field>
 </dbc>
