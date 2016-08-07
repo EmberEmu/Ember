@@ -1,4 +1,4 @@
-# Copyright (c) 2014, 2015 Ember
+# Copyright (c) 2014, 2015, 2016 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -69,6 +69,12 @@ include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 ##############################
 find_package(FlatBuffers REQUIRED)
 include_directories(${FLATBUFFERS_INCLUDE_DIR})
+
+##############################
+#            zlib            #
+##############################
+find_package(zlib 1.2.8 REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIR})
 
 ##############################
 #         Google Test        #
