@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>ItemSet</name>
+	
+	<field>
+		<type>int32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32[10]</type>
+		<name>items</name>
+	</field>
+
+	<field>
+		<type>uint32[7]</type>
+		<name>bank_item</name>
+	</field>
+
+
+	<field>
+		<type>uint32[8]</type>
+		<name>set_spell</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+	
+	<field>
+		<type>uint32[8]</type>
+		<name>set_threshold</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>required_skill</name>
+		<key>
+			<type>foreign</type>
+			<parent>SkillLine</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>required_skill_rank</name>
+	</field>
+</dbc>

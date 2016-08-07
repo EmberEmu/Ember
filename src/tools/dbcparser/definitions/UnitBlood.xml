@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>UnitBlood</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_front_small</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_front_large</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_back_small</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>combat_blood_spurt_back_large</name>
+	</field>
+
+	<field>
+		<type>string_ref[5]</type>
+		<name>texture</name>
+	</field>
+</dbc>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SpellChainEffects</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>average_seg_len</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>width</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>noise_scale</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>tex_coord_scale</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>seg_duration</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>seg_delay</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture</name>
+	</field>
+</dbc>

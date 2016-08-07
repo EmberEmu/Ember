@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>DurabilityQuality</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>data</name>
+	</field>
+</dbc>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>LoadingScreenTaxiSplines</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>taxi_path</name>
+		<key>
+			<type>foreign</type>
+			<parent>TaxiPath</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>float[8]</type>
+		<name>location_x</name>
+	</field>
+
+	<field>
+		<type>float[8]</type>
+		<name>location_y</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>leg_index</name>
+	</field>
+</dbc>

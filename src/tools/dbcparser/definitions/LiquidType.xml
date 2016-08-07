@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>LiquidType</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Type</name>
+		<options>
+			<option name="fire" value="0x00" />
+			<option name="slime" value="0x02" />
+			<option name="water" value="0x04" />
+		</options>
+	</enum>
+
+	<field>
+		<type>Type</type>
+		<name>type</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+</dbc>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>ItemVisuals</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[5]</type>
+		<name>item_visual_effects</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisualEffects</parent>
+		</key>
+	</field>
+</dbc>

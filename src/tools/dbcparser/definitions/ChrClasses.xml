@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>ChrClasses</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>player_class</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>damage_bonus_stat</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>PowerType</name>
+		<options>
+			<option name="mana" value="0x00" />
+			<option name="rage" value="0x01" />
+			<option name="focus" value="0x02" />
+			<option name="energy" value="0x03" />
+			<option name="happiness" value="0x04" />
+		</options>
+	</enum>
+
+	<field>
+		<type>PowerType</type>
+		<name>power_type</name>
+	</field>	
+
+	<field>
+		<type>string_ref</type>
+		<name>pet_name_token</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>filename</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>class_mask</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>hybrid_class</name>
+	</field>
+</dbc>

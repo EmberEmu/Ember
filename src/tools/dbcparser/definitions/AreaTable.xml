@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>AreaTable</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>map</name>
+		<key>
+			<type>foreign</type>
+			<parent>Map</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>parent_area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>area_bit</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>AreaFlags</name>
+		<options>
+			<option name="area_flag_snow" value="0x01" />
+			<option name="area_flag_unk" value="0x02" />
+			<option name="area_flag_development" value="0x04" />
+			<option name="area_flag_unk2" value="0x08" />
+			<option name="area_flag_unk3" value="0x10" />
+			<option name="area_flag_city_slave" value="0x20" />
+			<option name="area_flag_city_allow_duels" value="0x40" />
+			<option name="area_flag_unk4" value="0x80" />
+			<option name="area_flag_city" value="0x100" />
+			<option name="area_flag_test" value="0x200" />
+		</options>
+	</enum>
+
+	<field>
+		<type>AreaFlags</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_preferences</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundProviderPreferences</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_preferences_underwater</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundProviderPreferences</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_ambience</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundAmbience</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>zone_music</name>
+		<key>
+			<type>foreign</type>
+			<parent>ZoneMusic</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>zone_music_intro</name>
+		<key>
+			<type>foreign</type>
+			<parent>ZoneIntroMusicTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>exploration_level</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>area_name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>liquid_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>LiquidType</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>min_elevation</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>ambient_multiplier</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>light</name>
+		<key>
+			<type>foreign</type>
+			<parent>Light</parent>
+		</key>
+	</field>
+</dbc>

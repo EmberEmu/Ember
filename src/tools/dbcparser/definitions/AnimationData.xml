@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>AnimationData</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</type>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>WeaponFlags</type>
+		<options>
+			<option name="weapon_not_affected_by_animation" value="0x00" />
+			<option name="sheathe_weapons_automatically" value="0x04" />
+			<option name="sheathe_weapons_automatically_2" value="0x10" />
+			<option name="unsheathe_weapons" value="0x20" />
+		</options>
+	</enum>
+
+	<field>
+		<type>WeaponFlags</type>
+		<name>weapon_flags</type>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>body_flags</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>fallback</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>behaviour</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+</dbc>

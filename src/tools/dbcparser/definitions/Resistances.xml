@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>Resistances</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>physical_damage</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>fizzle_sound_entry</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+</dbc>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SkillCostsData</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>skill_costs</name>
+	</field>
+
+	<field>
+		<type>int32[3]</type>
+		<name>cost</name>
+	</field>
+</dbc>

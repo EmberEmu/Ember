@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>AttackAnimKits</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>animation_data</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>attack_anim_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>AttackAnimTypes</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>AttackHand</name>
+		<options>
+			<option name="main_hand" value="0x00" />
+			<option name="off_hand" value="0x01" />
+		</options>
+	</enum>
+
+	<field>
+		<type>AttackHand</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown</name>
+	</field>
+</dbc>

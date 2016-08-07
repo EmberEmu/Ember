@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SpellVisualKit</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>start_anim</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>anim_kit</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>head_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>chest_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>base_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>left_hand_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>right_hand_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>breath_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>left_weapon_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>right_weapon_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[3]</type>
+		<name>special_effects</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+
+	<field>
+		<type>uint32</type>
+		<name>world_effect</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualEffectName</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>shake</name>
+		<key>
+			<type>foreign</type>
+			<parent>CameraShakes</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>float[4]</type>
+		<name>char_proc</name>
+	</field>
+
+	<field>
+		<type>float[4]</type>
+		<name>char_param_zero</name>
+	</field>
+
+	<field>
+		<type>float[4]</type>
+		<name>char_param_one</name>
+	</field>
+
+	<field>
+		<type>float[4]</type>
+		<name>char_param_two</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+</dbc>

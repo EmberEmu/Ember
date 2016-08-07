@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>WorldMapOverlay</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>world_map_area</name>
+		<key>
+			<type>foreign</type>
+			<parent>WorldMapArea</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[4]</type>
+		<name>area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>location_x</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>location_y</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>texture_name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>texture_width</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>texture_height</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>offset_x</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>offset_y</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>hit_rect_top</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>hit_rect_left</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>hit_rect_bottom</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>hit_rect_right</name>
+	</field>
+</dbc>

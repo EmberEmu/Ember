@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>FactionGroup</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>mask_id</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>internal_name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+</dbc>

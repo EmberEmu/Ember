@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SpellMechanic</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>state_name</name>
+	</field>
+
+</dbc>

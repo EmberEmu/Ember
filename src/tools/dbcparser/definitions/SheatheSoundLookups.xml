@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SheatheSoundLookups</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_class</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemClass</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_subclass</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemSubClass</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>ItemEnvTypes</name>
+		<options>
+			<option name="shield" value="0x00" />
+			<option name="metal_weapon" value="0x01" />
+			<option name="wood_weapon" value="0x02" />
+		</options>
+	</enum>
+
+	<field>
+		<type>ItemEnvTypes</type>
+		<name>item_env_types</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>not_shield</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sheathe_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>draw_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+</dbc>

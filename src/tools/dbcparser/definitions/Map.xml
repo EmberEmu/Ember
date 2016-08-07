@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>Map</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>internal_name</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>InstanceType</name>
+		<options>
+			<option name="normal" value="0x00" />
+			<option name="group" value="0x01" />
+			<option name="raid" value="0x02" />
+			<option name="battleground" value="0x03" />
+		</options>
+	</enum>
+
+	<field>
+		<type>InstanceType</type>
+		<name>instance_type</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>battleground</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>map_name</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>min_level</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>max_level</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>max_players</name>
+	</field>
+
+	<field>
+		<type>int32[3]</type>
+		<name>unknown</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>map_description_horde</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>map_description_alliance</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>loading_screen</name>
+		<key>
+			<type>foreign</type>
+			<parent>LoadingScreens</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>raid_offset</name>
+	</field>
+
+	<field>
+		<type>int32[2]</type>
+		<name>unknown_2</name>
+	</field>
+</dbc>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SpellAuraNames</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>unknown</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>internal_name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+</dbc>

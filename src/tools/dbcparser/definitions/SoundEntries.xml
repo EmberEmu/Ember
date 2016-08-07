@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SoundEntries</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>SoundType</name>
+		<options>
+			<option name="unused" value="0x00" />
+			<option name="spells" value="0x01" />
+			<option name="ui" value="0x02" />
+			<option name="footsteps" value="0x03" />
+			<option name="weapon_impact" value="0x04" />
+			<option name="weapon_miss" value="0x06" />
+			<option name="pick_up_put_down" value="0x09" />
+			<option name="npc_combat" value="0x0A" />
+			<option name="errors" value="0x0C" />
+			<option name="objects" value="0x0E" />
+			<option name="death" value="0x10" />
+			<option name="npc_greetings" value="0x11" />
+			<option name="test" value="0x12" />
+			<option name="armour_foley" value="0x13" />
+			<option name="footsteps_2" value="0x14" />
+			<option name="water_character" value="0x15" />
+			<option name="water_liquid" value="0x16" />
+			<option name="tradeskills" value="0x17" />
+			<option name="doodads" value="0x19" />
+			<option name="spell_fizzle" value="0x1A" />
+			<option name="npc_loops" value="0x1B" />
+			<option name="zone_music" value="0x1C" />
+			<option name="emotes" value="0x1D" />
+			<option name="narration_music" value="0x1E" />
+			<option name="narration" value="0x1F" />
+			<option name="zone_ambience" value="0x32" />
+		</options>
+ 	</enum>
+
+ 	<field>
+		<type>SoundType</type>
+		<name>sound_type</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref[10]</type>
+		<name>files</name>
+	</field>
+
+	<field>
+		<type>uint32[10]</type>
+		<name>frequency</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>directory_base</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>volume</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>min_distance</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>distance_cutoff</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>sound_entries_advanced</name>
+	</field>
+</dbc>

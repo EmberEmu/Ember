@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>WorldMapArea</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>world_map_continent</name>
+		<key>
+			<type>foreign</type>
+			<parent>WorldMapContinent</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>area_name</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_left</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_right</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_top</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_bottom</name>
+	</field>
+</name>

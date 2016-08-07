@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>TalentTab</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_icon</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellIcon</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race_mask</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>class_mask</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>order_index</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>background_file</name>
+	</field>
+</dbc>

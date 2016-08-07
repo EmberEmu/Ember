@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SpellVisual</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>precast_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>cast_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>impact_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>state_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>state_done_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>channel_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>has_missile</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>missile_model</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>missile_path_type</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>missile_destination_attachment</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>missile_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>anim_event_sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>caster_impact_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>target_impact_kit</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisualKit</parent>
+		</key>
+	</field>
+</dbc>

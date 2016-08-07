@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SoundWaterType</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>liquid_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>LiquidType</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>FluidSpeed</name>
+		<options>
+			<option name="still" value="0x00" />
+			<option name="slow" value="0x04" />
+			<option name="rapid" value="0x08" />
+		</options>
+	</enum>
+
+	<field>
+		<type>FluidSpeed</type>
+		<name>fluid_speed</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+</dbc>

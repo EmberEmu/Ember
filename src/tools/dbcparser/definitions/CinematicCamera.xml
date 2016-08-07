@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CinematicCamera</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>model</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound_entry</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_x</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_y</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_z</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>rotation</name>
+	</field>
+</dbc>
