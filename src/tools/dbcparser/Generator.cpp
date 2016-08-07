@@ -153,8 +153,8 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 
 void generate_disk_loader(const types::Definitions& defs, const std::string& output) {
 	std::stringstream buffer(read_template("DiskLoader.cpp_"));
-	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
-	std::stringstream functions, calls;
+	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
+	std::stringstream functions, insertions, calls;
 
 	for(auto& def : defs) {
 		if(def->type != types::STRUCT) {
@@ -171,7 +171,9 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		bool double_spaced = false;
 		std::string primary_key;
 
-		calls << "std::cout << \"" << "detail::load_" << store_name << "(storage, dir_path_)\" << std::endl;" << std::endl;
+		insertions << "\t" << "dbc_map.emplace(\"" << dbc.name << "\", " << "detail::load_" << store_name << ");" << std::endl;
+
+		calls << "\t" << "log_cb_(\"Loading " << dbc.name << " DBC data...\");" << std::endl;
 		calls << "\t" << "detail::load_" << store_name << "(storage, dir_path_);" << std::endl;
 
 		functions << "void load_" << store_name << "(Storage& storage, const std::string& dir_path) {"
@@ -283,7 +285,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		functions << "}" << std::endl << std::endl;
 	}
 
-	std::string replace_pattern("$1" + functions.str() + "$2" + calls.str() + "$3");
+	std::string replace_pattern("$1" + functions.str() + "$2" + insertions.str() + "$3" + calls.str() + "$4");
 	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
 	save_output(output, "DiskLoader.cpp", out);
 }

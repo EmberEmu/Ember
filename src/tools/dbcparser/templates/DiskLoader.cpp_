@@ -27,12 +27,16 @@ namespace ember { namespace dbc {
 
 namespace detail {
 
+#pragma pack(push, 1)
+
 template<typename T>
 struct MappedDBC {
 	const DBCHeader* header;
 	const T* records;
 	const char* strings;
 };
+
+#pragma pack(pop)
 
 template<typename T>
 const MappedDBC<T> get_offsets(const void* start) {
@@ -47,14 +51,32 @@ const MappedDBC<T> get_offsets(const void* start) {
 
 } // detail
 
+DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
+                       : log_cb_(std::move(log_cb)), dir_path_(std::move(dir_path)) {
+<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>
+}
+
+Storage DiskLoader::load(const std::vector<std::string>& whitelist) const {
+	Storage storage;
+
+	for(auto& dbc : whitelist) {
+		auto it = dbc_map.find(dbc);
+
+		if(it == dbc_map.end()) {
+			throw std::runtime_error("Cannot load an unknown DBC file, " + dbc);
+		}
+		
+		log_cb_("Loading " + dbc + " DBC data...");
+		it->second(storage, dir_path_);
+	}
+
+	return storage;
+}
+
 Storage DiskLoader::load() const {
 	Storage storage;
 <%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>
 	return storage;		
-}
-
-Storage DiskLoader::disk_representations() const {
-	return load();
 }
 
 }} // dbc, ember
