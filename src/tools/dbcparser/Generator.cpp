@@ -14,8 +14,6 @@
 #include <fstream>
 #include <sstream>
 
-#include <iostream>
-
 namespace ember { namespace dbc {
 
 void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent);
@@ -50,7 +48,7 @@ std::string parent_alias(const types::Definitions& defs, const std::string& pare
 		}
 	}
 
-	return parent; //couldn't find parent, will just assume the validator caught the problem, if any
+	return parent; // couldn't find parent, will just assume the validator caught the problem, if any
 }
 
 void save_output(const std::string& path, const std::string& name, const std::string& output) {

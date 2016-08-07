@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>Startup_Strings</name>
+	<alias>startup_strings</alias>
 	
 	<field>
 		<type>uint32</type>

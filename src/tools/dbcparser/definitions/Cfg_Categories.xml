@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>Cfg_Categories</name>
+	<alias>cfg_categories</alias>
 
 	<field>
 		<type>uint32</type>

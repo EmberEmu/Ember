@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>WorldStateUI</name>
+	<alias>world_state_ui</alias>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>

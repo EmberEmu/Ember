@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>AreaPOI</name>
+	<alias>area_poi</alias>
 
 	<field>
 		<type>uint32</type>

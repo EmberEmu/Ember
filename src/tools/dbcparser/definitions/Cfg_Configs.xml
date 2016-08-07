@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>Cfg_Configs</name>
-	
+	<alias>cfg_configs</alias>
+
 	<field>
 		<type>uint32</type>
 		<name>id</name>
