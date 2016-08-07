@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,12 +8,10 @@
 
 #pragma once
 
-#include "Storage.h"
-
 namespace ember { namespace dbc {
 
-class Loader;
+struct Storage;
 
-Storage link(const Loader& source);
+void link(Storage& storage);
 
-}} //dbc, ember
+}} // dbc, ember

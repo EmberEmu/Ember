@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <map>
-#include <vector>
 #include <type_traits>
-#include <cstdint>
 #include <unordered_map>
+#include <vector>
+#include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace dbc {
 
@@ -23,17 +23,17 @@ class DBCMap {
 
 public:
 	template<typename... Args>
-	inline void emplace_back(Args&&... args) {
+	inline void emplace_back(std::uint32_t id, Args&&... args) {
 		storage.emplace_back(std::forward<Args>(args)...);
-		lookup[storage.back().id] = storage.size() - 1;
+		lookup[id] = storage.size() - 1;
 	}
 
 	inline void push_back(const T& object) {
 		storage.push_back(object);
-		lookup[storage.back().id] = storage.size() - 1;
+		lookup[storage.back()] = storage.size() - 1;
 	}
 
-	inline const T* operator[](std::size_t index) const  {
+	inline T* operator[](std::size_t index)  {
 		auto it = lookup.find(index);
 		
 		if(it == lookup.end()) {
@@ -52,4 +52,4 @@ public:
 	}
 };
 
-}} //dbc, ember
+}} // dbc, ember

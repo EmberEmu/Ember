@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,20 +10,28 @@
 
 #include "Loader.h"
 #include "Storage.h"
+#include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ember { namespace dbc {
 
 class DiskLoader final : public Loader {
-	const std::string dir_path_;
+	typedef std::function<void(Storage&, const std::string&)> DBCLoadFunc;
+	typedef std::function<void(const std::string&)> LogCB;
 
-	Storage load() const;
+	const LogCB log_cb_;
+	const std::string dir_path_;
+	std::unordered_map<std::string, DBCLoadFunc> dbc_map;
 
 public:
-	DiskLoader(std::string dir_path) : dir_path_(std::move(dir_path)) {}
-	~DiskLoader() override {}
-	Storage disk_representations() const override;
+	DiskLoader(std::string dir_path, LogCB log_cb = [](const std::string&){});
+	~DiskLoader() = default;
+
+	Storage load() const override;
+	Storage load(const std::vector<std::string>& whitelist) const override;
 };
 
-}} //dbc, ember
+}} // dbc, ember
