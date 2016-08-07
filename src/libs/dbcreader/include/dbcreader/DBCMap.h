@@ -9,46 +9,43 @@
 #pragma once
 
 #include <type_traits>
-#include <unordered_map>
-#include <vector>
 #include <cstdint>
 #include <cstddef>
+#include <boost/container/flat_map.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace ember { namespace dbc {
 
 template<typename T>
 class DBCMap {
-	std::vector<T> storage;
-	std::unordered_map<std::uint32_t, std::size_t> lookup;
+	boost::container::flat_map<std::size_t, T> storage;
 
 public:
 	template<typename... Args>
-	inline void emplace_back(std::uint32_t id, Args&&... args) {
-		storage.emplace_back(std::forward<Args>(args)...);
-		lookup[id] = storage.size() - 1;
-	}
-
-	inline void push_back(const T& object) {
-		storage.push_back(object);
-		lookup[storage.back()] = storage.size() - 1;
+	inline void emplace_back(std::size_t id, Args&&... args) {
+		storage.emplace(id, std::forward<Args>(args)...);
 	}
 
 	inline T* operator[](std::size_t index)  {
-		auto it = lookup.find(index);
+		auto it = storage.find(index);
 		
 		if(it == lookup.end()) {
 			return nullptr;
 		}
 
-		return &storage[it->second];
+		return &it->second;
 	}
 
-	inline auto begin() -> decltype(storage.begin()) const {
+	inline auto begin() const {
 		return storage.begin();
 	}
 
-	inline auto end() -> decltype(storage.end()) const {
+	inline auto end() const {
 		return storage.end();
+	}
+
+	auto values()  {
+		return storage | boost::adaptors::map_values;
 	}
 };
 
