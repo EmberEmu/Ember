@@ -55,13 +55,16 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 	if(args["disk"].as<bool>() || args.count("database")) {
 		std::cout << "Generating shared files...\n";
 		edbc::generate_common(defs, args["output"].as<std::string>());
-		std::cout << "Files generated." << std::endl;
+		std::cout << "Common files generated." << std::endl;
 	}
 
 
 	if(args["disk"].as<bool>()) {
 		edbc::generate_disk_source(defs, args["output"].as<std::string>());
+		std::cout << "Disk loader generated." << std::endl;
 	}
+
+	std::cout << "Done!" << std::endl;
 }
 
 void print_dbc_table(const edbc::types::Definitions& defs) {

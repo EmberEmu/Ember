@@ -496,12 +496,11 @@ void generate_common(const types::Definitions& defs, const std::string& output) 
 	generate_storage(defs, output);
 	generate_memory_defs(defs, output);
 	generate_disk_defs(defs, output);
-	generate_disk_loader(defs, output);
 	generate_linker(defs, output);
 }
 
 void generate_disk_source(const types::Definitions& defs, const std::string& output) {
-
+	generate_disk_loader(defs, output);
 }
 
 }} // dbc, ember

@@ -236,8 +236,8 @@ types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
 
 types::Definitions Parser::parse_file(const std::string& path) {
 	rxml::file<> definition(path.c_str());
-    rxml::xml_document<> doc;
-    doc.parse<0>(definition.data());
+	rxml::xml_document<> doc;
+	doc.parse<0>(definition.data());
 
 	auto root = doc.first_node();
 
