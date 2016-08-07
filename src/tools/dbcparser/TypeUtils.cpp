@@ -81,6 +81,7 @@ TypeComponents extract_components(const std::string& type) {
  * match Ember's naming convention. This function is only any use for ASCII strings.
  * Example: SoundEntries => sound_entries
  * Example: NPCSounds => npc_sounds (handles acronyms)
+ * todo: Should replace this with regex - it doesn't handle names such as AreaPOI correctly
  */
 std::string pascal_to_underscore(std::string name) {
 	const std::string uc_set("ABCDEFGHIJKLMNOPQRSTUVWXYZ");

@@ -154,7 +154,7 @@ types::Enum Parser::parse_enum(rxml::xml_node<>* root, types::Base* parent) {
 
 	UniqueCheck check{};
 
-	auto attr = root->first_attribute("comment");
+	auto attr = root->parent()->first_attribute("comment");
 
 	if(attr) {
 		parsed.comment = attr->value();
@@ -182,8 +182,8 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth, 
 
 	UniqueCheck check{};
 
-	auto attr = root->first_attribute("comment");
-
+	auto attr = root->parent()->first_attribute("comment");
+	
 	if(attr) {
 		parsed.comment = attr->value();
 	}
