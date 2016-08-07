@@ -74,6 +74,8 @@ class Validator {
 	void print_type_tree(const TreeNode<std::string>* types, std::size_t depth = 0);
 
 public:
+	Validator() = default;
+
 	void add_definition(const types::Definitions& definition) {
 		//definitions_.emplace_back(&definition);
 	}

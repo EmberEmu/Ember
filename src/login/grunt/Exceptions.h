@@ -16,13 +16,13 @@ namespace ember { namespace grunt {
 class exception : public std::runtime_error {
 public:
 	exception() : std::runtime_error("An unknown Grunt error occured!") { }
-	explicit exception(std::string msg) : std::runtime_error(msg) { };
+	explicit exception(const std::string& msg) : std::runtime_error(msg) { };
 };
 
 class bad_packet : public exception {
 public:
 	bad_packet() : exception("Bad packet encountered!") { }
-	explicit bad_packet(std::string msg) : exception(msg) { };
+	explicit bad_packet(const std::string& msg) : exception(msg) { };
 };
 
 }} // grunt, ember

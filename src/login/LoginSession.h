@@ -24,7 +24,7 @@ class Metrics;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);
-	void write_chain(grunt::PacketHandle packet);
+	void write_chain(const grunt::PacketHandle& packet);
 	void execute_async(std::shared_ptr<Action> action);
 
 public:

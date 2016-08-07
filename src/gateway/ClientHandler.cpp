@@ -78,7 +78,8 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, log::Logger* logger)
-                             : context_{}, connection_(connection), logger_(logger) { 
+                             : context_{}, connection_(connection), logger_(logger),
+                               header_(nullptr) { 
 	context_.state = ClientState::AUTHENTICATING;
 	context_.connection = &connection_;
 	context_.handler = this;

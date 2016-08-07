@@ -60,7 +60,7 @@ void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB 
 
 /* Signals that a currently queued player has decided to disconnect rather
  * hang around in the queue */
-void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
+void RealmQueue::dequeue(const std::shared_ptr<ClientConnection>& client) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto i = queue_.begin(); i != queue_.end(); ++i) {

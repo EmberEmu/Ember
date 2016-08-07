@@ -24,9 +24,7 @@ class ConsoleColour {
 	Colour original_;
 
 public:
-	ConsoleColour() {
-		original_ = save_output_colour();
-	}
+	ConsoleColour() : original_(save_output_colour()) {}
 
 	~ConsoleColour() {
 		reset();

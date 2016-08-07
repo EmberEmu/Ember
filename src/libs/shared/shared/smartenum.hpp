@@ -92,7 +92,7 @@ namespace smart_enum
         std::unordered_map<SizeType, std::string> nameMap;
     
         SizeType currentEnumValue = 0;
-        while(enumValuesString != "")
+        while(!enumValuesString.empty())
         {
             std::string currentEnumEntry = extractEntry(enumValuesString);
     
@@ -121,7 +121,7 @@ namespace smart_enum
         std::vector<Type> enumList;
     
         SizeType currentEnumValue = 0;
-        while(enumValuesString != "")
+		while(!enumValuesString.empty())
         {
             std::string currentEnumEntry = extractEntry(enumValuesString);
     

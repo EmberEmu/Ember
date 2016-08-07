@@ -51,7 +51,7 @@ void CharacterService::service_located(const messaging::multicast::LocateAnswer*
 }
 
 void CharacterService::handle_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                    boost::optional<const em::MessageRoot*> root, ResponseCB cb) const {
+                                    boost::optional<const em::MessageRoot*> root, const ResponseCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::CharResponse) {
@@ -64,7 +64,7 @@ void CharacterService::handle_reply(const spark::Link& link, const boost::uuids:
 }
 
 void CharacterService::handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                             boost::optional<const messaging::MessageRoot*> root, RetrieveCB cb) const {
+                                             boost::optional<const messaging::MessageRoot*> root, const RetrieveCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	std::vector<Character> characters;

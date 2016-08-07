@@ -47,7 +47,7 @@ class RegisterSessionAction final : public Action {
 
 public:
 	RegisterSessionAction(const AccountService& account_svc, std::string account, srp6::SessionKey key)
-	                      : account_svc_(account_svc), account_(account), key_(key) { }
+	                      : account_svc_(account_svc), account_(std::move(account)), key_(key) { }
 
 	virtual void execute() override try {
 		res_ = do_register().get();
@@ -84,7 +84,7 @@ class FetchSessionKeyAction final : public Action {
 
 public:
 	FetchSessionKeyAction(const AccountService& account_svc, std::string account)
-	                      : account_svc_(account_svc), account_(account) {}
+	                      : account_svc_(account_svc), account_(std::move(account)) {}
 
 	virtual void execute() override try {
 		res_ = do_fetch().get();

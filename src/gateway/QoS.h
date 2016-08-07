@@ -33,7 +33,7 @@ class QoS {
 
 public:
 	QoS(const ServerConfig& config, const SessionManager& sessions, boost::asio::io_service& service)
-		: sessions_(sessions), config_(config), service_(service), timer_(service) { }
+		: sessions_(sessions), config_(config), service_(service), timer_(service), last_bandwidth_out_(0) { }
 
 	void shutdown();
 };

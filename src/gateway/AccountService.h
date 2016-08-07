@@ -35,9 +35,9 @@ private:
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 	void handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> root, RegisterCB cb) const;
+	                           boost::optional<const messaging::MessageRoot*> root, const RegisterCB& cb) const;
 	void handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                         boost::optional<const messaging::MessageRoot*> root, LocateCB cb) const;
+	                         boost::optional<const messaging::MessageRoot*> root, const LocateCB& cb) const;
 
 public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
@@ -47,7 +47,7 @@ public:
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 
 	void locate_session(std::uint32_t account_id, LocateCB cb) const;
-	void locate_session(std::string account, LocateCB cb) const;
+	void locate_session(const std::string& account, LocateCB cb) const;
 };
 
 } // ember

@@ -58,7 +58,7 @@ class NetworkListener {
 	}
 
 public:
-	NetworkListener(ServicePool& pool, std::string interface, std::uint16_t port, bool tcp_no_delay, log::Logger* logger)
+	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port, bool tcp_no_delay, log::Logger* logger)
 	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM),
 	                  acceptor_(pool.get_service(), bai::tcp::endpoint(bai::address::from_string(interface), port)) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));

@@ -121,7 +121,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
 	               log::Logger* logger, log::Filter filter)
-	               : sessions_(sessions), socket_(std::move(socket)),
+	               : sessions_(sessions), socket_(std::move(socket)), body_read_size(0),
 	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
 	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH),
 	                 strand_(socket_.get_io_service()),

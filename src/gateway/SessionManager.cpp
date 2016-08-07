@@ -39,7 +39,7 @@ std::size_t SessionManager::count() const {
 
 ConnectionStats SessionManager::aggregate_stats() const {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
-	ConnectionStats ag_stats;
+	ConnectionStats ag_stats {};
 
 	for(auto& session : sessions_) {
 		auto stats = session->stats();

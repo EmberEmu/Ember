@@ -40,6 +40,7 @@ struct Storage {
 
 	Storage& operator=(Storage&& src) {
 		moves(src);
+		return *this;
 	}
 };
 

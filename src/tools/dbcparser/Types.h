@@ -51,7 +51,7 @@ struct Enum : Base {
 };
 
 struct Struct : Base {
-	Struct() : Base(STRUCT) {}
+	Struct() : Base(STRUCT), dbc(false) {}
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
 	bool dbc;

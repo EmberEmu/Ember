@@ -38,9 +38,9 @@ private:
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 	void handle_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                  boost::optional<const messaging::MessageRoot*> root, ResponseCB cb) const;
+	                  boost::optional<const messaging::MessageRoot*> root, const ResponseCB& cb) const;
 	void handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> root, RetrieveCB cb) const;
+	                           boost::optional<const messaging::MessageRoot*> root, const RetrieveCB& cb) const;
 
 public:
 	CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);

@@ -33,7 +33,7 @@ void send_character_list_fail(ClientContext* ctx) {
 	ctx->connection->send(response);
 }
 
-void send_character_list(ClientContext* ctx, std::vector<Character> characters) {
+void send_character_list(ClientContext* ctx, const std::vector<Character>& characters) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	auto response = std::make_shared<protocol::SMSG_CHAR_ENUM>();
