@@ -31,7 +31,28 @@ struct StringRefLoc {
 	std::uint32_t flags;
 };
 
-<%TEMPLATE_MEMORY_FORWARD_DECL%>
-<%TEMPLATE_MEMORY_DEFINITIONS%>
+struct ChrClasses;
+
+struct ChrClasses {
+	enum class PowerType : std::int32_t {
+		MANA = 0x00, 
+		RAGE = 0x01, 
+		FOCUS = 0x02, 
+		ENERGY = 0x03, 
+		HAPPINESS = 0x04
+	};
+
+	std::uint32_t id;
+	std::uint32_t player_class;
+	std::int32_t damage_bonus_stat;
+	PowerType power_type;
+	std::string pet_name_token;
+	StringRefLoc name;
+	std::string filename;
+	std::int32_t class_mask;
+	std::uint32_t hybrid_class;
+};
+
+
 
 }} // dbc, ember

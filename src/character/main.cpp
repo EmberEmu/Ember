@@ -8,6 +8,7 @@
 
 #include "FilterTypes.h"
 #include "Service.h"
+#include <dbcreader/DBCReader.h>
 #include <spark/Spark.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -30,6 +31,7 @@
 namespace el = ember::log;
 namespace es = ember::spark;
 namespace ep = ember::connection_pool;
+namespace edbc = ember::dbc;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
@@ -67,6 +69,15 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
+
+	// temp test
+	edbc::DiskLoader source(R"()",
+							[&](const std::string& message) {
+		LOG_DEBUG(logger) << message << LOG_SYNC;
+	});
+
+	edbc::Storage dbcs = source.load();
+	edbc::link(dbcs);
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();

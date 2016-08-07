@@ -47,13 +47,44 @@ const MappedDBC<T> get_offsets(const void* start) {
 	return MappedDBC<T>{dbc, records, string_block};
 }
 
-<%TEMPLATE_DISK_LOAD_FUNCTIONS%>
+void load_chr_classes(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ChrClasses.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ChrClasses>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ChrClasses entry{};
+		entry.id = dbc.records[i].id;
+		entry.player_class = dbc.records[i].player_class;
+		entry.damage_bonus_stat = dbc.records[i].damage_bonus_stat;
+		entry.power_type = static_cast<ChrClasses::PowerType>(dbc.records[i].power_type);
+		entry.pet_name_token = dbc.strings + dbc.records[i].pet_name_token;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		entry.filename = dbc.strings + dbc.records[i].filename;
+		entry.class_mask = dbc.records[i].class_mask;
+		entry.hybrid_class = dbc.records[i].hybrid_class;
+		storage.chr_classes.emplace_back(entry.id, entry);
+	}
+}
+
+
 
 } // detail
 
 DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
                        : log_cb_(std::move(log_cb)), dir_path_(std::move(dir_path)) {
-<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>
+	dbc_map.emplace("ChrClasses", detail::load_chr_classes);
+
 }
 
 Storage DiskLoader::load(const std::vector<std::string>& whitelist) const {
@@ -75,7 +106,9 @@ Storage DiskLoader::load(const std::vector<std::string>& whitelist) const {
 
 Storage DiskLoader::load() const {
 	Storage storage;
-<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>
+	log_cb_("Loading ChrClasses DBC data...");
+	detail::load_chr_classes(storage, dir_path_);
+
 	return storage;		
 }
 

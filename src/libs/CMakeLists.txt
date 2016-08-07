@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Ember
+# Copyright (c) 2016 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,3 +11,5 @@ add_subdirectory(conpool)
 add_subdirectory(spark)
 
 add_subdirectory(game_protocol)
+
+add_subdirectory(dbcreader)

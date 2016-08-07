@@ -19,12 +19,12 @@ namespace ember { namespace dbc {
 
 namespace detail {
 
-<%TEMPLATE_LINKING_FUNCTIONS%>
+
 
 } // detail
 
 void link(Storage& storage) {
-<%TEMPLATE_LINKING_FUNCTION_CALLS%>
+
 }
 
 }} // dbc, ember

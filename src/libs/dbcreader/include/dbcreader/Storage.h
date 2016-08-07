@@ -21,7 +21,8 @@
 namespace ember { namespace dbc {
 
 struct Storage {
-<%TEMPLATE_DBC_MAPS%>
+	DBCMap<ChrClasses> chr_classes;
+
 
 	Storage() = default;
 	Storage(const Storage&) = delete;
@@ -29,7 +30,8 @@ struct Storage {
 
 	//explicit because msvc is missing default move support
 	void moves(Storage& src) {
-<%TEMPLATE_MOVES%>
+		chr_classes = std::move(chr_classes);
+
 	}
 
 	Storage(Storage&& src) {
