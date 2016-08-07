@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <dbc>
 	<name>WowError_Strings</name>
-	<alias>wowError_strings</alias>
+	<alias>wow_error_strings</alias>
 
 	<field>
 		<type>uint32</type>
