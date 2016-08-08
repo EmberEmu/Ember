@@ -70,15 +70,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
-	// temp test
-	edbc::DiskLoader source(R"()",
-							[&](const std::string& message) {
-		LOG_DEBUG(logger) << message << LOG_SYNC;
-	});
-
-	edbc::Storage dbcs = source.load();
-	edbc::link(dbcs);
-
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));

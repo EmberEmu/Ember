@@ -60,7 +60,7 @@ add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} game_protocol spark logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} game_protocol spark conpool logging shared ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} game_protocol spark conpool logging shared ${ZLIB_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs DESTINATION ${CMAKE_INSTALL_PREFIX})

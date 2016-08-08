@@ -44,6 +44,7 @@ void handle_authentication(ClientContext* ctx) {
 	}
 
 	protocol::CMSG_AUTH_SESSION packet;
+	packet.set_size(ctx->header->size - sizeof(protocol::ClientHeader::opcode));
 
 	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
 		return;
