@@ -15,6 +15,7 @@
 #include <game_protocol/server/SMSG_CHAR_CREATE.h>
 #include <game_protocol/server/SMSG_CHARACTER_LOGIN_FAILED.h>
 #include <game_protocol/server/SMSG_LOGOUT_COMPLETE.h>
+#include <game_protocol/server/SMSG_ADDON_INFO.h>
 
 #include <game_protocol/client/CMSG_AUTH_SESSION.h>
 #include <game_protocol/client/CMSG_PING.h>

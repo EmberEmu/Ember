@@ -24,7 +24,7 @@ void update(ClientContext* ctx) {
 
 void exit(ClientContext* ctx) {
 	if(ctx->state == ClientState::SESSION_CLOSED) {
-		queue_service_temp->leave_queue(ctx->connection->shared_from_this());
+		queue_service_temp->dequeue(ctx->connection->shared_from_this());
 	}
 }
 

@@ -21,7 +21,7 @@ void update(ClientContext* context) {
 }
 
 void exit(ClientContext* context) {
-	queue_service_temp->decrement();
+	queue_service_temp->free_slot();
 }
 
 }} // world, ember

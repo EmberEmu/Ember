@@ -107,6 +107,10 @@ void handle_char_delete(ClientContext* ctx) {
 	);
 }
 
+void handle_login(ClientContext* ctx) {
+	ctx->handler->state_update(ClientState::IN_WORLD);
+}
+
 } // unnamed
 
 void enter(ClientContext* ctx) {
@@ -125,7 +129,7 @@ void update(ClientContext* ctx) {
 			handle_char_delete(ctx);
 			break;
 		case protocol::ClientOpcodes::CMSG_PLAYER_LOGIN:
-			//handle_login(ctx);
+			handle_login(ctx);
 			break;
 		/*case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
 			handle_char_rename(buffer);

@@ -93,12 +93,32 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 }
 
 void send_auth_challenge(ClientContext* ctx) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
 	packet->seed = ctx->auth_seed = 600; // todo, obviously
 	ctx->connection->send(packet);
 }
 
+void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	auto response = std::make_shared<protocol::SMSG_ADDON_INFO>();
+
+	for(auto& addon : packet.addons) {
+		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", State: " << addon.state
+			<< ", CRC: " << addon.crc << ", Unknown: " << addon.unknown << LOG_ASYNC;
+
+		protocol::SMSG_ADDON_INFO::AddonData data;
+		data.crc_valid = (addon.crc == 0x4C1C776D);
+	}
+
+	ctx->connection->send(response);
+}
+
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
 	std::uint32_t unknown = 0;
 
@@ -119,10 +139,12 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	ctx->connection->set_authenticated(key);
 	ctx->account_name = packet.username;
 
-	auto auth_success = [](ClientContext* ctx) {
+	auto auth_success = [packet](ClientContext* ctx) {
+		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 		++test;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
-		// send_addon_data();
+		send_addon_data(ctx, packet);
 		ctx->handler->state_update(ClientState::CHARACTER_LIST);
 	};
 

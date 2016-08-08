@@ -9,11 +9,14 @@
 #pragma once
 
 #include <game_protocol/Packet.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
 #include <botan/botan.h>
 #include <boost/assert.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <string>
+#include <vector>
 #include <cstdint>
 #include <cstddef>
 #include <zlib.h>
@@ -31,9 +34,9 @@ class CMSG_AUTH_SESSION final : public Packet {
 public:
 	struct AddonData {
 		std::string name;
+		std::uint8_t state; // enabled?
 		std::uint32_t crc;
 		std::uint32_t unknown;
-		std::uint8_t unknown2;
 	};
 
 	Botan::SecureVector<Botan::byte> digest;
@@ -92,16 +95,16 @@ public:
 
 		spark::SafeBinaryStream addon_stream(buffer);
 
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		while(!addon_stream.empty()) {
 			AddonData data;
 			addon_stream >> data.name;
+			addon_stream >> data.state;
 			addon_stream >> data.crc;
 			addon_stream >> data.unknown;
-			addon_stream >> data.unknown2;
 
 			be::little_to_native_inplace(data.crc);
 			be::little_to_native_inplace(data.unknown);
-			be::little_to_native_inplace(data.unknown2);
 
 			addons.emplace_back(std::move(data));
 		}
