@@ -62,7 +62,7 @@ void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB 
 
 /* Signals that a currently queued player has decided to disconnect rather
  * hang around in the queue */
-void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
+void RealmQueue::dequeue(const std::shared_ptr<ClientConnection>& client) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto i = queue_.begin(); i != queue_.end(); ++i) {
@@ -79,7 +79,7 @@ void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 
 /* Signals that a player occupying a server slot has disconnected, thus
  * allowing the player at the front of the queue to connect */
-void RealmQueue::decrement() {
+void RealmQueue::free_slot() {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(queue_.empty()) {

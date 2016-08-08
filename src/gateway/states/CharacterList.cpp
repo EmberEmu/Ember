@@ -135,8 +135,10 @@ void update(ClientContext* ctx) {
 }
 
 void exit(ClientContext* ctx) {
-	--test;
-	queue_service_temp->decrement();
+	if(ctx->state == ClientState::SESSION_CLOSED) {
+		--test;
+		queue_service_temp->free_slot();
+	}
 }
 
 }} // character_list, ember

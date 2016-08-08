@@ -111,6 +111,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
 
 	if(calc_hash != packet.digest) {
+		LOG_DEBUG_GLOB << "Received bad digest from " << packet.username << LOG_ASYNC;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
 		return;
 	}
@@ -172,7 +173,7 @@ void update(ClientContext* ctx) {
 }
 
 void exit(ClientContext* ctx) {
-
+	// don't care
 }
 
 }} // authentication, ember
