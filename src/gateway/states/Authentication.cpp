@@ -119,23 +119,25 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	ctx->account_name = packet.username;
 
 	auto auth_success = [](ClientContext* ctx) {
+		++test;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
 		// send_addon_data();
+		ctx->handler->state_update(ClientState::CHARACTER_LIST);
 	};
 
 	/*
 	* Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
 	* but that doesn't seem to be true - if this bugs out, check that out
 	*/
-	if(false) {
-		ctx->state = ClientState::IN_QUEUE;
-
-		queue_service_temp->enqueue(ctx->connection->shared_from_this(), [auth_success, ctx, packet]() {
+	if(test > 0) {
+		auto self(ctx->connection->shared_from_this());
+		queue_service_temp->enqueue(self, [auth_success, ctx, packet, self]() {
 			LOG_DEBUG_GLOB << packet.username << " removed from queue" << LOG_ASYNC;
 			auth_success(ctx);
 		});
 
 		LOG_DEBUG_GLOB << packet.username << " added to queue" << LOG_ASYNC;
+		ctx->handler->state_update(ClientState::IN_QUEUE);
 		return;
 	}
 

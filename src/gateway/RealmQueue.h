@@ -52,7 +52,7 @@ public:
 	RealmQueue::RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
 	void enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback, int priority = 0);
-	void dequeue(const std::shared_ptr<ClientConnection>& client);
+	void dequeue(std::shared_ptr<ClientConnection> client);
 	void decrement();
 	void shutdown();
 	std::size_t size() const;

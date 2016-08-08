@@ -20,6 +20,10 @@ void ClientHandler::start() {
 	enter_states[context_.state](&context_);
 }
 
+void ClientHandler::stop() {
+	state_update(ClientState::SESSION_CLOSED);
+}
+
 void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& buffer) {
 	context_.header = &header;
 	context_.buffer = &buffer;
@@ -33,14 +37,18 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			return;
 	}
 
-	ClientState prev_state = context_.state;
-
 	update_states[context_.state](&context_);
+}
 
-	if(prev_state != context_.state) {
-		exit_states[prev_state](&context_);
-		enter_states[context_.state](&context_);
-	}
+void ClientHandler::state_update(ClientState new_state) {
+	LOG_DEBUG_FILTER(logger_, LF_NETWORK) << client_identify() << ": "
+		<< "State change, " << ClientState_to_string(context_.state)
+		<< " => " << ClientState_to_string(new_state) << LOG_SYNC;
+
+	context_.prev_state = context_.state;
+	context_.state = new_state;
+	exit_states[context_.prev_state](&context_);
+	enter_states[context_.state](&context_);
 }
 
 // todo, this should go somewhere else
@@ -77,16 +85,24 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 	connection_.send(response);
 }
 
+/*
+ * Helper that decides whether to print the username or IP address in
+ * log outputs, based on whether authentication has completed
+ */
+std::string ClientHandler::client_identify() {
+	if(context_.auth_done) {
+		return context_.account_name;
+	} else {
+		return context_.connection->remote_address();
+	}
+}
+
 ClientHandler::ClientHandler(ClientConnection& connection, log::Logger* logger)
                              : context_{}, connection_(connection), logger_(logger),
                                header_(nullptr) { 
-	context_.state = ClientState::AUTHENTICATING;
+	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
 	context_.connection = &connection_;
 	context_.handler = this;
-}
-
-ClientHandler::~ClientHandler() {
-	exit_states[context_.state](&context_);
 }
 
 } // ember

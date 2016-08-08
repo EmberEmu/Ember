@@ -135,6 +135,7 @@ void update(ClientContext* ctx) {
 }
 
 void exit(ClientContext* ctx) {
+	--test;
 	queue_service_temp->decrement();
 }
 

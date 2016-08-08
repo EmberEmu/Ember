@@ -23,6 +23,7 @@ struct ClientContext {
 	protocol::ClientHeader* header;
 	spark::Buffer* buffer;
 	ClientState state;
+	ClientState prev_state;
 	ClientHandler* handler;
 	ClientConnection* connection;
 	std::uint64_t account_id;

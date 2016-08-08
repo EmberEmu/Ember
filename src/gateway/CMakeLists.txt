@@ -30,8 +30,9 @@ set(LIBRARY_HDR
     states/CharacterList.h
     states/WorldForwarder.h
     states/InQueue.h
+    states/SessionClose.h
     states/ClientContext.h
-    states/StateLUT.cpp
+    states/StateLUT.h
     temp.h
     )
 
@@ -52,6 +53,7 @@ set(LIBRARY_SRC
     states/CharacterList.cpp
     states/WorldForwarder.cpp
     states/InQueue.cpp
+    states/SessionClose.cpp
     states/StateLUT.cpp
     temp.cpp
     )

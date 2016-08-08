@@ -175,6 +175,7 @@ void ClientConnection::stop() {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
+		handler_.stop();
 		stopped_ = true;
 		boost::system::error_code ec; // we don't care about any errors
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);

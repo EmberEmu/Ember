@@ -6,26 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "InQueue.h"
-#include "logger/Logging.h"
-#include "../ClientHandler.h"
-#include "../ClientConnection.h"
-#include "../temp.h"
+#pragma once
 
-namespace ember { namespace queue {
+#include "ClientContext.h"
+
+namespace ember { namespace session_close {
 
 void enter(ClientContext* ctx) {
-	// don't care
+	// don't care, for now
 }
 
 void update(ClientContext* ctx) {
-	// don't care
+	// don't care, for now
 }
 
 void exit(ClientContext* ctx) {
-	if(ctx->state == ClientState::SESSION_CLOSED) {
-		queue_service_temp->dequeue(ctx->connection->shared_from_this());
-	}
+	// don't care, for now
 }
 
-}} // queue, ember
+}} // session_close, ember

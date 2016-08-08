@@ -11,6 +11,7 @@
 #include "CharacterList.h"
 #include "WorldForwarder.h"
 #include "InQueue.h"
+#include "SessionClose.h"
 
 namespace ember { 
 
@@ -18,21 +19,24 @@ const state_func update_states[] = {
 	&authentication::update,
 	&queue::update,
 	&character_list::update,
-	&world::update
+	&world::update,
+	&session_close::update
 };
 
 const state_func exit_states[] = {
 	&authentication::exit,
 	&queue::exit,
 	&character_list::exit,
-	&world::exit
+	&world::exit,
+	&session_close::exit
 };
 
 const state_func enter_states[] = {
 	&authentication::enter,
 	&queue::enter,
 	&character_list::enter,
-	&world::enter
+	&world::enter,
+	&session_close::enter
 };
 
 } // ember

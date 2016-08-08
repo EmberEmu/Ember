@@ -8,18 +8,12 @@
 
 #pragma once
 
-#include <shared/smartenum.hpp>
+#include "ClientContext.h"
 
-namespace ember {
+namespace ember { namespace session_close {
 
-smart_enum(ClientState, int,
-	// valid states
-	AUTHENTICATING,
-	IN_QUEUE,
-	CHARACTER_LIST,
-	IN_WORLD,
-	//TRANSFER_INITIATED,
-	SESSION_CLOSED
-)
+void enter(ClientContext* ctx);
+void update(ClientContext* ctx);
+void exit(ClientContext* ctx);
 
-} // ember
+}} // session_close, ember

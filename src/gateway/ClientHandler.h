@@ -24,15 +24,18 @@ class ClientHandler final {
 	protocol::ClientHeader* header_;
 	log::Logger* logger_;
 
+	std::string client_identify();
 	void handle_ping(spark::Buffer& buffer);
 
 public:
-	explicit ClientHandler(ClientConnection& connection, log::Logger* logger);
-	~ClientHandler();
+	ClientHandler(ClientConnection& connection, log::Logger* logger);
 
+	void state_update(ClientState new_state);
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
+
 	void start();
+	void stop();
 };
 
 } // ember

@@ -21,10 +21,12 @@ void RealmQueue::set_timer() {
 	});
 }
 
-/* Periodically update clients with their current queue position
+/*
+ * Periodically update clients with their current queue position
  * This is done with a timer rather than as players leave the queue/server
  * in order to reduce network traffic with longer queues where queue positions
- * are changing rapidly */
+ * are changing rapidly
+ */
 void RealmQueue::update_clients() {
 	std::lock_guard<std::mutex> guard(lock_);
 	std::size_t position = 1;
@@ -60,7 +62,7 @@ void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB 
 
 /* Signals that a currently queued player has decided to disconnect rather
  * hang around in the queue */
-void RealmQueue::dequeue(const std::shared_ptr<ClientConnection>& client) {
+void RealmQueue::dequeue(std::shared_ptr<ClientConnection> client) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto i = queue_.begin(); i != queue_.end(); ++i) {
