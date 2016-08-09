@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -44,29 +44,22 @@ class SMSG_ADDON_INFO final : public ServerPacket {
 public:
 	struct AddonData {
 		enum class Type : std::uint8_t {
-			BANNED, ENABLED, BLIZZARD
+			BANNED,     // does what you expect it to
+			ENABLED,    // shows the addon in the list - probably intended for player-created addons
+			BLIZZARD    // hides the addon from the list
 		};
 
 		Type type;
 		std::uint8_t info_block_present;
-		std::uint8_t pub_key_present;
+		std::uint8_t state; // first byte in the .pub files - not sure what it does
 		std::uint32_t update_available_flag;
 		std::string update_url;
-	};
-
-	struct BannedAddonData {
-		std::uint32_t unknown;
-		std::array<std::uint8_t, 16> unknown2;
-		std::array<std::uint8_t, 16> unknown3;
-		std::uint32_t unknown4;
-		std::uint32_t unknown5;
 	};
 
 	SMSG_ADDON_INFO() : ServerPacket(protocol::ServerOpcodes::SMSG_ADDON_INFO) { }
 
 	ResultCode result;
 	std::vector<AddonData> addon_data;
-	std::vector<BannedAddonData> banned_addons;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -79,17 +72,19 @@ public:
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
 		for(auto addon : addon_data) {
 			stream << addon.type;
-			stream << addon.info_block_present;
 
-			if(addon.info_block_present) {
-				stream << addon.pub_key_present;
+			if(addon.state || addon.update_available_flag) {
+				stream << std::uint8_t(1); // 'info block' is available
+				stream << addon.state; // any value other than zero is stored in the file and must be followed by the public key
 
-				if(addon.pub_key_present) {
+				if(addon.state) {
 					stream.put(public_key_.data(), public_key_.size());
 				}
-			}
 
-			stream << be::native_to_little(addon.update_available_flag);
+				stream << be::native_to_little(addon.update_available_flag);
+			} else {
+				stream << std::uint8_t(0); // 'info block' is not available
+			}
 
 			if(addon.update_url.empty()) {
 				stream << std::uint8_t(0); // URL not present
@@ -97,14 +92,6 @@ public:
 				stream << std::uint8_t(1); // URL present
 				stream << addon.update_url;
 			}
-		}
-
-		for(auto& addon : banned_addons) {
-			stream << be::native_to_little(addon.unknown);
-			stream.put(addon.unknown2.data(), addon.unknown2.size());
-			stream.put(addon.unknown3.data(), addon.unknown3.size());
-			stream << be::native_to_little(addon.unknown4);
-			stream << be::native_to_little(addon.unknown5);
 		}
 	}
 };

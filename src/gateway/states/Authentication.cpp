@@ -112,16 +112,15 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 
 		protocol::SMSG_ADDON_INFO::AddonData data;
 		data.type = protocol::SMSG_ADDON_INFO::AddonData::Type::BLIZZARD;
-		data.info_block_present = true;
+		data.update_available_flag = false; // URL must be present for this to work (check URL CRC)
 
-		if(addon.crc != 0x4C1C776D) {
+		if(addon.crc != 0x4C1C776D || addon.state != 1) {
 			LOG_DEBUG_GLOB << "Repairing " << addon.name << "..." << LOG_ASYNC;
-			data.pub_key_present = true;
+			data.state = 1;
 		} else {
-			data.pub_key_present = false;
-		}
-					
-		data.update_available_flag = false;
+			data.state = 0;
+		}		
+		
 		response->addon_data.emplace_back(std::move(data));
 	}
 
