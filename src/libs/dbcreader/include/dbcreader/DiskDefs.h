@@ -43,6 +43,28 @@ struct StringRefLoc {
 
 typedef StringRefLoc string_ref_loc;
 
+struct AnimationData {
+	typedef int32 WeaponFlags;
+	uint32 id;
+	string_ref name;
+	WeaponFlags weapon_flags;
+	int32 body_flags;
+	int32 unknown;
+	uint32 fallback;
+	uint32 behaviour;
+};
+
+struct CameraShakes {
+	uint32 id;
+	int32 shake_type;
+	int32 direction;
+	float amplitude;
+	float frequency;
+	float duration;
+	float phase;
+	float coefficient;
+};
+
 struct ChrClasses {
 	typedef int32 PowerType;
 	uint32 id;
@@ -54,6 +76,477 @@ struct ChrClasses {
 	string_ref filename;
 	int32 class_mask;
 	bool32 hybrid_class;
+};
+
+struct ChrRaces {
+	typedef uint32 Flags;
+	typedef uint32 BaseLanguage;
+	uint32 id;
+	Flags flags;
+	uint32 faction;
+	uint32 exploration_sound;
+	uint32 male_display;
+	uint32 female_display;
+	string_ref client_prefix;
+	float speed_modifier;
+	BaseLanguage base_lang;
+	uint32 creature_type;
+	uint32 login_effect;
+	int32 unknown1;
+	uint32 res_sickness_spell;
+	uint32 splash_sound_entry;
+	int32 unknown2;
+	string_ref client_file_path;
+	uint32 cinematic_sequence;
+	string_ref_loc name;
+	string_ref facial_hair_customisation[2];
+	string_ref hair_customisation;
+};
+
+struct CinematicCamera {
+	uint32 id;
+	string_ref model;
+	uint32 sound_entry;
+	float location_x;
+	float location_y;
+	float location_z;
+	float rotation;
+};
+
+struct CinematicSequences {
+	uint32 id;
+	uint32 sound_entry;
+	uint32 cinematic_camera_1[8];
+};
+
+struct CreatureDisplayInfo {
+	typedef int32 SizeClass;
+	uint32 id;
+	uint32 model;
+	uint32 sound;
+	uint32 extended_display_info;
+	float creature_model_scale;
+	int32 creature_model_alpha;
+	string_ref texture_variation[3];
+	SizeClass size;
+	uint32 blood;
+	uint32 npc_sound;
+};
+
+struct CreatureDisplayInfoExtra {
+	typedef int32 Sex;
+	uint32 id;
+	uint32 display_race;
+	Sex sex;
+	int32 skin;
+	int32 face;
+	int32 hair_style;
+	int32 hair_colour;
+	int32 facial_hair;
+	uint32 npc_item_display[9];
+	int32 flags;
+	string_ref bake_name;
+};
+
+struct CreatureModelData {
+	typedef int32 SizeClass;
+	uint32 id;
+	int32 flags;
+	string_ref model_path;
+	SizeClass size;
+	float model_scale;
+	uint32 blood;
+	uint32 footprint_texture;
+	float footprint_texture_length;
+	float footprint_texture_width;
+	float footprint_texture_scale;
+	int32 foley_material;
+	int32 footstep_shake_size;
+	int32 death_thud_shake_size;
+	float collision_width;
+	float collision_height;
+	float mount_height;
+};
+
+struct CreatureSoundData {
+	uint32 id;
+	uint32 sound_exertion;
+	uint32 sound_exertion_critical;
+	uint32 sound_injury;
+	uint32 sound_injury_critical;
+	uint32 sound_injury_crushing_blow;
+	uint32 sound_death;
+	uint32 sound_stun;
+	uint32 sound_stand;
+	uint32 sound_footstep;
+	uint32 sound_aggro;
+	uint32 sound_wing_flap;
+	uint32 sound_wing_glide;
+	uint32 sound_alert;
+	uint32 sound_fidget;
+	uint32 custom_attack;
+	uint32 npc_sound;
+	uint32 loop_sound;
+	int32 creature_impact_type;
+	uint32 sound_jump_start;
+	uint32 sound_jump_end;
+	uint32 sound_pet_attack;
+	uint32 sound_pet_order;
+	uint32 sound_pet_dismiss;
+	int32 fidget_delay_seconds_min;
+	int32 fidget_delay_seconds_max;
+	uint32 birth_sound;
+	uint32 spell_cast_directed_sound;
+	uint32 submerge_sound;
+	uint32 submerged_sound;
+};
+
+struct CreatureType {
+	uint32 id;
+	string_ref_loc name;
+	bool32 flags;
+};
+
+struct Faction {
+	typedef int32 ReputationRaceMask;
+	typedef int32 ReputationFlags;
+	uint32 id;
+	int32 reputation_index;
+	ReputationRaceMask reputation_race_mask[4];
+	int32 reputation_class_mask[4];
+	int32 reputation_base[4];
+	ReputationFlags reputation_flags[4];
+	uint32 parent_faction;
+	string_ref_loc name;
+	string_ref_loc description;
+};
+
+struct FactionGroup {
+	uint32 id;
+	int32 mask_id;
+	string_ref internal_name;
+	string_ref_loc name;
+};
+
+struct FactionTemplate {
+	typedef int32 Flags;
+	uint32 id;
+	uint32 faction;
+	Flags flags;
+	uint32 faction_group;
+	uint32 friend_group;
+	uint32 enemy_group;
+	uint32 enemies[4];
+	uint32 friends[4];
+};
+
+struct FootprintTextures {
+	uint32 id;
+	string_ref footstep_file_path;
+};
+
+struct HelmetGeosetVisData {
+	uint32 id;
+	int32 hide_geoset[5];
+};
+
+struct ItemClass {
+	typedef int32 Class;
+	uint32 id;
+	uint32 subclass_map;
+	Class item_class;
+};
+
+struct ItemDisplayInfo {
+	uint32 id;
+	string_ref model_name[2];
+	string_ref model_texture[2];
+	string_ref inventory_icon[2];
+	int32 geoset_group[3];
+	uint32 spell_visual;
+	uint32 group_sound_index;
+	uint32 helmet_geoset_vis[2];
+	string_ref textures[8];
+	uint32 item_visual;
+};
+
+struct ItemGroupSounds {
+	uint32 id;
+	uint32 sound_entry[4];
+};
+
+struct ItemSubClass {
+	uint32 item_class;
+	int32 subclass;
+	int32 prerequisite_proficiency;
+	int32 postrequisite_proficiency;
+	int32 flags;
+	int32 display_flags;
+	int32 weapon_parry_sequence;
+	int32 weapon_ready_sequence;
+	int32 weapon_attack_sequence;
+	int32 weapon_swing_size;
+	string_ref_loc display_name;
+	string_ref_loc verbose_name;
+};
+
+struct ItemVisualEffects {
+	uint32 id;
+	string_ref model_path;
+};
+
+struct ItemVisuals {
+	uint32 id;
+	uint32 item_visual_effects[5];
+};
+
+struct NPCSounds {
+	uint32 id;
+	uint32 sound_entries[4];
+};
+
+struct Resistances {
+	uint32 id;
+	bool32 physical_damage;
+	uint32 fizzle_sound_entry;
+	string_ref_loc name;
+};
+
+struct SoundEntries {
+	typedef int32 SoundType;
+	uint32 id;
+	SoundType sound_type;
+	string_ref name;
+	string_ref files[10];
+	uint32 frequency[10];
+	string_ref directory_base;
+	float volume;
+	int32 flags;
+	float min_distance;
+	float distance_cutoff;
+	int32 sound_entries_advanced;
+};
+
+struct Spell {
+	uint32 id;
+	uint32 school;
+	uint32 category;
+	int32 cast_ui;
+	uint32 dispel_type;
+	uint32 mechanic;
+	int32 attributes;
+	int32 attributes_ex[4];
+	uint32 shapeshift_mask;
+	uint32 shapeshift_exclude;
+	int32 targets;
+	uint32 target_creature_type;
+	uint32 requires_spell_focus;
+	int32 caster_aura_state;
+	int32 target_aura_state;
+	uint32 casting_time_index;
+	int32 recovery_time;
+	int32 category_recovery_time;
+	int32 aura_interrupt_flags;
+	int32 channel_interrupt_flags;
+	int32 proc_type_mask;
+	int32 proc_chance;
+	int32 proc_charges;
+	int32 max_level;
+	int32 base_level;
+	int32 spell_level;
+	uint32 duration;
+	int32 power_type;
+	int32 mana_cost;
+	int32 mana_cost_per_level;
+	int32 mana_cost_per_second;
+	int32 mana_cost_per_second_per_level;
+	uint32 range;
+	float speed;
+	uint32 modal_next_spell;
+	int32 stack_amount;
+	int32 totem[2];
+	int32 regent[8];
+	int32 reagent_count[8];
+	uint32 equipped_item_class;
+	uint32 equipped_item_subclass;
+	int32 equipped_item_inventory_type;
+	int32 effect[3];
+	int32 effect_die_sides[3];
+	int32 effect_base_dice[3];
+	float effect_dice_per_level[3];
+	float effect_real_points_per_level[3];
+	int32 effect_base_points[3];
+	uint32 effect_mechanic[3];
+	int32 implicit_target_a[3];
+	int32 implicit_target_b[3];
+	uint32 effect_radius[3];
+	int32 effect_aura[3];
+	float effect_amplitude[3];
+	float effect_multiple_values[3];
+	int32 effect_chain_target[3];
+	int32 effect_item_type[3];
+	uint32 effect_misc_value[3];
+	uint32 effect_trigger_spell[3];
+	float effect_points_per_combo[3];
+	int32 spell_visual[2];
+	uint32 spell_icon;
+	int32 active_icon;
+	int32 spell_priority;
+	int32 unknown_flag;
+	string_ref_loc name;
+	string_ref_loc name_subtext;
+	string_ref_loc description;
+	string_ref_loc aura_description;
+	int32 mana_cost_percent;
+	int32 start_recovery_category;
+	int32 start_recovery_time;
+	int32 max_target_level;
+	uint32 spell_class_set;
+	int32 spell_class_mask[2];
+	int32 max_targets;
+	int32 defence_type;
+	int32 prevention_type;
+	int32 stance_bar_order;
+	float damage_multiplier[3];
+	int32 min_faction;
+	int32 min_reputation;
+	int32 required_aura_vision;
+};
+
+struct SpellCastTimes {
+	uint32 id;
+	int32 base;
+	int32 per_level_increase;
+	int32 minimum;
+};
+
+struct SpellCategory {
+	uint32 id;
+	int32 flags;
+};
+
+struct SpellDispelType {
+	uint32 id;
+	string_ref name;
+	int32 mask;
+	bool32 allow_immunity;
+};
+
+struct SpellDuration {
+	uint32 id;
+	int32 duration;
+	int32 duration_per_level;
+	int32 max_duration;
+};
+
+struct SpellFocusObject {
+	uint32 id;
+	string_ref_loc name;
+};
+
+struct SpellIcon {
+	uint32 id;
+	string_ref texture_file;
+};
+
+struct SpellItemEnchantment {
+	uint32 id;
+	int32 enchantment_type[3];
+	int32 effect_points_min[3];
+	int32 effect_points_max[3];
+	int32 effect_arg[3];
+	string_ref_loc name;
+	uint32 item_visual;
+	int32 flags;
+};
+
+struct SpellMechanic {
+	uint32 id;
+	string_ref_loc state_name;
+};
+
+struct SpellRadius {
+	uint32 id;
+	float radius;
+	float radius_per_level;
+	float radius_max;
+};
+
+struct SpellRange {
+	uint32 id;
+	float range_min;
+	float range_max;
+	int32 flags;
+	string_ref_loc display_name;
+	string_ref_loc display_name_short;
+};
+
+struct SpellShapeshiftForm {
+	uint32 id;
+	int32 bonus_action_bar;
+	string_ref_loc name;
+	int32 flags;
+	int32 creature_type;
+	uint32 spell_icon;
+};
+
+struct SpellVisual {
+	uint32 id;
+	uint32 precast_kit;
+	uint32 cast_kit;
+	uint32 impact_kit;
+	uint32 state_kit;
+	uint32 state_done_kit;
+	uint32 channel_kit;
+	bool32 has_missile;
+	int32 missile_model;
+	int32 missile_path_type;
+	int32 missile_destination_attachment;
+	uint32 missile_sound;
+	uint32 anim_event_sound;
+	int32 flags;
+	uint32 caster_impact_kit;
+	uint32 target_impact_kit;
+};
+
+struct SpellVisualEffectName {
+	uint32 id;
+	string_ref name;
+	string_ref filename;
+	float area_effect_size;
+	float scale;
+};
+
+struct SpellVisualKit {
+	uint32 id;
+	uint32 start_anim;
+	int32 anim_kit;
+	uint32 head_effect;
+	uint32 chest_effect;
+	uint32 base_effect;
+	uint32 left_hand_effect;
+	uint32 right_hand_effect;
+	uint32 breath_effect;
+	uint32 left_weapon_effect;
+	uint32 right_weapon_effect;
+	uint32 special_effects[3];
+	uint32 world_effect;
+	uint32 sound;
+	uint32 shake;
+	float char_proc[4];
+	float char_param_zero[4];
+	float char_param_one[4];
+	float char_param_two[4];
+	int32 flags;
+};
+
+struct UnitBlood {
+	uint32 id;
+	int32 combat_blood_spurt_front_small;
+	int32 combat_blood_spurt_front_large;
+	int32 combat_blood_spurt_back_small;
+	int32 combat_blood_spurt_back_large;
+	string_ref texture[5];
 };
 
 

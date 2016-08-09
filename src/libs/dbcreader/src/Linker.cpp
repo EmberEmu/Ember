@@ -19,11 +19,291 @@ namespace ember { namespace dbc {
 
 namespace detail {
 
+void link_animation_data(Storage& storage) {
+	for(auto& i : storage.animation_data.values()) {
+		i.fallback = storage.animation_data[i.fallback_id];
+		i.behaviour = storage.animation_data[i.behaviour_id];
+	}
+}
+
+void link_chr_races(Storage& storage) {
+	for(auto& i : storage.chr_races.values()) {
+		i.faction = storage.faction_template[i.faction_id];
+		i.exploration_sound = storage.sound_entries[i.exploration_sound_id];
+		i.male_display = storage.creature_display_info[i.male_display_id];
+		i.female_display = storage.creature_display_info[i.female_display_id];
+		i.creature_type = storage.creature_type[i.creature_type_id];
+		i.login_effect = storage.spell[i.login_effect_id];
+		i.res_sickness_spell = storage.spell[i.res_sickness_spell_id];
+		i.splash_sound_entry = storage.sound_entries[i.splash_sound_entry_id];
+		i.cinematic_sequence = storage.cinematic_sequences[i.cinematic_sequence_id];
+	}
+}
+
+void link_cinematic_camera(Storage& storage) {
+	for(auto& i : storage.cinematic_camera.values()) {
+		i.sound_entry = storage.sound_entries[i.sound_entry_id];
+	}
+}
+
+void link_cinematic_sequences(Storage& storage) {
+	for(auto& i : storage.cinematic_sequences.values()) {
+		i.sound_entry = storage.sound_entries[i.sound_entry_id];
+
+		for(std::size_t j = 0; j < sizeof(i.cinematic_camera_1) / sizeof(std::uint32_t); ++j) { 
+			i.cinematic_camera_1[j] = storage.cinematic_camera[i.cinematic_camera_1_id[j]];
+		}
+	}
+}
+
+void link_creature_display_info(Storage& storage) {
+	for(auto& i : storage.creature_display_info.values()) {
+		i.model = storage.creature_model_data[i.model_id];
+		i.sound = storage.creature_sound_data[i.sound_id];
+		i.extended_display_info = storage.creature_display_info_extra[i.extended_display_info_id];
+		i.blood = storage.unit_blood[i.blood_id];
+		i.npc_sound = storage.npc_sounds[i.npc_sound_id];
+	}
+}
+
+void link_creature_display_info_extra(Storage& storage) {
+	for(auto& i : storage.creature_display_info_extra.values()) {
+		i.display_race = storage.chr_races[i.display_race_id];
+
+		for(std::size_t j = 0; j < sizeof(i.npc_item_display) / sizeof(std::uint32_t); ++j) { 
+			i.npc_item_display[j] = storage.item_display_info[i.npc_item_display_id[j]];
+		}
+	}
+}
+
+void link_creature_model_data(Storage& storage) {
+	for(auto& i : storage.creature_model_data.values()) {
+		i.blood = storage.unit_blood[i.blood_id];
+		i.footprint_texture = storage.footprint_textures[i.footprint_texture_id];
+	}
+}
+
+void link_creature_sound_data(Storage& storage) {
+	for(auto& i : storage.creature_sound_data.values()) {
+		i.sound_exertion = storage.sound_entries[i.sound_exertion_id];
+		i.sound_exertion_critical = storage.sound_entries[i.sound_exertion_critical_id];
+		i.sound_injury = storage.sound_entries[i.sound_injury_id];
+		i.sound_injury_critical = storage.sound_entries[i.sound_injury_critical_id];
+		i.sound_injury_crushing_blow = storage.sound_entries[i.sound_injury_crushing_blow_id];
+		i.sound_death = storage.sound_entries[i.sound_death_id];
+		i.sound_stun = storage.sound_entries[i.sound_stun_id];
+		i.sound_stand = storage.sound_entries[i.sound_stand_id];
+		i.sound_footstep = storage.sound_entries[i.sound_footstep_id];
+		i.sound_aggro = storage.sound_entries[i.sound_aggro_id];
+		i.sound_wing_flap = storage.sound_entries[i.sound_wing_flap_id];
+		i.sound_wing_glide = storage.sound_entries[i.sound_wing_glide_id];
+		i.sound_alert = storage.sound_entries[i.sound_alert_id];
+		i.sound_fidget = storage.sound_entries[i.sound_fidget_id];
+		i.npc_sound = storage.sound_entries[i.npc_sound_id];
+		i.loop_sound = storage.sound_entries[i.loop_sound_id];
+		i.sound_jump_start = storage.sound_entries[i.sound_jump_start_id];
+		i.sound_jump_end = storage.sound_entries[i.sound_jump_end_id];
+		i.sound_pet_attack = storage.sound_entries[i.sound_pet_attack_id];
+		i.sound_pet_order = storage.sound_entries[i.sound_pet_order_id];
+		i.sound_pet_dismiss = storage.sound_entries[i.sound_pet_dismiss_id];
+		i.birth_sound = storage.sound_entries[i.birth_sound_id];
+		i.spell_cast_directed_sound = storage.sound_entries[i.spell_cast_directed_sound_id];
+		i.submerge_sound = storage.sound_entries[i.submerge_sound_id];
+		i.submerged_sound = storage.sound_entries[i.submerged_sound_id];
+	}
+}
+
+void link_faction(Storage& storage) {
+	for(auto& i : storage.faction.values()) {
+		i.parent_faction = storage.faction[i.parent_faction_id];
+	}
+}
+
+void link_faction_template(Storage& storage) {
+	for(auto& i : storage.faction_template.values()) {
+		i.faction = storage.faction[i.faction_id];
+		i.faction_group = storage.faction_group[i.faction_group_id];
+		i.friend_group = storage.faction_group[i.friend_group_id];
+		i.enemy_group = storage.faction_group[i.enemy_group_id];
+
+		for(std::size_t j = 0; j < sizeof(i.enemies) / sizeof(std::uint32_t); ++j) { 
+			i.enemies[j] = storage.faction[i.enemies_id[j]];
+		}
+
+		for(std::size_t j = 0; j < sizeof(i.friends) / sizeof(std::uint32_t); ++j) { 
+			i.friends[j] = storage.faction[i.friends_id[j]];
+		}
+	}
+}
+
+void link_item_class(Storage& storage) {
+	for(auto& i : storage.item_class.values()) {
+		i.subclass_map = storage.item_sub_class[i.subclass_map_id];
+	}
+}
+
+void link_item_display_info(Storage& storage) {
+	for(auto& i : storage.item_display_info.values()) {
+		i.spell_visual = storage.spell_visual[i.spell_visual_id];
+		i.group_sound_index = storage.item_group_sounds[i.group_sound_index_id];
+
+		for(std::size_t j = 0; j < sizeof(i.helmet_geoset_vis) / sizeof(std::uint32_t); ++j) { 
+			i.helmet_geoset_vis[j] = storage.helmet_geoset_vis_data[i.helmet_geoset_vis_id[j]];
+		}
+
+		i.item_visual = storage.item_visuals[i.item_visual_id];
+	}
+}
+
+void link_item_group_sounds(Storage& storage) {
+	for(auto& i : storage.item_group_sounds.values()) {
+		for(std::size_t j = 0; j < sizeof(i.sound_entry) / sizeof(std::uint32_t); ++j) { 
+			i.sound_entry[j] = storage.sound_entries[i.sound_entry_id[j]];
+		}
+	}
+}
+
+void link_item_sub_class(Storage& storage) {
+	for(auto& i : storage.item_sub_class.values()) {
+		i.item_class = storage.item_class[i.item_class_id];
+	}
+}
+
+void link_item_visuals(Storage& storage) {
+	for(auto& i : storage.item_visuals.values()) {
+		for(std::size_t j = 0; j < sizeof(i.item_visual_effects) / sizeof(std::uint32_t); ++j) { 
+			i.item_visual_effects[j] = storage.item_visual_effects[i.item_visual_effects_id[j]];
+		}
+	}
+}
+
+void link_npc_sounds(Storage& storage) {
+	for(auto& i : storage.npc_sounds.values()) {
+		for(std::size_t j = 0; j < sizeof(i.sound_entries) / sizeof(std::uint32_t); ++j) { 
+			i.sound_entries[j] = storage.sound_entries[i.sound_entries_id[j]];
+		}
+	}
+}
+
+void link_resistances(Storage& storage) {
+	for(auto& i : storage.resistances.values()) {
+		i.fizzle_sound_entry = storage.sound_entries[i.fizzle_sound_entry_id];
+	}
+}
+
+void link_spell(Storage& storage) {
+	for(auto& i : storage.spell.values()) {
+		i.school = storage.resistances[i.school_id];
+		i.category = storage.spell_category[i.category_id];
+		i.dispel_type = storage.spell_dispel_type[i.dispel_type_id];
+		i.mechanic = storage.spell_mechanic[i.mechanic_id];
+		i.shapeshift_mask = storage.spell_shapeshift_form[i.shapeshift_mask_id];
+		i.shapeshift_exclude = storage.spell_shapeshift_form[i.shapeshift_exclude_id];
+		i.target_creature_type = storage.creature_type[i.target_creature_type_id];
+		i.requires_spell_focus = storage.spell_focus_object[i.requires_spell_focus_id];
+		i.casting_time_index = storage.spell_cast_times[i.casting_time_index_id];
+		i.duration = storage.spell_duration[i.duration_id];
+		i.range = storage.spell_range[i.range_id];
+		i.modal_next_spell = storage.spell[i.modal_next_spell_id];
+		i.equipped_item_class = storage.item_class[i.equipped_item_class_id];
+		i.equipped_item_subclass = storage.item_sub_class[i.equipped_item_subclass_id];
+		for(std::size_t j = 0; j < sizeof(i.effect_mechanic) / sizeof(std::uint32_t); ++j) { 
+			i.effect_mechanic[j] = storage.spell_mechanic[i.effect_mechanic_id[j]];
+		}
+
+		for(std::size_t j = 0; j < sizeof(i.effect_radius) / sizeof(std::uint32_t); ++j) { 
+			i.effect_radius[j] = storage.spell_radius[i.effect_radius_id[j]];
+		}
+
+		for(std::size_t j = 0; j < sizeof(i.effect_misc_value) / sizeof(std::uint32_t); ++j) { 
+			i.effect_misc_value[j] = storage.spell_item_enchantment[i.effect_misc_value_id[j]];
+		}
+
+		for(std::size_t j = 0; j < sizeof(i.effect_trigger_spell) / sizeof(std::uint32_t); ++j) { 
+			i.effect_trigger_spell[j] = storage.spell[i.effect_trigger_spell_id[j]];
+		}
+
+		i.spell_icon = storage.spell_icon[i.spell_icon_id];
+		i.spell_class_set = storage.chr_classes[i.spell_class_set_id];
+	}
+}
+
+void link_spell_item_enchantment(Storage& storage) {
+	for(auto& i : storage.spell_item_enchantment.values()) {
+		i.item_visual = storage.item_visuals[i.item_visual_id];
+	}
+}
+
+void link_spell_shapeshift_form(Storage& storage) {
+	for(auto& i : storage.spell_shapeshift_form.values()) {
+		i.spell_icon = storage.spell_icon[i.spell_icon_id];
+	}
+}
+
+void link_spell_visual(Storage& storage) {
+	for(auto& i : storage.spell_visual.values()) {
+		i.precast_kit = storage.spell_visual_kit[i.precast_kit_id];
+		i.cast_kit = storage.spell_visual_kit[i.cast_kit_id];
+		i.impact_kit = storage.spell_visual_kit[i.impact_kit_id];
+		i.state_kit = storage.spell_visual_kit[i.state_kit_id];
+		i.state_done_kit = storage.spell_visual_kit[i.state_done_kit_id];
+		i.channel_kit = storage.spell_visual_kit[i.channel_kit_id];
+		i.missile_sound = storage.sound_entries[i.missile_sound_id];
+		i.anim_event_sound = storage.spell_visual_kit[i.anim_event_sound_id];
+		i.caster_impact_kit = storage.spell_visual_kit[i.caster_impact_kit_id];
+		i.target_impact_kit = storage.spell_visual_kit[i.target_impact_kit_id];
+	}
+}
+
+void link_spell_visual_kit(Storage& storage) {
+	for(auto& i : storage.spell_visual_kit.values()) {
+		i.start_anim = storage.animation_data[i.start_anim_id];
+		i.head_effect = storage.spell_visual_effect_name[i.head_effect_id];
+		i.chest_effect = storage.spell_visual_effect_name[i.chest_effect_id];
+		i.base_effect = storage.spell_visual_effect_name[i.base_effect_id];
+		i.left_hand_effect = storage.spell_visual_effect_name[i.left_hand_effect_id];
+		i.right_hand_effect = storage.spell_visual_effect_name[i.right_hand_effect_id];
+		i.breath_effect = storage.spell_visual_effect_name[i.breath_effect_id];
+		i.left_weapon_effect = storage.spell_visual_effect_name[i.left_weapon_effect_id];
+		i.right_weapon_effect = storage.spell_visual_effect_name[i.right_weapon_effect_id];
+
+		for(std::size_t j = 0; j < sizeof(i.special_effects) / sizeof(std::uint32_t); ++j) { 
+			i.special_effects[j] = storage.spell_visual_effect_name[i.special_effects_id[j]];
+		}
+
+		i.world_effect = storage.spell_visual_effect_name[i.world_effect_id];
+		i.sound = storage.sound_entries[i.sound_id];
+		i.shake = storage.camera_shakes[i.shake_id];
+	}
+}
+
 
 
 } // detail
 
 void link(Storage& storage) {
+	detail::link_animation_data(storage);
+	detail::link_chr_races(storage);
+	detail::link_cinematic_camera(storage);
+	detail::link_cinematic_sequences(storage);
+	detail::link_creature_display_info(storage);
+	detail::link_creature_display_info_extra(storage);
+	detail::link_creature_model_data(storage);
+	detail::link_creature_sound_data(storage);
+	detail::link_faction(storage);
+	detail::link_faction_template(storage);
+	detail::link_item_class(storage);
+	detail::link_item_display_info(storage);
+	detail::link_item_group_sounds(storage);
+	detail::link_item_sub_class(storage);
+	detail::link_item_visuals(storage);
+	detail::link_npc_sounds(storage);
+	detail::link_resistances(storage);
+	detail::link_spell(storage);
+	detail::link_spell_item_enchantment(storage);
+	detail::link_spell_shapeshift_form(storage);
+	detail::link_spell_visual(storage);
+	detail::link_spell_visual_kit(storage);
 
 }
 

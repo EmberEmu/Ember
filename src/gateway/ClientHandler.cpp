@@ -79,8 +79,8 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 		return;
 	}
 
-	auto response = std::make_shared<protocol::SMSG_PONG>();
-	response->sequence_id = packet.sequence_id;
+	protocol::SMSG_PONG response;
+	response.sequence_id = packet.sequence_id;
 	connection_.latency(packet.latency);
 	connection_.send(response);
 }

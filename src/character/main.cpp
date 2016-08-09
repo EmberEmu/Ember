@@ -70,6 +70,15 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
+	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
+	edbc::DiskLoader loader(args["dbc.path"].as<std::string>());
+	auto dbc_store = loader.load({
+		"ChrClasses", "ChrRaces"
+	});
+
+	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
+	edbc::link(dbc_store);
+
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
@@ -120,8 +129,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	pos.add("config", 1);
 
 	//Config file options
-	po::options_description config_opts("Realm gateway configuration options");
+	po::options_description config_opts("Character service configuration options");
 	config_opts.add_options()
+		("dbc.path", po::value<std::string>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("spark.multicast_interface", po::value<std::string>()->required())

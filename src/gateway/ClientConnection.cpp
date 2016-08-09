@@ -66,37 +66,33 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 	}
 }
 
-void ClientConnection::send(std::shared_ptr<protocol::ServerPacket> packet) {
-	auto self(shared_from_this());
+void ClientConnection::send(const protocol::ServerPacket& packet) {
+	spark::Buffer& buffer(outbound_buffer_);
+	spark::SafeBinaryStream stream(buffer);
+	const std::size_t write_index = buffer.size(); // the current write index
 
-	service_.dispatch([this, self, packet]() mutable {
-		spark::Buffer& buffer(outbound_buffer_);
-		spark::SafeBinaryStream stream(buffer);
-		const std::size_t write_index = buffer.size(); // the current write index
+	stream << std::uint16_t(0) << packet.opcode << packet;
 
-		stream << std::uint16_t(0) << packet->opcode << *packet;
+	// calculate the size of the packet that we just streamed and then update the buffer
+	const boost::endian::big_uint16_at final_size =
+		static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
 
-		// calculate the size of the packet that we just streamed and then update the buffer
-		const boost::endian::big_uint16_at final_size =
-			static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
+	// todo - could implement iterators to make this slightly nicer
+	buffer[write_index + 0] = final_size.data()[0];
+	buffer[write_index + 1] = final_size.data()[1];
 
-		// todo - could implement iterators to make this slightly nicer
-		buffer[write_index + 0] = final_size.data()[0];
-		buffer[write_index + 1] = final_size.data()[1];
+	if(authenticated_) {
+		const std::size_t header_wire_size =
+			sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
+		crypto_.encrypt(buffer, write_index, header_wire_size);
+	}
 
-		if(authenticated_) {
-			const std::size_t header_wire_size =
-				sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
-			crypto_.encrypt(buffer, write_index, header_wire_size);
-		}
-
-		if(!write_in_progress_) {
-			write_in_progress_ = true;
-			write();
-		}
-
-		++stats_.messages_out;
-	});
+	if(!write_in_progress_) {
+		write_in_progress_ = true;
+		write();
+	}
+			
+	++stats_.messages_out;
 }
 
 void ClientConnection::write() {

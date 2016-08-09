@@ -29,18 +29,18 @@ public:
 	inline T* operator[](std::size_t index)  {
 		auto it = storage.find(index);
 		
-		if(it == lookup.end()) {
+		if(it == storage.end()) {
 			return nullptr;
 		}
 
 		return &it->second;
 	}
 
-	inline auto begin() const {
+	inline auto begin() {
 		return storage.begin();
 	}
 
-	inline auto end() const {
+	inline auto end() {
 		return storage.end();
 	}
 

@@ -47,6 +47,43 @@ const MappedDBC<T> get_offsets(const void* start) {
 	return MappedDBC<T>{dbc, records, string_block};
 }
 
+void load_animation_data(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "AnimationData.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::AnimationData>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		AnimationData entry{};
+		entry.id = dbc.records[i].id;
+		entry.name = dbc.strings + dbc.records[i].name;
+		entry.weapon_flags = static_cast<AnimationData::WeaponFlags>(dbc.records[i].weapon_flags);
+		entry.body_flags = dbc.records[i].body_flags;
+		entry.unknown = dbc.records[i].unknown;
+		entry.fallback_id = dbc.records[i].fallback;
+		entry.behaviour_id = dbc.records[i].behaviour;
+		storage.animation_data.emplace_back(entry.id, entry);
+	}
+}
+
+void load_camera_shakes(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CameraShakes.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CameraShakes>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CameraShakes entry{};
+		entry.id = dbc.records[i].id;
+		entry.shake_type = dbc.records[i].shake_type;
+		entry.direction = dbc.records[i].direction;
+		entry.amplitude = dbc.records[i].amplitude;
+		entry.frequency = dbc.records[i].frequency;
+		entry.duration = dbc.records[i].duration;
+		entry.phase = dbc.records[i].phase;
+		entry.coefficient = dbc.records[i].coefficient;
+		storage.camera_shakes.emplace_back(entry.id, entry);
+	}
+}
+
 void load_chr_classes(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ChrClasses.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
@@ -77,13 +114,1191 @@ void load_chr_classes(Storage& storage, const std::string& dir_path) {
 	}
 }
 
+void load_chr_races(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ChrRaces.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ChrRaces>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ChrRaces entry{};
+		entry.id = dbc.records[i].id;
+		entry.flags = static_cast<ChrRaces::Flags>(dbc.records[i].flags);
+		entry.faction_id = dbc.records[i].faction;
+		entry.exploration_sound_id = dbc.records[i].exploration_sound;
+		entry.male_display_id = dbc.records[i].male_display;
+		entry.female_display_id = dbc.records[i].female_display;
+		entry.client_prefix = dbc.strings + dbc.records[i].client_prefix;
+		entry.speed_modifier = dbc.records[i].speed_modifier;
+		entry.base_lang = static_cast<ChrRaces::BaseLanguage>(dbc.records[i].base_lang);
+		entry.creature_type_id = dbc.records[i].creature_type;
+		entry.login_effect_id = dbc.records[i].login_effect;
+		entry.unknown1 = dbc.records[i].unknown1;
+		entry.res_sickness_spell_id = dbc.records[i].res_sickness_spell;
+		entry.splash_sound_entry_id = dbc.records[i].splash_sound_entry;
+		entry.unknown2 = dbc.records[i].unknown2;
+		entry.client_file_path = dbc.strings + dbc.records[i].client_file_path;
+		entry.cinematic_sequence_id = dbc.records[i].cinematic_sequence;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].facial_hair_customisation) / sizeof(std::string); ++j) {
+			entry.facial_hair_customisation[j] = dbc.strings + dbc.records[i].facial_hair_customisation[j];
+		}
+
+		entry.hair_customisation = dbc.strings + dbc.records[i].hair_customisation;
+		storage.chr_races.emplace_back(entry.id, entry);
+	}
+}
+
+void load_cinematic_camera(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CinematicCamera.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CinematicCamera>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CinematicCamera entry{};
+		entry.id = dbc.records[i].id;
+		entry.model = dbc.strings + dbc.records[i].model;
+		entry.sound_entry_id = dbc.records[i].sound_entry;
+		entry.location_x = dbc.records[i].location_x;
+		entry.location_y = dbc.records[i].location_y;
+		entry.location_z = dbc.records[i].location_z;
+		entry.rotation = dbc.records[i].rotation;
+		storage.cinematic_camera.emplace_back(entry.id, entry);
+	}
+}
+
+void load_cinematic_sequences(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CinematicSequences.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CinematicSequences>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CinematicSequences entry{};
+		entry.id = dbc.records[i].id;
+		entry.sound_entry_id = dbc.records[i].sound_entry;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].cinematic_camera_1) / sizeof(std::uint32_t); ++j) {
+			entry.cinematic_camera_1_id[j] = dbc.records[i].cinematic_camera_1[j];
+		}
+
+		storage.cinematic_sequences.emplace_back(entry.id, entry);
+	}
+}
+
+void load_creature_display_info(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CreatureDisplayInfo.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CreatureDisplayInfo>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CreatureDisplayInfo entry{};
+		entry.id = dbc.records[i].id;
+		entry.model_id = dbc.records[i].model;
+		entry.sound_id = dbc.records[i].sound;
+		entry.extended_display_info_id = dbc.records[i].extended_display_info;
+		entry.creature_model_scale = dbc.records[i].creature_model_scale;
+		entry.creature_model_alpha = dbc.records[i].creature_model_alpha;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture_variation) / sizeof(std::string); ++j) {
+			entry.texture_variation[j] = dbc.strings + dbc.records[i].texture_variation[j];
+		}
+
+		entry.size = static_cast<CreatureDisplayInfo::SizeClass>(dbc.records[i].size);
+		entry.blood_id = dbc.records[i].blood;
+		entry.npc_sound_id = dbc.records[i].npc_sound;
+		storage.creature_display_info.emplace_back(entry.id, entry);
+	}
+}
+
+void load_creature_display_info_extra(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CreatureDisplayInfoExtra.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CreatureDisplayInfoExtra>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CreatureDisplayInfoExtra entry{};
+		entry.id = dbc.records[i].id;
+		entry.display_race_id = dbc.records[i].display_race;
+		entry.sex = static_cast<CreatureDisplayInfoExtra::Sex>(dbc.records[i].sex);
+		entry.skin = dbc.records[i].skin;
+		entry.face = dbc.records[i].face;
+		entry.hair_style = dbc.records[i].hair_style;
+		entry.hair_colour = dbc.records[i].hair_colour;
+		entry.facial_hair = dbc.records[i].facial_hair;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].npc_item_display) / sizeof(std::uint32_t); ++j) {
+			entry.npc_item_display_id[j] = dbc.records[i].npc_item_display[j];
+		}
+
+		entry.flags = dbc.records[i].flags;
+		entry.bake_name = dbc.strings + dbc.records[i].bake_name;
+		storage.creature_display_info_extra.emplace_back(entry.id, entry);
+	}
+}
+
+void load_creature_model_data(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CreatureModelData.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CreatureModelData>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CreatureModelData entry{};
+		entry.id = dbc.records[i].id;
+		entry.flags = dbc.records[i].flags;
+		entry.model_path = dbc.strings + dbc.records[i].model_path;
+		entry.size = static_cast<CreatureModelData::SizeClass>(dbc.records[i].size);
+		entry.model_scale = dbc.records[i].model_scale;
+		entry.blood_id = dbc.records[i].blood;
+		entry.footprint_texture_id = dbc.records[i].footprint_texture;
+		entry.footprint_texture_length = dbc.records[i].footprint_texture_length;
+		entry.footprint_texture_width = dbc.records[i].footprint_texture_width;
+		entry.footprint_texture_scale = dbc.records[i].footprint_texture_scale;
+		entry.foley_material = dbc.records[i].foley_material;
+		entry.footstep_shake_size = dbc.records[i].footstep_shake_size;
+		entry.death_thud_shake_size = dbc.records[i].death_thud_shake_size;
+		entry.collision_width = dbc.records[i].collision_width;
+		entry.collision_height = dbc.records[i].collision_height;
+		entry.mount_height = dbc.records[i].mount_height;
+		storage.creature_model_data.emplace_back(entry.id, entry);
+	}
+}
+
+void load_creature_sound_data(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CreatureSoundData.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CreatureSoundData>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CreatureSoundData entry{};
+		entry.id = dbc.records[i].id;
+		entry.sound_exertion_id = dbc.records[i].sound_exertion;
+		entry.sound_exertion_critical_id = dbc.records[i].sound_exertion_critical;
+		entry.sound_injury_id = dbc.records[i].sound_injury;
+		entry.sound_injury_critical_id = dbc.records[i].sound_injury_critical;
+		entry.sound_injury_crushing_blow_id = dbc.records[i].sound_injury_crushing_blow;
+		entry.sound_death_id = dbc.records[i].sound_death;
+		entry.sound_stun_id = dbc.records[i].sound_stun;
+		entry.sound_stand_id = dbc.records[i].sound_stand;
+		entry.sound_footstep_id = dbc.records[i].sound_footstep;
+		entry.sound_aggro_id = dbc.records[i].sound_aggro;
+		entry.sound_wing_flap_id = dbc.records[i].sound_wing_flap;
+		entry.sound_wing_glide_id = dbc.records[i].sound_wing_glide;
+		entry.sound_alert_id = dbc.records[i].sound_alert;
+		entry.sound_fidget_id = dbc.records[i].sound_fidget;
+		entry.custom_attack = dbc.records[i].custom_attack;
+		entry.npc_sound_id = dbc.records[i].npc_sound;
+		entry.loop_sound_id = dbc.records[i].loop_sound;
+		entry.creature_impact_type = dbc.records[i].creature_impact_type;
+		entry.sound_jump_start_id = dbc.records[i].sound_jump_start;
+		entry.sound_jump_end_id = dbc.records[i].sound_jump_end;
+		entry.sound_pet_attack_id = dbc.records[i].sound_pet_attack;
+		entry.sound_pet_order_id = dbc.records[i].sound_pet_order;
+		entry.sound_pet_dismiss_id = dbc.records[i].sound_pet_dismiss;
+		entry.fidget_delay_seconds_min = dbc.records[i].fidget_delay_seconds_min;
+		entry.fidget_delay_seconds_max = dbc.records[i].fidget_delay_seconds_max;
+		entry.birth_sound_id = dbc.records[i].birth_sound;
+		entry.spell_cast_directed_sound_id = dbc.records[i].spell_cast_directed_sound;
+		entry.submerge_sound_id = dbc.records[i].submerge_sound;
+		entry.submerged_sound_id = dbc.records[i].submerged_sound;
+		storage.creature_sound_data.emplace_back(entry.id, entry);
+	}
+}
+
+void load_creature_type(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CreatureType.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CreatureType>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CreatureType entry{};
+		entry.id = dbc.records[i].id;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		entry.flags = dbc.records[i].flags;
+		storage.creature_type.emplace_back(entry.id, entry);
+	}
+}
+
+void load_faction(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "Faction.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::Faction>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		Faction entry{};
+		entry.id = dbc.records[i].id;
+		entry.reputation_index = dbc.records[i].reputation_index;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].reputation_race_mask) / sizeof(Faction::ReputationRaceMask); ++j) {
+			entry.reputation_race_mask[j] = static_cast<Faction::ReputationRaceMask>(dbc.records[i].reputation_race_mask[j]);
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].reputation_class_mask) / sizeof(std::int32_t); ++j) {
+			entry.reputation_class_mask[j] = dbc.records[i].reputation_class_mask[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].reputation_base) / sizeof(std::int32_t); ++j) {
+			entry.reputation_base[j] = dbc.records[i].reputation_base[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].reputation_flags) / sizeof(Faction::ReputationFlags); ++j) {
+			entry.reputation_flags[j] = static_cast<Faction::ReputationFlags>(dbc.records[i].reputation_flags[j]);
+		}
+
+		entry.parent_faction_id = dbc.records[i].parent_faction;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+
+		 // string_ref_loc block
+		entry.description.enGB = dbc.strings + dbc.records[i].description.enGB;
+		entry.description.koKR = dbc.strings + dbc.records[i].description.koKR;
+		entry.description.frFR = dbc.strings + dbc.records[i].description.frFR;
+		entry.description.deDE = dbc.strings + dbc.records[i].description.deDE;
+		entry.description.enCN = dbc.strings + dbc.records[i].description.enCN;
+		entry.description.enTW = dbc.strings + dbc.records[i].description.enTW;
+		entry.description.esES = dbc.strings + dbc.records[i].description.esES;
+		entry.description.esMX = dbc.strings + dbc.records[i].description.esMX;
+
+		storage.faction.emplace_back(entry.id, entry);
+	}
+}
+
+void load_faction_group(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "FactionGroup.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::FactionGroup>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		FactionGroup entry{};
+		entry.id = dbc.records[i].id;
+		entry.mask_id = dbc.records[i].mask_id;
+		entry.internal_name = dbc.strings + dbc.records[i].internal_name;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		storage.faction_group.emplace_back(entry.id, entry);
+	}
+}
+
+void load_faction_template(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "FactionTemplate.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::FactionTemplate>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		FactionTemplate entry{};
+		entry.id = dbc.records[i].id;
+		entry.faction_id = dbc.records[i].faction;
+		entry.flags = static_cast<FactionTemplate::Flags>(dbc.records[i].flags);
+		entry.faction_group_id = dbc.records[i].faction_group;
+		entry.friend_group_id = dbc.records[i].friend_group;
+		entry.enemy_group_id = dbc.records[i].enemy_group;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].enemies) / sizeof(std::uint32_t); ++j) {
+			entry.enemies_id[j] = dbc.records[i].enemies[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].friends) / sizeof(std::uint32_t); ++j) {
+			entry.friends_id[j] = dbc.records[i].friends[j];
+		}
+
+		storage.faction_template.emplace_back(entry.id, entry);
+	}
+}
+
+void load_footprint_textures(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "FootprintTextures.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::FootprintTextures>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		FootprintTextures entry{};
+		entry.id = dbc.records[i].id;
+		entry.footstep_file_path = dbc.strings + dbc.records[i].footstep_file_path;
+		storage.footprint_textures.emplace_back(entry.id, entry);
+	}
+}
+
+void load_helmet_geoset_vis_data(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "HelmetGeosetVisData.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::HelmetGeosetVisData>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		HelmetGeosetVisData entry{};
+		entry.id = dbc.records[i].id;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].hide_geoset) / sizeof(std::int32_t); ++j) {
+			entry.hide_geoset[j] = dbc.records[i].hide_geoset[j];
+		}
+
+		storage.helmet_geoset_vis_data.emplace_back(entry.id, entry);
+	}
+}
+
+void load_item_class(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ItemClass.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ItemClass>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ItemClass entry{};
+		entry.id = dbc.records[i].id;
+		entry.subclass_map_id = dbc.records[i].subclass_map;
+		entry.item_class = static_cast<ItemClass::Class>(dbc.records[i].item_class);
+		storage.item_class.emplace_back(entry.id, entry);
+	}
+}
+
+void load_item_display_info(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ItemDisplayInfo.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ItemDisplayInfo>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ItemDisplayInfo entry{};
+		entry.id = dbc.records[i].id;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].model_name) / sizeof(std::string); ++j) {
+			entry.model_name[j] = dbc.strings + dbc.records[i].model_name[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].model_texture) / sizeof(std::string); ++j) {
+			entry.model_texture[j] = dbc.strings + dbc.records[i].model_texture[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].inventory_icon) / sizeof(std::string); ++j) {
+			entry.inventory_icon[j] = dbc.strings + dbc.records[i].inventory_icon[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].geoset_group) / sizeof(std::int32_t); ++j) {
+			entry.geoset_group[j] = dbc.records[i].geoset_group[j];
+		}
+
+		entry.spell_visual_id = dbc.records[i].spell_visual;
+		entry.group_sound_index_id = dbc.records[i].group_sound_index;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].helmet_geoset_vis) / sizeof(std::uint32_t); ++j) {
+			entry.helmet_geoset_vis_id[j] = dbc.records[i].helmet_geoset_vis[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].textures) / sizeof(std::string); ++j) {
+			entry.textures[j] = dbc.strings + dbc.records[i].textures[j];
+		}
+
+		entry.item_visual_id = dbc.records[i].item_visual;
+		storage.item_display_info.emplace_back(entry.id, entry);
+	}
+}
+
+void load_item_group_sounds(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ItemGroupSounds.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ItemGroupSounds>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ItemGroupSounds entry{};
+		entry.id = dbc.records[i].id;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].sound_entry) / sizeof(std::uint32_t); ++j) {
+			entry.sound_entry_id[j] = dbc.records[i].sound_entry[j];
+		}
+
+		storage.item_group_sounds.emplace_back(entry.id, entry);
+	}
+}
+
+void load_item_sub_class(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ItemSubClass.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ItemSubClass>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ItemSubClass entry{};
+		entry.item_class_id = dbc.records[i].item_class;
+		entry.subclass = dbc.records[i].subclass;
+		entry.prerequisite_proficiency = dbc.records[i].prerequisite_proficiency;
+		entry.postrequisite_proficiency = dbc.records[i].postrequisite_proficiency;
+		entry.flags = dbc.records[i].flags;
+		entry.display_flags = dbc.records[i].display_flags;
+		entry.weapon_parry_sequence = dbc.records[i].weapon_parry_sequence;
+		entry.weapon_ready_sequence = dbc.records[i].weapon_ready_sequence;
+		entry.weapon_attack_sequence = dbc.records[i].weapon_attack_sequence;
+		entry.weapon_swing_size = dbc.records[i].weapon_swing_size;
+
+		 // string_ref_loc block
+		entry.display_name.enGB = dbc.strings + dbc.records[i].display_name.enGB;
+		entry.display_name.koKR = dbc.strings + dbc.records[i].display_name.koKR;
+		entry.display_name.frFR = dbc.strings + dbc.records[i].display_name.frFR;
+		entry.display_name.deDE = dbc.strings + dbc.records[i].display_name.deDE;
+		entry.display_name.enCN = dbc.strings + dbc.records[i].display_name.enCN;
+		entry.display_name.enTW = dbc.strings + dbc.records[i].display_name.enTW;
+		entry.display_name.esES = dbc.strings + dbc.records[i].display_name.esES;
+		entry.display_name.esMX = dbc.strings + dbc.records[i].display_name.esMX;
+
+
+		 // string_ref_loc block
+		entry.verbose_name.enGB = dbc.strings + dbc.records[i].verbose_name.enGB;
+		entry.verbose_name.koKR = dbc.strings + dbc.records[i].verbose_name.koKR;
+		entry.verbose_name.frFR = dbc.strings + dbc.records[i].verbose_name.frFR;
+		entry.verbose_name.deDE = dbc.strings + dbc.records[i].verbose_name.deDE;
+		entry.verbose_name.enCN = dbc.strings + dbc.records[i].verbose_name.enCN;
+		entry.verbose_name.enTW = dbc.strings + dbc.records[i].verbose_name.enTW;
+		entry.verbose_name.esES = dbc.strings + dbc.records[i].verbose_name.esES;
+		entry.verbose_name.esMX = dbc.strings + dbc.records[i].verbose_name.esMX;
+
+		storage.item_sub_class.emplace_back(dbc.records[i].item_class, entry);
+	}
+}
+
+void load_item_visual_effects(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ItemVisualEffects.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ItemVisualEffects>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ItemVisualEffects entry{};
+		entry.id = dbc.records[i].id;
+		entry.model_path = dbc.strings + dbc.records[i].model_path;
+		storage.item_visual_effects.emplace_back(entry.id, entry);
+	}
+}
+
+void load_item_visuals(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "ItemVisuals.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::ItemVisuals>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		ItemVisuals entry{};
+		entry.id = dbc.records[i].id;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].item_visual_effects) / sizeof(std::uint32_t); ++j) {
+			entry.item_visual_effects_id[j] = dbc.records[i].item_visual_effects[j];
+		}
+
+		storage.item_visuals.emplace_back(entry.id, entry);
+	}
+}
+
+void load_npc_sounds(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "NPCSounds.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::NPCSounds>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		NPCSounds entry{};
+		entry.id = dbc.records[i].id;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].sound_entries) / sizeof(std::uint32_t); ++j) {
+			entry.sound_entries_id[j] = dbc.records[i].sound_entries[j];
+		}
+
+		storage.npc_sounds.emplace_back(entry.id, entry);
+	}
+}
+
+void load_resistances(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "Resistances.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::Resistances>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		Resistances entry{};
+		entry.id = dbc.records[i].id;
+		entry.physical_damage = dbc.records[i].physical_damage;
+		entry.fizzle_sound_entry_id = dbc.records[i].fizzle_sound_entry;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		storage.resistances.emplace_back(entry.id, entry);
+	}
+}
+
+void load_sound_entries(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SoundEntries.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SoundEntries>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SoundEntries entry{};
+		entry.id = dbc.records[i].id;
+		entry.sound_type = static_cast<SoundEntries::SoundType>(dbc.records[i].sound_type);
+		entry.name = dbc.strings + dbc.records[i].name;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].files) / sizeof(std::string); ++j) {
+			entry.files[j] = dbc.strings + dbc.records[i].files[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].frequency) / sizeof(std::uint32_t); ++j) {
+			entry.frequency[j] = dbc.records[i].frequency[j];
+		}
+
+		entry.directory_base = dbc.strings + dbc.records[i].directory_base;
+		entry.volume = dbc.records[i].volume;
+		entry.flags = dbc.records[i].flags;
+		entry.min_distance = dbc.records[i].min_distance;
+		entry.distance_cutoff = dbc.records[i].distance_cutoff;
+		entry.sound_entries_advanced = dbc.records[i].sound_entries_advanced;
+		storage.sound_entries.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "Spell.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::Spell>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		Spell entry{};
+		entry.id = dbc.records[i].id;
+		entry.school_id = dbc.records[i].school;
+		entry.category_id = dbc.records[i].category;
+		entry.cast_ui = dbc.records[i].cast_ui;
+		entry.dispel_type_id = dbc.records[i].dispel_type;
+		entry.mechanic_id = dbc.records[i].mechanic;
+		entry.attributes = dbc.records[i].attributes;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].attributes_ex) / sizeof(std::int32_t); ++j) {
+			entry.attributes_ex[j] = dbc.records[i].attributes_ex[j];
+		}
+
+		entry.shapeshift_mask_id = dbc.records[i].shapeshift_mask;
+		entry.shapeshift_exclude_id = dbc.records[i].shapeshift_exclude;
+		entry.targets = dbc.records[i].targets;
+		entry.target_creature_type_id = dbc.records[i].target_creature_type;
+		entry.requires_spell_focus_id = dbc.records[i].requires_spell_focus;
+		entry.caster_aura_state = dbc.records[i].caster_aura_state;
+		entry.target_aura_state = dbc.records[i].target_aura_state;
+		entry.casting_time_index_id = dbc.records[i].casting_time_index;
+		entry.recovery_time = dbc.records[i].recovery_time;
+		entry.category_recovery_time = dbc.records[i].category_recovery_time;
+		entry.aura_interrupt_flags = dbc.records[i].aura_interrupt_flags;
+		entry.channel_interrupt_flags = dbc.records[i].channel_interrupt_flags;
+		entry.proc_type_mask = dbc.records[i].proc_type_mask;
+		entry.proc_chance = dbc.records[i].proc_chance;
+		entry.proc_charges = dbc.records[i].proc_charges;
+		entry.max_level = dbc.records[i].max_level;
+		entry.base_level = dbc.records[i].base_level;
+		entry.spell_level = dbc.records[i].spell_level;
+		entry.duration_id = dbc.records[i].duration;
+		entry.power_type = dbc.records[i].power_type;
+		entry.mana_cost = dbc.records[i].mana_cost;
+		entry.mana_cost_per_level = dbc.records[i].mana_cost_per_level;
+		entry.mana_cost_per_second = dbc.records[i].mana_cost_per_second;
+		entry.mana_cost_per_second_per_level = dbc.records[i].mana_cost_per_second_per_level;
+		entry.range_id = dbc.records[i].range;
+		entry.speed = dbc.records[i].speed;
+		entry.modal_next_spell_id = dbc.records[i].modal_next_spell;
+		entry.stack_amount = dbc.records[i].stack_amount;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].totem) / sizeof(std::int32_t); ++j) {
+			entry.totem[j] = dbc.records[i].totem[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].regent) / sizeof(std::int32_t); ++j) {
+			entry.regent[j] = dbc.records[i].regent[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].reagent_count) / sizeof(std::int32_t); ++j) {
+			entry.reagent_count[j] = dbc.records[i].reagent_count[j];
+		}
+
+		entry.equipped_item_class_id = dbc.records[i].equipped_item_class;
+		entry.equipped_item_subclass_id = dbc.records[i].equipped_item_subclass;
+		entry.equipped_item_inventory_type = dbc.records[i].equipped_item_inventory_type;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect) / sizeof(std::int32_t); ++j) {
+			entry.effect[j] = dbc.records[i].effect[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_die_sides) / sizeof(std::int32_t); ++j) {
+			entry.effect_die_sides[j] = dbc.records[i].effect_die_sides[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_base_dice) / sizeof(std::int32_t); ++j) {
+			entry.effect_base_dice[j] = dbc.records[i].effect_base_dice[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_dice_per_level) / sizeof(float); ++j) {
+			entry.effect_dice_per_level[j] = dbc.records[i].effect_dice_per_level[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_real_points_per_level) / sizeof(float); ++j) {
+			entry.effect_real_points_per_level[j] = dbc.records[i].effect_real_points_per_level[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_base_points) / sizeof(std::int32_t); ++j) {
+			entry.effect_base_points[j] = dbc.records[i].effect_base_points[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_mechanic) / sizeof(std::uint32_t); ++j) {
+			entry.effect_mechanic_id[j] = dbc.records[i].effect_mechanic[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].implicit_target_a) / sizeof(std::int32_t); ++j) {
+			entry.implicit_target_a[j] = dbc.records[i].implicit_target_a[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].implicit_target_b) / sizeof(std::int32_t); ++j) {
+			entry.implicit_target_b[j] = dbc.records[i].implicit_target_b[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_radius) / sizeof(std::uint32_t); ++j) {
+			entry.effect_radius_id[j] = dbc.records[i].effect_radius[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_aura) / sizeof(std::int32_t); ++j) {
+			entry.effect_aura[j] = dbc.records[i].effect_aura[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_amplitude) / sizeof(float); ++j) {
+			entry.effect_amplitude[j] = dbc.records[i].effect_amplitude[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_multiple_values) / sizeof(float); ++j) {
+			entry.effect_multiple_values[j] = dbc.records[i].effect_multiple_values[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_chain_target) / sizeof(std::int32_t); ++j) {
+			entry.effect_chain_target[j] = dbc.records[i].effect_chain_target[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_item_type) / sizeof(std::int32_t); ++j) {
+			entry.effect_item_type[j] = dbc.records[i].effect_item_type[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_misc_value) / sizeof(std::uint32_t); ++j) {
+			entry.effect_misc_value_id[j] = dbc.records[i].effect_misc_value[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_trigger_spell) / sizeof(std::uint32_t); ++j) {
+			entry.effect_trigger_spell_id[j] = dbc.records[i].effect_trigger_spell[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_points_per_combo) / sizeof(float); ++j) {
+			entry.effect_points_per_combo[j] = dbc.records[i].effect_points_per_combo[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].spell_visual) / sizeof(std::int32_t); ++j) {
+			entry.spell_visual[j] = dbc.records[i].spell_visual[j];
+		}
+
+		entry.spell_icon_id = dbc.records[i].spell_icon;
+		entry.active_icon = dbc.records[i].active_icon;
+		entry.spell_priority = dbc.records[i].spell_priority;
+		entry.unknown_flag = dbc.records[i].unknown_flag;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+
+		 // string_ref_loc block
+		entry.name_subtext.enGB = dbc.strings + dbc.records[i].name_subtext.enGB;
+		entry.name_subtext.koKR = dbc.strings + dbc.records[i].name_subtext.koKR;
+		entry.name_subtext.frFR = dbc.strings + dbc.records[i].name_subtext.frFR;
+		entry.name_subtext.deDE = dbc.strings + dbc.records[i].name_subtext.deDE;
+		entry.name_subtext.enCN = dbc.strings + dbc.records[i].name_subtext.enCN;
+		entry.name_subtext.enTW = dbc.strings + dbc.records[i].name_subtext.enTW;
+		entry.name_subtext.esES = dbc.strings + dbc.records[i].name_subtext.esES;
+		entry.name_subtext.esMX = dbc.strings + dbc.records[i].name_subtext.esMX;
+
+
+		 // string_ref_loc block
+		entry.description.enGB = dbc.strings + dbc.records[i].description.enGB;
+		entry.description.koKR = dbc.strings + dbc.records[i].description.koKR;
+		entry.description.frFR = dbc.strings + dbc.records[i].description.frFR;
+		entry.description.deDE = dbc.strings + dbc.records[i].description.deDE;
+		entry.description.enCN = dbc.strings + dbc.records[i].description.enCN;
+		entry.description.enTW = dbc.strings + dbc.records[i].description.enTW;
+		entry.description.esES = dbc.strings + dbc.records[i].description.esES;
+		entry.description.esMX = dbc.strings + dbc.records[i].description.esMX;
+
+
+		 // string_ref_loc block
+		entry.aura_description.enGB = dbc.strings + dbc.records[i].aura_description.enGB;
+		entry.aura_description.koKR = dbc.strings + dbc.records[i].aura_description.koKR;
+		entry.aura_description.frFR = dbc.strings + dbc.records[i].aura_description.frFR;
+		entry.aura_description.deDE = dbc.strings + dbc.records[i].aura_description.deDE;
+		entry.aura_description.enCN = dbc.strings + dbc.records[i].aura_description.enCN;
+		entry.aura_description.enTW = dbc.strings + dbc.records[i].aura_description.enTW;
+		entry.aura_description.esES = dbc.strings + dbc.records[i].aura_description.esES;
+		entry.aura_description.esMX = dbc.strings + dbc.records[i].aura_description.esMX;
+
+		entry.mana_cost_percent = dbc.records[i].mana_cost_percent;
+		entry.start_recovery_category = dbc.records[i].start_recovery_category;
+		entry.start_recovery_time = dbc.records[i].start_recovery_time;
+		entry.max_target_level = dbc.records[i].max_target_level;
+		entry.spell_class_set_id = dbc.records[i].spell_class_set;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].spell_class_mask) / sizeof(std::int32_t); ++j) {
+			entry.spell_class_mask[j] = dbc.records[i].spell_class_mask[j];
+		}
+
+		entry.max_targets = dbc.records[i].max_targets;
+		entry.defence_type = dbc.records[i].defence_type;
+		entry.prevention_type = dbc.records[i].prevention_type;
+		entry.stance_bar_order = dbc.records[i].stance_bar_order;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].damage_multiplier) / sizeof(float); ++j) {
+			entry.damage_multiplier[j] = dbc.records[i].damage_multiplier[j];
+		}
+
+		entry.min_faction = dbc.records[i].min_faction;
+		entry.min_reputation = dbc.records[i].min_reputation;
+		entry.required_aura_vision = dbc.records[i].required_aura_vision;
+		storage.spell.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_cast_times(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellCastTimes.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellCastTimes>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellCastTimes entry{};
+		entry.id = dbc.records[i].id;
+		entry.base = dbc.records[i].base;
+		entry.per_level_increase = dbc.records[i].per_level_increase;
+		entry.minimum = dbc.records[i].minimum;
+		storage.spell_cast_times.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_category(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellCategory.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellCategory>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellCategory entry{};
+		entry.id = dbc.records[i].id;
+		entry.flags = dbc.records[i].flags;
+		storage.spell_category.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_dispel_type(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellDispelType.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellDispelType>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellDispelType entry{};
+		entry.id = dbc.records[i].id;
+		entry.name = dbc.strings + dbc.records[i].name;
+		entry.mask = dbc.records[i].mask;
+		entry.allow_immunity = dbc.records[i].allow_immunity;
+		storage.spell_dispel_type.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_duration(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellDuration.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellDuration>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellDuration entry{};
+		entry.id = dbc.records[i].id;
+		entry.duration = dbc.records[i].duration;
+		entry.duration_per_level = dbc.records[i].duration_per_level;
+		entry.max_duration = dbc.records[i].max_duration;
+		storage.spell_duration.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_focus_object(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellFocusObject.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellFocusObject>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellFocusObject entry{};
+		entry.id = dbc.records[i].id;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		storage.spell_focus_object.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_icon(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellIcon.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellIcon>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellIcon entry{};
+		entry.id = dbc.records[i].id;
+		entry.texture_file = dbc.strings + dbc.records[i].texture_file;
+		storage.spell_icon.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_item_enchantment(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellItemEnchantment.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellItemEnchantment>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellItemEnchantment entry{};
+		entry.id = dbc.records[i].id;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].enchantment_type) / sizeof(std::int32_t); ++j) {
+			entry.enchantment_type[j] = dbc.records[i].enchantment_type[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_points_min) / sizeof(std::int32_t); ++j) {
+			entry.effect_points_min[j] = dbc.records[i].effect_points_min[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_points_max) / sizeof(std::int32_t); ++j) {
+			entry.effect_points_max[j] = dbc.records[i].effect_points_max[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].effect_arg) / sizeof(std::int32_t); ++j) {
+			entry.effect_arg[j] = dbc.records[i].effect_arg[j];
+		}
+
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		entry.item_visual_id = dbc.records[i].item_visual;
+		entry.flags = dbc.records[i].flags;
+		storage.spell_item_enchantment.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_mechanic(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellMechanic.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellMechanic>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellMechanic entry{};
+		entry.id = dbc.records[i].id;
+
+		 // string_ref_loc block
+		entry.state_name.enGB = dbc.strings + dbc.records[i].state_name.enGB;
+		entry.state_name.koKR = dbc.strings + dbc.records[i].state_name.koKR;
+		entry.state_name.frFR = dbc.strings + dbc.records[i].state_name.frFR;
+		entry.state_name.deDE = dbc.strings + dbc.records[i].state_name.deDE;
+		entry.state_name.enCN = dbc.strings + dbc.records[i].state_name.enCN;
+		entry.state_name.enTW = dbc.strings + dbc.records[i].state_name.enTW;
+		entry.state_name.esES = dbc.strings + dbc.records[i].state_name.esES;
+		entry.state_name.esMX = dbc.strings + dbc.records[i].state_name.esMX;
+
+		storage.spell_mechanic.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_radius(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellRadius.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellRadius>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellRadius entry{};
+		entry.id = dbc.records[i].id;
+		entry.radius = dbc.records[i].radius;
+		entry.radius_per_level = dbc.records[i].radius_per_level;
+		entry.radius_max = dbc.records[i].radius_max;
+		storage.spell_radius.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_range(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellRange.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellRange>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellRange entry{};
+		entry.id = dbc.records[i].id;
+		entry.range_min = dbc.records[i].range_min;
+		entry.range_max = dbc.records[i].range_max;
+		entry.flags = dbc.records[i].flags;
+
+		 // string_ref_loc block
+		entry.display_name.enGB = dbc.strings + dbc.records[i].display_name.enGB;
+		entry.display_name.koKR = dbc.strings + dbc.records[i].display_name.koKR;
+		entry.display_name.frFR = dbc.strings + dbc.records[i].display_name.frFR;
+		entry.display_name.deDE = dbc.strings + dbc.records[i].display_name.deDE;
+		entry.display_name.enCN = dbc.strings + dbc.records[i].display_name.enCN;
+		entry.display_name.enTW = dbc.strings + dbc.records[i].display_name.enTW;
+		entry.display_name.esES = dbc.strings + dbc.records[i].display_name.esES;
+		entry.display_name.esMX = dbc.strings + dbc.records[i].display_name.esMX;
+
+
+		 // string_ref_loc block
+		entry.display_name_short.enGB = dbc.strings + dbc.records[i].display_name_short.enGB;
+		entry.display_name_short.koKR = dbc.strings + dbc.records[i].display_name_short.koKR;
+		entry.display_name_short.frFR = dbc.strings + dbc.records[i].display_name_short.frFR;
+		entry.display_name_short.deDE = dbc.strings + dbc.records[i].display_name_short.deDE;
+		entry.display_name_short.enCN = dbc.strings + dbc.records[i].display_name_short.enCN;
+		entry.display_name_short.enTW = dbc.strings + dbc.records[i].display_name_short.enTW;
+		entry.display_name_short.esES = dbc.strings + dbc.records[i].display_name_short.esES;
+		entry.display_name_short.esMX = dbc.strings + dbc.records[i].display_name_short.esMX;
+
+		storage.spell_range.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_shapeshift_form(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellShapeshiftForm.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellShapeshiftForm>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellShapeshiftForm entry{};
+		entry.id = dbc.records[i].id;
+		entry.bonus_action_bar = dbc.records[i].bonus_action_bar;
+
+		 // string_ref_loc block
+		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
+		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
+		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
+		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
+		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
+		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
+		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
+		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+
+		entry.flags = dbc.records[i].flags;
+		entry.creature_type = dbc.records[i].creature_type;
+		entry.spell_icon_id = dbc.records[i].spell_icon;
+		storage.spell_shapeshift_form.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_visual(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellVisual.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellVisual>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellVisual entry{};
+		entry.id = dbc.records[i].id;
+		entry.precast_kit_id = dbc.records[i].precast_kit;
+		entry.cast_kit_id = dbc.records[i].cast_kit;
+		entry.impact_kit_id = dbc.records[i].impact_kit;
+		entry.state_kit_id = dbc.records[i].state_kit;
+		entry.state_done_kit_id = dbc.records[i].state_done_kit;
+		entry.channel_kit_id = dbc.records[i].channel_kit;
+		entry.has_missile = dbc.records[i].has_missile;
+		entry.missile_model = dbc.records[i].missile_model;
+		entry.missile_path_type = dbc.records[i].missile_path_type;
+		entry.missile_destination_attachment = dbc.records[i].missile_destination_attachment;
+		entry.missile_sound_id = dbc.records[i].missile_sound;
+		entry.anim_event_sound_id = dbc.records[i].anim_event_sound;
+		entry.flags = dbc.records[i].flags;
+		entry.caster_impact_kit_id = dbc.records[i].caster_impact_kit;
+		entry.target_impact_kit_id = dbc.records[i].target_impact_kit;
+		storage.spell_visual.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_visual_effect_name(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellVisualEffectName.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellVisualEffectName>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellVisualEffectName entry{};
+		entry.id = dbc.records[i].id;
+		entry.name = dbc.strings + dbc.records[i].name;
+		entry.filename = dbc.strings + dbc.records[i].filename;
+		entry.area_effect_size = dbc.records[i].area_effect_size;
+		entry.scale = dbc.records[i].scale;
+		storage.spell_visual_effect_name.emplace_back(entry.id, entry);
+	}
+}
+
+void load_spell_visual_kit(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "SpellVisualKit.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::SpellVisualKit>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		SpellVisualKit entry{};
+		entry.id = dbc.records[i].id;
+		entry.start_anim_id = dbc.records[i].start_anim;
+		entry.anim_kit = dbc.records[i].anim_kit;
+		entry.head_effect_id = dbc.records[i].head_effect;
+		entry.chest_effect_id = dbc.records[i].chest_effect;
+		entry.base_effect_id = dbc.records[i].base_effect;
+		entry.left_hand_effect_id = dbc.records[i].left_hand_effect;
+		entry.right_hand_effect_id = dbc.records[i].right_hand_effect;
+		entry.breath_effect_id = dbc.records[i].breath_effect;
+		entry.left_weapon_effect_id = dbc.records[i].left_weapon_effect;
+		entry.right_weapon_effect_id = dbc.records[i].right_weapon_effect;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].special_effects) / sizeof(std::uint32_t); ++j) {
+			entry.special_effects_id[j] = dbc.records[i].special_effects[j];
+		}
+
+		entry.world_effect_id = dbc.records[i].world_effect;
+		entry.sound_id = dbc.records[i].sound;
+		entry.shake_id = dbc.records[i].shake;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].char_proc) / sizeof(float); ++j) {
+			entry.char_proc[j] = dbc.records[i].char_proc[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].char_param_zero) / sizeof(float); ++j) {
+			entry.char_param_zero[j] = dbc.records[i].char_param_zero[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].char_param_one) / sizeof(float); ++j) {
+			entry.char_param_one[j] = dbc.records[i].char_param_one[j];
+		}
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].char_param_two) / sizeof(float); ++j) {
+			entry.char_param_two[j] = dbc.records[i].char_param_two[j];
+		}
+
+		entry.flags = dbc.records[i].flags;
+		storage.spell_visual_kit.emplace_back(entry.id, entry);
+	}
+}
+
+void load_unit_blood(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "UnitBlood.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::UnitBlood>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		UnitBlood entry{};
+		entry.id = dbc.records[i].id;
+		entry.combat_blood_spurt_front_small = dbc.records[i].combat_blood_spurt_front_small;
+		entry.combat_blood_spurt_front_large = dbc.records[i].combat_blood_spurt_front_large;
+		entry.combat_blood_spurt_back_small = dbc.records[i].combat_blood_spurt_back_small;
+		entry.combat_blood_spurt_back_large = dbc.records[i].combat_blood_spurt_back_large;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture) / sizeof(std::string); ++j) {
+			entry.texture[j] = dbc.strings + dbc.records[i].texture[j];
+		}
+
+		storage.unit_blood.emplace_back(entry.id, entry);
+	}
+}
+
 
 
 } // detail
 
 DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
                        : log_cb_(std::move(log_cb)), dir_path_(std::move(dir_path)) {
+	dbc_map.emplace("AnimationData", detail::load_animation_data);
+	dbc_map.emplace("CameraShakes", detail::load_camera_shakes);
 	dbc_map.emplace("ChrClasses", detail::load_chr_classes);
+	dbc_map.emplace("ChrRaces", detail::load_chr_races);
+	dbc_map.emplace("CinematicCamera", detail::load_cinematic_camera);
+	dbc_map.emplace("CinematicSequences", detail::load_cinematic_sequences);
+	dbc_map.emplace("CreatureDisplayInfo", detail::load_creature_display_info);
+	dbc_map.emplace("CreatureDisplayInfoExtra", detail::load_creature_display_info_extra);
+	dbc_map.emplace("CreatureModelData", detail::load_creature_model_data);
+	dbc_map.emplace("CreatureSoundData", detail::load_creature_sound_data);
+	dbc_map.emplace("CreatureType", detail::load_creature_type);
+	dbc_map.emplace("Faction", detail::load_faction);
+	dbc_map.emplace("FactionGroup", detail::load_faction_group);
+	dbc_map.emplace("FactionTemplate", detail::load_faction_template);
+	dbc_map.emplace("FootprintTextures", detail::load_footprint_textures);
+	dbc_map.emplace("HelmetGeosetVisData", detail::load_helmet_geoset_vis_data);
+	dbc_map.emplace("ItemClass", detail::load_item_class);
+	dbc_map.emplace("ItemDisplayInfo", detail::load_item_display_info);
+	dbc_map.emplace("ItemGroupSounds", detail::load_item_group_sounds);
+	dbc_map.emplace("ItemSubClass", detail::load_item_sub_class);
+	dbc_map.emplace("ItemVisualEffects", detail::load_item_visual_effects);
+	dbc_map.emplace("ItemVisuals", detail::load_item_visuals);
+	dbc_map.emplace("NPCSounds", detail::load_npc_sounds);
+	dbc_map.emplace("Resistances", detail::load_resistances);
+	dbc_map.emplace("SoundEntries", detail::load_sound_entries);
+	dbc_map.emplace("Spell", detail::load_spell);
+	dbc_map.emplace("SpellCastTimes", detail::load_spell_cast_times);
+	dbc_map.emplace("SpellCategory", detail::load_spell_category);
+	dbc_map.emplace("SpellDispelType", detail::load_spell_dispel_type);
+	dbc_map.emplace("SpellDuration", detail::load_spell_duration);
+	dbc_map.emplace("SpellFocusObject", detail::load_spell_focus_object);
+	dbc_map.emplace("SpellIcon", detail::load_spell_icon);
+	dbc_map.emplace("SpellItemEnchantment", detail::load_spell_item_enchantment);
+	dbc_map.emplace("SpellMechanic", detail::load_spell_mechanic);
+	dbc_map.emplace("SpellRadius", detail::load_spell_radius);
+	dbc_map.emplace("SpellRange", detail::load_spell_range);
+	dbc_map.emplace("SpellShapeshiftForm", detail::load_spell_shapeshift_form);
+	dbc_map.emplace("SpellVisual", detail::load_spell_visual);
+	dbc_map.emplace("SpellVisualEffectName", detail::load_spell_visual_effect_name);
+	dbc_map.emplace("SpellVisualKit", detail::load_spell_visual_kit);
+	dbc_map.emplace("UnitBlood", detail::load_unit_blood);
 
 }
 
@@ -106,8 +1321,88 @@ Storage DiskLoader::load(const std::vector<std::string>& whitelist) const {
 
 Storage DiskLoader::load() const {
 	Storage storage;
+	log_cb_("Loading AnimationData DBC data...");
+	detail::load_animation_data(storage, dir_path_);
+	log_cb_("Loading CameraShakes DBC data...");
+	detail::load_camera_shakes(storage, dir_path_);
 	log_cb_("Loading ChrClasses DBC data...");
 	detail::load_chr_classes(storage, dir_path_);
+	log_cb_("Loading ChrRaces DBC data...");
+	detail::load_chr_races(storage, dir_path_);
+	log_cb_("Loading CinematicCamera DBC data...");
+	detail::load_cinematic_camera(storage, dir_path_);
+	log_cb_("Loading CinematicSequences DBC data...");
+	detail::load_cinematic_sequences(storage, dir_path_);
+	log_cb_("Loading CreatureDisplayInfo DBC data...");
+	detail::load_creature_display_info(storage, dir_path_);
+	log_cb_("Loading CreatureDisplayInfoExtra DBC data...");
+	detail::load_creature_display_info_extra(storage, dir_path_);
+	log_cb_("Loading CreatureModelData DBC data...");
+	detail::load_creature_model_data(storage, dir_path_);
+	log_cb_("Loading CreatureSoundData DBC data...");
+	detail::load_creature_sound_data(storage, dir_path_);
+	log_cb_("Loading CreatureType DBC data...");
+	detail::load_creature_type(storage, dir_path_);
+	log_cb_("Loading Faction DBC data...");
+	detail::load_faction(storage, dir_path_);
+	log_cb_("Loading FactionGroup DBC data...");
+	detail::load_faction_group(storage, dir_path_);
+	log_cb_("Loading FactionTemplate DBC data...");
+	detail::load_faction_template(storage, dir_path_);
+	log_cb_("Loading FootprintTextures DBC data...");
+	detail::load_footprint_textures(storage, dir_path_);
+	log_cb_("Loading HelmetGeosetVisData DBC data...");
+	detail::load_helmet_geoset_vis_data(storage, dir_path_);
+	log_cb_("Loading ItemClass DBC data...");
+	detail::load_item_class(storage, dir_path_);
+	log_cb_("Loading ItemDisplayInfo DBC data...");
+	detail::load_item_display_info(storage, dir_path_);
+	log_cb_("Loading ItemGroupSounds DBC data...");
+	detail::load_item_group_sounds(storage, dir_path_);
+	log_cb_("Loading ItemSubClass DBC data...");
+	detail::load_item_sub_class(storage, dir_path_);
+	log_cb_("Loading ItemVisualEffects DBC data...");
+	detail::load_item_visual_effects(storage, dir_path_);
+	log_cb_("Loading ItemVisuals DBC data...");
+	detail::load_item_visuals(storage, dir_path_);
+	log_cb_("Loading NPCSounds DBC data...");
+	detail::load_npc_sounds(storage, dir_path_);
+	log_cb_("Loading Resistances DBC data...");
+	detail::load_resistances(storage, dir_path_);
+	log_cb_("Loading SoundEntries DBC data...");
+	detail::load_sound_entries(storage, dir_path_);
+	log_cb_("Loading Spell DBC data...");
+	detail::load_spell(storage, dir_path_);
+	log_cb_("Loading SpellCastTimes DBC data...");
+	detail::load_spell_cast_times(storage, dir_path_);
+	log_cb_("Loading SpellCategory DBC data...");
+	detail::load_spell_category(storage, dir_path_);
+	log_cb_("Loading SpellDispelType DBC data...");
+	detail::load_spell_dispel_type(storage, dir_path_);
+	log_cb_("Loading SpellDuration DBC data...");
+	detail::load_spell_duration(storage, dir_path_);
+	log_cb_("Loading SpellFocusObject DBC data...");
+	detail::load_spell_focus_object(storage, dir_path_);
+	log_cb_("Loading SpellIcon DBC data...");
+	detail::load_spell_icon(storage, dir_path_);
+	log_cb_("Loading SpellItemEnchantment DBC data...");
+	detail::load_spell_item_enchantment(storage, dir_path_);
+	log_cb_("Loading SpellMechanic DBC data...");
+	detail::load_spell_mechanic(storage, dir_path_);
+	log_cb_("Loading SpellRadius DBC data...");
+	detail::load_spell_radius(storage, dir_path_);
+	log_cb_("Loading SpellRange DBC data...");
+	detail::load_spell_range(storage, dir_path_);
+	log_cb_("Loading SpellShapeshiftForm DBC data...");
+	detail::load_spell_shapeshift_form(storage, dir_path_);
+	log_cb_("Loading SpellVisual DBC data...");
+	detail::load_spell_visual(storage, dir_path_);
+	log_cb_("Loading SpellVisualEffectName DBC data...");
+	detail::load_spell_visual_effect_name(storage, dir_path_);
+	log_cb_("Loading SpellVisualKit DBC data...");
+	detail::load_spell_visual_kit(storage, dir_path_);
+	log_cb_("Loading UnitBlood DBC data...");
+	detail::load_unit_blood(storage, dir_path_);
 
 	return storage;		
 }

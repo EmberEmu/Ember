@@ -31,7 +31,77 @@ struct StringRefLoc {
 	std::uint32_t flags;
 };
 
+struct AnimationData;
+struct CameraShakes;
 struct ChrClasses;
+struct ChrRaces;
+struct CinematicCamera;
+struct CinematicSequences;
+struct CreatureDisplayInfo;
+struct CreatureDisplayInfoExtra;
+struct CreatureModelData;
+struct CreatureSoundData;
+struct CreatureType;
+struct Faction;
+struct FactionGroup;
+struct FactionTemplate;
+struct FootprintTextures;
+struct HelmetGeosetVisData;
+struct ItemClass;
+struct ItemDisplayInfo;
+struct ItemGroupSounds;
+struct ItemSubClass;
+struct ItemVisualEffects;
+struct ItemVisuals;
+struct NPCSounds;
+struct Resistances;
+struct SoundEntries;
+struct Spell;
+struct SpellCastTimes;
+struct SpellCategory;
+struct SpellDispelType;
+struct SpellDuration;
+struct SpellFocusObject;
+struct SpellIcon;
+struct SpellItemEnchantment;
+struct SpellMechanic;
+struct SpellRadius;
+struct SpellRange;
+struct SpellShapeshiftForm;
+struct SpellVisual;
+struct SpellVisualEffectName;
+struct SpellVisualKit;
+struct UnitBlood;
+
+struct AnimationData {
+	enum class WeaponFlags : std::int32_t {
+		WEAPON_NOT_AFFECTED_BY_ANIMATION = 0x00, 
+		SHEATHE_WEAPONS_AUTOMATICALLY = 0x04, 
+		SHEATHE_WEAPONS_AUTOMATICALLY_2 = 0x10, 
+		UNSHEATHE_WEAPONS = 0x20
+	};
+
+	std::uint32_t id;
+	std::string name;
+	WeaponFlags weapon_flags;
+	std::int32_t body_flags;
+	std::int32_t unknown;
+	AnimationData* fallback;
+	std::uint32_t fallback_id;
+	AnimationData* behaviour;
+	std::uint32_t behaviour_id;
+};
+
+struct CameraShakes {
+	std::uint32_t id;
+	std::int32_t shake_type;
+	std::int32_t direction;
+	float amplitude;
+	float frequency;
+	float duration;
+	float phase;
+	float coefficient;
+};
 
 struct ChrClasses {
 	enum class PowerType : std::int32_t {
@@ -51,6 +121,668 @@ struct ChrClasses {
 	std::string filename;
 	std::int32_t class_mask;
 	std::uint32_t hybrid_class;
+};
+
+struct ChrRaces {
+	enum class Flags : std::uint32_t {
+		NONE = 0x00, 
+		NOT_PLAYABLE = 0x01, 
+		BARE_FEET = 0x02, 
+		UNKNOWN1 = 0x04, 
+		UNKNOWN2 = 0x08
+	};
+
+	enum class BaseLanguage : std::uint32_t {
+		HORDE = 0x01, 
+		ALLIANCE = 0x07
+	};
+
+	std::uint32_t id;
+	Flags flags;
+	FactionTemplate* faction;
+	std::uint32_t faction_id;
+	SoundEntries* exploration_sound;
+	std::uint32_t exploration_sound_id;
+	CreatureDisplayInfo* male_display;
+	std::uint32_t male_display_id;
+	CreatureDisplayInfo* female_display;
+	std::uint32_t female_display_id;
+	std::string client_prefix;
+	float speed_modifier;
+	BaseLanguage base_lang;
+	CreatureType* creature_type;
+	std::uint32_t creature_type_id;
+	Spell* login_effect;
+	std::uint32_t login_effect_id;
+	std::int32_t unknown1;
+	Spell* res_sickness_spell;
+	std::uint32_t res_sickness_spell_id;
+	SoundEntries* splash_sound_entry;
+	std::uint32_t splash_sound_entry_id;
+	std::int32_t unknown2;
+	std::string client_file_path;
+	CinematicSequences* cinematic_sequence;
+	std::uint32_t cinematic_sequence_id;
+	StringRefLoc name;
+	std::string facial_hair_customisation[2];
+	std::string hair_customisation;
+};
+
+struct CinematicCamera {
+	std::uint32_t id;
+	std::string model;
+	SoundEntries* sound_entry;
+	std::uint32_t sound_entry_id;
+	float location_x;
+	float location_y;
+	float location_z;
+	float rotation;
+};
+
+struct CinematicSequences {
+	std::uint32_t id;
+	SoundEntries* sound_entry;
+	std::uint32_t sound_entry_id;
+	CinematicCamera* cinematic_camera_1[8];
+	std::uint32_t cinematic_camera_1_id[8];
+};
+
+struct CreatureDisplayInfo {
+	enum class SizeClass : std::int32_t {
+		SMALL = 0x00, 
+		MEDIUM = 0x01, 
+		LARGE = 0x02, 
+		GIANT = 0x03, 
+		COLOSSAL = 0x04
+	};
+
+	std::uint32_t id;
+	CreatureModelData* model;
+	std::uint32_t model_id;
+	CreatureSoundData* sound;
+	std::uint32_t sound_id;
+	CreatureDisplayInfoExtra* extended_display_info;
+	std::uint32_t extended_display_info_id;
+	float creature_model_scale;
+	std::int32_t creature_model_alpha;
+	std::string texture_variation[3];
+	SizeClass size;
+	UnitBlood* blood;
+	std::uint32_t blood_id;
+	NPCSounds* npc_sound;
+	std::uint32_t npc_sound_id;
+};
+
+struct CreatureDisplayInfoExtra {
+	enum class Sex : std::int32_t {
+		MALE = 0x00, 
+		FEMALE = 0x01
+	};
+
+	std::uint32_t id;
+	ChrRaces* display_race;
+	std::uint32_t display_race_id;
+	Sex sex;
+	std::int32_t skin;
+	std::int32_t face;
+	std::int32_t hair_style;
+	std::int32_t hair_colour;
+	std::int32_t facial_hair;
+	ItemDisplayInfo* npc_item_display[9];
+	std::uint32_t npc_item_display_id[9];
+	std::int32_t flags;
+	std::string bake_name;
+};
+
+struct CreatureModelData {
+	enum class SizeClass : std::int32_t {
+		SMALL = 0x00, 
+		MEDIUM = 0x01, 
+		LARGE = 0x02, 
+		GIANT = 0x03, 
+		COLOSSAL = 0x04
+	};
+
+	std::uint32_t id;
+	std::int32_t flags;
+	std::string model_path;
+	SizeClass size;
+	float model_scale;
+	UnitBlood* blood;
+	std::uint32_t blood_id;
+	FootprintTextures* footprint_texture;
+	std::uint32_t footprint_texture_id;
+	float footprint_texture_length;
+	float footprint_texture_width;
+	float footprint_texture_scale;
+	std::int32_t foley_material;
+	std::int32_t footstep_shake_size;
+	std::int32_t death_thud_shake_size;
+	float collision_width;
+	float collision_height;
+	float mount_height;
+};
+
+struct CreatureSoundData {
+	std::uint32_t id;
+	SoundEntries* sound_exertion;
+	std::uint32_t sound_exertion_id;
+	SoundEntries* sound_exertion_critical;
+	std::uint32_t sound_exertion_critical_id;
+	SoundEntries* sound_injury;
+	std::uint32_t sound_injury_id;
+	SoundEntries* sound_injury_critical;
+	std::uint32_t sound_injury_critical_id;
+	SoundEntries* sound_injury_crushing_blow;
+	std::uint32_t sound_injury_crushing_blow_id;
+	SoundEntries* sound_death;
+	std::uint32_t sound_death_id;
+	SoundEntries* sound_stun;
+	std::uint32_t sound_stun_id;
+	SoundEntries* sound_stand;
+	std::uint32_t sound_stand_id;
+	SoundEntries* sound_footstep;
+	std::uint32_t sound_footstep_id;
+	SoundEntries* sound_aggro;
+	std::uint32_t sound_aggro_id;
+	SoundEntries* sound_wing_flap;
+	std::uint32_t sound_wing_flap_id;
+	SoundEntries* sound_wing_glide;
+	std::uint32_t sound_wing_glide_id;
+	SoundEntries* sound_alert;
+	std::uint32_t sound_alert_id;
+	SoundEntries* sound_fidget;
+	std::uint32_t sound_fidget_id;
+	std::uint32_t custom_attack;
+	SoundEntries* npc_sound;
+	std::uint32_t npc_sound_id;
+	SoundEntries* loop_sound;
+	std::uint32_t loop_sound_id;
+	std::int32_t creature_impact_type;
+	SoundEntries* sound_jump_start;
+	std::uint32_t sound_jump_start_id;
+	SoundEntries* sound_jump_end;
+	std::uint32_t sound_jump_end_id;
+	SoundEntries* sound_pet_attack;
+	std::uint32_t sound_pet_attack_id;
+	SoundEntries* sound_pet_order;
+	std::uint32_t sound_pet_order_id;
+	SoundEntries* sound_pet_dismiss;
+	std::uint32_t sound_pet_dismiss_id;
+	std::int32_t fidget_delay_seconds_min;
+	std::int32_t fidget_delay_seconds_max;
+	SoundEntries* birth_sound;
+	std::uint32_t birth_sound_id;
+	SoundEntries* spell_cast_directed_sound;
+	std::uint32_t spell_cast_directed_sound_id;
+	SoundEntries* submerge_sound;
+	std::uint32_t submerge_sound_id;
+	SoundEntries* submerged_sound;
+	std::uint32_t submerged_sound_id;
+};
+
+struct CreatureType {
+	std::uint32_t id;
+	StringRefLoc name;
+	std::uint32_t flags;
+};
+
+struct Faction {
+	enum class ReputationRaceMask : std::int32_t {
+		HUMAN = 0x01, 
+		ORC = 0x02, 
+		DWARF = 0x04, 
+		NIGHT_ELF = 0x08, 
+		UNDEAD = 0x10, 
+		TAUREN = 0x20, 
+		GNOME = 0x40, 
+		TROLL = 0x80
+	};
+
+	enum class ReputationFlags : std::int32_t {
+		VISIBLE_TO_CLIENT = 0x01, 
+		ENABLE_AT_WAR = 0x02, 
+		HIDE_IN_CLIENT = 0x04, 
+		FORCE_HIDE_IN_CLIENT = 0x08, 
+		FORCE_AT_PEACE = 0x10, 
+		FACTION_INACTIVE = 0x20
+	};
+
+	std::uint32_t id;
+	std::int32_t reputation_index;
+	ReputationRaceMask reputation_race_mask[4];
+	std::int32_t reputation_class_mask[4];
+	std::int32_t reputation_base[4];
+	ReputationFlags reputation_flags[4];
+	Faction* parent_faction;
+	std::uint32_t parent_faction_id;
+	StringRefLoc name;
+	StringRefLoc description;
+};
+
+struct FactionGroup {
+	std::uint32_t id;
+	std::int32_t mask_id;
+	std::string internal_name;
+	StringRefLoc name;
+};
+
+struct FactionTemplate {
+	enum class Flags : std::int32_t {
+		PVP_FLAGGED = 0x800, 
+		ATTACK_PVPING_PLAYERS = 0x1000
+	};
+
+	std::uint32_t id;
+	Faction* faction;
+	std::uint32_t faction_id;
+	Flags flags;
+	FactionGroup* faction_group;
+	std::uint32_t faction_group_id;
+	FactionGroup* friend_group;
+	std::uint32_t friend_group_id;
+	FactionGroup* enemy_group;
+	std::uint32_t enemy_group_id;
+	Faction* enemies[4];
+	std::uint32_t enemies_id[4];
+	Faction* friends[4];
+	std::uint32_t friends_id[4];
+};
+
+struct FootprintTextures {
+	std::uint32_t id;
+	std::string footstep_file_path;
+};
+
+struct HelmetGeosetVisData {
+	std::uint32_t id;
+	std::int32_t hide_geoset[5];
+};
+
+struct ItemClass {
+	enum class Class : std::int32_t {
+		ITEM = 0x00, 
+		WEAPON = 0x01
+	};
+
+	std::uint32_t id;
+	ItemSubClass* subclass_map;
+	std::uint32_t subclass_map_id;
+	Class item_class;
+};
+
+struct ItemDisplayInfo {
+	std::uint32_t id;
+	std::string model_name[2];
+	std::string model_texture[2];
+	std::string inventory_icon[2];
+	std::int32_t geoset_group[3];
+	SpellVisual* spell_visual;
+	std::uint32_t spell_visual_id;
+	ItemGroupSounds* group_sound_index;
+	std::uint32_t group_sound_index_id;
+	HelmetGeosetVisData* helmet_geoset_vis[2];
+	std::uint32_t helmet_geoset_vis_id[2];
+	std::string textures[8];
+	ItemVisuals* item_visual;
+	std::uint32_t item_visual_id;
+};
+
+struct ItemGroupSounds {
+	std::uint32_t id;
+	SoundEntries* sound_entry[4];
+	std::uint32_t sound_entry_id[4];
+};
+
+struct ItemSubClass {
+	ItemClass* item_class;
+	std::uint32_t item_class_id;
+	std::int32_t subclass;
+	std::int32_t prerequisite_proficiency;
+	std::int32_t postrequisite_proficiency;
+	std::int32_t flags;
+	std::int32_t display_flags;
+	std::int32_t weapon_parry_sequence;
+	std::int32_t weapon_ready_sequence;
+	std::int32_t weapon_attack_sequence;
+	std::int32_t weapon_swing_size;
+	StringRefLoc display_name;
+	StringRefLoc verbose_name;
+};
+
+struct ItemVisualEffects {
+	std::uint32_t id;
+	std::string model_path;
+};
+
+struct ItemVisuals {
+	std::uint32_t id;
+	ItemVisualEffects* item_visual_effects[5];
+	std::uint32_t item_visual_effects_id[5];
+};
+
+struct NPCSounds {
+	std::uint32_t id;
+	SoundEntries* sound_entries[4];
+	std::uint32_t sound_entries_id[4];
+};
+
+struct Resistances {
+	std::uint32_t id;
+	std::uint32_t physical_damage;
+	SoundEntries* fizzle_sound_entry;
+	std::uint32_t fizzle_sound_entry_id;
+	StringRefLoc name;
+};
+
+struct SoundEntries {
+	enum class SoundType : std::int32_t {
+		UNUSED = 0x00, 
+		SPELLS = 0x01, 
+		UI = 0x02, 
+		FOOTSTEPS = 0x03, 
+		WEAPON_IMPACT = 0x04, 
+		WEAPON_MISS = 0x06, 
+		PICK_UP_PUT_DOWN = 0x09, 
+		NPC_COMBAT = 0x0A, 
+		ERRORS = 0x0C, 
+		OBJECTS = 0x0E, 
+		DEATH = 0x10, 
+		NPC_GREETINGS = 0x11, 
+		TEST = 0x12, 
+		ARMOUR_FOLEY = 0x13, 
+		FOOTSTEPS_2 = 0x14, 
+		WATER_CHARACTER = 0x15, 
+		WATER_LIQUID = 0x16, 
+		TRADESKILLS = 0x17, 
+		DOODADS = 0x19, 
+		SPELL_FIZZLE = 0x1A, 
+		NPC_LOOPS = 0x1B, 
+		ZONE_MUSIC = 0x1C, 
+		EMOTES = 0x1D, 
+		NARRATION_MUSIC = 0x1E, 
+		NARRATION = 0x1F, 
+		ZONE_AMBIENCE = 0x32
+	};
+
+	std::uint32_t id;
+	SoundType sound_type;
+	std::string name;
+	std::string files[10];
+	std::uint32_t frequency[10];
+	std::string directory_base;
+	float volume;
+	std::int32_t flags;
+	float min_distance;
+	float distance_cutoff;
+	std::int32_t sound_entries_advanced;
+};
+
+struct Spell {
+	std::uint32_t id;
+	Resistances* school;
+	std::uint32_t school_id;
+	SpellCategory* category;
+	std::uint32_t category_id;
+	std::int32_t cast_ui;
+	SpellDispelType* dispel_type;
+	std::uint32_t dispel_type_id;
+	SpellMechanic* mechanic;
+	std::uint32_t mechanic_id;
+	std::int32_t attributes;
+	std::int32_t attributes_ex[4];
+	SpellShapeshiftForm* shapeshift_mask;
+	std::uint32_t shapeshift_mask_id;
+	SpellShapeshiftForm* shapeshift_exclude;
+	std::uint32_t shapeshift_exclude_id;
+	std::int32_t targets;
+	CreatureType* target_creature_type;
+	std::uint32_t target_creature_type_id;
+	SpellFocusObject* requires_spell_focus;
+	std::uint32_t requires_spell_focus_id;
+	std::int32_t caster_aura_state;
+	std::int32_t target_aura_state;
+	SpellCastTimes* casting_time_index;
+	std::uint32_t casting_time_index_id;
+	std::int32_t recovery_time;
+	std::int32_t category_recovery_time;
+	std::int32_t aura_interrupt_flags;
+	std::int32_t channel_interrupt_flags;
+	std::int32_t proc_type_mask;
+	std::int32_t proc_chance;
+	std::int32_t proc_charges;
+	std::int32_t max_level;
+	std::int32_t base_level;
+	std::int32_t spell_level;
+	SpellDuration* duration;
+	std::uint32_t duration_id;
+	std::int32_t power_type;
+	std::int32_t mana_cost;
+	std::int32_t mana_cost_per_level;
+	std::int32_t mana_cost_per_second;
+	std::int32_t mana_cost_per_second_per_level;
+	SpellRange* range;
+	std::uint32_t range_id;
+	float speed;
+	Spell* modal_next_spell;
+	std::uint32_t modal_next_spell_id;
+	std::int32_t stack_amount;
+	std::int32_t totem[2];
+	std::int32_t regent[8];
+	std::int32_t reagent_count[8];
+	ItemClass* equipped_item_class;
+	std::uint32_t equipped_item_class_id;
+	ItemSubClass* equipped_item_subclass;
+	std::uint32_t equipped_item_subclass_id;
+	std::int32_t equipped_item_inventory_type;
+	std::int32_t effect[3];
+	std::int32_t effect_die_sides[3];
+	std::int32_t effect_base_dice[3];
+	float effect_dice_per_level[3];
+	float effect_real_points_per_level[3];
+	std::int32_t effect_base_points[3];
+	SpellMechanic* effect_mechanic[3];
+	std::uint32_t effect_mechanic_id[3];
+	std::int32_t implicit_target_a[3];
+	std::int32_t implicit_target_b[3];
+	SpellRadius* effect_radius[3];
+	std::uint32_t effect_radius_id[3];
+	std::int32_t effect_aura[3];
+	float effect_amplitude[3];
+	float effect_multiple_values[3];
+	std::int32_t effect_chain_target[3];
+	std::int32_t effect_item_type[3];
+	SpellItemEnchantment* effect_misc_value[3];
+	std::uint32_t effect_misc_value_id[3];
+	Spell* effect_trigger_spell[3];
+	std::uint32_t effect_trigger_spell_id[3];
+	float effect_points_per_combo[3];
+	std::int32_t spell_visual[2];
+	SpellIcon* spell_icon;
+	std::uint32_t spell_icon_id;
+	std::int32_t active_icon;
+	std::int32_t spell_priority;
+	std::int32_t unknown_flag;
+	StringRefLoc name;
+	StringRefLoc name_subtext;
+	StringRefLoc description;
+	StringRefLoc aura_description;
+	std::int32_t mana_cost_percent;
+	std::int32_t start_recovery_category;
+	std::int32_t start_recovery_time;
+	std::int32_t max_target_level;
+	ChrClasses* spell_class_set;
+	std::uint32_t spell_class_set_id; // todo
+	std::int32_t spell_class_mask[2];
+	std::int32_t max_targets;
+	std::int32_t defence_type;
+	std::int32_t prevention_type;
+	std::int32_t stance_bar_order;
+	float damage_multiplier[3];
+	std::int32_t min_faction;
+	std::int32_t min_reputation;
+	std::int32_t required_aura_vision;
+};
+
+struct SpellCastTimes {
+	std::uint32_t id;
+	std::int32_t base;
+	std::int32_t per_level_increase;
+	std::int32_t minimum;
+};
+
+struct SpellCategory {
+	std::uint32_t id;
+	std::int32_t flags;
+};
+
+struct SpellDispelType {
+	std::uint32_t id;
+	std::string name;
+	std::int32_t mask;
+	std::uint32_t allow_immunity;
+};
+
+struct SpellDuration {
+	std::uint32_t id;
+	std::int32_t duration;
+	std::int32_t duration_per_level;
+	std::int32_t max_duration;
+};
+
+struct SpellFocusObject {
+	std::uint32_t id;
+	StringRefLoc name;
+};
+
+struct SpellIcon {
+	std::uint32_t id;
+	std::string texture_file;
+};
+
+struct SpellItemEnchantment {
+	std::uint32_t id;
+	std::int32_t enchantment_type[3];
+	std::int32_t effect_points_min[3];
+	std::int32_t effect_points_max[3];
+	std::int32_t effect_arg[3];
+	StringRefLoc name;
+	ItemVisuals* item_visual;
+	std::uint32_t item_visual_id;
+	std::int32_t flags;
+};
+
+struct SpellMechanic {
+	std::uint32_t id;
+	StringRefLoc state_name;
+};
+
+struct SpellRadius {
+	std::uint32_t id;
+	float radius;
+	float radius_per_level;
+	float radius_max;
+};
+
+struct SpellRange {
+	std::uint32_t id;
+	float range_min;
+	float range_max;
+	std::int32_t flags;
+	StringRefLoc display_name;
+	StringRefLoc display_name_short;
+};
+
+struct SpellShapeshiftForm {
+	std::uint32_t id;
+	std::int32_t bonus_action_bar;
+	StringRefLoc name;
+	std::int32_t flags;
+	std::int32_t creature_type;
+	SpellIcon* spell_icon;
+	std::uint32_t spell_icon_id;
+};
+
+struct SpellVisual {
+	std::uint32_t id;
+	SpellVisualKit* precast_kit;
+	std::uint32_t precast_kit_id;
+	SpellVisualKit* cast_kit;
+	std::uint32_t cast_kit_id;
+	SpellVisualKit* impact_kit;
+	std::uint32_t impact_kit_id;
+	SpellVisualKit* state_kit;
+	std::uint32_t state_kit_id;
+	SpellVisualKit* state_done_kit;
+	std::uint32_t state_done_kit_id;
+	SpellVisualKit* channel_kit;
+	std::uint32_t channel_kit_id;
+	std::uint32_t has_missile;
+	std::int32_t missile_model;
+	std::int32_t missile_path_type;
+	std::int32_t missile_destination_attachment;
+	SoundEntries* missile_sound;
+	std::uint32_t missile_sound_id;
+	SpellVisualKit* anim_event_sound;
+	std::uint32_t anim_event_sound_id;
+	std::int32_t flags;
+	SpellVisualKit* caster_impact_kit;
+	std::uint32_t caster_impact_kit_id;
+	SpellVisualKit* target_impact_kit;
+	std::uint32_t target_impact_kit_id;
+};
+
+struct SpellVisualEffectName {
+	std::uint32_t id;
+	std::string name;
+	std::string filename;
+	float area_effect_size;
+	float scale;
+};
+
+struct SpellVisualKit {
+	std::uint32_t id;
+	AnimationData* start_anim;
+	std::uint32_t start_anim_id;
+	std::int32_t anim_kit;
+	SpellVisualEffectName* head_effect;
+	std::uint32_t head_effect_id;
+	SpellVisualEffectName* chest_effect;
+	std::uint32_t chest_effect_id;
+	SpellVisualEffectName* base_effect;
+	std::uint32_t base_effect_id;
+	SpellVisualEffectName* left_hand_effect;
+	std::uint32_t left_hand_effect_id;
+	SpellVisualEffectName* right_hand_effect;
+	std::uint32_t right_hand_effect_id;
+	SpellVisualEffectName* breath_effect;
+	std::uint32_t breath_effect_id;
+	SpellVisualEffectName* left_weapon_effect;
+	std::uint32_t left_weapon_effect_id;
+	SpellVisualEffectName* right_weapon_effect;
+	std::uint32_t right_weapon_effect_id;
+	SpellVisualEffectName* special_effects[3];
+	std::uint32_t special_effects_id[3];
+	SpellVisualEffectName* world_effect;
+	std::uint32_t world_effect_id;
+	SoundEntries* sound;
+	std::uint32_t sound_id;
+	CameraShakes* shake;
+	std::uint32_t shake_id;
+	float char_proc[4];
+	float char_param_zero[4];
+	float char_param_one[4];
+	float char_param_two[4];
+	std::int32_t flags;
+};
+
+struct UnitBlood {
+	std::uint32_t id;
+	std::int32_t combat_blood_spurt_front_small;
+	std::int32_t combat_blood_spurt_front_large;
+	std::int32_t combat_blood_spurt_back_small;
+	std::int32_t combat_blood_spurt_back_large;
+	std::string texture[5];
 };
 
 

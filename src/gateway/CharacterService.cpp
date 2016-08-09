@@ -174,7 +174,7 @@ void CharacterService::retrieve_characters(std::string account_name, RetrieveCB 
 	}
 }
 
-void CharacterService::delete_character(std::string account_name, unsigned int id, ResponseCB cb) const {
+void CharacterService::delete_character(std::string account_name, std::uint64_t id, ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();

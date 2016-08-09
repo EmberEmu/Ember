@@ -21,7 +21,47 @@
 namespace ember { namespace dbc {
 
 struct Storage {
+	DBCMap<AnimationData> animation_data;
+	DBCMap<CameraShakes> camera_shakes;
 	DBCMap<ChrClasses> chr_classes;
+	DBCMap<ChrRaces> chr_races;
+	DBCMap<CinematicCamera> cinematic_camera;
+	DBCMap<CinematicSequences> cinematic_sequences;
+	DBCMap<CreatureDisplayInfo> creature_display_info;
+	DBCMap<CreatureDisplayInfoExtra> creature_display_info_extra;
+	DBCMap<CreatureModelData> creature_model_data;
+	DBCMap<CreatureSoundData> creature_sound_data;
+	DBCMap<CreatureType> creature_type;
+	DBCMap<Faction> faction;
+	DBCMap<FactionGroup> faction_group;
+	DBCMap<FactionTemplate> faction_template;
+	DBCMap<FootprintTextures> footprint_textures;
+	DBCMap<HelmetGeosetVisData> helmet_geoset_vis_data;
+	DBCMap<ItemClass> item_class;
+	DBCMap<ItemDisplayInfo> item_display_info;
+	DBCMap<ItemGroupSounds> item_group_sounds;
+	DBCMap<ItemSubClass> item_sub_class;
+	DBCMap<ItemVisualEffects> item_visual_effects;
+	DBCMap<ItemVisuals> item_visuals;
+	DBCMap<NPCSounds> npc_sounds;
+	DBCMap<Resistances> resistances;
+	DBCMap<SoundEntries> sound_entries;
+	DBCMap<Spell> spell;
+	DBCMap<SpellCastTimes> spell_cast_times;
+	DBCMap<SpellCategory> spell_category;
+	DBCMap<SpellDispelType> spell_dispel_type;
+	DBCMap<SpellDuration> spell_duration;
+	DBCMap<SpellFocusObject> spell_focus_object;
+	DBCMap<SpellIcon> spell_icon;
+	DBCMap<SpellItemEnchantment> spell_item_enchantment;
+	DBCMap<SpellMechanic> spell_mechanic;
+	DBCMap<SpellRadius> spell_radius;
+	DBCMap<SpellRange> spell_range;
+	DBCMap<SpellShapeshiftForm> spell_shapeshift_form;
+	DBCMap<SpellVisual> spell_visual;
+	DBCMap<SpellVisualEffectName> spell_visual_effect_name;
+	DBCMap<SpellVisualKit> spell_visual_kit;
+	DBCMap<UnitBlood> unit_blood;
 
 
 	Storage() = default;
@@ -30,7 +70,47 @@ struct Storage {
 
 	//explicit because msvc is missing default move support
 	void moves(Storage& src) {
+		animation_data = std::move(animation_data);
+		camera_shakes = std::move(camera_shakes);
 		chr_classes = std::move(chr_classes);
+		chr_races = std::move(chr_races);
+		cinematic_camera = std::move(cinematic_camera);
+		cinematic_sequences = std::move(cinematic_sequences);
+		creature_display_info = std::move(creature_display_info);
+		creature_display_info_extra = std::move(creature_display_info_extra);
+		creature_model_data = std::move(creature_model_data);
+		creature_sound_data = std::move(creature_sound_data);
+		creature_type = std::move(creature_type);
+		faction = std::move(faction);
+		faction_group = std::move(faction_group);
+		faction_template = std::move(faction_template);
+		footprint_textures = std::move(footprint_textures);
+		helmet_geoset_vis_data = std::move(helmet_geoset_vis_data);
+		item_class = std::move(item_class);
+		item_display_info = std::move(item_display_info);
+		item_group_sounds = std::move(item_group_sounds);
+		item_sub_class = std::move(item_sub_class);
+		item_visual_effects = std::move(item_visual_effects);
+		item_visuals = std::move(item_visuals);
+		npc_sounds = std::move(npc_sounds);
+		resistances = std::move(resistances);
+		sound_entries = std::move(sound_entries);
+		spell = std::move(spell);
+		spell_cast_times = std::move(spell_cast_times);
+		spell_category = std::move(spell_category);
+		spell_dispel_type = std::move(spell_dispel_type);
+		spell_duration = std::move(spell_duration);
+		spell_focus_object = std::move(spell_focus_object);
+		spell_icon = std::move(spell_icon);
+		spell_item_enchantment = std::move(spell_item_enchantment);
+		spell_mechanic = std::move(spell_mechanic);
+		spell_radius = std::move(spell_radius);
+		spell_range = std::move(spell_range);
+		spell_shapeshift_form = std::move(spell_shapeshift_form);
+		spell_visual = std::move(spell_visual);
+		spell_visual_effect_name = std::move(spell_visual_effect_name);
+		spell_visual_kit = std::move(spell_visual_kit);
+		unit_blood = std::move(unit_blood);
 
 	}
 
@@ -40,7 +120,6 @@ struct Storage {
 
 	Storage& operator=(Storage&& src) {
 		moves(src);
-		return *this;
 	}
 };
 
