@@ -36,7 +36,7 @@ public:
 		std::string name;
 		std::uint8_t state; // enabled?
 		std::uint32_t crc;
-		std::uint32_t unknown;
+		std::uint32_t update_url_crc;
 	};
 
 	Botan::SecureVector<Botan::byte> digest;
@@ -101,10 +101,10 @@ public:
 			addon_stream >> data.name;
 			addon_stream >> data.state;
 			addon_stream >> data.crc;
-			addon_stream >> data.unknown;
+			addon_stream >> data.update_url_crc;
 
 			be::little_to_native_inplace(data.crc);
-			be::little_to_native_inplace(data.unknown);
+			be::little_to_native_inplace(data.update_url_crc);
 
 			addons.emplace_back(std::move(data));
 		}

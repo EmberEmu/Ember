@@ -25,10 +25,10 @@ public:
 	SMSG_AUTH_RESPONSE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE) { }
 
 	ResultCode result;
-	std::uint32_t queue_position;
-	std::uint32_t billing_time;
-	std::uint8_t billing_flags;
-	std::uint32_t billing_rested;
+	std::uint32_t queue_position = 0;
+	std::uint32_t billing_time = 0;
+	std::uint8_t billing_flags = 0;
+	std::uint32_t billing_rested = 0;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
