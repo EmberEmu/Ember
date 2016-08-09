@@ -27,4 +27,4 @@ set(EXECUTABLE_SRC
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} shared ${Boost_LIBRARIES})

@@ -21,7 +21,7 @@ typedef std::pair<std::string, boost::optional<int>> TypeComponents;
 TypeComponents extract_components(const std::string& type);
 std::string pascal_to_underscore(std::string name);
 
-extern std::map<std::string, std::pair<std::string, bool>> type_map;
+const extern std::map<std::string, std::pair<std::string, bool>> type_map;
 extern std::unordered_set<std::string> cpp_keywords;
 
 }} //dbc, ember

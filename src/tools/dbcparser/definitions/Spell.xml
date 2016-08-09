@@ -302,7 +302,7 @@
 	</field>
 
 	<field>
-		<type>int32[3]</type>
+		<type>uint32[3]</type>
 		<name>effect_mechanic</name>
 		<key>
 			<type>foreign</type>
@@ -321,7 +321,7 @@
 	</field>
 
 	<field>
-		<type>int32[3]</type>
+		<type>uint32[3]</type>
 		<name>effect_radius</name>
 		<key>
 			<type>foreign</type>
@@ -364,7 +364,7 @@
 	</field>
 
 	<field>
-		<type>int32[3]</type>
+		<type>uint32[3]</type>
 		<name>effect_trigger_spell</name>
 		<key>
 			<type>foreign</type>
@@ -383,7 +383,7 @@
 	</field>
 
 	<field>
-		<type>int32</type>
+		<type>uint32</type>
 		<name>spell_icon</name>
 		<key>
 			<type>foreign</type>

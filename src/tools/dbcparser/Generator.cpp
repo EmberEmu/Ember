@@ -93,18 +93,31 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 		call << "\t" << "detail::link_" << store_name << "(storage);" << std::endl;
 		
 		func << "void link_" << store_name << "(Storage& storage) {" << std::endl;
-		func << "\t" << "for(auto& i : storage." << store_name << ") {" << std::endl;
+		func << "\t" << "for(auto& i : storage." << store_name << ".values()) {" << std::endl;
 
 		for(auto& f : dbc->fields) {
 			std::stringstream curr_field;
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.is_initialized();
 			bool write_field = false;
+			std::string type;
+
+			if(type_map.find(components.first) == type_map.end()) {
+				auto t = locate_type(*dbc, components.first);
+
+				if(!t) {
+					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc->name);
+				}
+				
+				type = *t + ":: " + components.first;
+			} else {
+				type = type_map.at(components.first).first;
+			}
 
 			if(array) {
 				curr_field << (pack_loop_format? "" : "\n") << (double_spaced || first_field? "" : "\n")
 					<< "\t\t" << "for(std::size_t j = 0; j < "
-					<< "sizeof(i." << f.name << ") / sizeof(" << type_map[components.first].first << ");"
+					<< "sizeof(i." << f.name << ") / sizeof(" << type << ");"
 					<< " ++j) { " << std::endl;
 			} else {
 				curr_field << (!pack_loop_format? "\n" : "");
@@ -196,7 +209,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			std::string type;
 
 			if(type_map.find(components.first) != type_map.end()) {
-				type = type_map[components.first].first;
+				type = type_map.at(components.first).first;
 				type_found = true;
 			} else {
 				type = components.first;
@@ -210,7 +223,6 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 
 			double_spaced = array;
 
-			std::stringstream cast;
 			bool id_suffix = false;
 			bool foreign = false;
 			bool primary = false;
@@ -231,8 +243,15 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				}
 			}
 
-			if(cast.str().empty() && type_map.find(components.first) == type_map.end()) {
+			std::stringstream cast;
+
+			if(type_map.find(components.first) == type_map.end()) {
 				auto t = locate_type(dbc, type);
+
+				if(!t) {
+					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc.name);
+				}
+
 				cast << "static_cast<" << *t << "::" << type << ">(";
 			}
 
@@ -360,7 +379,7 @@ bool is_enum(const std::string& type) {
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
 	std::string tab("\t", indent);
 
-	definitions << tab << "enum class " << def.name << " : " << type_map[def.underlying_type].first << " {";
+	definitions << tab << "enum class " << def.name << " : " << type_map.at(def.underlying_type).first << " {";
 
 	if(!def.comment.empty()) { // todo, fix
 		definitions << " // " << def.comment;
@@ -424,7 +443,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 		// if the type isn't in the type map, just assume that it's a user-defined struct/enum
 		if(type_map.find(components.first) != type_map.end()) {
-			definitions << type_map[components.first].first;
+			definitions << type_map.at(components.first).first;
 		} else {
 			definitions << components.first;
 		}
