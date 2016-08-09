@@ -2,8 +2,8 @@
 <dbc>
 	<name>CharBaseInfo</name>
 	
-	<field>
-		<type>uint32</type>
+	<field ignore-type-mismatch="true">
+		<type>uint8</type>
 		<name>race</name>
 		<key>
 			<type>foreign</type>
@@ -11,8 +11,8 @@
 		</key>
 	</field>
 
-	<field>
-		<type>uint32</type>
+	<field ignore-type-mismatch="true">
+		<type>uint8</type>
 		<name>class_</name>
 		<key>
 			<type>foreign</type>
