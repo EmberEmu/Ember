@@ -26,7 +26,7 @@ public:
 		storage.emplace(id, std::forward<Args>(args)...);
 	}
 
-	inline T* operator[](std::size_t index)  {
+	inline const T* operator[](std::size_t index) const {
 		auto it = storage.find(index);
 		
 		if(it == storage.end()) {

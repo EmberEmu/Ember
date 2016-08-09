@@ -431,7 +431,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 		for(auto& k : f.keys) {
 			if(k.type == "foreign") {
-				definitions << tab << "\t" + k.parent << "* " << f.name
+				definitions << tab << "\t" << "const " << k.parent << "* " << f.name
 					<< (array ? "[" + std::to_string(*components.second) + "]" : "")
 					<< ";" << std::endl;
 				key = true;
