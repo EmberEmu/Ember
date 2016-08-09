@@ -25,7 +25,7 @@ typedef std::vector<std::unique_ptr<Base>> Definitions;
 struct Key {
 	std::string type;
 	std::string parent;
-	bool ignore_type_mismatch;
+	bool ignore_type_mismatch = false;
 };
 
 struct Field {
