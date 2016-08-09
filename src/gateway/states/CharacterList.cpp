@@ -28,16 +28,16 @@ namespace {
 void send_character_list_fail(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
-	response->result = protocol::ResultCode::AUTH_UNAVAILABLE;
+	protocol::SMSG_CHAR_CREATE response;
+	response.result = protocol::ResultCode::AUTH_UNAVAILABLE;
 	ctx->connection->send(response);
 }
 
 void send_character_list(ClientContext* ctx, const std::vector<Character>& characters) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_shared<protocol::SMSG_CHAR_ENUM>();
-	response->characters = characters;
+	protocol::SMSG_CHAR_ENUM response;
+	response.characters = characters;
 	ctx->connection->send(response);
 }
 
@@ -48,23 +48,24 @@ void handle_char_enum(ClientContext* ctx) {
 
 	char_serv_temp->retrieve_characters(ctx->account_name,
 	                                    [self, ctx](em::character::Status status, std::vector<Character> characters) {
-		if(status == em::character::Status::OK) {
-			send_character_list(ctx, characters);
-		} else {
-			send_character_list_fail(ctx);
-		}
-	});
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, characters]() {
+			if(status == em::character::Status::OK) {
+				send_character_list(ctx, characters);
+			} else {
+				send_character_list_fail(ctx);
+			}
+		});});
 }
 
 void send_character_delete(ClientContext* ctx) {
-	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
-	response->result = protocol::ResultCode::CHAR_DELETE_SUCCESS;
+	protocol::SMSG_CHAR_CREATE response;
+	response.result = protocol::ResultCode::CHAR_DELETE_SUCCESS;
 	ctx->connection->send(response);
 }
 
 void send_character_create(ClientContext* ctx) {
-	auto response = std::make_shared<protocol::SMSG_CHAR_CREATE>();
-	response->result = protocol::ResultCode::CHAR_CREATE_SUCCESS;
+	protocol::SMSG_CHAR_CREATE response;
+	response.result = protocol::ResultCode::CHAR_CREATE_SUCCESS;
 	ctx->connection->send(response);
 }
 
@@ -81,9 +82,11 @@ void handle_char_create(ClientContext* ctx) {
 
 	char_serv_temp->create_character(ctx->account_name, *packet.character,
 	                                 [self, ctx](em::character::Status status) {
-		//if(status == em::character::Status::OK) {
-			send_character_create(ctx);
-		//}
+		ctx->connection->socket().get_io_service().dispatch([self, ctx]() {
+			//if(status == em::character::Status::OK) {
+				send_character_create(ctx);
+			//}
+		});
 	});
 }
 
@@ -100,11 +103,12 @@ void handle_char_delete(ClientContext* ctx) {
 
 	char_serv_temp->delete_character(ctx->account_name, packet.id,
 	                                 [self, ctx](em::character::Status status) {
-		if(status == em::character::Status::OK) {
-			send_character_delete(ctx);
-		}
-	}
-	);
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, status]() {
+			if(status == em::character::Status::OK) {
+				send_character_delete(ctx);
+			}
+		});
+	});
 }
 
 void handle_login(ClientContext* ctx) {

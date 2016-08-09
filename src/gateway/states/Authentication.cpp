@@ -62,7 +62,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 
 	acct_serv->locate_session(packet.username, [self, ctx, packet](em::account::Status remote_res,
 	                                                               Botan::BigInt key) {
-		ctx->connection->socket().get_io_service().post([self, ctx, packet, remote_res, key]() {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, key]() {
 			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 				<< "Account server returned " << em::account::EnumNameStatus(remote_res)
 				<< " for " << packet.username << LOG_ASYNC;
@@ -95,15 +95,15 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 void send_auth_challenge(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto packet = std::make_shared<protocol::SMSG_AUTH_CHALLENGE>();
-	packet->seed = ctx->auth_seed = 600; // todo, obviously
-	ctx->connection->send(packet);
+	protocol::SMSG_AUTH_CHALLENGE response;
+	response.seed = ctx->auth_seed = 600; // todo, obviously
+	ctx->connection->send(response);
 }
 
 void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_shared<protocol::SMSG_ADDON_INFO>();
+	protocol::SMSG_ADDON_INFO response;
 
 	// should really have an addon database rather than assuming the client isn't sending junk
 	for(auto& addon : packet.addons) {
@@ -121,7 +121,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 			data.state = 0;
 		}		
 		
-		response->addon_data.emplace_back(std::move(data));
+		response.addon_data.emplace_back(std::move(data));
 	}
 
 	ctx->connection->send(response);
@@ -165,9 +165,12 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	*/
 	if(test > 0) {
 		auto self(ctx->connection->shared_from_this());
+
 		queue_service_temp->enqueue(self, [auth_success, ctx, packet, self]() {
-			LOG_DEBUG_GLOB << packet.username << " removed from queue" << LOG_ASYNC;
-			auth_success(ctx);
+			ctx->connection->socket().get_io_service().dispatch([self, ctx, auth_success, packet]() {
+				LOG_DEBUG_GLOB << packet.username << " removed from queue" << LOG_ASYNC;
+				auth_success(ctx);
+			});
 		});
 
 		LOG_DEBUG_GLOB << packet.username << " added to queue" << LOG_ASYNC;
@@ -182,8 +185,8 @@ void send_auth_result(ClientContext* ctx, protocol::ResultCode result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// not convinced that this packet is correct, apart from for AUTH_OK
-	auto response = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	response->result = result;
+	protocol::SMSG_AUTH_RESPONSE response;
+	response.result = result;
 	ctx->connection->send(response);
 }
 

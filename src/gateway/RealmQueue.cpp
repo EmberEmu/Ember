@@ -40,10 +40,12 @@ void RealmQueue::update_clients() {
 }
 
 void RealmQueue::send_position(std::size_t position, std::shared_ptr<ClientConnection> client) {
-	auto packet = std::make_shared<protocol::SMSG_AUTH_RESPONSE>();
-	packet->result = protocol::ResultCode::AUTH_WAIT_QUEUE;
-	packet->queue_position = position;
-	client->send(packet);
+	client->socket().get_io_service().dispatch([client, position]() {
+		protocol::SMSG_AUTH_RESPONSE packet;
+		packet.result = protocol::ResultCode::AUTH_WAIT_QUEUE;
+		packet.queue_position = position;
+		client->send(packet);
+	});
 }
 
 void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback, int priority) {

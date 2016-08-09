@@ -51,7 +51,7 @@ public:
 
 	void retrieve_characters(std::string account_name, RetrieveCB cb) const;
 	void create_character(std::string account_name, const Character& character, ResponseCB cb) const;
-	void delete_character(std::string account_name, unsigned int id, ResponseCB cb) const;
+	void delete_character(std::string account_name, std::uint64_t id, ResponseCB cb) const;
 };
 
 } // ember
