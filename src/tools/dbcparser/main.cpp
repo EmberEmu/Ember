@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -26,6 +27,7 @@ std::vector<std::string> fetch_definitions(const std::string& path);
 void print_dbc_table(const edbc::types::Definitions& defs);
 void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs);
+void generate_template(const std::string& dbc, const edbc::types::Definitions& groups);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -49,6 +51,13 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 
 	if(args.count("print-fields")) {
 		print_dbc_fields(args["print-fields"].as<std::string>(), defs);
+		return;
+	}
+
+
+	if(args.count("template")) {
+		generate_template(args["template"].as<std::string>(), defs);
+		std::cout << "DBC template generated." << std::endl;
 		return;
 	}
 
@@ -92,6 +101,91 @@ edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Defin
 	}
 
 	return nullptr;
+}
+
+void generate_template(const std::string& dbc, const edbc::types::Definitions& groups) {
+	auto def = locate_dbc(dbc, groups);
+
+	if(!def) {
+		throw std::invalid_argument(dbc + " - no such DBC");
+	}
+
+	std::ofstream file(def->name + ".dbc", std::ofstream::binary);
+	
+	// write header
+	std::uint32_t magic('CBDW');
+	std::uint32_t records = 1; // one record
+	std::uint32_t field_count = 0;
+	std::uint32_t string_block_size = 0;
+	std::uint32_t record_size = 0;
+
+	for(auto& f : def->fields) {
+		if(f.underlying_type == "string_ref_loc") {
+			field_count += 9;
+			string_block_size += 10;
+		} else {
+			field_count += 1;
+		}
+	}
+	
+	
+	for(auto& f : def->fields) {
+		if(f.underlying_type == "int8" || f.underlying_type == "uint8" || f.underlying_type == "bool") {
+			record_size += 1;
+		} else if(f.underlying_type == "int16" || f.underlying_type == "uint16") {
+			record_size += 2;
+		} else if(f.underlying_type == "int32" || f.underlying_type == "uint32"
+				  || f.underlying_type == "bool32" || f.underlying_type == "string_ref"
+				  || f.underlying_type == "bool32" || f.underlying_type == "float") {
+			record_size += 4;
+		} else if(f.underlying_type == "double") {
+			record_size += 8;
+		} else if(f.underlying_type == "string_ref_loc") {
+			record_size += 36;
+		} else {
+			throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
+		}
+	}
+	
+	std::stringstream string_block;
+
+	const std::string block = string_block.str();
+	string_block_size = block.size();
+
+	// not caring about endianness
+	file.write((char*)&magic, sizeof(magic));
+	file.write((char*)&records, sizeof(records));
+	file.write((char*)&field_count, sizeof(field_count));
+	file.write((char*)&record_size, sizeof(record_size));
+	file.write((char*)&string_block_size, sizeof(string_block_size));
+	file.write(block.c_str(), block.size());
+
+	// write an example record
+	for(auto& f : def->fields) {
+		if(f.underlying_type == "int8" || f.underlying_type == "uint8" || f.underlying_type == "bool") {
+			std::uint8_t val(1);
+			file.write((char*)&val, 1);
+		} else if(f.underlying_type == "int16" || f.underlying_type == "uint16") {
+			std::uint16_t val(1);
+			file.write((char*)&val, 2);
+		} else if(f.underlying_type == "int32" || f.underlying_type == "uint32"
+				  || f.underlying_type == "bool32" || f.underlying_type == "string_ref") {
+			std::uint32_t val(1);
+			file.write((char*)&val, 4);
+		} else if(f.underlying_type == "float") {
+			float val(1.0f);
+			file.write((char*)&val, 4);
+		} else if(f.underlying_type == "double") {
+			double val(1);
+			file.write((char*)&val, 8);
+		} else if(f.underlying_type == "string_ref") {
+			string_block << "Test string";
+			// ??
+		} else if(f.underlying_type == "string_ref_loc") {
+			string_block << "Test string GB";
+			string_block << std::uint32_t(0) << std::uint32_t(0);
+		}
+	}
 }
 
 void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& groups) {
@@ -153,7 +247,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("print-dbcs", po::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")
 		("print-fields", po::value<std::string>(),
-			"Print out of a summary of a specific DBC definition's fields");
+			"Print out of a summary of a specific DBC definition's fields")
+		("template", po::value<std::string>(),
+		 "Generate a DBC template file for editing in other tools");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(opt)
