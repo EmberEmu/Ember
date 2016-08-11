@@ -13,7 +13,7 @@
 #include <shared/database/daos/CharacterDAO.h>
 #include <spark/temp/Character_generated.h>
 #include <logger/Logging.h>
-#include <boost/locale.hpp>
+//#include <boost/locale.hpp>
 #include <locale>
 #include <regex>
 #include <string>
