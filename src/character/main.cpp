@@ -16,15 +16,17 @@
 #include <conpool/drivers/AutoSelect.h>
 #include <logger/Logging.h>
 #include <shared/Banner.h>
+#include <shared/database/daos/CharacterDAO.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
-#include <shared/database/daos/CharacterDAO.h>
+#include <shared/util/PCREHelper.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <stdexcept>
 
 #undef ERROR // temp
@@ -83,6 +85,17 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
 	edbc::link(dbc_store);
 
+	LOG_INFO_GLOB << "Compiling DBC regular expressions..." << LOG_ASYNC;
+	std::vector<ember::util::pcre::Result> profanity, reserved;
+
+	for(auto& i : dbc_store.names_profanity.values()) {
+		profanity.emplace_back(ember::util::pcre::utf8_jit_compile(i.name));
+	}
+
+	for(auto& i : dbc_store.names_reserved.values()) {
+		reserved.emplace_back(ember::util::pcre::utf8_jit_compile(i.name));
+	}
+
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
@@ -94,7 +107,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto character_dao = ember::dal::character_dao(pool);
 
-	boost::asio::io_service service;
+	std::locale temp;
+	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, temp);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
@@ -104,11 +118,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
+	boost::asio::io_service service;
 	es::Service spark("character", service, s_address, s_port, logger, spark_filter);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::CharacterHandler handler(dbc_store, *character_dao, "de-DE.UTF8");
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
 
 	service.dispatch([&, logger]() {

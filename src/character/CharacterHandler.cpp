@@ -10,75 +10,25 @@
 #include <shared/util/Utility.h>
 #include <shared/util/UTF8.h>
 #include <utf8cpp/utf8.h>
-#include <boost/algorithm/string.hpp>
-#include <pcre.h>
 
 namespace ember {
 
-CharacterHandler::CharacterHandler(const dbc::Storage& dbc, const dal::CharacterDAO& dao, const std::string& locale)
-                                   : dbc_(dbc), dao_(dao) {
-
-	//boost::locale::generator gen_;
-	//locale_ = gen_.generate(locale);
-
-	for(auto& i : dbc_.names_profanity.values()) {
-		int error_offset = 0;
-		const char* error = 0;
-
-		std::string target = i.name; // because we're working with const data - move?
-		boost::replace_first(target, R"(\<)", R"(\b)");
-		boost::replace_first(target, R"(\>)", R"(\b)");
-		
-		auto expression = std::unique_ptr<pcre, void(*)(void*)>(pcre_compile(target.c_str(), PCRE_UTF8 | PCRE_CASELESS,
-		                                                     &error, &error_offset, nullptr), pcre_free);
-
-		if(expression == nullptr) {
-			LOG_DEBUG_GLOB << "Nope" << LOG_ASYNC;
-		}
-
-		auto extra = std::unique_ptr<pcre_extra, void(*)(pcre_extra*)>(pcre_study(expression.get(), PCRE_STUDY_JIT_COMPILE,
-		                                                                    &error), pcre_free_study);
-
-		if(extra == nullptr) {
-			LOG_DEBUG_GLOB << "Nope #2" << LOG_ASYNC;
-		}
-
-		/*int ignored;
-		auto matches = pcre_exec(expression.get(), nullptr, find.c_str(), find.size(), 0, 0, &ignored, 1);
-
-		if(matches >= 0) {
-			LOG_DEBUG_GLOB << "Match found with " << target << LOG_ASYNC;
-		} else {
-			if(matches != PCRE_ERROR_NOMATCH) {
-				LOG_DEBUG_GLOB << "Error with " << target << LOG_ASYNC;
-			}
-		}*/
-
-		// workaround broken grep grammar implementation by removing the \< & \> word boundaries
-		//std::string pattern = std::regex_replace(test, boundary_replace, L"");
-
-		//std::regex regex(i.name);
-		//regex_profane_.emplace_back(regex);
-	}
-
-	/*for(auto& i : dbc_.names_reserved.values()) {
-		std::cout << i.name;
-		// workaround broken grep grammar implementation by removing the \< & \> word boundaries
-		std::string pattern = std::regex_replace(i.name, boundary_replace, "");
-		//regex_reserved_.emplace_back(pattern, std::regex::grep | std::regex::icase | std::regex::optimize);
-	}*/
-}
+CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
+                                   const std::vector<util::pcre::Result>& reserved_names,
+                                   const dbc::Storage& dbc, const dal::CharacterDAO& dao,
+                                   const std::locale& locale)
+                                   : profane_names_(profane_names), reserved_names_(reserved_names),
+                                     dbc_(dbc), dao_(dao) { }
 
 protocol::ResultCode CharacterHandler::validate_name(const std::string& name) const {
 	if(name.empty()) {
 		return protocol::ResultCode::CHAR_NAME_NO_NAME;
 	}
 
-	// we treat std::string as a container for a UTF-8 encoded string
 	bool valid = false;
 	std::size_t name_length = util::utf8::length(name, valid);
 
-	if(!valid) {
+	if(!valid) { // wasn't a valid UTF-8 encoded string
 		return protocol::ResultCode::CHAR_NAME_FAILURE;
 	}
 
@@ -110,16 +60,26 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 	//	return protocol::ResultCode::CHAR_NAME_ONLY_LETTERS;
 	//}
 
-	for(auto& regex : regex_profane_) {
-		/*if(std::wregex_match(name, regex)) {
-			return protocol::ResultCode::CHAR_NAME_PROFANE;
-		}*/
+	for(auto& regex : reserved_names_) {
+		int ret = util::pcre::match(name, regex);
+			
+		if(ret >= 0) {
+			return protocol::ResultCode::CHAR_NAME_RESERVED;
+		} else if(ret != PCRE_ERROR_NOMATCH) {
+			LOG_WARN_GLOB << "PCRE error encountered: " + ret << LOG_ASYNC;
+			return protocol::ResultCode::CHAR_NAME_FAILURE;
+		}
 	}
 
-	for(auto& regex : regex_reserved_) {
-		/*if(std::wregex_match(name, regex)) {
-			return protocol::ResultCode::CHAR_NAME_RESERVED;
-		}*/
+	for(auto& regex : profane_names_) {
+		int ret = util::pcre::match(name, regex);
+
+		if(ret >= 0) {
+			return protocol::ResultCode::CHAR_NAME_PROFANE;
+		} else if(ret != PCRE_ERROR_NOMATCH) {
+			LOG_WARN_GLOB << "PCRE error encountered: " + ret << LOG_ASYNC;
+			return protocol::ResultCode::CHAR_NAME_FAILURE;
+		}
 	}
 
 	return protocol::ResultCode::CHAR_CREATE_SUCCESS;

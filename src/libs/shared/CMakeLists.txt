@@ -50,6 +50,8 @@ set(THREADING_SRC
 )
 
 set(UTIL_SRC
+    shared/util/PCREHelper.h
+    shared/util/PCREHelper.cpp
     shared/util/UTF8.h
     shared/util/UTF8.cpp
     shared/util/Utility.h
@@ -99,4 +101,4 @@ source_group("Metrics" FILES ${METRICS_SRC})
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
-target_link_libraries(${LIBRARY_NAME} logging conpool)
+target_link_libraries(${LIBRARY_NAME} logging conpool pcre)

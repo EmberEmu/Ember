@@ -12,8 +12,10 @@
 #include <game_protocol/ResultCodes.h>
 #include <shared/database/daos/CharacterDAO.h>
 #include <spark/temp/Character_generated.h>
+#include <shared/util/PCREHelper.h>
 #include <logger/Logging.h>
 //#include <boost/locale.hpp>
+#include <pcre.h>
 #include <locale>
 #include <regex>
 #include <string>
@@ -28,20 +30,22 @@ class CharacterHandler {
 	const std::size_t MIN_NAME_LENGTH = 2;
 	const std::size_t MAX_CONSECUTIVE_LETTERS = 2;
 
-	std::locale locale_;
-	std::vector<std::regex> regex_profane_;
-	std::vector<std::regex> regex_reserved_;
-
+	const std::vector<util::pcre::Result>& profane_names_;
+	const std::vector<util::pcre::Result>& reserved_names_;
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
+	std::locale locale_;
 
-	protocol::ResultCode validate_name(const std::string& name) const;
 	void validate_race();
 	void validate_class();
 	void validate_race_class_pair();
+	protocol::ResultCode validate_name(const std::string& name) const;
 
 public:
-	CharacterHandler(const dbc::Storage& dbc, const dal::CharacterDAO& dao, const std::string& locale);
+	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
+	                 const std::vector<util::pcre::Result>& reserved_names,
+	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
+	                 const std::locale& locale);
 
 	std::string create_character(std::uint32_t account_id, std::uint32_t realm_id,
 	                                      const messaging::character::Character& details) const;
