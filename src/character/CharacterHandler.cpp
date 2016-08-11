@@ -82,8 +82,23 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 }
 
 std::string CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                                        const messaging::character::Character& details) const {
-	std::string name = details.name()->c_str();
+                                               const messaging::character::Character& character) const {
+
+	// validate the race/class combination
+	auto found = std::find_if(dbc_.char_base_info.begin(), dbc_.char_base_info.end(), [&](auto val) {
+		return (character.class_() == val.second.class__id && character.race() == val.second.race_id);
+	});
+
+	if(found == dbc_.char_base_info.end()) {
+		LOG_WARN_GLOB << "Received an invalid class/race combination of " << character.class_()
+			<< " & " << character.race() << " from account ID " << account_id << LOG_ASYNC; // todo, define new filter
+		return "temp";
+	}
+
+	LOG_DEBUG_GLOB << "Creating " << dbc_.chr_races[character.race()]->name.enGB
+		<< " " << dbc_.chr_classes[character.class_()]->name.enGB << LOG_ASYNC;
+
+	std::string name = character.name()->c_str();
 
 	//try {
 	//	// convert name case

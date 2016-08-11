@@ -36,6 +36,14 @@ public:
 		return &it->second;
 	}
 
+	inline auto begin() const {
+		return storage.begin();
+	}
+
+	inline auto end() const {
+		return storage.end();
+	}
+
 	inline auto begin() {
 		return storage.begin();
 	}
