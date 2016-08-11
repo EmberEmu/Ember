@@ -18,6 +18,8 @@ set(LIBRARY_SRC
     Service.cpp
     )
 
+include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
+
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} dbcreader spark logging game_protocol shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 

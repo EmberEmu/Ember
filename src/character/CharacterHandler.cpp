@@ -10,21 +10,19 @@
 #include <shared/util/Utility.h>
 #include <cctype>
 #include <boost/locale.hpp>
+#include <utf8cpp/utf8.h>
 
 namespace ember {
 
 CharacterHandler::CharacterHandler(const dbc::Storage& dbc, const dal::CharacterDAO& dao)
                                    : dbc_(dbc), dao_(dao) {
-	std::wregex boundary_replace(LR"(\<|\>)");
-	boost::locale::generator gen;
-	std::locale loc = gen("en_GB.UTF-8");
-	std::locale::global(loc);
+
 	for(auto& i : dbc_.names_profanity.values()) {
 		
 		// workaround broken grep grammar implementation by removing the \< & \> word boundaries
 		//std::string pattern = std::regex_replace(test, boundary_replace, L"");
 
-		std::regex regex(i.name);
+		//std::regex regex(i.name);
 		//regex_profane_.emplace_back(regex);
 	}
 
@@ -79,6 +77,9 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) {
 
 void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
                                         const messaging::character::Character& details) const {
+	std::string name = details.name()->c_str();
+	std::cout << "Name length is: " << name.length();
+	std::cout << "Name length is: " << utf8::distance(name.begin(), name.end());
 	
 }
 
