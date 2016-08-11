@@ -31,18 +31,19 @@
 
 #undef ERROR // temp
 
-namespace el = ember::log;
-namespace es = ember::spark;
 namespace ep = ember::connection_pool;
-namespace edbc = ember::dbc;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
-void launch(const po::variables_map& args, el::Logger* logger);
-unsigned int check_concurrency(el::Logger* logger); // todo, move
+namespace ember {
+
+void launch(const po::variables_map& args, log::Logger* logger);
+unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
+void pool_log_callback(ep::Severity, const std::string& message, log::Logger* logger);
+
+} // ember
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -55,26 +56,28 @@ void pool_log_callback(ep::Severity, const std::string& message, el::Logger* log
 int main(int argc, const char* argv[]) try {
 	ember::print_banner("Character Daemon");
 
-	const po::variables_map args = parse_arguments(argc, argv);
+	const po::variables_map args = ember::parse_arguments(argc, argv);
 
 	auto logger = ember::util::init_logging(args);
-	el::set_global_logger(logger.get());
+	ember::log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	launch(args, logger.get());
+	ember::launch(args, logger.get());
 	LOG_INFO(logger) << "Character daemon terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
 
-void launch(const po::variables_map& args, el::Logger* logger) try {
+namespace ember {
+
+void launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
-	edbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
+	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
@@ -83,7 +86,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	});
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
-	edbc::link(dbc_store);
+	dbc::link(dbc_store);
 
 	LOG_INFO_GLOB << "Compiling DBC regular expressions..." << LOG_ASYNC;
 	std::vector<ember::util::pcre::Result> profanity, reserved;
@@ -116,11 +119,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_group = args["spark.multicast_group"].as<std::string>();
 	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
-	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+	auto spark_filter = log::Filter(ember::FilterType::LF_SPARK);
 
 	boost::asio::io_service service;
-	es::Service spark("character", service, s_address, s_port, logger, spark_filter);
-	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
+	spark::Service spark("character", service, s_address, s_port, logger, spark_filter);
+	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
@@ -204,7 +207,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return std::move(options);
 }
 
-void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, const std::string& message, log::Logger* logger) {
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {
@@ -234,7 +237,7 @@ void pool_log_callback(ep::Severity severity, const std::string& message, el::Lo
  * in the machine but the standard doesn't guarantee that it won't be zero.
  * In that case, we just set the minimum concurrency level to two.
  */
-unsigned int check_concurrency(el::Logger* logger) {
+unsigned int check_concurrency(log::Logger* logger) {
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
@@ -248,3 +251,5 @@ unsigned int check_concurrency(el::Logger* logger) {
 	return concurrency;
 #endif
 }
+
+} // ember

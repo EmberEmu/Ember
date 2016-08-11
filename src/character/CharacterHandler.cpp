@@ -79,7 +79,6 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 	}
 
 	return protocol::ResultCode::CHAR_CREATE_SUCCESS;
-
 }
 
 std::string CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
