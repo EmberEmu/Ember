@@ -66,10 +66,11 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 
 	auto msg = static_cast<const em::character::Create*>(root->data());
 	auto c = msg->character();
+	auto n = handler_.create_character(1, msg->realm_id(), *msg->character());
 	
 	// temporary, if it isn't obvious
 	Character character(
-		c->name()->str(),
+		n,
 		0, // character ID, erp
 		1, // account ID
 		msg->realm_id(),
@@ -93,8 +94,7 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 		0 // pet family
 	);
 	
-	handler_.create_character(1, msg->realm_id(), *msg->character());
-	std::cout << c->name()->c_str() << std::endl; 
+	
 	character_dao_.create(character);
 	send_response(link, root, messaging::character::Status::OK);
 } catch(std::exception& e) {

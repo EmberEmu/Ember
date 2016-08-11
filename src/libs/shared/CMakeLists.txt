@@ -50,6 +50,8 @@ set(THREADING_SRC
 )
 
 set(UTIL_SRC
+    shared/util/UTF8.h
+    shared/util/UTF8.cpp
     shared/util/Utility.h
     shared/util/Utility.cpp
     shared/util/FormatPacket.h
@@ -94,6 +96,7 @@ source_group("Threading" FILES ${THREADING_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 source_group("Metrics" FILES ${METRICS_SRC})
 
+include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(${LIBRARY_NAME} logging conpool)

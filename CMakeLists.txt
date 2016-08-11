@@ -39,7 +39,7 @@ add_definitions(-DBOOST_ALL_NO_LIB)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.58.0 REQUIRED COMPONENTS program_options filesystem system)
+find_package(Boost 1.61.0 REQUIRED COMPONENTS program_options filesystem locale system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
@@ -75,6 +75,12 @@ include_directories(${FLATBUFFERS_INCLUDE_DIR})
 ##############################
 find_package(zlib 1.2.8 REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
+
+##############################
+#            PCRE            #
+##############################
+find_package(PCRE 8.39 REQUIRED)
+include_directories(${PCRE_INCLUDE_DIR})
 
 ##############################
 #         Google Test        #

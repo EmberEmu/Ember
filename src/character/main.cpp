@@ -108,7 +108,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::CharacterHandler handler(dbc_store, *character_dao);
+	ember::CharacterHandler handler(dbc_store, *character_dao, "de-DE.UTF8");
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
 
 	service.dispatch([&, logger]() {
