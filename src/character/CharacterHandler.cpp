@@ -18,7 +18,7 @@ CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profan
                                    const dbc::Storage& dbc, const dal::CharacterDAO& dao,
                                    const std::locale& locale)
                                    : profane_names_(profane_names), reserved_names_(reserved_names),
-                                     dbc_(dbc), dao_(dao) { }
+                                     dbc_(dbc), dao_(dao), locale_(locale) { }
 
 protocol::ResultCode CharacterHandler::validate_name(const std::string& name) const {
 	if(name.empty()) {
@@ -30,10 +30,6 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 
 	if(!valid) { // wasn't a valid UTF-8 encoded string
 		return protocol::ResultCode::CHAR_NAME_FAILURE;
-	}
-
-	if(name_length == 0) {
-		return protocol::ResultCode::CHAR_NAME_NO_NAME;
 	}
 
 	if(name_length > MAX_NAME_LENGTH) {
