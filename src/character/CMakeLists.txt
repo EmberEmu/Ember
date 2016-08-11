@@ -8,16 +8,18 @@ set(EXECUTABLE_NAME character)
 set(LIBRARY_NAME    libcharacter)
 
 set(LIBRARY_HDR
+    CharacterHandler.h
     Service.h
     FilterTypes.h
     )
 
 set(LIBRARY_SRC
+    CharacterHandler.cpp
     Service.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} dbcreader spark logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} dbcreader spark logging game_protocol shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} dbcreader spark conpool logging shared ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})

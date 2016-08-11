@@ -7,6 +7,7 @@
  */
 
 #include "FilterTypes.h"
+#include "CharacterHandler.h"
 #include "Service.h"
 #include <dbcreader/DBCReader.h>
 #include <spark/Spark.h>
@@ -71,9 +72,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 #endif
 
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
-	edbc::DiskLoader loader(args["dbc.path"].as<std::string>());
+	edbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
+		LOG_DEBUG(logger) << message << LOG_SYNC;
+	});
+
 	auto dbc_store = loader.load({
-		"ChrClasses", "ChrRaces"
+		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved"
 	});
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
@@ -104,7 +108,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::Service char_service(*character_dao, spark, discovery, logger);
+	ember::CharacterHandler handler(dbc_store, *character_dao);
+	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
 
 	service.dispatch([&, logger]() {
 		LOG_INFO(logger) << "Character daemon started successfully" << LOG_SYNC;

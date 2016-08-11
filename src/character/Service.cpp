@@ -14,9 +14,10 @@ namespace em = ember::messaging;
 
 namespace ember {
 
-Service::Service(dal::CharacterDAO& character_dao, spark::Service& spark, spark::ServiceDiscovery& discovery,
-                 log::Logger* logger)
-                 : character_dao_(character_dao), spark_(spark), discovery_(discovery), logger_(logger) {
+Service::Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,
+                 spark::ServiceDiscovery& discovery, log::Logger* logger)
+                 : character_dao_(character_dao), handler_(handler), spark_(spark),
+                   discovery_(discovery), logger_(logger) {
 	spark_.dispatcher()->register_handler(this, em::Service::Character, spark::EventDispatcher::Mode::SERVER);
 	discovery_.register_service(em::Service::Character);
 }
@@ -91,7 +92,9 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 		0, // pet level
 		0 // pet family
 	);
-
+	
+	handler_.create_character(1, msg->realm_id(), *msg->character());
+	std::cout << c->name()->c_str() << std::endl; 
 	character_dao_.create(character);
 	send_response(link, root, messaging::character::Status::OK);
 } catch(std::exception& e) {

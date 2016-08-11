@@ -84,6 +84,19 @@ void load_camera_shakes(Storage& storage, const std::string& dir_path) {
 	}
 }
 
+void load_char_base_info(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CharBaseInfo.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CharBaseInfo>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CharBaseInfo entry{};
+		entry.race_id = dbc.records[i].race;
+		entry.class__id = dbc.records[i].class_;
+		storage.char_base_info.emplace_back(i, entry);
+	}
+}
+
 void load_chr_classes(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ChrClasses.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
@@ -614,6 +627,32 @@ void load_item_visuals(Storage& storage, const std::string& dir_path) {
 		}
 
 		storage.item_visuals.emplace_back(entry.id, entry);
+	}
+}
+
+void load_names_profanity(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "NamesProfanity.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::NamesProfanity>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		NamesProfanity entry{};
+		entry.id = dbc.records[i].id;
+		entry.name = dbc.strings + dbc.records[i].name;
+		storage.names_profanity.emplace_back(entry.id, entry);
+	}
+}
+
+void load_names_reserved(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "NamesReserved.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::NamesReserved>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		NamesReserved entry{};
+		entry.id = dbc.records[i].id;
+		entry.name = dbc.strings + dbc.records[i].name;
+		storage.names_reserved.emplace_back(entry.id, entry);
 	}
 }
 
@@ -1260,6 +1299,7 @@ DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
                        : log_cb_(std::move(log_cb)), dir_path_(std::move(dir_path)) {
 	dbc_map.emplace("AnimationData", detail::load_animation_data);
 	dbc_map.emplace("CameraShakes", detail::load_camera_shakes);
+	dbc_map.emplace("CharBaseInfo", detail::load_char_base_info);
 	dbc_map.emplace("ChrClasses", detail::load_chr_classes);
 	dbc_map.emplace("ChrRaces", detail::load_chr_races);
 	dbc_map.emplace("CinematicCamera", detail::load_cinematic_camera);
@@ -1280,6 +1320,8 @@ DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
 	dbc_map.emplace("ItemSubClass", detail::load_item_sub_class);
 	dbc_map.emplace("ItemVisualEffects", detail::load_item_visual_effects);
 	dbc_map.emplace("ItemVisuals", detail::load_item_visuals);
+	dbc_map.emplace("NamesProfanity", detail::load_names_profanity);
+	dbc_map.emplace("NamesReserved", detail::load_names_reserved);
 	dbc_map.emplace("NPCSounds", detail::load_npc_sounds);
 	dbc_map.emplace("Resistances", detail::load_resistances);
 	dbc_map.emplace("SoundEntries", detail::load_sound_entries);
@@ -1325,6 +1367,8 @@ Storage DiskLoader::load() const {
 	detail::load_animation_data(storage, dir_path_);
 	log_cb_("Loading CameraShakes DBC data...");
 	detail::load_camera_shakes(storage, dir_path_);
+	log_cb_("Loading CharBaseInfo DBC data...");
+	detail::load_char_base_info(storage, dir_path_);
 	log_cb_("Loading ChrClasses DBC data...");
 	detail::load_chr_classes(storage, dir_path_);
 	log_cb_("Loading ChrRaces DBC data...");
@@ -1365,6 +1409,10 @@ Storage DiskLoader::load() const {
 	detail::load_item_visual_effects(storage, dir_path_);
 	log_cb_("Loading ItemVisuals DBC data...");
 	detail::load_item_visuals(storage, dir_path_);
+	log_cb_("Loading NamesProfanity DBC data...");
+	detail::load_names_profanity(storage, dir_path_);
+	log_cb_("Loading NamesReserved DBC data...");
+	detail::load_names_reserved(storage, dir_path_);
 	log_cb_("Loading NPCSounds DBC data...");
 	detail::load_npc_sounds(storage, dir_path_);
 	log_cb_("Loading Resistances DBC data...");

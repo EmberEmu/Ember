@@ -23,6 +23,7 @@ namespace ember { namespace dbc {
 struct Storage {
 	DBCMap<AnimationData> animation_data;
 	DBCMap<CameraShakes> camera_shakes;
+	DBCMap<CharBaseInfo> char_base_info;
 	DBCMap<ChrClasses> chr_classes;
 	DBCMap<ChrRaces> chr_races;
 	DBCMap<CinematicCamera> cinematic_camera;
@@ -43,6 +44,8 @@ struct Storage {
 	DBCMap<ItemSubClass> item_sub_class;
 	DBCMap<ItemVisualEffects> item_visual_effects;
 	DBCMap<ItemVisuals> item_visuals;
+	DBCMap<NamesProfanity> names_profanity;
+	DBCMap<NamesReserved> names_reserved;
 	DBCMap<NPCSounds> npc_sounds;
 	DBCMap<Resistances> resistances;
 	DBCMap<SoundEntries> sound_entries;
@@ -72,6 +75,7 @@ struct Storage {
 	void moves(Storage& src) {
 		animation_data = std::move(animation_data);
 		camera_shakes = std::move(camera_shakes);
+		char_base_info = std::move(char_base_info);
 		chr_classes = std::move(chr_classes);
 		chr_races = std::move(chr_races);
 		cinematic_camera = std::move(cinematic_camera);
@@ -92,6 +96,8 @@ struct Storage {
 		item_sub_class = std::move(item_sub_class);
 		item_visual_effects = std::move(item_visual_effects);
 		item_visuals = std::move(item_visuals);
+		names_profanity = std::move(names_profanity);
+		names_reserved = std::move(names_reserved);
 		npc_sounds = std::move(npc_sounds);
 		resistances = std::move(resistances);
 		sound_entries = std::move(sound_entries);

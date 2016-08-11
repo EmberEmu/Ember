@@ -44,6 +44,10 @@ public:
 		return storage.end();
 	}
 
+	auto values() const {
+		return storage | boost::adaptors::map_values;
+	}
+
 	auto values()  {
 		return storage | boost::adaptors::map_values;
 	}

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "CharacterHandler.h"
 #include <shared/database/daos/CharacterDAO.h>
 #include <spark/Service.h>
 #include <spark/temp/Character_generated.h>
@@ -17,6 +18,7 @@
 namespace ember {
 
 class Service final : public spark::EventHandler {
+	const CharacterHandler& handler_;
 	dal::CharacterDAO& character_dao_;
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
@@ -33,8 +35,8 @@ class Service final : public spark::EventHandler {
 	                   messaging::character::Status status);
 
 public:
-	Service(dal::CharacterDAO& character_dao, spark::Service& spark, spark::ServiceDiscovery& discovery,
-	        log::Logger* logger);
+	Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,
+	        spark::ServiceDiscovery& discovery, log::Logger* logger);
 	~Service();
 
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;

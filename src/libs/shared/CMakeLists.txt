@@ -50,6 +50,8 @@ set(THREADING_SRC
 )
 
 set(UTIL_SRC
+    shared/util/Utility.h
+    shared/util/Utility.cpp
     shared/util/FormatPacket.h
     shared/util/LogConfig.cpp
     shared/util/LogConfig.h

@@ -33,6 +33,7 @@ struct StringRefLoc {
 
 struct AnimationData;
 struct CameraShakes;
+struct CharBaseInfo;
 struct ChrClasses;
 struct ChrRaces;
 struct CinematicCamera;
@@ -53,6 +54,8 @@ struct ItemGroupSounds;
 struct ItemSubClass;
 struct ItemVisualEffects;
 struct ItemVisuals;
+struct NamesProfanity;
+struct NamesReserved;
 struct NPCSounds;
 struct Resistances;
 struct SoundEntries;
@@ -101,6 +104,13 @@ struct CameraShakes {
 	float duration;
 	float phase;
 	float coefficient;
+};
+
+struct CharBaseInfo {
+	const ChrRaces* race;
+	std::uint8_t race_id;
+	const ChrClasses* class_;
+	std::uint8_t class__id;
 };
 
 struct ChrClasses {
@@ -459,6 +469,16 @@ struct ItemVisuals {
 	std::uint32_t id;
 	const ItemVisualEffects* item_visual_effects[5];
 	std::uint32_t item_visual_effects_id[5];
+};
+
+struct NamesProfanity {
+	std::uint32_t id;
+	std::string name;
+};
+
+struct NamesReserved {
+	std::uint32_t id;
+	std::string name;
 };
 
 struct NPCSounds {

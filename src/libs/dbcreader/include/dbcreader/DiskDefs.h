@@ -65,6 +65,11 @@ struct CameraShakes {
 	float coefficient;
 };
 
+struct CharBaseInfo {
+	uint8 race;
+	uint8 class_;
+};
+
 struct ChrClasses {
 	typedef int32 PowerType;
 	uint32 id;
@@ -298,6 +303,16 @@ struct ItemVisualEffects {
 struct ItemVisuals {
 	uint32 id;
 	uint32 item_visual_effects[5];
+};
+
+struct NamesProfanity {
+	uint32 id;
+	string_ref name;
+};
+
+struct NamesReserved {
+	uint32 id;
+	string_ref name;
 };
 
 struct NPCSounds {

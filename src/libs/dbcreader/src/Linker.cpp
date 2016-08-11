@@ -26,6 +26,13 @@ void link_animation_data(Storage& storage) {
 	}
 }
 
+void link_char_base_info(Storage& storage) {
+	for(auto& i : storage.char_base_info.values()) {
+		i.race = storage.chr_races[i.race_id];
+		i.class_ = storage.chr_classes[i.class__id];
+	}
+}
+
 void link_chr_races(Storage& storage) {
 	for(auto& i : storage.chr_races.values()) {
 		i.faction = storage.faction_template[i.faction_id];
@@ -283,6 +290,7 @@ void link_spell_visual_kit(Storage& storage) {
 
 void link(Storage& storage) {
 	detail::link_animation_data(storage);
+	detail::link_char_base_info(storage);
 	detail::link_chr_races(storage);
 	detail::link_cinematic_camera(storage);
 	detail::link_cinematic_sequences(storage);
