@@ -109,21 +109,21 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 			case dbc::CharSections::SelectionType::BASE_SKIN:
 				if(section.colour_index == character.skin()) {
 					skin_match = true;
-					continue;
+					break;
 				}
 				break;
 			case dbc::CharSections::SelectionType::HAIR:
 				if(section.variation_index == character.hairstyle()
 				   && section.colour_index == character.haircolour()) {
 					hair_match = true;
-					continue;
+					break;
 				}
 				break;
 			case dbc::CharSections::SelectionType::FACE:
 				if(section.variation_index == character.face()
 				   && section.colour_index == character.skin()) {
 					face_match = true;
-					continue;
+					break;
 				}
 				break;
 			default: // shut the compiler up
@@ -135,7 +135,7 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 		}
 	}
 
-	// facial features (horns, markings, hair) validation
+	// facial features (horns, markings, tusks, piercings, hair) validation
 	bool facial_feature_match = false;
 
 	for(auto& style : dbc_.character_facial_hair_styles.values()) {
