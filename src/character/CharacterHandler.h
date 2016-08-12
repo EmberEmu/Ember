@@ -34,7 +34,8 @@ class CharacterHandler {
 	const std::vector<util::pcre::Result>& reserved_names_;
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
-	std::locale locale_;
+	const std::locale locale_;
+	log::Logger* logger_;
 
 	void validate_race();
 	void validate_class();
@@ -46,7 +47,7 @@ public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
 	                 const std::vector<util::pcre::Result>& reserved_names,
 	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
-	                 const std::locale& locale);
+	                 const std::locale& locale, log::Logger* logger);
 
 	protocol::ResultCode create_character(std::uint32_t account_id, std::uint32_t realm_id,
 	                                      const messaging::character::Character& character) const;

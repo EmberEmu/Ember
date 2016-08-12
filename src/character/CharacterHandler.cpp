@@ -7,6 +7,7 @@
  */
 
 #include "CharacterHandler.h"
+#include "FilterTypes.h"
 #include <shared/util/Utility.h>
 #include <shared/util/UTF8.h>
 #include <utf8cpp/utf8.h>
@@ -16,9 +17,9 @@ namespace ember {
 CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
                                    const std::vector<util::pcre::Result>& reserved_names,
                                    const dbc::Storage& dbc, const dal::CharacterDAO& dao,
-                                   const std::locale& locale)
+                                   const std::locale& locale, log::Logger* logger)
                                    : profane_names_(profane_names), reserved_names_(reserved_names),
-                                     dbc_(dbc), dao_(dao), locale_(locale) { }
+                                     dbc_(dbc), dao_(dao), locale_(locale), logger_(logger) { }
 
 protocol::ResultCode CharacterHandler::validate_name(const std::string& name) const {
 	if(name.empty()) {
@@ -62,7 +63,7 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 		if(ret >= 0) {
 			return protocol::ResultCode::CHAR_NAME_RESERVED;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_WARN_GLOB << "PCRE error encountered: " + ret << LOG_ASYNC;
+			LOG_WARN(logger_) << "PCRE error encountered: " + ret << LOG_ASYNC;
 			return protocol::ResultCode::CHAR_NAME_FAILURE;
 		}
 	}
@@ -73,7 +74,7 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 		if(ret >= 0) {
 			return protocol::ResultCode::CHAR_NAME_PROFANE;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_WARN_GLOB << "PCRE error encountered: " + ret << LOG_ASYNC;
+			LOG_WARN(logger_) << "PCRE error encountered: " + ret << LOG_ASYNC;
 			return protocol::ResultCode::CHAR_NAME_FAILURE;
 		}
 	}
@@ -89,8 +90,9 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 	});
 
 	if(found == dbc_.char_base_info.end()) {
-		LOG_WARN_GLOB << "Received an invalid class/race combination of " << character.class_()
-			<< " & " << character.race() << " from account ID " << account_id << LOG_ASYNC; // todo, define new filter
+		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
+			<< "Invalid class/race combination of " << character.class_()
+			<< " & " << character.race() << " from account ID " << account_id << LOG_ASYNC;
 		return false;
 	}
 
@@ -147,8 +149,10 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 	}
 
 	if(!facial_feature_match || !skin_match || !face_match || !hair_match) {
-		LOG_WARN_GLOB << "Received invalid visual customisation options from account " << account_id
-			<< ": Face ID: " << character.face() << " Facial feature ID: " << character.facialhair()
+		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
+			<< "Invalid visual customisation options from account " << account_id
+			<< ": Face ID: " << character.face()
+			<< " Facial feature ID: " << character.facialhair()
 			<< " Hair style ID: " << character.hairstyle()
 			<< " Hair colour ID: " << character.haircolour() << LOG_ASYNC;
 		return false;
