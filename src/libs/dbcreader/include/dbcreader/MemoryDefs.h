@@ -33,7 +33,10 @@ struct StringRefLoc {
 
 struct AnimationData;
 struct CameraShakes;
+struct CharacterFacialHairStyles;
 struct CharBaseInfo;
+struct CharSections;
+struct CharVariations;
 struct ChrClasses;
 struct ChrRaces;
 struct CinematicCamera;
@@ -106,11 +109,64 @@ struct CameraShakes {
 	float coefficient;
 };
 
+struct CharacterFacialHairStyles {
+	enum class Sex : std::int32_t {
+		MALE = 0x00, 
+		FEMALE = 0x01
+	};
+
+	const ChrRaces* race;
+	std::uint32_t race_id;
+	Sex sex;
+	const CharVariations* variation;
+	std::uint32_t variation_id;
+	std::int32_t geoset[6];
+};
+
 struct CharBaseInfo {
 	const ChrRaces* race;
 	std::uint8_t race_id;
 	const ChrClasses* class_;
 	std::uint8_t class__id;
+};
+
+struct CharSections {
+	enum class Sex : std::int32_t {
+		MALE = 0x00, 
+		FEMALE = 0x01
+	};
+
+	enum class SelectionType : std::int32_t {
+		BASE_SKIN = 0x00, 
+		FACE = 0x01, 
+		FACIAL_HAIR = 0x02, 
+		HAIR = 0x03, 
+		UNDERWEAR = 0x04
+	};
+
+	std::uint32_t id;
+	const ChrRaces* race;
+	std::uint32_t race_id;
+	Sex sex;
+	SelectionType type;
+	std::int32_t variation_index;
+	std::int32_t colour_index;
+	std::string texture_name[3];
+	std::uint32_t npc_only;
+};
+
+struct CharVariations {
+	enum class Sex : std::int32_t {
+		MALE = 0x00, 
+		FEMALE = 0x01
+	};
+
+	const ChrRaces* id;
+	std::uint32_t id_id;
+	Sex sex;
+	std::int32_t unknown_1;
+	std::int32_t mask[2];
+	std::int32_t unknown_2;
 };
 
 struct ChrClasses {
@@ -138,7 +194,7 @@ struct ChrRaces {
 		NONE = 0x00, 
 		NOT_PLAYABLE = 0x01, 
 		BARE_FEET = 0x02, 
-		UNKNOWN1 = 0x04, 
+		CAN_CURRENT_FORM_MOUNT = 0x04, 
 		UNKNOWN2 = 0x08
 	};
 
@@ -174,7 +230,7 @@ struct ChrRaces {
 	const CinematicSequences* cinematic_sequence;
 	std::uint32_t cinematic_sequence_id;
 	StringRefLoc name;
-	std::string facial_hair_customisation[2];
+	std::string facial_hair_customisation[2]; // this is split by gender
 	std::string hair_customisation;
 };
 

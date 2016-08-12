@@ -26,10 +26,29 @@ void link_animation_data(Storage& storage) {
 	}
 }
 
+void link_character_facial_hair_styles(Storage& storage) {
+	for(auto& i : storage.character_facial_hair_styles.values()) {
+		i.race = storage.chr_races[i.race_id];
+		i.variation = storage.char_variations[i.variation_id];
+	}
+}
+
 void link_char_base_info(Storage& storage) {
 	for(auto& i : storage.char_base_info.values()) {
 		i.race = storage.chr_races[i.race_id];
 		i.class_ = storage.chr_classes[i.class__id];
+	}
+}
+
+void link_char_sections(Storage& storage) {
+	for(auto& i : storage.char_sections.values()) {
+		i.race = storage.chr_races[i.race_id];
+	}
+}
+
+void link_char_variations(Storage& storage) {
+	for(auto& i : storage.char_variations.values()) {
+		i.id = storage.chr_races[i.id_id];
 	}
 }
 
@@ -290,7 +309,10 @@ void link_spell_visual_kit(Storage& storage) {
 
 void link(Storage& storage) {
 	detail::link_animation_data(storage);
+	detail::link_character_facial_hair_styles(storage);
 	detail::link_char_base_info(storage);
+	detail::link_char_sections(storage);
+	detail::link_char_variations(storage);
 	detail::link_chr_races(storage);
 	detail::link_cinematic_camera(storage);
 	detail::link_cinematic_sequences(storage);

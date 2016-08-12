@@ -81,9 +81,8 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 	return protocol::ResultCode::CHAR_CREATE_SUCCESS;
 }
 
-std::string CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                               const messaging::character::Character& character) const {
-
+bool CharacterHandler::validate_options(const messaging::character::Character& character,
+                                        std::uint32_t account_id) const {
 	// validate the race/class combination
 	auto found = std::find_if(dbc_.char_base_info.begin(), dbc_.char_base_info.end(), [&](auto val) {
 		return (character.class_() == val.second.class__id && character.race() == val.second.race_id);
@@ -92,13 +91,79 @@ std::string CharacterHandler::create_character(std::uint32_t account_id, std::ui
 	if(found == dbc_.char_base_info.end()) {
 		LOG_WARN_GLOB << "Received an invalid class/race combination of " << character.class_()
 			<< " & " << character.race() << " from account ID " << account_id << LOG_ASYNC; // todo, define new filter
-		return "temp";
+		return false;
 	}
 
-	LOG_DEBUG_GLOB << "Creating " << dbc_.chr_races[character.race()]->name.enGB
-		<< " " << dbc_.chr_classes[character.class_()]->name.enGB << LOG_ASYNC;
+	bool skin_match = false;
+	bool hair_match = false;
+	bool face_match = false;
 
-	std::string name = character.name()->c_str();
+	// validate visual customisation options
+	for(auto& section : dbc_.char_sections.values()) {
+		if(section.npc_only || section.race_id != character.race()
+		   || section.sex != static_cast<dbc::CharSections::Sex>(character.gender())) {
+			continue;
+		}
+
+		switch(section.type) {
+			case dbc::CharSections::SelectionType::BASE_SKIN:
+				if(section.colour_index == character.skin()) {
+					skin_match = true;
+					continue;
+				}
+				break;
+			case dbc::CharSections::SelectionType::HAIR:
+				if(section.variation_index == character.hairstyle()
+				   && section.colour_index == character.haircolour()) {
+					hair_match = true;
+					continue;
+				}
+				break;
+			case dbc::CharSections::SelectionType::FACE:
+				if(section.variation_index == character.face()
+				   && section.colour_index == character.skin()) {
+					face_match = true;
+					continue;
+				}
+				break;
+			default: // shut the compiler up
+				continue;
+		}
+
+		if(skin_match && hair_match && face_match) {
+			break;
+		}
+	}
+
+	// facial features (horns, markings, hair) validation
+	bool facial_feature_match = false;
+
+	for(auto& style : dbc_.character_facial_hair_styles.values()) {
+		if(style.race_id == character.race() && style.variation_id == character.facialhair()
+		   && style.sex == static_cast<dbc::CharacterFacialHairStyles::Sex>(character.gender())) {
+			facial_feature_match = true;
+			break;
+		}
+	}
+
+	if(!facial_feature_match || !skin_match || !face_match || !hair_match) {
+		LOG_WARN_GLOB << "Received invalid visual customisation options from account " << account_id
+			<< " Face ID: " << character.face() << " Facial feature ID: " << character.facialhair()
+			<< " Hair style ID: " << character.hairstyle()
+			<< " Hair colour ID: " << character.haircolour() << LOG_ASYNC;
+		return false;
+	}
+
+	return true;
+}
+
+protocol::ResultCode CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
+                                                        const messaging::character::Character& character) const {
+	bool success = validate_options(character, account_id);
+
+	if(!success) {
+		return protocol::ResultCode::CHAR_CREATE_ERROR; // todo, check error vs failed message
+	}
 
 	//try {
 	//	// convert name case
@@ -108,10 +173,11 @@ std::string CharacterHandler::create_character(std::uint32_t account_id, std::ui
 	//	return "";
 	//}
 
-	auto success = validate_name(name);
-	LOG_DEBUG_GLOB << protocol::to_string(success) << LOG_ASYNC;
-	LOG_DEBUG_GLOB << name << LOG_ASYNC;
-	return name;
+	auto result = validate_name(character.name()->c_str());
+
+	// actually create the character, etc
+
+	return result;
 }
 
 void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t realm_id,

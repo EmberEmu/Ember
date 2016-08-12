@@ -84,6 +84,25 @@ void load_camera_shakes(Storage& storage, const std::string& dir_path) {
 	}
 }
 
+void load_character_facial_hair_styles(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CharacterFacialHairStyles.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CharacterFacialHairStyles>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CharacterFacialHairStyles entry{};
+		entry.race_id = dbc.records[i].race;
+		entry.sex = static_cast<CharacterFacialHairStyles::Sex>(dbc.records[i].sex);
+		entry.variation_id = dbc.records[i].variation;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].geoset) / sizeof(std::int32_t); ++j) {
+			entry.geoset[j] = dbc.records[i].geoset[j];
+		}
+
+		storage.character_facial_hair_styles.emplace_back(i, entry);
+	}
+}
+
 void load_char_base_info(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "CharBaseInfo.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
@@ -94,6 +113,49 @@ void load_char_base_info(Storage& storage, const std::string& dir_path) {
 		entry.race_id = dbc.records[i].race;
 		entry.class__id = dbc.records[i].class_;
 		storage.char_base_info.emplace_back(i, entry);
+	}
+}
+
+void load_char_sections(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CharSections.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CharSections>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CharSections entry{};
+		entry.id = dbc.records[i].id;
+		entry.race_id = dbc.records[i].race;
+		entry.sex = static_cast<CharSections::Sex>(dbc.records[i].sex);
+		entry.type = static_cast<CharSections::SelectionType>(dbc.records[i].type);
+		entry.variation_index = dbc.records[i].variation_index;
+		entry.colour_index = dbc.records[i].colour_index;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture_name) / sizeof(std::string); ++j) {
+			entry.texture_name[j] = dbc.strings + dbc.records[i].texture_name[j];
+		}
+
+		entry.npc_only = dbc.records[i].npc_only;
+		storage.char_sections.emplace_back(entry.id, entry);
+	}
+}
+
+void load_char_variations(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "CharVariations.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::CharVariations>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		CharVariations entry{};
+		entry.id_id = dbc.records[i].id;
+		entry.sex = static_cast<CharVariations::Sex>(dbc.records[i].sex);
+		entry.unknown_1 = dbc.records[i].unknown_1;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].mask) / sizeof(std::int32_t); ++j) {
+			entry.mask[j] = dbc.records[i].mask[j];
+		}
+
+		entry.unknown_2 = dbc.records[i].unknown_2;
+		storage.char_variations.emplace_back(dbc.records[i].id, entry);
 	}
 }
 
@@ -1299,7 +1361,10 @@ DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
                        : log_cb_(std::move(log_cb)), dir_path_(std::move(dir_path)) {
 	dbc_map.emplace("AnimationData", detail::load_animation_data);
 	dbc_map.emplace("CameraShakes", detail::load_camera_shakes);
+	dbc_map.emplace("CharacterFacialHairStyles", detail::load_character_facial_hair_styles);
 	dbc_map.emplace("CharBaseInfo", detail::load_char_base_info);
+	dbc_map.emplace("CharSections", detail::load_char_sections);
+	dbc_map.emplace("CharVariations", detail::load_char_variations);
 	dbc_map.emplace("ChrClasses", detail::load_chr_classes);
 	dbc_map.emplace("ChrRaces", detail::load_chr_races);
 	dbc_map.emplace("CinematicCamera", detail::load_cinematic_camera);
@@ -1367,8 +1432,14 @@ Storage DiskLoader::load() const {
 	detail::load_animation_data(storage, dir_path_);
 	log_cb_("Loading CameraShakes DBC data...");
 	detail::load_camera_shakes(storage, dir_path_);
+	log_cb_("Loading CharacterFacialHairStyles DBC data...");
+	detail::load_character_facial_hair_styles(storage, dir_path_);
 	log_cb_("Loading CharBaseInfo DBC data...");
 	detail::load_char_base_info(storage, dir_path_);
+	log_cb_("Loading CharSections DBC data...");
+	detail::load_char_sections(storage, dir_path_);
+	log_cb_("Loading CharVariations DBC data...");
+	detail::load_char_variations(storage, dir_path_);
 	log_cb_("Loading ChrClasses DBC data...");
 	detail::load_chr_classes(storage, dir_path_);
 	log_cb_("Loading ChrRaces DBC data...");

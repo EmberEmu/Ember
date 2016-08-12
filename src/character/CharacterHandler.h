@@ -40,6 +40,7 @@ class CharacterHandler {
 	void validate_class();
 	void validate_race_class_pair();
 	protocol::ResultCode validate_name(const std::string& name) const;
+	bool validate_options(const messaging::character::Character& character, std::uint32_t account_id) const;
 
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
@@ -47,8 +48,8 @@ public:
 	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
 	                 const std::locale& locale);
 
-	std::string create_character(std::uint32_t account_id, std::uint32_t realm_id,
-	                                      const messaging::character::Character& details) const;
+	protocol::ResultCode create_character(std::uint32_t account_id, std::uint32_t realm_id,
+	                                      const messaging::character::Character& character) const;
 	void delete_character(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_guid) const;
 	std::vector<int> enum_characters(std::uint32_t account_id, std::uint32_t realm_id) const;
 };

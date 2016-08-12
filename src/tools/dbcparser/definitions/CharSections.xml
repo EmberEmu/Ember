@@ -67,6 +67,6 @@
 
 	<field>
 		<type>bool32</type>
-		<name>non-selectable</name>
+		<name>npc_only</name>
 	</field>
 </dbc>

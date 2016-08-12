@@ -23,7 +23,10 @@ namespace ember { namespace dbc {
 struct Storage {
 	DBCMap<AnimationData> animation_data;
 	DBCMap<CameraShakes> camera_shakes;
+	DBCMap<CharacterFacialHairStyles> character_facial_hair_styles;
 	DBCMap<CharBaseInfo> char_base_info;
+	DBCMap<CharSections> char_sections;
+	DBCMap<CharVariations> char_variations;
 	DBCMap<ChrClasses> chr_classes;
 	DBCMap<ChrRaces> chr_races;
 	DBCMap<CinematicCamera> cinematic_camera;
@@ -75,7 +78,10 @@ struct Storage {
 	void moves(Storage& src) {
 		animation_data = std::move(animation_data);
 		camera_shakes = std::move(camera_shakes);
+		character_facial_hair_styles = std::move(character_facial_hair_styles);
 		char_base_info = std::move(char_base_info);
+		char_sections = std::move(char_sections);
+		char_variations = std::move(char_variations);
 		chr_classes = std::move(chr_classes);
 		chr_races = std::move(chr_races);
 		cinematic_camera = std::move(cinematic_camera);

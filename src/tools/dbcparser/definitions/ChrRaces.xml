@@ -10,7 +10,7 @@
 			<option name="none" value="0x00" />
 			<option name="not_playable" value="0x01" />
 			<option name="bare_feet" value="0x02" />
-			<option name="unknown1" value="0x04" />
+			<option name="can_current_form_mount" value="0x04" />
 			<option name="unknown2" value="0x08" />
 		</options>
 	</enum>

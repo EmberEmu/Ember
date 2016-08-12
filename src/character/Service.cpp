@@ -70,7 +70,7 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 	
 	// temporary, if it isn't obvious
 	Character character(
-		n,
+		msg->character()->name()->c_str(),
 		0, // character ID, erp
 		1, // account ID
 		msg->realm_id(),

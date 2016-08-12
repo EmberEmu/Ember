@@ -65,9 +65,39 @@ struct CameraShakes {
 	float coefficient;
 };
 
+struct CharacterFacialHairStyles {
+	typedef int32 Sex;
+	uint32 race;
+	Sex sex;
+	uint32 variation;
+	int32 geoset[6];
+};
+
 struct CharBaseInfo {
 	uint8 race;
 	uint8 class_;
+};
+
+struct CharSections {
+	typedef int32 Sex;
+	typedef int32 SelectionType;
+	uint32 id;
+	uint32 race;
+	Sex sex;
+	SelectionType type;
+	int32 variation_index;
+	int32 colour_index;
+	string_ref texture_name[3];
+	bool32 npc_only;
+};
+
+struct CharVariations {
+	typedef int32 Sex;
+	uint32 id;
+	Sex sex;
+	int32 unknown_1;
+	int32 mask[2];
+	int32 unknown_2;
 };
 
 struct ChrClasses {
