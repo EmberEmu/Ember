@@ -121,8 +121,9 @@ public:
 		switch(state_) {
 			case State::INITIAL:
 				read_body(stream);
-			case State::CALL_AGAIN: // intentional fall-through
+			case State::CALL_AGAIN:
 				read_username(stream);
+				break;
 			default:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
