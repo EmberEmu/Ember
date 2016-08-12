@@ -148,7 +148,7 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 
 	if(!facial_feature_match || !skin_match || !face_match || !hair_match) {
 		LOG_WARN_GLOB << "Received invalid visual customisation options from account " << account_id
-			<< " Face ID: " << character.face() << " Facial feature ID: " << character.facialhair()
+			<< ": Face ID: " << character.face() << " Facial feature ID: " << character.facialhair()
 			<< " Hair style ID: " << character.hairstyle()
 			<< " Hair colour ID: " << character.haircolour() << LOG_ASYNC;
 		return false;
