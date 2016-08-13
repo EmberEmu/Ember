@@ -17,6 +17,7 @@
 #include <logger/Logging.h>
 #include <shared/Banner.h>
 #include <shared/database/daos/CharacterDAO.h>
+#include <shared/threading/ThreadPool.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/PCREHelper.h>
@@ -123,19 +124,30 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto spark_filter = log::Filter(ember::FilterType::LF_SPARK);
 
 	boost::asio::io_service service;
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	ThreadPool thread_pool(check_concurrency(logger));
+
 	spark::Service spark("character", service, s_address, s_port, logger, spark_filter);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
+	
+	signals.async_wait([&](const boost::system::error_code& error, int signal) {
+		LOG_INFO(logger) << "Character daemon shutting down..." << LOG_SYNC;
+		discovery.shutdown();
+		spark.shutdown();
+		thread_pool.shutdown();
+		pool.close();
+		service.stop();
+	});
 
 	service.dispatch([&, logger]() {
 		LOG_INFO(logger) << "Character daemon started successfully" << LOG_SYNC;
 	});
 
 	service.run();
-
-	LOG_INFO(logger) << "Character daemon shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }

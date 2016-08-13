@@ -32,6 +32,7 @@ private:
 	std::vector<std::thread> workers_;
 	LogCallback log_cb_;
 	std::mutex log_cb_lock_;
+	bool stopped_;
 
 public:
 	explicit ThreadPool(std::size_t initial_count);
@@ -46,6 +47,7 @@ public:
 #endif
 	}
 
+	void shutdown();
 	void log_callback(const LogCallback& callback);
 };
 
