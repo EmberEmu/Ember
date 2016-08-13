@@ -195,8 +195,12 @@ void Service::delete_character(const spark::Link& link, const em::MessageRoot* r
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Delete*>(root->data());
-	character_dao_.delete_character(msg->character_id());
-	send_response(link, root, messaging::character::Status::OK, protocol::ResultCode::CHAR_DELETE_SUCCESS);
+	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
+
+	handler_.delete_character(1, msg->realm_id(), msg->character_id(), [&, link, tracking](auto res) {
+		send_response(link, root, messaging::character::Status::OK, res);
+	});
+
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }

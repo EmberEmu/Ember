@@ -191,7 +191,7 @@ void CharacterHandler::validate_callback(boost::optional<std::vector<Character>>
 	}
 
 	if(characters->size() >= MAX_CHARACTER_SLOTS) {
-		cb(protocol::ResultCode::CHAR_CREATE_ACCOUNT_LIMIT);
+		cb(protocol::ResultCode::CHAR_CREATE_SERVER_LIMIT);
 		return;
 	}
 
@@ -243,6 +243,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 		0, // zone
 		0, // map,
 		0, // guild ID
+		0, // guild rank
 		0.f, 0.f, 0.f, // x y z
 		0, // flags
 		true, // first login
@@ -267,7 +268,16 @@ void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t 
                                         std::uint64_t character_guid, CharacterDeleteCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// verify that the character isn't a guild leader
+	// temp, as usual
+	auto res = dao_.character(character_guid);
+
+	if(!res || res->account_id() != account_id || res->guild_rank() == 1) {
+		cb(protocol::ResultCode::CHAR_DELETE_FAILED);
+		return;
+	}
+
+	dao_.delete_character(character_guid);
+	cb(protocol::ResultCode::CHAR_DELETE_SUCCESS);	
 }
 
 void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id,

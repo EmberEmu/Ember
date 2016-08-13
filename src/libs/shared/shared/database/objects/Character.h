@@ -32,6 +32,7 @@ class Character {
 	std::uint32_t zone_;
 	std::uint32_t map_;
 	std::uint32_t guild_id_;
+	std::uint32_t guild_rank_;
 	float x_, y_, z_;
 	std::uint32_t flags_;
 	bool first_login_;
@@ -43,12 +44,13 @@ public:
 	Character(std::string name, std::uint32_t id, std::uint32_t account_id, std::uint32_t realm_id, std::uint8_t race,
 	          std::uint8_t class_, std::uint8_t gender, std::uint8_t skin, std::uint8_t face,
 	          std::uint8_t hairstyle, std::uint8_t haircolour, std::uint8_t facialhair, std::uint8_t level,
-	          std::uint32_t zone, std::uint32_t map, std::uint32_t guild_id, float x, float y, float z, std::uint32_t flags,
-	          bool first_login, std::uint32_t pet_display, std::uint8_t pet_level, std::uint32_t pet_family)
+	          std::uint32_t zone, std::uint32_t map, std::uint32_t guild_id, std::uint32_t guild_rank,
+	          float x, float y, float z, std::uint32_t flags, bool first_login,
+	          std::uint32_t pet_display, std::uint8_t pet_level, std::uint32_t pet_family)
 	          : name_(name), account_id_(account_id), realm_id_(realm_id), race_(race), class_(class_), gender_(gender),
 	          skin_(skin), face_(face), hairstyle_(hairstyle), haircolour_(haircolour), facialhair_(facialhair), level_(level),
 	          zone_(zone), map_(map), x_(x), y_(y), z_(z), flags_(flags), first_login_(first_login), pet_display_(pet_display),
-	          pet_level_(pet_level), pet_family_(pet_family), guild_id_(guild_id), id_(id) { }
+	          pet_level_(pet_level), pet_family_(pet_family), guild_id_(guild_id), guild_rank_(guild_rank), id_(id) { }
 
 	std::uint32_t id() const {
 		return id_;
@@ -112,6 +114,10 @@ public:
 
 	std::uint32_t guild_id() const {
 		return guild_id_;
+	}
+
+	std::uint32_t guild_rank() const {
+		return guild_rank_;
 	}
 
 	float x() const {

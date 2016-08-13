@@ -36,7 +36,7 @@ public:
 		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
 		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                          "c.pet_family, gc.id as guild_id "
+		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 		                          "WHERE name = ? AND realm_id = ?";
@@ -53,8 +53,9 @@ public:
 			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
 			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
 			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
-			                    res->getUInt("map"), res->getUInt("guild_id"), res->getDouble("x"), res->getDouble("y"),
-			                    res->getDouble("z"), res->getUInt("flags"), res->getUInt("first_login"),
+			                    res->getUInt("map"), res->getUInt("guild_id"), res->getUInt("guild_rank"),
+			                    res->getDouble("x"), res->getDouble("y"), res->getDouble("z"),
+			                    res->getUInt("flags"), res->getUInt("first_login"),
 			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
 			return character;
 		}
@@ -64,18 +65,18 @@ public:
 		throw exception(e.what());
 	}
 	
-	boost::optional<Character> character(unsigned int id) const override try {
+	boost::optional<Character> character(std::uint64_t id) const override try {
 		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
 		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                          "c.pet_family, gc.id as guild_id "
+		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                          "WHERE id = ?";
+		                          "WHERE c.id = ?";
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
-		stmt->setUInt(1, id);
+		stmt->setUInt64(1, id);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
@@ -84,8 +85,9 @@ public:
 			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
 			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
 			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
-			                    res->getUInt("map"), res->getUInt("guild_id"), res->getDouble("x"), res->getDouble("y"),
-			                    res->getDouble("z"), res->getUInt("flags"), res->getUInt("first_login"),
+			                    res->getUInt("map"), res->getUInt("guild_id"), res->getUInt("guild_rank"),
+			                    res->getDouble("x"), res->getDouble("y"), res->getDouble("z"),
+			                    res->getUInt("flags"), res->getUInt("first_login"),
 			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
 			return character;
 		}
@@ -99,7 +101,7 @@ public:
 		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
 		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                          "c.pet_family, gc.id as guild_id "
+		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 		                          "LEFT JOIN users u ON u.id = c.account_id "
@@ -118,8 +120,9 @@ public:
 			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
 			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
 			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
-			                    res->getUInt("map"), res->getUInt("guild_id"), res->getDouble("x"), res->getDouble("y"),
-			                    res->getDouble("z"), res->getUInt("flags"), res->getUInt("first_login"),
+			                    res->getUInt("map"), res->getUInt("guild_id"), res->getUInt("guild_rank"), 
+			                    res->getDouble("x"), res->getDouble("y"), res->getDouble("z"),
+			                    res->getUInt("flags"), res->getUInt("first_login"),
 			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
 			characters.emplace_back(character);
 		}
@@ -129,7 +132,7 @@ public:
 		throw exception(e.what());
 	}
 
-	void delete_character(unsigned int id) const override try {
+	void delete_character(std::uint64_t id) const override try {
 		const std::string query = "DELETE FROM characters WHERE id = ?";
 
 		auto conn = pool_.wait_connection(5s);
