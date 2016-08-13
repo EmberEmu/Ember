@@ -24,9 +24,9 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	endif()
 endif()
 
-option(disable_threads "Disable threading" OFF)
+option(DISABLE_EMBER_THREADS "Disable multithreading for debugging" OFF)
 
-if(disable_threads)
+if(DISABLE_EMBER_THREADS)
 	add_definitions(-DDEBUG_NO_THREADS)
 endif()
 

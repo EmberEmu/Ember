@@ -112,7 +112,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto character_dao = ember::dal::character_dao(pool);
 
 	std::locale temp;
-	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, temp);
+	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, temp, logger);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
