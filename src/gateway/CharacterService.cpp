@@ -55,12 +55,12 @@ void CharacterService::handle_reply(const spark::Link& link, const boost::uuids:
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::CharResponse) {
-		cb(em::character::Status::SERVER_LINK_ERROR);
+		cb(em::character::Status::SERVER_LINK_ERROR, {});
 		return;
 	}
 
 	auto message = static_cast<const em::character::CharResponse*>((*root)->data());
-	cb(message->status());
+	cb(message->status(), static_cast<protocol::ResultCode>(message->result())); // todo
 }
 
 void CharacterService::handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
@@ -151,7 +151,7 @@ void CharacterService::create_character(std::string account_name, const Characte
 							  std::placeholders::_2, std::placeholders::_3, cb);
 
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(em::character::Status::SERVER_LINK_ERROR);
+		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }
 
@@ -188,7 +188,7 @@ void CharacterService::delete_character(std::string account_name, std::uint64_t 
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(em::character::Status::SERVER_LINK_ERROR);
+		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }
 

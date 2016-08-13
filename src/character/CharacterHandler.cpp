@@ -10,6 +10,7 @@
 #include "FilterTypes.h"
 #include <shared/util/Utility.h>
 #include <shared/util/UTF8.h>
+#include <shared/threading/ThreadPool.h>
 #include <utf8cpp/utf8.h>
 
 namespace ember {
@@ -17,11 +18,13 @@ namespace ember {
 CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
                                    const std::vector<util::pcre::Result>& reserved_names,
                                    const dbc::Storage& dbc, const dal::CharacterDAO& dao,
-                                   const std::locale& locale, log::Logger* logger)
+								   ThreadPool& pool, const std::locale& locale, log::Logger* logger)
                                    : profane_names_(profane_names), reserved_names_(reserved_names),
-                                     dbc_(dbc), dao_(dao), locale_(locale), logger_(logger) { }
+                                     dbc_(dbc), dao_(dao), pool_(pool), locale_(locale), logger_(logger) { }
 
 protocol::ResultCode CharacterHandler::validate_name(const std::string& name) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	if(name.empty()) {
 		return protocol::ResultCode::CHAR_NAME_NO_NAME;
 	}
@@ -84,6 +87,8 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 
 bool CharacterHandler::validate_options(const messaging::character::Character& character,
                                         std::uint32_t account_id) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	// validate the race/class combination
 	auto found = std::find_if(dbc_.char_base_info.begin(), dbc_.char_base_info.end(), [&](auto val) {
 		return (character.class_() == val.second.class__id && character.race() == val.second.race_id);
@@ -161,13 +166,47 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 	return true;
 }
 
-protocol::ResultCode CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                                        const messaging::character::Character& character) const {
+void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
+                                        const messaging::character::Character& character,
+                                        CharacterCreateCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	bool success = validate_options(character, account_id);
 
 	if(!success) {
-		return protocol::ResultCode::CHAR_CREATE_ERROR; // todo, check error vs failed message
+		cb(protocol::ResultCode::CHAR_CREATE_ERROR);
 	}
+	
+	auto result = validate_name(character.name()->c_str());
+
+	if(result != protocol::ResultCode::CHAR_CREATE_SUCCESS) {
+		cb(result);
+	}
+
+	Character c(
+		character.name()->c_str(),
+		0, // character ID, erp
+		account_id, // account ID
+		realm_id,
+		character.race(),
+		character.class_(),
+		character.gender(),
+		character.skin(),
+		character.face(),
+		character.hairstyle(),
+		character.haircolour(),
+		character.facialhair(),
+		1, // level
+		0, // zone
+		0, // map,
+		0, // guild ID
+		0.f, 0.f, 0.f, // x y z
+		0, // flags
+		true, // first login
+		0, // pet display
+		0, // pet level
+		0 // pet family
+	);
 
 	//try {
 	//	// convert name case
@@ -177,20 +216,50 @@ protocol::ResultCode CharacterHandler::create_character(std::uint32_t account_id
 	//	return "";
 	//}
 
-	auto result = validate_name(character.name()->c_str());
+	// start the callback nightmare
+	enum_characters(account_id, realm_id, [&, c, cb](boost::optional<std::vector<Character>> characters) { // todo, auto compiler bug
+		if(!characters) {
+			cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+			return;
+		}
 
-	// actually create the character, etc
+		if(characters->size() >= 2) {
+			cb(protocol::ResultCode::CHAR_CREATE_ACCOUNT_LIMIT);
+			return;
+		}
 
-	return result;
+		// PVP faction test, etc
+
+		pool_.run([=] {
+			try {
+				dao_.create(c);
+				cb(protocol::ResultCode::CHAR_CREATE_SUCCESS);
+			} catch(std::exception&) {
+				cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+			}
+		});
+	});
 }
 
 void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        std::uint64_t character_guid) const {
+                                        std::uint64_t character_guid, CharacterDeleteCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	// verify that the character isn't a guild leader
 }
 
-std::vector<int> CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id) const {
-	return std::vector<int>();
+void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id,
+                                       CharacterEnumCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	pool_.run([=] {
+		try {
+			auto characters = dao_.characters(account_id, realm_id);
+			cb(std::move(characters));
+		} catch(dal::exception& e) {
+			cb(boost::optional<std::vector<Character>>());
+		}
+	});
 }
 
 } // ember

@@ -29,10 +29,14 @@ class Service final : public spark::EventHandler {
 	void rename_character(const spark::Link& link, const messaging::MessageRoot* root);
 	void delete_character(const spark::Link& link, const messaging::MessageRoot* root);
 
-	void send_character_list(const spark::Link& link, const messaging::MessageRoot* root,
-	                         std::vector<Character> characters);
+	void send_character_list(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+	                         const boost::optional<std::vector<Character>>& characters);
+
 	void send_response(const spark::Link& link, const messaging::MessageRoot* root,
-	                   messaging::character::Status status);
+	                   messaging::character::Status status, protocol::ResultCode result);
+
+	void send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+	                   messaging::character::Status status, protocol::ResultCode result);
 
 public:
 	Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,

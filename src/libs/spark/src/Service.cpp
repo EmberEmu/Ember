@@ -25,7 +25,7 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                    hb_service_(service_, this, logger, filter), 
                    track_service_(service_, logger, filter),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
-	signals_.async_wait(std::bind(&Service::shutdown, this));
+	signals_.async_wait(std::bind(&Service::shutdown, this)); // todo, remove all async_waits
 
 	dispatcher_.register_handler(&hb_service_, messaging::Service::Core, EventDispatcher::Mode::BOTH);
 	dispatcher_.register_handler(&track_service_, messaging::Service::Tracking, EventDispatcher::Mode::CLIENT);

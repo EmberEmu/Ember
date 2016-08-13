@@ -13,6 +13,7 @@
 #include <spark/ServiceDiscovery.h>
 #include <spark/temp/MessageRoot_generated.h>
 //#include <srp6/Util.h>
+#include <game_protocol/ResultCodes.h>
 #include <logger/Logging.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
@@ -25,7 +26,7 @@ namespace ember {
 
 class CharacterService final : public spark::EventHandler {
 public:
-	typedef std::function<void(messaging::character::Status)> ResponseCB;
+	typedef std::function<void(messaging::character::Status, boost::optional<protocol::ResultCode>)> ResponseCB;
 	typedef std::function<void(messaging::character::Status, std::vector<Character>)> RetrieveCB;
 
 private:

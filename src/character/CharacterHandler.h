@@ -15,9 +15,10 @@
 #include <shared/util/PCREHelper.h>
 #include <logger/Logging.h>
 //#include <boost/locale.hpp>
+#include <boost/optional.hpp>
 #include <pcre.h>
 #include <locale>
-#include <regex>
+#include <functional>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -25,7 +26,13 @@
 
 namespace ember {
 
+class ThreadPool;
+
 class CharacterHandler {
+	typedef std::function<void(protocol::ResultCode)> CharacterCreateCB;
+	typedef std::function<void(boost::optional<std::vector<Character>>)> CharacterEnumCB;
+	typedef std::function<void(protocol::ResultCode)> CharacterDeleteCB;
+
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;
 	const std::size_t MAX_CONSECUTIVE_LETTERS = 2;
@@ -35,6 +42,8 @@ class CharacterHandler {
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
 	const std::locale locale_;
+
+	ThreadPool& pool_;
 	log::Logger* logger_;
 
 	void validate_race();
@@ -47,12 +56,16 @@ public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
 	                 const std::vector<util::pcre::Result>& reserved_names,
 	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
-	                 const std::locale& locale, log::Logger* logger);
+	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger);
 
-	protocol::ResultCode create_character(std::uint32_t account_id, std::uint32_t realm_id,
-	                                      const messaging::character::Character& character) const;
-	void delete_character(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_guid) const;
-	std::vector<int> enum_characters(std::uint32_t account_id, std::uint32_t realm_id) const;
+	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
+	                      const messaging::character::Character& character,
+	                      CharacterCreateCB cb) const;
+
+	void delete_character(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_guid,
+	                      CharacterDeleteCB cb) const;
+
+	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, CharacterEnumCB cb) const;
 };
 
 } // ember

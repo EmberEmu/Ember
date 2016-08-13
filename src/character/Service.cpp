@@ -48,55 +48,28 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 	}
 }
 
-// todo, entirely temporary code, no validation, etc
 void Service::retrieve_characters(const spark::Link& link, const em::MessageRoot* root) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Retrieve*>(root->data());
-	auto ok = msg->account_name()->str();
-	auto characters = character_dao_.characters(ok);
-	send_character_list(link, root, std::move(characters));
+	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
+
+	handler_.enum_characters(1, 1, [&, tracking](const auto& chars) {
+		send_character_list(link, tracking, chars);
+	});
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
-
 
 void Service::create_character(const spark::Link& link, const em::MessageRoot* root) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Create*>(root->data());
-	auto c = msg->character();
-	auto n = handler_.create_character(1, msg->realm_id(), *msg->character());
-	
-	// temporary, if it isn't obvious
-	Character character(
-		msg->character()->name()->c_str(),
-		0, // character ID, erp
-		1, // account ID
-		msg->realm_id(),
-		c->race(),
-		c->class_(),
-		c->gender(),
-		c->skin(),
-		c->face(),
-		c->hairstyle(),
-		c->haircolour(),
-		c->facialhair(),
-		1, // level
-		0, // zone
-		0, // map,
-		0, // guild ID
-		0.f, 0.f, 0.f, // x y z
-		0, // flags
-		true, // first login
-		0, // pet display
-		0, // pet level
-		0 // pet family
-	);
-	
-	
-	character_dao_.create(character);
-	send_response(link, root, messaging::character::Status::OK);
+	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
+
+	handler_.create_character(1, msg->realm_id(), *msg->character(), [&, link, tracking](auto res) mutable {
+		send_response(link, tracking, messaging::character::Status::OK, res);
+	});
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
@@ -106,11 +79,11 @@ void Service::rename_character(const spark::Link& link, const em::MessageRoot* r
 
 	auto msg = static_cast<const em::character::Rename*>(root->data());
 	// todo
-	send_response(link, root, messaging::character::Status::OK);
+	send_response(link, root, messaging::character::Status::OK, protocol::ResultCode::CHAR_NAME_FAILURE);
 }
 
-void Service::send_character_list(const spark::Link& link, const em::MessageRoot* root,
-                                  std::vector<Character> characters) {
+void Service::send_character_list(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+                                  const boost::optional<std::vector<Character>>& characters) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -119,44 +92,52 @@ void Service::send_character_list(const spark::Link& link, const em::MessageRoot
 	// painful
 	std::vector<flatbuffers::Offset<em::character::Character>> chars;
 
-	for(auto character : characters) {
-		em::character::CharacterBuilder cbb(*fbb);
-		cbb.add_id(character.id());
-		cbb.add_name(fbb->CreateString(character.name()));
-		cbb.add_race(character.race());
-		cbb.add_class_(character.class_temp());
-		cbb.add_gender(character.gender());
-		cbb.add_skin(character.skin());
-		cbb.add_face(character.face());
-		cbb.add_hairstyle(character.hairstyle());
-		cbb.add_haircolour(character.haircolour());
-		cbb.add_facialhair(character.facialhair());
-		cbb.add_level(character.level());
-		cbb.add_zone(character.zone());
-		cbb.add_map(character.map());
-		cbb.add_guild_id(character.guild_id());
-		cbb.add_x(character.x());
-		cbb.add_y(character.y());
-		cbb.add_z(character.z());
-		cbb.add_flags(character.flags());
-		cbb.add_first_login(character.first_login());
-		cbb.add_pet_display_id(character.pet_display());
-		cbb.add_pet_level(character.pet_level());
-		cbb.add_pet_family(character.pet_family());
-		chars.push_back(cbb.Finish());
+	if(characters) {
+		for(auto character : *characters) {
+			em::character::CharacterBuilder cbb(*fbb);
+			cbb.add_id(character.id());
+			cbb.add_name(fbb->CreateString(character.name()));
+			cbb.add_race(character.race());
+			cbb.add_class_(character.class_temp());
+			cbb.add_gender(character.gender());
+			cbb.add_skin(character.skin());
+			cbb.add_face(character.face());
+			cbb.add_hairstyle(character.hairstyle());
+			cbb.add_haircolour(character.haircolour());
+			cbb.add_facialhair(character.facialhair());
+			cbb.add_level(character.level());
+			cbb.add_zone(character.zone());
+			cbb.add_map(character.map());
+			cbb.add_guild_id(character.guild_id());
+			cbb.add_x(character.x());
+			cbb.add_y(character.y());
+			cbb.add_z(character.z());
+			cbb.add_flags(character.flags());
+			cbb.add_first_login(character.first_login());
+			cbb.add_pet_display_id(character.pet_display());
+			cbb.add_pet_level(character.pet_level());
+			cbb.add_pet_family(character.pet_family());
+			chars.push_back(cbb.Finish());
+		}
+	}
+	
+	// todo, something weird going on with Flatbuffers - won't set correct status if done above
+	if(characters) {
+		rrb.add_status(em::character::Status::OK);
+	} else {
+		rrb.add_status(em::character::Status::UNKNOWN_ERROR);
 	}
 	
 	rrb.add_characters(fbb->CreateVector(chars));
-	rrb.add_status(em::character::Status::OK);
 	auto data_offset = rrb.Finish();
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::Character);
 	mrb.add_data_type(em::Data::RetrieveResponse);
 	mrb.add_data(data_offset.Union());
 
-	if(root) {
-		spark_.set_tracking_data(root, mrb, fbb.get());
-	}
+	auto id = fbb->CreateVector(tracking);
+	mrb.add_tracking_id(id);
+	mrb.add_tracking_ttl(1);
 
 	auto mloc = mrb.Finish();
 	fbb->Finish(mloc);
@@ -164,10 +145,37 @@ void Service::send_character_list(const spark::Link& link, const em::MessageRoot
 }
 
 // todo
-void Service::send_response(const spark::Link& link, const em::MessageRoot* root, messaging::character::Status status) {
+
+void Service::send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+							messaging::character::Status status, protocol::ResultCode result) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::character::CharResponseBuilder rb(*fbb);
 	rb.add_status(status);
+	rb.add_result(static_cast<std::uint32_t>(result));
+	auto data_offset = rb.Finish();
+
+	em::MessageRootBuilder mrb(*fbb);
+	mrb.add_service(em::Service::Character);
+	mrb.add_data_type(em::Data::CharResponse);
+	mrb.add_data(data_offset.Union());
+
+	auto id = fbb->CreateVector(tracking);
+	mrb.add_tracking_id(id);
+	mrb.add_tracking_ttl(1);
+
+	//spark_.set_tracking_data(root, mrb, fbb.get());
+	auto mloc = mrb.Finish();
+
+	fbb->Finish(mloc);
+	spark_.send(link, fbb);
+}
+
+void Service::send_response(const spark::Link& link, const em::MessageRoot* root,
+                            messaging::character::Status status, protocol::ResultCode result) {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	em::character::CharResponseBuilder rb(*fbb);
+	rb.add_status(status);
+	rb.add_result(static_cast<std::uint32_t>(result));
 	auto data_offset = rb.Finish();
 
 	em::MessageRootBuilder mrb(*fbb);
@@ -187,7 +195,7 @@ void Service::delete_character(const spark::Link& link, const em::MessageRoot* r
 
 	auto msg = static_cast<const em::character::Delete*>(root->data());
 	character_dao_.delete_character(msg->character_id());
-	send_response(link, root, messaging::character::Status::OK);
+	send_response(link, root, messaging::character::Status::OK, protocol::ResultCode::CHAR_DELETE_FAILED);
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }

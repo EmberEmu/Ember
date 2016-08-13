@@ -113,7 +113,6 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto character_dao = ember::dal::character_dao(pool);
 
 	std::locale temp;
-	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, temp, logger);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
@@ -127,6 +126,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	ThreadPool thread_pool(check_concurrency(logger));
+	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, thread_pool, temp, logger);
 
 	spark::Service spark("character", service, s_address, s_port, logger, spark_filter);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
@@ -140,7 +140,6 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 		spark.shutdown();
 		thread_pool.shutdown();
 		pool.close();
-		service.stop();
 	});
 
 	service.dispatch([&, logger]() {
@@ -182,7 +181,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("remote_log.port", po::value<std::uint16_t>()->required())
 		("file_log.verbosity", po::value<std::string>()->required())
 		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path", po::value<std::string>()->default_value("gateway.log"))
+		("file_log.path", po::value<std::string>()->default_value("character.log"))
 		("file_log.timestamp_format", po::value<std::string>())
 		("file_log.mode", po::value<std::string>()->required())
 		("file_log.size_rotate", po::value<std::uint32_t>()->required())
@@ -258,7 +257,7 @@ unsigned int check_concurrency(log::Logger* logger) {
 		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 
-#ifdef DEBUG_NO_THREADS
+#ifdef DEBUG_NO_THREADS // todo, this shouldn't be needed
 	return 0;
 #else
 	return concurrency;

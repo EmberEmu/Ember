@@ -57,15 +57,15 @@ void handle_char_enum(ClientContext* ctx) {
 		});});
 }
 
-void send_character_delete(ClientContext* ctx) {
-	protocol::SMSG_CHAR_CREATE response;
-	response.result = protocol::ResultCode::CHAR_DELETE_SUCCESS;
+void send_character_delete(ClientContext* ctx, protocol::ResultCode result) {
+	protocol::SMSG_CHAR_DELETE response;
+	response.result = result;
 	ctx->connection->send(response);
 }
 
-void send_character_create(ClientContext* ctx) {
+void send_character_create(ClientContext* ctx, protocol::ResultCode result) {
 	protocol::SMSG_CHAR_CREATE response;
-	response.result = protocol::ResultCode::CHAR_CREATE_SUCCESS;
+	response.result = result;
 	ctx->connection->send(response);
 }
 
@@ -81,11 +81,14 @@ void handle_char_create(ClientContext* ctx) {
 	auto self = ctx->connection->shared_from_this();
 
 	char_serv_temp->create_character(ctx->account_name, *packet.character,
-	                                 [self, ctx](em::character::Status status) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx]() {
-			//if(status == em::character::Status::OK) {
-				send_character_create(ctx);
-			//}
+	                                 [self, ctx](em::character::Status status,
+	                                             boost::optional<protocol::ResultCode> result) {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
+			if(status == em::character::Status::OK) {
+				send_character_create(ctx, *result);
+			} else {
+				send_character_create(ctx, protocol::ResultCode::CHAR_CREATE_ERROR);
+			}
 		});
 	});
 }
@@ -102,10 +105,13 @@ void handle_char_delete(ClientContext* ctx) {
 	auto self = ctx->connection->shared_from_this();
 
 	char_serv_temp->delete_character(ctx->account_name, packet.id,
-	                                 [self, ctx](em::character::Status status) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, status]() {
+	                                 [self, ctx](em::character::Status status,
+	                                             boost::optional<protocol::ResultCode> result) {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
 			if(status == em::character::Status::OK) {
-				send_character_delete(ctx);
+				send_character_delete(ctx, *result);
+			} else {
+				send_character_delete(ctx, protocol::ResultCode::CHAR_DELETE_FAILED);
 			}
 		});
 	});

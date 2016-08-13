@@ -63,7 +63,7 @@ public:
 		throw exception(e.what());
 	}
 
-	std::vector<Character> characters(std::string account_name) const override try {
+	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id) const override try {
 		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
 		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
@@ -71,11 +71,12 @@ public:
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 		                          "LEFT JOIN users u ON u.id = c.account_id "
-		                          "WHERE u.id = (SELECT id AS user_id FROM users WHERE username = ?)";
+		                          "WHERE u.id = ? AND c.realm_id = ?";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
-		stmt->setString(1, account_name);
+		stmt->setUInt(1, account_id);
+		stmt->setUInt(2, realm_id);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<Character> characters;
 

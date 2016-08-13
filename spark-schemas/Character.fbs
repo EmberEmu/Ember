@@ -66,4 +66,5 @@ table Create {
 
 table CharResponse {
 	status:Status;
+	result:uint;
 }
