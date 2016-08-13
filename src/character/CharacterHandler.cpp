@@ -166,6 +166,47 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 	return true;
 }
 
+void CharacterHandler::name_collision_callback(const std::string& name, std::uint32_t realm_id,
+	                                           CharacterCreateCB cb) const {
+	pool_.run([=]() {
+		try {
+			boost::optional<Character>& res = dao_.character(name, realm_id);
+
+			if(!res) {
+				cb(protocol::ResultCode::CHAR_CREATE_SUCCESS);
+			} else {
+				cb(protocol::ResultCode::CHAR_CREATE_NAME_IN_USE);
+			}
+		} catch(dal::exception& e) {
+			cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+		}
+	});
+}
+
+void CharacterHandler::validate_callback(boost::optional<std::vector<Character>> characters,
+                                         const Character& character, CharacterCreateCB cb) const {
+	if(!characters) {
+		cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+		return;
+	}
+
+	if(characters->size() >= MAX_CHARACTER_SLOTS) {
+		cb(protocol::ResultCode::CHAR_CREATE_ACCOUNT_LIMIT);
+		return;
+	}
+
+	// PVP faction check, name collision check, etc
+
+	pool_.run([=] {
+		try {
+			dao_.create(character);
+			cb(protocol::ResultCode::CHAR_CREATE_SUCCESS);
+		} catch(std::exception&) {
+			cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+		}
+	});
+}
+
 void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
                                         const messaging::character::Character& character,
                                         CharacterCreateCB cb) const {
@@ -175,12 +216,14 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 
 	if(!success) {
 		cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+		return;
 	}
 	
 	auto result = validate_name(character.name()->c_str());
 
 	if(result != protocol::ResultCode::CHAR_CREATE_SUCCESS) {
 		cb(result);
+		return;
 	}
 
 	Character c(
@@ -208,36 +251,15 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 		0 // pet family
 	);
 
-	//try {
-	//	// convert name case
-	//	name = boost::locale::to_title(name, locale_);
-	//} catch(std::bad_cast& e) {
-	//	LOG_DEBUG_GLOB << "Could not perform name-case conversion: " << e.what() << LOG_ASYNC;
-	//	return "";
-	//}
-
 	// start the callback nightmare
-	enum_characters(account_id, realm_id, [&, c, cb](boost::optional<std::vector<Character>> characters) { // todo, auto compiler bug
-		if(!characters) {
-			cb(protocol::ResultCode::CHAR_CREATE_ERROR);
-			return;
+	name_collision_callback(character.name()->c_str(), realm_id, [=](protocol::ResultCode result) {
+		if(result == protocol::ResultCode::CHAR_CREATE_SUCCESS) {
+			enum_characters(account_id, realm_id, [&, c, cb](auto characters) {
+				validate_callback(characters, c, cb);
+			});
+		} else {
+			cb(result);
 		}
-
-		if(characters->size() >= 2) {
-			cb(protocol::ResultCode::CHAR_CREATE_ACCOUNT_LIMIT);
-			return;
-		}
-
-		// PVP faction test, etc
-
-		pool_.run([=] {
-			try {
-				dao_.create(c);
-				cb(protocol::ResultCode::CHAR_CREATE_SUCCESS);
-			} catch(std::exception&) {
-				cb(protocol::ResultCode::CHAR_CREATE_ERROR);
-			}
-		});
 	});
 }
 

@@ -67,7 +67,8 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::character::Create*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	handler_.create_character(1, msg->realm_id(), *msg->character(), [&, link, tracking](auto res) mutable {
+	handler_.create_character(1, msg->realm_id(), *msg->character(), [&, link, tracking](auto res) {
+		LOG_DEBUG(logger_) << "Response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, tracking, messaging::character::Status::OK, res);
 	});
 } catch(std::exception& e) {
@@ -195,7 +196,7 @@ void Service::delete_character(const spark::Link& link, const em::MessageRoot* r
 
 	auto msg = static_cast<const em::character::Delete*>(root->data());
 	character_dao_.delete_character(msg->character_id());
-	send_response(link, root, messaging::character::Status::OK, protocol::ResultCode::CHAR_DELETE_FAILED);
+	send_response(link, root, messaging::character::Status::OK, protocol::ResultCode::CHAR_DELETE_SUCCESS);
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }

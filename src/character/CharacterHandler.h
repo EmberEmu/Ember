@@ -33,9 +33,11 @@ class CharacterHandler {
 	typedef std::function<void(boost::optional<std::vector<Character>>)> CharacterEnumCB;
 	typedef std::function<void(protocol::ResultCode)> CharacterDeleteCB;
 
+	// todo, should probably be in a config
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;
 	const std::size_t MAX_CONSECUTIVE_LETTERS = 2;
+	const std::size_t MAX_CHARACTER_SLOTS = 10;
 
 	const std::vector<util::pcre::Result>& profane_names_;
 	const std::vector<util::pcre::Result>& reserved_names_;
@@ -51,6 +53,11 @@ class CharacterHandler {
 	void validate_race_class_pair();
 	protocol::ResultCode validate_name(const std::string& name) const;
 	bool validate_options(const messaging::character::Character& character, std::uint32_t account_id) const;
+
+	void validate_callback(boost::optional<std::vector<Character>> characters,
+	                       const Character& character, CharacterCreateCB cb) const;
+
+	void name_collision_callback(const std::string& name, std::uint32_t realm_id, CharacterCreateCB cb) const;
 
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,

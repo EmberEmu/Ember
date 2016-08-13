@@ -60,7 +60,7 @@ void CharacterService::handle_reply(const spark::Link& link, const boost::uuids:
 	}
 
 	auto message = static_cast<const em::character::CharResponse*>((*root)->data());
-	cb(message->status(), static_cast<protocol::ResultCode>(message->result())); // todo
+	cb(message->status(), static_cast<protocol::ResultCode>(message->result()));
 }
 
 void CharacterService::handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,

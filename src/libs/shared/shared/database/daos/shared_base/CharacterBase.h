@@ -21,6 +21,7 @@ namespace ember { namespace dal {
 class CharacterDAO {
 public:
 	virtual boost::optional<Character> character(unsigned int id) const = 0;
+	virtual boost::optional<Character> character(const std::string& name, std::uint32_t realm_id) const = 0;
 	virtual std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id) const = 0;
 	virtual void delete_character(unsigned int id) const = 0;
 	virtual void create(const Character& character) const = 0;

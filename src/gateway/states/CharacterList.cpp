@@ -54,7 +54,8 @@ void handle_char_enum(ClientContext* ctx) {
 			} else {
 				send_character_list_fail(ctx);
 			}
-		});});
+		});
+	});
 }
 
 void send_character_delete(ClientContext* ctx, protocol::ResultCode result) {

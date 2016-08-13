@@ -32,6 +32,38 @@ class MySQLCharacterDAO final : public CharacterDAO {
 public:
 	MySQLCharacterDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
+	boost::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
+		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
+		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		                          "c.pet_family, gc.id as guild_id "
+		                          "FROM characters c "
+		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
+		                          "WHERE name = ? AND realm_id = ?";
+
+		auto conn = pool_.wait_connection(5s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+		stmt->setString(1, name);
+		stmt->setUInt(2, realm_id);
+		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+		if(res->next()) {
+			Character character(res->getString("name"), res->getUInt("id"), res->getUInt("account_id"),
+			                    res->getUInt("realm_id"), res->getUInt("race"),
+			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
+			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
+			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
+			                    res->getUInt("map"), res->getUInt("guild_id"), res->getDouble("x"), res->getDouble("y"),
+			                    res->getDouble("z"), res->getUInt("flags"), res->getUInt("first_login"),
+			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
+			return character;
+		}
+
+		return boost::optional<Character>();
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+	
 	boost::optional<Character> character(unsigned int id) const override try {
 		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
 		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
