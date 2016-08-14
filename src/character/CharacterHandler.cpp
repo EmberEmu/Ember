@@ -24,7 +24,7 @@ CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profan
 
 void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
                                         const messaging::character::CharacterTemplate& options,
-										ResultCB callback) const {
+                                        ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	Character character;
@@ -40,6 +40,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	character.haircolour = options.haircolour();
 	character.facialhair = options.facialhair();
 
+	// class, race & visual customisation validation
 	bool success = validate_options(character, account_id);
 
 	if(!success) {
@@ -54,7 +55,8 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 		callback(result);
 		return;
 	}
-	
+
+	// query database for further validations steps
 	name_collision_callback(character.name, realm_id, [=](protocol::ResultCode result) mutable {
 		if(result == protocol::ResultCode::CHAR_CREATE_SUCCESS) {
 			enum_characters(account_id, realm_id, [=](auto& characters) mutable {
@@ -75,8 +77,9 @@ void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t 
 
 	// character must exist, belong to the same account and be on the same realm
 	if(!res || res->account_id != account_id || res->realm_id != realm_id) {
-		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER) << "Account " << account_id
-			<< " attempted an invalid delete on character " << character_guid << LOG_ASYNC;
+		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
+			<< "Account " << account_id << " attempted an invalid delete on character "
+			<< character_guid << LOG_ASYNC;
 		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
 		return;
 	}
@@ -93,8 +96,7 @@ void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t 
 	callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
 }
 
-void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id,
-									   EnumResultCB cb) const {
+void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
@@ -246,8 +248,8 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 
 	if(!facial_feature_match || !skin_match || !face_match || !hair_match) {
 		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
-			<< "Invalid visual customisation options from account " << account_id
-			<< ": Face ID: " << character.face
+			<< "Invalid visual customisation options from account " << account_id << ":"
+			<< " Face ID: " << character.face
 			<< " Facial feature ID: " << character.facialhair
 			<< " Hair style ID: " << character.hairstyle
 			<< " Hair colour ID: " << character.haircolour << LOG_ASYNC;
@@ -312,7 +314,7 @@ void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>&
 }
 
 void CharacterHandler::name_collision_callback(const std::string& name, std::uint32_t realm_id,
-											   ResultCB callback) const {
+                                               ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=]() {
