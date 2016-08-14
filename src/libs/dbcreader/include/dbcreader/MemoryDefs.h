@@ -267,11 +267,17 @@ struct CharStartTalents {
 };
 
 struct CharStartZones {
+	struct Vector {
+		float x;
+		float y;
+		float z;
+	};
+
 	std::uint32_t id;
 	const AreaTable* area;
 	std::uint32_t area_id;
-	float position[3];
-	float orientation[3];
+	Vector position;
+	Vector orientation;
 };
 
 struct CharVariations {

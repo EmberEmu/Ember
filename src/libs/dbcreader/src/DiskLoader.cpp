@@ -261,15 +261,12 @@ void load_char_start_zones(Storage& storage, const std::string& dir_path) {
 		CharStartZones entry{};
 		entry.id = dbc.records[i].id;
 		entry.area_id = dbc.records[i].area;
-
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].position) / sizeof(float); ++j) {
-			entry.position[j] = dbc.records[i].position[j];
-		}
-
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].orientation) / sizeof(float); ++j) {
-			entry.orientation[j] = dbc.records[i].orientation[j];
-		}
-
+		entry.position.x = dbc.records[i].position.x;
+		entry.position.y = dbc.records[i].position.y;
+		entry.position.z = dbc.records[i].position.z;
+		entry.orientation.x = dbc.records[i].orientation.x;
+		entry.orientation.y = dbc.records[i].orientation.y;
+		entry.orientation.z = dbc.records[i].orientation.z;
 		storage.char_start_zones.emplace_back(entry.id, entry);
 	}
 }

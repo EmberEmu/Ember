@@ -29,9 +29,8 @@ namespace ember {
 class ThreadPool;
 
 class CharacterHandler {
-	typedef std::function<void(protocol::ResultCode)> CharacterCreateCB;
-	typedef std::function<void(boost::optional<std::vector<Character>>)> CharacterEnumCB;
-	typedef std::function<void(protocol::ResultCode)> CharacterDeleteCB;
+	typedef std::function<void(protocol::ResultCode)> ResultCB;
+	typedef std::function<void(boost::optional<std::vector<Character>>)> EnumResultCB;
 
 	// todo, should probably be in a config
 	const std::size_t MAX_NAME_LENGTH = 12;
@@ -48,17 +47,14 @@ class CharacterHandler {
 	ThreadPool& pool_;
 	log::Logger* logger_;
 
-	void validate_race();
-	void validate_class();
-	void validate_race_class_pair();
 	protocol::ResultCode validate_name(const std::string& name) const;
-	bool validate_options(const messaging::character::Character& character, std::uint32_t account_id) const;
+	bool validate_options(const Character& character, std::uint32_t account_id) const;
 
-	void on_enum_complete(boost::optional<std::vector<Character>> characters,
-	                      Character& character, CharacterCreateCB cb) const;
+	void on_enum_complete(boost::optional<std::vector<Character>>& characters,
+	                      Character& character, ResultCB callback) const;
 
-
-	void name_collision_callback(const std::string& name, std::uint32_t realm_id, CharacterCreateCB cb) const;
+	void name_collision_callback(const std::string& name, std::uint32_t realm_id,
+								 ResultCB callback) const;
 
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
@@ -67,16 +63,16 @@ public:
 	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger);
 
 	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
-	                      const messaging::character::CharacterTemplate& character,
-	                      CharacterCreateCB cb) const;
+	                      const messaging::character::CharacterTemplate& options,
+						  ResultCB callback) const;
 
 	void delete_character(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_guid,
-	                      CharacterDeleteCB cb) const;
+						  ResultCB callback) const;
 
-	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, CharacterEnumCB cb) const;
+	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB callback) const;
 
 	void rename_character(std::uint32_t account_id, std::uint64_t character_guid,
-	                      const std::string& name, CharacterCreateCB cb);
+	                      const std::string& name, ResultCB callback);
 };
 
 } // ember

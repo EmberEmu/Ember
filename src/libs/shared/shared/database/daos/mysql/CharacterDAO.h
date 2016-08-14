@@ -29,6 +29,36 @@ class MySQLCharacterDAO final : public CharacterDAO {
 	T& pool_;
 	drivers::MySQL* driver_;
 
+	Character result_to_character(sql::ResultSet* res) const {
+		Character character;
+		character.name = res->getString("name");
+		character.id = res->getUInt("id");
+		character.account_id = res->getUInt("account_id");
+		character.realm_id = res->getUInt("realm_id");
+		character.race = res->getUInt("race");
+		character.class_ = res->getUInt("class");
+		character.gender = res->getUInt("gender");
+		character.skin = res->getUInt("skin");
+		character.face = res->getUInt("face");
+		character.hairstyle = res->getUInt("hairstyle");
+		character.haircolour = res->getUInt("haircolour");
+		character.facialhair = res->getUInt("facialhair");
+		character.level = res->getUInt("level");
+		character.zone = res->getUInt("zone");
+		character.map = res->getUInt("map");
+		character.guild_id = res->getUInt("guild_id");
+		character.guild_rank = res->getUInt("guild_rank");
+		character.position.x = res->getDouble("x");
+		character.position.y = res->getDouble("y");
+		character.position.z = res->getDouble("z");
+		character.flags = res->getUInt("flags");
+		character.first_login = res->getBoolean("first_login");
+		character.pet_display = res->getUInt("pet_display");
+		character.pet_level = res->getUInt("pet_level");
+		character.pet_family = res->getUInt("pet_family");
+		return character;
+	}
+
 public:
 	MySQLCharacterDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
@@ -48,16 +78,7 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			Character character(res->getString("name"), res->getUInt("id"), res->getUInt("account_id"),
-			                    res->getUInt("realm_id"), res->getUInt("race"),
-			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
-			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
-			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
-			                    res->getUInt("map"), res->getUInt("guild_id"), res->getUInt("guild_rank"),
-			                    res->getDouble("x"), res->getDouble("y"), res->getDouble("z"),
-			                    res->getUInt("flags"), res->getUInt("first_login"),
-			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
-			return character;
+			return result_to_character(res.get());
 		}
 
 		return boost::optional<Character>();
@@ -80,16 +101,7 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			Character character(res->getString("name"), res->getUInt("id"), res->getUInt("account_id"),
-			                    res->getUInt("realm_id"), res->getUInt("race"),
-			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
-			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
-			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
-			                    res->getUInt("map"), res->getUInt("guild_id"), res->getUInt("guild_rank"),
-			                    res->getDouble("x"), res->getDouble("y"), res->getDouble("z"),
-			                    res->getUInt("flags"), res->getUInt("first_login"),
-			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
-			return character;
+			return result_to_character(res.get());;
 		}
 
 		return boost::optional<Character>();
@@ -115,16 +127,7 @@ public:
 		std::vector<Character> characters;
 
 		while(res->next()) {
-			Character character(res->getString("name"), res->getUInt("id"), res->getUInt("account_id"),
-			                    res->getUInt("realm_id"), res->getUInt("race"),
-			                    res->getUInt("class"), res->getUInt("gender"), res->getUInt("skin"),
-			                    res->getUInt("face"), res->getUInt("hairstyle"), res->getUInt("haircolour"),
-			                    res->getUInt("facialhair"), res->getUInt("level"), res->getUInt("zone"),
-			                    res->getUInt("map"), res->getUInt("guild_id"), res->getUInt("guild_rank"), 
-			                    res->getDouble("x"), res->getDouble("y"), res->getDouble("z"),
-			                    res->getUInt("flags"), res->getUInt("first_login"),
-			                    res->getUInt("pet_display"), res->getUInt("pet_level"), res->getUInt("pet_family"));
-			characters.emplace_back(character);
+			//characters.emplace_back(result_to_character(res.get()));
 		}
 
 		return characters;
@@ -137,7 +140,7 @@ public:
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
-		stmt->setInt(1, id);
+		stmt->setUInt64(1, id);
 		
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to delete character " + std::to_string(id));
@@ -155,28 +158,28 @@ public:
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
-		stmt->setString(1, character.name());
-		stmt->setUInt(2, character.account_id());
-		stmt->setUInt(3, character.realm_id());
-		stmt->setUInt(4, character.race());
-		stmt->setUInt(5, character.class_temp());
-		stmt->setUInt(6, character.gender());
-		stmt->setUInt(7, character.skin());
-		stmt->setUInt(8, character.face());
-		stmt->setUInt(9, character.hairstyle());
-		stmt->setUInt(10, character.haircolour());
-		stmt->setUInt(11, character.facialhair());
-		stmt->setUInt(12, character.level());
-		stmt->setUInt(13, character.zone());
-		stmt->setUInt(14, character.map());
-		stmt->setDouble(15, character.x());
-		stmt->setDouble(16, character.y());
-		stmt->setDouble(17, character.z());
-		stmt->setUInt(18, character.flags());
-		stmt->setUInt(19, character.first_login());
-		stmt->setUInt(20, character.pet_display());
-		stmt->setUInt(21, character.pet_level());
-		stmt->setUInt(22, character.pet_family());
+		stmt->setString(1, character.name);
+		stmt->setUInt(2, character.account_id);
+		stmt->setUInt(3, character.realm_id);
+		stmt->setUInt(4, character.race);
+		stmt->setUInt(5, character.class_);
+		stmt->setUInt(6, character.gender);
+		stmt->setUInt(7, character.skin);
+		stmt->setUInt(8, character.face);
+		stmt->setUInt(9, character.hairstyle);
+		stmt->setUInt(10, character.haircolour);
+		stmt->setUInt(11, character.facialhair);
+		stmt->setUInt(12, character.level);
+		stmt->setUInt(13, character.zone);
+		stmt->setUInt(14, character.map);
+		stmt->setDouble(15, character.position.x);
+		stmt->setDouble(16, character.position.y);
+		stmt->setDouble(17, character.position.z);
+		stmt->setUInt(18, character.flags);
+		stmt->setUInt(19, character.first_login);
+		stmt->setUInt(20, character.pet_display);
+		stmt->setUInt(21, character.pet_level);
+		stmt->setUInt(22, character.pet_family);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to create character");

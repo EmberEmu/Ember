@@ -147,10 +147,16 @@ struct CharStartTalents {
 };
 
 struct CharStartZones {
+	struct Vector {
+		float x;
+		float y;
+		float z;
+	};
+
 	uint32 id;
 	uint32 area;
-	float position[3];
-	float orientation[3];
+	Vector position;
+	Vector orientation;
 };
 
 struct CharVariations {

@@ -96,28 +96,28 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 	if(characters) {
 		for(auto character : *characters) {
 			em::character::CharacterBuilder cbb(*fbb);
-			cbb.add_id(character.id());
-			cbb.add_name(fbb->CreateString(character.name()));
-			cbb.add_race(character.race());
-			cbb.add_class_(character.class_temp());
-			cbb.add_gender(character.gender());
-			cbb.add_skin(character.skin());
-			cbb.add_face(character.face());
-			cbb.add_hairstyle(character.hairstyle());
-			cbb.add_haircolour(character.haircolour());
-			cbb.add_facialhair(character.facialhair());
-			cbb.add_level(character.level());
-			cbb.add_zone(character.zone());
-			cbb.add_map(character.map());
-			cbb.add_guild_id(character.guild_id());
-			cbb.add_x(character.x());
-			cbb.add_y(character.y());
-			cbb.add_z(character.z());
-			cbb.add_flags(character.flags());
-			cbb.add_first_login(character.first_login());
-			cbb.add_pet_display_id(character.pet_display());
-			cbb.add_pet_level(character.pet_level());
-			cbb.add_pet_family(character.pet_family());
+			cbb.add_id(character.id);
+			cbb.add_name(fbb->CreateString(character.name));
+			cbb.add_race(character.race);
+			cbb.add_class_(character.class_);
+			cbb.add_gender(character.gender);
+			cbb.add_skin(character.skin);
+			cbb.add_face(character.face);
+			cbb.add_hairstyle(character.hairstyle);
+			cbb.add_haircolour(character.haircolour);
+			cbb.add_facialhair(character.facialhair);
+			cbb.add_level(character.level);
+			cbb.add_zone(character.zone);
+			cbb.add_map(character.map);
+			cbb.add_guild_id(character.guild_id);
+			cbb.add_x(character.position.x);
+			cbb.add_y(character.position.y);
+			cbb.add_z(character.position.z);
+			cbb.add_flags(character.flags);
+			cbb.add_first_login(character.first_login);
+			cbb.add_pet_display_id(character.pet_display);
+			cbb.add_pet_level(character.pet_level);
+			cbb.add_pet_family(character.pet_family);
 			chars.push_back(cbb.Finish());
 		}
 	}

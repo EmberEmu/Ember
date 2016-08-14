@@ -14,7 +14,7 @@
 namespace ember {
 
 struct Vector {
-	float x, y, z;
+	double x, y, z;
 };
 
 struct Character {

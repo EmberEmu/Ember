@@ -24,7 +24,7 @@ table CharacterTemplate {
 	facialhair:ubyte;
 }
 
-table CharacterDisplay {
+table Character {
 	id:uint;
 	name:string;
 	race:ubyte;
