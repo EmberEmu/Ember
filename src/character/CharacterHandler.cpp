@@ -23,7 +23,7 @@ CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profan
                                      dbc_(dbc), dao_(dao), pool_(pool), locale_(locale), logger_(logger) { }
 
 void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        const messaging::character::Character& character,
+                                        const messaging::character::CharacterTemplate& character,
                                         CharacterCreateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -34,6 +34,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 		return;
 	}
 	
+	// name validation
 	auto result = validate_name(character.name()->c_str());
 
 	if(result != protocol::ResultCode::CHAR_CREATE_SUCCESS) {
@@ -41,37 +42,23 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 		return;
 	}
 
-	Character c(
-		character.name()->c_str(),
-		0, // character ID, erp
-		account_id, // account ID
-		realm_id,
-		character.race(),
-		character.class_(),
-		character.gender(),
-		character.skin(),
-		character.face(),
-		character.hairstyle(),
-		character.haircolour(),
-		character.facialhair(),
-		1, // level
-		0, // zone
-		0, // map,
-		0, // guild ID
-		0, // guild rank
-		0.f, 0.f, 0.f, // x y z
-		0, // flags
-		true, // first login
-		0, // pet display
-		0, // pet level
-		0 // pet family
-	);
-
-	// start the callback nightmare
+	Character c;
+	c.race =  character.race(),
+	c.name = character.name()->c_str();
+	c.realm_id = realm_id;
+	c.account_id = account_id;
+	c.class_ = character.class_();
+	c.gender = character.gender();
+	c.skin = character.skin();
+	c.face = character.face();
+	c.hairstyle = character.hairstyle();
+	c.haircolour = character.haircolour();
+	c.facialhair = character.facialhair();
+	
 	name_collision_callback(character.name()->c_str(), realm_id, [=](protocol::ResultCode result) {
 		if(result == protocol::ResultCode::CHAR_CREATE_SUCCESS) {
 			enum_characters(account_id, realm_id, [&, c, cb](auto characters) {
-				validate_callback(characters, c, cb);
+				on_enum_complete(characters, c, cb);
 			});
 		} else {
 			cb(result);
@@ -271,8 +258,8 @@ bool CharacterHandler::validate_options(const messaging::character::Character& c
 	return true;
 }
 
-void CharacterHandler::validate_callback(boost::optional<std::vector<Character>> characters,
-                                         const Character& character, CharacterCreateCB cb) const {
+void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>> characters,
+                                        Character& character, CharacterCreateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!characters) {
@@ -285,7 +272,33 @@ void CharacterHandler::validate_callback(boost::optional<std::vector<Character>>
 		return;
 	}
 
-	// PVP faction check, name collision check, etc
+	// PVP faction check etc
+
+	// everything looks good - populate the character data and create it
+	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& info) {
+		return info.second->race == character.race() && info.second->class_ == character_.class_();
+	});
+
+	if(base_info == dbc_.char_start_base.end()) {
+		LOG_ERROR(logger_) << "Unable to find base data for " << dbc_.chr_races[character.race]
+			<< " " << dbc_.chr_classes[character.class_] << LOG_ASYNC;
+		cb(protocol::ResultCode::CHAR_CREATE_ERROR);
+		return;
+	}
+
+	// populate zone information
+	const auto& info = base_info->second;
+	character.zone = info.zone_id;
+	character.map = info.zone->area->map_id;
+	character.position.x = info.zone->position.x;
+	character.position.y = info.zone->position.y;
+	character.position.z = info.zone->position.z;
+
+	// populate items information
+
+	// populate spells information
+
+	// populate talents information
 
 	pool_.run([=] {
 		try {

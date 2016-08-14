@@ -19,13 +19,32 @@
 		</key>
 	</field>
 
+	<struct>
+		<name>Vector</name>
+
+		<field>
+			<type>float</type>
+			<name>x</name>
+		</field>
+
+		<field>
+			<type>float</type>
+			<name>y</name>
+		</field>
+
+		<field>
+			<type>float</type>
+			<name>z</name>
+		</field>
+	</struct>
+
 	<field>
-		<type>float[3]</type>
+		<type>Vector</type>
 		<name>position</name>
 	</field>
 
 	<field>
-		<type>float[3]</type>
+		<type>Vector</type>
 		<name>orientation</name>
 	</field>
 	

@@ -54,8 +54,8 @@ class CharacterHandler {
 	protocol::ResultCode validate_name(const std::string& name) const;
 	bool validate_options(const messaging::character::Character& character, std::uint32_t account_id) const;
 
-	void validate_callback(boost::optional<std::vector<Character>> characters,
-	                       const Character& character, CharacterCreateCB cb) const;
+	void on_enum_complete(boost::optional<std::vector<Character>> characters,
+	                      Character& character, CharacterCreateCB cb) const;
 
 
 	void name_collision_callback(const std::string& name, std::uint32_t realm_id, CharacterCreateCB cb) const;
@@ -67,7 +67,7 @@ public:
 	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger);
 
 	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
-	                      const messaging::character::Character& character,
+	                      const messaging::character::CharacterTemplate& character,
 	                      CharacterCreateCB cb) const;
 
 	void delete_character(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_guid,

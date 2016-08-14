@@ -12,7 +12,19 @@ enum Status : ubyte {
 	UNKNOWN_ERROR, OK, SERVER_LINK_ERROR, ILLFORMED_MESSAGE
 }
 
-table Character {
+table CharacterTemplate {
+	name:string;
+	race:ubyte;
+	class_:ubyte;
+	gender:ubyte;
+	skin:ubyte;
+	face:ubyte;
+	hairstyle:ubyte;
+	haircolour:ubyte;
+	facialhair:ubyte;
+}
+
+table CharacterDisplay {
 	id:uint;
 	name:string;
 	race:ubyte;
@@ -61,7 +73,7 @@ table Delete {
 
 table Create {
 	realm_id:uint;
-	character:Character;
+	character:CharacterTemplate;
 }
 
 table CharResponse {
