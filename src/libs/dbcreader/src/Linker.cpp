@@ -26,6 +26,21 @@ void link_animation_data(Storage& storage) {
 	}
 }
 
+void link_area_table(Storage& storage) {
+	for(auto& i : storage.area_table.values()) {
+		i.map = storage.map[i.map_id];
+		i.parent_area_table = storage.area_table[i.parent_area_table_id];
+		i.sound_preferences = storage.sound_provider_preferences[i.sound_preferences_id];
+		i.sound_preferences_underwater = storage.sound_provider_preferences[i.sound_preferences_underwater_id];
+		i.sound_ambience = storage.sound_ambience[i.sound_ambience_id];
+		i.zone_music = storage.zone_music[i.zone_music_id];
+		i.zone_music_intro = storage.zone_intro_music_table[i.zone_music_intro_id];
+		i.faction_group = storage.faction_group[i.faction_group_id];
+		i.liquid_type = storage.liquid_type[i.liquid_type_id];
+		i.light = storage.light[i.light_id];
+	}
+}
+
 void link_character_facial_hair_styles(Storage& storage) {
 	for(auto& i : storage.character_facial_hair_styles.values()) {
 		i.race = storage.chr_races[i.race_id];
@@ -43,6 +58,44 @@ void link_char_base_info(Storage& storage) {
 void link_char_sections(Storage& storage) {
 	for(auto& i : storage.char_sections.values()) {
 		i.race = storage.chr_races[i.race_id];
+	}
+}
+
+void link_char_start_base(Storage& storage) {
+	for(auto& i : storage.char_start_base.values()) {
+		i.race = storage.chr_races[i.race_id];
+		i.class_ = storage.chr_classes[i.class__id];
+		i.zone = storage.char_start_zones[i.zone_id];
+		i.outfit = storage.char_start_outfit[i.outfit_id];
+	}
+}
+
+void link_char_start_outfit(Storage& storage) {
+	for(auto& i : storage.char_start_outfit.values()) {
+		i.race = storage.chr_races[i.race_id];
+		i.class_ = storage.chr_classes[i.class__id];
+	}
+}
+
+void link_char_start_spells(Storage& storage) {
+	for(auto& i : storage.char_start_spells.values()) {
+		i.race = storage.chr_races[i.race_id];
+		i.class_ = storage.chr_classes[i.class__id];
+		i.spell = storage.spell[i.spell_id];
+	}
+}
+
+void link_char_start_talents(Storage& storage) {
+	for(auto& i : storage.char_start_talents.values()) {
+		i.race = storage.chr_races[i.race_id];
+		i.class_ = storage.chr_classes[i.class__id];
+		i.talent = storage.talent[i.talent_id];
+	}
+}
+
+void link_char_start_zones(Storage& storage) {
+	for(auto& i : storage.char_start_zones.values()) {
+		i.area = storage.area_table[i.area_id];
 	}
 }
 
@@ -203,6 +256,35 @@ void link_item_visuals(Storage& storage) {
 	}
 }
 
+void link_light(Storage& storage) {
+	for(auto& i : storage.light.values()) {
+		i.map = storage.map[i.map_id];
+
+		for(std::size_t j = 0; j < sizeof(i.light_params) / sizeof(std::uint32_t); ++j) { 
+			i.light_params[j] = storage.light_params[i.light_params_id[j]];
+		}
+	}
+}
+
+void link_light_params(Storage& storage) {
+	for(auto& i : storage.light_params.values()) {
+		i.light_skybox = storage.light_skybox[i.light_skybox_id];
+	}
+}
+
+void link_liquid_type(Storage& storage) {
+	for(auto& i : storage.liquid_type.values()) {
+		i.spell = storage.spell[i.spell_id];
+	}
+}
+
+void link_map(Storage& storage) {
+	for(auto& i : storage.map.values()) {
+		i.area_table = storage.area_table[i.area_table_id];
+		i.loading_screen = storage.loading_screens[i.loading_screen_id];
+	}
+}
+
 void link_npc_sounds(Storage& storage) {
 	for(auto& i : storage.npc_sounds.values()) {
 		for(std::size_t j = 0; j < sizeof(i.sound_entries) / sizeof(std::uint32_t); ++j) { 
@@ -214,6 +296,13 @@ void link_npc_sounds(Storage& storage) {
 void link_resistances(Storage& storage) {
 	for(auto& i : storage.resistances.values()) {
 		i.fizzle_sound_entry = storage.sound_entries[i.fizzle_sound_entry_id];
+	}
+}
+
+void link_sound_ambience(Storage& storage) {
+	for(auto& i : storage.sound_ambience.values()) {
+		i.day_sound = storage.sound_entries[i.day_sound_id];
+		i.night_sound = storage.sound_entries[i.night_sound_id];
 	}
 }
 
@@ -303,15 +392,54 @@ void link_spell_visual_kit(Storage& storage) {
 	}
 }
 
+void link_talent(Storage& storage) {
+	for(auto& i : storage.talent.values()) {
+		i.tab = storage.talent_tab[i.tab_id];
+
+		for(std::size_t j = 0; j < sizeof(i.spell_rank) / sizeof(std::uint32_t); ++j) { 
+			i.spell_rank[j] = storage.spell[i.spell_rank_id[j]];
+		}
+
+		i.required_spell = storage.spell[i.required_spell_id];
+	}
+}
+
+void link_talent_tab(Storage& storage) {
+	for(auto& i : storage.talent_tab.values()) {
+		i.spell_icon = storage.spell_icon[i.spell_icon_id];
+		i.race_mask = storage.chr_races[i.race_mask_id];
+		i.class_mask = storage.chr_classes[i.class_mask_id];
+	}
+}
+
+void link_zone_intro_music_table(Storage& storage) {
+	for(auto& i : storage.zone_intro_music_table.values()) {
+		i.intro_sound = storage.sound_entries[i.intro_sound_id];
+	}
+}
+
+void link_zone_music(Storage& storage) {
+	for(auto& i : storage.zone_music.values()) {
+		i.day_sound = storage.sound_entries[i.day_sound_id];
+		i.night_sound = storage.sound_entries[i.night_sound_id];
+	}
+}
+
 
 
 } // detail
 
 void link(Storage& storage) {
 	detail::link_animation_data(storage);
+	detail::link_area_table(storage);
 	detail::link_character_facial_hair_styles(storage);
 	detail::link_char_base_info(storage);
 	detail::link_char_sections(storage);
+	detail::link_char_start_base(storage);
+	detail::link_char_start_outfit(storage);
+	detail::link_char_start_spells(storage);
+	detail::link_char_start_talents(storage);
+	detail::link_char_start_zones(storage);
 	detail::link_char_variations(storage);
 	detail::link_chr_races(storage);
 	detail::link_cinematic_camera(storage);
@@ -327,13 +455,22 @@ void link(Storage& storage) {
 	detail::link_item_group_sounds(storage);
 	detail::link_item_sub_class(storage);
 	detail::link_item_visuals(storage);
+	detail::link_light(storage);
+	detail::link_light_params(storage);
+	detail::link_liquid_type(storage);
+	detail::link_map(storage);
 	detail::link_npc_sounds(storage);
 	detail::link_resistances(storage);
+	detail::link_sound_ambience(storage);
 	detail::link_spell(storage);
 	detail::link_spell_item_enchantment(storage);
 	detail::link_spell_shapeshift_form(storage);
 	detail::link_spell_visual(storage);
 	detail::link_spell_visual_kit(storage);
+	detail::link_talent(storage);
+	detail::link_talent_tab(storage);
+	detail::link_zone_intro_music_table(storage);
+	detail::link_zone_music(storage);
 
 }
 

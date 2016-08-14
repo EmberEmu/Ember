@@ -57,6 +57,7 @@ class CharacterHandler {
 	void validate_callback(boost::optional<std::vector<Character>> characters,
 	                       const Character& character, CharacterCreateCB cb) const;
 
+
 	void name_collision_callback(const std::string& name, std::uint32_t realm_id, CharacterCreateCB cb) const;
 
 public:
@@ -73,6 +74,9 @@ public:
 	                      CharacterDeleteCB cb) const;
 
 	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, CharacterEnumCB cb) const;
+
+	void rename_character(std::uint32_t account_id, std::uint64_t character_guid,
+	                      const std::string& name, CharacterCreateCB cb);
 };
 
 } // ember

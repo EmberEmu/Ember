@@ -22,10 +22,16 @@ namespace ember { namespace dbc {
 
 struct Storage {
 	DBCMap<AnimationData> animation_data;
+	DBCMap<AreaTable> area_table;
 	DBCMap<CameraShakes> camera_shakes;
 	DBCMap<CharacterFacialHairStyles> character_facial_hair_styles;
 	DBCMap<CharBaseInfo> char_base_info;
 	DBCMap<CharSections> char_sections;
+	DBCMap<CharStartBase> char_start_base;
+	DBCMap<CharStartOutfit> char_start_outfit;
+	DBCMap<CharStartSpells> char_start_spells;
+	DBCMap<CharStartTalents> char_start_talents;
+	DBCMap<CharStartZones> char_start_zones;
 	DBCMap<CharVariations> char_variations;
 	DBCMap<ChrClasses> chr_classes;
 	DBCMap<ChrRaces> chr_races;
@@ -47,11 +53,19 @@ struct Storage {
 	DBCMap<ItemSubClass> item_sub_class;
 	DBCMap<ItemVisualEffects> item_visual_effects;
 	DBCMap<ItemVisuals> item_visuals;
+	DBCMap<Light> light;
+	DBCMap<LightParams> light_params;
+	DBCMap<LightSkybox> light_skybox;
+	DBCMap<LiquidType> liquid_type;
+	DBCMap<LoadingScreens> loading_screens;
+	DBCMap<Map> map;
 	DBCMap<NamesProfanity> names_profanity;
 	DBCMap<NamesReserved> names_reserved;
 	DBCMap<NPCSounds> npc_sounds;
 	DBCMap<Resistances> resistances;
+	DBCMap<SoundAmbience> sound_ambience;
 	DBCMap<SoundEntries> sound_entries;
+	DBCMap<SoundProviderPreferences> sound_provider_preferences;
 	DBCMap<Spell> spell;
 	DBCMap<SpellCastTimes> spell_cast_times;
 	DBCMap<SpellCategory> spell_category;
@@ -67,7 +81,11 @@ struct Storage {
 	DBCMap<SpellVisual> spell_visual;
 	DBCMap<SpellVisualEffectName> spell_visual_effect_name;
 	DBCMap<SpellVisualKit> spell_visual_kit;
+	DBCMap<Talent> talent;
+	DBCMap<TalentTab> talent_tab;
 	DBCMap<UnitBlood> unit_blood;
+	DBCMap<ZoneIntroMusicTable> zone_intro_music_table;
+	DBCMap<ZoneMusic> zone_music;
 
 
 	Storage() = default;
@@ -77,10 +95,16 @@ struct Storage {
 	//explicit because msvc is missing default move support
 	void moves(Storage& src) {
 		animation_data = std::move(animation_data);
+		area_table = std::move(area_table);
 		camera_shakes = std::move(camera_shakes);
 		character_facial_hair_styles = std::move(character_facial_hair_styles);
 		char_base_info = std::move(char_base_info);
 		char_sections = std::move(char_sections);
+		char_start_base = std::move(char_start_base);
+		char_start_outfit = std::move(char_start_outfit);
+		char_start_spells = std::move(char_start_spells);
+		char_start_talents = std::move(char_start_talents);
+		char_start_zones = std::move(char_start_zones);
 		char_variations = std::move(char_variations);
 		chr_classes = std::move(chr_classes);
 		chr_races = std::move(chr_races);
@@ -102,11 +126,19 @@ struct Storage {
 		item_sub_class = std::move(item_sub_class);
 		item_visual_effects = std::move(item_visual_effects);
 		item_visuals = std::move(item_visuals);
+		light = std::move(light);
+		light_params = std::move(light_params);
+		light_skybox = std::move(light_skybox);
+		liquid_type = std::move(liquid_type);
+		loading_screens = std::move(loading_screens);
+		map = std::move(map);
 		names_profanity = std::move(names_profanity);
 		names_reserved = std::move(names_reserved);
 		npc_sounds = std::move(npc_sounds);
 		resistances = std::move(resistances);
+		sound_ambience = std::move(sound_ambience);
 		sound_entries = std::move(sound_entries);
+		sound_provider_preferences = std::move(sound_provider_preferences);
 		spell = std::move(spell);
 		spell_cast_times = std::move(spell_cast_times);
 		spell_category = std::move(spell_category);
@@ -122,7 +154,11 @@ struct Storage {
 		spell_visual = std::move(spell_visual);
 		spell_visual_effect_name = std::move(spell_visual_effect_name);
 		spell_visual_kit = std::move(spell_visual_kit);
+		talent = std::move(talent);
+		talent_tab = std::move(talent_tab);
 		unit_blood = std::move(unit_blood);
+		zone_intro_music_table = std::move(zone_intro_music_table);
+		zone_music = std::move(zone_music);
 
 	}
 

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharStartTalents</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>class_</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>talent</name>
+		<key>
+			<type>foreign</type>
+			<parent>Talent</parent>
+		</key>
+	</field>
+	
+</dbc>

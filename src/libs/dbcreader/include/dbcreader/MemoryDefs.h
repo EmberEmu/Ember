@@ -32,10 +32,16 @@ struct StringRefLoc {
 };
 
 struct AnimationData;
+struct AreaTable;
 struct CameraShakes;
 struct CharacterFacialHairStyles;
 struct CharBaseInfo;
 struct CharSections;
+struct CharStartBase;
+struct CharStartOutfit;
+struct CharStartSpells;
+struct CharStartTalents;
+struct CharStartZones;
 struct CharVariations;
 struct ChrClasses;
 struct ChrRaces;
@@ -57,11 +63,19 @@ struct ItemGroupSounds;
 struct ItemSubClass;
 struct ItemVisualEffects;
 struct ItemVisuals;
+struct Light;
+struct LightParams;
+struct LightSkybox;
+struct LiquidType;
+struct LoadingScreens;
+struct Map;
 struct NamesProfanity;
 struct NamesReserved;
 struct NPCSounds;
 struct Resistances;
+struct SoundAmbience;
 struct SoundEntries;
+struct SoundProviderPreferences;
 struct Spell;
 struct SpellCastTimes;
 struct SpellCategory;
@@ -77,7 +91,11 @@ struct SpellShapeshiftForm;
 struct SpellVisual;
 struct SpellVisualEffectName;
 struct SpellVisualKit;
+struct Talent;
+struct TalentTab;
 struct UnitBlood;
+struct ZoneIntroMusicTable;
+struct ZoneMusic;
 
 struct AnimationData {
 	enum class WeaponFlags : std::int32_t {
@@ -96,6 +114,49 @@ struct AnimationData {
 	std::uint32_t fallback_id;
 	const AnimationData* behaviour;
 	std::uint32_t behaviour_id;
+};
+
+struct AreaTable {
+	enum class AreaFlags : std::int32_t {
+		AREA_FLAG_SNOW = 0x01, 
+		AREA_FLAG_UNK = 0x02, 
+		AREA_FLAG_DEVELOPMENT = 0x04, 
+		AREA_FLAG_UNK2 = 0x08, 
+		AREA_FLAG_UNK3 = 0x10, 
+		AREA_FLAG_CITY_SLAVE = 0x20, 
+		AREA_FLAG_CITY_ALLOW_DUELS = 0x40, 
+		AREA_FLAG_UNK4 = 0x80, 
+		AREA_FLAG_CITY = 0x100, 
+		AREA_FLAG_TEST = 0x200
+	};
+
+	std::uint32_t id;
+	const Map* map;
+	std::uint32_t map_id;
+	const AreaTable* parent_area_table;
+	std::uint32_t parent_area_table_id;
+	std::int32_t area_bit;
+	AreaFlags flags;
+	const SoundProviderPreferences* sound_preferences;
+	std::uint32_t sound_preferences_id;
+	const SoundProviderPreferences* sound_preferences_underwater;
+	std::uint32_t sound_preferences_underwater_id;
+	const SoundAmbience* sound_ambience;
+	std::uint32_t sound_ambience_id;
+	const ZoneMusic* zone_music;
+	std::uint32_t zone_music_id;
+	const ZoneIntroMusicTable* zone_music_intro;
+	std::uint32_t zone_music_intro_id;
+	std::int32_t exploration_level;
+	StringRefLoc area_name;
+	const FactionGroup* faction_group;
+	std::uint32_t faction_group_id;
+	const LiquidType* liquid_type;
+	std::uint32_t liquid_type_id;
+	std::int32_t min_elevation;
+	float ambient_multiplier;
+	const Light* light;
+	std::uint32_t light_id;
 };
 
 struct CameraShakes {
@@ -153,6 +214,64 @@ struct CharSections {
 	std::int32_t colour_index;
 	std::string texture_name[3];
 	std::uint32_t npc_only;
+};
+
+struct CharStartBase {
+	std::uint32_t id;
+	const ChrRaces* race;
+	std::uint32_t race_id;
+	const ChrClasses* class_;
+	std::uint32_t class__id;
+	const CharStartZones* zone;
+	std::uint32_t zone_id;
+	const CharStartOutfit* outfit;
+	std::uint32_t outfit_id;
+};
+
+struct CharStartOutfit {
+	enum class Sex : std::int8_t {
+		MALE = 0x00, 
+		FEMALE = 0x01
+	};
+
+	std::uint32_t id;
+	const ChrRaces* race;
+	std::uint8_t race_id;
+	const ChrClasses* class_;
+	std::uint8_t class__id;
+	Sex sex;
+	std::int8_t outfit_id;
+	std::uint32_t item_id[12];
+	std::uint32_t display_id[12];
+	std::uint32_t inv_slot_id[12];
+};
+
+struct CharStartSpells {
+	std::uint32_t id;
+	const ChrRaces* race;
+	std::uint32_t race_id;
+	const ChrClasses* class_;
+	std::uint32_t class__id;
+	const Spell* spell;
+	std::uint32_t spell_id;
+};
+
+struct CharStartTalents {
+	std::uint32_t id;
+	const ChrRaces* race;
+	std::uint32_t race_id;
+	const ChrClasses* class_;
+	std::uint32_t class__id;
+	const Talent* talent;
+	std::uint32_t talent_id;
+};
+
+struct CharStartZones {
+	std::uint32_t id;
+	const AreaTable* area;
+	std::uint32_t area_id;
+	float position[3];
+	float orientation[3];
 };
 
 struct CharVariations {
@@ -527,6 +646,84 @@ struct ItemVisuals {
 	std::uint32_t item_visual_effects_id[5];
 };
 
+struct Light {
+	std::uint32_t id;
+	const Map* map;
+	std::uint32_t map_id;
+	float location_x;
+	float location_y;
+	float location_z;
+	float falloff_start;
+	float falloff_end;
+	const LightParams* light_params[5];
+	std::uint32_t light_params_id[5];
+};
+
+struct LightParams {
+	std::uint32_t id;
+	std::uint32_t highlight_sky;
+	const LightSkybox* light_skybox;
+	std::uint32_t light_skybox_id;
+	float glow;
+	float water_shallow_alpha;
+	float water_deep_alpha;
+	float ocean_shallow_alpha;
+	float ocean_deep_alpha;
+	std::uint32_t flags;
+};
+
+struct LightSkybox {
+	std::uint32_t id;
+	std::string skybox_model_path;
+};
+
+struct LiquidType {
+	enum class Type : std::int32_t {
+		FIRE = 0x00, 
+		SLIME = 0x02, 
+		WATER = 0x04
+	};
+
+	std::uint32_t id;
+	std::string name;
+	Type type;
+	const Spell* spell;
+	std::uint32_t spell_id;
+};
+
+struct LoadingScreens {
+	std::uint32_t id;
+	std::string name;
+	std::string file_path;
+};
+
+struct Map {
+	enum class InstanceType : std::int32_t {
+		NORMAL = 0x00, 
+		GROUP = 0x01, 
+		RAID = 0x02, 
+		BATTLEGROUND = 0x03
+	};
+
+	std::uint32_t id;
+	std::string internal_name;
+	InstanceType instance_type;
+	std::uint32_t battleground;
+	StringRefLoc map_name;
+	std::int32_t min_level;
+	std::int32_t max_level;
+	std::int32_t max_players;
+	std::int32_t unknown[3];
+	const AreaTable* area_table;
+	std::uint32_t area_table_id;
+	StringRefLoc map_description_horde;
+	StringRefLoc map_description_alliance;
+	const LoadingScreens* loading_screen;
+	std::uint32_t loading_screen_id;
+	std::int32_t raid_offset;
+	std::int32_t unknown_2[2];
+};
+
 struct NamesProfanity {
 	std::uint32_t id;
 	std::string name;
@@ -549,6 +746,14 @@ struct Resistances {
 	const SoundEntries* fizzle_sound_entry;
 	std::uint32_t fizzle_sound_entry_id;
 	StringRefLoc name;
+};
+
+struct SoundAmbience {
+	std::uint32_t id;
+	const SoundEntries* day_sound;
+	std::uint32_t day_sound_id;
+	const SoundEntries* night_sound;
+	std::uint32_t night_sound_id;
 };
 
 struct SoundEntries {
@@ -592,6 +797,33 @@ struct SoundEntries {
 	float min_distance;
 	float distance_cutoff;
 	std::int32_t sound_entries_advanced;
+};
+
+struct SoundProviderPreferences {
+	std::uint32_t id;
+	std::string description;
+	std::int32_t flags;
+	std::int32_t eax_environment_selection;
+	float eax_decay_time;
+	float eax2_environment_size;
+	float eax_environment_diffusion;
+	std::int32_t eax2_room;
+	std::int32_t eax2_room_hf;
+	float eax2_decay_hf_ratio;
+	std::int32_t eax2_reflections;
+	float eax2_reflections_delay;
+	std::int32_t eax2_reverb;
+	float eax2_reverb_delay;
+	float eax2_room_rolloff;
+	float eax2_air_absorption;
+	std::int32_t eax3_room_lf;
+	float eax3_delay_lf_ratio;
+	float eax3_echo_time;
+	float eax3_echo_depth;
+	float eax3_modulation_time;
+	float eax3_modulation_depth;
+	float eax3_hf_reference;
+	float eax3_lf_reference;
 };
 
 struct Spell {
@@ -852,6 +1084,34 @@ struct SpellVisualKit {
 	std::int32_t flags;
 };
 
+struct Talent {
+	std::uint32_t id;
+	const TalentTab* tab;
+	std::uint32_t tab_id;
+	std::int32_t tier;
+	std::int32_t column_index;
+	const Spell* spell_rank[9];
+	std::uint32_t spell_rank_id[9];
+	std::uint32_t prereq_talents[3];
+	std::int32_t prereq_ranks[3];
+	std::int32_t flags;
+	const Spell* required_spell;
+	std::uint32_t required_spell_id;
+};
+
+struct TalentTab {
+	std::uint32_t id;
+	StringRefLoc name;
+	const SpellIcon* spell_icon;
+	std::uint32_t spell_icon_id;
+	const ChrRaces* race_mask;
+	std::uint32_t race_mask_id;
+	const ChrClasses* class_mask;
+	std::uint32_t class_mask_id;
+	std::uint32_t order_index;
+	std::string background_file;
+};
+
 struct UnitBlood {
 	std::uint32_t id;
 	std::int32_t combat_blood_spurt_front_small;
@@ -859,6 +1119,28 @@ struct UnitBlood {
 	std::int32_t combat_blood_spurt_back_small;
 	std::int32_t combat_blood_spurt_back_large;
 	std::string texture[5];
+};
+
+struct ZoneIntroMusicTable {
+	std::uint32_t id;
+	std::string name;
+	const SoundEntries* intro_sound;
+	std::uint32_t intro_sound_id;
+	std::uint32_t priority_over_ambience;
+	std::int32_t min_delay;
+};
+
+struct ZoneMusic {
+	std::uint32_t id;
+	std::string set_name;
+	std::int32_t silence_interval_min_day;
+	std::int32_t silence_interval_min_night;
+	std::int32_t silence_interval_max_day;
+	std::int32_t silence_interval_max_night;
+	const SoundEntries* day_sound;
+	std::uint32_t day_sound_id;
+	const SoundEntries* night_sound;
+	std::uint32_t night_sound_id;
 };
 
 

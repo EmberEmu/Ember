@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharStartBase</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>class_</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>zone</name>
+		<key>
+			<type>foreign</type>
+			<parent>CharStartZones</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>outfit</name>
+		<key>
+			<type>foreign</type>
+			<parent>CharStartOutfit</parent>
+		</key>
+	</field>
+	
+</dbc>

@@ -54,6 +54,27 @@ struct AnimationData {
 	uint32 behaviour;
 };
 
+struct AreaTable {
+	typedef int32 AreaFlags;
+	uint32 id;
+	uint32 map;
+	uint32 parent_area_table;
+	int32 area_bit;
+	AreaFlags flags;
+	uint32 sound_preferences;
+	uint32 sound_preferences_underwater;
+	uint32 sound_ambience;
+	uint32 zone_music;
+	uint32 zone_music_intro;
+	int32 exploration_level;
+	string_ref_loc area_name;
+	uint32 faction_group;
+	uint32 liquid_type;
+	int32 min_elevation;
+	float ambient_multiplier;
+	uint32 light;
+};
+
 struct CameraShakes {
 	uint32 id;
 	int32 shake_type;
@@ -89,6 +110,47 @@ struct CharSections {
 	int32 colour_index;
 	string_ref texture_name[3];
 	bool32 npc_only;
+};
+
+struct CharStartBase {
+	uint32 id;
+	uint32 race;
+	uint32 class_;
+	uint32 zone;
+	uint32 outfit;
+};
+
+struct CharStartOutfit {
+	typedef int8 Sex;
+	uint32 id;
+	uint8 race;
+	uint8 class_;
+	Sex sex;
+	int8 outfit_id;
+	uint32 item_id[12];
+	uint32 display_id[12];
+	uint32 inv_slot_id[12];
+};
+
+struct CharStartSpells {
+	uint32 id;
+	uint32 race;
+	uint32 class_;
+	uint32 spell;
+};
+
+struct CharStartTalents {
+	uint32 id;
+	uint32 race;
+	uint32 class_;
+	uint32 talent;
+};
+
+struct CharStartZones {
+	uint32 id;
+	uint32 area;
+	float position[3];
+	float orientation[3];
 };
 
 struct CharVariations {
@@ -335,6 +397,67 @@ struct ItemVisuals {
 	uint32 item_visual_effects[5];
 };
 
+struct Light {
+	uint32 id;
+	uint32 map;
+	float location_x;
+	float location_y;
+	float location_z;
+	float falloff_start;
+	float falloff_end;
+	uint32 light_params[5];
+};
+
+struct LightParams {
+	uint32 id;
+	bool32 highlight_sky;
+	uint32 light_skybox;
+	float glow;
+	float water_shallow_alpha;
+	float water_deep_alpha;
+	float ocean_shallow_alpha;
+	float ocean_deep_alpha;
+	uint32 flags;
+};
+
+struct LightSkybox {
+	uint32 id;
+	string_ref skybox_model_path;
+};
+
+struct LiquidType {
+	typedef int32 Type;
+	uint32 id;
+	string_ref name;
+	Type type;
+	uint32 spell;
+};
+
+struct LoadingScreens {
+	uint32 id;
+	string_ref name;
+	string_ref file_path;
+};
+
+struct Map {
+	typedef int32 InstanceType;
+	uint32 id;
+	string_ref internal_name;
+	InstanceType instance_type;
+	bool32 battleground;
+	string_ref_loc map_name;
+	int32 min_level;
+	int32 max_level;
+	int32 max_players;
+	int32 unknown[3];
+	uint32 area_table;
+	string_ref_loc map_description_horde;
+	string_ref_loc map_description_alliance;
+	uint32 loading_screen;
+	int32 raid_offset;
+	int32 unknown_2[2];
+};
+
 struct NamesProfanity {
 	uint32 id;
 	string_ref name;
@@ -357,6 +480,12 @@ struct Resistances {
 	string_ref_loc name;
 };
 
+struct SoundAmbience {
+	uint32 id;
+	uint32 day_sound;
+	uint32 night_sound;
+};
+
 struct SoundEntries {
 	typedef int32 SoundType;
 	uint32 id;
@@ -370,6 +499,33 @@ struct SoundEntries {
 	float min_distance;
 	float distance_cutoff;
 	int32 sound_entries_advanced;
+};
+
+struct SoundProviderPreferences {
+	uint32 id;
+	string_ref description;
+	int32 flags;
+	int32 eax_environment_selection;
+	float eax_decay_time;
+	float eax2_environment_size;
+	float eax_environment_diffusion;
+	int32 eax2_room;
+	int32 eax2_room_hf;
+	float eax2_decay_hf_ratio;
+	int32 eax2_reflections;
+	float eax2_reflections_delay;
+	int32 eax2_reverb;
+	float eax2_reverb_delay;
+	float eax2_room_rolloff;
+	float eax2_air_absorption;
+	int32 eax3_room_lf;
+	float eax3_delay_lf_ratio;
+	float eax3_echo_time;
+	float eax3_echo_depth;
+	float eax3_modulation_time;
+	float eax3_modulation_depth;
+	float eax3_hf_reference;
+	float eax3_lf_reference;
 };
 
 struct Spell {
@@ -585,6 +741,28 @@ struct SpellVisualKit {
 	int32 flags;
 };
 
+struct Talent {
+	uint32 id;
+	uint32 tab;
+	int32 tier;
+	int32 column_index;
+	uint32 spell_rank[9];
+	uint32 prereq_talents[3];
+	int32 prereq_ranks[3];
+	int32 flags;
+	uint32 required_spell;
+};
+
+struct TalentTab {
+	uint32 id;
+	string_ref_loc name;
+	uint32 spell_icon;
+	uint32 race_mask;
+	uint32 class_mask;
+	uint32 order_index;
+	string_ref background_file;
+};
+
 struct UnitBlood {
 	uint32 id;
 	int32 combat_blood_spurt_front_small;
@@ -592,6 +770,25 @@ struct UnitBlood {
 	int32 combat_blood_spurt_back_small;
 	int32 combat_blood_spurt_back_large;
 	string_ref texture[5];
+};
+
+struct ZoneIntroMusicTable {
+	uint32 id;
+	string_ref name;
+	uint32 intro_sound;
+	bool32 priority_over_ambience;
+	int32 min_delay;
+};
+
+struct ZoneMusic {
+	uint32 id;
+	string_ref set_name;
+	int32 silence_interval_min_day;
+	int32 silence_interval_min_night;
+	int32 silence_interval_max_day;
+	int32 silence_interval_max_night;
+	uint32 day_sound;
+	uint32 night_sound;
 };
 
 
