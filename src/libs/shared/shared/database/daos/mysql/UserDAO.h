@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -64,6 +64,27 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to set last login for " + user.username());
 		}
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	std::unordered_map<std::uint32_t, std::uint32_t> character_counts(std::uint32_t user_id) const override try {
+		const std::string query = "SELECT COUNT(c.id) AS count, c.realm_id "
+		                          "FROM users u, characters c "
+		                          "WHERE u.id = ? GROUP BY c.realm_id";
+		
+		auto conn = pool_.wait_connection(5s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+		stmt->setUInt(1, user_id);
+		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+		std::unordered_map<std::uint32_t, std::uint32_t> counts;
+
+		if(res->next()) {
+			counts.emplace(res->getUInt("realm_id"), res->getUInt("count"));
+		}
+
+		return counts;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

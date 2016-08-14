@@ -56,7 +56,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 		return;
 	}
 
-	// query database for further validations steps
+	// query database for further validation steps
 	name_collision_callback(character.name, realm_id, [=](protocol::ResultCode result) mutable {
 		if(result == protocol::ResultCode::CHAR_CREATE_SUCCESS) {
 			enum_characters(account_id, realm_id, [=](auto& characters) mutable {

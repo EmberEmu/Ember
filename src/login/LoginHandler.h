@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 namespace ember {
@@ -35,7 +36,7 @@ class LoginHandler {
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
 		FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT, FETCHING_SESSION,
-		WRITING_SESSION, CLOSED
+		WRITING_SESSION, FETCHING_CHARACTER_DATA, CLOSED
 	};
 
 	State state_ = State::INITIAL_CHALLENGE;
@@ -50,6 +51,7 @@ class LoginHandler {
 	const AccountService& acct_svc_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
+	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
 
 	void send_realm_list(const grunt::Packet* packet);
 	void process_challenge(const grunt::Packet* packet);
@@ -60,9 +62,12 @@ class LoginHandler {
 	void send_login_challenge(FetchUserAction* action);
 	void send_login_proof(RegisterSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
+	void send_proof(FetchCharacterCounts* action);
 
+	void handle_character_counts(FetchCharacterCounts* action);
 	void fetch_user(grunt::Opcode opcode, const std::string& username);
 	void fetch_session_key(FetchUserAction* action);
+
 	void reject_client(const GameVersion& version);
 	void patch_client(const GameVersion& version);
 

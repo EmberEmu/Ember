@@ -67,6 +67,9 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 		case State::WRITING_SESSION:
 			send_login_proof(static_cast<RegisterSessionAction*>(action.get()));
 			break;
+		case State::FETCHING_CHARACTER_DATA:
+			send_proof(static_cast<FetchCharacterCounts*>(action.get()));
+			break;
 		case State::CLOSED:
 			return false;
 		default:
@@ -79,6 +82,21 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	state_ = State::CLOSED;
 	return false;
+}
+
+void LoginHandler::send_proof(FetchCharacterCounts* action) { // temp name, todo
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	try {
+		char_count_ = action->get_result();	
+	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
+		metrics_.increment("login_internal_failure");
+		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
+		                   << ": " << e.what() << LOG_ASYNC;
+	}
+
+	state_ = State::REQUEST_REALMS;
+	send(action->response());
 }
 
 void LoginHandler::process_challenge(const grunt::Packet* packet) {
@@ -265,7 +283,8 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
-		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->username(), login_auth_->session_key());
+		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->username(),
+															  login_auth_->session_key());
 		execute_async(action);
 	} else {
 		send_login_proof_failure(result);
@@ -298,7 +317,7 @@ void LoginHandler::send_login_proof(RegisterSessionAction* action) {
 		response->result = grunt::ResultCode::SUCCESS;
 		response->M2 = server_proof_;
 		response->account_flags = 0;
-		state_ = State::REQUEST_REALMS;
+		state_ = State::FETCHING_CHARACTER_DATA;;
 	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
 		metrics_.increment("login_failure");
 		response->result = grunt::ResultCode::FAIL_ALREADY_ONLINE;
@@ -312,7 +331,12 @@ void LoginHandler::send_login_proof(RegisterSessionAction* action) {
 	LOG_DEBUG(logger_) << "Login result for " << user_->username() << ": "
 	                   << messaging::account::EnumNameStatus(result) << LOG_ASYNC;
 
-	send(std::move(response));
+	// defer sending the response until we've fetched the character data
+	if(result == messaging::account::Status::OK) {
+		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, std::move(response)));
+	} else {
+		send(std::move(response));
+	}
 }
 
 void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
@@ -337,8 +361,8 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
 	response->result = grunt::ResultCode::SUCCESS;
 
-	state_ = State::REQUEST_REALMS;
-	send(std::move(response));
+	state_ = State::FETCHING_CHARACTER_DATA;
+	execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, std::move(response)));
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {
@@ -354,7 +378,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		response->realms.push_back({ realm, 0 });
+		response->realms.push_back({ realm, char_count_[realm.id] });
 	}
 
 	state_ = State::REQUEST_REALMS;

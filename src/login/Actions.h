@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "AccountService.h"
+#include "grunt/Packet.h"
 #include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
 #include <boost/optional.hpp>
@@ -16,6 +17,7 @@
 #include <future>
 #include <string>
 #include <utility>
+#include <cstdint>
 
 namespace ember {
 
@@ -127,6 +129,38 @@ public:
 
 	std::string username() {
 		return username_;
+	}
+};
+
+class FetchCharacterCounts final : public Action {
+	const std::uint32_t user_id_;
+	const dal::UserDAO& user_src_;
+	std::unordered_map<std::uint32_t, std::uint32_t> counts_;
+	std::unique_ptr<grunt::Packet> response_;
+	std::exception_ptr exception_;
+
+public:
+	FetchCharacterCounts(std::uint32_t user_id, const dal::UserDAO& user_src,
+	                     std::unique_ptr<grunt::Packet> response)
+	                     : user_id_(user_id), user_src_(user_src),
+	                       response_(std::move(response)) {}
+
+	virtual void execute() override try {
+		counts_ = user_src_.character_counts(user_id_);
+	} catch(const dal::exception&) {
+		exception_ = std::current_exception();
+	}
+
+	std::unordered_map<std::uint32_t, std::uint32_t> get_result() {
+		if(exception_) {
+			std::rethrow_exception(exception_);
+		}
+
+		return counts_;
+	}
+
+	std::unique_ptr<grunt::Packet> response() {
+		return std::move(response_);
 	}
 };
 

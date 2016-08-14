@@ -122,7 +122,7 @@ class RealmList final : public Packet {
 public:
 	struct RealmListEntry {
 		Realm realm;
-		std::uint8_t characters;
+		std::uint32_t characters;
 	};
 
 	Opcode opcode;
@@ -168,9 +168,9 @@ public:
 			stream << realm.name;
 			stream << realm.ip;
 			stream << be::native_to_little(realm.population);
-			stream << entry.characters;
+			stream << static_cast<std::uint8_t>(entry.characters);
 			stream << realm.zone;
-			stream << std::uint8_t(0); // unknown
+			stream << std::uint8_t(0); // WoWPython mentions something to do with ping time, todo, check
 		}
 
 		stream << be::native_to_little(unknown2);
