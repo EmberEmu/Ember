@@ -1,0 +1,1 @@
+﻿The DBCs contained in this folder are server-side templates, intended to be filled with your own data. There are no client DBC files here.
