@@ -65,7 +65,6 @@ class LoginHandler {
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
 
-	void handle_character_counts(FetchCharacterCounts* action);
 	void fetch_user(grunt::Opcode opcode, const std::string& username);
 	void fetch_session_key(FetchUserAction* action);
 
