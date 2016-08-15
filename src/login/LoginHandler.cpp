@@ -23,13 +23,13 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 
 	switch(prev_state) {
 		case State::INITIAL_CHALLENGE:
-			process_challenge(packet);
+			initiate_login(packet);
 			break;
 		case State::LOGIN_PROOF:
 			check_login_proof(packet);
 			break;
 		case State::RECONNECT_PROOF:
-			send_reconnect_proof(packet);
+			check_reconnect_proof(packet);
 			break;
 		case State::REQUEST_REALMS:
 			send_realm_list(packet);
@@ -65,10 +65,10 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 			send_reconnect_challenge(static_cast<FetchSessionKeyAction*>(action.get()));
 			break;
 		case State::WRITING_SESSION:
-			send_login_proof(static_cast<RegisterSessionAction*>(action.get()));
+			on_session_write(static_cast<RegisterSessionAction*>(action.get()));
 			break;
 		case State::FETCHING_CHARACTER_DATA:
-			send_proof(static_cast<FetchCharacterCounts*>(action.get()));
+			on_character_data(static_cast<FetchCharacterCounts*>(action.get()));
 			break;
 		case State::CLOSED:
 			return false;
@@ -84,22 +84,8 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	return false;
 }
 
-void LoginHandler::send_proof(FetchCharacterCounts* action) { // temp name, todo
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	try {
-		char_count_ = action->get_result();	
-	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
-		metrics_.increment("login_internal_failure");
-		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
-		                   << ": " << e.what() << LOG_ASYNC;
-	}
-
-	state_ = State::REQUEST_REALMS;
-	send(action->response());
-}
-
-void LoginHandler::process_challenge(const grunt::Packet* packet) {
+void LoginHandler::initiate_login(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto challenge = dynamic_cast<const grunt::client::LoginChallenge*>(packet);
@@ -225,6 +211,15 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	send(std::move(response));
 }
 
+void LoginHandler::send_reconnect_proof(grunt::ResultCode result) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto response = std::make_unique<grunt::server::ReconnectProof>();
+	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
+	response->result = result;
+	send(std::move(response));
+}
+
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -287,59 +282,77 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 															  login_auth_->session_key());
 		execute_async(action);
 	} else {
-		send_login_proof_failure(result);
+		send_login_proof(result);
 	}
 }
 
-void LoginHandler::send_login_proof_failure(grunt::ResultCode result) {
+void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	LOG_DEBUG(logger_) << "Rejected login (" << user_->username() << ", "
-	                   << grunt::to_string(result) << ")" << LOG_ASYNC;
-
-	metrics_.increment("login_failure");
 
 	auto response = std::make_unique<grunt::server::LoginProof>();
 	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
 	response->result = result;
 
+	if(result == grunt::ResultCode::SUCCESS) {
+		metrics_.increment("login_success");
+		response->M2 = server_proof_;
+		response->account_flags = 0; // todo
+	} else {
+		metrics_.increment("login_failure");
+	}
+
+	LOG_DEBUG(logger_) << "Login result for " << user_->username() << ": "
+	                   << grunt::to_string(result) << LOG_ASYNC;
+
 	send(std::move(response));
 }
 
-void LoginHandler::send_login_proof(RegisterSessionAction* action) {
+void LoginHandler::on_character_data(FetchCharacterCounts* action) { // temp name, todo
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	try {
+		char_count_ = action->get_result();
+	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
+		metrics_.increment("login_internal_failure");
+		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
+			<< ": " << e.what() << LOG_ASYNC;
+	}
+
+	state_ = State::REQUEST_REALMS;
+
+	if(!action->reconnect()) {
+		send_login_proof(grunt::ResultCode::SUCCESS);
+	} else {
+		send_reconnect_proof(grunt::ResultCode::SUCCESS);
+	}
+}
+
+void LoginHandler::on_session_write(RegisterSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto result = action->get_result();
-	auto response = std::make_unique<grunt::server::LoginProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
+	grunt::ResultCode response = grunt::ResultCode::SUCCESS;
 
 	if(result == messaging::account::Status::OK) {
-		metrics_.increment("login_success");
-		response->result = grunt::ResultCode::SUCCESS;
-		response->M2 = server_proof_;
-		response->account_flags = 0;
 		state_ = State::FETCHING_CHARACTER_DATA;;
 	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
-		metrics_.increment("login_failure");
-		response->result = grunt::ResultCode::FAIL_ALREADY_ONLINE;
+		response = grunt::ResultCode::FAIL_ALREADY_ONLINE;
 	} else {
 		metrics_.increment("login_internal_failure");
-		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		response = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(result)
 		                   << " from peer during login" << LOG_ASYNC;
 	}
 
-	LOG_DEBUG(logger_) << "Login result for " << user_->username() << ": "
-	                   << messaging::account::EnumNameStatus(result) << LOG_ASYNC;
-
 	// defer sending the response until we've fetched the character data
 	if(result == messaging::account::Status::OK) {
-		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, std::move(response)));
+		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_));
 	} else {
-		send(std::move(response));
+		send_login_proof(response);
 	}
 }
 
-void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
+void LoginHandler::check_reconnect_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto proof = dynamic_cast<const grunt::client::ReconnectProof*>(packet);
@@ -351,18 +364,13 @@ void LoginHandler::send_reconnect_proof(const grunt::Packet* packet) {
 	if(reconn_auth_->proof_check(proof)) {
 		metrics_.increment("login_success");
 		LOG_DEBUG(logger_) << "Successfully reconnected " << reconn_auth_->username() << LOG_ASYNC;
+		state_ = State::FETCHING_CHARACTER_DATA;
+		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
 		metrics_.increment("login_failure");
 		LOG_DEBUG(logger_) << "Failed to reconnect (bad proof) " << reconn_auth_->username() << LOG_ASYNC;
-		return;
+		send_reconnect_proof(grunt::ResultCode::FAIL_INCORRECT_PASSWORD);
 	}
-
-	auto response = std::make_unique<grunt::server::ReconnectProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
-	response->result = grunt::ResultCode::SUCCESS;
-
-	state_ = State::FETCHING_CHARACTER_DATA;
-	execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, std::move(response)));
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {

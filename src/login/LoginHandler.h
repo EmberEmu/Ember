@@ -54,15 +54,16 @@ class LoginHandler {
 	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
 
 	void send_realm_list(const grunt::Packet* packet);
-	void process_challenge(const grunt::Packet* packet);
+	void initiate_login(const grunt::Packet* packet);
 	void check_login_proof(const grunt::Packet* packet);
-	void send_reconnect_proof(const grunt::Packet* packet);
-	void send_login_proof_failure(grunt::ResultCode result);
+	void check_reconnect_proof(const grunt::Packet* packet);
+	void send_reconnect_proof(grunt::ResultCode result);
+	void send_login_proof(grunt::ResultCode result);
 	void build_login_challenge(grunt::server::LoginChallenge* packet);
 	void send_login_challenge(FetchUserAction* action);
-	void send_login_proof(RegisterSessionAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
-	void send_proof(FetchCharacterCounts* action);
+	void on_character_data(FetchCharacterCounts* action);
+	void on_session_write(RegisterSessionAction* action);
 
 	void handle_character_counts(FetchCharacterCounts* action);
 	void fetch_user(grunt::Opcode opcode, const std::string& username);

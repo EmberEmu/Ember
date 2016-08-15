@@ -136,14 +136,12 @@ class FetchCharacterCounts final : public Action {
 	const std::uint32_t user_id_;
 	const dal::UserDAO& user_src_;
 	std::unordered_map<std::uint32_t, std::uint32_t> counts_;
-	std::unique_ptr<grunt::Packet> response_;
+	bool reconnect_;
 	std::exception_ptr exception_;
 
 public:
-	FetchCharacterCounts(std::uint32_t user_id, const dal::UserDAO& user_src,
-	                     std::unique_ptr<grunt::Packet> response)
-	                     : user_id_(user_id), user_src_(user_src),
-	                       response_(std::move(response)) {}
+	FetchCharacterCounts(std::uint32_t user_id, const dal::UserDAO& user_src, bool reconnect = false)
+	                     : user_id_(user_id), user_src_(user_src), reconnect_(reconnect) {}
 
 	virtual void execute() override try {
 		counts_ = user_src_.character_counts(user_id_);
@@ -159,8 +157,8 @@ public:
 		return counts_;
 	}
 
-	std::unique_ptr<grunt::Packet> response() {
-		return std::move(response_);
+	bool reconnect() {
+		return reconnect_;
 	}
 };
 
