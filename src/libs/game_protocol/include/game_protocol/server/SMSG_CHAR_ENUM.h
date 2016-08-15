@@ -40,28 +40,28 @@ public:
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {
-			stream << std::uint64_t(c.id());
-			stream << c.name();
-			stream << c.race();
-			stream << c.class_temp();
-			stream << c.gender();
-			stream << c.skin();
-			stream << c.face();
-			stream << c.hairstyle();
-			stream << c.haircolour();
-			stream << c.facialhair();
-			stream << c.level();
-			stream << c.zone();
-			stream << c.map();
-			stream << c.x();
-			stream << c.y();
-			stream << c.z();
-			stream << c.guild_id();
-			stream << c.flags();
-			stream << c.first_login();
-			stream << c.pet_display();
-			stream << c.pet_level();
-			stream << c.pet_family();
+			stream << std::uint64_t(c.id);
+			stream << c.name;
+			stream << c.race;
+			stream << c.class_;
+			stream << c.gender;
+			stream << c.skin;
+			stream << c.face;
+			stream << c.hairstyle;
+			stream << c.haircolour;
+			stream << c.facialhair;
+			stream << c.level;
+			stream << c.zone;
+			stream << c.map;
+			stream << c.position.x;
+			stream << c.position.y;
+			stream << c.position.z;
+			stream << c.guild_id;
+			stream << c.flags;
+			stream << c.first_login;
+			stream << c.pet_display;
+			stream << c.pet_level;
+			stream << c.pet_family;
 
 			//	// inventory
 			//	for(int i = 0; i < 19; ++i) {

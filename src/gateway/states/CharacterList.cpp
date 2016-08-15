@@ -81,7 +81,7 @@ void handle_char_create(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->create_character(ctx->account_name, *packet.character,
+	char_serv_temp->create_character(ctx->account_name, packet.character,
 	                                 [self, ctx](em::character::Status status,
 	                                             boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {

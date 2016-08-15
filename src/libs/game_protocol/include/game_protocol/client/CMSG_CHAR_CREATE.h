@@ -25,7 +25,7 @@ class CMSG_CHAR_CREATE final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	std::unique_ptr<Character> character;
+	Character character; // todo, replace this type with CharacterTemplate
 	
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -53,30 +53,31 @@ public:
 		stream >> facial_hair;
 		stream >> outfit_id;
 
-		character = std::make_unique<Character>(
-			name,
-			0, // ID
-			0, // account ID
-			0, // realm ID
-			race,
-			class_,
-			gender,
-			skin, 
-			face,
-			hair_style,
-			hair_colour,
-			facial_hair,
-			0, // level
-			0, // zone
-			0, // map
-			0, // guild ID
-			0.f, 0.f, 0.f, // x y z
-			0, // flags
-			false, // first login,
-			0, // pet display
-			0, // pet level
-			0 // pet family
-		);
+		character.name = name;
+		character.id = 0;
+		character.account_id = 0;
+		character.realm_id = 0;
+		character.race = race;
+		character.class_ = class_;
+		character.gender = gender;
+		character.skin = skin;
+		character.face = face;
+		character.hairstyle = hair_style;
+		character.haircolour = hair_colour;
+		character.facialhair = facial_hair;
+		character.level = 0;
+		character.zone = 0;
+		character.map = 0;
+		character.guild_id = 0;
+		character.guild_rank = 0;
+		character.position.x = 0.0f;
+		character.position.y = 0.0f;
+		character.position.z = 0.0f;
+		character.flags = 0;
+		character.first_login = false;
+		character.pet_display = 0;
+		character.pet_level = 0;
+		character.pet_family = 0;
 
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {

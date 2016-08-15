@@ -78,33 +78,32 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link, const boos
 	auto key = message->characters();
 
 	for(auto i = key->begin(); i != key->end(); ++i) {
-		Character character (
-			i->name()->str(),
-			i->id(),
-			0, // account ID
-			0, // realm ID
-			i->race(),
-			i->class_(),
-			i->gender(),
-			i->skin(),
-			i->face(),
-			i->hairstyle(),
-			i->haircolour(),
-			i->facialhair(),
-			i->level(), // level
-			i->zone(), // zone
-			i->map(), // map,
-			i->guild_id(), // guild ID
-			i->x(),
-			i->y(),
-			i->z(),
-			i->flags(),
-			i->first_login(),
-			i->pet_display_id(),
-			i->pet_level(),
-			i->pet_family()
-		);
-
+		Character character;
+		character.name = i->name()->str();
+		character.id = i->id();
+		character.account_id = 1; // todo
+		character.realm_id = 1; // todo
+		character.race = i->race();
+		character.class_ = i->class_();
+		character.gender = i->gender();
+		character.skin = i->skin();
+		character.face = i->face();
+		character.hairstyle = i->hairstyle();
+		character.haircolour = i->haircolour();
+		character.facialhair = i->facialhair();
+		character.level = i->level();
+		character.zone = i->zone();
+		character.map = i->map();
+		character.guild_id = i->guild_id();
+		character.guild_rank = 0; // todo
+		character.position.x = i->x();
+		character.position.y = i->y();
+		character.position.z = i->z();
+		character.flags = i->flags();
+		character.first_login = i->first_login();
+		character.pet_display = i->pet_display_id();
+		character.pet_level = i->pet_level();
+		character.pet_family = i->pet_family();
 		characters.emplace_back(character);
 	}
 
@@ -116,29 +115,16 @@ void CharacterService::create_character(std::string account_name, const Characte
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	
-	em::character::CharacterBuilder cbb(*fbb);
-	cbb.add_id(0); // ??
-	cbb.add_name(fbb->CreateString(character.name()));
-	cbb.add_race(character.race());
-	cbb.add_class_(character.class_temp());
-	cbb.add_gender(character.gender());
-	cbb.add_skin(character.skin());
-	cbb.add_face(character.face());
-	cbb.add_hairstyle(character.hairstyle());
-	cbb.add_haircolour(character.haircolour());
-	cbb.add_facialhair(character.facialhair());
-	cbb.add_level(character.level());
-	cbb.add_zone(character.zone());
-	cbb.add_map(character.map());
-	cbb.add_guild_id(character.guild_id());
-	cbb.add_x(character.x());
-	cbb.add_y(character.y());
-	cbb.add_z(character.z());
-	cbb.add_flags(character.flags());
-	cbb.add_first_login(character.first_login());
-	cbb.add_pet_display_id(character.pet_display());
-	cbb.add_pet_level(character.pet_level());
-	cbb.add_pet_family(character.pet_family());
+	em::character::CharacterTemplateBuilder cbb(*fbb);
+	cbb.add_name(fbb->CreateString(character.name));
+	cbb.add_race(character.race);
+	cbb.add_class_(character.class_);
+	cbb.add_gender(character.gender);
+	cbb.add_skin(character.skin);
+	cbb.add_face(character.face);
+	cbb.add_hairstyle(character.hairstyle);
+	cbb.add_haircolour(character.haircolour);
+	cbb.add_facialhair(character.facialhair);
 	auto fb_char = cbb.Finish();
 
 	auto uuid = generate_uuid();
