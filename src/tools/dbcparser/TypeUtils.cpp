@@ -16,24 +16,38 @@
 
 namespace ember { namespace dbc {
 
-//todo, temporary home
-const std::map<std::string, std::pair<std::string, bool>> type_map {
-		 //type              //real type         //valid enum type?
-		{ "int8",           { "std::int8_t",     true  }},
-		{ "uint8",          { "std::uint8_t",    true  }},
-		{ "int16",          { "std::int16_t",    true  }},
-		{ "uint16",         { "std::uint16_t",   true  }},
-		{ "int32",          { "std::int32_t",    true  }},
-		{ "uint32",         { "std::uint32_t",   true  }},
-		{ "bool",           { "bool",            false }},
-		{ "bool32",         { "std::uint32_t",   false }},
-		{ "string_ref",     { "std::string",     false }},
-		{ "string_ref_loc", { "StringRefLoc",    false }},
-		{ "float",          { "float",           false }},
-		{ "double",         { "double",          false }}
+const std::unordered_map<std::string, int> type_size_map {
+	{ "int8",           1 },
+	{ "uint8",          1 },
+	{ "int16",          2 },
+	{ "uint16",         2 },
+	{ "int32",          4 },
+	{ "uint32",         4 },
+	{ "bool",           1 },
+	{ "bool32",         4 },
+	{ "string_ref",     4 },
+	{ "string_ref_loc", 36 },
+	{ "float",          4 },
+	{ "double",         8 }
 };
 
-std::unordered_set<std::string> cpp_keywords {
+const std::map<std::string, std::pair<std::string, bool>> type_map {
+	 //type              //real type         //valid enum type?
+	{ "int8",           { "std::int8_t",     true  }},
+	{ "uint8",          { "std::uint8_t",    true  }},
+	{ "int16",          { "std::int16_t",    true  }},
+	{ "uint16",         { "std::uint16_t",   true  }},
+	{ "int32",          { "std::int32_t",    true  }},
+	{ "uint32",         { "std::uint32_t",   true  }},
+	{ "bool",           { "bool",            false }},
+	{ "bool32",         { "std::uint32_t",   false }},
+	{ "string_ref",     { "std::string",     false }},
+	{ "string_ref_loc", { "StringRefLoc",    false }},
+	{ "float",          { "float",           false }},
+	{ "double",         { "double",          false }}
+};
+
+const std::unordered_set<std::string> cpp_keywords {
 	"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor"
 	"bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
 	"compl", "const", "constexpr", "const_cast", "continue", "decltype", "default",
@@ -112,6 +126,20 @@ std::string pascal_to_underscore(std::string name) {
 	}
 
 	return name;
+}
+
+types::Base* locate_type_base(const types::Struct& base, const std::string& type_name) {
+	for(auto& f : base.children) {
+		if(f->name == type_name) {
+			return f.get();
+		}
+	}
+
+	if(base.parent == nullptr) {
+		return nullptr;
+	}
+
+	return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
 }} //dbc, ember
