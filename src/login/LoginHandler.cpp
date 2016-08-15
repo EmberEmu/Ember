@@ -279,7 +279,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
 		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->username(),
-															  login_auth_->session_key());
+		                                                      login_auth_->session_key());
 		execute_async(action);
 	} else {
 		send_login_proof(result);
