@@ -45,7 +45,7 @@ std::size_t max_consecutive_check(const std::string& name) {
 void set_window_title(const std::string& title) {
 #ifdef _WIN32
     SetConsoleTitle(title.c_str());
-#elif defined __linux__ || defined __unix__ // todo, test0
+#elif defined __linux__ || defined __unix__ // todo, test
   	std::cout << "\033]0;" << title << "}\007";
 #endif
 }
