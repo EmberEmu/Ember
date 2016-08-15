@@ -40,7 +40,7 @@ struct Character {
 	std::uint32_t flags;
 	bool first_login;
 	std::uint32_t pet_display;
-	std::uint8_t pet_level;
+	std::uint32_t pet_level;
 	std::uint32_t pet_family;
 };
 

@@ -96,16 +96,17 @@ void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t 
 	callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
 }
 
-void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB cb) const {
+void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id,
+                                       EnumResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
 		try {
 			auto characters = dao_.characters(account_id, realm_id);
-			cb(std::move(characters));
+			callback(std::move(characters));
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			cb(boost::optional<std::vector<Character>>());
+			callback(boost::optional<std::vector<Character>>());
 		}
 	});
 }

@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include <game_protocol/ResultCodes.h>
 
  /* TODO, TEMPORARY CODE FOR EXPERIMENTATION */
 

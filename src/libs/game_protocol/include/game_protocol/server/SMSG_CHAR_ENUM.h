@@ -53,12 +53,12 @@ public:
 			stream << c.level;
 			stream << c.zone;
 			stream << c.map;
-			stream << c.position.x;
-			stream << c.position.y;
-			stream << c.position.z;
+			stream << static_cast<float>(c.position.x);
+			stream << static_cast<float>(c.position.y);
+			stream << static_cast<float>(c.position.z);
 			stream << c.guild_id;
 			stream << c.flags;
-			stream << c.first_login;
+			stream << static_cast<std::uint8_t>(c.first_login);
 			stream << c.pet_display;
 			stream << c.pet_level;
 			stream << c.pet_family;

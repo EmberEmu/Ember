@@ -127,7 +127,7 @@ public:
 		std::vector<Character> characters;
 
 		while(res->next()) {
-			//characters.emplace_back(result_to_character(res.get()));
+			characters.emplace_back(result_to_character(res.get()));
 		}
 
 		return characters;
