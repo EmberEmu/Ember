@@ -103,6 +103,78 @@ edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Defin
 	return nullptr;
 }
 
+#include <boost/optional.hpp>
+#include "TypeUtils.h"
+
+using namespace ember::dbc;
+
+
+types::Base* locate_type(const types::Struct& base, const std::string& type_name) {
+	for(auto& f : base.children) {
+		if(f->name == type_name) {
+			return f.get();
+		}
+	}
+
+	if(base.parent == nullptr) {
+		return nullptr;
+	}
+
+	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
+}
+
+#include <unordered_map>
+
+std::unordered_map<std::string, int> size_map {
+	{ "int8",           1 },
+	{ "uint8",          1 },
+	{ "int16",          2 },
+	{ "uint16",         2 },
+	{ "int32",          4 },
+	{ "uint32",         4 },
+	{ "bool",           1 },
+	{ "bool32",         4 },
+	{ "string_ref",     4 },
+	{ "string_ref_loc", 36 },
+	{ "float",          4 },
+	{ "double",         8 }
+};
+
+struct TypeMetrics {
+	int records;
+	int size;
+};
+
+TypeMetrics type_metrics(const types::Struct& base, TypeMetrics metrics = {}) {
+	for(auto& f : base.fields) {
+		std::string type = f.underlying_type;
+
+		// if this is a user-defined struct, we need to go through that type too
+		// if it's an enum, we can just grab the underlying type
+		auto it = type_map.find(f.underlying_type);
+
+		if(it != type_map.end()) {
+			metrics.records += 1;
+			metrics.size += size_map.at(f.underlying_type);
+		} else {
+			auto found = locate_type(base, f.underlying_type);
+
+			if(!found) {
+				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
+			}
+
+			if(found->type == types::STRUCT) {
+				metrics = type_metrics(static_cast<types::Struct&>(*found), metrics);
+			} else if(found->type == types::ENUM) {
+				metrics.records += 1;
+				metrics.size += size_map.at(static_cast<types::Enum*>(found)->underlying_type);
+			}
+		}
+	}
+
+	return metrics;
+}
+
 void generate_template(const std::string& dbc, const edbc::types::Definitions& groups) {
 	auto def = locate_dbc(dbc, groups);
 
@@ -128,24 +200,9 @@ void generate_template(const std::string& dbc, const edbc::types::Definitions& g
 		}
 	}
 	
-	
-	for(auto& f : def->fields) {
-		if(f.underlying_type == "int8" || f.underlying_type == "uint8" || f.underlying_type == "bool") {
-			record_size += 1;
-		} else if(f.underlying_type == "int16" || f.underlying_type == "uint16") {
-			record_size += 2;
-		} else if(f.underlying_type == "int32" || f.underlying_type == "uint32"
-				  || f.underlying_type == "bool32" || f.underlying_type == "string_ref"
-				  || f.underlying_type == "bool32" || f.underlying_type == "float") {
-			record_size += 4;
-		} else if(f.underlying_type == "double") {
-			record_size += 8;
-		} else if(f.underlying_type == "string_ref_loc") {
-			record_size += 36;
-		} else {
-			throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
-		}
-	}
+	TypeMetrics metrics = type_metrics(*def);
+
+	std::cout << "Size: " << metrics.size << " Records: " << metrics.records << "\n";
 	
 	std::stringstream string_block;
 
