@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<dbc>
+<dbc comment="todo, size is correct but number of fields isn't">
 	<name>Spell</name>
 	
 	<field>

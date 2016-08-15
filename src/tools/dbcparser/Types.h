@@ -14,6 +14,17 @@
 
 namespace ember { namespace dbc { namespace types {
 
+struct Struct;
+struct Enum;
+struct Field;
+
+class TypeVisitor {
+public:
+	virtual void visit(const types::Struct*) = 0;
+	virtual void visit(const types::Enum*) = 0;
+	virtual void visit(const types::Field*) = 0;
+};
+
 struct Base;
 
 enum Types {
@@ -28,14 +39,22 @@ struct Key {
 	bool ignore_type_mismatch = false;
 };
 
-struct Field {
+struct IVisitor {
+	virtual void accept(TypeVisitor* visitor) = 0;
+};
+
+struct Field : IVisitor {
 	std::string underlying_type;
 	std::string name;
 	std::string comment;
 	std::vector<Key> keys;
+
+	virtual void accept(TypeVisitor* visitor) {
+		visitor->visit(this);
+	};
 };
 
-struct Base {
+struct Base : IVisitor {
 	explicit Base(Types type_) : type(type_), parent(nullptr) {}
 	Types type;
 	std::string name;
@@ -48,6 +67,10 @@ struct Enum : Base {
 	Enum() : Base(ENUM) {}
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
+
+	virtual void accept(TypeVisitor* visitor) {
+		visitor->visit(this);
+	};
 };
 
 struct Struct : Base {
@@ -55,6 +78,10 @@ struct Struct : Base {
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
 	bool dbc;
+
+	virtual void accept(TypeVisitor* visitor) {
+		visitor->visit(this);
+	};
 
 	/* for msvc again - todo, remove in VS2015 */
 	void move_op(Struct& src) {

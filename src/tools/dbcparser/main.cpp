@@ -8,15 +8,19 @@
 
 #include "Parser.h"
 #include "Generator.h"
+#include <spark/BinaryStream.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include "bprinter/table_printer.h"
 #include <boost/filesystem.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <stdexcept>
-#include <iostream>
+#include <unordered_map>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -36,7 +40,7 @@ int main(int argc, const char* argv[]) try {
 	
 	edbc::Parser parser;
 	auto definitions = parser.parse(paths);
-
+	
 	handle_options(args, definitions);
 } catch(std::exception& e) {
 	std::cerr << e.what();
@@ -123,9 +127,7 @@ types::Base* locate_type(const types::Struct& base, const std::string& type_name
 	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
-#include <unordered_map>
-
-std::unordered_map<std::string, int> size_map {
+const std::unordered_map<std::string, int> type_size_map {
 	{ "int8",           1 },
 	{ "uint8",          1 },
 	{ "int16",          2 },
@@ -140,40 +142,134 @@ std::unordered_map<std::string, int> size_map {
 	{ "double",         8 }
 };
 
-struct TypeMetrics {
-	int records;
-	int size;
+class RecordPrinter : public types::TypeVisitor {
+	ember::spark::ChainedBuffer<4096> buffer_, sb_buffer_;
+	ember::spark::BinaryStream record_, string_block_;
+	const std::string default_string = "Hello, world!";
+
+	void generate_field(const std::string& type) {
+		if(type == "int8" || type == "uint8" || type == "bool") {
+			record_ << std::uint8_t(1);
+		} else if(type == "int16" || type == "uint16") {
+			record_ << std::uint16_t(1);
+		} else if(type == "int32" || type == "uint32" || type == "bool32") {
+			record_ << std::uint32_t(1);
+		} else if(type == "float") {
+			record_ << 1.0f;
+		} else if(type == "double") {
+			record_ << 1.0;
+		} else if(type == "string_ref") {
+			record_ << std::uint32_t(string_block_.size());
+			string_block_ << default_string;
+		} else if(type == "string_ref_loc") {
+			for(int i = 0; i < 9; ++i) {
+				record_ << std::uint32_t(string_block_.size());
+				string_block_ << default_string;
+			}
+		}
+	}
+
+public:
+	RecordPrinter() : record_(buffer_), string_block_(sb_buffer_) {
+		// DBC editors choke if the block doesn't start with 0 with the first string at offset 1
+		// This is apparently just DBC editors being bad, which is why this tool exists to begin with
+		string_block_ << std::uint8_t(0);
+	}
+
+	void visit(const types::Struct* type) override {
+		// we don't care about structs
+	}
+
+	void visit(const types::Enum* type) override {
+		generate_field(type->underlying_type);
+	}
+
+	void visit(const types::Field* type) override {
+		auto components = extract_components(type->underlying_type);
+		int scalar_size = type_size_map.at(components.first);
+		std::size_t elements = 1;
+
+		// if this is an array, we need to write multiple records
+		if(components.second) {
+			elements = *components.second;
+		}
+
+		for(std::size_t i = 0; i < elements; ++i) {
+			generate_field(components.first);
+		}
+	}
+
+	std::vector<char> string_block() {
+		std::vector<char> data(string_block_.size());
+		string_block_.get(data.data(), data.size());
+		return data;
+	}
+
+	std::vector<char> record() {
+		std::vector<char> data(record_.size());
+		record_.get(data.data(), data.size());
+		return data;
+	}
 };
 
-TypeMetrics type_metrics(const types::Struct& base, TypeMetrics metrics = {}) {
-	for(auto& f : base.fields) {
+class TypeMetrics : public types::TypeVisitor {
+public:
+	int fields = 0;
+	int size = 0;
+
+	void visit(const types::Struct* type) override {
+		// we don't care about structs
+	}
+
+	void visit(const types::Enum* type) override {
+		++fields;
+		size += type_size_map.at(type->underlying_type);
+	}
+
+	void visit(const types::Field* type) override {
+		auto components = extract_components(type->underlying_type);
+		int scalar_size = type_size_map.at(components.first);
+		
+		// handle arrays
+		if(components.second) {
+			fields += *components.second;
+			size += (scalar_size * (*components.second));
+		} else {
+			++fields;
+			size += scalar_size;
+		}
+	}
+};
+
+template<typename T>
+void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
+	for(auto f : dbc->fields) {
 		std::string type = f.underlying_type;
 
 		// if this is a user-defined struct, we need to go through that type too
 		// if it's an enum, we can just grab the underlying type
-		auto it = type_map.find(f.underlying_type);
+		auto components = extract_components(f.underlying_type);
+		auto it = type_map.find(components.first);
 
 		if(it != type_map.end()) {
-			metrics.records += 1;
-			metrics.size += size_map.at(f.underlying_type);
+			visitor.visit(&f);
 		} else {
-			auto found = locate_type(base, f.underlying_type);
+			auto found = locate_type(*dbc, f.underlying_type);
 
 			if(!found) {
 				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
 			}
 
 			if(found->type == types::STRUCT) {
-				metrics = type_metrics(static_cast<types::Struct&>(*found), metrics);
+				walk_dbc_fields(static_cast<types::Struct*>(found), visitor);
 			} else if(found->type == types::ENUM) {
-				metrics.records += 1;
-				metrics.size += size_map.at(static_cast<types::Enum*>(found)->underlying_type);
+				visitor.visit(static_cast<types::Enum*>(found));
 			}
 		}
 	}
-
-	return metrics;
 }
+
+namespace be = boost::endian;
 
 void generate_template(const std::string& dbc, const edbc::types::Definitions& groups) {
 	auto def = locate_dbc(dbc, groups);
@@ -181,68 +277,35 @@ void generate_template(const std::string& dbc, const edbc::types::Definitions& g
 	if(!def) {
 		throw std::invalid_argument(dbc + " - no such DBC");
 	}
-
 	std::ofstream file(def->name + ".dbc", std::ofstream::binary);
 	
+	TypeMetrics metrics;
+	walk_dbc_fields(def, metrics);
+
+	RecordPrinter printer;
+	walk_dbc_fields(def, printer);
+
+	std::vector<char> record_data = printer.record();
+	std::vector<char> string_data = printer.string_block();
+
+	be::big_uint32_t magic('WDBC');
+	be::little_uint32_t records = 1;
+	be::little_uint32_t fields = metrics.fields;
+	be::little_uint32_t size = metrics.size;
+	be::little_uint32_t string_block_size = string_data.size();
+	
 	// write header
-	std::uint32_t magic('CBDW');
-	std::uint32_t records = 1; // one record
-	std::uint32_t field_count = 0;
-	std::uint32_t string_block_size = 0;
-	std::uint32_t record_size = 0;
-
-	for(auto& f : def->fields) {
-		if(f.underlying_type == "string_ref_loc") {
-			field_count += 9;
-			string_block_size += 10;
-		} else {
-			field_count += 1;
-		}
-	}
-	
-	TypeMetrics metrics = type_metrics(*def);
-
-	std::cout << "Size: " << metrics.size << " Records: " << metrics.records << "\n";
-	
-	std::stringstream string_block;
-
-	const std::string block = string_block.str();
-	string_block_size = block.size();
-
-	// not caring about endianness
 	file.write((char*)&magic, sizeof(magic));
 	file.write((char*)&records, sizeof(records));
-	file.write((char*)&field_count, sizeof(field_count));
-	file.write((char*)&record_size, sizeof(record_size));
+	file.write((char*)&fields, sizeof(fields));
+	file.write((char*)&size, sizeof(size));
 	file.write((char*)&string_block_size, sizeof(string_block_size));
-	file.write(block.c_str(), block.size());
+	
+	// write dummy record
+	file.write(record_data.data(), record_data.size());
 
-	// write an example record
-	for(auto& f : def->fields) {
-		if(f.underlying_type == "int8" || f.underlying_type == "uint8" || f.underlying_type == "bool") {
-			std::uint8_t val(1);
-			file.write((char*)&val, 1);
-		} else if(f.underlying_type == "int16" || f.underlying_type == "uint16") {
-			std::uint16_t val(1);
-			file.write((char*)&val, 2);
-		} else if(f.underlying_type == "int32" || f.underlying_type == "uint32"
-				  || f.underlying_type == "bool32" || f.underlying_type == "string_ref") {
-			std::uint32_t val(1);
-			file.write((char*)&val, 4);
-		} else if(f.underlying_type == "float") {
-			float val(1.0f);
-			file.write((char*)&val, 4);
-		} else if(f.underlying_type == "double") {
-			double val(1);
-			file.write((char*)&val, 8);
-		} else if(f.underlying_type == "string_ref") {
-			string_block << "Test string";
-			// ??
-		} else if(f.underlying_type == "string_ref_loc") {
-			string_block << "Test string GB";
-			string_block << std::uint32_t(0) << std::uint32_t(0);
-		}
-	}
+	// write string block
+	file.write(string_data.data(), string_data.size());
 }
 
 void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& groups) {
