@@ -148,7 +148,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 
 	service.dispatch([&, logger]() {
-		LOG_INFO(logger) << APP_NAME << " daemon started successfully" << LOG_SYNC;
+		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
 
 	service.run();
