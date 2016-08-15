@@ -8,14 +8,17 @@
 
 #include "Parser.h"
 #include "Generator.h"
+#include "DBCGenerator.h"
 #include "bprinter/table_printer.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <stdexcept>
-#include <iostream>
+#include <unordered_map>
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -26,6 +29,7 @@ std::vector<std::string> fetch_definitions(const std::string& path);
 void print_dbc_table(const edbc::types::Definitions& defs);
 void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs);
+edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Definitions& defs);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -34,7 +38,7 @@ int main(int argc, const char* argv[]) try {
 	
 	edbc::Parser parser;
 	auto definitions = parser.parse(paths);
-
+	
 	handle_options(args, definitions);
 } catch(std::exception& e) {
 	std::cerr << e.what();
@@ -49,6 +53,19 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 
 	if(args.count("print-fields")) {
 		print_dbc_fields(args["print-fields"].as<std::string>(), defs);
+		return;
+	}
+
+
+	if(args.count("template")) {
+		auto dbc = locate_dbc(args["template"].as<std::string>(), defs);
+
+		if(dbc == nullptr) {
+			throw std::invalid_argument("Could not find the specified DBC definition");
+		}
+
+		edbc::generate_template(dbc);
+		std::cout << "DBC template generated." << std::endl;
 		return;
 	}
 
@@ -153,7 +170,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("print-dbcs", po::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")
 		("print-fields", po::value<std::string>(),
-			"Print out of a summary of a specific DBC definition's fields");
+			"Print out of a summary of a specific DBC definition's fields")
+		("template", po::value<std::string>(),
+		 "Generate a DBC template file for editing in other tools");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(opt)

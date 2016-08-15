@@ -19,6 +19,8 @@ set(EXECUTABLE_SRC
 	TypeUtils.h
 	Types.h
 	TreeNode.h
+	DBCGenerator.h
+	DBCGenerator.cpp
 	bprinter/table_printer.cpp
 	bprinter/table_printer.h
 	bprinter/impl/table_printer.tpp.h
@@ -27,4 +29,4 @@ set(EXECUTABLE_SRC
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} shared ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} spark shared ${Boost_LIBRARIES})
