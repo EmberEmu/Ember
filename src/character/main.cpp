@@ -21,6 +21,7 @@
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/PCREHelper.h>
+#include <shared/util/Utility.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
@@ -31,6 +32,8 @@
 #include <stdexcept>
 
 #undef ERROR // temp
+
+const std::string APP_NAME = "Character Daemon";
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -55,7 +58,8 @@ void pool_log_callback(ep::Severity, const std::string& message, log::Logger* lo
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner("Character Daemon");
+	ember::print_banner(APP_NAME);
+	ember::util::set_window_title(APP_NAME);
 
 	const po::variables_map args = ember::parse_arguments(argc, argv);
 
@@ -64,7 +68,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	ember::launch(args, logger.get());
-	LOG_INFO(logger) << "Character daemon terminated" << LOG_SYNC;
+	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -136,7 +140,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
 	
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_INFO(logger) << "Character daemon shutting down..." << LOG_SYNC;
+		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
 		discovery.shutdown();
 		spark.shutdown();
 		thread_pool.shutdown();
@@ -144,7 +148,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 
 	service.dispatch([&, logger]() {
-		LOG_INFO(logger) << "Character daemon started successfully" << LOG_SYNC;
+		LOG_INFO(logger) << APP_NAME << " daemon started successfully" << LOG_SYNC;
 	});
 
 	service.run();

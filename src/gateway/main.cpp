@@ -22,6 +22,7 @@
 #include <logger/Logging.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
@@ -34,6 +35,8 @@
 #include <stdexcept>
 
 #undef ERROR // temp
+
+const std::string APP_NAME = "Realm Gateway";
 
 namespace el = ember::log;
 namespace es = ember::spark;
@@ -56,7 +59,8 @@ void pool_log_callback(ep::Severity, const std::string& message, el::Logger* log
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner("Realm Gateway");
+	ember::print_banner(APP_NAME);
+	ember::util::set_window_title(APP_NAME);
 
 	const po::variables_map args = parse_arguments(argc, argv);
 
@@ -65,7 +69,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
-	LOG_INFO(logger) << "Realm gateway terminated" << LOG_SYNC;
+	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -95,6 +99,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
+	ember::util::set_window_title(APP_NAME + " - " + realm->name);
 
 	// Determine concurrency level
 	unsigned int concurrency = check_concurrency(logger);
@@ -144,12 +149,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	service.dispatch([&, logger]() {
 		realm_svc.set_realm_online();
-		LOG_INFO(logger) << "Gateway started successfully" << LOG_SYNC;
+		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
 
 	service_pool.run();
 
-	LOG_INFO(logger) << "Realm gateway shutting down..." << LOG_SYNC;
+	LOG_INFO(logger) << APP_NAME << " gateway shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }

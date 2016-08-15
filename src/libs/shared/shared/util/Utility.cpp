@@ -8,6 +8,10 @@
 
 #include "Utility.h"
 
+#ifdef _WIN32
+    #include <Windows.h>
+#endif
+
 namespace ember { namespace util {
 
 std::size_t max_consecutive_check(const std::string& name) {
@@ -36,6 +40,14 @@ std::size_t max_consecutive_check(const std::string& name) {
 	}
 
 	return longest_sequence;
+}
+
+void set_window_title(const std::string& title) {
+#ifdef _WIN32
+    SetConsoleTitle(title.c_str());
+#elif defined __linux__ || defined __unix__ // todo, test0
+  	std::cout << "\033]0;" << title << "}\007";
+#endif
 }
 
 }} // util, ember

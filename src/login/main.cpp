@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,6 +24,7 @@
 #include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>
 #include <shared/util/LogConfig.h>
+#include <shared/util/Utility.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
@@ -62,6 +63,8 @@ void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
+const std::string APP_NAME = "Login Daemon";
+
 /*
  * We want to do the minimum amount of work required to get 
  * logging facilities and crash handlers up and running in main.
@@ -71,7 +74,9 @@ void pool_log_callback(ep::Severity, const std::string& message, el::Logger* log
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner("Login Daemon");
+	ember::print_banner(APP_NAME);
+	ember::util::set_window_title(APP_NAME);
+
 	const po::variables_map args = parse_arguments(argc, argv);
 
 	auto logger = ember::util::init_logging(args);
@@ -80,7 +85,7 @@ int main(int argc, const char* argv[]) try {
 
 	print_lib_versions(logger.get());
 	launch(args, logger.get());
-	LOG_INFO(logger) << "Login daemon terminated" << LOG_SYNC;
+	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
@@ -205,7 +210,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	service.run();
 
-	LOG_INFO(logger) << "Login daemon shutting down..." << LOG_SYNC;
+	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
 
 	for(auto& worker : workers) {
 		worker.join();
