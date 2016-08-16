@@ -31,7 +31,10 @@ struct Character {
 		UNKNOWN9               = 0x100,
 		UNKNOWN10              = 0x200,
 		HIDE_HELM              = 0x400,
-		HIDE_CLOAK             = 0x800
+		HIDE_CLOAK             = 0x800,
+		UNKNOWN13              = 0x1000,
+		GHOST                  = 0x2000,
+		RENAME                 = 0x4000
 	};
 
 	std::string name;
