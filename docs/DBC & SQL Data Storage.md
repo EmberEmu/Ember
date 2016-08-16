@@ -8,11 +8,11 @@ DBC, ***d***ata***b***ase ***c***lient, files are used as a storage format by th
 
 These files contain static data that is often shared between the client and the server and would be automatically generated from a relational database. It is likely that the code used by the game to read the files was also automatically generated.
 
-Ember uses the DBC format for storing its static data and defines many DBCs that are exclusive to the server. Definitions of for these DBCs can be found in *'src/tools/dbcparser/definitions'* and the matching DBC files can be found in the *'dbc/'* directory.
+Ember uses the DBC format for storing its static data and defines many DBCs that are exclusive to the server. Definitions for these DBCs can be found in *'src/tools/dbcparser/definitions'* and the matching DBC files can be found in *'dbc/'*.
 
 #### Code generation
 
-To allow for rapid iteration and development, Ember uses its own DBC parser to convert XML-based DBC definitions into the C++ required to load and work with the data from the DBCs. 
+To allow for rapid iteration and development, Ember uses its own DBC parser to convert XML-based DBC definitions into the C++ required to load and work with the data. 
 
 The DBC parser tool is also capable of generating DBC files based on a definition. That is, when given a DBC definition, it will produce a matching DBC file that can be then opened by the server and various DBC editing tools.
 
