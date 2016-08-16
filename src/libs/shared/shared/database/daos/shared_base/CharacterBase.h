@@ -13,11 +13,9 @@
 #include <boost/optional.hpp>
 #include <string>
 #include <vector>
-#include <cstddef>
+#include <cstdint>
 
 namespace ember { namespace dal {
-
-/* TODO, TEMPORARY CODE*/
 
 class CharacterDAO {
 public:
@@ -29,4 +27,4 @@ public:
 	virtual ~CharacterDAO() = default;
 };
 
-}} //dal, ember
+}} // dal, ember

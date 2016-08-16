@@ -181,7 +181,7 @@ namespace network_comms {
 
 ...
 
-} //network_comms
+} // network_comms
 ```
 
 ##Language Usage
@@ -193,6 +193,7 @@ Use the `#pragma once` preprocessor directive over the more traditional `#ifndef
 ###Header Inclusion Order
 1. Corresponding .h file(s).
 2. Related project headers.
+3. Ember library headers.
 3. Third-party library headers.
 4. Standard library headers.
 5. System headers.
@@ -201,10 +202,13 @@ To generalise, go from local to global. This ordering can help prevent accidenta
 
 For an example Player.cpp:
 ```cpp
-#include "Player.h"
-#include "PlayerManager.h"
-#include <boost/thread/shared_mutex.hpp>
-#include <memory>
+#include "Player.h"                       // corresponding .h file
+#include "PlayerManager.h"                // related project header
+#include <logging/Logger.h>               // Ember library header
+#include <boost/thread/shared_mutex.hpp>  // third-party library header
+#include <memory>                         // standard library header
+#include <cstdint>                        // standard library header
+#include <Windows.h>                      // system header
 ```
 
 ###Prefer `enum class` over `enum`

@@ -61,7 +61,7 @@ void handle_char_enum(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->retrieve_characters(ctx->account_name,
+	char_serv_temp->retrieve_characters(ctx->account_id, 1, // todo, realm ID
 	                                    [self, ctx](em::character::Status status,
 	                                                std::vector<Character> characters) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, characters]() mutable {
@@ -97,7 +97,7 @@ void handle_char_create(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->create_character(ctx->account_name, packet.character,
+	char_serv_temp->create_character(ctx->account_id, 1, packet.character, // todo, realm ID
 	                                 [self, ctx](em::character::Status status,
 	                                             boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
@@ -121,7 +121,7 @@ void handle_char_delete(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->delete_character(ctx->account_name, packet.id,
+	char_serv_temp->delete_character(ctx->account_id, packet.id, 1, // todo, realm ID, swap args
 	                                 [self, ctx](em::character::Status status,
 	                                             boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {

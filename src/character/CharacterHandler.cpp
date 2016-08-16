@@ -30,8 +30,8 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	Character character;
 	character.race = options.race();
 	character.name = options.name()->c_str();
-	character.realm_id = realm_id;
 	character.account_id = account_id;
+	character.realm_id = realm_id;
 	character.class_ = options.class_();
 	character.gender = options.gender();
 	character.skin = options.skin();

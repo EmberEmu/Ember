@@ -19,8 +19,8 @@ namespace ember { namespace dal {
 class UserDAO {
 public:
 	virtual boost::optional<User> user(const std::string& username) const = 0;
-	virtual void record_last_login(const User& user, const std::string& ip) const = 0;
-	virtual std::unordered_map<std::uint32_t, std::uint32_t> character_counts(std::uint32_t user_id) const = 0;
+	virtual void record_last_login(std::uint32_t account_id, const std::string& ip) const = 0;
+	virtual std::unordered_map<std::uint32_t, std::uint32_t> character_counts(std::uint32_t account_id) const = 0;
 	virtual ~UserDAO() = default;
 };
 

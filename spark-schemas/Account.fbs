@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,18 +17,27 @@ enum DisconnectReason : ubyte {
 	INTERNAL_LINK_LOST
 }
 
-table RegisterKey {
+table AccountLookup {
 	account_name:string;
+}
+
+table AccountLookupResponse {
+	status:Status;
+	account_id:uint;
+}
+
+table RegisterKey {
+	account_id:uint;
 	key:[ubyte];
 }
 
 table KeyLookup {
-	account_name:string;
+	account_id:uint;
 }
 
 table KeyLookupResp {
 	status:Status;
-	account_name:string;
+	account_id:uint;
 	key:[ubyte];	
 }
 

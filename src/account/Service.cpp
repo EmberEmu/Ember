@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,6 +33,8 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 		case em::Data::KeyLookup:
 			locate_session(link, msg);
 			break;
+		case em::Data::AccountLookup:
+			send_account_locate_reply(link, msg); // todo
 		default:
 			LOG_DEBUG(logger_) << "Service received unhandled message type" << LOG_ASYNC;
 	}
@@ -55,10 +57,10 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
 	auto status = em::account::Status::OK;
 	
-	if(msg->key() && msg->account_name()) {
+	if(msg->key() && msg->account_id()) {
 		Botan::BigInt key(msg->key()->data(), msg->key()->size());
 
-		if(!sessions_.register_session(msg->account_name()->str(), key)) {
+		if(!sessions_.register_session(msg->account_id(), key)) {
 			status = em::account::Status::ALREADY_LOGGED_IN;
 		}
 	} else {
@@ -74,8 +76,8 @@ void Service::locate_session(const spark::Link& link, const em::MessageRoot* roo
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 	auto session = boost::optional<Botan::BigInt>();
 	
-	if(msg->account_name()) {
-		session = sessions_.lookup_session(msg->account_name()->str());
+	if(msg->account_id()) {
+		session = sessions_.lookup_session(msg->account_id());
 	}
 
 	send_locate_reply(link, root, session);
@@ -101,6 +103,30 @@ void Service::send_register_reply(const spark::Link& link, const em::MessageRoot
 	spark_.send(link, fbb);
 }
 
+void Service::send_account_locate_reply(const spark::Link& link, const em::MessageRoot* root) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto msg = static_cast<const em::account::AccountLookup*>(root->data());
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+
+	em::account::AccountLookupResponseBuilder klb(*fbb);
+	klb.add_status(em::account::Status::OK);
+	klb.add_account_id(1); // todo
+	auto data_offset = klb.Finish();
+
+	em::MessageRootBuilder mrb(*fbb);
+	mrb.add_service(em::Service::Account);
+	mrb.add_data_type(em::Data::AccountLookupResponse);
+	mrb.add_data(data_offset.Union());
+	spark_.set_tracking_data(root, mrb, fbb.get());
+	auto mloc = mrb.Finish();
+
+	fbb->Finish(mloc);
+	spark_.send(link, fbb);
+
+	// todo, logging
+}
+
 void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* root,
                                 const boost::optional<Botan::BigInt>& key) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -120,7 +146,7 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 	}
 
 	klb.add_status(status);
-	klb.add_account_name(fbb->CreateString(msg->account_name()));
+	klb.add_account_id(msg->account_id());
 	auto data_offset = klb.Finish();
 
 	em::MessageRootBuilder mrb(*fbb);
@@ -133,8 +159,8 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 	fbb->Finish(mloc);
 	spark_.send(link, fbb);
 
-	LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_name()->str() << " -> "
-		<< em::account::EnumNameStatus(status) << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "
+	<< em::account::EnumNameStatus(status) << LOG_ASYNC;
 }
 
 } // ember

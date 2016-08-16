@@ -16,6 +16,7 @@
 #include <logger/Logging.h>
 #include <botan/botan.h>
 #include <botan/sha160.h>
+#include <cstdint>
 
 #include "../temp.h"
 
@@ -32,6 +33,7 @@ void send_auth_result(ClientContext* ctx, protocol::ResultCode result);
 void handle_authentication(ClientContext* ctx);
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
+void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
 
 void handle_authentication(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
@@ -50,19 +52,45 @@ void handle_authentication(ClientContext* ctx) {
 		return;
 	}
 
+	LOG_DEBUG_GLOB << "Received session proof from " << packet.username << LOG_ASYNC;
+
 	// todo - check game build
-	fetch_session_key(ctx, packet);
+	fetch_account_id(ctx, packet);
+}
+
+void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	auto self = ctx->connection->shared_from_this();
+
+	acct_serv->locate_account_id(packet.username, [self, ctx, packet](em::account::Status remote_res,
+	                                                                  std::uint32_t account_id) {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, account_id]() { // todo
+			if(remote_res == em::account::Status::OK && account_id) {
+				if((ctx->account_id = account_id)) {
+					fetch_session_key(ctx, packet);
+				} else {
+					LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
+						<< packet.username << LOG_ASYNC;
+				}
+			} else {
+				LOG_ERROR_FILTER_GLOB(LF_NETWORK)
+					<< "Account server returned " << em::account::EnumNameStatus(remote_res)
+					<< " for " << packet.username << " lookup" << LOG_ASYNC;
+				ctx->connection->close_session();
+			}
+		}
+	);});
 }
 
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-	LOG_DEBUG_GLOB << "Received session proof from " << packet.username << LOG_ASYNC;
 
 	auto self = ctx->connection->shared_from_this();
 
-	acct_serv->locate_session(packet.username, [self, ctx, packet](em::account::Status remote_res,
-	                                                               Botan::BigInt key) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, key]() {
+	acct_serv->locate_session(ctx->account_id, [self, ctx, packet](em::account::Status remote_res,
+	                                                          Botan::BigInt key) {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, key]() { // todo
 			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 				<< "Account server returned " << em::account::EnumNameStatus(remote_res)
 				<< " for " << packet.username << LOG_ASYNC;
@@ -84,6 +112,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 						result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
 				}
 
+				// note: the game doesn't seem to pay attention to this
 				send_auth_result(ctx, result);
 			} else {
 				prove_session(ctx, key, packet);

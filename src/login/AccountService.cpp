@@ -51,7 +51,8 @@ void AccountService::service_located(const messaging::multicast::LocateAnswer* m
 }
 
 void AccountService::handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                           boost::optional<const em::MessageRoot*> root, const RegisterCB& cb) const {
+                                           boost::optional<const em::MessageRoot*> root,
+                                           const RegisterCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::Response) {
@@ -64,7 +65,8 @@ void AccountService::handle_register_reply(const spark::Link& link, const boost:
 }
 
 void AccountService::handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                         boost::optional<const messaging::MessageRoot*> root, const LocateCB& cb) const {
+                                         boost::optional<const messaging::MessageRoot*> root,
+                                         const LocateCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::KeyLookupResp) {
@@ -83,14 +85,14 @@ void AccountService::handle_locate_reply(const spark::Link& link, const boost::u
 	cb(message->status(), Botan::BigInt::decode(key->data(), key->size()));
 }
 
-void AccountService::locate_session(std::string account, LocateCB cb) const {
+void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
-		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, fbb->CreateString(account)).Union());
+		em::Data::KeyLookup, em::account::CreateKeyLookup(*fbb, account_id).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&AccountService::handle_locate_reply, this, std::placeholders::_1,
@@ -101,7 +103,8 @@ void AccountService::locate_session(std::string account, LocateCB cb) const {
 	}
 }
 
-void AccountService::register_session(std::string account, const srp6::SessionKey& key, RegisterCB cb) const {
+void AccountService::register_session(std::uint32_t account_id, const srp6::SessionKey& key,
+                                      RegisterCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -109,7 +112,7 @@ void AccountService::register_session(std::string account, const srp6::SessionKe
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto f_key = fbb->CreateVector(key.t.begin(), key.t.size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
-		em::Data::RegisterKey, em::account::CreateRegisterKey(*fbb, fbb->CreateString(account), f_key).Union());
+		em::Data::RegisterKey, em::account::CreateRegisterKey(*fbb, account_id, f_key).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&AccountService::handle_register_reply, this, std::placeholders::_1,

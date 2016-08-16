@@ -10,26 +10,22 @@
 
 namespace ember {
 
-bool Sessions::register_session(std::string account, Botan::BigInt key) {
-	std::transform(account.begin(), account.end(), account.begin(), ::tolower);
-
+bool Sessions::register_session(std::uint32_t account_id, Botan::BigInt key) {
 	std::lock_guard<std::mutex> guard(lock_);
 
-	auto it = sessions_.find(account);
+	auto it = sessions_.find(account_id);
 
 	if(!allow_overwrite_ && it != sessions_.end()) {
 		return false;
 	}
 
-	sessions_[account] = key;
+	sessions_[account_id] = key;
 	return true;
 }
 
-boost::optional<Botan::BigInt> Sessions::lookup_session(std::string account) {
-	std::transform(account.begin(), account.end(), account.begin(), ::tolower);
-
+boost::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) {
 	std::lock_guard<std::mutex> guard(lock_);
-	auto it = sessions_.find(account);
+	auto it = sessions_.find(account_id);
 
 	if(it == sessions_.end()) {
 		return boost::optional<Botan::BigInt>();

@@ -18,13 +18,13 @@ namespace ember {
 
 class Sessions {
 	bool allow_overwrite_;
-	std::unordered_map<std::string, Botan::BigInt> sessions_;
+	std::unordered_map<std::uint32_t, Botan::BigInt> sessions_;
 	std::mutex lock_;
 
 public:
 	explicit Sessions(bool allow_overwrite) : allow_overwrite_(allow_overwrite) { }
-	bool register_session(std::string account, Botan::BigInt key);
-	boost::optional<Botan::BigInt> lookup_session(std::string account_id);
+	bool register_session(std::uint32_t account_id, Botan::BigInt key);
+	boost::optional<Botan::BigInt> lookup_session(std::uint32_t account_id);
 };
 
 } // ember

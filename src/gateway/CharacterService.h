@@ -12,15 +12,14 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/temp/MessageRoot_generated.h>
-//#include <srp6/Util.h>
 #include <game_protocol/ResultCodes.h>
 #include <logger/Logging.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>
 #include <memory>
-#include <string>
 #include <vector>
+#include <cstdint>
 
 namespace ember {
 
@@ -50,9 +49,14 @@ public:
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 
-	void retrieve_characters(std::string account_name, RetrieveCB cb) const;
-	void create_character(std::string account_name, const Character& character, ResponseCB cb) const;
-	void delete_character(std::string account_name, std::uint64_t id, ResponseCB cb) const;
+	void retrieve_characters(std::uint32_t account_id, std::uint32_t realm_id,
+	                         RetrieveCB cb) const;
+
+	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
+	                      const Character& character, ResponseCB cb) const;
+
+	void delete_character(std::uint32_t account_id, std::uint64_t id,
+	                      std::uint32_t realm_id, ResponseCB cb) const;
 };
 
 } // ember

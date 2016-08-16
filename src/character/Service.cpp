@@ -68,7 +68,15 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::character::Create*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	handler_.create_character(1, msg->realm_id(), *msg->character(), [&, link, tracking](auto res) {
+	if(msg->character() == nullptr) {
+		LOG_WARN(logger_) << "Illformed character create request from " << link.description << LOG_ASYNC;
+
+		send_response(link, tracking, messaging::character::Status::ILLFORMED_MESSAGE,
+		              protocol::ResultCode::CHAR_LIST_FAILED);
+		return;
+	}
+
+	handler_.create_character(msg->account_id(), msg->realm_id(), *msg->character(), [&, link, tracking](auto res) {
 		LOG_DEBUG(logger_) << "Response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, tracking, messaging::character::Status::OK, res);
 	});

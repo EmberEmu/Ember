@@ -26,6 +26,8 @@ table CharacterTemplate {
 
 table Character {
 	id:uint;
+	account_id:uint;
+	realm_id:uint;
 	name:string;
 	race:ubyte;
 	class_:ubyte;
@@ -42,6 +44,7 @@ table Character {
 	y:float;
 	z:float;
 	guild_id:uint;
+	guild_rank:uint;
 	flags:uint;
 	first_login:ubyte;
 	pet_display_id:uint;
@@ -55,23 +58,25 @@ table RetrieveResponse {
 }
 
 table Retrieve {
-	account_name:string;
+	account_id:uint;
 	realm_id:uint;
 }
 
 table Rename {
-	account_name:string;
+	account_id:uint;
+	name:string;
 	realm_id:uint;
 	character_id:uint;
 }
 
 table Delete {
-	account_name:string;
+	account_id:uint;
 	realm_id:uint;
 	character_id:uint;
 }
 
 table Create {
+	account_id:uint;
 	realm_id:uint;
 	character:CharacterTemplate;
 }
