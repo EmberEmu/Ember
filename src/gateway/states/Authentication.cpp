@@ -136,18 +136,18 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 
 	// should really have an addon database rather than assuming the client isn't sending junk
 	for(auto& addon : packet.addons) {
-		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", State: " << addon.state
+		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
 		protocol::SMSG_ADDON_INFO::AddonData data;
 		data.type = protocol::SMSG_ADDON_INFO::AddonData::Type::BLIZZARD;
 		data.update_available_flag = false; // URL must be present for this to work (check URL CRC)
 
-		if(addon.crc != 0x4C1C776D || addon.state != 1) {
+		if(addon.crc != 0x4C1C776D || addon.key_version != 1) { // todo, define?
 			LOG_DEBUG_GLOB << "Repairing " << addon.name << "..." << LOG_ASYNC;
-			data.state = 1;
+			data.key_version = 1;
 		} else {
-			data.state = 0;
+			data.key_version = 0;
 		}		
 		
 		response.addon_data.emplace_back(std::move(data));

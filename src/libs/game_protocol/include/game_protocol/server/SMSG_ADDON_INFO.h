@@ -51,7 +51,7 @@ public:
 
 		Type type;
 		std::uint8_t info_block_present;
-		std::uint8_t state; // first byte in the .pub files - not sure what it does
+		std::uint8_t key_version;
 		std::uint32_t update_available_flag;
 		std::string update_url;
 	};
@@ -70,14 +70,14 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		for(auto addon : addon_data) {
+		for(auto& addon : addon_data) {
 			stream << addon.type;
 
-			if(addon.state || addon.update_available_flag) {
+			if(addon.key_version || addon.update_available_flag) {
 				stream << std::uint8_t(1); // 'info block' is available
-				stream << addon.state; // any value other than zero is stored in the file and must be followed by the public key
+				stream << addon.key_version; // any value other than zero is stored in the file and must be followed by the public key
 
-				if(addon.state) {
+				if(addon.key_version) {
 					stream.put(public_key_.data(), public_key_.size());
 				}
 

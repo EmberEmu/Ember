@@ -34,7 +34,7 @@ class CMSG_AUTH_SESSION final : public Packet {
 public:
 	struct AddonData {
 		std::string name;
-		std::uint8_t state; // enabled?
+		std::uint8_t key_version;
 		std::uint32_t crc;
 		std::uint32_t update_url_crc;
 	};
@@ -99,7 +99,7 @@ public:
 		while(!addon_stream.empty()) {
 			AddonData data;
 			addon_stream >> data.name;
-			addon_stream >> data.state;
+			addon_stream >> data.key_version;
 			addon_stream >> data.crc;
 			addon_stream >> data.update_url_crc;
 
