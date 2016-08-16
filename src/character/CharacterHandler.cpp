@@ -28,6 +28,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	Character character;
+	character.level  = 1;
 	character.race = options.race();
 	character.name = options.name()->c_str();
 	character.realm_id = realm_id;
@@ -277,31 +278,44 @@ void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>&
 	// PVP faction check etc
 
 	// everything looks good - populate the character data and create it
+	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
+	const dbc::ChrClasses* class_ = dbc_.chr_classes[character.class_];
+
 	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& info) {
 		return info.second.race_id == character.race && info.second.class__id == character.class_;
 	});
 
 	if(base_info == dbc_.char_start_base.end()) {
-		LOG_ERROR(logger_) << "Unable to find base data for "
-			<< dbc_.chr_races[character.race]->name.enGB << " " 
-			<< dbc_.chr_classes[character.class_]->name.enGB << LOG_ASYNC;
+		LOG_ERROR(logger_) << "Unable to find base data for " << race->name.enGB << " "
+			<< class_->name.enGB << LOG_ASYNC;
 		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
 		return;
 	}
 
 	// populate zone information
-	const auto& info = base_info->second;
-	character.zone = info.zone_id;
-	character.map = info.zone->area->map_id;
-	character.position.x = info.zone->position.x;
-	character.position.y = info.zone->position.y;
-	character.position.z = info.zone->position.z;
+	const dbc::CharStartZones* zone = base_info->second.zone;
+
+	character.zone = zone->area_id;
+	character.map = zone->area->map_id;
+	character.position.x = zone->position.x;
+	character.position.y = zone->position.y;
+	character.position.z = zone->position.z;
 
 	// populate items information
 
 	// populate spells information
 
 	// populate talents information
+
+	const char* subzone = nullptr;
+
+	if(zone->area->parent_area_table_id) {
+		subzone = zone->area->parent_area_table->area_name.enGB.c_str();
+	}
+
+	LOG_DEBUG(logger_) << "Creating " << race->name.enGB << " " << class_->name.enGB << " at "
+		<< zone->area->area_name.enGB << (subzone ? ", " : " ") << (subzone ? subzone : " ")
+		<< LOG_ASYNC;
 
 	pool_.run([=] {
 		try {
