@@ -37,7 +37,7 @@
 		</key>
 	</field>
 
-	<field>
+	<field comment="todo, delete - unused">
 		<type>uint32</type>
 		<name>outfit</name>
 		<key>

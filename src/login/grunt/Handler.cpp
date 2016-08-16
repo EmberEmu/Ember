@@ -19,6 +19,7 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 
 	switch(opcode) {
 		case Opcode::CMD_AUTH_LOGIN_CHALLENGE:
+			[[fallthrough]];
 		case Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
 			curr_packet_ = std::make_unique<client::LoginChallenge>();
 			break;
@@ -58,6 +59,7 @@ boost::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	switch(state_) {
 		case State::NEW_PACKET:
 			handle_new_packet(buffer);
+			[[fallthrough]];
 		case State::READ:
 			handle_read(buffer);
 			break;
