@@ -28,6 +28,7 @@ public:
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> character_id;
+		be::little_to_native_inplace(character_id);
 
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
@@ -35,7 +36,7 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << character_id;
+		stream << be::native_to_little(character_id);
 	}
 };
 

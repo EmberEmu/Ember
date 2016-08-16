@@ -51,7 +51,7 @@ class MySQLCharacterDAO final : public CharacterDAO {
 		character.position.x = res->getDouble("x");
 		character.position.y = res->getDouble("y");
 		character.position.z = res->getDouble("z");
-		character.flags = res->getUInt("flags");
+		character.flags = static_cast<Character::Flags>(res->getUInt("flags"));
 		character.first_login = res->getBoolean("first_login");
 		character.pet_display = res->getUInt("pet_display");
 		character.pet_level = res->getUInt("pet_level");

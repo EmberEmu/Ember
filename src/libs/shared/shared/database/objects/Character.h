@@ -18,6 +18,22 @@ struct Vector {
 };
 
 struct Character {
+	enum Flags : std::uint32_t { // todo, investigate
+		NONE                   = 0x000,
+		UNKNOWN1               = 0x001,
+		UNKNOWN2               = 0x002,
+		LOCKED_FOR_TRANSFER    = 0x004,
+		UNKNOWN4               = 0x008,
+		UNKNOWN5               = 0x010,
+		UNKNOWN6               = 0x020,
+		UNKNOWN7               = 0x040,
+		UNKNOWN8               = 0x080,
+		UNKNOWN9               = 0x100,
+		UNKNOWN10              = 0x200,
+		HIDE_HELM              = 0x400,
+		HIDE_CLOAK             = 0x800
+	};
+
 	std::string name;
 	std::uint32_t id;
 	std::uint32_t account_id;
@@ -37,7 +53,7 @@ struct Character {
 	std::uint32_t guild_rank;
 	Vector position;
 	Vector orientation;
-	std::uint32_t flags;
+	Flags flags;
 	bool first_login;
 	std::uint32_t pet_display;
 	std::uint32_t pet_level;

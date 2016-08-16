@@ -28,7 +28,6 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	Character character;
-	character.level  = 1;
 	character.race = options.race();
 	character.name = options.name()->c_str();
 	character.realm_id = realm_id;
@@ -40,6 +39,9 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	character.hairstyle = options.hairstyle();
 	character.haircolour = options.haircolour();
 	character.facialhair = options.facialhair();
+	character.level = 1; // todo
+	character.flags = Character::Flags::NONE; // todo
+	character.first_login = true;
 
 	// class, race & visual customisation validation
 	bool success = validate_options(character, account_id);

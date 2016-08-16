@@ -73,7 +73,7 @@ public:
 		character.position.x = 0.0f;
 		character.position.y = 0.0f;
 		character.position.z = 0.0f;
-		character.flags = 0;
+		character.flags = Character::Flags::NONE;
 		character.first_login = false;
 		character.pet_display = 0;
 		character.pet_level = 0;

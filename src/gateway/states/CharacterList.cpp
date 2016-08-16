@@ -33,12 +33,27 @@ void send_character_list_fail(ClientContext* ctx) {
 	ctx->connection->send(response);
 }
 
-void send_character_list(ClientContext* ctx, const std::vector<Character>& characters) {
+void send_character_list(ClientContext* ctx, std::vector<Character>& characters) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_ENUM response;
+
+	// emulate a quirk of the retail server
+	//if(quirks.first_login_hide_zone) {
+		for(auto& c : characters) {
+			if(c.first_login) {
+				c.zone = 0;
+			}
+		}
+	//}
+
 	response.characters = characters;
 	ctx->connection->send(response);
+}
+
+void handle_char_rename(ClientContext* ctx) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 }
 
 void handle_char_enum(ClientContext* ctx) {
@@ -47,8 +62,9 @@ void handle_char_enum(ClientContext* ctx) {
 	auto self = ctx->connection->shared_from_this();
 
 	char_serv_temp->retrieve_characters(ctx->account_name,
-	                                    [self, ctx](em::character::Status status, std::vector<Character> characters) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, characters]() {
+	                                    [self, ctx](em::character::Status status,
+	                                                std::vector<Character> characters) {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, characters]() mutable {
 			if(status == em::character::Status::OK) {
 				send_character_list(ctx, characters);
 			} else {
@@ -120,6 +136,17 @@ void handle_char_delete(ClientContext* ctx) {
 
 void handle_login(ClientContext* ctx) {
 	ctx->handler->state_update(ClientState::IN_WORLD);
+
+	protocol::CMSG_PLAYER_LOGIN packet;
+
+	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+		return;
+	}
+}
+
+void unhandled_packet(ClientContext* ctx) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	ctx->buffer->skip(ctx->header->size - sizeof(protocol::ClientOpcodes));
 }
 
 } // unnamed
@@ -139,13 +166,14 @@ void update(ClientContext* ctx) {
 		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
 			handle_char_delete(ctx);
 			break;
+		case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
+			handle_char_rename(ctx);
+			break;
 		case protocol::ClientOpcodes::CMSG_PLAYER_LOGIN:
 			handle_login(ctx);
 			break;
-		/*case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
-			handle_char_rename(buffer);
-			break;*/
-		// case enter world
+		default:
+			unhandled_packet(ctx);
 	}
 }
 
