@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>AddonData</name>
+
+	<enum>
+		<type>uint8</type>
+		<name>Type</name>
+
+		<options>
+			<option name="banned"   value="0x00" />
+			<option name="enabled"  value="0x01" />
+			<option name="blizzard" value="0x02" />
+		</options>
+	</enum>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>url</name>
+	</field>
+
+	<field>
+		<type>bool</type>
+		<name>update_flag</name>
+	</field>
+
+	<field>
+		<type>Type</type>
+		<name>type</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>key_crc</name>
+	</field>
+
+	<field>
+		<type>uint8</type>
+		<name>key_version</name>
+	</field>
+
+	<field>
+		<type>uint8[256]</type>
+		<name>public_key</name>
+	</field>
+	
+</dbc>
