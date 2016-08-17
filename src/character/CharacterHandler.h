@@ -52,16 +52,16 @@ class CharacterHandler {
 	bool validate_options(const Character& character, std::uint32_t account_id) const;
 
 	void on_enum_complete(boost::optional<std::vector<Character>>& characters,
-	                      Character& character, ResultCB callback) const;
+	                      Character& character, const ResultCB& callback) const;
 
 	void name_collision_callback(const std::string& name, std::uint32_t realm_id,
-								 ResultCB callback) const;
+								 const ResultCB& callback) const;
 
 	void rename_validate(std::uint32_t account_id, const boost::optional<Character>& character,
-	                     const std::string& name, RenameCB callback) const;
+	                     const std::string& name, const RenameCB& callback) const;
 
 	void rename_finalise(Character character, const std::string& name,
-						 RenameCB callback) const;
+						 const RenameCB& callback) const;
 
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,

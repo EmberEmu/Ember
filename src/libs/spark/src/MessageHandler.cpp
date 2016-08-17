@@ -23,7 +23,7 @@ namespace ember { namespace spark {
 MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger, log::Filter filter)
                                : dispatcher_(dispatcher), self_(link), initiator_(initiator),
-                                 logger_(logger), filter_(filter), services_(services) { }
+                                 logger_(logger), filter_(filter), services_(services), peer_{} { }
 
 
 void MessageHandler::send_negotiation(NetworkSession& net) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,12 +35,12 @@ class Service final {
 	boost::asio::signal_set signals_;
 
 	Link link_;
-	Listener listener_;
 	EventDispatcher dispatcher_;
 	ServicesMap services_;
 	SessionManager sessions_;
 	HeartbeatService hb_service_;
 	TrackingService track_service_;
+	Listener listener_;
 
 	log::Logger* logger_;
 	log::Filter filter_;

@@ -13,6 +13,7 @@
 #include <boost/optional.hpp>
 #include <unordered_map>
 #include <string>
+#include <cstdint>
 
 namespace ember { namespace dal {
 

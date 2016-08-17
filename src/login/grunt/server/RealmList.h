@@ -33,8 +33,8 @@ class RealmList final : public Packet {
 	static const std::size_t MAX_REALM_ENTRIES = 255;
 
 	State state_ = State::INITIAL;
-	std::uint16_t size;
-	std::uint8_t realm_count;
+	std::uint16_t size = 0;
+	std::uint8_t realm_count = 0;
 
 	std::uint16_t calculate_size() const {
 		std::size_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 

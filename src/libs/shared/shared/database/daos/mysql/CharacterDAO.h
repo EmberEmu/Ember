@@ -16,13 +16,10 @@
 #include <cppconn/prepared_statement.h>
 #include <chrono>
 #include <memory>
-#include <vector>
 
 namespace ember { namespace dal { 
 
 using namespace std::chrono_literals;
-
-/* TODO, TEMPORARY CODE*/
 
 template<typename T>
 class MySQLCharacterDAO final : public CharacterDAO {

@@ -82,7 +82,9 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 void ConsoleSink::set_colour(Severity severity) {
 	switch(severity) {
 		case Severity::FATAL:
+			[[fallthrough]];
 		case Severity::ERROR:
+			[[fallthrough]];
 		case Severity::WARN:
 			util::set_output_colour(util::Colour::LIGHT_RED);
 			break;
@@ -94,6 +96,9 @@ void ConsoleSink::set_colour(Severity severity) {
 			break;
 		case Severity::TRACE:
 			util::set_output_colour(util::Colour::DARK_GREY);
+			break;
+		case Severity::DISABLED:
+			// shutting the compiler up
 			break;
 	}
 }

@@ -60,7 +60,7 @@ class ClientConnection final : public std::enable_shared_from_this<ClientConnect
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)
-	                 : sessions_(sessions), socket_(service), stats_{},
+	                 : sessions_(sessions), socket_(service), stats_{}, crypto_{}, packet_header_{},
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service),
 	                   authenticated_(false), write_in_progress_(false), handler_(*this, logger) { }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ public:
 		throw exception(e.what());
 	}
 
-	boost::optional<Realm> get_realm(int id) const override try {
+	boost::optional<Realm> get_realm(std::uint32_t id) const override try {
 		const std::string query = "SELECT id, name, ip, type, flags, zone, population FROM realms "
 		                          "WHERE id = ?";
 

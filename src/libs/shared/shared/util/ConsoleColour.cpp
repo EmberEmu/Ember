@@ -66,6 +66,9 @@ WORD colour_attribute(Colour colour) {
 		case Colour::YELLOW:
 			attribute = FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_RED;
 			break;
+		case Colour::DEFAULT:
+			// shutting the compiler up
+			break;
 	}
 
 	return attribute;

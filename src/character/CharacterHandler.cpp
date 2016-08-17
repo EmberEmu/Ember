@@ -118,7 +118,7 @@ void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t r
 }
 
 void CharacterHandler::rename_finalise(Character character, const std::string& name,
-                                       RenameCB callback) const {
+									   const RenameCB& callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	character.name = name;
@@ -137,7 +137,7 @@ void CharacterHandler::rename_finalise(Character character, const std::string& n
 
 void CharacterHandler::rename_validate(std::uint32_t account_id,
                                        const boost::optional<Character>& character,
-                                       const std::string& name, RenameCB callback) const {
+                                       const std::string& name, const RenameCB& callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!character) {
@@ -331,7 +331,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 }
 
 void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>& characters,
-                                        Character& character, ResultCB callback) const {
+                                        Character& character, const ResultCB& callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!characters) {
@@ -398,7 +398,7 @@ void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>&
 }
 
 void CharacterHandler::name_collision_callback(const std::string& name, std::uint32_t realm_id,
-                                               ResultCB callback) const {
+											   const ResultCB& callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=]() {

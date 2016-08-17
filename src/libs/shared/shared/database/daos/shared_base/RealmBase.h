@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ namespace dal {
 class RealmDAO {
 public:
 	virtual std::vector<Realm> get_realms() const = 0;
-	virtual boost::optional<Realm> get_realm(int id) const = 0;
+	virtual boost::optional<Realm> get_realm(std::uint32_t id) const = 0;
 	virtual ~RealmDAO() = default;
 };
 
