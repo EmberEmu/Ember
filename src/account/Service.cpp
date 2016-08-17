@@ -35,6 +35,7 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 			break;
 		case em::Data::AccountLookup:
 			send_account_locate_reply(link, msg); // todo
+			break;
 		default:
 			LOG_DEBUG(logger_) << "Service received unhandled message type" << LOG_ASYNC;
 	}
