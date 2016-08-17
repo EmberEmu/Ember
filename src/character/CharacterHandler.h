@@ -30,6 +30,7 @@ class ThreadPool;
 
 class CharacterHandler {
 	typedef std::function<void(protocol::ResultCode)> ResultCB;
+	typedef std::function<void(protocol::ResultCode, boost::optional<Character>)> RenameCB;
 	typedef std::function<void(boost::optional<std::vector<Character>>)> EnumResultCB;
 
 	// todo, should probably be in a config
@@ -57,10 +58,10 @@ class CharacterHandler {
 								 ResultCB callback) const;
 
 	void rename_validate(std::uint32_t account_id, const boost::optional<Character>& character,
-	                     const std::string& name, ResultCB callback) const;
+	                     const std::string& name, RenameCB callback) const;
 
 	void rename_finalise(Character character, const std::string& name,
-	                     ResultCB callback) const;
+						 RenameCB callback) const;
 
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
@@ -78,7 +79,7 @@ public:
 	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB callback) const;
 
 	void rename_character(std::uint32_t account_id, std::uint64_t character_guid,
-	                      const std::string& name, ResultCB callback) const;
+	                      const std::string& name, RenameCB callback) const;
 };
 
 } // ember

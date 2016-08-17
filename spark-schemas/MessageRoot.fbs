@@ -17,7 +17,7 @@ namespace ember.messaging;
 union Data { Ping, Pong, Banner, Negotiate,
              account.Response, account.AccountLookup, account.AccountLookupResponse, account.RegisterKey, account.Disconnect, account.KeyLookup, account.KeyLookupResp,
              realm.RealmStatus, realm.RequestRealmStatus,
-             character.CharResponse, character.RetrieveResponse, character.Retrieve, character.Rename, character.Delete, character.Create }
+             character.CharResponse, character.RetrieveResponse, character.Retrieve, character.Rename, character.RenameResponse, character.Delete, character.Create }
 
 table MessageRoot {
 	service:Service;

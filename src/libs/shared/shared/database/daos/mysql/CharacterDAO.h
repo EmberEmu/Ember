@@ -189,11 +189,11 @@ public:
 	}
 
 	void update(const Character& character) const override try {
-		const std::string query = "UPDATE characters (name, account_id, realm_id, race, class, gender, "
-		                          "skin, face, hairstyle, haircolour, facialhair, level, zone, "
-		                          "map, x, y, z, flags, first_login, pet_display, pet_level, "
-		                          "pet_family) "
-		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		const std::string query = "UPDATE characters SET name = ?, account_id = ?, realm_id = ?, race = ?, class = ?, gender = ?, "
+		                          "skin = ?, face = ?, hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
+		                          "map = ?, x = ?, y = ?, z = ?, flags = ?, first_login = ?, pet_display = ?, pet_level = ?, "
+		                          "pet_family = ? "
+		                          "WHERE id = ?";
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -219,6 +219,7 @@ public:
 		stmt->setUInt(20, character.pet_display);
 		stmt->setUInt(21, character.pet_level);
 		stmt->setUInt(22, character.pet_family);
+		stmt->setUInt(23, character.id);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update character");

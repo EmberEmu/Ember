@@ -14,6 +14,7 @@
 #include <game_protocol/server/SMSG_CHAR_ENUM.h>
 #include <game_protocol/server/SMSG_CHAR_CREATE.h>
 #include <game_protocol/server/SMSG_CHAR_DELETE.h>
+#include <game_protocol/server/SMSG_CHAR_RENAME.h>
 #include <game_protocol/server/SMSG_CHARACTER_LOGIN_FAILED.h>
 #include <game_protocol/server/SMSG_LOGOUT_COMPLETE.h>
 #include <game_protocol/server/SMSG_ADDON_INFO.h>
@@ -23,4 +24,5 @@
 #include <game_protocol/client/CMSG_CHAR_CREATE.h>
 #include <game_protocol/client/CMSG_CHAR_DELETE.h>
 #include <game_protocol/client/CMSG_CHAR_ENUM.h>
+#include <game_protocol/client/CMSG_CHAR_RENAME.h>
 #include <game_protocol/client/CMSG_PLAYER_LOGIN.h>

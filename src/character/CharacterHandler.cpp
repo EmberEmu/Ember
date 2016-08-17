@@ -43,7 +43,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	character.flags = Character::Flags::NONE; // todo
 	character.first_login = true;
 
-	// class, race & visual customisation validation
+	// class, race and visual customisation validation
 	bool success = validate_options(character, account_id);
 
 	if(!success) {
@@ -115,47 +115,48 @@ void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t r
 }
 
 void CharacterHandler::rename_finalise(Character character, const std::string& name,
-                                       ResultCB callback) const {
+                                       RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	character.name = name;
-	character.flags |= Character::Flags::RENAME;
+	character.flags ^= Character::Flags::RENAME;
 
 	pool_.run([=] {
 		try {
 			dao_.update(character);
-			callback(protocol::ResultCode::CHAR_NAME_FAILURE);
+			callback(protocol::ResultCode::RESPONSE_SUCCESS, character);
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_NAME_FAILURE);
+			callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
 		}
 	});
 }
 
 void CharacterHandler::rename_validate(std::uint32_t account_id,
                                        const boost::optional<Character>& character,
-                                       const std::string& name, ResultCB callback) const {
+                                       const std::string& name, RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!character) {
-		callback(protocol::ResultCode::CHAR_NAME_FAILURE);
+		LOG_TRACE(logger_) << "1" << LOG_ASYNC;
+		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
 		return;
 	}
 
 	if(character->account_id != account_id) {
-		callback(protocol::ResultCode::CHAR_NAME_FAILURE);
+		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
 		return;
 	}
 
 	if((character->flags & Character::Flags::RENAME) != Character::Flags::RENAME) {
-		callback(protocol::ResultCode::CHAR_NAME_FAILURE);
+		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
 		return;
 	}
 
 	auto res = validate_name(name);
 
 	if(res != protocol::ResultCode::CHAR_NAME_SUCCESS) {
-		callback(res);
+		callback(res, {});
 		return;
 	}
 
@@ -163,13 +164,13 @@ void CharacterHandler::rename_validate(std::uint32_t account_id,
 		if(result == protocol::ResultCode::CHAR_NAME_SUCCESS) {
 			rename_finalise(*character, name, callback); // todo, better names
 		} else {
-			callback(result);
+			callback(result, {});
 		}
 	});
 }
 
 void CharacterHandler::rename_character(std::uint32_t account_id, std::uint64_t character_guid,
-                                        const std::string& name, ResultCB callback) const {
+                                        const std::string& name, RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
@@ -178,7 +179,7 @@ void CharacterHandler::rename_character(std::uint32_t account_id, std::uint64_t 
 			rename_validate(account_id, character, name, callback);
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_NAME_FAILURE);
+			callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
 		}
 	});
 

@@ -55,7 +55,7 @@ void Service::retrieve_characters(const spark::Link& link, const em::MessageRoot
 	auto msg = static_cast<const em::character::Retrieve*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	handler_.enum_characters(1, 1, [&, tracking](const auto& chars) {
+	handler_.enum_characters(msg->account_id(), msg->realm_id(), [&, tracking](const auto& chars) {
 		send_character_list(link, tracking, chars);
 	});
 } catch(std::exception& e) {
@@ -76,8 +76,9 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 		return;
 	}
 
-	handler_.create_character(msg->account_id(), msg->realm_id(), *msg->character(), [&, link, tracking](auto res) {
-		LOG_DEBUG(logger_) << "Response code: " << protocol::to_string(res) << LOG_ASYNC;
+	handler_.create_character(msg->account_id(), msg->realm_id(), *msg->character(),
+	                          [&, link, tracking](auto res) {
+		LOG_DEBUG(logger_) << "Create response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, tracking, messaging::character::Status::OK, res);
 	});
 } catch(std::exception& e) {
@@ -146,10 +147,43 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 	spark_.send(link, fbb);
 }
 
-// todo
+void Service::send_rename_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+								   messaging::character::Status status, protocol::ResultCode result,
+								   boost::optional<Character> character) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	em::character::RenameResponseBuilder rb(*fbb);
+	rb.add_status(status);
+	rb.add_result(static_cast<std::uint32_t>(result));
+
+	if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
+		rb.add_character_id(character->id);
+		rb.add_name(fbb->CreateString(character->name));
+	}
+
+	rb.add_result(static_cast<std::uint32_t>(result));
+	auto data_offset = rb.Finish();
+
+	em::MessageRootBuilder mrb(*fbb);
+	mrb.add_service(em::Service::Character);
+	mrb.add_data_type(em::Data::RenameResponse);
+	mrb.add_data(data_offset.Union());
+
+	auto id = fbb->CreateVector(tracking);
+	mrb.add_tracking_id(id);
+	mrb.add_tracking_ttl(1);
+
+	auto mloc = mrb.Finish();
+
+	fbb->Finish(mloc);
+	spark_.send(link, fbb);
+}
 
 void Service::send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
 							messaging::character::Status status, protocol::ResultCode result) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::character::CharResponseBuilder rb(*fbb);
 	rb.add_status(status);
@@ -165,7 +199,6 @@ void Service::send_response(const spark::Link& link, const std::vector<std::uint
 	mrb.add_tracking_id(id);
 	mrb.add_tracking_ttl(1);
 
-	//spark_.set_tracking_data(root, mrb, fbb.get());
 	auto mloc = mrb.Finish();
 
 	fbb->Finish(mloc);
@@ -174,6 +207,8 @@ void Service::send_response(const spark::Link& link, const std::vector<std::uint
 
 void Service::send_response(const spark::Link& link, const em::MessageRoot* root,
                             messaging::character::Status status, protocol::ResultCode result) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::character::CharResponseBuilder rb(*fbb);
 	rb.add_status(status);
@@ -200,6 +235,7 @@ void Service::delete_character(const spark::Link& link, const em::MessageRoot* r
 
 	handler_.delete_character(msg->account_id(), msg->realm_id(), msg->character_id(),
 	                          [&, link, tracking](auto res) {
+		LOG_DEBUG(logger_) << "Deletion response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, root, messaging::character::Status::OK, res);
 	});
 
@@ -213,15 +249,19 @@ void Service::rename_character(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::character::Rename*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	if(!msg->name() || msg->account_id() || msg->character_id()) {
+	if(!msg->name() || !msg->account_id() || !msg->character_id()) {
+		LOG_WARN(logger_) << "Illformed rename request from " << link.description << LOG_ASYNC;
+
 		send_response(link, root, messaging::character::Status::ILLFORMED_MESSAGE,
 		              protocol::ResultCode::CHAR_NAME_FAILURE);
 		return;
 	}
 
 	handler_.rename_character(msg->account_id(), msg->character_id(), msg->name()->str(),
-	                         [&, link, tracking](auto res) {
-		send_response(link, root, messaging::character::Status::OK, res);
+	                         [&, link, tracking](auto res, boost::optional<Character> character) {
+		LOG_DEBUG(logger_) << "Rename response code: " << protocol::to_string(res) << LOG_ASYNC;
+
+		send_rename_response(link, tracking, messaging::character::Status::OK, res, character);
 	});
 
 } catch(std::exception& e) {

@@ -14,6 +14,8 @@
 #include <spark/temp/Character_generated.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
+#include <string>
+#include <cstdint>
 
 namespace ember {
 
@@ -37,6 +39,10 @@ class Service final : public spark::EventHandler {
 
 	void send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
 	                   messaging::character::Status status, protocol::ResultCode result);
+
+	void send_rename_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+	                          messaging::character::Status status, protocol::ResultCode result,
+	                          boost::optional<Character> character);
 
 public:
 	Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,

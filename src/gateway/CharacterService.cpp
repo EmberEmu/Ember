@@ -63,6 +63,26 @@ void CharacterService::handle_reply(const spark::Link& link, const boost::uuids:
 	cb(message->status(), static_cast<protocol::ResultCode>(message->result()));
 }
 
+void CharacterService::handle_rename_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
+                                             boost::optional<const messaging::MessageRoot*> root,
+                                             const RenameCB& cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	if(!root || (*root)->data_type() != messaging::Data::RenameResponse) {
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+		return;
+	}
+
+	auto message = static_cast<const messaging::character::RenameResponse*>((*root)->data());
+
+	if(!message->name() || !message->character_id()) {
+		cb(em::character::Status::ILLFORMED_MESSAGE, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+	}
+
+	cb(message->status(), static_cast<protocol::ResultCode>(message->result()),
+	   message->character_id(), message->name()->str());
+}
+
 void CharacterService::handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
                                              boost::optional<const messaging::MessageRoot*> root,
                                              const RetrieveCB& cb) const {
@@ -143,6 +163,27 @@ void CharacterService::create_character(std::uint32_t account_id, std::uint32_t 
 	}
 }
 
+void CharacterService::rename_character(std::uint32_t account_id, std::uint32_t character_id,
+										std::uint32_t realm_id, const std::string& name,
+										RenameCB cb) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+
+	auto uuid = generate_uuid();
+	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
+	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
+											em::Data::Rename, em::character::CreateRename(*fbb, account_id,
+	                                        fbb->CreateString(name), realm_id, character_id).Union());
+	fbb->Finish(msg);
+
+	auto track_cb = std::bind(&CharacterService::handle_rename_reply, this, std::placeholders::_1,
+							  std::placeholders::_2, std::placeholders::_3, cb);
+
+	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+	}
+}
 void CharacterService::retrieve_characters(std::uint32_t account_id, std::uint32_t realm_id,
                                            RetrieveCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;

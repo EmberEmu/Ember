@@ -51,9 +51,40 @@ void send_character_list(ClientContext* ctx, std::vector<Character>& characters)
 	ctx->connection->send(response);
 }
 
+void send_character_rename(ClientContext* ctx, protocol::ResultCode result,
+                           std::uint64_t id, const std::string& name) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	protocol::SMSG_CHAR_RENAME response;
+	response.result = result;
+	response.id = id;
+	response.name = name;
+	ctx->connection->send(response);
+}
+
 void handle_char_rename(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
+	protocol::CMSG_CHAR_RENAME packet;
+
+	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+		return;
+	}
+
+	auto self = ctx->connection->shared_from_this();
+
+	char_serv_temp->rename_character(ctx->account_id, packet.id, 1, packet.name, // todo, realm ID
+	                                 [self, ctx](em::character::Status status,
+	                                             protocol::ResultCode res, std::uint64_t id,
+												 const std::string& name) {
+		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, res, id, name]() {
+			if(status == em::character::Status::OK) {
+				send_character_rename(ctx, res, id, name);
+			} else {
+				send_character_rename(ctx, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+			}
+		});
+	});
 }
 
 void handle_char_enum(ClientContext* ctx) {
@@ -75,12 +106,16 @@ void handle_char_enum(ClientContext* ctx) {
 }
 
 void send_character_delete(ClientContext* ctx, protocol::ResultCode result) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	protocol::SMSG_CHAR_DELETE response;
 	response.result = result;
 	ctx->connection->send(response);
 }
 
 void send_character_create(ClientContext* ctx, protocol::ResultCode result) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	protocol::SMSG_CHAR_CREATE response;
 	response.result = result;
 	ctx->connection->send(response);
