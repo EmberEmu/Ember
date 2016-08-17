@@ -67,6 +67,9 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 }
 
 void ClientConnection::send(const protocol::ServerPacket& packet) {
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
+		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
+
 	spark::Buffer& buffer(outbound_buffer_);
 	spark::SafeBinaryStream stream(buffer);
 	const std::size_t write_index = buffer.size(); // the current write index
