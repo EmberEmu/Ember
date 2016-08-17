@@ -64,7 +64,6 @@ public:
 
 	void visit(const types::Field* type) override {
 		auto components = extract_components(type->underlying_type);
-		int scalar_size = type_size_map.at(components.first);
 		std::size_t elements = 1;
 
 		// if this is an array, we need to write multiple records
@@ -122,8 +121,6 @@ public:
 template<typename T>
 void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
 	for(auto f : dbc->fields) {
-		std::string type = f.underlying_type;
-
 		// if this is a user-defined struct, we need to go through that type too
 		// if it's an enum, we can just grab the underlying type
 		auto components = extract_components(f.underlying_type);
