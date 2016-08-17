@@ -175,7 +175,7 @@ public:
 		stmt->setDouble(15, character.position.x);
 		stmt->setDouble(16, character.position.y);
 		stmt->setDouble(17, character.position.z);
-		stmt->setUInt(18, character.flags);
+		stmt->setUInt(18, static_cast<std::uint32_t>(character.flags));
 		stmt->setUInt(19, character.first_login);
 		stmt->setUInt(20, character.pet_display);
 		stmt->setUInt(21, character.pet_level);
@@ -183,6 +183,45 @@ public:
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to create character");
+		}
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	void update(const Character& character) const override try {
+		const std::string query = "UPDATE characters (name, account_id, realm_id, race, class, gender, "
+		                          "skin, face, hairstyle, haircolour, facialhair, level, zone, "
+		                          "map, x, y, z, flags, first_login, pet_display, pet_level, "
+		                          "pet_family) "
+		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		
+		auto conn = pool_.wait_connection(5s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+		stmt->setString(1, character.name);
+		stmt->setUInt(2, character.account_id);
+		stmt->setUInt(3, character.realm_id);
+		stmt->setUInt(4, character.race);
+		stmt->setUInt(5, character.class_);
+		stmt->setUInt(6, character.gender);
+		stmt->setUInt(7, character.skin);
+		stmt->setUInt(8, character.face);
+		stmt->setUInt(9, character.hairstyle);
+		stmt->setUInt(10, character.haircolour);
+		stmt->setUInt(11, character.facialhair);
+		stmt->setUInt(12, character.level);
+		stmt->setUInt(13, character.zone);
+		stmt->setUInt(14, character.map);
+		stmt->setDouble(15, character.position.x);
+		stmt->setDouble(16, character.position.y);
+		stmt->setDouble(17, character.position.z);
+		stmt->setUInt(18, static_cast<std::uint32_t>(character.flags));
+		stmt->setUInt(19, character.first_login);
+		stmt->setUInt(20, character.pet_display);
+		stmt->setUInt(21, character.pet_level);
+		stmt->setUInt(22, character.pet_family);
+
+		if(!stmt->executeUpdate()) {
+			throw exception("Unable to update character");
 		}
 	} catch(std::exception& e) {
 		throw exception(e.what());

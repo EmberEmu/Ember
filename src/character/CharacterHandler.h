@@ -56,6 +56,12 @@ class CharacterHandler {
 	void name_collision_callback(const std::string& name, std::uint32_t realm_id,
 								 ResultCB callback) const;
 
+	void rename_validate(std::uint32_t account_id, const boost::optional<Character>& character,
+	                     const std::string& name, ResultCB callback) const;
+
+	void rename_finalise(Character character, const std::string& name,
+	                     ResultCB callback) const;
+
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
 	                 const std::vector<util::pcre::Result>& reserved_names,
@@ -72,7 +78,7 @@ public:
 	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB callback) const;
 
 	void rename_character(std::uint32_t account_id, std::uint64_t character_guid,
-	                      const std::string& name, ResultCB callback);
+	                      const std::string& name, ResultCB callback) const;
 };
 
 } // ember

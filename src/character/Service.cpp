@@ -84,14 +84,6 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
 
-void Service::rename_character(const spark::Link& link, const em::MessageRoot* root) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	auto msg = static_cast<const em::character::Rename*>(root->data());
-	// todo
-	send_response(link, root, messaging::character::Status::OK, protocol::ResultCode::CHAR_NAME_FAILURE);
-}
-
 void Service::send_character_list(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
                                   const boost::optional<std::vector<Character>>& characters) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -122,7 +114,7 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 			cbb.add_x(character.position.x);
 			cbb.add_y(character.position.y);
 			cbb.add_z(character.position.z);
-			cbb.add_flags(character.flags);
+			cbb.add_flags(static_cast<std::uint32_t>(character.flags));
 			cbb.add_first_login(character.first_login);
 			cbb.add_pet_display_id(character.pet_display);
 			cbb.add_pet_level(character.pet_level);
@@ -206,7 +198,29 @@ void Service::delete_character(const spark::Link& link, const em::MessageRoot* r
 	auto msg = static_cast<const em::character::Delete*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	handler_.delete_character(1, msg->realm_id(), msg->character_id(), [&, link, tracking](auto res) {
+	handler_.delete_character(msg->account_id(), msg->realm_id(), msg->character_id(),
+	                          [&, link, tracking](auto res) {
+		send_response(link, root, messaging::character::Status::OK, res);
+	});
+
+} catch(std::exception& e) {
+	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
+}
+
+void Service::rename_character(const spark::Link& link, const em::MessageRoot* root) try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto msg = static_cast<const em::character::Rename*>(root->data());
+	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
+
+	if(!msg->name() || msg->account_id() || msg->character_id()) {
+		send_response(link, root, messaging::character::Status::ILLFORMED_MESSAGE,
+		              protocol::ResultCode::CHAR_NAME_FAILURE);
+		return;
+	}
+
+	handler_.rename_character(msg->account_id(), msg->character_id(), msg->name()->str(),
+	                         [&, link, tracking](auto res) {
 		send_response(link, root, messaging::character::Status::OK, res);
 	});
 

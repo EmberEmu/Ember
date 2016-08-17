@@ -50,6 +50,7 @@ set(THREADING_SRC
 )
 
 set(UTIL_SRC
+    shared/util/enum_flags.h
     shared/util/PCREHelper.h
     shared/util/PCREHelper.cpp
     shared/util/UTF8.h

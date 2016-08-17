@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/enum_flags.h>
 #include <string>
 #include <cstdint>
 
@@ -18,7 +19,7 @@ struct Vector {
 };
 
 struct Character {
-	enum Flags : std::uint32_t { // todo, investigate
+	enum class Flags : std::uint32_t { // todo, investigate
 		NONE                   = 0x000,
 		UNKNOWN1               = 0x001,
 		UNKNOWN2               = 0x002,
@@ -62,5 +63,7 @@ struct Character {
 	std::uint32_t pet_level;
 	std::uint32_t pet_family;
 };
+
+ENUM_FLAGS(Character::Flags, std::uint32_t);
 
 } //ember
