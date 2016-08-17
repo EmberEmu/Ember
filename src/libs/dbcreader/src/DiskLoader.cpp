@@ -47,6 +47,29 @@ const MappedDBC<T> get_offsets(const void* start) {
 	return MappedDBC<T>{dbc, records, string_block};
 }
 
+void load_addon_data(Storage& storage, const std::string& dir_path) {
+	bi::file_mapping file(std::string(dir_path + "AddonData.dbc").c_str(), bi::read_only);
+	bi::mapped_region region(file, bi::read_only);
+	auto dbc = get_offsets<disk::AddonData>(region.get_address());
+
+	for(std::uint32_t i = 0; i < dbc.header->records; ++i) {
+		AddonData entry{};
+		entry.id = dbc.records[i].id;
+		entry.name = dbc.strings + dbc.records[i].name;
+		entry.url = dbc.strings + dbc.records[i].url;
+		entry.update_flag = dbc.records[i].update_flag;
+		entry.type = static_cast<AddonData::Type>(dbc.records[i].type);
+		entry.key_crc = dbc.records[i].key_crc;
+		entry.key_version = dbc.records[i].key_version;
+
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].public_key) / sizeof(std::uint8_t); ++j) {
+			entry.public_key[j] = dbc.records[i].public_key[j];
+		}
+
+		storage.addon_data.emplace_back(entry.id, entry);
+	}
+}
+
 void load_animation_data(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "AnimationData.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
@@ -85,14 +108,14 @@ void load_area_table(Storage& storage, const std::string& dir_path) {
 		entry.exploration_level = dbc.records[i].exploration_level;
 
 		 // string_ref_loc block
-		entry.area_name.enGB = dbc.strings + dbc.records[i].area_name.enGB;
-		entry.area_name.koKR = dbc.strings + dbc.records[i].area_name.koKR;
-		entry.area_name.frFR = dbc.strings + dbc.records[i].area_name.frFR;
-		entry.area_name.deDE = dbc.strings + dbc.records[i].area_name.deDE;
-		entry.area_name.enCN = dbc.strings + dbc.records[i].area_name.enCN;
-		entry.area_name.enTW = dbc.strings + dbc.records[i].area_name.enTW;
-		entry.area_name.esES = dbc.strings + dbc.records[i].area_name.esES;
-		entry.area_name.esMX = dbc.strings + dbc.records[i].area_name.esMX;
+		entry.area_name.en_gb = dbc.strings + dbc.records[i].area_name.en_gb;
+		entry.area_name.ko_kr = dbc.strings + dbc.records[i].area_name.ko_kr;
+		entry.area_name.fr_fr = dbc.strings + dbc.records[i].area_name.fr_fr;
+		entry.area_name.de_de = dbc.strings + dbc.records[i].area_name.de_de;
+		entry.area_name.en_cn = dbc.strings + dbc.records[i].area_name.en_cn;
+		entry.area_name.en_tw = dbc.strings + dbc.records[i].area_name.en_tw;
+		entry.area_name.es_es = dbc.strings + dbc.records[i].area_name.es_es;
+		entry.area_name.es_mx = dbc.strings + dbc.records[i].area_name.es_mx;
 
 		entry.faction_group_id = dbc.records[i].faction_group;
 		entry.liquid_type_id = dbc.records[i].liquid_type;
@@ -305,14 +328,14 @@ void load_chr_classes(Storage& storage, const std::string& dir_path) {
 		entry.pet_name_token = dbc.strings + dbc.records[i].pet_name_token;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		entry.filename = dbc.strings + dbc.records[i].filename;
 		entry.class_mask = dbc.records[i].class_mask;
@@ -347,14 +370,14 @@ void load_chr_races(Storage& storage, const std::string& dir_path) {
 		entry.cinematic_sequence_id = dbc.records[i].cinematic_sequence;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 
 		for(std::size_t j = 0; j < sizeof(dbc.records[i].facial_hair_customisation) / sizeof(std::string); ++j) {
@@ -531,14 +554,14 @@ void load_creature_type(Storage& storage, const std::string& dir_path) {
 		entry.id = dbc.records[i].id;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		entry.flags = dbc.records[i].flags;
 		storage.creature_type.emplace_back(entry.id, entry);
@@ -574,25 +597,25 @@ void load_faction(Storage& storage, const std::string& dir_path) {
 		entry.parent_faction_id = dbc.records[i].parent_faction;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 
 		 // string_ref_loc block
-		entry.description.enGB = dbc.strings + dbc.records[i].description.enGB;
-		entry.description.koKR = dbc.strings + dbc.records[i].description.koKR;
-		entry.description.frFR = dbc.strings + dbc.records[i].description.frFR;
-		entry.description.deDE = dbc.strings + dbc.records[i].description.deDE;
-		entry.description.enCN = dbc.strings + dbc.records[i].description.enCN;
-		entry.description.enTW = dbc.strings + dbc.records[i].description.enTW;
-		entry.description.esES = dbc.strings + dbc.records[i].description.esES;
-		entry.description.esMX = dbc.strings + dbc.records[i].description.esMX;
+		entry.description.en_gb = dbc.strings + dbc.records[i].description.en_gb;
+		entry.description.ko_kr = dbc.strings + dbc.records[i].description.ko_kr;
+		entry.description.fr_fr = dbc.strings + dbc.records[i].description.fr_fr;
+		entry.description.de_de = dbc.strings + dbc.records[i].description.de_de;
+		entry.description.en_cn = dbc.strings + dbc.records[i].description.en_cn;
+		entry.description.en_tw = dbc.strings + dbc.records[i].description.en_tw;
+		entry.description.es_es = dbc.strings + dbc.records[i].description.es_es;
+		entry.description.es_mx = dbc.strings + dbc.records[i].description.es_mx;
 
 		storage.faction.emplace_back(entry.id, entry);
 	}
@@ -610,14 +633,14 @@ void load_faction_group(Storage& storage, const std::string& dir_path) {
 		entry.internal_name = dbc.strings + dbc.records[i].internal_name;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		storage.faction_group.emplace_back(entry.id, entry);
 	}
@@ -770,25 +793,25 @@ void load_item_sub_class(Storage& storage, const std::string& dir_path) {
 		entry.weapon_swing_size = dbc.records[i].weapon_swing_size;
 
 		 // string_ref_loc block
-		entry.display_name.enGB = dbc.strings + dbc.records[i].display_name.enGB;
-		entry.display_name.koKR = dbc.strings + dbc.records[i].display_name.koKR;
-		entry.display_name.frFR = dbc.strings + dbc.records[i].display_name.frFR;
-		entry.display_name.deDE = dbc.strings + dbc.records[i].display_name.deDE;
-		entry.display_name.enCN = dbc.strings + dbc.records[i].display_name.enCN;
-		entry.display_name.enTW = dbc.strings + dbc.records[i].display_name.enTW;
-		entry.display_name.esES = dbc.strings + dbc.records[i].display_name.esES;
-		entry.display_name.esMX = dbc.strings + dbc.records[i].display_name.esMX;
+		entry.display_name.en_gb = dbc.strings + dbc.records[i].display_name.en_gb;
+		entry.display_name.ko_kr = dbc.strings + dbc.records[i].display_name.ko_kr;
+		entry.display_name.fr_fr = dbc.strings + dbc.records[i].display_name.fr_fr;
+		entry.display_name.de_de = dbc.strings + dbc.records[i].display_name.de_de;
+		entry.display_name.en_cn = dbc.strings + dbc.records[i].display_name.en_cn;
+		entry.display_name.en_tw = dbc.strings + dbc.records[i].display_name.en_tw;
+		entry.display_name.es_es = dbc.strings + dbc.records[i].display_name.es_es;
+		entry.display_name.es_mx = dbc.strings + dbc.records[i].display_name.es_mx;
 
 
 		 // string_ref_loc block
-		entry.verbose_name.enGB = dbc.strings + dbc.records[i].verbose_name.enGB;
-		entry.verbose_name.koKR = dbc.strings + dbc.records[i].verbose_name.koKR;
-		entry.verbose_name.frFR = dbc.strings + dbc.records[i].verbose_name.frFR;
-		entry.verbose_name.deDE = dbc.strings + dbc.records[i].verbose_name.deDE;
-		entry.verbose_name.enCN = dbc.strings + dbc.records[i].verbose_name.enCN;
-		entry.verbose_name.enTW = dbc.strings + dbc.records[i].verbose_name.enTW;
-		entry.verbose_name.esES = dbc.strings + dbc.records[i].verbose_name.esES;
-		entry.verbose_name.esMX = dbc.strings + dbc.records[i].verbose_name.esMX;
+		entry.verbose_name.en_gb = dbc.strings + dbc.records[i].verbose_name.en_gb;
+		entry.verbose_name.ko_kr = dbc.strings + dbc.records[i].verbose_name.ko_kr;
+		entry.verbose_name.fr_fr = dbc.strings + dbc.records[i].verbose_name.fr_fr;
+		entry.verbose_name.de_de = dbc.strings + dbc.records[i].verbose_name.de_de;
+		entry.verbose_name.en_cn = dbc.strings + dbc.records[i].verbose_name.en_cn;
+		entry.verbose_name.en_tw = dbc.strings + dbc.records[i].verbose_name.en_tw;
+		entry.verbose_name.es_es = dbc.strings + dbc.records[i].verbose_name.es_es;
+		entry.verbose_name.es_mx = dbc.strings + dbc.records[i].verbose_name.es_mx;
 
 		storage.item_sub_class.emplace_back(dbc.records[i].item_class, entry);
 	}
@@ -922,14 +945,14 @@ void load_map(Storage& storage, const std::string& dir_path) {
 		entry.battleground = dbc.records[i].battleground;
 
 		 // string_ref_loc block
-		entry.map_name.enGB = dbc.strings + dbc.records[i].map_name.enGB;
-		entry.map_name.koKR = dbc.strings + dbc.records[i].map_name.koKR;
-		entry.map_name.frFR = dbc.strings + dbc.records[i].map_name.frFR;
-		entry.map_name.deDE = dbc.strings + dbc.records[i].map_name.deDE;
-		entry.map_name.enCN = dbc.strings + dbc.records[i].map_name.enCN;
-		entry.map_name.enTW = dbc.strings + dbc.records[i].map_name.enTW;
-		entry.map_name.esES = dbc.strings + dbc.records[i].map_name.esES;
-		entry.map_name.esMX = dbc.strings + dbc.records[i].map_name.esMX;
+		entry.map_name.en_gb = dbc.strings + dbc.records[i].map_name.en_gb;
+		entry.map_name.ko_kr = dbc.strings + dbc.records[i].map_name.ko_kr;
+		entry.map_name.fr_fr = dbc.strings + dbc.records[i].map_name.fr_fr;
+		entry.map_name.de_de = dbc.strings + dbc.records[i].map_name.de_de;
+		entry.map_name.en_cn = dbc.strings + dbc.records[i].map_name.en_cn;
+		entry.map_name.en_tw = dbc.strings + dbc.records[i].map_name.en_tw;
+		entry.map_name.es_es = dbc.strings + dbc.records[i].map_name.es_es;
+		entry.map_name.es_mx = dbc.strings + dbc.records[i].map_name.es_mx;
 
 		entry.min_level = dbc.records[i].min_level;
 		entry.max_level = dbc.records[i].max_level;
@@ -942,25 +965,25 @@ void load_map(Storage& storage, const std::string& dir_path) {
 		entry.area_table_id = dbc.records[i].area_table;
 
 		 // string_ref_loc block
-		entry.map_description_horde.enGB = dbc.strings + dbc.records[i].map_description_horde.enGB;
-		entry.map_description_horde.koKR = dbc.strings + dbc.records[i].map_description_horde.koKR;
-		entry.map_description_horde.frFR = dbc.strings + dbc.records[i].map_description_horde.frFR;
-		entry.map_description_horde.deDE = dbc.strings + dbc.records[i].map_description_horde.deDE;
-		entry.map_description_horde.enCN = dbc.strings + dbc.records[i].map_description_horde.enCN;
-		entry.map_description_horde.enTW = dbc.strings + dbc.records[i].map_description_horde.enTW;
-		entry.map_description_horde.esES = dbc.strings + dbc.records[i].map_description_horde.esES;
-		entry.map_description_horde.esMX = dbc.strings + dbc.records[i].map_description_horde.esMX;
+		entry.map_description_horde.en_gb = dbc.strings + dbc.records[i].map_description_horde.en_gb;
+		entry.map_description_horde.ko_kr = dbc.strings + dbc.records[i].map_description_horde.ko_kr;
+		entry.map_description_horde.fr_fr = dbc.strings + dbc.records[i].map_description_horde.fr_fr;
+		entry.map_description_horde.de_de = dbc.strings + dbc.records[i].map_description_horde.de_de;
+		entry.map_description_horde.en_cn = dbc.strings + dbc.records[i].map_description_horde.en_cn;
+		entry.map_description_horde.en_tw = dbc.strings + dbc.records[i].map_description_horde.en_tw;
+		entry.map_description_horde.es_es = dbc.strings + dbc.records[i].map_description_horde.es_es;
+		entry.map_description_horde.es_mx = dbc.strings + dbc.records[i].map_description_horde.es_mx;
 
 
 		 // string_ref_loc block
-		entry.map_description_alliance.enGB = dbc.strings + dbc.records[i].map_description_alliance.enGB;
-		entry.map_description_alliance.koKR = dbc.strings + dbc.records[i].map_description_alliance.koKR;
-		entry.map_description_alliance.frFR = dbc.strings + dbc.records[i].map_description_alliance.frFR;
-		entry.map_description_alliance.deDE = dbc.strings + dbc.records[i].map_description_alliance.deDE;
-		entry.map_description_alliance.enCN = dbc.strings + dbc.records[i].map_description_alliance.enCN;
-		entry.map_description_alliance.enTW = dbc.strings + dbc.records[i].map_description_alliance.enTW;
-		entry.map_description_alliance.esES = dbc.strings + dbc.records[i].map_description_alliance.esES;
-		entry.map_description_alliance.esMX = dbc.strings + dbc.records[i].map_description_alliance.esMX;
+		entry.map_description_alliance.en_gb = dbc.strings + dbc.records[i].map_description_alliance.en_gb;
+		entry.map_description_alliance.ko_kr = dbc.strings + dbc.records[i].map_description_alliance.ko_kr;
+		entry.map_description_alliance.fr_fr = dbc.strings + dbc.records[i].map_description_alliance.fr_fr;
+		entry.map_description_alliance.de_de = dbc.strings + dbc.records[i].map_description_alliance.de_de;
+		entry.map_description_alliance.en_cn = dbc.strings + dbc.records[i].map_description_alliance.en_cn;
+		entry.map_description_alliance.en_tw = dbc.strings + dbc.records[i].map_description_alliance.en_tw;
+		entry.map_description_alliance.es_es = dbc.strings + dbc.records[i].map_description_alliance.es_es;
+		entry.map_description_alliance.es_mx = dbc.strings + dbc.records[i].map_description_alliance.es_mx;
 
 		entry.loading_screen_id = dbc.records[i].loading_screen;
 		entry.raid_offset = dbc.records[i].raid_offset;
@@ -1028,14 +1051,14 @@ void load_resistances(Storage& storage, const std::string& dir_path) {
 		entry.fizzle_sound_entry_id = dbc.records[i].fizzle_sound_entry;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		storage.resistances.emplace_back(entry.id, entry);
 	}
@@ -1265,47 +1288,47 @@ void load_spell(Storage& storage, const std::string& dir_path) {
 		entry.unknown_flag = dbc.records[i].unknown_flag;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 
 		 // string_ref_loc block
-		entry.name_subtext.enGB = dbc.strings + dbc.records[i].name_subtext.enGB;
-		entry.name_subtext.koKR = dbc.strings + dbc.records[i].name_subtext.koKR;
-		entry.name_subtext.frFR = dbc.strings + dbc.records[i].name_subtext.frFR;
-		entry.name_subtext.deDE = dbc.strings + dbc.records[i].name_subtext.deDE;
-		entry.name_subtext.enCN = dbc.strings + dbc.records[i].name_subtext.enCN;
-		entry.name_subtext.enTW = dbc.strings + dbc.records[i].name_subtext.enTW;
-		entry.name_subtext.esES = dbc.strings + dbc.records[i].name_subtext.esES;
-		entry.name_subtext.esMX = dbc.strings + dbc.records[i].name_subtext.esMX;
+		entry.name_subtext.en_gb = dbc.strings + dbc.records[i].name_subtext.en_gb;
+		entry.name_subtext.ko_kr = dbc.strings + dbc.records[i].name_subtext.ko_kr;
+		entry.name_subtext.fr_fr = dbc.strings + dbc.records[i].name_subtext.fr_fr;
+		entry.name_subtext.de_de = dbc.strings + dbc.records[i].name_subtext.de_de;
+		entry.name_subtext.en_cn = dbc.strings + dbc.records[i].name_subtext.en_cn;
+		entry.name_subtext.en_tw = dbc.strings + dbc.records[i].name_subtext.en_tw;
+		entry.name_subtext.es_es = dbc.strings + dbc.records[i].name_subtext.es_es;
+		entry.name_subtext.es_mx = dbc.strings + dbc.records[i].name_subtext.es_mx;
 
 
 		 // string_ref_loc block
-		entry.description.enGB = dbc.strings + dbc.records[i].description.enGB;
-		entry.description.koKR = dbc.strings + dbc.records[i].description.koKR;
-		entry.description.frFR = dbc.strings + dbc.records[i].description.frFR;
-		entry.description.deDE = dbc.strings + dbc.records[i].description.deDE;
-		entry.description.enCN = dbc.strings + dbc.records[i].description.enCN;
-		entry.description.enTW = dbc.strings + dbc.records[i].description.enTW;
-		entry.description.esES = dbc.strings + dbc.records[i].description.esES;
-		entry.description.esMX = dbc.strings + dbc.records[i].description.esMX;
+		entry.description.en_gb = dbc.strings + dbc.records[i].description.en_gb;
+		entry.description.ko_kr = dbc.strings + dbc.records[i].description.ko_kr;
+		entry.description.fr_fr = dbc.strings + dbc.records[i].description.fr_fr;
+		entry.description.de_de = dbc.strings + dbc.records[i].description.de_de;
+		entry.description.en_cn = dbc.strings + dbc.records[i].description.en_cn;
+		entry.description.en_tw = dbc.strings + dbc.records[i].description.en_tw;
+		entry.description.es_es = dbc.strings + dbc.records[i].description.es_es;
+		entry.description.es_mx = dbc.strings + dbc.records[i].description.es_mx;
 
 
 		 // string_ref_loc block
-		entry.aura_description.enGB = dbc.strings + dbc.records[i].aura_description.enGB;
-		entry.aura_description.koKR = dbc.strings + dbc.records[i].aura_description.koKR;
-		entry.aura_description.frFR = dbc.strings + dbc.records[i].aura_description.frFR;
-		entry.aura_description.deDE = dbc.strings + dbc.records[i].aura_description.deDE;
-		entry.aura_description.enCN = dbc.strings + dbc.records[i].aura_description.enCN;
-		entry.aura_description.enTW = dbc.strings + dbc.records[i].aura_description.enTW;
-		entry.aura_description.esES = dbc.strings + dbc.records[i].aura_description.esES;
-		entry.aura_description.esMX = dbc.strings + dbc.records[i].aura_description.esMX;
+		entry.aura_description.en_gb = dbc.strings + dbc.records[i].aura_description.en_gb;
+		entry.aura_description.ko_kr = dbc.strings + dbc.records[i].aura_description.ko_kr;
+		entry.aura_description.fr_fr = dbc.strings + dbc.records[i].aura_description.fr_fr;
+		entry.aura_description.de_de = dbc.strings + dbc.records[i].aura_description.de_de;
+		entry.aura_description.en_cn = dbc.strings + dbc.records[i].aura_description.en_cn;
+		entry.aura_description.en_tw = dbc.strings + dbc.records[i].aura_description.en_tw;
+		entry.aura_description.es_es = dbc.strings + dbc.records[i].aura_description.es_es;
+		entry.aura_description.es_mx = dbc.strings + dbc.records[i].aura_description.es_mx;
 
 		entry.mana_cost_percent = dbc.records[i].mana_cost_percent;
 		entry.start_recovery_category = dbc.records[i].start_recovery_category;
@@ -1401,14 +1424,14 @@ void load_spell_focus_object(Storage& storage, const std::string& dir_path) {
 		entry.id = dbc.records[i].id;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		storage.spell_focus_object.emplace_back(entry.id, entry);
 	}
@@ -1454,14 +1477,14 @@ void load_spell_item_enchantment(Storage& storage, const std::string& dir_path) 
 
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		entry.item_visual_id = dbc.records[i].item_visual;
 		entry.flags = dbc.records[i].flags;
@@ -1479,14 +1502,14 @@ void load_spell_mechanic(Storage& storage, const std::string& dir_path) {
 		entry.id = dbc.records[i].id;
 
 		 // string_ref_loc block
-		entry.state_name.enGB = dbc.strings + dbc.records[i].state_name.enGB;
-		entry.state_name.koKR = dbc.strings + dbc.records[i].state_name.koKR;
-		entry.state_name.frFR = dbc.strings + dbc.records[i].state_name.frFR;
-		entry.state_name.deDE = dbc.strings + dbc.records[i].state_name.deDE;
-		entry.state_name.enCN = dbc.strings + dbc.records[i].state_name.enCN;
-		entry.state_name.enTW = dbc.strings + dbc.records[i].state_name.enTW;
-		entry.state_name.esES = dbc.strings + dbc.records[i].state_name.esES;
-		entry.state_name.esMX = dbc.strings + dbc.records[i].state_name.esMX;
+		entry.state_name.en_gb = dbc.strings + dbc.records[i].state_name.en_gb;
+		entry.state_name.ko_kr = dbc.strings + dbc.records[i].state_name.ko_kr;
+		entry.state_name.fr_fr = dbc.strings + dbc.records[i].state_name.fr_fr;
+		entry.state_name.de_de = dbc.strings + dbc.records[i].state_name.de_de;
+		entry.state_name.en_cn = dbc.strings + dbc.records[i].state_name.en_cn;
+		entry.state_name.en_tw = dbc.strings + dbc.records[i].state_name.en_tw;
+		entry.state_name.es_es = dbc.strings + dbc.records[i].state_name.es_es;
+		entry.state_name.es_mx = dbc.strings + dbc.records[i].state_name.es_mx;
 
 		storage.spell_mechanic.emplace_back(entry.id, entry);
 	}
@@ -1520,25 +1543,25 @@ void load_spell_range(Storage& storage, const std::string& dir_path) {
 		entry.flags = dbc.records[i].flags;
 
 		 // string_ref_loc block
-		entry.display_name.enGB = dbc.strings + dbc.records[i].display_name.enGB;
-		entry.display_name.koKR = dbc.strings + dbc.records[i].display_name.koKR;
-		entry.display_name.frFR = dbc.strings + dbc.records[i].display_name.frFR;
-		entry.display_name.deDE = dbc.strings + dbc.records[i].display_name.deDE;
-		entry.display_name.enCN = dbc.strings + dbc.records[i].display_name.enCN;
-		entry.display_name.enTW = dbc.strings + dbc.records[i].display_name.enTW;
-		entry.display_name.esES = dbc.strings + dbc.records[i].display_name.esES;
-		entry.display_name.esMX = dbc.strings + dbc.records[i].display_name.esMX;
+		entry.display_name.en_gb = dbc.strings + dbc.records[i].display_name.en_gb;
+		entry.display_name.ko_kr = dbc.strings + dbc.records[i].display_name.ko_kr;
+		entry.display_name.fr_fr = dbc.strings + dbc.records[i].display_name.fr_fr;
+		entry.display_name.de_de = dbc.strings + dbc.records[i].display_name.de_de;
+		entry.display_name.en_cn = dbc.strings + dbc.records[i].display_name.en_cn;
+		entry.display_name.en_tw = dbc.strings + dbc.records[i].display_name.en_tw;
+		entry.display_name.es_es = dbc.strings + dbc.records[i].display_name.es_es;
+		entry.display_name.es_mx = dbc.strings + dbc.records[i].display_name.es_mx;
 
 
 		 // string_ref_loc block
-		entry.display_name_short.enGB = dbc.strings + dbc.records[i].display_name_short.enGB;
-		entry.display_name_short.koKR = dbc.strings + dbc.records[i].display_name_short.koKR;
-		entry.display_name_short.frFR = dbc.strings + dbc.records[i].display_name_short.frFR;
-		entry.display_name_short.deDE = dbc.strings + dbc.records[i].display_name_short.deDE;
-		entry.display_name_short.enCN = dbc.strings + dbc.records[i].display_name_short.enCN;
-		entry.display_name_short.enTW = dbc.strings + dbc.records[i].display_name_short.enTW;
-		entry.display_name_short.esES = dbc.strings + dbc.records[i].display_name_short.esES;
-		entry.display_name_short.esMX = dbc.strings + dbc.records[i].display_name_short.esMX;
+		entry.display_name_short.en_gb = dbc.strings + dbc.records[i].display_name_short.en_gb;
+		entry.display_name_short.ko_kr = dbc.strings + dbc.records[i].display_name_short.ko_kr;
+		entry.display_name_short.fr_fr = dbc.strings + dbc.records[i].display_name_short.fr_fr;
+		entry.display_name_short.de_de = dbc.strings + dbc.records[i].display_name_short.de_de;
+		entry.display_name_short.en_cn = dbc.strings + dbc.records[i].display_name_short.en_cn;
+		entry.display_name_short.en_tw = dbc.strings + dbc.records[i].display_name_short.en_tw;
+		entry.display_name_short.es_es = dbc.strings + dbc.records[i].display_name_short.es_es;
+		entry.display_name_short.es_mx = dbc.strings + dbc.records[i].display_name_short.es_mx;
 
 		storage.spell_range.emplace_back(entry.id, entry);
 	}
@@ -1555,14 +1578,14 @@ void load_spell_shapeshift_form(Storage& storage, const std::string& dir_path) {
 		entry.bonus_action_bar = dbc.records[i].bonus_action_bar;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		entry.flags = dbc.records[i].flags;
 		entry.creature_type = dbc.records[i].creature_type;
@@ -1702,14 +1725,14 @@ void load_talent_tab(Storage& storage, const std::string& dir_path) {
 		entry.id = dbc.records[i].id;
 
 		 // string_ref_loc block
-		entry.name.enGB = dbc.strings + dbc.records[i].name.enGB;
-		entry.name.koKR = dbc.strings + dbc.records[i].name.koKR;
-		entry.name.frFR = dbc.strings + dbc.records[i].name.frFR;
-		entry.name.deDE = dbc.strings + dbc.records[i].name.deDE;
-		entry.name.enCN = dbc.strings + dbc.records[i].name.enCN;
-		entry.name.enTW = dbc.strings + dbc.records[i].name.enTW;
-		entry.name.esES = dbc.strings + dbc.records[i].name.esES;
-		entry.name.esMX = dbc.strings + dbc.records[i].name.esMX;
+		entry.name.en_gb = dbc.strings + dbc.records[i].name.en_gb;
+		entry.name.ko_kr = dbc.strings + dbc.records[i].name.ko_kr;
+		entry.name.fr_fr = dbc.strings + dbc.records[i].name.fr_fr;
+		entry.name.de_de = dbc.strings + dbc.records[i].name.de_de;
+		entry.name.en_cn = dbc.strings + dbc.records[i].name.en_cn;
+		entry.name.en_tw = dbc.strings + dbc.records[i].name.en_tw;
+		entry.name.es_es = dbc.strings + dbc.records[i].name.es_es;
+		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 		entry.spell_icon_id = dbc.records[i].spell_icon;
 		entry.race_mask_id = dbc.records[i].race_mask;
@@ -1782,6 +1805,7 @@ void load_zone_music(Storage& storage, const std::string& dir_path) {
 
 DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
                        : log_cb_(std::move(log_cb)), dir_path_(std::move(dir_path)) {
+	dbc_map.emplace("AddonData", detail::load_addon_data);
 	dbc_map.emplace("AnimationData", detail::load_animation_data);
 	dbc_map.emplace("AreaTable", detail::load_area_table);
 	dbc_map.emplace("CameraShakes", detail::load_camera_shakes);
@@ -1869,6 +1893,8 @@ Storage DiskLoader::load(const std::vector<std::string>& whitelist) const {
 
 Storage DiskLoader::load() const {
 	Storage storage;
+	log_cb_("Loading AddonData DBC data...");
+	detail::load_addon_data(storage, dir_path_);
 	log_cb_("Loading AnimationData DBC data...");
 	detail::load_animation_data(storage, dir_path_);
 	log_cb_("Loading AreaTable DBC data...");

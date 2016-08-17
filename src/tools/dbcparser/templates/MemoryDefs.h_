@@ -20,14 +20,14 @@
 namespace ember { namespace dbc {
 
 struct StringRefLoc {
-	std::string enGB;
-	std::string koKR;
-	std::string frFR;
-	std::string deDE;
-	std::string enCN;
-	std::string enTW;
-	std::string esES;
-	std::string esMX;
+	std::string en_gb;
+	std::string ko_kr;
+	std::string fr_fr;
+	std::string de_de;
+	std::string en_cn;
+	std::string en_tw;
+	std::string es_es;
+	std::string es_mx;
 	std::uint32_t flags;
 };
 

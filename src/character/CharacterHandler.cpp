@@ -355,8 +355,8 @@ void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>&
 	});
 
 	if(base_info == dbc_.char_start_base.end()) {
-		LOG_ERROR(logger_) << "Unable to find base data for " << race->name.enGB << " "
-			<< class_->name.enGB << LOG_ASYNC;
+		LOG_ERROR(logger_) << "Unable to find base data for " << race->name.en_gb << " "
+			<< class_->name.en_gb << LOG_ASYNC;
 		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
 		return;
 	}
@@ -379,11 +379,11 @@ void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>&
 	const char* subzone = nullptr;
 
 	if(zone->area->parent_area_table_id) {
-		subzone = zone->area->parent_area_table->area_name.enGB.c_str();
+		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
 	}
 
-	LOG_DEBUG(logger_) << "Creating " << race->name.enGB << " " << class_->name.enGB << " at "
-		<< zone->area->area_name.enGB << (subzone ? ", " : " ") << (subzone ? subzone : " ")
+	LOG_DEBUG(logger_) << "Creating " << race->name.en_gb << " " << class_->name.en_gb << " at "
+		<< zone->area->area_name.en_gb << (subzone ? ", " : " ") << (subzone ? subzone : " ")
 		<< LOG_ASYNC;
 
 	pool_.run([=] {

@@ -20,17 +20,18 @@
 namespace ember { namespace dbc {
 
 struct StringRefLoc {
-	std::string enGB;
-	std::string koKR;
-	std::string frFR;
-	std::string deDE;
-	std::string enCN;
-	std::string enTW;
-	std::string esES;
-	std::string esMX;
+	std::string en_gb;
+	std::string ko_kr;
+	std::string fr_fr;
+	std::string de_de;
+	std::string en_cn;
+	std::string en_tw;
+	std::string es_es;
+	std::string es_mx;
 	std::uint32_t flags;
 };
 
+struct AddonData;
 struct AnimationData;
 struct AreaTable;
 struct CameraShakes;
@@ -96,6 +97,23 @@ struct TalentTab;
 struct UnitBlood;
 struct ZoneIntroMusicTable;
 struct ZoneMusic;
+
+struct AddonData {
+	enum class Type : std::uint8_t {
+		BANNED = 0x00, 
+		ENABLED = 0x01, 
+		BLIZZARD = 0x02
+	};
+
+	std::uint32_t id;
+	std::string name;
+	std::string url;
+	bool update_flag;
+	Type type;
+	std::uint32_t key_crc;
+	std::uint8_t key_version;
+	std::uint8_t public_key[256];
+};
 
 struct AnimationData {
 	enum class WeaponFlags : std::int32_t {
@@ -225,7 +243,7 @@ struct CharStartBase {
 	const CharStartZones* zone;
 	std::uint32_t zone_id;
 	const CharStartOutfit* outfit;
-	std::uint32_t outfit_id;
+	std::uint32_t outfit_id; // todo, delete - unused
 };
 
 struct CharStartOutfit {
@@ -832,7 +850,7 @@ struct SoundProviderPreferences {
 	float eax3_lf_reference;
 };
 
-struct Spell {
+struct Spell { // todo, size is correct but number of fields isn't
 	std::uint32_t id;
 	const Resistances* school;
 	std::uint32_t school_id;

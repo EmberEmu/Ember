@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,7 @@
 namespace ember { namespace dbc {
 
 struct Storage {
+	DBCMap<AddonData> addon_data;
 	DBCMap<AnimationData> animation_data;
 	DBCMap<AreaTable> area_table;
 	DBCMap<CameraShakes> camera_shakes;
@@ -94,6 +95,7 @@ struct Storage {
 
 	//explicit because msvc is missing default move support
 	void moves(Storage& src) {
+		addon_data = std::move(addon_data);
 		animation_data = std::move(animation_data);
 		area_table = std::move(area_table);
 		camera_shakes = std::move(camera_shakes);
@@ -168,6 +170,7 @@ struct Storage {
 
 	Storage& operator=(Storage&& src) {
 		moves(src);
+		return *this;
 	}
 };
 

@@ -13,6 +13,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 namespace ember { namespace dbc {
 
@@ -22,6 +23,54 @@ void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, 
 void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent);
+
+// todo, delete this - already exists
+template<typename T>
+void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
+	for(auto f : dbc->fields) {
+		// if this is a user-defined struct, we need to go through that type too
+		// if it's an enum, we can just grab the underlying type
+		auto components = extract_components(f.underlying_type);
+		auto it = type_map.find(components.first);
+
+		if(it != type_map.end()) {
+			visitor.visit(&f);
+		} else {
+			auto found = locate_type_base(*dbc, f.underlying_type);
+
+			if(!found) {
+				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
+			}
+
+			if(found->type == types::STRUCT) {
+				walk_dbc_fields(static_cast<types::Struct*>(found), visitor);
+			} else if(found->type == types::ENUM) {
+				visitor.visit(static_cast<types::Enum*>(found));
+			}
+		}
+	}
+}
+
+class StructFieldEnum : public types::TypeVisitor {
+	std::vector<std::string> names_;
+
+public:
+	void visit(const types::Struct* type) override {
+		std::cout << type->name << "\n";
+	}
+
+	void visit(const types::Enum* type) override {
+		// we don't care about enums
+	}
+
+	void visit(const types::Field* type) override {
+		names_.emplace_back(type->name);
+	}
+
+	std::vector<std::string> names() {
+		return names_;
+	}
+};
 
 boost::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
 	for(auto& f : base.children) {
@@ -73,8 +122,9 @@ std::stringstream read_template(const std::string& template_file) {
 }
 
 void generate_linker(const types::Definitions& defs, const std::string& output) {
-	std::stringstream buffer(read_template("Linker.cpp_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_LINKING_FUNCTIONS%>([^]+)<%TEMPLATE_LINKING_FUNCTION_CALLS%>([^]+))");
+
+	std::stringstream buffer(read_template("Linker.cpp_"));
 	std::stringstream functions, calls;
 
 	for(auto& def : defs) {
@@ -83,6 +133,12 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 		}
 			
 		auto dbc = static_cast<types::Struct*>(def.get());
+
+		// don't produce linking code for structs
+		if(!dbc->dbc) {
+			continue;
+		}
+
 		std::string store_name = def->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
 		std::stringstream call, func;
 		bool write_func = false;
@@ -163,8 +219,9 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 }
 
 void generate_disk_loader(const types::Definitions& defs, const std::string& output) {
-	std::stringstream buffer(read_template("DiskLoader.cpp_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
+
+	std::stringstream buffer(read_template("DiskLoader.cpp_"));
 	std::stringstream functions, insertions, calls;
 
 	for(auto& def : defs) {
@@ -244,20 +301,38 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			}
 
 			std::stringstream cast;
+			StructFieldEnum enumerator;
 
-			if(type_map.find(components.first) == type_map.end()) {
+			if(type_map.find(components.first) == type_map.end()) { // user-defined type handling
 				auto t = locate_type(dbc, type);
 
 				if(!t) {
 					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc.name);
 				}
 
-				cast << "static_cast<" << *t << "::" << type << ">(";
+				auto base = locate_type_base(dbc, type);
+				
+				if(!base) {
+					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc.name);
+				}
+
+				if(base->type == types::ENUM) {
+					cast << "static_cast<" << *t << "::" << type << ">(";
+				} else if(base->type == types::STRUCT) {
+					walk_dbc_fields(static_cast<types::Struct*>(base), enumerator);
+				} else {
+					throw std::runtime_error("Unhandled type (not a struct or enum) found: " + components.first + " in DBC: " + dbc.name);
+				}
 			}
+
+			// I don't even.
+			auto names = enumerator.names();
+			std::stringstream field;
+			std::vector<std::string> field_left, field_right;
 
 			// hardcoded, bad, like the rest of this file
 			std::vector<std::string> locales = { 
-				"enGB", "koKR", "frFR", "deDE", "enCN", "enTW", "esES", "esMX"
+				"en_gb", "ko_kr", "fr_fr", "de_de", "en_cn", "en_tw", "es_es", "es_mx"
 			};
 
 			if(components.first == "string_ref_loc") {
@@ -270,17 +345,37 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 
 				functions << "\n";
 			} else {
-				functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id" : "")
-					<< (array ? "[j]" : "") << " = " << cast.str();
+				if(names.empty()) {
+					functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id" : "")
+						<< (array ? "[j]" : "") << " = " << cast.str();
+				} else {
+					for(auto& name : names) {
+						field << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id" : "")
+							<< (array ? "[j]" : "") << "." << name << " = " << cast.str();
+						field_left.push_back(field.str());
+						field.str("");
+					}
+				}
 			}
-
 
 			if(components.first == "string_ref") {
 				functions << "dbc.strings + ";
 			}
 			
 			if(components.first != "string_ref_loc") {
-				functions << "dbc.records[i]." << f.name << (array ? "[j]" : "") << (cast.str().empty() ? "" : ")") << ";" << std::endl;
+				if(names.empty()) {
+					functions << "dbc.records[i]." << f.name << (array ? "[j]" : "") << (cast.str().empty() ? "" : ")") << ";" << std::endl;
+				} else {
+					for(auto& name : names) {
+						field << "dbc.records[i]." << f.name << (array ? "[j]" : "") << "." << name << (cast.str().empty() ? "" : ")") << ";" << std::endl;
+						field_right.push_back(field.str());
+						field.str("");
+					}
+				}
+			}
+
+			for(std::size_t i = 0; i < field_left.size(); ++i) {
+				functions << field_left[i] << field_right[i];
 			}
 
 			if(array) {
@@ -321,11 +416,6 @@ void generate_disk_struct_recursive(const types::Struct& def, std::stringstream&
 }
 
 void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
-	// only load DBCs, not shared structs
-	if(!def.dbc) {
-		return;
-	}
-
 	std::string tab("\t", indent);
 
 	definitions << tab << "struct " << def.name << " {" << std::endl;
@@ -352,8 +442,9 @@ void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, 
 }
 
 void generate_disk_defs(const types::Definitions& defs, const std::string& output) {
-	std::stringstream buffer(read_template("DiskDefs.h_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
+
+	std::stringstream buffer(read_template("DiskDefs.h_"));
 	std::stringstream definitions;
 
 	for(auto& def : defs) {
@@ -462,8 +553,9 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 }
 
 void generate_memory_defs(const types::Definitions& defs, const std::string& output) {
-	std::stringstream buffer(read_template("MemoryDefs.h_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_MEMORY_FORWARD_DECL%>([^]+)<%TEMPLATE_MEMORY_DEFINITIONS%>([^]+))");
+
+	std::stringstream buffer(read_template("MemoryDefs.h_"));
 	std::stringstream forward_decls, definitions;
 
 	for(auto& def : defs) {
@@ -485,8 +577,9 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 }
 
 void generate_storage(const types::Definitions& defs, const std::string& output) {
-	std::stringstream buffer(read_template("Storage.h_"));
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>([^]+)<%TEMPLATE_MOVES%>([^]+))");
+
+	std::stringstream buffer(read_template("Storage.h_"));
 	std::stringstream declarations, moves;
 
 	for(auto& def : defs) {

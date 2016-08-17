@@ -30,18 +30,30 @@ typedef std::uint32_t bool32;
 #pragma pack(push, 1)
 
 struct StringRefLoc {
-	string_ref enGB;
-	string_ref koKR;
-	string_ref frFR;
-	string_ref deDE;
-	string_ref enCN;
-	string_ref enTW;
-	string_ref esES;
-	string_ref esMX;
+	string_ref en_gb;
+	string_ref ko_kr;
+	string_ref fr_fr;
+	string_ref de_de;
+	string_ref en_cn;
+	string_ref en_tw;
+	string_ref es_es;
+	string_ref es_mx;
 	std::uint32_t flags;
 };
 
 typedef StringRefLoc string_ref_loc;
+
+struct AddonData {
+	typedef uint8 Type;
+	uint32 id;
+	string_ref name;
+	string_ref url;
+	bool update_flag;
+	Type type;
+	uint32 key_crc;
+	uint8 key_version;
+	uint8 public_key[256];
+};
 
 struct AnimationData {
 	typedef int32 WeaponFlags;
