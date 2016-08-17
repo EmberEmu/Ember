@@ -87,7 +87,10 @@ void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t 
 		return;
 	}
 
-	// todo, transfer lock
+	if((res->flags & Character::Flags::LOCKED_FOR_TRANSFER) == Character::Flags::LOCKED_FOR_TRANSFER) {
+		callback(protocol::ResultCode::CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER);
+		return;
+	}
 
 	// character cannot be a guild leader (no specific guild leader deletion message until TBC)
 	if(res->guild_rank == 1) { // todo, ranks need defined properly
@@ -138,7 +141,6 @@ void CharacterHandler::rename_validate(std::uint32_t account_id,
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!character) {
-		LOG_TRACE(logger_) << "1" << LOG_ASYNC;
 		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
 		return;
 	}
