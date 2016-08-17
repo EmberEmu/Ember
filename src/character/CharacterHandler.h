@@ -55,13 +55,13 @@ class CharacterHandler {
 	                      Character& character, const ResultCB& callback) const;
 
 	void name_collision_callback(const std::string& name, std::uint32_t realm_id,
-								 const ResultCB& callback) const;
+	                             const ResultCB& callback) const;
 
 	void rename_validate(std::uint32_t account_id, const boost::optional<Character>& character,
 	                     const std::string& name, const RenameCB& callback) const;
 
 	void rename_finalise(Character character, const std::string& name,
-						 const RenameCB& callback) const;
+	                     const RenameCB& callback) const;
 
 public:
 	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
@@ -71,10 +71,10 @@ public:
 
 	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
 	                      const messaging::character::CharacterTemplate& options,
-						  ResultCB callback) const;
+	                      ResultCB callback) const;
 
 	void delete_character(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_guid,
-						  ResultCB callback) const;
+	                      ResultCB callback) const;
 
 	void enum_characters(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB callback) const;
 
