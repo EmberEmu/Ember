@@ -24,6 +24,7 @@
 #include <shared/Version.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
+#include <dbcreader/DBCReader.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <boost/asio.hpp>
@@ -79,6 +80,16 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
+
+	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
+	ember::dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
+		LOG_DEBUG(logger) << message << LOG_SYNC;
+	});
+
+	auto dbc_store = loader.load({"AddonData"});
+
+	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
+	ember::dbc::link(dbc_store);
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
@@ -173,6 +184,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
+		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())
 		("realm.max-slots", po::value<unsigned int>()->required())
