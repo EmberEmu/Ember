@@ -27,7 +27,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
                                         ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	Character character;
+	Character character{};
 	character.race = options.race();
 	character.name = options.name()->c_str();
 	character.account_id = account_id;
