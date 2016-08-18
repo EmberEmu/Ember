@@ -71,35 +71,53 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	});
 }
 
-void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        std::uint64_t character_guid, ResultCB callback) const {
+void CharacterHandler::delete_callback(std::uint32_t account_id, std::uint32_t realm_id,
+									   std::uint64_t character_id, const boost::optional<Character>& character,
+									   const ResultCB& callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// temp, as usual
-	auto res = dao_.character(character_guid);
-
 	// character must exist, belong to the same account and be on the same realm
-	if(!res || res->account_id != account_id || res->realm_id != realm_id) {
+	if(!character || character->account_id != account_id || character->realm_id != realm_id) {
 		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
 			<< "Account " << account_id << " attempted an invalid delete on character "
-			<< character_guid << LOG_ASYNC;
+			<< character_id << LOG_ASYNC;
 		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
 		return;
 	}
 
-	if((res->flags & Character::Flags::LOCKED_FOR_TRANSFER) == Character::Flags::LOCKED_FOR_TRANSFER) {
+	if((character->flags & Character::Flags::LOCKED_FOR_TRANSFER) == Character::Flags::LOCKED_FOR_TRANSFER) {
 		callback(protocol::ResultCode::CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER);
 		return;
 	}
 
 	// character cannot be a guild leader (no specific guild leader deletion message until TBC)
-	if(res->guild_rank == 1) { // todo, ranks need defined properly
+	if(character->guild_rank == 1) { // todo, ranks need defined properly
 		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
 		return;
 	}
 
-	dao_.delete_character(character_guid);
-	callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
+	pool_.run([=] {
+		try {
+			dao_.delete_character(character_id);
+			callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
+		} catch(dal::exception& e) {
+			callback(protocol::ResultCode::CHAR_DELETE_FAILED);
+		}
+	});
+}
+
+void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t realm_id,
+                                        std::uint64_t character_id, ResultCB callback) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	pool_.run([=] {
+		try {
+			auto character = dao_.character(character_id);
+			delete_callback(account_id, realm_id, character_id, character, callback);
+		} catch(dal::exception& e) {
+			callback(protocol::ResultCode::CHAR_DELETE_FAILED);
+		}
+	});
 }
 
 void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id,
@@ -171,13 +189,13 @@ void CharacterHandler::rename_validate(std::uint32_t account_id,
 	});
 }
 
-void CharacterHandler::rename_character(std::uint32_t account_id, std::uint64_t character_guid,
+void CharacterHandler::rename_character(std::uint32_t account_id, std::uint64_t character_id,
                                         const std::string& name, RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
 		try {
-			auto character = dao_.character(character_guid);
+			auto character = dao_.character(character_id);
 			rename_validate(account_id, character, name, callback);
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;

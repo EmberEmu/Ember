@@ -205,28 +205,6 @@ void Service::send_response(const spark::Link& link, const std::vector<std::uint
 	spark_.send(link, fbb);
 }
 
-void Service::send_response(const spark::Link& link, const em::MessageRoot* root,
-                            messaging::character::Status status, protocol::ResultCode result) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	em::character::CharResponseBuilder rb(*fbb);
-	rb.add_status(status);
-	rb.add_result(static_cast<std::uint32_t>(result));
-	auto data_offset = rb.Finish();
-
-	em::MessageRootBuilder mrb(*fbb);
-	mrb.add_service(em::Service::Character);
-	mrb.add_data_type(em::Data::CharResponse);
-	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
-	auto mloc = mrb.Finish();
-
-	fbb->Finish(mloc);
-	spark_.send(link, fbb);
-}
-
-// todo
 void Service::delete_character(const spark::Link& link, const em::MessageRoot* root) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -236,9 +214,8 @@ void Service::delete_character(const spark::Link& link, const em::MessageRoot* r
 	handler_.delete_character(msg->account_id(), msg->realm_id(), msg->character_id(),
 	                          [&, link, tracking](auto res) {
 		LOG_DEBUG(logger_) << "Deletion response code: " << protocol::to_string(res) << LOG_ASYNC;
-		send_response(link, root, messaging::character::Status::OK, res);
+		send_response(link, tracking, messaging::character::Status::OK, res);
 	});
-
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
@@ -252,7 +229,7 @@ void Service::rename_character(const spark::Link& link, const em::MessageRoot* r
 	if(!msg->name() || !msg->account_id() || !msg->character_id()) {
 		LOG_WARN(logger_) << "Illformed rename request from " << link.description << LOG_ASYNC;
 
-		send_response(link, root, messaging::character::Status::ILLFORMED_MESSAGE,
+		send_response(link, tracking, messaging::character::Status::ILLFORMED_MESSAGE,
 		              protocol::ResultCode::CHAR_NAME_FAILURE);
 		return;
 	}

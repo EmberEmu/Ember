@@ -34,9 +34,6 @@ class Service final : public spark::EventHandler {
 	void send_character_list(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
 	                         const boost::optional<std::vector<Character>>& characters);
 
-	void send_response(const spark::Link& link, const messaging::MessageRoot* root,
-	                   messaging::character::Status status, protocol::ResultCode result);
-
 	void send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
 	                   messaging::character::Status status, protocol::ResultCode result);
 
