@@ -27,8 +27,10 @@
 #include <dbcreader/DBCReader.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/util/xoroshiro128plus.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <botan/auto_rng.h>
 #include <chrono>
 #include <iostream>
 #include <fstream>
@@ -80,6 +82,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
+
+	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
+	Botan::AutoSeeded_RNG rng;
+	rng.randomize((Botan::byte*)ember::rng::xorshift::seed, sizeof(ember::rng::xorshift::seed));
 
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
 	ember::dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {

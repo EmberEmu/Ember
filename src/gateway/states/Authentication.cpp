@@ -13,6 +13,7 @@
 #include <game_protocol/Packets.h>
 #include <spark/Buffer.h>
 #include <spark/temp/Account_generated.h>
+#include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
 #include <botan/botan.h>
 #include <botan/sha160.h>
@@ -123,9 +124,8 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 
 void send_auth_challenge(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-
 	protocol::SMSG_AUTH_CHALLENGE response;
-	response.seed = ctx->auth_seed = 600; // todo, obviously
+	response.seed = ctx->auth_seed = static_cast<std::uint32_t>(ember::rng::xorshift::next());
 	ctx->connection->send(response);
 }
 
@@ -134,7 +134,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 
 	protocol::SMSG_ADDON_INFO response;
 
-	// should really have an addon database rather than assuming the client isn't sending junk
+	// todo, use AddonData.dbc
 	for(auto& addon : packet.addons) {
 		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
