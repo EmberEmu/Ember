@@ -253,7 +253,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		functions << "\t" << "auto dbc = get_offsets<disk::" << dbc.name <<
 			">(region.get_address());" << std::endl << std::endl;
 							
-		functions << "\t" << "for(std::uint32_t i = 0; i < dbc.header->records; ++i) {" << std::endl;
+		functions << "\t" << "for(std::size_t i = 0; i < dbc.header->records; ++i) {" << std::endl;
 		functions << "\t\t" << dbc.name << " entry{};" << std::endl;
 		
 		bool is_primary_foreign = false;
