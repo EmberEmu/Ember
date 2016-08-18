@@ -191,7 +191,7 @@ void load_char_sections(Storage& storage, const std::string& dir_path) {
 		entry.variation_index = dbc.records[i].variation_index;
 		entry.colour_index = dbc.records[i].colour_index;
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture_name) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture_name) / sizeof(std::uint32_t); ++j) {
 			entry.texture_name[j] = dbc.strings + dbc.records[i].texture_name[j];
 		}
 
@@ -380,7 +380,7 @@ void load_chr_races(Storage& storage, const std::string& dir_path) {
 		entry.name.es_mx = dbc.strings + dbc.records[i].name.es_mx;
 
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].facial_hair_customisation) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].facial_hair_customisation) / sizeof(std::uint32_t); ++j) {
 			entry.facial_hair_customisation[j] = dbc.strings + dbc.records[i].facial_hair_customisation[j];
 		}
 
@@ -439,7 +439,7 @@ void load_creature_display_info(Storage& storage, const std::string& dir_path) {
 		entry.creature_model_scale = dbc.records[i].creature_model_scale;
 		entry.creature_model_alpha = dbc.records[i].creature_model_alpha;
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture_variation) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture_variation) / sizeof(std::uint32_t); ++j) {
 			entry.texture_variation[j] = dbc.strings + dbc.records[i].texture_variation[j];
 		}
 
@@ -725,15 +725,15 @@ void load_item_display_info(Storage& storage, const std::string& dir_path) {
 		ItemDisplayInfo entry{};
 		entry.id = dbc.records[i].id;
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].model_name) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].model_name) / sizeof(std::uint32_t); ++j) {
 			entry.model_name[j] = dbc.strings + dbc.records[i].model_name[j];
 		}
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].model_texture) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].model_texture) / sizeof(std::uint32_t); ++j) {
 			entry.model_texture[j] = dbc.strings + dbc.records[i].model_texture[j];
 		}
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].inventory_icon) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].inventory_icon) / sizeof(std::uint32_t); ++j) {
 			entry.inventory_icon[j] = dbc.strings + dbc.records[i].inventory_icon[j];
 		}
 
@@ -748,7 +748,7 @@ void load_item_display_info(Storage& storage, const std::string& dir_path) {
 			entry.helmet_geoset_vis_id[j] = dbc.records[i].helmet_geoset_vis[j];
 		}
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].textures) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].textures) / sizeof(std::uint32_t); ++j) {
 			entry.textures[j] = dbc.strings + dbc.records[i].textures[j];
 		}
 
@@ -1089,7 +1089,7 @@ void load_sound_entries(Storage& storage, const std::string& dir_path) {
 		entry.sound_type = static_cast<SoundEntries::SoundType>(dbc.records[i].sound_type);
 		entry.name = dbc.strings + dbc.records[i].name;
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].files) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].files) / sizeof(std::uint32_t); ++j) {
 			entry.files[j] = dbc.strings + dbc.records[i].files[j];
 		}
 
@@ -1756,7 +1756,7 @@ void load_unit_blood(Storage& storage, const std::string& dir_path) {
 		entry.combat_blood_spurt_back_small = dbc.records[i].combat_blood_spurt_back_small;
 		entry.combat_blood_spurt_back_large = dbc.records[i].combat_blood_spurt_back_large;
 
-		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture) / sizeof(std::string); ++j) {
+		for(std::size_t j = 0; j < sizeof(dbc.records[i].texture) / sizeof(std::uint32_t); ++j) {
 			entry.texture[j] = dbc.strings + dbc.records[i].texture[j];
 		}
 

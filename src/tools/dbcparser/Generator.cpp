@@ -272,6 +272,10 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				type = components.first;
 			}
 
+			if(str_offset) { // another hacky fix!
+				type = "std::uint32_t";
+			}
+
 			if(array) {
 				functions << (double_spaced? "" : "\n") << "\t\t"
 					<< "for(std::size_t j = 0; j < sizeof(dbc.records[i]."
