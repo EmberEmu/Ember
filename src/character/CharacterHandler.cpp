@@ -117,7 +117,7 @@ void CharacterHandler::restore_character(std::uint64_t id, ResultCB callback) co
 			auto char_enum = dao_.characters(character->account_id, character->realm_id);
 
 			if(char_enum.size() >= MAX_CHARACTER_SLOTS) {
-				LOG_ERROR(logger_) << "Cannot restore character - would exceed max slots" << LOG_ASYNC;
+				LOG_WARN(logger_) << "Cannot restore character - would exceed max slots" << LOG_ASYNC;
 				callback(protocol::ResultCode::RESPONSE_FAILURE);
 				return;
 			}
