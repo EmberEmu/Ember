@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `ember` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `ember`;
 -- MySQL dump 10.13  Distrib 5.6.17, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: ember
@@ -48,8 +46,9 @@ CREATE TABLE `characters` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` int(11) unsigned NOT NULL,
   `realm_id` int(11) unsigned NOT NULL,
-  `deletion_date` datetime DEFAULT NULL COMMENT 'Deletion date is stored here and kept as NULL in most cases to allow for a unique constraint to be kept character names. All names on a realm must be unique for non-deleted characters but multiple deleted characters may have the same name.',
+  `deletion_date` datetime DEFAULT NULL COMMENT 'Deletion date is stored here and kept as NULL in most cases to allow for a unique constraint to be kept on character names. All names on a realm must be unique for non-deleted characters but multiple deleted characters may have the same name.',
   `name` varchar(45) NOT NULL,
+  `internal_name` varchar(45) NOT NULL,
   `race` tinyint(4) NOT NULL,
   `class` tinyint(4) NOT NULL,
   `gender` tinyint(4) NOT NULL,
@@ -70,12 +69,12 @@ CREATE TABLE `characters` (
   `pet_level` varchar(45) NOT NULL,
   `pet_family` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `char_name_unique` (`name`,`realm_id`,`deletion_date`),
+  UNIQUE KEY `char_name_unique` (`realm_id`,`deletion_date`,`internal_name`),
   KEY `account_ref_idx` (`account_id`),
   KEY `realm_ref_idx` (`realm_id`),
   CONSTRAINT `account_ref` FOREIGN KEY (`account_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realm_ref` FOREIGN KEY (`realm_id`) REFERENCES `realms` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=420 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=429 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -201,4 +200,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-19 11:55:04
+-- Dump completed on 2016-08-19 13:59:06
