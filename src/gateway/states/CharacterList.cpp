@@ -77,11 +77,19 @@ void handle_char_rename(ClientContext* ctx) {
 	                                 [self, ctx](em::character::Status status,
 	                                             protocol::ResultCode res, std::uint64_t id,
 												 const std::string& name) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, res, id, name]() {
+		ctx->connection->socket().get_io_service().dispatch([=]() {
+			LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+			protocol::ResultCode result = protocol::ResultCode::CHAR_NAME_FAILURE;
+
 			if(status == em::character::Status::OK) {
-				send_character_rename(ctx, res, id, name);
+				result = res;
+			}
+
+			if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
+				send_character_rename(ctx, result, id, name);
 			} else {
-				send_character_rename(ctx, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+				send_character_rename(ctx, result, 0, "");
 			}
 		});
 	});

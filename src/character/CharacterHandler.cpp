@@ -22,9 +22,9 @@ CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profan
                                    : profane_names_(profane_names), reserved_names_(reserved_names),
                                      dbc_(dbc), dao_(dao), pool_(pool), locale_(locale), logger_(logger) { }
 
-void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        const messaging::character::CharacterTemplate& options,
-                                        ResultCB callback) const {
+void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
+                              const messaging::character::CharacterTemplate& options,
+                              ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	Character character{};
@@ -44,200 +44,44 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	character.flags = Character::Flags::NONE; // todo
 	character.first_login = true;
 
-	// class, race and visual customisation validation
-	bool success = validate_options(character, account_id);
-
-	if(!success) {
-		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
-		return;
-	}
-	
-	// name validation
-	auto result = validate_name(character.name);
-
-	if(result != protocol::ResultCode::CHAR_NAME_SUCCESS) {
-		callback(result);
-		return;
-	}
-
-	// query database for further validation steps
-	name_collision_callback(character.name, realm_id, [=](protocol::ResultCode result) mutable {
-		if(result == protocol::ResultCode::CHAR_NAME_SUCCESS) {
-			enum_characters(account_id, realm_id, [=](auto& characters) mutable {
-				on_enum_complete(characters, character, callback);
-			});
-		} else {
-			callback(result);
-		}
-	});
-}
-
-void CharacterHandler::delete_callback(std::uint32_t account_id, std::uint32_t realm_id,
-                                       std::uint64_t character_id, const boost::optional<Character>& character,
-                                       const ResultCB& callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	// character must exist, belong to the same account and be on the same realm
-	if(!character || character->account_id != account_id || character->realm_id != realm_id) {
-		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
-			<< "Account " << account_id << " attempted an invalid delete on character "
-			<< character_id << LOG_ASYNC;
-		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
-		return;
-	}
-
-	if((character->flags & Character::Flags::LOCKED_FOR_TRANSFER) == Character::Flags::LOCKED_FOR_TRANSFER) {
-		callback(protocol::ResultCode::CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER);
-		return;
-	}
-
-	// character cannot be a guild leader (no specific guild leader deletion message until TBC)
-	if(character->guild_rank == 1) { // todo, ranks need defined properly
-		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
-		return;
-	}
-
 	pool_.run([=] {
-		try {
-			dao_.delete_character(character_id, true);
-			callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_DELETE_FAILED);
-		}
+		do_create(account_id, realm_id, character, callback);
 	});
 }
 
-void CharacterHandler::restore_character(std::uint64_t id, ResultCB callback) const {
+void CharacterHandler::restore(std::uint64_t id, ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
-		try {
-			auto character = dao_.character(id);
-			auto match = dao_.character(character->name, character->realm_id);
-			auto char_enum = dao_.characters(character->account_id, character->realm_id);
-
-			if(char_enum.size() >= MAX_CHARACTER_SLOTS) {
-				LOG_WARN(logger_) << "Cannot restore character - would exceed max slots" << LOG_ASYNC;
-				callback(protocol::ResultCode::RESPONSE_FAILURE);
-				return;
-			}
-
-			if(match) {
-				character->flags |= Character::Flags::RENAME;
-			} else {
-				character->internal_name = character->name;
-			}
-
-			dao_.update(*character);
-			dao_.restore(id);
-			callback(protocol::ResultCode::RESPONSE_SUCCESS);
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::RESPONSE_FAILURE);
-		}
+		do_restore(id, callback);
 	});
 }
 
-void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        std::uint64_t character_id, ResultCB callback) const {
+void CharacterHandler::erase(std::uint32_t account_id, std::uint32_t realm_id,
+                             std::uint64_t character_id, ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
-		try {
-			auto character = dao_.character(character_id);
-			delete_callback(account_id, realm_id, character_id, character, callback);
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_DELETE_FAILED);
-		}
+		do_erase(account_id, realm_id, character_id, callback);
 	});
 }
 
-void CharacterHandler::enum_characters(std::uint32_t account_id, std::uint32_t realm_id,
-                                       EnumResultCB callback) const {
+void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_id,
+                                 EnumResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
-		try {
-			auto characters = dao_.characters(account_id, realm_id);
-			callback(std::move(characters));
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(boost::optional<std::vector<Character>>());
-		}
+		do_enumerate(account_id, realm_id, callback);
 	});
 }
 
-void CharacterHandler::rename_finalise(Character character, const std::string& name,
-                                       const RenameCB& callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	character.name = name;
-	character.internal_name = name;
-	character.flags ^= Character::Flags::RENAME;
-
-	pool_.run([=] {
-		try {
-			dao_.update(character);
-			callback(protocol::ResultCode::RESPONSE_SUCCESS, character);
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
-		}
-	});
-}
-
-void CharacterHandler::rename_validate(std::uint32_t account_id,
-                                       const boost::optional<Character>& character,
-                                       const std::string& name, const RenameCB& callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	if(!character) {
-		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
-		return;
-	}
-
-	if(character->account_id != account_id) {
-		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
-		return;
-	}
-
-	if((character->flags & Character::Flags::RENAME) != Character::Flags::RENAME) {
-		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
-		return;
-	}
-
-	auto res = validate_name(name);
-
-	if(res != protocol::ResultCode::CHAR_NAME_SUCCESS) {
-		callback(res, {});
-		return;
-	}
-
-	name_collision_callback(name, character->realm_id, [=](protocol::ResultCode result) mutable {
-		if(result == protocol::ResultCode::CHAR_NAME_SUCCESS) {
-			rename_finalise(*character, name, callback); // todo, better names
-		} else {
-			callback(result, {});
-		}
-	});
-}
-
-void CharacterHandler::rename_character(std::uint32_t account_id, std::uint64_t character_id,
-                                        const std::string& name, RenameCB callback) const {
+void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_id,
+                              const std::string& name, RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
-		try {
-			auto character = dao_.character(character_id);
-			rename_validate(account_id, character, name, callback);
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
-		}
+		do_rename(account_id, character_id, name, callback);
 	});
-
 }
 
 protocol::ResultCode CharacterHandler::validate_name(const std::string& name) const {
@@ -301,6 +145,208 @@ protocol::ResultCode CharacterHandler::validate_name(const std::string& name) co
 	}
 
 	return protocol::ResultCode::CHAR_NAME_SUCCESS;
+}
+
+void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_id,
+			                     Character character, const ResultCB& callback) const try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	// class, race and visual customisation validation
+	bool success = validate_options(character, account_id);
+
+	if(!success) {
+		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
+		return;
+	}
+
+	// name validation
+	auto result = validate_name(character.name);
+
+	if(result != protocol::ResultCode::CHAR_NAME_SUCCESS) {
+		callback(result);
+		return;
+	}
+
+	boost::optional<Character>& res = dao_.character(character.name, realm_id);
+
+	if(res) {
+		callback(protocol::ResultCode::CHAR_CREATE_NAME_IN_USE);
+		return;
+	}
+
+	// query database for further validation steps
+	auto& characters = dao_.characters(account_id, realm_id);
+
+	if(characters.size() >= MAX_CHARACTER_SLOTS) {
+		callback(protocol::ResultCode::CHAR_CREATE_SERVER_LIMIT);
+		return;
+	}
+
+	// PVP faction check etc
+
+	// everything looks good - populate the character data and create it
+	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
+	const dbc::ChrClasses* class_ = dbc_.chr_classes[character.class_];
+
+	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& info) {
+		return info.second.race_id == character.race && info.second.class__id == character.class_;
+	});
+
+	if(base_info == dbc_.char_start_base.end()) {
+		LOG_ERROR(logger_) << "Unable to find base data for " << race->name.en_gb << " "
+			<< class_->name.en_gb << LOG_ASYNC;
+		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
+		return;
+	}
+
+	// populate zone information
+	const dbc::CharStartZones* zone = base_info->second.zone;
+
+	character.zone = zone->area_id;
+	character.map = zone->area->map_id;
+	character.position.x = zone->position.x;
+	character.position.y = zone->position.y;
+	character.position.z = zone->position.z;
+
+	// populate items information
+
+	// populate spells information
+
+	// populate talents information
+
+	const char* subzone = nullptr;
+
+	if(zone->area->parent_area_table_id) {
+		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
+	}
+
+	LOG_DEBUG(logger_) << "Creating " << race->name.en_gb << " " << class_->name.en_gb << " at "
+		<< zone->area->area_name.en_gb << (subzone ? ", " : " ") << (subzone ? subzone : " ")
+		<< LOG_ASYNC;
+
+	dao_.create(character);
+	callback(protocol::ResultCode::CHAR_CREATE_SUCCESS);
+} catch(dal::exception& e) {
+	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	callback(protocol::ResultCode::CHAR_CREATE_ERROR);
+}
+
+void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id,
+                                std::uint64_t character_id, const ResultCB& callback) const try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto character = dao_.character(character_id);
+	
+	// character must exist, belong to the same account and be on the same realm
+	if(!character || character->account_id != account_id || character->realm_id != realm_id) {
+		LOG_WARN_FILTER(logger_, LF_NAUGHTY_USER)
+			<< "Account " << account_id << " attempted an invalid delete on character "
+			<< character_id << LOG_ASYNC;
+		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
+		return;
+	}
+
+	if((character->flags & Character::Flags::LOCKED_FOR_TRANSFER) == Character::Flags::LOCKED_FOR_TRANSFER) {
+		callback(protocol::ResultCode::CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER);
+		return;
+	}
+
+	// character cannot be a guild leader (no specific guild leader deletion message until TBC)
+	if(character->guild_rank == 1) { // todo, ranks need defined properly
+		callback(protocol::ResultCode::CHAR_DELETE_FAILED);
+		return;
+	}
+
+	dao_.delete_character(character_id, true);
+	callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
+} catch(dal::exception& e) {
+	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	callback(protocol::ResultCode::CHAR_DELETE_FAILED);
+}
+
+
+void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
+									const EnumResultCB& callback) const try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto characters = dao_.characters(account_id, realm_id);
+	callback(std::move(characters));
+} catch(dal::exception& e) {
+	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	callback(boost::optional<std::vector<Character>>());
+}
+
+void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,
+			                     const std::string& name, const RenameCB& callback) const try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto character = dao_.character(character_id);
+	
+	if(!character) {
+		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
+		return;
+	}
+
+	if(character->account_id != account_id) {
+		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
+		return;
+	}
+
+	if((character->flags & Character::Flags::RENAME) != Character::Flags::RENAME) {
+		callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
+		return;
+	}
+
+	auto validation_res = validate_name(name);
+
+	if(validation_res != protocol::ResultCode::CHAR_NAME_SUCCESS) {
+		callback(validation_res, {});
+		return;
+	}
+
+	boost::optional<Character>& match = dao_.character(name, character->realm_id);
+
+	if(match) {
+		callback(protocol::ResultCode::CHAR_CREATE_NAME_IN_USE, {});
+		return;
+	}
+
+	character->name = name;
+	character->internal_name = name;
+	character->flags ^= Character::Flags::RENAME;
+
+	dao_.update(*character);
+	callback(protocol::ResultCode::RESPONSE_SUCCESS, *character);
+} catch(dal::exception& e) {
+	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	callback(protocol::ResultCode::CHAR_NAME_FAILURE, {});
+}
+
+void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) const try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto character = dao_.character(id);
+	auto match = dao_.character(character->name, character->realm_id);
+	auto char_enum = dao_.characters(character->account_id, character->realm_id);
+
+	if(char_enum.size() >= MAX_CHARACTER_SLOTS) {
+		LOG_WARN(logger_) << "Cannot restore character - would exceed max slots" << LOG_ASYNC;
+		callback(protocol::ResultCode::RESPONSE_FAILURE);
+		return;
+	}
+
+	if(match) {
+		character->flags |= Character::Flags::RENAME;
+	} else {
+		character->internal_name = character->name;
+	}
+
+	dao_.update(*character);
+	dao_.restore(id);
+	callback(protocol::ResultCode::RESPONSE_SUCCESS);
+} catch(dal::exception& e) {
+	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	callback(protocol::ResultCode::RESPONSE_FAILURE);
 }
 
 bool CharacterHandler::validate_options(const Character& character, std::uint32_t account_id) const {
@@ -381,93 +427,6 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	}
 
 	return true;
-}
-
-void CharacterHandler::on_enum_complete(boost::optional<std::vector<Character>>& characters,
-                                        Character& character, const ResultCB& callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	if(!characters) {
-		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
-		return;
-	}
-
-	if(characters->size() >= MAX_CHARACTER_SLOTS) {
-		callback(protocol::ResultCode::CHAR_CREATE_SERVER_LIMIT);
-		return;
-	}
-
-	// PVP faction check etc
-
-	// everything looks good - populate the character data and create it
-	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
-	const dbc::ChrClasses* class_ = dbc_.chr_classes[character.class_];
-
-	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& info) {
-		return info.second.race_id == character.race && info.second.class__id == character.class_;
-	});
-
-	if(base_info == dbc_.char_start_base.end()) {
-		LOG_ERROR(logger_) << "Unable to find base data for " << race->name.en_gb << " "
-			<< class_->name.en_gb << LOG_ASYNC;
-		callback(protocol::ResultCode::CHAR_CREATE_ERROR);
-		return;
-	}
-
-	// populate zone information
-	const dbc::CharStartZones* zone = base_info->second.zone;
-
-	character.zone = zone->area_id;
-	character.map = zone->area->map_id;
-	character.position.x = zone->position.x;
-	character.position.y = zone->position.y;
-	character.position.z = zone->position.z;
-
-	// populate items information
-
-	// populate spells information
-
-	// populate talents information
-
-	const char* subzone = nullptr;
-
-	if(zone->area->parent_area_table_id) {
-		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
-	}
-
-	LOG_DEBUG(logger_) << "Creating " << race->name.en_gb << " " << class_->name.en_gb << " at "
-		<< zone->area->area_name.en_gb << (subzone ? ", " : " ") << (subzone ? subzone : " ")
-		<< LOG_ASYNC;
-
-	pool_.run([=] {
-		try {
-			dao_.create(character);
-			callback(protocol::ResultCode::CHAR_CREATE_SUCCESS);
-		} catch(std::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_CREATE_ERROR);
-		}
-	});
-}
-
-void CharacterHandler::name_collision_callback(const std::string& name, std::uint32_t realm_id,
-                                               const ResultCB& callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	pool_.run([=]() {
-		try {
-			boost::optional<Character>& res = dao_.character(name, realm_id);
-
-			if(!res) {
-				callback(protocol::ResultCode::CHAR_NAME_SUCCESS);
-			} else {
-				callback(protocol::ResultCode::CHAR_CREATE_NAME_IN_USE);
-			}
-		} catch(dal::exception& e) {
-			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-			callback(protocol::ResultCode::CHAR_CREATE_ERROR);
-		}
-	});
 }
 
 } // ember

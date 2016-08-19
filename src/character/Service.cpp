@@ -28,6 +28,17 @@ Service::~Service() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
+void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
+	switch(event) {
+		case spark::LinkState::LINK_UP:
+			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
+			break;
+		case spark::LinkState::LINK_DOWN:
+			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
+			break;
+	}
+}
+
 void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -49,20 +60,18 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 	}
 }
 
-void Service::retrieve_characters(const spark::Link& link, const em::MessageRoot* root) try {
+void Service::retrieve_characters(const spark::Link& link, const em::MessageRoot* root) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Retrieve*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	handler_.enum_characters(msg->account_id(), msg->realm_id(), [&, tracking](const auto& chars) {
+	handler_.enumerate(msg->account_id(), msg->realm_id(), [&, tracking](const auto& chars) {
 		send_character_list(link, tracking, chars);
 	});
-} catch(std::exception& e) {
-	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
 
-void Service::create_character(const spark::Link& link, const em::MessageRoot* root) try {
+void Service::create_character(const spark::Link& link, const em::MessageRoot* root) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Create*>(root->data());
@@ -76,13 +85,10 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 		return;
 	}
 
-	handler_.create_character(msg->account_id(), msg->realm_id(), *msg->character(),
-	                          [&, link, tracking](auto res) {
+	handler_.create(msg->account_id(), msg->realm_id(), *msg->character(), [&, link, tracking](auto res) {
 		LOG_DEBUG(logger_) << "Create response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, tracking, messaging::character::Status::OK, res);
 	});
-} catch(std::exception& e) {
-	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
 
 void Service::send_character_list(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
@@ -205,22 +211,19 @@ void Service::send_response(const spark::Link& link, const std::vector<std::uint
 	spark_.send(link, fbb);
 }
 
-void Service::delete_character(const spark::Link& link, const em::MessageRoot* root) try {
+void Service::delete_character(const spark::Link& link, const em::MessageRoot* root) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Delete*>(root->data());
 	std::vector<std::uint8_t> tracking(root->tracking_id()->begin(), root->tracking_id()->end());
 
-	handler_.delete_character(msg->account_id(), msg->realm_id(), msg->character_id(),
-	                          [&, link, tracking](auto res) {
+	handler_.erase(msg->account_id(), msg->realm_id(), msg->character_id(), [&, link, tracking](auto res) {
 		LOG_DEBUG(logger_) << "Deletion response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, tracking, messaging::character::Status::OK, res);
 	});
-} catch(std::exception& e) {
-	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 }
 
-void Service::rename_character(const spark::Link& link, const em::MessageRoot* root) try {
+void Service::rename_character(const spark::Link& link, const em::MessageRoot* root) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = static_cast<const em::character::Rename*>(root->data());
@@ -234,26 +237,12 @@ void Service::rename_character(const spark::Link& link, const em::MessageRoot* r
 		return;
 	}
 
-	handler_.rename_character(msg->account_id(), msg->character_id(), msg->name()->str(),
-	                         [&, link, tracking](auto res, boost::optional<Character> character) {
+	handler_.rename(msg->account_id(), msg->character_id(), msg->name()->str(),
+	               [&, link, tracking](auto res, boost::optional<Character> character) {
 		LOG_DEBUG(logger_) << "Rename response code: " << protocol::to_string(res) << LOG_ASYNC;
 
 		send_rename_response(link, tracking, messaging::character::Status::OK, res, character);
 	});
-
-} catch(std::exception& e) {
-	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
-}
-
-void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
-			break;
-	}
 }
 
 } // ember

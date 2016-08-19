@@ -69,14 +69,16 @@ void CharacterService::handle_rename_reply(const spark::Link& link, const boost:
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::RenameResponse) {
-		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
 	auto message = static_cast<const messaging::character::RenameResponse*>((*root)->data());
 
-	if(!message->name() || !message->character_id()) {
-		cb(em::character::Status::ILLFORMED_MESSAGE, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+	// TODO! Refactor everything here - just pass the full character struct to the caller
+	if(!message->name() || !message->character_id() || message->result() != (uint32_t)protocol::ResultCode::RESPONSE_SUCCESS) {
+		cb(em::character::Status::ILLFORMED_MESSAGE, protocol::ResultCode::CHAR_NAME_FAILURE, 0, "");
+		return;
 	}
 
 	cb(message->status(), static_cast<protocol::ResultCode>(message->result()),
