@@ -57,7 +57,7 @@ class CharacterHandler {
 	               Character character, const ResultCB& callback) const;
 
 	void do_erase(std::uint32_t account_id, std::uint32_t realm_id,
-				  std::uint64_t character_id, const ResultCB& callback) const;
+	              std::uint64_t character_id, const ResultCB& callback) const;
 
 	void do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
 	                  const EnumResultCB& callback) const;
