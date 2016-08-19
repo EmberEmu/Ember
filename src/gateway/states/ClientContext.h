@@ -19,6 +19,10 @@ namespace ember {
 class ClientHandler;
 class ClientConnection;
 
+enum class AuthStatus {
+	NOT_AUTHED, IN_PROGRESS, SUCCESS, FAILED
+};
+
 struct ClientContext {
 	protocol::ClientHeader* header;
 	spark::Buffer* buffer;
@@ -30,7 +34,7 @@ struct ClientContext {
 	std::string account_name;
 	std::uint32_t auth_seed;
 	//std::shared_ptr<WorldConnection> world_conn;
-	bool auth_done;
+	AuthStatus auth_status;
 };
 
 } // ember

@@ -40,11 +40,11 @@ void handle_authentication(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// prevent repeated auth attempts
-	if(ctx->auth_done) {
+	if(ctx->auth_status != AuthStatus::NOT_AUTHED) {
 		return;
-	} else {
-		ctx->auth_done = true;
 	}
+	
+	ctx->auth_status = AuthStatus::IN_PROGRESS;
 
 	protocol::CMSG_AUTH_SESSION packet;
 	packet.set_size(ctx->header->size - sizeof(protocol::ClientHeader::opcode));
@@ -90,11 +90,13 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 	auto self = ctx->connection->shared_from_this();
 
 	acct_serv->locate_session(ctx->account_id, [self, ctx, packet](em::account::Status remote_res,
-	                                                          Botan::BigInt key) {
+	                                                               Botan::BigInt key) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, key]() { // todo
 			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 				<< "Account server returned " << em::account::EnumNameStatus(remote_res)
 				<< " for " << packet.username << LOG_ASYNC;
+	
+			ctx->auth_status = AuthStatus::FAILED; // default unless overridden by success
 
 			if(remote_res != em::account::Status::OK) {
 				protocol::ResultCode result;
@@ -183,6 +185,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 		++test;
+		ctx->auth_status = AuthStatus::SUCCESS;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
 		send_addon_data(ctx, packet);
 		ctx->handler->state_update(ClientState::CHARACTER_LIST);

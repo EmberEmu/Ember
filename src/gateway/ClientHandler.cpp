@@ -90,7 +90,7 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
  * log outputs, based on whether authentication has completed
  */
 std::string ClientHandler::client_identify() {
-	if(context_.auth_done) {
+	if(context_.auth_status == AuthStatus::SUCCESS) {
 		return context_.account_name;
 	} else {
 		return context_.connection->remote_address();

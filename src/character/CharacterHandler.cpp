@@ -72,8 +72,8 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 }
 
 void CharacterHandler::delete_callback(std::uint32_t account_id, std::uint32_t realm_id,
-									   std::uint64_t character_id, const boost::optional<Character>& character,
-									   const ResultCB& callback) const {
+                                       std::uint64_t character_id, const boost::optional<Character>& character,
+                                       const ResultCB& callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	// character must exist, belong to the same account and be on the same realm
