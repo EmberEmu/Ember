@@ -32,12 +32,12 @@ void RealmService::handle_message(const spark::Link& link, const em::MessageRoot
 }
 
 void RealmService::set_realm_online() {
-	realm_.flags = static_cast<Realm::Flag>(realm_.flags & ~Realm::Flag::OFFLINE);
+	realm_.flags &= ~Realm::Flag::OFFLINE;
 	broadcast_realm_status();
 }
 
 void RealmService::set_realm_offline() {
-	realm_.flags = static_cast<Realm::Flag>(realm_.flags | Realm::Flag::OFFLINE);
+	realm_.flags |= Realm::Flag::OFFLINE;
 	broadcast_realm_status();
 }
 

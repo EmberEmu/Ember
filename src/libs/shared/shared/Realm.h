@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/enum_flags.h>
 #include <string>
 #include <cstdint>
 
@@ -56,5 +57,7 @@ struct Realm {
 	Zone zone;
 	CreationSetting creation_setting;
 };
+
+ENUM_FLAGS(Realm::Flag, std::uint8_t);
 
 } //ember
