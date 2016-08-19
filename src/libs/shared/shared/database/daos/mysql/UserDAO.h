@@ -71,7 +71,8 @@ public:
 	std::unordered_map<std::uint32_t, std::uint32_t> character_counts(std::uint32_t account_id) const override try {
 		const std::string query = "SELECT COUNT(c.id) AS count, c.realm_id "
 		                          "FROM users u, characters c "
-		                          "WHERE u.id = ? GROUP BY c.realm_id";
+		                          "WHERE u.id = ? AND c.deletion_date IS NULL "
+		                          "GROUP BY c.realm_id";
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

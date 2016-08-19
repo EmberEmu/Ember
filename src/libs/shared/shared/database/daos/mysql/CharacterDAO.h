@@ -66,7 +66,7 @@ public:
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                          "WHERE name = ? AND realm_id = ? AND c.deletion_date IS NULL";
+		                          "WHERE internal_name = ? AND realm_id = ? AND c.deletion_date IS NULL";
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -132,11 +132,31 @@ public:
 		throw exception(e.what());
 	}
 
+	void restore(std::uint64_t id, bool restore_name) const override try {
+		std::string query;
+
+		if(restore_name) {
+			query = "UPDATE characters SET deletion_date = NULL, internal_name = name WHERE id = ?";
+		} else {
+			query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
+		}
+
+		auto conn = pool_.wait_connection(5s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+		stmt->setUInt64(1, id);
+
+		if(!stmt->executeUpdate()) {
+			throw exception("Unable to restore character " + std::to_string(id));
+		}
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
 	void delete_character(std::uint64_t id, bool soft_delete) const override try {
 		std::string query;
 
 		if(soft_delete) {
-			query = "UPDATE characters SET deletion_date = CURTIME() WHERE id = ?";
+			query = "UPDATE characters SET deletion_date = CURTIME(), internal_name = CONCAT(name, id) WHERE id = ?";
 		} else {
 			query = "DELETE FROM characters WHERE id = ?";
 		}
@@ -156,8 +176,8 @@ public:
 		const std::string query = "INSERT INTO characters (name, account_id, realm_id, race, class, gender, "
 		                          "skin, face, hairstyle, haircolour, facialhair, level, zone, "
 		                          "map, x, y, z, flags, first_login, pet_display, pet_level, "
-		                          "pet_family) "
-		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		                          "pet_family, internal_name) "
+		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, name)";
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -191,12 +211,18 @@ public:
 		throw exception(e.what());
 	}
 
-	void update(const Character& character) const override try {
-		const std::string query = "UPDATE characters SET name = ?, account_id = ?, realm_id = ?, race = ?, class = ?, gender = ?, "
-		                          "skin = ?, face = ?, hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
-		                          "map = ?, x = ?, y = ?, z = ?, flags = ?, first_login = ?, pet_display = ?, pet_level = ?, "
-		                          "pet_family = ? "
-		                          "WHERE id = ?";
+	void update(const Character& character, bool update_internal_name) const override try {
+		std::string query = "UPDATE characters SET name = ?, account_id = ?, realm_id = ?, race = ?, class = ?, gender = ?, "
+		                    "skin = ?, face = ?, hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
+		                    "map = ?, x = ?, y = ?, z = ?, flags = ?, first_login = ?, pet_display = ?, pet_level = ?, "
+		                    "pet_family = ? ";
+
+		// todo, make internal_name part of Character and remove this logic
+		if(update_internal_name) {
+			query += ", internal_name = name ";
+		}
+
+		query += "WHERE id = ?";
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

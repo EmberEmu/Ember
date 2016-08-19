@@ -107,6 +107,39 @@ void CharacterHandler::delete_callback(std::uint32_t account_id, std::uint32_t r
 	});
 }
 
+void CharacterHandler::restore_character(std::uint64_t id, ResultCB callback) const {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	pool_.run([=] {
+		try {
+			auto character = dao_.character(id);
+			auto match = dao_.character(character->name, character->realm_id);
+			auto char_enum = dao_.characters(character->account_id, character->realm_id);
+
+			if(char_enum.size() >= MAX_CHARACTER_SLOTS) {
+				LOG_ERROR(logger_) << "Cannot restore character - would exceed max slots" << LOG_ASYNC;
+				callback(protocol::ResultCode::RESPONSE_FAILURE);
+				return;
+			}
+
+			if(match) {
+				// if the character name has been reused, set the rename flag
+				// and don't restore their internal name
+				character->flags |= Character::Flags::RENAME;
+				dao_.update(*character, false);
+				dao_.restore(id, false);
+			} else {
+				dao_.restore(id, true);
+			}
+
+			callback(protocol::ResultCode::RESPONSE_SUCCESS);
+		} catch(dal::exception& e) {
+			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+			callback(protocol::ResultCode::RESPONSE_FAILURE);
+		}
+	});
+}
+
 void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t realm_id,
                                         std::uint64_t character_id, ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -146,7 +179,7 @@ void CharacterHandler::rename_finalise(Character character, const std::string& n
 
 	pool_.run([=] {
 		try {
-			dao_.update(character);
+			dao_.update(character, true);
 			callback(protocol::ResultCode::RESPONSE_SUCCESS, character);
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;

@@ -83,6 +83,8 @@ public:
 
 	void rename_character(std::uint32_t account_id, std::uint64_t character_id,
 	                      const std::string& name, RenameCB callback) const;
+
+	void restore_character(std::uint64_t id, ResultCB callback) const;
 };
 
 } // ember
