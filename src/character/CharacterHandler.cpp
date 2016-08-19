@@ -30,6 +30,7 @@ void CharacterHandler::create_character(std::uint32_t account_id, std::uint32_t 
 	Character character{};
 	character.race = options.race();
 	character.name = options.name()->c_str();
+	character.internal_name = options.name()->c_str();
 	character.account_id = account_id;
 	character.realm_id = realm_id;
 	character.class_ = options.class_();
@@ -123,15 +124,13 @@ void CharacterHandler::restore_character(std::uint64_t id, ResultCB callback) co
 			}
 
 			if(match) {
-				// if the character name has been reused, set the rename flag
-				// and don't restore their internal name
 				character->flags |= Character::Flags::RENAME;
-				dao_.update(*character, false);
-				dao_.restore(id, false);
 			} else {
-				dao_.restore(id, true);
+				character->internal_name = character->name;
 			}
 
+			dao_.update(*character);
+			dao_.restore(id);
 			callback(protocol::ResultCode::RESPONSE_SUCCESS);
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
@@ -175,11 +174,12 @@ void CharacterHandler::rename_finalise(Character character, const std::string& n
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	character.name = name;
+	character.internal_name = name;
 	character.flags ^= Character::Flags::RENAME;
 
 	pool_.run([=] {
 		try {
-			dao_.update(character, true);
+			dao_.update(character);
 			callback(protocol::ResultCode::RESPONSE_SUCCESS, character);
 		} catch(dal::exception& e) {
 			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;

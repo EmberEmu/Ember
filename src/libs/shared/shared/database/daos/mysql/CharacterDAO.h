@@ -29,6 +29,7 @@ class MySQLCharacterDAO final : public CharacterDAO {
 	Character result_to_character(sql::ResultSet* res) const {
 		Character character;
 		character.name = res->getString("name");
+		character.internal_name = res->getString("internal_name");
 		character.id = res->getUInt("id");
 		character.account_id = res->getUInt("account_id");
 		character.realm_id = res->getUInt("realm_id");
@@ -60,8 +61,8 @@ public:
 	MySQLCharacterDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	boost::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
-		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
-		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
@@ -84,8 +85,8 @@ public:
 	}
 	
 	boost::optional<Character> character(std::uint64_t id) const override try {
-		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
-		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
@@ -107,8 +108,8 @@ public:
 	}
 
 	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id) const override try {
-		const std::string query = "SELECT c.name, c.id, c.account_id, c.realm_id, c.race, c.class, c.gender, "
-		                          "c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
@@ -132,14 +133,9 @@ public:
 		throw exception(e.what());
 	}
 
-	void restore(std::uint64_t id, bool restore_name) const override try {
-		std::string query;
-
-		if(restore_name) {
-			query = "UPDATE characters SET deletion_date = NULL, internal_name = name WHERE id = ?";
-		} else {
-			query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
-		}
+	void restore(std::uint64_t id) const override try {
+		const std::string query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
+	
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -177,7 +173,7 @@ public:
 		                          "skin, face, hairstyle, haircolour, facialhair, level, zone, "
 		                          "map, x, y, z, flags, first_login, pet_display, pet_level, "
 		                          "pet_family, internal_name) "
-		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, name)";
+		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -203,6 +199,7 @@ public:
 		stmt->setUInt(20, character.pet_display);
 		stmt->setUInt(21, character.pet_level);
 		stmt->setUInt(22, character.pet_family);
+		stmt->setString(23, character.internal_name);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to create character");
@@ -211,44 +208,40 @@ public:
 		throw exception(e.what());
 	}
 
-	void update(const Character& character, bool update_internal_name) const override try {
-		std::string query = "UPDATE characters SET name = ?, account_id = ?, realm_id = ?, race = ?, class = ?, gender = ?, "
-		                    "skin = ?, face = ?, hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
-		                    "map = ?, x = ?, y = ?, z = ?, flags = ?, first_login = ?, pet_display = ?, pet_level = ?, "
-		                    "pet_family = ? ";
-
-		// todo, make internal_name part of Character and remove this logic
-		if(update_internal_name) {
-			query += ", internal_name = name ";
-		}
-
-		query += "WHERE id = ?";
+	void update(const Character& character) const override try {
+		const std::string query = "UPDATE characters SET name = ?, internal_name = ?, account_id = ?, "
+		                          "realm_id = ?, race = ?, class = ?, gender = ?, skin = ?, face = ?, "
+		                          "hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
+		                          "map = ?, x = ?, y = ?, z = ?, flags = ?, first_login = ?, pet_display = ?, "
+		                          "pet_level = ?, pet_family = ? "
+		                          "WHERE id = ?";
 		
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, character.name);
-		stmt->setUInt(2, character.account_id);
-		stmt->setUInt(3, character.realm_id);
-		stmt->setUInt(4, character.race);
-		stmt->setUInt(5, character.class_);
-		stmt->setUInt(6, character.gender);
-		stmt->setUInt(7, character.skin);
-		stmt->setUInt(8, character.face);
-		stmt->setUInt(9, character.hairstyle);
-		stmt->setUInt(10, character.haircolour);
-		stmt->setUInt(11, character.facialhair);
-		stmt->setUInt(12, character.level);
-		stmt->setUInt(13, character.zone);
-		stmt->setUInt(14, character.map);
-		stmt->setDouble(15, character.position.x);
-		stmt->setDouble(16, character.position.y);
-		stmt->setDouble(17, character.position.z);
-		stmt->setUInt(18, static_cast<std::uint32_t>(character.flags));
-		stmt->setUInt(19, character.first_login);
-		stmt->setUInt(20, character.pet_display);
-		stmt->setUInt(21, character.pet_level);
-		stmt->setUInt(22, character.pet_family);
-		stmt->setUInt(23, character.id);
+		stmt->setString(2, character.internal_name);
+		stmt->setUInt(3, character.account_id);
+		stmt->setUInt(4, character.realm_id);
+		stmt->setUInt(5, character.race);
+		stmt->setUInt(6, character.class_);
+		stmt->setUInt(7, character.gender);
+		stmt->setUInt(8, character.skin);
+		stmt->setUInt(9, character.face);
+		stmt->setUInt(10, character.hairstyle);
+		stmt->setUInt(11, character.haircolour);
+		stmt->setUInt(12, character.facialhair);
+		stmt->setUInt(13, character.level);
+		stmt->setUInt(14, character.zone);
+		stmt->setUInt(15, character.map);
+		stmt->setDouble(16, character.position.x);
+		stmt->setDouble(17, character.position.y);
+		stmt->setDouble(18, character.position.z);
+		stmt->setUInt(19, static_cast<std::uint32_t>(character.flags));
+		stmt->setUInt(20, character.first_login);
+		stmt->setUInt(21, character.pet_display);
+		stmt->setUInt(22, character.pet_level);
+		stmt->setUInt(23, character.pet_family);
+		stmt->setUInt(24, character.id);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update character");
