@@ -98,9 +98,10 @@ void CharacterHandler::delete_callback(std::uint32_t account_id, std::uint32_t r
 
 	pool_.run([=] {
 		try {
-			dao_.delete_character(character_id);
+			dao_.delete_character(character_id, true);
 			callback(protocol::ResultCode::CHAR_DELETE_SUCCESS);
 		} catch(dal::exception& e) {
+			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 			callback(protocol::ResultCode::CHAR_DELETE_FAILED);
 		}
 	});
@@ -115,6 +116,7 @@ void CharacterHandler::delete_character(std::uint32_t account_id, std::uint32_t 
 			auto character = dao_.character(character_id);
 			delete_callback(account_id, realm_id, character_id, character, callback);
 		} catch(dal::exception& e) {
+			LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 			callback(protocol::ResultCode::CHAR_DELETE_FAILED);
 		}
 	});

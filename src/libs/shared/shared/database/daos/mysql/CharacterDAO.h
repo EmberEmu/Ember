@@ -66,7 +66,7 @@ public:
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                          "WHERE name = ? AND realm_id = ?";
+		                          "WHERE name = ? AND realm_id = ? AND c.deletion_date IS NULL";
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -90,7 +90,7 @@ public:
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                          "WHERE c.id = ?";
+		                          "WHERE c.id = ? AND c.deletion_date IS NULL";
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -114,7 +114,7 @@ public:
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 		                          "LEFT JOIN users u ON u.id = c.account_id "
-		                          "WHERE u.id = ? AND c.realm_id = ?";
+		                          "WHERE u.id = ? AND c.realm_id = ? AND c.deletion_date IS NULL";
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -132,8 +132,14 @@ public:
 		throw exception(e.what());
 	}
 
-	void delete_character(std::uint64_t id) const override try {
-		const std::string query = "DELETE FROM characters WHERE id = ?";
+	void delete_character(std::uint64_t id, bool soft_delete) const override try {
+		std::string query;
+
+		if(soft_delete) {
+			query = "UPDATE characters SET deletion_date = CURTIME() WHERE id = ?";
+		} else {
+			query = "DELETE FROM characters WHERE id = ?";
+		}
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
