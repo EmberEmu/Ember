@@ -7,7 +7,10 @@
  */
 
 #include "CharacterList.h"
+#include "../Locator.h"
 #include "../ClientHandler.h"
+#include "../RealmQueue.h"
+#include "../CharacterService.h"
 #include "../ClientConnection.h"
 #include "../FilterTypes.h"
 #include <logger/Logging.h>
@@ -16,8 +19,6 @@
 #include <spark/temp/Account_generated.h>
 #include <memory>
 #include <vector>
-
-#include "../temp.h"
 
 namespace em = ember::messaging;
 
@@ -73,10 +74,10 @@ void handle_char_rename(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->rename_character(ctx->account_id, packet.id, 1, packet.name, // todo, realm ID
-	                                 [self, ctx](em::character::Status status,
-	                                             protocol::ResultCode res, std::uint64_t id,
-												 const std::string& name) {
+	Locator::character()->rename_character(ctx->account_id, packet.id, 1, packet.name, // todo, realm ID
+	                                       [self, ctx](em::character::Status status,
+	                                                   protocol::ResultCode res, std::uint64_t id,
+												       const std::string& name) {
 		ctx->connection->socket().get_io_service().dispatch([=]() {
 			LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
@@ -100,9 +101,9 @@ void handle_char_enum(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->retrieve_characters(ctx->account_id, 1, // todo, realm ID
-	                                    [self, ctx](em::character::Status status,
-	                                                std::vector<Character> characters) {
+	Locator::character()->retrieve_characters(ctx->account_id, 1, // todo, realm ID
+	                                          [self, ctx](em::character::Status status,
+	                                                      std::vector<Character> characters) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, characters]() mutable {
 			if(status == em::character::Status::OK) {
 				send_character_list(ctx, characters);
@@ -140,9 +141,9 @@ void handle_char_create(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->create_character(ctx->account_id, 1, packet.character, // todo, realm ID
-	                                 [self, ctx](em::character::Status status,
-	                                             boost::optional<protocol::ResultCode> result) {
+	Locator::character()->create_character(ctx->account_id, 1, packet.character, // todo, realm ID
+	                                       [self, ctx](em::character::Status status,
+	                                                   boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
 			if(status == em::character::Status::OK) {
 				send_character_create(ctx, *result);
@@ -164,9 +165,9 @@ void handle_char_delete(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	char_serv_temp->delete_character(ctx->account_id, packet.id, 1, // todo, realm ID, swap args
-	                                 [self, ctx](em::character::Status status,
-	                                             boost::optional<protocol::ResultCode> result) {
+	Locator::character()->delete_character(ctx->account_id, packet.id, 1, // todo, realm ID, swap args
+	                                       [self, ctx](em::character::Status status,
+	                                                   boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
 			if(status == em::character::Status::OK) {
 				send_character_delete(ctx, *result);
@@ -222,8 +223,8 @@ void update(ClientContext* ctx) {
 
 void exit(ClientContext* ctx) {
 	if(ctx->state == ClientState::SESSION_CLOSED) {
-		--test;
-		queue_service_temp->free_slot();
+		//--test;
+		Locator::queue()->free_slot();
 	}
 }
 

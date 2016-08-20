@@ -8,6 +8,7 @@ set(EXECUTABLE_NAME gateway)
 set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
+    Locator.h
     SessionManager.h
     FilterTypes.h
     RealmService.h
@@ -33,10 +34,10 @@ set(LIBRARY_HDR
     states/SessionClose.h
     states/ClientContext.h
     states/StateLUT.h
-    temp.h
     )
 
 set(LIBRARY_SRC
+    Locator.cpp
     SessionManager.cpp
     ClientConnection.cpp
     RealmService.cpp
@@ -55,7 +56,6 @@ set(LIBRARY_SRC
     states/InQueue.cpp
     states/SessionClose.cpp
     states/StateLUT.cpp
-    temp.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

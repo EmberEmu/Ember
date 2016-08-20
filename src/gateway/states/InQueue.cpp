@@ -8,9 +8,10 @@
 
 #include "InQueue.h"
 #include "logger/Logging.h"
+#include "../Locator.h"
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
-#include "../temp.h"
+#include "../RealmQueue.h"
 
 namespace ember { namespace queue {
 
@@ -24,7 +25,7 @@ void update(ClientContext* ctx) {
 
 void exit(ClientContext* ctx) {
 	if(ctx->state == ClientState::SESSION_CLOSED) {
-		queue_service_temp->dequeue(ctx->connection->shared_from_this());
+		Locator::queue()->dequeue(ctx->connection->shared_from_this());
 	}
 }
 

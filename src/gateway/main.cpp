@@ -6,8 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "temp.h"
-
+#include "Locator.h"
 #include "FilterTypes.h"
 #include "RealmQueue.h"
 #include "ServicePool.h"
@@ -144,15 +143,16 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
+	ember::RealmQueue queue_service(service_pool.get_service());
 	ember::RealmService realm_svc(*realm, spark, discovery, logger);
 	ember::AccountService acct_svc(spark, discovery, logger);
 	ember::CharacterService char_svc(spark, discovery, logger);
-
-	// temp stuff
-	char_serv_temp = &char_svc;
-	acct_serv = &acct_svc;
-	ember::RealmQueue queue_service(service_pool.get_service());
-	queue_service_temp = &queue_service;
+	
+	// set services - not the best design pattern but it'll do for now
+	ember::Locator::set(&queue_service);
+	ember::Locator::set(&realm_svc);
+	ember::Locator::set(&acct_svc);
+	ember::Locator::set(&char_svc);
 
 	auto max_slots = args["realm.max-slots"].as<unsigned int>();
 	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
@@ -199,6 +199,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
+		("quirks.list_zone_hide", po::bool_switch()->required())
 		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())

@@ -6,20 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "WorldForwarder.h"
+#include "Locator.h"
 
-namespace ember { namespace world {
+namespace ember {
 
-void enter(ClientContext* context) {
+CharacterService* Locator::character_;
+AccountService* Locator::account_;
+RealmService* Locator::realm_;
+RealmQueue* Locator::queue_;
 
-}
-
-void update(ClientContext* context) {
-
-}
-
-void exit(ClientContext* context) {
-	//queue_service_temp->free_slot();
-}
-
-}} // world, ember
+} // ember

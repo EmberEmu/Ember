@@ -7,7 +7,10 @@
  */
 
 #include "Authentication.h"
+#include "../AccountService.h"
+#include "../RealmQueue.h"
 #include "../ClientConnection.h"
+#include "../Locator.h"
 #include <game_protocol/Opcodes.h>
 #include <game_protocol/PacketHeaders.h>
 #include <game_protocol/Packets.h>
@@ -18,8 +21,6 @@
 #include <botan/botan.h>
 #include <botan/sha160.h>
 #include <cstdint>
-
-#include "../temp.h"
 
 #undef ERROR // temp
 
@@ -64,7 +65,7 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 
 	auto self = ctx->connection->shared_from_this();
 
-	acct_serv->locate_account_id(packet.username, [self, ctx, packet](em::account::Status remote_res,
+	Locator::account()->locate_account_id(packet.username, [self, ctx, packet](em::account::Status remote_res,
 	                                                                  std::uint32_t account_id) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, account_id]() { // todo
 			if(remote_res == em::account::Status::OK && account_id) {
@@ -89,7 +90,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 
 	auto self = ctx->connection->shared_from_this();
 
-	acct_serv->locate_session(ctx->account_id, [self, ctx, packet](em::account::Status remote_res,
+	Locator::account()->locate_session(ctx->account_id, [self, ctx, packet](em::account::Status remote_res,
 	                                                               Botan::BigInt key) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, key]() { // todo
 			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
@@ -185,7 +186,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	auto auth_success = [packet](ClientContext* ctx) {
 		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-		++test;
+		//++test;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
 		send_addon_data(ctx, packet);
 		ctx->handler->state_update(ClientState::CHARACTER_LIST);
@@ -195,10 +196,10 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	* Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
 	* but that doesn't seem to be true - if this bugs out, check that out
 	*/
-	if(test > 0) {
+	if(false) {
 		auto self(ctx->connection->shared_from_this());
 
-		queue_service_temp->enqueue(self, [auth_success, ctx, packet, self]() {
+		Locator::queue()->enqueue(self, [auth_success, ctx, packet, self]() {
 			ctx->connection->socket().get_io_service().dispatch([self, ctx, auth_success, packet]() {
 				LOG_DEBUG_GLOB << packet.username << " removed from queue" << LOG_ASYNC;
 				auth_success(ctx);
@@ -240,8 +241,6 @@ void update(ClientContext* ctx) {
 	}
 }
 
-void exit(ClientContext* ctx) {
-	// don't care
-}
+void exit(ClientContext* ctx) {}
 
 }} // authentication, ember
