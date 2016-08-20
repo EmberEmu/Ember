@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,7 @@
 namespace ember {
 
 struct Realm {
-	enum CreationSetting : std::uint8_t {
+	enum class CreationSetting : std::uint8_t {
 		ENABLED,
 		DISABLED,
 		QUEUED,
@@ -34,11 +34,11 @@ struct Realm {
 		FULL         = 0x80
 	}; 
 
-	enum Type : std::uint32_t {
+	enum class Type : std::uint32_t {
 		PvE, PvP, RP = 6, RPPvP = 8,
 	};
 
-	enum Zone : std::uint8_t { // these are probably wrong
+	enum class Zone : std::uint8_t { // these are probably wrong
 		ANY,
 		UNITED_States,
 		KOREA,
@@ -59,5 +59,8 @@ struct Realm {
 };
 
 ENUM_FLAGS(Realm::Flag, std::uint8_t);
+ENUM_FLAGS(Realm::Type, std::uint32_t);
+ENUM_FLAGS(Realm::Zone, std::uint8_t);
+ENUM_FLAGS(Realm::CreationSetting, std::uint8_t);
 
 } //ember
