@@ -15,7 +15,7 @@
 namespace ember {
 
 struct Vector {
-	double x, y, z;
+	float x, y, z;
 };
 
 struct CharacterTemplate { // used during creation
