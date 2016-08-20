@@ -31,8 +31,6 @@
 #include <vector>
 #include <stdexcept>
 
-#undef ERROR // temp
-
 const std::string APP_NAME = "Character Daemon";
 
 namespace ep = ember::connection_pool;

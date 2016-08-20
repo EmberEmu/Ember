@@ -27,8 +27,8 @@
 		*logger << ember::log::Severity::WARN
 
 #define LOG_ERROR(logger) \
-	if(logger->severity() <= ember::log::Severity::ERROR) { \
-		*logger << ember::log::Severity::ERROR
+	if(logger->severity() <= ember::log::Severity::ERROR_) { \
+		*logger << ember::log::Severity::ERROR_
 
 #define LOG_FATAL(logger) \
 	if(logger->severity() <= ember::log::Severity::FATAL) { \
@@ -51,8 +51,8 @@
 		*logger << ember::log::Severity::WARN << ember::log::Filter(type)
 
 #define LOG_ERROR_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::ERROR && !(logger->filter() & type)) { \
-		*logger << ember::log::Severity::ERROR << ember::log::Filter(type)
+	if(logger->severity() <= ember::log::Severity::ERROR_ && !(logger->filter() & type)) { \
+		*logger << ember::log::Severity::ERROR_ << ember::log::Filter(type)
 
 #define LOG_FATAL_FILTER(logger, type) \
 	if(logger->severity() <= ember::log::Severity::FATAL && !(logger->filter() & type)) { \

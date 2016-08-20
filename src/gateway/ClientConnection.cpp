@@ -9,8 +9,6 @@
 #include "ClientConnection.h"
 #include "SessionManager.h"
 
-#undef ERROR // temp
-
 namespace ember {
 
 void ClientConnection::parse_header(spark::Buffer& buffer) {

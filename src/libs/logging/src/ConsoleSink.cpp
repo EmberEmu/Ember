@@ -83,7 +83,7 @@ void ConsoleSink::set_colour(Severity severity) {
 	switch(severity) {
 		case Severity::FATAL:
 			[[fallthrough]];
-		case Severity::ERROR:
+		case Severity::ERROR_:
 			[[fallthrough]];
 		case Severity::WARN:
 			util::set_output_colour(util::Colour::LIGHT_RED);

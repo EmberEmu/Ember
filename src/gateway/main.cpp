@@ -36,8 +36,6 @@
 #include <string>
 #include <stdexcept>
 
-#undef ERROR // temp
-
 const std::string APP_NAME = "Realm Gateway";
 
 namespace el = ember::log;

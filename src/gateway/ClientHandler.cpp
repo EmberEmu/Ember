@@ -12,8 +12,6 @@
 #include <game_protocol/Packets.h>
 #include <spark/SafeBinaryStream.h>
 
-#undef ERROR // temp
-
 namespace ember {
 
 void ClientHandler::start() {

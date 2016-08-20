@@ -22,8 +22,6 @@
 #include <botan/sha160.h>
 #include <cstdint>
 
-#undef ERROR // temp
-
 namespace em = ember::messaging;
 
 namespace ember {
