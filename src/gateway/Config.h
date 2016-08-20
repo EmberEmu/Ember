@@ -6,14 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Locator.h"
+#pragma once
+
+#include <shared/Realm.h>
+#include <cstddef>
 
 namespace ember {
 
-CharacterService* Locator::character_;
-AccountService* Locator::account_;
-RealmService* Locator::realm_;
-RealmQueue* Locator::queue_;
-Config* Locator::config_;
+struct Config {
+	Realm* realm;
+	bool list_zone_hide;
+	unsigned int max_slots;
+};
 
 } // ember

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Config.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/temp/MessageRoot_generated.h>
@@ -36,6 +37,7 @@ private:
 	std::unique_ptr<spark::ServiceListener> listener_;
 	mutable boost::uuids::random_generator generate_uuid; // functor
 	spark::Link link_;
+	const Config& config_;
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 
@@ -52,23 +54,23 @@ private:
 	                         const RenameCB& cb) const;
 
 public:
-	CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
+	CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, const Config& config,
+	                 log::Logger* logger);
+
 	~CharacterService();
 
 	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
 	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
 
-	void retrieve_characters(std::uint32_t account_id, std::uint32_t realm_id,
-	                         RetrieveCB cb) const;
+	void retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const;
 
-	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
-	                      const CharacterTemplate& character, ResponseCB cb) const;
+	void create_character(std::uint32_t account_id, const CharacterTemplate& character,
+	                      ResponseCB cb) const;
 
-	void delete_character(std::uint32_t account_id, std::uint64_t id,
-	                      std::uint32_t realm_id, ResponseCB cb) const;
+	void delete_character(std::uint32_t account_id, std::uint64_t id, ResponseCB cb) const;
 
 	void rename_character(std::uint32_t account_id, std::uint32_t character_id,
-	                      std::uint32_t realm_id, const std::string& name, RenameCB cb) const;
+	                      const std::string& name, RenameCB cb) const;
 };
 
 } // ember

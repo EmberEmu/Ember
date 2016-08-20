@@ -8,6 +8,7 @@ set(EXECUTABLE_NAME gateway)
 set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
+    Config.h
     Locator.h
     SessionManager.h
     FilterTypes.h

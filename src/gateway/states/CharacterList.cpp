@@ -7,6 +7,7 @@
  */
 
 #include "CharacterList.h"
+#include "../Config.h"
 #include "../Locator.h"
 #include "../ClientHandler.h"
 #include "../RealmQueue.h"
@@ -40,15 +41,15 @@ void send_character_list(ClientContext* ctx, std::vector<Character>& characters)
 	protocol::SMSG_CHAR_ENUM response;
 
 	// emulate a quirk of the retail server
-	//if(quirks.first_login_hide_zone) {
+	if(Locator::config()->list_zone_hide) {
 		for(auto& c : characters) {
 			if(c.first_login) {
 				c.zone = 0;
 			}
 		}
-	//}
+	}
 
-	response.characters = characters;
+	response.characters = std::move(characters);
 	ctx->connection->send(response);
 }
 
@@ -74,7 +75,7 @@ void handle_char_rename(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	Locator::character()->rename_character(ctx->account_id, packet.id, 1, packet.name, // todo, realm ID
+	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
 	                                       [self, ctx](em::character::Status status,
 	                                                   protocol::ResultCode res, std::uint64_t id,
 												       const std::string& name) {
@@ -101,10 +102,9 @@ void handle_char_enum(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	Locator::character()->retrieve_characters(ctx->account_id, 1, // todo, realm ID
-	                                          [self, ctx](em::character::Status status,
-	                                                      std::vector<Character> characters) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, characters]() mutable {
+	Locator::character()->retrieve_characters(ctx->account_id, [self, ctx](em::character::Status status,
+	                                                                       std::vector<Character> characters) {
+		ctx->connection->socket().get_io_service().dispatch([=, characters = std::move(characters)]() mutable {
 			if(status == em::character::Status::OK) {
 				send_character_list(ctx, characters);
 			} else {
@@ -141,7 +141,7 @@ void handle_char_create(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	Locator::character()->create_character(ctx->account_id, 1, packet.character, // todo, realm ID
+	Locator::character()->create_character(ctx->account_id, packet.character,
 	                                       [self, ctx](em::character::Status status,
 	                                                   boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
@@ -165,7 +165,7 @@ void handle_char_delete(ClientContext* ctx) {
 
 	auto self = ctx->connection->shared_from_this();
 
-	Locator::character()->delete_character(ctx->account_id, packet.id, 1, // todo, realm ID, swap args
+	Locator::character()->delete_character(ctx->account_id, packet.id,
 	                                       [self, ctx](em::character::Status status,
 	                                                   boost::optional<protocol::ResultCode> result) {
 		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
@@ -179,6 +179,8 @@ void handle_char_delete(ClientContext* ctx) {
 }
 
 void handle_login(ClientContext* ctx) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	ctx->handler->state_update(ClientState::IN_WORLD);
 
 	protocol::CMSG_PLAYER_LOGIN packet;
@@ -195,9 +197,7 @@ void unhandled_packet(ClientContext* ctx) {
 
 } // unnamed
 
-void enter(ClientContext* ctx) {
-	// don't care
-}
+void enter(ClientContext* ctx) {}
 
 void update(ClientContext* ctx) {
 	switch(ctx->header->opcode) {

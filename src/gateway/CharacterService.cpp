@@ -13,8 +13,8 @@ namespace em = ember::messaging;
 
 namespace ember {
 
-CharacterService::CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger)
-                               : spark_(spark), s_disc_(s_disc), logger_(logger) {
+CharacterService::CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, const Config& config, log::Logger* logger)
+                                   : spark_(spark), s_disc_(s_disc), config_(config), logger_(logger) {
 	spark_.dispatcher()->register_handler(this, em::Service::Character, spark::EventDispatcher::Mode::CLIENT);
 	listener_ = std::move(s_disc_.listener(messaging::Service::Character,
 	                      std::bind(&CharacterService::service_located, this, std::placeholders::_1)));
@@ -133,8 +133,8 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link, const boos
 	cb(message->status(), characters);
 }
 
-void CharacterService::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        const CharacterTemplate& character, ResponseCB cb) const {
+void CharacterService::create_character(std::uint32_t account_id, const CharacterTemplate& character,
+                                        ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -154,7 +154,7 @@ void CharacterService::create_character(std::uint32_t account_id, std::uint32_t 
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Create, em::character::CreateCreate(*fbb, account_id, realm_id, fb_char).Union());
+		em::Data::Create, em::character::CreateCreate(*fbb, account_id, config_.realm->id, fb_char).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,
@@ -166,8 +166,7 @@ void CharacterService::create_character(std::uint32_t account_id, std::uint32_t 
 }
 
 void CharacterService::rename_character(std::uint32_t account_id, std::uint32_t character_id,
-                                        std::uint32_t realm_id, const std::string& name,
-                                        RenameCB cb) const {
+                                        const std::string& name, RenameCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -176,7 +175,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint32_t 
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
 	                                        em::Data::Rename, em::character::CreateRename(*fbb, account_id,
-	                                        fbb->CreateString(name), realm_id, character_id).Union());
+	                                        fbb->CreateString(name), config_.realm->id, character_id).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_rename_reply, this, std::placeholders::_1,
@@ -186,15 +185,14 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint32_t 
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
 	}
 }
-void CharacterService::retrieve_characters(std::uint32_t account_id, std::uint32_t realm_id,
-                                           RetrieveCB cb) const {
+void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Retrieve, em::character::CreateRetrieve(*fbb, account_id, realm_id).Union());
+		em::Data::Retrieve, em::character::CreateRetrieve(*fbb, account_id, config_.realm->id).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_retrieve_reply, this, std::placeholders::_1,
@@ -206,15 +204,14 @@ void CharacterService::retrieve_characters(std::uint32_t account_id, std::uint32
 	}
 }
 
-void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id,
-                                        std::uint32_t realm_id, ResponseCB cb) const {
+void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id, ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Delete, em::character::CreateDelete(*fbb, account_id, realm_id, id).Union());
+		em::Data::Delete, em::character::CreateDelete(*fbb, account_id, config_.realm->id, id).Union());
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,

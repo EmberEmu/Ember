@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Config.h"
 #include "Locator.h"
 #include "FilterTypes.h"
 #include "RealmQueue.h"
@@ -115,6 +116,12 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
 	ember::util::set_window_title(APP_NAME + " - " + realm->name);
 
+	// Set config
+	ember::Config config;
+	config.max_slots = args["realm.max_slots"].as<unsigned int>();
+	config.list_zone_hide = args["quirks.list_zone_hide"].as<bool>();
+	config.realm = realm.get_ptr();
+
 	// Determine concurrency level
 	unsigned int concurrency = check_concurrency(logger);
 
@@ -144,16 +151,14 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::RealmQueue queue_service(service_pool.get_service());
 	ember::RealmService realm_svc(*realm, spark, discovery, logger);
 	ember::AccountService acct_svc(spark, discovery, logger);
-	ember::CharacterService char_svc(spark, discovery, logger);
+	ember::CharacterService char_svc(spark, discovery, config, logger);
 	
 	// set services - not the best design pattern but it'll do for now
 	ember::Locator::set(&queue_service);
 	ember::Locator::set(&realm_svc);
 	ember::Locator::set(&acct_svc);
 	ember::Locator::set(&char_svc);
-
-	auto max_slots = args["realm.max-slots"].as<unsigned int>();
-	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
+	ember::Locator::set(&config);
 	
 	// Start network listener
 	auto interface = args["network.interface"].as<std::string>();
@@ -201,8 +206,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())
-		("realm.max-slots", po::value<unsigned int>()->required())
-		("realm.reserved-slots", po::value<unsigned int>()->required())
+		("realm.max_slots", po::value<unsigned int>()->required())
+		("realm.reserved_slots", po::value<unsigned int>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("spark.multicast_interface", po::value<std::string>()->required())

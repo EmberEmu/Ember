@@ -8,6 +8,7 @@
 
 #include "Authentication.h"
 #include "../AccountService.h"
+#include "../Config.h"
 #include "../RealmQueue.h"
 #include "../ClientConnection.h"
 #include "../Locator.h"
@@ -183,8 +184,6 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 	auto auth_success = [packet](ClientContext* ctx) {
 		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-
-		//++test;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
 		send_addon_data(ctx, packet);
 		ctx->handler->state_update(ClientState::CHARACTER_LIST);
@@ -194,7 +193,9 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	* Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
 	* but that doesn't seem to be true - if this bugs out, check that out
 	*/
-	if(false) {
+	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
+
+	if(active_players >= Locator::config()->max_slots) {
 		auto self(ctx->connection->shared_from_this());
 
 		Locator::queue()->enqueue(self, [auth_success, ctx, packet, self]() {
