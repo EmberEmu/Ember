@@ -163,6 +163,9 @@ void ClientConnection::set_authenticated(const Botan::BigInt& key) {
 }
 
 void ClientConnection::start() {
+	address_ = socket_.remote_endpoint().address().to_string()
+		+ ":" + std::to_string(socket_.remote_endpoint().port());
+
 	handler_.start();
 	read();
 }
@@ -191,7 +194,7 @@ boost::asio::ip::tcp::socket& ClientConnection::socket() {
 }
 
 std::string ClientConnection::remote_address() {
-	return socket_.remote_endpoint().address().to_string() + ":" + std::to_string(socket_.remote_endpoint().port());
+	return address_;
 }
 
 const ConnectionStats& ClientConnection::stats() const {

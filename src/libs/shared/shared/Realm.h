@@ -22,7 +22,7 @@ struct Realm {
 		EXISTING_ONLY
 	};
 
-	enum Flag : std::uint8_t {
+	enum class Flag : std::uint8_t {
 		NONE         = 0x00,
 		INVALID      = 0x01,
 		OFFLINE      = 0x02,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,7 +53,7 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status
 	rsb.add_id(realm_.id);
 	rsb.add_name(fbb->CreateString(realm_.name));
 	rsb.add_ip(fbb->CreateString(realm_.ip));
-	rsb.add_flags(realm_.flags);
+	rsb.add_flags(static_cast<std::uint8_t>(realm_.flags));
 	rsb.add_population(realm_.population);
 	rsb.add_zone(realm_.zone);
 	rsb.add_type(realm_.type);

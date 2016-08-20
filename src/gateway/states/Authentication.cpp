@@ -180,12 +180,12 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 	ctx->connection->set_authenticated(key);
 	ctx->account_name = packet.username;
+	ctx->auth_status = AuthStatus::SUCCESS;
 
 	auto auth_success = [packet](ClientContext* ctx) {
 		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 		++test;
-		ctx->auth_status = AuthStatus::SUCCESS;
 		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
 		send_addon_data(ctx, packet);
 		ctx->handler->state_update(ClientState::CHARACTER_LIST);
