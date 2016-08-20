@@ -18,7 +18,20 @@ struct Vector {
 	double x, y, z;
 };
 
-struct Character {
+struct CharacterTemplate { // used during creation
+	std::string name;
+	std::uint8_t race;
+	std::uint8_t class_;
+	std::uint8_t gender;
+	std::uint8_t skin;
+	std::uint8_t face;
+	std::uint8_t hairstyle;
+	std::uint8_t haircolour;
+	std::uint8_t facialhair;
+	std::uint8_t outfit_id;
+};
+
+struct Character { // used for character list display
 	enum class Flags : std::uint32_t { // todo, investigate
 		NONE                   = 0x000,
 		UNKNOWN1               = 0x001,

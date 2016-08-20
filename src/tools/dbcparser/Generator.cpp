@@ -476,7 +476,7 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 
 	definitions << tab << "enum class " << def.name << " : " << type_map.at(def.underlying_type).first << " {";
 
-	if(!def.comment.empty()) { // todo, fix
+	if(!def.comment.empty()) {
 		definitions << " // " << def.comment;
 	}
 
@@ -511,7 +511,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 	definitions << tab << "struct " << def.name << " {";
 	
-	if(!def.comment.empty()) { // todo, fix
+	if(!def.comment.empty()) {
 		definitions << " // " << def.comment;
 	}
 
@@ -546,7 +546,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 		definitions << " " << f.name << (key ? "_id" : "")
 			<< (array ? "[" + std::to_string(*components.second) + "]" : "") << ";";
 
-		if(!f.comment.empty()) { // todo, fix
+		if(!f.comment.empty()) {
 			definitions << " // " << f.comment;
 		}
 

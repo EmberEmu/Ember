@@ -25,59 +25,21 @@ class CMSG_CHAR_CREATE final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Character character; // todo, replace this type with CharacterTemplate
+	CharacterTemplate character;
 	
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		// todo, everything needs redone
-		std::string name;
-		std::uint8_t race;
-		std::uint8_t class_;
-		std::uint8_t gender;
-		std::uint8_t skin;
-		std::uint8_t face;
-		std::uint8_t hair_style;
-		std::uint8_t hair_colour;
-		std::uint8_t facial_hair;
-		std::uint8_t outfit_id;
-
-		stream >> name;
-		stream >> race;
-		stream >> class_;
-		stream >> gender;
-		stream >> skin;
-		stream >> face;
-		stream >> hair_style;
-		stream >> hair_colour;
-		stream >> facial_hair;
-		stream >> outfit_id;
-
-		character.name = name;
-		character.id = 0;
-		character.account_id = 0;
-		character.realm_id = 0;
-		character.race = race;
-		character.class_ = class_;
-		character.gender = gender;
-		character.skin = skin;
-		character.face = face;
-		character.hairstyle = hair_style;
-		character.haircolour = hair_colour;
-		character.facialhair = facial_hair;
-		character.level = 0;
-		character.zone = 0;
-		character.map = 0;
-		character.guild_id = 0;
-		character.guild_rank = 0;
-		character.position.x = 0.0f;
-		character.position.y = 0.0f;
-		character.position.z = 0.0f;
-		character.flags = Character::Flags::NONE;
-		character.first_login = false;
-		character.pet_display = 0;
-		character.pet_level = 0;
-		character.pet_family = 0;
+		stream >> character.name;
+		stream >> character.race;
+		stream >> character.class_;
+		stream >> character.gender;
+		stream >> character.skin;
+		stream >> character.face;
+		stream >> character.hairstyle;
+		stream >> character.haircolour;
+		stream >> character.facialhair;
+		stream >> character.outfit_id;
 
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
@@ -85,16 +47,16 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		//stream << name;
-		//stream << race;
-		//stream << class_;
-		//stream << gender;
-		//stream << skin;
-		//stream << face;
-		//stream << hair_style;
-		//stream << hair_colour;
-		//stream << facial_hair;
-		//stream << outfit_id;
+		stream << character.name;
+		stream << character.race;
+		stream << character.class_;
+		stream << character.gender;
+		stream << character.skin;
+		stream << character.face;
+		stream << character.hairstyle;
+		stream << character.haircolour;
+		stream << character.facialhair;
+		stream << character.outfit_id;
 	}
 };
 

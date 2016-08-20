@@ -134,7 +134,7 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link, const boos
 }
 
 void CharacterService::create_character(std::uint32_t account_id, std::uint32_t realm_id,
-                                        const Character& character, ResponseCB cb) const {
+                                        const CharacterTemplate& character, ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();

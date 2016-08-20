@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <shared/database/objects/Character.h>
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/temp/MessageRoot_generated.h>
 #include <game_protocol/ResultCodes.h>
 #include <logger/Logging.h>
+#include <shared/database/objects/Character.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>
@@ -62,7 +62,7 @@ public:
 	                         RetrieveCB cb) const;
 
 	void create_character(std::uint32_t account_id, std::uint32_t realm_id,
-	                      const Character& character, ResponseCB cb) const;
+	                      const CharacterTemplate& character, ResponseCB cb) const;
 
 	void delete_character(std::uint32_t account_id, std::uint64_t id,
 	                      std::uint32_t realm_id, ResponseCB cb) const;
