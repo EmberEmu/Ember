@@ -48,7 +48,9 @@ void ServicePool::run() {
 }
 
 void ServicePool::stop() {
-	for(auto& service : services_) {
+	work_.clear();
+
+ 	for(auto& service : services_) {
 		service->stop();
 	}
 }

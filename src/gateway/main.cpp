@@ -138,6 +138,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
 	auto& service = service_pool.get_service();
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
 	es::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
@@ -164,14 +166,21 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	ember::NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
+	signals.async_wait([&](const boost::system::error_code& error, int signal) {
+		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+		discovery.shutdown();
+		spark.shutdown();
+		queue_service.shutdown();
+		pool.close();
+		service_pool.stop();
+	});
+
 	service.dispatch([&, logger]() {
 		realm_svc.set_realm_online();
 		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
 
 	service_pool.run();
-
-	LOG_INFO(logger) << APP_NAME << " gateway shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
