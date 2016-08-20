@@ -36,7 +36,7 @@ public:
 
 		for(auto i = 0; i < char_count; ++i) {
 			Character c;
-			stream >> c.id; // todo, 64 -> 32 bit
+			stream >> c.id;
 			stream >> c.name;
 			stream >> c.race;
 			stream >> c.class_;
@@ -49,9 +49,9 @@ public:
 			stream >> c.level;
 			stream >> c.zone;
 			stream >> c.map;
-			stream >> c.position.x; // todo, change to float
-			stream >> c.position.y; // todo, change to float
-			stream >> c.position.z; // todo, change to float
+			stream >> c.position.x;
+			stream >> c.position.y;
+			stream >> c.position.z;
 			stream >> c.guild_id;
 			stream >> c.flags;
 			stream >> c.first_login;
@@ -84,7 +84,7 @@ public:
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {
-			stream << be::native_to_little(std::uint64_t(c.id));
+			stream << be::native_to_little(c.id);
 			stream << c.name;
 			stream << c.race;
 			stream << c.class_;
@@ -97,9 +97,9 @@ public:
 			stream << c.level;
 			stream << be::native_to_little(c.zone);
 			stream << c.map;
-			stream << static_cast<float>(c.position.x);
-			stream << static_cast<float>(c.position.y);
-			stream << static_cast<float>(c.position.z);
+			stream << be::native_to_little(c.position.x);
+			stream << be::native_to_little(c.position.y);
+			stream << be::native_to_little(c.position.z);
 			stream << be::native_to_little(c.guild_id);
 			stream << be::native_to_little(c.flags);
 			stream << static_cast<std::uint8_t>(c.first_login);

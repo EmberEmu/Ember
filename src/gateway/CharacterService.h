@@ -69,7 +69,7 @@ public:
 
 	void delete_character(std::uint32_t account_id, std::uint64_t id, ResponseCB cb) const;
 
-	void rename_character(std::uint32_t account_id, std::uint32_t character_id,
+	void rename_character(std::uint32_t account_id, std::uint64_t character_id,
 	                      const std::string& name, RenameCB cb) const;
 };
 

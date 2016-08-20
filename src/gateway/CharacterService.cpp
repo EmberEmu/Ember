@@ -165,7 +165,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	}
 }
 
-void CharacterService::rename_character(std::uint32_t account_id, std::uint32_t character_id,
+void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t character_id,
                                         const std::string& name, RenameCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 

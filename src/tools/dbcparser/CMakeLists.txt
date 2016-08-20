@@ -1,4 +1,4 @@
-# Copyright (c) 2014, 2015 Ember
+# Copyright (c) 2014 - 2016 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,4 +29,4 @@ set(EXECUTABLE_SRC
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} spark shared ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} logging spark shared ${Boost_LIBRARIES})

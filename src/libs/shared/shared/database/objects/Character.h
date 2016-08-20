@@ -53,7 +53,7 @@ struct Character { // used for character list display
 
 	std::string name;
 	std::string internal_name;
-	std::uint32_t id;
+	std::uint64_t id;
 	std::uint32_t account_id;
 	std::uint32_t realm_id;
 	std::uint8_t race;

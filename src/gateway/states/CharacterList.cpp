@@ -38,8 +38,6 @@ void send_character_list_fail(ClientContext* ctx) {
 void send_character_list(ClientContext* ctx, std::vector<Character>& characters) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	protocol::SMSG_CHAR_ENUM response;
-
 	// emulate a quirk of the retail server
 	if(Locator::config()->list_zone_hide) {
 		for(auto& c : characters) {
@@ -49,6 +47,7 @@ void send_character_list(ClientContext* ctx, std::vector<Character>& characters)
 		}
 	}
 
+	protocol::SMSG_CHAR_ENUM response;
 	response.characters = std::move(characters);
 	ctx->connection->send(response);
 }
@@ -78,7 +77,7 @@ void handle_char_rename(ClientContext* ctx) {
 	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
 	                                       [self, ctx](em::character::Status status,
 	                                                   protocol::ResultCode res, std::uint64_t id,
-												       const std::string& name) {
+	                                                   const std::string& name) {
 		ctx->connection->socket().get_io_service().dispatch([=]() {
 			LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 

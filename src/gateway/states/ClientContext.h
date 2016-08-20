@@ -30,7 +30,7 @@ struct ClientContext {
 	ClientState prev_state;
 	ClientHandler* handler;
 	ClientConnection* connection;
-	std::uint64_t account_id;
+	std::uint32_t account_id;
 	std::string account_name;
 	std::uint32_t auth_seed;
 	//std::shared_ptr<WorldConnection> world_conn;
