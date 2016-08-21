@@ -9,6 +9,7 @@
 #include "Generator.h"
 #include "TypeUtils.h"
 #include "Types.h"
+#include <logger/Logging.h>
 #include <regex>
 #include <vector>
 #include <fstream>
@@ -73,6 +74,8 @@ public:
 };
 
 boost::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	for(auto& f : base.children) {
 		if(f->name == type_name) {
 			return base.name;
@@ -87,6 +90,8 @@ boost::optional<std::string> locate_type(const types::Struct& base, const std::s
 }
 
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	for(auto& def : defs) {
 		if(def->name == parent) {
 			if(!def->alias.empty()) {
@@ -101,6 +106,8 @@ std::string parent_alias(const types::Definitions& defs, const std::string& pare
 }
 
 void save_output(const std::string& path, const std::string& name, const std::string& output) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	std::ofstream ofs(path + "\\" + name);
 	ofs << output;
 
@@ -110,6 +117,8 @@ void save_output(const std::string& path, const std::string& name, const std::st
 }
 
 std::stringstream read_template(const std::string& template_file) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	std::ifstream ifs("templates/" + template_file);
 	std::stringstream buffer;
 	buffer << ifs.rdbuf();
@@ -122,8 +131,9 @@ std::stringstream read_template(const std::string& template_file) {
 }
 
 void generate_linker(const types::Definitions& defs, const std::string& output) {
-	std::regex pattern(R"(([^]+)<%TEMPLATE_LINKING_FUNCTIONS%>([^]+)<%TEMPLATE_LINKING_FUNCTION_CALLS%>([^]+))");
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
+	std::regex pattern(R"(([^]+)<%TEMPLATE_LINKING_FUNCTIONS%>([^]+)<%TEMPLATE_LINKING_FUNCTION_CALLS%>([^]+))");
 	std::stringstream buffer(read_template("Linker.cpp_"));
 	std::stringstream functions, calls;
 
@@ -219,8 +229,10 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 }
 
 void generate_disk_loader(const types::Definitions& defs, const std::string& output) {
-	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_DEBUG_GLOB << "Generating disk loader..." << LOG_ASYNC;
 
+	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
 	std::stringstream buffer(read_template("DiskLoader.cpp_"));
 	std::stringstream functions, insertions, calls;
 
@@ -407,6 +419,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 }
 
 void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	for(auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
 			case types::STRUCT:
@@ -420,6 +434,8 @@ void generate_disk_struct_recursive(const types::Struct& def, std::stringstream&
 }
 
 void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	std::string tab("\t", indent);
 
 	definitions << tab << "struct " << def.name << " {" << std::endl;
@@ -441,13 +457,15 @@ void generate_disk_struct(const types::Struct& def, std::stringstream& definitio
 }
 
 void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	std::string tab("\t", indent);
 	definitions << tab << "typedef " << def.underlying_type << " " << def.name << ";" << "\n";
 }
 
 void generate_disk_defs(const types::Definitions& defs, const std::string& output) {
-	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
+	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
 	std::stringstream buffer(read_template("DiskDefs.h_"));
 	std::stringstream definitions;
 
@@ -468,10 +486,13 @@ void generate_disk_defs(const types::Definitions& defs, const std::string& outpu
 }
 
 bool is_enum(const std::string& type) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	return type.find("enum") != std::string::npos;
 }
 
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	std::string tab("\t", indent);
 
 	definitions << tab << "enum class " << def.name << " : " << type_map.at(def.underlying_type).first << " {";
@@ -494,6 +515,8 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 }
 
 void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	for(auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
 			case types::STRUCT:
@@ -507,6 +530,8 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 }
 
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	std::string tab("\t", indent);
 
 	definitions << tab << "struct " << def.name << " {";
@@ -557,6 +582,8 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 }
 
 void generate_memory_defs(const types::Definitions& defs, const std::string& output) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	std::regex pattern(R"(([^]+)<%TEMPLATE_MEMORY_FORWARD_DECL%>([^]+)<%TEMPLATE_MEMORY_DEFINITIONS%>([^]+))");
 
 	std::stringstream buffer(read_template("MemoryDefs.h_"));
@@ -581,6 +608,7 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 }
 
 void generate_storage(const types::Definitions& defs, const std::string& output) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>([^]+)<%TEMPLATE_MOVES%>([^]+))");
 
 	std::stringstream buffer(read_template("Storage.h_"));
@@ -609,6 +637,8 @@ void generate_storage(const types::Definitions& defs, const std::string& output)
 }
 
 void generate_common(const types::Definitions& defs, const std::string& output) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_DEBUG_GLOB << "Generating common files..." << LOG_ASYNC;
 	generate_storage(defs, output);
 	generate_memory_defs(defs, output);
 	generate_disk_defs(defs, output);
@@ -616,6 +646,7 @@ void generate_common(const types::Definitions& defs, const std::string& output) 
 }
 
 void generate_disk_source(const types::Definitions& defs, const std::string& output) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	generate_disk_loader(defs, output);
 }
 

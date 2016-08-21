@@ -8,6 +8,7 @@
 
 #include "Parser.h"
 #include "Validator.h"
+#include <logger/Logging.h>
 #include <rapidxml_utils.hpp>
 
 namespace rxml = rapidxml;
@@ -15,6 +16,8 @@ namespace rxml = rapidxml;
 namespace ember { namespace dbc {
 
 types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	types::Key key;
 	auto attr = property->first_attribute("ignore-type-mismatch");
 
@@ -42,6 +45,8 @@ types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 
 void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>& key,
                                 rxml::xml_node<>* property) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	for(rxml::xml_node<>* node = property->first_node(); node; node = node->next_sibling()) {
 		std::pair<std::string, std::string> kv;
 
@@ -64,6 +69,8 @@ void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>
 }
 
 void Parser::parse_enum_node(types::Enum& type, UniqueCheck& check, rxml::xml_node<>* node) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	if(strcmp(node->name(), "name") == 0) {
 		assign_unique(type.name, check.name, node);
 		return;
@@ -87,6 +94,8 @@ void Parser::parse_enum_node(types::Enum& type, UniqueCheck& check, rxml::xml_no
 }
 
 void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xml_node<>* node) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	if(strcmp(node->name(), "name") == 0) {
 		assign_unique(type.name, check.name, node);
 		return;
@@ -103,6 +112,8 @@ void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xm
 }
 
 void Parser::assign_unique(std::string& type, bool& exists, rxml::xml_node<>* node) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	if(exists) {
 		throw exception(std::string("Multiple definitions of: ") + node->name());
 	}
@@ -113,6 +124,8 @@ void Parser::assign_unique(std::string& type, bool& exists, rxml::xml_node<>* no
 
 void Parser::parse_field_node(types::Field& field, UniqueCheck& check, 
                               rxml::xml_node<>* node) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	if(strcmp(node->name(), "name") == 0) {
 		assign_unique(field.name, check.name, node);
 		return;
@@ -128,6 +141,8 @@ void Parser::parse_field_node(types::Field& field, UniqueCheck& check,
 }
 
 types::Field Parser::parse_field(rxml::xml_node<>* root) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	types::Field field;
 	UniqueCheck check{};
 
@@ -149,6 +164,8 @@ types::Field Parser::parse_field(rxml::xml_node<>* root) {
 }
 
 types::Enum Parser::parse_enum(rxml::xml_node<>* root, types::Base* parent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	types::Enum parsed;
 	parsed.parent = parent;
 
@@ -172,6 +189,8 @@ types::Enum Parser::parse_enum(rxml::xml_node<>* root, types::Base* parent) {
 }
 
 types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth, types::Base* parent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	if(depth > MAX_PARSE_DEPTH) {
 		throw exception("Struct nesting is too deep");
 	}
@@ -211,6 +230,8 @@ types::Struct Parser::parse_struct(rxml::xml_node<>* root, bool dbc, int depth, 
 }
 
 types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	types::Definitions definition;
 
 	for(rxml::xml_node<>* node = parent; node; node = node->next_sibling()) {
@@ -235,6 +256,9 @@ types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
 }
 
 types::Definitions Parser::parse_file(const std::string& path) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_DEBUG_GLOB << "Parsing " << path << LOG_ASYNC;
+
 	rxml::file<> definition(path.c_str());
 	rxml::xml_document<> doc;
 	doc.parse<0>(definition.data());
@@ -249,12 +273,16 @@ types::Definitions Parser::parse_file(const std::string& path) {
 }
 
 types::Definitions Parser::parse(const std::string& path) try {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	return parse_file(path);
 } catch(std::exception& e) {
 	throw parse_error(path, e.what());
 }
 
 types::Definitions Parser::parse(const std::vector<std::string>& paths) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	types::Definitions defs;
 
 	for(auto& path : paths) {

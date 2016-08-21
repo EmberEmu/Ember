@@ -10,11 +10,15 @@
 #include "Generator.h"
 #include "DBCGenerator.h"
 #include "bprinter/table_printer.h"
+#include <logger/Logging.h>
+#include <logger/ConsoleSink.h>
+#include <logger/FileSink.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -23,7 +27,9 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 namespace edbc = ember::dbc;
+namespace el = ember::log;
 
+int launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(const std::string& path);
 void print_dbc_table(const edbc::types::Definitions& defs);
@@ -33,15 +39,34 @@ edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Defin
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
-	const std::string def_path = args["definitions"].as<std::string>();
-	std::vector<std::string> paths = fetch_definitions(def_path);
-	
-	edbc::Parser parser;
-	auto definitions = parser.parse(paths);
-	
-	handle_options(args, definitions);
+	auto con_verbosity = el::severity_string(args["verbosity"].as<std::string>());
+	auto file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
+
+	auto logger = std::make_unique<el::Logger>();
+	auto fsink = std::make_unique<el::FileSink>(file_verbosity, el::Filter(0),
+	                                            "dbcparser.log", el::FileSink::Mode::APPEND);
+	auto consink = std::make_unique<el::ConsoleSink>(con_verbosity, el::Filter(0));
+	consink->colourise(true);
+	logger->add_sink(std::move(consink));
+	logger->add_sink(std::move(fsink));
+	el::set_global_logger(logger.get());
+
+	return launch(args);
 } catch(std::exception& e) {
 	std::cerr << e.what();
+	return 1;
+}
+
+int launch(const po::variables_map& args) try {
+	const std::string def_path = args["definitions"].as<std::string>();
+	std::vector<std::string> paths = fetch_definitions(def_path);
+
+	edbc::Parser parser;
+	auto definitions = parser.parse(paths);
+	handle_options(args, definitions);
+	return 0;
+} catch(std::exception& e) {
+	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
 	return 1;
 }
 
@@ -55,7 +80,6 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 		print_dbc_fields(args["print-fields"].as<std::string>(), defs);
 		return;
 	}
-
 
 	if(args.count("template")) {
 		auto dbc = locate_dbc(args["template"].as<std::string>(), defs);
@@ -81,7 +105,7 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 		std::cout << "Disk loader generated." << std::endl;
 	}
 
-	std::cout << "Done!" << std::endl;
+	LOG_DEBUG_GLOB << "Done!" << LOG_ASYNC;
 }
 
 void print_dbc_table(const edbc::types::Definitions& defs) {
@@ -165,6 +189,10 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 			"Path to the DBC XML definitions")
 		("output,o", po::value<std::string>()->default_value("output"),
 			"Directory to save output to")
+		("verbosity,v", po::value<std::string>()->default_value("info"),
+		 "Logging verbosity")
+		("fverbosity", po::value<std::string>()->default_value("disabled"),
+		 "File logging verbosity")
 		("disk", po::bool_switch(),
 			"Generate files required for loading DBC data from disk")
 		("print-dbcs", po::bool_switch(),

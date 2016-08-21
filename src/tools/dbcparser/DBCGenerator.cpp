@@ -10,6 +10,7 @@
 #include "TypeUtils.h"
 #include <spark/BinaryStream.h>
 #include <spark/buffers/ChainedBuffer.h>
+#include <logger/Logging.h>
 #include <boost/endian/arithmetic.hpp>
 #include <fstream>
 #include <vector>
@@ -145,6 +146,8 @@ void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
 }
 
 void generate_template(const types::Struct* dbc) {
+	LOG_DEBUG_GLOB << "Generating template for " << dbc->name << LOG_ASYNC;
+
 	std::ofstream file(dbc->name + ".dbc", std::ofstream::binary);
 	
 	TypeMetrics metrics;
@@ -174,6 +177,8 @@ void generate_template(const types::Struct* dbc) {
 
 	// write string block
 	file.write(string_data.data(), string_data.size());
+
+	LOG_DEBUG_GLOB << "Completed template generation for " << dbc->name << LOG_ASYNC;
 }
 
 }} // dbc, ember
