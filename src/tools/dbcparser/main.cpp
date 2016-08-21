@@ -89,20 +89,16 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 		}
 
 		edbc::generate_template(dbc);
-		std::cout << "DBC template generated." << std::endl;
 		return;
 	}
 
 	if(args["disk"].as<bool>() || args.count("database")) {
-		std::cout << "Generating shared files...\n";
 		edbc::generate_common(defs, args["output"].as<std::string>());
-		std::cout << "Common files generated." << std::endl;
 	}
 
 
 	if(args["disk"].as<bool>()) {
 		edbc::generate_disk_source(defs, args["output"].as<std::string>());
-		std::cout << "Disk loader generated." << std::endl;
 	}
 
 	LOG_DEBUG_GLOB << "Done!" << LOG_ASYNC;

@@ -9,17 +9,22 @@
 #pragma once
 
 #include <cstdint>
+#include <boost/endian/arithmetic.hpp>
 
 namespace ember { namespace dbc {
 
+namespace be = boost::endian;
+
 #pragma pack(push, 1)
 
+#define DBC_MAGIC 'WDBC'
+
 struct DBCHeader {
-	std::uint32_t magic;
-	std::uint32_t records;
-	std::uint32_t fields;
-	std::uint32_t record_size;
-	std::uint32_t string_block_len;
+	be::big_uint32_t magic;
+	be::little_uint32_t records;
+	be::little_uint32_t fields;
+	be::little_uint32_t record_size;
+	be::little_uint32_t string_block_len;
 };
 
 #pragma pack(pop)

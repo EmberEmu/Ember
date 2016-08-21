@@ -25,33 +25,6 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent);
 
-// todo, delete this - already exists
-template<typename T>
-void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
-	for(auto f : dbc->fields) {
-		// if this is a user-defined struct, we need to go through that type too
-		// if it's an enum, we can just grab the underlying type
-		auto components = extract_components(f.underlying_type);
-		auto it = type_map.find(components.first);
-
-		if(it != type_map.end()) {
-			visitor.visit(&f);
-		} else {
-			auto found = locate_type_base(*dbc, f.underlying_type);
-
-			if(!found) {
-				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
-			}
-
-			if(found->type == types::STRUCT) {
-				walk_dbc_fields(static_cast<types::Struct*>(found), visitor);
-			} else if(found->type == types::ENUM) {
-				visitor.visit(static_cast<types::Enum*>(found));
-			}
-		}
-	}
-}
-
 class StructFieldEnum : public types::TypeVisitor {
 	std::vector<std::string> names_;
 
@@ -230,7 +203,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 
 void generate_disk_loader(const types::Definitions& defs, const std::string& output) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
-	LOG_DEBUG_GLOB << "Generating disk loader..." << LOG_ASYNC;
+	LOG_INFO_GLOB << "Generating disk loader..." << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
 	std::stringstream buffer(read_template("DiskLoader.cpp_"));
@@ -246,6 +219,9 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		if(!dbc.dbc) {
 			continue;
 		}
+
+		TypeMetrics metrics;
+		walk_dbc_fields(&dbc, metrics);
 
 		std::string store_name = dbc.alias.empty()? pascal_to_underscore(dbc.name) : dbc.alias;
 		bool double_spaced = false;
@@ -264,6 +240,9 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			<< std::endl;
 		functions << "\t" << "auto dbc = get_offsets<disk::" << dbc.name <<
 			">(region.get_address());" << std::endl << std::endl;
+
+		functions << "\tvalidate_dbc(\"" << dbc.name << "\", dbc.header, " << metrics.record_size
+		          << ", " << metrics.fields << ", region.get_size()" << ");" << std::endl << std::endl;
 							
 		functions << "\t" << "for(std::size_t i = 0; i < dbc.header->records; ++i) {" << std::endl;
 		functions << "\t\t" << dbc.name << " entry{};" << std::endl;
@@ -638,7 +617,7 @@ void generate_storage(const types::Definitions& defs, const std::string& output)
 
 void generate_common(const types::Definitions& defs, const std::string& output) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
-	LOG_DEBUG_GLOB << "Generating common files..." << LOG_ASYNC;
+	LOG_INFO_GLOB << "Generating common files..." << LOG_ASYNC;
 	generate_storage(defs, output);
 	generate_memory_defs(defs, output);
 	generate_disk_defs(defs, output);

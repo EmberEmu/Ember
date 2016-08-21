@@ -19,7 +19,10 @@
 #include <dbcreader/MemoryDefs.h>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <string>
+#include <sstream>
 #include <cstdint>
+#include <cstddef>
 
 namespace bi = boost::interprocess;
 
@@ -47,10 +50,39 @@ const MappedDBC<T> get_offsets(const void* start) {
 	return MappedDBC<T>{dbc, records, string_block};
 }
 
+void validate_dbc(const char* name, const DBCHeader* header, std::size_t expect_size,
+                  std::size_t expect_fields, std::size_t dbc_size) {
+	if(header->magic != DBC_MAGIC) {
+		std::stringstream err;
+		err << name << ": " << "Invalid header magic - found 0x" << std::hex << header->magic
+		    << ", expected 0x" << DBC_MAGIC;
+		throw std::runtime_error(err.str());
+	}
+
+	if(header->record_size != expect_size || header->fields != expect_fields) {
+		std::stringstream err;
+		err << name << ": " << "Expected " << expect_fields << " fields, " << expect_size << " byte records "
+		    << "but DBC has " << header->fields << " fields and " << header->record_size << " byte records";
+		throw std::runtime_error(err.str());
+	}
+
+	std::size_t calculated_size = sizeof(DBCHeader) + header->string_block_len
+	                              + (header->record_size * header->records);
+
+	if(calculated_size != dbc_size) {
+		std::stringstream err;
+		err << name << ": " << "Invalid size! Expected " << calculated_size << " bytes but the file was "
+		    << dbc_size << " bytes";
+		throw std::runtime_error(err.str());
+	}
+}
+
 void load_addon_data(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "AddonData.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::AddonData>(region.get_address());
+
+	validate_dbc("AddonData", dbc.header, 275, 263, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		AddonData entry{};
@@ -75,6 +107,8 @@ void load_animation_data(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::AnimationData>(region.get_address());
 
+	validate_dbc("AnimationData", dbc.header, 28, 7, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		AnimationData entry{};
 		entry.id = dbc.records[i].id;
@@ -92,6 +126,8 @@ void load_area_table(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "AreaTable.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::AreaTable>(region.get_address());
+
+	validate_dbc("AreaTable", dbc.header, 100, 25, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		AreaTable entry{};
@@ -131,6 +167,8 @@ void load_camera_shakes(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CameraShakes>(region.get_address());
 
+	validate_dbc("CameraShakes", dbc.header, 32, 8, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CameraShakes entry{};
 		entry.id = dbc.records[i].id;
@@ -149,6 +187,8 @@ void load_character_facial_hair_styles(Storage& storage, const std::string& dir_
 	bi::file_mapping file(std::string(dir_path + "CharacterFacialHairStyles.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharacterFacialHairStyles>(region.get_address());
+
+	validate_dbc("CharacterFacialHairStyles", dbc.header, 36, 9, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharacterFacialHairStyles entry{};
@@ -169,6 +209,8 @@ void load_char_base_info(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharBaseInfo>(region.get_address());
 
+	validate_dbc("CharBaseInfo", dbc.header, 2, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharBaseInfo entry{};
 		entry.race_id = dbc.records[i].race;
@@ -181,6 +223,8 @@ void load_char_sections(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "CharSections.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharSections>(region.get_address());
+
+	validate_dbc("CharSections", dbc.header, 40, 10, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharSections entry{};
@@ -205,6 +249,8 @@ void load_char_start_base(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharStartBase>(region.get_address());
 
+	validate_dbc("CharStartBase", dbc.header, 20, 5, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharStartBase entry{};
 		entry.id = dbc.records[i].id;
@@ -220,6 +266,8 @@ void load_char_start_outfit(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "CharStartOutfit.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharStartOutfit>(region.get_address());
+
+	validate_dbc("CharStartOutfit", dbc.header, 152, 41, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharStartOutfit entry{};
@@ -250,6 +298,8 @@ void load_char_start_spells(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharStartSpells>(region.get_address());
 
+	validate_dbc("CharStartSpells", dbc.header, 16, 4, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharStartSpells entry{};
 		entry.id = dbc.records[i].id;
@@ -265,6 +315,8 @@ void load_char_start_talents(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharStartTalents>(region.get_address());
 
+	validate_dbc("CharStartTalents", dbc.header, 16, 4, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharStartTalents entry{};
 		entry.id = dbc.records[i].id;
@@ -279,6 +331,8 @@ void load_char_start_zones(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "CharStartZones.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharStartZones>(region.get_address());
+
+	validate_dbc("CharStartZones", dbc.header, 32, 8, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharStartZones entry{};
@@ -299,6 +353,8 @@ void load_char_variations(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CharVariations>(region.get_address());
 
+	validate_dbc("CharVariations", dbc.header, 24, 6, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CharVariations entry{};
 		entry.id_id = dbc.records[i].id;
@@ -318,6 +374,8 @@ void load_chr_classes(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ChrClasses.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ChrClasses>(region.get_address());
+
+	validate_dbc("ChrClasses", dbc.header, 68, 17, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ChrClasses entry{};
@@ -348,6 +406,8 @@ void load_chr_races(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ChrRaces.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ChrRaces>(region.get_address());
+
+	validate_dbc("ChrRaces", dbc.header, 116, 29, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ChrRaces entry{};
@@ -394,6 +454,8 @@ void load_cinematic_camera(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CinematicCamera>(region.get_address());
 
+	validate_dbc("CinematicCamera", dbc.header, 28, 7, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CinematicCamera entry{};
 		entry.id = dbc.records[i].id;
@@ -412,6 +474,8 @@ void load_cinematic_sequences(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CinematicSequences>(region.get_address());
 
+	validate_dbc("CinematicSequences", dbc.header, 40, 10, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CinematicSequences entry{};
 		entry.id = dbc.records[i].id;
@@ -429,6 +493,8 @@ void load_creature_display_info(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "CreatureDisplayInfo.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CreatureDisplayInfo>(region.get_address());
+
+	validate_dbc("CreatureDisplayInfo", dbc.header, 48, 12, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CreatureDisplayInfo entry{};
@@ -454,6 +520,8 @@ void load_creature_display_info_extra(Storage& storage, const std::string& dir_p
 	bi::file_mapping file(std::string(dir_path + "CreatureDisplayInfoExtra.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CreatureDisplayInfoExtra>(region.get_address());
+
+	validate_dbc("CreatureDisplayInfoExtra", dbc.header, 76, 19, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CreatureDisplayInfoExtra entry{};
@@ -481,6 +549,8 @@ void load_creature_model_data(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CreatureModelData>(region.get_address());
 
+	validate_dbc("CreatureModelData", dbc.header, 64, 16, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CreatureModelData entry{};
 		entry.id = dbc.records[i].id;
@@ -507,6 +577,8 @@ void load_creature_sound_data(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "CreatureSoundData.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CreatureSoundData>(region.get_address());
+
+	validate_dbc("CreatureSoundData", dbc.header, 120, 30, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CreatureSoundData entry{};
@@ -549,6 +621,8 @@ void load_creature_type(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::CreatureType>(region.get_address());
 
+	validate_dbc("CreatureType", dbc.header, 44, 11, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		CreatureType entry{};
 		entry.id = dbc.records[i].id;
@@ -572,6 +646,8 @@ void load_faction(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "Faction.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::Faction>(region.get_address());
+
+	validate_dbc("Faction", dbc.header, 124, 31, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		Faction entry{};
@@ -626,6 +702,8 @@ void load_faction_group(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::FactionGroup>(region.get_address());
 
+	validate_dbc("FactionGroup", dbc.header, 48, 12, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		FactionGroup entry{};
 		entry.id = dbc.records[i].id;
@@ -650,6 +728,8 @@ void load_faction_template(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "FactionTemplate.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::FactionTemplate>(region.get_address());
+
+	validate_dbc("FactionTemplate", dbc.header, 56, 14, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		FactionTemplate entry{};
@@ -677,6 +757,8 @@ void load_footprint_textures(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::FootprintTextures>(region.get_address());
 
+	validate_dbc("FootprintTextures", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		FootprintTextures entry{};
 		entry.id = dbc.records[i].id;
@@ -689,6 +771,8 @@ void load_helmet_geoset_vis_data(Storage& storage, const std::string& dir_path) 
 	bi::file_mapping file(std::string(dir_path + "HelmetGeosetVisData.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::HelmetGeosetVisData>(region.get_address());
+
+	validate_dbc("HelmetGeosetVisData", dbc.header, 24, 6, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		HelmetGeosetVisData entry{};
@@ -707,6 +791,8 @@ void load_item_class(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ItemClass>(region.get_address());
 
+	validate_dbc("ItemClass", dbc.header, 12, 3, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ItemClass entry{};
 		entry.id = dbc.records[i].id;
@@ -720,6 +806,8 @@ void load_item_display_info(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ItemDisplayInfo.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ItemDisplayInfo>(region.get_address());
+
+	validate_dbc("ItemDisplayInfo", dbc.header, 92, 23, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ItemDisplayInfo entry{};
@@ -762,6 +850,8 @@ void load_item_group_sounds(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ItemGroupSounds>(region.get_address());
 
+	validate_dbc("ItemGroupSounds", dbc.header, 20, 5, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ItemGroupSounds entry{};
 		entry.id = dbc.records[i].id;
@@ -778,6 +868,8 @@ void load_item_sub_class(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ItemSubClass.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ItemSubClass>(region.get_address());
+
+	validate_dbc("ItemSubClass", dbc.header, 112, 28, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ItemSubClass entry{};
@@ -822,6 +914,8 @@ void load_item_visual_effects(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ItemVisualEffects>(region.get_address());
 
+	validate_dbc("ItemVisualEffects", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ItemVisualEffects entry{};
 		entry.id = dbc.records[i].id;
@@ -834,6 +928,8 @@ void load_item_visuals(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ItemVisuals.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ItemVisuals>(region.get_address());
+
+	validate_dbc("ItemVisuals", dbc.header, 24, 6, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ItemVisuals entry{};
@@ -851,6 +947,8 @@ void load_light(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "Light.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::Light>(region.get_address());
+
+	validate_dbc("Light", dbc.header, 48, 12, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		Light entry{};
@@ -875,6 +973,8 @@ void load_light_params(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::LightParams>(region.get_address());
 
+	validate_dbc("LightParams", dbc.header, 36, 9, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		LightParams entry{};
 		entry.id = dbc.records[i].id;
@@ -895,6 +995,8 @@ void load_light_skybox(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::LightSkybox>(region.get_address());
 
+	validate_dbc("LightSkybox", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		LightSkybox entry{};
 		entry.id = dbc.records[i].id;
@@ -907,6 +1009,8 @@ void load_liquid_type(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "LiquidType.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::LiquidType>(region.get_address());
+
+	validate_dbc("LiquidType", dbc.header, 16, 4, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		LiquidType entry{};
@@ -923,6 +1027,8 @@ void load_loading_screens(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::LoadingScreens>(region.get_address());
 
+	validate_dbc("LoadingScreens", dbc.header, 12, 3, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		LoadingScreens entry{};
 		entry.id = dbc.records[i].id;
@@ -936,6 +1042,8 @@ void load_map(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "Map.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::Map>(region.get_address());
+
+	validate_dbc("Map", dbc.header, 168, 42, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		Map entry{};
@@ -1001,6 +1109,8 @@ void load_names_profanity(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::NamesProfanity>(region.get_address());
 
+	validate_dbc("NamesProfanity", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		NamesProfanity entry{};
 		entry.id = dbc.records[i].id;
@@ -1014,6 +1124,8 @@ void load_names_reserved(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::NamesReserved>(region.get_address());
 
+	validate_dbc("NamesReserved", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		NamesReserved entry{};
 		entry.id = dbc.records[i].id;
@@ -1026,6 +1138,8 @@ void load_npc_sounds(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "NPCSounds.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::NPCSounds>(region.get_address());
+
+	validate_dbc("NPCSounds", dbc.header, 20, 5, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		NPCSounds entry{};
@@ -1043,6 +1157,8 @@ void load_resistances(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "Resistances.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::Resistances>(region.get_address());
+
+	validate_dbc("Resistances", dbc.header, 48, 12, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		Resistances entry{};
@@ -1069,6 +1185,8 @@ void load_sound_ambience(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SoundAmbience>(region.get_address());
 
+	validate_dbc("SoundAmbience", dbc.header, 12, 3, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SoundAmbience entry{};
 		entry.id = dbc.records[i].id;
@@ -1082,6 +1200,8 @@ void load_sound_entries(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "SoundEntries.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SoundEntries>(region.get_address());
+
+	validate_dbc("SoundEntries", dbc.header, 116, 29, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SoundEntries entry{};
@@ -1111,6 +1231,8 @@ void load_sound_provider_preferences(Storage& storage, const std::string& dir_pa
 	bi::file_mapping file(std::string(dir_path + "SoundProviderPreferences.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SoundProviderPreferences>(region.get_address());
+
+	validate_dbc("SoundProviderPreferences", dbc.header, 96, 24, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SoundProviderPreferences entry{};
@@ -1146,6 +1268,8 @@ void load_spell(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "Spell.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::Spell>(region.get_address());
+
+	validate_dbc("Spell", dbc.header, 692, 173, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		Spell entry{};
@@ -1361,6 +1485,8 @@ void load_spell_cast_times(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellCastTimes>(region.get_address());
 
+	validate_dbc("SpellCastTimes", dbc.header, 16, 4, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellCastTimes entry{};
 		entry.id = dbc.records[i].id;
@@ -1376,6 +1502,8 @@ void load_spell_category(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellCategory>(region.get_address());
 
+	validate_dbc("SpellCategory", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellCategory entry{};
 		entry.id = dbc.records[i].id;
@@ -1388,6 +1516,8 @@ void load_spell_dispel_type(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "SpellDispelType.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellDispelType>(region.get_address());
+
+	validate_dbc("SpellDispelType", dbc.header, 16, 4, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellDispelType entry{};
@@ -1404,6 +1534,8 @@ void load_spell_duration(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellDuration>(region.get_address());
 
+	validate_dbc("SpellDuration", dbc.header, 16, 4, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellDuration entry{};
 		entry.id = dbc.records[i].id;
@@ -1418,6 +1550,8 @@ void load_spell_focus_object(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "SpellFocusObject.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellFocusObject>(region.get_address());
+
+	validate_dbc("SpellFocusObject", dbc.header, 40, 10, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellFocusObject entry{};
@@ -1442,6 +1576,8 @@ void load_spell_icon(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellIcon>(region.get_address());
 
+	validate_dbc("SpellIcon", dbc.header, 8, 2, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellIcon entry{};
 		entry.id = dbc.records[i].id;
@@ -1454,6 +1590,8 @@ void load_spell_item_enchantment(Storage& storage, const std::string& dir_path) 
 	bi::file_mapping file(std::string(dir_path + "SpellItemEnchantment.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellItemEnchantment>(region.get_address());
+
+	validate_dbc("SpellItemEnchantment", dbc.header, 96, 24, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellItemEnchantment entry{};
@@ -1497,6 +1635,8 @@ void load_spell_mechanic(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellMechanic>(region.get_address());
 
+	validate_dbc("SpellMechanic", dbc.header, 40, 10, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellMechanic entry{};
 		entry.id = dbc.records[i].id;
@@ -1520,6 +1660,8 @@ void load_spell_radius(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellRadius>(region.get_address());
 
+	validate_dbc("SpellRadius", dbc.header, 16, 4, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellRadius entry{};
 		entry.id = dbc.records[i].id;
@@ -1534,6 +1676,8 @@ void load_spell_range(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "SpellRange.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellRange>(region.get_address());
+
+	validate_dbc("SpellRange", dbc.header, 88, 22, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellRange entry{};
@@ -1572,6 +1716,8 @@ void load_spell_shapeshift_form(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellShapeshiftForm>(region.get_address());
 
+	validate_dbc("SpellShapeshiftForm", dbc.header, 56, 14, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellShapeshiftForm entry{};
 		entry.id = dbc.records[i].id;
@@ -1598,6 +1744,8 @@ void load_spell_visual(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "SpellVisual.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellVisual>(region.get_address());
+
+	validate_dbc("SpellVisual", dbc.header, 64, 16, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellVisual entry{};
@@ -1626,6 +1774,8 @@ void load_spell_visual_effect_name(Storage& storage, const std::string& dir_path
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellVisualEffectName>(region.get_address());
 
+	validate_dbc("SpellVisualEffectName", dbc.header, 20, 5, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellVisualEffectName entry{};
 		entry.id = dbc.records[i].id;
@@ -1641,6 +1791,8 @@ void load_spell_visual_kit(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "SpellVisualKit.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::SpellVisualKit>(region.get_address());
+
+	validate_dbc("SpellVisualKit", dbc.header, 136, 34, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		SpellVisualKit entry{};
@@ -1690,6 +1842,8 @@ void load_talent(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::Talent>(region.get_address());
 
+	validate_dbc("Talent", dbc.header, 84, 21, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		Talent entry{};
 		entry.id = dbc.records[i].id;
@@ -1720,6 +1874,8 @@ void load_talent_tab(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::TalentTab>(region.get_address());
 
+	validate_dbc("TalentTab", dbc.header, 60, 15, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		TalentTab entry{};
 		entry.id = dbc.records[i].id;
@@ -1748,6 +1904,8 @@ void load_unit_blood(Storage& storage, const std::string& dir_path) {
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::UnitBlood>(region.get_address());
 
+	validate_dbc("UnitBlood", dbc.header, 40, 10, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		UnitBlood entry{};
 		entry.id = dbc.records[i].id;
@@ -1769,6 +1927,8 @@ void load_zone_intro_music_table(Storage& storage, const std::string& dir_path) 
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ZoneIntroMusicTable>(region.get_address());
 
+	validate_dbc("ZoneIntroMusicTable", dbc.header, 20, 5, region.get_size());
+
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ZoneIntroMusicTable entry{};
 		entry.id = dbc.records[i].id;
@@ -1784,6 +1944,8 @@ void load_zone_music(Storage& storage, const std::string& dir_path) {
 	bi::file_mapping file(std::string(dir_path + "ZoneMusic.dbc").c_str(), bi::read_only);
 	bi::mapped_region region(file, bi::read_only);
 	auto dbc = get_offsets<disk::ZoneMusic>(region.get_address());
+
+	validate_dbc("ZoneMusic", dbc.header, 32, 8, region.get_size());
 
 	for(std::size_t i = 0; i < dbc.header->records; ++i) {
 		ZoneMusic entry{};

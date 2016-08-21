@@ -90,61 +90,6 @@ public:
 	}
 };
 
-class TypeMetrics : public types::TypeVisitor {
-public:
-	int fields = 0;
-	int size = 0;
-
-	void visit(const types::Struct* type) override {
-		// we don't care about structs
-	}
-
-	void visit(const types::Enum* type) override {
-		++fields;
-		size += type_size_map.at(type->underlying_type);
-	}
-
-	void visit(const types::Field* type) override {
-		auto components = extract_components(type->underlying_type);
-		int scalar_size = type_size_map.at(components.first);
-		
-		// handle arrays
-		if(components.second) {
-			fields += *components.second;
-			size += (scalar_size * (*components.second));
-		} else {
-			++fields;
-			size += scalar_size;
-		}
-	}
-};
-
-template<typename T>
-void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
-	for(auto f : dbc->fields) {
-		// if this is a user-defined struct, we need to go through that type too
-		// if it's an enum, we can just grab the underlying type
-		auto components = extract_components(f.underlying_type);
-		auto it = type_map.find(components.first);
-
-		if(it != type_map.end()) {
-			visitor.visit(&f);
-		} else {
-			auto found = locate_type_base(*dbc, f.underlying_type);
-
-			if(!found) {
-				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
-			}
-
-			if(found->type == types::STRUCT) {
-				walk_dbc_fields(static_cast<types::Struct*>(found), visitor);
-			} else if(found->type == types::ENUM) {
-				visitor.visit(static_cast<types::Enum*>(found));
-			}
-		}
-	}
-}
-
 void generate_template(const types::Struct* dbc) {
 	LOG_DEBUG_GLOB << "Generating template for " << dbc->name << LOG_ASYNC;
 
@@ -162,14 +107,14 @@ void generate_template(const types::Struct* dbc) {
 	be::big_uint32_t magic('WDBC');
 	be::little_uint32_t records = 1;
 	be::little_uint32_t fields = metrics.fields;
-	be::little_uint32_t size = metrics.size;
+	be::little_uint32_t record_size = metrics.record_size;
 	be::little_uint32_t string_block_size = string_data.size();
 	
 	// write header
 	file.write((char*)&magic, sizeof(magic));
 	file.write((char*)&records, sizeof(records));
 	file.write((char*)&fields, sizeof(fields));
-	file.write((char*)&size, sizeof(size));
+	file.write((char*)&record_size, sizeof(record_size));
 	file.write((char*)&string_block_size, sizeof(string_block_size));
 	
 	// write dummy record

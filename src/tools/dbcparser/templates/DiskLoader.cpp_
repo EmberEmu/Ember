@@ -19,7 +19,10 @@
 #include <dbcreader/MemoryDefs.h>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <string>
+#include <sstream>
 #include <cstdint>
+#include <cstddef>
 
 namespace bi = boost::interprocess;
 
@@ -45,6 +48,33 @@ const MappedDBC<T> get_offsets(const void* start) {
 	auto records = reinterpret_cast<const T*>(data + sizeof(DBCHeader));
 	auto string_block = data + sizeof(DBCHeader) + (dbc->record_size * dbc->records);
 	return MappedDBC<T>{dbc, records, string_block};
+}
+
+void validate_dbc(const char* name, const DBCHeader* header, std::size_t expect_size,
+                  std::size_t expect_fields, std::size_t dbc_size) {
+	if(header->magic != DBC_MAGIC) {
+		std::stringstream err;
+		err << name << ": " << "Invalid header magic - found 0x" << std::hex << header->magic
+		    << ", expected 0x" << DBC_MAGIC;
+		throw std::runtime_error(err.str());
+	}
+
+	if(header->record_size != expect_size || header->fields != expect_fields) {
+		std::stringstream err;
+		err << name << ": " << "Expected " << expect_fields << " fields, " << expect_size << " byte records "
+		    << "but DBC has " << header->fields << " fields and " << header->record_size << " byte records";
+		throw std::runtime_error(err.str());
+	}
+
+	std::size_t calculated_size = sizeof(DBCHeader) + header->string_block_len
+	                              + (header->record_size * header->records);
+
+	if(calculated_size != dbc_size) {
+		std::stringstream err;
+		err << name << ": " << "Invalid size! Expected " << calculated_size << " bytes but the file was "
+		    << dbc_size << " bytes";
+		throw std::runtime_error(err.str());
+	}
 }
 
 <%TEMPLATE_DISK_LOAD_FUNCTIONS%>
