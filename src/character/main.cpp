@@ -109,7 +109,17 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto driver(ember::drivers::init_db_driver(db_config_path));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
+	auto min_conns = args["database.min_connections"].as<unsigned short>();
+	auto max_conns = args["database.max_connections"].as<unsigned short>();
+	auto concurrency = check_concurrency(logger);
+
+	if(max_conns != concurrency) {
+		LOG_WARN(logger) << "Max. database connection count may be non-optimal (use "
+			<< concurrency << " to match logical core count)" << LOG_SYNC;
+	}
+
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
 	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
@@ -128,7 +138,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::io_service service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
-	ThreadPool thread_pool(check_concurrency(logger));
+	ThreadPool thread_pool(concurrency);
 	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, thread_pool, temp, logger);
 
 	spark::Service spark("character", service, s_address, s_port, logger, spark_filter);
@@ -192,6 +202,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("file_log.log_timestamp", po::bool_switch()->required())
 		("file_log.log_severity", po::bool_switch()->required())
 		("database.config_path", po::value<std::string>()->required())
+		("database.min_connections", po::value<unsigned short>()->required())
+		("database.max_connections", po::value<unsigned short>()->required())
 		("metrics.enabled", po::bool_switch()->required())
 		("metrics.statsd_host", po::value<std::string>()->required())
 		("metrics.statsd_port", po::value<std::uint16_t>()->required())
