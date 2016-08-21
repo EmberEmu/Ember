@@ -122,7 +122,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto user_dao = ember::dal::user_dao(pool);
 	auto realm_dao = ember::dal::realm_dao(pool);
 	auto ip_ban_dao = ember::dal::ip_ban_dao(pool); 
-	auto ip_ban_cache = ember::IPBanCache(*ip_ban_dao);
+	auto ip_ban_cache = ember::IPBanCache(ip_ban_dao->all_bans());
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	ember::RealmList realm_list(realm_dao->get_realms());
