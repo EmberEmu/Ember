@@ -49,7 +49,7 @@ class IPBanCache {
 				throw std::runtime_error("IPv6 bans are not supported but the ban cache encountered one!");
 			}
 
-			std::uint32_t mask = ~(0xFFFFFFFFu >> ban.second);
+			std::uint32_t mask = (~0U) << (32 - ban.second);
 			entries_.emplace_back(IPv4Entry{static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask});
 		}
 	}
