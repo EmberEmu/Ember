@@ -15,11 +15,11 @@ class IPBanTest : public ::testing::Test {
 public:
 	virtual void SetUp() {
 		std::vector<ember::IPEntry> entries {
-			{ "192.88.99.62", 32 },
-			{ "203.62.113.82", 31 },
-			{ "169.254.26.21", 24 },
+			{ "198.51.106.51",   8 },
 			{ "172.16.125.134", 16 },
-			{ "198.51.106.51", 8 }
+			{ "169.254.26.21",  24 },
+			{ "203.62.113.82",  31 },
+			{ "192.88.99.62",   32 }
 		};
 
 		bans.swap(std::make_unique<ember::IPBanCache>(entries));
