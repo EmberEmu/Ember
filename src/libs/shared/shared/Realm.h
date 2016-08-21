@@ -40,7 +40,7 @@ struct Realm {
 
 	enum class Zone : std::uint8_t { // these are probably wrong
 		ANY,
-		UNITED_States,
+		UNITED_STATES,
 		KOREA,
 		ENGLISH,
 		TAIWAN,
