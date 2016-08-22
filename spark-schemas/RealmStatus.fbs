@@ -26,5 +26,3 @@ table RealmStatus {
 	category:int;
 	region:int;
 }
-
-

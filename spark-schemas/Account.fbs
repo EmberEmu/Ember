@@ -17,11 +17,11 @@ enum DisconnectReason : ubyte {
 	INTERNAL_LINK_LOST
 }
 
-table Lookup {
+table LookupID {
 	account_name:string;
 }
 
-table LookupResponse {
+table LookupIDResponse {
 	status:Status;
 	account_id:uint;
 }
@@ -46,6 +46,7 @@ table Disconnect {
 	reason:DisconnectReason;
 }
 
-table Response {
-	status:Status;
+table Disconnect {
+	session_key:[ubyte];
+	reason:DisconnectSessionReason;
 }
