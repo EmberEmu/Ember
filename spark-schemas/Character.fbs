@@ -88,7 +88,7 @@ table Create {
 	character:CharacterTemplate;
 }
 
-table CharResponse {
+table CreateResponse {
 	status:Status;
 	result:uint;
 }

@@ -17,25 +17,25 @@ enum DisconnectReason : ubyte {
 	INTERNAL_LINK_LOST
 }
 
-table AccountLookup {
+table Lookup {
 	account_name:string;
 }
 
-table AccountLookupResponse {
+table LookupResponse {
 	status:Status;
 	account_id:uint;
 }
 
-table RegisterKey {
+table RegisterSession {
 	account_id:uint;
 	key:[ubyte];
 }
 
-table KeyLookup {
+table SessionLookup {
 	account_id:uint;
 }
 
-table KeyLookupResp {
+table SessionResponse {
 	status:Status;
 	account_id:uint;
 	key:[ubyte];	
