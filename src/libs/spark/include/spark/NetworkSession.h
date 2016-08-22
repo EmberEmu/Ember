@@ -42,7 +42,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	MessageHandler handler_;
 	const std::string remote_;
 	log::Logger* logger_; 
-	log::Filter filter_;
 	bool stopped_;
 
 	bool process_header() {
@@ -50,7 +49,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		boost::endian::little_to_native_inplace(body_read_size);
 	
 		if(body_read_size > MAX_MESSAGE_LENGTH) {
-			LOG_WARN_FILTER(logger_, filter_)
+			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Peer at " << remote_host()
 				<< " attempted to send a message of "
 				<< body_read_size << " bytes" << LOG_ASYNC;
@@ -59,7 +58,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		}
 
 		if(body_read_size > in_buff_.size()) {
-			LOG_WARN_FILTER(logger_, filter_)
+			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Peer at " << remote_host()
 				<< " attempted to send a message of "
 				<< body_read_size << " bytes" << LOG_ASYNC;
@@ -109,7 +108,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 
 	void stop() {
-		LOG_DEBUG_FILTER(logger_, filter_)
+		LOG_DEBUG_FILTER(logger_, LF_SPARK)
 			<< "[spark] Closing connection to " << remote_host() << LOG_ASYNC;
 
 		stopped_ = true;
@@ -122,7 +121,7 @@ public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
 	               log::Logger* logger, log::Filter filter)
 	               : sessions_(sessions), socket_(std::move(socket)), body_read_size(0),
-	                 handler_(handler), logger_(logger), filter_(filter), stopped_(false),
+	                 handler_(handler), logger_(logger), stopped_(false),
 	                 state_(ReadState::HEADER), in_buff_(DEFAULT_BUFFER_LENGTH),
 	                 strand_(socket_.get_io_service()),
 	                 remote_(socket_.remote_endpoint().address().to_string()
@@ -149,7 +148,7 @@ public:
 		auto size = static_cast<decltype(body_read_size)>(fbb->GetSize());
 
 		if(size > MAX_MESSAGE_LENGTH) {
-			LOG_DEBUG_FILTER(logger_, filter_)
+			LOG_DEBUG_FILTER(logger_, LF_SPARK)
 				<< "[spark] Attempted to send a message larger than permitted size ("
 				<< MAX_MESSAGE_LENGTH << " bytes)" << LOG_ASYNC;
 			return;

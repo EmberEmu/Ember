@@ -19,20 +19,18 @@ namespace ember { namespace spark {
 namespace bai = boost::asio::ip;
 
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-                 std::uint16_t port, log::Logger* logger, log::Filter filter)
-                 : service_(service), logger_(logger), filter_(filter), signals_(service, SIGINT, SIGTERM),
+                 std::uint16_t port, log::Logger* logger)
+                 : service_(service), logger_(logger),
                    listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger, filter),
                    hb_service_(service_, this, logger, filter), 
                    track_service_(service_, logger, filter),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
-	signals_.async_wait(std::bind(&Service::shutdown, this)); // todo, remove all async_waits
-
 	dispatcher_.register_handler(&hb_service_, messaging::Service::Core, EventDispatcher::Mode::BOTH);
 	dispatcher_.register_handler(&track_service_, messaging::Service::Tracking, EventDispatcher::Mode::CLIENT);
 }
 
 void Service::shutdown() {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Service shutting down..." << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Service shutting down..." << LOG_ASYNC;
 	track_service_.shutdown();
 	hb_service_.shutdown();
 	listener_.shutdown();
@@ -40,10 +38,10 @@ void Service::shutdown() {
 }
 
 void Service::start_session(boost::asio::ip::tcp::socket socket) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
-	MessageHandler m_handler(dispatcher_, services_, link_, true, logger_, filter_);
-	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_, filter_);
+	MessageHandler m_handler(dispatcher_, services_, link_, true, logger_);
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_);
 	sessions_.start(session);
 }
 
@@ -60,7 +58,7 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 				start_session(std::move(*socket));
 			}
 
-			LOG_DEBUG_FILTER(logger_, filter_)
+			LOG_DEBUG_FILTER(logger_, LF_SPARK)
 				<< "[spark] " << (ec? "Unable to establish" : "Established")
 				<< " connection to " << host << ":" << port << LOG_ASYNC;
 		}
@@ -68,12 +66,12 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 }
 
 void Service::connect(const std::string& host, std::uint16_t port) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 	do_connect(host, port);
 }
 
 void Service::default_handler(const Link& link, const messaging::MessageRoot* message) {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Peer sent an unknown service type, ID: "
+	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Peer sent an unknown service type, ID: "
 		<< static_cast<std::underlying_type<messaging::Data>::type>(message->data_type()) << LOG_ASYNC;
 }
 
@@ -126,7 +124,7 @@ auto Service::send(const Link& link, BufferHandle fbb, const ResponseToken& toke
 }
 
 void Service::broadcast(std::uint32_t service_id, ServicesMap::Mode mode, BufferHandle fbb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 	const auto& links = services_.peer_services(service, mode);
 
 	for(const auto& link : links) {
@@ -137,7 +135,7 @@ void Service::broadcast(std::uint32_t service_id, ServicesMap::Mode mode, Buffer
 		if(shared_net) {
 			shared_net->write(fbb);
 		} else {
-			LOG_WARN_FILTER(logger_, filter_) << "[spark] Unable to lock weak_ptr!" << LOG_ASYNC;
+			LOG_WARN_FILTER(logger_, LF_SPARK) << "[spark] Unable to lock weak_ptr!" << LOG_ASYNC;
 		}
 	}
 }

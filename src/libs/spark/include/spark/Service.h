@@ -34,7 +34,6 @@ class Service final {
 	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandle;
 
 	boost::asio::io_service& service_;
-	boost::asio::signal_set signals_;
 
 	Link link_;
 	EventDispatcher dispatcher_;
@@ -45,7 +44,6 @@ class Service final {
 	Listener listener_;
 
 	log::Logger* logger_;
-	log::Filter filter_;
 	
 	void do_connect(const std::string& host, std::uint16_t port);
 	void start_session(boost::asio::ip::tcp::socket socket);

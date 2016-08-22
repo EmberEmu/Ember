@@ -8,15 +8,13 @@
 
 #pragma once
 
+#include <shared/FilterTypes.h>
+
 namespace ember {
 
-enum FilterType {
-	LF_RESERVED = 1, // do not use explicitly
-	LF_MONITORING = 2,
-	LF_DB_CONN_POOL = 4,
-	LF_NETWORK = 8,
-	LF_SPARK = 16,
-	LF_NAUGHTY_USER = 32
+// Service specific filters
+enum ExtendedFilterType {
+	LF_NAUGHTY_USER = 128
 };
 
 } // ember
