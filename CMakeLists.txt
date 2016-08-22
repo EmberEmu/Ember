@@ -65,9 +65,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(VERSION --tags --dirty=-d)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/shared/shared/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/src/Version.cpp" @ONLY)
-list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/src/Version.cpp" Version.h)
-set(version_file "${CMAKE_CURRENT_BINARY_DIR}/src/Version.cpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/shared/shared/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
+list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
+set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
 ##############################
 #            Botan           #

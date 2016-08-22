@@ -14,5 +14,4 @@ set(FB_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/Multicast.fbs
 )
 
-build_flatbuffers("${FB_HEADERS}" ${CMAKE_BINARY_DIR}/src ${SPARK_TARGET_NAME} "" ${CMAKE_BINARY_DIR}/src "" "")
-include_directories(${GENERATED_INCLUDES_DIR})
+build_flatbuffers("${FB_HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR} ${SPARK_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")
