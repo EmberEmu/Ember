@@ -41,12 +41,12 @@ table SessionResponse {
 	key:[ubyte];	
 }
 
-table Disconnect {
+table DisconnectID {
 	account_id:uint;
 	reason:DisconnectReason;
 }
 
-table Disconnect {
+table DisconnectSession {
 	session_key:[ubyte];
-	reason:DisconnectSessionReason;
+	reason:DisconnectReason;
 }

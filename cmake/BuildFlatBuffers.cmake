@@ -89,7 +89,7 @@ function(build_flatbuffers flatbuffers_schemas
         COMMAND ${FLATC} --gen-mutable
         -o ${generated_includes_dir}
         ${include_params}
-        -c ${schema}
+        -c ${schema} --scoped-enums
         DEPENDS ${FLATC_TARGET} ${schema} ${additional_dependencies})
       list(APPEND all_generated_files ${generated_include})
     endif()
