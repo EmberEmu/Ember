@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
 #include <spark/temp/Core_generated.h>
+#include <shared/FilterTypes.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>
 
@@ -17,8 +18,8 @@ namespace ember { namespace spark {
 namespace sc = std::chrono;
 
 HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Service* service,
-                                   log::Logger* logger, log::Filter filter) : timer_(io_service),
-                                   service_(service), logger_(logger), filter_(filter) {
+                                   log::Logger* logger) : timer_(io_service),
+                                   service_(service), logger_(logger) {
 	set_timer();
 }
 
@@ -31,7 +32,7 @@ void HeartbeatService::handle_message(const Link& link, const messaging::Message
 			handle_pong(link, message);
 			break;
 		default:
-			LOG_WARN_FILTER(logger_, filter_)
+			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Unhandled message received by core from "
 				<< boost::uuids::to_string(link.uuid) << LOG_ASYNC;
 	}
@@ -63,7 +64,7 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 		auto latency = std::chrono::milliseconds(time - pong->timestamp());
 
 		if(latency > LATENCY_WARN_THRESHOLD) {
-			LOG_WARN_FILTER(logger_, filter_)
+			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Detected high latency to " << link.description
 				<< ":" << boost::uuids::to_string(link.uuid) << LOG_ASYNC;
 		}

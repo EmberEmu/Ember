@@ -42,7 +42,6 @@ class ServiceDiscovery {
 	mutable std::mutex lock_;
 
 	log::Logger* logger_;
-	log::Filter filter_;
 
 	void remove_listener(const ServiceListener* listener);
 
@@ -63,7 +62,7 @@ public:
 	ServiceDiscovery(boost::asio::io_service& service,
 	                 std::string address, std::uint16_t port, 
 					 const std::string& mcast_iface, const std::string& mcast_group,
-	                 std::uint16_t mcast_port, log::Logger* logger, log::Filter filter);
+	                 std::uint16_t mcast_port, log::Logger* logger);
 
 	void register_service(messaging::Service service);
 	void remove_service(messaging::Service service);

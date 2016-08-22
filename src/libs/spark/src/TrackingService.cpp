@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/TrackingService.h>
+#include <shared/FilterTypes.h>
 #include <boost/optional.hpp>
 #include <algorithm>
 
@@ -16,16 +17,16 @@ namespace sc = std::chrono;
 
 namespace ember { namespace spark {
 
-TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter)
-                                 : service_(service), logger_(logger), filter_(filter) { }
+TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger)
+                                 : service_(service), logger_(logger) { }
 
 void TrackingService::handle_message(const Link& link, const messaging::MessageRoot* message) try {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto recv_id = message->tracking_id();
 
 	if(recv_id->size() != boost::uuids::uuid::static_size()) {
-		LOG_DEBUG_FILTER(logger_, filter_)
+		LOG_DEBUG_FILTER(logger_, LF_SPARK)
 			<< "[spark] Received tracked message with invalid UUID length" << LOG_ASYNC;
 	}
 
@@ -38,14 +39,14 @@ void TrackingService::handle_message(const Link& link, const messaging::MessageR
 	guard.unlock();
 
 	if(link != handler->link) {
-		LOG_WARN_FILTER(logger_, filter_)
+		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Tracked message receipient != sender" << LOG_ASYNC;
 		return;
 	}
 
 	handler->handler(link, uuid, boost::optional<const messaging::MessageRoot*>(message));
 } catch(std::out_of_range) {
-	LOG_DEBUG_FILTER(logger_, filter_)
+	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }
 
@@ -55,7 +56,7 @@ void TrackingService::handle_link_event(const Link& link, LinkState state) {
 
 void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
                                        TrackingHandler handler, sc::milliseconds timeout) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto request = std::make_unique<Request>(service_, id, link, handler);
 	request->timer.expires_from_now(timeout);

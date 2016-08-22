@@ -32,7 +32,6 @@ class MessageHandler {
 	const EventDispatcher& dispatcher_;
 	ServicesMap& services_;
 	log::Logger* logger_;
-	log::Filter filter_;
 	std::set<std::int32_t> matches_;
 	bool initiator_;
 

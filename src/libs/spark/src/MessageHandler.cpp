@@ -13,6 +13,7 @@
 #include <spark/temp/MessageRoot_generated.h>
 #include <spark/temp/Core_generated.h>
 #include <spark/temp/ServiceTypes_generated.h>
+#include <shared/FilterTypes.h>
 #include <flatbuffers/flatbuffers.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -23,11 +24,11 @@ namespace ember { namespace spark {
 MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger, log::Filter filter)
                                : dispatcher_(dispatcher), self_(link), initiator_(initiator),
-                                 logger_(logger), filter_(filter), services_(services), peer_{} { }
+                                 logger_(logger), services_(services), peer_{} { }
 
 
 void MessageHandler::send_negotiation(NetworkSession& net) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto in = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER)));
@@ -41,7 +42,7 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 }
 
 void MessageHandler::send_banner(NetworkSession& net) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto desc = fbb->CreateString(self_.description);
@@ -55,7 +56,7 @@ void MessageHandler::send_banner(NetworkSession& net) {
 }
 
 bool MessageHandler::establish_link(NetworkSession& net, const messaging::MessageRoot* message) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	if(message->data_type() != messaging::Data::Banner) {
 		LOG_WARN_FILTER(logger_, filter_)
@@ -68,7 +69,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 
 	if(!banner->server_uuid() || banner->server_uuid()->size() != boost::uuids::uuid::static_size()
 	   || !banner->description()) {
-		LOG_WARN_FILTER(logger_, filter_)
+		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Link failed, incompatible banner: "
 			<< net.remote_host() << LOG_ASYNC;
 		return false;
@@ -78,7 +79,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 	peer_.description = banner->description()->str();
 	peer_.net = std::weak_ptr<NetworkSession>(net.shared_from_this());
 
-	LOG_TRACE_FILTER(logger_, filter_)
+	LOG_TRACE_FILTER(logger_, LF_SPARK)
 		<< "[spark] Peer banner: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
@@ -93,7 +94,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const messaging::Messag
 }
 
 bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::MessageRoot* message) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	if(message->data_type() != messaging::Data::Negotiate) {
 		LOG_WARN_FILTER(logger_, filter_)
@@ -105,7 +106,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	auto protocols = static_cast<const messaging::Negotiate*>(message->data());
 	
 	if(!protocols->proto_in() || !protocols->proto_out()) {
-		LOG_WARN_FILTER(logger_, filter_)
+		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Link failed, incompatible negotiation: "
 			<< net.remote_host() << LOG_ASYNC;
 		return false;
@@ -142,7 +143,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 	);
 
 	if(!matches) {
-		LOG_DEBUG_FILTER(logger_, filter_)
+		LOG_DEBUG_FILTER(logger_, LF_SPARK)
 			<< "[spark] Peer did not match any supported protocols: "
 			<< net.remote_host() << LOG_ASYNC;
 		return false;
@@ -152,7 +153,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const messaging::M
 		send_negotiation(net);
 	}
 
-	LOG_INFO_FILTER(logger_, filter_)
+	LOG_INFO_FILTER(logger_, LF_SPARK)
 		<< "[spark] Established link: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
@@ -189,7 +190,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::
 	flatbuffers::Verifier verifier(buffer.data(), buffer.size());
 
 	if(!messaging::VerifyMessageRootBuffer(verifier)) {
-		LOG_DEBUG_FILTER(logger_, filter_)
+		LOG_DEBUG_FILTER(logger_, LF_SPARK)
 			<< "[spark] Message failed validation, dropping peer" << LOG_ASYNC;
 		return false;
 	}
@@ -210,7 +211,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const std::vector<std::
 }
 
 void MessageHandler::start(NetworkSession& net) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 	
 	if(initiator_) {
 		send_banner(net);

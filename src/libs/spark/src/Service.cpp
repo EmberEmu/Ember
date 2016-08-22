@@ -10,6 +10,7 @@
 #include <spark/MessageHandler.h>
 #include <spark/NetworkSession.h>
 #include <spark/Listener.h>
+#include <shared/FilterTypes.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>
 #include <type_traits>
@@ -21,9 +22,9 @@ namespace bai = boost::asio::ip;
 Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger)
                  : service_(service), logger_(logger),
-                   listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger, filter),
-                   hb_service_(service_, this, logger, filter), 
-                   track_service_(service_, logger, filter),
+                   listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger),
+                   hb_service_(service_, this, logger), 
+                   track_service_(service_, logger),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
 	dispatcher_.register_handler(&hb_service_, messaging::Service::Core, EventDispatcher::Mode::BOTH);
 	dispatcher_.register_handler(&track_service_, messaging::Service::Tracking, EventDispatcher::Mode::CLIENT);

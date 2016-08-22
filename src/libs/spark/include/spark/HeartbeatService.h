@@ -32,7 +32,6 @@ class HeartbeatService : public EventHandler {
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	log::Logger* logger_;
-	log::Filter filter_;
 
 	void set_timer();
 	void send_ping(const Link& link, std::uint64_t time);
@@ -43,7 +42,7 @@ class HeartbeatService : public EventHandler {
 
 public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
-	                 log::Logger* logger, log::Filter filter);
+	                 log::Logger* logger);
 
 	void handle_message(const Link& link, const messaging::MessageRoot* message);
 	void handle_link_event(const Link& link, LinkState state);

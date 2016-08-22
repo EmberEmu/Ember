@@ -9,6 +9,7 @@
 #include <spark/ServiceDiscovery.h>
 #include <spark/ServiceListener.h>
 #include <spark/temp/Multicast_generated.h>
+#include <shared/FilterTypes.h>
 #include <boost/lexical_cast.hpp>
 
 namespace bai = boost::asio::ip;
@@ -19,9 +20,9 @@ namespace ember { namespace spark {
 ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
                                    std::string address, std::uint16_t port,
                                    const std::string& mcast_iface, const std::string& mcast_group,
-                                   std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
+                                   std::uint16_t mcast_port, log::Logger* logger)
                                    : address_(std::move(address)), port_(port),
-                                     socket_(service), logger_(logger), filter_(filter),
+                                     socket_(service), logger_(logger),
                                      signals_(service, SIGINT, SIGTERM),
                                      service_(service), endpoint_(bai::address::from_string(mcast_group), mcast_port) {
 	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
@@ -37,7 +38,7 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
 }
 
 void ServiceDiscovery::shutdown() {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Discovery service shutting down..." << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Discovery service shutting down..." << LOG_ASYNC;
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
@@ -66,7 +67,7 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 	flatbuffers::Verifier verifier(buffer_.data(), size);
 
 	if(!mcast::VerifyMessageRootBuffer(verifier)) {
-		LOG_DEBUG_FILTER(logger_, filter_)
+		LOG_DEBUG_FILTER(logger_, LF_SPARK)
 			<< "[spark] Multicast message failed validation" << LOG_ASYNC;
 		return;
 	}
@@ -81,7 +82,7 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 			handle_locate_answer(static_cast<const mcast::LocateAnswer*>(message->data()));
 			break;
 		default:
-			LOG_WARN_FILTER(logger_, filter_)
+			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Received an unknown multicast packet type from "
 				<< boost::lexical_cast<std::string>(remote_ep_.address()) << LOG_ASYNC;
 	}
@@ -91,7 +92,7 @@ void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb)
 	socket_.async_send_to(boost::asio::buffer(fbb->GetBufferPointer(), fbb->GetSize()), endpoint_,
 		[this, fbb](const boost::system::error_code& ec, std::size_t /*size*/) {
 			if(ec) {
-				LOG_WARN_FILTER(logger_, filter_)
+				LOG_WARN_FILTER(logger_, LF_SPARK)
 					<< "[spark] Error on sending service discovery packet: "
 					<< ec.message() << LOG_ASYNC;
 			}
@@ -145,7 +146,7 @@ void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
 	if(message->type() == messaging::Service::Reserved
 	   || !message->ip() || !message->port()) {
-		LOG_WARN_FILTER(logger_, filter_)
+		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Received incompatible locate answer " << LOG_ASYNC;
 		return;
 	}

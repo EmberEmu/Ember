@@ -55,7 +55,7 @@ public:
 	enum class Result { OK, LINK_GONE };
 
 	Service(std::string description, boost::asio::io_service& service, const std::string& interface,
-	        std::uint16_t port, log::Logger* logger, log::Filter filter);
+	        std::uint16_t port, log::Logger* logger);
 	~Service();
 
 	EventDispatcher* dispatcher();
