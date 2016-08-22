@@ -28,8 +28,10 @@
 
 namespace ember { namespace spark {
 
+BOOST_STRONG_TYPEDEF(boost::uuids::uuid, ResponseToken)
+
 class Service final {
-	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandler;
+	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandle;
 
 	boost::asio::io_service& service_;
 	boost::asio::signal_set signals_;
@@ -60,12 +62,13 @@ public:
 
 	EventDispatcher* dispatcher();
 	void connect(const std::string& host, std::uint16_t port);
-	Result send(const Link& link, BufferHandler fbb) const;
-	Result send_tracked(const Link& link, boost::uuids::uuid id,
-	                    BufferHandler fbb, TrackingHandler callback);
-	void broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const;
-	void set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
-	                       flatbuffers::FlatBufferBuilder* fbb);
+
+	Result send(const Link& link, BufferHandle fbb) const;
+	Result send(const Link& link, BufferHandle fbb, const ResponseToken& token) const;
+	Result send(const Link& link, BufferHandle fbb, const ResponseToken& token, TrackingHandler callback);
+	Result send(const Link& link, BufferHandle fbb, TrackingHandler callback);
+
+	void broadcast(std::uint32_t service_id, ServicesMap::Mode mode, BufferHandle fbb) const;
 	void shutdown();
 };
 

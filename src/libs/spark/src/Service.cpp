@@ -77,7 +77,7 @@ void Service::default_handler(const Link& link, const messaging::MessageRoot* me
 		<< static_cast<std::underlying_type<messaging::Data>::type>(message->data_type()) << LOG_ASYNC;
 }
 
-auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
+auto Service::send(const Link& link, BufferHandle fbb) const -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -88,8 +88,7 @@ auto Service::send(const Link& link, BufferHandler fbb) const -> Result {
 	return Result::OK;
 }
 
-auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
-                           BufferHandler fbb, TrackingHandler callback) -> Result {
+auto Service::send(const Link& link, BufferHandle fbb, TrackingHandler callback) -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -101,7 +100,32 @@ auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
 	return Result::OK;
 }
 
-void Service::broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const {
+auto Service::send(const Link& link, BufferHandle fbb, const ResponseToken& token) -> Result {
+	auto net = link.net.lock();
+
+	if(!net) {
+		return Result::LINK_GONE;
+	}
+
+	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
+	net->write(fbb);
+	return Result::OK;
+}
+
+auto Service::send(const Link& link, BufferHandle fbb, const ResponseToken& token,
+                   TrackingHandler callback) -> Result {
+	auto net = link.net.lock();
+
+	if(!net) {
+		return Result::LINK_GONE;
+	}
+
+	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
+	net->write(fbb);
+	return Result::OK;
+}
+
+void Service::broadcast(std::uint32_t service_id, ServicesMap::Mode mode, BufferHandle fbb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	const auto& links = services_.peer_services(service, mode);
 
@@ -115,15 +139,6 @@ void Service::broadcast(messaging::Service service, ServicesMap::Mode mode, Buff
 		} else {
 			LOG_WARN_FILTER(logger_, filter_) << "[spark] Unable to lock weak_ptr!" << LOG_ASYNC;
 		}
-	}
-}
-
-void Service::set_tracking_data(const messaging::MessageRoot* root, messaging::MessageRootBuilder& mrb,
-                                flatbuffers::FlatBufferBuilder* fbb) {
-	if(root->tracking_id()) {
-		auto id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
-		mrb.add_tracking_id(id);
-		mrb.add_tracking_ttl(1);
 	}
 }
 
