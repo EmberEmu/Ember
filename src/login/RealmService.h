@@ -10,7 +10,6 @@
 
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>

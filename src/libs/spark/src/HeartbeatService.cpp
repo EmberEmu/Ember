@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Core_generated.h"
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
-#include <spark/temp/Core_generated.h>
 #include <shared/FilterTypes.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>

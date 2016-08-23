@@ -11,7 +11,6 @@
 #include "Config.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <game_protocol/ResultCodes.h>
 #include <logger/Logging.h>
 #include <shared/database/objects/Character.h>

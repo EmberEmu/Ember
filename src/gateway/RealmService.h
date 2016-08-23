@@ -8,11 +8,10 @@
 
 #pragma once
 
+#include "RealmStatus_generated.h"
 #include <shared/Realm.h>
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/RealmStatus_generated.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <memory>
 

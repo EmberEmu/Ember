@@ -8,11 +8,10 @@
 
 #pragma once
 
+#include "ServiceTypes_generated.h"
 #include <spark/Common.h>
 #include <spark/EventHandler.h>
 #include <spark/Link.h>
-#include <spark/temp/MessageRoot_generated.h>
-#include <spark/temp/ServiceTypes_generated.h>
 #include <forward_list>
 #include <shared_mutex>
 #include <unordered_map>

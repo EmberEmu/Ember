@@ -11,7 +11,6 @@
 #include <spark/Common.h>
 #include <spark/Link.h>
 #include <spark/EventHandler.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/functional/hash.hpp>

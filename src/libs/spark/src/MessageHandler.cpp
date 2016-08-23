@@ -6,13 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Core_generated.h"
 #include <spark/MessageHandler.h>
 #include <spark/EventDispatcher.h>
 #include <spark/NetworkSession.h>
 #include <spark/Utility.h>
-#include <spark/temp/MessageRoot_generated.h>
-#include <spark/temp/Core_generated.h>
-#include <spark/temp/ServiceTypes_generated.h>
 #include <shared/FilterTypes.h>
 #include <flatbuffers/flatbuffers.h>
 #include <boost/uuid/uuid.hpp>

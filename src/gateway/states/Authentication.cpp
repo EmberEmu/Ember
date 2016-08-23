@@ -7,6 +7,7 @@
  */
 
 #include "Authentication.h"
+#include "Account_generated.h"
 #include "../AccountService.h"
 #include "../Config.h"
 #include "../RealmQueue.h"
@@ -17,7 +18,6 @@
 #include <game_protocol/PacketHeaders.h>
 #include <game_protocol/Packets.h>
 #include <spark/Buffer.h>
-#include <spark/temp/Account_generated.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>

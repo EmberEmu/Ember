@@ -9,7 +9,6 @@
 #pragma once
 
 #include <spark/Link.h>
-#include <spark/temp/MessageRoot_generated.h>
 
 namespace ember { namespace spark {
 

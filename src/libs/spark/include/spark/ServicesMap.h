@@ -9,7 +9,6 @@
 #pragma once
 
 #include <spark/Link.h>
-#include <spark/temp/ServiceTypes_generated.h>
 #include <forward_list>
 #include <mutex>
 #include <unordered_map>

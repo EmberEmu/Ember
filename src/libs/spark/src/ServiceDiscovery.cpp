@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Multicast_generated.h"
 #include <spark/ServiceDiscovery.h>
 #include <spark/ServiceListener.h>
-#include <spark/temp/Multicast_generated.h>
 #include <shared/FilterTypes.h>
 #include <boost/lexical_cast.hpp>
 

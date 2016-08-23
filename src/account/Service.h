@@ -9,9 +9,8 @@
 #pragma once
 
 #include "Sessions.h"
+#include "Account_generated.h"
 #include <spark/Service.h>
-#include <spark/temp/Account_generated.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <boost/optional.hpp>
 #include <cstdint>

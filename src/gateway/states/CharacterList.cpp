@@ -7,6 +7,7 @@
  */
 
 #include "CharacterList.h"
+#include "Account_generated.h"
 #include "../Config.h"
 #include "../Locator.h"
 #include "../ClientHandler.h"
@@ -18,7 +19,6 @@
 #include <logger/Logging.h>
 #include <game_protocol/Packets.h>
 #include <game_protocol/Opcodes.h>
-#include <spark/temp/Account_generated.h>
 #include <memory>
 #include <vector>
 

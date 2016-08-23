@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include "Multicast_generated.h"
 #include <spark/Common.h>
-#include <spark/temp/Multicast_generated.h>
 
 namespace ember { namespace spark {
 

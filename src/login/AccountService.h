@@ -10,7 +10,6 @@
 
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <srp6/Util.h>
 #include <logger/Logging.h>
 #include <botan/bigint.h>

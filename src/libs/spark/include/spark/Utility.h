@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <spark/temp/ServiceTypes_generated.h>
 #include <vector>
 #include <cstdint>
 

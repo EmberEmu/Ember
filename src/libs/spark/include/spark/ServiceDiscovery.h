@@ -8,10 +8,9 @@
 
 #pragma once
 
+#include "Multicast_generated.h"
 #include <spark/Common.h>
 #include <spark/ServiceListener.h>
-#include <spark/temp/ServiceTypes_generated.h>
-#include <spark/temp/Multicast_generated.h>
 #include <logger/Logging.h>
 #include <flatbuffers/flatbuffers.h>
 #include <boost/asio.hpp>

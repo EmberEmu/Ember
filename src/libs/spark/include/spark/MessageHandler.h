@@ -10,7 +10,6 @@
 
 #include <spark/Link.h>
 #include <spark/ServicesMap.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <set>
 #include <vector>

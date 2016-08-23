@@ -8,9 +8,8 @@
 
 #pragma once
 
+#include "Multicast_generated.h"
 #include <functional>
-#include <spark/temp/MessageRoot_generated.h>
-#include <spark/temp/Multicast_generated.h>
 #include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
 

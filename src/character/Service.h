@@ -11,8 +11,7 @@
 #include "CharacterHandler.h"
 #include <shared/database/daos/CharacterDAO.h>
 #include <spark/Service.h>
-#include <spark/temp/Character_generated.h>
-#include <spark/temp/MessageRoot_generated.h>
+#include "Character_generated.h""
 #include <logger/Logging.h>
 #include <string>
 #include <cstdint>
