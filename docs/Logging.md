@@ -45,7 +45,7 @@ Creation example:
 ```cpp
 #include <logger/FileSink.h>
 
-auto sink = std::make_unique<el::FileSink>(el::Severity::DEBUG, el::Filter(-1), "my_log.log", el::FileSink::Mode::APPEND);
+auto sink = std::make_unique<el::FileSink>(el::Severity::DEBUG, el::Filter(0), "my_log.log", el::FileSink::Mode::APPEND);
 ```
 
 Filenames may include formatters as specified by C++11's put_time function. See http://en.cppreference.com/w/cpp/io/manip/put_time.
@@ -70,7 +70,7 @@ Creation example:
 ```cpp
 #include <logger/SyslogSink.h>
 
-auto sink = std::make_unique<el::SyslogSink>(el::Severity::ERROR, el::Filter(-1), "localhost", 514, el::SyslogSink::Facility::LOCAL_USE_0, "login");
+auto sink = std::make_unique<el::SyslogSink>(el::Severity::ERROR, el::Filter(0), "localhost", 514, el::SyslogSink::Facility::LOCAL_USE_0, "login");
 ```
 
 # Registering Sinks
@@ -78,7 +78,7 @@ After creating the desired sinks, they must be registered with the logger. This 
 
 For example:
 ```cpp
-auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(-1));
+auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(0));
 auto logger = std::make_unique<el::Logger>();
 logger->add_sink(std::move(sink));
 ```
