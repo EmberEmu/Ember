@@ -31,7 +31,7 @@ namespace el = ember::log;
 
 int launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-std::vector<std::string> fetch_definitions(const std::string& path);
+std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths);
 void print_dbc_table(const edbc::types::Definitions& defs);
 void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs);
@@ -58,8 +58,9 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const po::variables_map& args) try {
-	const std::string def_path = args["definitions"].as<std::string>();
-	std::vector<std::string> paths = fetch_definitions(def_path);
+	const auto def_paths = args["definitions"].as<std::vector<std::string>>();
+
+	std::vector<std::string> paths = fetch_definitions(def_paths);
 
 	edbc::Parser parser;
 	auto definitions = parser.parse(paths);
@@ -161,27 +162,29 @@ void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& gr
 	}
 }
 
-std::vector<std::string> fetch_definitions(const std::string& path) {
-	if(!boost::filesystem::is_directory(path)) {
-		throw std::exception("Invalid path provided.");
-	}
+std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths) {
+	std::vector<std::string> xml_paths;
 
-	std::vector<std::string> paths;
+	for(auto& path : paths) {
+		if(!boost::filesystem::is_directory(path)) {
+			throw std::invalid_argument("Invalid path provided, " + path);
+		}
 
-	for(auto& file : fs::directory_iterator(path)) {
-		if(file.path().extension() == ".xml") {
-			paths.emplace_back(file.path().string());
+		for(auto& file : fs::directory_iterator(path)) {
+			if(file.path().extension() == ".xml") {
+				xml_paths.emplace_back(file.path().string());
+			}
 		}
 	}
 
-	return paths;
+	return xml_paths;
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description opt("Generic options");
 	opt.add_options()
 		("help,h", "Displays a list of available options")
-		("definitions,d", po::value<std::string>()->default_value("definitions"),
+		("definitions,d", po::value<std::vector<std::string>>()->multitoken(),
 			"Path to the DBC XML definitions")
 		("output,o", po::value<std::string>()->default_value("output"),
 			"Directory to save output to")
