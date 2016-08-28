@@ -89,25 +89,25 @@ void save_output(const std::string& path, const std::string& name, const std::st
 	}
 }
 
-std::stringstream read_template(const std::string& template_file) {
+std::stringstream read_template(const std::string& path, const std::string& file) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	std::ifstream ifs("templates/" + template_file);
+	std::ifstream ifs(path + file);
 	std::stringstream buffer;
 	buffer << ifs.rdbuf();
 
 	if(!ifs.is_open() || !ifs.good()) {
-		throw std::runtime_error(template_file + " could not be opened for reading");
+		throw std::runtime_error(path + file + " could not be opened for reading");
 	}
 
 	return buffer;
 }
 
-void generate_linker(const types::Definitions& defs, const std::string& output) {
+void generate_linker(const types::Definitions& defs, const std::string& output, const std::string& path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_LINKING_FUNCTIONS%>([^]+)<%TEMPLATE_LINKING_FUNCTION_CALLS%>([^]+))");
-	std::stringstream buffer(read_template("Linker.cpp_"));
+	std::stringstream buffer(read_template(path, "Linker.cpp_"));
 	std::stringstream functions, calls;
 
 	for(auto& def : defs) {
@@ -201,12 +201,12 @@ void generate_linker(const types::Definitions& defs, const std::string& output) 
 	save_output(output, "Linker.cpp", out);
 }
 
-void generate_disk_loader(const types::Definitions& defs, const std::string& output) {
+void generate_disk_loader(const types::Definitions& defs, const std::string& output, const std::string& path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	LOG_INFO_GLOB << "Generating disk loader..." << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
-	std::stringstream buffer(read_template("DiskLoader.cpp_"));
+	std::stringstream buffer(read_template(path, "DiskLoader.cpp_"));
 	std::stringstream functions, insertions, calls;
 
 	for(auto& def : defs) {
@@ -441,11 +441,11 @@ void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, 
 	definitions << tab << "typedef " << def.underlying_type << " " << def.name << ";" << "\n";
 }
 
-void generate_disk_defs(const types::Definitions& defs, const std::string& output) {
+void generate_disk_defs(const types::Definitions& defs, const std::string& output, const std::string& path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
-	std::stringstream buffer(read_template("DiskDefs.h_"));
+	std::stringstream buffer(read_template(path, "DiskDefs.h_"));
 	std::stringstream definitions;
 
 	for(auto& def : defs) {
@@ -560,12 +560,12 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 	definitions << tab << "};" << std::endl << std::endl;
 }
 
-void generate_memory_defs(const types::Definitions& defs, const std::string& output) {
+void generate_memory_defs(const types::Definitions& defs, const std::string& output, const std::string& path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_MEMORY_FORWARD_DECL%>([^]+)<%TEMPLATE_MEMORY_DEFINITIONS%>([^]+))");
 
-	std::stringstream buffer(read_template("MemoryDefs.h_"));
+	std::stringstream buffer(read_template(path, "MemoryDefs.h_"));
 	std::stringstream forward_decls, definitions;
 
 	for(auto& def : defs) {
@@ -586,11 +586,11 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 	save_output(output, "MemoryDefs.h", out);
 }
 
-void generate_storage(const types::Definitions& defs, const std::string& output) {
+void generate_storage(const types::Definitions& defs, const std::string& output, const std::string& path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>([^]+)<%TEMPLATE_MOVES%>([^]+))");
 
-	std::stringstream buffer(read_template("Storage.h_"));
+	std::stringstream buffer(read_template(path, "Storage.h_"));
 	std::stringstream declarations, moves;
 
 	for(auto& def : defs) {
@@ -615,18 +615,20 @@ void generate_storage(const types::Definitions& defs, const std::string& output)
 	save_output(output, "Storage.h", out);
 }
 
-void generate_common(const types::Definitions& defs, const std::string& output) {
+void generate_common(const types::Definitions& defs, const std::string& output,
+                     const std::string& template_path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 	LOG_INFO_GLOB << "Generating common files..." << LOG_ASYNC;
-	generate_storage(defs, output);
-	generate_memory_defs(defs, output);
-	generate_disk_defs(defs, output);
-	generate_linker(defs, output);
+	generate_storage(defs, output, template_path);
+	generate_memory_defs(defs, output, template_path);
+	generate_disk_defs(defs, output, template_path);
+	generate_linker(defs, output, template_path);
 }
 
-void generate_disk_source(const types::Definitions& defs, const std::string& output) {
+void generate_disk_source(const types::Definitions& defs, const std::string& output,
+                          const std::string& template_path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
-	generate_disk_loader(defs, output);
+	generate_disk_loader(defs, output, template_path);
 }
 
 }} // dbc, ember

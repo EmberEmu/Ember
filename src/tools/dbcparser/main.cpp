@@ -94,12 +94,12 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 	}
 
 	if(args["disk"].as<bool>() || args.count("database")) {
-		edbc::generate_common(defs, args["output"].as<std::string>());
+		edbc::generate_common(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
 	}
 
 
 	if(args["disk"].as<bool>()) {
-		edbc::generate_disk_source(defs, args["output"].as<std::string>());
+		edbc::generate_disk_source(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
 	}
 
 	LOG_DEBUG_GLOB << "Done!" << LOG_ASYNC;
@@ -188,10 +188,12 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 			"Path to the DBC XML definitions")
 		("output,o", po::value<std::string>()->default_value("output"),
 			"Directory to save output to")
+		("templates,t", po::value<std::string>()->default_value("templates/"),
+			"Path to the code generation templates")
 		("verbosity,v", po::value<std::string>()->default_value("info"),
-		 "Logging verbosity")
+			"Logging verbosity")
 		("fverbosity", po::value<std::string>()->default_value("disabled"),
-		 "File logging verbosity")
+			"File logging verbosity")
 		("disk", po::bool_switch(),
 			"Generate files required for loading DBC data from disk")
 		("print-dbcs", po::bool_switch(),
@@ -199,7 +201,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("print-fields", po::value<std::string>(),
 			"Print out of a summary of a specific DBC definition's fields")
 		("template", po::value<std::string>(),
-		 "Generate a DBC template file for editing in other tools");
+			"Generate a DBC template file for editing in other tools");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(opt)
