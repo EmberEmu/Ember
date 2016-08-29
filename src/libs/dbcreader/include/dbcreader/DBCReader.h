@@ -8,5 +8,5 @@
 
 #pragma once 
 
-#include <dbcreader/Linker.h>
-#include <dbcreader/DiskLoader.h>
+#include "Linker.h"
+#include "DiskLoader.h"
