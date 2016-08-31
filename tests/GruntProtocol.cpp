@@ -93,7 +93,8 @@ TEST(GruntProtocol, ClientLoginProof) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(grunt::client::LoginProof::TwoFactorSecurity::NONE, packet.security)
+		<< "Deserialisation failed (field: security)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
@@ -202,7 +203,8 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 		<< "Deserialisation failed (field: salt)";
 	ASSERT_EQ(0, packet.unk1) << "Deserialisation failed (field: unknown 1)";
 	//ASSERT_EQ(0, packet.unk3) << "Deserialisation failed (field: unknown 3)";
-	ASSERT_EQ(0, packet.unk4) << "Deserialisation failed (field: unknown 4)";
+	ASSERT_EQ(grunt::server::LoginChallenge::TwoFactorSecurity::NONE, packet.security)
+		<< "Deserialisation failed (field: security)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);

@@ -14,6 +14,7 @@
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <array>
 #include <cstdint>
 #include <cstddef>
 
@@ -26,22 +27,9 @@ class LoginProof final : public Packet {
 	static const unsigned int A_LENGTH = 32;
 	static const unsigned int M1_LENGTH = 20;
 	static const unsigned int CRC_LENGTH = 20;
+	static const std::uint8_t PIN_DATA_LENGTH = 36;
 
-public:
-	Opcode opcode;
-	Botan::BigInt A;
-	Botan::BigInt M1;
-	Botan::BigInt crc_hash;
-	std::uint8_t key_count;
-	std::uint8_t unknown;
-
-	State read_from_stream(spark::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
-
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
-		}
-
+	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 
 		// could just use one buffer but this is safer from silly mistakes
@@ -56,14 +44,64 @@ public:
 		M1 = Botan::BigInt(m1_buff, M1_LENGTH);
 
 		Botan::byte crc_buff[CRC_LENGTH];
-		stream.get(crc_buff, CRC_LENGTH); 
+		stream.get(crc_buff, CRC_LENGTH);
 		std::reverse(std::begin(crc_buff), std::end(crc_buff));
 		crc_hash = Botan::BigInt(crc_buff, CRC_LENGTH);
 
 		stream >> key_count;
-		stream >> unknown;
+		stream >> static_cast<TwoFactorSecurity>(security);
+	}
 
-		return State::DONE;
+	void read_pin_data(spark::BinaryStream& stream) {
+		switch(security) {
+			case TwoFactorSecurity::NONE:
+				state_ = State::DONE;
+				break;
+			case TwoFactorSecurity::PIN:
+				if(stream.size() >= PIN_DATA_LENGTH) {
+					stream.get(pin_data_unknown.data(), PIN_DATA_LENGTH);
+					state_ = State::DONE;
+				} else {
+					state_ = State::CALL_AGAIN;
+				}
+				break;
+			default:
+				throw grunt::bad_packet("Unknown security method from client");
+		}
+	}
+
+public:
+	enum class TwoFactorSecurity : std::uint8_t {
+		NONE, PIN
+	};
+
+	Opcode opcode;
+	Botan::BigInt A;
+	Botan::BigInt M1;
+	Botan::BigInt crc_hash;
+	std::uint8_t key_count;
+	TwoFactorSecurity security;
+	std::array<std::uint8_t, PIN_DATA_LENGTH> pin_data_unknown;
+
+	State read_from_stream(spark::BinaryStream& stream) override {
+		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+
+		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+			return State::CALL_AGAIN;
+		}
+
+		switch(state_) {
+			case State::INITIAL:
+				read_body(stream);
+				[[fallthrough]];
+			case State::CALL_AGAIN:
+				read_pin_data(stream);
+				break;
+			default:
+				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
+		}
+
+		return state_;
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
@@ -82,7 +120,7 @@ public:
 		stream.put(bytes.begin(), bytes.size());
 
 		stream << key_count;
-		stream << unknown;
+		stream << security;
 	}
 };
 
