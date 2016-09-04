@@ -101,7 +101,10 @@ class RealmList final : public Packet {
 			stream >> realm.population;
 			stream >> num_chars;
 			stream >> realm.zone;
-			stream.skip(1); // unknown byte, just skip it
+
+			std::uint8_t realm_id;
+			stream >> realm.id;
+			realm.id = realm_id;
 
 			be::little_to_native_inplace(realm.type);
 			be::little_to_native_inplace(realm.population);
@@ -170,7 +173,7 @@ public:
 			stream << be::native_to_little(realm.population);
 			stream << static_cast<std::uint8_t>(entry.characters);
 			stream << realm.zone;
-			stream << std::uint8_t(0); // WoWPython mentions something to do with ping time, todo, check
+			stream << std::uint8_t(realm.id);
 		}
 
 		stream << be::native_to_little(unknown2);
