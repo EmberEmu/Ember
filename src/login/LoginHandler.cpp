@@ -270,7 +270,10 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 		pin_auth_.set_pin(user_->pin());
 		pin_auth_.set_client_hash(packet->pin_hash);
 		pin_auth_.set_client_salt(packet->pin_salt);
-		return pin_auth_.validate_pin(packet->pin_hash);
+		auto result =  pin_auth_.validate_pin(packet->pin_hash);
+		LOG_DEBUG(logger_) << "PIN authentication for " << user_->username()
+		                   << (result? " OK" : " failed") << LOG_ASYNC;
+		return result;
 	}
 
 	// no PIN was expected, nothing to validate

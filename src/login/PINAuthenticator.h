@@ -39,7 +39,7 @@ private:
 	void remap_pin();
 
 public:
-	PINAuthenticator(log::Logger* logger) : logger_(logger) {}
+	explicit PINAuthenticator(log::Logger* logger) : logger_(logger), pin_(0), grid_seed_(0) {}
 
 	std::array<std::uint8_t, SALT_LENGTH>& server_salt();
 	std::uint32_t grid_seed();
