@@ -16,11 +16,12 @@
 namespace ember {
 
 class PINAuthenticator {
+	static const int MIN_PIN_LENGTH =  4;
+	static const int MAX_PIN_LENGTH = 10;
 	static const int GRID_SIZE      = 10;
 	static const int SALT_LENGTH    = 16;
 	static const int HASH_LENGTH    = 20;
-	static const int MAX_PIN_LENGTH = 10;
-
+	
 	std::uint64_t pin_;
 	std::uint32_t grid_seed_;
 	std::array<std::uint8_t, SALT_LENGTH> client_salt_;

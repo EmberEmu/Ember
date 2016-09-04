@@ -60,6 +60,10 @@ void PINAuthenticator::pin_to_bytes(std::uint64_t pin) {
 		pin /= 10;
 	}
 	
+	if(pin_bytes_.size() < MIN_PIN_LENGTH || pin_bytes_.size() > MAX_PIN_LENGTH) {
+		throw std::invalid_argument("Incorrect PIN length provided");
+	}
+
 #if defined(BOOST_LITTLE_ENDIAN) 
 	std::reverse(pin_bytes_.begin(), pin_bytes_.end());
 #endif
