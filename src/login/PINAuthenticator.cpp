@@ -96,7 +96,7 @@ void PINAuthenticator::remap_pin_grid() {
 		std::uint8_t* src_ptr = grid.data() + remainder + 1;
 		std::uint8_t* dst_ptr = grid.data() + remainder;
 
-		memcpy(dst_ptr, src_ptr, copy_size);
+		std::copy(src_ptr, src_ptr + copy_size, dst_ptr);
 		++remapped_index;
 	}
 }
