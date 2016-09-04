@@ -103,7 +103,7 @@ class RealmList final : public Packet {
 			stream >> realm.zone;
 
 			std::uint8_t realm_id;
-			stream >> realm.id;
+			stream >> realm_id;
 			realm.id = realm_id;
 
 			be::little_to_native_inplace(realm.type);

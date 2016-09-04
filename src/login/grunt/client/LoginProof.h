@@ -27,7 +27,8 @@ class LoginProof final : public Packet {
 	static const unsigned int A_LENGTH = 32;
 	static const unsigned int M1_LENGTH = 20;
 	static const unsigned int CRC_LENGTH = 20;
-	static const std::uint8_t PIN_DATA_LENGTH = 36;
+	static const std::uint8_t PIN_SALT_LENGTH = 16;
+	static const std::uint8_t PIN_HASH_LENGTH = 20;
 
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
@@ -58,8 +59,9 @@ class LoginProof final : public Packet {
 				state_ = State::DONE;
 				break;
 			case TwoFactorSecurity::PIN:
-				if(stream.size() >= PIN_DATA_LENGTH) {
-					stream.get(pin_data_unknown.data(), PIN_DATA_LENGTH);
+				if(stream.size() >= (pin_salt.size() + pin_hash.size())) {
+					stream.get(pin_salt.data(), pin_salt.size());
+					stream.get(pin_hash.data(), pin_hash.size());
 					state_ = State::DONE;
 				} else {
 					state_ = State::CALL_AGAIN;
@@ -81,7 +83,8 @@ public:
 	Botan::BigInt crc_hash;
 	std::uint8_t key_count;
 	TwoFactorSecurity security;
-	std::array<std::uint8_t, PIN_DATA_LENGTH> pin_data_unknown;
+	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
+	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -121,6 +124,11 @@ public:
 
 		stream << key_count;
 		stream << security;
+
+		if(security == TwoFactorSecurity::PIN) {
+			stream.put(pin_salt.data(), pin_salt.size());
+			stream.put(pin_hash.data(), pin_hash.size());
+		}
 	}
 };
 

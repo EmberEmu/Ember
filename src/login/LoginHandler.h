@@ -13,6 +13,7 @@
 #include "Authenticator.h"
 #include "GameVersion.h"
 #include "RealmList.h"
+#include "PINAuthenticator.h"
 #include "grunt/Packets.h"
 #include "grunt/Handler.h"
 #include <logger/Logging.h>
@@ -49,6 +50,7 @@ class LoginHandler {
 	Botan::BigInt server_proof_;
 	const std::string source_;
 	const AccountService& acct_svc_;
+	PINAuthenticator pin_auth_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
@@ -64,6 +66,7 @@ class LoginHandler {
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
+	bool validate_pin(const grunt::client::LoginProof* packet);
 
 	void fetch_user(grunt::Opcode opcode, const std::string& username);
 	void fetch_session_key(FetchUserAction* action);
@@ -81,7 +84,7 @@ public:
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
 	             log::Logger* logger, const RealmList& realm_list, std::string source, Metrics& metrics)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
-	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics) {}
+	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics), pin_auth_(logger) {}
 };
 
 } // ember

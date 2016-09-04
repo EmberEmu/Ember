@@ -19,19 +19,24 @@ class User {
 	std::string user_;
 	std::string v_;
 	std::string s_;
+	std::uint64_t pin_;
 	bool banned_;
 	bool suspended_;
 
 public:
 	User(std::uint32_t id, std::string username, std::string salt, std::string verifier,
-	     bool banned, bool suspended) : id_(id), user_(std::move(username)),
-	     s_(std::move(salt)), v_(std::move(verifier)) {
+	     std::uint64_t pin, bool banned, bool suspended) : id_(id), user_(std::move(username)),
+	     s_(std::move(salt)), v_(std::move(verifier)), pin_(pin) {
 		banned_ = banned;
 		suspended_ = suspended;
 	}
 
 	std::uint32_t id() const {
 		return id_;
+	}
+
+	std::uint64_t pin() const {
+		return pin_;
 	}
 
 	std::string verifier() const {

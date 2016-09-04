@@ -32,6 +32,7 @@
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
+#include <shared/util/xoroshiro128plus.h>
 #include <botan/init.h>
 #include <botan/version.h>
 #include <boost/asio/io_service.hpp>
@@ -98,6 +99,11 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
 	Botan::LibraryInitializer init("thread_safe");
+
+	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
+	Botan::AutoSeeded_RNG rng;
+	rng.randomize(reinterpret_cast<Botan::byte*>(ember::rng::xorshift::seed),
+	              sizeof(ember::rng::xorshift::seed));
 
 	unsigned int concurrency = check_concurrency(logger);
 

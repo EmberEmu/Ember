@@ -13,11 +13,14 @@
 #include "../ResultCodes.h"
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <boost/endian/conversion.hpp>
 #include <array>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember { namespace grunt { namespace server {
+
+namespace be = boost::endian;
 
 class LoginChallenge final : public Packet {
 	static const std::size_t WIRE_LENGTH = 119;
@@ -64,8 +67,10 @@ class LoginChallenge final : public Packet {
 		}
 
 		// does the stream hold enough bytes to complete the PIN data?
-		if(stream.size() >= PIN_DATA_LENGTH) {
-			stream.get(pin_data_unknown.data(), PIN_DATA_LENGTH);
+		if(stream.size() >= (pin_salt.size() + sizeof(pin_grid_seed))) {
+			stream >> pin_grid_seed;
+			be::little_to_native_inplace(pin_grid_seed);
+			stream.get(pin_salt.data(), PIN_SALT_LENGTH);
 			state_ = State::DONE;
 		} else {
 			state_ = State::CALL_AGAIN;
@@ -75,7 +80,7 @@ class LoginChallenge final : public Packet {
 public:
 	static const std::uint8_t PRIME_LENGTH    = 32;
 	static const std::uint8_t PUB_KEY_LENGTH  = 32;
-	static const std::uint8_t PIN_DATA_LENGTH = 20;
+	static const std::uint8_t PIN_SALT_LENGTH = 16;
 
 	enum class TwoFactorSecurity : std::uint8_t {
 		NONE, PIN
@@ -92,7 +97,8 @@ public:
 	Botan::BigInt s;
 	std::array<Botan::byte, 16> crc_salt;
 	TwoFactorSecurity security = TwoFactorSecurity::NONE;
-	std::array<std::uint8_t, PIN_DATA_LENGTH> pin_data_unknown;
+	std::uint32_t pin_grid_seed;
+	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 
 	// todo - early abort (wire length change)
 	State read_from_stream(spark::BinaryStream& stream) override {
@@ -144,9 +150,9 @@ public:
 		stream.put(crc_salt.data(), crc_salt.size());
 		stream << security;
 
-		// unknown, need to research
 		if(security == TwoFactorSecurity::PIN) {
-			stream << std::uint32_t(0) << std::uint64_t(0) << std::uint64_t(0);
+			stream << be::native_to_little(pin_grid_seed);
+			stream.put(pin_salt.data(), pin_salt.size());
 		}
 	}
 };

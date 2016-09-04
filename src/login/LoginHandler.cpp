@@ -175,6 +175,13 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 	packet->N = values.gen.prime();
 	packet->s = values.salt;
 	packet->security = grunt::server::LoginChallenge::TwoFactorSecurity::NONE;
+
+	if(user_->pin()) {
+		packet->security = grunt::server::LoginChallenge::TwoFactorSecurity::PIN;
+		packet->pin_grid_seed = pin_auth_.grid_seed();
+		packet->pin_salt = pin_auth_.server_salt();
+	}
+
 	auto crc_salt = Botan::AutoSeeded_RNG().random_vec(16);
 	std::copy(crc_salt.begin(), crc_salt.end(), packet->crc_salt.data());
 }
@@ -250,6 +257,26 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	send(std::move(response));
 }
 
+bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	// ensure the packet contained PIN data if a PIN is expected
+	if(user_->pin() && packet->security != grunt::client::LoginProof::TwoFactorSecurity::PIN) {
+		return false;
+	}
+
+	// if a PIN is expected, validate it
+	if(user_->pin()) {
+		pin_auth_.set_pin(user_->pin());
+		pin_auth_.set_client_hash(packet->pin_hash);
+		pin_auth_.set_client_salt(packet->pin_salt);
+		return pin_auth_.validate_pin(packet->pin_hash);
+	}
+
+	// no PIN was expected, nothing to validate
+	return true;
+}
+
 void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -259,10 +286,11 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_AUTH_LOGIN_PROOF");
 	}
 
+	auto pin_match = validate_pin(proof_packet);
 	auto proof = login_auth_->proof_check(proof_packet);
 	auto result = grunt::ResultCode::FAIL_INCORRECT_PASSWORD;
 	
-	if(proof.match) {
+	if(proof.match && pin_match) {
 		if(user_->banned()) {
 			result = grunt::ResultCode::FAIL_BANNED;
 		} else if(user_->suspended()) {
@@ -279,8 +307,7 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
-		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->id(),
-		                                                      login_auth_->session_key());
+		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->id(), login_auth_->session_key());
 		execute_async(action);
 	} else {
 		send_login_proof(result);

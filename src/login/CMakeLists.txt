@@ -44,6 +44,7 @@ set(LIBRARY_HDR
     MonitorCallbacks.h
     AccountService.h
     RealmService.h
+    PINAuthenticator.h
     )
 
 set(LIBRARY_SRC
@@ -56,6 +57,7 @@ set(LIBRARY_SRC
     MonitorCallbacks.cpp
     AccountService.cpp
     RealmService.cpp
+    PINAuthenticator.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
