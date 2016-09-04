@@ -37,7 +37,7 @@ std::uint32_t PINAuthenticator::grid_seed() {
 /* 
  * Returns a completely random 16-byte salt used during hashing
  */
-std::array<std::uint8_t, 16>& PINAuthenticator::server_salt() {
+auto PINAuthenticator::server_salt() -> std::array<std::uint8_t, SALT_LENGTH>& {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	for(std::size_t i = 0; i < server_salt_.size(); ++i) {
