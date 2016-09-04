@@ -8,9 +8,12 @@
 
 #include "PINAuthenticator.h"
 #include <shared/util/xoroshiro128plus.h>
+#include <shared/util/base32.h>
 #include <boost/endian/conversion.hpp>
+#include <botan/hmac.h>
 #include <botan/sha160.h>
 #include <cstddef>
+#include <ctime>
 
 namespace ember {
 
@@ -54,6 +57,8 @@ auto PINAuthenticator::server_salt() -> std::array<std::uint8_t, SALT_LENGTH>& {
  */
 void PINAuthenticator::pin_to_bytes(std::uint64_t pin) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	pin_bytes_.clear();
 
 	while(pin != 0) {
 		pin_bytes_.push_back(pin % 10);
@@ -145,6 +150,39 @@ bool PINAuthenticator::validate_pin(const std::array<std::uint8_t, HASH_LENGTH>&
 
 	// ensure we computed the same result as the client
 	return std::equal(final_hash.begin(), final_hash.end(), client_hash.begin(), client_hash.end());
+}
+
+std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int interval) {
+	std::vector<std::uint8_t> decoded_key((secret.size() + 7) / 8 * 5);
+	int key_size = base32_decode((const uint8_t*)secret.data(), decoded_key.data(), decoded_key.size());
+
+	if(key_size == -1) {
+		throw std::invalid_argument("Unable to base32 decode TOTP key, " + secret);
+	}
+
+	auto time = std::time(NULL);
+	std::uint64_t now = static_cast<std::uint64_t>(time);
+	std::uint64_t step = floor(now / 30) + interval;
+
+	Botan::SHA_160* hasher = new Botan::SHA_160(); // todo, memory leak but Botan crashes with stack-allocated objects (?!)
+	Botan::HMAC hmac(hasher);
+	hmac.set_key(decoded_key.data(), key_size);
+
+#if defined(BOOST_LITTLE_ENDIAN) 
+	hmac.update_be(step);
+#else
+	hmac.update(step);
+#endif
+
+	auto hmac_result = hmac.final();
+
+	unsigned int offset = hmac_result[19] & 0xF;
+	std::uint32_t pin = (hmac_result[offset] & 0x7f) << 24 | (hmac_result[offset + 1] & 0xff) << 16
+	                     | (hmac_result[offset + 2] & 0xff) << 8 | (hmac_result[offset + 3] & 0xff);
+
+	pin &= 0x7FFFFFFF;
+	pin %= 1000000;
+	return pin;
 }
 
 } // ember

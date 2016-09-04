@@ -176,7 +176,7 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 	packet->s = values.salt;
 	packet->security = grunt::server::LoginChallenge::TwoFactorSecurity::NONE;
 
-	if(user_->pin()) {
+	if(user_->pin_method() != PINMethod::NONE) {
 		packet->security = grunt::server::LoginChallenge::TwoFactorSecurity::PIN;
 		packet->pin_grid_seed = pin_auth_.grid_seed();
 		packet->pin_salt = pin_auth_.server_salt();
@@ -260,24 +260,41 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// ensure the packet contained PIN data if a PIN is expected
-	if(user_->pin() && packet->security != grunt::client::LoginProof::TwoFactorSecurity::PIN) {
+	// no PIN was expected, nothing to validate
+	if(user_->pin_method() == PINMethod::NONE) {
+		return true;
+	}
+
+	// PIN auth is enabled for this user, make sure the packet has PIN data
+	if(packet->security != grunt::client::LoginProof::TwoFactorSecurity::PIN) {
 		return false;
 	}
 
-	// if a PIN is expected, validate it
-	if(user_->pin()) {
+	bool result = false;
+
+	pin_auth_.set_client_hash(packet->pin_hash);
+	pin_auth_.set_client_salt(packet->pin_salt);
+
+	if(user_->pin_method() == PINMethod::FIXED) {
 		pin_auth_.set_pin(user_->pin());
-		pin_auth_.set_client_hash(packet->pin_hash);
-		pin_auth_.set_client_salt(packet->pin_salt);
-		auto result =  pin_auth_.validate_pin(packet->pin_hash);
-		LOG_DEBUG(logger_) << "PIN authentication for " << user_->username()
-		                   << (result? " OK" : " failed") << LOG_ASYNC;
-		return result;
+		result = pin_auth_.validate_pin(packet->pin_hash);
 	}
 
-	// no PIN was expected, nothing to validate
-	return true;
+	if(user_->pin_method() == PINMethod::TOTP) {
+		for(auto interval = -1; interval < 2; ++interval) { // try time intervals -1 to +1
+			pin_auth_.set_pin(PINAuthenticator::generate_totp_pin(user_->totp_token(), interval));
+
+			if(pin_auth_.validate_pin(packet->pin_hash)) {
+				result = true;
+				break;
+			}
+		}
+	}
+
+	LOG_DEBUG(logger_) << "PIN authentication for " << user_->username()
+	                   << (result ? " OK" : " failed") << LOG_ASYNC;
+
+	return result;
 }
 
 void LoginHandler::check_login_proof(const grunt::Packet* packet) {

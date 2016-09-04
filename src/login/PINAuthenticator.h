@@ -52,6 +52,8 @@ public:
 	void set_client_salt(std::array<std::uint8_t, SALT_LENGTH> salt) {
 		client_salt_ = salt;
 	}
+
+	static std::uint32_t generate_totp_pin(const std::string& secret, int interval = - 1);
 };
 
 } // ember

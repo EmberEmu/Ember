@@ -64,6 +64,8 @@ set(UTIL_SRC
     shared/util/LogConfig.h
     shared/util/ConsoleColour.h
     shared/util/ConsoleColour.cpp
+    shared/util/base32.h
+    shared/util/base32.cpp
 )
 
 set(METRICS_SRC

@@ -30,7 +30,8 @@ public:
 	MySQLUserDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	boost::optional<User> user(const std::string& username) const override try {
-		const std::string query = "SELECT u.username, u.id, u.s, u.v, u.pin_auth, b.user_id as banned, "
+		const std::string query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "
+		                          "u.totp_key, b.user_id as banned, "
 		                          "s.user_id as suspended FROM users u "
 		                          "LEFT JOIN bans b ON u.id = b.user_id "
 		                          "LEFT JOIN suspensions s ON u.id = s.user_id "
@@ -43,7 +44,8 @@ public:
 
 		if(res->next()) {
 			User user(res->getUInt("id"), res->getString("username"), res->getString("s"),
-			          res->getString("v"), res->getUInt64("pin_auth"), res->getBoolean("banned"),
+			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),
+			          res->getUInt64("pin"), res->getString("totp_key"), res->getBoolean("banned"),
 			          res->getBoolean("suspended"));
 			return user;
 		}
