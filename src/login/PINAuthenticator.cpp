@@ -160,12 +160,12 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 		throw std::invalid_argument("Unable to base32 decode TOTP key, " + secret);
 	}
 
+	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
 	auto time = std::time(NULL);
 	std::uint64_t now = static_cast<std::uint64_t>(time);
-	std::uint64_t step = floor(now / 30) + interval;
+	std::uint64_t step = static_cast<std::uint64_t>((floor(now / 30))) + interval;
 
-	Botan::SHA_160* hasher = new Botan::SHA_160(); // todo, memory leak but Botan crashes with stack-allocated objects (?!)
-	Botan::HMAC hmac(hasher);
+	Botan::HMAC hmac(new Botan::SHA_160()); // this is not a leak, Botan::HMAC takes ownership
 	hmac.set_key(decoded_key.data(), key_size);
 
 #if defined(BOOST_LITTLE_ENDIAN) 
