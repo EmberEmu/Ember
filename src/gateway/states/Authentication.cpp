@@ -73,18 +73,20 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	if(event->status == em::account::Status::OK && event->id) {
-		if((ctx->account_id = event->id)) {
-			fetch_session_key(ctx, event->packet);
-		} else {
-			LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
-				<< event->packet.username << LOG_ASYNC;
-		}
-	} else {
+	if(event->status != em::account::Status::OK) {
 		LOG_ERROR_FILTER_GLOB(LF_NETWORK)
 			<< "Account server returned " << em::account::EnumNameStatus(event->status)
 			<< " for " << event->packet.username << " lookup" << LOG_ASYNC;
 		ctx->connection->close_session();
+		return;
+	}
+
+	if(event->id) {
+		ctx->account_id = event->id;
+		fetch_session_key(ctx, event->packet);
+	} else {
+		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
+			<< event->packet.username << LOG_ASYNC;
 	}
 }
 
@@ -173,9 +175,9 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 	Botan::SHA_160 hasher;
 	hasher.update(packet.username);
-	hasher.update((Botan::byte*)&unknown, sizeof(unknown));
-	hasher.update((Botan::byte*)&packet.seed, sizeof(packet.seed));
-	hasher.update((Botan::byte*)&ctx->auth_seed, sizeof(ctx->auth_seed));
+	hasher.update_be(boost::endian::native_to_big(unknown));
+	hasher.update_be(boost::endian::native_to_big(packet.seed));
+	hasher.update_be(boost::endian::native_to_big(ctx->auth_seed));
 	hasher.update(k_bytes);
 	Botan::SecureVector<Botan::byte> calc_hash = hasher.final();
 
