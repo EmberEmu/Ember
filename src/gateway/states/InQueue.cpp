@@ -23,7 +23,7 @@ void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
 
 	protocol::SMSG_AUTH_RESPONSE packet;
 	packet.result = protocol::ResultCode::AUTH_WAIT_QUEUE;
-	packet.queue_position = event->position;
+	packet.queue_position = static_cast<std::uint32_t>(event->position);
 	ctx->connection->send(packet);
 }
 

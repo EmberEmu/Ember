@@ -41,7 +41,7 @@ void RealmQueue::update_clients() {
 }
 
 void RealmQueue::send_position(std::size_t position, ClientUUID client) {
-	std::unique_ptr<const Event> event = std::make_unique<QueuePosition>(position);
+	auto event = std::make_unique<QueuePosition>(position);
 	Locator::dispatcher()->post_event(client, std::move(event));
 }
 

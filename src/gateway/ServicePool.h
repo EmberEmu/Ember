@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
 #include <memory>
 #include <vector>
 #include <cstddef>

@@ -12,12 +12,8 @@
 #include "ClientHandler.h"
 #include "ServicePool.h"
 #include <shared/ClientUUID.h>
-#include <queue>
 #include <memory>
 #include <unordered_map>
-#include <boost/asio/io_service.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/functional/hash.hpp>
 
 namespace ember {
 
@@ -25,15 +21,15 @@ class EventDispatcher {
 	typedef std::unordered_map<ClientUUID, ClientHandler*> HandlerMap;
 
 	const ServicePool& pool_;
-    thread_local static HandlerMap handlers_;
+	thread_local static HandlerMap handlers_;
 
 public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
 	void post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const;
 	void post_shared_event(const ClientUUID& client, const std::shared_ptr<const Event>& event) const;
-    void register_handler(ClientHandler* handler);
-    void remove_handler(ClientHandler* handler);
+	void register_handler(ClientHandler* handler);
+	void remove_handler(ClientHandler* handler);
 };
 
 } // ember

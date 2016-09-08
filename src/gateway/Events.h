@@ -17,6 +17,7 @@
 #include <vector>
 #include <utility>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember {
 
