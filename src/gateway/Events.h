@@ -94,5 +94,4 @@ struct CharRenameResponse : Event {
 	std::string name;
 };
 
-
 } // ember

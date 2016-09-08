@@ -14,6 +14,7 @@ namespace ember {
 
 void SessionManager::start(std::unique_ptr<ClientConnection> session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
+
 	auto handle = session.get();
 	sessions_.insert(std::move(session));
 	handle->start();
@@ -21,8 +22,13 @@ void SessionManager::start(std::unique_ptr<ClientConnection> session) {
 
 void SessionManager::stop(ClientConnection* session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
-	//sessions_.erase(session);
-	session->stop();
+
+	auto it = std::find_if(sessions_.begin(), sessions_.end(), [session](auto& value) {
+		return session == value.get();
+	});
+
+	(*it)->stop();
+	sessions_.erase(it);
 }
 
 void SessionManager::stop_all() {
@@ -40,6 +46,7 @@ std::size_t SessionManager::count() const {
 
 ConnectionStats SessionManager::aggregate_stats() const {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
+
 	ConnectionStats ag_stats {};
 
 	for(auto& session : sessions_) {
