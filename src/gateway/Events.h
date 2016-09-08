@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include "Event.h"
 #include <game_protocol/ResultCodes.h>
 #include <game_protocol/client/CMSG_AUTH_SESSION.h>
@@ -22,15 +21,17 @@
 namespace ember {
 
 struct QueuePosition : Event {
-	QueuePosition(std::size_t position) : Event { EventType::QUEUE_UPDATE_POSITION }, position(position) { }
+	explicit QueuePosition(std::size_t position) 
+	                       : Event { EventType::QUEUE_UPDATE_POSITION },
+	                         position(position) { }
 
 	std::size_t position;
 };
 
 struct QueueSuccess : Event {
-	QueueSuccess(protocol::CMSG_AUTH_SESSION packet)
-	             : Event { EventType::QUEUE_SUCCESS },
-	               packet(std::move(packet)) { }
+	explicit QueueSuccess(protocol::CMSG_AUTH_SESSION packet)
+	                      : Event { EventType::QUEUE_SUCCESS },
+	                        packet(std::move(packet)) { }
 
 	protocol::CMSG_AUTH_SESSION packet;
 };
@@ -83,7 +84,7 @@ struct CharDeleteResponse : Event {
 };
 
 struct CharRenameResponse : Event {
-	CharRenameResponse(messaging::character::Status status, protocol::ResultCode res,
+	CharRenameResponse(messaging::character::Status status, protocol::ResultCode result,
 	                   std::uint64_t id, std::string name)
 	                   : Event { EventType::CHAR_RENAME_RESPONSE },
 	                     status(status), result(result), id(id), name(std::move(name)) { }

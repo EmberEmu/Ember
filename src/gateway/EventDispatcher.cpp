@@ -42,7 +42,8 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const
 	});
 }
 
-void EventDispatcher::post_shared_event(const ClientUUID& client, std::shared_ptr<const Event> event) const {
+void EventDispatcher::post_shared_event(const ClientUUID& client,
+										const std::shared_ptr<const Event>& event) const {
 	auto service = pool_.get_service(client.service());
 
 	// bad service index encoded in the UUID

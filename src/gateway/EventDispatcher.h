@@ -31,7 +31,7 @@ public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
 	void post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const;
-	void post_shared_event(const ClientUUID& client, std::shared_ptr<const Event> event) const;
+	void post_shared_event(const ClientUUID& client, const std::shared_ptr<const Event>& event) const;
     void register_handler(ClientHandler* handler);
     void remove_handler(ClientHandler* handler);
 };

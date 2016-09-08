@@ -19,6 +19,8 @@
 namespace ember { namespace queue {
 
 void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	protocol::SMSG_AUTH_RESPONSE packet;
 	packet.result = protocol::ResultCode::AUTH_WAIT_QUEUE;
 	packet.queue_position = event->position;
@@ -26,6 +28,7 @@ void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
 }
 
 void handle_queue_success(ClientContext* ctx, const QueueSuccess* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 	authentication::auth_success(ctx, event->packet);
 }
 

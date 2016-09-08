@@ -71,6 +71,8 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 }
 
 void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	if(event->status == em::account::Status::OK && event->id) {
 		if((ctx->account_id = event->id)) {
 			fetch_session_key(ctx, event->packet);
