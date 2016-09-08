@@ -69,9 +69,7 @@ void PINAuthenticator::pin_to_bytes(std::uint64_t pin) {
 		throw std::invalid_argument("Incorrect PIN length provided");
 	}
 
-#if defined(BOOST_LITTLE_ENDIAN) 
 	std::reverse(pin_bytes_.begin(), pin_bytes_.end());
-#endif
 }
 
 /* 
@@ -179,6 +177,8 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	unsigned int offset = hmac_result[19] & 0xF;
 	std::uint32_t pin = (hmac_result[offset] & 0x7f) << 24 | (hmac_result[offset + 1] & 0xff) << 16
 	                     | (hmac_result[offset + 2] & 0xff) << 8 | (hmac_result[offset + 3] & 0xff);
+
+    boost::endian::little_to_native_inplace(pin);
 
 	pin &= 0x7FFFFFFF;
 	pin %= 1000000;

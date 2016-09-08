@@ -53,7 +53,7 @@ public:
 		client_salt_ = salt;
 	}
 
-	static std::uint32_t generate_totp_pin(const std::string& secret, int interval = - 1);
+	static std::uint32_t generate_totp_pin(const std::string& secret, int interval);
 };
 
 } // ember
