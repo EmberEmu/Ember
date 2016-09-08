@@ -76,8 +76,8 @@ void character_rename(ClientContext* ctx) {
 	auto uuid = ctx->handler->uuid();
 
 	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
-	                                       [uuid](em::character::Status status, protocol::ResultCode result,
-	                                              std::uint64_t id, const std::string& name) {
+	                                       [uuid](auto status, auto result,
+	                                              auto id, const auto& name) {
 		auto event = std::make_unique<CharRenameResponse>(status, result, id, name);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
@@ -105,8 +105,7 @@ void character_enumerate(ClientContext* ctx) {
 	auto uuid = ctx->handler->uuid();
 
 	Locator::character()->retrieve_characters(ctx->account_id,
-	                                          [uuid](em::character::Status status,
-	                                                 std::vector<Character> characters) {
+	                                          [uuid](auto status, auto characters) {
 		auto event = std::make_unique<CharEnumResponse>(status, std::move(characters));
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
@@ -150,8 +149,7 @@ void character_create(ClientContext* ctx) {
 	auto uuid = ctx->handler->uuid();
 
 	Locator::character()->create_character(ctx->account_id, packet.character,
-	                                       [uuid](em::character::Status status,
-	                                              protocol::ResultCode result) {
+	                                       [uuid](auto status, auto result) {
 		auto event = std::make_unique<CharCreateResponse>(status, result);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
@@ -179,8 +177,7 @@ void character_delete(ClientContext* ctx) {
 	auto uuid = ctx->handler->uuid();
 
 	Locator::character()->delete_character(ctx->account_id, packet.id,
-	                                       [uuid](em::character::Status status, 
-	                                              protocol::ResultCode result) {
+	                                       [uuid](auto status, auto result) {
 		auto event = std::make_unique<CharDeleteResponse>(status, result);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});

@@ -64,7 +64,7 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 	auto uuid = ctx->handler->uuid();
 
 	Locator::account()->locate_account_id(packet.username,
-	                                      [uuid, packet](em::account::Status status, std::uint32_t id) {
+	                                      [uuid, packet](auto status, auto id) {
 		auto event = std::make_unique<AccountIDResponse>(packet, status, id);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
@@ -96,7 +96,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 	auto uuid = ctx->handler->uuid();
 
 	Locator::account()->locate_session(ctx->account_id,
-	                                   [uuid, packet](em::account::Status status, Botan::BigInt key) {
+	                                   [uuid, packet](auto status, auto key) {
 		auto event = std::make_unique<SessionKeyResponse>(packet, status, key);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
