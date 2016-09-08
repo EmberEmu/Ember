@@ -19,13 +19,17 @@ void enter(ClientContext* ctx) {
 	// don't care
 }
 
+void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
+
+}
+
 void update(ClientContext* ctx) {
 	// don't care
 }
 
 void exit(ClientContext* ctx) {
 	if(ctx->state == ClientState::SESSION_CLOSED) {
-		Locator::queue()->dequeue(ctx->connection->shared_from_this());
+		//Locator::queue()->dequeue();
 	}
 }
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "ClientContext.h"
+#include "SessionClose.h"
 
 namespace ember { namespace session_close {
 
@@ -18,6 +18,10 @@ void enter(ClientContext* ctx) {
 
 void update(ClientContext* ctx) {
 	// don't care, for now
+}
+
+void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
+    // don't care, for now
 }
 
 void exit(ClientContext* ctx) {

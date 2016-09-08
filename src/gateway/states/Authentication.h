@@ -9,11 +9,14 @@
 #pragma once
 
 #include "ClientContext.h"
+#include "../Events.h"
+#include <memory>
 
 namespace ember { namespace authentication {
 
 void enter(ClientContext* ctx);
 void update(ClientContext* ctx);
+void handle_event(ClientContext* ctx, std::shared_ptr<Event> event);
 void exit(ClientContext* ctx);
 
 }} // authentication, ember

@@ -31,6 +31,14 @@ boost::asio::io_service& ServicePool::get_service() {
 	return service;
 }
 
+boost::asio::io_service* ServicePool::get_service(std::size_t index) const {
+	if(index > services_.size()) {
+		return nullptr;
+	}
+
+	return services_[index].get();
+}
+
 void ServicePool::run() {
 	std::vector<std::thread> threads;
 	auto core_count = std::thread::hardware_concurrency();

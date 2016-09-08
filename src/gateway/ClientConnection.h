@@ -27,7 +27,7 @@ namespace ember {
 
 class SessionManager;
 
-class ClientConnection final : public std::enable_shared_from_this<ClientConnection> {
+class ClientConnection final {
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::ip::tcp::socket socket_;

@@ -8,11 +8,15 @@
 
 #pragma once
 
+#include "Event.h"
 #include "states/ClientContext.h"
 #include <game_protocol/Packet.h>
 #include <game_protocol/PacketHeaders.h> // todo, remove
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
+#include <shared/ClientUUID.h>
+#include <boost/uuid/uuid.hpp>
+#include <memory>
 
 namespace ember {
 
@@ -22,20 +26,26 @@ class ClientHandler final {
 	ClientConnection& connection_;
 	ClientContext context_;
 	protocol::ClientHeader* header_;
+    const client_uuid::uuid uuid_;
 	log::Logger* logger_;
 
 	std::string client_identify();
 	void handle_ping(spark::Buffer& buffer);
 
 public:
-	ClientHandler(ClientConnection& connection, log::Logger* logger);
+	ClientHandler(ClientConnection& connection, client_uuid::uuid uuid, log::Logger* logger);
 
 	void state_update(ClientState new_state);
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
+    void handle_event(std::shared_ptr<Event> event);
 
 	void start();
 	void stop();
+
+    const client_uuid::uuid& uuid() const {
+        return uuid_;
+    }
 };
 
 } // ember

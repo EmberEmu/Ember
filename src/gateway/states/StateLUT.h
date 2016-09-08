@@ -8,14 +8,19 @@
 
 #pragma once
 
+#include "../Event.h"
+#include <memory>
+
 namespace ember { 
 
 struct ClientContext;
 
 typedef void(*state_func)(ClientContext*);
+typedef void(*event_handler)(ClientContext*, std::shared_ptr<Event>);
 
+extern const state_func enter_states[];
 extern const state_func update_states[];
 extern const state_func exit_states[];
-extern const state_func enter_states[];
+extern const event_handler handle_event[];
 
 } // ember

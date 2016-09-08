@@ -9,6 +9,10 @@ set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
     Config.h
+    Event.h
+    EventDispatcher.h
+    Events.h
+    EventTypes.h
     Locator.h
     SessionManager.h
     FilterTypes.h
@@ -38,6 +42,7 @@ set(LIBRARY_HDR
     )
 
 set(LIBRARY_SRC
+    EventDispatcher.cpp
     Locator.cpp
     SessionManager.cpp
     ClientConnection.cpp

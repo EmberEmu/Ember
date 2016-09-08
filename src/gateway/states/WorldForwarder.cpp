@@ -18,6 +18,10 @@ void update(ClientContext* context) {
 
 }
 
+void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
+
+}
+
 void exit(ClientContext* context) {
 	//queue_service_temp->free_slot();
 }

@@ -38,6 +38,10 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 	update_states[context_.state](&context_);
 }
 
+void ClientHandler::handle_event(std::shared_ptr<Event> event) {
+    handle_event[context_.state](&context_, event);
+}
+
 void ClientHandler::state_update(ClientState new_state) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK) << client_identify() << ": "
 		<< "State change, " << ClientState_to_string(context_.state)
@@ -95,9 +99,9 @@ std::string ClientHandler::client_identify() {
 	}
 }
 
-ClientHandler::ClientHandler(ClientConnection& connection, log::Logger* logger)
+ClientHandler::ClientHandler(ClientConnection& connection, client_uuid::uuid uuid, log::Logger* logger)
                              : context_{}, connection_(connection), logger_(logger),
-                               header_(nullptr) { 
+                               header_(nullptr), uuid_(uuid) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
 	context_.connection = &connection_;
 	context_.handler = this;

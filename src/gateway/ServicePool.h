@@ -25,6 +25,7 @@ public:
 	explicit ServicePool(std::size_t pool_size);
 	
 	boost::asio::io_service& get_service();
+	boost::asio::io_service* get_service(std::size_t index) const;
 	void run();
 	void stop();
 	std::size_t size() const;

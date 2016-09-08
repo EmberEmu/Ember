@@ -72,10 +72,8 @@ void handle_char_rename(ClientContext* ctx) {
 		return;
 	}
 
-	auto self = ctx->connection->shared_from_this();
-
 	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
-	                                       [self, ctx](em::character::Status status,
+	                                       [ctx](em::character::Status status,
 	                                                   protocol::ResultCode res, std::uint64_t id,
 	                                                   const std::string& name) {
 		ctx->connection->socket().get_io_service().dispatch([=]() {
@@ -99,9 +97,7 @@ void handle_char_rename(ClientContext* ctx) {
 void handle_char_enum(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto self = ctx->connection->shared_from_this();
-
-	Locator::character()->retrieve_characters(ctx->account_id, [self, ctx](em::character::Status status,
+	Locator::character()->retrieve_characters(ctx->account_id, [ctx](em::character::Status status,
 	                                                                       std::vector<Character> characters) {
 		ctx->connection->socket().get_io_service().dispatch([=, characters = std::move(characters)]() mutable {
 			if(status == em::character::Status::OK) {
@@ -138,12 +134,10 @@ void handle_char_create(ClientContext* ctx) {
 		return;
 	}
 
-	auto self = ctx->connection->shared_from_this();
-
 	Locator::character()->create_character(ctx->account_id, packet.character,
-	                                       [self, ctx](em::character::Status status,
+	                                       [ctx](em::character::Status status,
 	                                                   boost::optional<protocol::ResultCode> result) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
+		ctx->connection->socket().get_io_service().dispatch([ctx, status, result]() {
 			if(status == em::character::Status::OK) {
 				send_character_create(ctx, *result);
 			} else {
@@ -162,12 +156,10 @@ void handle_char_delete(ClientContext* ctx) {
 		return;
 	}
 
-	auto self = ctx->connection->shared_from_this();
-
 	Locator::character()->delete_character(ctx->account_id, packet.id,
-	                                       [self, ctx](em::character::Status status,
+	                                       [ctx](em::character::Status status,
 	                                                   boost::optional<protocol::ResultCode> result) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, status, result]() {
+		ctx->connection->socket().get_io_service().dispatch([ctx, status, result]() {
 			if(status == em::character::Status::OK) {
 				send_character_delete(ctx, *result);
 			} else {
@@ -218,6 +210,10 @@ void update(ClientContext* ctx) {
 		default:
 			unhandled_packet(ctx);
 	}
+}
+
+void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
+
 }
 
 void exit(ClientContext* ctx) {

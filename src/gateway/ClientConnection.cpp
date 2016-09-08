@@ -97,14 +97,12 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 }
 
 void ClientConnection::write() {
-	auto self(shared_from_this());
-
 	if(!socket_.is_open()) {
 		return;
 	}
 
 	socket_.async_send(outbound_buffer_, create_alloc_handler(allocator_,
-		[this, self](boost::system::error_code ec, std::size_t size) {
+		[this](boost::system::error_code ec, std::size_t size) {
 			stats_.bytes_out += size;
 			++stats_.packets_out;
 
@@ -124,7 +122,6 @@ void ClientConnection::write() {
 }
 
 void ClientConnection::read() {
-	auto self(shared_from_this());
 	auto tail = inbound_buffer_.back();
 
 	// if the buffer chain has no more space left, allocate & attach new node
@@ -135,7 +132,7 @@ void ClientConnection::read() {
 
 	socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 		create_alloc_handler(allocator_,
-		[this, self](boost::system::error_code ec, std::size_t size) {
+		[this](boost::system::error_code ec, std::size_t size) {
 			if(stopped_) {
 				return;
 			}
@@ -169,9 +166,7 @@ void ClientConnection::start() {
 }
 
 void ClientConnection::stop() {
-	auto self(shared_from_this());
-
-	service_.dispatch([this, self] {
+	service_.dispatch([this] {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
@@ -184,7 +179,7 @@ void ClientConnection::stop() {
 }
 
 void ClientConnection::close_session() {
-	sessions_.stop(shared_from_this());
+	sessions_.stop(this);
 }
 
 boost::asio::ip::tcp::socket& ClientConnection::socket() {

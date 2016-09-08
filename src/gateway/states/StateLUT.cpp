@@ -15,6 +15,14 @@
 
 namespace ember { 
 
+const event_handler handle_event[] = {
+    &authentication::handle_event,
+    &queue::handle_event,
+    &character_list::handle_event,
+    &world::handle_event,
+    &session_close::handle_event
+};
+
 const state_func update_states[] = {
 	&authentication::update,
 	&queue::update,

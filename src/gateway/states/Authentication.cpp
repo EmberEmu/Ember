@@ -62,11 +62,9 @@ void handle_authentication(ClientContext* ctx) {
 void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto self = ctx->connection->shared_from_this();
-
-	Locator::account()->locate_account_id(packet.username, [self, ctx, packet](em::account::Status remote_res,
+	Locator::account()->locate_account_id(packet.username, [ctx, packet](em::account::Status remote_res,
 	                                                                  std::uint32_t account_id) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, account_id]() { // todo
+		ctx->connection->socket().get_io_service().dispatch([ctx, packet, remote_res, account_id]() { // todo
 			if(remote_res == em::account::Status::OK && account_id) {
 				if((ctx->account_id = account_id)) {
 					fetch_session_key(ctx, packet);
@@ -87,11 +85,9 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto self = ctx->connection->shared_from_this();
-
-	Locator::account()->locate_session(ctx->account_id, [self, ctx, packet](em::account::Status remote_res,
+	Locator::account()->locate_session(ctx->account_id, [ctx, packet](em::account::Status remote_res,
 	                                                               Botan::BigInt key) {
-		ctx->connection->socket().get_io_service().dispatch([self, ctx, packet, remote_res, key]() { // todo
+		ctx->connection->socket().get_io_service().dispatch([ctx, packet, remote_res, key]() { // todo
 			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 				<< "Account server returned " << em::account::EnumNameStatus(remote_res)
 				<< " for " << packet.username << LOG_ASYNC;
@@ -196,10 +192,8 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
 	if(active_players >= Locator::config()->max_slots) {
-		auto self(ctx->connection->shared_from_this());
-
-		Locator::queue()->enqueue(self, [auth_success, ctx, packet, self]() {
-			ctx->connection->socket().get_io_service().dispatch([self, ctx, auth_success, packet]() {
+		Locator::queue()->enqueue([auth_success, ctx, packet]() {
+			ctx->connection->socket().get_io_service().dispatch([ctx, auth_success, packet]() {
 				LOG_DEBUG_GLOB << packet.username << " removed from queue" << LOG_ASYNC;
 				auth_success(ctx);
 			});
@@ -238,6 +232,10 @@ void update(ClientContext* ctx) {
 		//default:
 			//ctx->state = ClientState::UNEXPECTED_PACKET;
 	}
+}
+
+void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
+
 }
 
 void exit(ClientContext* ctx) {}

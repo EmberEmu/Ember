@@ -85,6 +85,7 @@ set(LIBRARY_SRC
     ${THREADING_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
+    shared/ClientUUID.h
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/Realm.h
