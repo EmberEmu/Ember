@@ -19,7 +19,7 @@ typedef void(*state_func)(ClientContext*);
 typedef void(*event_handler)(ClientContext*, const Event*);
 
 extern const state_func enter_states[];
-extern const state_func update_states[];
+extern const state_func update_packet[];
 extern const state_func exit_states[];
 extern const event_handler update_event[];
 

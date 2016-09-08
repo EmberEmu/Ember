@@ -13,6 +13,7 @@
 #include "../RealmQueue.h"
 #include "../CharacterService.h"
 #include "../ClientConnection.h"
+#include "../EventDispatcher.h"
 #include "../FilterTypes.h"
 #include <logger/Logging.h>
 #include <game_protocol/Packets.h>
@@ -35,7 +36,7 @@ void send_character_list_fail(ClientContext* ctx) {
 	ctx->connection->send(response);
 }
 
-void send_character_list(ClientContext* ctx, std::vector<Character>& characters) {
+void send_character_list(ClientContext* ctx, std::vector<Character> characters) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// emulate a quirk of the retail server
@@ -53,7 +54,7 @@ void send_character_list(ClientContext* ctx, std::vector<Character>& characters)
 }
 
 void send_character_rename(ClientContext* ctx, protocol::ResultCode result,
-                           std::uint64_t id, const std::string& name) {
+                           std::uint64_t id = 0, const std::string& name = "") {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_RENAME response;
@@ -63,7 +64,7 @@ void send_character_rename(ClientContext* ctx, protocol::ResultCode result,
 	ctx->connection->send(response);
 }
 
-void handle_char_rename(ClientContext* ctx) {
+void character_rename(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_CHAR_RENAME packet;
@@ -72,41 +73,53 @@ void handle_char_rename(ClientContext* ctx) {
 		return;
 	}
 
+	auto uuid = ctx->handler->uuid();
+
 	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
-	                                       [ctx](em::character::Status status,
-	                                                   protocol::ResultCode res, std::uint64_t id,
-	                                                   const std::string& name) {
-		ctx->connection->socket().get_io_service().dispatch([=]() {
-			LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-
-			protocol::ResultCode result = protocol::ResultCode::CHAR_NAME_FAILURE;
-
-			if(status == em::character::Status::OK) {
-				result = res;
-			}
-
-			if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
-				send_character_rename(ctx, result, id, name);
-			} else {
-				send_character_rename(ctx, result, 0, "");
-			}
-		});
+	                                       [uuid](em::character::Status status, protocol::ResultCode result,
+	                                              std::uint64_t id, const std::string& name) {
+		auto event = std::make_unique<CharRenameResponse>(status, result, id, name);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
-void handle_char_enum(ClientContext* ctx) {
+void character_rename_completion(ClientContext* ctx, const CharRenameResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	Locator::character()->retrieve_characters(ctx->account_id, [ctx](em::character::Status status,
-	                                                                       std::vector<Character> characters) {
-		ctx->connection->socket().get_io_service().dispatch([=, characters = std::move(characters)]() mutable {
-			if(status == em::character::Status::OK) {
-				send_character_list(ctx, characters);
-			} else {
-				send_character_list_fail(ctx);
-			}
-		});
+	protocol::ResultCode result = protocol::ResultCode::CHAR_NAME_FAILURE;
+
+	if(event->status == em::character::Status::OK) {
+		result = event->result;
+	}
+
+	if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
+		send_character_rename(ctx, result, event->id, event->name);
+	} else {
+		send_character_rename(ctx, result);
+	}
+}
+
+void character_enumerate(ClientContext* ctx) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	auto uuid = ctx->handler->uuid();
+
+	Locator::character()->retrieve_characters(ctx->account_id,
+	                                          [uuid](em::character::Status status,
+	                                                 std::vector<Character> characters) {
+		auto event = std::make_unique<CharEnumResponse>(status, std::move(characters));
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
+}
+
+void character_enumerate_completion(ClientContext* ctx, const CharEnumResponse* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	if(event->status == em::character::Status::OK) {
+		send_character_list(ctx, event->characters);
+	} else {
+		send_character_list_fail(ctx);
+	}
 }
 
 void send_character_delete(ClientContext* ctx, protocol::ResultCode result) {
@@ -125,7 +138,7 @@ void send_character_create(ClientContext* ctx, protocol::ResultCode result) {
 	ctx->connection->send(response);
 }
 
-void handle_char_create(ClientContext* ctx) {
+void character_create(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_CHAR_CREATE packet;
@@ -134,20 +147,27 @@ void handle_char_create(ClientContext* ctx) {
 		return;
 	}
 
+	auto uuid = ctx->handler->uuid();
+
 	Locator::character()->create_character(ctx->account_id, packet.character,
-	                                       [ctx](em::character::Status status,
-	                                                   boost::optional<protocol::ResultCode> result) {
-		ctx->connection->socket().get_io_service().dispatch([ctx, status, result]() {
-			if(status == em::character::Status::OK) {
-				send_character_create(ctx, *result);
-			} else {
-				send_character_create(ctx, protocol::ResultCode::CHAR_CREATE_ERROR);
-			}
-		});
+	                                       [uuid](em::character::Status status,
+	                                              protocol::ResultCode result) {
+		auto event = std::make_unique<CharCreateResponse>(status, result);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
-void handle_char_delete(ClientContext* ctx) {
+void character_create_completion(ClientContext* ctx, const CharCreateResponse* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	if(event->status == em::character::Status::OK) {
+		send_character_create(ctx, event->result);
+	} else {
+		send_character_create(ctx, protocol::ResultCode::CHAR_CREATE_ERROR);
+	}
+}
+
+void character_delete(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_CHAR_DELETE packet;
@@ -156,20 +176,27 @@ void handle_char_delete(ClientContext* ctx) {
 		return;
 	}
 
+	auto uuid = ctx->handler->uuid();
+
 	Locator::character()->delete_character(ctx->account_id, packet.id,
-	                                       [ctx](em::character::Status status,
-	                                                   boost::optional<protocol::ResultCode> result) {
-		ctx->connection->socket().get_io_service().dispatch([ctx, status, result]() {
-			if(status == em::character::Status::OK) {
-				send_character_delete(ctx, *result);
-			} else {
-				send_character_delete(ctx, protocol::ResultCode::CHAR_DELETE_FAILED);
-			}
-		});
+	                                       [uuid](em::character::Status status, 
+	                                              protocol::ResultCode result) {
+		auto event = std::make_unique<CharDeleteResponse>(status, result);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
-void handle_login(ClientContext* ctx) {
+void character_delete_completion(ClientContext* ctx, const CharDeleteResponse* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	if(event->status == em::character::Status::OK) {
+		send_character_delete(ctx, event->result);
+	} else {
+		send_character_delete(ctx, protocol::ResultCode::CHAR_DELETE_FAILED);
+	}
+}
+
+void player_login(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	ctx->handler->state_update(ClientState::IN_WORLD);
@@ -190,22 +217,22 @@ void unhandled_packet(ClientContext* ctx) {
 
 void enter(ClientContext* ctx) {}
 
-void update(ClientContext* ctx) {
+void handle_packet(ClientContext* ctx) {
 	switch(ctx->header->opcode) {
 		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
-			handle_char_enum(ctx);
+			character_enumerate(ctx);
 			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_CREATE:
-			handle_char_create(ctx);
+			character_create(ctx);
 			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
-			handle_char_delete(ctx);
+			character_delete(ctx);
 			break;
 		case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
-			handle_char_rename(ctx);
+			character_rename(ctx);
 			break;
 		case protocol::ClientOpcodes::CMSG_PLAYER_LOGIN:
-			handle_login(ctx);
+			player_login(ctx);
 			break;
 		default:
 			unhandled_packet(ctx);
@@ -213,7 +240,20 @@ void update(ClientContext* ctx) {
 }
 
 void handle_event(ClientContext* ctx, const Event* event) {
-
+	switch(event->type) {
+		case EventType::CHAR_CREATE_RESPONSE:
+			character_create_completion(ctx, static_cast<const CharCreateResponse*>(event));
+			break;
+		case EventType::CHAR_DELETE_RESPONSE:
+			character_delete_completion(ctx, static_cast<const CharDeleteResponse*>(event));
+			break;
+		case EventType::CHAR_ENUM_RESPONSE:
+			character_enumerate_completion(ctx, static_cast<const CharEnumResponse*>(event));
+			break;
+		case EventType::CHAR_RENAME_RESPONSE:
+			character_rename_completion(ctx, static_cast<const CharRenameResponse*>(event));
+			break;
+	}
 }
 
 void exit(ClientContext* ctx) {

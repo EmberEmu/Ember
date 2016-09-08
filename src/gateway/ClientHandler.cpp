@@ -39,7 +39,7 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			return;
 	}
 
-	update_states[context_.state](&context_);
+	update_packet[context_.state](&context_);
 }
 
 void ClientHandler::handle_event(std::unique_ptr<const Event> event) {

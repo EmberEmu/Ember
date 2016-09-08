@@ -11,7 +11,6 @@
 #include "EventDispatcher.h"
 #include <logger/Logging.h>
 
-
 namespace ember {
 
 thread_local EventDispatcher::HandlerMap EventDispatcher::handlers_;
@@ -21,7 +20,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const
 
 	// bad service index encoded in the UUID
 	if(service == nullptr) {
-		LOG_DEBUG_GLOB << "Invalid service pointer" << LOG_ASYNC;
+		LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
 		return;
 	}
 
@@ -43,12 +42,12 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const
 	});
 }
 
-void EventDispatcher::post_event(const ClientUUID& client, std::shared_ptr<const Event> event) const {
+void EventDispatcher::post_shared_event(const ClientUUID& client, std::shared_ptr<const Event> event) const {
 	auto service = pool_.get_service(client.service());
 
 	// bad service index encoded in the UUID
 	if(service == nullptr) {
-		// log
+		LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
 		return;
 	}
 
@@ -57,6 +56,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::shared_ptr<const
 
 		// client disconnected, nothing to do here
 		if(handler == handlers_.end()) {
+			LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
 			return;
 		}
 		

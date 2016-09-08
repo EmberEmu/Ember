@@ -16,7 +16,7 @@ void enter(ClientContext* ctx) {
 	// don't care, for now
 }
 
-void update(ClientContext* ctx) {
+void handle_packet(ClientContext* ctx) {
 	// don't care, for now
 }
 

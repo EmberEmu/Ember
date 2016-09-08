@@ -55,7 +55,7 @@ void CharacterService::handle_reply(const spark::Link& link, const boost::uuids:
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::CharResponse) {
-		cb(em::character::Status::SERVER_LINK_ERROR, {});
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::RESPONSE_FAILURE);
 		return;
 	}
 

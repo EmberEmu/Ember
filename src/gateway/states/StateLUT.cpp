@@ -23,12 +23,12 @@ const event_handler update_event[] = {
     &session_close::handle_event
 };
 
-const state_func update_states[] = {
-	&authentication::update,
-	&queue::update,
-	&character_list::update,
-	&world::update,
-	&session_close::update
+const state_func update_packet[] = {
+	&authentication::handle_packet,
+	&queue::handle_packet,
+	&character_list::handle_packet,
+	&world::handle_packet,
+	&session_close::handle_packet
 };
 
 const state_func exit_states[] = {

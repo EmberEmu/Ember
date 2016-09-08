@@ -14,7 +14,7 @@ void enter(ClientContext* context) {
 
 }
 
-void update(ClientContext* context) {
+void handle_packet(ClientContext* context) {
 
 }
 

@@ -26,7 +26,7 @@ namespace ember {
 
 class CharacterService final : public spark::EventHandler {
 public:
-	typedef std::function<void(messaging::character::Status, boost::optional<protocol::ResultCode>)> ResponseCB;
+	typedef std::function<void(messaging::character::Status, protocol::ResultCode)> ResponseCB;
 	typedef std::function<void(messaging::character::Status, protocol::ResultCode, std::uint64_t, std::string)> RenameCB;
 	typedef std::function<void(messaging::character::Status, std::vector<Character>)> RetrieveCB;
 

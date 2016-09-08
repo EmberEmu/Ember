@@ -8,13 +8,13 @@
 
 #include "InQueue.h"
 #include "Authentication.h"
-#include "logger/Logging.h"
 #include "../EventTypes.h"
-#include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
 #include "../Locator.h"
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
+#include <logger/Logging.h>
+#include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
 
 namespace ember { namespace queue {
 
@@ -44,7 +44,7 @@ void handle_event(ClientContext* ctx, const Event* event) {
 	}
 }
 
-void update(ClientContext* ctx) {
+void handle_packet(ClientContext* ctx) {
 	// don't care
 }
 

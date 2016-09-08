@@ -61,62 +61,72 @@ void handle_authentication(ClientContext* ctx) {
 void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	Locator::account()->locate_account_id(packet.username, [ctx, packet](em::account::Status remote_res,
-	                                                                  std::uint32_t account_id) {
-		ctx->connection->socket().get_io_service().dispatch([ctx, packet, remote_res, account_id]() { // todo
-			if(remote_res == em::account::Status::OK && account_id) {
-				if((ctx->account_id = account_id)) {
-					fetch_session_key(ctx, packet);
-				} else {
-					LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
-						<< packet.username << LOG_ASYNC;
-				}
-			} else {
-				LOG_ERROR_FILTER_GLOB(LF_NETWORK)
-					<< "Account server returned " << em::account::EnumNameStatus(remote_res)
-					<< " for " << packet.username << " lookup" << LOG_ASYNC;
-				ctx->connection->close_session();
-			}
+	auto uuid = ctx->handler->uuid();
+
+	Locator::account()->locate_account_id(packet.username,
+	                                      [uuid, packet](em::account::Status status, std::uint32_t id) {
+		auto event = std::make_unique<AccountIDResponse>(packet, status, id);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
+	});
+}
+
+void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
+	if(event->status == em::account::Status::OK && event->id) {
+		if((ctx->account_id = event->id)) {
+			fetch_session_key(ctx, event->packet);
+		} else {
+			LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
+				<< event->packet.username << LOG_ASYNC;
 		}
-	);});
+	} else {
+		LOG_ERROR_FILTER_GLOB(LF_NETWORK)
+			<< "Account server returned " << em::account::EnumNameStatus(event->status)
+			<< " for " << event->packet.username << " lookup" << LOG_ASYNC;
+		ctx->connection->close_session();
+	}
 }
 
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	Locator::account()->locate_session(ctx->account_id, [ctx, packet](em::account::Status remote_res,
-	                                                               Botan::BigInt key) {
-		ctx->connection->socket().get_io_service().dispatch([ctx, packet, remote_res, key]() { // todo
-			LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
-				<< "Account server returned " << em::account::EnumNameStatus(remote_res)
-				<< " for " << packet.username << LOG_ASYNC;
-	
-			ctx->auth_status = AuthStatus::FAILED; // default unless overridden by success
+	auto uuid = ctx->handler->uuid();
 
-			if(remote_res != em::account::Status::OK) {
-				protocol::ResultCode result;
-
-				switch(remote_res) {
-					case em::account::Status::ALREADY_LOGGED_IN:
-						result = protocol::ResultCode::AUTH_ALREADY_ONLINE;
-						break;
-					case em::account::Status::SESSION_NOT_FOUND:
-						result = protocol::ResultCode::AUTH_UNKNOWN_ACCOUNT;
-						break;
-					default:
-						LOG_ERROR_FILTER_GLOB(LF_NETWORK) << "Received "
-							<< em::account::EnumNameStatus(remote_res)
-							<< " from account server" << LOG_ASYNC;
-						result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
-				}
-
-				// note: the game doesn't seem to pay attention to this
-				send_auth_result(ctx, result);
-			} else {
-				prove_session(ctx, key, packet);
-			}
-		});
+	Locator::account()->locate_session(ctx->account_id,
+	                                   [uuid, packet](em::account::Status status, Botan::BigInt key) {
+		auto event = std::make_unique<SessionKeyResponse>(packet, status, key);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
+}
+
+void handle_session_key(ClientContext* ctx, const SessionKeyResponse* event) {
+	LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
+		<< "Account server returned " << em::account::EnumNameStatus(event->status)
+		<< " for " << event->packet.username << LOG_ASYNC;
+
+	ctx->auth_status = AuthStatus::FAILED; // default unless overridden by success
+
+	if(event->status != em::account::Status::OK) {
+		protocol::ResultCode result;
+
+		switch(event->status) {
+			case em::account::Status::ALREADY_LOGGED_IN:
+				result = protocol::ResultCode::AUTH_ALREADY_ONLINE;
+				break;
+			case em::account::Status::SESSION_NOT_FOUND:
+				result = protocol::ResultCode::AUTH_UNKNOWN_ACCOUNT;
+				break;
+			default:
+				LOG_ERROR_FILTER_GLOB(LF_NETWORK) << "Received "
+					<< em::account::EnumNameStatus(event->status)
+					<< " from account server" << LOG_ASYNC;
+				result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
+		}
+
+		// note: the game doesn't seem to pay attention to this
+		send_auth_result(ctx, result);
+	} else {
+		prove_session(ctx, event->key, event->packet);
+	}
 }
 
 void send_auth_challenge(ClientContext* ctx) {
@@ -177,18 +187,17 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	ctx->account_name = packet.username;
 	ctx->auth_status = AuthStatus::SUCCESS;
 
-	
 	/*
 	* Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
 	* but that doesn't seem to be true - if this bugs out, check that out
 	*/
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
-	if(true) {
+	if(active_players >= Locator::config()->max_slots) {
 		auto uuid = ctx->handler->uuid();
 
 		Locator::queue()->enqueue(uuid, [uuid, packet]() {
-			std::unique_ptr<const Event> event = std::make_unique<QueueSuccess>(std::move(packet));
+			auto event = std::make_unique<QueueSuccess>(std::move(packet));
 			Locator::dispatcher()->post_event(uuid, std::move(event));
 		});
 
@@ -206,7 +215,6 @@ void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet)
 	ctx->handler->state_update(ClientState::CHARACTER_LIST);
 }
 
-
 void send_auth_result(ClientContext* ctx, protocol::ResultCode result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
@@ -220,7 +228,7 @@ void enter(ClientContext* ctx) {
 	send_auth_challenge(ctx);
 }
 
-void update(ClientContext* ctx) {
+void handle_packet(ClientContext* ctx) {
 	switch(ctx->header->opcode) {
 		case protocol::ClientOpcodes::CMSG_AUTH_SESSION:
 			handle_authentication(ctx);
@@ -231,9 +239,18 @@ void update(ClientContext* ctx) {
 }
 
 void handle_event(ClientContext* ctx, const Event* event) {
-	LOG_INFO_GLOB << "Got event" << LOG_ASYNC;
+	switch(event->type) {
+		case EventType::ACCOUNT_ID_RESPONSE:
+			handle_account_id(ctx, static_cast<const AccountIDResponse*>(event));
+			break;
+		case EventType::SESSION_KEY_RESPONSE:
+			handle_session_key(ctx, static_cast<const SessionKeyResponse*>(event));
+			break;
+	}
 }
 
-void exit(ClientContext* ctx) {}
+void exit(ClientContext* ctx) {
+	// don't care
+}
 
 }} // authentication, ember

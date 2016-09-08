@@ -8,23 +8,91 @@
 
 #pragma once
 
+
 #include "Event.h"
+#include <game_protocol/ResultCodes.h>
 #include <game_protocol/client/CMSG_AUTH_SESSION.h>
+#include <shared/database/objects/Character.h>
+#include <spark/temp/Account_generated.h>
+#include <spark/temp/Character_generated.h>
+#include <vector>
+#include <utility>
+#include <cstdint>
 
 namespace ember {
 
-struct QueuePosition : public Event {
+struct QueuePosition : Event {
 	QueuePosition(std::size_t position) : Event { EventType::QUEUE_UPDATE_POSITION }, position(position) { }
 
 	std::size_t position;
 };
 
-struct QueueSuccess : public Event {
+struct QueueSuccess : Event {
 	QueueSuccess(protocol::CMSG_AUTH_SESSION packet)
 	             : Event { EventType::QUEUE_SUCCESS },
 	               packet(std::move(packet)) { }
 
 	protocol::CMSG_AUTH_SESSION packet;
 };
+
+struct AccountIDResponse : Event {
+	AccountIDResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status, std::uint32_t id)
+	                  : Event { EventType::ACCOUNT_ID_RESPONSE },
+	                    packet(std::move(packet)), status(status), id(id) { }
+
+	protocol::CMSG_AUTH_SESSION packet;
+	messaging::account::Status status;
+	std::uint32_t id;
+};
+
+struct SessionKeyResponse : Event {
+	SessionKeyResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status, Botan::BigInt key)
+	                   : Event { EventType::SESSION_KEY_RESPONSE },
+	                     packet(std::move(packet)), status(status), key(key) { }
+
+	protocol::CMSG_AUTH_SESSION packet;
+	messaging::account::Status status;
+	Botan::BigInt key;
+};
+
+struct CharEnumResponse : Event {
+	CharEnumResponse(messaging::character::Status status, std::vector<Character> characters)
+	                 : Event{ EventType::CHAR_ENUM_RESPONSE },
+	                   status(status), characters(std::move(characters)) { }
+
+	messaging::character::Status status;
+	std::vector<Character> characters;
+};
+
+struct CharCreateResponse : Event {
+	CharCreateResponse(messaging::character::Status status, protocol::ResultCode result)
+	                   : Event { EventType::CHAR_CREATE_RESPONSE },
+	                     status(status), result(result) { }
+
+	messaging::character::Status status;
+	protocol::ResultCode result;
+};
+
+struct CharDeleteResponse : Event {
+	CharDeleteResponse(messaging::character::Status status, protocol::ResultCode result)
+	                   : Event{ EventType::CHAR_DELETE_RESPONSE },
+	                     status(status), result(result) { }
+
+	messaging::character::Status status;
+	protocol::ResultCode result;
+};
+
+struct CharRenameResponse : Event {
+	CharRenameResponse(messaging::character::Status status, protocol::ResultCode res,
+	                   std::uint64_t id, std::string name)
+	                   : Event { EventType::CHAR_RENAME_RESPONSE },
+	                     status(status), result(result), id(id), name(std::move(name)) { }
+
+	messaging::character::Status status;
+	protocol::ResultCode result;
+	std::uint64_t id;
+	std::string name;
+};
+
 
 } // ember
