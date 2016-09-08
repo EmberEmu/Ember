@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/ClientUUID.h>
 #include <boost/asio/basic_waitable_timer.hpp>
 #include <boost/asio/io_service.hpp>
 #include <chrono>
@@ -26,7 +27,7 @@ class RealmQueue {
 
 	struct QueueEntry {
 		int priority;
-		std::shared_ptr<ClientConnection> client;
+		ClientUUID client;
 		LeaveQueueCB callback;
 
 		bool operator>(const QueueEntry& rhs) const {
@@ -44,15 +45,15 @@ class RealmQueue {
 	std::list<QueueEntry> queue_;
 	std::mutex lock_;
 
-	void send_position(std::size_t position, std::shared_ptr<ClientConnection> client);
+	void send_position(std::size_t position, ClientUUID client);
 	void update_clients();
 	void set_timer();
 
 public:
 	RealmQueue::RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
-	void enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback, int priority = 0);
-	void dequeue(const std::shared_ptr<ClientConnection>& client);
+	void enqueue(ClientUUID client, LeaveQueueCB callback, int priority = 0);
+	void dequeue(const ClientUUID& client);
 	void free_slot();
 	void shutdown();
 	std::size_t size() const;

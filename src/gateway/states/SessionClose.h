@@ -16,7 +16,7 @@ namespace ember { namespace session_close {
 
 void enter(ClientContext* ctx);
 void update(ClientContext* ctx);
-void handle_event(ClientContext* ctx, std::shared_ptr<Event> event);
+void handle_event(ClientContext* ctx, const Event* event);
 void exit(ClientContext* ctx);
 
 }} // session_close, ember

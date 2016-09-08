@@ -13,6 +13,7 @@
 #include "SessionManager.h"
 #include "ClientConnection.h"
 #include <logger/Logger.h>
+#include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
@@ -30,15 +31,18 @@ class NetworkListener {
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	SessionManager sessions_;
+	std::size_t index_;
 	ServicePool& pool_;
 	log::Logger* logger_;
 	ASIOAllocator allocator_; // todo - thread_local, VS2015
-	std::shared_ptr<ClientConnection> next_connection_;
+	std::unique_ptr<ClientConnection> next_connection_;
 
 	void accept_connection() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-		next_connection_ = std::make_shared<ClientConnection>(sessions_, pool_.get_service(), logger_);
+		++index_ %= pool_.size();
+		next_connection_ = std::make_unique<ClientConnection>(sessions_, *pool_.get_service(index_),
+		                                                      ClientUUID::generate(index_), logger_);
 
 		acceptor_.async_accept(next_connection_->socket(), [this](boost::system::error_code ec) {
 			if(!acceptor_.is_open()) {
@@ -48,9 +52,10 @@ class NetworkListener {
 			if(!ec) {
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 					<< "Accepted connection "
-					<< boost::lexical_cast<std::string>(next_connection_->socket().remote_endpoint()) << LOG_ASYNC;
+					<< boost::lexical_cast<std::string>(next_connection_->socket().remote_endpoint())
+					<< LOG_ASYNC;
 
-				sessions_.start(next_connection_);
+				sessions_.start(std::move(next_connection_));
 			}
 
 			accept_connection();
@@ -59,7 +64,7 @@ class NetworkListener {
 
 public:
 	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port, bool tcp_no_delay, log::Logger* logger)
-	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM),
+	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM), index_(0),
 	                  acceptor_(pool.get_service(), bai::tcp::endpoint(bai::address::from_string(interface), port)) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));

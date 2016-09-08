@@ -22,7 +22,7 @@
 namespace ember {
 
 class EventDispatcher {
-	typedef std::unordered_map<client_uuid::uuid, ClientHandler*> HandlerMap;
+	typedef std::unordered_map<ClientUUID, ClientHandler*> HandlerMap;
 
 	const ServicePool& pool_;
     thread_local static HandlerMap handlers_;
@@ -30,7 +30,8 @@ class EventDispatcher {
 public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
-	void post_event(const client_uuid::uuid& client, std::shared_ptr<Event> event);
+	void post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const;
+	void post_event(const ClientUUID& client, std::shared_ptr<const Event> event) const;
     void register_handler(ClientHandler* handler);
     void remove_handler(ClientHandler* handler);
 };

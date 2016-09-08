@@ -14,9 +14,11 @@
 
 namespace ember { namespace authentication {
 
+void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
+
 void enter(ClientContext* ctx);
 void update(ClientContext* ctx);
-void handle_event(ClientContext* ctx, std::shared_ptr<Event> event);
+void handle_event(ClientContext* ctx, const Event* event);
 void exit(ClientContext* ctx);
 
 }} // authentication, ember

@@ -12,6 +12,7 @@
 #include "../RealmQueue.h"
 #include "../ClientConnection.h"
 #include "../Locator.h"
+#include "../EventDispatcher.h"
 #include <game_protocol/Opcodes.h>
 #include <game_protocol/PacketHeaders.h>
 #include <game_protocol/Packets.h>
@@ -25,9 +26,7 @@
 
 namespace em = ember::messaging;
 
-namespace ember {
-
-namespace {
+namespace ember { namespace authentication {
 
 void send_auth_challenge(ClientContext* ctx);
 void send_auth_result(ClientContext* ctx, protocol::ResultCode result);
@@ -178,34 +177,35 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	ctx->account_name = packet.username;
 	ctx->auth_status = AuthStatus::SUCCESS;
 
-	auto auth_success = [packet](ClientContext* ctx) {
-		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-		send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
-		send_addon_data(ctx, packet);
-		ctx->handler->state_update(ClientState::CHARACTER_LIST);
-	};
-
+	
 	/*
 	* Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
 	* but that doesn't seem to be true - if this bugs out, check that out
 	*/
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
-	if(active_players >= Locator::config()->max_slots) {
-		Locator::queue()->enqueue([auth_success, ctx, packet]() {
-			ctx->connection->socket().get_io_service().dispatch([ctx, auth_success, packet]() {
-				LOG_DEBUG_GLOB << packet.username << " removed from queue" << LOG_ASYNC;
-				auth_success(ctx);
-			});
+	if(true) {
+		auto uuid = ctx->handler->uuid();
+
+		Locator::queue()->enqueue(uuid, [uuid, packet]() {
+			std::unique_ptr<const Event> event = std::make_unique<QueueSuccess>(std::move(packet));
+			Locator::dispatcher()->post_event(uuid, std::move(event));
 		});
 
-		LOG_DEBUG_GLOB << packet.username << " added to queue" << LOG_ASYNC;
 		ctx->handler->state_update(ClientState::IN_QUEUE);
 		return;
 	}
 
-	auth_success(ctx);
+	auth_success(ctx, packet);
 }
+
+void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
+	send_addon_data(ctx, packet);
+	ctx->handler->state_update(ClientState::CHARACTER_LIST);
+}
+
 
 void send_auth_result(ClientContext* ctx, protocol::ResultCode result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
@@ -215,10 +215,6 @@ void send_auth_result(ClientContext* ctx, protocol::ResultCode result) {
 	response.result = result;
 	ctx->connection->send(response);
 }
-
-} // unnamed
-
-namespace authentication {
 
 void enter(ClientContext* ctx) {
 	send_auth_challenge(ctx);
@@ -234,8 +230,8 @@ void update(ClientContext* ctx) {
 	}
 }
 
-void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
-
+void handle_event(ClientContext* ctx, const Event* event) {
+	LOG_INFO_GLOB << "Got event" << LOG_ASYNC;
 }
 
 void exit(ClientContext* ctx) {}

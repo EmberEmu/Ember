@@ -26,24 +26,25 @@ class ClientHandler final {
 	ClientConnection& connection_;
 	ClientContext context_;
 	protocol::ClientHeader* header_;
-    const client_uuid::uuid uuid_;
+    const ClientUUID uuid_;
 	log::Logger* logger_;
 
 	std::string client_identify();
 	void handle_ping(spark::Buffer& buffer);
 
 public:
-	ClientHandler(ClientConnection& connection, client_uuid::uuid uuid, log::Logger* logger);
+	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger);
 
 	void state_update(ClientState new_state);
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
 	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
-    void handle_event(std::shared_ptr<Event> event);
+	void handle_event(std::unique_ptr<const Event> event);
+    void handle_event(std::shared_ptr<const Event> event);
 
 	void start();
 	void stop();
 
-    const client_uuid::uuid& uuid() const {
+    const ClientUUID& uuid() const {
         return uuid_;
     }
 };

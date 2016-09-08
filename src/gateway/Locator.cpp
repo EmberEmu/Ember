@@ -10,6 +10,7 @@
 
 namespace ember {
 
+EventDispatcher* Locator::dispatcher_;
 CharacterService* Locator::character_;
 AccountService* Locator::account_;
 RealmService* Locator::realm_;

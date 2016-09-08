@@ -15,7 +15,7 @@
 
 namespace ember { 
 
-const event_handler handle_event[] = {
+const event_handler update_event[] = {
     &authentication::handle_event,
     &queue::handle_event,
     &character_list::handle_event,

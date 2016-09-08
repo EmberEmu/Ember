@@ -12,6 +12,7 @@
 #include "RealmQueue.h"
 #include "ServicePool.h"
 #include "AccountService.h"
+#include "EventDispatcher.h"
 #include "CharacterService.h"
 #include "RealmService.h"
 #include "NetworkListener.h"
@@ -133,6 +134,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Starting service pool with " << concurrency << " threads..." << LOG_SYNC;
 	ember::ServicePool service_pool(concurrency);
 
+	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
+	ember::EventDispatcher dispatcher(service_pool);
+
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
@@ -154,6 +158,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	ember::CharacterService char_svc(spark, discovery, config, logger);
 	
 	// set services - not the best design pattern but it'll do for now
+	ember::Locator::set(&dispatcher);
 	ember::Locator::set(&queue_service);
 	ember::Locator::set(&realm_svc);
 	ember::Locator::set(&acct_svc);

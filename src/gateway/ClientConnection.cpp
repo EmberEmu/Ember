@@ -194,6 +194,10 @@ const ConnectionStats& ClientConnection::stats() const {
 	return stats_;
 }
 
+const ClientUUID& ClientConnection::uuid() const {
+	return uuid_;
+}
+
 void ClientConnection::latency(std::size_t latency) {
 	stats_.latency = latency;
 }

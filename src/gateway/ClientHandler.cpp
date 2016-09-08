@@ -8,6 +8,8 @@
 
 #include "ClientHandler.h"
 #include "ClientConnection.h"
+#include "Locator.h"
+#include "EventDispatcher.h"
 #include "states/StateLUT.h"
 #include <game_protocol/Packets.h>
 #include <spark/SafeBinaryStream.h>
@@ -15,10 +17,12 @@
 namespace ember {
 
 void ClientHandler::start() {
+	Locator::dispatcher()->register_handler(this);
 	enter_states[context_.state](&context_);
 }
 
 void ClientHandler::stop() {
+	Locator::dispatcher()->remove_handler(this);
 	state_update(ClientState::SESSION_CLOSED);
 }
 
@@ -38,8 +42,12 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 	update_states[context_.state](&context_);
 }
 
-void ClientHandler::handle_event(std::shared_ptr<Event> event) {
-    handle_event[context_.state](&context_, event);
+void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
+	update_event[context_.state](&context_, event.get());
+}
+
+void ClientHandler::handle_event(std::shared_ptr<const Event> event) {
+	update_event[context_.state](&context_, event.get());
 }
 
 void ClientHandler::state_update(ClientState new_state) {
@@ -99,7 +107,7 @@ std::string ClientHandler::client_identify() {
 	}
 }
 
-ClientHandler::ClientHandler(ClientConnection& connection, client_uuid::uuid uuid, log::Logger* logger)
+ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger)
                              : context_{}, connection_(connection), logger_(logger),
                                header_(nullptr), uuid_(uuid) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;

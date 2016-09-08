@@ -7,8 +7,9 @@
  */
 
 #include "RealmQueue.h"
-#include "ClientConnection.h"
-#include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
+#include "Events.h"
+#include "EventDispatcher.h"
+#include "Locator.h"
 
 namespace ember {
 
@@ -39,16 +40,12 @@ void RealmQueue::update_clients() {
 	set_timer();
 }
 
-void RealmQueue::send_position(std::size_t position, std::shared_ptr<ClientConnection> client) {
-	client->socket().get_io_service().dispatch([client, position]() {
-		protocol::SMSG_AUTH_RESPONSE packet;
-		packet.result = protocol::ResultCode::AUTH_WAIT_QUEUE;
-		packet.queue_position = position;
-		client->send(packet);
-	});
+void RealmQueue::send_position(std::size_t position, ClientUUID client) {
+	std::unique_ptr<const Event> event = std::make_unique<QueuePosition>(position);
+	Locator::dispatcher()->post_event(client, std::move(event));
 }
 
-void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB callback, int priority) {
+void RealmQueue::enqueue(ClientUUID client, LeaveQueueCB callback, int priority) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(queue_.empty()) {
@@ -64,7 +61,7 @@ void RealmQueue::enqueue(std::shared_ptr<ClientConnection> client, LeaveQueueCB 
 
 /* Signals that a currently queued player has decided to disconnect rather
  * hang around in the queue */
-void RealmQueue::dequeue(const std::shared_ptr<ClientConnection>& client) {
+void RealmQueue::dequeue(const ClientUUID& client) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	for(auto i = queue_.begin(); i != queue_.end(); ++i) {

@@ -11,7 +11,8 @@
 namespace ember {
 
 enum class EventType {
-    TEST
+	QUEUE_SUCCESS,
+    QUEUE_UPDATE_POSITION
 };
 
 } // ember

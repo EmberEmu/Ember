@@ -20,7 +20,7 @@ void update(ClientContext* ctx) {
 	// don't care, for now
 }
 
-void handle_event(ClientContext* ctx, std::shared_ptr<Event> event) {
+void handle_event(ClientContext* ctx, const Event* event) {
     // don't care, for now
 }
 

@@ -9,21 +9,50 @@
 #pragma once
 
 #include "EventDispatcher.h"
+#include <logger/Logging.h>
 
 
 namespace ember {
 
-EventDispatcher::HandlerMap EventDispatcher::handlers_;
+thread_local EventDispatcher::HandlerMap EventDispatcher::handlers_;
 
-void EventDispatcher::post_event(const client_uuid::uuid& client, std::shared_ptr<Event> event) {
-	auto service = pool_.get_service(client.service);
+void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const {
+	auto service = pool_.get_service(client.service());
 
+	// bad service index encoded in the UUID
+	if(service == nullptr) {
+		LOG_DEBUG_GLOB << "Invalid service pointer" << LOG_ASYNC;
+		return;
+	}
+
+	// this is a workaround for ASIO's lack of C++14 support,
+	// otherwise we'd ideally just move event into the lambda
+	auto raw = event.release();
+
+	service->post([client, raw] {
+		auto handler = handlers_.find(client);
+
+		// client disconnected, nothing to do here
+		if(handler == handlers_.end()) {
+			LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
+			return;
+		}
+
+		auto event = std::unique_ptr<const Event>(raw);
+		handler->second->handle_event(std::move(event));
+	});
+}
+
+void EventDispatcher::post_event(const ClientUUID& client, std::shared_ptr<const Event> event) const {
+	auto service = pool_.get_service(client.service());
+
+	// bad service index encoded in the UUID
 	if(service == nullptr) {
 		// log
 		return;
 	}
 
-	service->dispatch([=] {
+	service->post([=] {
 		auto handler = handlers_.find(client);
 
 		// client disconnected, nothing to do here
@@ -36,11 +65,19 @@ void EventDispatcher::post_event(const client_uuid::uuid& client, std::shared_pt
 }
 
 void EventDispatcher::register_handler(ClientHandler* handler) {
-	handlers_[handler->uuid()] = handler;
+	auto service = pool_.get_service(handler->uuid().service());
+
+	service->post([=] {
+		handlers_[handler->uuid()] = handler;
+	});
 }
 
 void EventDispatcher::remove_handler(ClientHandler* handler) {
-    handlers_.erase(handler->uuid());
+	auto service = pool_.get_service(handler->uuid().service());
+	
+	service->post([=] {
+		handlers_.erase(handler->uuid());
+	});
 }
 
 } // ember

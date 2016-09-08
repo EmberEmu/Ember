@@ -15,6 +15,7 @@
 #include <game_protocol/PacketHeaders.h> // todo, remove
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
+#include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
 #include <boost/asio.hpp>
@@ -34,6 +35,7 @@ class ClientConnection final {
 	boost::asio::io_service& service_;
 
 	ConnectionStats stats_;
+	ClientUUID uuid_;
 	ClientHandler handler_;
 	PacketCrypto crypto_;
 	protocol::ClientHeader packet_header_;
@@ -60,10 +62,12 @@ class ClientConnection final {
 	void completion_check(spark::Buffer& buffer);
 
 public:
-	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, log::Logger* logger)
+	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, ClientUUID uuid,
+	                 log::Logger* logger)
 	                 : sessions_(sessions), socket_(service), stats_{}, crypto_{}, packet_header_{},
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service),
-	                   authenticated_(false), write_in_progress_(false), handler_(*this, logger) {}
+	                   authenticated_(false), write_in_progress_(false), uuid_(uuid),
+	                   handler_(*this, uuid, logger) {}
 
 	void start();
 	void close_session();
@@ -73,6 +77,7 @@ public:
 	void latency(std::size_t latency);
 
 	const ConnectionStats& stats() const;
+	const ClientUUID& uuid() const;
 
 	void send(const protocol::ServerPacket& packet);
 	boost::asio::ip::tcp::socket& socket();
