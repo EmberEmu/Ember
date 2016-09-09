@@ -26,6 +26,7 @@ class EventDispatcher {
 public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
+	template<typename T> void exec(const ClientUUID& client, T work) const;
 	void post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const;
 	void post_shared_event(const ClientUUID& client, const std::shared_ptr<const Event>& event) const;
 	void register_handler(ClientHandler* handler);

@@ -15,6 +15,29 @@ namespace ember {
 
 thread_local EventDispatcher::HandlerMap EventDispatcher::handlers_;
 
+template<typename T>
+void EventDispatcher::exec(const ClientUUID& client, T work) const {
+	auto service = pool_.get_service(client.service());
+
+	// bad service index encoded in the UUID
+	if(service == nullptr) {
+		LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+		return;
+	}
+
+	service->post([client, work] {
+		auto handler = handlers_.find(client);
+
+		// client disconnected, nothing to do here
+		if(handler == handlers_.end()) {
+			LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
+			return;
+		}
+
+		work();
+	});
+}
+
 void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const {
 	auto service = pool_.get_service(client.service());
 
