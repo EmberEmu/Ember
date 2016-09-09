@@ -24,11 +24,13 @@ class ClientConnection;
 
 class RealmQueue {
 	typedef std::function<void()> LeaveQueueCB;
+	typedef std::function<void(std::size_t)> UpdateQueueCB;
 
 	struct QueueEntry {
 		int priority;
 		ClientUUID client;
-		LeaveQueueCB callback;
+		UpdateQueueCB on_update;
+		LeaveQueueCB on_leave;
 
 		bool operator>(const QueueEntry& rhs) const {
 			return rhs.priority > priority;
@@ -45,14 +47,13 @@ class RealmQueue {
 	std::list<QueueEntry> queue_;
 	std::mutex lock_;
 
-	void send_position(std::size_t position, ClientUUID client);
 	void update_clients();
 	void set_timer();
 
 public:
 	RealmQueue::RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
-	void enqueue(ClientUUID client, LeaveQueueCB callback, int priority = 0);
+	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb, int priority = 0);
 	void dequeue(const ClientUUID& client);
 	void free_slot();
 	void shutdown();

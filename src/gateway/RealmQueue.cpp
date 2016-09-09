@@ -7,9 +7,6 @@
  */
 
 #include "RealmQueue.h"
-#include "Events.h"
-#include "EventDispatcher.h"
-#include "Locator.h"
 
 namespace ember {
 
@@ -33,26 +30,22 @@ void RealmQueue::update_clients() {
 	std::size_t position = 1;
 
 	for(auto& entry : queue_) {
-		send_position(position, entry.client);
+		entry.on_update(position);
 		++position;
 	}
 
 	set_timer();
 }
 
-void RealmQueue::send_position(std::size_t position, ClientUUID client) {
-	auto event = std::make_unique<QueuePosition>(position);
-	Locator::dispatcher()->post_event(client, std::move(event));
-}
-
-void RealmQueue::enqueue(ClientUUID client, LeaveQueueCB callback, int priority) {
+void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb,
+                         int priority) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(queue_.empty()) {
 		set_timer();
 	}
 
-	queue_.emplace_back(QueueEntry{priority, client, callback});
+	queue_.emplace_back(QueueEntry{priority, client, on_update_cb, on_leave_cb});
 
 	// guaranteed to be a stable sort - not the most efficient way to have queue priority
 	// but allows for multiple priority levels without multiple hard-coded queues
@@ -86,7 +79,7 @@ void RealmQueue::free_slot() {
 	}
 
 	auto& entry = queue_.front();
-	entry.callback();
+	entry.on_leave();
 	queue_.pop_front();
 
 	if(queue_.empty()) {

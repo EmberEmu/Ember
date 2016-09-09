@@ -200,10 +200,16 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	if(active_players >= Locator::config()->max_slots) {
 		auto uuid = ctx->handler->uuid();
 
-		Locator::queue()->enqueue(uuid, [uuid, packet]() {
-			auto event = std::make_unique<QueueSuccess>(std::move(packet));
-			Locator::dispatcher()->post_event(uuid, std::move(event));
-		});
+		Locator::queue()->enqueue(uuid,
+			[uuid, packet](std::size_t position) {
+				auto event = std::make_unique<QueuePosition>(position);
+				Locator::dispatcher()->post_event(uuid, std::move(event));
+			},
+			[uuid, packet]() {
+				auto event = std::make_unique<QueueSuccess>(std::move(packet));
+				Locator::dispatcher()->post_event(uuid, std::move(event));
+			}
+		);
 
 		ctx->handler->state_update(ClientState::IN_QUEUE);
 		return;
