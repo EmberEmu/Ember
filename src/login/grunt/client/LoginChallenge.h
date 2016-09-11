@@ -32,7 +32,7 @@ class LoginChallenge final : public Packet {
 
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
-		stream >> error;
+		stream >> unknown;
 		stream.skip(2); // skip the size field - we don't need it
 		stream >> magic;
 		stream >> version.major;
@@ -101,7 +101,7 @@ public:
 	};
 
 	Opcode opcode;
-	std::uint8_t error; // todo - nobody seems to know what this is, look into it at some point
+	std::uint8_t unknown; // 3 during login challenge, 2 during reconnect challenge
 	PacketMagic magic;
 	GameVersion version;
 	Platform platform;
@@ -140,7 +140,7 @@ public:
 		auto size = static_cast<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
 
 		stream << opcode;
-		stream << error;
+		stream << unknown;
 		stream << be::native_to_little(size);
 		stream << be::native_to_little(magic);
 		stream << version.major;

@@ -41,7 +41,7 @@ class LoginProof final : public Packet {
 			return;
 		}
 
-		// must be SMSG_LOGIN_PROOF, so read the rest of the packet
+		// must be CMD_AUTH_LOGIN_PROOF, so read the rest of the packet
 		if(stream.size() < BODY_LENGTH) {
 			state_ = State::CALL_AGAIN;
 			return;
