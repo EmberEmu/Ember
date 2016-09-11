@@ -51,7 +51,7 @@ void RealmService::handle_realm_status(const spark::Link& link, const em::Messag
 	realm.name = msg->name()->str();
 	realm.population = msg->population();
 	realm.type = static_cast<Realm::Type>(msg->type());
-	realm.flags = static_cast<Realm::Flag>(msg->flags());
+	realm.flags = static_cast<Realm::Flags>(msg->flags());
 	realm.zone = static_cast<Realm::Zone>(msg->zone());
 	realms_.add_realm(realm);
 
@@ -91,7 +91,7 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 	}
 
 	Realm realm = realms_.get_realm(it->second);
-	realm.flags = static_cast<Realm::Flag>(realm.flags | Realm::Flag::OFFLINE);
+	realm.flags = realm.flags | Realm::Flags::OFFLINE;
 	realms_.add_realm(realm);
 
 	LOG_INFO(logger_) << "Set gateway for " << realm.name <<  " to offline" << LOG_ASYNC;

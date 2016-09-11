@@ -171,7 +171,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
-	std::uint32_t unknown = 0;
+	std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 
 	Botan::SHA_160 hasher;
 	hasher.update(packet.username);

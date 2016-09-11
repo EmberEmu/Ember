@@ -41,7 +41,7 @@ public:
 			Realm temp{res->getUInt("id"), res->getString("name"), res->getString("ip"),
 			           static_cast<float>(res->getDouble("population")),
 		               static_cast<Realm::Type>(res->getUInt("type")),
-					   static_cast<Realm::Flag>(res->getUInt("flags")),
+					   static_cast<Realm::Flags>(res->getUInt("flags")),
 		               static_cast<Realm::Zone>(res->getUInt("zone"))};
 			realms.emplace_back(std::move(temp));
 		}
@@ -66,7 +66,7 @@ public:
 			Realm temp{res->getUInt("id"), res->getString("name"), res->getString("ip"),
 			           static_cast<float>(res->getDouble("population")),
 		               static_cast<Realm::Type>(res->getUInt("type")),
-					   static_cast<Realm::Flag>(res->getUInt("flags")),
+					   static_cast<Realm::Flags>(res->getUInt("flags")),
 		               static_cast<Realm::Zone>(res->getUInt("zone"))};
 			return boost::optional<Realm>(std::move(temp));
 		}

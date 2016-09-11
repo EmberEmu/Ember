@@ -22,16 +22,16 @@ struct Realm {
 		EXISTING_ONLY
 	};
 
-	enum class Flag : std::uint8_t {
+	enum class Flags : std::uint8_t {
 		NONE         = 0x00,
 		INVALID      = 0x01,
 		OFFLINE      = 0x02,
 		SPECIFYBUILD = 0x04,
 		UNK1         = 0x08,
 		UNK2         = 0x10,
-		NEW_PLAYERS  = 0x20,
-		RECOMMENDED  = 0x40,
-		FULL         = 0x80
+		RECOMMENDED  = 0x20, // can set manually or allow client to do so by setting the population to 600.0f
+		NEW_PLAYERS  = 0x40, // can set manually or allow client to do so by setting the population to 200.0f
+		FULL         = 0x80  // can set manually or allow client to do so by setting the population to 400.0f
 	}; 
 
 	enum class Type : std::uint32_t {
@@ -53,12 +53,12 @@ struct Realm {
 	std::string name, ip;
 	float population;
 	Type type;
-	Flag flags;
+	Flags flags;
 	Zone zone;
 	CreationSetting creation_setting;
 };
 
-ENUM_FLAGS(Realm::Flag, std::uint8_t);
+ENUM_FLAGS(Realm::Flags, std::uint8_t);
 ENUM_FLAGS(Realm::Type, std::uint32_t);
 ENUM_FLAGS(Realm::Zone, std::uint8_t);
 ENUM_FLAGS(Realm::CreationSetting, std::uint8_t);

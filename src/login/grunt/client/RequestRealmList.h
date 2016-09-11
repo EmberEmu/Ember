@@ -26,7 +26,7 @@ class RequestRealmList final : public Packet {
 
 public:
 	Opcode opcode;
-	std::uint32_t unknown;
+	std::uint32_t unknown; // hardcoded to zero in public client
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

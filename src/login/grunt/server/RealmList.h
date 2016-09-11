@@ -129,9 +129,9 @@ public:
 	};
 
 	Opcode opcode;
-	std::uint32_t unknown = 0;
+	std::uint32_t unknown = 0; // appears to be ignored in public clients
 	std::vector<RealmListEntry> realms;
-	std::uint16_t unknown2 = 5;
+	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
