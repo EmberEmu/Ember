@@ -32,7 +32,7 @@ class LoginChallenge final : public Packet {
 
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
-		stream >> unknown;
+		stream >> protocol_ver;
 		stream.skip(2); // skip the size field - we don't need it
 		stream >> magic;
 		stream >> version.major;
@@ -75,6 +75,11 @@ class LoginChallenge final : public Packet {
 	}
 
 public:
+	enum class ProtocolVersion : std::uint8_t {
+		CONNECT = 2,
+		RECONNECT = 3
+	};
+
 	// todo - use constexpr func when switched to VS2015 - this is implementation defined behaviour!
 	enum PacketMagic : std::uint32_t {
 		WoW = 'WoW'
@@ -101,7 +106,7 @@ public:
 	};
 
 	Opcode opcode;
-	std::uint8_t unknown; // 3 during login challenge, 2 during reconnect challenge
+	ProtocolVersion protocol_ver;
 	PacketMagic magic;
 	GameVersion version;
 	Platform platform;
@@ -140,7 +145,7 @@ public:
 		auto size = static_cast<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
 
 		stream << opcode;
-		stream << unknown;
+		stream << protocol_ver;
 		stream << be::native_to_little(size);
 		stream << be::native_to_little(magic);
 		stream << version.major;

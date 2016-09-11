@@ -77,7 +77,7 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 			return false;
 	}
 
-	return true;
+	return (state_ != State::CLOSED);
 } catch(std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	state_ = State::CLOSED;
@@ -94,8 +94,16 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_LOGIN/RECONNECT_CHALLENGE");
 	}
 
+	if(challenge->protocol_ver != grunt::client::LoginChallenge::ProtocolVersion::CONNECT
+	   && challenge->protocol_ver != grunt::client::LoginChallenge::ProtocolVersion::RECONNECT) {
+		LOG_TRACE(logger_) << "Unsupported challenge protocol version, "
+		                   << static_cast<std::uint8_t>(challenge->protocol_ver) << LOG_ASYNC;
+		return;
+	}
+
 	if(challenge->magic != grunt::client::LoginChallenge::WoW) {
-		throw std::runtime_error("Invalid game magic!");
+		LOG_TRACE(logger_) << "Bad magic from client "  << LOG_ASYNC;
+		return;
 	}
 
 	LOG_DEBUG(logger_) << "Challenge: " << challenge->username << ", "

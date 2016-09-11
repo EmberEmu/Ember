@@ -31,7 +31,7 @@ class LoginChallenge final : public Packet {
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> result;
-		stream >> unk1;
+		stream >> protocol_ver;
 
 		if(result != grunt::ResultCode::SUCCESS) {
 			state_ = State::DONE;
@@ -89,7 +89,7 @@ public:
 
 	Opcode opcode;
 	ResultCode result;
-	std::uint8_t unk1 = 0; // client is coded to disconnect on any positive value
+	std::uint8_t protocol_ver = 0;
 	Botan::BigInt B;
 	std::uint8_t g_len;
 	std::uint8_t g;
@@ -125,7 +125,7 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << unk1;
+		stream << protocol_ver;
 		stream << result;
 
 		if(result != grunt::ResultCode::SUCCESS) {
