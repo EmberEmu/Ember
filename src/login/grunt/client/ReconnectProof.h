@@ -28,7 +28,7 @@ public:
 	Opcode opcode;
 	std::array<Botan::byte, 16> salt;
 	std::array<Botan::byte, 20> proof;
-	std::array<Botan::byte, 20> R3; // probably client integrity hash, todo
+	std::array<Botan::byte, 20> client_checksum; // exe checksum (just add salt^)
 	std::uint8_t key_count;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
@@ -41,7 +41,7 @@ public:
 		stream >> opcode;
 		stream.get(salt.data(), salt.size());
 		stream.get(proof.data(), proof.size());
-		stream.get(R3.data(), R3.size());
+		stream.get(client_checksum.data(), client_checksum.size());
 		stream >> key_count;
 
 		return (state_ = State::DONE);
@@ -51,7 +51,7 @@ public:
 		stream << opcode;
 		stream.put(salt.data(), salt.size());
 		stream.put(proof.data(), proof.size());
-		stream.put(R3.data(), R3.size());
+		stream.put(client_checksum.data(), client_checksum.size());
 		stream << key_count;
 	}
 };

@@ -47,7 +47,7 @@ class LoginProof final : public Packet {
 		Botan::byte crc_buff[CRC_LENGTH];
 		stream.get(crc_buff, CRC_LENGTH);
 		std::reverse(std::begin(crc_buff), std::end(crc_buff));
-		crc_hash = Botan::BigInt(crc_buff, CRC_LENGTH);
+		client_checksum = Botan::BigInt(crc_buff, CRC_LENGTH);
 
 		stream >> key_count;
 		stream >> static_cast<TwoFactorSecurity>(security);
@@ -77,10 +77,17 @@ public:
 		NONE, PIN
 	};
 
+	struct KeyData {
+		std::uint16_t unk_1;
+		std::uint32_t unk_2;
+		std::array<std::uint8_t, 4> unk_3;
+		std::array<std::uint8_t, 20> unk_4_hash; // hashed with A or 'salt' if reconnect proof
+	};
+
 	Opcode opcode;
 	Botan::BigInt A;
 	Botan::BigInt M1;
-	Botan::BigInt crc_hash;
+	Botan::BigInt client_checksum;
 	std::uint8_t key_count;
 	TwoFactorSecurity security;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
@@ -118,7 +125,7 @@ public:
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
-		bytes = Botan::BigInt::encode_1363(crc_hash, CRC_LENGTH);
+		bytes = Botan::BigInt::encode_1363(client_checksum, CRC_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
