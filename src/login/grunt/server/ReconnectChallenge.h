@@ -28,8 +28,8 @@ class ReconnectChallenge final : public Packet {
 public:
 	Opcode opcode;
 	ResultCode result;
-	std::array<Botan::byte, RAND_LENGTH> rand; // so many bytes, so little understood - todo, research
-	std::array<Botan::byte, RAND_LENGTH> rand2;
+	std::array<Botan::byte, RAND_LENGTH> salt;
+	std::array<Botan::byte, RAND_LENGTH> rand2; // probably another salt for client integrity checking, todo
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -40,18 +40,18 @@ public:
 		
 		stream >> opcode;
 		stream >> result;
-		stream.get(rand.data(), rand.size());
+		stream.get(salt.data(), salt.size());
 		stream.get(rand2.data(), rand2.size());
 
 		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
-		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "SMSG_RECONNECT_CHALLENGE rand != RAND_LENGTH");
+		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "CMD_RECONNECT_CHALLENGE rand != RAND_LENGTH");
 
 		stream << opcode;
 		stream << result;
-		stream.put(rand.data(), rand.size());
+		stream.put(salt.data(), salt.size());
 		stream.put(rand2.data(), rand2.size());
 	}
 };

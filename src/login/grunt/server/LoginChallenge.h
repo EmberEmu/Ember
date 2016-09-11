@@ -81,6 +81,7 @@ public:
 	static const std::uint8_t PRIME_LENGTH    = 32;
 	static const std::uint8_t PUB_KEY_LENGTH  = 32;
 	static const std::uint8_t PIN_SALT_LENGTH = 16;
+	static const std::uint8_t CRC_SALT_LENGTH = 16;
 
 	enum class TwoFactorSecurity : std::uint8_t {
 		NONE, PIN
@@ -88,14 +89,14 @@ public:
 
 	Opcode opcode;
 	ResultCode result;
-	std::uint8_t unk1 = 0;
+	std::uint8_t unk1 = 0; // client is coded to disconnect on any positive value
 	Botan::BigInt B;
 	std::uint8_t g_len;
 	std::uint8_t g;
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	std::array<Botan::byte, 16> crc_salt;
+	std::array<Botan::byte, CRC_SALT_LENGTH> crc_salt;
 	TwoFactorSecurity security = TwoFactorSecurity::NONE;
 	std::uint32_t pin_grid_seed;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;

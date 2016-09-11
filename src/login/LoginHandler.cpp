@@ -234,14 +234,14 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
 	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
-	auto rand = Botan::AutoSeeded_RNG().random_vec(response->rand.size());
-	std::copy(rand.begin(), rand.end(), response->rand.data());
+	auto salt = Botan::AutoSeeded_RNG().random_vec(response->salt.size());
+	std::copy(salt.begin(), salt.end(), response->salt.data());
 
 	auto res = action->get_result();
 
 	if(res.first == messaging::account::Status::OK) {
 		state_ = State::RECONNECT_PROOF;
-		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, rand);
+		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, salt);
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response->result = grunt::ResultCode::FAIL_NOACCESS;
