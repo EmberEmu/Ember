@@ -77,7 +77,7 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 			return false;
 	}
 
-	return (state_ != State::CLOSED);
+	return true;
 } catch(std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	state_ = State::CLOSED;
