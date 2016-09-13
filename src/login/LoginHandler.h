@@ -38,6 +38,8 @@ class Metrics;
 
 class LoginHandler {
 	const static int HASH_LENGTH = 20;
+	const static int CONNECT_PROTO_VERSION = 3;
+	const static int RECONNECT_PROTO_VERSION = 2;
 
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,

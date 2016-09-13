@@ -94,15 +94,17 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_LOGIN/RECONNECT_CHALLENGE");
 	}
 
-	if(challenge->protocol_ver != grunt::client::LoginChallenge::ProtocolVersion::CONNECT
-	   && challenge->protocol_ver != grunt::client::LoginChallenge::ProtocolVersion::RECONNECT) {
-		LOG_TRACE(logger_) << "Unsupported challenge protocol version, "
-		                   << static_cast<std::uint8_t>(challenge->protocol_ver) << LOG_ASYNC;
+	if(challenge->opcode == grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE
+	   && challenge->protocol_ver != CONNECT_PROTO_VERSION
+	   || challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
+	   && challenge->protocol_ver != RECONNECT_PROTO_VERSION) {
+		LOG_DEBUG(logger_) << "Unsupported protocol version, "
+		                   << challenge->protocol_ver << LOG_ASYNC;
 		return;
 	}
 
-	if(challenge->magic != grunt::client::LoginChallenge::WoW) {
-		LOG_TRACE(logger_) << "Bad magic from client "  << LOG_ASYNC;
+	if(challenge->game != grunt::client::LoginChallenge::WoW) {
+		LOG_DEBUG(logger_) << "Bad game magic from client"  << LOG_ASYNC;
 		return;
 	}
 
@@ -248,6 +250,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 
 	grunt::server::ReconnectChallenge response;
 	response.result = grunt::ResultCode::SUCCESS;
+
 	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response.salt.size());
 	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response.salt.data());
 

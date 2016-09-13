@@ -34,7 +34,7 @@ class LoginChallenge final : public Packet {
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream.skip(2); // skip the size field - we don't need it
-		stream >> magic;
+		stream >> game;
 		stream >> version.major;
 		stream >> version.minor;
 		stream >> version.patch;
@@ -55,7 +55,7 @@ class LoginChallenge final : public Packet {
 		username.resize(username_len);
 
 		// handle endianness
-		be::little_to_native_inplace(magic);
+		be::little_to_native_inplace(game);
 		be::little_to_native_inplace(version.build);
 		be::little_to_native_inplace(platform);
 		be::little_to_native_inplace(os);
@@ -75,13 +75,8 @@ class LoginChallenge final : public Packet {
 	}
 
 public:
-	enum class ProtocolVersion : std::uint8_t {
-		CONNECT = 2,
-		RECONNECT = 3
-	};
-
 	// todo - use constexpr func when switched to VS2015 - this is implementation defined behaviour!
-	enum PacketMagic : std::uint32_t {
+	enum Game : std::uint32_t {
 		WoW = 'WoW'
 	};
 
@@ -107,8 +102,8 @@ public:
 
 
 	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
-	ProtocolVersion protocol_ver;
-	PacketMagic magic;
+	std::uint8_t protocol_ver;
+	Game game;
 	GameVersion version;
 	Platform platform;
 	OperatingSystem os;
@@ -148,7 +143,7 @@ public:
 		stream << opcode;
 		stream << protocol_ver;
 		stream << be::native_to_little(size);
-		stream << be::native_to_little(magic);
+		stream << be::native_to_little(game);
 		stream << version.major;
 		stream << version.minor;
 		stream << version.patch;
