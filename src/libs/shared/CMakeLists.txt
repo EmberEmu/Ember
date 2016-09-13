@@ -66,6 +66,8 @@ set(UTIL_SRC
     shared/util/ConsoleColour.cpp
     shared/util/base32.h
     shared/util/base32.cpp
+    shared/util/FileMD5.h
+    shared/util/FileMD5.cpp
 )
 
 set(METRICS_SRC

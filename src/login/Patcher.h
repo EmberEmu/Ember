@@ -9,21 +9,28 @@
 #pragma once
 
 #include "GameVersion.h"
+#include "PatchMeta.h"
+#include <boost/optional.hpp>
 #include <string>
 #include <vector>
 
 namespace ember {
 
 class Patcher {
-	const std::string path_;
+	const std::vector<PatchMeta> patches_;
 	const std::vector<GameVersion> versions_;
+	FileMeta survey_;
+	bool survey_active_;
+
+	void generate_graph();
 
 public:
 	enum class PatchLevel { OK, TOO_OLD, PATCH_AVAILABLE, TOO_NEW };
 
-	Patcher(std::vector<GameVersion> versions, std::string patch_path)
-	        : versions_(std::move(versions)), path_(patch_path) {}
-
+	Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches);
+	void set_survey(FileMeta survey);
+	bool survey_active() const;
+	boost::optional<FileMeta> find_patch(const GameVersion& client_version) const;
 	PatchLevel check_version(const GameVersion& client_version) const;
 };
 
