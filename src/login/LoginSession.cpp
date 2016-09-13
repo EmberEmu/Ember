@@ -67,12 +67,12 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 }
 
 // todo use a single chain here and create a write queue instead
-void LoginSession::write_chain(const grunt::PacketHandle& packet) {
+void LoginSession::write_chain(const grunt::Packet& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	auto chain = std::make_shared<spark::ChainedBuffer<1024>>();
 	spark::BinaryStream stream(*chain);
-	packet->write_to_stream(stream);
+	packet.write_to_stream(stream);
 	NetworkSession::write_chain(chain);
 }
 

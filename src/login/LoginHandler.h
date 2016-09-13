@@ -68,13 +68,13 @@ class LoginHandler {
 	void check_reconnect_proof(const grunt::Packet* packet);
 	void send_reconnect_proof(grunt::ResultCode result);
 	void send_login_proof(grunt::ResultCode result);
-	void build_login_challenge(grunt::server::LoginChallenge* packet);
+	void build_login_challenge(grunt::server::LoginChallenge& packet);
 	void send_login_challenge(FetchUserAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
 	bool validate_pin(const grunt::client::LoginProof* packet);
-
+	
 	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
 								   const Botan::BigInt& client_salt, bool reconnect);
 
@@ -90,7 +90,7 @@ class LoginHandler {
 
 public:
 	std::function<void(std::shared_ptr<Action> action)> execute_async;
-	std::function<void(grunt::PacketHandle)> send;
+	std::function<void(const grunt::Packet&)> send;
 
 	bool update_state(std::shared_ptr<Action> action);
 	bool update_state(const grunt::Packet* packet);

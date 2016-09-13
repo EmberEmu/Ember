@@ -166,65 +166,65 @@ void LoginHandler::fetch_session_key(FetchUserAction* action_res) {
 void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
 
-	auto response = std::make_unique<grunt::server::LoginChallenge>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
-	response->result = grunt::ResultCode::FAIL_VERSION_INVALID;
-	send(std::move(response));
+	grunt::server::LoginChallenge response;
+	response.opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
+	response.result = grunt::ResultCode::FAIL_VERSION_INVALID;
+	send(response);
 }
 
-void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) {	
+void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto values = login_auth_->challenge_reply();
-	packet->B = values.B;
-	packet->g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
-	packet->g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
-	packet->n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
-	packet->N = values.gen.prime();
-	packet->s = values.salt;
-	packet->security = grunt::server::LoginChallenge::TwoFactorSecurity::NONE;
+	packet.B = values.B;
+	packet.g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
+	packet.g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
+	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
+	packet.N = values.gen.prime();
+	packet.s = values.salt;
+	packet.security = grunt::server::LoginChallenge::TwoFactorSecurity::NONE;
 
 	if(user_->pin_method() != PINMethod::NONE) {
-		packet->security = grunt::server::LoginChallenge::TwoFactorSecurity::PIN;
-		packet->pin_grid_seed = pin_auth_.grid_seed();
-		packet->pin_salt = pin_auth_.server_salt();
+		packet.security = grunt::server::LoginChallenge::TwoFactorSecurity::PIN;
+		packet.pin_grid_seed = pin_auth_.grid_seed();
+		packet.pin_salt = pin_auth_.server_salt();
 	}
 
 	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(16);
-	std::copy(checksum_salt_.begin(), checksum_salt_.end(), packet->checksum_salt.data());
+	std::copy(checksum_salt_.begin(), checksum_salt_.end(), packet.checksum_salt.data());
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_unique<grunt::server::LoginChallenge>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
-	response->result = grunt::ResultCode::SUCCESS;
+	grunt::server::LoginChallenge response;
+	response.opcode = grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE;
+	response.result = grunt::ResultCode::SUCCESS;
 
 	try {
 		if((user_ = action->get_result())) {
 			login_auth_ = std::make_unique<LoginAuthenticator>(*user_);
-			build_login_challenge(response.get());
+			build_login_challenge(response);
 			state_ = State::LOGIN_PROOF;
 		} else {
 			// leaks information on whether the account exists (could send challenge anyway?)
-			response->result = grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
+			response.result = grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
 			metrics_.increment("login_failure");
 			LOG_DEBUG(logger_) << "Account not found: " << action->username() << LOG_ASYNC;
 		}
 	} catch(dal::exception& e) {
-		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		response.result = grunt::ResultCode::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << action->username()
 		                   << ": " << e.what() << LOG_ASYNC;
 	} catch(Botan::Exception& e) {
-		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		response.result = grunt::ResultCode::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
 		                   << ": " << e.what() << LOG_ASYNC;
 	}
 	
-	send(std::move(response));
+	send(response);
 }
 
 void LoginHandler::send_reconnect_proof(grunt::ResultCode result) {
@@ -239,20 +239,20 @@ void LoginHandler::send_reconnect_proof(grunt::ResultCode result) {
 		metrics_.increment("login_failure");
 	}
 
-	auto response = std::make_unique<grunt::server::ReconnectProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
-	response->result = result;
-	send(std::move(response));
+	grunt::server::ReconnectProof response;
+	response.opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
+	response.result = result;
+	send(response);
 }
 
 void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
-	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
-	response->result = grunt::ResultCode::SUCCESS;
-	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response->salt.size());
-	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response->salt.data());
+	grunt::server::ReconnectChallenge response;
+	response.opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
+	response.result = grunt::ResultCode::SUCCESS;
+	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response.salt.size());
+	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response.salt.data());
 
 	auto res = action->get_result();
 
@@ -261,17 +261,17 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, checksum_salt_);
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
-		response->result = grunt::ResultCode::FAIL_NOACCESS;
+		response.result = grunt::ResultCode::FAIL_NOACCESS;
 		LOG_DEBUG(logger_) << "Reconnect failed, session not found for "
 		                   << user_->username() << LOG_ASYNC;
 	} else {
 		metrics_.increment("login_internal_failure");
-		response->result = grunt::ResultCode::FAIL_DB_BUSY;
+		response.result = grunt::ResultCode::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(res.first)
 		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
 	
-	send(std::move(response));
+	send(response);
 }
 
 bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
@@ -391,14 +391,14 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto response = std::make_unique<grunt::server::LoginProof>();
-	response->opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
-	response->result = result;
+	grunt::server::LoginProof response;
+	response.opcode = grunt::Opcode::CMD_AUTH_LOGON_PROOF;
+	response.result = result;
 
 	if(result == grunt::ResultCode::SUCCESS) {
 		metrics_.increment("login_success");
-		response->M2 = server_proof_;
-		response->account_flags = 0; // todo
+		response.M2 = server_proof_;
+		response.account_flags = 0; // todo
 	} else {
 		metrics_.increment("login_failure");
 	}
@@ -406,7 +406,7 @@ void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	LOG_DEBUG(logger_) << "Login result for " << user_->username() << ": "
 	                   << grunt::to_string(result) << LOG_ASYNC;
 
-	send(std::move(response));
+	send(response);
 }
 
 void LoginHandler::on_character_data(FetchCharacterCounts* action) { // temp name, todo
@@ -483,17 +483,17 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_REALM_LIST");
 	}
 
-	auto response = std::make_unique<grunt::server::RealmList>();
-	response->opcode = grunt::Opcode::CMD_REALM_LIST;
+	grunt::server::RealmList response;
+	response.opcode = grunt::Opcode::CMD_REALM_LIST;
 	
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		response->realms.push_back({ realm, char_count_[realm.id] });
+		response.realms.push_back({ realm, char_count_[realm.id] });
 	}
 
 	state_ = State::REQUEST_REALMS;
-	send(std::move(response));
+	send(response);
 }
 
 } // ember
