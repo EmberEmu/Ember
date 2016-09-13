@@ -10,6 +10,9 @@
 #include <fstream>
 #include <botan/hmac.h>
 #include <botan/sha160.h>
+#include <memory>
+#include <utility>
+#include <cstddef>
 
 namespace ember {
 
@@ -35,14 +38,17 @@ ExecutableChecksum::ExecutableChecksum(const std::string& path, std::initializer
 }
 
 Botan::SecureVector<Botan::byte> ExecutableChecksum::checksum(const Botan::SecureVector<Botan::byte>& seed) const {
-	Botan::HMAC hasher(new Botan::SHA_160()); // not a leak, Botan takes ownership
-	hasher.set_key(seed);
+	auto sha160 = std::make_unique<Botan::SHA_160>();
+	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
+	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
+
+	hmac.set_key(seed);
 
 	for(auto& buffer : buffers_) {
-		hasher.update(reinterpret_cast<const Botan::byte*>(buffer.data()), buffer.size());
+		hmac.update(reinterpret_cast<const Botan::byte*>(buffer.data()), buffer.size());
 	}
 
-	return hasher.final();
+	return hmac.final();
 }
 
 Botan::SecureVector<Botan::byte> ExecutableChecksum::finalise(const Botan::SecureVector<Botan::byte>& checksum,

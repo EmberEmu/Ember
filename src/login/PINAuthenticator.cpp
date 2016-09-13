@@ -12,6 +12,8 @@
 #include <boost/endian/conversion.hpp>
 #include <botan/hmac.h>
 #include <botan/sha160.h>
+#include <memory>
+#include <utility>
 #include <cstddef>
 #include <ctime>
 
@@ -163,7 +165,10 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	std::uint64_t now = static_cast<std::uint64_t>(time);
 	std::uint64_t step = static_cast<std::uint64_t>((floor(now / 30))) + interval;
 
-	Botan::HMAC hmac(new Botan::SHA_160()); // this is not a leak, Botan::HMAC takes ownership
+	auto sha160 = std::make_unique<Botan::SHA_160>();
+	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
+	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
+
 	hmac.set_key(decoded_key.data(), key_size);
 
 #if defined(BOOST_LITTLE_ENDIAN) 
