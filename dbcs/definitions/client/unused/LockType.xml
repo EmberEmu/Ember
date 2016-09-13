@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>LockType</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>resource_name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>verb</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>cursor_name</name>
+	</field>
+</dbc>

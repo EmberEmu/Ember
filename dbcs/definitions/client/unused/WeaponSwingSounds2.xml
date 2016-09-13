@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>WeaponSwingSounds2</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>SwingType</name>
+		<options>
+			<option name="light" value="0x00" />
+			<option name="medium" value="0x01" />
+			<option name="heavy" value="0x02" />
+		</options>
+	</enum>
+
+	<field>
+		<type>SwingType</type>
+		<name>swing_type</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>critical</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>sound</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+</dbc>

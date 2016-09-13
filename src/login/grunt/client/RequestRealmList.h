@@ -26,9 +26,9 @@ class RequestRealmList final : public Packet {
 
 public:
 	Opcode opcode = Opcode::CMD_REALM_LIST;
-	std::uint32_t unknown;
+	std::uint32_t unknown; // hardcoded to zero in public client
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -41,7 +41,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << be::native_to_little(unknown);
 	}

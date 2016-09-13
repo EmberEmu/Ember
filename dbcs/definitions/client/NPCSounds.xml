@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>NPCSounds</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[4]</type>
+		<name>sound_entries</name>
+		<key>
+			<type>foreign</type>
+			<parent>SoundEntries</parent>
+		</key>
+	</field>
+</dbc>

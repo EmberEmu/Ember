@@ -13,14 +13,16 @@ namespace ember {
 
 using namespace std::string_literals;
 
-ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_) {
+ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_), stopped_(false) {
 	for(std::size_t i = 0; i < initial_count; ++i) {
 		workers_.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
 			(&boost::asio::io_service::run), &service_); 
 	}
 }
 
-ThreadPool::~ThreadPool() {
+
+void ThreadPool::shutdown() {
+	stopped_ = true;
 	service_.stop();
 
 	for(auto& worker : workers_) {
@@ -32,9 +34,16 @@ ThreadPool::~ThreadPool() {
 			std::lock_guard<std::mutex> guard(log_cb_lock_);
 
 			if(log_cb_) {
-				log_cb_(Severity::FATAL, "In thread pool dtor: "s + e.what());
+				log_cb_(Severity::FATAL, "In thread pool shutdown: "s + e.what());
 			}
 		}
+	}
+
+}
+
+ThreadPool::~ThreadPool() {
+	if(!stopped_) {
+		shutdown();
 	}
 }
 

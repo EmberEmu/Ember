@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>GMSurveySurveys</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[10]</type>
+		<name>questions</name>
+		<key>
+			<type>foreign</type>
+			<parent>GMSurveyQuestions</parent>
+		</key>
+	</field>
+</dbc>

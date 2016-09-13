@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>FactionTemplate</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Flags</name>
+		<options>
+			<option name="pvp_flagged" value="0x800" />
+			<option name="attack_pvping_players" value="0x1000" />
+		</options>
+	</enum>
+
+	<field>
+		<type>Flags</type>
+		<name>flags</type>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>friend_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>enemy_group</name>
+		<key>
+			<type>foreign</type>
+			<parent>FactionGroup</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[4]</type>
+		<name>enemies</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[4]</type>
+		<name>friends</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+</dbc>

@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>Talent</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>tab</name>
+		<key>
+			<type>foreign</type>
+			<parent>TalentTab</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>tier</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>column_index</name>
+	</field>
+
+	<field>
+		<type>uint32[9]</type>
+		<name>spell_rank</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[3]</type>
+		<name>prereq_talents</name>
+	</field>
+
+	<field>
+		<type>int32[3]</type>
+		<name>prereq_ranks</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>required_spell</name>
+		<key>
+			<type>foreign</type>
+			<parent>Spell</parent>
+		</key>
+	</field>
+</dbc>

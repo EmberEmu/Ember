@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharSections</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>SelectionType</name>
+		<options>
+			<option name="base_skin" value="0x00" />
+			<option name="face" value="0x01" />
+			<option name="facial_hair" value="0x02" />
+			<option name="hair" value="0x03" />
+			<option name="underwear" value="0x04" />
+		</options>
+	</enum>
+
+	<field>
+		<type>SelectionType</type>
+		<name>type</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>variation_index</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>colour_index</name>
+	</field>
+
+	<field>
+		<type>string_ref[3]</type>
+		<name>texture_name</name>
+	</field>
+
+	<field>
+		<type>bool32</type>
+		<name>non-selectable</name>
+	</field>
+</dbc>

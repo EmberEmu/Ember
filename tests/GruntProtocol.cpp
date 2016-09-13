@@ -7,7 +7,7 @@
  */
 
 #include "GruntPacketDumps.h"
-#include <spark/BufferChain.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <login/grunt/Packets.h>
 #include <boost/asio/ip/address.hpp>
 #include <gtest/gtest.h>
@@ -36,7 +36,7 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 	const std::size_t packet_size = sizeof(client_login_challenge);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(client_login_challenge, packet_size);
 
@@ -65,8 +65,8 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 		<< "Deserialisation failed (field: locale)";
 	ASSERT_EQ(ip, packet.ip)
 		<< "Deserialisation failed (field: IP)";
-	ASSERT_EQ(3, packet.error)
-		<< "Deserialisation failed (field: result)";
+	ASSERT_EQ(grunt::client::LoginChallenge::ProtocolVersion::RECONNECT, packet.protocol_ver)
+		<< "Deserialisation failed (field: protocol_ver)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
@@ -83,7 +83,7 @@ TEST(GruntProtocol, ClientLoginProof) {
 	const std::size_t packet_size = sizeof(client_login_proof);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(client_login_proof, packet_size);
 
@@ -93,7 +93,8 @@ TEST(GruntProtocol, ClientLoginProof) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(grunt::client::LoginProof::TwoFactorSecurity::NONE, packet.security)
+		<< "Deserialisation failed (field: security)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
@@ -110,7 +111,7 @@ TEST(GruntProtocol, ClientReconnectProof) {
 	const std::size_t packet_size = sizeof(client_reconnect_proof);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(client_reconnect_proof, packet_size);
 
@@ -130,12 +131,12 @@ TEST(GruntProtocol, ClientReconnectProof) {
 
 	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
 
-	ASSERT_EQ(r1_expected, packet.R1)
-		<< "Deserialisation failed (field: R1)";
-	ASSERT_EQ(r2_expected, packet.R2)
-		<< "Deserialisation failed (field: R2)";
-	ASSERT_EQ(r3_expected, packet.R3)
-		<< "Deserialisation failed (field: R3)";
+	ASSERT_EQ(r1_expected, packet.salt)
+		<< "Deserialisation failed (field: salt)";
+	ASSERT_EQ(r2_expected, packet.proof)
+		<< "Deserialisation failed (field: proof)";
+	ASSERT_EQ(r3_expected, packet.client_checksum)
+		<< "Deserialisation failed (field: client_checksum)";
 	ASSERT_EQ(0, packet.key_count) << "Deserialisation failed (field: key count)";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -153,7 +154,7 @@ TEST(GruntProtocol, ClientRequestRealmList) {
 	const std::size_t packet_size = sizeof(request_realm_list);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(request_realm_list, packet_size);
 
@@ -180,7 +181,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	const std::size_t packet_size = sizeof(server_login_challenge);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	chain.write(server_login_challenge, packet_size);
 
 	// deserialise the packet
@@ -200,9 +201,9 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
 	ASSERT_EQ(Botan::BigInt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C"), packet.s)
 		<< "Deserialisation failed (field: salt)";
-	ASSERT_EQ(0, packet.unk1) << "Deserialisation failed (field: unknown 1)";
-	//ASSERT_EQ(0, packet.unk3) << "Deserialisation failed (field: unknown 3)";
-	ASSERT_EQ(0, packet.unk4) << "Deserialisation failed (field: unknown 4)";
+	ASSERT_EQ(0, packet.protocol_ver) << "Deserialisation failed (field: protocol_ver)";
+	ASSERT_EQ(grunt::server::LoginChallenge::TwoFactorSecurity::NONE, packet.security)
+		<< "Deserialisation failed (field: security)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
@@ -219,7 +220,7 @@ TEST(GruntProtocol, ServerLoginProof) {
 	const std::size_t packet_size = sizeof(server_login_proof);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(server_login_proof, packet_size);
 
@@ -250,7 +251,7 @@ TEST(GruntProtocol, ServerRealmList) {
 	const std::size_t packet_size = sizeof(realm_list);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(realm_list, packet_size);
 
@@ -267,8 +268,9 @@ TEST(GruntProtocol, ServerRealmList) {
 	auto realm = entry.realm;
 	auto chars = entry.characters;
 
-	ASSERT_EQ(2, realm.flags) << "Deserialisation failed (invalid realm flags)";
-	ASSERT_EQ(1, realm.icon) << "Deserialisation failed (invalid realm icon)";
+	ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Deserialisation failed (invalid realm flags)";
+	ASSERT_EQ(Realm::Type::PvP, realm.type) << "Deserialisation failed (invalid realm type)";
+	ASSERT_EQ(Realm::Zone::UNITED_STATES, realm.zone) << "Deserialisation failed (invalid realm zone)";
 	ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
 	ASSERT_EQ("Ember"s, realm.name) << "Deserialisation failed (invalid realm name)";
 	ASSERT_EQ(0.0f, realm.population) << "Deserialisation failed (invalid realm population)";
@@ -279,8 +281,9 @@ TEST(GruntProtocol, ServerRealmList) {
 	realm = entry.realm;
 	chars = entry.characters;
 
-	ASSERT_EQ(1, realm.flags) << "Deserialisation failed (invalid realm flags)";
-	ASSERT_EQ(0, realm.icon) << "Deserialisation failed (invalid realm icon)";
+	ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Deserialisation failed (invalid realm flags)";
+	ASSERT_EQ(Realm::Type::PvE, realm.type) << "Deserialisation failed (invalid realm type)";
+	ASSERT_EQ(Realm::Zone::UNITED_STATES, realm.zone) << "Deserialisation failed (invalid realm zone)";
 	ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
 	ASSERT_EQ("Ember Test"s, realm.name) << "Deserialisation failed (invalid realm name)";
 	ASSERT_EQ(1.4f, realm.population) << "Deserialisation failed (invalid realm population)";
@@ -305,7 +308,7 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 	const std::size_t packet_size = sizeof(server_reconnect_challenge);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(server_reconnect_challenge, packet_size);
 
@@ -314,13 +317,15 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 	packet.read_from_stream(stream);
 
 	// verify the deserialisation results
-	std::array<Botan::byte, 16> rand{ 0xdd, 0x26, 0xe7, 0x5f, 0x44, 0x24, 0xcf, 0xdd, 0x51, 0x89,
-	                                  0x41, 0xd2, 0x02, 0x78, 0xd1, 0x84 };
+	std::array<Botan::byte, 16> salt { 0xdd, 0x26, 0xe7, 0x5f, 0x44, 0x24, 0xcf, 0xdd, 0x51, 0x89,
+	                                   0x41, 0xd2, 0x02, 0x78, 0xd1, 0x84 };
+	std::array<Botan::byte, 16> expected_bytes { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	                                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(rand, packet.rand) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(salt, packet.salt) << "Deserialisation failed (field: salt)";
 	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: unknown)";
-	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
-	ASSERT_EQ(0, packet.unknown2) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(expected_bytes, packet.rand2) << "Deserialisation failed (field: unknown)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(stream);
@@ -337,7 +342,7 @@ TEST(GruntProtocol, ServerReconnectProof) {
 	const std::size_t packet_size = sizeof(server_reconnect_proof);
 
 	// write the packet bytes into chain
-	spark::BufferChain<1024> chain;
+	spark::ChainedBuffer<1024> chain;
 	spark::BinaryStream stream(chain);
 	chain.write(server_reconnect_proof, packet_size);
 

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>ItemDisplayInfo</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref[2]</type>
+		<name>model_name</name>
+	</field>
+
+	<field>
+		<type>string_ref[2]</type>
+		<name>model_texture</name>
+	</field>
+
+	<field>
+		<type>string_ref[2]</type>
+		<name>inventory_icon</name>
+	</field>
+
+	<field>
+		<type>int32[3]</type>
+		<name>geoset_group</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_visual</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellVisual</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>group_sound_index</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemGroupSounds</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[2]</type>
+		<name>helmet_geoset_vis</name>
+		<key>
+			<type>foreign</type>
+			<parent>HelmetGeosetVisData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref[8]</type>
+		<name>textures</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>item_visual</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemVisuals</parent>
+		</key>
+	</field>
+</dbc>

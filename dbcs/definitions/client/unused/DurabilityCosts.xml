@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>DurabilityCosts</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32[21]</type>
+		<name>weapon_subclass_cost</name>
+	</field>
+
+	<field>
+		<type>int32[8]</type>
+		<name>armour_subclass_cost</name>
+	</field>
+</dbc>

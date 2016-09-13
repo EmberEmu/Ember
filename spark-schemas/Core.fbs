@@ -1,0 +1,29 @@
+/*
+ * Copyright (c) 2015 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+include "ServiceTypes.fbs";
+
+namespace ember.messaging;
+
+table Ping {
+	timestamp:ulong;
+}
+
+table Pong {
+	timestamp:ulong;
+}
+
+table Banner {
+	description:string;
+	server_uuid:[ubyte];
+}
+
+table Negotiate {
+	proto_in:[Service];
+	proto_out:[Service];
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>Cfg_Configs</name>
+	<alias>cfg_configs</alias>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>realm_type</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>pvp_allowed</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>roleplaying</name>
+	</field>
+</dbc>

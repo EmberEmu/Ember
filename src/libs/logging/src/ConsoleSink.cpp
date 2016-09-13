@@ -9,6 +9,7 @@
 #include <logger/ConsoleSink.h>
 #include <logger/Exception.h>
 #include <logger/Utility.h>
+#include <shared/util/ConsoleColour.h>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -17,8 +18,18 @@
 namespace ember { namespace log {
 
 void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+	if(!colour_) {
+		do_batch_write(records);
+	} else { // we can't do batch output if we need to colour each individual log record
+		for(auto& r : records) {
+			write(r.first.severity, r.first.type, r.second);
+		}
+	}
+}
+
+void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
 	std::size_t size = 0;
-	Severity sink_sev= this->severity();
+	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
@@ -53,14 +64,50 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 		return;
 	}
 
+	util::Colour old_colour;
+
+	if(colour_) {
+		old_colour = util::save_output_colour();
+		set_colour(severity);
+	}
+
 	std::string buffer = detail::severity_string(severity);
 	buffer.append(record.begin(), record.end());
 	std::fwrite(buffer.c_str(), buffer.size(), 1, stdout);
+
 
 	if(flush) {
 		if(std::fflush(stdout) != 0) {
 			throw exception("Unable to flush log record to console");
 		}
+	}
+
+	if(colour_) {
+		util::set_output_colour(old_colour);
+	}
+}
+
+void ConsoleSink::set_colour(Severity severity) {
+	switch(severity) {
+		case Severity::FATAL:
+			[[fallthrough]];
+		case Severity::ERROR_:
+			[[fallthrough]];
+		case Severity::WARN:
+			util::set_output_colour(util::Colour::LIGHT_RED);
+			break;
+		case Severity::INFO:
+			util::set_output_colour(util::Colour::WHITE);
+			break;
+		case Severity::DEBUG:
+			util::set_output_colour(util::Colour::LIGHT_CYAN);
+			break;
+		case Severity::TRACE:
+			util::set_output_colour(util::Colour::DARK_GREY);
+			break;
+		case Severity::DISABLED:
+			// shutting the compiler up
+			break;
 	}
 }
 

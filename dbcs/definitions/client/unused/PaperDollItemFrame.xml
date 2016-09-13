@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>PaperDollItemFrame</name>
+	
+	<field>
+		<type>string_ref</type>
+		<name>item_button_name</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>slot_icon</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>slot_number</name>
+	</field>
+</dbc>

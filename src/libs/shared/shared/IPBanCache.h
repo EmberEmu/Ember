@@ -17,8 +17,6 @@
 namespace ember {
 
 class IPBanCache {
-	dal::IPBanDAO& source_;
-
 	struct IPv4Entry {
 		std::uint32_t range;
 		std::uint32_t mask;
@@ -43,24 +41,22 @@ class IPBanCache {
 		return false;
 	}
 
-	void load_bans() {
-		std::vector<IPEntry> results(source_.all_bans());
-
-		for(auto& res : results) {
-			auto address = boost::asio::ip::address::from_string(res.first);
+	void load_bans(const std::vector<IPEntry>& bans) {
+		for(auto& ban : bans) {
+			auto address = boost::asio::ip::address::from_string(ban.first);
 
 			if(address.is_v6()) {
 				throw std::runtime_error("IPv6 bans are not supported but the ban cache encountered one!");
 			}
 
-			std::uint32_t mask = ~(0xFFFFFFFFu >> res.second);
+			std::uint32_t mask = (~0U) << (32 - ban.second);
 			entries_.emplace_back(IPv4Entry{static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask});
 		}
 	}
 
 public:
-	IPBanCache(dal::IPBanDAO& source) : source_(source) {
-		load_bans();
+	IPBanCache(const std::vector<IPEntry>& bans) {
+		load_bans(bans);
 	}
 
 	bool is_banned(const std::string& ip) {

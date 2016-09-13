@@ -179,8 +179,9 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 	current_size_ += buffer_size;
 }
 
+
 void FileSink::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
-	if(this->severity() >= severity || (this->filter() & type)) {
+	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
 

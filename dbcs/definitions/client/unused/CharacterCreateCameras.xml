@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharacterCreateCameras</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>bool32[2]</type>
+		<name>unknown</name>
+	</field>
+
+	<field>
+		<type>float[3]</type>
+		<name>unknown_2</name>
+	</field>
+</dbc>

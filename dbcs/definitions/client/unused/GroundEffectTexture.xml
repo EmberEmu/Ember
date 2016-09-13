@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>GroundEffectTexture</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[4]</type>
+		<name>doodad</name>
+		<key>
+			<type>foreign</type>
+			<parent>GroundEffectDoodad</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>density</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>terrain_type</name>
+		<key>
+			<type>foreign</type>
+			<parent>TerrainType</parent>
+		</key>
+	</field>
+</dbc>

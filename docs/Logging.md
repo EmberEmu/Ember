@@ -30,10 +30,13 @@ To create a console sink, simply do:
 ```cpp
 #include <logger/ConsoleSink.h>
 
-auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(-1));
+auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(0));
 ```
 
-Other than setting the severity and filter value (-1 disables filtering), the console sink offers no options.
+The console sink has the ability to colourise the output. To enable this option, simply do:
+```cpp
+sink->colourise(true); // false by default
+```
 
 ### File Sink
 The file sink requires three arguments; severity, filename to write the logs to and a mode that indicates, in cases where the file already exists, whether to create a new file for logging or to append to an existing file. If instructed to create a new file, it will rename the existing file, not overwrite it.
@@ -42,7 +45,7 @@ Creation example:
 ```cpp
 #include <logger/FileSink.h>
 
-auto sink = std::make_unique<el::FileSink>(el::Severity::DEBUG, el::Filter(-1), "my_log.log", el::FileSink::Mode::APPEND);
+auto sink = std::make_unique<el::FileSink>(el::Severity::DEBUG, el::Filter(0), "my_log.log", el::FileSink::Mode::APPEND);
 ```
 
 Filenames may include formatters as specified by C++11's put_time function. See http://en.cppreference.com/w/cpp/io/manip/put_time.
@@ -67,7 +70,7 @@ Creation example:
 ```cpp
 #include <logger/SyslogSink.h>
 
-auto sink = std::make_unique<el::SyslogSink>(el::Severity::ERROR, el::Filter(-1), "localhost", 514, el::SyslogSink::Facility::LOCAL_USE_0, "login");
+auto sink = std::make_unique<el::SyslogSink>(el::Severity::ERROR, el::Filter(0), "localhost", 514, el::SyslogSink::Facility::LOCAL_USE_0, "login");
 ```
 
 # Registering Sinks
@@ -75,7 +78,7 @@ After creating the desired sinks, they must be registered with the logger. This 
 
 For example:
 ```cpp
-auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(-1));
+auto sink = std::make_unique<el::ConsoleSink>(el::Severity::INFO, el::Filter(0));
 auto logger = std::make_unique<el::Logger>();
 logger->add_sink(std::move(sink));
 ```

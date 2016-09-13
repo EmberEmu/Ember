@@ -7,7 +7,7 @@
  */
 
 #define BUFFER_CHAIN_DEBUG
-#include <spark/BufferChain.h>
+#include <spark/buffers/ChainedBuffer.h>
 #undef BUFFER_CHAIN_DEBUG
 #include <gtest/gtest.h>
 #include <memory>
@@ -18,8 +18,8 @@
 
 namespace spark = ember::spark;
 
-TEST(BufferChainTest, Size) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, Size) {
+	spark::ChainedBuffer<32> chain;
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 
 	chain.reserve(50);
@@ -39,8 +39,8 @@ TEST(BufferChainTest, Size) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
-TEST(BufferChainTest, ReadWriteConsistency) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, ReadWriteConsistency) {
+	spark::ChainedBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	int num = 41521;
 
@@ -58,8 +58,8 @@ TEST(BufferChainTest, ReadWriteConsistency) {
 	ASSERT_EQ(0, chain.size()) << "Chain should be empty";
 }
 
-TEST(BufferChainTest, ReserveFetchConsistency) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, ReserveFetchConsistency) {
+	spark::ChainedBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	const std::size_t text_len = sizeof(text);
 
@@ -73,7 +73,11 @@ TEST(BufferChainTest, ReserveFetchConsistency) {
 	std::size_t offset = 0;
 
 	for(auto& buffer : buffers) {
+<<<<<<< HEAD
 		std::memcpy(buffer->storage.data(), text + offset, buffer->size());
+=======
+		std::memcpy(const_cast<char*>(buffer->read_data()), text + offset, buffer->size());
+>>>>>>> spark-new
 		offset += buffer->size();
 
 		if(offset > text_len || !offset) {
@@ -88,8 +92,8 @@ TEST(BufferChainTest, ReserveFetchConsistency) {
 	ASSERT_STREQ(text, output.c_str()) << "Read produced incorrect result";
 }
 
-TEST(BufferChainTest, Skip) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, Skip) {
+	spark::ChainedBuffer<32> chain;
 	int foo = 960;
 	int bar = 296;
 
@@ -102,8 +106,8 @@ TEST(BufferChainTest, Skip) {
 	ASSERT_EQ(bar, foo) << "Skip produced incorrect result";
 }
 
-TEST(BufferChainTest, Clear) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, Clear) {
+	spark::ChainedBuffer<32> chain;
 	const int iterations = 100;
 
 	for(int i = 0; i < iterations; ++i) {
@@ -115,8 +119,8 @@ TEST(BufferChainTest, Clear) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
-TEST(BufferChainTest, AttachTail) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, AttachTail) {
+	spark::ChainedBuffer<32> chain;
 	spark::BufferBlock<32>* buffer = chain.allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
@@ -124,7 +128,7 @@ TEST(BufferChainTest, AttachTail) {
 
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	chain.skip(32); // skip first block
-	chain.attach(buffer);
+	chain.push_back(buffer);
 	chain.advance_write_cursor(written);
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 
@@ -135,17 +139,17 @@ TEST(BufferChainTest, AttachTail) {
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
 
-TEST(BufferChainTest, RetrieveTail) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, RetrieveTail) {
+	spark::ChainedBuffer<32> chain;
 	std::string text("This string is < 32 bytes"); // could this fail on exotic platforms?
 	chain.write(text.data(), text.length());
 
-	auto tail = chain.tail();
+	auto tail = chain.back();
 	ASSERT_EQ(0, std::memcmp(text.data(), tail->storage.data(), text.length())) << "Tail data is incorrect";
 }
 
-TEST(BufferChainTest, Copy) {
-	spark::BufferChain<32> chain;
+TEST(ChainedBufferTest, Copy) {
+	spark::ChainedBuffer<32> chain;
 	int output, foo = 54543;
 	chain.write(&foo, sizeof(int));
 	ASSERT_EQ(sizeof(int), chain.size());
@@ -154,8 +158,8 @@ TEST(BufferChainTest, Copy) {
 	ASSERT_EQ(foo, output) << "Copy output is incorrect";
 }
 
-TEST(BufferChainTest, CopyChain) {
-	spark::BufferChain<sizeof(int)> chain, chain2;
+TEST(ChainedBufferTest, CopyChain) {
+	spark::ChainedBuffer<sizeof(int)> chain, chain2;
 	int foo = 5491;
 	int output;
 
@@ -176,13 +180,12 @@ TEST(BufferChainTest, CopyChain) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	ASSERT_EQ(sizeof(int) * 2, chain2.size()) << "Chain size is incorrect";
 
-	
 	chain2.read(&output, sizeof(int));
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
-TEST(BufferChainTest, MoveChain) {
-	spark::BufferChain<32> chain, chain2;
+TEST(ChainedBufferTest, MoveChain) {
+	spark::ChainedBuffer<32> chain, chain2;
 	int foo = 23113;
 
 	chain.write(&foo, sizeof(int));
@@ -198,8 +201,8 @@ TEST(BufferChainTest, MoveChain) {
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
-TEST(BufferChainTest, ReadIterator) {
-	spark::BufferChain<16> chain; // ensure the string is split over multiple buffers
+TEST(ChainedBufferTest, ReadIterator) {
+	spark::ChainedBuffer<16> chain; // ensure the string is split over multiple buffers
 	std::string skip("Skipping");
 	std::string input("The quick brown fox jumps over the lazy dog");
 	std::string output;
@@ -216,8 +219,8 @@ TEST(BufferChainTest, ReadIterator) {
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
 }
 
-TEST(BufferChainTest, ASIOIteratorRegressionTest) {
-	spark::BufferChain<1> chain;
+TEST(ChainedBufferTest, ASIOIteratorRegressionTest) {
+	spark::ChainedBuffer<1> chain;
 
 	// 119 bytes (size of 1.12.1 LoginChallenge packet)
 	std::string input("Lorem ipsum dolor sit amet, consectetur adipiscing elit."

@@ -14,6 +14,7 @@ set(EXECUTABLE_SRC
     GruntProtocol.cpp
     LoginHandler.cpp
     Patcher.cpp
+    IPBan.cpp
     )
 
 add_executable(unit_tests ${EXECUTABLE_SRC})

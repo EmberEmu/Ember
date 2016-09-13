@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,10 +33,10 @@ class RealmList final : public Packet {
 	static const std::size_t MAX_REALM_ENTRIES = 255;
 
 	State state_ = State::INITIAL;
-	std::uint16_t size;
-	std::uint8_t realm_count;
+	std::uint16_t size = 0;
+	std::uint8_t realm_count = 0;
 
-	std::uint16_t calculate_size() {
+	std::uint16_t calculate_size() const {
 		std::size_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 
 		                          (MINIMUM_REALM_ENTRY_WIRE_LENGTH * realms.size());
 
@@ -51,7 +51,7 @@ class RealmList final : public Packet {
 		return static_cast<std::uint16_t>(packet_size);
 	}
 
-	void read_size(spark::BinaryStream& stream) {
+	void read_size(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> size;
 		be::little_to_native_inplace(size);
@@ -63,7 +63,7 @@ class RealmList final : public Packet {
 		state_ = State::CALL_AGAIN;
 	}
 
-	void parse_body(spark::BinaryStream& stream) {
+	void parse_body(spark::SafeBinaryStream& stream) {
 		if(stream.size() < size) {
 			return;
 		}
@@ -84,7 +84,7 @@ class RealmList final : public Packet {
 			Realm realm;
 			std::uint8_t num_chars;
 
-			stream >> realm.icon;
+			stream >> realm.type;
 			stream >> realm.flags;
 			stream >> realm.name;
 
@@ -100,10 +100,13 @@ class RealmList final : public Packet {
 
 			stream >> realm.population;
 			stream >> num_chars;
-			stream >> realm.timezone;
-			stream.skip(1); // unknown byte, just skip it
+			stream >> realm.zone;
 
-			be::little_to_native_inplace(realm.icon);
+			std::uint8_t realm_id;
+			stream >> realm_id;
+			realm.id = realm_id;
+
+			be::little_to_native_inplace(realm.type);
 			be::little_to_native_inplace(realm.population);
 
 			realms.emplace_back(RealmListEntry{ realm, num_chars });
@@ -122,15 +125,16 @@ class RealmList final : public Packet {
 public:
 	struct RealmListEntry {
 		Realm realm;
-		std::uint8_t characters;
+		std::uint32_t characters;
 	};
 
 	Opcode opcode = Opcode::CMD_REALM_LIST;
-	std::uint32_t unknown = 0;
-	std::vector<RealmListEntry> realms;
-	std::uint16_t unknown2 = 5;
+	std::uint32_t unknown = 0; // appears to be ignored in public clients
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	std::vector<RealmListEntry> realms;
+	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
+
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -139,7 +143,8 @@ public:
 
 		switch(state_) {
 			case State::INITIAL:
-				read_size(stream); // intentional fall-through
+				read_size(stream);
+				[[fallthrough]];
 			case State::CALL_AGAIN:
 				parse_body(stream);
 				break;
@@ -150,7 +155,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		if(realms.size() > MAX_REALM_ENTRIES) {
 			throw bad_packet("Attempted to send too many realm list entries!");
 		}
@@ -162,14 +167,14 @@ public:
 
 		for(auto& entry : realms) {
 			auto& realm = entry.realm;
-			stream << be::native_to_little(realm.icon);
+			stream << be::native_to_little(realm.type);
 			stream << realm.flags;
 			stream << realm.name;
 			stream << realm.ip;
 			stream << be::native_to_little(realm.population);
-			stream << entry.characters;
-			stream << realm.timezone;
-			stream << std::uint8_t(0); // unknown
+			stream << static_cast<std::uint8_t>(entry.characters);
+			stream << realm.zone;
+			stream << std::uint8_t(realm.id);
 		}
 
 		stream << be::native_to_little(unknown2);

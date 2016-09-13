@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SpellEffectCameraShakes</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32[3]</type>
+		<name>camera_shake</name>
+		<key>
+			<type>foreign</type>
+			<parent>CameraShakes</parent>
+		</key>
+	</field>
+</dbc>

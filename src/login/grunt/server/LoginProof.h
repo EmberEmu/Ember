@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,19 +29,19 @@ class LoginProof final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_head(spark::BinaryStream& stream) {
+	void read_head(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> result;
 	}
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::SafeBinaryStream& stream) {
 		// no need to keep reading - the other fields aren't set
 		if(result != grunt::ResultCode::SUCCESS) {
 			state_ = State::DONE;
 			return;
 		}
 
-		// must be SMSG_LOGIN_PROOF, so read the rest of the packet
+		// must be CMD_AUTH_LOGIN_PROOF, so read the rest of the packet
 		if(stream.size() < BODY_LENGTH) {
 			state_ = State::CALL_AGAIN;
 			return;
@@ -62,7 +62,7 @@ public:
 	Botan::BigInt M2;
 	std::uint32_t account_flags;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < HEADER_LENGTH) {
@@ -71,7 +71,8 @@ public:
 
 		switch(state_) {
 			case State::INITIAL:
-				read_head(stream); // intentional fall-through
+				read_head(stream);
+				[[fallthrough]];
 			case State::CALL_AGAIN:
 				read_body(stream);
 				break;
@@ -82,7 +83,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << result;
 

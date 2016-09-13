@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>Startup_Strings</name>
+	<alias>startup_strings</alias>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>startup_string</name>
+	</field>
+</dbc>

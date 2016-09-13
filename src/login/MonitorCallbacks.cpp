@@ -26,7 +26,7 @@ void install_net_monitor(Monitor& monitor, const NetworkListener& server, log::L
 
 	monitor.add_source(source, Monitor::Severity::WARN,
 		std::bind(monitor_log_callback, std::placeholders::_1, std::placeholders::_2,
-		std::placeholders::_3, logger)
+		          std::placeholders::_3, logger)
 	);
 
 }
@@ -34,7 +34,7 @@ void install_net_monitor(Monitor& monitor, const NetworkListener& server, log::L
 void monitor_log_callback(const Monitor::Source& source, Monitor::Severity severity,
                           std::intmax_t value, log::Logger* logger) {
 	std::stringstream message;
-	message << source.key << ":" << "v:" << value << ":t:" << source.threshold << " - ";
+	message << source.key << ":v:" << value << ":t:" << source.threshold << " - ";
 
 	if(source.triggered) {
 		message << source.message;

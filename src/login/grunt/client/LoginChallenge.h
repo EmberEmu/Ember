@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,9 +30,9 @@ class LoginChallenge final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
-		stream >> error;
+		stream >> protocol_ver;
 		stream.skip(2); // skip the size field - we don't need it
 		stream >> magic;
 		stream >> version.major;
@@ -64,7 +64,7 @@ class LoginChallenge final : public Packet {
 		be::big_to_native_inplace(ip);
 	}
 
-	void read_username(spark::BinaryStream& stream) {
+	void read_username(spark::SafeBinaryStream& stream) {
 		// does the stream hold enough bytes to complete the username?
 		if(stream.size() >= username.size()) {
 			stream.get(username, username.size());
@@ -75,6 +75,11 @@ class LoginChallenge final : public Packet {
 	}
 
 public:
+	enum class ProtocolVersion : std::uint8_t {
+		CONNECT = 2,
+		RECONNECT = 3
+	};
+
 	// todo - use constexpr func when switched to VS2015 - this is implementation defined behaviour!
 	enum PacketMagic : std::uint32_t {
 		WoW = 'WoW'
@@ -100,8 +105,13 @@ public:
 		enTW = 'enTW', enCN = 'enCN',
 	};
 
+<<<<<<< HEAD
 	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	std::uint8_t error; // todo - nobody seems to know what this is, look into it at some point
+=======
+	Opcode opcode;
+	ProtocolVersion protocol_ver;
+>>>>>>> spark-new
 	PacketMagic magic;
 	GameVersion version;
 	Platform platform;
@@ -111,7 +121,7 @@ public:
 	std::uint32_t ip; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -121,8 +131,10 @@ public:
 		switch(state_) {
 			case State::INITIAL:
 				read_body(stream);
-			case State::CALL_AGAIN: // intentional fall-through
+				[[fallthrough]];
+			case State::CALL_AGAIN:
 				read_username(stream);
+				break;
 			default:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
@@ -130,15 +142,15 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		if(username.length() > MAX_USERNAME_LEN) {
-			throw bad_packet("Provided username was too long!"); // todo
+			throw bad_packet("Provided username was too long!");
 		}
 
 		auto size = static_cast<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
 
 		stream << opcode;
-		stream << error;
+		stream << protocol_ver;
 		stream << be::native_to_little(size);
 		stream << be::native_to_little(magic);
 		stream << version.major;

@@ -71,7 +71,7 @@ class NetworkListener {
 	}
 
 public:
-	NetworkListener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
+	NetworkListener(boost::asio::io_service& service, const std::string& interface, std::uint16_t port,
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger* logger)
 	                : acceptor_(service_, boost::asio::ip::tcp::endpoint(

@@ -61,7 +61,7 @@ std::string severity_string(Severity severity) {
 			return "[info] ";
 		case Severity::FATAL:
 			return "[fatal] ";
-		case Severity::ERROR:
+		case Severity::ERROR_:
 			return "[error] ";
 		default:
 			return "[unknown] ";
@@ -80,7 +80,7 @@ Severity severity_string(const std::string& severity) {
 	} else if(severity == "warning") {
 		return Severity::WARN;
 	} else if(severity == "error") {
-		return Severity::ERROR;
+		return Severity::ERROR_;
 	} else if(severity == "fatal") {
 		return Severity::FATAL;
 	} else if(severity == "none" || severity == "disabled") {

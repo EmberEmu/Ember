@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>TerrainTypeSounds</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+</dbc>

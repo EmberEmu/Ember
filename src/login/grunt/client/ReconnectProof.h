@@ -24,14 +24,13 @@ class ReconnectProof final : public Packet {
 	static const std::size_t WIRE_LENGTH = 58;
 	State state_ = State::INITIAL;
 
-public:
 	Opcode opcode = Opcode::CMD_AUTH_RECONNECT_PROOF;
-	std::array<Botan::byte, 16> R1;
-	std::array<Botan::byte, 20> R2;
-	std::array<Botan::byte, 20> R3;
+	std::array<Botan::byte, 16> salt;
+	std::array<Botan::byte, 20> proof;
+	std::array<Botan::byte, 20> client_checksum;
 	std::uint8_t key_count;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -39,19 +38,19 @@ public:
 		}
 
 		stream >> opcode;
-		stream.get(R1.data(), R1.size());
-		stream.get(R2.data(), R2.size());
-		stream.get(R3.data(), R3.size());
+		stream.get(salt.data(), salt.size());
+		stream.get(proof.data(), proof.size());
+		stream.get(client_checksum.data(), client_checksum.size());
 		stream >> key_count;
 
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream.put(R1.data(), R1.size());
-		stream.put(R2.data(), R2.size());
-		stream.put(R3.data(), R3.size());
+		stream.put(salt.data(), salt.size());
+		stream.put(proof.data(), proof.size());
+		stream.put(client_checksum.data(), client_checksum.size());
 		stream << key_count;
 	}
 };

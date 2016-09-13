@@ -18,12 +18,12 @@ namespace ember {
 
 class ReconnectAuthenticator {
 	std::string rcon_user_;
-	Botan::SecureVector<Botan::byte> rcon_chall_;
+	Botan::SecureVector<Botan::byte> salt_;
 	srp6::SessionKey sess_key_;
 
 public:
-	ReconnectAuthenticator(std::string username, const std::string& session_key,
-	                       const Botan::SecureVector<Botan::byte>& bytes);
+	ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
+	                       const Botan::SecureVector<Botan::byte>& salt);
 	bool proof_check(const grunt::client::ReconnectProof* proof);
 	std::string username() { return rcon_user_; } // todo
 };
@@ -49,7 +49,7 @@ public:
 	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
 	ProofResult proof_check(const grunt::client::LoginProof* proof);
-	std::string session_key();
+	srp6::SessionKey session_key();
 };
 
 } //ember

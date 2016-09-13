@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharStartZones</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>area</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<struct>
+		<name>Vector</name>
+
+		<field>
+			<type>float</type>
+			<name>x</name>
+		</field>
+
+		<field>
+			<type>float</type>
+			<name>y</name>
+		</field>
+
+		<field>
+			<type>float</type>
+			<name>z</name>
+		</field>
+	</struct>
+
+	<field>
+		<type>Vector</type>
+		<name>position</name>
+	</field>
+
+	<field>
+		<type>Vector</type>
+		<name>orientation</name>
+	</field>
+	
+</dbc>

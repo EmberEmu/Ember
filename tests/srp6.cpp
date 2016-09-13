@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014, 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,23 +20,23 @@ namespace srp = ember::srp6;
 class srp6SessionTest : public ::testing::Test {
 public:
 	virtual void SetUp() {
-		identifier = "CHAOSVEX";
-		password = "ABC";
-		gen = std::make_unique<srp::Generator>(srp::Generator::Group::_256_BIT);
-		salt = srp::generate_salt(32);
-		verifier = srp::generate_verifier(identifier, password, *gen, salt, srp::Compliance::GAME);
-		server = std::make_unique<srp::Server>(*gen, verifier);
-		client = std::make_unique<srp::Client>(identifier, password, *gen);
+		identifier_ = "CHAOSVEX";
+		password_ = "ABC";
+		gen_ = std::make_unique<srp::Generator>(srp::Generator::Group::_256_BIT);
+		salt_ = srp::generate_salt(32);
+		verifier_ = srp::generate_verifier(identifier_, password_, *gen_, salt_, srp::Compliance::GAME);
+		server_ = std::make_unique<srp::Server>(*gen_, verifier_);
+		client_ = std::make_unique<srp::Client>(identifier_, password_, *gen_);
 	}
 
 	virtual void TearDown() {}
 
-	std::string identifier, password;
-	Botan::BigInt verifier;
-	Botan::BigInt salt;
-	std::unique_ptr<srp::Generator> gen;
-	std::unique_ptr<srp::Server> server;
-	std::unique_ptr<srp::Client> client;
+	std::string identifier_, password_;
+	Botan::BigInt verifier_;
+	Botan::BigInt salt_;
+	std::unique_ptr<srp::Generator> gen_;
+	std::unique_ptr<srp::Server> server_;
+	std::unique_ptr<srp::Client> client_;
 };
 
 TEST(srp6a, RFC5054_TestVectors) {
@@ -99,17 +99,17 @@ TEST(srp6a, RFC5054_TestVectors) {
 }
 
 TEST_F(srp6SessionTest, SelfAuthentication) {
-	Botan::BigInt A = client->public_ephemeral();
-	Botan::BigInt B = server->public_ephemeral();
+	Botan::BigInt A = client_->public_ephemeral();
+	Botan::BigInt B = server_->public_ephemeral();
 
-	srp::SessionKey s_key = server->session_key(A);
-	srp::SessionKey c_key = client->session_key(B, salt);
+	srp::SessionKey s_key = server_->session_key(A);
+	srp::SessionKey c_key = client_->session_key(B, salt_);
 
-	Botan::BigInt c_proof = client->generate_proof(c_key);
-	Botan::BigInt s_proof = server->generate_proof(s_key, c_proof);
+	Botan::BigInt c_proof = client_->generate_proof(c_key);
+	Botan::BigInt s_proof = server_->generate_proof(s_key, c_proof);
 
-	Botan::BigInt expected_c_proof = srp::generate_client_proof(identifier, s_key, gen->prime(),
-	                                                            gen->generator(), A, B, salt);
+	Botan::BigInt expected_c_proof = srp::generate_client_proof(identifier_, s_key, gen_->prime(),
+	                                                            gen_->generator(), A, B, salt_);
 	Botan::BigInt expected_s_proof = srp::generate_server_proof(A, c_proof, c_key);
 
 	EXPECT_EQ(expected_c_proof, c_proof) << "Server could not verify client proof!";
@@ -145,21 +145,21 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 }
 
 TEST_F(srp6SessionTest, ServerZeroEphemeral) {
-	EXPECT_THROW(server->session_key(0), srp::exception)
+	EXPECT_THROW(server_->session_key(0), srp::exception)
 		<< "Public ephemeral key should never be zero!";
 }
 
 TEST_F(srp6SessionTest, ServerNegativeEphemeral) {
-	EXPECT_THROW(server->session_key(Botan::BigInt("-10")), srp::exception)
+	EXPECT_THROW(server_->session_key(Botan::BigInt("-10")), srp::exception)
 		<< "Public ephemeral key should never be negative!";
 }
 
 TEST_F(srp6SessionTest, ClientZeroEphemeral) {
-	EXPECT_THROW(client->session_key(0, salt), srp::exception)
+	EXPECT_THROW(client_->session_key(0, salt_), srp::exception)
 		<< "Public ephemeral key should never be zero!";
 }
 
 TEST_F(srp6SessionTest, ClientNegativeEphemeral) {
-	EXPECT_THROW(client->session_key(Botan::BigInt("-10"), salt), srp::exception)
+	EXPECT_THROW(client_->session_key(Botan::BigInt("-10"), salt_), srp::exception)
 		<< "Public ephemeral key should never be negative!";
 }

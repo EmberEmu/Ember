@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>AreaPOI</name>
+	<alias>area_poi</alias>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>importance</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>icon</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>faction</name>
+		<key>
+			<type>foreign</type>
+			<parent>Faction</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_x</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_y</name>
+	</field>
+
+	<field>
+		<type>float</type>
+		<name>location_z</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>map</name>
+		<key>
+			<type>foreign</type>
+			<parent>Map</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>flags</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>description</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>world_state</name>
+		<key>
+			<type>foreign</type>
+			<parent>WorldStateUI</parent>
+		</key>
+	</field>
+</dbc>

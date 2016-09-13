@@ -19,8 +19,13 @@ namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
                            log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
+<<<<<<< HEAD
                            : handler_(builder.create(remote_address())),
                              logger_(logger), pool_(pool),
+=======
+                           : handler_(builder.create(remote_address() + ":" + std::to_string(remote_port()))),
+                             logger_(logger), pool_(pool), grunt_handler_(logger),
+>>>>>>> spark-new
                              NetworkSession(sessions, std::move(socket), logger) {
 	handler_.send = std::bind(&LoginSession::write_chain, this, std::placeholders::_1);
 	handler_.execute_async = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
@@ -67,12 +72,16 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 }
 
 // todo use a single chain here and create a write queue instead
+<<<<<<< HEAD
 void LoginSession::write_chain(grunt::PacketHandle packet) {
+=======
+void LoginSession::write_chain(const grunt::Packet& packet) {
+>>>>>>> spark-new
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto chain = std::make_shared<spark::BufferChain<1024>>();
+	auto chain = std::make_shared<spark::ChainedBuffer<1024>>();
 	spark::BinaryStream stream(*chain);
-	packet->write_to_stream(stream);
+	packet.write_to_stream(stream);
 	NetworkSession::write_chain(chain);
 }
 

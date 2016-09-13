@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>LightSkybox</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>skybox_model_path</name>
+	</field>
+</dbc>

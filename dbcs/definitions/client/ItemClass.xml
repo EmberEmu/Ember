@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>ItemClass</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>subclass_map</name>
+		<key>
+			<type>foreign</type>
+			<parent>ItemSubClass</type>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Class</name>
+		<options>
+			<option name="item" value="0x00" />
+			<option name="weapon" value="0x01" />
+		</options>
+	</enum>
+
+	<field>
+		<type>Class</type>
+		<name>item_class</name>
+	</field>
+</dbc>

@@ -44,18 +44,21 @@ std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::Seve
 	el::FileSink::Mode mode = (mode_str == "append")? el::FileSink::Mode::APPEND :
 	                                                  el::FileSink::Mode::TRUNCATE;
 
-	auto file_sink = std::make_unique<el::FileSink>(severity, el::Filter(filter), path, mode);
-	file_sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
-	file_sink->log_severity(args["file_log.log_severity"].as<bool>());
-	file_sink->log_date(args["file_log.log_timestamp"].as<bool>());
-	file_sink->time_format(args["file_log.timestamp_format"].as<std::string>());
-	file_sink->midnight_rotate(args["file_log.midnight_rotate"].as<bool>());
-	return std::move(file_sink);
+	auto sink = std::make_unique<el::FileSink>(severity, el::Filter(filter), path, mode);
+	sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
+	sink->log_severity(args["file_log.log_severity"].as<bool>());
+	sink->log_date(args["file_log.log_timestamp"].as<bool>());
+	sink->time_format(args["file_log.timestamp_format"].as<std::string>());
+	sink->midnight_rotate(args["file_log.midnight_rotate"].as<bool>());
+	return std::move(sink);
 }
 
 std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
-	return std::make_unique<el::ConsoleSink>(severity, el::Filter(filter));
+	auto colourise = args["console_log.colours"].as<bool>();
+	auto sink = std::make_unique<el::ConsoleSink>(severity, el::Filter(filter));
+	sink->colourise(colourise);
+	return std::move(sink);
 }
 
 } // unnamed

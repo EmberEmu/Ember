@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>WorldStateUI</name>
+	<alias>world_state_ui</alias>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>map</name>
+		<key>
+			<type>foreign</type>
+			<parent>Map</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>area_table</name>
+		<key>
+			<type>foreign</type>
+			<parent>AreaTable</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>icon</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>state_variable</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>tooltip</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>state</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>world_state</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>type</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>dynamic_icon</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>dynamic_tooltip</name>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>extended_ui</name>
+	</field>
+
+	<field>
+		<type>uint32[3]</type>
+		<name>unknown</name>
+	</field>
+</dbc>

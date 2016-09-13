@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharVariations</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+		<key>
+			<type>foreign</key>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown_1</name>
+	</field>
+
+	<field>
+		<type>int32[2]</type>
+		<name>mask</name>
+	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown_2</name>
+	</field>
+</dbc>

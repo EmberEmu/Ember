@@ -9,10 +9,11 @@
 #pragma once
 
 #include <cstdint>
+#include <shared/smartenum.hpp>
 
 namespace ember { namespace grunt {
 
-enum class ResultCode : std::uint8_t {
+smart_enum_class(ResultCode, std::uint8_t,
 	SUCCESS                     = 0x00,
 	FAIL_UNKNOWN0               = 0x01, 
 	FAIL_UNKNOWN1               = 0x02,
@@ -28,7 +29,7 @@ enum class ResultCode : std::uint8_t {
 	FAIL_SUSPENDED              = 0x0C,
 	FAIL_NOACCESS               = 0x0D,
 	SUCCESS_SURVEY              = 0x0E,
-	FAIL_PARENTAL_CONTROL       = 0x0F,
-};
+	FAIL_PARENTAL_CONTROL       = 0x0F
+)
 
 }} // grunt, ember

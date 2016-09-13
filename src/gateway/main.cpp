@@ -1,40 +1,56 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "LogFilters.h"
+#include "Config.h"
+#include "Locator.h"
+#include "FilterTypes.h"
+#include "RealmQueue.h"
+#include "ServicePool.h"
+#include "AccountService.h"
+#include "EventDispatcher.h"
+#include "CharacterService.h"
+#include "RealmService.h"
+#include "NetworkListener.h"
+#include <spark/Spark.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <logger/Logging.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
+#include <dbcreader/DBCReader.h>
+#include <shared/database/daos/RealmDAO.h>
+#include <shared/database/daos/UserDAO.h>
+#include <shared/util/xoroshiro128plus.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <botan/auto_rng.h>
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <stdexcept>
 
+const std::string APP_NAME = "Realm Gateway";
+
 namespace el = ember::log;
-namespace ef = ember::filter;
+namespace es = ember::spark;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
+using namespace std::chrono_literals;
 
 void launch(const po::variables_map& args, el::Logger* logger);
+unsigned int check_concurrency(el::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
-ember::drivers::MySQL init_db_driver(const po::variables_map& args);
-int fetch_realm(unsigned int id);
-
-int fetch_realm(unsigned int id) {
-	return 0;
-}
+void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -45,29 +61,134 @@ int fetch_realm(unsigned int id) {
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner("Realm Gateway");
+	ember::print_banner(APP_NAME);
+	ember::util::set_window_title(APP_NAME);
 
-	const po::variables_map args = std::move(parse_arguments(argc, argv));
+	const po::variables_map args = parse_arguments(argc, argv);
 
 	auto logger = ember::util::init_logging(args);
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
+	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
-	LOG_INFO(logger) << "Retrieving realm configuration..."<< LOG_SYNC;
+#ifdef DEBUG_NO_THREADS
+	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+#endif
 
-	auto realm_id = args["realm.id"].as<unsigned short>();
-	auto realm = fetch_realm(realm_id);
+	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
+	Botan::AutoSeeded_RNG rng;
+	rng.randomize((Botan::byte*)ember::rng::xorshift::seed, sizeof(ember::rng::xorshift::seed));
 
-	auto max_slots = args["realm.max-slots"].as<unsigned int>();
-	auto reserved_slots = args["realm.reserved-slots"].as<unsigned int>();
+	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
+	ember::dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
+		LOG_DEBUG(logger) << message << LOG_SYNC;
+	});
+
+	auto dbc_store = loader.load({"AddonData"});
+
+	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
+	ember::dbc::link(dbc_store);
+
+	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
+	auto db_config_path = args["database.config_path"].as<std::string>();
+	auto driver(ember::drivers::init_db_driver(db_config_path));
+
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
+	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
+
+	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
+	auto realm_dao = ember::dal::realm_dao(pool);
+
+	LOG_INFO(logger) << "Retrieving realm information..."<< LOG_SYNC;
+	auto realm = realm_dao->get_realm(args["realm.id"].as<unsigned int>());
 	
+	if(!realm) {
+		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
+	}
+
+	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
+	ember::util::set_window_title(APP_NAME + " - " + realm->name);
+
+	// Set config
+	ember::Config config;
+	config.max_slots = args["realm.max_slots"].as<unsigned int>();
+	config.list_zone_hide = args["quirks.list_zone_hide"].as<bool>();
+	config.realm = realm.get_ptr();
+
+	// Determine concurrency level
+	unsigned int concurrency = check_concurrency(logger);
+
+	if(args.count("misc.concurrency")) {
+		concurrency = args["misc.concurrency"].as<unsigned int>();
+	}
+
+	// Start ASIO service pool
+	LOG_INFO(logger) << "Starting service pool with " << concurrency << " threads..." << LOG_SYNC;
+	ember::ServicePool service_pool(concurrency);
+
+	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
+	ember::EventDispatcher dispatcher(service_pool);
+
+	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
+	auto s_address = args["spark.address"].as<std::string>();
+	auto s_port = args["spark.port"].as<std::uint16_t>();
+	auto mcast_group = args["spark.multicast_group"].as<std::string>();
+	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
+	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
+	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+
+	auto& service = service_pool.get_service();
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	es::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
+	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
+	                               mcast_port, logger, spark_filter);
+
+	ember::RealmQueue queue_service(service_pool.get_service());
+	ember::RealmService realm_svc(*realm, spark, discovery, logger);
+	ember::AccountService acct_svc(spark, discovery, logger);
+	ember::CharacterService char_svc(spark, discovery, config, logger);
+	
+	// set services - not the best design pattern but it'll do for now
+	ember::Locator::set(&dispatcher);
+	ember::Locator::set(&queue_service);
+	ember::Locator::set(&realm_svc);
+	ember::Locator::set(&acct_svc);
+	ember::Locator::set(&char_svc);
+	ember::Locator::set(&config);
+	
+	// Start network listener
+	auto interface = args["network.interface"].as<std::string>();
+	auto port = args["network.port"].as<std::uint16_t>();
+	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
+
+	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
+
+	ember::NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
+
+	signals.async_wait([&](const boost::system::error_code& error, int signal) {
+		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+		discovery.shutdown();
+		spark.shutdown();
+		queue_service.shutdown();
+		pool.close();
+		service_pool.stop();
+	});
+
+	service.dispatch([&, logger]() {
+		realm_svc.set_realm_online();
+		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+	});
+
+	service_pool.run();
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
@@ -86,19 +207,31 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
 	config_opts.add_options()
+		("quirks.list_zone_hide", po::bool_switch()->required())
+		("dbc.path", po::value<std::string>()->required())
+		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())
-		("realm.max-slots", po::value<unsigned int>()->required())
-		("realm.reserved-slots", po::value<unsigned int>()->required())
-		("network.interface", po::value<unsigned int>()->required())
+		("realm.max_slots", po::value<unsigned int>()->required())
+		("realm.reserved_slots", po::value<unsigned int>()->required())
+		("spark.address", po::value<std::string>()->required())
+		("spark.port", po::value<std::uint16_t>()->required())
+		("spark.multicast_interface", po::value<std::string>()->required())
+		("spark.multicast_group", po::value<std::string>()->required())
+		("spark.multicast_port", po::value<std::uint16_t>()->required())
 		("network.interface", po::value<std::string>()->required())
-		("network.port", po::value<unsigned short>()->required())
+		("network.port", po::value<std::uint16_t>()->required())
+		("network.tcp_no_delay", po::bool_switch()->default_value(true))
+		("network.compression", po::value<std::uint8_t>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
-		("remote_log.filter-mask", po::value<unsigned int>()->required())
+		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", po::bool_switch()->required())
 		("remote_log.verbosity", po::value<std::string>()->required())
+		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("remote_log.service_name", po::value<std::string>()->required())
 		("remote_log.host", po::value<std::string>()->required())
-		("remote_log.port", po::value<unsigned short>()->required())
+		("remote_log.port", po::value<std::uint16_t>()->required())
 		("file_log.verbosity", po::value<std::string>()->required())
+		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("file_log.path", po::value<std::string>()->default_value("gateway.log"))
 		("file_log.timestamp_format", po::value<std::string>())
 		("file_log.mode", po::value<std::string>()->required())
@@ -106,13 +239,13 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("file_log.midnight_rotate", po::bool_switch()->required())
 		("file_log.log_timestamp", po::bool_switch()->required())
 		("file_log.log_severity", po::bool_switch()->required())
-		("database.username", po::value<std::string>()->required())
-		("database.password", po::value<std::string>()->default_value(""))
-		("database.database", po::value<std::string>()->required())
-		("database.host", po::value<std::string>()->required())
-		("database.port", po::value<unsigned short>()->required())
-		("database.min_connections", po::value<unsigned short>()->required())
-		("database.max_connections", po::value<unsigned short>()->required());
+		("database.config_path", po::value<std::string>()->required())
+		("metrics.enabled", po::bool_switch()->required())
+		("metrics.statsd_host", po::value<std::string>()->required())
+		("metrics.statsd_port", po::value<std::uint16_t>()->required())
+		("monitor.enabled", po::bool_switch()->required())
+		("monitor.interface", po::value<std::string>()->required())
+		("monitor.port", po::value<std::uint16_t>()->required());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
@@ -134,14 +267,50 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::store(po::parse_config_file(ifs, config_opts), options);
 	po::notify(options);
 
-	return options;
+	return std::move(options);
 }
 
-ember::drivers::DriverType init_db_driver(const po::variables_map& args) {
-	auto user = args["database.username"].as<std::string>();
-	auto pass = args["database.password"].as<std::string>();
-	auto host = args["database.host"].as<std::string>();
-	auto port = args["database.port"].as<unsigned short>();
-	auto db   = args["database.database"].as<std::string>();
-	return {user, pass, host, port, db};
+void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+	using ember::LF_DB_CONN_POOL;
+
+	switch(severity) {
+		case(ep::Severity::DEBUG) :
+			LOG_DEBUG_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::INFO) :
+			LOG_INFO_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::WARN) :
+			LOG_WARN_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::ERROR) :
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		case(ep::Severity::FATAL) :
+			LOG_FATAL_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+			break;
+		default:
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+	}
+}
+
+/*
+ * The concurrency level returned is usually the number of logical cores
+ * in the machine but the standard doesn't guarantee that it won't be zero.
+ * In that case, we just set the minimum concurrency level to two.
+ */
+unsigned int check_concurrency(el::Logger* logger) {
+	unsigned int concurrency = std::thread::hardware_concurrency();
+
+	if(!concurrency) {
+		concurrency = 2;
+		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
+	}
+
+#ifdef DEBUG_NO_THREADS
+	return 0;
+#else
+	return concurrency;
+#endif
 }

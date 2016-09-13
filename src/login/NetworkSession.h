@@ -11,8 +11,7 @@
 #include "SessionManager.h"
 #include "FilterTypes.h"
 #include <logger/Logging.h>
-#include <spark/BufferChain.h>
-#include <shared/PacketStream.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
@@ -25,33 +24,47 @@
 namespace ember {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 300 };
+	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
-	spark::BufferChain<1024> inbound_buffer_;
+	spark::ChainedBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
+<<<<<<< HEAD
 	const std::string remote_address_;
 	log::Logger* logger_;
+=======
+	log::Logger* logger_;
+	bool stopped_;
+>>>>>>> spark-new
 
 	void read() {
 		auto self(shared_from_this());
-		auto tail = inbound_buffer_.tail();
+		auto tail = inbound_buffer_.back();
 
 		// if the buffer chain has no more space left, allocate & attach new node
 		if(!tail->free()) {
 			tail = inbound_buffer_.allocate();
-			inbound_buffer_.attach(tail);
+			inbound_buffer_.push_back(tail);
 		}
 
+<<<<<<< HEAD
+=======
+		set_timer();
+>>>>>>> spark-new
 		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 			strand_.wrap(create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
+				if(stopped_) {
+					return;
+				}
+
+				timer_.cancel();
+
 				if(!ec) {
-					set_timer();
 					inbound_buffer_.advance_write_cursor(size);
 
 					if(handle_packet(inbound_buffer_)) {
@@ -70,15 +83,19 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		auto self(shared_from_this());
 
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
+<<<<<<< HEAD
 		timer_.async_wait(strand_.wrap(
 			[this, self](const boost::system::error_code& ec) {
 				timeout(ec);
 			}
 		));
+=======
+		timer_.async_wait(strand_.wrap(std::bind(&NetworkSession::timeout, this, std::placeholders::_1)));
+>>>>>>> spark-new
 	}
 
 	void timeout(const boost::system::error_code& ec) {
-		if(ec) { // if ec is set, the timer was aborted (session close / refreshed)
+		if(ec || stopped_) { // if ec is set, the timer was aborted (session close / refreshed)
 			return;
 		}
 
@@ -95,20 +112,25 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
+			stopped_ = true;
 			boost::system::error_code ec; // we don't care about any errors
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 			socket_.close(ec);
+			timer_.cancel();
 		});
 	}
 
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
+<<<<<<< HEAD
 	                 strand_(socket.get_io_service()), logger_(logger),
 	                 remote_address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
+=======
+	                 strand_(socket.get_io_service()), logger_(logger), stopped_(false) { }
+>>>>>>> spark-new
 
 	virtual void start() {
-		set_timer();
 		read();
 	}
 
@@ -120,25 +142,8 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	void write(std::shared_ptr<Packet> packet) {
-		auto self(shared_from_this());
-
-		if(!socket_.is_open()) {
-			return;
-		}
-
-		socket_.async_send(boost::asio::buffer(*packet),
-			strand_.wrap(create_alloc_handler(allocator_,
-			[this, packet, self](boost::system::error_code ec, std::size_t) {
-				if(ec && ec != boost::asio::error::operation_aborted) {
-					close_session();
-				}
-			}
-		)));
-	}
-
 	template<std::size_t BlockSize>
-	void write_chain(std::shared_ptr<spark::BufferChain<BlockSize>> chain) {
+	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {

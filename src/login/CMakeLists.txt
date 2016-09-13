@@ -42,6 +42,10 @@ set(LIBRARY_HDR
     Patcher.h
     FilterTypes.h
     MonitorCallbacks.h
+    AccountService.h
+    RealmService.h
+    PINAuthenticator.h
+    ExecutablesChecksum.h
     )
 
 set(LIBRARY_SRC
@@ -52,6 +56,10 @@ set(LIBRARY_SRC
     Authenticator.cpp
     Patcher.cpp
     MonitorCallbacks.cpp
+    AccountService.cpp
+    RealmService.cpp
+    PINAuthenticator.cpp
+    ExecutablesChecksum.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

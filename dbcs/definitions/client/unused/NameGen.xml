@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>NameGen</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref</type>
+		<name>name</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</key>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<enum>
+		<type>int32</type>
+		<name>Sex</name>
+		<options>
+			<option name="male" value="0x00" />
+			<option name="female" value="0x01" />
+		</options>
+	</enum>
+
+	<field>
+		<type>Sex</type>
+		<name>sex</name>
+	</field>
+</dbc>

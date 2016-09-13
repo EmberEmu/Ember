@@ -1,0 +1,5 @@
+namespace ember.messaging;
+
+enum Service : int {
+	Reserved, Core, Tracking, Account, RealmStatus, Character
+}

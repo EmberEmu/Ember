@@ -44,27 +44,27 @@ auto LoginAuthenticator::proof_check(const grunt::client::LoginProof* proof) -> 
 	return { false, 0 };
 }
 
-std::string LoginAuthenticator::session_key() {
-	Botan::BigInt key(Botan::BigInt::decode(sess_key_));
-	std::stringstream keystr; keystr << key;
-	return keystr.str();
+srp6::SessionKey LoginAuthenticator::session_key() {
+	return sess_key_;
 }
 
-ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const std::string& session_key,
-                                               const Botan::SecureVector<Botan::byte>& bytes)
+ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
+                                               const Botan::SecureVector<Botan::byte>& salt)
                                                : rcon_user_(std::move(username)) {
-	rcon_chall_ = bytes;
-	sess_key_ = Botan::BigInt::encode(Botan::BigInt(session_key));
+	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
+	std::transform(rcon_user_.begin(), rcon_user_.end(), rcon_user_.begin(), ::toupper);
+	salt_ = salt;
+	sess_key_ = Botan::BigInt::encode(session_key);
 }
 
-bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof* proof) {
+bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof* packet) {
 	Botan::SHA_160 hasher;
 	hasher.update(rcon_user_);
-	hasher.update(proof->R1.data(), proof->R1.size());
-	hasher.update(rcon_chall_);
+	hasher.update(packet->salt.data(), packet->salt.size());
+	hasher.update(salt_);
 	hasher.update(sess_key_);
 	auto res = hasher.final();
-	return std::equal(res.begin(), res.end(), std::begin(proof->R2), std::end(proof->R2));
+	return std::equal(res.begin(), res.end(), std::begin(packet->proof), std::end(packet->proof));
 }
 
 } // ember

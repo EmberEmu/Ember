@@ -11,11 +11,11 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstdint>
 
-#undef ERROR //preventing a conflict with wingdi.h (dragged in indirectly by ASIO)
+#undef ERROR
 
 namespace ember { namespace log {
 
-enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, DISABLED };
+enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR_, FATAL, DISABLED };
 BOOST_STRONG_TYPEDEF(std::uint_fast32_t, Filter);
 
 struct RecordDetail {

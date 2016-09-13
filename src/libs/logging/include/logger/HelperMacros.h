@@ -52,13 +52,14 @@ if(false) { \
 
 #if !NO_LOGGING && !NO_ERROR_LOGGING
 #define LOG_ERROR(logger) \
-	if(logger->severity() <= ember::log::Severity::ERROR) { \
-		*logger << ember::log::Severity::ERROR
+	if(logger->severity() <= ember::log::Severity::ERROR_) { \
+		*logger << ember::log::Severity::ERROR_
 #else
 #define LOG_ERROR(logger) \
 if(false) { \
 		*logger
 #endif
+
 
 #if !NO_LOGGING && !NO_FATAL_LOGGING
 #define LOG_FATAL(logger) \
@@ -112,13 +113,14 @@ if(false) { \
 
 #if !NO_LOGGING && !NO_ERROR_LOGGING
 #define LOG_ERROR_FILTER(logger, type) \
-	if(logger->severity() <= ember::log::Severity::ERROR && !(logger->filter() & type)) { \
-		*logger << ember::log::Severity::ERROR << ember::log::Filter(type)
+	if(logger->severity() <= ember::log::Severity::ERROR_ && !(logger->filter() & type)) { \
+		*logger << ember::log::Severity::ERROR_ << ember::log::Filter(type)
 #else
 #define LOG_ERROR_FILTER(logger, type) \
 if(false) { \
 		*logger
 #endif
+
 
 #if !NO_LOGGING && !NO_FATAL_LOGGING
 #define LOG_FATAL_FILTER(logger, type) \
