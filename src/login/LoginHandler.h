@@ -37,6 +37,8 @@ class NetworkSession;
 class Metrics;
 
 class LoginHandler {
+	const static int HASH_LENGTH = 20;
+
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
 		FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT, FETCHING_SESSION,

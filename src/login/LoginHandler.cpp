@@ -305,13 +305,13 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	return result;
 }
 
-bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, 20>& hash,
+bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH_LENGTH>& hash,
 											 const Botan::BigInt& salt, bool reconnect) {
 	auto decoded = Botan::BigInt::encode(salt);
 	std::reverse(decoded.begin(), decoded.end());
 	return validate_client_integrity(hash, decoded.begin(), decoded.size(), reconnect);
 }
-bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
+bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH_LENGTH>& client_hash,
                                              const std::uint8_t* salt, std::size_t len,
                                              bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -324,7 +324,7 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, 20>&
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		Botan::SecureVector<Botan::byte> exe_checksum(20);
+		Botan::SecureVector<Botan::byte> exe_checksum(HASH_LENGTH);
 		hash = exe_checksum_->finalise(exe_checksum, salt, len);
 	} else {
 		hash = exe_checksum_->finalise(exe_checksum_->checksum(checksum_salt_), salt, len);
