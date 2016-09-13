@@ -52,12 +52,9 @@ Botan::SecureVector<Botan::byte> ExecutableChecksum::checksum(const Botan::Secur
 }
 
 Botan::SecureVector<Botan::byte> ExecutableChecksum::finalise(const Botan::SecureVector<Botan::byte>& checksum,
-                                                              const Botan::BigInt& client_seed) {
-	auto encoded = Botan::BigInt::encode(client_seed);
-	std::reverse(encoded.begin(), encoded.end());
-
+															  const std::uint8_t* client_seed, std::size_t len) {
 	Botan::SHA_160 hasher;
-	hasher.update(encoded);
+	hasher.update(client_seed, len);
 	hasher.update(checksum);
 	auto hash = hasher.final();
 	return hash;

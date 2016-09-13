@@ -28,7 +28,7 @@ public:
 	Opcode opcode;
 	std::array<Botan::byte, 16> salt;
 	std::array<Botan::byte, 20> proof;
-	std::array<Botan::byte, 20> client_checksum; // exe checksum (just add salt^)
+	std::array<Botan::byte, 20> client_checksum;
 	std::uint8_t key_count;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

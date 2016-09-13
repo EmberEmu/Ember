@@ -26,7 +26,7 @@ public:
 	Botan::SecureVector<Botan::byte> checksum(const Botan::SecureVector<Botan::byte>& seed) const;
 
 	static Botan::SecureVector<Botan::byte> finalise(const Botan::SecureVector<Botan::byte>& checksum,
-	                                                 const Botan::BigInt& client_seed);
+													 const std::uint8_t* seed, std::size_t len);
 };
 
 } // ember

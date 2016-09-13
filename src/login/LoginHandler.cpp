@@ -242,14 +242,14 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	auto response = std::make_unique<grunt::server::ReconnectChallenge>();
 	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
 	response->result = grunt::ResultCode::SUCCESS;
-	auto salt = Botan::AutoSeeded_RNG().random_vec(response->salt.size());
-	std::copy(salt.begin(), salt.end(), response->salt.data());
+	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response->salt.size());
+	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response->salt.data());
 
 	auto res = action->get_result();
 
 	if(res.first == messaging::account::Status::OK) {
 		state_ = State::RECONNECT_PROOF;
-		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, salt);
+		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, checksum_salt_);
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response->result = grunt::ResultCode::FAIL_NOACCESS;
@@ -305,15 +305,32 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	return result;
 }
 
-bool LoginHandler::validate_client_integrity(const grunt::client::LoginProof* proof) {
+bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, 20>& hash,
+											 const Botan::BigInt& salt, bool reconnect) {
+	auto decoded = Botan::BigInt::encode(salt);
+	std::reverse(decoded.begin(), decoded.end());
+	return validate_client_integrity(hash, decoded.begin(), decoded.size(), reconnect);
+}
+bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
+                                             const std::uint8_t* salt, std::size_t len,
+                                             bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!exe_checksum_) {
 		return true;
 	}
 
-	auto hash = exe_checksum_->finalise(exe_checksum_->checksum(checksum_salt_), proof->A);
-	return std::equal(hash.begin(), hash.end(), proof->client_checksum.begin());
+	Botan::SecureVector<Botan::byte> hash;
+
+	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
+	if(reconnect) {
+		Botan::SecureVector<Botan::byte> exe_checksum(20);
+		hash = exe_checksum_->finalise(exe_checksum, salt, len);
+	} else {
+		hash = exe_checksum_->finalise(exe_checksum_->checksum(checksum_salt_), salt, len);
+	}
+
+	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
 }
 
 void LoginHandler::check_login_proof(const grunt::Packet* packet) {
@@ -324,8 +341,8 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	if(!proof_packet) {
 		throw std::runtime_error("Expected CMD_AUTH_LOGIN_PROOF");
 	}
-
-	if(!validate_client_integrity(proof_packet)) {
+	
+	if(!validate_client_integrity(proof_packet->client_checksum, proof_packet->A, false)) {
 		send_login_proof(grunt::ResultCode::FAIL_VERSION_INVALID);
 		return;
 	}
@@ -435,6 +452,12 @@ void LoginHandler::check_reconnect_proof(const grunt::Packet* packet) {
 
 	if(!proof) {
 		throw std::runtime_error("Expected CMD_AUTH_RECONNECT_PROOF");
+	}
+	
+	if(!validate_client_integrity(proof->client_checksum, proof->salt.data(), proof->salt.size(), true)) {
+		metrics_.increment("login_failure");
+		send_reconnect_proof(grunt::ResultCode::FAIL_VERSION_INVALID);
+		return;
 	}
 
 	if(reconn_auth_->proof_check(proof)) {

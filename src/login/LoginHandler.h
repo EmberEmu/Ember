@@ -28,6 +28,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace ember {
 
@@ -71,7 +72,13 @@ class LoginHandler {
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
 	bool validate_pin(const grunt::client::LoginProof* packet);
-	bool validate_client_integrity(const grunt::client::LoginProof* proof);
+
+	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
+								   const Botan::BigInt& client_salt, bool reconnect);
+
+	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
+	                               const std::uint8_t* client_salt, std::size_t len,
+	                               bool reconnect);
 
 	void fetch_user(grunt::Opcode opcode, const std::string& username);
 	void fetch_session_key(FetchUserAction* action);
