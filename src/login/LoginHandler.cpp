@@ -230,6 +230,15 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 void LoginHandler::send_reconnect_proof(grunt::ResultCode result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	LOG_DEBUG(logger_) << "Reconnect result for " << user_->username() << ": "
+	                   << grunt::to_string(result) << LOG_ASYNC;
+
+	if(result == grunt::ResultCode::SUCCESS) {
+		metrics_.increment("login_success");
+	} else {
+		metrics_.increment("login_failure");
+	}
+
 	auto response = std::make_unique<grunt::server::ReconnectProof>();
 	response->opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
 	response->result = result;
@@ -455,19 +464,14 @@ void LoginHandler::check_reconnect_proof(const grunt::Packet* packet) {
 	}
 	
 	if(!validate_client_integrity(proof->client_checksum, proof->salt.data(), proof->salt.size(), true)) {
-		metrics_.increment("login_failure");
 		send_reconnect_proof(grunt::ResultCode::FAIL_VERSION_INVALID);
 		return;
 	}
 
 	if(reconn_auth_->proof_check(proof)) {
-		metrics_.increment("login_success");
-		LOG_DEBUG(logger_) << "Successfully reconnected " << reconn_auth_->username() << LOG_ASYNC;
 		state_ = State::FETCHING_CHARACTER_DATA;
 		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
-		metrics_.increment("login_failure");
-		LOG_DEBUG(logger_) << "Failed to reconnect (bad proof) " << reconn_auth_->username() << LOG_ASYNC;
 		send_reconnect_proof(grunt::ResultCode::FAIL_INCORRECT_PASSWORD);
 	}
 }
