@@ -31,13 +31,13 @@ class LoginProof final : public Packet {
 	static const std::size_t WIRE_LENGTH = 74; 
 	static const unsigned int A_LENGTH = 32;
 	static const unsigned int M1_LENGTH = 20;
-	static const unsigned int CRC_LENGTH = 20;
+	static const unsigned int SHA1_LENGTH = 20;
 	static const std::uint8_t PIN_SALT_LENGTH = 16;
 	static const std::uint8_t PIN_HASH_LENGTH = 20;
 
 	std::uint8_t key_count_ = 0;
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 
 		// could just use one buffer but this is safer from silly mistakes
@@ -55,7 +55,7 @@ class LoginProof final : public Packet {
 		stream >> key_count_;
 	}
 
-	bool read_security_type(spark::BinaryStream& stream) {
+	bool read_security_type(spark::SafeBinaryStream& stream) {
 		if(stream.size() < sizeof(TwoFactorSecurity)) {
 			return false;
 		}
@@ -76,7 +76,7 @@ class LoginProof final : public Packet {
 		return true;
 	}
 
-	bool read_pin_data(spark::BinaryStream& stream) {
+	bool read_pin_data(spark::SafeBinaryStream& stream) {
 		if(stream.size() < (pin_salt.size() + pin_hash.size())) {
 			return false;
 		}
@@ -88,7 +88,7 @@ class LoginProof final : public Packet {
 		return true;
 	}
 
-	bool read_key_data(spark::BinaryStream& stream) {
+	bool read_key_data(spark::SafeBinaryStream& stream) {
 		// could use a macro to take care of this - not using sizeof(KeyData) to avoid having to #pragma pack
 		auto key_data_size = sizeof(KeyData::unk_1) + sizeof(KeyData::unk_2) 
 		                     + sizeof(KeyData::unk_3) + sizeof(KeyData::unk_4_hash);
@@ -127,12 +127,12 @@ public:
 	Botan::BigInt A;
 	Botan::BigInt M1;
 	TwoFactorSecurity security;
-	std::array<std::uint8_t, CRC_LENGTH> client_checksum;
+	std::array<std::uint8_t, SHA1_LENGTH> client_checksum;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;
 	std::vector<KeyData> keys;
 
-	void read_optional_data(spark::BinaryStream& stream) {
+	void read_optional_data(spark::SafeBinaryStream& stream) {
 		bool continue_read = true;
 
 		while(continue_read) {
@@ -155,7 +155,7 @@ public:
 		state_ = (read_state_ == ReadState::DONE)? State::DONE : State::CALL_AGAIN;
 	}
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {

@@ -30,7 +30,7 @@ class LoginChallenge final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream.skip(2); // skip the size field - we don't need it
@@ -64,7 +64,7 @@ class LoginChallenge final : public Packet {
 		be::big_to_native_inplace(ip);
 	}
 
-	void read_username(spark::BinaryStream& stream) {
+	void read_username(spark::SafeBinaryStream& stream) {
 		// does the stream hold enough bytes to complete the username?
 		if(stream.size() >= username.size()) {
 			stream.get(username, username.size());
@@ -116,7 +116,7 @@ public:
 	std::uint32_t ip; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -139,7 +139,7 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		if(username.length() > MAX_USERNAME_LEN) {
-			throw bad_packet("Provided username was too long!"); // todo
+			throw bad_packet("Provided username was too long!");
 		}
 
 		auto size = static_cast<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);

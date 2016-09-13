@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <cstddef>
 
 namespace ember { namespace spark {
 
@@ -21,10 +22,12 @@ public:
 
 class buffer_underrun : public exception {
 public:
-	buffer_underrun(std::size_t buff_size, std::size_t read_size)
-		: exception("Buffer underrun - " + std::to_string(read_size) + " byte read requested, buffer contains"
-		            + std::to_string(buff_size) + " bytes") { }
-	buffer_underrun(std::string msg) : exception(msg) { };
+	const std::size_t buff_size, read_size;
+
+	buffer_underrun(std::size_t read_size, std::size_t buff_size)
+		: exception("Buffer underrun - " + std::to_string(read_size) + " byte read requested, buffer contains "
+		            + std::to_string(buff_size) + " bytes"),
+		            buff_size(buff_size), read_size(read_size) { }
 };
 
 }} //spark, ember

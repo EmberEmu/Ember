@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Packet.h"
 #include <stdexcept>
 #include <string>
  
@@ -21,8 +22,7 @@ public:
 
 class bad_packet : public exception {
 public:
-	bad_packet() : exception("Bad packet encountered!") { }
-	explicit bad_packet(const std::string& msg) : exception(msg) { };
+	bad_packet(const std::string& msg) : exception(msg) { }
 };
 
 }} // grunt, ember

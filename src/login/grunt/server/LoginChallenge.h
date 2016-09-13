@@ -28,7 +28,7 @@ class LoginChallenge final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> result;
 		stream >> protocol_ver;
@@ -57,11 +57,11 @@ class LoginChallenge final : public Packet {
 		std::reverse(std::begin(s_buff), std::end(s_buff));
 		s = Botan::BigInt(s_buff, SALT_LENGTH);
 
-		stream.get(crc_salt.data(), crc_salt.size());
+		stream.get(checksum_salt.data(), checksum_salt.size());
 		stream >> static_cast<TwoFactorSecurity>(security);
 	}
 
-	void read_pin_data(spark::BinaryStream& stream) {
+	void read_pin_data(spark::SafeBinaryStream& stream) {
 		if(security != TwoFactorSecurity::PIN || state_ == State::DONE) {
 			return;
 		}
@@ -81,7 +81,7 @@ public:
 	static const std::uint8_t PRIME_LENGTH    = 32;
 	static const std::uint8_t PUB_KEY_LENGTH  = 32;
 	static const std::uint8_t PIN_SALT_LENGTH = 16;
-	static const std::uint8_t CRC_SALT_LENGTH = 16;
+	static const std::uint8_t CHECKSUM_SALT_LENGTH = 16;
 
 	enum class TwoFactorSecurity : std::uint8_t {
 		NONE, PIN
@@ -96,13 +96,13 @@ public:
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	std::array<Botan::byte, CRC_SALT_LENGTH> crc_salt;
+	std::array<Botan::byte, CHECKSUM_SALT_LENGTH> checksum_salt;
 	TwoFactorSecurity security = TwoFactorSecurity::NONE;
 	std::uint32_t pin_grid_seed;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 
 	// todo - early abort (wire length change)
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -148,7 +148,7 @@ public:
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
-		stream.put(crc_salt.data(), crc_salt.size());
+		stream.put(checksum_salt.data(), checksum_salt.size());
 		stream << security;
 
 		if(security == TwoFactorSecurity::PIN) {

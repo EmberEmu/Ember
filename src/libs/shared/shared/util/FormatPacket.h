@@ -15,8 +15,8 @@
 
 namespace ember { namespace util {
 
-inline std::string format_packet(unsigned char* packet, std::size_t size, int columns = 16) {
-	std::size_t rows = ceil(size / static_cast<double>(columns));
+inline std::string format_packet(unsigned char* packet, std::size_t size, unsigned int columns = 16) {
+	auto rows = static_cast<std::size_t>(ceil(size / static_cast<double>(columns)));
 	std::stringstream buffer;
 	auto offset = 0;
 

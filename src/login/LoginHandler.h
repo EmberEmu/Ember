@@ -57,7 +57,7 @@ class LoginHandler {
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
-	Botan::SecureVector<Botan::byte> crc_salt_;
+	Botan::SecureVector<Botan::byte> checksum_salt_;
 
 	void send_realm_list(const grunt::Packet* packet);
 	void initiate_login(const grunt::Packet* packet);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/BinaryStream.h>
+#include <spark/SafeBinaryStream.h>
 
 namespace ember { namespace grunt {
 
@@ -17,7 +18,7 @@ struct Packet {
 		INITIAL, CALL_AGAIN, DONE
 	};
 
-	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
+	virtual State read_from_stream(spark::SafeBinaryStream& stream) = 0;
 	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;
 	virtual ~Packet() = default;
 };

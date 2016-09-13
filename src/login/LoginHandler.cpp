@@ -190,8 +190,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 		packet->pin_salt = pin_auth_.server_salt();
 	}
 
-	crc_salt_ = Botan::AutoSeeded_RNG().random_vec(16);
-	std::copy(crc_salt_.begin(), crc_salt_.end(), packet->crc_salt.data());
+	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(16);
+	std::copy(checksum_salt_.begin(), checksum_salt_.end(), packet->checksum_salt.data());
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
@@ -312,7 +312,7 @@ bool LoginHandler::validate_client_integrity(const grunt::client::LoginProof* pr
 		return true;
 	}
 
-	auto hash = exe_checksum_->finalise(exe_checksum_->checksum(crc_salt_), proof->A);
+	auto hash = exe_checksum_->finalise(exe_checksum_->checksum(checksum_salt_), proof->A);
 	return std::equal(hash.begin(), hash.end(), proof->client_checksum.begin());
 }
 

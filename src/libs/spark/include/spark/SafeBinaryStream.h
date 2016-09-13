@@ -59,6 +59,7 @@ public:
 
 	// terminates when it hits a null-byte or consumes all data in the buffer
 	SafeBinaryStream& operator >>(std::string& dest) {
+		check_read_bounds(1);
 		char byte;
 
 		do { // not overly efficient

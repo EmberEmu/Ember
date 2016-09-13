@@ -29,12 +29,12 @@ class LoginProof final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_head(spark::BinaryStream& stream) {
+	void read_head(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> result;
 	}
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::SafeBinaryStream& stream) {
 		// no need to keep reading - the other fields aren't set
 		if(result != grunt::ResultCode::SUCCESS) {
 			state_ = State::DONE;
@@ -62,7 +62,7 @@ public:
 	Botan::BigInt M2;
 	std::uint32_t account_flags;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < HEADER_LENGTH) {

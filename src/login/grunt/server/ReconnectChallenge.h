@@ -31,7 +31,7 @@ public:
 	std::array<Botan::byte, RAND_LENGTH> salt;
 	std::array<Botan::byte, RAND_LENGTH> rand2; // probably another salt for client integrity checking, todo
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {

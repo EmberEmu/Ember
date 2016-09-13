@@ -51,7 +51,7 @@ class RealmList final : public Packet {
 		return static_cast<std::uint16_t>(packet_size);
 	}
 
-	void read_size(spark::BinaryStream& stream) {
+	void read_size(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> size;
 		be::little_to_native_inplace(size);
@@ -63,7 +63,7 @@ class RealmList final : public Packet {
 		state_ = State::CALL_AGAIN;
 	}
 
-	void parse_body(spark::BinaryStream& stream) {
+	void parse_body(spark::SafeBinaryStream& stream) {
 		if(stream.size() < size) {
 			return;
 		}
@@ -133,7 +133,7 @@ public:
 	std::vector<RealmListEntry> realms;
 	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
