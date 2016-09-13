@@ -12,8 +12,10 @@
 #include "GameVersion.h"
 #include "SessionBuilders.h"
 #include "LoginHandlerBuilder.h"
+#include "ExecutablesChecksum.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
+#include <botan/sha160.h>
 #include "Patcher.h"
 #include "RealmList.h"
 #include <logger/Logging.h>
@@ -56,6 +58,7 @@ namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 void print_lib_versions(el::Logger* logger);
 std::vector<ember::GameVersion> client_versions();
@@ -104,6 +107,17 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	Botan::AutoSeeded_RNG rng;
 	rng.randomize(reinterpret_cast<Botan::byte*>(ember::rng::xorshift::seed),
 	              sizeof(ember::rng::xorshift::seed));
+
+	// Load binaries for integrity checking
+	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
+	std::unique_ptr<ember::ExecutableChecksum> exe_check;
+
+	if(args["integrity.enabled"].as<bool>()) {
+		auto bins = { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s, "dbghelp.dll"s, "unicows.dll"s };
+		auto bin_path = args["integrity.bin_path"].as<std::string>();
+
+		exe_check = std::make_unique<ember::ExecutableChecksum>(bin_path, bins);
+	}
 
 	unsigned int concurrency = check_concurrency(logger);
 
@@ -175,7 +189,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	// Start login server
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, "temp");
-	ember::LoginHandlerBuilder builder(logger, patcher, *user_dao, acct_svc, realm_list, *metrics);
+	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc, realm_list, *metrics);
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
 	auto interface = args["network.interface"].as<std::string>();
@@ -249,6 +263,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
+		("integrity.enabled", po::bool_switch()->default_value(false))
+		("integrity.bin_path", po::value<std::string>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("spark.multicast_interface", po::value<std::string>()->required())

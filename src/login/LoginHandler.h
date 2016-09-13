@@ -11,6 +11,7 @@
 #include "Actions.h"
 #include "AccountService.h"
 #include "Authenticator.h"
+#include "ExecutablesChecksum.h"
 #include "GameVersion.h"
 #include "RealmList.h"
 #include "PINAuthenticator.h"
@@ -20,6 +21,7 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
 #include <botan/bigint.h>
+#include <botan/secmem.h>
 #include <boost/optional.hpp>
 #include <functional>
 #include <memory>
@@ -50,10 +52,12 @@ class LoginHandler {
 	Botan::BigInt server_proof_;
 	const std::string source_;
 	const AccountService& acct_svc_;
+	const ExecutableChecksum* exe_checksum_;
 	PINAuthenticator pin_auth_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
+	Botan::SecureVector<Botan::byte> crc_salt_;
 
 	void send_realm_list(const grunt::Packet* packet);
 	void initiate_login(const grunt::Packet* packet);
@@ -67,6 +71,7 @@ class LoginHandler {
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
 	bool validate_pin(const grunt::client::LoginProof* packet);
+	bool validate_client_integrity(const grunt::client::LoginProof* proof);
 
 	void fetch_user(grunt::Opcode opcode, const std::string& username);
 	void fetch_session_key(FetchUserAction* action);
@@ -82,9 +87,11 @@ public:
 	bool update_state(const grunt::Packet* packet);
 
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
-	             log::Logger* logger, const RealmList& realm_list, std::string source, Metrics& metrics)
+	             const ExecutableChecksum* exe_checksum, log::Logger* logger,
+	             const RealmList& realm_list, std::string source, Metrics& metrics)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
-	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics), pin_auth_(logger) {}
+	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics),
+	               pin_auth_(logger), exe_checksum_(exe_checksum) { }
 };
 
 } // ember

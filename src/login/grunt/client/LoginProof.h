@@ -51,11 +51,7 @@ class LoginProof final : public Packet {
 		std::reverse(std::begin(m1_buff), std::end(m1_buff));
 		M1 = Botan::BigInt(m1_buff, M1_LENGTH);
 
-		Botan::byte crc_buff[CRC_LENGTH];
-		stream.get(crc_buff, CRC_LENGTH);
-		std::reverse(std::begin(crc_buff), std::end(crc_buff));
-		client_checksum = Botan::BigInt(crc_buff, CRC_LENGTH);
-
+		stream.get(client_checksum.data(), client_checksum.size());
 		stream >> key_count_;
 	}
 
@@ -130,8 +126,8 @@ public:
 	Opcode opcode;
 	Botan::BigInt A;
 	Botan::BigInt M1;
-	Botan::BigInt client_checksum;
 	TwoFactorSecurity security;
+	std::array<std::uint8_t, CRC_LENGTH> client_checksum;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;
 	std::vector<KeyData> keys;
@@ -191,9 +187,7 @@ public:
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
 
-		bytes = Botan::BigInt::encode_1363(client_checksum, CRC_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(client_checksum.data(), client_checksum.size());
 
 		stream << static_cast<std::uint8_t>(keys.size());
 

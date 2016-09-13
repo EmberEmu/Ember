@@ -20,6 +20,7 @@ class Patcher;
 class RealmList;
 class Metrics;
 class AccountService;
+class ExecutableChecksum;
 
 class LoginHandlerBuilder {
 	log::Logger* logger_;
@@ -27,16 +28,17 @@ class LoginHandlerBuilder {
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_dao_;
 	const AccountService& acct_svc_;
+	const ExecutableChecksum* exe_check_;
 	Metrics& metrics_;
 
 public:
-	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const dal::UserDAO& user_dao,
-	                    const AccountService& acct_svc, RealmList& realm_list, Metrics& metrics)
+	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const ExecutableChecksum* exe_check,
+	                    const dal::UserDAO& user_dao, const AccountService& acct_svc, RealmList& realm_list, Metrics& metrics)
 	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao), acct_svc_(acct_svc),
-	                      realm_list_(realm_list), metrics_(metrics) {}
+	                      realm_list_(realm_list), metrics_(metrics), exe_check_(exe_check) {}
 
 	LoginHandler create(std::string source) const {
-		return { user_dao_, acct_svc_, patcher_, logger_, realm_list_, std::move(source), metrics_ };
+		return { user_dao_, acct_svc_, patcher_, exe_check_, logger_, realm_list_, std::move(source), metrics_ };
 	}
 };
 

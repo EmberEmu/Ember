@@ -190,8 +190,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge* packet) 
 		packet->pin_salt = pin_auth_.server_salt();
 	}
 
-	auto crc_salt = Botan::AutoSeeded_RNG().random_vec(16);
-	std::copy(crc_salt.begin(), crc_salt.end(), packet->crc_salt.data());
+	crc_salt_ = Botan::AutoSeeded_RNG().random_vec(16);
+	std::copy(crc_salt_.begin(), crc_salt_.end(), packet->crc_salt.data());
 }
 
 void LoginHandler::send_login_challenge(FetchUserAction* action) {
@@ -305,6 +305,17 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	return result;
 }
 
+bool LoginHandler::validate_client_integrity(const grunt::client::LoginProof* proof) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	if(!exe_checksum_) {
+		return true;
+	}
+
+	auto hash = exe_checksum_->finalise(exe_checksum_->checksum(crc_salt_), proof->A);
+	return std::equal(hash.begin(), hash.end(), proof->client_checksum.begin());
+}
+
 void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -314,11 +325,20 @@ void LoginHandler::check_login_proof(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_AUTH_LOGIN_PROOF");
 	}
 
-	auto pin_match = validate_pin(proof_packet);
+	if(!validate_client_integrity(proof_packet)) {
+		send_login_proof(grunt::ResultCode::FAIL_VERSION_INVALID);
+		return;
+	}
+
+	if(!validate_pin(proof_packet)) {
+		send_login_proof(grunt::ResultCode::FAIL_INCORRECT_PASSWORD);
+		return;
+	}
+
 	auto proof = login_auth_->proof_check(proof_packet);
 	auto result = grunt::ResultCode::FAIL_INCORRECT_PASSWORD;
 	
-	if(proof.match && pin_match) {
+	if(proof.match) {
 		if(user_->banned()) {
 			result = grunt::ResultCode::FAIL_BANNED;
 		} else if(user_->suspended()) {

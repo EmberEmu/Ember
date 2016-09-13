@@ -45,6 +45,7 @@ set(LIBRARY_HDR
     AccountService.h
     RealmService.h
     PINAuthenticator.h
+    ExecutablesChecksum.h
     )
 
 set(LIBRARY_SRC
@@ -58,6 +59,7 @@ set(LIBRARY_SRC
     AccountService.cpp
     RealmService.cpp
     PINAuthenticator.cpp
+    ExecutablesChecksum.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
