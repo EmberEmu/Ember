@@ -10,6 +10,7 @@
 
 #include "NetworkSession.h"
 #include "LoginHandler.h"
+#include "grunt/Packet.h"
 #include "grunt/Handler.h"
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
@@ -24,11 +25,7 @@ class Metrics;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);
-<<<<<<< HEAD
-	void write_chain(grunt::PacketHandle packet);
-=======
 	void write_chain(const grunt::Packet& packet);
->>>>>>> spark-new
 	void execute_async(std::shared_ptr<Action> action);
 
 public:

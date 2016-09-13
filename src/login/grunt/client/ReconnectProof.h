@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,6 +24,7 @@ class ReconnectProof final : public Packet {
 	static const std::size_t WIRE_LENGTH = 58;
 	State state_ = State::INITIAL;
 
+public:
 	Opcode opcode = Opcode::CMD_AUTH_RECONNECT_PROOF;
 	std::array<Botan::byte, 16> salt;
 	std::array<Botan::byte, 20> proof;

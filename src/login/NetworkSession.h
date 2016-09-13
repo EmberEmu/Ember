@@ -33,13 +33,9 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	spark::ChainedBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
-<<<<<<< HEAD
 	const std::string remote_address_;
 	log::Logger* logger_;
-=======
-	log::Logger* logger_;
 	bool stopped_;
->>>>>>> spark-new
 
 	void read() {
 		auto self(shared_from_this());
@@ -51,10 +47,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			inbound_buffer_.push_back(tail);
 		}
 
-<<<<<<< HEAD
-=======
 		set_timer();
->>>>>>> spark-new
+
 		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 			strand_.wrap(create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
@@ -83,15 +77,11 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		auto self(shared_from_this());
 
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-<<<<<<< HEAD
 		timer_.async_wait(strand_.wrap(
 			[this, self](const boost::system::error_code& ec) {
 				timeout(ec);
 			}
 		));
-=======
-		timer_.async_wait(strand_.wrap(std::bind(&NetworkSession::timeout, this, std::placeholders::_1)));
->>>>>>> spark-new
 	}
 
 	void timeout(const boost::system::error_code& ec) {
@@ -123,12 +113,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-<<<<<<< HEAD
-	                 strand_(socket.get_io_service()), logger_(logger),
+	                 strand_(socket.get_io_service()), logger_(logger), stopped_(false),
 	                 remote_address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
-=======
-	                 strand_(socket.get_io_service()), logger_(logger), stopped_(false) { }
->>>>>>> spark-new
 
 	virtual void start() {
 		read();
@@ -136,6 +122,10 @@ public:
 
 	std::string remote_address() {
 		return remote_address_;
+	}
+
+	std::uint16_t remote_port() {
+		return socket_.remote_endpoint().port();
 	}
 
 	virtual void close_session() {

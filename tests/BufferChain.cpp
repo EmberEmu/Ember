@@ -73,11 +73,7 @@ TEST(ChainedBufferTest, ReserveFetchConsistency) {
 	std::size_t offset = 0;
 
 	for(auto& buffer : buffers) {
-<<<<<<< HEAD
-		std::memcpy(buffer->storage.data(), text + offset, buffer->size());
-=======
 		std::memcpy(const_cast<char*>(buffer->read_data()), text + offset, buffer->size());
->>>>>>> spark-new
 		offset += buffer->size();
 
 		if(offset > text_len || !offset) {

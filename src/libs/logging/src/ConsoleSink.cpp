@@ -22,7 +22,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
 		for(auto& r : records) {
-			write(r.first.severity, r.first.type, r.second);
+			write(r.first.severity, r.first.type, r.second, false);
 		}
 	}
 }

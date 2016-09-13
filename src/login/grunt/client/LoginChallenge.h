@@ -105,13 +105,9 @@ public:
 		enTW = 'enTW', enCN = 'enCN',
 	};
 
-<<<<<<< HEAD
+
 	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
-	std::uint8_t error; // todo - nobody seems to know what this is, look into it at some point
-=======
-	Opcode opcode;
 	ProtocolVersion protocol_ver;
->>>>>>> spark-new
 	PacketMagic magic;
 	GameVersion version;
 	Platform platform;
