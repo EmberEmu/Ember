@@ -55,7 +55,7 @@ public:
 	std::uint32_t survey_id;
 	std::uint8_t error;
 	std::uint16_t size;
-	std::string data;
+	std::vector<std::uint8_t> data;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
