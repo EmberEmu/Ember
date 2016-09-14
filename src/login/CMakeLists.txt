@@ -19,6 +19,7 @@ set(GRUNT_SRC
     grunt/client/LoginProof.h
     grunt/client/ReconnectProof.h
     grunt/client/RequestRealmList.h
+    grunt/client/SurveyResult.h
     grunt/server/LoginChallenge.h
     grunt/server/ReconnectChallenge.h
     grunt/server/LoginProof.h

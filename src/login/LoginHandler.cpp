@@ -84,7 +84,6 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 	return false;
 }
 
-
 void LoginHandler::initiate_login(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -128,9 +127,16 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 }
 
 void LoginHandler::patch_client(const GameVersion& version) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	// don't know yet
 	//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
 	//write(packet);
+}
+
+void LoginHandler::send_survey() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 }
 
 void LoginHandler::fetch_user(grunt::Opcode opcode, const std::string& username) {

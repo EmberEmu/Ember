@@ -21,9 +21,9 @@ enum class Opcode : std::uint8_t {
 	CMD_REALM_LIST                = 0x10,
 	CMD_XFER_INITIATE             = 0x30,
 	CMD_XFER_DATA                 = 0x31,
-	//CMD_SURVEY_UNKNOWN            = 0x32,
-	//CMD_SURVEY_UNKNOWN_2          = 0x33,
-	//CMD_SURVEY_UNKNOWN_3          = 0x34
+	CMD_XFER_ACCEPT               = 0x32,
+	CMD_XFER_RESUME               = 0x33,
+	CMD_XFER_CANCEL               = 0x34
 };
 
 // These seem to be part of a legacy auth protocol or (more likely) were used by internal services
