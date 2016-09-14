@@ -128,9 +128,9 @@ public:
 		std::uint32_t characters;
 	};
 
-	Opcode opcode = Opcode::CMD_REALM_LIST;
-	std::uint32_t unknown = 0; // appears to be ignored in public clients
+	RealmList() : Packet(Opcode::CMD_REALM_LIST) {}
 
+	std::uint32_t unknown = 0; // appears to be ignored in public clients
 	std::vector<RealmListEntry> realms;
 	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
 

@@ -25,7 +25,8 @@ class ReconnectProof final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Opcode opcode = Opcode::CMD_AUTH_RECONNECT_PROOF;
+	ReconnectProof() : Packet(Opcode::CMD_AUTH_RECONNECT_PROOF) {}
+
 	std::array<Botan::byte, 16> salt;
 	std::array<Botan::byte, 20> proof;
 	std::array<Botan::byte, 20> client_checksum;

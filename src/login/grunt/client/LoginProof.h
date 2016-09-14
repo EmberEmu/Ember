@@ -123,7 +123,8 @@ public:
 		std::array<std::uint8_t, 20> unk_4_hash; // hashed with A or 'salt' if reconnect proof
 	};
 
-	Opcode opcode;
+	LoginProof() : Packet(Opcode::CMD_AUTH_LOGON_PROOF) {}
+
 	Botan::BigInt A;
 	Botan::BigInt M1;
 	TwoFactorSecurity security;

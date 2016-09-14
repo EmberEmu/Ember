@@ -20,7 +20,7 @@ class Patcher {
 	const std::vector<PatchMeta> patches_;
 	const std::vector<GameVersion> versions_;
 	FileMeta survey_;
-	bool survey_active_;
+	std::uint32_t survey_id_;
 
 	void generate_graph();
 
@@ -28,8 +28,8 @@ public:
 	enum class PatchLevel { OK, TOO_OLD, PATCH_AVAILABLE, TOO_NEW };
 
 	Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches);
-	void set_survey(FileMeta survey);
-	bool survey_active() const;
+	void set_survey(FileMeta survey, std::uint32_t id);
+	std::uint32_t survey_id() const;
 	boost::optional<FileMeta> find_patch(const GameVersion& client_version) const;
 	PatchLevel check_version(const GameVersion& client_version) const;
 };

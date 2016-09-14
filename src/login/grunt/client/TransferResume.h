@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,39 +10,44 @@
 
 #include "../Opcodes.h"
 #include "../Packet.h"
-#include "../ResultCodes.h"
+#include "../Exceptions.h"
+#include <boost/assert.hpp>
+#include <boost/endian/conversion.hpp>
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace grunt { namespace server {
+namespace ember { namespace grunt { namespace client {
 
-class ReconnectProof final : public Packet {
-	static const std::size_t WIRE_LENGTH = 2;
+namespace be = boost::endian;
 
+class TransferResume final : public Packet {
+	static const std::size_t WIRE_LENGTH = 9;
 	State state_ = State::INITIAL;
 
 public:
-	ReconnectProof() : Packet(Opcode::CMD_AUTH_RECONNECT_PROOF) {}
+	TransferResume() : Packet(Opcode::CMD_XFER_RESUME) {}
 
-	ResultCode result;
-
+	std::uint64_t offset;
+	
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
+		if(stream.size() < WIRE_LENGTH) {
 			return State::CALL_AGAIN;
 		}
 
 		stream >> opcode;
-		stream >> result;
-		
+		stream >> offset;
+
+		be::little_to_native_inplace(offset);
+
 		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << result;
+		stream << be::native_to_little(offset);
 	}
 };
 
-}}} // server, grunt, ember
+}}} // client, grunt, ember

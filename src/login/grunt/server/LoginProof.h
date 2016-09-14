@@ -52,15 +52,16 @@ class LoginProof final : public Packet {
 		std::reverse(std::begin(m2_buff), std::end(m2_buff));
 		M2 = Botan::BigInt(m2_buff, PROOF_LENGTH);
 
-		stream >> account_flags;
-		be::little_to_native_inplace(account_flags);
+		stream >> survey_id;
+		be::little_to_native_inplace(survey_id);
 	}
 
 public:
-	Opcode opcode = Opcode::CMD_AUTH_LOGON_PROOF;
+	LoginProof() : Packet(Opcode::CMD_AUTH_LOGON_PROOF) {}
+
 	ResultCode result;
 	Botan::BigInt M2;
-	std::uint32_t account_flags;
+	std::uint32_t survey_id = 0;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -88,15 +89,15 @@ public:
 		stream << result;
 
 		// no need to stream the rest of the members
-		if(result != grunt::ResultCode::SUCCESS) {
+		if(result != grunt::ResultCode::SUCCESS && result != grunt::ResultCode::SUCCESS_SURVEY) {
 			return;
 		}
 
 		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.begin(), bytes.size());
-
-		stream << be::native_to_little(account_flags);
+		stream << be::native_to_little(survey_id);
+	
 	}
 };
 

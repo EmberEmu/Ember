@@ -20,11 +20,16 @@ set(GRUNT_SRC
     grunt/client/ReconnectProof.h
     grunt/client/RequestRealmList.h
     grunt/client/SurveyResult.h
+    grunt/client/TransferAccept.h
+    grunt/client/TransferResume.h
+    grunt/client/TransferCancel.h
     grunt/server/LoginChallenge.h
     grunt/server/ReconnectChallenge.h
     grunt/server/LoginProof.h
     grunt/server/ReconnectProof.h
     grunt/server/RealmList.h
+    grunt/server/TransferData.h
+    grunt/server/TransferInitiate.h
 )
 
 set(LIBRARY_HDR
@@ -73,7 +78,7 @@ add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
 target_link_libraries(${LIBRARY_NAME} spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark conpool srp6 logging shared ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark conpool srp6 logging shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/login/ DESTINATION ${CMAKE_INSTALL_PREFIX})

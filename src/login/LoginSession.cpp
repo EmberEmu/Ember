@@ -19,7 +19,7 @@ namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
                            log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
-                           : handler_(builder.create(remote_address() + ":" + std::to_string(remote_port()))),
+                           : handler_(builder.create(remote_address())),
                              logger_(logger), pool_(pool), grunt_handler_(logger),
                              NetworkSession(sessions, std::move(socket), logger) {
 	handler_.send = std::bind(&LoginSession::write_chain, this, std::placeholders::_1);
@@ -32,6 +32,8 @@ bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
+			<< grunt::to_string((*packet)->opcode) << LOG_ASYNC;
 		return handler_.update_state(packet->get());
 	}
 
@@ -70,10 +72,17 @@ void LoginSession::async_completion(std::shared_ptr<Action> action) try {
 void LoginSession::write_chain(const grunt::Packet& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
+		<< grunt::to_string(packet.opcode) << LOG_ASYNC;
+
 	auto chain = std::make_shared<spark::ChainedBuffer<1024>>();
 	spark::BinaryStream stream(*chain);
 	packet.write_to_stream(stream);
 	NetworkSession::write_chain(chain);
+}
+
+void LoginSession::on_chunk_complete() {
+
 }
 
 } // ember

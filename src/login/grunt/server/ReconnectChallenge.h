@@ -26,7 +26,7 @@ class ReconnectChallenge final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Opcode opcode = Opcode::CMD_AUTH_RECONNECT_CHALLENGE;
+	ReconnectChallenge() : Packet(Opcode::CMD_AUTH_RECONNECT_CHALLENGE) {}
 	ResultCode result;
 	std::array<Botan::byte, RAND_LENGTH> salt;
 	std::array<Botan::byte, RAND_LENGTH> rand2; // probably another salt for client integrity checking, todo

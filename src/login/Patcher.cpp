@@ -15,7 +15,7 @@ namespace ember {
 
 Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches)
                  : versions_(std::move(versions)), patches_(std::move(patches)),
-                   survey_active_(false) {
+                   survey_id_(0) {
 	generate_graph();
 }
 
@@ -43,13 +43,13 @@ auto Patcher::check_version(const GameVersion& client_version) const -> PatchLev
 	return PatchLevel::TOO_NEW;
 }
 
-void Patcher::set_survey(FileMeta survey) {
+void Patcher::set_survey(FileMeta survey, std::uint32_t id) {
+	survey_id_ = id;
 	survey_ = std::move(survey);
-	survey_active_ = true;
 }
 
-bool Patcher::survey_active() const {
-	return survey_active_;
+std::uint32_t Patcher::survey_id() const {
+	return survey_id_;
 }
 
 } // ember

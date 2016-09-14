@@ -78,16 +78,17 @@ class LoginChallenge final : public Packet {
 	}
 
 public:
-	static const std::uint8_t PRIME_LENGTH    = 32;
-	static const std::uint8_t PUB_KEY_LENGTH  = 32;
-	static const std::uint8_t PIN_SALT_LENGTH = 16;
+	static const std::uint8_t PRIME_LENGTH         = 32;
+	static const std::uint8_t PUB_KEY_LENGTH       = 32;
+	static const std::uint8_t PIN_SALT_LENGTH      = 16;
 	static const std::uint8_t CHECKSUM_SALT_LENGTH = 16;
+
+	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGIN_CHALLENGE) { }
 
 	enum class TwoFactorSecurity : std::uint8_t {
 		NONE, PIN
 	};
 
-	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	ResultCode result;
 	std::uint8_t protocol_ver = 0;
 	Botan::BigInt B;

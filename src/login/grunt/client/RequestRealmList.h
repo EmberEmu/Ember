@@ -25,7 +25,8 @@ class RequestRealmList final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	Opcode opcode = Opcode::CMD_REALM_LIST;
+	RequestRealmList() : Packet(Opcode::CMD_REALM_LIST) {}
+
 	std::uint32_t unknown; // hardcoded to zero in public client
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

@@ -27,6 +27,7 @@ class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);
 	void write_chain(const grunt::Packet& packet);
 	void execute_async(std::shared_ptr<Action> action);
+	void on_chunk_complete();
 
 public:
 	ThreadPool& pool_;

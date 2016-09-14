@@ -100,8 +100,8 @@ public:
 		enTW = 'enTW', enCN = 'enCN',
 	};
 
+	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGIN_CHALLENGE) {}
 
-	Opcode opcode = Opcode::CMD_AUTH_LOGIN_CHALLENGE;
 	std::uint8_t protocol_ver;
 	Game game;
 	GameVersion version;

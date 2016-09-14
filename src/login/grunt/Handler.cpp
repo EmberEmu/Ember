@@ -52,8 +52,20 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 		case Opcode::CMD_AUTH_RECONNECT_PROOF:
 			curr_packet_ = std::make_unique<client::ReconnectProof>();
 			break;
+		case Opcode::CMD_SURVEY_RESULT:
+			curr_packet_ = std::make_unique<client::SurveyResult>();
+			break;
 		case Opcode::CMD_REALM_LIST:
 			curr_packet_ = std::make_unique<client::RequestRealmList>();
+			break;
+		case Opcode::CMD_XFER_ACCEPT:
+			curr_packet_ = std::make_unique<client::TransferAccept>();
+			break;
+		case Opcode::CMD_XFER_RESUME:
+			curr_packet_ = std::make_unique<client::TransferResume>();
+			break;
+		case Opcode::CMD_XFER_CANCEL:
+			curr_packet_ = std::make_unique<client::TransferCancel>();
 			break;
 		default:
 			throw bad_packet("Unknown opcode encountered!");

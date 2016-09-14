@@ -132,6 +132,11 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
+	void chunked_write() {
+
+
+	}
+
 	template<std::size_t BlockSize>
 	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
 		auto self(shared_from_this());

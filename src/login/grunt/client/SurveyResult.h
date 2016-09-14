@@ -26,15 +26,20 @@ class SurveyResult final : public Packet {
 
 	void read_body(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
-		stream >> unknown;
-		stream >> unknown2;
+		stream >> survey_id;
+		stream >> error;
 		stream >> size;
 
-		be::little_to_native_inplace(unknown);
+		be::little_to_native_inplace(survey_id);
 		be::little_to_native_inplace(size);
 	}
 
 	void read_data(spark::SafeBinaryStream& stream) {
+		if(error) {
+			state_ = State::DONE;
+			return;
+		}
+
 		if(stream.size() >= size) {
 			data.resize(size);
 			stream.get(&data[0], data.size());
@@ -45,9 +50,10 @@ class SurveyResult final : public Packet {
 	}
 
 public:
-	Opcode opcode = Opcode::CMD_SURVEY_RESULT;
-	std::uint32_t unknown;
-	std::uint8_t unknown2;
+	SurveyResult() : Packet(Opcode::CMD_SURVEY_RESULT) {}
+
+	std::uint32_t survey_id;
+	std::uint8_t error;
 	std::uint16_t size;
 	std::string data;
 
@@ -74,8 +80,8 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << be::native_to_little(unknown);
-		stream << unknown2;
+		stream << be::native_to_little(survey_id);
+		stream << error;
 		stream << be::native_to_little(std::uint16_t(data.size()));
 		stream.put(data.data(), data.size());
 	}

@@ -188,7 +188,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start login server
 	const auto allowed_clients = client_versions();
-	ember::Patcher patcher(allowed_clients, "temp");
+	ember::Patcher patcher(allowed_clients, std::vector<ember::PatchMeta>());
+
+	if(args["survey.enabled"].as<bool>()) {
+		ember::FileMeta meta;
+		patcher.set_survey(meta, args["survey.id"].as<std::uint32_t>());
+
+	}
 	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc, realm_list, *metrics);
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
@@ -206,7 +212,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	if(args["monitor.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
 
-		monitor = std::make_unique<ember::Monitor>(
+		monitor = std::make_unique<ember::Monitor>(	
 			service, args["monitor.interface"].as<std::string>(),
 			args["monitor.port"].as<std::uint16_t>(), *metrics
 		);
@@ -263,6 +269,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
+		("survey.enabled", po::bool_switch()->default_value(false))
+		("survey.bin_path", po::value<std::string>()->required())
+		("survey.id", po::value<std::uint32_t>()->required())
 		("integrity.enabled", po::bool_switch()->default_value(false))
 		("integrity.bin_path", po::value<std::string>()->required())
 		("spark.address", po::value<std::string>()->required())

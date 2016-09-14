@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Opcodes.h"
 #include <spark/BinaryStream.h>
 #include <spark/SafeBinaryStream.h>
 
@@ -17,6 +18,10 @@ struct Packet {
 	enum class State {
 		INITIAL, CALL_AGAIN, DONE
 	};
+
+	Opcode opcode;
+
+	Packet(Opcode opcode) : opcode(opcode) { }
 
 	virtual State read_from_stream(spark::SafeBinaryStream& stream) = 0;
 	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;

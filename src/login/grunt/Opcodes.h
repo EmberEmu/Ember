@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <shared/smartenum.hpp>
 #include <cstdint>
 
 namespace ember { namespace grunt {
 
-enum class Opcode : std::uint8_t {
+smart_enum_class(Opcode, std::uint8_t,
 	CMD_AUTH_LOGIN_CHALLENGE      = 0x00,
 	CMD_AUTH_LOGON_PROOF          = 0x01,
 	CMD_AUTH_RECONNECT_CHALLENGE  = 0x02,
@@ -24,7 +25,7 @@ enum class Opcode : std::uint8_t {
 	CMD_XFER_ACCEPT               = 0x32,
 	CMD_XFER_RESUME               = 0x33,
 	CMD_XFER_CANCEL               = 0x34
-};
+)
 
 // These seem to be part of a legacy auth protocol or (more likely) were used by internal services
 // Included for posterity
