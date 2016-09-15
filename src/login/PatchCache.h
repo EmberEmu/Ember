@@ -12,6 +12,4 @@
 
 namespace ember { namespace patch_cache {
 
-std::vector<PatchMeta> fetch(const std::string& path);
-
 }} // patch_cache, ember

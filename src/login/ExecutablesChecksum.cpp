@@ -56,8 +56,7 @@ Botan::SecureVector<Botan::byte> ExecutableChecksum::finalise(const Botan::Secur
 	Botan::SHA_160 hasher;
 	hasher.update(client_seed, len);
 	hasher.update(checksum);
-	auto hash = hasher.final();
-	return hash;
+	return hasher.final();
 }
 
 } // ember

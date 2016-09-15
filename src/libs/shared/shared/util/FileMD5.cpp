@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,15 +14,19 @@
 
 namespace ember { namespace util {
 
-Botan::BigInt generate_md5(const std::string& file) {
-	std::fstream stream(file, std::ios::in | std::ios::binary);
+Botan::SecureVector<Botan::byte> generate_md5(const char* data, const std::size_t len) {
+	Botan::MD5 hasher;
+	return hasher.process(reinterpret_cast<const Botan::byte*>(data), len);
+}
+
+Botan::SecureVector<Botan::byte> generate_md5(const std::string& file) {
+	std::ifstream stream(file, std::ios::in | std::ios::binary | std::ios::ate);
 
 	if(!stream.is_open()) {
-		return "";
+		throw std::runtime_error("Could not open file for MD5, " + file);
 	}
 
-	stream.seekg(0, std::ios::end);
-	std::size_t remaining = stream.tellg();
+	auto remaining = stream.tellg();
 	stream.seekg(0, std::ios::beg);
 
 	Botan::MD5 hasher;
@@ -30,17 +34,17 @@ Botan::BigInt generate_md5(const std::string& file) {
 	std::vector<char> buffer(block_size);
 
 	while(remaining) {
-		std::size_t read_size = remaining > block_size? block_size : remaining;
+		std::size_t read_size = remaining >= block_size? block_size : remaining;
 		stream.read(buffer.data(), read_size);
-		hasher.update(reinterpret_cast<Botan::byte*>(buffer.data()), read_size);
+		hasher.update(reinterpret_cast<const Botan::byte*>(buffer.data()), read_size);
 		remaining -= read_size;
 
 		if(!stream.good()) {
-			return "";
+			throw std::runtime_error("Could not read file for MD5, " + file);
 		}
 	}
 
-	return Botan::BigInt::decode(hasher.final());
+	return hasher.final();
 }
 
 }} // util, ember

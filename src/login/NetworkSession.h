@@ -132,28 +132,27 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	void chunked_write() {
-
-
-	}
-
 	template<std::size_t BlockSize>
-	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain) {
+	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain, bool notify) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
 			return;
 		}
 
+		set_timer();
+
 		socket_.async_send(*chain,
 			strand_.wrap(create_alloc_handler(allocator_,
-			[this, self, chain](boost::system::error_code ec, std::size_t size) {
+			[=](boost::system::error_code ec, std::size_t size) {
 				chain->skip(size);
 
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				} else if(!ec && chain->size()) {
-					write_chain(chain); 
+					write_chain(chain, notify); 
+				} else if(notify) {
+					on_write_complete();
 				}
 			}
 		)));
@@ -162,6 +161,7 @@ public:
 	boost::asio::strand& strand() { return strand_;  }
 
 	virtual bool handle_packet(spark::Buffer& buffer) = 0;
+	virtual void on_write_complete() = 0;
 	virtual ~NetworkSession() = default;
 
 	friend class SessionManager;

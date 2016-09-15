@@ -26,9 +26,12 @@ class TransferData final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
+	static const std::uint16_t MAX_CHUNK_SIZE = 65535;
+
 	TransferData() : Packet(Opcode::CMD_XFER_DATA) {}
 
-	std::vector<std::uint8_t> chunk;
+	std::uint16_t size;
+	std::array<char, MAX_CHUNK_SIZE> chunk;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -38,6 +41,9 @@ public:
 		}
 
 		stream >> opcode;
+		stream >> size;
+
+		be::little_to_native_inplace(size);
 
 
 		return (state_ = State::DONE);
@@ -45,8 +51,8 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << static_cast<std::uint16_t>(chunk.size());
-		stream.put(chunk.data(), chunk.size());
+		stream << be::native_to_little(size);
+		stream.put(chunk.data(), size);
 	}
 };
 

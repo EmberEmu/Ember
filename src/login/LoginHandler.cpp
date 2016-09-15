@@ -6,13 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "grunt/Packets.h"
 #include "LoginHandler.h"
 #include "Patcher.h"
+#include "grunt/Packets.h"
 #include <boost/range/adaptor/map.hpp>
+#include <zlib.h>
 #include <stdexcept>
 #include <utility>
-
+ 
 namespace ember {
 
 bool LoginHandler::update_state(const grunt::Packet* packet) try {
@@ -33,6 +34,19 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 			break;
 		case State::REQUEST_REALMS:
 			send_realm_list(packet);
+			break;
+		case State::SURVEY_INITIATE:
+			handle_transfer_ack(packet, true);
+			break;
+		case State::PATCH_INITIATE:
+			handle_transfer_ack(packet, false);
+			break;
+		case State::SURVEY_TRANSFER:
+		case State::PATCH_TRANSFER:
+			handle_transfer_abort(prev_state);
+			break;
+		case State::SURVEY_RESULT:
+			check_survey_result(packet);
 			break;
 		case State::CLOSED:
 			return false;
@@ -124,19 +138,6 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 			patch_client(challenge->version);
 			break;
 	}
-}
-
-void LoginHandler::patch_client(const GameVersion& version) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	// don't know yet
-	//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
-	//write(packet);
-}
-
-void LoginHandler::send_survey() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
 }
 
 void LoginHandler::fetch_user(grunt::Opcode opcode, const std::string& username) {
@@ -404,7 +405,7 @@ void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		metrics_.increment("login_success");
 		response.M2 = server_proof_;
-		response.account_flags = 0; // todo
+		response.survey_id = patcher_.survey_id();
 	} else {
 		metrics_.increment("login_failure");
 	}
@@ -415,7 +416,7 @@ void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	send(response);
 }
 
-void LoginHandler::on_character_data(FetchCharacterCounts* action) { // temp name, todo
+void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	try {
@@ -428,10 +429,15 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) { // temp nam
 
 	state_ = State::REQUEST_REALMS;
 
-	if(!action->reconnect()) {
-		send_login_proof(grunt::ResultCode::SUCCESS);
-	} else {
+	if(action->reconnect()) {
 		send_reconnect_proof(grunt::ResultCode::SUCCESS);
+	} else {
+		send_login_proof(grunt::ResultCode::SUCCESS);
+	}
+
+	if(patcher_.survey_id()) {
+		state_ = State::SURVEY_INITIATE;
+		initiate_file_transfer(patcher_.survey_meta());
 	}
 }
 
@@ -442,7 +448,7 @@ void LoginHandler::on_session_write(RegisterSessionAction* action) {
 	grunt::ResultCode response = grunt::ResultCode::SUCCESS;
 
 	if(result == messaging::account::Status::OK) {
-		state_ = State::FETCHING_CHARACTER_DATA;;
+		state_ = State::FETCHING_CHARACTER_DATA;
 	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
 		response = grunt::ResultCode::FAIL_ALREADY_ONLINE;
 	} else {
@@ -506,6 +512,132 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 
 	state_ = State::REQUEST_REALMS;
 	send(response);
+}
+
+void LoginHandler::patch_client(const GameVersion& version) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	// don't know yet
+	//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
+	//write(packet);
+}
+
+void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	LOG_DEBUG(logger_) << "Initiating transfer of " << meta.name << " to "
+     	               << user_->username() << LOG_ASYNC;
+
+	transfer_state_.size = meta.size;
+
+	grunt::server::TransferInitiate response;
+	response.filename = meta.name;
+	response.filesize = meta.size;
+	response.md5 = meta.md5;
+	send(response);
+}
+
+void LoginHandler::check_survey_result(const grunt::Packet* packet) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto survey = dynamic_cast<const grunt::client::SurveyResult*>(packet);
+
+	if(!survey) {
+		throw std::runtime_error("Expected CMD_SURVEY_RESULT");
+	}
+
+	 // todo
+	LOG_INFO(logger_) << survey->size << LOG_SYNC;
+	LOG_INFO(logger_) << survey->survey_id << LOG_SYNC;
+	LOG_INFO(logger_) << survey->error << LOG_SYNC;
+
+	if(!survey->error) {
+		std::string data; data.resize(10000);
+		uLongf len = 10000;
+		auto ret = uncompress((Bytef*)&data[0], &len, (Bytef*)survey->data.data(), survey->size);
+		data.resize(len);
+		LOG_INFO(logger_) << data << LOG_SYNC;
+	}
+
+	state_ = State::REQUEST_REALMS;
+}
+
+void LoginHandler::handle_transfer_ack(const grunt::Packet* packet, bool survey) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	switch(packet->opcode) {
+		case grunt::Opcode::CMD_XFER_RESUME:
+			transfer_state_.offset = static_cast<const grunt::client::TransferResume*>(packet)->offset;
+			[[fallthrough]];
+		case grunt::Opcode::CMD_XFER_ACCEPT:
+			state_ = survey? State::SURVEY_TRANSFER : State::PATCH_TRANSFER;
+			transfer_chunk();
+			break;
+		case grunt::Opcode::CMD_XFER_CANCEL:
+			state_ = survey? State::SURVEY_RESULT : State::CLOSED;
+			break;
+		default:
+			state_ = State::CLOSED;
+			break;
+	}
+}
+
+void LoginHandler::handle_transfer_abort(State state) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	transfer_state_.abort = true;
+
+	switch(state) {
+		case State::SURVEY_TRANSFER:
+		case State::PATCH_TRANSFER:
+			state_ = State::CLOSED;
+			break;
+	}
+}
+
+void LoginHandler::transfer_chunk() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto remaining = transfer_state_.size - transfer_state_.offset;
+	std::uint16_t read_size = grunt::server::TransferData::MAX_CHUNK_SIZE;
+
+	if(read_size > remaining) {
+		read_size = static_cast<std::uint16_t>(remaining);
+	}
+
+	grunt::server::TransferData response;
+	response.size = read_size;
+
+	if(state_ == State::SURVEY_TRANSFER) {
+		auto* survey_mpq = patcher_.survey_data().data() + transfer_state_.offset;
+		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
+	} else {
+		transfer_state_.file.read(response.chunk.data(), read_size);
+	}
+
+	transfer_state_.offset += read_size;
+	send_chunk(response);
+}
+
+void LoginHandler::on_chunk_complete() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	if(transfer_state_.abort) {
+		return;
+	}
+
+	if(transfer_state_.offset != transfer_state_.size) {
+		transfer_chunk();
+	} else {
+		switch(state_) {
+			case State::SURVEY_TRANSFER:
+				state_ = State::SURVEY_RESULT;
+				break;
+			case State::FILE_TRANSFER:
+				state_ = State::CLOSED;
+				break;
+		}
+	}
 }
 
 } // ember

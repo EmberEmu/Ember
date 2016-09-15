@@ -190,11 +190,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto allowed_clients = client_versions();
 	ember::Patcher patcher(allowed_clients, std::vector<ember::PatchMeta>());
 
+	// Load survey data
 	if(args["survey.enabled"].as<bool>()) {
-		ember::FileMeta meta;
-		patcher.set_survey(meta, args["survey.id"].as<std::uint32_t>());
-
+		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
+		patcher.set_survey(args["survey.bin_path"].as<std::string>(),
+		                   args["survey.id"].as<std::uint32_t>());
 	}
+
 	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc, realm_list, *metrics);
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 

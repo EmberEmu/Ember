@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,11 +7,11 @@
  */
 
 #include <string>
-
-namespace Botan { class BigInt; }
+#include <botan/secmem.h>
 
 namespace ember { namespace util {
 
-Botan::BigInt generate_md5(const std::string& file);
+Botan::SecureVector<Botan::byte> generate_md5(const char* data, const std::size_t len);
+Botan::SecureVector<Botan::byte> generate_md5(const std::string& file);
 
 }} // util, ember

@@ -21,7 +21,7 @@ namespace ember {
 struct FileMeta {
 	std::string name;
 	std::string rel_path;
-	Botan::BigInt md5;
+	std::array<std::uint8_t, 16> md5;
 	std::uint64_t size;
 };
 

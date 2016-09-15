@@ -7,9 +7,11 @@
  */
 
 #include "Patcher.h"
+#include <shared/util/FileMD5.h>
 #include <algorithm>
-#include <regex>
-#include <cstdio>
+#include <fstream>
+//#include <regex>
+//#include <cstdio>
 
 namespace ember {
 
@@ -43,9 +45,36 @@ auto Patcher::check_version(const GameVersion& client_version) const -> PatchLev
 	return PatchLevel::TOO_NEW;
 }
 
-void Patcher::set_survey(FileMeta survey, std::uint32_t id) {
+void Patcher::set_survey(const std::string& path, std::uint32_t id) {
+	survey_.name = "Survey";
 	survey_id_ = id;
-	survey_ = std::move(survey);
+	
+	std::ifstream file(path + "Survey.mpq", std::ios::binary | std::ios::ate);
+
+	if(!file.is_open()) {
+		throw std::runtime_error("Unable to open " + path + "Survey.mpq");
+	}
+
+	survey_.size = file.tellg();
+	file.seekg(0, std::ios::beg);
+
+	std::vector<char> buffer(static_cast<std::size_t>(survey_.size));
+
+	if(!file.read(buffer.data(), survey_.size)) {
+		throw std::runtime_error("Unable to read " + path + "Survey.mpq");
+	}
+
+	auto md5 = util::generate_md5(buffer.data(), buffer.size());
+	std::copy(md5.begin(), md5.end(), survey_.md5.data());
+	survey_data_ = std::move(buffer);
+}
+
+FileMeta Patcher::survey_meta() const {
+	return survey_;
+}
+
+const std::vector<char>& Patcher::survey_data() const {
+	return survey_data_;
 }
 
 std::uint32_t Patcher::survey_id() const {
