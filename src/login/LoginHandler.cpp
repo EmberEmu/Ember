@@ -10,7 +10,6 @@
 #include "Patcher.h"
 #include "grunt/Packets.h"
 #include <boost/range/adaptor/map.hpp>
-#include <zlib.h>
 #include <stdexcept>
 #include <utility>
  

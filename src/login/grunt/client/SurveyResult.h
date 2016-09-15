@@ -14,7 +14,6 @@
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <zlib.h>
-#include <iostream>
 #include <cstdint>
 #include <cstddef>
 
@@ -49,6 +48,12 @@ class SurveyResult final : public Packet {
 			return;
 		}
 
+		/* 
+		 * The game sends the compressed length, not the decompressed length,
+		 * so we need some guesswork with the maximum buffer size for decompression.
+		 * However, the client limits itself to 1000 bytes, which can cause the survey
+		 * to fail with machines that have a healthy number of peripherals attached.
+		 */
 		std::vector<std::uint8_t> compressed(compressed_size_);
 		stream.get(&compressed[0], compressed.size());
 		data.resize(MAX_SURVEY_LEN);
@@ -61,7 +66,6 @@ class SurveyResult final : public Packet {
 			throw bad_packet("Decompression of survey data failed with code " + ret);
 		}
 		
-		std::cout << "Decompressed size: " << dest_len << " Packet reported: " << compressed_size_ << "\n";
 		data.resize(dest_len);
 		state_ = State::DONE;
 	}
@@ -95,11 +99,25 @@ public:
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
+		if(data.size() > MAX_SURVEY_LEN) {
+			throw bad_packet("Survey data is too big");
+		}
+
 		stream << opcode;
 		stream << be::native_to_little(survey_id);
 		stream << error;
-		/*stream << be::native_to_little(std::uint16_t(data.size()));
-		stream.put(data.data(), data.size());*/
+
+		std::vector<std::uint8_t> compressed(data.size());
+		uLongf dest_len = compressed.size();
+
+		auto ret = compress(compressed.data(), &dest_len, reinterpret_cast<const Bytef*>(data.data()), data.size());
+
+		if(ret != Z_OK) {
+			throw bad_packet("Compression of survey data failed with code " + ret);
+		}
+
+		stream << be::native_to_little(static_cast<std::uint16_t>(dest_len));
+		stream.put(compressed.data(), dest_len);
 	}
 };
 
