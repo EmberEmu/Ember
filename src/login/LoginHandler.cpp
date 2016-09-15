@@ -27,10 +27,10 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 			initiate_login(packet);
 			break;
 		case State::LOGIN_PROOF:
-			check_login_proof(packet);
+			handle_login_proof(packet);
 			break;
 		case State::RECONNECT_PROOF:
-			check_reconnect_proof(packet);
+			handle_reconnect_proof(packet);
 			break;
 		case State::REQUEST_REALMS:
 			send_realm_list(packet);
@@ -46,7 +46,7 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 			handle_transfer_abort(prev_state);
 			break;
 		case State::SURVEY_RESULT:
-			check_survey_result(packet);
+			handle_survey_result(packet);
 			break;
 		case State::CLOSED:
 			return false;
@@ -350,7 +350,7 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
 }
 
-void LoginHandler::check_login_proof(const grunt::Packet* packet) {
+void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto proof_packet = dynamic_cast<const grunt::client::LoginProof*>(packet);
@@ -466,7 +466,7 @@ void LoginHandler::on_session_write(RegisterSessionAction* action) {
 	}
 }
 
-void LoginHandler::check_reconnect_proof(const grunt::Packet* packet) {
+void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto proof = dynamic_cast<const grunt::client::ReconnectProof*>(packet);
@@ -537,7 +537,7 @@ void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
 	send(response);
 }
 
-void LoginHandler::check_survey_result(const grunt::Packet* packet) {
+void LoginHandler::handle_survey_result(const grunt::Packet* packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto survey = dynamic_cast<const grunt::client::SurveyResult*>(packet);
@@ -546,19 +546,21 @@ void LoginHandler::check_survey_result(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_SURVEY_RESULT");
 	}
 
-	 // todo
-	LOG_INFO(logger_) << survey->size << LOG_SYNC;
-	LOG_INFO(logger_) << survey->survey_id << LOG_SYNC;
-	LOG_INFO(logger_) << survey->error << LOG_SYNC;
-
-	if(!survey->error) {
-		std::string data; data.resize(10000);
-		uLongf len = 10000;
-		auto ret = uncompress((Bytef*)&data[0], &len, (Bytef*)survey->data.data(), survey->size);
-		data.resize(len);
-		LOG_INFO(logger_) << data << LOG_SYNC;
+	if(survey->survey_id != patcher_.survey_id()) {
+		LOG_DEBUG(logger_) << "Received an invalid survey ID from "
+		                   << user_->username() << LOG_ASYNC;
+		state_ = State::REQUEST_REALMS;
+		return;
 	}
 
+	// this can be caused by the client having already sent data for the active survey ID
+	if(survey->error) {
+		state_ = State::REQUEST_REALMS;
+		return;
+	}
+
+	LOG_INFO(logger_) << survey->data << LOG_SYNC;
+	metrics_.increment("surveys_received");
 	state_ = State::REQUEST_REALMS;
 }
 

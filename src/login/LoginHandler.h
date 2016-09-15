@@ -82,8 +82,8 @@ class LoginHandler {
 	void handle_transfer_abort(State state);
 	void send_realm_list(const grunt::Packet* packet);
 	void initiate_login(const grunt::Packet* packet);
-	void check_login_proof(const grunt::Packet* packet);
-	void check_reconnect_proof(const grunt::Packet* packet);
+	void handle_login_proof(const grunt::Packet* packet);
+	void handle_reconnect_proof(const grunt::Packet* packet);
 	void send_reconnect_proof(grunt::ResultCode result);
 	void send_login_proof(grunt::ResultCode result);
 	void build_login_challenge(grunt::server::LoginChallenge& packet);
@@ -92,7 +92,7 @@ class LoginHandler {
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
 	bool validate_pin(const grunt::client::LoginProof* packet);
-	void check_survey_result(const grunt::Packet* packet);
+	void handle_survey_result(const grunt::Packet* packet);
 
 	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
 								   const Botan::BigInt& client_salt, bool reconnect);
