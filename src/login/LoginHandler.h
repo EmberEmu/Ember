@@ -79,7 +79,7 @@ class LoginHandler {
 	void transfer_chunk();
 	void initiate_file_transfer(const FileMeta& meta);
 	void handle_transfer_ack(const grunt::Packet* packet, bool survey);
-	void handle_transfer_abort(State state);
+	void handle_transfer_abort();
 	void send_realm_list(const grunt::Packet* packet);
 	void initiate_login(const grunt::Packet* packet);
 	void handle_login_proof(const grunt::Packet* packet);

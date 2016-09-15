@@ -42,7 +42,7 @@ bool LoginHandler::update_state(const grunt::Packet* packet) try {
 			break;
 		case State::SURVEY_TRANSFER:
 		case State::PATCH_TRANSFER:
-			handle_transfer_abort(prev_state);
+			handle_transfer_abort();
 			break;
 		case State::SURVEY_RESULT:
 			handle_survey_result(packet);
@@ -585,15 +585,7 @@ void LoginHandler::handle_transfer_ack(const grunt::Packet* packet, bool survey)
 
 void LoginHandler::handle_transfer_abort(State state) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
 	transfer_state_.abort = true;
-
-	switch(state) {
-		case State::SURVEY_TRANSFER:
-		case State::PATCH_TRANSFER:
-			state_ = State::CLOSED;
-			break;
-	}
 }
 
 void LoginHandler::transfer_chunk() {
