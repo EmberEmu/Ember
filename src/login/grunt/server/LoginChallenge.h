@@ -83,7 +83,7 @@ public:
 	static const std::uint8_t PIN_SALT_LENGTH      = 16;
 	static const std::uint8_t CHECKSUM_SALT_LENGTH = 16;
 
-	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGIN_CHALLENGE) { }
+	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGON_CHALLENGE) { }
 
 	enum class TwoFactorSecurity : std::uint8_t {
 		NONE, PIN
