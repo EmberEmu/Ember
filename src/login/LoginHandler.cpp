@@ -80,7 +80,7 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 		case State::WRITING_SESSION:
 			on_session_write(static_cast<RegisterSessionAction*>(action.get()));
 			break;
-		case State::WRITING_SURVEY:
+		case State::REQUEST_REALMS:
 			on_survey_write(static_cast<SaveSurveyAction*>(action.get()));
 			break;
 		case State::FETCHING_CHARACTER_DATA:
@@ -553,26 +553,26 @@ void LoginHandler::handle_survey_result(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_SURVEY_RESULT");
 	}
 
+	// allow the client to request the realmlist without waiting on the survey write callback
+	state_ = State::REQUEST_REALMS;
+
 	if(survey->survey_id != patcher_.survey_id()) {
 		LOG_DEBUG(logger_) << "Received an invalid survey ID from "
 		                   << user_->username() << LOG_ASYNC;
-		state_ = State::REQUEST_REALMS;
 		return;
 	}
 
 	// this can be caused by the client having already sent data for the active survey ID
 	if(survey->error) {
-		state_ = State::REQUEST_REALMS;
 		return;
 	}
-
-	state_ = State::WRITING_SURVEY;
 
 	auto action = std::make_shared<SaveSurveyAction>(
 		user_->id(), user_src_,
 		survey->survey_id, survey->data
 	);
 
+	metrics_.increment("surveys_received");
 	execute_async(action);
 }
 
@@ -582,11 +582,7 @@ void LoginHandler::on_survey_write(SaveSurveyAction* action) {
 	if(action->error()) {
 		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
 		                   << ", " << action->exception().what() << LOG_ASYNC;
-	} else {
-		metrics_.increment("surveys_received");
 	}
-
-	state_ = State::REQUEST_REALMS;
 }
 
 void LoginHandler::handle_transfer_ack(const grunt::Packet* packet, bool survey) {
