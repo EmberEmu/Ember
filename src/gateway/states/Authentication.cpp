@@ -202,8 +202,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 		Locator::queue()->enqueue(uuid,
 			[uuid, packet](std::size_t position) {
-				auto event = std::make_unique<QueuePosition>(position);
-				Locator::dispatcher()->post_event(uuid, std::move(event));
+				Locator::dispatcher()->post_event(uuid, QueuePosition(position));
 			},
 			[uuid, packet]() {
 				auto event = std::make_unique<QueueSuccess>(std::move(packet));

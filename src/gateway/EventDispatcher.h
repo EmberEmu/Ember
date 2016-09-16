@@ -27,7 +27,13 @@ public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
 	template<typename T> void exec(const ClientUUID& client, T work) const;
+
+	template<typename EventType>
+	void post_event(const ClientUUID& client, const EventType& event) const;
+
 	void post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const;
+
+	// not an overload of post_event to avoid ambiguous overload errors with unique_ptr 
 	void post_shared_event(const ClientUUID& client, const std::shared_ptr<const Event>& event) const;
 	void register_handler(ClientHandler* handler);
 	void remove_handler(ClientHandler* handler);

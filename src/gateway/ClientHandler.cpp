@@ -42,6 +42,10 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 	update_packet[context_.state](&context_);
 }
 
+void ClientHandler::handle_event(const Event* event) {
+	update_event[context_.state](&context_, event);
+}
+
 void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 	update_event[context_.state](&context_, event.get());
 }

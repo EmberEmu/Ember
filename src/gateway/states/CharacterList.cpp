@@ -150,8 +150,7 @@ void character_create(ClientContext* ctx) {
 
 	Locator::character()->create_character(ctx->account_id, packet.character,
 	                                       [uuid](auto status, auto result) {
-		auto event = std::make_unique<CharCreateResponse>(status, result);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		Locator::dispatcher()->post_event(uuid, CharCreateResponse>(status, result));
 	});
 }
 
@@ -178,8 +177,7 @@ void character_delete(ClientContext* ctx) {
 
 	Locator::character()->delete_character(ctx->account_id, packet.id,
 	                                       [uuid](auto status, auto result) {
-		auto event = std::make_unique<CharDeleteResponse>(status, result);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
 	});
 }
 

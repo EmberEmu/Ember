@@ -10,6 +10,7 @@
 
 #include "EventDispatcher.h"
 #include <logger/Logging.h>
+#include <type_traits>
 
 namespace ember {
 
@@ -85,6 +86,31 @@ void EventDispatcher::post_shared_event(const ClientUUID& client,
 		}
 		
 		handler->second->handle_event(event);
+	});
+}
+
+template<typename EventType>
+void EventDispatcher::post_event(const ClientUUID& client, const EventType& event) const {
+	static_assert(std::is_base_of<Event, T>::value);
+
+	auto service = pool_.get_service(client.service());
+
+	// bad service index encoded in the UUID
+	if(service == nullptr) {
+		LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+		return;
+	}
+
+	service->post([=] {
+		auto handler = handlers_.find(client);
+
+		// client disconnected, nothing to do here
+		if(handler == handlers_.end()) {
+			LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
+			return;
+		}
+
+		handler->second->handle_event(&event);
 	});
 }
 
