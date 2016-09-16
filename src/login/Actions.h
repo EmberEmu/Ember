@@ -159,4 +159,33 @@ public:
 	}
 };
 
+class SaveSurveyAction final : public Action {
+	const dal::UserDAO& user_src_;
+	std::uint32_t user_id_;
+	std::uint32_t survey_id_;
+	std::string data_;
+	dal::exception exception_;
+	bool error_;
+
+public:
+	SaveSurveyAction(std::uint32_t user_id, const dal::UserDAO& user_src, std::uint32_t survey_id,
+	                 std::string data) : user_src_(user_src), user_id_(user_id), survey_id_(survey_id),
+	                                     data_(std::move(data)), error_(false) { }
+
+	virtual void execute() override try {
+		user_src_.save_survey(user_id_, survey_id_, data_);
+	} catch(const dal::exception& e) {
+		exception_ = e;
+		error_ = true;
+	}
+
+	bool error() {
+		return error_;
+	}
+
+	dal::exception exception() {
+		return exception_;
+	}
+};
+
 } // ember

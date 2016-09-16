@@ -22,6 +22,7 @@ public:
 	virtual boost::optional<User> user(const std::string& username) const = 0;
 	virtual void record_last_login(std::uint32_t account_id, const std::string& ip) const = 0;
 	virtual std::unordered_map<std::uint32_t, std::uint32_t> character_counts(std::uint32_t account_id) const = 0;
+	virtual void save_survey(std::uint32_t account_id, std::uint32_t survey_id, const std::string& data) const = 0;
 	virtual ~UserDAO() = default;
 };
 

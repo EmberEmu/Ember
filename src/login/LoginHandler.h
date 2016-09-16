@@ -53,9 +53,9 @@ class LoginHandler {
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
 		SURVEY_INITIATE, SURVEY_TRANSFER, SURVEY_RESULT, PATCH_INITIATE,
-		PATCH_TRANSFER, FILE_TRANSFER,
-		FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT, FETCHING_SESSION,
-		WRITING_SESSION, FETCHING_CHARACTER_DATA, CLOSED
+		PATCH_TRANSFER, FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT,
+		FETCHING_SESSION, WRITING_SESSION, WRITING_SURVEY,
+		FETCHING_CHARACTER_DATA, CLOSED
 	};
 
 	State state_ = State::INITIAL_CHALLENGE;
@@ -93,6 +93,7 @@ class LoginHandler {
 	void on_session_write(RegisterSessionAction* action);
 	bool validate_pin(const grunt::client::LoginProof* packet);
 	void handle_survey_result(const grunt::Packet* packet);
+	void on_survey_write(SaveSurveyAction* action);
 
 	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
 								   const Botan::BigInt& client_salt, bool reconnect);

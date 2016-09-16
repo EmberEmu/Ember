@@ -80,6 +80,9 @@ bool LoginHandler::update_state(std::shared_ptr<Action> action) try {
 		case State::WRITING_SESSION:
 			on_session_write(static_cast<RegisterSessionAction*>(action.get()));
 			break;
+		case State::WRITING_SURVEY:
+			on_survey_write(static_cast<SaveSurveyAction*>(action.get()));
+			break;
 		case State::FETCHING_CHARACTER_DATA:
 			on_character_data(static_cast<FetchCharacterCounts*>(action.get()));
 			break;
@@ -388,7 +391,12 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
-		auto action = std::make_shared<RegisterSessionAction>(acct_svc_, user_->id(), login_auth_->session_key());
+
+		auto action = std::make_shared<RegisterSessionAction>(
+			acct_svc_, user_->id(),
+		    login_auth_->session_key()
+		);
+
 		execute_async(action);
 	} else {
 		send_login_proof(result);
@@ -404,7 +412,7 @@ void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		metrics_.increment("login_success");
 		response.M2 = server_proof_;
-		response.survey_id = patcher_.survey_id();
+		response.survey_id = user_->survey_request()? patcher_.survey_id() : 0;
 	} else {
 		metrics_.increment("login_failure");
 	}
@@ -434,7 +442,7 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 		send_login_proof(grunt::ResultCode::SUCCESS);
 	}
 
-	if(patcher_.survey_id()) {
+	if(patcher_.survey_id() && user_->survey_request()) {
 		state_ = State::SURVEY_INITIATE;
 		initiate_file_transfer(patcher_.survey_meta());
 	}
@@ -558,8 +566,26 @@ void LoginHandler::handle_survey_result(const grunt::Packet* packet) {
 		return;
 	}
 
-	LOG_INFO(logger_) << survey->data << LOG_SYNC;
-	metrics_.increment("surveys_received");
+	state_ = State::WRITING_SURVEY;
+
+	auto action = std::make_shared<SaveSurveyAction>(
+		user_->id(), user_src_,
+		survey->survey_id, survey->data
+	);
+
+	execute_async(action);
+}
+
+void LoginHandler::on_survey_write(SaveSurveyAction* action) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	if(action->error()) {
+		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
+		                   << ", " << action->exception().what() << LOG_ASYNC;
+	} else {
+		metrics_.increment("surveys_received");
+	}
+
 	state_ = State::REQUEST_REALMS;
 }
 
@@ -583,7 +609,7 @@ void LoginHandler::handle_transfer_ack(const grunt::Packet* packet, bool survey)
 	}
 }
 
-void LoginHandler::handle_transfer_abort(State state) {
+void LoginHandler::handle_transfer_abort() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	transfer_state_.abort = true;
 }
@@ -626,7 +652,7 @@ void LoginHandler::on_chunk_complete() {
 			case State::SURVEY_TRANSFER:
 				state_ = State::SURVEY_RESULT;
 				break;
-			case State::FILE_TRANSFER:
+			case State::PATCH_TRANSFER:
 				state_ = State::CLOSED;
 				break;
 		}

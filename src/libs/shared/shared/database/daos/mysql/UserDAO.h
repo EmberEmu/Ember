@@ -31,7 +31,7 @@ public:
 
 	boost::optional<User> user(const std::string& username) const override try {
 		const std::string query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "
-		                          "u.totp_key, b.user_id as banned, "
+		                          "u.totp_key, b.user_id as banned, u.survey_request, "
 		                          "s.user_id as suspended FROM users u "
 		                          "LEFT JOIN bans b ON u.id = b.user_id "
 		                          "LEFT JOIN suspensions s ON u.id = s.user_id "
@@ -46,11 +46,49 @@ public:
 			User user(res->getUInt("id"), res->getString("username"), res->getString("s"),
 			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),
 			          res->getUInt64("pin"), res->getString("totp_key"), res->getBoolean("banned"),
-			          res->getBoolean("suspended"));
+			          res->getBoolean("suspended"), res->getBoolean("survey_request"));
 			return user;
 		}
 
 		return boost::optional<User>();
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	void save_survey(std::uint32_t account_id, std::uint32_t survey_id,
+	                 const std::string& data) const override try {
+		auto conn = pool_.wait_connection(5s);
+		conn->setAutoCommit(false);
+
+		try {
+			// intentionally not storing the user ID with the survey data, not an oversight :)
+			std::string query = "INSERT INTO survey_results (survey_id, data) VALUES (?, ?)";
+
+			sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+			stmt->setUInt(1, survey_id);
+			stmt->setString(2, data);
+	
+			if(!stmt->executeUpdate()) {
+				throw exception("Unable to save survey data for account ID " + account_id);
+			}
+
+			query = "UPDATE users SET survey_request = 0 WHERE id = ?";
+
+			stmt = driver_->prepare_cached(*conn, query);
+			stmt->setUInt(1, account_id);
+
+			if(!stmt->executeUpdate()) {
+				throw exception("Unable to save survey data for account ID " + account_id);
+			}
+
+			conn->commit();
+		} catch(std::exception& e) {
+			conn->rollback();
+			conn->setAutoCommit(true);
+			throw exception(e.what());
+		}
+
+		conn->setAutoCommit(true);
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}
@@ -99,4 +137,4 @@ std::unique_ptr<MySQLUserDAO<T>> user_dao(T& pool) {
 	return std::make_unique<MySQLUserDAO<T>>(pool);
 }
 
-}} //dal, ember
+}} // dal, ember
