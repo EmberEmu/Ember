@@ -52,6 +52,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const
 	auto raw = event.release();
 
 	service->post([client, raw] {
+		auto event = std::unique_ptr<const Event>(raw);
 		auto handler = handlers_.find(client);
 
 		// client disconnected, nothing to do here
@@ -60,7 +61,6 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<const
 			return;
 		}
 
-		auto event = std::unique_ptr<const Event>(raw);
 		handler->second->handle_event(std::move(event));
 	});
 }
