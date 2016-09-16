@@ -31,6 +31,7 @@
 #include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/IPBanDAO.h>
+#include <shared/database/daos/PatchDAO.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
@@ -108,16 +109,28 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	rng.randomize(reinterpret_cast<Botan::byte*>(ember::rng::xorshift::seed),
 	              sizeof(ember::rng::xorshift::seed));
 
-	// Load binaries for integrity checking
+	// Load integrity, patch and survey data
 	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
 	std::unique_ptr<ember::ExecutableChecksum> exe_check;
 
 	if(args["integrity.enabled"].as<bool>()) {
 		auto bins = { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s, "dbghelp.dll"s, "unicows.dll"s };
 		auto bin_path = args["integrity.bin_path"].as<std::string>();
-
 		exe_check = std::make_unique<ember::ExecutableChecksum>(bin_path, bins);
 	}
+
+	const auto allowed_clients = client_versions();
+	ember::Patcher patcher(allowed_clients, std::vector<ember::PatchMeta>());
+
+	if(args["survey.enabled"].as<bool>()) {
+		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
+		patcher.set_survey(
+			args["survey.bin_path"].as<std::string>(),
+			args["survey.id"].as<std::uint32_t>()
+		);
+	}
+
+	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
 
 	unsigned int concurrency = check_concurrency(logger);
 
@@ -141,6 +154,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
 	auto user_dao = ember::dal::user_dao(pool);
 	auto realm_dao = ember::dal::realm_dao(pool);
+	auto patch_dao = ember::dal::patch_dao(pool);
 	auto ip_ban_dao = ember::dal::ip_ban_dao(pool); 
 	auto ip_ban_cache = ember::IPBanCache(ip_ban_dao->all_bans());
 
@@ -187,16 +201,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	// Start login server
-	const auto allowed_clients = client_versions();
-	ember::Patcher patcher(allowed_clients, std::vector<ember::PatchMeta>());
-
-	// Load survey data
-	if(args["survey.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
-		patcher.set_survey(args["survey.bin_path"].as<std::string>(),
-		                   args["survey.id"].as<std::uint32_t>());
-	}
-
 	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc, realm_list, *metrics);
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Ember
+# Copyright (c) 2015, 2016 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,10 +16,12 @@ set(SHARED_DAOS_SRC
     shared/database/daos/RealmDAO.h
     shared/database/daos/UserDAO.h
     shared/database/daos/CharacterDAO.h
+    shared/database/daos/PatchDAO.h
     shared/database/daos/shared_base/IPBanBase.h
     shared/database/daos/shared_base/RealmBase.h
     shared/database/daos/shared_base/UserBase.h
     shared/database/daos/shared_base/CharacterBase.h
+    shared/database/daos/shared_base/PatchBase.h
 )
 
 set(MYSQL_DAOS_SRC
@@ -27,6 +29,7 @@ set(MYSQL_DAOS_SRC
     shared/database/daos/mysql/RealmDAO.h
     shared/database/daos/mysql/UserDAO.h
     shared/database/daos/mysql/CharacterDAO.h
+    shared/database/daos/mysql/PatchDAO.h
 )
 
 set(POSTGRESQL_DAOS_SRC
@@ -34,6 +37,7 @@ set(POSTGRESQL_DAOS_SRC
     shared/database/daos/postgresql/RealmDAO.h
     shared/database/daos/postgresql/UserDAO.h
     shared/database/daos/postgresql/CharacterDAO.h
+    shared/database/daos/postgresql/PatchDAO.h
 )
 
 set(MEMORY_SRC
