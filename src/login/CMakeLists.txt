@@ -8,6 +8,7 @@ set(EXECUTABLE_NAME login)
 set(LIBRARY_NAME    liblogin)
 
 set(GRUNT_SRC
+    grunt/Magic.h
     grunt/Exceptions.h
     grunt/ResultCodes.h
     grunt/Handler.h

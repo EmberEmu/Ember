@@ -74,21 +74,15 @@ FileMeta Patcher::survey_meta() const {
 	return survey_;
 }
 
-bool Patcher::survey_platform(grunt::client::LoginChallenge::Platform platform,
-                              grunt::client::LoginChallenge::OperatingSystem os) const {
-	if(platform != grunt::client::LoginChallenge::Platform::x86) {
-		return false;
-	}
-
-	if(os != grunt::client::LoginChallenge::OperatingSystem::Windows) {
+bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const {
+	if(platform != grunt::Platform::x86 || os != grunt::System::Windows) {
 		return false;
 	}
 
 	return true;
 }
 
-const std::vector<char>& Patcher::survey_data(grunt::client::LoginChallenge::Platform platform,
-                                              grunt::client::LoginChallenge::OperatingSystem os) const {
+const std::vector<char>& Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
 	if(!survey_platform(platform, os)) {
 		throw std::invalid_argument("Attempted to retrieve survey binaries for an unsupported platform!");
 	}

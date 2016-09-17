@@ -118,7 +118,7 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 		return;
 	}
 
-	if(challenge->game != grunt::client::LoginChallenge::WoW) {
+	if(challenge->game != grunt::Game::WoW) {
 		LOG_DEBUG(logger_) << "Bad game magic from client"  << LOG_ASYNC;
 		return;
 	}

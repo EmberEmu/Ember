@@ -9,7 +9,7 @@
 #pragma once
 
 #include "GameVersion.h"
-#include "grunt/client/LoginChallenge.h"
+#include "grunt/Magic.h"
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/objects/PatchMeta.h>
 #include <logger/Logging.h>
@@ -35,11 +35,8 @@ public:
 	void set_survey(const std::string& path, std::uint32_t id);
 	FileMeta survey_meta() const;
 
-	bool Patcher::survey_platform(grunt::client::LoginChallenge::Platform platform,
-	                              grunt::client::LoginChallenge::OperatingSystem os) const;
-
-	const std::vector<char>& survey_data(grunt::client::LoginChallenge::Platform platform,
-	                                     grunt::client::LoginChallenge::OperatingSystem os) const;
+	bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const;
+	const std::vector<char>& survey_data(grunt::Platform platform, grunt::System os) const;
 
 	std::uint32_t survey_id() const;
 	boost::optional<FileMeta> find_patch(const GameVersion& client_version) const;
