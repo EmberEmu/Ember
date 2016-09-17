@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "PatchMeta.h"
 #include <vector>
 
 namespace ember {
@@ -16,7 +15,7 @@ namespace ember {
 class PatchGraph {
 	
 public:
-	PatchGraph(std::vector<PatchMeta> patches);
+	//PatchGraph(std::vector<PatchMeta> patches);
 };
 
 } // ember
