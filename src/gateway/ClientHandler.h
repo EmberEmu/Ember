@@ -40,14 +40,14 @@ public:
 	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
-    void handle_event(std::shared_ptr<const Event> event);
+	void handle_event(std::shared_ptr<const Event> event);
 
 	void start();
 	void stop();
 
-    const ClientUUID& uuid() const {
-        return uuid_;
-    }
+	const ClientUUID& uuid() const {
+		return uuid_;
+	}
 };
 
 } // ember
