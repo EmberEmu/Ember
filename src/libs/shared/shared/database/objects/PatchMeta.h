@@ -12,12 +12,13 @@
 #include <string>
 #include <sstream>
 #include <cstdint>
+#include <string>
 
 namespace ember {
 
 struct FileMeta {
 	std::string name;
-	std::array<std::uint8_t, 16> md5;
+	std::array<char, 16> md5;
 	std::uint64_t size;
 };
 
@@ -25,9 +26,13 @@ struct PatchMeta {
 	std::uint32_t id;
 	std::uint16_t build_from;
 	std::uint16_t build_to;
-	enum class Type {
-		ROLLUP, PARTIAL
-	} type;
+	std::uint32_t arch_id;
+	std::uint32_t locale_id;
+	std::uint32_t os_id;
+	std::string arch;
+	std::string locale;
+	std::string os;
+	bool mpq;
 	FileMeta file_meta;
 };
 

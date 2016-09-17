@@ -29,7 +29,7 @@ public:
 	
 	std::string filename;
 	std::uint64_t filesize;
-	std::array<std::uint8_t, 16> md5;
+	std::array<char, 16> md5;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

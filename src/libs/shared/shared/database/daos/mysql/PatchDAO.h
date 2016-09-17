@@ -9,30 +9,108 @@
 #pragma once
 
 #include <shared/database/daos/shared_base/PatchBase.h>
+#include <botan/bigint.h>
 #include <conpool/ConnectionPool.h>
 #include <mysql_connection.h>
 #include <cppconn/exception.h>
 #include <conpool/drivers/MySQL/Driver.h>
 #include <cppconn/prepared_statement.h>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace ember { namespace dal {
 
 using namespace std::chrono_literals;
 
 template<typename T>
-class PatchDAO final : public PatchBase {
+class MySQLPatchDAO final : public PatchDAO {
 	T& pool_;
 	drivers::MySQL* driver_;
 
 public:
-	PatchDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
+	MySQLPatchDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
+	std::vector<PatchMeta> fetch_patches() const final override try {
+		const std::string query = "SELECT patches.id, `from`, `to`, mpq, name, size, md5, os, "
+		                          "architecture, locale, os.value AS os_val, "
+		                          "arch.value AS architecture_val, l.value AS locale_val "
+		                          "FROM patches "
+		                          "LEFT JOIN architectures arch ON patches.architecture = arch.id "  
+		                          "LEFT JOIN locales l ON patches.locale = l.id "
+		                          "LEFT JOIN operating_systems os ON patches.os = os.id";
+
+		auto conn = pool_.wait_connection(60s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+		std::vector<PatchMeta> patches;
+
+		while(res->next()) {
+			PatchMeta meta;
+			meta.id = res->getUInt("id");
+			meta.build_from = res->getUInt("from");
+			meta.build_to = res->getUInt("to");
+			meta.os_id = res->getUInt("os");
+			meta.arch_id = res->getUInt("architecture");
+			meta.locale_id = res->getUInt("locale");
+			meta.mpq = res->getBoolean("mpq");
+			meta.file_meta.name = res->getString("name");
+			meta.file_meta.size = res->getUInt64("size");
+			meta.os = res->getUInt("os_val");
+			meta.locale = res->getString("locale_val");
+			meta.arch = res->getString("architecture_val");
+
+			// sigh.
+			auto md5 = res->getString("md5");
+			Botan::BigInt md5_int(reinterpret_cast<const Botan::byte*>(md5.c_str()), md5.length(),
+			             Botan::BigInt::Base::Hexadecimal);
+			auto md5_enc = Botan::BigInt::encode_1363(md5_int, meta.file_meta.md5.size());
+			std::copy(md5_enc.begin(), md5_enc.end(), meta.file_meta.md5.data());
+
+			patches.emplace_back(std::move(meta));
+		}
+
+		return patches;
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
+
+	void update(const PatchMeta& meta) const final override try {
+		const std::string query = "UPDATE patches SET `from` = ?, `to` = ?, `mpq` = ?, "
+		                          "`name` = ?, `size` = ?, `md5` = ?, `locale` = ?, "
+		                          "`architecture` = ?, `os` = ? "
+		                          "WHERE id = ?";
+
+		auto conn = pool_.wait_connection(60s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+
+		stmt->setUInt(1, meta.build_from);
+		stmt->setUInt(2, meta.build_to);
+		stmt->setBoolean(3, meta.mpq);
+		stmt->setString(4, meta.file_meta.name);
+		stmt->setUInt64(5, meta.file_meta.size);
+		auto md5 = Botan::BigInt::decode(reinterpret_cast<const Botan::byte*>(meta.file_meta.md5.data()),
+		                                 meta.file_meta.md5.size());
+		std::stringstream md5_str;
+		md5_str << std::hex << md5;
+		stmt->setString(6, md5_str.str());
+		stmt->setUInt(7, meta.os_id);
+		stmt->setUInt(8, meta.arch_id);
+		stmt->setUInt(9, meta.locale_id);
+		stmt->setUInt(10, meta.id);
+
+		if(!stmt->executeUpdate()) {
+			throw exception("Unable to update patch #" + std::to_string(meta.id));
+		}
+	} catch(std::exception& e) {
+		throw exception(e.what());
+	}
 };
 
 template<typename T>
-std::unique_ptr<PatchDAO<T>> patch_dao(T& pool) {
-	return std::make_unique<PatchDAO<T>>(pool);
+std::unique_ptr<MySQLPatchDAO<T>> patch_dao(T& pool) {
+	return std::make_unique<MySQLPatchDAO<T>>(pool);
 }
 
 }} //dal, ember

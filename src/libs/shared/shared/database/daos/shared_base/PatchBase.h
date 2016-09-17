@@ -8,17 +8,17 @@
 
 #pragma once
 
+#include <shared/database/objects/PatchMeta.h>
 #include <shared/database/Exception.h>
-#include <boost/optional.hpp>
-#include <string>
 #include <vector>
-#include <cstdint>
 
 namespace ember { namespace dal {
 
-class PatchBase {
+class PatchDAO {
 public:
-	virtual ~PatchBase() = default;
+	virtual std::vector<PatchMeta> fetch_patches() const = 0;
+	virtual void update(const PatchMeta& meta) const = 0;
+	virtual ~PatchDAO() = default;
 };
 
 }} // dal, ember

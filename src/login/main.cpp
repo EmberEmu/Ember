@@ -15,7 +15,6 @@
 #include "ExecutablesChecksum.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
-#include <botan/sha160.h>
 #include "Patcher.h"
 #include "RealmList.h"
 #include <logger/Logging.h>
@@ -42,6 +41,8 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <pcre.h>
+#include <zlib.h>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -109,27 +110,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	rng.randomize(reinterpret_cast<Botan::byte*>(ember::rng::xorshift::seed),
 	              sizeof(ember::rng::xorshift::seed));
 
-	// Load integrity, patch and survey data
-	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
-	std::unique_ptr<ember::ExecutableChecksum> exe_check;
-
-	if(args["integrity.enabled"].as<bool>()) {
-		auto bins = { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s, "dbghelp.dll"s, "unicows.dll"s };
-		auto bin_path = args["integrity.bin_path"].as<std::string>();
-		exe_check = std::make_unique<ember::ExecutableChecksum>(bin_path, bins);
-	}
-
-	const auto allowed_clients = client_versions();
-	ember::Patcher patcher(allowed_clients, std::vector<ember::PatchMeta>());
-
-	if(args["survey.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
-		patcher.set_survey(
-			args["survey.bin_path"].as<std::string>(),
-			args["survey.id"].as<std::uint32_t>()
-		);
-	}
-
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
 
 	unsigned int concurrency = check_concurrency(logger);
@@ -157,6 +137,33 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto patch_dao = ember::dal::patch_dao(pool);
 	auto ip_ban_dao = ember::dal::ip_ban_dao(pool); 
 	auto ip_ban_cache = ember::IPBanCache(ip_ban_dao->all_bans());
+
+	// Load integrity, patch and survey data
+	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
+	std::unique_ptr<ember::ExecutableChecksum> exe_check;
+
+	if(args["integrity.enabled"].as<bool>()) {
+		auto bins = { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s, "dbghelp.dll"s, "unicows.dll"s };
+		auto bin_path = args["integrity.bin_path"].as<std::string>();
+		exe_check = std::make_unique<ember::ExecutableChecksum>(bin_path, bins);
+	}
+
+	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
+	const auto allowed_clients = client_versions();
+
+	auto patches = ember::Patcher::load_patches(
+		args["patches.bin_path"].as<std::string>(), *patch_dao, logger
+	);
+
+	ember::Patcher patcher(allowed_clients, patches);
+
+	if(args["survey.enabled"].as<bool>()) {
+		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
+		patcher.set_survey(
+			args["survey.bin_path"].as<std::string>(),
+			args["survey.id"].as<std::uint32_t>()
+		);
+	}
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	ember::RealmList realm_list(realm_dao->get_realms());
@@ -275,6 +282,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
+		("patches.bin_path", po::value<std::string>()->required())
 		("survey.enabled", po::bool_switch()->default_value(false))
 		("survey.bin_path", po::value<std::string>()->required())
 		("survey.id", po::value<std::uint32_t>()->required())
@@ -366,6 +374,8 @@ void print_lib_versions(el::Logger* logger) {
 	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
 	LOG_DEBUG(logger) << "- " << ember::drivers::DriverType::name()
 	                  << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
+	LOG_DEBUG(logger) << "- PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << LOG_SYNC;
+	LOG_DEBUG(logger) << "- Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {

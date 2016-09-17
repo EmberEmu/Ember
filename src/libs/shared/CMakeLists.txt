@@ -8,6 +8,8 @@ set(LIBRARY_NAME shared)
 
 set(DB_OBJECTS
     shared/database/objects/User.h
+    shared/database/objects/Character.h
+    shared/database/objects/PatchMeta.h
 )
 
 set(SHARED_DAOS_SRC
