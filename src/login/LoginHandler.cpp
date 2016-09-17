@@ -381,9 +381,9 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 			result = grunt::ResultCode::FAIL_BANNED;
 		} else if(user_->suspended()) {
 			result = grunt::ResultCode::FAIL_SUSPENDED;
-		/*} else if(time) {
-			res = grunt::ResultCode::FAIL_NO_TIME;
-		} else if(parental_controls) {
+		} else if(!user_->subscriber()) {
+			result = grunt::ResultCode::FAIL_NO_TIME;
+		/*} else if(parental_controls) {
 			res = grunt::ResultCode::FAIL_PARENTAL_CONTROLS;*/
 		} else {
 			result = grunt::ResultCode::SUCCESS;

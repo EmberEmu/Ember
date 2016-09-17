@@ -29,14 +29,15 @@ class User {
 	bool banned_;
 	bool suspended_;
 	bool survey_request_;
+	bool subscriber_;
 
 public:
 	User(std::uint32_t id, std::string username, std::string salt, std::string verifier,
 	     PINMethod pin_method, std::uint64_t pin, std::string totp_token, bool banned, bool suspended,
-	     bool survey_request)
+	     bool survey_request, bool subscriber)
          : id_(id), user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)),
 	       pin_(pin), pin_method_(pin_method), totp_token_(std::move(totp_token)),
-	       survey_request_(survey_request) {
+	       survey_request_(survey_request), subscriber_(subscriber) {
 		banned_ = banned;
 		suspended_ = suspended;
 	}
@@ -79,6 +80,10 @@ public:
 
 	bool survey_request() const {
 		return survey_request_;
+	}
+
+	bool subscriber() const {
+		return subscriber_;
 	}
 };
 

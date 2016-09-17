@@ -31,7 +31,7 @@ public:
 
 	boost::optional<User> user(const std::string& username) const override try {
 		const std::string query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "
-		                          "u.totp_key, b.user_id as banned, u.survey_request, "
+		                          "u.totp_key, b.user_id as banned, u.survey_request, u.subscriber, "
 		                          "s.user_id as suspended FROM users u "
 		                          "LEFT JOIN bans b ON u.id = b.user_id "
 		                          "LEFT JOIN suspensions s ON u.id = s.user_id "
@@ -46,7 +46,8 @@ public:
 			User user(res->getUInt("id"), res->getString("username"), res->getString("s"),
 			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),
 			          res->getUInt64("pin"), res->getString("totp_key"), res->getBoolean("banned"),
-			          res->getBoolean("suspended"), res->getBoolean("survey_request"));
+			          res->getBoolean("suspended"), res->getBoolean("survey_request"),
+			          res->getBoolean("subscriber"));
 			return user;
 		}
 
