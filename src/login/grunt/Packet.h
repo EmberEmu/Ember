@@ -21,7 +21,7 @@ struct Packet {
 
 	Opcode opcode;
 
-	Packet(Opcode opcode) : opcode(opcode) { }
+	explicit Packet(Opcode opcode) : opcode(opcode) { }
 
 	virtual State read_from_stream(spark::SafeBinaryStream& stream) = 0;
 	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;

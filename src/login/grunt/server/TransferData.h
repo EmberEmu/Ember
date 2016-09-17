@@ -30,7 +30,7 @@ public:
 
 	TransferData() : Packet(Opcode::CMD_XFER_DATA) {}
 
-	std::uint16_t size;
+	std::uint16_t size = 0;
 	std::array<char, MAX_CHUNK_SIZE> chunk;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

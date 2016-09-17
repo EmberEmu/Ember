@@ -78,14 +78,14 @@ class LoginChallenge final : public Packet {
 public:
 	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGON_CHALLENGE) {}
 
-	std::uint8_t protocol_ver;
+	std::uint8_t protocol_ver = 0;
 	Game game;
-	GameVersion version;
+	GameVersion version = {};
 	Platform platform;
 	System os;
 	Locale locale;
-	std::uint32_t timezone_bias;
-	std::uint32_t ip; // todo - apparently flipped with Mac builds (PPC only?)
+	std::uint32_t timezone_bias = 0;
+	std::uint32_t ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

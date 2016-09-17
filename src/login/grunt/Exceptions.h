@@ -22,7 +22,7 @@ public:
 
 class bad_packet : public exception {
 public:
-	bad_packet(const std::string& msg) : exception(msg) { }
+	explicit bad_packet(const std::string& msg) : exception(msg) { }
 };
 
 }} // grunt, ember

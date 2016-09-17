@@ -28,7 +28,7 @@ public:
 	TransferInitiate() : Packet(Opcode::CMD_XFER_INITIATE) {}
 	
 	std::string filename;
-	std::uint64_t filesize;
+	std::uint64_t filesize = 0;
 	std::array<char, 16> md5;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

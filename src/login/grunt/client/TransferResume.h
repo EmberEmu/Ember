@@ -27,7 +27,7 @@ class TransferResume final : public Packet {
 public:
 	TransferResume() : Packet(Opcode::CMD_XFER_RESUME) {}
 
-	std::uint64_t offset;
+	std::uint64_t offset = 0;
 	
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

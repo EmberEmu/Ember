@@ -118,7 +118,7 @@ public:
 
 	Botan::BigInt A;
 	Botan::BigInt M1;
-	bool two_factor_auth;
+	bool two_factor_auth = 0;
 	std::array<std::uint8_t, SHA1_LENGTH> client_checksum;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;

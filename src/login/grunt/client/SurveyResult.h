@@ -73,8 +73,8 @@ class SurveyResult final : public Packet {
 public:
 	SurveyResult() : Packet(Opcode::CMD_SURVEY_RESULT) {}
 
-	std::uint32_t survey_id;
-	std::uint8_t error;
+	std::uint32_t survey_id = 0;
+	std::uint8_t error = 0;
 	std::string data;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

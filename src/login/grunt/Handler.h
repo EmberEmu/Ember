@@ -35,7 +35,7 @@ class Handler {
 	void dump_bad_packet(const spark::buffer_underrun& e, spark::Buffer& buffer, std::size_t offset);
 
 public:
-	Handler(log::Logger* logger) : logger_(logger) { }
+	explicit Handler(log::Logger* logger) : logger_(logger) { }
 
 	boost::optional<PacketHandle> try_deserialise(spark::Buffer& buffer);
 };
