@@ -90,7 +90,7 @@ public:
 		OSX     = 'OSX'
 	};
 
-	enum ClientLocale : std::uint32_t {
+	enum Locale : std::uint32_t {
 		enGB = 'enGB', enUS = 'enUS',
 		esMX = 'esMX', ptBR = 'ptBR',
 		frFR = 'frFR', deDE = 'deDE',
@@ -107,7 +107,7 @@ public:
 	GameVersion version;
 	Platform platform;
 	OperatingSystem os;
-	ClientLocale locale;
+	Locale locale;
 	std::uint32_t timezone_bias;
 	std::uint32_t ip; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;

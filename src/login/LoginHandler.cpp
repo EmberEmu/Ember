@@ -126,6 +126,8 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 	LOG_DEBUG(logger_) << "Challenge: " << challenge->username << ", "
 	                   << challenge->version << ", " << source_ << LOG_ASYNC;
 
+	challenge_ = *challenge;
+
 	Patcher::PatchLevel patch_level = patcher_.check_version(challenge->version);
 
 	switch(patch_level) {
@@ -403,7 +405,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 	}
 }
 
-void LoginHandler::send_login_proof(grunt::ResultCode result) {
+void LoginHandler::send_login_proof(grunt::ResultCode result, bool survey) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	grunt::server::LoginProof response;
@@ -412,7 +414,7 @@ void LoginHandler::send_login_proof(grunt::ResultCode result) {
 	if(result == grunt::ResultCode::SUCCESS) {
 		metrics_.increment("login_success");
 		response.M2 = server_proof_;
-		response.survey_id = user_->survey_request()? patcher_.survey_id() : 0;
+		response.survey_id = survey? patcher_.survey_id() : 0;
 	} else {
 		metrics_.increment("login_failure");
 	}
@@ -422,6 +424,7 @@ void LoginHandler::send_login_proof(grunt::ResultCode result) {
 
 	send(response);
 }
+
 
 void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -434,16 +437,23 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 			<< ": " << e.what() << LOG_ASYNC;
 	}
 
+	bool trigger_survey = false;
 	state_ = State::REQUEST_REALMS;
+
+	if(patcher_.survey_platform(challenge_.platform, challenge_.os)) {
+		if(user_->survey_request() && !action->reconnect()) {
+			state_ = State::SURVEY_INITIATE;
+			trigger_survey = true;
+		}
+	}
 
 	if(action->reconnect()) {
 		send_reconnect_proof(grunt::ResultCode::SUCCESS);
 	} else {
-		send_login_proof(grunt::ResultCode::SUCCESS);
+		send_login_proof(grunt::ResultCode::SUCCESS, trigger_survey);
 	}
 
-	if(patcher_.survey_id() && user_->survey_request()) {
-		state_ = State::SURVEY_INITIATE;
+	if(trigger_survey) {
 		initiate_file_transfer(patcher_.survey_meta());
 	}
 }
@@ -624,7 +634,8 @@ void LoginHandler::transfer_chunk() {
 	response.size = read_size;
 
 	if(state_ == State::SURVEY_TRANSFER) {
-		auto* survey_mpq = patcher_.survey_data().data() + transfer_state_.offset;
+		auto* survey_mpq = patcher_.survey_data(challenge_.platform, challenge_.os).data();
+		survey_mpq += transfer_state_.offset;
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {
 		transfer_state_.file.read(response.chunk.data(), read_size);

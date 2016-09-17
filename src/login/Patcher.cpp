@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -74,7 +74,25 @@ FileMeta Patcher::survey_meta() const {
 	return survey_;
 }
 
-const std::vector<char>& Patcher::survey_data() const {
+bool Patcher::survey_platform(grunt::client::LoginChallenge::Platform platform,
+                              grunt::client::LoginChallenge::OperatingSystem os) const {
+	if(platform != grunt::client::LoginChallenge::Platform::x86) {
+		return false;
+	}
+
+	if(os != grunt::client::LoginChallenge::OperatingSystem::Windows) {
+		return false;
+	}
+
+	return true;
+}
+
+const std::vector<char>& Patcher::survey_data(grunt::client::LoginChallenge::Platform platform,
+                                              grunt::client::LoginChallenge::OperatingSystem os) const {
+	if(!survey_platform(platform, os)) {
+		throw std::invalid_argument("Attempted to retrieve survey binaries for an unsupported platform!");
+	}
+
 	return survey_data_;
 }
 

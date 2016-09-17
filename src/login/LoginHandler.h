@@ -74,6 +74,7 @@ class LoginHandler {
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
 	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
 	Botan::SecureVector<Botan::byte> checksum_salt_;
+	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
 
 	void transfer_chunk();
@@ -85,7 +86,7 @@ class LoginHandler {
 	void handle_login_proof(const grunt::Packet* packet);
 	void handle_reconnect_proof(const grunt::Packet* packet);
 	void send_reconnect_proof(grunt::ResultCode result);
-	void send_login_proof(grunt::ResultCode result);
+	void send_login_proof(grunt::ResultCode result, bool survey = false);
 	void build_login_challenge(grunt::server::LoginChallenge& packet);
 	void send_login_challenge(FetchUserAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
