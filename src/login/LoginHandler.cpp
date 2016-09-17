@@ -109,7 +109,7 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_LOGIN/RECONNECT_CHALLENGE");
 	}
 
-	if(challenge->opcode == grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE
+	if(challenge->opcode == grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE
 	   && challenge->protocol_ver != CONNECT_PROTO_VERSION
 	   || challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
 	   && challenge->protocol_ver != RECONNECT_PROTO_VERSION) {
@@ -146,7 +146,7 @@ void LoginHandler::fetch_user(grunt::Opcode opcode, const std::string& username)
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	switch(opcode) {
-		case grunt::Opcode::CMD_AUTH_LOGIN_CHALLENGE:
+		case grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE:
 			state_ = State::FETCHING_USER_LOGIN;
 			break;
 		case grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE:

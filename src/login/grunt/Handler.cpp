@@ -41,7 +41,7 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 	buffer.copy(&opcode, sizeof(opcode));
 
 	switch(opcode) {
-		case Opcode::CMD_AUTH_LOGIN_CHALLENGE:
+		case Opcode::CMD_AUTH_LOGON_CHALLENGE:
 			[[fallthrough]];
 		case Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
 			curr_packet_ = std::make_unique<client::LoginChallenge>();
