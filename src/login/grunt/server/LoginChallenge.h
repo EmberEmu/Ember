@@ -58,11 +58,11 @@ class LoginChallenge final : public Packet {
 		s = Botan::BigInt(s_buff, SALT_LENGTH);
 
 		stream.get(checksum_salt.data(), checksum_salt.size());
-		stream >> static_cast<TwoFactorSecurity>(security);
+		stream >> two_factor_auth;
 	}
 
 	void read_pin_data(spark::SafeBinaryStream& stream) {
-		if(security != TwoFactorSecurity::PIN || state_ == State::DONE) {
+		if(!two_factor_auth || state_ == State::DONE) {
 			return;
 		}
 
@@ -98,7 +98,7 @@ public:
 	Botan::BigInt N;
 	Botan::BigInt s;
 	std::array<Botan::byte, CHECKSUM_SALT_LENGTH> checksum_salt;
-	TwoFactorSecurity security = TwoFactorSecurity::NONE;
+	bool two_factor_auth = false;
 	std::uint32_t pin_grid_seed;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 
@@ -150,9 +150,9 @@ public:
 		stream.put(bytes.begin(), bytes.size());
 
 		stream.put(checksum_salt.data(), checksum_salt.size());
-		stream << security;
+		stream << two_factor_auth;
 
-		if(security == TwoFactorSecurity::PIN) {
+		if(two_factor_auth) {
 			stream << be::native_to_little(pin_grid_seed);
 			stream.put(pin_salt.data(), pin_salt.size());
 		}

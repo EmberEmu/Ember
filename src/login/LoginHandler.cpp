@@ -194,10 +194,10 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet.N = values.gen.prime();
 	packet.s = values.salt;
-	packet.security = grunt::server::LoginChallenge::TwoFactorSecurity::NONE;
+	packet.two_factor_auth = false;
 
 	if(user_->pin_method() != PINMethod::NONE) {
-		packet.security = grunt::server::LoginChallenge::TwoFactorSecurity::PIN;
+		packet.two_factor_auth = true;
 		packet.pin_grid_seed = pin_auth_.grid_seed();
 		packet.pin_salt = pin_auth_.server_salt();
 	}
@@ -294,7 +294,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	}
 
 	// PIN auth is enabled for this user, make sure the packet has PIN data
-	if(packet->security != grunt::client::LoginProof::TwoFactorSecurity::PIN) {
+	if(!packet->two_factor_auth) {
 		return false;
 	}
 

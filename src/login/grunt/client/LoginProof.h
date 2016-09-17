@@ -56,21 +56,16 @@ class LoginProof final : public Packet {
 	}
 
 	bool read_security_type(spark::SafeBinaryStream& stream) {
-		if(stream.size() < sizeof(TwoFactorSecurity)) {
+		if(stream.size() < sizeof(two_factor_auth)) {
 			return false;
 		}
 
-		stream >> static_cast<TwoFactorSecurity>(security);
+		stream >> two_factor_auth;
 
-		switch(security) {
-			case TwoFactorSecurity::NONE:
-				read_state_ = ReadState::DONE;
-				break;
-			case TwoFactorSecurity::PIN:
-				read_state_ = ReadState::READ_PIN_DATA;
-				break;
-			default:
-				throw grunt::bad_packet("Unknown security method from client");
+		if(two_factor_auth) {
+			read_state_ = ReadState::READ_PIN_DATA;
+		} else {
+			read_state_ = ReadState::DONE;
 		}
 
 		return true;
@@ -112,10 +107,6 @@ class LoginProof final : public Packet {
 	}
 
 public:
-	enum class TwoFactorSecurity : std::uint8_t {
-		NONE, PIN
-	};
-
 	struct KeyData {
 		std::uint16_t unk_1;
 		std::uint32_t unk_2;
@@ -127,7 +118,7 @@ public:
 
 	Botan::BigInt A;
 	Botan::BigInt M1;
-	TwoFactorSecurity security;
+	bool two_factor_auth;
 	std::array<std::uint8_t, SHA1_LENGTH> client_checksum;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;
@@ -199,9 +190,9 @@ public:
 			stream.put(key.unk_4_hash.data(), key.unk_4_hash.size());
 		}
 
-		stream << security;
+		stream << two_factor_auth;
 
-		if(security == TwoFactorSecurity::PIN) {
+		if(two_factor_auth) {
 			stream.put(pin_salt.data(), pin_salt.size());
 			stream.put(pin_hash.data(), pin_hash.size());
 		}
