@@ -52,7 +52,7 @@ Botan::SecureVector<Botan::byte> ExecutableChecksum::checksum(const Botan::Secur
 }
 
 Botan::SecureVector<Botan::byte> ExecutableChecksum::finalise(const Botan::SecureVector<Botan::byte>& checksum,
-															  const std::uint8_t* client_seed, std::size_t len) {
+                                                              const std::uint8_t* client_seed, std::size_t len) {
 	Botan::SHA_160 hasher;
 	hasher.update(client_seed, len);
 	hasher.update(checksum);

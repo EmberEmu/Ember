@@ -9,6 +9,7 @@
 #pragma once
 
 #include "GameVersion.h"
+#include "PatchGraph.h"
 #include "grunt/Magic.h"
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/objects/PatchMeta.h>
@@ -22,11 +23,14 @@ namespace ember {
 class Patcher {
 	const std::vector<PatchMeta> patches_;
 	const std::vector<GameVersion> versions_;
+	std::unordered_map<std::size_t, PatchGraph> graphs_;
+	std::unordered_map<std::size_t, std::vector<PatchMeta>> patch_bins;
+
 	FileMeta survey_;
 	std::vector<char> survey_data_;
 	std::uint32_t survey_id_;
 
-	void generate_graph();
+	std::size_t fnv_hash(std::size_t hash, std::string data);
 
 public:
 	enum class PatchLevel { OK, TOO_OLD, PATCH_AVAILABLE, TOO_NEW };

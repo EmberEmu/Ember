@@ -7,6 +7,7 @@
  */
 
 #include "Patcher.h"
+#include "PatchGraph.h"
 #include <shared/util/FileMD5.h>
 #include <algorithm>
 #include <fstream>
@@ -18,11 +19,25 @@ namespace ember {
 Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches)
                  : versions_(std::move(versions)), patches_(std::move(patches)),
                    survey_id_(0) {
-	generate_graph();
+	for(auto& patch : patches) {
+		std::size_t hash = 0x811C9DC5;
+		hash = fnv_hash(hash, patch.locale);
+		hash = fnv_hash(hash, patch.arch);
+		hash = fnv_hash(hash, patch.os);
+		patch_bins[hash].emplace_back(patch);
+	}
+
+	for(auto& bin : patch_bins) {
+		graphs_.emplace(bin.first, PatchGraph(bin.second));
+	}
 }
 
-void Patcher::generate_graph() {
+std::size_t Patcher::fnv_hash(std::size_t hash, std::string data) {
+	for(std::size_t i = 0; i < data.size(); ++i) {
+		hash = (hash * 0x1000193) ^ data[i];
+	}
 
+	return hash;
 }
 
 boost::optional<FileMeta> Patcher::find_patch(const GameVersion& client_version) const {
