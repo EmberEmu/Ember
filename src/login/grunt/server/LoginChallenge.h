@@ -33,7 +33,7 @@ class LoginChallenge final : public Packet {
 		stream >> result;
 		stream >> protocol_ver;
 
-		if(result != grunt::ResultCode::SUCCESS) {
+		if(result != grunt::Result::SUCCESS) {
 			state_ = State::DONE;
 			return; // rest of the fields won't be sent
 		}
@@ -89,7 +89,7 @@ public:
 		NONE, PIN
 	};
 
-	ResultCode result;
+	Result result;
 	std::uint8_t protocol_ver = 0;
 	Botan::BigInt B;
 	std::uint8_t g_len;
@@ -129,7 +129,7 @@ public:
 		stream << protocol_ver;
 		stream << result;
 
-		if(result != grunt::ResultCode::SUCCESS) {
+		if(result != grunt::Result::SUCCESS) {
 			return; // don't send the rest of the fields
 		}
 		

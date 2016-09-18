@@ -180,7 +180,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG(logger_) << "Rejecting client version " << version << LOG_ASYNC;
 
 	grunt::server::LoginChallenge response;
-	response.result = grunt::ResultCode::FAIL_VERSION_INVALID;
+	response.result = grunt::Result::FAIL_VERSION_INVALID;
 	send(response);
 }
 
@@ -210,7 +210,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	grunt::server::LoginChallenge response;
-	response.result = grunt::ResultCode::SUCCESS;
+	response.result = grunt::Result::SUCCESS;
 
 	try {
 		if((user_ = action->get_result())) {
@@ -219,17 +219,17 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 			state_ = State::LOGIN_PROOF;
 		} else {
 			// leaks information on whether the account exists (could send challenge anyway?)
-			response.result = grunt::ResultCode::FAIL_UNKNOWN_ACCOUNT;
+			response.result = grunt::Result::FAIL_UNKNOWN_ACCOUNT;
 			metrics_.increment("login_failure");
 			LOG_DEBUG(logger_) << "Account not found: " << action->username() << LOG_ASYNC;
 		}
 	} catch(dal::exception& e) {
-		response.result = grunt::ResultCode::FAIL_DB_BUSY;
+		response.result = grunt::Result::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << action->username()
 		                   << ": " << e.what() << LOG_ASYNC;
 	} catch(Botan::Exception& e) {
-		response.result = grunt::ResultCode::FAIL_DB_BUSY;
+		response.result = grunt::Result::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "Encoding failure for " << action->username()
 		                   << ": " << e.what() << LOG_ASYNC;
@@ -238,13 +238,13 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 	send(response);
 }
 
-void LoginHandler::send_reconnect_proof(grunt::ResultCode result) {
+void LoginHandler::send_reconnect_proof(grunt::Result result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	LOG_DEBUG(logger_) << "Reconnect result for " << user_->username() << ": "
 	                   << grunt::to_string(result) << LOG_ASYNC;
 
-	if(result == grunt::ResultCode::SUCCESS) {
+	if(result == grunt::Result::SUCCESS) {
 		metrics_.increment("login_success");
 	} else {
 		metrics_.increment("login_failure");
@@ -259,7 +259,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	grunt::server::ReconnectChallenge response;
-	response.result = grunt::ResultCode::SUCCESS;
+	response.result = grunt::Result::SUCCESS;
 
 	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response.salt.size());
 	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response.salt.data());
@@ -271,12 +271,12 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, checksum_salt_);
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
-		response.result = grunt::ResultCode::FAIL_NOACCESS;
+		response.result = grunt::Result::FAIL_NOACCESS;
 		LOG_DEBUG(logger_) << "Reconnect failed, session not found for "
 		                   << user_->username() << LOG_ASYNC;
 	} else {
 		metrics_.increment("login_internal_failure");
-		response.result = grunt::ResultCode::FAIL_DB_BUSY;
+		response.result = grunt::Result::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(res.first)
 		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
@@ -363,33 +363,33 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 	}
 	
 	if(!validate_client_integrity(proof_packet->client_checksum, proof_packet->A, false)) {
-		send_login_proof(grunt::ResultCode::FAIL_VERSION_INVALID);
+		send_login_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
 	}
 
 	if(!validate_pin(proof_packet)) {
-		send_login_proof(grunt::ResultCode::FAIL_INCORRECT_PASSWORD);
+		send_login_proof(grunt::Result::FAIL_INCORRECT_PASSWORD);
 		return;
 	}
 
 	auto proof = login_auth_->proof_check(proof_packet);
-	auto result = grunt::ResultCode::FAIL_INCORRECT_PASSWORD;
+	auto result = grunt::Result::FAIL_INCORRECT_PASSWORD;
 	
 	if(proof.match) {
 		if(user_->banned()) {
-			result = grunt::ResultCode::FAIL_BANNED;
+			result = grunt::Result::FAIL_BANNED;
 		} else if(user_->suspended()) {
-			result = grunt::ResultCode::FAIL_SUSPENDED;
+			result = grunt::Result::FAIL_SUSPENDED;
 		} else if(!user_->subscriber()) {
-			result = grunt::ResultCode::FAIL_NO_TIME;
+			result = grunt::Result::FAIL_NO_TIME;
 		/*} else if(parental_controls) {
-			res = grunt::ResultCode::FAIL_PARENTAL_CONTROLS;*/
+			res = grunt::Result::FAIL_PARENTAL_CONTROLS;*/
 		} else {
-			result = grunt::ResultCode::SUCCESS;
+			result = grunt::Result::SUCCESS;
 		}
 	}
 
-	if(result == grunt::ResultCode::SUCCESS) {
+	if(result == grunt::Result::SUCCESS) {
 		state_ = State::WRITING_SESSION;
 		server_proof_ = proof.server_proof;
 
@@ -404,13 +404,13 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 	}
 }
 
-void LoginHandler::send_login_proof(grunt::ResultCode result, bool survey) {
+void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	grunt::server::LoginProof response;
 	response.result = result;
 
-	if(result == grunt::ResultCode::SUCCESS) {
+	if(result == grunt::Result::SUCCESS) {
 		metrics_.increment("login_success");
 		response.M2 = server_proof_;
 		response.survey_id = survey? patcher_.survey_id() : 0;
@@ -447,9 +447,9 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	}
 
 	if(action->reconnect()) {
-		send_reconnect_proof(grunt::ResultCode::SUCCESS);
+		send_reconnect_proof(grunt::Result::SUCCESS);
 	} else {
-		send_login_proof(grunt::ResultCode::SUCCESS, trigger_survey);
+		send_login_proof(grunt::Result::SUCCESS, trigger_survey);
 	}
 
 	if(trigger_survey) {
@@ -461,15 +461,15 @@ void LoginHandler::on_session_write(RegisterSessionAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto result = action->get_result();
-	grunt::ResultCode response = grunt::ResultCode::SUCCESS;
+	grunt::Result response = grunt::Result::SUCCESS;
 
 	if(result == messaging::account::Status::OK) {
 		state_ = State::FETCHING_CHARACTER_DATA;
 	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
-		response = grunt::ResultCode::FAIL_ALREADY_ONLINE;
+		response = grunt::Result::FAIL_ALREADY_ONLINE;
 	} else {
 		metrics_.increment("login_internal_failure");
-		response = grunt::ResultCode::FAIL_DB_BUSY;
+		response = grunt::Result::FAIL_DB_BUSY;
 		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(result)
 		                   << " from peer during login" << LOG_ASYNC;
 	}
@@ -492,7 +492,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 	}
 	
 	if(!validate_client_integrity(proof->client_checksum, proof->salt.data(), proof->salt.size(), true)) {
-		send_reconnect_proof(grunt::ResultCode::FAIL_VERSION_INVALID);
+		send_reconnect_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
 	}
 
@@ -500,11 +500,11 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 		state_ = State::FETCHING_CHARACTER_DATA;
 		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
-		send_reconnect_proof(grunt::ResultCode::FAIL_INCORRECT_PASSWORD);
+		send_reconnect_proof(grunt::Result::FAIL_INCORRECT_PASSWORD);
 	}
 
 	grunt::server::ReconnectProof response;
-	response.result = grunt::ResultCode::SUCCESS;
+	response.result = grunt::Result::SUCCESS;
 
 	state_ = State::REQUEST_REALMS;
 	send(response);

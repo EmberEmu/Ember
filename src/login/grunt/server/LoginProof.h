@@ -36,7 +36,7 @@ class LoginProof final : public Packet {
 
 	void read_body(spark::SafeBinaryStream& stream) {
 		// no need to keep reading - the other fields aren't set
-		if(result != grunt::ResultCode::SUCCESS) {
+		if(result != grunt::Result::SUCCESS) {
 			state_ = State::DONE;
 			return;
 		}
@@ -59,7 +59,7 @@ class LoginProof final : public Packet {
 public:
 	LoginProof() : Packet(Opcode::CMD_AUTH_LOGON_PROOF) {}
 
-	ResultCode result;
+	Result result;
 	Botan::BigInt M2;
 	std::uint32_t survey_id = 0;
 
@@ -89,7 +89,7 @@ public:
 		stream << result;
 
 		// no need to stream the rest of the members
-		if(result != grunt::ResultCode::SUCCESS && result != grunt::ResultCode::SUCCESS_SURVEY) {
+		if(result != grunt::Result::SUCCESS && result != grunt::Result::SUCCESS_SURVEY) {
 			return;
 		}
 

@@ -24,7 +24,7 @@ class ReconnectProof final : public Packet {
 public:
 	ReconnectProof() : Packet(Opcode::CMD_AUTH_RECONNECT_PROOF) {}
 
-	ResultCode result;
+	Result result;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

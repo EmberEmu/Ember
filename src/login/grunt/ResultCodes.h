@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@
 
 namespace ember { namespace grunt {
 
-smart_enum_class(ResultCode, std::uint8_t,
+smart_enum_class(Result, std::uint8_t,
 	SUCCESS                     = 0x00,
 	FAIL_UNKNOWN0               = 0x01, 
 	FAIL_UNKNOWN1               = 0x02,

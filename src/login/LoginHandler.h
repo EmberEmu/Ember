@@ -85,8 +85,8 @@ class LoginHandler {
 	void initiate_login(const grunt::Packet* packet);
 	void handle_login_proof(const grunt::Packet* packet);
 	void handle_reconnect_proof(const grunt::Packet* packet);
-	void send_reconnect_proof(grunt::ResultCode result);
-	void send_login_proof(grunt::ResultCode result, bool survey = false);
+	void send_reconnect_proof(grunt::Result result);
+	void send_login_proof(grunt::Result result, bool survey = false);
 	void build_login_challenge(grunt::server::LoginChallenge& packet);
 	void send_login_challenge(FetchUserAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
