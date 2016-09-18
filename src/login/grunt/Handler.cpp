@@ -110,5 +110,4 @@ boost::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	}
 }
 
-
 }} // grunt, ember

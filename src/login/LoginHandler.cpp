@@ -251,7 +251,6 @@ void LoginHandler::send_reconnect_proof(grunt::ResultCode result) {
 	}
 
 	grunt::server::ReconnectProof response;
-	response.opcode = grunt::Opcode::CMD_AUTH_RECONNECT_PROOF;
 	response.result = result;
 	send(response);
 }
@@ -519,8 +518,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	}
 
 	grunt::server::RealmList response;
-	response.opcode = grunt::Opcode::CMD_REALM_LIST;
-	
+
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
