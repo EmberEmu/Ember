@@ -80,33 +80,33 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 	}
 
 	auto build = client_version.build;
-	bool direct_path = false;
+	bool path = false;
 
-	// ensure there's a direct path from the client version to a supported version
+	// ensure there's a patch path from the client version to a supported version
 	for(auto& version : versions_) {
 		if(g_it->second.is_path(build, version.build)) {
-			direct_path = true;
+			path = true;
 			break;
 		}
 	}
 
-	// couldn't find a direct path, find the best rollup patch that'll cover the client
-	if(!direct_path) {
+	// couldn't find a patch path, find the best rollup patch that'll cover the client
+	if(!path) {
 		const PatchMeta* meta = nullptr;
 
 		for(auto& version : versions_) {
 			meta = locate_rollup(p_it->second, client_version.build, version.build);
 
-			// check to see whether there's a direct path from this rollup
+			// check to see whether there's a patch path from this rollup
 			if(meta && g_it->second.is_path(meta->build_from, version.build)) {
 				build = meta->build_from;
-				direct_path = true;
+				path = true;
 				break;
 			}
 		}
 
 		// still no path? Guess we're out of luck.
-		if(!direct_path) {
+		if(!path) {
 			return {};
 		}
 	}
