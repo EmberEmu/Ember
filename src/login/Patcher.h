@@ -30,8 +30,6 @@ class Patcher {
 	std::vector<char> survey_data_;
 	std::uint32_t survey_id_;
 
-	std::size_t fnv_hash(std::size_t hash, std::string data);
-
 public:
 	enum class PatchLevel { OK, TOO_OLD, PATCH_AVAILABLE, TOO_NEW };
 

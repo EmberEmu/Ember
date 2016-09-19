@@ -22,13 +22,11 @@ enum class Game : std::uint32_t {
 enum class Platform : std::uint32_t {
 	x86 = 'x86',
 	PPC = 'PPC',
-	END_VALUE
 };
 
 enum class System : std::uint32_t {
 	Windows = 'Win',
 	OSX     = 'OSX',
-	END_VALUE
 };
 
 enum Locale : std::uint32_t {

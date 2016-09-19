@@ -74,6 +74,7 @@ set(UTIL_SRC
     shared/util/base32.cpp
     shared/util/FileMD5.h
     shared/util/FileMD5.cpp
+    shared/util/FNVHash.h
 )
 
 set(METRICS_SRC

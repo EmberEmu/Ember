@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/FNVHash.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <boost/functional/hash.hpp>
 #include <algorithm>
@@ -30,16 +31,6 @@ class ClientUUID {
 		};
 	};
 
-	std::size_t fnv_hash() {
-		std::size_t hash = 0x811C9DC5;
-		
-		for(std::size_t i = 0; i < sizeof(data_); ++i) {
-			hash = (hash * 0x1000193) ^ data_[i];
-		}
-
-		return hash;
-	}
-
 public:
 	inline std::size_t hash() const {
 		return hash_;
@@ -49,10 +40,11 @@ public:
 		return service_;
 	}
 
-	static ClientUUID from_bytes(const std::uint8_t* data) {
+	static ClientUUID from_bytes(const std::uint8_t* data) { // todo
 		ClientUUID uuid;
 		std::copy(data, data + 16, uuid.data_);
-		uuid.hash_ = uuid.fnv_hash();
+		FNVHash hasher;
+		uuid.hash_ = hasher.update(data, 16);
 		return uuid;
 	}
 
@@ -64,7 +56,8 @@ public:
 		}
 
 		uuid.service_ = static_cast<std::uint8_t>(service_index); // todo
-		uuid.hash_ = uuid.fnv_hash();
+		FNVHash hasher;
+		uuid.hash_ = hasher.update(uuid.data_, sizeof(uuid.data_));
 		return uuid;
 	}
 

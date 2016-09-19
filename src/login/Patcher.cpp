@@ -9,35 +9,28 @@
 #include "Patcher.h"
 #include "PatchGraph.h"
 #include <shared/util/FileMD5.h>
+#include <shared/util/FNVHash.h>
 #include <algorithm>
 #include <fstream>
-//#include <regex>
-//#include <cstdio>
 
 namespace ember {
 
 Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches)
                  : versions_(std::move(versions)), patches_(std::move(patches)),
                    survey_id_(0) {
+	FNVHash hasher;
+
 	for(auto& patch : patches) {
-		std::size_t hash = 0x811C9DC5;
-		hash = fnv_hash(hash, patch.locale);
-		hash = fnv_hash(hash, patch.arch);
-		hash = fnv_hash(hash, patch.os);
+		hasher.update(patch.locale);
+		hasher.update(patch.arch);
+		hasher.update(patch.os);
+		std::size_t hash = hasher.finalise();
 		patch_bins[hash].emplace_back(patch);
 	}
 
 	for(auto& bin : patch_bins) {
 		graphs_.emplace(bin.first, PatchGraph(bin.second));
 	}
-}
-
-std::size_t Patcher::fnv_hash(std::size_t hash, std::string data) {
-	for(std::size_t i = 0; i < data.size(); ++i) {
-		hash = (hash * 0x1000193) ^ data[i];
-	}
-
-	return hash;
 }
 
 boost::optional<FileMeta> Patcher::find_patch(const GameVersion& client_version) const {
@@ -97,6 +90,7 @@ bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const 
 	return true;
 }
 
+// todo, change how this works
 const std::vector<char>& Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
 	if(!survey_platform(platform, os)) {
 		throw std::invalid_argument("Attempted to retrieve survey binaries for an unsupported platform!");

@@ -7,7 +7,7 @@
  */
 
 #include "PatchGraph.h"
-#include <iostream>
+
 namespace ember {
 
 void PatchGraph::build_graph(const std::vector<PatchMeta>& patches) {
