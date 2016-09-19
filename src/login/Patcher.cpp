@@ -145,6 +145,7 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 
 	for(auto& patch : patches) {
 		bool dirty = false;
+		patch.file_meta.path = path;
 
 		// we open each patch to make sure that it at least exists
 		std::ifstream file(path + patch.file_meta.name, std::ios::binary | std::ios::ate);

@@ -135,11 +135,10 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 			fetch_user(challenge->opcode, challenge->username);
 			break;
 		case Patcher::PatchLevel::TOO_NEW:
-		case Patcher::PatchLevel::TOO_OLD:
 			reject_client(challenge->version);
 			break;
-		case Patcher::PatchLevel::PATCH_AVAILABLE:
-			patch_client(challenge->version);
+		case Patcher::PatchLevel::TOO_OLD:
+			patch_client(challenge);
 			break;
 	}
 }
@@ -529,12 +528,25 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	send(response);
 }
 
-void LoginHandler::patch_client(const GameVersion& version) {
+void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// don't know yet
-	//stream << std::uint8_t(0) << std::uint8_t(0) << protocol::RESULT::FAIL_VERSION_UPDATE;
-	//write(packet);
+	auto meta = patcher_.find_patch(challenge->version, challenge->locale,
+	                                challenge->platform, challenge->os);
+
+	if(!meta) {
+		reject_client(challenge->version);
+		return;
+	}
+	
+	std::ifstream patch(meta->file_meta.path + meta->file_meta.name);
+
+	if(!patch.is_open()) {
+		LOG_ERROR(logger_) << "Could not open patch, " << meta->file_meta.name << LOG_ASYNC;
+	}
+
+	transfer_state_.file = std::move(patch);
+	initiate_file_transfer(meta->file_meta);
 }
 
 void LoginHandler::initiate_file_transfer(const FileMeta& meta) {

@@ -107,7 +107,7 @@ class LoginHandler {
 	void fetch_session_key(FetchUserAction* action);
 
 	void reject_client(const GameVersion& version);
-	void patch_client(const GameVersion& version);
+	void patch_client(const grunt::client::LoginChallenge* version);
 
 public:
 	std::function<void(std::shared_ptr<Action> action)> execute_async;

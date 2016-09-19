@@ -31,7 +31,7 @@ class Patcher {
 	std::uint32_t survey_id_;
 
 public:
-	enum class PatchLevel { OK, TOO_OLD, PATCH_AVAILABLE, TOO_NEW };
+	enum class PatchLevel { OK, TOO_OLD, TOO_NEW };
 
 	Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches);
 	
