@@ -9,34 +9,38 @@
 #pragma once
 
 #include <shared/database/objects/PatchMeta.h>
-#include <vector>
+#include <deque>
+#include <string>
 #include <unordered_map>
+#include <vector>
 #include <cstdint>
 
 namespace ember {
 
 struct Edge {
+	std::string filename;
 	std::uint16_t build_to;
 	std::uint64_t filesize;
 };
 
-struct Node {
-	std::vector<Edge> edges;
-	std::uint32_t cost;
-};
-
 class PatchGraph {
-	std::unordered_map<std::uint16_t, Node> adjacency_;
+	std::unordered_map<std::uint16_t, std::vector<Edge>> adjacency_;
 
 	void build_graph(const std::vector<PatchMeta>& patches);
+	bool edge_test(const std::vector<Edge>& edges, std::uint16_t to) const;
 
 public:
-	PatchGraph(const std::vector<PatchMeta>& patches) {
+	struct Node {
+		std::uint16_t from;
+		std::uint64_t weight;
+	};
+
+	explicit PatchGraph(const std::vector<PatchMeta>& patches) {
 		build_graph(patches);
 	}
 
-	bool edge_test(const std::vector<Edge>& edges, std::uint16_t to);
-	bool is_path(std::uint16_t from, std::uint16_t to);
+	std::deque<Node> path(std::uint16_t from, std::uint16_t to) const;
+	bool is_path(std::uint16_t from, std::uint16_t to) const;
 };
 
 } // ember

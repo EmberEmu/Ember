@@ -8,35 +8,35 @@
 
 #pragma once
 
+#include <shared/smartenum.hpp>
 #include <cstdint>
 
  /* This file isn't as exciting as the name implies */
 
 namespace ember { namespace grunt {
 
-// todo - use constexpr func when switched to VS2015 - this is implementation defined behaviour!
-enum class Game : std::uint32_t {
+smart_enum_class(Game, std::uint32_t,
 	WoW = 'WoW'
-};
+);
 
-enum class Platform : std::uint32_t {
+smart_enum_class(Platform, std::uint32_t,
 	x86 = 'x86',
-	PPC = 'PPC',
-};
+	PPC = 'PPC'
+);
 
-enum class System : std::uint32_t {
-	Windows = 'Win',
-	OSX     = 'OSX',
-};
+smart_enum_class(System, std::uint32_t,
+	Win = 'Win',
+	OSX = 'OSX'
+);
 
-enum Locale : std::uint32_t {
+smart_enum_class(Locale, std::uint32_t,
 	enGB = 'enGB', enUS = 'enUS',
 	esMX = 'esMX', ptBR = 'ptBR',
 	frFR = 'frFR', deDE = 'deDE',
 	esES = 'esES', ptPT = 'ptPT',
 	itIT = 'itIT', ruRU = 'ruRU',
 	koKR = 'koKR', zhTW = 'zhTW',
-	enTW = 'enTW', enCN = 'enCN',
-};
+	enTW = 'enTW', enCN = 'enCN'
+);
 
 }} // grunt, ember

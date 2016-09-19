@@ -10,6 +10,7 @@
 #include "PatchGraph.h"
 #include <shared/util/FileMD5.h>
 #include <shared/util/FNVHash.h>
+#include <boost/endian/conversion.hpp>
 #include <algorithm>
 #include <fstream>
 
@@ -20,11 +21,11 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
                    survey_id_(0) {
 	FNVHash hasher;
 
-	for(auto& patch : patches) {
+	for(auto& patch : patches_) {
 		hasher.update(patch.locale);
 		hasher.update(patch.arch);
 		hasher.update(patch.os);
-		std::size_t hash = hasher.finalise();
+		auto hash = hasher.finalise();
 		patch_bins[hash].emplace_back(patch);
 	}
 
@@ -33,8 +34,43 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 	}
 }
 
-boost::optional<FileMeta> Patcher::find_patch(const GameVersion& client_version) const {
-	return boost::optional<FileMeta>();
+boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, grunt::Locale locale,
+                                               grunt::Platform platform, grunt::System os) const {
+	FNVHash hasher;
+	hasher.update(grunt::to_string(locale));
+	hasher.update(grunt::to_string(platform));
+	hasher.update(grunt::to_string(os));
+	auto hash = hasher.hash();
+	auto g_it = graphs_.find(hash);
+	auto p_it = patch_bins.find(hash);
+	
+	if(g_it == graphs_.end() || p_it == patch_bins.end()) {
+		return {};
+	}
+
+	for(auto& version : versions_) {
+		auto paths = g_it->second.path(client_version.build, version.build);
+		
+		if(paths.empty()) {
+			continue;
+		}
+		
+		auto build_to = version.build;
+		auto build_from = paths.front().from;
+		paths.pop_front();
+
+		if(!paths.empty()) {
+			build_to = paths.front().from;
+		}
+
+		for(auto& patch : p_it->second) {
+			if(patch.build_from == build_from && patch.build_to == build_to) {
+				return patch;
+			}
+		}
+	}
+
+	return {};
 }
 
 auto Patcher::check_version(const GameVersion& client_version) const -> PatchLevel {
@@ -83,7 +119,7 @@ FileMeta Patcher::survey_meta() const {
 }
 
 bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const {
-	if(platform != grunt::Platform::x86 || os != grunt::System::Windows) {
+	if(platform != grunt::Platform::x86 || os != grunt::System::Win) {
 		return false;
 	}
 

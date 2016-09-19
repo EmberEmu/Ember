@@ -47,7 +47,7 @@ public:
 		std::vector<PatchMeta> patches;
 
 		while(res->next()) {
-			PatchMeta meta;
+			PatchMeta meta{};
 			meta.id = res->getUInt("id");
 			meta.build_from = res->getUInt("from");
 			meta.build_to = res->getUInt("to");
@@ -57,7 +57,7 @@ public:
 			meta.mpq = res->getBoolean("mpq");
 			meta.file_meta.name = res->getString("name");
 			meta.file_meta.size = res->getUInt64("size");
-			meta.os = res->getUInt("os_val");
+			meta.os = res->getString("os_val");
 			meta.locale = res->getString("locale_val");
 			meta.arch = res->getString("architecture_val");
 
@@ -97,9 +97,9 @@ public:
 		std::stringstream md5_str;
 		md5_str << std::hex << md5;
 		stmt->setString(6, md5_str.str());
-		stmt->setUInt(7, meta.os_id);
+		stmt->setUInt(7, meta.locale_id);
 		stmt->setUInt(8, meta.arch_id);
-		stmt->setUInt(9, meta.locale_id);
+		stmt->setUInt(9, meta.os_id);
 		stmt->setUInt(10, meta.id);
 
 		if(!stmt->executeUpdate()) {

@@ -30,6 +30,8 @@ SOFTWARE.
 #include <vector>
 #include <cstdint>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 namespace smart_enum
 {
@@ -100,20 +102,30 @@ namespace smart_enum
             if(equalSignPos != std::string::npos)
             {
                 std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
-                currentEnumValue = std::stoi(rightHandSide, 0, determine_base(rightHandSide));
+				
+				if(rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'') {
+					std::stringstream decimalConvert;
+					decimalConvert << "0x" << std::hex << std::setw(2) << std::setfill('0');
+
+					for(std::size_t i = 1; i < rightHandSide.size() - 1; ++i) {
+						decimalConvert << static_cast<unsigned>(rightHandSide[i]);
+					}
+
+					rightHandSide = decimalConvert.str();
+				}
+
+                currentEnumValue = static_cast<SizeType>(std::stoull(rightHandSide, 0, determine_base(rightHandSide)));
                 currentEnumEntry.erase(equalSignPos);
             }
     
             currentEnumEntry = trimWhitespace(currentEnumEntry);
-            
-
             nameMap[currentEnumValue] = currentEnumEntry;
     
             currentEnumValue++;
         }
         
         return nameMap;
-    }
+	}
     
     template<typename SizeType, typename Type>
     std::vector<Type> makeEnumList(std::string enumValuesString)
@@ -129,7 +141,19 @@ namespace smart_enum
             if(equalSignPos != std::string::npos)
             {
                 std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
-                currentEnumValue = std::stoi(rightHandSide, 0, determine_base(rightHandSide));
+
+				if(rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'') {
+					std::stringstream decimalConvert;
+					decimalConvert << "0x" << std::hex << std::setw(2) << std::setfill('0');
+
+					for(std::size_t i = 1; i < rightHandSide.size() - 1; ++i) {
+						decimalConvert << static_cast<unsigned>(rightHandSide[i]);
+					}
+
+					rightHandSide = decimalConvert.str();
+				}
+
+                currentEnumValue = static_cast<SizeType>(std::stoull(rightHandSide, 0, determine_base(rightHandSide)));
                 currentEnumEntry.erase(equalSignPos);
             }
     

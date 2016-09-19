@@ -34,14 +34,18 @@ public:
 	enum class PatchLevel { OK, TOO_OLD, PATCH_AVAILABLE, TOO_NEW };
 
 	Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches);
+	
+	// Survey
 	void set_survey(const std::string& path, std::uint32_t id);
 	FileMeta survey_meta() const;
-
+	std::uint32_t survey_id() const;
 	bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const;
 	const std::vector<char>& survey_data(grunt::Platform platform, grunt::System os) const;
 
-	std::uint32_t survey_id() const;
-	boost::optional<FileMeta> find_patch(const GameVersion& client_version) const;
+	// Patching
+	boost::optional<PatchMeta> find_patch(const GameVersion& client_version, grunt::Locale locale,
+	                                      grunt::Platform platform, grunt::System os) const;
+
 	PatchLevel check_version(const GameVersion& client_version) const;
 
 	static std::vector<PatchMeta> load_patches(const std::string& path, const dal::PatchDAO& dao,
