@@ -21,7 +21,7 @@ class FNVHash {
 public:
 	template<typename T>
 	std::size_t update(const T& data) {
-		const char* data_ = reinterpret_cast<const char*>(data);
+		const char* data_ = reinterpret_cast<const char*>(&data);
 
 		for(std::size_t i = 0; i < sizeof(data); ++i) {
 			hash_ = (hash_ * 0x1000193) ^ data_[i];
