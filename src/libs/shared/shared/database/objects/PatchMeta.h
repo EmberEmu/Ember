@@ -34,6 +34,7 @@ struct PatchMeta {
 	std::string locale;
 	std::string os;
 	bool mpq;
+	bool rollup;
 	FileMeta file_meta;
 };
 

@@ -33,7 +33,7 @@ public:
 	MySQLPatchDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<PatchMeta> fetch_patches() const final override try {
-		const std::string query = "SELECT patches.id, `from`, `to`, mpq, name, size, md5, os, "
+		const std::string query = "SELECT patches.id, `from`, `to`, mpq, name, size, md5, os, rollup, "
 		                          "architecture, locale, os.value AS os_val, "
 		                          "arch.value AS architecture_val, l.value AS locale_val "
 		                          "FROM patches "
@@ -60,11 +60,12 @@ public:
 			meta.os = res->getString("os_val");
 			meta.locale = res->getString("locale_val");
 			meta.arch = res->getString("architecture_val");
+			meta.rollup = res->getBoolean("rollup");
 
 			// sigh.
 			auto md5 = res->getString("md5");
 			Botan::BigInt md5_int(reinterpret_cast<const Botan::byte*>(md5.c_str()), md5.length(),
-			             Botan::BigInt::Base::Hexadecimal);
+			                      Botan::BigInt::Base::Hexadecimal);
 			auto md5_enc = Botan::BigInt::encode_1363(md5_int, meta.file_meta.md5.size());
 			std::reverse(md5_enc.begin(), md5_enc.end());
 
@@ -81,7 +82,7 @@ public:
 	void update(const PatchMeta& meta) const final override try {
 		const std::string query = "UPDATE patches SET `from` = ?, `to` = ?, `mpq` = ?, "
 		                          "`name` = ?, `size` = ?, `md5` = ?, `locale` = ?, "
-		                          "`architecture` = ?, `os` = ? "
+		                          "`architecture` = ?, `os` = ?, `rollup` = ? "
 		                          "WHERE id = ?";
 
 		auto conn = pool_.wait_connection(60s);
@@ -100,7 +101,8 @@ public:
 		stmt->setUInt(7, meta.locale_id);
 		stmt->setUInt(8, meta.arch_id);
 		stmt->setUInt(9, meta.os_id);
-		stmt->setUInt(10, meta.id);
+		stmt->setBoolean(10, meta.rollup);
+		stmt->setUInt(11, meta.id);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update patch #" + std::to_string(meta.id));

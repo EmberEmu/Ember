@@ -48,7 +48,7 @@ const PatchMeta* Patcher::locate_rollup(const std::vector<PatchMeta>& patches,
 	const PatchMeta* meta = nullptr;
 
 	for(auto& patch : patches) {
-		if(patch.mpq) {
+		if(!patch.rollup) {
 			continue;
 		}
 
