@@ -32,6 +32,37 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 	for(auto& bin : patch_bins) {
 		graphs_.emplace(bin.first, PatchGraph(bin.second));
 	}
+
+	GameVersion a; a.build = 5428;
+	auto meta = find_patch(a, grunt::Locale::enUS, grunt::Platform::x86, grunt::System::Win);
+
+	if(meta) {
+		std::cout << meta->file_meta.name << std::endl;
+	} else {
+		std::cout << "Could not find patch path" << std::endl;
+	}
+}
+
+const PatchMeta* Patcher::locate_rollup(const std::vector<PatchMeta>& patches,
+                                        std::uint16_t from, std::uint16_t to) const {
+	const PatchMeta* meta = nullptr;
+
+	for(auto& patch : patches) {
+		if(patch.mpq) {
+			continue;
+		}
+
+		// rollup build must be <= the client build and <= the server build
+		if(patch.build_from <= from && patch.build_to <= to) {
+			if(meta == nullptr) {
+				meta = &patch;
+			} else if(meta->file_meta.size >= patch.file_meta.size) {
+				meta = &patch; // go for the smaller file
+			}
+		}
+	}
+
+	return meta;
 }
 
 boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, grunt::Locale locale,
@@ -48,8 +79,41 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 		return {};
 	}
 
+	auto build = client_version.build;
+	bool direct_path = false;
+
+	// ensure there's a direct path from the client version to a supported version
 	for(auto& version : versions_) {
-		auto paths = g_it->second.path(client_version.build, version.build);
+		if(g_it->second.is_path(build, version.build)) {
+			direct_path = true;
+			break;
+		}
+	}
+
+	// couldn't find a direct path, find the best rollup patch that'll cover the client
+	if(!direct_path) {
+		const PatchMeta* meta = nullptr;
+
+		for(auto& version : versions_) {
+			meta = locate_rollup(p_it->second, client_version.build, version.build);
+
+			// check to see whether there's a direct path from this rollup
+			if(meta && g_it->second.is_path(meta->build_from, version.build)) {
+				build = meta->build_from;
+				direct_path = true;
+				break;
+			}
+		}
+
+		// still no path? Guess we're out of luck.
+		if(!direct_path) {
+			return {};
+		}
+	}
+
+	// using the optimal patching path, locate the next patch file
+	for(auto& version : versions_) {
+		auto paths = g_it->second.path(build, version.build);
 		
 		if(paths.empty()) {
 			continue;

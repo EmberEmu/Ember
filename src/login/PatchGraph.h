@@ -18,7 +18,6 @@
 namespace ember {
 
 struct Edge {
-	std::string filename;
 	std::uint16_t build_to;
 	std::uint64_t filesize;
 };

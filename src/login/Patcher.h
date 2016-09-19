@@ -30,6 +30,9 @@ class Patcher {
 	std::vector<char> survey_data_;
 	std::uint32_t survey_id_;
 
+	const PatchMeta* locate_rollup(const std::vector<PatchMeta>& patches,
+	                               std::uint16_t from, std::uint16_t to) const;
+
 public:
 	enum class PatchLevel { OK, TOO_OLD, TOO_NEW };
 

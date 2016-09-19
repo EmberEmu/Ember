@@ -26,7 +26,7 @@ public:
 
 void PatchGraph::build_graph(const std::vector<PatchMeta>& patches) {
 	for(auto& patch : patches) {
-		adjacency_[patch.build_from].emplace_back(Edge {patch.file_meta.name, patch.build_to, patch.file_meta.size});
+		adjacency_[patch.build_from].emplace_back(Edge { patch.build_to, patch.file_meta.size });
 	}
 }
 
@@ -50,7 +50,7 @@ bool PatchGraph::edge_test(const std::vector<Edge>& edges, std::uint16_t to) con
 
 bool PatchGraph::is_path(std::uint16_t from, std::uint16_t to) const {
 	for(auto& entry : adjacency_) {
-		if(entry.first <= from) { // todo, need to test for rollup vs incremental
+		if(entry.first == from) {
 			if(edge_test(entry.second, to)) {
 				return true;
 			}
