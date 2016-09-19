@@ -39,8 +39,8 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 	FNVHash hasher;
 	hasher.update(grunt::to_string(locale));
 	hasher.update(grunt::to_string(platform));
-	hasher.update(grunt::to_string(os));
-	auto hash = hasher.hash();
+	auto hash = hasher.update(grunt::to_string(os));
+
 	auto g_it = graphs_.find(hash);
 	auto p_it = patch_bins.find(hash);
 	

@@ -546,6 +546,11 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) 
 	}
 
 	transfer_state_.file = std::move(patch);
+
+	if(meta->mpq) {
+		meta->file_meta.name = "Patch";
+	}
+
 	initiate_file_transfer(meta->file_meta);
 }
 
