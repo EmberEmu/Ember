@@ -210,7 +210,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	// Start login server
 	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc,
 	                                   realm_list, *metrics);
-	ember::LoginSessionBuilder s_builder(builder, thread_pool, *metrics);
+	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<std::uint16_t>();

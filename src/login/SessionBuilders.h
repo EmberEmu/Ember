@@ -9,7 +9,6 @@
 #pragma once
 
 #include "LoginSession.h"
-#include <shared/metrics/Metrics.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <memory>
@@ -33,16 +32,14 @@ public:
 class LoginSessionBuilder final : public NetworkSessionBuilder {
 	const LoginHandlerBuilder& builder_;
 	ThreadPool& pool_;
-	Metrics& metrics_;
 
 public:
-	LoginSessionBuilder(const LoginHandlerBuilder& builder, ThreadPool& pool, Metrics& metrics)
-	                    : builder_(builder), pool_(pool), metrics_(metrics) { }
+	LoginSessionBuilder(const LoginHandlerBuilder& builder, ThreadPool& pool)
+	                    : builder_(builder), pool_(pool) { }
 
 	std::shared_ptr<NetworkSession> create(SessionManager& sessions, bai::tcp::socket socket,
 	                                       log::Logger* logger) const override {
-		return std::make_shared<LoginSession>(sessions, std::move(socket), logger,
-		                                      metrics_, pool_, builder_);
+		return std::make_shared<LoginSession>(sessions, std::move(socket), logger, pool_, builder_);
 	}
 };
 

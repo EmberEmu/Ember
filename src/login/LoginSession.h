@@ -21,7 +21,6 @@ namespace ember {
 
 class LoginHandlerBuilder;
 class ThreadPool;
-class Metrics;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(std::shared_ptr<Action> action);
@@ -35,8 +34,7 @@ public:
 	grunt::Handler grunt_handler_;
 
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	             log::Logger* logger, Metrics& metrics, ThreadPool& pool,
-	             const LoginHandlerBuilder& builder);
+	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::Buffer& buffer) override;
 	void on_write_complete() override;
