@@ -57,7 +57,7 @@ boost::optional<std::string> locate_type(const types::Struct& base, const std::s
 	}
 
 	if(base.parent == nullptr) {
-		return boost::optional<std::string>();
+		return boost::none;
 	}
 
 	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);

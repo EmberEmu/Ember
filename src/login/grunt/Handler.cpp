@@ -106,7 +106,7 @@ boost::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	if(state_ == State::NEW_PACKET) {
 		return std::move(curr_packet_);
 	} else {
-		return {};
+		return boost::none;
 	}
 }
 

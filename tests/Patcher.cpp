@@ -20,7 +20,7 @@ TEST(PatcherTest, VersionChecks) {
 	GameVersion version_ok { 1, 2, 1, 5875 };
 	GameVersion version_too_new { 2, 0, 1, 6180 };
 	GameVersion version_too_old { 1, 1, 0, 4044 };
-	Patcher patcher(versions, "temp, unused");
+	Patcher patcher(versions, std::vector<PatchMeta>());
 	
 	ASSERT_EQ(Patcher::PatchLevel::OK, patcher.check_version(version_ok))
 		<< "Build should have been accepted";

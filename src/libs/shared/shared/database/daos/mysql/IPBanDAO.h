@@ -40,7 +40,7 @@ public:
 			return res->getUInt("cidr");
 		}
 
-		return boost::optional<std::uint32_t>();
+		return boost::none;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

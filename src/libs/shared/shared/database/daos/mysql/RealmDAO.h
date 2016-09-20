@@ -71,7 +71,7 @@ public:
 			return boost::optional<Realm>(std::move(temp));
 		}
 
-		return boost::optional<Realm>();
+		return boost::none;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

@@ -51,7 +51,7 @@ public:
 			return user;
 		}
 
-		return boost::optional<User>();
+		return boost::none;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

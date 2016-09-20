@@ -9,6 +9,7 @@
 #include "GruntPacketDumps.h"
 #include <spark/buffers/ChainedBuffer.h>
 #include <login/grunt/Packets.h>
+#include <login/grunt/Magic.h>
 #include <boost/asio/ip/address.hpp>
 #include <gtest/gtest.h>
 #include <memory>
@@ -56,17 +57,17 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 		<< "Deserialisation failed (field: username)";
 	ASSERT_EQ(0, packet.timezone_bias)
 		<< "Deserialisation failed (field: timezone bias)";
-	ASSERT_EQ(grunt::client::LoginChallenge::Platform::x86, packet.platform)
+	ASSERT_EQ(grunt::Platform::x86, packet.platform)
 		<< "Deserialisation failed (field: platform)";
-	ASSERT_EQ(grunt::client::LoginChallenge::OperatingSystem::Windows, packet.os)
+	ASSERT_EQ(grunt::System::Win, packet.os)
 		<< "Deserialisation failed (field: operating system)";
-	ASSERT_EQ(grunt::client::LoginChallenge::PacketMagic::WoW, packet.magic)
+	ASSERT_EQ(grunt::Game::WoW, packet.game)
 		<< "Deserialisation failed (field: magic)";
-	ASSERT_EQ(grunt::client::LoginChallenge::ClientLocale::enUS, packet.locale)
+	ASSERT_EQ(grunt::Locale::enUS, packet.locale)
 		<< "Deserialisation failed (field: locale)";
 	ASSERT_EQ(ip, packet.ip)
 		<< "Deserialisation failed (field: IP)";
-	ASSERT_EQ(grunt::client::LoginChallenge::ProtocolVersion::RECONNECT, packet.protocol_ver)
+	ASSERT_EQ(3, packet.protocol_ver)
 		<< "Deserialisation failed (field: protocol_ver)";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -95,7 +96,7 @@ TEST(GruntProtocol, ClientLoginProof) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(grunt::client::LoginProof::TwoFactorSecurity::NONE, packet.security)
+	ASSERT_EQ(false, packet.two_factor_auth)
 		<< "Deserialisation failed (field: security)";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -207,7 +208,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	ASSERT_EQ(Botan::BigInt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C"), packet.s)
 		<< "Deserialisation failed (field: salt)";
 	ASSERT_EQ(0, packet.protocol_ver) << "Deserialisation failed (field: protocol_ver)";
-	ASSERT_EQ(grunt::server::LoginChallenge::TwoFactorSecurity::NONE, packet.security)
+	ASSERT_EQ(false, packet.two_factor_auth)
 		<< "Deserialisation failed (field: security)";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -236,11 +237,10 @@ TEST(GruntProtocol, ServerLoginProof) {
 
 	// verify the deserialisation results
 	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
-	ASSERT_EQ(0, packet.account_flags) << "Deserialisation failed (field: account flags)";
+	ASSERT_EQ(0, packet.survey_id) << "Deserialisation failed (field: survey ID)";
 	ASSERT_EQ(Botan::BigInt("0xa3fbd672a092de7650fb0733419ebf59bcae644a"), packet.M2)
 		<< "Deserialisation failed (field: M2)";
 	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
-	ASSERT_EQ(0, packet.account_flags) << "Deserialisation failed (field: unknown)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);

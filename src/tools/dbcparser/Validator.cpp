@@ -43,7 +43,7 @@ boost::optional<const types::Field*> Validator::locate_fk_parent(const std::stri
 		}
 	}
 
-	return boost::optional<const types::Field*>();
+	return boost::none;
 }
 
 void Validator::check_foreign_keys(const types::Field& field) {

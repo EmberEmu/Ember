@@ -147,7 +147,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 			});
 			
 			if(res == pool_.end()) {
-				return boost::optional<Connection<ConType>>();
+				return boost::none;
 			}
 		}
 

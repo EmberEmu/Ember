@@ -79,7 +79,7 @@ public:
 			return result_to_character(res.get());
 		}
 
-		return boost::optional<Character>();
+		return boost::none;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}
@@ -102,7 +102,7 @@ public:
 			return result_to_character(res.get());;
 		}
 
-		return boost::optional<Character>();
+		return boost::none;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

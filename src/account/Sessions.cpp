@@ -28,7 +28,7 @@ boost::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id
 	auto it = sessions_.find(account_id);
 
 	if(it == sessions_.end()) {
-		return boost::optional<Botan::BigInt>();
+		return boost::none;
 	}
 
 	return boost::optional<Botan::BigInt>(it->second);

@@ -67,7 +67,7 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 	auto p_it = patch_bins.find(hash);
 	
 	if(g_it == graphs_.end() || p_it == patch_bins.end()) {
-		return {};
+		return boost::none;
 	}
 
 	auto build = client_version.build;
@@ -98,7 +98,7 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 
 		// still no path? Guess we're out of luck.
 		if(!path) {
-			return {};
+			return boost::none;
 		}
 	}
 
@@ -125,7 +125,7 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 		}
 	}
 
-	return {};
+	return boost::none;
 }
 
 auto Patcher::check_version(const GameVersion& client_version) const -> PatchLevel {
