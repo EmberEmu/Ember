@@ -23,9 +23,9 @@ class IntegrityHelper {
 
 	std::size_t hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const;
 
-	void load_integrity_binaries(std::uint16_t build, const std::string& path,
-	                             const std::initializer_list<std::string>& bins,
-	                             grunt::System system, grunt::Platform platform);
+	void load_binaries(const std::string& path, std::uint16_t build,
+	                   const std::initializer_list<std::string>& bins,
+	                   grunt::System system, grunt::Platform platform);
 
 public:
 	IntegrityHelper(const std::vector<GameVersion>& versions, const std::string& path);

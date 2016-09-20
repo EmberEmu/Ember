@@ -21,9 +21,9 @@ IntegrityHelper::IntegrityHelper(const std::vector<GameVersion>& versions, const
 	std::initializer_list<std::string> macppc {  };
 
 	for(auto& version : versions) {
-		load_integrity_binaries(version.build, path, winx86, grunt::System::Win, grunt::Platform::x86);
-		load_integrity_binaries(version.build, path, macx86, grunt::System::OSX, grunt::Platform::x86);
-		load_integrity_binaries(version.build, path, macppc, grunt::System::OSX, grunt::Platform::PPC);
+		load_binaries(path, version.build, winx86, grunt::System::Win, grunt::Platform::x86);
+		load_binaries(path, version.build, macx86, grunt::System::OSX, grunt::Platform::x86);
+		load_binaries(path, version.build, macppc, grunt::System::OSX, grunt::Platform::PPC);
 	}
 
 	// ensure we have at least one supported client
@@ -43,9 +43,9 @@ const ExecutableChecksum* IntegrityHelper::checker(GameVersion version, grunt::P
 	return &it->second;
 }
 
-void IntegrityHelper::load_integrity_binaries(std::uint16_t build, const std::string& path,
-                                              const std::initializer_list<std::string>& bins,
-                                              grunt::System system, grunt::Platform platform) {
+void IntegrityHelper::load_binaries(const std::string& path, std::uint16_t build,
+                                    const std::initializer_list<std::string>& bins,
+                                    grunt::System system, grunt::Platform platform) {
 	bfs::path dir(path + grunt::to_string(system) + "_" + grunt::to_string(platform)
 	              + "_" + std::to_string(build) + "\\");
 
