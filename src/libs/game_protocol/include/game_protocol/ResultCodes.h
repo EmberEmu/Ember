@@ -13,8 +13,7 @@
 
 namespace ember { namespace protocol {
 
-// from MaNGOS with some fixes
-smart_enum_class(ResultCode, std::uint8_t,
+smart_enum_class(Result, std::uint8_t,
 	RESPONSE_SUCCESS                                       = 0x00,
 	RESPONSE_FAILURE                                       = 0x01,
 	RESPONSE_CANCELLED                                     = 0x02,

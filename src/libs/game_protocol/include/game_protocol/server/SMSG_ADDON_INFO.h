@@ -58,7 +58,7 @@ public:
 
 	SMSG_ADDON_INFO() : ServerPacket(protocol::ServerOpcodes::SMSG_ADDON_INFO) { }
 
-	ResultCode result;
+	Result result;
 	std::vector<AddonData> addon_data;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {

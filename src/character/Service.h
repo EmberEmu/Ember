@@ -35,10 +35,10 @@ class Service final : public spark::EventHandler {
 	                         const boost::optional<std::vector<Character>>& characters);
 
 	void send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
-	                   messaging::character::Status status, protocol::ResultCode result);
+	                   messaging::character::Status status, protocol::Result result);
 
 	void send_rename_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
-	                          messaging::character::Status status, protocol::ResultCode result,
+	                          messaging::character::Status status, protocol::Result result,
 	                          boost::optional<Character> character);
 
 public:

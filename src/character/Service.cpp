@@ -81,7 +81,7 @@ void Service::create_character(const spark::Link& link, const em::MessageRoot* r
 		LOG_WARN(logger_) << "Illformed character create request from " << link.description << LOG_ASYNC;
 
 		send_response(link, tracking, messaging::character::Status::ILLFORMED_MESSAGE,
-		              protocol::ResultCode::CHAR_LIST_FAILED);
+		              protocol::Result::CHAR_LIST_FAILED);
 		return;
 	}
 
@@ -154,7 +154,7 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 }
 
 void Service::send_rename_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
-								   messaging::character::Status status, protocol::ResultCode result,
+								   messaging::character::Status status, protocol::Result result,
 								   boost::optional<Character> character) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -163,7 +163,7 @@ void Service::send_rename_response(const spark::Link& link, const std::vector<st
 	rb.add_status(status);
 	rb.add_result(static_cast<std::uint32_t>(result));
 
-	if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
+	if(result == protocol::Result::RESPONSE_SUCCESS) {
 		rb.add_character_id(character->id);
 		rb.add_name(fbb->CreateString(character->name));
 	}
@@ -187,7 +187,7 @@ void Service::send_rename_response(const spark::Link& link, const std::vector<st
 }
 
 void Service::send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
-							messaging::character::Status status, protocol::ResultCode result) {
+							messaging::character::Status status, protocol::Result result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -233,7 +233,7 @@ void Service::rename_character(const spark::Link& link, const em::MessageRoot* r
 		LOG_WARN(logger_) << "Illformed rename request from " << link.description << LOG_ASYNC;
 
 		send_response(link, tracking, messaging::character::Status::ILLFORMED_MESSAGE,
-		              protocol::ResultCode::CHAR_NAME_FAILURE);
+		              protocol::Result::CHAR_NAME_FAILURE);
 		return;
 	}
 

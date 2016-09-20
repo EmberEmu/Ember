@@ -24,7 +24,7 @@ class SMSG_LOGOUT_COMPLETE final : public ServerPacket {
 public:
 	SMSG_LOGOUT_COMPLETE() : ServerPacket(protocol::ServerOpcodes::SMSG_LOGOUT_COMPLETE) {}
 
-	ResultCode result;
+	Result result;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

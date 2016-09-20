@@ -29,8 +29,8 @@ namespace ember {
 class ThreadPool;
 
 class CharacterHandler {
-	typedef std::function<void(protocol::ResultCode)> ResultCB;
-	typedef std::function<void(protocol::ResultCode, boost::optional<Character>)> RenameCB;
+	typedef std::function<void(protocol::Result)> ResultCB;
+	typedef std::function<void(protocol::Result, boost::optional<Character>)> RenameCB;
 	typedef std::function<void(boost::optional<std::vector<Character>>)> EnumResultCB;
 
 	// todo, should probably be in a config
@@ -48,7 +48,7 @@ class CharacterHandler {
 	ThreadPool& pool_;
 	log::Logger* logger_;
 
-	protocol::ResultCode validate_name(const std::string& name) const;
+	protocol::Result validate_name(const std::string& name) const;
 	bool validate_options(const Character& character, std::uint32_t account_id) const;
 
 	/** I/O heavy functions run async in a thread pool **/

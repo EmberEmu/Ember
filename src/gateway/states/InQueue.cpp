@@ -22,7 +22,7 @@ void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE packet;
-	packet.result = protocol::ResultCode::AUTH_WAIT_QUEUE;
+	packet.result = protocol::Result::AUTH_WAIT_QUEUE;
 	packet.queue_position = static_cast<std::uint32_t>(event->position);
 	ctx->connection->send(packet);
 }

@@ -25,7 +25,7 @@ class SMSG_CHAR_RENAME final : public ServerPacket {
 public:
 	SMSG_CHAR_RENAME() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_RENAME) { }
 
-	ResultCode result;
+	Result result;
 	std::uint64_t id;
 	std::string name;
 	
@@ -34,7 +34,7 @@ public:
 
 		stream >> result;
 
-		if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
+		if(result == protocol::Result::RESPONSE_SUCCESS) {
 			stream >> id;
 			stream >> name;
 		}
@@ -49,7 +49,7 @@ public:
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
 		stream << result;
 
-		if(result == protocol::ResultCode::RESPONSE_SUCCESS) {
+		if(result == protocol::Result::RESPONSE_SUCCESS) {
 			stream << be::native_to_little(id);
 			stream << name;
 		}

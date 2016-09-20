@@ -203,7 +203,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	ASSERT_EQ(Botan::BigInt("0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"), packet.N)
 		<< "Deserialisation failed (field: N [safe prime])";
 	ASSERT_EQ(32, packet.n_len) << "Deserialisation failed (field: N length)";
-	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
 	ASSERT_EQ(Botan::BigInt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C"), packet.s)
 		<< "Deserialisation failed (field: salt)";
 	ASSERT_EQ(0, packet.protocol_ver) << "Deserialisation failed (field: protocol_ver)";
@@ -239,7 +239,7 @@ TEST(GruntProtocol, ServerLoginProof) {
 	ASSERT_EQ(0, packet.account_flags) << "Deserialisation failed (field: account flags)";
 	ASSERT_EQ(Botan::BigInt("0xa3fbd672a092de7650fb0733419ebf59bcae644a"), packet.M2)
 		<< "Deserialisation failed (field: M2)";
-	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
 	ASSERT_EQ(0, packet.account_flags) << "Deserialisation failed (field: unknown)";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -332,7 +332,7 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(salt, packet.salt) << "Deserialisation failed (field: salt)";
-	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: unknown)";
 	ASSERT_EQ(expected_bytes, packet.rand2) << "Deserialisation failed (field: unknown)";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -361,7 +361,7 @@ TEST(GruntProtocol, ServerReconnectProof) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(grunt::ResultCode::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);

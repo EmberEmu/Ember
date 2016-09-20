@@ -26,15 +26,54 @@ class EventDispatcher {
 public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
-	template<typename T> void exec(const ClientUUID& client, T work) const;
+	template<typename T> void exec(const ClientUUID& client, T work) const {
+		auto service = pool_.get_service(client.service());
+
+		// bad service index encoded in the UUID
+		if(service == nullptr) {
+			LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+			return;
+		}
+
+		service->post([client, work] {
+			auto handler = handlers_.find(client);
+
+			// client disconnected, nothing to do here
+			if(handler == handlers_.end()) {
+				LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
+				return;
+			}
+
+			work();
+		});
+	}
 
 	template<typename EventType>
-	void post_event(const ClientUUID& client, const EventType& event) const;
+	typename std::enable_if<std::is_base_of<Event, EventType>::value>::type
+	post_event(const ClientUUID& client, const EventType& event) const {
+		auto service = pool_.get_service(client.service());
 
-	void post_event(const ClientUUID& client, std::unique_ptr<const Event> event) const;
+		// bad service index encoded in the UUID
+		if(service == nullptr) {
+			LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+			return;
+		}
 
-	// not an overload of post_event to avoid ambiguous overload errors with unique_ptr 
-	void post_shared_event(const ClientUUID& client, const std::shared_ptr<const Event>& event) const;
+		service->post([=] {
+			auto handler = handlers_.find(client);
+
+			// client disconnected, nothing to do here
+			if(handler == handlers_.end()) {
+				LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
+				return;
+			}
+
+			handler->second->handle_event(&event);
+		});
+	}
+
+	void post_event(const ClientUUID& client, std::unique_ptr<Event> event) const;
+	void post_event(const ClientUUID& client, std::shared_ptr<const Event>& event) const;
 	void register_handler(ClientHandler* handler);
 	void remove_handler(ClientHandler* handler);
 };

@@ -25,7 +25,7 @@ class SMSG_CHAR_DELETE final : public ServerPacket {
 public:
 	SMSG_CHAR_DELETE() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_DELETE) { }
 
-	ResultCode result;
+	Result result;
 	
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

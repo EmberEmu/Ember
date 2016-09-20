@@ -67,31 +67,31 @@ struct CharEnumResponse : Event {
 };
 
 struct CharCreateResponse : Event {
-	CharCreateResponse(messaging::character::Status status, protocol::ResultCode result)
+	CharCreateResponse(messaging::character::Status status, protocol::Result result)
 	                   : Event { EventType::CHAR_CREATE_RESPONSE },
 	                     status(status), result(result) { }
 
 	messaging::character::Status status;
-	protocol::ResultCode result;
+	protocol::Result result;
 };
 
 struct CharDeleteResponse : Event {
-	CharDeleteResponse(messaging::character::Status status, protocol::ResultCode result)
+	CharDeleteResponse(messaging::character::Status status, protocol::Result result)
 	                   : Event{ EventType::CHAR_DELETE_RESPONSE },
 	                     status(status), result(result) { }
 
 	messaging::character::Status status;
-	protocol::ResultCode result;
+	protocol::Result result;
 };
 
 struct CharRenameResponse : Event {
-	CharRenameResponse(messaging::character::Status status, protocol::ResultCode result,
+	CharRenameResponse(messaging::character::Status status, protocol::Result result,
 	                   std::uint64_t id, std::string name)
 	                   : Event { EventType::CHAR_RENAME_RESPONSE },
 	                     status(status), result(result), id(id), name(std::move(name)) { }
 
 	messaging::character::Status status;
-	protocol::ResultCode result;
+	protocol::Result result;
 	std::uint64_t id;
 	std::string name;
 };

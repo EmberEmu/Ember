@@ -29,7 +29,7 @@ namespace em = ember::messaging;
 namespace ember { namespace authentication {
 
 void send_auth_challenge(ClientContext* ctx);
-void send_auth_result(ClientContext* ctx, protocol::ResultCode result);
+void send_auth_result(ClientContext* ctx, protocol::Result result);
 void handle_authentication(ClientContext* ctx);
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
@@ -110,20 +110,20 @@ void handle_session_key(ClientContext* ctx, const SessionKeyResponse* event) {
 	ctx->auth_status = AuthStatus::FAILED; // default unless overridden by success
 
 	if(event->status != em::account::Status::OK) {
-		protocol::ResultCode result;
+		protocol::Result result;
 
 		switch(event->status) {
 			case em::account::Status::ALREADY_LOGGED_IN:
-				result = protocol::ResultCode::AUTH_ALREADY_ONLINE;
+				result = protocol::Result::AUTH_ALREADY_ONLINE;
 				break;
 			case em::account::Status::SESSION_NOT_FOUND:
-				result = protocol::ResultCode::AUTH_UNKNOWN_ACCOUNT;
+				result = protocol::Result::AUTH_UNKNOWN_ACCOUNT;
 				break;
 			default:
 				LOG_ERROR_FILTER_GLOB(LF_NETWORK) << "Received "
 					<< em::account::EnumNameStatus(event->status)
 					<< " from account server" << LOG_ASYNC;
-				result = protocol::ResultCode::AUTH_SYSTEM_ERROR;
+				result = protocol::Result::AUTH_SYSTEM_ERROR;
 		}
 
 		// note: the game doesn't seem to pay attention to this
@@ -183,7 +183,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 	if(calc_hash != packet.digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet.username << LOG_ASYNC;
-		send_auth_result(ctx, protocol::ResultCode::AUTH_BAD_SERVER_PROOF);
+		send_auth_result(ctx, protocol::Result::AUTH_BAD_SERVER_PROOF);
 		return;
 	}
 
@@ -219,12 +219,12 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-	send_auth_result(ctx, protocol::ResultCode::AUTH_OK);
+	send_auth_result(ctx, protocol::Result::AUTH_OK);
 	send_addon_data(ctx, packet);
 	ctx->handler->state_update(ClientState::CHARACTER_LIST);
 }
 
-void send_auth_result(ClientContext* ctx, protocol::ResultCode result) {
+void send_auth_result(ClientContext* ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// not convinced that this packet is correct, apart from for AUTH_OK

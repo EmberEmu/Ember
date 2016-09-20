@@ -24,7 +24,7 @@ class SMSG_AUTH_RESPONSE final : public ServerPacket {
 public:
 	SMSG_AUTH_RESPONSE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE) { }
 
-	ResultCode result;
+	Result result;
 	std::uint32_t queue_position = 0;
 	std::uint32_t billing_time = 0;
 	std::uint8_t billing_flags = 0;
@@ -35,11 +35,11 @@ public:
 
 		stream >> result;
 
-		if(result == ResultCode::AUTH_WAIT_QUEUE) {
+		if(result == Result::AUTH_WAIT_QUEUE) {
 			stream >> queue_position;
 		}
 
-		if(result == ResultCode::AUTH_OK) {
+		if(result == Result::AUTH_OK) {
 			stream >> billing_time;
 			stream >> billing_flags;
 			stream >> billing_rested;
@@ -59,11 +59,11 @@ public:
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
 		stream << be::native_to_little(result);
 
-		if(result == ResultCode::AUTH_WAIT_QUEUE) {
+		if(result == Result::AUTH_WAIT_QUEUE) {
 			stream << be::native_to_little(queue_position);
 		}
 
-		if(result == ResultCode::AUTH_OK) {
+		if(result == Result::AUTH_OK) {
 			stream << be::native_to_little(billing_time);
 			stream << be::native_to_little(billing_flags);
 			stream << be::native_to_little(billing_rested);

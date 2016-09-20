@@ -55,12 +55,12 @@ void CharacterService::handle_reply(const spark::Link& link, const boost::uuids:
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::CharResponse) {
-		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::RESPONSE_FAILURE);
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::RESPONSE_FAILURE);
 		return;
 	}
 
 	auto message = static_cast<const em::character::CharResponse*>((*root)->data());
-	cb(message->status(), static_cast<protocol::ResultCode>(message->result()));
+	cb(message->status(), static_cast<protocol::Result>(message->result()));
 }
 
 void CharacterService::handle_rename_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
@@ -69,19 +69,19 @@ void CharacterService::handle_rename_reply(const spark::Link& link, const boost:
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(!root || (*root)->data_type() != messaging::Data::RenameResponse) {
-		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, "");
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
 	auto message = static_cast<const messaging::character::RenameResponse*>((*root)->data());
 
 	// TODO! Refactor everything here - just pass the full character struct to the caller
-	if(!message->name() || !message->character_id() || message->result() != (uint32_t)protocol::ResultCode::RESPONSE_SUCCESS) {
-		cb(em::character::Status::ILLFORMED_MESSAGE, protocol::ResultCode::CHAR_NAME_FAILURE, 0, "");
+	if(!message->name() || !message->character_id() || message->result() != (uint32_t)protocol::Result::RESPONSE_SUCCESS) {
+		cb(em::character::Status::ILLFORMED_MESSAGE, protocol::Result::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
-	cb(message->status(), static_cast<protocol::ResultCode>(message->result()),
+	cb(message->status(), static_cast<protocol::Result>(message->result()),
 	   message->character_id(), message->name()->str());
 }
 
@@ -182,7 +182,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 
 	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		cb(em::character::Status::SERVER_LINK_ERROR, protocol::ResultCode::CHAR_NAME_FAILURE, 0, nullptr);
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, nullptr);
 	}
 }
 void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const {
