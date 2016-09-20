@@ -32,15 +32,6 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 	for(auto& bin : patch_bins) {
 		graphs_.emplace(bin.first, PatchGraph(bin.second));
 	}
-
-	GameVersion a; a.build = 5428;
-	auto meta = find_patch(a, grunt::Locale::enUS, grunt::Platform::x86, grunt::System::Win);
-
-	if(meta) {
-		std::cout << meta->file_meta.name << std::endl;
-	} else {
-		std::cout << "Could not find patch path" << std::endl;
-	}
 }
 
 const PatchMeta* Patcher::locate_rollup(const std::vector<PatchMeta>& patches,
