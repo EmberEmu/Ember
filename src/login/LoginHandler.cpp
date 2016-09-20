@@ -423,7 +423,6 @@ void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
 	send(response);
 }
 
-
 void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -532,10 +531,6 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	grunt::server::LoginChallenge response;
-	response.result = grunt::Result::FAIL_VERSION_UPDATE;
-	send(response);
-
 	auto meta = patcher_.find_patch(challenge->version, challenge->locale,
 	                                challenge->platform, challenge->os);
 
@@ -543,6 +538,10 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) 
 		reject_client(challenge->version);
 		return;
 	}
+
+	grunt::server::LoginChallenge response;
+	response.result = grunt::Result::FAIL_VERSION_UPDATE;
+	send(response);
 
 	LOG_DEBUG(logger_) << "Initiating patch transfer, " << meta->file_meta.name << LOG_ASYNC;
 	std::ifstream patch(meta->file_meta.path + meta->file_meta.name,
@@ -641,6 +640,8 @@ void LoginHandler::handle_transfer_abort() {
 }
 
 void LoginHandler::transfer_chunk() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto remaining = transfer_state_.size - transfer_state_.offset;
 	std::uint16_t read_size = grunt::server::TransferData::MAX_CHUNK_SIZE;
 
@@ -669,6 +670,8 @@ void LoginHandler::transfer_chunk() {
 }
 
 void LoginHandler::on_chunk_complete() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	if(transfer_state_.abort) {
 		return;
 	}
