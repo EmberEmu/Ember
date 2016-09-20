@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <shared/memory/ASIOAllocator.h>
+#include <shared/metrics/Metrics.h>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
@@ -35,6 +36,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	ASIOAllocator allocator_; // temp - should be passed in
 	const std::string remote_address_;
 	log::Logger* logger_;
+	Metrics& metrics_;
 	bool stopped_;
 
 	void read() {
@@ -108,15 +110,19 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 			socket_.close(ec);
 			timer_.cancel();
 		});
+
+		metrics_.gauge("connections", -1, true);
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger,
+	               Metrics& metrics)
 	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	                 strand_(socket.get_io_service()), logger_(logger), stopped_(false),
+	                 strand_(socket.get_io_service()), logger_(logger), metrics_(metrics), stopped_(false),
 	                 remote_address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
 
 	virtual void start() {
+		metrics_.gauge("connections", 1, true);
 		read();
 	}
 

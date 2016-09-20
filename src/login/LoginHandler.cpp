@@ -557,6 +557,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) 
 		meta->file_meta.name = "Patch";
 	}
 
+	metrics_.increment("patches_sent");
 	state_ = State::PATCH_INITIATE;
 	initiate_file_transfer(meta->file_meta);
 }
@@ -676,9 +677,8 @@ void LoginHandler::on_chunk_complete() {
 		return;
 	}
 
-	if(transfer_state_.offset != transfer_state_.size) {
-		transfer_chunk();
-	} else {
+	// transfer complete?
+	if(transfer_state_.offset == transfer_state_.size) {
 		switch(state_) {
 			case State::SURVEY_TRANSFER:
 				state_ = State::SURVEY_RESULT;
@@ -687,6 +687,8 @@ void LoginHandler::on_chunk_complete() {
 				state_ = State::CLOSED;
 				break;
 		}
+	} else {
+		transfer_chunk();
 	}
 }
 

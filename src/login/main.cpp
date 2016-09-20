@@ -208,8 +208,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	// Start login server
-	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc, realm_list, *metrics);
-	ember::LoginSessionBuilder s_builder(builder, thread_pool);
+	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc,
+	                                   realm_list, *metrics);
+	ember::LoginSessionBuilder s_builder(builder, thread_pool, *metrics);
 
 	auto interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<std::uint16_t>();
@@ -217,7 +218,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
-	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger);
+	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder, ip_ban_cache,
+	                              logger, *metrics);
 
 	// Start monitoring service
 	std::unique_ptr<ember::Monitor> monitor;

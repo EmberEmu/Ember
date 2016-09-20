@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include "LoginSession.h"
 #include "LoginHandlerBuilder.h"
 #include "FilterTypes.h"
+#include <shared/metrics/Metrics.h>
 #include <shared/threading/ThreadPool.h>
 #include <exception>
 #include <functional>
@@ -18,10 +19,11 @@
 namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-                           log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
+                           log::Logger* logger, Metrics& metrics, ThreadPool& pool,
+                           const LoginHandlerBuilder& builder)
                            : handler_(builder.create(remote_address())),
                              logger_(logger), pool_(pool), grunt_handler_(logger),
-                             NetworkSession(sessions, std::move(socket), logger) {
+                             NetworkSession(sessions, std::move(socket), logger, metrics) {
 	handler_.send = std::bind(&LoginSession::write_chain, this, std::placeholders::_1, false);
 	handler_.send_chunk = std::bind(&LoginSession::write_chain, this, std::placeholders::_1, true);
 	handler_.execute_async = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
