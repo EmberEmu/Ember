@@ -54,6 +54,7 @@ set(LIBRARY_HDR
     PINAuthenticator.h
     ExecutablesChecksum.h
     PatchGraph.h
+    IntegrityHelper.h
     )
 
 set(LIBRARY_SRC
@@ -69,6 +70,7 @@ set(LIBRARY_SRC
     PINAuthenticator.cpp
     ExecutablesChecksum.cpp
     PatchGraph.cpp
+    IntegrityHelper.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

@@ -12,7 +12,7 @@
 #include "GameVersion.h"
 #include "SessionBuilders.h"
 #include "LoginHandlerBuilder.h"
-#include "ExecutablesChecksum.h"
+#include "IntegrityHelper.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
 #include "Patcher.h"
@@ -60,7 +60,6 @@ namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
-using namespace std::string_literals;
 
 void print_lib_versions(el::Logger* logger);
 std::vector<ember::GameVersion> client_versions();
@@ -140,16 +139,17 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Load integrity, patch and survey data
 	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
-	std::unique_ptr<ember::ExecutableChecksum> exe_check;
+	std::unique_ptr<ember::IntegrityHelper> exe_check;
+
+	const auto allowed_clients = client_versions(); // move
 
 	if(args["integrity.enabled"].as<bool>()) {
-		auto bins = { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s, "dbghelp.dll"s, "unicows.dll"s };
 		auto bin_path = args["integrity.bin_path"].as<std::string>();
-		exe_check = std::make_unique<ember::ExecutableChecksum>(bin_path, bins);
+		exe_check = std::make_unique<ember::IntegrityHelper>(allowed_clients, bin_path);
 	}
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
-	const auto allowed_clients = client_versions();
+
 
 	auto patches = ember::Patcher::load_patches(
 		args["patches.bin_path"].as<std::string>(), *patch_dao, logger

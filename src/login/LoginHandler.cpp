@@ -335,8 +335,16 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH
                                              bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	// ensure checking is enabled
 	if(!exe_checksum_) {
 		return true;
+	}
+
+	auto checker = exe_checksum_->checker(challenge_.version, challenge_.platform, challenge_.os);
+
+	// ensure we have binaries for the platform/version the client is using
+	if(!checker) {
+		return false;
 	}
 
 	Botan::SecureVector<Botan::byte> hash;
@@ -344,9 +352,9 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
 		Botan::SecureVector<Botan::byte> exe_checksum(HASH_LENGTH);
-		hash = exe_checksum_->finalise(exe_checksum, salt, len);
+		hash = checker->finalise(exe_checksum, salt, len);
 	} else {
-		hash = exe_checksum_->finalise(exe_checksum_->checksum(checksum_salt_), salt, len);
+		hash = checker->finalise(checker->checksum(checksum_salt_), salt, len);
 	}
 
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
