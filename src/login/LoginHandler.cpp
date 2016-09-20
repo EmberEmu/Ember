@@ -109,13 +109,13 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_LOGIN/RECONNECT_CHALLENGE");
 	}
 
+	// we'll continue anyway
 	if(challenge->opcode == grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE
 	   && challenge->protocol_ver != CONNECT_PROTO_VERSION
 	   || challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
 	   && challenge->protocol_ver != RECONNECT_PROTO_VERSION) {
 		LOG_DEBUG(logger_) << "Unsupported protocol version, "
 		                   << challenge->protocol_ver << LOG_ASYNC;
-		return;
 	}
 
 	if(challenge->game != grunt::Game::WoW) {
@@ -452,6 +452,7 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	}
 
 	if(trigger_survey) {
+		LOG_DEBUG(logger_) << "Initiating survey transfer..." << LOG_ASYNC;
 		initiate_file_transfer(patcher_.survey_meta());
 	}
 }
@@ -531,6 +532,10 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	grunt::server::LoginChallenge response;
+	response.result = grunt::Result::FAIL_VERSION_UPDATE;
+	send(response);
+
 	auto meta = patcher_.find_patch(challenge->version, challenge->locale,
 	                                challenge->platform, challenge->os);
 
@@ -538,28 +543,28 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) 
 		reject_client(challenge->version);
 		return;
 	}
-	
-	std::ifstream patch(meta->file_meta.path + meta->file_meta.name);
+
+	LOG_DEBUG(logger_) << "Initiating patch transfer, " << meta->file_meta.name << LOG_ASYNC;
+	std::ifstream patch(meta->file_meta.path + meta->file_meta.name,
+	                    std::ios::binary | std::ios::beg);
 
 	if(!patch.is_open()) {
 		LOG_ERROR(logger_) << "Could not open patch, " << meta->file_meta.name << LOG_ASYNC;
 	}
 
 	transfer_state_.file = std::move(patch);
-
-	if(!meta->rollup) {
+	
+	if(meta->mpq) {
 		meta->file_meta.name = "Patch";
 	}
 
+	state_ = State::PATCH_INITIATE;
 	initiate_file_transfer(meta->file_meta);
 }
 
 void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	LOG_DEBUG(logger_) << "Initiating transfer of " << meta.name << " to "
-     	               << user_->username() << LOG_ASYNC;
-
+	
 	transfer_state_.size = meta.size;
 
 	grunt::server::TransferInitiate response;
@@ -636,8 +641,6 @@ void LoginHandler::handle_transfer_abort() {
 }
 
 void LoginHandler::transfer_chunk() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
 	auto remaining = transfer_state_.size - transfer_state_.offset;
 	std::uint16_t read_size = grunt::server::TransferData::MAX_CHUNK_SIZE;
 
@@ -654,6 +657,11 @@ void LoginHandler::transfer_chunk() {
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {
 		transfer_state_.file.read(response.chunk.data(), read_size);
+
+		if(!transfer_state_.file.good()) {
+			LOG_ERROR(logger_) << "Patch reading failed during transfer" << LOG_ASYNC;
+			return;
+		}
 	}
 
 	transfer_state_.offset += read_size;
@@ -661,8 +669,6 @@ void LoginHandler::transfer_chunk() {
 }
 
 void LoginHandler::on_chunk_complete() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
 	if(transfer_state_.abort) {
 		return;
 	}

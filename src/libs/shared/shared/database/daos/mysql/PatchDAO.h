@@ -67,8 +67,6 @@ public:
 			Botan::BigInt md5_int(reinterpret_cast<const Botan::byte*>(md5.c_str()), md5.length(),
 			                      Botan::BigInt::Base::Hexadecimal);
 			auto md5_enc = Botan::BigInt::encode_1363(md5_int, meta.file_meta.md5.size());
-			std::reverse(md5_enc.begin(), md5_enc.end());
-
 			std::copy(md5_enc.begin(), md5_enc.end(), meta.file_meta.md5.data());
 
 			patches.emplace_back(std::move(meta));
