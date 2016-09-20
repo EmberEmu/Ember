@@ -50,7 +50,7 @@ void IntegrityHelper::load_integrity_binaries(std::uint16_t build, const std::st
 	              + "_" + std::to_string(build) + "\\");
 
 	if(bfs::is_directory(dir)) {
-		auto fnv = hash(build, grunt::Platform::x86, grunt::System::Win);
+		auto fnv = hash(build, platform, system);
 		ExecutableChecksum checksum(dir.string(), bins);
 		checkers_.emplace(fnv, std::move(checksum));
 	}
