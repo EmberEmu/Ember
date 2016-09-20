@@ -53,7 +53,6 @@ set(LIBRARY_HDR
     RealmService.h
     PINAuthenticator.h
     ExecutablesChecksum.h
-    PatchCache.h
     PatchGraph.h
     )
 
@@ -69,7 +68,6 @@ set(LIBRARY_SRC
     RealmService.cpp
     PINAuthenticator.cpp
     ExecutablesChecksum.cpp
-    PatchCache.cpp
     PatchGraph.cpp
     )
 
