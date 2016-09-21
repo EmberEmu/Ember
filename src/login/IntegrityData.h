@@ -11,6 +11,7 @@
 #include "GameVersion.h"
 #include "grunt/Magic.h"
 #include "ExecutablesChecksum.h"
+#include <boost/optional.hpp>
 #include <string>
 #include <unordered_map>
 #include <cstdint>
@@ -18,8 +19,8 @@
 
 namespace ember {
 
-class IntegrityHelper {
-	std::unordered_map<std::size_t, ExecutableChecksum> checkers_;
+class IntegrityData {
+	std::unordered_map<std::size_t, std::vector<char>> data_;
 
 	std::size_t hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const;
 
@@ -28,10 +29,10 @@ class IntegrityHelper {
 	                   grunt::System system, grunt::Platform platform);
 
 public:
-	IntegrityHelper(const std::vector<GameVersion>& versions, const std::string& path);
+	IntegrityData(const std::vector<GameVersion>& versions, const std::string& path);
 
-	const ExecutableChecksum* checker(GameVersion version, grunt::Platform platform,
-	                                  grunt::System os) const;
+	boost::optional<const std::vector<char>*> lookup(GameVersion version, grunt::Platform platform,
+	                                                 grunt::System os) const;
 };
 
 

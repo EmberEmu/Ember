@@ -11,7 +11,7 @@
 #include "Actions.h"
 #include "AccountService.h"
 #include "Authenticator.h"
-#include "IntegrityHelper.h"
+#include "IntegrityData.h"
 #include "GameVersion.h"
 #include "RealmList.h"
 #include "PINAuthenticator.h"
@@ -68,7 +68,7 @@ class LoginHandler {
 	Botan::BigInt server_proof_;
 	const std::string source_;
 	const AccountService& acct_svc_;
-	const IntegrityHelper* exe_checksum_;
+	const IntegrityData* exe_data_;
 	PINAuthenticator pin_auth_;
 	std::unique_ptr<LoginAuthenticator> login_auth_;
 	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
@@ -119,11 +119,11 @@ public:
 	void on_chunk_complete();
 
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
-	             const IntegrityHelper* exe_checksum, log::Logger* logger,
+	             const IntegrityData* exe_data, log::Logger* logger,
 	             const RealmList& realm_list, std::string source, Metrics& metrics)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics),
-	               pin_auth_(logger), exe_checksum_(exe_checksum), transfer_state_{} { }
+	               pin_auth_(logger), exe_data_(exe_data), transfer_state_{} { }
 };
 
 } // ember

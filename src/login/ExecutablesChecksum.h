@@ -10,23 +10,16 @@
 
 #include <botan/bigint.h>
 #include <botan/secmem.h>
-#include <initializer_list>
 #include <string>
 #include <vector>
 #include <cstdint>
 
-namespace ember {
+namespace ember { namespace client_integrity {
 
-class ExecutableChecksum {
-	std::vector<std::vector<char>> buffers_;
+Botan::SecureVector<Botan::byte> checksum(const Botan::SecureVector<Botan::byte>& seed,
+                                          const std::vector<char>* buffer);
 
-public:
-	ExecutableChecksum(const std::string& path, std::initializer_list<std::string> files);
+Botan::SecureVector<Botan::byte> finalise(const Botan::SecureVector<Botan::byte>& checksum,
+                                          const std::uint8_t* seed, std::size_t len);
 
-	Botan::SecureVector<Botan::byte> checksum(const Botan::SecureVector<Botan::byte>& seed) const;
-
-	static Botan::SecureVector<Botan::byte> finalise(const Botan::SecureVector<Botan::byte>& checksum,
-	                                                 const std::uint8_t* seed, std::size_t len);
-};
-
-} // ember
+}} // client_integrity, ember

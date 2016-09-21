@@ -12,7 +12,7 @@
 #include "GameVersion.h"
 #include "SessionBuilders.h"
 #include "LoginHandlerBuilder.h"
-#include "IntegrityHelper.h"
+#include "IntegrityData.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
 #include "Patcher.h"
@@ -139,13 +139,13 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Load integrity, patch and survey data
 	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
-	std::unique_ptr<ember::IntegrityHelper> exe_check;
+	std::unique_ptr<ember::IntegrityData> exe_data;
 
 	const auto allowed_clients = client_versions(); // move
 
 	if(args["integrity.enabled"].as<bool>()) {
 		auto bin_path = args["integrity.bin_path"].as<std::string>();
-		exe_check = std::make_unique<ember::IntegrityHelper>(allowed_clients, bin_path);
+		exe_data = std::make_unique<ember::IntegrityData>(allowed_clients, bin_path);
 	}
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
@@ -208,7 +208,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	// Start login server
-	ember::LoginHandlerBuilder builder(logger, patcher, exe_check.get(), *user_dao, acct_svc,
+	ember::LoginHandlerBuilder builder(logger, patcher, exe_data.get(), *user_dao, acct_svc,
 	                                   realm_list, *metrics);
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
