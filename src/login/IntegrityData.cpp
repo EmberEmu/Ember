@@ -9,6 +9,9 @@
 #include "IntegrityData.h"
 #include <shared/util/FNVHash.h>
 #include <boost/filesystem.hpp>
+#include <initializer_list>
+#include <fstream>
+#include <cstddef>
 
 namespace bfs = boost::filesystem;
 using namespace std::string_literals;
@@ -80,7 +83,8 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 	data_.emplace(fnv, std::move(buffer));
 }
 
-std::size_t IntegrityData::hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const {
+std::size_t IntegrityData::hash(std::uint16_t build, grunt::Platform platform,
+                                grunt::System os) const {
 	FNVHash hasher;
 	hasher.update(build);
 	hasher.update(grunt::to_string(platform));

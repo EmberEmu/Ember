@@ -9,11 +9,7 @@
 #include "ExecutablesChecksum.h"
 #include <botan/hmac.h>
 #include <botan/sha160.h>
-#include <initializer_list>
-#include <fstream>
 #include <memory>
-#include <utility>
-#include <cstddef>
 
 namespace ember { namespace client_integrity {
 

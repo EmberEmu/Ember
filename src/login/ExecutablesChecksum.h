@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include <botan/bigint.h>
 #include <botan/secmem.h>
-#include <string>
 #include <vector>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember { namespace client_integrity {
 
