@@ -21,7 +21,8 @@ CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profan
                                    const dbc::Storage& dbc, const dal::CharacterDAO& dao,
                                    ThreadPool& pool, const std::locale& locale, log::Logger* logger)
                                    : profane_names_(profane_names), reserved_names_(reserved_names),
-                                     dbc_(dbc), dao_(dao), pool_(pool), locale_(locale), logger_(logger) { }
+                                     dbc_(dbc), dao_(dao), pool_(pool), locale_(locale),
+                                     logger_(logger) { }
 
 void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
                               const messaging::character::CharacterTemplate& options,
@@ -42,7 +43,7 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 	character.haircolour = options.haircolour();
 	character.facialhair = options.facialhair();
 	character.level = 1; // todo
-	character.flags = Character::Flags::NONE; // todo
+	character.flags = Character::Flags::NONE;
 	character.first_login = true;
 
 	pool_.run([=] {
@@ -137,11 +138,12 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	});
 
 	if(it != characters.end() /* && pvp_server */) { // todo, add check to make sure it's a PvP server
-		auto& current = pvp_faction(*dbc_.chr_races[characters.front().race]->faction)->internal_name;
-		auto& opposing = pvp_faction(*dbc_.chr_races[character.race]->faction)->internal_name;
+		auto current = pvp_faction(*dbc_.chr_races[characters.front().race]->faction);
+		auto opposing = pvp_faction(*dbc_.chr_races[character.race]->faction);
 
-		LOG_DEBUG(logger_) << "Cannot create " << opposing << " characters with existing "
-			<< current << " characters on a PvP realm" << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "Cannot create " << opposing->internal_name
+			<< " characters with existing " << current->internal_name
+			<< " characters on a PvP realm" << LOG_ASYNC;
 
 		callback(protocol::Result::CHAR_CREATE_PVP_TEAMS_VIOLATION);
 		return;
@@ -248,31 +250,31 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	auto character = dao_.character(character_id);
 	
 	if(!character) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, {});
+		callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
 		return;
 	}
 
 	if(character->account_id != account_id) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, {});
+		callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
 		return;
 	}
 
 	if((character->flags & Character::Flags::RENAME) != Character::Flags::RENAME) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, {});
+		callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
 		return;
 	}
 
 	auto validation_res = validate_name(name);
 
 	if(validation_res != protocol::Result::CHAR_NAME_SUCCESS) {
-		callback(validation_res, {});
+		callback(validation_res, boost::none);
 		return;
 	}
 
 	boost::optional<Character>& match = dao_.character(name, character->realm_id);
 
 	if(match) {
-		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, {});
+		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, boost::none);
 		return;
 	}
 
@@ -287,7 +289,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	callback(protocol::Result::RESPONSE_SUCCESS, *character);
 } catch(dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::CHAR_NAME_FAILURE, {});
+	callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
 }
 
 void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) const try {
