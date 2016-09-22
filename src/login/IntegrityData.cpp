@@ -14,13 +14,12 @@
 #include <cstddef>
 
 namespace bfs = boost::filesystem;
-using namespace std::string_literals;
 
 namespace ember {
 
 IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std::string& path) {
-	std::initializer_list<std::string> winx86 { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s,
-	                                            "dbghelp.dll"s, "unicows.dll"s };
+	std::initializer_list<std::string> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
+	                                            "dbghelp.dll", "unicows.dll" };
 
 	std::initializer_list<std::string> macx86 { "MacOS/World of Warcraft", "Info.plist",
 	                                            "Resources/Main.nib/objects.xib",
@@ -93,8 +92,8 @@ std::size_t IntegrityData::hash(std::uint16_t build, grunt::Platform platform,
                                 grunt::System os) const {
 	FNVHash hasher;
 	hasher.update(build);
-	hasher.update(grunt::to_string(platform));
-	return hasher.update(grunt::to_string(os));
+	hasher.update(platform);
+	return hasher.update(os);
 }
 
 } // ember
