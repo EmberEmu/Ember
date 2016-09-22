@@ -21,8 +21,14 @@ namespace ember {
 IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std::string& path) {
 	std::initializer_list<std::string> winx86 { "WoW.exe"s, "fmod.dll"s, "ijl15.dll"s,
 	                                            "dbghelp.dll"s, "unicows.dll"s };
-	std::initializer_list<std::string> macx86 {  };
-	std::initializer_list<std::string> macppc {  };
+
+	std::initializer_list<std::string> macx86 { "MacOS/World of Warcraft", "Info.plist",
+	                                            "Resources/Main.nib/objects.xib",
+	                                            "Resources/wow.icns", "PckgInfo" };
+
+	std::initializer_list<std::string> macppc { "MacOS/World of Warcraft", "Info.plist",
+	                                            "Resources/Main.nib/objects.xib",
+	                                            "Resources/wow.icns", "PckgInfo" };
 
 	for(auto& version : versions) {
 		load_binaries(path, version.build, winx86, grunt::System::Win, grunt::Platform::x86);
