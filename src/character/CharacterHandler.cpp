@@ -12,6 +12,7 @@
 #include <shared/util/UTF8.h>
 #include <shared/threading/ThreadPool.h>
 #include <utf8cpp/utf8.h>
+#include <boost/assert.hpp>
 
 namespace ember {
 
@@ -112,14 +113,39 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	}
 
 	// query database for further validation steps
-	auto& characters = dao_.characters(account_id, realm_id);
+	const auto& characters = dao_.characters(account_id);
 
-	if(characters.size() >= MAX_CHARACTER_SLOTS) {
+	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
+		callback(protocol::Result::CHAR_CREATE_ACCOUNT_LIMIT);
+		return;
+	}
+
+	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](auto& c) {
+		return c.realm_id == realm_id;
+	});
+
+	if(static_cast<std::size_t>(realm_chars) >= MAX_CHARACTER_SLOTS_SERVER) {
 		callback(protocol::Result::CHAR_CREATE_SERVER_LIMIT);
 		return;
 	}
 
-	// PVP faction check etc
+	// PvP faction check
+	auto faction_group = dbc_.chr_races[character.race]->faction->faction_group_id;
+
+	auto it = std::find_if_not(characters.begin(), characters.end(), [&](auto& c) {
+		return faction_group == dbc_.chr_races[c.race]->faction->faction_group_id;
+	});
+
+	if(it != characters.end() /* && pvp_server */) { // todo, add check to make sure it's a PvP server
+		auto& current = pvp_faction(*dbc_.chr_races[characters.front().race]->faction)->internal_name;
+		auto& opposing = pvp_faction(*dbc_.chr_races[character.race]->faction)->internal_name;
+
+		LOG_DEBUG(logger_) << "Cannot create " << opposing << " characters with existing "
+			<< current << " characters on a PvP realm" << LOG_ASYNC;
+
+		callback(protocol::Result::CHAR_CREATE_PVP_TEAMS_VIOLATION);
+		return;
+	}
 
 	// everything looks good - populate the character data and create it
 	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
@@ -194,6 +220,8 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 		return;
 	}
 
+	LOG_DEBUG(logger_) << "Deleting " << character->name << ", #" << character->id << LOG_ASYNC;
+
 	dao_.delete_character(character_id, true);
 	callback(protocol::Result::CHAR_DELETE_SUCCESS);
 } catch(dal::exception& e) {
@@ -248,6 +276,9 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 
+	LOG_DEBUG(logger_) << "Renaming " << character->name << " => " << name << ", #"
+		<< character->id << LOG_ASYNC;
+
 	character->name = name;
 	character->internal_name = name;
 	character->flags ^= Character::Flags::RENAME;
@@ -264,11 +295,21 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 
 	auto character = dao_.character(id);
 	auto match = dao_.character(character->name, character->realm_id);
-	auto char_enum = dao_.characters(character->account_id, character->realm_id);
+	auto characters = dao_.characters(character->account_id);
 
-	if(char_enum.size() >= MAX_CHARACTER_SLOTS) {
-		LOG_WARN(logger_) << "Cannot restore character - would exceed max slots" << LOG_ASYNC;
-		callback(protocol::Result::RESPONSE_FAILURE);
+	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
+		LOG_WARN(logger_) << "Cannot restore character - would exceed max account slots" << LOG_ASYNC;
+		callback(protocol::Result::CHAR_CREATE_ACCOUNT_LIMIT);
+		return;
+	}
+
+	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](auto& c) {
+		return c.realm_id == character->realm_id;
+	});
+
+	if(static_cast<std::size_t>(realm_chars) >= MAX_CHARACTER_SLOTS_SERVER) {
+		LOG_WARN(logger_) << "Cannot restore character - would exceed max server slots" << LOG_ASYNC;
+		callback(protocol::Result::CHAR_CREATE_SERVER_LIMIT);
 		return;
 	}
 
@@ -277,6 +318,8 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	} else {
 		character->internal_name = character->name;
 	}
+
+	LOG_DEBUG(logger_) << "Restoring " << character->name << ", #" << character->id << LOG_ASYNC;
 
 	dao_.update(*character);
 	dao_.restore(id);
@@ -427,6 +470,25 @@ protocol::Result CharacterHandler::validate_name(const std::string& name) const 
 	}
 
 	return protocol::Result::CHAR_NAME_SUCCESS;
+}
+
+// This function should be moved when there's a more suitable home for it
+const dbc::FactionGroup* CharacterHandler::pvp_faction(const dbc::FactionTemplate& fac_template) const {
+	for(auto& group : dbc_.faction_group.values()) {
+		if(group.internal_name == "Player") {
+			if(fac_template.faction_group_id == (1 << group.mask_id)) {
+				return &group;
+			}
+		}
+
+		if(group.mask_id) {
+			if(fac_template.faction_group_id & (1 << group.mask_id)) {
+				return &group;
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 } // ember

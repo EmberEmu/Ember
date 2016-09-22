@@ -107,20 +107,28 @@ public:
 		throw exception(e.what());
 	}
 
-	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id) const override try {
-		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
-		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
-		                          "FROM characters c "
-		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                          "LEFT JOIN users u ON u.id = c.account_id "
-		                          "WHERE u.id = ? AND c.realm_id = ? AND c.deletion_date IS NULL";
+	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
+		std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		                    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		                    "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		                    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
+		                    "FROM characters c "
+		                    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
+		                    "LEFT JOIN users u ON u.id = c.account_id "
+		                    "WHERE u.id = ? AND c.deletion_date IS NULL ";
+
+		if(realm_id) {
+			query.append("AND c.realm_id = ? ");
+		}
 
 		auto conn = pool_.wait_connection(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
-		stmt->setUInt(2, realm_id);
+
+		if(realm_id) {
+			stmt->setUInt(2, realm_id);
+		}
+
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<Character> characters;
 

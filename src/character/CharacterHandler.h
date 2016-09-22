@@ -33,11 +33,11 @@ class CharacterHandler {
 	typedef std::function<void(protocol::Result, boost::optional<Character>)> RenameCB;
 	typedef std::function<void(boost::optional<std::vector<Character>>)> EnumResultCB;
 
-	// todo, should probably be in a config
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;
 	const std::size_t MAX_CONSECUTIVE_LETTERS = 2;
-	const std::size_t MAX_CHARACTER_SLOTS = 10;
+	const std::size_t MAX_CHARACTER_SLOTS_SERVER = 10;
+	const std::size_t MAX_CHARACTER_SLOTS_ACCOUNT = 100; // todo, allow config
 
 	const std::vector<util::pcre::Result>& profane_names_;
 	const std::vector<util::pcre::Result>& reserved_names_;
@@ -50,6 +50,7 @@ class CharacterHandler {
 
 	protocol::Result validate_name(const std::string& name) const;
 	bool validate_options(const Character& character, std::uint32_t account_id) const;
+	const dbc::FactionGroup* pvp_faction(const dbc::FactionTemplate& fac_template) const;
 
 	/** I/O heavy functions run async in a thread pool **/
 
