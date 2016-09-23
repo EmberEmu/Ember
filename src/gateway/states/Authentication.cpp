@@ -207,7 +207,6 @@ void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet)
 void send_auth_result(ClientContext* ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	// not convinced that this packet is correct, apart from for AUTH_OK
 	protocol::SMSG_AUTH_RESPONSE response;
 	response.result = result;
 	ctx->connection->send(response);
