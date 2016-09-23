@@ -93,7 +93,7 @@ void character_rename_completion(ClientContext* ctx, const CharRenameResponse* e
 	}
 
 	if(result == protocol::Result::RESPONSE_SUCCESS) {
-		send_character_rename(ctx, result, event->id, event->name);
+		send_character_rename(ctx, result, event->character_id, event->name);
 	} else {
 		send_character_rename(ctx, result);
 	}

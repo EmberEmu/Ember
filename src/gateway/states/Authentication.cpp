@@ -82,8 +82,8 @@ void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 		return;
 	}
 
-	if(event->id) {
-		ctx->account_id = event->id;
+	if(event->account_id) {
+		ctx->account_id = event->account_id;
 		fetch_session_key(ctx, event->packet);
 	} else {
 		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "

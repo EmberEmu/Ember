@@ -38,17 +38,19 @@ struct QueueSuccess : Event {
 };
 
 struct AccountIDResponse : Event {
-	AccountIDResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status, std::uint32_t id)
+	AccountIDResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status,
+	                  std::uint32_t id)
 	                  : Event { EventType::ACCOUNT_ID_RESPONSE },
-	                    packet(std::move(packet)), status(status), id(id) { }
+	                    packet(std::move(packet)), status(status), account_id(id) { }
 
 	protocol::CMSG_AUTH_SESSION packet;
 	messaging::account::Status status;
-	std::uint32_t id;
+	std::uint32_t account_id;
 };
 
 struct SessionKeyResponse : Event {
-	SessionKeyResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status, Botan::BigInt key)
+	SessionKeyResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status,
+	                   Botan::BigInt key)
 	                   : Event { EventType::SESSION_KEY_RESPONSE },
 	                     packet(std::move(packet)), status(status), key(key) { }
 
@@ -88,11 +90,12 @@ struct CharRenameResponse : Event {
 	CharRenameResponse(messaging::character::Status status, protocol::Result result,
 	                   std::uint64_t id, std::string name)
 	                   : Event { EventType::CHAR_RENAME_RESPONSE },
-	                     status(status), result(result), id(id), name(std::move(name)) { }
+	                     status(status), result(result), character_id(id),
+	                     name(std::move(name)) { }
 
 	messaging::character::Status status;
 	protocol::Result result;
-	std::uint64_t id;
+	std::uint64_t character_id;
 	std::string name;
 };
 
