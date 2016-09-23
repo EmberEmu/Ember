@@ -95,7 +95,6 @@ public:
 
 		spark::SafeBinaryStream addon_stream(buffer);
 
-		std::this_thread::sleep_for(std::chrono::seconds(1));
 		while(!addon_stream.empty()) {
 			AddonData data;
 			addon_stream >> data.name;
