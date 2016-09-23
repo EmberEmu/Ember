@@ -15,6 +15,8 @@
 
 namespace ember {
 
+/* TODO - THIS NEEDS REFACTORED - CURRENTLY UNSAFE! */
+
 class ClientConnection;
 struct ConnectionStats;
 

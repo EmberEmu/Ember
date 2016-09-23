@@ -12,6 +12,8 @@
 
 namespace ember {
 
+/* TODO - THIS NEEDS REFACTORED - CURRENTLY UNSAFE! */
+
 void SessionManager::start(std::unique_ptr<ClientConnection> session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
 
@@ -32,11 +34,12 @@ void SessionManager::stop(ClientConnection* session) {
 }
 
 void SessionManager::stop_all() {
+	std::lock_guard<std::mutex> guard(sessions_lock_);
+
 	for(auto& session : sessions_) {
 		session->stop();
 	}
 
-	std::lock_guard<std::mutex> guard(sessions_lock_);
 	sessions_.clear();
 }
 

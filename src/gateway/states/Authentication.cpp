@@ -18,6 +18,7 @@
 #include <game_protocol/Packets.h>
 #include <spark/Buffer.h>
 #include <spark/temp/Account_generated.h>
+#include <shared/util/EnumHelper.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
 #include <botan/botan.h>
@@ -63,8 +64,7 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 
 	auto uuid = ctx->handler->uuid();
 
-	Locator::account()->locate_account_id(packet.username,
-	                                      [uuid, packet](auto status, auto id) {
+	Locator::account()->locate_account_id(packet.username, [uuid, packet](auto status, auto id) {
 		auto event = std::make_unique<AccountIDResponse>(packet, status, id);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
@@ -75,7 +75,8 @@ void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 
 	if(event->status != em::account::Status::OK) {
 		LOG_ERROR_FILTER_GLOB(LF_NETWORK)
-			<< "Account server returned " << em::account::EnumNameStatus(event->status)
+			<< "Account server returned "
+			<< util::fb_status(event->status, em::account::EnumNamesStatus())
 			<< " for " << event->packet.username << " lookup" << LOG_ASYNC;
 		ctx->connection->close_session();
 		return;
@@ -95,8 +96,7 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 
 	auto uuid = ctx->handler->uuid();
 
-	Locator::account()->locate_session(ctx->account_id,
-	                                   [uuid, packet](auto status, auto key) {
+	Locator::account()->locate_session(ctx->account_id, [uuid, packet](auto status, auto key) {
 		auto event = std::make_unique<SessionKeyResponse>(packet, status, key);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
@@ -104,32 +104,16 @@ void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pa
 
 void handle_session_key(ClientContext* ctx, const SessionKeyResponse* event) {
 	LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
-		<< "Account server returned " << em::account::EnumNameStatus(event->status)
+		<< "Account server returned "
+		<< util::fb_status(event->status, em::account::EnumNamesStatus())
 		<< " for " << event->packet.username << LOG_ASYNC;
 
 	ctx->auth_status = AuthStatus::FAILED; // default unless overridden by success
 
-	if(event->status != em::account::Status::OK) {
-		protocol::Result result;
-
-		switch(event->status) {
-			case em::account::Status::ALREADY_LOGGED_IN:
-				result = protocol::Result::AUTH_ALREADY_ONLINE;
-				break;
-			case em::account::Status::SESSION_NOT_FOUND:
-				result = protocol::Result::AUTH_UNKNOWN_ACCOUNT;
-				break;
-			default:
-				LOG_ERROR_FILTER_GLOB(LF_NETWORK) << "Received "
-					<< em::account::EnumNameStatus(event->status)
-					<< " from account server" << LOG_ASYNC;
-				result = protocol::Result::AUTH_SYSTEM_ERROR;
-		}
-
-		// note: the game doesn't seem to pay attention to this
-		send_auth_result(ctx, result);
-	} else {
+	if(event->status == em::account::Status::OK) {
 		prove_session(ctx, event->key, event->packet);
+	} else {
+		ctx->connection->close_session();
 	}
 }
 
@@ -183,7 +167,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 	if(calc_hash != packet.digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet.username << LOG_ASYNC;
-		send_auth_result(ctx, protocol::Result::AUTH_BAD_SERVER_PROOF);
+		ctx->connection->close_session(); // key mismatch, client can't decrypt response
 		return;
 	}
 
@@ -191,10 +175,6 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	ctx->account_name = packet.username;
 	ctx->auth_status = AuthStatus::SUCCESS;
 
-	/*
-	* Note: MaNGOS claims you need a full auth packet for the initial AUTH_WAIT_QUEUE
-	* but that doesn't seem to be true - if this bugs out, check that out
-	*/
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
 	if(active_players >= Locator::config()->max_slots) {

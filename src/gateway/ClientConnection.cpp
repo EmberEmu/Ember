@@ -166,20 +166,20 @@ void ClientConnection::start() {
 }
 
 void ClientConnection::stop() {
-	service_.dispatch([this] {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Closing connection to " << remote_address() << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+		<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
-		handler_.stop();
-		stopped_ = true;
-		boost::system::error_code ec; // we don't care about any errors
-		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-		socket_.close(ec);
-	});
+	handler_.stop();
+	stopped_ = true;
+	boost::system::error_code ec; // we don't care about any errors
+	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.close(ec);
 }
 
 void ClientConnection::close_session() {
-	sessions_.stop(this);
+	service_.post([this]() {
+		sessions_.stop(this);
+	});
 }
 
 boost::asio::ip::tcp::socket& ClientConnection::socket() {
