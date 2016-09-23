@@ -510,12 +510,6 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 	} else {
 		send_reconnect_proof(grunt::Result::FAIL_INCORRECT_PASSWORD);
 	}
-
-	grunt::server::ReconnectProof response;
-	response.result = grunt::Result::SUCCESS;
-
-	state_ = State::REQUEST_REALMS;
-	send(response);
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet* packet) {
