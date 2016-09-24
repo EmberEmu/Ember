@@ -229,7 +229,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 		monitor = std::make_unique<ember::Monitor>(	
 			service, args["monitor.interface"].as<std::string>(),
-			args["monitor.port"].as<std::uint16_t>(), *metrics
+			args["monitor.port"].as<std::uint16_t>()
 		);
 
 		ember::install_net_monitor(*monitor, server, logger);

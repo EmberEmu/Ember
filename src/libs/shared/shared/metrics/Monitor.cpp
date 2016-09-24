@@ -7,7 +7,6 @@
  */
 
 #include <shared/metrics/Monitor.h>
-#include <shared/metrics/Metrics.h>
 #include <memory>
 #include <sstream>
 
@@ -17,8 +16,8 @@ using namespace std::chrono_literals;
 namespace bai = boost::asio::ip;
 
 Monitor::Monitor(boost::asio::io_service& service, const std::string& interface,
-                 std::uint16_t port, Metrics& metrics, std::chrono::seconds frequency)
-                 : timer_(service), strand_(service), metrics_(metrics), TIMER_FREQUENCY(frequency),
+                 std::uint16_t port, std::chrono::seconds frequency)
+                 : timer_(service), strand_(service), TIMER_FREQUENCY(frequency),
                    socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)),
                    signals_(service, SIGINT, SIGTERM) {
 	signals_.async_wait(std::bind(&Monitor::shutdown, this));
@@ -94,8 +93,6 @@ void Monitor::execute_source(Source& source, Severity severity, LogCallback& log
 		log(source, Severity::INFO, value);
 		--counters_[severity];
 	}
-
-	metrics_.gauge(source.key.c_str(), value);
 }
 
 std::string Monitor::generate_message() {

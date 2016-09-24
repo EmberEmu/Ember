@@ -231,7 +231,6 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 	callback(protocol::Result::CHAR_DELETE_FAILED);
 }
 
-
 void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
                                     const EnumResultCB& callback) const try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -264,10 +263,10 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 
-	auto validation_res = validate_name(name);
+	auto result = validate_name(name);
 
-	if(validation_res != protocol::Result::CHAR_NAME_SUCCESS) {
-		callback(validation_res, boost::none);
+	if(result != protocol::Result::CHAR_NAME_SUCCESS) {
+		callback(result, boost::none);
 		return;
 	}
 
@@ -296,7 +295,6 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto character = dao_.character(id);
-	auto match = dao_.character(character->name, character->realm_id);
 	auto characters = dao_.characters(character->account_id);
 
 	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
@@ -315,7 +313,10 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		return;
 	}
 
-	if(match) {
+	// ensure their name hasn't been taken - if so, force a rename
+	auto name_taken = dao_.character(character->name, character->realm_id);
+
+	if(name_taken) {
 		character->flags |= Character::Flags::RENAME;
 	} else {
 		character->internal_name = character->name;

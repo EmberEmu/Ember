@@ -25,8 +25,6 @@ namespace ember {
 
 using namespace std::chrono_literals;
 
-class Metrics;
-
 // todo - workaround for GCC defect, awaiting fix (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970)
 struct GCCHashFix { template <typename T> std::size_t operator()(T t) const { return static_cast<std::size_t>(t); }};
 
@@ -56,7 +54,6 @@ private:
 	boost::asio::signal_set signals_;
 	boost::asio::strand strand_;
 
-	Metrics& metrics_;
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
 	std::mutex source_lock_;
 	std::unordered_map<Severity, unsigned int, GCCHashFix> counters_;
@@ -73,7 +70,7 @@ private:
 
 public:
 	Monitor(boost::asio::io_service& service, const std::string& interface,
-	        std::uint16_t port, Metrics& metrics, std::chrono::seconds frequency = 5s);
+	        std::uint16_t port, std::chrono::seconds frequency = 5s);
 
 	void add_source(Source source, Severity severity, LogCallback log_callback);
 };
