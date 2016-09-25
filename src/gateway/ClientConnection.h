@@ -13,12 +13,13 @@
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include <game_protocol/PacketHeaders.h> // todo, remove
-#include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
+#include <logger/Logging.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
 #include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -36,19 +37,19 @@ class ClientConnection final {
 	boost::asio::io_service& service_;
 	boost::asio::ip::tcp::socket socket_;
 
-	ConnectionStats stats_;
-	ClientUUID uuid_;
-	ClientHandler handler_;
-	PacketCrypto crypto_;
-	protocol::ClientHeader packet_header_;
 	spark::ChainedBuffer<1024> inbound_buffer_;
 	spark::ChainedBuffer<4096> outbound_buffer_;
+
+	ClientHandler handler_;
+	ConnectionStats stats_;
+	PacketCrypto crypto_;
+	protocol::ClientHeader packet_header_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
 	bool authenticated_;
 	bool write_in_progress_;
-	std::string address_;
+	const std::string address_;
 
 	std::condition_variable stop_sync_;
 	std::mutex stop_lock_;
@@ -70,10 +71,11 @@ class ClientConnection final {
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                 ClientUUID uuid, log::Logger* logger)
-	                 : sessions_(sessions), service_(socket.get_io_service()),
+	                 : service_(socket.get_io_service()), sessions_(sessions),
 	                   socket_(std::move(socket)), stats_{}, crypto_{}, packet_header_{},
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
-	                   authenticated_(false), write_in_progress_(false), uuid_(uuid),
+	                   authenticated_(false), write_in_progress_(false),
+	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),
 	                   handler_(*this, uuid, logger) {}
 
 	~ClientConnection();
@@ -90,8 +92,6 @@ public:
 
 	void send(const protocol::ServerPacket& packet);
 	std::string remote_address();
-
-	friend class SessionManager;
 };
 
 } // ember

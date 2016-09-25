@@ -153,17 +153,13 @@ void ClientConnection::read() {
 }
 
 void ClientConnection::set_authenticated(const Botan::BigInt& key) {
-	Botan::SecureVector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
+	auto k_bytes = Botan::BigInt::encode(key);
 	crypto_.set_key(k_bytes);
 	authenticated_ = true;
 }
 
 void ClientConnection::start() {
 	stopped_ = false;
-
-	address_ = socket_.remote_endpoint().address().to_string()
-		+ ":" + std::to_string(socket_.remote_endpoint().port());
-
 	handler_.start();
 	read();
 }
@@ -212,10 +208,6 @@ std::string ClientConnection::remote_address() {
 
 const ConnectionStats& ClientConnection::stats() const {
 	return stats_;
-}
-
-const ClientUUID& ClientConnection::uuid() const {
-	return uuid_;
 }
 
 void ClientConnection::latency(std::size_t latency) {
