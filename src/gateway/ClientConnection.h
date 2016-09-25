@@ -19,6 +19,7 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
 #include <boost/asio.hpp>
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
