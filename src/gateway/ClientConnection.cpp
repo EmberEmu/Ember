@@ -8,6 +8,7 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
+#include <condition_variable>
 
 namespace ember {
 
@@ -158,6 +159,8 @@ void ClientConnection::set_authenticated(const Botan::BigInt& key) {
 }
 
 void ClientConnection::start() {
+	stopped_ = false;
+
 	address_ = socket_.remote_endpoint().address().to_string()
 		+ ":" + std::to_string(socket_.remote_endpoint().port());
 
@@ -170,15 +173,36 @@ void ClientConnection::stop() {
 		<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
 	handler_.stop();
-	stopped_ = true;
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
+	stopped_ = true;
 }
 
+/* 
+ * This function should only be used by the handler to allow for the session to be
+ * queued for closure after it has returned from processing the current event/packet.
+ * Posting rather than dispatching ensures that the object won't be destroyed by the
+ * session manager until current processing has finished.
+ */
 void ClientConnection::close_session() {
-	service_.post([this]() {
+	service_.post([this] {
 		sessions_.stop(this);
+	});
+}
+
+/*
+ * This function is used by the destructor to ensure that all current processing
+ * has finished before it returns. It uses dispatch rather than post to ensure
+ * that if the calling thread happens to be the owner of this connection, that
+ * it will be closed immediately, 'in line', rather than blocking indefinitely.
+ */
+void ClientConnection::close_session_sync() {
+	service_.dispatch([&] {
+		stop();
+
+		std::unique_lock<std::mutex> ul(stop_lock_);
+		stop_sync_.notify_all();
 	});
 }
 
@@ -204,6 +228,17 @@ void ClientConnection::latency(std::size_t latency) {
 
 void ClientConnection::compression_level(unsigned int level) {
 	// todo
+}
+
+ClientConnection::~ClientConnection() {
+	if(!stopped_) {
+		close_session_sync();
+
+		while(!stopped_) {
+			std::unique_lock<std::mutex> guard(stop_lock_);
+			stop_sync_.wait(guard);
+		}
+	}
 }
 
 } // ember

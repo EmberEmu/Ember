@@ -75,6 +75,7 @@ public:
 	void shutdown() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 		acceptor_.close();
+		sessions_.stop_all();
 	}
 };
 

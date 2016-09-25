@@ -176,6 +176,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
 		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+		server.shutdown();
 		discovery.shutdown();
 		spark.shutdown();
 		queue_service.shutdown();

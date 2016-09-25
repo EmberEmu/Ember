@@ -20,6 +20,7 @@
 #include <botan/bigint.h>
 #include <boost/asio.hpp>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <cstdint>
@@ -44,10 +45,13 @@ class ClientConnection final {
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
-	bool stopped_;
 	bool authenticated_;
 	bool write_in_progress_;
 	std::string address_;
+
+	std::condition_variable stop_sync_;
+	std::mutex stop_lock_;
+	std::atomic_bool stopped_;
 
 	// socket I/O
 	void read();
@@ -55,6 +59,7 @@ class ClientConnection final {
 
 	// session management
 	void stop();
+	void close_session_sync();
 
 	// packet reassembly & dispatching
 	void process_buffered_data(spark::Buffer& buffer);
@@ -65,9 +70,10 @@ public:
 	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, ClientUUID uuid,
 	                 log::Logger* logger)
 	                 : sessions_(sessions), socket_(service), stats_{}, crypto_{}, packet_header_{},
-	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(false), service_(service),
+	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true), service_(service),
 	                   authenticated_(false), write_in_progress_(false), uuid_(uuid),
 	                   handler_(*this, uuid, logger) {}
+	~ClientConnection();
 
 	void start();
 	void close_session();
