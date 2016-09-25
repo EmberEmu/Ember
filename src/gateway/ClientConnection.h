@@ -33,8 +33,8 @@ class SessionManager;
 class ClientConnection final {
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
-	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service& service_;
+	boost::asio::ip::tcp::socket socket_;
 
 	ConnectionStats stats_;
 	ClientUUID uuid_;
@@ -68,12 +68,14 @@ class ClientConnection final {
 	void completion_check(spark::Buffer& buffer);
 
 public:
-	ClientConnection(SessionManager& sessions, boost::asio::io_service& service, ClientUUID uuid,
-	                 log::Logger* logger)
-	                 : sessions_(sessions), socket_(service), stats_{}, crypto_{}, packet_header_{},
-	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true), service_(service),
+	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
+	                 ClientUUID uuid, log::Logger* logger)
+	                 : sessions_(sessions), service_(socket.get_io_service()),
+	                   socket_(std::move(socket)), stats_{}, crypto_{}, packet_header_{},
+	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false), uuid_(uuid),
 	                   handler_(*this, uuid, logger) {}
+
 	~ClientConnection();
 
 	void start();
@@ -87,7 +89,6 @@ public:
 	const ClientUUID& uuid() const;
 
 	void send(const protocol::ServerPacket& packet);
-	boost::asio::ip::tcp::socket& socket();
 	std::string remote_address();
 
 	friend class SessionManager;

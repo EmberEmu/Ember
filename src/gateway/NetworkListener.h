@@ -35,16 +35,13 @@ class NetworkListener {
 	ServicePool& pool_;
 	log::Logger* logger_;
 	ASIOAllocator allocator_; // todo - thread_local, VS2015
-	std::unique_ptr<ClientConnection> next_connection_;
+	//std::unique_ptr<ClientConnection> next_connection_;
+	boost::asio::ip::tcp::socket socket_;
 
 	void accept_connection() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-		++index_ %= pool_.size();
-		next_connection_ = std::make_unique<ClientConnection>(sessions_, *pool_.get_service(index_),
-		                                                      ClientUUID::generate(index_), logger_);
-
-		acceptor_.async_accept(next_connection_->socket(), [this](boost::system::error_code ec) {
+		acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
 			if(!acceptor_.is_open()) {
 				return;
 			}
@@ -52,12 +49,19 @@ class NetworkListener {
 			if(!ec) {
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 					<< "Accepted connection "
-					<< boost::lexical_cast<std::string>(next_connection_->socket().remote_endpoint())
+					<< boost::lexical_cast<std::string>(socket_.remote_endpoint())
 					<< LOG_ASYNC;
 
-				sessions_.start(std::move(next_connection_));
+				auto client = std::make_unique<ClientConnection>(
+					sessions_, std::move(socket_),
+					ClientUUID::generate(index_), logger_
+				);
+
+				sessions_.start(std::move(client));
 			}
 
+			++index_ %= pool_.size();
+			socket_ = boost::asio::ip::tcp::socket(*pool_.get_service(index_));
 			accept_connection();
 		});
 	}
@@ -65,7 +69,7 @@ class NetworkListener {
 public:
 	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port, bool tcp_no_delay, log::Logger* logger)
 	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM), index_(0),
-	                  acceptor_(pool.get_service(), bai::tcp::endpoint(bai::address::from_string(interface), port)) {
+	                  acceptor_(pool.get_service(), bai::tcp::endpoint(bai::address::from_string(interface), port)), socket_(pool.get_service()) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));

@@ -206,10 +206,6 @@ void ClientConnection::close_session_sync() {
 	});
 }
 
-boost::asio::ip::tcp::socket& ClientConnection::socket() {
-	return socket_;
-}
-
 std::string ClientConnection::remote_address() {
 	return address_;
 }
