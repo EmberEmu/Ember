@@ -34,8 +34,6 @@ class NetworkListener {
 	std::size_t index_;
 	ServicePool& pool_;
 	log::Logger* logger_;
-	ASIOAllocator allocator_; // todo - thread_local, VS2015
-	//std::unique_ptr<ClientConnection> next_connection_;
 	boost::asio::ip::tcp::socket socket_;
 
 	void accept_connection() {
