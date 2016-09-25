@@ -8,6 +8,7 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
+#include <spark/buffers/BufferSequence.h>
 
 namespace ember {
 
@@ -101,7 +102,9 @@ void ClientConnection::write() {
 		return;
 	}
 
-	socket_.async_send(outbound_buffer_, create_alloc_handler(allocator_,
+	spark::BufferSequence<OUTBOUND_SIZE> sequence(outbound_buffer_);
+
+	socket_.async_send(sequence, create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
 			stats_.bytes_out += size;
 			++stats_.packets_out;

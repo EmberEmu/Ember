@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,6 @@
 #include <spark/buffers/ChainedNode.h>
 #include <spark/Buffer.h>
 #include <boost/assert.hpp>
-#include <boost/asio/buffer.hpp>
 #include <algorithm>
 #include <vector>
 #include <utility>
@@ -19,7 +18,10 @@
 
 namespace ember { namespace spark {
 
-template<typename std::size_t BlockSize = 1024>
+template<typename std::size_t BlockSize>
+class BufferSequence;
+
+template<typename std::size_t BlockSize>
 class ChainedBuffer final : public Buffer {
 	ChainedNode root_;
 	std::size_t size_;
@@ -50,7 +52,7 @@ class ChainedBuffer final : public Buffer {
 			return;
 		}
 
-		clear(); //clear our current blocks rather than swapping them
+		clear(); // clear our current blocks rather than swapping them
 
 		size_ = rhs.size_;
 		root_.next = rhs.root_.next;
@@ -305,58 +307,8 @@ public:
 		return const_cast<char&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
 	}
 
-	class const_iterator {
-	public:
-		const_iterator(const ChainedBuffer<BlockSize>& chain, const ChainedNode* curr_node)
-		               : chain_(chain), curr_node_(curr_node) {}
-
-		const_iterator& operator++() {
-			curr_node_ = curr_node_->next;
-			return *this;
-		}
-
-		const_iterator operator++(int) {
-			const_iterator current(*this);
-			curr_node_ = curr_node_->next;
-			return current;
-		}
-
-		boost::asio::const_buffer operator*() const {
-			auto buffer = chain_.buffer_from_node(curr_node_);
-			return boost::asio::const_buffer(buffer->read_data(), buffer->size());
-		}
-
-		bool operator==(const const_iterator& rhs) const {
-			return curr_node_ == rhs.curr_node_;
-		}
-
-		bool operator!=(const const_iterator& rhs) const {
-			return curr_node_ != rhs.curr_node_;
-		}
-
-		const_iterator& operator=(const_iterator&) = delete;
-
-#ifdef BUFFER_CHAIN_DEBUG
-		std::pair<const char*, std::size_t> get_buffer() {
-			auto buffer = chain_.buffer_from_node(curr_node_);
-			return std::make_pair<char*, std::size_t>(const_cast<char*>(buffer->read_data()), buffer->size());
-		}
-#endif
-
-	private:
-		const ChainedBuffer<BlockSize>& chain_;
-		const ChainedNode* curr_node_;
-	};
-
-	const_iterator begin() const {
-		return const_iterator(*this, root_.next);
-	}
-
-	const_iterator end() const {
-		return const_iterator(*this, &root_);
-	}
-
-	friend class const_iterator;
+	template<typename std::size_t BlockSize>
+	friend class BufferSequence;
 };
 
 }} // spark, ember

@@ -32,13 +32,16 @@ namespace ember {
 class SessionManager;
 
 class ClientConnection final {
+	static constexpr std::size_t INBOUND_SIZE = 1024;
+	static constexpr std::size_t OUTBOUND_SIZE = 4096;
+
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::io_service& service_;
 	boost::asio::ip::tcp::socket socket_;
 
-	spark::ChainedBuffer<1024> inbound_buffer_;
-	spark::ChainedBuffer<4096> outbound_buffer_;
+	spark::ChainedBuffer<INBOUND_SIZE> inbound_buffer_;
+	spark::ChainedBuffer<OUTBOUND_SIZE> outbound_buffer_;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
