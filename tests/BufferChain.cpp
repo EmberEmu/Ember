@@ -1,14 +1,15 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#define BUFFER_CHAIN_DEBUG
 #include <spark/buffers/ChainedBuffer.h>
-#undef BUFFER_CHAIN_DEBUG
+#define BUFFER_SEQUENCE_DEBUG
+#include <spark/buffers/BufferSequence.h>
+#undef BUFFER_SEQUENCE_DEBUG
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
@@ -199,6 +200,7 @@ TEST(ChainedBufferTest, MoveChain) {
 
 TEST(ChainedBufferTest, ReadIterator) {
 	spark::ChainedBuffer<16> chain; // ensure the string is split over multiple buffers
+	spark::BufferSequence<16> sequence(chain);
 	std::string skip("Skipping");
 	std::string input("The quick brown fox jumps over the lazy dog");
 	std::string output;
@@ -207,7 +209,7 @@ TEST(ChainedBufferTest, ReadIterator) {
 	chain.write(input.data(), input.size());
 	chain.skip(skip.size()); // ensure skipped data isn't read back out
 	
-	for(auto i = chain.begin(), j = chain.end(); i != j; ++i) {
+	for(auto i = sequence.begin(), j = sequence.end(); i != j; ++i) {
 		auto buffer = i.get_buffer();
 		std::copy(buffer.first, buffer.first + buffer.second, std::back_inserter(output));
 	}
@@ -217,6 +219,7 @@ TEST(ChainedBufferTest, ReadIterator) {
 
 TEST(ChainedBufferTest, ASIOIteratorRegressionTest) {
 	spark::ChainedBuffer<1> chain;
+	spark::BufferSequence<1> sequence(chain);
 
 	// 119 bytes (size of 1.12.1 LoginChallenge packet)
 	std::string input("Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -225,11 +228,11 @@ TEST(ChainedBufferTest, ASIOIteratorRegressionTest) {
 	chain.write(input.data(), input.length());
 	ASSERT_EQ(119, chain.size()) << "Chain size was incorrect";
 
-	auto it = chain.begin();
+	auto it = sequence.begin();
 	std::size_t bytes_sent = 0;
 
 	// do first read
-	for(std::size_t i = 0; it != chain.end() && i != 64; ++i, ++it) {
+	for(std::size_t i = 0; it != sequence.end() && i != 64; ++i, ++it) {
 		bytes_sent += it.get_buffer().second;
 	}
 
@@ -237,11 +240,11 @@ TEST(ChainedBufferTest, ASIOIteratorRegressionTest) {
 	ASSERT_EQ(64, bytes_sent) << "First read length was incorrect";
 	ASSERT_EQ(55, chain.size()) << "Chain size was incorrect";
 
-	auto it_s = chain.begin();
+	auto it_s = sequence.begin();
 	bytes_sent = 0;
 
 	// do second read
-	for(std::size_t i = 0; it_s != chain.end() && i != 64; ++i, ++it_s) {
+	for(std::size_t i = 0; it_s != sequence.end() && i != 64; ++i, ++it_s) {
 		bytes_sent += it_s.get_buffer().second;
 	}
 
@@ -254,11 +257,11 @@ TEST(ChainedBufferTest, ASIOIteratorRegressionTest) {
 	chain.write(input.data(), input.length());
 	ASSERT_EQ(2, chain.size()) << "Chain size was incorrect";
 
-	auto it_t = chain.begin();
+	auto it_t = sequence.begin();
 	bytes_sent = 0;
 
 	// do third read
-	for(std::size_t i = 0; it_t != chain.end() && i != 64; ++i, ++it_t) {
+	for(std::size_t i = 0; it_t != sequence.end() && i != 64; ++i, ++it_t) {
 		bytes_sent += it_t.get_buffer().second;
 	}
 

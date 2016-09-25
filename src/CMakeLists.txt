@@ -11,8 +11,8 @@ add_subdirectory(world)
 add_subdirectory(account)
 
 add_subdirectory(character)
-add_subdirectory(instancemaster)
-add_subdirectory(instanceslave)
+#add_subdirectory(instancemaster)
+#add_subdirectory(instanceslave)
 add_subdirectory(libs)
 
 add_subdirectory(tools)

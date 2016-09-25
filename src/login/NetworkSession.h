@@ -12,6 +12,7 @@
 #include "FilterTypes.h"
 #include <logger/Logging.h>
 #include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/BufferSequence.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
@@ -142,7 +143,9 @@ public:
 
 		set_timer();
 
-		socket_.async_send(*chain,
+		spark::BufferSequence<BlockSize> sequence(*chain);
+
+		socket_.async_send(sequence,
 			strand_.wrap(create_alloc_handler(allocator_,
 			[=](boost::system::error_code ec, std::size_t size) {
 				chain->skip(size);

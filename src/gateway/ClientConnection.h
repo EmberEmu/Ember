@@ -52,6 +52,7 @@ class ClientConnection final {
 	log::Logger* logger_;
 	bool authenticated_;
 	bool write_in_progress_;
+	unsigned int compression_level_;
 	const std::string address_;
 
 	std::condition_variable stop_condvar_;
@@ -70,6 +71,7 @@ class ClientConnection final {
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
+	void stream_compress(const protocol::ServerPacket& packet);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
@@ -79,22 +81,22 @@ public:
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false),
 	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),
-	                   handler_(*this, uuid, logger) {}
+	                   handler_(*this, uuid, logger), compression_level_(9) {}
 
 	~ClientConnection();
 
 	void start();
-	void close_session();
 
 	void set_authenticated(const Botan::BigInt& key);
 	void compression_level(unsigned int level);
 	void latency(std::size_t latency);
 
 	const ConnectionStats& stats() const;
-	const ClientUUID& uuid() const;
-
-	void send(const protocol::ServerPacket& packet);
 	std::string remote_address();
+
+	// these should be made private, only for use by the handler
+	void send(const protocol::ServerPacket& packet);
+	void close_session();
 };
 
 } // ember

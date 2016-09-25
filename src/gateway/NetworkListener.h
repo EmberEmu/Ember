@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -65,9 +65,12 @@ class NetworkListener {
 	}
 
 public:
-	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port, bool tcp_no_delay, log::Logger* logger)
-	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM), index_(0),
-	                  acceptor_(pool.get_service(), bai::tcp::endpoint(bai::address::from_string(interface), port)), socket_(pool.get_service()) {
+	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port,
+	                bool tcp_no_delay, log::Logger* logger)
+	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM),
+	                  index_(0), acceptor_(pool.get_service(),
+	                  bai::tcp::endpoint(bai::address::from_string(interface), port)),
+	                  socket_(pool.get_service()) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));

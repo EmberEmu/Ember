@@ -9,6 +9,7 @@
 #include "ClientConnection.h"
 #include "SessionManager.h"
 #include <spark/buffers/BufferSequence.h>
+#include <zlib.h>
 
 namespace ember {
 
@@ -79,7 +80,6 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	const boost::endian::big_uint16_at final_size =
 		static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
 
-	// todo - could implement iterators to make this slightly nicer
 	buffer[write_index + 0] = final_size.data()[0];
 	buffer[write_index + 1] = final_size.data()[1];
 
@@ -217,13 +217,61 @@ void ClientConnection::latency(std::size_t latency) {
 }
 
 void ClientConnection::compression_level(unsigned int level) {
-	// todo
+	compression_level_ = level;
+}
+
+// temp testing function, do not use yet
+void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
+	constexpr std::size_t BLOCK_SIZE = 64;
+	spark::ChainedBuffer<4096> temp_buffer;
+	spark::Buffer& buffer(temp_buffer);
+	spark::SafeBinaryStream stream(buffer);
+	spark::SafeBinaryStream out_stream(outbound_buffer_);
+	stream << std::uint16_t(0) << packet.opcode << packet;
+
+	boost::endian::big_int16_t size =
+		static_cast<std::uint16_t>(stream.size() - sizeof(protocol::ServerHeader::size));
+
+	temp_buffer[0] = size.data()[0];
+	temp_buffer[1] = size.data()[1];
+
+	std::uint8_t in_buff[BLOCK_SIZE];
+	std::uint8_t out_buff[BLOCK_SIZE];
+
+	z_stream z_stream{};
+	z_stream.next_in = in_buff;
+	z_stream.next_out = out_buff;
+
+	deflateInit(&z_stream, compression_level_);
+
+	out_stream << std::uint16_t(0) << std::uint16_t(0x1F6);
+
+	while(!stream.empty()) {
+		z_stream.avail_in = stream.size() >= BLOCK_SIZE? BLOCK_SIZE : stream.size();
+		stream.get(in_buff, z_stream.avail_in);
+
+		do {
+			z_stream.avail_out = BLOCK_SIZE;
+			int ret = deflate(&z_stream, Z_NO_FLUSH);
+
+			if(ret != Z_OK) {
+				throw std::runtime_error("Zlib failed");
+			}
+
+			outbound_buffer_.write(out_buff, BLOCK_SIZE - z_stream.avail_out);
+		} while(z_stream.avail_out == 0);
+
+
+		outbound_buffer_.write(out_buff, BLOCK_SIZE - z_stream.avail_out);
+	}
+
+	deflateEnd(&z_stream);
 }
 
 ClientConnection::~ClientConnection() {
 	if(!stopped_) {
 		close_session_sync();
-
+		
 		while(!stopped_) {
 			std::unique_lock<std::mutex> guard(stop_lock_);
 			stop_condvar_.wait(guard);

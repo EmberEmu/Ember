@@ -69,7 +69,7 @@ void EventDispatcher::post_event(const ClientUUID& client,
 void EventDispatcher::register_handler(ClientHandler* handler) {
 	auto service = pool_.get_service(handler->uuid().service());
 
-	service->post([=] {
+	service->dispatch([=] {
 		handlers_[handler->uuid()] = handler;
 	});
 }
@@ -77,7 +77,7 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 void EventDispatcher::remove_handler(ClientHandler* handler) {
 	auto service = pool_.get_service(handler->uuid().service());
 	
-	service->post([=] {
+	service->dispatch([=] {
 		handlers_.erase(handler->uuid());
 	});
 }
