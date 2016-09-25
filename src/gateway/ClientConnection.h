@@ -21,10 +21,10 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <atomic>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <utility>
 #include <cstdint>
 
 namespace ember {
@@ -51,7 +51,7 @@ class ClientConnection final {
 	bool write_in_progress_;
 	const std::string address_;
 
-	std::condition_variable stop_sync_;
+	std::condition_variable stop_condvar_;
 	std::mutex stop_lock_;
 	std::atomic_bool stopped_;
 

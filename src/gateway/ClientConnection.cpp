@@ -8,7 +8,6 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
-#include <condition_variable>
 
 namespace ember {
 
@@ -198,7 +197,7 @@ void ClientConnection::close_session_sync() {
 		stop();
 
 		std::unique_lock<std::mutex> ul(stop_lock_);
-		stop_sync_.notify_all();
+		stop_condvar_.notify_all();
 	});
 }
 
@@ -224,7 +223,7 @@ ClientConnection::~ClientConnection() {
 
 		while(!stopped_) {
 			std::unique_lock<std::mutex> guard(stop_lock_);
-			stop_sync_.wait(guard);
+			stop_condvar_.wait(guard);
 		}
 	}
 }
