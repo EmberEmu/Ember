@@ -49,7 +49,6 @@ public:
 	sql::Connection* open() const;
 	bool clean(sql::Connection* conn) const;
 	void close(sql::Connection* conn) const;
-	void clear_state(sql::Connection* conn) const;
 	bool keep_alive(sql::Connection* conn) const;
 	void thread_enter() const;
 	void thread_exit() const;

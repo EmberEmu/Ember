@@ -70,7 +70,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
-	spark::Buffer& buffer(outbound_buffer_);
+	spark::Buffer& buffer(*outbound_back_);
 	spark::SafeBinaryStream stream(buffer);
 	const std::size_t write_index = buffer.size(); // the current write index
 
@@ -91,6 +91,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;
+		swap_buffers();
 		write();
 	}
 			
@@ -102,23 +103,28 @@ void ClientConnection::write() {
 		return;
 	}
 
-	spark::BufferSequence<OUTBOUND_SIZE> sequence(outbound_buffer_);
+	spark::BufferSequence<OUTBOUND_SIZE> sequence(*outbound_front_);
 
 	socket_.async_send(sequence, create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
 			stats_.bytes_out += size;
 			++stats_.packets_out;
 
-			outbound_buffer_.skip(size);
+			outbound_front_->skip(size);
 
 			if(ec && ec != boost::asio::error::operation_aborted) {
 				close_session();
-			} else if(!outbound_buffer_.empty()) {
-				// data was buffered at some point between the last send and this handler being invoked
+			} else if(!outbound_front_->empty()) {
+				// entire buffer wasn't sent, hit gather-write limits?
 				write();
 			} else {
-				// all done!
-				write_in_progress_ = false;
+				swap_buffers();
+
+				if(!outbound_front_->empty()) {
+					write();
+				} else { // all done!
+					write_in_progress_ = false;
+				}
 			}
 		}
 	));
@@ -152,6 +158,16 @@ void ClientConnection::read() {
 			}
 		}
 	));
+}
+
+void ClientConnection::swap_buffers() {
+	if(outbound_front_ == &outbound_buffers_.front()) {
+		outbound_front_ = &outbound_buffers_.back();
+		outbound_back_ = &outbound_buffers_.front();
+	} else {
+		outbound_front_ = &outbound_buffers_.front();
+		outbound_back_ = &outbound_buffers_.back();
+	}
 }
 
 void ClientConnection::set_authenticated(const Botan::BigInt& key) {
@@ -226,7 +242,7 @@ void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
 	spark::ChainedBuffer<4096> temp_buffer;
 	spark::Buffer& buffer(temp_buffer);
 	spark::SafeBinaryStream stream(buffer);
-	spark::SafeBinaryStream out_stream(outbound_buffer_);
+	spark::SafeBinaryStream out_stream(*outbound_back_);
 	stream << std::uint16_t(0) << packet.opcode << packet;
 
 	boost::endian::big_int16_t size =
@@ -258,11 +274,11 @@ void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
 				throw std::runtime_error("Zlib failed");
 			}
 
-			outbound_buffer_.write(out_buff, BLOCK_SIZE - z_stream.avail_out);
+			outbound_back_->write(out_buff, BLOCK_SIZE - z_stream.avail_out);
 		} while(z_stream.avail_out == 0);
 
 
-		outbound_buffer_.write(out_buff, BLOCK_SIZE - z_stream.avail_out);
+		outbound_back_->write(out_buff, BLOCK_SIZE - z_stream.avail_out);
 	}
 
 	deflateEnd(&z_stream);

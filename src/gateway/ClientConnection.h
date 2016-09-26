@@ -20,6 +20,7 @@
 #include <botan/bigint.h>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -33,7 +34,7 @@ class SessionManager;
 
 class ClientConnection final {
 	static constexpr std::size_t INBOUND_SIZE = 1024;
-	static constexpr std::size_t OUTBOUND_SIZE = 4096;
+	static constexpr std::size_t OUTBOUND_SIZE = 2048;
 
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
@@ -41,7 +42,9 @@ class ClientConnection final {
 	boost::asio::ip::tcp::socket socket_;
 
 	spark::ChainedBuffer<INBOUND_SIZE> inbound_buffer_;
-	spark::ChainedBuffer<OUTBOUND_SIZE> outbound_buffer_;
+	std::array<spark::ChainedBuffer<OUTBOUND_SIZE>, 2> outbound_buffers_;
+	spark::ChainedBuffer<OUTBOUND_SIZE>* outbound_front_;
+	spark::ChainedBuffer<OUTBOUND_SIZE>* outbound_back_;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
@@ -72,6 +75,7 @@ class ClientConnection final {
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(spark::Buffer& buffer);
 	void stream_compress(const protocol::ServerPacket& packet);
+	void swap_buffers();
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
@@ -81,7 +85,9 @@ public:
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false),
 	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),
-	                   handler_(*this, uuid, logger), compression_level_(9) {}
+	                   handler_(*this, uuid, logger), compression_level_(0),
+	                   outbound_front_(&outbound_buffers_[0]),
+	                   outbound_back_(&outbound_buffers_[1]) { }
 
 	~ClientConnection();
 

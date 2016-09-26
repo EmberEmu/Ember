@@ -27,7 +27,6 @@ namespace ember {
 namespace bai = boost::asio::ip;
 
 class NetworkListener {
-	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	SessionManager sessions_;
@@ -67,13 +66,12 @@ class NetworkListener {
 public:
 	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port,
 	                bool tcp_no_delay, log::Logger* logger)
-	                : pool_(pool), logger_(logger), signals_(pool.get_service(), SIGINT, SIGTERM),
+	                : pool_(pool), logger_(logger),
 	                  index_(0), acceptor_(pool.get_service(),
 	                  bai::tcp::endpoint(bai::address::from_string(interface), port)),
-	                  socket_(pool.get_service()) {
+	                  socket_(*pool.get_service(0)) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));
 		accept_connection();
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,7 +32,7 @@ boost::asio::io_service& ServicePool::get_service() {
 }
 
 boost::asio::io_service* ServicePool::get_service(std::size_t index) const {
-	if(index > services_.size()) {
+	if(index >= services_.size()) {
 		return nullptr;
 	}
 
