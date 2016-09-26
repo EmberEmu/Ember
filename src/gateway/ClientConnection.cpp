@@ -112,19 +112,20 @@ void ClientConnection::write() {
 
 			outbound_front_->skip(size);
 
-			if(ec && ec != boost::asio::error::operation_aborted) {
-				close_session();
-			} else if(!outbound_front_->empty()) {
-				// entire buffer wasn't sent, hit gather-write limits?
-				write();
-			} else {
-				swap_buffers();
-
+			if(!ec) {
 				if(!outbound_front_->empty()) {
-					write();
-				} else { // all done!
-					write_in_progress_ = false;
+					write(); // entire buffer wasn't sent, hit gather-write limits?
+				} else {
+					swap_buffers();
+
+					if(!outbound_front_->empty()) {
+						write();
+					} else { // all done!
+						write_in_progress_ = false;
+					}
 				}
+			} else if(ec != boost::asio::error::operation_aborted) {
+				close_session();
 			}
 		}
 	));
@@ -142,10 +143,6 @@ void ClientConnection::read() {
 	socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
 		create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
-			if(stopped_) {
-				return;
-			}
-
 			if(!ec) {
 				stats_.bytes_in += size;
 				++stats_.packets_in;
