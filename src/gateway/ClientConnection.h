@@ -89,8 +89,6 @@ public:
 	                   outbound_front_(&outbound_buffers_[0]),
 	                   outbound_back_(&outbound_buffers_[1]) { }
 
-	~ClientConnection();
-
 	void start();
 
 	void set_authenticated(const Botan::BigInt& key);
@@ -103,6 +101,9 @@ public:
 	// these should be made private, only for use by the handler
 	void send(const protocol::ServerPacket& packet);
 	void close_session();
+	void terminate();
+
+	static void async_shutdown(std::shared_ptr<ClientConnection> test);
 };
 
 } // ember

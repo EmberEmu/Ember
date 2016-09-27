@@ -56,11 +56,11 @@ void ServicePool::run() {
 }
 
 void ServicePool::stop() {
-	work_.clear();
-
  	for(auto& service : services_) {
 		service->stop();
 	}
+
+	work_.clear();
 }
 
 std::size_t ServicePool::size() const {

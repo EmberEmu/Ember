@@ -49,7 +49,7 @@ class NetworkListener {
 					<< boost::lexical_cast<std::string>(socket_.remote_endpoint())
 					<< LOG_ASYNC;
 
-				auto client = std::make_unique<ClientConnection>(
+				auto client = std::make_shared<ClientConnection>(
 					sessions_, std::move(socket_),
 					ClientUUID::generate(index_), logger_
 				);

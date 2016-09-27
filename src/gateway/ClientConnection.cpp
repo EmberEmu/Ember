@@ -132,6 +132,10 @@ void ClientConnection::write() {
 }
 
 void ClientConnection::read() {
+	if(!socket_.is_open()) {
+		return;
+	}
+
 	auto tail = inbound_buffer_.back();
 
 	// if the buffer chain has no more space left, allocate & attach new node
@@ -281,15 +285,29 @@ void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
 	deflateEnd(&z_stream);
 }
 
-ClientConnection::~ClientConnection() {
+void ClientConnection::terminate() {
 	if(!stopped_) {
 		close_session_sync();
-		
+
 		while(!stopped_) {
 			std::unique_lock<std::mutex> guard(stop_lock_);
 			stop_condvar_.wait(guard);
 		}
 	}
+}
+
+/*
+ * Closes the socket and then posts a final event that keeps the client alive
+ * until all pending handlers are executed with 'operation_aborted'.
+ * That's the theory anyway.
+ */
+void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
+	client->terminate();
+
+	client->service_.post([client]() {
+		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << "Handler for " << client->remote_address()
+			<< " destroyed" << LOG_ASYNC;
+	});
 }
 
 } // ember
