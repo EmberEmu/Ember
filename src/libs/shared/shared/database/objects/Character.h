@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <shared/util/enum_flags.h>
+#include <shared/util/enum_bitmask.h>
 #include <string>
 #include <cstdint>
 
@@ -78,6 +78,6 @@ struct Character { // used for character list display
 	std::uint32_t pet_family;
 };
 
-ENUM_FLAGS(Character::Flags, std::uint32_t);
+ENABLE_BITMASK(Character::Flags);
 
 } //ember

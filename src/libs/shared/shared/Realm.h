@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <shared/util/enum_flags.h>
+#include <shared/util/enum_bitmask.h>
 #include <string>
 #include <cstdint>
 
@@ -58,9 +58,9 @@ struct Realm {
 	CreationSetting creation_setting;
 };
 
-ENUM_FLAGS(Realm::Flags, std::uint8_t);
-ENUM_FLAGS(Realm::Type, std::uint32_t);
-ENUM_FLAGS(Realm::Zone, std::uint8_t);
-ENUM_FLAGS(Realm::CreationSetting, std::uint8_t);
+ENABLE_BITMASK(Realm::Flags);
+ENABLE_BITMASK(Realm::Type);
+ENABLE_BITMASK(Realm::Zone);
+ENABLE_BITMASK(Realm::CreationSetting);
 
 } //ember
