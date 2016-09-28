@@ -100,4 +100,4 @@ struct EnableBitMask<x>                  \
     static constexpr bool enable = true; \
 };
 
-}; // ember
+} // ember
