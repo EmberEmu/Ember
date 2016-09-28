@@ -8,9 +8,6 @@
 
 #pragma once
 
-#ifndef ENUM_BITMASK_H
-#define ENUM_BITMASK_H
-
 #include <type_traits>
 
 namespace ember {
@@ -104,5 +101,3 @@ struct EnableBitMask<x>                  \
 };
 
 }; // ember
-
-#endif
