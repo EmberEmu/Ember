@@ -103,7 +103,7 @@ auto Service::send_tracked(const Link& link, boost::uuids::uuid id,
 
 void Service::broadcast(messaging::Service service, ServicesMap::Mode mode, BufferHandler fbb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	auto& links = services_.peer_services(service, mode);
+	const auto& links = services_.peer_services(service, mode);
 
 	for(auto& link : links) {
 		/* The weak_ptr should never fail to lock as the link will be removed from the

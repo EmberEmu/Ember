@@ -42,7 +42,7 @@ public:
 	void set_survey(const std::string& path, std::uint32_t id);
 	FileMeta survey_meta() const;
 	std::uint32_t survey_id() const;
-	bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const;
+	bool survey_platform(grunt::Platform platform, grunt::System os) const;
 	const std::vector<char>& survey_data(grunt::Platform platform, grunt::System os) const;
 
 	// Patching

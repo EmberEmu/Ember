@@ -69,12 +69,12 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 	// write all of the binary data into a single buffer
 	for(auto& f : files) {
 		bfs::path fpath = dir;
-		dir /= f;
+		fpath /= f;
 
 		std::ifstream file(fpath.string(), std::ios::binary | std::ios::ate);
 
 		if(!file.is_open()) {
-			throw std::runtime_error("Unable to open " + dir.string() + f);
+			throw std::runtime_error("Unable to open " + fpath.string());
 		}
 
 		std::streamsize size = file.tellg();
@@ -82,7 +82,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 		buffer.resize(static_cast<std::size_t>(size) + buffer.size());
 
 		if(!file.read(buffer.data() + write_offset, size)) {
-			throw std::runtime_error("Unable to read " + dir.string() + f);
+			throw std::runtime_error("Unable to read " + fpath.string());
 		}
 
 		write_offset += static_cast<std::size_t>(size);

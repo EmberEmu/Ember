@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,7 +29,7 @@ public:
 	ReconnectChallenge() : Packet(Opcode::CMD_AUTH_RECONNECT_CHALLENGE) {}
 	Result result;
 	std::array<Botan::byte, RAND_LENGTH> salt;
-	std::array<Botan::byte, RAND_LENGTH> rand2; // probably another salt for client integrity checking, todo
+	std::array<Botan::byte, RAND_LENGTH> rand2;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -47,8 +47,6 @@ public:
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
-		BOOST_ASSERT_MSG(rand.size() == RAND_LENGTH, "CMD_RECONNECT_CHALLENGE rand != RAND_LENGTH");
-
 		stream << opcode;
 		stream << result;
 		stream.put(salt.data(), salt.size());
