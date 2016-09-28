@@ -15,6 +15,7 @@
 #include <memory>
 #include <utility>
 #include <cstddef>
+#include <cmath>
 #include <ctime>
 
 namespace ember {
@@ -163,7 +164,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
 	auto time = std::time(NULL);
 	std::uint64_t now = static_cast<std::uint64_t>(time);
-	std::uint64_t step = static_cast<std::uint64_t>((floor(now / 30))) + interval;
+	std::uint64_t step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
 	auto sha160 = std::make_unique<Botan::SHA_160>();
 	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
