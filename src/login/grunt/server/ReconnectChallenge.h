@@ -29,7 +29,7 @@ public:
 	ReconnectChallenge() : Packet(Opcode::CMD_AUTH_RECONNECT_CHALLENGE) {}
 	Result result;
 	std::array<Botan::byte, RAND_LENGTH> salt;
-	std::array<Botan::byte, RAND_LENGTH> rand2;
+	std::array<Botan::byte, RAND_LENGTH> checksum_salt; // client no longer uses this
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -41,7 +41,7 @@ public:
 		stream >> opcode;
 		stream >> result;
 		stream.get(salt.data(), salt.size());
-		stream.get(rand2.data(), rand2.size());
+		stream.get(checksum_salt.data(), checksum_salt.size());
 
 		return (state_ = State::DONE);
 	}
@@ -50,7 +50,7 @@ public:
 		stream << opcode;
 		stream << result;
 		stream.put(salt.data(), salt.size());
-		stream.put(rand2.data(), rand2.size());
+		stream.put(checksum_salt.data(), checksum_salt.size());
 	}
 };
 
