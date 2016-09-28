@@ -56,7 +56,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
                                   const std::initializer_list<std::string>& files,
                                   grunt::System system, grunt::Platform platform) {
 	bfs::path dir(path + grunt::to_string(system) + "_" + grunt::to_string(platform)
-	              + "_" + std::to_string(build) + "\\");
+	              + "_" + std::to_string(build));
 
 	if(!bfs::is_directory(dir)) {
 		return;
@@ -68,7 +68,10 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 
 	// write all of the binary data into a single buffer
 	for(auto& f : files) {
-		std::ifstream file(dir.string() + f, std::ios::binary | std::ios::ate);
+		bfs::path fpath = dir;
+		dir /= f;
+
+		std::ifstream file(fpath.string(), std::ios::binary | std::ios::ate);
 
 		if(!file.is_open()) {
 			throw std::runtime_error("Unable to open " + dir.string() + f);

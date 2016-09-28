@@ -70,7 +70,7 @@ public:
 			stmt->setString(2, data);
 	
 			if(!stmt->executeUpdate()) {
-				throw exception("Unable to save survey data for account ID " + account_id);
+				throw exception("Unable to save survey data for account ID " + std::to_string(account_id));
 			}
 
 			query = "UPDATE users SET survey_request = 0 WHERE id = ?";
@@ -79,7 +79,7 @@ public:
 			stmt->setUInt(1, account_id);
 
 			if(!stmt->executeUpdate()) {
-				throw exception("Unable to save survey data for account ID " + account_id);
+				throw exception("Unable to save survey data for account ID " + std::to_string(account_id));
 			}
 
 			conn->commit();

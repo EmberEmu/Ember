@@ -28,7 +28,7 @@ function(build_dbc_loaders dbc_hdr dbc_src
 
     # concat the paths into a format usable by the tool
     foreach(dir ${definition_dirs})
-        set(definition_dir_str "\"${dir}\" ${definition_dir_str}")
+        set(definition_dir_str \"${dir}\" ${definition_dir_str})
     endforeach()
 
     add_custom_command(

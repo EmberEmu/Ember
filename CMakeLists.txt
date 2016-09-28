@@ -32,6 +32,7 @@ endif()
 
 find_package(Threads REQUIRED)
 
+# todo, breaks with 64-bit
 # http://stackoverflow.com/questions/9742003/platform-detection-in-cmake
 if(WIN32)
 	macro(get_WIN32_WINNT version)

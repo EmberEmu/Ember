@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include "TypeUtils.h"
 #include "Exception.h"
 #include <exception>
@@ -78,7 +76,7 @@ TypeComponents extract_components(const std::string& type) {
 				components.second = std::stoi(matches[2].str());
 
 				if(components.second < 0) {
-					throw std::exception(); //todo
+					throw exception("Negative array size found in " + type);
 				}
 			} catch(std::exception) {
 				throw exception(matches[2].str() + " is not a valid array entry count"

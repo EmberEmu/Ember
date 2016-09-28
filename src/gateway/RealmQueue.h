@@ -51,7 +51,7 @@ class RealmQueue {
 	void set_timer();
 
 public:
-	RealmQueue::RealmQueue(boost::asio::io_service& service) : timer_(service) { }
+	RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb, int priority = 0);
 	void dequeue(const ClientUUID& client);

@@ -63,7 +63,7 @@ class SurveyResult final : public Packet {
 		auto ret = uncompress(reinterpret_cast<Bytef*>(&data[0]), &dest_len, compressed.data(), compressed.size());
 
 		if(ret != Z_OK) {
-			throw bad_packet("Decompression of survey data failed with code " + ret);
+			throw bad_packet("Decompression of survey data failed with code " + std::to_string(ret));
 		}
 		
 		data.resize(dest_len);
@@ -113,7 +113,7 @@ public:
 		auto ret = compress(compressed.data(), &dest_len, reinterpret_cast<const Bytef*>(data.data()), data.size());
 
 		if(ret != Z_OK) {
-			throw bad_packet("Compression of survey data failed with code " + ret);
+			throw bad_packet("Compression of survey data failed with code " + std::to_string(ret));
 		}
 
 		stream << be::native_to_little(static_cast<std::uint16_t>(dest_len));

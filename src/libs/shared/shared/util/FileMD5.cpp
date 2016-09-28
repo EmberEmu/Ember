@@ -26,7 +26,7 @@ Botan::SecureVector<Botan::byte> generate_md5(const std::string& file) {
 		throw std::runtime_error("Could not open file for MD5, " + file);
 	}
 
-	auto remaining = stream.tellg();
+	auto remaining = static_cast<std::size_t>(stream.tellg());
 	stream.seekg(0, std::ios::beg);
 
 	Botan::MD5 hasher;

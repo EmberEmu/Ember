@@ -22,7 +22,7 @@ public:
 			{ "192.88.99.62",   32 }
 		};
 
-		bans.swap(std::make_unique<ember::IPBanCache>(entries));
+		bans = std::make_unique<ember::IPBanCache>(entries);
 	}
 
 	virtual void TearDown() {}

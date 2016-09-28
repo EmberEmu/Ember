@@ -90,7 +90,9 @@ void save_output(const std::string& path, const std::string& name, const std::st
 		}
 	}
 
-	std::ofstream ofs(path + "\\" + name);
+	dir /= name;
+
+	std::ofstream ofs(dir.string());
 	ofs << output;
 
 	if(!ofs.is_open() || !ofs.good()) {

@@ -110,10 +110,10 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 	}
 
 	// we'll continue anyway
-	if(challenge->opcode == grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE
-	   && challenge->protocol_ver != CONNECT_PROTO_VERSION
-	   || challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
-	   && challenge->protocol_ver != RECONNECT_PROTO_VERSION) {
+	if((challenge->opcode == grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE
+	   && challenge->protocol_ver != CONNECT_PROTO_VERSION)
+	   || (challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
+	   && challenge->protocol_ver != RECONNECT_PROTO_VERSION)) {
 		LOG_DEBUG(logger_) << "Unsupported protocol version, "
 		                   << challenge->protocol_ver << LOG_ASYNC;
 	}

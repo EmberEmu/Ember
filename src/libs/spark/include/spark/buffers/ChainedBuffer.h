@@ -243,7 +243,7 @@ public:
 
 	void pop_front() {
 		auto buffer = buffer_from_node(root_.next);
-		size -= buffer->size();
+		size_ -= buffer->size();
 		unlink_node(root_.next);
 	}
 
@@ -307,7 +307,7 @@ public:
 		return const_cast<char&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
 	}
 
-	template<typename std::size_t BlockSize>
+	template<typename std::size_t T>
 	friend class BufferSequence;
 };
 

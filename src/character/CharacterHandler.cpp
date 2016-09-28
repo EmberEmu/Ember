@@ -106,7 +106,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		return;
 	}
 
-	boost::optional<Character>& res = dao_.character(character.name, realm_id);
+	const boost::optional<Character>& res = dao_.character(character.name, realm_id);
 
 	if(res) {
 		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE);
@@ -270,7 +270,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 
-	boost::optional<Character>& match = dao_.character(name, character->realm_id);
+	const boost::optional<Character>& match = dao_.character(name, character->realm_id);
 
 	if(match) {
 		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, boost::none);
@@ -314,7 +314,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	}
 
 	// ensure their name hasn't been taken - if so, force a rename
-	auto name_taken = dao_.character(character->name, character->realm_id);
+	const auto& name_taken = dao_.character(character->name, character->realm_id);
 
 	if(name_taken) {
 		character->flags |= Character::Flags::RENAME;

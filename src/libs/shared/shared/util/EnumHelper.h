@@ -20,7 +20,7 @@ namespace ember { namespace util {
 
 template<typename T>
 auto enum_value(T value) {
-	return static_cast<std::underlying_type<T>::type>(value);
+	return static_cast<typename std::underlying_type<T>::type>(value);
 }
 
 // makes sure converting an enum value to a string isn't going to cause a crash
