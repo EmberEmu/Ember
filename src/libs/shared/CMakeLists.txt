@@ -58,7 +58,7 @@ set(THREADING_SRC
 set(UTIL_SRC
     shared/util/xoroshiro128plus.h
     shared/util/xoroshiro128plus.cpp
-    shared/util/enum_flags.h
+    shared/util/enum_bitmask.h
     shared/util/PCREHelper.h
     shared/util/PCREHelper.cpp
     shared/util/UTF8.h
