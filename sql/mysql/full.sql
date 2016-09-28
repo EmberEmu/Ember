@@ -16,6 +16,21 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `architectures`
+--
+
+DROP TABLE IF EXISTS `architectures`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `architectures` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `value` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_UNIQUE` (`value`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `bans`
 --
 
@@ -46,9 +61,9 @@ CREATE TABLE `characters` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` int(11) unsigned NOT NULL,
   `realm_id` int(11) unsigned NOT NULL,
-  `deletion_date` datetime DEFAULT NULL COMMENT 'Deletion date is stored here and kept as NULL in most cases to allow for a unique constraint to be kept on character names. All names on a realm must be unique for non-deleted characters but multiple deleted characters may have the same name.',
   `name` varchar(45) NOT NULL,
   `internal_name` varchar(45) NOT NULL,
+  `deletion_date` datetime DEFAULT NULL COMMENT 'Deletion date is stored here and kept as NULL in most cases to allow for a unique constraint to be kept character names. All names on a realm must be unique for non-deleted characters but multiple deleted characters may have the same name.',
   `race` tinyint(4) NOT NULL,
   `class` tinyint(4) NOT NULL,
   `gender` tinyint(4) NOT NULL,
@@ -74,7 +89,7 @@ CREATE TABLE `characters` (
   KEY `realm_ref_idx` (`realm_id`),
   CONSTRAINT `account_ref` FOREIGN KEY (`account_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realm_ref` FOREIGN KEY (`realm_id`) REFERENCES `realms` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=429 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=582 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,7 +109,7 @@ CREATE TABLE `guild_characters` (
   KEY `guild_ref_idx` (`guild_id`),
   CONSTRAINT `character_ref` FOREIGN KEY (`character_id`) REFERENCES `characters` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `guild_ref` FOREIGN KEY (`guild_id`) REFERENCES `guilds` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -132,6 +147,66 @@ CREATE TABLE `ip_bans` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `locales`
+--
+
+DROP TABLE IF EXISTS `locales`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `locales` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `value` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_UNIQUE` (`value`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `operating_systems`
+--
+
+DROP TABLE IF EXISTS `operating_systems`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `operating_systems` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `value` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_UNIQUE` (`value`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `patches`
+--
+
+DROP TABLE IF EXISTS `patches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `patches` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `locale` int(10) unsigned DEFAULT NULL,
+  `architecture` int(10) unsigned DEFAULT NULL,
+  `os` int(10) unsigned DEFAULT NULL,
+  `from` int(10) unsigned NOT NULL,
+  `to` int(10) unsigned NOT NULL,
+  `md5` varchar(255) DEFAULT NULL,
+  `size` int(11) DEFAULT '0',
+  `mpq` bit(1) NOT NULL DEFAULT b'0',
+  `rollup` bit(1) NOT NULL DEFAULT b'0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `from_to_unique` (`from`,`to`),
+  KEY `locale_fk_idx` (`locale`),
+  KEY `os_fk_idx` (`os`),
+  KEY `arch_fk_idx` (`architecture`),
+  CONSTRAINT `arch_fk` FOREIGN KEY (`architecture`) REFERENCES `architectures` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `locale_fk` FOREIGN KEY (`locale`) REFERENCES `locales` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `os_fk` FOREIGN KEY (`os`) REFERENCES `operating_systems` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `realms`
 --
 
@@ -149,6 +224,21 @@ CREATE TABLE `realms` (
   `creation_setting` tinyint(3) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `survey_results`
+--
+
+DROP TABLE IF EXISTS `survey_results`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `survey_results` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `survey_id` int(10) unsigned NOT NULL,
+  `data` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -184,8 +274,11 @@ CREATE TABLE `users` (
   `s` varchar(255) NOT NULL,
   `v` varchar(255) NOT NULL,
   `creation_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `subscriber` bit(1) NOT NULL DEFAULT b'0',
-  `pin_auth` bit(1) NOT NULL,
+  `subscriber` bit(1) NOT NULL DEFAULT b'1',
+  `survey_request` bit(1) NOT NULL DEFAULT b'0',
+  `pin_method` int(11) NOT NULL DEFAULT '0',
+  `pin` int(11) DEFAULT NULL,
+  `totp_key` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
@@ -200,4 +293,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-08-19 13:59:06
+-- Dump completed on 2016-09-28  8:04:54
