@@ -241,10 +241,11 @@ public:
 		return buffer_from_node(root_.next);
 	}
 
-	void pop_front() {
+	auto pop_front() {
 		auto buffer = buffer_from_node(root_.next);
 		size_ -= buffer->size();
 		unlink_node(root_.next);
+		return buffer;
 	}
 
 	void push_back(BufferBlock<BlockSize>* buffer) {

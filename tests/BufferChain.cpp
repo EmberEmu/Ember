@@ -136,6 +136,28 @@ TEST(ChainedBufferTest, AttachTail) {
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
 
+TEST(ChainedBufferTest, PopFrontPushBack) {
+	spark::ChainedBuffer<32> chain;
+	spark::BufferBlock<32>* buffer = chain.allocate();
+
+	std::string text("This is a string that is almost certainly longer than 32 bytes");
+	std::size_t written = buffer->write(text.c_str(), text.length());
+
+	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
+	chain.push_back(buffer);
+	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
+	auto front = chain.pop_front();
+	chain.deallocate(front);
+	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
+
+	std::string output; output.resize(written);
+
+	chain.read(&output[0], written);
+	std::cout << output;
+	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
+	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
+}
+
 TEST(ChainedBufferTest, RetrieveTail) {
 	spark::ChainedBuffer<32> chain;
 	std::string text("This string is < 32 bytes"); // could this fail on exotic platforms?
