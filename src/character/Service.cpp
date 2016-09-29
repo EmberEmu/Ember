@@ -96,6 +96,8 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto id = fbb->CreateVector(tracking);
+
 	em::character::RetrieveResponseBuilder rrb(*fbb);
 
 	// painful
@@ -139,12 +141,12 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 	
 	rrb.add_characters(fbb->CreateVector(chars));
 	auto data_offset = rrb.Finish();
+
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::Character);
 	mrb.add_data_type(em::Data::RetrieveResponse);
 	mrb.add_data(data_offset.Union());
 
-	auto id = fbb->CreateVector(tracking);
 	mrb.add_tracking_id(id);
 	mrb.add_tracking_ttl(1);
 
@@ -159,6 +161,8 @@ void Service::send_rename_response(const spark::Link& link, const std::vector<st
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto id = fbb->CreateVector(tracking);
+
 	em::character::RenameResponseBuilder rb(*fbb);
 	rb.add_status(status);
 	rb.add_result(static_cast<std::uint32_t>(result));
@@ -176,7 +180,6 @@ void Service::send_rename_response(const spark::Link& link, const std::vector<st
 	mrb.add_data_type(em::Data::RenameResponse);
 	mrb.add_data(data_offset.Union());
 
-	auto id = fbb->CreateVector(tracking);
 	mrb.add_tracking_id(id);
 	mrb.add_tracking_ttl(1);
 
@@ -191,6 +194,8 @@ void Service::send_response(const spark::Link& link, const std::vector<std::uint
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto id = fbb->CreateVector(tracking);
+
 	em::character::CharResponseBuilder rb(*fbb);
 	rb.add_status(status);
 	rb.add_result(static_cast<std::uint32_t>(result));
@@ -201,7 +206,6 @@ void Service::send_response(const spark::Link& link, const std::vector<std::uint
 	mrb.add_data_type(em::Data::CharResponse);
 	mrb.add_data(data_offset.Union());
 
-	auto id = fbb->CreateVector(tracking);
 	mrb.add_tracking_id(id);
 	mrb.add_tracking_ttl(1);
 

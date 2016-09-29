@@ -93,13 +93,25 @@ void Service::send_register_reply(const spark::Link& link, const em::MessageRoot
 	rb.add_status(status);
 	auto data_offset = rb.Finish();
 
+	flatbuffers::Offset<flatbuffers::Vector<std::uint8_t>> id;
+
+	if(root->tracking_id()) {
+		id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
+	}
+
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::Account);
 	mrb.add_data_type(em::Data::Response);
 	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
-	auto mloc = mrb.Finish();
 
+	if(root->tracking_id()) {
+		mrb.add_tracking_id(id);
+		mrb.add_tracking_ttl(1);
+	}
+
+	//spark_.set_tracking_data(root, mrb, fbb.get());
+	auto mloc = mrb.Finish();
+	
 	fbb->Finish(mloc);
 	spark_.send(link, fbb);
 }
@@ -115,11 +127,23 @@ void Service::send_account_locate_reply(const spark::Link& link, const em::Messa
 	klb.add_account_id(1); // todo
 	auto data_offset = klb.Finish();
 
+	flatbuffers::Offset<flatbuffers::Vector<std::uint8_t>> id;
+
+	if(root->tracking_id()) {
+		id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
+	}
+
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::Account);
 	mrb.add_data_type(em::Data::AccountLookupResponse);
 	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
+
+	if(root->tracking_id()) {
+		mrb.add_tracking_id(id);
+		mrb.add_tracking_ttl(1);
+	}
+
+	//spark_.set_tracking_data(root, mrb, fbb.get());
 	auto mloc = mrb.Finish();
 
 	fbb->Finish(mloc);
@@ -150,11 +174,23 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 	klb.add_account_id(msg->account_id());
 	auto data_offset = klb.Finish();
 
+	flatbuffers::Offset<flatbuffers::Vector<std::uint8_t>> id;
+
+	if(root->tracking_id()) {
+		id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
+	}
+
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::Account);
 	mrb.add_data_type(em::Data::KeyLookupResp);
 	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
+	//spark_.set_tracking_data(root, mrb, fbb.get());
+
+	if(root->tracking_id()) {
+		mrb.add_tracking_id(id);
+		mrb.add_tracking_ttl(1);
+	}
+
 	auto mloc = mrb.Finish();
 
 	fbb->Finish(mloc);
