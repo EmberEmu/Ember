@@ -124,8 +124,8 @@ TEST(ChainedBufferTest, AttachTail) {
 	std::size_t written = buffer->write(text.c_str(), text.length());
 
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
-	chain.skip(32); // skip first block
 	chain.push_back(buffer);
+	chain.skip(32); // skip first block
 	chain.advance_write_cursor(written);
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 
