@@ -45,11 +45,11 @@ public:
 	void set_pin(std::uint64_t pin);
 	bool validate_pin(const std::array<std::uint8_t, HASH_LENGTH>& hash);
 
-	void set_client_hash(std::array<std::uint8_t, HASH_LENGTH> hash) {
+	void set_client_hash(const std::array<std::uint8_t, HASH_LENGTH>& hash) {
 		client_hash_ = hash;
 	}
 
-	void set_client_salt(std::array<std::uint8_t, SALT_LENGTH> salt) {
+	void set_client_salt(const std::array<std::uint8_t, SALT_LENGTH>& salt) {
 		client_salt_ = salt;
 	}
 

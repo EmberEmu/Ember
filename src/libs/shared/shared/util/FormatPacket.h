@@ -12,12 +12,13 @@
 #include <sstream>
 #include <cstddef>
 #include <cctype>
+#include <cmath>
 
 namespace ember { namespace util {
 
 inline std::string format_packet(const unsigned char* packet, std::size_t size,
                                  unsigned int columns = 16) {
-	auto rows = static_cast<std::size_t>(ceil(size / static_cast<double>(columns)));
+	auto rows = static_cast<std::size_t>(std::ceil(size / static_cast<double>(columns)));
 	std::stringstream buffer;
 	auto offset = 0;
 

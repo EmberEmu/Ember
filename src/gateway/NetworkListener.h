@@ -57,7 +57,8 @@ class NetworkListener {
 				sessions_.start(std::move(client));
 			}
 
-			++index_ %= pool_.size();
+			++index_;
+			index_ %= pool_.size();
 			socket_ = boost::asio::ip::tcp::socket(*pool_.get_service(index_));
 			accept_connection();
 		});

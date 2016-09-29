@@ -105,7 +105,7 @@ void Service::broadcast(messaging::Service service, ServicesMap::Mode mode, Buff
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	const auto& links = services_.peer_services(service, mode);
 
-	for(auto& link : links) {
+	for(const auto& link : links) {
 		/* The weak_ptr should never fail to lock as the link will be removed from the
 		   services map before the network session shared_ptr goes out of scope */
 		auto shared_net = link.net.lock();

@@ -546,23 +546,25 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) 
 	response.result = grunt::Result::FAIL_VERSION_UPDATE;
 	send(response);
 
-	LOG_DEBUG(logger_) << "Initiating patch transfer, " << meta->file_meta.name << LOG_ASYNC;
-	std::ifstream patch(meta->file_meta.path + meta->file_meta.name,
+	auto fmeta = meta->file_meta;
+
+	LOG_DEBUG(logger_) << "Initiating patch transfer, " << fmeta.name << LOG_ASYNC;
+	std::ifstream patch(fmeta.path + fmeta.name,
 	                    std::ios::binary | std::ios::beg);
 
 	if(!patch.is_open()) {
-		LOG_ERROR(logger_) << "Could not open patch, " << meta->file_meta.name << LOG_ASYNC;
+		LOG_ERROR(logger_) << "Could not open patch, " << fmeta.name << LOG_ASYNC;
 	}
 
 	transfer_state_.file = std::move(patch);
 	
 	if(meta->mpq) {
-		meta->file_meta.name = "Patch";
+		fmeta.name = "Patch";
 	}
 
 	metrics_.increment("patches_sent");
 	state_ = State::PATCH_INITIATE;
-	initiate_file_transfer(meta->file_meta);
+	initiate_file_transfer(fmeta);
 }
 
 void LoginHandler::initiate_file_transfer(const FileMeta& meta) {

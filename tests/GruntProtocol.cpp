@@ -332,8 +332,8 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(salt, packet.salt) << "Deserialisation failed (field: salt)";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: unknown)";
-	ASSERT_EQ(expected_bytes, packet.rand2) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(expected_bytes, packet.checksum_salt) << "Deserialisation failed (field: checksum_salt)";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
