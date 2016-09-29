@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -40,9 +40,9 @@ SecureVector<byte> interleaved_hash(SecureVector<byte> hash) {
 	//implemented as described in RFC2945
 	auto begin = std::find_if(hash.begin(), hash.end(), [](byte b) { return b; });
 	begin = std::distance(begin, hash.end()) % 2 == 0? begin : begin + 1;
-	std::size_t index = 0;
+
 	auto bound = std::stable_partition(begin, hash.end(),
-		[&index](int) { return ++index % 2; });
+		[&begin](const auto& x) { return (&x - begin) % 2 == 0; });
 
 	Botan::SHA_160 hasher;
 	SecureVector<byte> g(hasher.process(begin, std::distance(begin, bound)));
