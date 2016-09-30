@@ -35,7 +35,6 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
 #include <shared/util/xoroshiro128plus.h>
-#include <botan/init.h>
 #include <botan/version.h>
 #include <boost/asio/io_service.hpp>
 #include <boost/version.hpp>
