@@ -101,9 +101,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
-	LOG_INFO(logger) << "Initialialising Botan..." << LOG_SYNC;
-	Botan::LibraryInitializer init("thread_safe");
-
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
 	rng.randomize(reinterpret_cast<Botan::byte*>(ember::rng::xorshift::seed),
