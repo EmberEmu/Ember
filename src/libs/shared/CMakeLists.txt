@@ -84,6 +84,8 @@ set(METRICS_SRC
     shared/metrics/MetricsImpl.cpp
     shared/metrics/Monitor.h
     shared/metrics/Monitor.cpp
+    shared/metrics/MetricsPoll.h
+    shared/metrics/MetricsPoll.cpp
 )
 
 set(LIBRARY_SRC
