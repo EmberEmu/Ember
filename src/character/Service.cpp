@@ -98,7 +98,6 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto id = fbb->CreateVector(tracking);
 
-	em::character::RetrieveResponseBuilder rrb(*fbb);
 
 	// painful
 	std::vector<flatbuffers::Offset<em::character::Character>> chars;
@@ -131,7 +130,10 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 			chars.push_back(cbb.Finish());
 		}
 	}
-	
+
+	auto charsvec = fbb->CreateVector(chars);
+
+	em::character::RetrieveResponseBuilder rrb(*fbb);
 	// todo, something weird going on with Flatbuffers - won't set correct status if done above
 	if(characters) {
 		rrb.add_status(em::character::Status::OK);
@@ -139,7 +141,7 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 		rrb.add_status(em::character::Status::UNKNOWN_ERROR);
 	}
 	
-	rrb.add_characters(fbb->CreateVector(chars));
+	rrb.add_characters(charsvec);
 	auto data_offset = rrb.Finish();
 
 	em::MessageRootBuilder mrb(*fbb);
@@ -162,6 +164,7 @@ void Service::send_rename_response(const spark::Link& link, const std::vector<st
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto id = fbb->CreateVector(tracking);
+	auto name = fbb->CreateString(character->name);
 
 	em::character::RenameResponseBuilder rb(*fbb);
 	rb.add_status(status);
@@ -169,7 +172,7 @@ void Service::send_rename_response(const spark::Link& link, const std::vector<st
 
 	if(result == protocol::Result::RESPONSE_SUCCESS) {
 		rb.add_character_id(character->id);
-		rb.add_name(fbb->CreateString(character->name));
+		rb.add_name(name);
 	}
 
 	rb.add_result(static_cast<std::uint32_t>(result));

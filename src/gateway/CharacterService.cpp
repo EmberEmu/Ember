@@ -138,9 +138,10 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	
+	auto name = fbb->CreateString(character.name);
+
 	em::character::CharacterTemplateBuilder cbb(*fbb);
-	cbb.add_name(fbb->CreateString(character.name));
+	cbb.add_name(name);
 	cbb.add_race(character.race);
 	cbb.add_class_(character.class_);
 	cbb.add_gender(character.gender);
@@ -153,8 +154,9 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
+	auto submsg = em::character::CreateCreate(*fbb, account_id, config_.realm->id, fb_char).Union();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Create, em::character::CreateCreate(*fbb, account_id, config_.realm->id, fb_char).Union());
+		em::Data::Create, submsg);
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,
@@ -170,12 +172,13 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-
+	auto fbname = fbb->CreateString(name);
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
+
+	auto submsg = em::character::CreateRename(*fbb, account_id, fbname, config_.realm->id, character_id).Union();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-	                                        em::Data::Rename, em::character::CreateRename(*fbb, account_id,
-	                                        fbb->CreateString(name), config_.realm->id, character_id).Union());
+	                                        em::Data::Rename, submsg);
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_rename_reply, this, std::placeholders::_1,
@@ -191,8 +194,9 @@ void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
+	auto submsg = em::character::CreateRetrieve(*fbb, account_id, config_.realm->id).Union();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Retrieve, em::character::CreateRetrieve(*fbb, account_id, config_.realm->id).Union());
+		em::Data::Retrieve, submsg);
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_retrieve_reply, this, std::placeholders::_1,
@@ -210,8 +214,9 @@ void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
+	auto submsg = em::character::CreateDelete(*fbb, account_id, config_.realm->id, id).Union();
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Delete, em::character::CreateDelete(*fbb, account_id, config_.realm->id, id).Union());
+		em::Data::Delete, submsg);
 	fbb->Finish(msg);
 
 	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,

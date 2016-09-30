@@ -49,23 +49,33 @@ void RealmService::send_realm_status(const spark::Link& link, const em::MessageR
 
 std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status(const em::MessageRoot* root) const {
 	auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
+	auto name = fbb->CreateString(realm_.name);
+	auto ip = fbb->CreateString(realm_.ip);
+	
 	em::realm::RealmStatusBuilder rsb(*fbb);
 	rsb.add_id(realm_.id);
-	rsb.add_name(fbb->CreateString(realm_.name));
-	rsb.add_ip(fbb->CreateString(realm_.ip));
+	rsb.add_name(name);
+	rsb.add_ip(ip);
 	rsb.add_flags(static_cast<std::uint8_t>(realm_.flags));
 	rsb.add_population(realm_.population);
 	rsb.add_zone(static_cast<std::uint8_t>(realm_.zone));
 	rsb.add_type(static_cast<std::uint32_t>(realm_.type));
 	auto data_offset = rsb.Finish();
 
+	flatbuffers::Offset<flatbuffers::Vector<std::uint8_t>> id;
+
+	if(root && root->tracking_id()) {
+		id = fbb->CreateVector(root->tracking_id()->data(), root->tracking_id()->size());
+	}
+
 	em::MessageRootBuilder mrb(*fbb);
 	mrb.add_service(em::Service::RealmStatus);
 	mrb.add_data_type(em::Data::RealmStatus);
 	mrb.add_data(data_offset.Union());
 
-	if(root) {
-		spark_.set_tracking_data(root, mrb, fbb.get());
+	if(root && root->tracking_id()) {
+		mrb.add_tracking_id(id);
+		mrb.add_tracking_ttl(1);
 	}
 
 	auto mloc = mrb.Finish();
