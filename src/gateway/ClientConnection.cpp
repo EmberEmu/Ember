@@ -172,7 +172,7 @@ void ClientConnection::swap_buffers() {
 }
 
 void ClientConnection::set_authenticated(const Botan::BigInt& key) {
-	auto k_bytes = Botan::BigInt::encode_locked(key);
+	auto k_bytes = Botan::BigInt::encode(key);
 	crypto_.set_key(k_bytes);
 	authenticated_ = true;
 }

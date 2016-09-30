@@ -154,7 +154,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	Botan::secure_vector<Botan::byte> k_bytes = Botan::BigInt::encode_locked(key);
+	Botan::secure_vector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
 	std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 
 	Botan::SHA_160 hasher;

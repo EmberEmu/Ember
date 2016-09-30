@@ -20,7 +20,7 @@ Botan::secure_vector<Botan::byte> checksum(const Botan::secure_vector<Botan::byt
 	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
 
 	hmac.set_key(seed);
-	hmac.update(reinterpret_cast<const Botan::byte*>(buffer->data()), buffer->size());
+	hmac.update(buffer->data());
 	return hmac.final();
 }
 

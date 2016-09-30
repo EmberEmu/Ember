@@ -58,7 +58,7 @@ SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, Compl
 	BigInt x = detail::compute_x(identifier_, password_, salt, mode);
 	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
 	return interleave ? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
-	                    : SessionKey(Botan::BigInt::encode_locked(S));
+	                    : SessionKey(Botan::BigInt::encode(S));
 }
 
 BigInt Client::generate_proof(const SessionKey& key) const {

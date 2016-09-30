@@ -17,15 +17,16 @@
  
 namespace ember { namespace srp6 {
 	
-BOOST_STRONG_TYPEDEF(Botan::secure_vector<Botan::byte>, SessionKey);
+BOOST_STRONG_TYPEDEF(std::vector<Botan::byte>, SessionKey);
 
 enum class Compliance { RFC5054, GAME };
 
 namespace detail {
 
-Botan::secure_vector<Botan::byte> interleaved_hash(Botan::secure_vector<Botan::byte> hash);
-Botan::secure_vector<Botan::byte> encode_flip(const Botan::BigInt& val);
+std::vector<Botan::byte> interleaved_hash(std::vector<Botan::byte> hash);
+std::vector<Botan::byte> encode_flip(const Botan::BigInt& val);
 Botan::secure_vector<Botan::byte> encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
+Botan::BigInt decode_flip(std::vector<Botan::byte> val);
 Botan::BigInt decode_flip(Botan::secure_vector<Botan::byte> val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
                         Compliance mode);

@@ -325,7 +325,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 
 bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH_LENGTH>& hash,
                                              const Botan::BigInt& salt, bool reconnect) {
-	auto decoded = Botan::BigInt::encode_locked(salt);
+	auto decoded = Botan::BigInt::encode(salt);
 	std::reverse(decoded.begin(), decoded.end());
 	return validate_client_integrity(hash, decoded.data(), decoded.size(), reconnect);
 }
