@@ -14,18 +14,18 @@
 namespace ember { namespace client_integrity {
 
 Botan::secure_vector<Botan::byte> checksum(const Botan::secure_vector<Botan::byte>& seed,
-                                          const std::vector<char>* buffer) {
+                                           const std::vector<char>* buffer) {
 	auto sha160 = std::make_unique<Botan::SHA_160>();
 	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
 	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
 
 	hmac.set_key(seed);
-	hmac.update(buffer->data());
+	hmac.update(reinterpret_cast<const Botan::byte*>(buffer->data()), buffer->size());
 	return hmac.final();
 }
 
 Botan::secure_vector<Botan::byte> finalise(const Botan::secure_vector<Botan::byte>& checksum,
-                                          const std::uint8_t* client_seed, std::size_t len) {
+                                           const std::uint8_t* client_seed, std::size_t len) {
 	Botan::SHA_160 hasher;
 	hasher.update(client_seed, len);
 	hasher.update(checksum);
