@@ -39,7 +39,7 @@ public:
 		std::uint32_t update_url_crc;
 	};
 
-	Botan::SecureVector<Botan::byte> digest;
+	Botan::secure_vector<Botan::byte> digest;
 	std::uint32_t seed;
 	std::uint32_t id;
 	std::uint32_t security;
@@ -60,7 +60,7 @@ public:
 		stream >> seed;
 
 		digest.resize(DIGEST_LENGTH);
-		stream.get(digest.begin(), DIGEST_LENGTH);
+		stream.get(digest.data(), DIGEST_LENGTH);
 		
 		// handle compressed addon data
 		be::little_uint32_t decompressed_size;
@@ -122,7 +122,7 @@ public:
 		stream << be::native_to_little(unk1);
 		stream << username;
 		stream << be::native_to_little(seed);
-		stream.put(digest.begin(), digest.size());
+		stream.put(digest.data(), digest.size());
 	}
 
 	void set_size(std::uint16_t size) {

@@ -14,12 +14,12 @@
 
 namespace ember { namespace util {
 
-Botan::SecureVector<Botan::byte> generate_md5(const char* data, const std::size_t len) {
+Botan::secure_vector<Botan::byte> generate_md5(const char* data, const std::size_t len) {
 	Botan::MD5 hasher;
 	return hasher.process(reinterpret_cast<const Botan::byte*>(data), len);
 }
 
-Botan::SecureVector<Botan::byte> generate_md5(const std::string& file) {
+Botan::secure_vector<Botan::byte> generate_md5(const std::string& file) {
 	std::ifstream stream(file, std::ios::in | std::ios::binary | std::ios::ate);
 
 	if(!stream.is_open()) {

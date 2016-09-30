@@ -327,7 +327,7 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH
                                              const Botan::BigInt& salt, bool reconnect) {
 	auto decoded = Botan::BigInt::encode(salt);
 	std::reverse(decoded.begin(), decoded.end());
-	return validate_client_integrity(hash, decoded.begin(), decoded.size(), reconnect);
+	return validate_client_integrity(hash, decoded.data(), decoded.size(), reconnect);
 }
 
 bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH_LENGTH>& client_hash,
@@ -347,11 +347,11 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH
 		return false;
 	}
 
-	Botan::SecureVector<Botan::byte> hash;
+	Botan::secure_vector<Botan::byte> hash;
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		Botan::SecureVector<Botan::byte> checksum(HASH_LENGTH); // all-zero hash
+		Botan::secure_vector<Botan::byte> checksum(HASH_LENGTH); // all-zero hash
 		hash = client_integrity::finalise(checksum, salt, len);
 	} else {
 		auto checksum = client_integrity::checksum(checksum_salt_, *data);
