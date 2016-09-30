@@ -21,8 +21,9 @@ struct Generator {
 		_6144_BIT, _8192_BIT
 	};
 
-	explicit Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g_(g), N_(N) {}
-	Generator(Group group);
+	Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g_(g), N_(N) {}
+	explicit Generator(Group group);
+
 	inline Botan::BigInt prime() const { return N_; }
 	inline Botan::BigInt generator() const { return g_; }
 	inline Botan::BigInt operator()(const Botan::BigInt& x) const {
