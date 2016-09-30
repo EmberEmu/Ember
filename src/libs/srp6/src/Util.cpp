@@ -47,13 +47,13 @@ std::vector<byte> interleaved_hash(std::vector<byte> hash) {
 	begin = std::distance(begin, hash.end()) % 2 == 0? begin : begin + 1;
 
 	auto bound = std::stable_partition(begin, hash.end(),
-		[&begin](const auto& x) { return (&x - begin.base()) % 2 == 0; });
+	    [&begin](const auto& x) { return (&x - &*begin) % 2 == 0; });
 
 	Botan::SHA_160 hasher;
-	secure_vector<byte> g(hasher.process(begin.base(), std::distance(begin, bound)));
-	secure_vector<byte> h(hasher.process(bound.base(), std::distance(bound, hash.end())));
-	std::vector<byte> final; //todo - when Botan 1.11 works on msvc, .reserve!
-	
+	secure_vector<byte> g(hasher.process(&*begin, std::distance(begin, bound)));
+	secure_vector<byte> h(hasher.process(&*bound, std::distance(bound, hash.end())));
+	std::vector<byte> final;
+
 	for(std::size_t i = 0, j = g.size(); i < j; ++i) {
 		final.push_back(g[i]);
 		final.push_back(h[i]);
