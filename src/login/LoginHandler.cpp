@@ -9,6 +9,7 @@
 #include "LoginHandler.h"
 #include "Patcher.h"
 #include "grunt/Packets.h"
+#include <shared/util/EnumHelper.h>
 #include <boost/range/adaptor/map.hpp>
 #include <stdexcept>
 #include <utility>
@@ -276,7 +277,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	} else {
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(res.first)
+		LOG_ERROR(logger_) << util::fb_status(res.first, messaging::account::EnumNamesStatus())
 		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
 	
@@ -478,7 +479,7 @@ void LoginHandler::on_session_write(RegisterSessionAction* action) {
 	} else {
 		metrics_.increment("login_internal_failure");
 		response = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << messaging::account::EnumNameStatus(result)
+		LOG_ERROR(logger_) << util::fb_status(result, messaging::account::EnumNamesStatus())
 		                   << " from peer during login" << LOG_ASYNC;
 	}
 

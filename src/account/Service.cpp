@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include <shared/util/EnumHelper.h>
 
 namespace em = ember::messaging;
 
@@ -161,7 +162,7 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 	spark_.send(link, fbb);
 
 	LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "
-	<< em::account::EnumNameStatus(status) << LOG_ASYNC;
+		<< util::fb_status(status, messaging::account::EnumNamesStatus()) << LOG_ASYNC;
 }
 
 } // ember
