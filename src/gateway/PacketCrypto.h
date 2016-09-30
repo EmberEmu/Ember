@@ -18,14 +18,14 @@
 namespace ember {
 
 class PacketCrypto {
-	Botan::SecureVector<Botan::byte> key_;
+	Botan::secure_vector<Botan::byte> key_;
 	std::uint8_t send_i_ = 0;
 	std::uint8_t send_j_ = 0;
 	std::uint8_t recv_i_ = 0;
 	std::uint8_t recv_j_ = 0;
 
 public:
-	void set_key(const Botan::SecureVector<Botan::byte>& key) {
+	void set_key(const Botan::secure_vector<Botan::byte>& key) {
 		key_ = key;
 	}
 

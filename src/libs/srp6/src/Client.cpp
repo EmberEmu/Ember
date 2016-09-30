@@ -14,7 +14,7 @@
 #include <utility>
 
 using Botan::BigInt;
-using Botan::SecureVector;
+using Botan::secure_vector;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
@@ -27,7 +27,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, std:
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
                : identifier_(std::move(identifier)), password_(std::move(password)),
                  gen_(std::move(gen)), a_(a) {
-	A_ = gen(a_) /* % N */;
+	A_ = gen_(a_) /* % N */;
 
 	if(srp6a) {
 		k_ = std::move(detail::compute_k(gen_.generator(), gen_.prime()));
@@ -58,7 +58,7 @@ SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, Compl
 	BigInt x = detail::compute_x(identifier_, password_, salt, mode);
 	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
 	return interleave ? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
-	                    : SessionKey(Botan::BigInt::encode(S));
+	                    : SessionKey(Botan::BigInt::encode_locked(S));
 }
 
 BigInt Client::generate_proof(const SessionKey& key) const {

@@ -140,7 +140,7 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 
 	if(key) {
 		auto encoded_key = Botan::BigInt::encode(*key);
-		klb.add_key(fbb->CreateVector(encoded_key.begin(), encoded_key.size()));
+		klb.add_key(fbb->CreateVector(encoded_key.data(), encoded_key.size()));
 		status = em::account::Status::OK;
 	} else {
 		status = em::account::Status::SESSION_NOT_FOUND;

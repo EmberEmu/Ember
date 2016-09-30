@@ -18,6 +18,7 @@
 #include <utility>
 #include <cstdint>
 #include <cstddef>
+#include <botan/bigint.h>
 
 namespace ember {
 

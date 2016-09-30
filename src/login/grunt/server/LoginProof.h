@@ -93,9 +93,9 @@ public:
 			return;
 		}
 
-		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
+		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(bytes.data(), bytes.size());
 		stream << be::native_to_little(survey_id);
 	
 	}
