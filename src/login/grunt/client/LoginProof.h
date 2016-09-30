@@ -171,13 +171,13 @@ public:
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 
-		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
+		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(bytes.data(), bytes.size());
 
 		bytes = Botan::BigInt::encode_1363(M1, M1_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(bytes.data(), bytes.size());
 
 		stream.put(client_checksum.data(), client_checksum.size());
 

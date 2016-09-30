@@ -11,7 +11,7 @@
 
 namespace ember { namespace util {
 
-Botan::SecureVector<Botan::byte> generate_md5(const char* data, const std::size_t len);
-Botan::SecureVector<Botan::byte> generate_md5(const std::string& file);
+Botan::secure_vector<Botan::byte> generate_md5(const char* data, const std::size_t len);
+Botan::secure_vector<Botan::byte> generate_md5(const std::string& file);
 
 }} // util, ember

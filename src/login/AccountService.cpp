@@ -110,7 +110,7 @@ void AccountService::register_session(std::uint32_t account_id, const srp6::Sess
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto uuid = generate_uuid();
 	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto f_key = fbb->CreateVector(key.t.begin(), key.t.size());
+	auto f_key = fbb->CreateVector(key.t.data(), key.t.size());
 	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Account, uuid_bytes, 0,
 		em::Data::RegisterKey, em::account::CreateRegisterKey(*fbb, account_id, f_key).Union());
 	fbb->Finish(msg);

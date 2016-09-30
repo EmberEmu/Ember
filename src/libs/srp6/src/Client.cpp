@@ -14,7 +14,7 @@
 #include <utility>
 
 using Botan::BigInt;
-using Botan::SecureVector;
+using Botan::secure_vector;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
@@ -27,7 +27,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, std:
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
                : identifier_(std::move(identifier)), password_(std::move(password)),
                  gen_(std::move(gen)), a_(a) {
-	A_ = gen(a_) /* % N */;
+	A_ = gen_(a_) /* % N */;
 
 	if(srp6a) {
 		k_ = std::move(detail::compute_k(gen_.generator(), gen_.prime()));

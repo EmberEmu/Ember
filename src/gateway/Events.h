@@ -14,6 +14,7 @@
 #include <shared/database/objects/Character.h>
 #include <spark/temp/Account_generated.h>
 #include <spark/temp/Character_generated.h>
+#include <botan/bigint.h>
 #include <vector>
 #include <utility>
 #include <cstdint>

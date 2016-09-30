@@ -133,9 +133,9 @@ public:
 			return; // don't send the rest of the fields
 		}
 		
-		Botan::SecureVector<Botan::byte> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
+		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(bytes.data(), bytes.size());
 
 		stream << g_len;
 		stream << g;
@@ -143,11 +143,11 @@ public:
 
 		bytes = Botan::BigInt::encode_1363(N, PRIME_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(bytes.data(), bytes.size());
 
 		bytes = Botan::BigInt::encode_1363(s, SALT_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.begin(), bytes.size());
+		stream.put(bytes.data(), bytes.size());
 
 		stream.put(checksum_salt.data(), checksum_salt.size());
 		stream << two_factor_auth;
