@@ -159,12 +159,19 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+
+	flatbuffers::Offset<flatbuffers::Vector<std::uint8_t>> vector_key;
+
+	if(key) {
+		auto encoded_key = Botan::BigInt::encode(*key);
+		vector_key = fbb->CreateVector(encoded_key.begin(), encoded_key.size());
+	}
+
 	em::account::KeyLookupRespBuilder klb(*fbb);
 	em::account::Status status;
 
 	if(key) {
-		auto encoded_key = Botan::BigInt::encode(*key);
-		klb.add_key(fbb->CreateVector(encoded_key.begin(), encoded_key.size()));
+		klb.add_key(vector_key);
 		status = em::account::Status::OK;
 	} else {
 		status = em::account::Status::SESSION_NOT_FOUND;

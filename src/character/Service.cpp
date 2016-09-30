@@ -98,15 +98,16 @@ void Service::send_character_list(const spark::Link& link, const std::vector<std
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto id = fbb->CreateVector(tracking);
 
-
 	// painful
 	std::vector<flatbuffers::Offset<em::character::Character>> chars;
 
 	if(characters) {
 		for(auto character : *characters) {
+			auto name = fbb->CreateString(character.name);
+
 			em::character::CharacterBuilder cbb(*fbb);
 			cbb.add_id(character.id);
-			cbb.add_name(fbb->CreateString(character.name));
+			cbb.add_name(name);
 			cbb.add_race(character.race);
 			cbb.add_class_(character.class_);
 			cbb.add_gender(character.gender);
