@@ -10,8 +10,6 @@
 
 namespace ember { 
 
-
-
 MetricsPoll::MetricsPoll(boost::asio::io_service& service, Metrics& metrics)
                          : timer_(service), metrics_(metrics) {
 	timer_.expires_from_now(FREQUENCY);
