@@ -53,6 +53,7 @@ std::vector<byte> interleaved_hash(std::vector<byte> hash) {
 	secure_vector<byte> g(hasher.process(&*begin, std::distance(begin, bound)));
 	secure_vector<byte> h(hasher.process(&*bound, std::distance(bound, hash.end())));
 	std::vector<byte> final;
+	final.reserve(g.size());
 
 	for(std::size_t i = 0, j = g.size(); i < j; ++i) {
 		final.push_back(g[i]);
