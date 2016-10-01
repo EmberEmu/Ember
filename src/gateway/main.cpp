@@ -22,6 +22,7 @@
 #include <conpool/drivers/AutoSelect.h>
 #include <logger/Logging.h>
 #include <shared/Banner.h>
+#include <shared/util/EnumHelper.h>
 #include <shared/Version.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
@@ -40,17 +41,22 @@
 
 const std::string APP_NAME = "Realm Gateway";
 
-namespace el = ember::log;
-namespace es = ember::spark;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
-using namespace std::chrono_literals;
 
-void launch(const po::variables_map& args, el::Logger* logger);
-unsigned int check_concurrency(el::Logger* logger); // todo, move
+using namespace std::chrono_literals;
+using namespace std::placeholders;
+
+namespace ember {
+
+void launch(const po::variables_map& args, log::Logger* logger);
+unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
+void pool_log_callback(ep::Severity, const std::string& message, log::Logger* logger);
+std::string category_name(const po::variables_map& args, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
+
+} // ember
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -61,13 +67,15 @@ void pool_log_callback(ep::Severity, const std::string& message, el::Logger* log
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner(APP_NAME);
-	ember::util::set_window_title(APP_NAME);
+	using namespace ember;
+
+	print_banner(APP_NAME);
+	util::set_window_title(APP_NAME);
 
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = ember::util::init_logging(args);
-	el::set_global_logger(logger.get());
+	auto logger = util::init_logging(args);
+	log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	launch(args, logger.get());
@@ -77,7 +85,9 @@ int main(int argc, const char* argv[]) try {
 	return 1;
 }
 
-void launch(const po::variables_map& args, el::Logger* logger) try {
+namespace ember {
+
+void launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
@@ -87,14 +97,14 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	rng.randomize((Botan::byte*)ember::rng::xorshift::seed, sizeof(ember::rng::xorshift::seed));
 
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
-	ember::dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
+	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load({"AddonData"});
+	auto dbc_store = loader.load({"AddonData", "Cfg_Categories"});
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
-	ember::dbc::link(dbc_store);
+	dbc::link(dbc_store);
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	auto db_config_path = args["database.config_path"].as<std::string>();
@@ -102,7 +112,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
-	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
+	pool.logging_callback(std::bind(pool_log_callback, _1, _2, logger));
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto realm_dao = ember::dal::realm_dao(pool);
@@ -113,12 +123,17 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	if(!realm) {
 		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
 	}
+	
+	// Validate category & region
+	auto cat_name = category_name(args, dbc_store.cfg_categories);
 
-	LOG_INFO(logger) << "Serving as gateway for " << realm->name << LOG_SYNC;
-	ember::util::set_window_title(APP_NAME + " - " + realm->name);
+	LOG_INFO(logger) << "Serving as gateway for " << realm->name
+	                 << " (" << cat_name << ")" << LOG_SYNC;
+
+	util::set_window_title(APP_NAME + " - " + realm->name);
 
 	// Set config
-	ember::Config config;
+	Config config;
 	config.max_slots = args["realm.max_slots"].as<unsigned int>();
 	config.list_zone_hide = args["quirks.list_zone_hide"].as<bool>();
 	config.realm = realm.get_ptr();
@@ -132,10 +147,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start ASIO service pool
 	LOG_INFO(logger) << "Starting service pool with " << concurrency << " threads..." << LOG_SYNC;
-	ember::ServicePool service_pool(concurrency);
+	ServicePool service_pool(concurrency);
 
 	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
-	ember::EventDispatcher dispatcher(service_pool);
+	EventDispatcher dispatcher(service_pool);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();
@@ -143,27 +158,27 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_group = args["spark.multicast_group"].as<std::string>();
 	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
-	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
 	auto& service = service_pool.get_service();
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
-	es::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
-	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
+	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
+	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger, spark_filter);
 
-	ember::RealmQueue queue_service(service_pool.get_service());
-	ember::RealmService realm_svc(*realm, spark, discovery, logger);
-	ember::AccountService acct_svc(spark, discovery, logger);
-	ember::CharacterService char_svc(spark, discovery, config, logger);
+	RealmQueue queue_service(service_pool.get_service());
+	RealmService realm_svc(*realm, spark, discovery, logger);
+	AccountService acct_svc(spark, discovery, logger);
+	CharacterService char_svc(spark, discovery, config, logger);
 	
 	// set services - not the best design pattern but it'll do for now
-	ember::Locator::set(&dispatcher);
-	ember::Locator::set(&queue_service);
-	ember::Locator::set(&realm_svc);
-	ember::Locator::set(&acct_svc);
-	ember::Locator::set(&char_svc);
-	ember::Locator::set(&config);
+	Locator::set(&dispatcher);
+	Locator::set(&queue_service);
+	Locator::set(&realm_svc);
+	Locator::set(&acct_svc);
+	Locator::set(&char_svc);
+	Locator::set(&config);
 	
 	// Start network listener
 	auto interface = args["network.interface"].as<std::string>();
@@ -172,7 +187,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
-	ember::NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
+	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
 		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
@@ -192,6 +207,24 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	service_pool.run();
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+}
+
+std::string category_name(const po::variables_map& args, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
+	auto category = static_cast<dbc::Cfg_Categories::Category>(
+		args["realm.category"].as<std::int32_t>()
+	);
+
+	auto region = static_cast<dbc::Cfg_Categories::Region>(
+		args["realm.region"].as<std::int32_t>()
+	);
+
+	for(auto& record : dbc.values()) {
+		if(record.category == category && record.region == region) {
+			return record.name.en_gb;
+		}
+	}
+
+	throw std::invalid_argument("Unknown realm category & region combination in configuration");
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
@@ -214,6 +247,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("realm.id", po::value<unsigned int>()->required())
 		("realm.max_slots", po::value<unsigned int>()->required())
 		("realm.reserved_slots", po::value<unsigned int>()->required())
+		("realm.category", po::value<std::int32_t>()->required())
+		("realm.region", po::value<std::int32_t>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("spark.multicast_interface", po::value<std::string>()->required())
@@ -271,7 +306,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return std::move(options);
 }
 
-void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, const std::string& message, log::Logger* logger) {
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {
@@ -301,7 +336,7 @@ void pool_log_callback(ep::Severity severity, const std::string& message, el::Lo
  * in the machine but the standard doesn't guarantee that it won't be zero.
  * In that case, we just set the minimum concurrency level to two.
  */
-unsigned int check_concurrency(el::Logger* logger) {
+unsigned int check_concurrency(log::Logger* logger) {
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
@@ -315,3 +350,5 @@ unsigned int check_concurrency(el::Logger* logger) {
 	return concurrency;
 #endif
 }
+
+} // ember
