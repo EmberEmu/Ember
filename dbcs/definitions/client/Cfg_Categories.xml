@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>Cfg_Categories</name>
+	<alias>cfg_categories</alias>
+
+	<enum>
+		<type>int32</type>
+		<name>Tab</name>
+		<options>
+			<!-- US -->
+			<option name="UNITED_STATES" value="1" />
+			<option name="OCEANIC"       value="5" />
+
+			<!-- KOREA -->
+			<option name="KOREA"         value="1" />
+
+			<!-- EUROPE -->
+			<option name="ENGLISH"       value="1" />
+			<option name="GERMAN"        value="2" />
+			<option name="FRENCH"        value="3" />
+			<option name="SPANISH"       value="5" />
+
+			<!-- TAIWAN -->
+			<option name="TAIWAN"        value="1" />
+
+			<!-- CHINA -->
+			<option name="CHINA"         value="1" />
+			<option name="CN3"           value="2" />
+			<option name="CN7"           value="3" />
+
+			<!-- TEST -->
+			<option name="TEST_SERVER"   value="1" />
+			<option name="OCEANIC_TEST"  value="5" />
+
+			<!-- QA -->
+			<option name="QA_SERVER"     value="1" />
+		</options>
+	</enum>
+
+	<enum>
+		<type>int32</type>
+		<name>Region</name>
+		<options>
+			<option name="UNITED_STATES" value="1" />
+			<option name="KOREA"         value="2" />
+			<option name="EUROPE"        value="3" />
+			<option name="TAIWAN"        value="4" />
+			<option name="CHINA"         value="5" />
+			<option name="TEST_SERVER"   value="99" />
+			<option name="QA_SERVER"     value="101" />
+		</options>
+	</enum>
+
+
+	<field>
+		<type>Tab</type>
+		<name>tab</name>
+	</field>
+
+	<field>
+		<type>Region</type>
+		<name>region</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>name</name>
+	</field>
+</dbc>
