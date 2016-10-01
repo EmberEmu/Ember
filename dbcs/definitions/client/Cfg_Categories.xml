@@ -51,7 +51,6 @@
 		</options>
 	</enum>
 
-
 	<field>
 		<type>Category</type>
 		<name>category</name>

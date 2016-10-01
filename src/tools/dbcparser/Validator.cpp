@@ -388,8 +388,8 @@ void Validator::validate_enum_options(const types::Enum* def) {
 			[option](std::pair<std::string, std::string> i) {
 				return i.second == option.second;
 		}) != options.end()) {
-			throw exception("Duplicate index found for " + option.first + " in " + def->name
-			                + ": " + option.second);
+			LOG_DEBUG_GLOB << "Duplicate index found for " << option.first << " in " << def->name
+			               << ": " << option.second << LOG_ASYNC;
 		}
 
 		options[option.first] = option.second;
