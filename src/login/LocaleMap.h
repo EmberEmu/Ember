@@ -9,8 +9,8 @@
 #pragma once
 
 #include "grunt/Magic.h"
-#include <unordered_map>
 #include <dbcreader/MemoryDefs.h>
+#include <unordered_map>
 
 namespace ember {
 

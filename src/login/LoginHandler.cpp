@@ -121,7 +121,7 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 	}
 
 	if(challenge->game != grunt::Game::WoW) {
-		LOG_DEBUG(logger_) << "Bad game magic from client"  << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "Bad game magic from client" << LOG_ASYNC;
 		return;
 	}
 
@@ -306,10 +306,8 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	if(user_->pin_method() == PINMethod::FIXED) {
 		pin_auth_.set_pin(user_->pin());
 		result = pin_auth_.validate_pin(packet->pin_hash);
-	}
-
-	if(user_->pin_method() == PINMethod::TOTP) {
-		for(auto interval = -1; interval < 2; ++interval) { // try time intervals -1 to +1
+	} else if(user_->pin_method() == PINMethod::TOTP) {
+		for(int interval = -1; interval < 2; ++interval) { // try time intervals -1 to +1
 			pin_auth_.set_pin(PINAuthenticator::generate_totp_pin(user_->totp_token(), interval));
 
 			if(pin_auth_.validate_pin(packet->pin_hash)) {
@@ -317,6 +315,9 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 				break;
 			}
 		}
+	} else {
+		LOG_ERROR(logger_) << "Unknown TOTP method, "
+		                   << util::enum_value(user_->pin_method()) << LOG_ASYNC;
 	}
 
 	LOG_DEBUG(logger_) << "PIN authentication for " << user_->username()
@@ -393,7 +394,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 		} else if(!user_->subscriber()) {
 			result = grunt::Result::FAIL_NO_TIME;
 		/*} else if(parental_controls) {
-			res = grunt::Result::FAIL_PARENTAL_CONTROLS;*/
+			result = grunt::Result::FAIL_PARENTAL_CONTROLS;*/
 		} else {
 			result = grunt::Result::SUCCESS;
 		}
@@ -405,7 +406,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 
 		auto action = std::make_shared<RegisterSessionAction>(
 			acct_svc_, user_->id(),
-		    login_auth_->session_key()
+			login_auth_->session_key()
 		);
 
 		execute_async(action);
@@ -442,7 +443,7 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
-			<< ": " << e.what() << LOG_ASYNC;
+		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
 	bool trigger_survey = false;
@@ -524,7 +525,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	// look the client's locale up for sending the correct realm category
 	auto region = locale_map.find(challenge_.locale);
 
-	if(locale_enforce_ && region == locale_map.end()) {
+	if(region == locale_map.end() && locale_enforce_) {
 		return;
 	}
 
@@ -532,7 +533,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		if(!locale_enforce_ || realm.region == region->second) {
+		if(realm.region == region->second || !locale_enforce_) {
 			response.realms.push_back({ realm, char_count_[realm.id] });
 		}
 	}
@@ -559,11 +560,11 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge* challenge) 
 	auto fmeta = meta->file_meta;
 
 	LOG_DEBUG(logger_) << "Initiating patch transfer, " << fmeta.name << LOG_ASYNC;
-	std::ifstream patch(fmeta.path + fmeta.name,
-	                    std::ios::binary | std::ios::beg);
+	std::ifstream patch(fmeta.path + fmeta.name, std::ios::binary | std::ios::beg);
 
 	if(!patch.is_open()) {
 		LOG_ERROR(logger_) << "Could not open patch, " << fmeta.name << LOG_ASYNC;
+		return;
 	}
 
 	transfer_state_.file = std::move(patch);
@@ -669,7 +670,7 @@ void LoginHandler::transfer_chunk() {
 	response.size = read_size;
 
 	if(state_ == State::SURVEY_TRANSFER) {
-		auto* survey_mpq = patcher_.survey_data(challenge_.platform, challenge_.os).data();
+		auto survey_mpq = patcher_.survey_data(challenge_.platform, challenge_.os).begin();
 		survey_mpq += transfer_state_.offset;
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {
