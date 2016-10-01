@@ -14,6 +14,6 @@
 
 namespace ember {
 
-extern std::unordered_map<grunt::Locale, dbc::Cfg_Categories::Region> locale_map;
+extern const std::unordered_map<grunt::Locale, dbc::Cfg_Categories::Region> locale_map;
 
 };

@@ -10,7 +10,7 @@
 
 namespace ember {
 
-std::unordered_map<grunt::Locale, dbc::Cfg_Categories::Region> locale_map {
+const std::unordered_map<grunt::Locale, dbc::Cfg_Categories::Region> locale_map {
 	{ grunt::Locale::enGB, dbc::Cfg_Categories::Region::EUROPE },
 	{ grunt::Locale::deDE, dbc::Cfg_Categories::Region::EUROPE },
 	{ grunt::Locale::frFR, dbc::Cfg_Categories::Region::EUROPE },
