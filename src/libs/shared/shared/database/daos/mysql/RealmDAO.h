@@ -29,7 +29,8 @@ public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<Realm> get_realms() const override final try {
-		const std::string query = "SELECT id, name, ip, type, flags, zone, population FROM realms";
+		const std::string query = "SELECT id, name, ip, type, flags, category, "
+		                          "region, creation_setting, population FROM realms";
 
 		auto conn = pool_.wait_connection(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -42,7 +43,9 @@ public:
 			           static_cast<float>(res->getDouble("population")),
 		               static_cast<Realm::Type>(res->getUInt("type")),
 					   static_cast<Realm::Flags>(res->getUInt("flags")),
-		               static_cast<Realm::Zone>(res->getUInt("zone"))};
+			           static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
+		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region"))};
+		               static_cast<Realm::CreationSetting>(res->getUInt("creation_setting")),
 			realms.emplace_back(std::move(temp));
 		}
 
@@ -52,9 +55,10 @@ public:
 	}
 
 	boost::optional<Realm> get_realm(std::uint32_t id) const override final try {
-		const std::string query = "SELECT id, name, ip, type, flags, zone, population FROM realms "
+		const std::string query = "SELECT id, name, ip, type, flags, category, "
+		                          "region, creation_setting, population FROM realms "
 		                          "WHERE id = ?";
-
+	
 		auto conn = pool_.wait_connection(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setInt(1, id);
@@ -67,8 +71,10 @@ public:
 			           static_cast<float>(res->getDouble("population")),
 		               static_cast<Realm::Type>(res->getUInt("type")),
 					   static_cast<Realm::Flags>(res->getUInt("flags")),
-		               static_cast<Realm::Zone>(res->getUInt("zone"))};
-			return boost::optional<Realm>(std::move(temp));
+			           static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
+		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region"))};
+		               static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"));
+			return temp;
 		}
 
 		return boost::none;

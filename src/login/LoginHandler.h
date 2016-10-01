@@ -76,6 +76,7 @@ class LoginHandler {
 	Botan::secure_vector<Botan::byte> checksum_salt_;
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
+	bool locale_enforce_;
 
 	void transfer_chunk();
 	void initiate_file_transfer(const FileMeta& meta);
@@ -120,10 +121,12 @@ public:
 
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
 	             const IntegrityData* exe_data, log::Logger* logger,
-	             const RealmList& realm_list, std::string source, Metrics& metrics)
+	             const RealmList& realm_list, std::string source, Metrics& metrics,
+	             bool locale_enforce)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics),
-	               pin_auth_(logger), exe_data_(exe_data), transfer_state_{} { }
+	               pin_auth_(logger), exe_data_(exe_data), transfer_state_{},
+				   locale_enforce_(locale_enforce) { }
 };
 
 } // ember

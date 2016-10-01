@@ -116,7 +116,7 @@ source_group("Threading" FILES ${THREADING_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 source_group("Metrics" FILES ${METRICS_SRC})
 
-include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
+include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp ${PROJECT_BINARY_DIR}/src)
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(${LIBRARY_NAME} logging conpool)

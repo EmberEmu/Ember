@@ -55,6 +55,7 @@ set(LIBRARY_HDR
     ExecutablesChecksum.h
     PatchGraph.h
     IntegrityData.h
+    LocaleMap.h
     )
 
 set(LIBRARY_SRC
@@ -71,15 +72,16 @@ set(LIBRARY_SRC
     ExecutablesChecksum.cpp
     PatchGraph.cpp
     IntegrityData.cpp
+    LocaleMap.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
-target_link_libraries(${LIBRARY_NAME} spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} dbcreader spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark conpool srp6 logging shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} dbcreader spark conpool srp6 logging shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/login/ DESTINATION ${CMAKE_INSTALL_PREFIX})

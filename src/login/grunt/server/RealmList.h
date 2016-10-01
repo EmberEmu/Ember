@@ -100,7 +100,10 @@ class RealmList final : public Packet {
 
 			stream >> realm.population;
 			stream >> num_chars;
-			stream >> realm.zone;
+
+			std::uint8_t realm_cat;
+			stream >> realm_cat;
+			realm.category = realm.category;
 
 			std::uint8_t realm_id;
 			stream >> realm_id;
@@ -173,7 +176,7 @@ public:
 			stream << realm.ip;
 			stream << be::native_to_little(realm.population);
 			stream << static_cast<std::uint8_t>(entry.characters);
-			stream << realm.zone;
+			stream << static_cast<std::uint8_t>(realm.category);
 			stream << std::uint8_t(realm.id);
 		}
 

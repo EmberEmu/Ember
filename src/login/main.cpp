@@ -205,7 +205,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start login server
 	ember::LoginHandlerBuilder builder(logger, patcher, exe_data.get(), *user_dao, acct_svc,
-	                                   realm_list, *metrics);
+	                                   realm_list, *metrics, args["locale.enforce"].as<bool>());
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
 	auto interface = args["network.interface"].as<std::string>();
@@ -280,6 +280,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Config file options
 	po::options_description config_opts("Login configuration options");
 	config_opts.add_options()
+		("locale.enforce", po::bool_switch()->required())
 		("patches.bin_path", po::value<std::string>()->required())
 		("survey.enabled", po::bool_switch()->default_value(false))
 		("survey.bin_path", po::value<std::string>()->required())

@@ -23,7 +23,8 @@ table RealmStatus {
 	population:float;
 	type:uint;
 	flags:ubyte;
-	zone:ubyte;
+	category:int;
+	region:int;
 }
 
 

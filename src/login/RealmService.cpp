@@ -13,9 +13,14 @@ namespace em = ember::messaging;
 
 namespace ember {
 
-RealmService::RealmService(RealmList& realms, spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger)
+RealmService::RealmService(RealmList& realms, spark::Service& spark,
+                           spark::ServiceDiscovery& s_disc, log::Logger* logger)
                            : realms_(realms), spark_(spark), s_disc_(s_disc), logger_(logger) {
-	spark_.dispatcher()->register_handler(this, em::Service::RealmStatus, spark::EventDispatcher::Mode::CLIENT);
+	spark_.dispatcher()->register_handler(
+		this, em::Service::RealmStatus,
+		spark::EventDispatcher::Mode::CLIENT
+	);
+
 	listener_ = std::move(s_disc_.listener(em::Service::RealmStatus,
 	                      std::bind(&RealmService::service_located, this, std::placeholders::_1)));
 	listener_->search();
@@ -52,7 +57,8 @@ void RealmService::handle_realm_status(const spark::Link& link, const em::Messag
 	realm.population = msg->population();
 	realm.type = static_cast<Realm::Type>(msg->type());
 	realm.flags = static_cast<Realm::Flags>(msg->flags());
-	realm.zone = static_cast<Realm::Zone>(msg->zone());
+	realm.category = static_cast<dbc::Cfg_Categories::Category>(msg->category());
+	realm.region = static_cast<dbc::Cfg_Categories::Region>(msg->region());
 	realms_.add_realm(realm);
 
 	LOG_INFO(logger_) << "Updated realm information for " << realm.name << LOG_ASYNC;

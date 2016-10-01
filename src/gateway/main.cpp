@@ -54,7 +54,7 @@ void launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, const std::string& message, log::Logger* logger);
-std::string category_name(const po::variables_map& args, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
+std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
 
 } // ember
 
@@ -125,7 +125,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 	
 	// Validate category & region
-	auto cat_name = category_name(args, dbc_store.cfg_categories);
+	auto cat_name = category_name(*realm, dbc_store.cfg_categories);
 
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name
 	                 << " (" << cat_name << ")" << LOG_SYNC;
@@ -209,22 +209,14 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
-std::string category_name(const po::variables_map& args, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
-	auto category = static_cast<dbc::Cfg_Categories::Category>(
-		args["realm.category"].as<std::int32_t>()
-	);
-
-	auto region = static_cast<dbc::Cfg_Categories::Region>(
-		args["realm.region"].as<std::int32_t>()
-	);
-
+std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
 	for(auto& record : dbc.values()) {
-		if(record.category == category && record.region == region) {
+		if(record.category == realm.category && record.region == realm.region) {
 			return record.name.en_gb;
 		}
 	}
 
-	throw std::invalid_argument("Unknown realm category & region combination in configuration");
+	throw std::invalid_argument("Unknown category/region combination in database");
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
@@ -247,8 +239,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("realm.id", po::value<unsigned int>()->required())
 		("realm.max_slots", po::value<unsigned int>()->required())
 		("realm.reserved_slots", po::value<unsigned int>()->required())
-		("realm.category", po::value<std::int32_t>()->required())
-		("realm.region", po::value<std::int32_t>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("spark.multicast_interface", po::value<std::string>()->required())

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <dbcreader/MemoryDefs.h>
 #include <shared/util/enum_bitmask.h>
 #include <string>
 #include <cstdint>
@@ -38,29 +39,16 @@ struct Realm {
 		PvE, PvP, RP = 6, RPPvP = 8,
 	};
 
-	enum class Zone : std::uint8_t { // these are probably wrong
-		ANY,
-		UNITED_STATES,
-		KOREA,
-		ENGLISH,
-		TAIWAN,
-		CHINA,
-		TEST_SERVER = 99,
-		QA_SERVER = 101,
-	};
-
 	std::uint32_t id;
 	std::string name, ip;
 	float population;
 	Type type;
 	Flags flags;
-	Zone zone;
+	dbc::Cfg_Categories::Category category;
+	dbc::Cfg_Categories::Region region;
 	CreationSetting creation_setting;
 };
 
 ENABLE_BITMASK(Realm::Flags);
-ENABLE_BITMASK(Realm::Type);
-ENABLE_BITMASK(Realm::Zone);
-ENABLE_BITMASK(Realm::CreationSetting);
 
 } //ember

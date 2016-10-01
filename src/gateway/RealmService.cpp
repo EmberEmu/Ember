@@ -7,6 +7,7 @@
  */
 
 #include "RealmService.h"
+#include <shared/util/EnumHelper.h>
 
 namespace em = ember::messaging;
 
@@ -53,10 +54,11 @@ std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status
 	rsb.add_id(realm_.id);
 	rsb.add_name(fbb->CreateString(realm_.name));
 	rsb.add_ip(fbb->CreateString(realm_.ip));
-	rsb.add_flags(static_cast<std::uint8_t>(realm_.flags));
+	rsb.add_flags(util::enum_value(realm_.flags));
 	rsb.add_population(realm_.population);
-	rsb.add_zone(static_cast<std::uint8_t>(realm_.zone));
-	rsb.add_type(static_cast<std::uint32_t>(realm_.type));
+	rsb.add_category(util::enum_value(realm_.category));
+	rsb.add_region(util::enum_value(realm_.region));
+	rsb.add_type(util::enum_value(realm_.type));
 	auto data_offset = rsb.Finish();
 
 	em::MessageRootBuilder mrb(*fbb);

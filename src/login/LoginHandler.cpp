@@ -8,6 +8,7 @@
 
 #include "LoginHandler.h"
 #include "Patcher.h"
+#include "LocaleMap.h"
 #include "grunt/Packets.h"
 #include <shared/util/EnumHelper.h>
 #include <boost/range/adaptor/map.hpp>
@@ -520,12 +521,20 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_REALM_LIST");
 	}
 
-	grunt::server::RealmList response;
+	// look the client's locale up for sending the correct realm category
+	auto region = locale_map.find(challenge_.locale);
 
+	if(locale_enforce_ && region == locale_map.end()) {
+		return;
+	}
+
+	grunt::server::RealmList response;
 	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		response.realms.push_back({ realm, char_count_[realm.id] });
+		if(!locale_enforce_ || realm.region == region->second) {
+			response.realms.push_back({ realm, char_count_[realm.id] });
+		}
 	}
 
 	state_ = State::REQUEST_REALMS;

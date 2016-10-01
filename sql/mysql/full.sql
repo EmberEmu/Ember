@@ -89,7 +89,7 @@ CREATE TABLE `characters` (
   KEY `realm_ref_idx` (`realm_id`),
   CONSTRAINT `account_ref` FOREIGN KEY (`account_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `realm_ref` FOREIGN KEY (`realm_id`) REFERENCES `realms` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=582 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=588 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -219,11 +219,12 @@ CREATE TABLE `realms` (
   `ip` varchar(45) NOT NULL,
   `type` int(11) NOT NULL,
   `flags` int(11) NOT NULL,
-  `zone` int(11) NOT NULL,
   `population` float NOT NULL,
   `creation_setting` tinyint(3) unsigned NOT NULL,
+  `category` int(11) NOT NULL DEFAULT '1',
+  `region` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,4 +294,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-09-28  8:04:54
+-- Dump completed on 2016-10-01  8:59:23
