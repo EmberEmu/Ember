@@ -78,6 +78,9 @@ class LoginChallenge final : public Packet {
 public:
 	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGON_CHALLENGE) {}
 
+	const static int CHALLENGE_VER = 3;
+	const static int RECONNECT_CHALLENGE_VER = 2;
+
 	std::uint8_t protocol_ver = 0;
 	Game game;
 	GameVersion version = {};

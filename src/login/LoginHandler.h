@@ -47,8 +47,6 @@ struct TransferState {
 
 class LoginHandler {
 	const static int HASH_LENGTH = 20;
-	const static int CONNECT_PROTO_VERSION = 3;
-	const static int RECONNECT_PROTO_VERSION = 2;
 
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
@@ -78,24 +76,31 @@ class LoginHandler {
 	TransferState transfer_state_;
 	bool locale_enforce_;
 
-	void transfer_chunk();
+	void initiate_login(const grunt::Packet* packet);
 	void initiate_file_transfer(const FileMeta& meta);
+
 	void handle_transfer_ack(const grunt::Packet* packet, bool survey);
 	void handle_transfer_abort();
-	void send_realm_list(const grunt::Packet* packet);
-	void initiate_login(const grunt::Packet* packet);
 	void handle_login_proof(const grunt::Packet* packet);
 	void handle_reconnect_proof(const grunt::Packet* packet);
+	void handle_survey_result(const grunt::Packet* packet);
+
 	void send_reconnect_proof(grunt::Result result);
 	void send_login_proof(grunt::Result result, bool survey = false);
-	void build_login_challenge(grunt::server::LoginChallenge& packet);
+	void send_realm_list(const grunt::Packet* packet);
 	void send_login_challenge(FetchUserAction* action);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
+	void build_login_challenge(grunt::server::LoginChallenge& packet);
+
 	void on_character_data(FetchCharacterCounts* action);
 	void on_session_write(RegisterSessionAction* action);
-	bool validate_pin(const grunt::client::LoginProof* packet);
-	void handle_survey_result(const grunt::Packet* packet);
 	void on_survey_write(SaveSurveyAction* action);
+
+	void transfer_chunk();
+	void set_transfer_offset(const grunt::Packet* packet);
+
+	bool validate_pin(const grunt::client::LoginProof* packet);
+	bool validate_protocol_version(const grunt::client::LoginChallenge* challenge);
 
 	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
 								   const Botan::BigInt& client_salt, bool reconnect);

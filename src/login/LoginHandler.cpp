@@ -111,11 +111,11 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_LOGIN/RECONNECT_CHALLENGE");
 	}
 
-	// we'll continue anyway
-	if((challenge->opcode == grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE
-	   && challenge->protocol_ver != CONNECT_PROTO_VERSION)
-	   || (challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
-	   && challenge->protocol_ver != RECONNECT_PROTO_VERSION)) {
+	/* 
+	 * Older clients are likely to be using an older protocol version
+	 * but they're close enough that patch transfers will still work
+	 */
+	if(!validate_protocol_version(challenge)) {
 		LOG_DEBUG(logger_) << "Unsupported protocol version, "
 		                   << challenge->protocol_ver << LOG_ASYNC;
 	}
@@ -143,6 +143,24 @@ void LoginHandler::initiate_login(const grunt::Packet* packet) {
 			patch_client(challenge);
 			break;
 	}
+}
+
+bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge* challenge) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	const auto version = challenge->protocol_ver;
+
+	if(challenge->opcode == grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE
+		&& version == grunt::client::LoginChallenge::CHALLENGE_VER) {
+		return true;
+	}
+
+	if(challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
+	   && version == grunt::client::ReconnectChallenge::RECONNECT_CHALLENGE_VER) {
+		return true;
+	}
+
+	return false;
 }
 
 void LoginHandler::fetch_user(grunt::Opcode opcode, const std::string& username) {
@@ -446,23 +464,20 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
-	bool trigger_survey = false;
 	state_ = State::REQUEST_REALMS;
-
-	if(patcher_.survey_platform(challenge_.platform, challenge_.os)) {
-		if(user_->survey_request() && !action->reconnect()) {
-			state_ = State::SURVEY_INITIATE;
-			trigger_survey = true;
-		}
-	}
 
 	if(action->reconnect()) {
 		send_reconnect_proof(grunt::Result::SUCCESS);
-	} else {
-		send_login_proof(grunt::Result::SUCCESS, trigger_survey);
+		return;
+	}
+	
+	if(user_->survey_request() && patcher_.survey_platform(challenge_.platform, challenge_.os)) {
+		state_ = State::SURVEY_INITIATE;
 	}
 
-	if(trigger_survey) {
+	send_login_proof(grunt::Result::SUCCESS, state_ == State::SURVEY_INITIATE);
+
+	if(state_ == State::SURVEY_INITIATE) {
 		LOG_DEBUG(logger_) << "Initiating survey transfer..." << LOG_ASYNC;
 		initiate_file_transfer(patcher_.survey_meta());
 	}
@@ -502,7 +517,8 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 		throw std::runtime_error("Expected CMD_AUTH_RECONNECT_PROOF");
 	}
 	
-	if(!validate_client_integrity(proof->client_checksum, proof->salt.data(), proof->salt.size(), true)) {
+	if(!validate_client_integrity(proof->client_checksum, proof->salt.data(),
+	                              proof->salt.size(), true)) {
 		send_reconnect_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
 	}
@@ -608,7 +624,11 @@ void LoginHandler::handle_survey_result(const grunt::Packet* packet) {
 		return;
 	}
 
-	// this can be caused by the client having already sent data for the active survey ID
+	/*
+	 * Errors can be caused by the client having already sent data for the
+	 * active survey ID or by the compressed data length being too large
+	 * for the client to send (hardcoded to 1000 bytes)
+	 */
 	if(survey->error) {
 		return;
 	}
@@ -626,9 +646,21 @@ void LoginHandler::on_survey_write(SaveSurveyAction* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(action->error()) {
-		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
-		                   << ", " << action->exception().what() << LOG_ASYNC;
+		LOG_ERROR(logger_) << "DAL failure for " << user_->username() << ", "
+		                   << action->exception().what() << LOG_ASYNC;
 	}
+}
+
+void LoginHandler::set_transfer_offset(const grunt::Packet* packet) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto resume = dynamic_cast<const grunt::client::TransferResume*>(packet);
+
+	if(!resume) {
+		throw std::runtime_error("Expected CMD_XFER_RESUME");
+	}
+
+	transfer_state_.offset = resume->offset;
 }
 
 void LoginHandler::handle_transfer_ack(const grunt::Packet* packet, bool survey) {
@@ -636,7 +668,7 @@ void LoginHandler::handle_transfer_ack(const grunt::Packet* packet, bool survey)
 
 	switch(packet->opcode) {
 		case grunt::Opcode::CMD_XFER_RESUME:
-			transfer_state_.offset = static_cast<const grunt::client::TransferResume*>(packet)->offset;
+			set_transfer_offset(packet);
 			[[fallthrough]];
 		case grunt::Opcode::CMD_XFER_ACCEPT:
 			state_ = survey? State::SURVEY_TRANSFER : State::PATCH_TRANSFER;
