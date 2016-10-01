@@ -10,12 +10,15 @@
 #include "Patcher.h"
 #include "LocaleMap.h"
 #include "grunt/Packets.h"
+#include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
 #include <boost/range/adaptor/map.hpp>
 #include <stdexcept>
 #include <utility>
  
 namespace ember {
+
+const static int SHA1_LENGTH = 20; // should go somewhere else
 
 bool LoginHandler::update_state(const grunt::Packet* packet) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -344,14 +347,14 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof* packet) {
 	return result;
 }
 
-bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH_LENGTH>& hash,
+bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& hash,
                                              const Botan::BigInt& salt, bool reconnect) {
 	auto decoded = Botan::BigInt::encode(salt);
 	std::reverse(decoded.begin(), decoded.end());
 	return validate_client_integrity(hash, decoded.data(), decoded.size(), reconnect);
 }
 
-bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH_LENGTH>& client_hash,
+bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& client_hash,
                                              const std::uint8_t* salt, std::size_t len,
                                              bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -372,7 +375,7 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, HASH
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		Botan::secure_vector<Botan::byte> checksum(HASH_LENGTH); // all-zero hash
+		Botan::secure_vector<Botan::byte> checksum(SHA1_LENGTH); // all-zero hash
 		hash = client_integrity::finalise(checksum, salt, len);
 	} else {
 		auto checksum = client_integrity::checksum(checksum_salt_, *data);

@@ -19,7 +19,6 @@
 #include "grunt/Handler.h"
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
-#include <shared/metrics/Metrics.h>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
 #include <boost/optional.hpp>
@@ -35,7 +34,6 @@ namespace ember {
 
 struct FileMeta;
 class Patcher;
-class NetworkSession;
 class Metrics;
 
 struct TransferState {
@@ -46,14 +44,14 @@ struct TransferState {
 };
 
 class LoginHandler {
-	const static int HASH_LENGTH = 20;
-
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
-		SURVEY_INITIATE, SURVEY_TRANSFER, SURVEY_RESULT, PATCH_INITIATE,
-		PATCH_TRANSFER, FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT,
-		FETCHING_SESSION, WRITING_SESSION, WRITING_SURVEY,
-		FETCHING_CHARACTER_DATA, CLOSED
+		SURVEY_INITIATE, SURVEY_TRANSFER, SURVEY_RESULT, 
+		PATCH_INITIATE, PATCH_TRANSFER, 
+		FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT, FETCHING_SESSION,
+		FETCHING_CHARACTER_DATA,
+		WRITING_SESSION, WRITING_SURVEY,
+		CLOSED
 	};
 
 	State state_ = State::INITIAL_CHALLENGE;
@@ -74,22 +72,22 @@ class LoginHandler {
 	Botan::secure_vector<Botan::byte> checksum_salt_;
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
-	bool locale_enforce_;
+	const bool locale_enforce_;
 
 	void initiate_login(const grunt::Packet* packet);
 	void initiate_file_transfer(const FileMeta& meta);
 
-	void handle_transfer_ack(const grunt::Packet* packet, bool survey);
-	void handle_transfer_abort();
 	void handle_login_proof(const grunt::Packet* packet);
 	void handle_reconnect_proof(const grunt::Packet* packet);
 	void handle_survey_result(const grunt::Packet* packet);
+	void handle_transfer_ack(const grunt::Packet* packet, bool survey);
+	void handle_transfer_abort();
 
-	void send_reconnect_proof(grunt::Result result);
-	void send_login_proof(grunt::Result result, bool survey = false);
-	void send_realm_list(const grunt::Packet* packet);
 	void send_login_challenge(FetchUserAction* action);
+	void send_login_proof(grunt::Result result, bool survey = false);
 	void send_reconnect_challenge(FetchSessionKeyAction* action);
+	void send_reconnect_proof(grunt::Result result);
+	void send_realm_list(const grunt::Packet* packet);
 	void build_login_challenge(grunt::server::LoginChallenge& packet);
 
 	void on_character_data(FetchCharacterCounts* action);
@@ -125,9 +123,8 @@ public:
 	void on_chunk_complete();
 
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
-	             const IntegrityData* exe_data, log::Logger* logger,
-	             const RealmList& realm_list, std::string source, Metrics& metrics,
-	             bool locale_enforce)
+	             const IntegrityData* exe_data, log::Logger* logger, const RealmList& realm_list,
+	             std::string source, Metrics& metrics, bool locale_enforce)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics),
 	               pin_auth_(logger), exe_data_(exe_data), transfer_state_{},
