@@ -5,7 +5,7 @@
 
 	<enum>
 		<type>int32</type>
-		<name>Tab</name>
+		<name>Category</name>
 		<options>
 			<!-- US -->
 			<option name="UNITED_STATES" value="1" />
@@ -53,8 +53,8 @@
 
 
 	<field>
-		<type>Tab</type>
-		<name>tab</name>
+		<type>Category</type>
+		<name>category</name>
 	</field>
 
 	<field>
