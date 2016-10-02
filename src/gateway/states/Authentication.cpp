@@ -136,7 +136,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 
 		protocol::SMSG_ADDON_INFO::AddonData data;
 		data.type = protocol::SMSG_ADDON_INFO::AddonData::Type::BLIZZARD;
-		data.update_available_flag = false; // URL must be present for this to work (check URL CRC)
+		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.crc != 0x4C1C776D || addon.key_version != 1) { // todo, define?
 			LOG_DEBUG_GLOB << "Repairing " << addon.name << "..." << LOG_ASYNC;

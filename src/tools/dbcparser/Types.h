@@ -102,6 +102,9 @@ struct Struct : Base {
 		move_op(src);
 		return *this;
 	}
+
+	Struct(Struct& src) = delete;
+	Struct& operator=(Struct& src) = delete;
 };
 
 }}} //types, dbc, ember

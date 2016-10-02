@@ -283,19 +283,21 @@ public:
 	}
 
 	void return_connection(Connection<ConType>& connection) {
+		auto detail = connection.detail_.get();
+
 		if(return_clean()) {
-			if(!driver_.clean(connection.detail_.get().conn)) {
-				connection.detail_.get().dirty = true;
-				connection.detail_.get().sweep = true;
+			if(!driver_.clean(detail.conn)) {
+				detail.dirty = true;
+				detail.sweep = true;
 			}
 		} else {
-			connection.detail_.get().dirty = true;
+			detail.dirty = true;
 		}
 
 		connection.released_ = true;
-		connection.detail_.get().checked_out = false;
+		detail.checked_out = false;
 		std::atomic_thread_fence(std::memory_order_release);
-		pool_guards_[connection.detail_.get().id].store(false, std::memory_order_relaxed);
+		pool_guards_[detail.id].store(false, std::memory_order_relaxed);
 
 		driver_.thread_exit();
 		manager_.check_exceptions();

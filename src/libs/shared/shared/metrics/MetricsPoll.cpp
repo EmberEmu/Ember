@@ -34,7 +34,7 @@ void MetricsPoll::timeout(const boost::system::error_code& ec) {
 	}
 
 	for(auto& cb : callbacks_) {
-		cb.timer =-  FREQUENCY;
+		cb.timer -=  FREQUENCY;
 
 		// [under/over]flow check
 		if(cb.timer > FREQUENCY || cb.timer < 0s) {
