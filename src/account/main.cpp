@@ -164,7 +164,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::store(po::parse_config_file(ifs, config_opts), options);
 	po::notify(options);
 
-	return std::move(options);
+	return options;
 }
 
 void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {

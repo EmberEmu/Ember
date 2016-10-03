@@ -252,7 +252,7 @@ types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
 		}
 	}
 
-	return std::move(definition);
+	return definition;
 }
 
 types::Definitions Parser::parse_file(const std::string& path) {

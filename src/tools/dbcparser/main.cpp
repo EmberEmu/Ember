@@ -214,5 +214,5 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		std::exit(0);
 	}
 
-	return std::move(options);
+	return options;
 }
