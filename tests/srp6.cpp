@@ -132,7 +132,7 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 	Botan::BigInt verifier("0x37A75AE5BCF38899C75D28688C78434CB690657B5D8D77463668B83D0062A186");
 
 	// Start server
-	srp::Generator gen = srp::Generator::Group::_256_BIT;
+	srp::Generator gen(srp::Generator::Group::_256_BIT);
 	srp::Server server(gen, verifier, b);
 
 	srp::SessionKey key = server.session_key(A);

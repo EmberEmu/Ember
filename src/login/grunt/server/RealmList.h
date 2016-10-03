@@ -103,7 +103,7 @@ class RealmList final : public Packet {
 
 			std::uint8_t realm_cat;
 			stream >> realm_cat;
-			realm.category = realm.category;
+			realm.category = static_cast<decltype(realm.category)>(realm_cat);
 
 			std::uint8_t realm_id;
 			stream >> realm_id;

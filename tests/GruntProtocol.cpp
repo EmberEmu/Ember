@@ -52,23 +52,23 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(version, packet.version)
-		<< "Deserialisation failed (field: client version)";
+		<< "field: client version";
 	ASSERT_EQ("CHAOSVEX"s, packet.username)
-		<< "Deserialisation failed (field: username)";
+		<< "field: username";
 	ASSERT_EQ(0, packet.timezone_bias)
-		<< "Deserialisation failed (field: timezone bias)";
+		<< "field: timezone bias";
 	ASSERT_EQ(grunt::Platform::x86, packet.platform)
-		<< "Deserialisation failed (field: platform)";
+		<< "field: platform";
 	ASSERT_EQ(grunt::System::Win, packet.os)
-		<< "Deserialisation failed (field: operating system)";
+		<< "field: operating system";
 	ASSERT_EQ(grunt::Game::WoW, packet.game)
-		<< "Deserialisation failed (field: magic)";
+		<< "field: magic";
 	ASSERT_EQ(grunt::Locale::enUS, packet.locale)
-		<< "Deserialisation failed (field: locale)";
+		<< "field: locale";
 	ASSERT_EQ(ip, packet.ip)
-		<< "Deserialisation failed (field: IP)";
+		<< "field: IP";
 	ASSERT_EQ(3, packet.protocol_ver)
-		<< "Deserialisation failed (field: protocol_ver)";
+		<< "field: protocol_ver";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -97,7 +97,7 @@ TEST(GruntProtocol, ClientLoginProof) {
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(false, packet.two_factor_auth)
-		<< "Deserialisation failed (field: security)";
+		<< "field: security";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -136,12 +136,12 @@ TEST(GruntProtocol, ClientReconnectProof) {
 	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
 
 	ASSERT_EQ(r1_expected, packet.salt)
-		<< "Deserialisation failed (field: salt)";
+		<< "field: salt";
 	ASSERT_EQ(r2_expected, packet.proof)
-		<< "Deserialisation failed (field: proof)";
+		<< "field: proof";
 	ASSERT_EQ(r3_expected, packet.client_checksum)
-		<< "Deserialisation failed (field: client_checksum)";
-	ASSERT_EQ(0, packet.key_count) << "Deserialisation failed (field: key count)";
+		<< "field: client_checksum";
+	ASSERT_EQ(0, packet.key_count) << "field: key count";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -169,7 +169,7 @@ TEST(GruntProtocol, ClientRequestRealmList) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(0, packet.unknown) << "field: unknown";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -198,18 +198,18 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(Botan::BigInt("0x153a794dba6475ef8b2cfdbb8fc88d40edc0effea638842829d4d2c4baba84f1"), packet.B)
-		<< "Deserialisation failed (field: B [public ephemeral])";
-	ASSERT_EQ(7, packet.g) << "Deserialisation failed (field: g [generator])";
-	ASSERT_EQ(1, packet.g_len) << "Deserialisation failed (field: g length)";
+		<< "field: B [public ephemeral]";
+	ASSERT_EQ(7, packet.g) << "field: g [generator]";
+	ASSERT_EQ(1, packet.g_len) << "field: g length";
 	ASSERT_EQ(Botan::BigInt("0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"), packet.N)
-		<< "Deserialisation failed (field: N [safe prime])";
-	ASSERT_EQ(32, packet.n_len) << "Deserialisation failed (field: N length)";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+		<< "field: N [safe prime]";
+	ASSERT_EQ(32, packet.n_len) << "field: N length";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
 	ASSERT_EQ(Botan::BigInt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C"), packet.s)
-		<< "Deserialisation failed (field: salt)";
-	ASSERT_EQ(0, packet.protocol_ver) << "Deserialisation failed (field: protocol_ver)";
+		<< "field: salt";
+	ASSERT_EQ(0, packet.protocol_ver) << "field: protocol_ver";
 	ASSERT_EQ(false, packet.two_factor_auth)
-		<< "Deserialisation failed (field: security)";
+		<< "field: security";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -237,10 +237,10 @@ TEST(GruntProtocol, ServerLoginProof) {
 
 	// verify the deserialisation results
 	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
-	ASSERT_EQ(0, packet.survey_id) << "Deserialisation failed (field: survey ID)";
+	ASSERT_EQ(0, packet.survey_id) << "field: survey ID";
 	ASSERT_EQ(Botan::BigInt("0xa3fbd672a092de7650fb0733419ebf59bcae644a"), packet.M2)
-		<< "Deserialisation failed (field: M2)";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+		<< "field: M2";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -263,42 +263,42 @@ TEST(GruntProtocol, ServerRealmList) {
 	chain.write(realm_list, packet_size);
 
 	// deserialise the packet
-	auto packet = grunt::server::RealmList();
+	grunt::server::RealmList packet;
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(2, packet.realms.size()) << "Deserialisation failed (invalid realm count)";
+	ASSERT_EQ(2, packet.realms.size()) << "Invalid realm count";
 
 	// test first realm entry
 	grunt::server::RealmList::RealmListEntry entry = packet.realms[0];
 	auto realm = entry.realm;
 	auto chars = entry.characters;
 
-	ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Deserialisation failed (invalid realm flags)";
-	ASSERT_EQ(Realm::Type::PvP, realm.type) << "Deserialisation failed (invalid realm type)";
-	ASSERT_EQ(Realm::Zone::UNITED_STATES, realm.zone) << "Deserialisation failed (invalid realm zone)";
-	ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
-	ASSERT_EQ("Ember"s, realm.name) << "Deserialisation failed (invalid realm name)";
-	ASSERT_EQ(0.0f, realm.population) << "Deserialisation failed (invalid realm population)";
-	ASSERT_EQ(0, chars) << "Deserialisation failed (invalid character count)";
+	ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Invalid realm flags";
+	ASSERT_EQ(Realm::Type::PvP, realm.type) << "Invalid realm type";
+	ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
+	ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Invalid realm IP";
+	ASSERT_EQ("Ember"s, realm.name) << "Invalid realm name";
+	ASSERT_EQ(0.0f, realm.population) << "Invalid realm population";
+	ASSERT_EQ(0, chars) << "Invalid character count";
 
 	//test second realm entry
 	entry = packet.realms[1];
 	realm = entry.realm;
 	chars = entry.characters;
 
-	ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Deserialisation failed (invalid realm flags)";
-	ASSERT_EQ(Realm::Type::PvE, realm.type) << "Deserialisation failed (invalid realm type)";
-	ASSERT_EQ(Realm::Zone::UNITED_STATES, realm.zone) << "Deserialisation failed (invalid realm zone)";
-	ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Deserialisation failed (invalid realm IP)";
-	ASSERT_EQ("Ember Test"s, realm.name) << "Deserialisation failed (invalid realm name)";
-	ASSERT_EQ(1.4f, realm.population) << "Deserialisation failed (invalid realm population)";
-	ASSERT_EQ(0, chars) << "Deserialisation failed (invalid character count)";
+	ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Invalid realm flags";
+	ASSERT_EQ(Realm::Type::PvE, realm.type) << "Invalid realm type";
+	ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
+	ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Invalid realm IP";
+	ASSERT_EQ("Ember Test"s, realm.name) << "Invalid realm name";
+	ASSERT_EQ(1.4f, realm.population) << "Invalid realm population";
+	ASSERT_EQ(0, chars) << "Invalid character count";
 
 	// check the other fields
-	ASSERT_EQ(0, packet.unknown) << "Deserialisation failed (field: unknown)";
-	ASSERT_EQ(5, packet.unknown2) << "Deserialisation failed (field: unknown)";
+	ASSERT_EQ(0, packet.unknown) << "field: unknown";
+	ASSERT_EQ(5, packet.unknown2) << "field: unknown";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -331,9 +331,9 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 	                                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(salt, packet.salt) << "Deserialisation failed (field: salt)";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
-	ASSERT_EQ(expected_bytes, packet.checksum_salt) << "Deserialisation failed (field: checksum_salt)";
+	ASSERT_EQ(salt, packet.salt) << "field: salt";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
+	ASSERT_EQ(expected_bytes, packet.checksum_salt) << "field: checksum_salt";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -361,7 +361,7 @@ TEST(GruntProtocol, ServerReconnectProof) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "Deserialisation failed (field: result)";
+	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
