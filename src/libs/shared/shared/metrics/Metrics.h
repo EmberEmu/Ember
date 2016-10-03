@@ -18,7 +18,7 @@ class Metrics {
 public:
 	virtual void increment(const char* key, std::intmax_t value = 1) { }
 	virtual void timing(const char* key, std::chrono::milliseconds value) { }
-	virtual void gauge(const char* key, std::intmax_t value, bool adjust = false) { }
+	virtual void gauge(const char* key, std::size_t value, bool adjust = false) { }
 	virtual void set(const char* key, std::intmax_t value) { }
 	virtual ~Metrics() = default;
 };

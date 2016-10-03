@@ -42,7 +42,7 @@ void MetricsImpl::timing(const char* key, std::chrono::milliseconds value) {
  	send(format.str());
 }
 
-void MetricsImpl::gauge(const char* key, std::intmax_t value, bool adjust) {
+void MetricsImpl::gauge(const char* key, std::size_t value, bool adjust) {
 	std::stringstream format;
 	format << key << ":";
 
@@ -63,7 +63,7 @@ void MetricsImpl::set(const char* key, std::intmax_t value) {
 void MetricsImpl::send(std::string message) {
 	auto datagram = std::make_shared<std::string>(std::move(message));
 	socket_.async_send(boost::asio::buffer(*datagram),
-		[datagram](const boost::system::error_code&, std::size_t){ });
+		[datagram](const boost::system::error_code&, std::size_t) { });
 }
 
 } // ember

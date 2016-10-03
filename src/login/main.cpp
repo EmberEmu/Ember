@@ -28,6 +28,7 @@
 #include <shared/util/Utility.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
+#include <shared/metrics/MetricsPoll.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
@@ -231,6 +232,17 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 		ember::install_net_monitor(*monitor, server, logger);
 		ember::install_pool_monitor(*monitor, pool, logger);
 	}
+
+	// Start metrics polling
+	ember::MetricsPoll poller(service, *metrics);
+
+	poller.add_source([&pool](ember::Metrics& metrics) {
+		metrics.gauge("db_connections", pool.size());
+	}, 5s);
+
+	poller.add_source([&server](ember::Metrics& metrics) {
+		metrics.gauge("sessions", server.connection_count());
+	}, 5s);
 
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << "Login daemon started successfully" << LOG_SYNC;
