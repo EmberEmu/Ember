@@ -76,6 +76,7 @@ set(UTIL_SRC
     shared/util/FileMD5.cpp
     shared/util/FNVHash.h
     shared/util/EnumHelper.h
+    shared/util/SafeStaticCast.h
 )
 
 set(METRICS_SRC

@@ -12,6 +12,7 @@
 #include "grunt/Packets.h"
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
+#include <shared/util/SafeStaticCast.h>
 #include <boost/range/adaptor/map.hpp>
 #include <stdexcept>
 #include <utility>
@@ -711,7 +712,7 @@ void LoginHandler::transfer_chunk() {
 
 	if(state_ == State::SURVEY_TRANSFER) {
 		auto survey_mpq = patcher_.survey_data(challenge_.platform, challenge_.os).begin();
-		survey_mpq += transfer_state_.offset;
+		survey_mpq += safe_static_cast<int>(transfer_state_.offset);
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {
 		transfer_state_.file.read(response.chunk.data(), read_size);
