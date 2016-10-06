@@ -17,7 +17,7 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
-	const std::size_t header_wire_size
+	constexpr std::size_t header_wire_size
 		= sizeof(protocol::ClientHeader::size) + sizeof(protocol::ClientHeader::opcode);
 
 	if(buffer.size() < header_wire_size) {
@@ -84,7 +84,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	buffer[write_index + 1] = final_size.data()[1];
 
 	if(authenticated_) {
-		const std::size_t header_wire_size =
+		constexpr std::size_t header_wire_size =
 			sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
 		crypto_.encrypt(buffer, write_index, header_wire_size);
 	}
