@@ -60,7 +60,7 @@ class SurveyResult final : public Packet {
 
 		uLongf dest_len = data.size();
 
-		auto ret = uncompress(reinterpret_cast<Bytef*>(&data[0]), &dest_len, compressed.data(), compressed.size());
+		auto ret = uncompress(reinterpret_cast<Bytef*>(data.data()), &dest_len, compressed.data(), compressed.size());
 
 		if(ret != Z_OK) {
 			throw bad_packet("Decompression of survey data failed with code " + std::to_string(ret));

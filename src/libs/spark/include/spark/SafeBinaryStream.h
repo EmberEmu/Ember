@@ -83,7 +83,7 @@ public:
 	void get(std::string& dest, std::size_t size) {
 		check_read_bounds(size);
 		dest.resize(size);
-		buffer_.read(&dest[0], size); // check back in a decade - non-const data should be added by then
+		buffer_.read(dest.data(), size);
 	}
 
 	void get(void* dest, std::size_t size) {
