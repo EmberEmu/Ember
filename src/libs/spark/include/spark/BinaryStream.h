@@ -33,7 +33,7 @@ public:
 	}
 
 	BinaryStream& operator <<(const std::string& data) {
-		buffer_.write(&data[0], data.size());
+		buffer_.write(data.data(), data.size());
 		char term = '\0';
 		buffer_.write(&term, 1);
 		return *this;

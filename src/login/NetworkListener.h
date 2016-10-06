@@ -85,7 +85,7 @@ public:
 	                  metrics_(metrics) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-		signals_.async_wait(std::bind(&NetworkListener::shutdown, this));
+		signals_.async_wait([this](auto& error, auto signal) { shutdown(); });
 		accept_connection();
 	}
 

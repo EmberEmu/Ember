@@ -23,9 +23,17 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
                            : handler_(builder.create(remote_address())),
                              logger_(logger), pool_(pool), grunt_handler_(logger),
                              NetworkSession(sessions, std::move(socket), logger) {
-	handler_.send = std::bind(&LoginSession::write_chain, this, std::placeholders::_1, false);
-	handler_.send_chunk = std::bind(&LoginSession::write_chain, this, std::placeholders::_1, true);
-	handler_.execute_async = std::bind(&LoginSession::execute_async, this, std::placeholders::_1);
+	handler_.send = [&](auto& packet) {
+		write_chain(packet, false);
+	};
+
+	handler_.send_chunk = [&](auto& packet) {
+		write_chain(packet, true);
+	};
+
+	handler_.execute_async = [&](auto& action) {
+		execute_async(action);
+	};
 }
 
 bool LoginSession::handle_packet(spark::Buffer& buffer) try {

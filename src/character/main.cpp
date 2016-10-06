@@ -120,7 +120,10 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
-	pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
+	
+	pool.logging_callback([logger](auto severity, auto message) {
+		pool_log_callback(severity, message, logger);
+	});
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
 	auto character_dao = ember::dal::character_dao(pool);
