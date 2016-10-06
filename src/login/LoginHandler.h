@@ -22,6 +22,7 @@
 #include <botan/bigint.h>
 #include <botan/secmem.h>
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 #include <fstream>
 #include <functional>
 #include <memory>
@@ -44,6 +45,14 @@ struct TransferState {
 };
 
 class LoginHandler {
+	typedef std::unordered_map<std::uint32_t, std::uint32_t> CharacterCount;
+
+	typedef boost::variant<
+		std::unique_ptr<LoginAuthenticator>,
+		std::unique_ptr<ReconnectAuthenticator>,
+		CharacterCount
+	> StateContainer;
+
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
 		SURVEY_INITIATE, SURVEY_TRANSFER, SURVEY_RESULT, 
@@ -52,9 +61,8 @@ class LoginHandler {
 		FETCHING_CHARACTER_DATA,
 		WRITING_SESSION, WRITING_SURVEY,
 		CLOSED
-	};
+	} state_ = State::INITIAL_CHALLENGE;
 
-	State state_ = State::INITIAL_CHALLENGE;
 	Metrics& metrics_;
 	log::Logger* logger_;
 	const Patcher& patcher_;
@@ -66,9 +74,7 @@ class LoginHandler {
 	const AccountService& acct_svc_;
 	const IntegrityData* exe_data_;
 	PINAuthenticator pin_auth_;
-	std::unique_ptr<LoginAuthenticator> login_auth_;
-	std::unique_ptr<ReconnectAuthenticator> reconn_auth_;
-	std::unordered_map<std::uint32_t, std::uint32_t> char_count_;
+	StateContainer state_data_;
 	Botan::secure_vector<Botan::byte> checksum_salt_;
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;

@@ -209,7 +209,8 @@ void LoginHandler::reject_client(const GameVersion& version) {
 void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto values = login_auth_->challenge_reply();
+	const auto& authenticator = boost::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
+	auto values = authenticator->challenge_reply();
 	packet.B = values.B;
 	packet.g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
 	packet.g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
@@ -236,7 +237,7 @@ void LoginHandler::send_login_challenge(FetchUserAction* action) {
 
 	try {
 		if((user_ = action->get_result())) {
-			login_auth_ = std::make_unique<LoginAuthenticator>(*user_);
+			state_data_ = std::make_unique<LoginAuthenticator>(*user_);
 			build_login_challenge(response);
 			state_ = State::LOGIN_PROOF;
 		} else {
@@ -290,7 +291,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 
 	if(res.first == messaging::account::Status::OK) {
 		state_ = State::RECONNECT_PROOF;
-		reconn_auth_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, checksum_salt_);
+		state_data_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, checksum_salt_);
 	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response.result = grunt::Result::FAIL_NOACCESS;
@@ -404,7 +405,8 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 		return;
 	}
 
-	auto proof = login_auth_->proof_check(proof_packet);
+	const auto& authenticator = boost::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
+	const auto proof = authenticator->proof_check(proof_packet);
 	auto result = grunt::Result::FAIL_INCORRECT_PASSWORD;
 	
 	if(proof.match) {
@@ -427,7 +429,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 
 		auto action = std::make_shared<RegisterSessionAction>(
 			acct_svc_, user_->id(),
-			login_auth_->session_key()
+			authenticator->session_key()
 		);
 
 		execute_async(action);
@@ -460,7 +462,7 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	try {
-		char_count_ = action->get_result();
+		state_data_ = action->get_result();
 	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
@@ -526,7 +528,9 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 		return;
 	}
 
-	if(reconn_auth_->proof_check(proof)) {
+	const auto& authenticator = boost::get<std::unique_ptr<ReconnectAuthenticator>>(state_data_);
+
+	if(authenticator->proof_check(proof)) {
 		state_ = State::FETCHING_CHARACTER_DATA;
 		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
@@ -548,12 +552,13 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 		return;
 	}
 
+	const std::shared_ptr<const RealmMap> realms = realm_list_.realms();
+	auto& char_count = boost::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
-	std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
 		if(realm.region == region->second || !locale_enforce_) {
-			response.realms.push_back({ realm, char_count_[realm.id] });
+			response.realms.push_back({ realm, char_count[realm.id] });
 		}
 	}
 
