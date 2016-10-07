@@ -283,7 +283,7 @@ public:
 	}
 
 	void return_connection(Connection<ConType>& connection) {
-		auto detail = connection.detail_.get();
+		auto& detail = connection.detail_.get();
 
 		if(return_clean()) {
 			if(!driver_.clean(detail.conn)) {
