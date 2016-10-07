@@ -86,7 +86,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 				BOOST_ASSERT_MSG(pool_it != pool_.end(), "Exceeded maximum database connection count.");
 			}
 
-			*pool_it = std::move(ConnDetail<ConType>(f.get()));
+			*pool_it = std::move(ConnDetail<ConType>(f.get(), pool_it->id));
 			++size_;
 			semaphore_.signal();
 		}

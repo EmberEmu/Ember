@@ -33,7 +33,7 @@ struct alignas(CACHELINE_SIZE) ConnDetail {
 	bool refresh = false;
 	sc::seconds idle = 0s;
 
-	ConnDetail(const ConType& connection) : conn(connection), empty_slot(false) {}
+	ConnDetail(const ConType& connection, unsigned int id) : conn(connection), id(id), empty_slot(false) {}
 	ConnDetail() = default;
 
 	void reset() {
