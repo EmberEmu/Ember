@@ -66,18 +66,33 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 // todo, this should go somewhere else
-bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
+[[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet,
+                                                     spark::Buffer& buffer) {
+	const auto end_size = buffer.size() - context_.header->size;
+
 	spark::SafeBinaryStream stream(buffer);
 
 	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Parsing of " << protocol::to_string(header_->opcode)
+			<< "Deserialisation of " << protocol::to_string(header_->opcode)
 			<< " failed" << LOG_ASYNC;
 
-		//if(close_on_failure) {
-			connection_.close_session();
-		//}
-		
+		/*
+		* If parsing a known message type fails, there's a good chance that
+		* there's a mistake in the definition. If that's the case, check to see
+		* whether we've ended up reading too much data from the buffer.
+		* If so, messaging framing has likely been lost and the only thing to do
+		* is to disconnect the client.
+		*/
+		if(buffer.size() < end_size) {
+			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+				<< "Message framing lost at " << protocol::to_string(header_->opcode)
+				<< " for " << connection_.remote_address() << LOG_ASYNC;
+			connection_.close_session();		
+		} else {
+			buffer.skip(buffer.size() - end_size);
+		}
+
 		return false;
 	}
 

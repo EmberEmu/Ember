@@ -80,6 +80,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	const boost::endian::big_uint16_at final_size =
 		static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
 
+	// todo, implement an iterator for the buffer at some point
 	buffer[write_index + 0] = final_size.data()[0];
 	buffer[write_index + 1] = final_size.data()[1];
 
