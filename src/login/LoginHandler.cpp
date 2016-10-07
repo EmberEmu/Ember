@@ -15,7 +15,6 @@
 #include <shared/util/SafeStaticCast.h>
 #include <boost/range/adaptor/map.hpp>
 #include <stdexcept>
-#include <utility>
  
 namespace ember {
 
@@ -160,7 +159,7 @@ bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge
 	}
 
 	if(challenge->opcode == grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE
-	   && version == grunt::client::ReconnectChallenge::RECONNECT_CHALLENGE_VER) {
+		&& version == grunt::client::ReconnectChallenge::RECONNECT_CHALLENGE_VER) {
 		return true;
 	}
 
@@ -211,7 +210,7 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	const auto& authenticator = boost::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
-	auto values = authenticator->challenge_reply();
+	const auto& values = authenticator->challenge_reply();
 	packet.B = values.B;
 	packet.g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
 	packet.g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
@@ -465,6 +464,7 @@ void LoginHandler::on_character_data(FetchCharacterCounts* action) {
 	try {
 		state_data_ = action->get_result();
 	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
+		state_data_ = CharacterCount();
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR(logger_) << "DAL failure for " << user_->username()
 		                   << ": " << e.what() << LOG_ASYNC;
