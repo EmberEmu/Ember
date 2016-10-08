@@ -20,7 +20,7 @@ namespace ember { namespace spark {
 TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger)
                                  : service_(service), logger_(logger) { }
 
-void TrackingService::handle_message(const Link& link, const messaging::MessageRoot* message) try {
+void TrackingService::handle_message(const Link& link, const ResponseToken& token, const void* message) try {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto recv_id = message->tracking_id();
@@ -50,7 +50,11 @@ void TrackingService::handle_message(const Link& link, const messaging::MessageR
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }
 
-void TrackingService::handle_link_event(const Link& link, LinkState state) {
+void TrackingService::on_link_up(const spark::Link& link) {
+	// we don't care about this
+}
+
+void TrackingService::on_link_down(const spark::Link& link) {
 	// we don't care about this
 }
 

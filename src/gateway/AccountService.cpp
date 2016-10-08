@@ -25,24 +25,20 @@ AccountService::~AccountService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void AccountService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
+void AccountService::on_link_up(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link up: " << link.description << LOG_ASYNC;
+	link_ = link;
+}
+
+void AccountService::on_link_down(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
+}
+
+void AccountService::on_message(const spark::Link& link, const ResponseToken& token, const void* root) {
 	// we only care about tracked messages at the moment
 	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
 }
 
-void AccountService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_INFO(logger_) << "Link to account server established" << LOG_ASYNC;
-			link_ = link;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_INFO(logger_) << "Link to account server closed" << LOG_ASYNC;
-			break;
-	}
-}
 
 void AccountService::service_located(const messaging::multicast::LocateAnswer* message) {
 	LOG_DEBUG(logger_) << "Located account service at " << message->ip()->str() 

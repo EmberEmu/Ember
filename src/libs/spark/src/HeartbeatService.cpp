@@ -23,7 +23,7 @@ HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Se
 	set_timer();
 }
 
-void HeartbeatService::handle_message(const Link& link, const messaging::MessageRoot* message) {
+void HeartbeatService::on_message(const Link& link, const ResponseToken& token, const void* message) {
 	switch(message->data_type()) {
 		case messaging::Data::Ping:
 			handle_ping(link, message);
@@ -38,17 +38,14 @@ void HeartbeatService::handle_message(const Link& link, const messaging::Message
 	}
 }
 
-void HeartbeatService::handle_link_event(const Link& link, LinkState state) {
+void HeartbeatService::on_link_up(const spark::Link& link) {
 	std::lock_guard<std::mutex> guard(lock_);
+	peers_.emplace_front(link);
+}
 
-	switch(state) {
-		case LinkState::LINK_UP:
-			peers_.emplace_front(link);
-			break;
-		case LinkState::LINK_DOWN:
-			peers_.remove(link);
-			break;
-	}
+void HeartbeatService::on_link_down(const spark::Link& link) {
+	std::lock_guard<std::mutex> guard(lock_);
+	peers_.remove(link);
 }
 
 void HeartbeatService::handle_ping(const Link& link, const messaging::MessageRoot* message) {

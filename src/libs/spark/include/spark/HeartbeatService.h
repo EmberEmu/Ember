@@ -43,8 +43,10 @@ public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
 	                 log::Logger* logger);
 
-	void handle_message(const Link& link, const messaging::MessageRoot* message);
-	void handle_link_event(const Link& link, LinkState state);
+	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
+
 	void shutdown();
 };
 

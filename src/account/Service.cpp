@@ -24,7 +24,7 @@ Service::~Service() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg) {
+void Service::on_message(const spark::Link& link, const spark::ResponseToken& token, const void* msg) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	switch(msg->data_type()) {
@@ -42,15 +42,12 @@ void Service::handle_message(const spark::Link& link, const em::MessageRoot* msg
 	}
 }
 
-void Service::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
-			break;
-	}
+void Service::on_link_up(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link up: " << link.description << LOG_ASYNC;
+}
+
+void Service::on_link_down(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
 void Service::register_session(const spark::Link& link, const em::MessageRoot* root) {

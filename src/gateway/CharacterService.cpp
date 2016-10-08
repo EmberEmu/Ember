@@ -25,23 +25,18 @@ CharacterService::~CharacterService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void CharacterService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
+void CharacterService::on_message(const spark::Link& link, const ResponseToken& token, void* root) {
 	// we only care about tracked messages at the moment
 	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
 }
 
-void CharacterService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+void CharacterService::on_link_up(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link up: " << link.description << LOG_ASYNC;
+	link_ = link;
+}
 
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_INFO(logger_) << "Link to character server established" << LOG_ASYNC;
-			link_ = link;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_INFO(logger_) << "Link to character server closed" << LOG_ASYNC;
-			break;
-	}
+void CharacterService::on_link_down(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
 void CharacterService::service_located(const messaging::multicast::LocateAnswer* message) {

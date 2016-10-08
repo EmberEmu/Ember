@@ -31,8 +31,9 @@ public:
 	RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
 	~RealmService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 
 	void set_realm_online();
 	void set_realm_offline();

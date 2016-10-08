@@ -58,8 +58,9 @@ public:
 
 	~CharacterService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 
 	void retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const;
 

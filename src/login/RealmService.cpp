@@ -30,7 +30,7 @@ RealmService::~RealmService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void RealmService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
+void RealmService::on_message(const spark::Link& link, const ResponseToken& token, const em::MessageRoot* root) {
 	switch(root->data_type()) {
 		case em::Data::RealmStatus:
 			handle_realm_status(link, root);
@@ -67,19 +67,14 @@ void RealmService::handle_realm_status(const spark::Link& link, const em::Messag
 	known_realms_[link.uuid] = msg->id();
 }
 
-void RealmService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+void RealmService::on_link_up(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link to realm gateway established" << LOG_ASYNC;
+	request_realm_status(link);
+}
 
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_INFO(logger_) << "Link to realm gateway established" << LOG_ASYNC;
-			request_realm_status(link);
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_INFO(logger_) << "Link to realm gateway closed" << LOG_ASYNC;
-			mark_realm_offline(link);
-			break;
-	}
+void RealmService::on_link_down(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link to realm gateway closed" << LOG_ASYNC;
+	mark_realm_offline(link);
 }
 
 void RealmService::service_located(const messaging::multicast::LocateAnswer* message) {

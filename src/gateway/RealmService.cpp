@@ -24,7 +24,7 @@ RealmService::~RealmService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void RealmService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
+void RealmService::on_message(const spark::Link& link, const void* root) {
 	switch(root->data_type()) {
 		case em::Data::RequestRealmStatus:
 			send_realm_status(link, root);
@@ -80,15 +80,16 @@ void RealmService::broadcast_realm_status() const {
 	spark_.broadcast(em::Service::RealmStatus, spark::ServicesMap::Mode::CLIENT, std::move(fbb));
 }
 
-void RealmService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
-			break;
-	}
+void RealmService::on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) {
+
+}
+
+void RealmService::on_link_up(const spark::Link& link) { 
+	LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
+}
+
+void RealmService::on_link_down(const spark::Link& link) {
+	LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
 } // ember

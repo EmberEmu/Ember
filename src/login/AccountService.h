@@ -43,8 +43,9 @@ public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
 	~AccountService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 
 	void register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const;
 	void locate_session(std::uint32_t account_id, LocateCB cb) const;

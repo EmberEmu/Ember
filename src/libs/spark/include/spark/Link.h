@@ -16,10 +16,6 @@ namespace ember { namespace spark {
 
 class NetworkSession;
 
-enum class LinkState {
-	LINK_UP, LINK_DOWN
-};
-
 struct Link {
 	boost::uuids::uuid uuid;
 	std::string description;

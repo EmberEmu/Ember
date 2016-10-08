@@ -45,8 +45,10 @@ class TrackingService : public EventHandler {
 public:
 	TrackingService(boost::asio::io_service& service, log::Logger* logger);
 
-	void handle_message(const Link& link, const messaging::MessageRoot* message);
-	void handle_link_event(const Link& link, LinkState state);
+	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
+
 	void register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
 	                      std::chrono::milliseconds timeout);
 	void shutdown();
