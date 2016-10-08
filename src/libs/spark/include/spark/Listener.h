@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,6 @@ class Listener {
 
 	SessionManager& sessions_;
 	log::Logger* logger_;
-	log::Filter filter_;
 	const Link& link_;
 	const EventDispatcher& handlers_;
 	ServicesMap& services_;
@@ -37,7 +36,7 @@ class Listener {
 public:
 	Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
 	         SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,
-	         const Link& link, log::Logger* logger, log::Filter filter);
+	         const Link& link, log::Logger* logger);
 
 	void shutdown();
 };

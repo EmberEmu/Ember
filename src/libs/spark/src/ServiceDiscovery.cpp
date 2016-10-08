@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,13 +17,12 @@ namespace mcast = ember::messaging::multicast;
 
 namespace ember { namespace spark {
 
-ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
-                                   std::string address, std::uint16_t port,
-                                   const std::string& mcast_iface, const std::string& mcast_group,
-                                   std::uint16_t mcast_port, log::Logger* logger)
+ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service, std::string address,
+                                   std::uint16_t port, const std::string& mcast_iface,
+                                   const std::string& mcast_group, std::uint16_t mcast_port,
+                                   log::Logger* logger)
                                    : address_(std::move(address)), port_(port),
                                      socket_(service), logger_(logger),
-                                     signals_(service, SIGINT, SIGTERM),
                                      service_(service), endpoint_(bai::address::from_string(mcast_group), mcast_port) {
 	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
@@ -32,7 +31,6 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
 	socket_.bind(listen_endpoint);
 	
 	socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
-	signals_.async_wait(std::bind(&ServiceDiscovery::shutdown, this));
 
 	receive();
 }

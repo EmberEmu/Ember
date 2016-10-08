@@ -12,8 +12,12 @@
 #include <spark/Listener.h>
 #include <shared/FilterTypes.h>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/optional.hpp>
+#include <chrono>
 #include <functional>
 #include <type_traits>
+
+using namespace std::chrono_literals;
 
 namespace ember { namespace spark {
 
@@ -26,8 +30,8 @@ Service::Service(std::string description, boost::asio::io_service& service, cons
                    hb_service_(service_, this, logger), 
                    track_service_(service_, logger),
                    link_ { boost::uuids::random_generator()(), std::move(description) } {
-	dispatcher_.register_handler(&hb_service_, messaging::Service::Core, EventDispatcher::Mode::BOTH);
-	dispatcher_.register_handler(&track_service_, messaging::Service::Tracking, EventDispatcher::Mode::CLIENT);
+	dispatcher_.register_handler(&hb_service_, messaging::Service::CORE_HEARTBEAT, EventDispatcher::Mode::BOTH);
+	dispatcher_.register_handler(&track_service_, messaging::Service::CORE_HEARTBEAT, EventDispatcher::Mode::CLIENT);
 }
 
 void Service::shutdown() {
@@ -71,12 +75,7 @@ void Service::connect(const std::string& host, std::uint16_t port) {
 	do_connect(host, port);
 }
 
-void Service::default_handler(const Link& link, const messaging::MessageRoot* message) {
-	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Peer sent an unknown service type, ID: "
-		<< static_cast<std::underlying_type<messaging::Data>::type>(message->data_type()) << LOG_ASYNC;
-}
-
-auto Service::send(const Link& link, BufferHandle fbb) const -> Result {
+auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb) const -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -87,31 +86,7 @@ auto Service::send(const Link& link, BufferHandle fbb) const -> Result {
 	return Result::OK;
 }
 
-auto Service::send(const Link& link, BufferHandle fbb, TrackingHandler callback) -> Result {
-	auto net = link.net.lock();
-
-	if(!net) {
-		return Result::LINK_GONE;
-	}
-
-	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
-	net->write(fbb);
-	return Result::OK;
-}
-
-auto Service::send(const Link& link, BufferHandle fbb, const ResponseToken& token) -> Result {
-	auto net = link.net.lock();
-
-	if(!net) {
-		return Result::LINK_GONE;
-	}
-
-	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
-	net->write(fbb);
-	return Result::OK;
-}
-
-auto Service::send(const Link& link, BufferHandle fbb, const ResponseToken& token,
+auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
                    TrackingHandler callback) -> Result {
 	auto net = link.net.lock();
 
@@ -119,12 +94,39 @@ auto Service::send(const Link& link, BufferHandle fbb, const ResponseToken& toke
 		return Result::LINK_GONE;
 	}
 
-	track_service_.register_tracked(link, id, callback, std::chrono::seconds(5));
+	auto uuid = generate_uuid();
+	track_service_.register_tracked(link, uuid, callback, 5s);
 	net->write(fbb);
 	return Result::OK;
 }
 
-void Service::broadcast(std::uint32_t service_id, ServicesMap::Mode mode, BufferHandle fbb) const {
+auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
+                   const ResponseToken& token) const -> Result {
+	auto net = link.net.lock();
+
+	if(!net) {
+		return Result::LINK_GONE;
+	}
+
+	net->write(fbb);
+	return Result::OK;
+}
+
+auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
+                   const ResponseToken& token, TrackingHandler callback) -> Result {
+	auto net = link.net.lock();
+
+	if(!net) {
+		return Result::LINK_GONE;
+	}
+
+	track_service_.register_tracked(link, token, callback, 5s);
+	net->write(fbb);
+	return Result::OK;
+}
+
+void Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
+                        BufferHandle fbb) const {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 	const auto& links = services_.peer_services(service, mode);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,8 +15,8 @@ namespace ember {
 
 AccountService::AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger)
                                : spark_(spark), s_disc_(s_disc), logger_(logger) {
-	spark_.dispatcher()->register_handler(this, em::Service::Account, spark::EventDispatcher::Mode::CLIENT);
-	listener_ = std::move(s_disc_.listener(messaging::Service::Account,
+	spark_.dispatcher()->register_handler(this, em::Service::ACCOUNT, spark::EventDispatcher::Mode::CLIENT);
+	listener_ = std::move(s_disc_.listener(messaging::Service::ACCOUNT,
 	                      std::bind(&AccountService::service_located, this, std::placeholders::_1)));
 	listener_->search();
 }
@@ -34,9 +34,10 @@ void AccountService::on_link_down(const spark::Link& link) {
 	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
-void AccountService::on_message(const spark::Link& link, const ResponseToken& token, const void* root) {
+void AccountService::on_message(const spark::Link& link, const spark::ResponseToken& token,
+                                std::uint16_t opcode, const std::uint8_t* data) {
 	// we only care about tracked messages at the moment
-	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Account service received unhandled message" << LOG_ASYNC;
 }
 
 

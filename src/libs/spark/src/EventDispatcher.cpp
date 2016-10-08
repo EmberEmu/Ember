@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,7 @@ void EventDispatcher::register_handler(EventHandler* handler, messaging::Service
 
 /* Remove by pointer rather than service to reduce the odds of making the
    mistake of removing a handler that doesn't belong to the caller */
-void EventDispatcher::remove_handler(EventHandler* handler) {
+void EventDispatcher::remove_handler(const EventHandler* handler) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
 	
 	for(auto& entry: handlers_) {
@@ -28,23 +28,33 @@ void EventDispatcher::remove_handler(EventHandler* handler) {
 	}
 }
 
-void EventDispatcher::dispatch_link_event(messaging::Service service,
-                                          const Link& link, LinkState state) const {
-	std::unique_lock<std::shared_timed_mutex> guard(lock_);
+void EventDispatcher::notify_link_up(messaging::Service service, const Link& link) const {
+	std::lock_guard<std::shared_timed_mutex> guard(lock_);
+
 	auto it = handlers_.find(service);
 
 	if(it != handlers_.end()) {
-		it->second.handler->handle_link_event(link, state);
+		it->second.handler->on_link_up(link);
+	}
+}
+
+void EventDispatcher::notify_link_down(messaging::Service service, const Link& link) const {
+	std::lock_guard<std::shared_timed_mutex> guard(lock_);
+
+	auto it = handlers_.find(service);
+
+	if(it != handlers_.end()) {
+		it->second.handler->on_link_down(link);
 	}
 }
 
 void EventDispatcher::dispatch_message(messaging::Service service, const Link& link,
-                                       const messaging::MessageRoot* message) const {
+                                       const Message& message) const {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
 	auto it = handlers_.find(service);
 
 	if(it != handlers_.end()) {
-		it->second.handler->handle_message(link, message);
+		it->second.handler->on_message(link, message);
 	}
 } 
 

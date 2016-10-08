@@ -9,6 +9,8 @@
 #pragma once
 
 #include "Config.h"
+#include "Services_generated.h"
+#include "Character_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <game_protocol/ResultCodes.h>
@@ -58,7 +60,8 @@ public:
 
 	~CharacterService();
 
-	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const spark::ResponseToken& token,
+	                std::uint16_t opcode, const std::uint8_t* data) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 

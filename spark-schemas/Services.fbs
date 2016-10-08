@@ -8,7 +8,7 @@
 
 namespace ember.messaging;
 
-enum Service : ubyte {
-	CORE, ACCOUNT, GATEWAY, LOGIN, WORLD, INSTANCESLAVE,
-	INSTANCEMASTER, CHARACTER, DBPROXY
+enum Service : int { // waste of bandwidth, FlatBuffers enum vector workaround
+	CORE_TRACKING, CORE_HEARTBEAT, ACCOUNT, GATEWAY, LOGIN,
+	WORLD, INSTANCESLAVE, INSTANCEMASTER, CHARACTER, DBPROXY
 }

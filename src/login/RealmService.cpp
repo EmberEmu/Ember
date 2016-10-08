@@ -30,7 +30,7 @@ RealmService::~RealmService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void RealmService::on_message(const spark::Link& link, const ResponseToken& token, const em::MessageRoot* root) {
+void RealmService::on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root) {
 	switch(root->data_type()) {
 		case em::Data::RealmStatus:
 			handle_realm_status(link, root);

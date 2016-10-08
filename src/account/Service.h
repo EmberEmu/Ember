@@ -39,7 +39,7 @@ public:
 	Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
 	~Service();
 
-	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root /*temp*/) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 };

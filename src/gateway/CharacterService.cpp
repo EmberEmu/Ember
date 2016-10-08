@@ -7,6 +7,7 @@
  */
 
 #include "CharacterService.h"
+#include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid.hpp>
 
 namespace em = ember::messaging;
@@ -15,8 +16,8 @@ namespace ember {
 
 CharacterService::CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, const Config& config, log::Logger* logger)
                                    : spark_(spark), s_disc_(s_disc), config_(config), logger_(logger) {
-	spark_.dispatcher()->register_handler(this, em::Service::Character, spark::EventDispatcher::Mode::CLIENT);
-	listener_ = std::move(s_disc_.listener(messaging::Service::Character,
+	spark_.dispatcher()->register_handler(this, em::Service::CHARACTER, spark::EventDispatcher::Mode::CLIENT);
+	listener_ = std::move(s_disc_.listener(messaging::Service::CHARACTER,
 	                      std::bind(&CharacterService::service_located, this, std::placeholders::_1)));
 	listener_->search();
 }
@@ -25,7 +26,8 @@ CharacterService::~CharacterService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void CharacterService::on_message(const spark::Link& link, const ResponseToken& token, void* root) {
+void CharacterService::on_message(const spark::Link& link, const spark::ResponseToken& token,
+                                  std::uint16_t opcode, const std::uint8_t* data) {
 	// we only care about tracked messages at the moment
 	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
 }
@@ -155,7 +157,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,
 							  std::placeholders::_2, std::placeholders::_3, cb);
 
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }
@@ -176,7 +178,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	auto track_cb = std::bind(&CharacterService::handle_rename_reply, this, std::placeholders::_1,
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, nullptr);
 	}
 }
@@ -193,26 +195,28 @@ void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB 
 	auto track_cb = std::bind(&CharacterService::handle_retrieve_reply, this, std::placeholders::_1,
 	                          std::placeholders::_2, std::placeholders::_3, cb);
 
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
 		std::vector<Character> chars;
 		cb(em::character::Status::SERVER_LINK_ERROR, chars);
 	}
 }
 
-void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id, ResponseCB cb) const {
+void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id,
+                                        ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Delete, em::character::CreateDelete(*fbb, account_id, config_.realm->id, id).Union());
-	fbb->Finish(msg);
+	std::uint16_t opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_CREATE);
 
-	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,
-	                          std::placeholders::_2, std::placeholders::_3, cb);
+	em::character::DeleteBuilder msg(*fbb);
+	msg.add_account_id = account_id;
+	msg.add_character_id = id;
+	msg.add_realm_id = config_.realm->id;
+	msg.Finish();
 
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto token, auto data) {
+		handle_reply(link, token, cb);
+	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }

@@ -37,7 +37,6 @@ class ServiceDiscovery {
 	std::array<std::uint8_t, BUFFER_SIZE> buffer_;
 	std::vector<messaging::Service> services_;
 	std::unordered_map<messaging::Service, std::vector<const ServiceListener*>> listeners_;
-	boost::asio::signal_set signals_;
 	mutable std::mutex lock_;
 
 	log::Logger* logger_;
@@ -58,9 +57,8 @@ class ServiceDiscovery {
 	void handle_receive(const boost::system::error_code& ec, std::size_t size);
 
 public:
-	ServiceDiscovery(boost::asio::io_service& service,
-	                 std::string address, std::uint16_t port, 
-					 const std::string& mcast_iface, const std::string& mcast_group,
+	ServiceDiscovery(boost::asio::io_service& service, std::string address, std::uint16_t port,
+	                 const std::string& mcast_iface, const std::string& mcast_group,
 	                 std::uint16_t mcast_port, log::Logger* logger);
 
 	void register_service(messaging::Service service);

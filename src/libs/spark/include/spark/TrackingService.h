@@ -11,6 +11,7 @@
 #include <spark/Common.h>
 #include <spark/Link.h>
 #include <spark/EventHandler.h>
+#include <spark/Service.h> // todo, remove
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/functional/hash.hpp>
@@ -19,12 +20,14 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include <cstdint>
 
 namespace ember { namespace spark {
 
 class TrackingService : public EventHandler {
 	struct Request {
-		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link, TrackingHandler handler)
+		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link,
+		         TrackingHandler handler)
 		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
 
 		boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer;
@@ -45,7 +48,7 @@ class TrackingService : public EventHandler {
 public:
 	TrackingService(boost::asio::io_service& service, log::Logger* logger);
 
-	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const Message& message) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 

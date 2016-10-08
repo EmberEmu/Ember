@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,14 +8,18 @@
 
 #pragma once
 
+#include "Core_generated.h"
 #include <spark/Link.h>
 #include <spark/EventHandler.h>
+#include <spark/Helpers.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <chrono>
 #include <forward_list>
+#include <functional>
 #include <mutex>
-#include <set>
+#include <unordered_map>
+#include <cstdint>
 
 namespace ember { namespace spark {
 
@@ -29,21 +33,21 @@ class HeartbeatService : public EventHandler {
 	std::forward_list<Link> peers_;
 	std::mutex lock_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	std::unordered_map<messaging::core::Opcode, LocalDispatcher> handlers_;
 
 	log::Logger* logger_;
-
 	void set_timer();
 	void send_ping(const Link& link, std::uint64_t time);
 	void send_pong(const Link& link, std::uint64_t time);
 	void trigger_pings(const boost::system::error_code& ec);
-	void handle_ping(const Link& link, const messaging::MessageRoot* message);
-	void handle_pong(const Link& link, const messaging::MessageRoot* message);
+	void handle_ping(const Link& link, const Message& message);
+	void handle_pong(const Link& link, const Message& message);
 
 public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
 	                 log::Logger* logger);
 
-	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const Message& message) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 

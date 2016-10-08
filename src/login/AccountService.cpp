@@ -25,7 +25,7 @@ AccountService::~AccountService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void AccountService::on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) {
+void AccountService::on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root /*temp*/) {
 	// we only care about tracked messages at the moment
 	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
 }

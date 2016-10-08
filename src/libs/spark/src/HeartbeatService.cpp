@@ -7,35 +7,45 @@
  */
 
 #include "Core_generated.h"
+
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
 #include <shared/FilterTypes.h>
+#include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid_io.hpp>
-#include <functional>
 
 namespace ember { namespace spark {
 
+namespace em = ember::messaging;
 namespace sc = std::chrono;
+using namespace std::placeholders;
 
 HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Service* service,
                                    log::Logger* logger) : timer_(io_service),
                                    service_(service), logger_(logger) {
+	REGISTER(em::core::Opcode::MSG_PING, em::core::Ping, HeartbeatService::handle_ping);
+	REGISTER(em::core::Opcode::MSG_PONG, em::core::Pong, HeartbeatService::handle_pong);
 	set_timer();
 }
 
-void HeartbeatService::on_message(const Link& link, const ResponseToken& token, const void* message) {
-	switch(message->data_type()) {
-		case messaging::Data::Ping:
-			handle_ping(link, message);
-			break;
-		case messaging::Data::Pong:
-			handle_pong(link, message);
-			break;
-		default:
-			LOG_WARN_FILTER(logger_, LF_SPARK)
-				<< "[spark] Unhandled message received by core from "
-				<< boost::uuids::to_string(link.uuid) << LOG_ASYNC;
+void HeartbeatService::on_message(const Link& link, const Message& message) {
+	auto handler = handlers_.find(static_cast<messaging::core::Opcode>(message.opcode));
+
+	if(handler == handlers_.end()) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Unhandled message received by core from "
+			<< link.description << LOG_ASYNC;
+		return;
 	}
+
+	if(!handler->second.verify(message)) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Bad message received by core from "
+			<< link.description << LOG_ASYNC;
+		return;
+	}
+
+	handler->second.handle(message);
 }
 
 void HeartbeatService::on_link_up(const spark::Link& link) {
@@ -48,13 +58,13 @@ void HeartbeatService::on_link_down(const spark::Link& link) {
 	peers_.remove(link);
 }
 
-void HeartbeatService::handle_ping(const Link& link, const messaging::MessageRoot* message) {
-	auto ping = static_cast<const messaging::Ping*>(message->data());
+void HeartbeatService::handle_ping(const Link& link, const Message& message) {
+	auto ping = flatbuffers::GetRoot<em::core::Ping>(message.data);
 	send_pong(link, ping->timestamp());
 }
 
-void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoot* message) {
-	auto pong = static_cast<const messaging::Pong*>(message->data());
+void HeartbeatService::handle_pong(const Link& link, const Message& message) {
+	auto pong = flatbuffers::GetRoot<em::core::Pong>(message.data);
 	auto time = sc::duration_cast<sc::milliseconds>(sc::steady_clock::now().time_since_epoch()).count();
 
 	if(pong->timestamp()) {
@@ -70,18 +80,18 @@ void HeartbeatService::handle_pong(const Link& link, const messaging::MessageRoo
 
 void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Core, 0, 0,
-		messaging::Data::Ping, messaging::CreatePing(*fbb, time).Union());
+	std::uint16_t opcode = util::enum_value(messaging::core::Opcode::MSG_PING);
+	auto msg = messaging::core::CreatePing(*fbb, time);
 	fbb->Finish(msg);
-	service_->send(link, fbb);
+	service_->send(link, opcode, fbb);
 }
 
 void HeartbeatService::send_pong(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Core, 0, 0,
-		messaging::Data::Pong, messaging::CreatePong(*fbb, time).Union());
+	std::uint16_t opcode = util::enum_value(messaging::core::Opcode::MSG_PONG);
+	auto msg = messaging::core::CreatePong(*fbb, time);
 	fbb->Finish(msg);
-	service_->send(link, fbb);
+	service_->send(link, opcode, fbb);
 }
 
 void HeartbeatService::trigger_pings(const boost::system::error_code& ec) {
@@ -105,7 +115,9 @@ void HeartbeatService::trigger_pings(const boost::system::error_code& ec) {
 
 void HeartbeatService::set_timer() {
 	timer_.expires_from_now(PING_FREQUENCY);
-	timer_.async_wait(std::bind(&HeartbeatService::trigger_pings, this, std::placeholders::_1));
+	timer_.async_wait([&](auto& ec) {
+		trigger_pings(ec);
+	});
 }
 
 void HeartbeatService::shutdown() {

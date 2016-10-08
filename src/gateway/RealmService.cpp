@@ -80,7 +80,7 @@ void RealmService::broadcast_realm_status() const {
 	spark_.broadcast(em::Service::RealmStatus, spark::ServicesMap::Mode::CLIENT, std::move(fbb));
 }
 
-void RealmService::on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) {
+void RealmService::on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root /*temp*/) {
 
 }
 

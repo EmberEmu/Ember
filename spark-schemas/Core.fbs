@@ -6,10 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+include "Services.fbs";
+
 namespace ember.messaging.core;
 
 enum Opcode : ushort {
 	MSG_PING, MSG_PONG, MSG_BANNER, MSG_NEGOTIATE	
+}
+
+table Header {
+	opcode:ushort;
+	service:Service;
+	uuid:[ubyte];
 }
 
 table Ping {
@@ -26,6 +34,6 @@ table Banner {
 }
 
 table Negotiate {
-	proto_in:[uint];
-	proto_out:[uint];
+	proto_in:[Service];
+	proto_out:[Service];
 }

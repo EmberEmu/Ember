@@ -17,7 +17,7 @@ namespace ember { namespace spark {
 
 Listener::Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port, 
                    SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,
-                   const Link& link, log::Logger* logger, log::Filter filter)
+                   const Link& link, log::Logger* logger)
                    : service_(service), acceptor_(service, boost::asio::ip::tcp::endpoint(
                      boost::asio::ip::address::from_string(interface), port)), link_(link),
                      socket_(service), sessions_(sessions), logger_(logger),
@@ -51,8 +51,8 @@ void Listener::accept_connection() {
 
 void Listener::start_session(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
-	MessageHandler m_handler(handlers_, services_, link_, false, logger_, filter_);
-	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_, filter_);
+	MessageHandler m_handler(handlers_, services_, link_, false, logger_);
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_);
 	sessions_.start(session);
 }
 

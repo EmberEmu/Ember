@@ -20,22 +20,12 @@ namespace ember { namespace spark {
 TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger)
                                  : service_(service), logger_(logger) { }
 
-void TrackingService::handle_message(const Link& link, const ResponseToken& token, const void* message) try {
+void TrackingService::on_message(const Link& link, const Message& message) try {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
-	auto recv_id = message->tracking_id();
-
-	if(recv_id->size() != boost::uuids::uuid::static_size()) {
-		LOG_DEBUG_FILTER(logger_, LF_SPARK)
-			<< "[spark] Received tracked message with invalid UUID length" << LOG_ASYNC;
-	}
-
-	boost::uuids::uuid uuid;
-	std::copy(recv_id->begin(), recv_id->end(), uuid.begin());
-
 	std::unique_lock<std::mutex> guard(lock_);
-	auto handler = std::move(handlers_.at(uuid));
-	handlers_.erase(uuid);
+	auto handler = std::move(handlers_.at(*message.token));
+	handlers_.erase(*message.token);
 	guard.unlock();
 
 	if(link != handler->link) {
@@ -44,18 +34,10 @@ void TrackingService::handle_message(const Link& link, const ResponseToken& toke
 		return;
 	}
 
-	handler->handler(link, uuid, boost::optional<const messaging::MessageRoot*>(message));
+	handler->handler(link, message);
 } catch(std::out_of_range) {
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
-}
-
-void TrackingService::on_link_up(const spark::Link& link) {
-	// we don't care about this
-}
-
-void TrackingService::on_link_down(const spark::Link& link) {
-	// we don't care about this
 }
 
 void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
@@ -81,7 +63,7 @@ void TrackingService::timeout(boost::uuids::uuid id, Link link, const boost::sys
 	handlers_.erase(id);
 	guard.unlock();
 
-	handler->handler(link, id, boost::optional<const messaging::MessageRoot*>());
+	handler->handler(link, boost::none);
 }
 
 void TrackingService::shutdown() {
@@ -90,6 +72,14 @@ void TrackingService::shutdown() {
 	for(auto& handler : handlers_) {
 		handler.second->timer.cancel();
 	}
+}
+
+void TrackingService::on_link_up(const spark::Link& link) {
+	// we don't care about this
+}
+
+void TrackingService::on_link_down(const spark::Link& link) {
+	// we don't care about this
 }
 
 }} // spark, ember

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Account_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <logger/Logging.h>
@@ -51,7 +52,8 @@ public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
 	~AccountService();
 
-	void on_message(const spark::Link& link, const ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const spark::ResponseToken& token,
+	                std::uint16_t opcode, const std::uint8_t* data) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 
