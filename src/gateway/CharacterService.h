@@ -42,16 +42,13 @@ private:
 	
 	void service_located(const messaging::multicast::LocateAnswer* message);
 
-	void handle_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                  boost::optional<const messaging::MessageRoot*> root,
+	void handle_reply(const spark::Link& link, boost::optional<const spark::Message> message,
 	                  const ResponseCB& cb) const;
 
-	void handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> root,
+	void handle_retrieve_reply(const spark::Link& link, boost::optional<const spark::Message> message,
 	                           const RetrieveCB& cb) const;
 
-	void handle_rename_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                         boost::optional<const messaging::MessageRoot*> root,
+	void handle_rename_reply(const spark::Link& link, boost::optional<const spark::Message> message,
 	                         const RenameCB& cb) const;
 
 public:
@@ -60,8 +57,7 @@ public:
 
 	~CharacterService();
 
-	void on_message(const spark::Link& link, const spark::ResponseToken& token,
-	                std::uint16_t opcode, const std::uint8_t* data) override;
+	void on_message(const spark::Link& link, const spark::Message& message) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 

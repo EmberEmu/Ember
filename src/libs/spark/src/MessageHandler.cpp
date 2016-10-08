@@ -107,31 +107,27 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 	}
 
 	// vectors of enums are very annoying to use in FlatBuffers :(
-	std::vector<std::underlying_type<messaging::Service>::type>
-		remote_servers(protocols->proto_in()->begin(), protocols->proto_in()->end());
-	std::vector<std::underlying_type<messaging::Service>::type>
-		remote_clients(protocols->proto_out()->begin(), protocols->proto_out()->end());
-	auto our_servers = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER));
-	auto our_clients = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT));
+	auto servers = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER));
+	auto clients = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT));
 
-	std::sort(our_servers.begin(), our_servers.end());
-	std::sort(our_clients.begin(), our_clients.end());
-	std::sort(remote_servers.begin(), remote_servers.end());
-	std::sort(remote_clients.begin(), remote_clients.end());
+	std::sort(servers.begin(), servers.end());
+	std::sort(clients.begin(), clients.end());
+	std::sort(protocols->proto_in()->begin(), protocols->proto_in()->end());   // remote servers
+	std::sort(protocols->proto_out()->begin(), protocols->proto_out()->end()); // remote clients
 
 	// match our clients to their servers
-	std::set_intersection(our_clients.begin(), our_clients.end(),
-	                      remote_servers.begin(), remote_servers.end(),
+	std::set_intersection(clients.begin(), clients.end(),
+						  protocols->proto_in()->begin(), protocols->proto_in()->end(),
 	                      std::inserter(matches_, matches_.begin()));
 
 	// match their clients to our servers
-	std::set_intersection(remote_clients.begin(), remote_clients.end(),
-	                      our_servers.begin(), our_servers.end(),
+	std::set_intersection(protocols->proto_out()->begin(), protocols->proto_out()->end(),
+						  clients.begin(), clients.end(),
 	                      std::inserter(matches_, matches_.begin()));
 
-	// we don't care about matches for core service
+	// we don't care about matches for core service, todo, get rid of this somehow?
 	auto matches = std::count_if(matches_.begin(), matches_.end(),
-		[](auto service) { // todo, get rid of this?
+		[](auto service) {
 			return service != static_cast<std::underlying_type<messaging::Service>::type>(messaging::Service::CORE_HEARTBEAT)
 				&& service != static_cast<std::underlying_type<messaging::Service>::type>(messaging::Service::CORE_TRACKING);
 		}
@@ -153,13 +149,13 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
 	// register peer's services to allow for broadcasting
-	for(auto& service : remote_clients) {
-		services_.register_peer_service(peer_, static_cast<messaging::Service>(service),
+	for(auto& i = protocols->proto_out()->begin(); i != protocols->proto_out()->end(); ++i) {
+		services_.register_peer_service(peer_, static_cast<messaging::Service>(*i),
 		                                ServicesMap::Mode::CLIENT);
 	}
 
-	for(auto& service : remote_servers) {
-		services_.register_peer_service(peer_, static_cast<messaging::Service>(service),
+	for(auto& i = protocols->proto_in()->begin(); i != protocols->proto_in()->end(); ++i) {
+		services_.register_peer_service(peer_, static_cast<messaging::Service>(*i),
 										ServicesMap::Mode::SERVER);
 	}
 
