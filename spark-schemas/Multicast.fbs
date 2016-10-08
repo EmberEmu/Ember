@@ -8,6 +8,10 @@
 
 namespace ember.messaging.multicast;
 
+enum Opcode : ushort {
+	CMSG_LOCATE, SMSG_LOCATE
+}
+
 table Locate {
 	service_type:uint;
 }

@@ -8,6 +8,10 @@
 
 namespace ember.messaging.core;
 
+enum Opcode : ushort {
+	MSG_PING, MSG_PONG, MSG_BANNER, MSG_NEGOTIATE	
+}
+
 table Ping {
 	timestamp:ulong;
 }
