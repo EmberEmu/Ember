@@ -221,8 +221,8 @@ void handle_packet(ClientContext* ctx) {
 		case protocol::ClientOpcodes::CMSG_AUTH_SESSION:
 			handle_authentication(ctx);
 			break;
-		//default:
-			//ctx->state = ClientState::UNEXPECTED_PACKET;
+		default:
+			ctx->handler->packet_skip(*ctx->buffer);
 	}
 }
 

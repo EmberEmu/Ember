@@ -66,9 +66,8 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 // todo, this should go somewhere else
-[[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet,
-                                                     spark::Buffer& buffer) {
-	const auto end_size = buffer.size() - context_.header->size;
+[[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
+	const auto end_size = buffer.size() - context_.header->size - sizeof(protocol::ClientOpcodes);
 
 	spark::SafeBinaryStream stream(buffer);
 
@@ -97,6 +96,16 @@ void ClientHandler::state_update(ClientState new_state) {
 	}
 
 	return true;
+}
+
+// todo, this should go somewhere else
+void ClientHandler::packet_skip(spark::Buffer& buffer) {
+	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+		<< ClientState_to_string(context_.state) << " requested skip of packet "
+		<< protocol::to_string(header_->opcode) << " from "
+		<< connection_.remote_address() << LOG_ASYNC;
+
+	buffer.skip(header_->size - sizeof(protocol::ClientOpcodes));
 }
 
 void ClientHandler::handle_ping(spark::Buffer& buffer) {

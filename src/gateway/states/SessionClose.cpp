@@ -9,6 +9,7 @@
 #pragma once
 
 #include "SessionClose.h"
+#include "../ClientHandler.h"
 
 namespace ember { namespace session_close {
 
@@ -17,7 +18,7 @@ void enter(ClientContext* ctx) {
 }
 
 void handle_packet(ClientContext* ctx) {
-	// don't care, for now
+	ctx->handler->packet_skip(*ctx->buffer);
 }
 
 void handle_event(ClientContext* ctx, const Event* event) {

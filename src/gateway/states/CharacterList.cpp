@@ -203,11 +203,6 @@ void player_login(ClientContext* ctx) {
 	}
 }
 
-void unhandled_packet(ClientContext* ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-	ctx->buffer->skip(ctx->header->size - sizeof(protocol::ClientOpcodes));
-}
-
 } // unnamed
 
 void enter(ClientContext* ctx) {}
@@ -230,7 +225,7 @@ void handle_packet(ClientContext* ctx) {
 			player_login(ctx);
 			break;
 		default:
-			unhandled_packet(ctx);
+			ctx->handler->packet_skip(*ctx->buffer);
 	}
 }
 

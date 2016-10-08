@@ -48,7 +48,7 @@ void handle_event(ClientContext* ctx, const Event* event) {
 }
 
 void handle_packet(ClientContext* ctx) {
-	// don't care
+	ctx->handler->packet_skip(*ctx->buffer);
 }
 
 void exit(ClientContext* ctx) {
