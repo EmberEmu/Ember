@@ -25,8 +25,8 @@ class PacketCrypto {
 	std::uint8_t recv_j_ = 0;
 
 public:
-	void set_key(const std::vector<Botan::byte>& key) {
-		key_ = key;
+	void set_key(std::vector<Botan::byte> key) {
+		key_ = std::move(key);
 	}
 
 	void encrypt(spark::Buffer& data, std::size_t offset, std::size_t length) {
