@@ -18,7 +18,7 @@
 #include <spark/SessionManager.h>
 #include <spark/NetworkSession.h>
 #include <spark/Listener.h>
-#include <logger/Logger.h>
+#include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <flatbuffers/flatbuffers.h>
