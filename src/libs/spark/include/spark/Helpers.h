@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/Service.h> // todo, remove
+#include <functional>
 
 namespace ember { namespace spark {
 
@@ -26,7 +27,7 @@ struct LocalDispatcher {
 	[](auto& message) { Service::verify<type>(message) }
 
 #define HANDLER(type) \
-	std::bind(&type, this, _1)
+	std::bind(&type, this, std::placeholders::_1)
 
 #define REGISTER(opcode, type, handler) \
 	handlers_.emplace(opcode, VERIFY(type, ##message), HANDLER(handler))

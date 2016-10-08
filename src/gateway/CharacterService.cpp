@@ -44,7 +44,7 @@ void CharacterService::on_link_down(const spark::Link& link) {
 }
 
 void CharacterService::service_located(const messaging::multicast::LocateAnswer* message) {
-	LOG_DEBUG(logger_) << "Located account service at " << message->ip()->str() 
+	LOG_DEBUG(logger_) << "Located character service at " << message->ip()->str() 
 	                   << ":" << message->port() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());
 }
@@ -89,7 +89,6 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link,
                                              boost::optional<const spark::Message> message,
                                              const RetrieveCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
 
 	if(!message || !spark::Service::verify<em::character::RetrieveResponse>(*message)) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
@@ -138,7 +137,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	std::uint16_t opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_CREATE);
+	const auto opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_CREATE);
 
 	em::character::CharacterTemplateBuilder cbb(*fbb);
 	cbb.add_name(fbb->CreateString(character.name));

@@ -8,6 +8,8 @@
 
 #include "RealmService.h"
 #include "RealmList.h"
+#include "RealmStatus_generated.h"
+#include <shared/util/EnumHelper.h>
 
 namespace em = ember::messaging;
 
@@ -16,55 +18,69 @@ namespace ember {
 RealmService::RealmService(RealmList& realms, spark::Service& spark,
                            spark::ServiceDiscovery& s_disc, log::Logger* logger)
                            : realms_(realms), spark_(spark), s_disc_(s_disc), logger_(logger) {
+	REGISTER(em::realm::Opcode::SMSG_REALM_STATUS, em::realm::RealmStatus, RealmService::handle_realm_status);
+
 	spark_.dispatcher()->register_handler(
-		this, em::Service::RealmStatus,
+		this, em::Service::GATEWAY,
 		spark::EventDispatcher::Mode::CLIENT
 	);
 
-	listener_ = std::move(s_disc_.listener(em::Service::RealmStatus,
+	listener_ = std::move(s_disc_.listener(em::Service::GATEWAY,
 	                      std::bind(&RealmService::service_located, this, std::placeholders::_1)));
 	listener_->search();
+
 }
 
 RealmService::~RealmService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void RealmService::on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root) {
-	switch(root->data_type()) {
-		case em::Data::RealmStatus:
-			handle_realm_status(link, root);
-			break;
-		default:
-			LOG_DEBUG(logger_) << "Unhandled realm status message from " << link.description << LOG_ASYNC;
+void RealmService::on_message(const spark::Link& link, const spark::Message& message) {
+	auto handler = handlers_.find(static_cast<messaging::realm::Opcode>(message.opcode));
+
+	if(handler == handlers_.end()) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "Unhandled realm message from "
+			<< link.description << LOG_ASYNC;
+		return;
 	}
+
+	if(!handler->second.verify(message)) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "Bad message received by core from "
+			<< link.description << LOG_ASYNC;
+		return;
+	}
+
+	handler->second.handle(message);
 }
 
-void RealmService::handle_realm_status(const spark::Link& link, const em::MessageRoot* root) {
+void RealmService::handle_realm_status(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto msg = static_cast<const em::realm::RealmStatus*>(root->data());
+	auto data = flatbuffers::GetRoot<messaging::realm::RealmStatus>(message.data);
 
-	if(!msg->name() || !msg->id() || !msg->ip()) {
+	if(!data->name() || !data->id() || !data->ip()) {
 		LOG_WARN(logger_) << "Incompatible realm status update from " << link.description << LOG_ASYNC;
+		return;
 	}
 
 	// update everything rather than bothering to only set changed fields
 	Realm realm;
-	realm.id = msg->id();
-	realm.ip = msg->ip()->str();
-	realm.name = msg->name()->str();
-	realm.population = msg->population();
-	realm.type = static_cast<Realm::Type>(msg->type());
-	realm.flags = static_cast<Realm::Flags>(msg->flags());
-	realm.category = static_cast<dbc::Cfg_Categories::Category>(msg->category());
-	realm.region = static_cast<dbc::Cfg_Categories::Region>(msg->region());
+	realm.id = data->id();
+	realm.ip = data->ip()->str();
+	realm.name = data->name()->str();
+	realm.population = data->population();
+	realm.type = static_cast<Realm::Type>(data->type());
+	realm.flags = static_cast<Realm::Flags>(data->flags());
+	realm.category = static_cast<dbc::Cfg_Categories::Category>(data->category());
+	realm.region = static_cast<dbc::Cfg_Categories::Region>(data->region());
 	realms_.add_realm(realm);
 
 	LOG_INFO(logger_) << "Updated realm information for " << realm.name << LOG_ASYNC;
 
 	// keep track of this link's realm ID so we can mark it as offline if it disappears
-	known_realms_[link.uuid] = msg->id();
+	known_realms_[link.uuid] = data->id();
 }
 
 void RealmService::on_link_up(const spark::Link& link) {
@@ -101,12 +117,12 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 void RealmService::request_realm_status(const spark::Link& link) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	const auto opcode = util::enum_value(messaging::realm::Opcode::CMSG_REALM_STATUS);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::RealmStatus, 0, 0,
-	                                         em::Data::RequestRealmStatus, 0);
-	fbb->Finish(msg);
+	messaging::realm::RequestRealmStatusBuilder msg(*fbb);
+	msg.Finish();
 
-	if(spark_.send(link, fbb) != spark::Service::Result::OK) {
+	if(spark_.send(link, opcode, fbb) != spark::Service::Result::OK) {
 		LOG_DEBUG(logger_) << "Realm status request failed, " << link.description << LOG_ASYNC;
 	}
 }
