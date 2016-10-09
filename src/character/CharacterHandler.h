@@ -13,7 +13,6 @@
 #include <shared/database/daos/CharacterDAO.h>
 #include <spark/temp/Character_generated.h>
 #include <shared/util/PCREHelper.h>
-#include <shared/threading/ThreadPool.h>
 #include <logger/Logging.h>
 //#include <boost/locale.hpp>
 #include <boost/optional.hpp>
