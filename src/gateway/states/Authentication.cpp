@@ -234,6 +234,8 @@ void handle_event(ClientContext* ctx, const Event* event) {
 		case EventType::SESSION_KEY_RESPONSE:
 			handle_session_key(ctx, static_cast<const SessionKeyResponse*>(event));
 			break;
+		default:
+			break;
 	}
 }
 

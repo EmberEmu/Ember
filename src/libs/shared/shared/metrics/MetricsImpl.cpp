@@ -39,15 +39,20 @@ void MetricsImpl::increment(const char* key, std::intmax_t value) {
 void MetricsImpl::timing(const char* key, std::chrono::milliseconds value) {
 	std::stringstream format;
 	format << key << ":" << value.count() << "|ms";
- 	send(format.str());
+	send(format.str());
 }
 
-void MetricsImpl::gauge(const char* key, std::intmax_t value, bool adjust) {
+void MetricsImpl::gauge(const char* key, std::uintmax_t value, Adjustment adjustment) {
 	std::stringstream format;
 	format << key << ":";
 
-	if(adjust) {
-		format << (value >= 0? "+" : "-");
+	switch (adjustment) {
+		case Adjustment::POSITIVE: format << "+";
+			break;
+		case Adjustment::NEGATIVE: format << "-";
+			break;
+		default:
+			break;
 	}
 
 	format << value << "|g";
@@ -58,7 +63,7 @@ void MetricsImpl::gauge(const char* key, std::intmax_t value, bool adjust) {
 void MetricsImpl::set(const char* key, std::intmax_t value) {
 	std::stringstream format;
 	format << key << ":" << value << "|s";
- 	send(format.str());
+	send(format.str());
 }
 
 void MetricsImpl::send(std::string message) {
