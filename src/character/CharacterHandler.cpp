@@ -456,7 +456,7 @@ protocol::Result CharacterHandler::validate_name(const std::string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR(logger_) << "PCRE error encountered: " + ret << LOG_ASYNC;
+			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
 			return protocol::Result::CHAR_NAME_FAILURE;
 		}
 	}
@@ -467,7 +467,7 @@ protocol::Result CharacterHandler::validate_name(const std::string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_PROFANE;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR(logger_) << "PCRE error encountered: " + ret << LOG_ASYNC;
+			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
 			return protocol::Result::CHAR_NAME_FAILURE;
 		}
 	}

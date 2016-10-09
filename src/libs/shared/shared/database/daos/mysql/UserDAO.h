@@ -104,7 +104,7 @@ public:
 		stmt->setString(2, ip);
 		
 		if(!stmt->executeUpdate()) {
-			throw exception("Unable to set last login for account ID " + account_id);
+			throw exception("Unable to set last login for account ID " + std::to_string(account_id));
 		}
 	} catch(std::exception& e) {
 		throw exception(e.what());

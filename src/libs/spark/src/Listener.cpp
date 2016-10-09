@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <spark/Listener.h>
 #include <spark/NetworkSession.h>
 #include <spark/SessionManager.h>

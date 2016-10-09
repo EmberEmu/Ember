@@ -44,8 +44,8 @@ public:
 		               static_cast<Realm::Type>(res->getUInt("type")),
 					   static_cast<Realm::Flags>(res->getUInt("flags")),
 			           static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
-		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region"))};
-		               static_cast<Realm::CreationSetting>(res->getUInt("creation_setting")),
+		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
+			           static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))};
 			realms.emplace_back(std::move(temp));
 		}
 
@@ -72,8 +72,8 @@ public:
 		               static_cast<Realm::Type>(res->getUInt("type")),
 					   static_cast<Realm::Flags>(res->getUInt("flags")),
 			           static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
-		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region"))};
-		               static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"));
+		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
+			           static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))};
 			return temp;
 		}
 
