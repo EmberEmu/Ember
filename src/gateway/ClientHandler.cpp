@@ -37,6 +37,8 @@ void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& 
 			return;
 		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE: // no response required
 			return;
+		default:
+			break;
 	}
 
 	update_packet[context_.state](&context_);

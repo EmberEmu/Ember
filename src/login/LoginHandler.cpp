@@ -743,6 +743,8 @@ void LoginHandler::on_chunk_complete() {
 			case State::PATCH_TRANSFER:
 				state_ = State::CLOSED;
 				break;
+			default:
+				break;
 		}
 	} else {
 		transfer_chunk();

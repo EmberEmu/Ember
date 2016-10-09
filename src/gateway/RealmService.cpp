@@ -29,6 +29,8 @@ void RealmService::handle_message(const spark::Link& link, const em::MessageRoot
 		case em::Data::RequestRealmStatus:
 			send_realm_status(link, root);
 			break;
+		default:
+			break;
 	}
 }
 
