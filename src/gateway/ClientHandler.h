@@ -25,7 +25,6 @@ class ClientConnection;
 class ClientHandler final {
 	ClientConnection& connection_;
 	ClientContext context_;
-	protocol::ClientHeader* header_;
     const ClientUUID uuid_;
 	log::Logger* logger_;
 

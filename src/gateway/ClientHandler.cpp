@@ -75,7 +75,7 @@ void ClientHandler::state_update(ClientState new_state) {
 
 	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Deserialisation of " << protocol::to_string(header_->opcode)
+			<< "Deserialisation of " << protocol::to_string(context_.header->opcode)
 			<< " failed" << LOG_ASYNC;
 
 		/*
@@ -87,7 +87,7 @@ void ClientHandler::state_update(ClientState new_state) {
 		*/
 		if(buffer.size() < end_size) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-				<< "Message framing lost at " << protocol::to_string(header_->opcode)
+				<< "Message framing lost at " << protocol::to_string(context_.header->opcode)
 				<< " for " << connection_.remote_address() << LOG_ASYNC;
 			connection_.close_session();		
 		} else {
@@ -104,10 +104,10 @@ void ClientHandler::state_update(ClientState new_state) {
 void ClientHandler::packet_skip(spark::Buffer& buffer) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 		<< ClientState_to_string(context_.state) << " requested skip of packet "
-		<< protocol::to_string(header_->opcode) << " from "
+		<< protocol::to_string(context_.header->opcode) << " from "
 		<< connection_.remote_address() << LOG_ASYNC;
 
-	buffer.skip(header_->size - sizeof(protocol::ClientOpcodes));
+	buffer.skip(context_.header->size - sizeof(protocol::ClientOpcodes));
 }
 
 void ClientHandler::handle_ping(spark::Buffer& buffer) {
@@ -138,8 +138,7 @@ std::string ClientHandler::client_identify() {
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger)
-                             : context_{}, connection_(connection), logger_(logger),
-                               header_(nullptr), uuid_(uuid) { 
+                             : context_{}, connection_(connection), logger_(logger), uuid_(uuid) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
 	context_.connection = &connection_;
 	context_.handler = this;
