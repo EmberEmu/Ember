@@ -44,6 +44,8 @@ void handle_event(ClientContext* ctx, const Event* event) {
 		case EventType::QUEUE_SUCCESS:
 			handle_queue_success(ctx, static_cast<const QueueSuccess*>(event));
 			break;
+		default:
+			break;
 	}
 }
 

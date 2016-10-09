@@ -304,7 +304,7 @@ public:
 		return (*buffer)[offset_index % BlockSize];
 	}
 
-	char& operator[](const std::size_t index) {
+	char& operator[](const std::size_t index) override {
 		return const_cast<char&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
 	}
 
