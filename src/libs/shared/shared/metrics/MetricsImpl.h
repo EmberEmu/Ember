@@ -29,7 +29,7 @@ public:
 
 	void increment(const char* key, std::intmax_t value = 1) override;
 	void timing(const char* key, std::chrono::milliseconds value) override;
-	void gauge(const char* key, std::size_t value, bool adjust = false) override;
+    void gauge(const char* key, std::intmax_t value, bool adjust = false) override;
 	void set(const char* key, std::intmax_t value) override;
 };
 
