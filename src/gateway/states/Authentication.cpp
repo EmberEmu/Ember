@@ -131,6 +131,10 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 
 	// todo, use AddonData.dbc
 	for(auto& addon : packet.addons) {
+		if(addon.crc == 0) {
+			continue; // client doesn't send the CRC after the initial connection
+		}
+
 		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
