@@ -13,33 +13,42 @@ namespace em = ember::messaging;
 
 namespace ember {
 
-Service::Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger)
+Service::Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery,
+                 log::Logger* logger)
                  : sessions_(sessions), spark_(spark), discovery_(discovery), logger_(logger) {
-	spark_.dispatcher()->register_handler(this, em::Service::Account, spark::EventDispatcher::Mode::SERVER);
-	discovery_.register_service(em::Service::Account);
+	REGISTER(em::account::Opcode::CMSG_ACCOUNT_LOOKUP, em::account::LookupID, Service::account_lookup);
+	REGISTER(em::account::Opcode::CMSG_SESSION_LOOKUP, em::account::SessionLookup, Service::locate_session);
+	REGISTER(em::account::Opcode::CMSG_REGISTER_SESSION, em::account::RegisterSession, Service::register_session);
+
+	spark_.dispatcher()->register_handler(this, em::Service::ACCOUNT, spark::EventDispatcher::Mode::SERVER);
+	discovery_.register_service(em::Service::ACCOUNT);
 }
 
 Service::~Service() {
-	discovery_.remove_service(em::Service::Account);
+	discovery_.remove_service(em::Service::ACCOUNT);
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void Service::on_message(const spark::Link& link, const spark::ResponseToken& token, const void* msg) {
+void Service::on_message(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	switch(msg->data_type()) {
-		case em::Data::RegisterKey:
-			register_session(link, msg);
-			break;
-		case em::Data::KeyLookup:
-			locate_session(link, msg);
-			break;
-		case em::Data::AccountLookup:
-			send_account_locate_reply(link, msg); // todo
-			break;
-		default:
-			LOG_DEBUG(logger_) << "Service received unhandled message type" << LOG_ASYNC;
+	auto handler = handlers_.find(static_cast<messaging::core::Opcode>(message.opcode));
+
+	if(handler == handlers_.end()) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "Unhandled message received from "
+			<< link.description << LOG_ASYNC;
+		return;
 	}
+
+	if(!handler->second.verify(message)) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Bad message received from "
+			<< link.description << LOG_ASYNC;
+		return;
+	}
+
+	handler->second.handle(message);
 }
 
 void Service::on_link_up(const spark::Link& link) {
@@ -50,9 +59,10 @@ void Service::on_link_down(const spark::Link& link) {
 	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
-void Service::register_session(const spark::Link& link, const em::MessageRoot* root) {
+void Service::register_session(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	auto data = flatbuffers::GetRoot<>(message.data);
 	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
 	auto status = em::account::Status::OK;
 	
@@ -69,10 +79,11 @@ void Service::register_session(const spark::Link& link, const em::MessageRoot* r
 	send_register_reply(link, root, status);
 }
 
-void Service::locate_session(const spark::Link& link, const em::MessageRoot* root) {
+void Service::locate_session(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
+	auto data = flatbuffers::GetRoot<>(message.data);
+	auto msg = static_cast<const em::account::SessionLookup*>(root->data());
 	auto session = boost::optional<Botan::BigInt>();
 	
 	if(msg->account_id()) {
@@ -82,29 +93,23 @@ void Service::locate_session(const spark::Link& link, const em::MessageRoot* roo
 	send_locate_reply(link, root, session);
 }
 
-void Service::send_register_reply(const spark::Link& link, const em::MessageRoot* root,
+void Service::send_register_reply(const spark::Link& link, const spark::Message& message,
                                   em::account::Status status) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	auto data = flatbuffers::GetRoot<>(message.data);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::account::ResponseBuilder rb(*fbb);
 	rb.add_status(status);
-	auto data_offset = rb.Finish();
+	fbb->Finish(rb.Finish()); // check this
 
-	em::MessageRootBuilder mrb(*fbb);
-	mrb.add_service(em::Service::Account);
-	mrb.add_data_type(em::Data::Response);
-	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
-	auto mloc = mrb.Finish();
-
-	fbb->Finish(mloc);
 	spark_.send(link, fbb);
 }
 
-void Service::send_account_locate_reply(const spark::Link& link, const em::MessageRoot* root) {
+void Service::account_lookup(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	auto data = flatbuffers::GetRoot<>(message.data);
 	auto msg = static_cast<const em::account::AccountLookup*>(root->data());
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
@@ -113,12 +118,6 @@ void Service::send_account_locate_reply(const spark::Link& link, const em::Messa
 	klb.add_account_id(1); // todo
 	auto data_offset = klb.Finish();
 
-	em::MessageRootBuilder mrb(*fbb);
-	mrb.add_service(em::Service::Account);
-	mrb.add_data_type(em::Data::AccountLookupResponse);
-	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
-	auto mloc = mrb.Finish();
 
 	fbb->Finish(mloc);
 	spark_.send(link, fbb);
@@ -126,10 +125,11 @@ void Service::send_account_locate_reply(const spark::Link& link, const em::Messa
 	// todo, logging
 }
 
-void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* root,
+void Service::send_locate_reply(const spark::Link& link, const spark::Message& message,
                                 const boost::optional<Botan::BigInt>& key) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	auto data = flatbuffers::GetRoot<>(message.data);
 	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -146,16 +146,7 @@ void Service::send_locate_reply(const spark::Link& link, const em::MessageRoot* 
 
 	klb.add_status(status);
 	klb.add_account_id(msg->account_id());
-	auto data_offset = klb.Finish();
-
-	em::MessageRootBuilder mrb(*fbb);
-	mrb.add_service(em::Service::Account);
-	mrb.add_data_type(em::Data::KeyLookupResp);
-	mrb.add_data(data_offset.Union());
-	spark_.set_tracking_data(root, mrb, fbb.get());
-	auto mloc = mrb.Finish();
-
-	fbb->Finish(mloc);
+	fbb->Finish(klb.Finish());
 	spark_.send(link, fbb);
 
 	LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "

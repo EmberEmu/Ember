@@ -157,8 +157,8 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	msg.add_realm_id(config_.realm->id);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto token, auto data) {
-		handle_reply(link, token, cb);
+	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+		handle_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
@@ -180,8 +180,8 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	msg.add_name(fb_name);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto token, auto data) {
-		handle_rename_reply(link, token, cb);
+	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+		handle_rename_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, nullptr);
 	}
@@ -197,11 +197,10 @@ void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB 
 	msg.add_realm_id(config_.realm->id);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto token, auto data) {
-		handle_retrieve_reply(link, token, cb);
+	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+		handle_retrieve_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
-		std::vector<Character> chars;
-		cb(em::character::Status::SERVER_LINK_ERROR, chars);
+		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }
 
@@ -218,8 +217,8 @@ void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t 
 	msg.add_realm_id = config_.realm->id;
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto token, auto data) {
-		handle_reply(link, token, cb);
+	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+		handle_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}

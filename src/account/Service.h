@@ -11,6 +11,7 @@
 #include "Sessions.h"
 #include "Account_generated.h"
 #include <spark/Service.h>
+#include <spark/Helpers.h>
 #include <logger/Logging.h>
 #include <boost/optional.hpp>
 #include <cstdint>
@@ -22,24 +23,24 @@ class Service final : public spark::EventHandler {
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
+	std::unordered_map<messaging::core::Opcode, spark::LocalDispatcher> handlers_;
 
+	void register_session(const spark::Link& link, const spark::Message& message);
+	void locate_session(const spark::Link& link, const spark::Message& message);
 
-	void register_session(const spark::Link& link, const messaging::MessageRoot* root);
-	void locate_session(const spark::Link& link, const messaging::MessageRoot* root);
-
-	void send_locate_reply(const spark::Link& link, const messaging::MessageRoot* root,
+	void send_locate_reply(const spark::Link& link, const spark::Message& message,
 	                       const boost::optional<Botan::BigInt>& key);
 
-	void send_account_locate_reply(const spark::Link& link, const messaging::MessageRoot* root); // todo
+	void account_lookup(const spark::Link& link, const spark::Message& message);
 
-	void send_register_reply(const spark::Link& link, const messaging::MessageRoot* root,
+	void send_register_reply(const spark::Link& link, const spark::Message& message,
 	                         messaging::account::Status status);
 
 public:
 	Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
 	~Service();
 
-	void on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const spark::Message& message) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 };

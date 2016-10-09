@@ -7,7 +7,6 @@
  */
 
 #include "Core_generated.h"
-
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
 #include <shared/FilterTypes.h>

@@ -47,7 +47,7 @@ void RealmService::on_message(const spark::Link& link, const spark::Message& mes
 
 	if(!handler->second.verify(message)) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
-			<< "Bad message received by core from "
+			<< "Bad message received from "
 			<< link.description << LOG_ASYNC;
 		return;
 	}
