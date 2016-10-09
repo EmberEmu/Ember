@@ -44,13 +44,7 @@ void MetricsImpl::timing(const char* key, std::chrono::milliseconds value) {
 
 void MetricsImpl::gauge(const char* key, std::size_t value, bool adjust) {
 	std::stringstream format;
-	format << key << ":";
-
-	if(adjust) {
-		format << (value >= 0? "+" : "-");
-	}
-
-	format << value << "|g";
+	format << key << ":" << value << "|g";
  	send(format.str());
 }
 
