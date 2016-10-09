@@ -468,7 +468,7 @@ protocol::Result CharacterHandler::validate_name(const std::string& name) const 
 		int ret = util::pcre::match(name, regex);
 
 		if(ret >= 0) {
-			return protocol::Result::CHAR_NAME_PROFANE;
+			return protocol::Result::CHAR_NAME_RESERVED;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
 			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
 			return protocol::Result::CHAR_NAME_FAILURE;

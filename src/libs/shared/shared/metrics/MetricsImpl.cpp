@@ -51,7 +51,7 @@ void MetricsImpl::gauge(const char* key, std::uintmax_t value, Adjustment adjust
 			break;
 		case Adjustment::NEGATIVE: format << "-";
 			break;
-		default:
+		case Adjustment::NONE:
 			break;
 	}
 
