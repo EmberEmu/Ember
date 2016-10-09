@@ -31,7 +31,7 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 		write_chain(packet, true);
 	};
 
-	handler_.execute_async = [&](auto& action) {
+	handler_.execute_async = [&](auto action) {
 		execute_async(action);
 	};
 }

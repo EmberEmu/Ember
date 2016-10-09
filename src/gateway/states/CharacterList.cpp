@@ -243,6 +243,8 @@ void handle_event(ClientContext* ctx, const Event* event) {
 		case EventType::CHAR_RENAME_RESPONSE:
 			character_rename_completion(ctx, static_cast<const CharRenameResponse*>(event));
 			break;
+		default:
+			break;
 	}
 }
 
