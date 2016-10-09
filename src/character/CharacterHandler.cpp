@@ -16,14 +16,6 @@
 
 namespace ember {
 
-CharacterHandler::CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
-                                   const std::vector<util::pcre::Result>& reserved_names,
-                                   const dbc::Storage& dbc, const dal::CharacterDAO& dao,
-                                   ThreadPool& pool, const std::locale& locale, log::Logger* logger)
-                                   : profane_names_(profane_names), reserved_names_(reserved_names),
-                                     dbc_(dbc), dao_(dao), pool_(pool), locale_(locale),
-                                     logger_(logger) { }
-
 void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
                               const messaging::character::CharacterTemplate& options,
                               ResultCB callback) const {
@@ -462,6 +454,17 @@ protocol::Result CharacterHandler::validate_name(const std::string& name) const 
 	}
 
 	for(auto& regex : profane_names_) {
+		int ret = util::pcre::match(name, regex);
+
+		if(ret >= 0) {
+			return protocol::Result::CHAR_NAME_PROFANE;
+		} else if(ret != PCRE_ERROR_NOMATCH) {
+			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
+			return protocol::Result::CHAR_NAME_FAILURE;
+		}
+	}
+
+	for(auto& regex : spam_names_) {
 		int ret = util::pcre::match(name, regex);
 
 		if(ret >= 0) {

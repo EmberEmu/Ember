@@ -87,21 +87,26 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto dbc_store = loader.load({
 		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
 		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartTalents",
-		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup"
+		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
+		"SpamMessages"
 	});
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
 	dbc::link(dbc_store);
 
 	LOG_INFO_GLOB << "Compiling DBC regular expressions..." << LOG_ASYNC;
-	std::vector<ember::util::pcre::Result> profanity, reserved;
+	std::vector<ember::util::pcre::Result> profanity, reserved, spam;
 
-	for(auto& i : dbc_store.names_profanity.values()) {
-		profanity.emplace_back(ember::util::pcre::utf8_jit_compile(i.name));
+	for(auto& record : dbc_store.names_profanity.values()) {
+		profanity.emplace_back(ember::util::pcre::utf8_jit_compile(record.name));
 	}
 
-	for(auto& i : dbc_store.names_reserved.values()) {
-		reserved.emplace_back(ember::util::pcre::utf8_jit_compile(i.name));
+	for(auto& record : dbc_store.names_reserved.values()) {
+		reserved.emplace_back(ember::util::pcre::utf8_jit_compile(record.name));
+	}
+
+	for(auto& record : dbc_store.spam_messages.values()) {
+		spam.emplace_back(ember::util::pcre::utf8_jit_compile(record.text));
 	}
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
@@ -142,7 +147,8 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	ThreadPool thread_pool(concurrency);
-	ember::CharacterHandler handler(profanity, reserved, dbc_store, *character_dao, thread_pool, temp, logger);
+	ember::CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
+	                                dbc_store, *character_dao, thread_pool, temp, logger);
 
 	spark::Service spark("character", service, s_address, s_port, logger, spark_filter);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,

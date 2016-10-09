@@ -13,6 +13,7 @@
 #include <shared/database/daos/CharacterDAO.h>
 #include <spark/temp/Character_generated.h>
 #include <shared/util/PCREHelper.h>
+#include <shared/threading/ThreadPool.h>
 #include <logger/Logging.h>
 //#include <boost/locale.hpp>
 #include <boost/optional.hpp>
@@ -39,8 +40,9 @@ class CharacterHandler {
 	const std::size_t MAX_CHARACTER_SLOTS_SERVER = 10;
 	const std::size_t MAX_CHARACTER_SLOTS_ACCOUNT = 100; // todo, allow config
 
-	const std::vector<util::pcre::Result>& profane_names_;
-	const std::vector<util::pcre::Result>& reserved_names_;
+	const std::vector<util::pcre::Result> profane_names_;
+	const std::vector<util::pcre::Result> reserved_names_;
+	const std::vector<util::pcre::Result> spam_names_;
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
 	const std::locale locale_;
@@ -69,10 +71,16 @@ class CharacterHandler {
 	void do_restore(std::uint64_t id, const ResultCB& callback) const;
 
 public:
-	CharacterHandler(const std::vector<util::pcre::Result>& profane_names,
-	                 const std::vector<util::pcre::Result>& reserved_names,
-	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
-	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger);
+	CharacterHandler(std::vector<util::pcre::Result> profane_names,
+	                 std::vector<util::pcre::Result> reserved_names,
+	                 std::vector<util::pcre::Result> spam_names,
+	                 dbc::Storage& dbc, const dal::CharacterDAO& dao,
+	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger)
+	                 : profane_names_(std::move(profane_names)),
+	                   reserved_names_(std::move(reserved_names)),
+	                   spam_names_(std::move(spam_names)),
+	                   dbc_(dbc), dao_(dao), pool_(pool), locale_(locale),
+	                   logger_(logger) {}
 
 	void create(std::uint32_t account_id, std::uint32_t realm_id,
 	            const messaging::character::CharacterTemplate& options, ResultCB callback) const;
