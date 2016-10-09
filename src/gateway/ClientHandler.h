@@ -25,7 +25,7 @@ class ClientConnection;
 class ClientHandler final {
 	ClientConnection& connection_;
 	ClientContext context_;
-    const ClientUUID uuid_;
+	const ClientUUID uuid_;
 	log::Logger* logger_;
 
 	std::string client_identify();
