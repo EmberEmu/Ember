@@ -131,10 +131,6 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 
 	// todo, use AddonData.dbc
 	for(auto& addon : packet.addons) {
-		if(addon.crc == 0) {
-			continue; // client doesn't send the CRC after the initial connection
-		}
-
 		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
@@ -142,7 +138,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 		data.type = protocol::SMSG_ADDON_INFO::AddonData::Type::BLIZZARD;
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
-		if(addon.crc != 0x4C1C776D || addon.key_version != 1) { // todo, define?
+		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
 			LOG_DEBUG_GLOB << "Repairing " << addon.name << "..." << LOG_ASYNC;
 			data.key_version = 1;
 		} else {
