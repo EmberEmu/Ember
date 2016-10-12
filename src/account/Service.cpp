@@ -123,21 +123,21 @@ void Service::send_locate_reply(const spark::Link& link, const boost::optional<B
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto opcode = util::enum_value(em::account::Opcode::SMSG_SESSION_LOOKUP);
-
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	em::account::SessionResponseBuilder klb(*fbb);
 
 	if(key) {
 		auto encoded_key = Botan::BigInt::encode(*key);
-		klb.add_key(fbb->CreateVector(encoded_key.data(), encoded_key.size()));
+		auto offset = fbb->CreateVector(encoded_key.data(), encoded_key.size());
+		em::account::SessionResponseBuilder klb(*fbb);
+		klb.add_key(offset);
 		klb.add_status(em::account::Status::OK);
+		fbb->Finish(klb.Finish());
 	} else {
+		em::account::SessionResponseBuilder klb(*fbb);
 		klb.add_status(em::account::Status::SESSION_NOT_FOUND);
+		fbb->Finish(klb.Finish());
 	}
 
-	
-	//klb.add_account_id(msg->account_id()); // todo, why does this even exist?
-	fbb->Finish(klb.Finish());
 	spark_.send(link, opcode, fbb);
 
 	/*LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "
