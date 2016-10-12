@@ -8,6 +8,7 @@
 
 #include "Service.h"
 #include <shared/util/EnumHelper.h>
+#include <flatbuffers/flatbuffers.h>
 
 namespace em = ember::messaging;
 
@@ -62,8 +63,7 @@ void Service::on_link_down(const spark::Link& link) {
 void Service::register_session(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto data = flatbuffers::GetRoot<>(message.data);
-	auto msg = static_cast<const em::account::RegisterKey*>(root->data());
+	auto msg = flatbuffers::GetRoot<em::account::RegisterSession>(message.data);
 	auto status = em::account::Status::OK;
 	
 	if(msg->key() && msg->account_id()) {
@@ -76,81 +76,72 @@ void Service::register_session(const spark::Link& link, const spark::Message& me
 		status = em::account::Status::ILLFORMED_MESSAGE;
 	}
 
-	send_register_reply(link, root, status);
+	send_register_reply(link, status);
 }
 
 void Service::locate_session(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto data = flatbuffers::GetRoot<>(message.data);
-	auto msg = static_cast<const em::account::SessionLookup*>(root->data());
+	auto msg = flatbuffers::GetRoot<em::account::SessionLookup>(message.data);
 	auto session = boost::optional<Botan::BigInt>();
 	
 	if(msg->account_id()) {
 		session = sessions_.lookup_session(msg->account_id());
 	}
 
-	send_locate_reply(link, root, session);
+	send_locate_reply(link, session);
 }
 
-void Service::send_register_reply(const spark::Link& link, const spark::Message& message,
-                                  em::account::Status status) {
+void Service::send_register_reply(const spark::Link& link, em::account::Status status) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto data = flatbuffers::GetRoot<>(message.data);
+	auto opcode = util::enum_value(em::account::Opcode::SMSG_REGISTER_SESSION);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	em::account::ResponseBuilder rb(*fbb);
+	em::account::SessionResponseBuilder rb(*fbb);
 	rb.add_status(status);
 	fbb->Finish(rb.Finish()); // check this
 
-	spark_.send(link, fbb);
+	spark_.send(link, opcode, fbb);
 }
 
 void Service::account_lookup(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto data = flatbuffers::GetRoot<>(message.data);
-	auto msg = static_cast<const em::account::AccountLookup*>(root->data());
+	auto opcode = util::enum_value(em::account::Opcode::SMSG_ACCOUNT_LOOKUP);
+	auto msg = flatbuffers::GetRoot<em::account::LookupID>(message.data);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
-	em::account::AccountLookupResponseBuilder klb(*fbb);
+	em::account::LookupIDResponseBuilder klb(*fbb);
 	klb.add_status(em::account::Status::OK);
 	klb.add_account_id(1); // todo
 	auto data_offset = klb.Finish();
-
-
-	fbb->Finish(mloc);
-	spark_.send(link, fbb);
-
-	// todo, logging
+	fbb->Finish(klb.Finish());
+	spark_.send(link, opcode, fbb);
 }
 
-void Service::send_locate_reply(const spark::Link& link, const spark::Message& message,
-                                const boost::optional<Botan::BigInt>& key) {
+void Service::send_locate_reply(const spark::Link& link, const boost::optional<Botan::BigInt>& key) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto data = flatbuffers::GetRoot<>(message.data);
-	auto msg = static_cast<const em::account::KeyLookup*>(root->data());
+	auto opcode = util::enum_value(em::account::Opcode::SMSG_SESSION_LOOKUP);
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	em::account::KeyLookupRespBuilder klb(*fbb);
-	em::account::Status status;
+	em::account::SessionResponseBuilder klb(*fbb);
 
 	if(key) {
 		auto encoded_key = Botan::BigInt::encode(*key);
 		klb.add_key(fbb->CreateVector(encoded_key.data(), encoded_key.size()));
-		status = em::account::Status::OK;
+		klb.add_status(em::account::Status::OK);
 	} else {
-		status = em::account::Status::SESSION_NOT_FOUND;
+		klb.add_status(em::account::Status::SESSION_NOT_FOUND);
 	}
 
-	klb.add_status(status);
-	klb.add_account_id(msg->account_id());
+	
+	//klb.add_account_id(msg->account_id()); // todo, why does this even exist?
 	fbb->Finish(klb.Finish());
-	spark_.send(link, fbb);
+	spark_.send(link, opcode, fbb);
 
-	LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "
-		<< util::fb_status(status, messaging::account::EnumNamesStatus()) << LOG_ASYNC;
+	/*LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "
+		<< util::fb_status(status, messaging::account::EnumNamesStatus()) << LOG_ASYNC;*/
 }
 
 } // ember

@@ -27,14 +27,9 @@ class Service final : public spark::EventHandler {
 
 	void register_session(const spark::Link& link, const spark::Message& message);
 	void locate_session(const spark::Link& link, const spark::Message& message);
-
-	void send_locate_reply(const spark::Link& link, const spark::Message& message,
-	                       const boost::optional<Botan::BigInt>& key);
-
+	void send_locate_reply(const spark::Link& link, const boost::optional<Botan::BigInt>& key);
 	void account_lookup(const spark::Link& link, const spark::Message& message);
-
-	void send_register_reply(const spark::Link& link, const spark::Message& message,
-	                         messaging::account::Status status);
+	void send_register_reply(const spark::Link& link, messaging::account::Status status);
 
 public:
 	Service(Sessions& sessions, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
