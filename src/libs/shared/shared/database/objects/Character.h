@@ -80,4 +80,4 @@ struct Character { // used for character list display
 
 ENABLE_BITMASK(Character::Flags);
 
-} //ember
+} // ember

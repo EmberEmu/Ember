@@ -9,12 +9,13 @@
 #pragma once
 
 #include "CharacterHandler.h"
-#include <shared/database/daos/CharacterDAO.h>
+#include "Character_generated.h"
+#include <spark/Helpers.h>
 #include <spark/Service.h>
-#include "Character_generated.h""
 #include <logger/Logging.h>
-#include <string>
-#include <cstdint>
+#include <shared/database/objects/Character.h>
+#include <shared/database/daos/CharacterDAO.h>
+#include <vector>
 
 namespace ember {
 
@@ -23,30 +24,31 @@ class Service final : public spark::EventHandler {
 	dal::CharacterDAO& character_dao_;
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
+	std::unordered_map<messaging::core::Opcode, spark::LocalDispatcher> handlers_;
 	log::Logger* logger_;
 
-	void retrieve_characters(const spark::Link& link, const messaging::MessageRoot* root);
-	void create_character(const spark::Link& link, const messaging::MessageRoot* root);
-	void rename_character(const spark::Link& link, const messaging::MessageRoot* root);
-	void delete_character(const spark::Link& link, const messaging::MessageRoot* root);
+	void retrieve_characters(const spark::Link& link, const spark::Message& message);
+	void create_character(const spark::Link& link, const spark::Message& message);
+	void rename_character(const spark::Link& link, const spark::Message& message);
+	void delete_character(const spark::Link& link, const spark::Message& message);
 
-	void send_character_list(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
-	                         const boost::optional<std::vector<Character>>& characters);
+	void send_character_list(const spark::Link& link, const spark::ResponseToken& token, 
+	                         em::character::Status status, const std::vector<Character>& characters);
 
-	void send_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
+	void send_response(const spark::Link& link, const spark::ResponseToken& token, 
 	                   messaging::character::Status status, protocol::Result result);
 
-	void send_rename_response(const spark::Link& link, const std::vector<std::uint8_t>& tracking,
-	                          messaging::character::Status status, protocol::Result result,
-	                          boost::optional<Character> character);
+	void send_rename_response(const spark::Link& link, const spark::ResponseToken& token,
+	                          protocol::Result result, boost::optional<Character> character);
 
 public:
 	Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,
 	        spark::ServiceDiscovery& discovery, log::Logger* logger);
 	~Service();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const spark::Message& message) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 };
 
 } // ember

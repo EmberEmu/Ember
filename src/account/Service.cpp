@@ -116,6 +116,7 @@ void Service::account_lookup(const spark::Link& link, const spark::Message& mess
 	klb.add_account_id(1); // todo
 	auto data_offset = klb.Finish();
 	fbb->Finish(klb.Finish());
+
 	spark_.send(link, opcode, fbb);
 }
 

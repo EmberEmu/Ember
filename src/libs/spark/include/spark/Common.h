@@ -20,14 +20,14 @@ struct Link;
 struct Endpoint;
 class ServiceDiscovery;
 
-typedef boost::uuids::uuid ResponseToken;
+typedef boost::optional<boost::uuids::uuid> ResponseToken;
 
 struct Message {
 	messaging::Service service;
 	std::uint16_t opcode;
 	std::uint32_t size;
 	const std::uint8_t* data;
-	boost::optional<ResponseToken> token;
+	ResponseToken token;
 };
 
 typedef std::function<void(const spark::Link&, boost::optional<Message>)> TrackingHandler;
