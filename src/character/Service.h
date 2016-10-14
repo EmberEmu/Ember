@@ -32,13 +32,13 @@ class Service final : public spark::EventHandler {
 	void rename_character(const spark::Link& link, const spark::Message& message);
 	void delete_character(const spark::Link& link, const spark::Message& message);
 
-	void send_character_list(const spark::Link& link, const spark::ResponseToken& token, 
+	void send_character_list(const spark::Link& link, const spark::Beacon& token, 
 	                         em::character::Status status, const std::vector<Character>& characters);
 
-	void send_response(const spark::Link& link, const spark::ResponseToken& token, 
+	void send_response(const spark::Link& link, const spark::Beacon& token, 
 	                   messaging::character::Status status, protocol::Result result);
 
-	void send_rename_response(const spark::Link& link, const spark::ResponseToken& token,
+	void send_rename_response(const spark::Link& link, const spark::Beacon& token,
 	                          protocol::Result result, boost::optional<Character> character);
 
 public:

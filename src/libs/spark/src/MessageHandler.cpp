@@ -179,7 +179,7 @@ void MessageHandler::dispatch_message(const Message& message) {
 
 bool MessageHandler::handle_message(NetworkSession& net, const messaging::core::Header* header,
                                     const std::uint8_t* data, std::uint32_t size) {
-	boost::optional<ResponseToken> token;
+	boost::optional<Beacon> token;
 
 	if(header->uuid()) {
 		boost::uuids::uuid uuid;

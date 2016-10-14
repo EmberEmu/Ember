@@ -34,7 +34,7 @@ void AccountService::on_link_down(const spark::Link& link) {
 	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
-void AccountService::on_message(const spark::Link& link, const spark::ResponseToken& token,
+void AccountService::on_message(const spark::Link& link, const spark::Beacon& token,
                                 std::uint16_t opcode, const std::uint8_t* data) {
 	// we only care about tracked messages at the moment
 	LOG_DEBUG(logger_) << "Account service received unhandled message" << LOG_ASYNC;

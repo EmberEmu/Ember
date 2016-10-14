@@ -103,7 +103,7 @@ void Service::create_character(const spark::Link& link, const spark::Message& me
 	});
 }
 
-void Service::send_character_list(const spark::Link& link, const spark::ResponseToken& token,
+void Service::send_character_list(const spark::Link& link, const spark::Beacon& token,
                                   em::character::Status status,
                                   const std::vector<Character>& characters) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -149,7 +149,7 @@ void Service::send_character_list(const spark::Link& link, const spark::Response
 	spark_.send(link, opcode, fbb);
 }
 
-void Service::send_rename_response(const spark::Link& link, const spark::ResponseToken& token,
+void Service::send_rename_response(const spark::Link& link, const spark::Beacon& token,
                                    protocol::Result result, boost::optional<Character> character) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -170,7 +170,7 @@ void Service::send_rename_response(const spark::Link& link, const spark::Respons
 	spark_.send(link, opcode, fbb);
 }
 
-void Service::send_response(const spark::Link& link, const spark::ResponseToken& token,
+void Service::send_response(const spark::Link& link, const spark::Beacon& token,
                             em::character::Status status, protocol::Result result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 

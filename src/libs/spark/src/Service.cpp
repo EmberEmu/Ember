@@ -101,7 +101,7 @@ auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 }
 
 auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
-                   const ResponseToken& token) const -> Result {
+                   const Beacon& token) const -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -113,7 +113,7 @@ auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 }
 
 auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
-                   const ResponseToken& token, TrackingHandler callback) -> Result {
+                   const Beacon& token, TrackingHandler callback) -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {

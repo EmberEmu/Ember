@@ -63,10 +63,10 @@ public:
 
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb) const;
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
-	            const ResponseToken& token) const;
+	            const Beacon& token) const;
 
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
-	            const ResponseToken& token, TrackingHandler callback);
+	            const Beacon& token, TrackingHandler callback);
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 	            TrackingHandler callback);
 

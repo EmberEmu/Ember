@@ -43,7 +43,7 @@ public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
 	~AccountService();
 
-	void on_message(const spark::Link& link, const spark::ResponseToken& token, const void* root /*temp*/) override;
+	void on_message(const spark::Link& link, const spark::Beacon& token, const void* root /*temp*/) override;
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 
