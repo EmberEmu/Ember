@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Core_generated.h"
 #include "Multicast_generated.h"
 #include <spark/ServiceDiscovery.h>
 #include <spark/ServiceListener.h>
@@ -22,8 +23,9 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service, std::string
                                    const std::string& mcast_group, std::uint16_t mcast_port,
                                    log::Logger* logger)
                                    : address_(std::move(address)), port_(port),
-                                     socket_(service), logger_(logger),
-                                     service_(service), endpoint_(bai::address::from_string(mcast_group), mcast_port) {
+                                     socket_(service), logger_(logger), service_(service),
+                                     endpoint_(bai::address::from_string(mcast_group),
+                                     mcast_port) {
 	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
 	socket_.open(listen_endpoint.protocol());
@@ -64,20 +66,20 @@ void ServiceDiscovery::handle_receive(const boost::system::error_code& ec, std::
 void ServiceDiscovery::handle_packet(std::size_t size) {
 	flatbuffers::Verifier verifier(buffer_.data(), size);
 
-	if(!mcast::VerifyMessageRootBuffer(verifier)) {
-		LOG_DEBUG_FILTER(logger_, LF_SPARK)
-			<< "[spark] Multicast message failed validation" << LOG_ASYNC;
+	auto root = flatbuffers::GetRoot<messaging::core::Header>(buffer_.data());
+	
+	if(!root->Verify) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Multicast message header failed validation" << LOG_ASYNC;
 		return;
 	}
 
-	auto message = mcast::GetMessageRoot(buffer_.data());
-
-	switch(message->data_type()) {
-		case mcast::Data::Locate:
-			handle_locate(static_cast<const mcast::Locate*>(message->data()));
+	switch(root->opcode) {
+		case mcast::Opcode::CMSG_LOCATE:
+			handle_locate(flatbuffers::GetRoot<mcast::Locate>(buffer_.data()));
 			break;
-		case mcast::Data::LocateAnswer:
-			handle_locate_answer(static_cast<const mcast::LocateAnswer*>(message->data()));
+		case mcast::Opcode::SMSG_LOCATE:
+			handle_locate_answer(flatbuffers::GetRoot<mcast::LocateResponse>(buffer_.data()));
 			break;
 		default:
 			LOG_WARN_FILTER(logger_, LF_SPARK)
@@ -90,7 +92,7 @@ void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb)
 	socket_.async_send_to(boost::asio::buffer(fbb->GetBufferPointer(), fbb->GetSize()), endpoint_,
 		[this, fbb](const boost::system::error_code& ec, std::size_t /*size*/) {
 			if(ec) {
-				LOG_WARN_FILTER(logger_, LF_SPARK)
+				LOG_ERROR_FILTER(logger_, LF_SPARK)
 					<< "[spark] Error on sending service discovery packet: "
 					<< ec.message() << LOG_ASYNC;
 			}
@@ -104,7 +106,8 @@ void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
 	vec.erase(std::remove(vec.begin(), vec.end(), listener), vec.end());
 }
 
-std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service, LocateCallback cb) {
+std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service,
+                                                            LocateCallback cb) {
 	auto listener = std::make_unique<ServiceListener>(this, service, cb);
 	std::lock_guard<std::mutex> guard(lock_);
 	listeners_[service].emplace_back(listener.get());
@@ -113,8 +116,7 @@ std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service s
 
 void ServiceDiscovery::locate_service(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Locate,
-		mcast::CreateLocate(*fbb, service).Union());
+	auto msg = mcast::CreateLocate(*fbb, service);
 	fbb->Finish(msg);
 	send(fbb);
 }
@@ -122,27 +124,26 @@ void ServiceDiscovery::locate_service(messaging::Service service) {
 void ServiceDiscovery::send_announce(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto ip = fbb->CreateString(address_);
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::LocateAnswer,
-		mcast::CreateLocateAnswer(*fbb, ip, port_, service).Union());
+	auto msg = 	mcast::CreateLocateResponse(*fbb, ip, port_, service);
 	fbb->Finish(msg);
 	send(fbb);
 }
 
 void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 	// check to see if we a matching service registered
-	std::unique_lock<std::mutex> guard(lock_);
-
-	auto it = std::find(services_.begin(), services_.end(), message->type());
+	std::lock_guard<std::mutex> guard(lock_);
+	
+	auto it = std::find(services_.begin(), services_.end(), message->service());
 
 	if(it == services_.end()) {
 		return; // no matching services
 	}
 
-	send_announce(message->type());
+	send_announce(message->service());
 }
 
-void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
-	if(message->type() == messaging::Service::Reserved
+void ServiceDiscovery::handle_locate_answer(const mcast::LocateResponse* message) {
+	if(message->type() != messaging::Service::CORE_DISCOVERY
 	   || !message->ip() || !message->port()) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Received incompatible locate answer " << LOG_ASYNC;

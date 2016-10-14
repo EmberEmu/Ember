@@ -83,7 +83,7 @@ std::shared_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_status() con
 
 void RealmService::broadcast_realm_status() const {
 	auto fbb = build_status();
-	spark_.broadcast(em::Service::GATEWAY, spark::ServicesMap::Mode::CLIENT, std::move(fbb));
+	spark_.broadcast(em::Service::GATEWAY, spark::ServicesMap::Mode::CLIENT, fbb);
 }
 
 void RealmService::on_link_up(const spark::Link& link) { 

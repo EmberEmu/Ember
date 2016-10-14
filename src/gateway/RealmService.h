@@ -11,6 +11,7 @@
 #include "RealmStatus_generated.h"
 #include <shared/Realm.h>
 #include <spark/Service.h>
+#include <spark/Common.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/Helpers.h>
 #include <logger/Logging.h>

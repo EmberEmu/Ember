@@ -47,7 +47,7 @@ class ServiceDiscovery {
 	void receive();
 	void handle_packet(std::size_t size);
 	void handle_locate(const messaging::multicast::Locate* message);
-	void handle_locate_answer(const messaging::multicast::LocateAnswer* message);
+	void handle_locate_answer(const messaging::multicast::LocateResponse* message);
 
 	// packet senders
 	void send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb);
