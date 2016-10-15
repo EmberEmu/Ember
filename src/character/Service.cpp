@@ -7,7 +7,7 @@
  */
 
 #include "Service.h"
-#include <game_protocol/ResultCodes.h>
+#include "CharacterHandler.h"
 #include <shared/util/EnumHelper.h>
 #include <string>
 #include <cstdint>
@@ -34,10 +34,6 @@ Service::~Service() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void Service::on_message(const spark::Link& link, const spark::Message& message) {
-
-}
-
 void Service::on_link_up(const spark::Link& link) {
 	LOG_INFO(logger_) << "Link up: " << link.description << LOG_ASYNC;
 }
@@ -49,7 +45,7 @@ void Service::on_link_down(const spark::Link& link) {
 void Service::on_message(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto handler = handlers_.find(static_cast<messaging::core::Opcode>(message.opcode));
+	auto handler = handlers_.find(static_cast<messaging::character::Opcode>(message.opcode));
 
 	if(handler == handlers_.end()) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
@@ -65,7 +61,7 @@ void Service::on_message(const spark::Link& link, const spark::Message& message)
 		return;
 	}
 
-	handler->second.handle(message);
+	handler->second.handle(link, message);
 }
 
 void Service::retrieve_characters(const spark::Link& link, const spark::Message& message) {
@@ -74,11 +70,11 @@ void Service::retrieve_characters(const spark::Link& link, const spark::Message&
 	auto msg = flatbuffers::GetRoot<em::character::Retrieve>(message.data);
 	auto token = message.token;
 
-	handler_.enumerate(msg->account_id(), msg->realm_id(), [token](const auto& chars) {
+	handler_.enumerate(msg->account_id(), msg->realm_id(), [this, link, token](const auto& chars) {
 		if(chars) {
 			send_character_list(link, token, em::character::Status::OK, *chars);
 		} else {
-			send_character_list(link, token, chars, em::character::Status::UNKNOWN_ERROR, {});
+			send_character_list(link, token, em::character::Status::UNKNOWN_ERROR, {});
 		}
 	});
 }
@@ -193,7 +189,7 @@ void Service::delete_character(const spark::Link& link, const spark::Message& me
 
 	handler_.erase(msg->account_id(), msg->realm_id(), msg->character_id(), [&, link, token](auto res) {
 		LOG_DEBUG(logger_) << "Deletion response code: " << protocol::to_string(res) << LOG_ASYNC;
-		send_response(link, tracking, messaging::character::Status::OK, res);
+		send_response(link, message.token, messaging::character::Status::OK, res);
 	});
 }
 

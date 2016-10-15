@@ -112,8 +112,8 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 
 	std::sort(servers.begin(), servers.end());
 	std::sort(clients.begin(), clients.end());
-	std::sort(protocols->proto_in()->begin(), protocols->proto_in()->end());   // remote servers
-	std::sort(protocols->proto_out()->begin(), protocols->proto_out()->end()); // remote clients
+//	std::sort(protocols->proto_in()->begin(), protocols->proto_in()->end());   // remote servers
+//	std::sort(protocols->proto_out()->begin(), protocols->proto_out()->end()); // remote clients
 
 	// match our clients to their servers
 	std::set_intersection(clients.begin(), clients.end(),
@@ -170,7 +170,7 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 
 void MessageHandler::dispatch_message(const Message& message) {
 	// if there's a tracking UUID set in the message, route it through the tracking service
-	if(message.token) {
+	if(message.token.tracked) {
 		dispatcher_.dispatch_message(messaging::Service::CORE_TRACKING, peer_, message);
 	} else {
 		dispatcher_.dispatch_message(message.service, peer_, message);
@@ -179,15 +179,16 @@ void MessageHandler::dispatch_message(const Message& message) {
 
 bool MessageHandler::handle_message(NetworkSession& net, const messaging::core::Header* header,
                                     const std::uint8_t* data, std::uint32_t size) {
-	boost::optional<Beacon> token;
+	Beacon token;
 
 	if(header->uuid()) {
 		boost::uuids::uuid uuid;
 		std::copy(header->uuid()->begin(), header->uuid()->end(), uuid.data);
-		token = std::move(uuid);
+		token.uuid = std::move(uuid);
+		token.tracked = true;
 	}
 
-	const Message message { header->service(), header->opcode(), size, data, token };
+	const Message message { header->service(), header->opcode(), size, data, std::move(token) };
 
 	switch(state_) {
 		case State::HANDSHAKING:

@@ -14,7 +14,7 @@ namespace ember {
 
 // Service specific filters
 enum ExtendedFilterType {
-	LF_NAUGHTY_USER = 128
+
 };
 
 } // ember

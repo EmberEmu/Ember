@@ -8,7 +8,6 @@
 
 #include "RealmService.h"
 #include "RealmList.h"
-#include "RealmStatus_generated.h"
 #include <shared/util/EnumHelper.h>
 
 namespace em = ember::messaging;
@@ -52,7 +51,7 @@ void RealmService::on_message(const spark::Link& link, const spark::Message& mes
 		return;
 	}
 
-	handler->second.handle(message);
+	handler->second.handle(link, message);
 }
 
 void RealmService::handle_realm_status(const spark::Link& link, const spark::Message& message) {
@@ -93,7 +92,7 @@ void RealmService::on_link_down(const spark::Link& link) {
 	mark_realm_offline(link);
 }
 
-void RealmService::service_located(const messaging::multicast::LocateAnswer* message) {
+void RealmService::service_located(const messaging::multicast::LocateResponse* message) {
 	LOG_DEBUG(logger_) << "Located realm gateway at " << message->ip()->str()
 	                   << ":" << message->port() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());

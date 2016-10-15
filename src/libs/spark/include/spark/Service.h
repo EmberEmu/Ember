@@ -63,7 +63,7 @@ public:
 
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb) const;
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
-	            const Beacon& token) const;
+	            const Beacon& token);
 
 	Result send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 	            const Beacon& token, TrackingHandler callback);
@@ -74,10 +74,10 @@ public:
 	void shutdown();
 
 	template<typename MessageType>
-	[[nodiscard]] static bool verify(const Message& message) {
+	/*[[nodiscard]] todo*/ static bool verify(const Message& message) {
 		flatbuffers::Verifier verifier(message.data, message.size);
-		auto message = flatbuffers::GetRoot<MessageType>(message.data);
-		return message->Verify(verifier);
+		auto root = flatbuffers::GetRoot<MessageType>(message.data);
+		return root->Verify(verifier);
 	}
 };
 

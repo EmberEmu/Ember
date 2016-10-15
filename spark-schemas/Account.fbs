@@ -24,6 +24,10 @@ enum DisconnectReason : ubyte {
 	INTERNAL_LINK_LOST
 }
 
+table Response {
+	status:Status;
+}
+
 table LookupID {
 	account_name:string;
 }

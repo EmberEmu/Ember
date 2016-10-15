@@ -26,6 +26,8 @@
 
 namespace ember { namespace spark {
 
+typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
+
 class ServiceDiscovery {
 	static const std::size_t BUFFER_SIZE = 1024;
 
@@ -50,7 +52,8 @@ class ServiceDiscovery {
 	void handle_locate_answer(const messaging::multicast::LocateResponse* message);
 
 	// packet senders
-	void send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb);
+	void send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb,
+	          messaging::multicast::Opcode opcode);
 	void send_announce(messaging::Service service);
 
 	void locate_service(messaging::Service);

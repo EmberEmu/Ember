@@ -47,9 +47,9 @@ public:
 	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
 	                 log::Logger* logger);
 
-	void on_message(const spark::Link& link, const Message& message) override;
-	void on_link_up(const spark::Link& link) override;
-	void on_link_down(const spark::Link& link) override;
+	void on_message(const Link& link, const Message& message) override;
+	void on_link_up(const Link& link) override;
+	void on_link_down(const Link& link) override;
 
 	void shutdown();
 };

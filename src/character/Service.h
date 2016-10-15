@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "CharacterHandler.h"
 #include "Character_generated.h"
+#include <game_protocol/ResultCodes.h>
 #include <spark/Helpers.h>
 #include <spark/Service.h>
 #include <logger/Logging.h>
@@ -19,12 +19,14 @@
 
 namespace ember {
 
+class CharacterHandler;
+
 class Service final : public spark::EventHandler {
 	const CharacterHandler& handler_;
 	dal::CharacterDAO& character_dao_;
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
-	std::unordered_map<messaging::core::Opcode, spark::LocalDispatcher> handlers_;
+	std::unordered_map<messaging::character::Opcode, spark::LocalDispatcher> handlers_;
 	log::Logger* logger_;
 
 	void retrieve_characters(const spark::Link& link, const spark::Message& message);
@@ -33,7 +35,8 @@ class Service final : public spark::EventHandler {
 	void delete_character(const spark::Link& link, const spark::Message& message);
 
 	void send_character_list(const spark::Link& link, const spark::Beacon& token, 
-	                         em::character::Status status, const std::vector<Character>& characters);
+	                         messaging::character::Status status,
+	                         const std::vector<Character>& characters);
 
 	void send_response(const spark::Link& link, const spark::Beacon& token, 
 	                   messaging::character::Status status, protocol::Result result);

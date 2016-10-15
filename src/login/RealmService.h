@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "RealmStatus_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/Helpers.h>
@@ -34,7 +35,7 @@ class RealmService final : public spark::EventHandler {
 
 	spark::Link link_;
 
-	void service_located(const messaging::multicast::LocateAnswer* message);
+	void service_located(const messaging::multicast::LocateResponse* message);
 	void request_realm_status(const spark::Link& link);
 	void mark_realm_offline(const spark::Link& link);
 	void handle_realm_status(const spark::Link& link, const spark::Message& message);

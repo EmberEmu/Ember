@@ -8,18 +8,18 @@
 
 #pragma once
 
-#include <spark/Link.h>
 #include <cstdint>
 
 namespace ember { namespace spark {
 
 struct Message;
+struct Link;
 
 class EventHandler {
 public:
-	virtual void on_message(const spark::Link& link, const Message& message) = 0;
-	virtual void on_link_up(const spark::Link& link) = 0;
-	virtual void on_link_down(const spark::Link& link) = 0;
+	virtual void on_message(const Link& link, const Message& message) = 0;
+	virtual void on_link_up(const Link& link) = 0;
+	virtual void on_link_down(const Link& link) = 0;
 
 	virtual ~EventHandler() = default;
 };

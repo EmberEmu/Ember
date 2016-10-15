@@ -11,7 +11,6 @@
 #include <spark/Common.h>
 #include <spark/Link.h>
 #include <spark/EventHandler.h>
-#include <spark/Service.h> // todo, remove
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/functional/hash.hpp>
@@ -48,9 +47,9 @@ class TrackingService : public EventHandler {
 public:
 	TrackingService(boost::asio::io_service& service, log::Logger* logger);
 
-	void on_message(const spark::Link& link, const Message& message) override;
-	void on_link_up(const spark::Link& link) override;
-	void on_link_down(const spark::Link& link) override;
+	void on_message(const Link& link, const Message& message) override;
+	void on_link_up(const Link& link) override;
+	void on_link_down(const Link& link) override;
 
 	void register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
 	                      std::chrono::milliseconds timeout);

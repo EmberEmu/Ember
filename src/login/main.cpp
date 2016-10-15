@@ -188,9 +188,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
-	es::Service spark("login", service, s_address, s_port, logger, spark_filter);
+	es::Service spark("login", service, s_address, s_port, logger);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger, spark_filter);
+	                               mcast_port, logger);
 
 	ember::AccountService acct_svc(spark, discovery, logger);
 	ember::RealmService realm_svc(realm_list, spark, discovery, logger);

@@ -33,7 +33,7 @@ Service::~Service() {
 void Service::on_message(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto handler = handlers_.find(static_cast<messaging::core::Opcode>(message.opcode));
+	auto handler = handlers_.find(static_cast<messaging::account::Opcode>(message.opcode));
 
 	if(handler == handlers_.end()) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
@@ -49,7 +49,7 @@ void Service::on_message(const spark::Link& link, const spark::Message& message)
 		return;
 	}
 
-	handler->second.handle(message);
+	handler->second.handle(link, message);
 }
 
 void Service::on_link_up(const spark::Link& link) {

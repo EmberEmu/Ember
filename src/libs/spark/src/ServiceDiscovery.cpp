@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#define FLATBUFFERS_TRACK_VERIFIER_BUFFER_SIZE
 #include "Core_generated.h"
 #include "Multicast_generated.h"
 #include <spark/ServiceDiscovery.h>
@@ -66,20 +67,22 @@ void ServiceDiscovery::handle_receive(const boost::system::error_code& ec, std::
 void ServiceDiscovery::handle_packet(std::size_t size) {
 	flatbuffers::Verifier verifier(buffer_.data(), size);
 
-	auto root = flatbuffers::GetRoot<messaging::core::Header>(buffer_.data());
+	auto root = flatbuffers::GetSizePrefixedRoot<messaging::core::Header>(buffer_.data());
 	
-	if(!root->Verify) {
+	if(!root->Verify(verifier)) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Multicast message header failed validation" << LOG_ASYNC;
 		return;
 	}
 
-	switch(root->opcode) {
+	auto body = buffer_.data() + verifier.GetComputedSize();
+	
+	switch(static_cast<mcast::Opcode>(root->opcode())) {
 		case mcast::Opcode::CMSG_LOCATE:
-			handle_locate(flatbuffers::GetRoot<mcast::Locate>(buffer_.data()));
+			handle_locate(flatbuffers::GetRoot<mcast::Locate>(body));
 			break;
 		case mcast::Opcode::SMSG_LOCATE:
-			handle_locate_answer(flatbuffers::GetRoot<mcast::LocateResponse>(buffer_.data()));
+			handle_locate_answer(flatbuffers::GetRoot<mcast::LocateResponse>(body));
 			break;
 		default:
 			LOG_WARN_FILTER(logger_, LF_SPARK)
@@ -88,13 +91,24 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 	}
 }
 
-void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {
-	socket_.async_send_to(boost::asio::buffer(fbb->GetBufferPointer(), fbb->GetSize()), endpoint_,
-		[this, fbb](const boost::system::error_code& ec, std::size_t /*size*/) {
+void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> msg,
+							mcast::Opcode opcode) {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto header = messaging::core::CreateHeader(*fbb, static_cast<std::uint16_t>(opcode),
+	                                            messaging::Service::CORE_DISCOVERY);
+	fbb->FinishSizePrefixed(header);
+
+	std::vector<boost::asio::const_buffer> buffers {
+		{ fbb->GetBufferPointer(), fbb->GetSize() },
+		{ msg->GetBufferPointer(), msg->GetSize() }
+	};
+
+	socket_.async_send_to(buffers, endpoint_,
+		[this, msg, fbb](const boost::system::error_code& ec, std::size_t size) {
 			if(ec) {
 				LOG_ERROR_FILTER(logger_, LF_SPARK)
 					<< "[spark] Error on sending service discovery packet: "
-					<< ec.message() << LOG_ASYNC;
+					<< ec.message() << ", size " << size << LOG_ASYNC;
 			}
 		}
 	);
@@ -117,16 +131,16 @@ std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service s
 void ServiceDiscovery::locate_service(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto msg = mcast::CreateLocate(*fbb, service);
-	fbb->Finish(msg);
-	send(fbb);
+	fbb->FinishSizePrefixed(msg);
+	send(fbb, mcast::Opcode::CMSG_LOCATE);
 }
 
 void ServiceDiscovery::send_announce(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto ip = fbb->CreateString(address_);
 	auto msg = 	mcast::CreateLocateResponse(*fbb, ip, port_, service);
-	fbb->Finish(msg);
-	send(fbb);
+	fbb->FinishSizePrefixed(msg);
+	send(fbb, mcast::Opcode::SMSG_LOCATE);
 }
 
 void ServiceDiscovery::handle_locate(const mcast::Locate* message) {

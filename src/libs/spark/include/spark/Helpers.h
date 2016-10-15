@@ -8,13 +8,15 @@
 
 #pragma once
 
-#include <spark/Service.h> // todo, remove
 #include <functional>
 
 namespace ember { namespace spark {
 
+struct Link;
+struct Message;
+
 typedef std::function<bool(const Message&)> Verifier;
-typedef std::function<void(const Message&)> Handler;
+typedef std::function<void(const Link&, const Message&)> Handler;
 
 struct LocalDispatcher {
 	Verifier verify;
@@ -24,10 +26,10 @@ struct LocalDispatcher {
 }} // spark, ember
 
 #define VERIFY(type, message) \
-	[](auto& message) { Service::verify<type>(message) }
+	[](auto& message) { return spark::Service::verify<type>(message); }
 
-#define HANDLER(type) \
-	std::bind(&type, this, std::placeholders::_1)
+#define HANDLER(handler) \
+	std::bind(&handler, this, std::placeholders::_1, std::placeholders::_2)
 
 #define REGISTER(opcode, type, handler) \
-	handlers_.emplace(opcode, VERIFY(type, ##message), HANDLER(handler))
+	handlers_.emplace(opcode, spark::LocalDispatcher { VERIFY(type, ##message), HANDLER(handler) })

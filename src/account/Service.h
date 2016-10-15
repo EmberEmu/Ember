@@ -23,7 +23,7 @@ class Service final : public spark::EventHandler {
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
-	std::unordered_map<messaging::core::Opcode, spark::LocalDispatcher> handlers_;
+	std::unordered_map<messaging::account::Opcode, spark::LocalDispatcher> handlers_;
 
 	void register_session(const spark::Link& link, const spark::Message& message);
 	void locate_session(const spark::Link& link, const spark::Message& message);

@@ -43,14 +43,14 @@ void CharacterService::on_link_down(const spark::Link& link) {
 	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
-void CharacterService::service_located(const messaging::multicast::LocateAnswer* message) {
+void CharacterService::service_located(const messaging::multicast::LocateResponse* message) {
 	LOG_DEBUG(logger_) << "Located character service at " << message->ip()->str() 
 	                   << ":" << message->port() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());
 }
 
 void CharacterService::handle_reply(const spark::Link& link,
-                                    boost::optional<const spark::Message> message,
+                                    boost::optional<spark::Message>& message,
                                     const ResponseCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -64,7 +64,7 @@ void CharacterService::handle_reply(const spark::Link& link,
 }
 
 void CharacterService::handle_rename_reply(const spark::Link& link,
-                                           boost::optional<const spark::Message> message,
+                                           boost::optional<spark::Message>& message,
                                            const RenameCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -86,7 +86,7 @@ void CharacterService::handle_rename_reply(const spark::Link& link,
 }
 
 void CharacterService::handle_retrieve_reply(const spark::Link& link,
-                                             boost::optional<const spark::Message> message,
+                                             boost::optional<spark::Message>& message,
                                              const RetrieveCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -157,7 +157,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	msg.add_realm_id(config_.realm->id);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
 		handle_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
@@ -180,7 +180,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	msg.add_name(fb_name);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
 		handle_rename_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, nullptr);
@@ -197,7 +197,7 @@ void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB 
 	msg.add_realm_id(config_.realm->id);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
 		handle_retrieve_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
@@ -212,12 +212,12 @@ void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	em::character::DeleteBuilder msg(*fbb);
-	msg.add_account_id = account_id;
-	msg.add_character_id = id;
-	msg.add_realm_id = config_.realm->id;
+	msg.add_account_id (account_id);
+	msg.add_character_id(id);
+	msg.add_realm_id(config_.realm->id);
 	msg.Finish();
 
-	if(spark_.send(link_, opcode, fbb, [cb](auto link, auto message, auto data) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
 		handle_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});

@@ -81,9 +81,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
 	boost::asio::io_service service;
-	es::Service spark("social", service, s_address, s_port, logger, spark_filter);
+	es::Service spark("social", service, s_address, s_port, logger);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger, spark_filter);
+	                               mcast_port, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();

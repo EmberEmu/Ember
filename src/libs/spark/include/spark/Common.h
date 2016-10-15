@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Multicast_generated.h"
+#include "Services_generated.h"
 #include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <functional>
@@ -18,9 +18,11 @@ namespace ember { namespace spark {
 
 struct Link;
 struct Endpoint;
-class ServiceDiscovery;
 
-typedef boost::optional<boost::uuids::uuid> Beacon;
+struct Beacon {
+	bool tracked;
+	boost::uuids::uuid uuid;
+};
 
 struct Message {
 	messaging::Service service;
@@ -30,8 +32,7 @@ struct Message {
 	Beacon token;
 };
 
-typedef std::function<void(const spark::Link&, boost::optional<Message>)> TrackingHandler;
+typedef std::function<void(const Link&, boost::optional<Message>)> TrackingHandler;
 typedef std::function<void(const Endpoint*)> ResolveCallback;
-typedef std::function<void(const messaging::multicast::LocateAnswer*)> LocateCallback;
 
 }} // spark, ember

@@ -13,7 +13,7 @@
 namespace ember {
 
 enum ExtendedFilterType {
-	LF_NAUGHTY_USER = 128
+
 };
 
 } // ember

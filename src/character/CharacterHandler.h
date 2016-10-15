@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Character_generated.h""
+#include "Character_generated.h"
 #include <dbcreader/Storage.h>
 #include <game_protocol/ResultCodes.h>
 #include <shared/database/daos/CharacterDAO.h>

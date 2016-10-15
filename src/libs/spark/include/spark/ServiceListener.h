@@ -14,6 +14,10 @@
 
 namespace ember { namespace spark {
 
+typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
+
+class ServiceDiscovery;
+
 class ServiceListener {
 	ServiceDiscovery* sd_client_;
 	const messaging::Service service_;

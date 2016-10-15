@@ -101,7 +101,7 @@ auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 }
 
 auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
-                   const Beacon& token) const -> Result {
+                   const Beacon& token) -> Result {
 	auto net = link.net.lock();
 
 	if(!net) {
@@ -120,7 +120,7 @@ auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 		return Result::LINK_GONE;
 	}
 
-	track_service_.register_tracked(link, token, callback, 5s);
+	track_service_.register_tracked(link, token.uuid, callback, 5s);
 	net->write(fbb);
 	return Result::OK;
 }

@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Core_generated.h"
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
 #include <shared/FilterTypes.h>
@@ -44,15 +43,15 @@ void HeartbeatService::on_message(const Link& link, const Message& message) {
 		return;
 	}
 
-	handler->second.handle(message);
+	handler->second.handle(link, message);
 }
 
-void HeartbeatService::on_link_up(const spark::Link& link) {
+void HeartbeatService::on_link_up(const Link& link) {
 	std::lock_guard<std::mutex> guard(lock_);
 	peers_.emplace_front(link);
 }
 
-void HeartbeatService::on_link_down(const spark::Link& link) {
+void HeartbeatService::on_link_down(const Link& link) {
 	std::lock_guard<std::mutex> guard(lock_);
 	peers_.remove(link);
 }

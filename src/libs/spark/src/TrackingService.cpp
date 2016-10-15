@@ -24,8 +24,8 @@ void TrackingService::on_message(const Link& link, const Message& message) try {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	std::unique_lock<std::mutex> guard(lock_);
-	auto handler = std::move(handlers_.at(*message.token));
-	handlers_.erase(*message.token);
+	auto handler = std::move(handlers_.at(message.token.uuid));
+	handlers_.erase(message.token.uuid);
 	guard.unlock();
 
 	if(link != handler->link) {
@@ -40,8 +40,8 @@ void TrackingService::on_message(const Link& link, const Message& message) try {
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }
 
-void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
-                                       TrackingHandler handler, sc::milliseconds timeout) {
+void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
+                                       sc::milliseconds timeout) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto request = std::make_unique<Request>(service_, id, link, handler);
@@ -74,11 +74,11 @@ void TrackingService::shutdown() {
 	}
 }
 
-void TrackingService::on_link_up(const spark::Link& link) {
+void TrackingService::on_link_up(const Link& link) {
 	// we don't care about this
 }
 
-void TrackingService::on_link_down(const spark::Link& link) {
+void TrackingService::on_link_down(const Link& link) {
 	// we don't care about this
 }
 

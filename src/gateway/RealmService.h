@@ -24,11 +24,11 @@ class RealmService final : public spark::EventHandler {
 	spark::Service& spark_;
 	spark::ServiceDiscovery& discovery_;
 	log::Logger* logger_;
-	std::unordered_map<messaging::core::Opcode, spark::LocalDispatcher> handlers_;
+	std::unordered_map<messaging::realm::Opcode, spark::LocalDispatcher> handlers_;
 	
 	std::shared_ptr<flatbuffers::FlatBufferBuilder> build_status() const;
-	void broadcast_realm_status() const;
-	void send_realm_status(const spark::Link& link, const spark::Message& message) const;
+	void broadcast_status() const;
+	void send_status(const spark::Link& link, const spark::Message& message) const;
 
 public:
 	RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
@@ -38,8 +38,8 @@ public:
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
 
-	void set_realm_online();
-	void set_realm_offline();
+	void set_online();
+	void set_offline();
 };
 
 } // ember
