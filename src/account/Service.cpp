@@ -76,7 +76,7 @@ void Service::register_session(const spark::Link& link, const spark::Message& me
 		status = em::account::Status::ILLFORMED_MESSAGE;
 	}
 
-	send_register_reply(link, status);
+	send_register_reply(link, status, message.token);
 }
 
 void Service::locate_session(const spark::Link& link, const spark::Message& message) {
@@ -89,10 +89,11 @@ void Service::locate_session(const spark::Link& link, const spark::Message& mess
 		session = sessions_.lookup_session(msg->account_id());
 	}
 
-	send_locate_reply(link, session);
+	send_locate_reply(link, session, message.token);
 }
 
-void Service::send_register_reply(const spark::Link& link, em::account::Status status) {
+void Service::send_register_reply(const spark::Link& link, em::account::Status status,
+                                  const spark::Beacon& token) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto opcode = util::enum_value(em::account::Opcode::SMSG_REGISTER_SESSION);
@@ -117,10 +118,11 @@ void Service::account_lookup(const spark::Link& link, const spark::Message& mess
 	auto data_offset = klb.Finish();
 	fbb->Finish(klb.Finish());
 
-	spark_.send(link, opcode, fbb);
+	spark_.send(link, opcode, fbb, message.token);
 }
 
-void Service::send_locate_reply(const spark::Link& link, const boost::optional<Botan::BigInt>& key) {
+void Service::send_locate_reply(const spark::Link& link, const boost::optional<Botan::BigInt>& key,
+                                const spark::Beacon& token) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto opcode = util::enum_value(em::account::Opcode::SMSG_SESSION_LOOKUP);
@@ -139,10 +141,7 @@ void Service::send_locate_reply(const spark::Link& link, const boost::optional<B
 		fbb->Finish(klb.Finish());
 	}
 
-	spark_.send(link, opcode, fbb);
-
-	/*LOG_DEBUG(logger_) << "Session key lookup: " << msg->account_id() << " -> "
-		<< util::fb_status(status, messaging::account::EnumNamesStatus()) << LOG_ASYNC;*/
+	spark_.send(link, opcode, fbb, token);
 }
 
 } // ember

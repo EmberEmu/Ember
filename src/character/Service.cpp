@@ -142,7 +142,7 @@ void Service::send_character_list(const spark::Link& link, const spark::Beacon& 
 	rrb.add_characters(char_vec);
 	fbb->Finish(rrb.Finish());
 
-	spark_.send(link, opcode, fbb);
+	spark_.send(link, opcode, fbb, token);
 }
 
 void Service::send_rename_response(const spark::Link& link, const spark::Beacon& token,
@@ -163,7 +163,7 @@ void Service::send_rename_response(const spark::Link& link, const spark::Beacon&
 	rb.add_result(static_cast<std::uint32_t>(result));
 	fbb->Finish(rb.Finish());
 
-	spark_.send(link, opcode, fbb);
+	spark_.send(link, opcode, fbb, token);
 }
 
 void Service::send_response(const spark::Link& link, const spark::Beacon& token,
@@ -178,7 +178,7 @@ void Service::send_response(const spark::Link& link, const spark::Beacon& token,
 	rb.add_result(static_cast<std::uint32_t>(result));
 	fbb->Finish(rb.Finish());
 
-	spark_.send(link, opcode, fbb);
+	spark_.send(link, opcode, fbb, token);
 }
 
 void Service::delete_character(const spark::Link& link, const spark::Message& message) {
