@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>StartItemQuantities</name>
+	
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>foreign</type>
+			<parent>CharStartOutfit</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint8</type>
+		<name>quantity</name>
+	</field>
+</dbc>

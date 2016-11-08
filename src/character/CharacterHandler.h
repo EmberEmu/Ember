@@ -51,6 +51,7 @@ class CharacterHandler {
 
 	protocol::Result validate_name(const std::string& name) const;
 	bool validate_options(const Character& character, std::uint32_t account_id) const;
+	void populate_items(Character& character, const dbc::CharStartOutfit& outfit) const;
 	const dbc::FactionGroup* pvp_faction(const dbc::FactionTemplate& fac_template) const;
 
 	/** I/O heavy functions run async in a thread pool **/
@@ -68,6 +69,7 @@ class CharacterHandler {
 	               const std::string& name, const RenameCB& callback) const;
 
 	void do_restore(std::uint64_t id, const ResultCB& callback) const;
+
 
 public:
 	CharacterHandler(std::vector<util::pcre::Result> profane_names,

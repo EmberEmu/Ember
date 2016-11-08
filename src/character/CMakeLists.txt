@@ -9,6 +9,7 @@ set(LIBRARY_NAME    libcharacter)
 
 set(LIBRARY_HDR
     CharacterHandler.h
+    InventoryTypes.h
     Service.h
     FilterTypes.h
     )

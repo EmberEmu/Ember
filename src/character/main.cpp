@@ -88,7 +88,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
 		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartTalents",
 		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
-		"SpamMessages"
+		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
 	});
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;

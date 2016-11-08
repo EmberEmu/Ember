@@ -145,8 +145,8 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
 	const dbc::ChrClasses* class_ = dbc_.chr_classes[character.class_];
 
-	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& info) {
-		return info.second.race_id == character.race && info.second.class__id == character.class_;
+	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& record) {
+		return record.second.race_id == character.race && record.second.class__id == character.class_;
 	});
 
 	if(base_info == dbc_.char_start_base.end()) {
@@ -165,7 +165,17 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	character.position.y = zone->position.y;
 	character.position.z = zone->position.z;
 
-	// populate items information
+	// populate starting equipment
+	auto items = std::find_if(dbc_.char_start_outfit.begin(), dbc_.char_start_outfit.end(), [&](auto& record) {
+		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	});
+
+	if(items != dbc_.char_start_outfit.end()) {
+		populate_items(character, items->second);
+	} else { // could be intentional, so we'll keep going
+		LOG_DEBUG(logger_) << "No starting item data found for race" <<
+			character.race << ", class " << character.class_ << LOG_ASYNC;
+	}
 
 	// populate spells information
 
@@ -495,6 +505,10 @@ const dbc::FactionGroup* CharacterHandler::pvp_faction(const dbc::FactionTemplat
 	}
 
 	return nullptr;
+}
+
+void CharacterHandler::populate_items(Character& character, const dbc::CharStartOutfit& outfit) const {
+
 }
 
 } // ember
