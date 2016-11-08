@@ -48,17 +48,17 @@
 	</field>
 
 	<field>
-		<type>uint32[12]</type>
+		<type>int32[12]</type>
 		<name>item_id</name>
 	</field>
 
 	<field>
-		<type>uint32[12]</type>
+		<type>int32[12]</type>
 		<name>display_id</name>
 	</field>
 
 	<field>
-		<type>uint32[12]</type>
+		<type>int32[12]</type>
 		<name>inv_slot_id</name>
 	</field>
 </dbc>
