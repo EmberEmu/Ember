@@ -26,6 +26,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 #include <cstdint>
 
 namespace ember {
@@ -103,7 +104,7 @@ public:
 	void close_session();
 	void terminate();
 
-	static void async_shutdown(std::shared_ptr<ClientConnection> test);
+	static void async_shutdown(std::shared_ptr<ClientConnection> client);
 };
 
 } // ember
