@@ -8,11 +8,12 @@ set(EXECUTABLE_NAME world)
 set(LIBRARY_NAME    libworld)
 
 set(LIBRARY_HDR
-   
+    networking/sync/Listener.h
+    networking/sync/SocketHandler.h
     )
 
 set(LIBRARY_SRC
-
+    networking/sync/SocketHandler.cpp
     )
 
 
