@@ -110,7 +110,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	pos.add("config", 1);
 
 	//Config file options
-	po::options_description config_opts("Login configuration options");
+	po::options_description config_opts("Account configuration options");
 	config_opts.add_options()
 		("spark.address,", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
