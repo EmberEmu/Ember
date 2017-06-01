@@ -21,7 +21,6 @@
 #include <shared/database/daos/UserDAO.h>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
-#include <boost/variant.hpp>
 #include <fstream>
 #include <functional>
 #include <memory>
@@ -29,6 +28,7 @@
 #include <optional>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace ember {
@@ -47,7 +47,7 @@ struct TransferState {
 class LoginHandler {
 	typedef std::unordered_map<std::uint32_t, std::uint32_t> CharacterCount;
 
-	typedef boost::variant<
+	typedef std::variant<
 		std::unique_ptr<LoginAuthenticator>,
 		std::unique_ptr<ReconnectAuthenticator>,
 		CharacterCount

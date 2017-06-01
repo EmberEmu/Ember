@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -209,7 +209,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto& authenticator = boost::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
+	const auto& authenticator = std::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
 	const auto& values = authenticator->challenge_reply();
 	packet.B = values.B;
 	packet.g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
@@ -405,7 +405,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet* packet) {
 		return;
 	}
 
-	const auto& authenticator = boost::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
+	const auto& authenticator = std::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
 	const auto proof = authenticator->proof_check(proof_packet);
 	auto result = grunt::Result::FAIL_INCORRECT_PASSWORD;
 	
@@ -529,7 +529,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet* packet) {
 		return;
 	}
 
-	const auto& authenticator = boost::get<std::unique_ptr<ReconnectAuthenticator>>(state_data_);
+	const auto& authenticator = std::get<std::unique_ptr<ReconnectAuthenticator>>(state_data_);
 
 	if(authenticator->proof_check(proof)) {
 		state_ = State::FETCHING_CHARACTER_DATA;
@@ -554,7 +554,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	}
 
 	const std::shared_ptr<const RealmMap> realms = realm_list_.realms();
-	auto& char_count = boost::get<CharacterCount>(state_data_);
+	auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
 
 	for(auto& realm : *realms | boost::adaptors::map_values) {
