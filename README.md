@@ -19,13 +19,13 @@ Ember aims to support the following platforms as a minimum:
 | Mac OS | x86, x64        |
 
 ### Compiler support:
-This table lists the compilers that Ember actively supports as well as the minimum versions capable of compiling the codebase. Only the supported versions are guaranteed to work.
+This table lists the compilers actively used during development as well as the oldest versions that should support the language features needed to compile the codebase. The minimum versions are not frequently tested, therefore they are not guaranteed to be compatible.
 
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
-| MSVC  | 19 (VS2015) | 19 (VS2015) |
-| Clang |     3.7     |     3.4     |
-| GCC   |     5.1     |     5.0     |
+| MSVC  | 19.1 (VS2017) | 19.1 (VS2017) |
+| Clang |     4.0     |     4.0     |
+| GCC   |     7.0     |     7.0     |
 
 ### Build status:
 
