@@ -133,8 +133,8 @@ MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
 }
 
 void MySQL::close_cache(const sql::Connection* conn) const {
+	// todo - iterators (ex. erased element) not invalidated by erase, research
 	std::lock_guard<std::mutex> lock(cache_lock_);
-	auto cache_it = cache_.find(conn);
 	cache_.erase(conn);
 }
 
