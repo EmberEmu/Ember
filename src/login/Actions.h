@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,10 +12,10 @@
 #include "grunt/Packet.h"
 #include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
-#include <boost/optional.hpp>
 #include <exception>
 #include <future>
 #include <string>
+#include <optional>
 #include <utility>
 #include <cstdint>
 
@@ -103,7 +103,7 @@ public:
 class FetchUserAction final : public Action {
 	const std::string username_;
 	const dal::UserDAO& user_src_;
-	boost::optional<User> user_;
+	std::optional<User> user_;
 	std::exception_ptr exception_;
 
 public:
@@ -116,7 +116,7 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	boost::optional<User> get_result() {
+	std::optional<User> get_result() {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}

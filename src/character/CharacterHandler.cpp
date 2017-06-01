@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -98,7 +98,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		return;
 	}
 
-	const boost::optional<Character>& res = dao_.character(character.name, realm_id);
+	const std::optional<Character>& res = dao_.character(character.name, realm_id);
 
 	if(res) {
 		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE);
@@ -241,7 +241,7 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
 	callback(std::move(characters));
 } catch(dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(boost::optional<std::vector<Character>>());
+	callback(std::optional<std::vector<Character>>());
 }
 
 void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,
@@ -251,31 +251,31 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	auto character = dao_.character(character_id);
 	
 	if(!character) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
+		callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
 		return;
 	}
 
 	if(character->account_id != account_id) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
+		callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
 		return;
 	}
 
 	if((character->flags & Character::Flags::RENAME) != Character::Flags::RENAME) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
+		callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
 		return;
 	}
 
 	auto result = validate_name(name);
 
 	if(result != protocol::Result::CHAR_NAME_SUCCESS) {
-		callback(result, boost::none);
+		callback(result, std::nullopt);
 		return;
 	}
 
-	const boost::optional<Character>& match = dao_.character(name, character->realm_id);
+	const std::optional<Character>& match = dao_.character(name, character->realm_id);
 
 	if(match) {
-		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, boost::none);
+		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, std::nullopt);
 		return;
 	}
 
@@ -290,7 +290,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	callback(protocol::Result::RESPONSE_SUCCESS, *character);
 } catch(dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::CHAR_NAME_FAILURE, boost::none);
+	callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
 }
 
 void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) const try {

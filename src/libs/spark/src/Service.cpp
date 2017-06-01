@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,9 +12,9 @@
 #include <spark/Listener.h>
 #include <shared/FilterTypes.h>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/optional.hpp>
 #include <chrono>
 #include <functional>
+#include <optional>
 #include <type_traits>
 
 using namespace std::chrono_literals;

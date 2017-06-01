@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,11 +15,11 @@
 #include <shared/util/PCREHelper.h>
 #include <logger/Logging.h>
 //#include <boost/locale.hpp>
-#include <boost/optional.hpp>
 #include <pcre.h>
 #include <locale>
 #include <functional>
 #include <string>
+#include <optional>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -30,8 +30,8 @@ class ThreadPool;
 
 class CharacterHandler {
 	typedef std::function<void(protocol::Result)> ResultCB;
-	typedef std::function<void(protocol::Result, boost::optional<Character>)> RenameCB;
-	typedef std::function<void(boost::optional<std::vector<Character>>)> EnumResultCB;
+	typedef std::function<void(protocol::Result, std::optional<Character>)> RenameCB;
+	typedef std::function<void(std::optional<std::vector<Character>>)> EnumResultCB;
 
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;

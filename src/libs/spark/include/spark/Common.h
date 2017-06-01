@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,9 +9,9 @@
 #pragma once
 
 #include "Services_generated.h"
-#include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <functional>
+#include <optional>
 #include <cstdint>
 
 namespace ember { namespace spark {
@@ -32,7 +32,7 @@ struct Message {
 	Beacon token;
 };
 
-typedef std::function<void(const Link&, boost::optional<Message>)> TrackingHandler;
+typedef std::function<void(const Link&, std::optional<Message>)> TrackingHandler;
 typedef std::function<void(const Endpoint*)> ResolveCallback;
 
 }} // spark, ember

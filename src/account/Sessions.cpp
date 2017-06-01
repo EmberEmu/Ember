@@ -23,15 +23,15 @@ bool Sessions::register_session(std::uint32_t account_id, Botan::BigInt key) {
 	return true;
 }
 
-boost::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) {
+std::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) {
 	std::lock_guard<std::mutex> guard(lock_);
 	auto it = sessions_.find(account_id);
 
 	if(it == sessions_.end()) {
-		return boost::none;
+		return std::nullopt;
 	}
 
-	return boost::optional<Botan::BigInt>(it->second);
+	return std::optional<Botan::BigInt>(it->second);
 }
 
 } // ember

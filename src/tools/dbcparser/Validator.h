@@ -12,7 +12,7 @@
 #include "Types.h"
 #include "TypeUtils.h"
 #include "TreeNode.h"
-#include <boost/optional.hpp>
+#include <optional>
 #include <string>
 #include <vector>
 #include <map>
@@ -53,7 +53,7 @@ class Validator {
 	void check_multiple_definitions(const types::Base* def);
 	void check_key_types(const types::Field& def);
 	void check_foreign_keys(const types::Field& def);
-	boost::optional<const types::Field*> locate_fk_parent(const std::string& parent);
+	std::optional<const types::Field*> locate_fk_parent(const std::string& parent);
 
 	//New
 	void build_type_tree();

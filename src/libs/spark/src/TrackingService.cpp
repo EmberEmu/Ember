@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,8 +8,8 @@
 
 #include <spark/TrackingService.h>
 #include <shared/FilterTypes.h>
-#include <boost/optional.hpp>
 #include <algorithm>
+#include <optional>
 
 namespace sc = std::chrono;
 
@@ -61,7 +61,7 @@ void TrackingService::timeout(boost::uuids::uuid id, Link link, const boost::sys
 	handlers_.erase(id);
 	guard.unlock();
 
-	handler->handler(link, boost::none);
+	handler->handler(link, std::nullopt);
 }
 
 void TrackingService::shutdown() {

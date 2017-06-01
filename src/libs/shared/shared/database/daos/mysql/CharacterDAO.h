@@ -60,7 +60,7 @@ class MySQLCharacterDAO final : public CharacterDAO {
 public:
 	MySQLCharacterDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	boost::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
+	std::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
 		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
@@ -79,12 +79,12 @@ public:
 			return result_to_character(res.get());
 		}
 
-		return boost::none;
+		return std::nullopt;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}
 	
-	boost::optional<Character> character(std::uint64_t id) const override try {
+	std::optional<Character> character(std::uint64_t id) const override try {
 		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
@@ -102,7 +102,7 @@ public:
 			return result_to_character(res.get());;
 		}
 
-		return boost::none;
+		return std::nullopt;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

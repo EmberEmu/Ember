@@ -93,7 +93,7 @@ void Handler::handle_read(spark::Buffer& buffer, std::size_t offset) try {
 	throw bad_packet(e.what());
 }
 
-boost::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
+std::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	switch(state_) {
 		case State::NEW_PACKET:
 			handle_new_packet(buffer);
@@ -106,7 +106,7 @@ boost::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	if(state_ == State::NEW_PACKET) {
 		return std::move(curr_packet_);
 	} else {
-		return boost::none;
+		return std::nullopt;
 	}
 }
 

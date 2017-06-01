@@ -20,7 +20,7 @@ namespace ember { namespace dbc {
  * Searches DBC definitions for the given foreign key. 
  * Only child structs of the root node are considered for matches.
  */
-boost::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
+std::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	for(auto& def : *definitions_) {
@@ -37,13 +37,13 @@ boost::optional<const types::Field*> Validator::locate_fk_parent(const std::stri
 		for(auto& field : def_s->fields) {
 			for(auto& key : field.keys) {
 				if(key.type == "primary") {
-					return boost::optional<const types::Field*>(&field);
+					return std::optional<const types::Field*>(&field);
 				}
 			}
 		}
 	}
 
-	return boost::none;
+	return std::nullopt;
 }
 
 void Validator::check_foreign_keys(const types::Field& field) {
@@ -51,7 +51,7 @@ void Validator::check_foreign_keys(const types::Field& field) {
 
 	for(auto& key : field.keys) {
 		if(key.type == "foreign") {
-			boost::optional<const types::Field*> pk = locate_fk_parent(key.parent);
+			std::optional<const types::Field*> pk = locate_fk_parent(key.parent);
 			auto components(extract_components(field.underlying_type));
 
 			if(!pk) {

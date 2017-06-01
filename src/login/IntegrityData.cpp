@@ -41,7 +41,7 @@ IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std
 	}
 }
 
-boost::optional<const std::vector<char>*> 
+std::optional<const std::vector<char>*> 
 IntegrityData::lookup(GameVersion version, grunt::Platform platform, grunt::System os) const {
 	auto it = data_.find(hash(version.build, platform, os));
 

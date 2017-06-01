@@ -39,7 +39,7 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	boost::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
+	std::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "

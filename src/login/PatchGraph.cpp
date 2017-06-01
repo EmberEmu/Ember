@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,8 +7,8 @@
  */
 
 #include "PatchGraph.h"
-#include <boost/optional.hpp>
 #include <algorithm>
+#include <optional>
 #include <queue>
 #include <set>
 
@@ -62,7 +62,7 @@ bool PatchGraph::is_path(std::uint16_t from, std::uint16_t to) const {
 
 std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t to) const {
 	std::unordered_map<std::uint16_t, std::uint64_t> distance;
-	std::unordered_map<std::uint16_t, boost::optional<Node>> prev;
+	std::unordered_map<std::uint16_t, std::optional<Node>> prev;
 	std::priority_queue<Node, std::vector<Node>, NodeComp> queue;
 
 	for(auto& v : adjacency_) {

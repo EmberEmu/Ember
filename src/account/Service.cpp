@@ -83,7 +83,7 @@ void Service::locate_session(const spark::Link& link, const spark::Message& mess
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto msg = flatbuffers::GetRoot<em::account::SessionLookup>(message.data);
-	auto session = boost::optional<Botan::BigInt>();
+	auto session = std::optional<Botan::BigInt>();
 	
 	if(msg->account_id()) {
 		session = sessions_.lookup_session(msg->account_id());
@@ -121,7 +121,7 @@ void Service::account_lookup(const spark::Link& link, const spark::Message& mess
 	spark_.send(link, opcode, fbb, message.token);
 }
 
-void Service::send_locate_reply(const spark::Link& link, const boost::optional<Botan::BigInt>& key,
+void Service::send_locate_reply(const spark::Link& link, const std::optional<Botan::BigInt>& key,
                                 const spark::Beacon& token) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 

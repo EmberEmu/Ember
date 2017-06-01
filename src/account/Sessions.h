@@ -9,7 +9,7 @@
 #pragma once
 
 #include <botan/bigint.h>
-#include <boost/optional.hpp>
+#include <optional>
 #include <mutex>
 #include <unordered_map>
 #include <cstdint>
@@ -24,7 +24,7 @@ class Sessions {
 public:
 	explicit Sessions(bool allow_overwrite) : allow_overwrite_(allow_overwrite) { }
 	bool register_session(std::uint32_t account_id, Botan::BigInt key);
-	boost::optional<Botan::BigInt> lookup_session(std::uint32_t account_id);
+	std::optional<Botan::BigInt> lookup_session(std::uint32_t account_id);
 };
 
 } // ember

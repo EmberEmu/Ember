@@ -146,7 +146,7 @@ void Service::send_character_list(const spark::Link& link, const spark::Beacon& 
 }
 
 void Service::send_rename_response(const spark::Link& link, const spark::Beacon& token,
-                                   protocol::Result result, boost::optional<Character> character) {
+                                   protocol::Result result, std::optional<Character> character) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto opcode = util::enum_value(em::character::Opcode::SMSG_CHAR_RENAME);

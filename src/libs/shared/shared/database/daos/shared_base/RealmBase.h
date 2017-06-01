@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,8 +10,8 @@
 
 #include <shared/database/Exception.h>
 #include <shared/Realm.h>
-#include <boost/optional.hpp>
 #include <string>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -22,7 +22,7 @@ namespace dal {
 class RealmDAO {
 public:
 	virtual std::vector<Realm> get_realms() const = 0;
-	virtual boost::optional<Realm> get_realm(std::uint32_t id) const = 0;
+	virtual std::optional<Realm> get_realm(std::uint32_t id) const = 0;
 	virtual ~RealmDAO() = default;
 };
 

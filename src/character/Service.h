@@ -42,7 +42,7 @@ class Service final : public spark::EventHandler {
 	                   messaging::character::Status status, protocol::Result result);
 
 	void send_rename_response(const spark::Link& link, const spark::Beacon& token,
-	                          protocol::Result result, boost::optional<Character> character);
+	                          protocol::Result result, std::optional<Character> character);
 
 public:
 	Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,8 +14,8 @@
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/objects/PatchMeta.h>
 #include <logger/Logging.h>
-#include <boost/optional.hpp>
 #include <string>
+#include <optional>
 #include <vector>
 
 namespace ember {
@@ -46,7 +46,7 @@ public:
 	const std::vector<char>& survey_data(grunt::Platform platform, grunt::System os) const;
 
 	// Patching
-	boost::optional<PatchMeta> find_patch(const GameVersion& client_version, grunt::Locale locale,
+	std::optional<PatchMeta> find_patch(const GameVersion& client_version, grunt::Locale locale,
 	                                      grunt::Platform platform, grunt::System os) const;
 
 	PatchLevel check_version(const GameVersion& client_version) const;

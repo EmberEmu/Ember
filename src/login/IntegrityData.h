@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,8 +11,8 @@
 #include "GameVersion.h"
 #include "grunt/Magic.h"
 #include "ExecutablesChecksum.h"
-#include <boost/optional.hpp>
 #include <string>
+#include <optional>
 #include <unordered_map>
 #include <cstdint>
 #include <cstddef>
@@ -31,7 +31,7 @@ class IntegrityData {
 public:
 	IntegrityData(const std::vector<GameVersion>& versions, const std::string& path);
 
-	boost::optional<const std::vector<char>*> lookup(GameVersion version, grunt::Platform platform,
+	std::optional<const std::vector<char>*> lookup(GameVersion version, grunt::Platform platform,
 	                                                 grunt::System os) const;
 };
 

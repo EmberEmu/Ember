@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,8 +12,8 @@
 #include "Exceptions.h"
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
-#include <boost/optional.hpp>
 #include <memory>
+#include <optional>
 #include <cstddef>
 
 namespace ember { namespace grunt {
@@ -37,7 +37,7 @@ class Handler {
 public:
 	explicit Handler(log::Logger* logger) : logger_(logger) { }
 
-	boost::optional<PacketHandle> try_deserialise(spark::Buffer& buffer);
+	std::optional<PacketHandle> try_deserialise(spark::Buffer& buffer);
 };
 
 }} // grunt, ember

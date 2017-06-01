@@ -34,9 +34,9 @@ private:
 	spark::Link link_;
 	
 	void service_located(const messaging::multicast::LocateResponse* message);
-	void handle_register_reply(const spark::Link& link, boost::optional<spark::Message>& message,
+	void handle_register_reply(const spark::Link& link, std::optional<spark::Message>& message,
 	                           const RegisterCB& cb) const;
-	void handle_locate_reply(const spark::Link& link, boost::optional<spark::Message>& message,
+	void handle_locate_reply(const spark::Link& link, std::optional<spark::Message>& message,
 	                         const LocateCB& cb) const;
 
 public:

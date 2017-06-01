@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,12 +21,12 @@
 #include <shared/database/daos/UserDAO.h>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
-#include <boost/optional.hpp>
 #include <boost/variant.hpp>
 #include <fstream>
 #include <functional>
 #include <memory>
 #include <string>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -68,7 +68,7 @@ class LoginHandler {
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_src_;
-	boost::optional<User> user_;
+	std::optional<User> user_;
 	Botan::BigInt server_proof_;
 	const std::string source_;
 	const AccountService& acct_svc_;

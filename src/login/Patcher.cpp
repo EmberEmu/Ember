@@ -56,7 +56,7 @@ const PatchMeta* Patcher::locate_rollup(const std::vector<PatchMeta>& patches,
 	return meta;
 }
 
-boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, grunt::Locale locale,
+std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, grunt::Locale locale,
                                                grunt::Platform platform, grunt::System os) const {
 	FNVHash hasher;
 	hasher.update(grunt::to_string(locale));
@@ -67,7 +67,7 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 	auto p_it = patch_bins.find(hash);
 	
 	if(g_it == graphs_.end() || p_it == patch_bins.end()) {
-		return boost::none;
+		return std::nullopt;
 	}
 
 	auto build = client_version.build;
@@ -98,7 +98,7 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 
 		// still no path? Guess we're out of luck.
 		if(!path) {
-			return boost::none;
+			return std::nullopt;
 		}
 	}
 
@@ -125,7 +125,7 @@ boost::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version
 		}
 	}
 
-	return boost::none;
+	return std::nullopt;
 }
 
 auto Patcher::check_version(const GameVersion& client_version) const -> PatchLevel {

@@ -47,7 +47,7 @@ void AccountService::service_located(const messaging::multicast::LocateResponse*
 }
 
 void AccountService::handle_register_reply(const spark::Link& link,
-                                           boost::optional<spark::Message>& message,
+                                           std::optional<spark::Message>& message,
                                            const RegisterCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -62,7 +62,7 @@ void AccountService::handle_register_reply(const spark::Link& link,
 }
 
 void AccountService::handle_locate_reply(const spark::Link& link,
-                                         boost::optional<spark::Message>& message,
+                                         std::optional<spark::Message>& message,
                                          const LocateCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 

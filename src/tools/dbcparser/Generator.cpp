@@ -47,7 +47,7 @@ public:
 	}
 };
 
-boost::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
+std::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	for(auto& f : base.children) {
@@ -57,7 +57,7 @@ boost::optional<std::string> locate_type(const types::Struct& base, const std::s
 	}
 
 	if(base.parent == nullptr) {
-		return boost::none;
+		return std::nullopt;
 	}
 
 	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);

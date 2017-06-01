@@ -28,7 +28,7 @@ class MySQLIPBanDAO final : public IPBanDAO {
 public:
 	MySQLIPBanDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	boost::optional<std::uint32_t> get_mask(const std::string& ip) const override try {
+	std::optional<std::uint32_t> get_mask(const std::string& ip) const override try {
 		const std::string query = "SELECT cidr FROM ip_bans WHERE ip = ?";
 
 		auto conn = pool_.wait_connection(60s);
@@ -40,7 +40,7 @@ public:
 			return res->getUInt("cidr");
 		}
 
-		return boost::none;
+		return std::nullopt;
 	} catch(std::exception& e) {
 		throw exception(e.what());
 	}

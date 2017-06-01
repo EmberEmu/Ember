@@ -50,7 +50,7 @@ void CharacterService::service_located(const messaging::multicast::LocateRespons
 }
 
 void CharacterService::handle_reply(const spark::Link& link,
-                                    boost::optional<spark::Message>& message,
+                                    std::optional<spark::Message>& message,
                                     const ResponseCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -64,7 +64,7 @@ void CharacterService::handle_reply(const spark::Link& link,
 }
 
 void CharacterService::handle_rename_reply(const spark::Link& link,
-                                           boost::optional<spark::Message>& message,
+                                           std::optional<spark::Message>& message,
                                            const RenameCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -86,7 +86,7 @@ void CharacterService::handle_rename_reply(const spark::Link& link,
 }
 
 void CharacterService::handle_retrieve_reply(const spark::Link& link,
-                                             boost::optional<spark::Message>& message,
+                                             std::optional<spark::Message>& message,
                                              const RetrieveCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
