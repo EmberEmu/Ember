@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,24 +8,31 @@
 
 #pragma once
 
-#include <functional>
-#include <spark/temp/MessageRoot_generated.h>
-#include <spark/temp/Multicast_generated.h>
+#include "Services_generated.h"
 #include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <functional>
+#include <cstdint>
 
 namespace ember { namespace spark {
 
 struct Link;
-enum class LinkState;
 struct Endpoint;
-class ServiceDiscovery;
 
-//namespace messaging { struct MessageRoot; }
+struct Beacon {
+	bool tracked;
+	boost::uuids::uuid uuid;
+};
 
-typedef std::function<void(const spark::Link&, const boost::uuids::uuid&,
-	boost::optional<const messaging::MessageRoot*>)> TrackingHandler;
+struct Message {
+	messaging::Service service;
+	std::uint16_t opcode;
+	std::uint32_t size;
+	const std::uint8_t* data;
+	Beacon token;
+};
+
+typedef std::function<void(const Link&, boost::optional<Message>)> TrackingHandler;
 typedef std::function<void(const Endpoint*)> ResolveCallback;
-typedef std::function<void(const messaging::multicast::LocateAnswer*)> LocateCallback;
 
 }} // spark, ember

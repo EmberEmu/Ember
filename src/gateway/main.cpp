@@ -166,9 +166,9 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto& service = service_pool.get_service();
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
-	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger, spark_filter);
+	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger, spark_filter);
+	                               mcast_port, logger);
 
 	RealmQueue queue_service(service_pool.get_service());
 	RealmService realm_svc(*realm, spark, discovery, logger);
@@ -203,7 +203,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 
 	service.dispatch([&, logger]() {
-		realm_svc.set_realm_online();
+		realm_svc.set_online();
 		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
 

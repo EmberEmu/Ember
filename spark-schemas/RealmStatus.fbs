@@ -8,6 +8,10 @@
 
 namespace ember.messaging.realm;
 
+enum Opcode : ushort {
+	CMSG_REALM_STATUS, SMSG_REALM_STATUS
+}
+
 enum Status : ubyte {
 	UNKNOWN_ERROR, OK
 }
@@ -26,5 +30,3 @@ table RealmStatus {
 	category:int;
 	region:int;
 }
-
-

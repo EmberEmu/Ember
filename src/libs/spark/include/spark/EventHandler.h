@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,15 +8,18 @@
 
 #pragma once
 
-#include <spark/Link.h>
-#include <spark/temp/MessageRoot_generated.h>
+#include <cstdint>
 
 namespace ember { namespace spark {
 
+struct Message;
+struct Link;
+
 class EventHandler {
 public:
-	virtual void handle_message(const spark::Link& link, const messaging::MessageRoot* msg) = 0;
-	virtual void handle_link_event(const spark::Link& link, spark::LinkState event) = 0;
+	virtual void on_message(const Link& link, const Message& message) = 0;
+	virtual void on_link_up(const Link& link) = 0;
+	virtual void on_link_down(const Link& link) = 0;
 
 	virtual ~EventHandler() = default;
 };

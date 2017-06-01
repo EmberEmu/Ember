@@ -9,9 +9,10 @@
 #pragma once
 
 #include "Config.h"
+#include "Services_generated.h"
+#include "Character_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <game_protocol/ResultCodes.h>
 #include <logger/Logging.h>
 #include <shared/database/objects/Character.h>
@@ -35,22 +36,18 @@ private:
 	spark::ServiceDiscovery& s_disc_;
 	log::Logger* logger_;
 	std::unique_ptr<spark::ServiceListener> listener_;
-	mutable boost::uuids::random_generator generate_uuid; // functor
 	spark::Link link_;
 	const Config& config_;
 	
-	void service_located(const messaging::multicast::LocateAnswer* message);
+	void service_located(const messaging::multicast::LocateResponse* message);
 
-	void handle_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                  boost::optional<const messaging::MessageRoot*> root,
+	void handle_reply(const spark::Link& link, boost::optional<spark::Message>& message,
 	                  const ResponseCB& cb) const;
 
-	void handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> root,
+	void handle_retrieve_reply(const spark::Link& link, boost::optional<spark::Message>& message,
 	                           const RetrieveCB& cb) const;
 
-	void handle_rename_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                         boost::optional<const messaging::MessageRoot*> root,
+	void handle_rename_reply(const spark::Link& link, boost::optional<spark::Message>& message,
 	                         const RenameCB& cb) const;
 
 public:
@@ -59,8 +56,9 @@ public:
 
 	~CharacterService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const spark::Message& message) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 
 	void retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const;
 

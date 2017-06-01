@@ -1,14 +1,17 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#define FLATBUFFERS_TRACK_VERIFIER_BUFFER_SIZE
+#include "Core_generated.h"
+#include "Multicast_generated.h"
 #include <spark/ServiceDiscovery.h>
 #include <spark/ServiceListener.h>
-#include <spark/temp/Multicast_generated.h>
+#include <shared/FilterTypes.h>
 #include <boost/lexical_cast.hpp>
 
 namespace bai = boost::asio::ip;
@@ -16,14 +19,14 @@ namespace mcast = ember::messaging::multicast;
 
 namespace ember { namespace spark {
 
-ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
-                                   std::string address, std::uint16_t port,
-                                   const std::string& mcast_iface, const std::string& mcast_group,
-                                   std::uint16_t mcast_port, log::Logger* logger, log::Filter filter)
+ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service, std::string address,
+                                   std::uint16_t port, const std::string& mcast_iface,
+                                   const std::string& mcast_group, std::uint16_t mcast_port,
+                                   log::Logger* logger)
                                    : address_(std::move(address)), port_(port),
-                                     socket_(service), logger_(logger), filter_(filter),
-                                     signals_(service, SIGINT, SIGTERM),
-                                     service_(service), endpoint_(bai::address::from_string(mcast_group), mcast_port) {
+                                     socket_(service), logger_(logger), service_(service),
+                                     endpoint_(bai::address::from_string(mcast_group),
+                                     mcast_port) {
 	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
 	socket_.open(listen_endpoint.protocol());
@@ -31,13 +34,12 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service,
 	socket_.bind(listen_endpoint);
 	
 	socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
-	signals_.async_wait(std::bind(&ServiceDiscovery::shutdown, this));
 
 	receive();
 }
 
 void ServiceDiscovery::shutdown() {
-	LOG_DEBUG_FILTER(logger_, filter_) << "[spark] Discovery service shutting down..." << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Discovery service shutting down..." << LOG_ASYNC;
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
@@ -65,35 +67,48 @@ void ServiceDiscovery::handle_receive(const boost::system::error_code& ec, std::
 void ServiceDiscovery::handle_packet(std::size_t size) {
 	flatbuffers::Verifier verifier(buffer_.data(), size);
 
-	if(!mcast::VerifyMessageRootBuffer(verifier)) {
-		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Multicast message failed validation" << LOG_ASYNC;
+	auto root = flatbuffers::GetSizePrefixedRoot<messaging::core::Header>(buffer_.data());
+	
+	if(!root->Verify(verifier)) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Multicast message header failed validation" << LOG_ASYNC;
 		return;
 	}
 
-	auto message = mcast::GetMessageRoot(buffer_.data());
-
-	switch(message->data_type()) {
-		case mcast::Data::Locate:
-			handle_locate(static_cast<const mcast::Locate*>(message->data()));
+	auto body = buffer_.data() + verifier.GetComputedSize();
+	
+	switch(static_cast<mcast::Opcode>(root->opcode())) {
+		case mcast::Opcode::CMSG_LOCATE:
+			handle_locate(flatbuffers::GetRoot<mcast::Locate>(body));
 			break;
-		case mcast::Data::LocateAnswer:
-			handle_locate_answer(static_cast<const mcast::LocateAnswer*>(message->data()));
+		case mcast::Opcode::SMSG_LOCATE:
+			handle_locate_answer(flatbuffers::GetRoot<mcast::LocateResponse>(body));
 			break;
 		default:
-			LOG_WARN_FILTER(logger_, filter_)
+			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Received an unknown multicast packet type from "
 				<< boost::lexical_cast<std::string>(remote_ep_.address()) << LOG_ASYNC;
 	}
 }
 
-void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb) {
-	socket_.async_send_to(boost::asio::buffer(fbb->GetBufferPointer(), fbb->GetSize()), endpoint_,
-		[this, fbb](const boost::system::error_code& ec, std::size_t /*size*/) {
+void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> msg,
+							mcast::Opcode opcode) {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto header = messaging::core::CreateHeader(*fbb, static_cast<std::uint16_t>(opcode),
+	                                            messaging::Service::CORE_DISCOVERY);
+	fbb->FinishSizePrefixed(header);
+
+	std::vector<boost::asio::const_buffer> buffers {
+		{ fbb->GetBufferPointer(), fbb->GetSize() },
+		{ msg->GetBufferPointer(), msg->GetSize() }
+	};
+
+	socket_.async_send_to(buffers, endpoint_,
+		[this, msg, fbb](const boost::system::error_code& ec, std::size_t size) {
 			if(ec) {
-				LOG_WARN_FILTER(logger_, filter_)
+				LOG_ERROR_FILTER(logger_, LF_SPARK)
 					<< "[spark] Error on sending service discovery packet: "
-					<< ec.message() << LOG_ASYNC;
+					<< ec.message() << ", size " << size << LOG_ASYNC;
 			}
 		}
 	);
@@ -105,7 +120,8 @@ void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
 	vec.erase(std::remove(vec.begin(), vec.end(), listener), vec.end());
 }
 
-std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service, LocateCallback cb) {
+std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service,
+                                                            LocateCallback cb) {
 	auto listener = std::make_unique<ServiceListener>(this, service, cb);
 	std::lock_guard<std::mutex> guard(lock_);
 	listeners_[service].emplace_back(listener.get());
@@ -114,38 +130,36 @@ std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service s
 
 void ServiceDiscovery::locate_service(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::Locate,
-		mcast::CreateLocate(*fbb, service).Union());
-	fbb->Finish(msg);
-	send(fbb);
+	auto msg = mcast::CreateLocate(*fbb, service);
+	fbb->FinishSizePrefixed(msg);
+	send(fbb, mcast::Opcode::CMSG_LOCATE);
 }
 
 void ServiceDiscovery::send_announce(messaging::Service service) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto ip = fbb->CreateString(address_);
-	auto msg = mcast::CreateMessageRoot(*fbb, mcast::Data::LocateAnswer,
-		mcast::CreateLocateAnswer(*fbb, ip, port_, service).Union());
-	fbb->Finish(msg);
-	send(fbb);
+	auto msg = 	mcast::CreateLocateResponse(*fbb, ip, port_, service);
+	fbb->FinishSizePrefixed(msg);
+	send(fbb, mcast::Opcode::SMSG_LOCATE);
 }
 
 void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 	// check to see if we a matching service registered
-	std::unique_lock<std::mutex> guard(lock_);
-
-	auto it = std::find(services_.begin(), services_.end(), message->type());
+	std::lock_guard<std::mutex> guard(lock_);
+	
+	auto it = std::find(services_.begin(), services_.end(), message->service());
 
 	if(it == services_.end()) {
 		return; // no matching services
 	}
 
-	send_announce(message->type());
+	send_announce(message->service());
 }
 
-void ServiceDiscovery::handle_locate_answer(const mcast::LocateAnswer* message) {
-	if(message->type() == messaging::Service::Reserved
+void ServiceDiscovery::handle_locate_answer(const mcast::LocateResponse* message) {
+	if(message->type() != messaging::Service::CORE_DISCOVERY
 	   || !message->ip() || !message->port()) {
-		LOG_WARN_FILTER(logger_, filter_)
+		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Received incompatible locate answer " << LOG_ASYNC;
 		return;
 	}

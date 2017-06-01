@@ -8,6 +8,13 @@
 
 namespace ember.messaging.character;
 
+enum Opcode : ushort {
+	CMSG_CHAR_ENUM, SMSG_CHAR_ENUM,
+	CMSG_CHAR_RENAME, SMSG_CHAR_RENAME,
+	CMSG_CHAR_CREATE, SMSG_CHAR_RESPONSE,
+	CMSG_CHAR_DELETE
+}
+
 enum Status : ubyte {
 	UNKNOWN_ERROR, OK, SERVER_LINK_ERROR, ILLFORMED_MESSAGE
 }
@@ -88,7 +95,7 @@ table Create {
 	character:CharacterTemplate;
 }
 
-table CharResponse {
+table CreateResponse {
 	status:Status;
 	result:uint;
 }

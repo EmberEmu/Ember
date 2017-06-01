@@ -97,6 +97,7 @@ include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 ##############################
 find_package(FlatBuffers REQUIRED)
 include_directories(${FLATBUFFERS_INCLUDE_DIR})
+include(${CMAKE_MODULE_PATH}/BuildFlatBuffers.cmake)
 
 ##############################
 #            zlib            #
@@ -125,5 +126,6 @@ add_definitions(-DDB_MYSQL) #temporary!
 
 include(BuildDBCLoaders) # temp, maybe
 
+add_subdirectory(spark-schemas)
 add_subdirectory(tests)
 add_subdirectory(src)

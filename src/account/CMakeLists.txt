@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Ember
+# Copyright (c) 2015, 2016 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,9 @@ set(LIBRARY_SRC
     )
 
 
+include_directories(${SPARK_INCLUDES_DIR})
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_dependencies(${LIBRARY_NAME} SPARK_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} spark logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

@@ -6,15 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
+namespace ember.messaging;
 
-#include <shared/FilterTypes.h>
-
-namespace ember {
-
-// Service specific filters
-enum ExtendedFilterType {
-
-};
-
-} // ember
+enum Service : int { // waste of bandwidth, FlatBuffers enum vector workaround
+	CORE_TRACKING, CORE_HEARTBEAT, CORE_DISCOVERY,
+	ACCOUNT, GATEWAY, LOGIN,
+	WORLD, INSTANCESLAVE, INSTANCEMASTER, CHARACTER, DBPROXY
+}

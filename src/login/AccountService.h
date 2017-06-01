@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include "Account_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <srp6/Util.h>
 #include <logger/Logging.h>
 #include <botan/bigint.h>
@@ -31,21 +31,21 @@ private:
 	spark::ServiceDiscovery& s_disc_;
 	log::Logger* logger_;
 	std::unique_ptr<spark::ServiceListener> listener_;
-	mutable boost::uuids::random_generator generate_uuid; // functor
 	spark::Link link_;
 	
-	void service_located(const messaging::multicast::LocateAnswer* message);
-	void handle_register_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                           boost::optional<const messaging::MessageRoot*> root, const RegisterCB& cb) const;
-	void handle_locate_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-	                         boost::optional<const messaging::MessageRoot*> root, const LocateCB& cb) const;
+	void service_located(const messaging::multicast::LocateResponse* message);
+	void handle_register_reply(const spark::Link& link, boost::optional<spark::Message>& message,
+	                           const RegisterCB& cb) const;
+	void handle_locate_reply(const spark::Link& link, boost::optional<spark::Message>& message,
+	                         const LocateCB& cb) const;
 
 public:
 	AccountService(spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
 	~AccountService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const spark::Message& token) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 
 	void register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const;
 	void locate_session(std::uint32_t account_id, LocateCB cb) const;

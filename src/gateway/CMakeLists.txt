@@ -65,6 +65,7 @@ set(LIBRARY_SRC
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_dependencies(${LIBRARY_NAME} SPARK_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} dbcreader game_protocol spark logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

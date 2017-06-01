@@ -150,9 +150,9 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	ember::CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
 	                                dbc_store, *character_dao, thread_pool, temp, logger);
 
-	spark::Service spark("character", service, s_address, s_port, logger, spark_filter);
+	spark::Service spark("character", service, s_address, s_port, logger);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger, spark_filter);
+	                               mcast_port, logger);
 
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
 	

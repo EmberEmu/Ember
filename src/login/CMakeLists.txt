@@ -78,6 +78,7 @@ set(LIBRARY_SRC
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
+add_dependencies(${LIBRARY_NAME} SPARK_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} dbcreader spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

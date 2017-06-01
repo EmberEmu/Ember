@@ -22,6 +22,7 @@ set(LIBRARY_SRC
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_dependencies(${LIBRARY_NAME} SPARK_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} dbcreader spark logging game_protocol shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

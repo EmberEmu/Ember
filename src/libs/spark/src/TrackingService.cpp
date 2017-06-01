@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 
 #include <spark/TrackingService.h>
+#include <shared/FilterTypes.h>
 #include <boost/optional.hpp>
 #include <algorithm>
 
@@ -14,46 +15,32 @@ namespace sc = std::chrono;
 
 namespace ember { namespace spark {
 
-TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter)
-                                 : service_(service), logger_(logger), filter_(filter) { }
+TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger)
+                                 : service_(service), logger_(logger) { }
 
-void TrackingService::handle_message(const Link& link, const messaging::MessageRoot* message) try {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
-
-	auto recv_id = message->tracking_id();
-
-	if(recv_id->size() != boost::uuids::uuid::static_size()) {
-		LOG_DEBUG_FILTER(logger_, filter_)
-			<< "[spark] Received tracked message with invalid UUID length" << LOG_ASYNC;
-	}
-
-	boost::uuids::uuid uuid;
-	std::copy(recv_id->begin(), recv_id->end(), uuid.begin());
+void TrackingService::on_message(const Link& link, const Message& message) try {
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	std::unique_lock<std::mutex> guard(lock_);
-	auto handler = std::move(handlers_.at(uuid));
-	handlers_.erase(uuid);
+	auto handler = std::move(handlers_.at(message.token.uuid));
+	handlers_.erase(message.token.uuid);
 	guard.unlock();
 
 	if(link != handler->link) {
-		LOG_WARN_FILTER(logger_, filter_)
+		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Tracked message receipient != sender" << LOG_ASYNC;
 		return;
 	}
 
-	handler->handler(link, uuid, boost::optional<const messaging::MessageRoot*>(message));
+	handler->handler(link, message);
 } catch(std::out_of_range) {
-	LOG_DEBUG_FILTER(logger_, filter_)
+	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }
 
-void TrackingService::handle_link_event(const Link& link, LinkState state) {
-	// we don't care about this
-}
-
-void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id,
-                                       TrackingHandler handler, sc::milliseconds timeout) {
-	LOG_TRACE_FILTER(logger_, filter_) << __func__ << LOG_ASYNC;
+void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
+                                       sc::milliseconds timeout) {
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto request = std::make_unique<Request>(service_, id, link, handler);
 	request->timer.expires_from_now(timeout);
@@ -74,7 +61,7 @@ void TrackingService::timeout(boost::uuids::uuid id, Link link, const boost::sys
 	handlers_.erase(id);
 	guard.unlock();
 
-	handler->handler(link, id, boost::optional<const messaging::MessageRoot*>());
+	handler->handler(link, boost::none);
 }
 
 void TrackingService::shutdown() {
@@ -83,6 +70,14 @@ void TrackingService::shutdown() {
 	for(auto& handler : handlers_) {
 		handler.second->timer.cancel();
 	}
+}
+
+void TrackingService::on_link_up(const Link& link) {
+	// we don't care about this
+}
+
+void TrackingService::on_link_down(const Link& link) {
+	// we don't care about this
 }
 
 }} // spark, ember

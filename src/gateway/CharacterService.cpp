@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Ember
+ * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,16 +7,20 @@
  */
 
 #include "CharacterService.h"
+#include <spark/Helpers.h>
+#include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid.hpp>
 
 namespace em = ember::messaging;
 
 namespace ember {
 
-CharacterService::CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc, const Config& config, log::Logger* logger)
+CharacterService::CharacterService(spark::Service& spark, spark::ServiceDiscovery& s_disc,
+                                   const Config& config, log::Logger* logger)
                                    : spark_(spark), s_disc_(s_disc), config_(config), logger_(logger) {
-	spark_.dispatcher()->register_handler(this, em::Service::Character, spark::EventDispatcher::Mode::CLIENT);
-	listener_ = std::move(s_disc_.listener(messaging::Service::Character,
+	spark_.dispatcher()->register_handler(this, em::Service::CHARACTER,
+	                                      spark::EventDispatcher::Mode::CLIENT);
+	listener_ = std::move(s_disc_.listener(messaging::Service::CHARACTER,
 	                      std::bind(&CharacterService::service_located, this, std::placeholders::_1)));
 	listener_->search();
 }
@@ -25,80 +29,75 @@ CharacterService::~CharacterService() {
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void CharacterService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
+void CharacterService::on_message(const spark::Link& link, const spark::Message& message) {
 	// we only care about tracked messages at the moment
-	LOG_DEBUG(logger_) << "Session service received unhandled message" << LOG_ASYNC;
+	LOG_WARN(logger_) << "Character service received unhandled message" << LOG_ASYNC;
 }
 
-void CharacterService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_INFO(logger_) << "Link to character server established" << LOG_ASYNC;
-			link_ = link;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_INFO(logger_) << "Link to character server closed" << LOG_ASYNC;
-			break;
-	}
+void CharacterService::on_link_up(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link up: " << link.description << LOG_ASYNC;
+	link_ = link;
 }
 
-void CharacterService::service_located(const messaging::multicast::LocateAnswer* message) {
-	LOG_DEBUG(logger_) << "Located account service at " << message->ip()->str() 
+void CharacterService::on_link_down(const spark::Link& link) {
+	LOG_INFO(logger_) << "Link down: " << link.description << LOG_ASYNC;
+}
+
+void CharacterService::service_located(const messaging::multicast::LocateResponse* message) {
+	LOG_DEBUG(logger_) << "Located character service at " << message->ip()->str() 
 	                   << ":" << message->port() << LOG_ASYNC;
 	spark_.connect(message->ip()->str(), message->port());
 }
 
-void CharacterService::handle_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                    boost::optional<const em::MessageRoot*> root, const ResponseCB& cb) const {
+void CharacterService::handle_reply(const spark::Link& link,
+                                    boost::optional<spark::Message>& message,
+                                    const ResponseCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!root || (*root)->data_type() != messaging::Data::CharResponse) {
+	if(!message || !spark::Service::verify<em::character::CreateResponse>(*message)) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::RESPONSE_FAILURE);
 		return;
 	}
 
-	auto message = static_cast<const em::character::CharResponse*>((*root)->data());
-	cb(message->status(), static_cast<protocol::Result>(message->result()));
+	auto data = flatbuffers::GetRoot<em::character::CreateResponse>(message->data);
+	cb(data->status(), static_cast<protocol::Result>(data->result()));
 }
 
-void CharacterService::handle_rename_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                           boost::optional<const messaging::MessageRoot*> root,
+void CharacterService::handle_rename_reply(const spark::Link& link,
+                                           boost::optional<spark::Message>& message,
                                            const RenameCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	if(!root || (*root)->data_type() != messaging::Data::RenameResponse) {
+	if(!message || !spark::Service::verify<em::character::RenameResponse>(*message)) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
-	auto message = static_cast<const messaging::character::RenameResponse*>((*root)->data());
+	auto data = flatbuffers::GetRoot<em::character::RenameResponse>(message->data);
 
 	// TODO! Refactor everything here - just pass the full character struct to the caller
-	if(!message->name() || !message->character_id() || message->result() != (uint32_t)protocol::Result::RESPONSE_SUCCESS) {
+	if(!data->name() || !data->character_id() || data->result() != (uint32_t)protocol::Result::RESPONSE_SUCCESS) {
 		cb(em::character::Status::ILLFORMED_MESSAGE, protocol::Result::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
-	cb(message->status(), static_cast<protocol::Result>(message->result()),
-	   message->character_id(), message->name()->str());
+	cb(data->status(), static_cast<protocol::Result>(data->result()),
+	   data->character_id(), data->name()->str());
 }
 
-void CharacterService::handle_retrieve_reply(const spark::Link& link, const boost::uuids::uuid& uuid,
-                                             boost::optional<const messaging::MessageRoot*> root,
+void CharacterService::handle_retrieve_reply(const spark::Link& link,
+                                             boost::optional<spark::Message>& message,
                                              const RetrieveCB& cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	std::vector<Character> characters;
-
-	if(!root || (*root)->data_type() != messaging::Data::RetrieveResponse) {
-		cb(em::character::Status::SERVER_LINK_ERROR, characters);
+	if(!message || !spark::Service::verify<em::character::RetrieveResponse>(*message)) {
+		cb(em::character::Status::SERVER_LINK_ERROR, {});
 		return;
 	}
 
-	auto message = static_cast<const messaging::character::RetrieveResponse*>((*root)->data());
-	auto key = message->characters();
+	std::vector<Character> characters;
+	auto data = flatbuffers::GetRoot<em::character::RetrieveResponse>(message->data);
+	auto key = data->characters();
 
 	for(auto i = key->begin(); i != key->end(); ++i) {
 		Character character;
@@ -130,7 +129,7 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link, const boos
 		characters.emplace_back(character);
 	}
 
-	cb(message->status(), characters);
+	cb(data->status(), characters);
 }
 
 void CharacterService::create_character(std::uint32_t account_id, const CharacterTemplate& character,
@@ -138,7 +137,8 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	
+	const auto opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_CREATE);
+
 	em::character::CharacterTemplateBuilder cbb(*fbb);
 	cbb.add_name(fbb->CreateString(character.name));
 	cbb.add_race(character.race);
@@ -151,16 +151,15 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	cbb.add_facialhair(character.facialhair);
 	auto fb_char = cbb.Finish();
 
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Create, em::character::CreateCreate(*fbb, account_id, config_.realm->id, fb_char).Union());
-	fbb->Finish(msg);
+	messaging::character::CreateBuilder msg(*fbb);
+	msg.add_account_id(account_id);
+	msg.add_character(fb_char);
+	msg.add_realm_id(config_.realm->id);
+	msg.Finish();
 
-	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,
-							  std::placeholders::_2, std::placeholders::_3, cb);
-
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
+		handle_reply(link, message, cb);
+	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }
@@ -169,55 +168,58 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
                                         const std::string& name, RenameCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+
+	const auto opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_RENAME);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	auto fb_name = fbb->CreateString(name);
 
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-	                                        em::Data::Rename, em::character::CreateRename(*fbb, account_id,
-	                                        fbb->CreateString(name), config_.realm->id, character_id).Union());
-	fbb->Finish(msg);
+	em::character::RenameBuilder msg(*fbb);
+	msg.add_account_id(account_id);
+	msg.add_character_id(character_id);
+	msg.add_realm_id(config_.realm->id);
+	msg.add_name(fb_name);
+	msg.Finish();
 
-	auto track_cb = std::bind(&CharacterService::handle_rename_reply, this, std::placeholders::_1,
-	                          std::placeholders::_2, std::placeholders::_3, cb);
-
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
+		handle_rename_reply(link, message, cb);
+	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, nullptr);
 	}
 }
 void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	const auto opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_ENUM);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Retrieve, em::character::CreateRetrieve(*fbb, account_id, config_.realm->id).Union());
-	fbb->Finish(msg);
 
-	auto track_cb = std::bind(&CharacterService::handle_retrieve_reply, this, std::placeholders::_1,
-	                          std::placeholders::_2, std::placeholders::_3, cb);
+	em::character::RetrieveBuilder msg(*fbb);
+	msg.add_account_id(account_id);
+	msg.add_realm_id(config_.realm->id);
+	msg.Finish();
 
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
-		std::vector<Character> chars;
-		cb(em::character::Status::SERVER_LINK_ERROR, chars);
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
+		handle_retrieve_reply(link, message, cb);
+	}) != spark::Service::Result::OK) {
+		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }
 
-void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id, ResponseCB cb) const {
+void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id,
+                                        ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	const auto opcode = util::enum_value(em::character::Opcode::CMSG_CHAR_DELETE);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto uuid = generate_uuid();
-	auto uuid_bytes = fbb->CreateVector(uuid.begin(), uuid.static_size());
-	auto msg = messaging::CreateMessageRoot(*fbb, messaging::Service::Character, uuid_bytes, 0,
-		em::Data::Delete, em::character::CreateDelete(*fbb, account_id, config_.realm->id, id).Union());
-	fbb->Finish(msg);
 
-	auto track_cb = std::bind(&CharacterService::handle_reply, this, std::placeholders::_1,
-	                          std::placeholders::_2, std::placeholders::_3, cb);
+	em::character::DeleteBuilder msg(*fbb);
+	msg.add_account_id (account_id);
+	msg.add_character_id(id);
+	msg.add_realm_id(config_.realm->id);
+	msg.Finish();
 
-	if(spark_.send_tracked(link_, uuid, fbb, track_cb) != spark::Service::Result::OK) {
+	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
+		handle_reply(link, message, cb);
+	}) != spark::Service::Result::OK) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
 	}
 }

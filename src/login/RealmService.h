@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include "RealmStatus_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <spark/temp/MessageRoot_generated.h>
+#include <spark/Helpers.h>
 #include <logger/Logging.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -29,21 +30,23 @@ class RealmService final : public spark::EventHandler {
 	spark::ServiceDiscovery& s_disc_;
 	log::Logger* logger_;
 	std::unique_ptr<spark::ServiceListener> listener_;
-	mutable boost::uuids::random_generator generate_uuid; // functor
 	std::unordered_map<boost::uuids::uuid, std::uint32_t, boost::hash<boost::uuids::uuid>> known_realms_;
+	std::unordered_map<messaging::realm::Opcode, spark::LocalDispatcher> handlers_;
+
 	spark::Link link_;
 
-	void service_located(const messaging::multicast::LocateAnswer* message);
+	void service_located(const messaging::multicast::LocateResponse* message);
 	void request_realm_status(const spark::Link& link);
 	void mark_realm_offline(const spark::Link& link);
-	void handle_realm_status(const spark::Link& link, const messaging::MessageRoot* root);
+	void handle_realm_status(const spark::Link& link, const spark::Message& message);
 
 public:
 	RealmService(RealmList& realms, spark::Service& spark, spark::ServiceDiscovery& s_disc, log::Logger* logger);
 	~RealmService();
 
-	void handle_message(const spark::Link& link, const messaging::MessageRoot* root) override;
-	void handle_link_event(const spark::Link& link, spark::LinkState event) override;
+	void on_message(const spark::Link& link, const spark::Message& message) override;
+	void on_link_up(const spark::Link& link) override;
+	void on_link_down(const spark::Link& link) override;
 };
 
 } // ember

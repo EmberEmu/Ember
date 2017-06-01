@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
 #include "FilterTypes.h"
 //#include "MonitorCallbacks.h"
 #include "Service.h"
@@ -78,9 +77,9 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
-	es::Service spark("account", service, s_address, s_port, logger, spark_filter);
+	es::Service spark("account", service, s_address, s_port, logger);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger, spark_filter);
+	                               mcast_port, logger);
 
 	ember::Sessions sessions(true);
 	ember::Service net_service(sessions, spark, discovery, logger);

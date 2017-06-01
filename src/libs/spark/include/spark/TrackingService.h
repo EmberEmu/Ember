@@ -11,7 +11,6 @@
 #include <spark/Common.h>
 #include <spark/Link.h>
 #include <spark/EventHandler.h>
-#include <spark/temp/MessageRoot_generated.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 #include <boost/functional/hash.hpp>
@@ -20,12 +19,14 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include <cstdint>
 
 namespace ember { namespace spark {
 
 class TrackingService : public EventHandler {
 	struct Request {
-		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link, TrackingHandler handler)
+		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link,
+		         TrackingHandler handler)
 		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
 
 		boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer;
@@ -39,16 +40,17 @@ class TrackingService : public EventHandler {
 
 	boost::asio::io_service& service_;
 	log::Logger* logger_;
-	log::Filter filter_;
 	std::mutex lock_;
 
 	void timeout(boost::uuids::uuid id, Link link, const boost::system::error_code& ec);
 
 public:
-	TrackingService(boost::asio::io_service& service, log::Logger* logger, log::Filter filter);
+	TrackingService(boost::asio::io_service& service, log::Logger* logger);
 
-	void handle_message(const Link& link, const messaging::MessageRoot* message);
-	void handle_link_event(const Link& link, LinkState state);
+	void on_message(const Link& link, const Message& message) override;
+	void on_link_up(const Link& link) override;
+	void on_link_down(const Link& link) override;
+
 	void register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
 	                      std::chrono::milliseconds timeout);
 	void shutdown();

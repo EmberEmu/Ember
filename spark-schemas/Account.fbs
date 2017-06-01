@@ -8,6 +8,13 @@
 
 namespace ember.messaging.account;
 
+enum Opcode : ushort {
+	CMSG_SESSION_LOOKUP, SMSG_SESSION_LOOKUP,
+	CMSG_ACCOUNT_LOOKUP, SMSG_ACCOUNT_LOOKUP,
+	CMSG_REGISTER_SESSION, SMSG_REGISTER_SESSION,
+	CMSG_DISCONNECT_SESSION, SMSG_DISCONNECT_SESSION
+}
+
 enum Status : ubyte {
 	UNKNOWN_ERROR, OK, SERVER_LINK_ERROR, ILLFORMED_MESSAGE, ALREADY_LOGGED_IN, SESSION_NOT_FOUND
 }
@@ -17,35 +24,40 @@ enum DisconnectReason : ubyte {
 	INTERNAL_LINK_LOST
 }
 
-table AccountLookup {
+table Response {
+	status:Status;
+}
+
+table LookupID {
 	account_name:string;
 }
 
-table AccountLookupResponse {
+table LookupIDResponse {
 	status:Status;
 	account_id:uint;
 }
 
-table RegisterKey {
+table RegisterSession {
 	account_id:uint;
 	key:[ubyte];
 }
 
-table KeyLookup {
+table SessionLookup {
 	account_id:uint;
 }
 
-table KeyLookupResp {
+table SessionResponse {
 	status:Status;
 	account_id:uint;
 	key:[ubyte];	
 }
 
-table Disconnect {
+table DisconnectID {
 	account_id:uint;
 	reason:DisconnectReason;
 }
 
-table Response {
-	status:Status;
+table DisconnectSession {
+	session_key:[ubyte];
+	reason:DisconnectReason;
 }

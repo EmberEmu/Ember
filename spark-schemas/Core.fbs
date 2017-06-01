@@ -1,14 +1,24 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-include "ServiceTypes.fbs";
+include "Services.fbs";
 
-namespace ember.messaging;
+namespace ember.messaging.core;
+
+enum Opcode : ushort {
+	MSG_PING, MSG_PONG, MSG_BANNER, MSG_NEGOTIATE	
+}
+
+table Header {
+	opcode:ushort;
+	service:Service;
+	uuid:[ubyte];
+}
 
 table Ping {
 	timestamp:ulong;

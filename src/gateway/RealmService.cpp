@@ -13,84 +13,88 @@ namespace em = ember::messaging;
 
 namespace ember {
 
-RealmService::RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger)
-                           : realm_(realm), spark_(spark), discovery_(discovery), logger_(logger) { 
-	spark_.dispatcher()->register_handler(this, em::Service::RealmStatus, spark::EventDispatcher::Mode::SERVER);
-	discovery_.register_service(em::Service::RealmStatus);
+RealmService::RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery,
+                           log::Logger* logger)
+                           : realm_(realm), spark_(spark), discovery_(discovery), logger_(logger) {
+	REGISTER(em::realm::Opcode::CMSG_REALM_STATUS, em::realm::RequestRealmStatus, RealmService::send_status);
+
+	spark_.dispatcher()->register_handler(this, em::Service::GATEWAY, spark::EventDispatcher::Mode::SERVER);
+	discovery_.register_service(em::Service::GATEWAY);
 }
 
 RealmService::~RealmService() {
-	discovery_.remove_service(em::Service::RealmStatus);
+	discovery_.remove_service(em::Service::GATEWAY);
 	spark_.dispatcher()->remove_handler(this);
 }
 
-void RealmService::handle_message(const spark::Link& link, const em::MessageRoot* root) {
-	switch(root->data_type()) {
-		case em::Data::RequestRealmStatus:
-			send_realm_status(link, root);
-			break;
-		default:
-			break;
+void RealmService::on_message(const spark::Link& link, const spark::Message& message) {
+	auto handler = handlers_.find(static_cast<messaging::realm::Opcode>(message.opcode));
+
+	if(handler == handlers_.end()) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Unhandled message received from "
+			<< link.description << LOG_ASYNC;
+		return;
 	}
+
+	if(!handler->second.verify(message)) {
+		LOG_WARN_FILTER(logger_, LF_SPARK)
+			<< "[spark] Bad message received from "
+			<< link.description << LOG_ASYNC;
+		return;
+	}
+
+	handler->second.handle(link, message);
 }
 
-void RealmService::set_realm_online() {
+void RealmService::set_online() {
 	realm_.flags &= ~Realm::Flags::OFFLINE;
-	broadcast_realm_status();
+	broadcast_status();
 }
 
-void RealmService::set_realm_offline() {
+void RealmService::set_offline() {
 	realm_.flags |= Realm::Flags::OFFLINE;
-	broadcast_realm_status();
+	broadcast_status();
 }
 
-void RealmService::send_realm_status(const spark::Link& link, const em::MessageRoot* root) const {
+void RealmService::send_status(const spark::Link& link, const spark::Message& message) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	auto fbb = build_realm_status(root);
-	spark_.send(link, std::move(fbb));
+	const auto opcode = util::enum_value(em::realm::Opcode::SMSG_REALM_STATUS);
+	auto fbb = build_status();
+	spark_.send(link, opcode, fbb, message.token);
 }
 
-std::unique_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_realm_status(const em::MessageRoot* root) const {
-	auto fbb = std::make_unique<flatbuffers::FlatBufferBuilder>();
-	em::realm::RealmStatusBuilder rsb(*fbb);
-	rsb.add_id(realm_.id);
-	rsb.add_name(fbb->CreateString(realm_.name));
-	rsb.add_ip(fbb->CreateString(realm_.ip));
-	rsb.add_flags(util::enum_value(realm_.flags));
-	rsb.add_population(realm_.population);
-	rsb.add_category(util::enum_value(realm_.category));
-	rsb.add_region(util::enum_value(realm_.region));
-	rsb.add_type(util::enum_value(realm_.type));
-	auto data_offset = rsb.Finish();
+std::shared_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_status() const {
+	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
-	em::MessageRootBuilder mrb(*fbb);
-	mrb.add_service(em::Service::RealmStatus);
-	mrb.add_data_type(em::Data::RealmStatus);
-	mrb.add_data(data_offset.Union());
+	auto fb_name = fbb->CreateString(realm_.name);
+	auto fb_ip = fbb->CreateString(realm_.ip);
 
-	if(root) {
-		spark_.set_tracking_data(root, mrb, fbb.get());
-	}
+	em::realm::RealmStatusBuilder builder(*fbb);
+	builder.add_id(realm_.id);
+	builder.add_name(fb_name);
+	builder.add_ip(fb_ip);
+	builder.add_flags(util::enum_value(realm_.flags));
+	builder.add_population(realm_.population);
+	builder.add_category(util::enum_value(realm_.category));
+	builder.add_region(util::enum_value(realm_.region));
+	builder.add_type(util::enum_value(realm_.type));
+	fbb->Finish(builder.Finish());
 
-	auto mloc = mrb.Finish();
-	fbb->Finish(mloc);
 	return fbb;
 }
 
-void RealmService::broadcast_realm_status() const {
-	auto fbb = build_realm_status();
-	spark_.broadcast(em::Service::RealmStatus, spark::ServicesMap::Mode::CLIENT, std::move(fbb));
+void RealmService::broadcast_status() const {
+	auto fbb = build_status();
+	spark_.broadcast(em::Service::GATEWAY, spark::ServicesMap::Mode::CLIENT, fbb);
 }
 
-void RealmService::handle_link_event(const spark::Link& link, spark::LinkState event) {
-	switch(event) {
-		case spark::LinkState::LINK_UP:
-			LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
-			break;
-		case spark::LinkState::LINK_DOWN:
-			LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
-			break;
-	}
+void RealmService::on_link_up(const spark::Link& link) { 
+	LOG_DEBUG(logger_) << "Link up: " << link.description << LOG_ASYNC;
+}
+
+void RealmService::on_link_down(const spark::Link& link) {
+	LOG_DEBUG(logger_) << "Link down: " << link.description << LOG_ASYNC;
 }
 
 } // ember
