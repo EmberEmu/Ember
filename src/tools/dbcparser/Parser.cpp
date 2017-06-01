@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,7 @@
 
 namespace rxml = rapidxml;
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
@@ -304,4 +304,4 @@ types::Definitions Parser::parse(const std::vector<std::string>& paths) {
 	return defs;
 }
 
-}} //dbc, ember
+} // dbc, ember

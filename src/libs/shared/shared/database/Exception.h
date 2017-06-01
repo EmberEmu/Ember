@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
  
-namespace ember { namespace dal {
+namespace ember::dal {
 
 class exception : public std::runtime_error {
 public:
@@ -19,4 +19,4 @@ public:
 	exception(std::string msg) : std::runtime_error(msg) { };
 };
 
-}} //dal, ember
+} //dal, ember

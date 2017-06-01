@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -28,7 +28,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
@@ -199,4 +199,4 @@ public:
 	friend class SessionManager;
 };
 
-}} // spark, ember
+} // spark, ember

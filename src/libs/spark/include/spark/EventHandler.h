@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 struct Message;
 struct Link;
@@ -24,4 +24,4 @@ public:
 	virtual ~EventHandler() = default;
 };
 
-}} // spark, ember
+} // spark, ember

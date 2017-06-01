@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,7 +24,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
 
@@ -73,4 +73,4 @@ public:
 };
 
 
-}} // multicast, spark, ember
+} // spark, ember

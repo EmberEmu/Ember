@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 template<typename T>
 struct TreeNode {
@@ -20,4 +20,4 @@ struct TreeNode {
 	std::vector<std::unique_ptr<TreeNode<T>>> children;
 };
 
-}}; //dbc, ember
+} //dbc, ember

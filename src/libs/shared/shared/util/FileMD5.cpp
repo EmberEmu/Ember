@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <vector>
 #include <fstream>
 
-namespace ember { namespace util {
+namespace ember::util {
 
 Botan::secure_vector<Botan::byte> generate_md5(const char* data, const std::size_t len) {
 	Botan::MD5 hasher;
@@ -47,4 +47,4 @@ Botan::secure_vector<Botan::byte> generate_md5(const std::string& file) {
 	return hasher.final();
 }
 
-}} // util, ember
+} // util, ember

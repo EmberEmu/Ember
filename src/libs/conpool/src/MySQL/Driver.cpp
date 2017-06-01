@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@
 #include <memory>
 #include <sstream>
 
-namespace ember { namespace drivers {
+namespace ember::drivers {
 
 MySQL::MySQL(std::string user, std::string pass, const std::string& host, unsigned short port,
              std::string db) : database(db), username(std::move(user)), password(std::move(pass)),
@@ -138,4 +138,4 @@ void MySQL::close_cache(const sql::Connection* conn) const {
 	cache_.erase(conn);
 }
 
-}} // drivers, ember
+} // drivers, ember

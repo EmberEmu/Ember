@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 class Parser {
 	static const int MAX_PARSE_DEPTH = 3;
@@ -44,4 +44,4 @@ public:
 	types::Definitions parse(const std::vector<std::string>& paths);
 };
 
-}} //dbc, ember
+} //dbc, ember

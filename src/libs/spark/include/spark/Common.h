@@ -14,7 +14,7 @@
 #include <optional>
 #include <cstdint>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 struct Link;
 struct Endpoint;
@@ -35,4 +35,4 @@ struct Message {
 typedef std::function<void(const Link&, std::optional<Message>)> TrackingHandler;
 typedef std::function<void(const Endpoint*)> ResolveCallback;
 
-}} // spark, ember
+} // spark, ember

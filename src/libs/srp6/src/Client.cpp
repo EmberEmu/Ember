@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,7 +18,7 @@ using Botan::secure_vector;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 
 Client::Client(std::string identifier, std::string password, Generator gen, std::size_t key_size, bool srp6a)
                : Client(std::move(identifier), std::move(password), gen,
@@ -65,4 +65,4 @@ BigInt Client::generate_proof(const SessionKey& key) const {
 	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B_, salt_);
 }
 
-}} //srp6, ember
+} //srp6, ember

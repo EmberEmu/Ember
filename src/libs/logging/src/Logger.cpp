@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,7 +9,7 @@
 #include <logger/Logger.h>
 #include <logger/LoggerImpl.h>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 Logger::Logger() : pimpl_(std::make_unique<impl>()) {}
 Logger::~Logger() = default;
@@ -113,4 +113,4 @@ Logger& flush_sync(Logger& out) {
 	return out;
 }
 
-}} //log, ember
+} //log, ember

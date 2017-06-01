@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
  
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 class exception : public std::runtime_error {
 public:
@@ -25,4 +25,4 @@ public:
 	parse_error(const std::string& file, const std::string& msg) : exception(file + ": " + msg) { };
 };
 
-}} //dbc, ember
+} //dbc, ember

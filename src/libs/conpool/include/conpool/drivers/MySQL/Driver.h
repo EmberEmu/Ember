@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,7 +22,7 @@ class PreparedStatement;
 
 }
 
-namespace ember { namespace drivers {
+namespace ember::drivers {
 
 class MySQL {
 	typedef std::unordered_map<std::string, sql::PreparedStatement*> QueryCache;
@@ -58,4 +58,4 @@ public:
 	                     sql::PreparedStatement* value);
 };
 
-}} //drivers, ember
+} //drivers, ember

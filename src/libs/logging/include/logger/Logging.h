@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,7 @@
 #include <memory>
 #include <mutex>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 namespace detail {
 
@@ -24,4 +24,4 @@ extern Logger* logger_;
 Logger* get_logger();
 void set_global_logger(Logger* logger);
 
-}} //log, ember
+} //log, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 
 using namespace std::string_literals;
 
-namespace ember { namespace util { namespace pcre {
+namespace ember::util::pcre {
 
 Result utf8_jit_compile(std::string expression) {
 	int error_offset = 0;
@@ -49,4 +49,4 @@ int match(const std::string& needle, const Result& result) {
 	return pcre_exec(result.pcre.get(), result.extra.get(), needle.c_str(), needle.size(), 0, 0, nullptr, 0);
 }
 
-}}} // pcre, util, ember
+} // pcre, util, ember

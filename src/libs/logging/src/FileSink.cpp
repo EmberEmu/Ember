@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,7 +18,7 @@
 #pragma warning(push)
 #pragma warning(disable: 4996)
 
-namespace ember { namespace log {
+namespace ember::log {
 
 namespace fs = boost::filesystem;
 
@@ -208,6 +208,6 @@ void FileSink::write(Severity severity, Filter type, const std::vector<char>& re
 	}
 }
 
-}} //log, ember
+} //log, ember
 
 #pragma warning(pop)

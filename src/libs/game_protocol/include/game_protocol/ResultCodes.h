@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <shared/smartenum.hpp>
 
-namespace ember { namespace protocol {
+namespace ember::protocol {
 
 smart_enum_class(Result, std::uint8_t,
 	RESPONSE_SUCCESS                                       = 0x00,
@@ -107,4 +107,4 @@ smart_enum_class(Result, std::uint8_t,
 	CHAR_NAME_FAILURE                                      = 0x51,
 )
 
-}} // protocol, ember
+} // protocol, ember

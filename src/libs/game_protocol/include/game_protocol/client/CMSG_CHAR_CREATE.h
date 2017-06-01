@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace protocol {
+namespace ember::protocol {
 
 namespace be = boost::endian;
 
@@ -60,4 +60,4 @@ public:
 	}
 };
 
-}} // protocol, ember
+} // protocol, ember

@@ -11,7 +11,7 @@
 #include <game_protocol/Opcodes.h>
 #include <boost/endian/arithmetic.hpp>
 
-namespace ember { namespace protocol {
+namespace ember::protocol {
 
 struct ServerHeader {
 	boost::endian::big_uint16_t size;
@@ -23,4 +23,4 @@ struct ClientHeader {
 	ClientOpcodes opcode;
 };
 
-}} // protocol, ember
+} // protocol, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class Sink {
 	Severity severity_;
@@ -34,4 +34,4 @@ public:
 	virtual ~Sink() = default;
 };
 
-}} //log, ember
+} //log, ember

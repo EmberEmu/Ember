@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <botan/sha160.h>
 #include <memory>
 
-namespace ember { namespace client_integrity {
+namespace ember::client_integrity {
 
 Botan::secure_vector<Botan::byte> checksum(const Botan::secure_vector<Botan::byte>& seed,
                                            const std::vector<char>* buffer) {
@@ -32,4 +32,4 @@ Botan::secure_vector<Botan::byte> finalise(const Botan::secure_vector<Botan::byt
 	return hasher.final();
 }
 
-}} // client_integrity, ember
+} // client_integrity, ember

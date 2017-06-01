@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,8 +11,8 @@
 #include "Types.h"
 #include <string>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 void generate_template(const types::Struct* dbc);
 
-}} // dbc, ember
+} // dbc, ember

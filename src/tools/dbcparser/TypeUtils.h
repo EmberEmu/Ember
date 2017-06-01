@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@
 #include <unordered_set>
 #include <stdexcept>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 typedef std::pair<std::string, std::optional<int>> TypeComponents;
 
@@ -91,4 +91,4 @@ void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
 	}
 }
 
-}} //dbc, ember
+} //dbc, ember

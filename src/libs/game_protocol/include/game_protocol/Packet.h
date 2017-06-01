@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <spark/SafeBinaryStream.h>
 #include <cstdint>
 
-namespace ember { namespace protocol {
+namespace ember::protocol {
 
 struct Packet {
 	enum class State {
@@ -40,4 +40,4 @@ inline spark::SafeBinaryStream& operator<<(spark::SafeBinaryStream& out, const S
 //	return in;
 //}
 
-}} // client, grunt, ember
+} // protocol, ember

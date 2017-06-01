@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace ember { namespace util {
+namespace ember::util {
 
 enum class Colour : unsigned int {
 	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA,
@@ -39,4 +39,4 @@ public:
 	}
 };
 
-}} // util, ember
+} // util, ember

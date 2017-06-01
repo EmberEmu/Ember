@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 
 #include <cstdint>
 
-namespace ember { namespace dbc { namespace disk {
+namespace ember::dbc::disk {
 
 typedef std::uint32_t string_ref;
 typedef std::uint32_t uint32;
@@ -47,4 +47,4 @@ typedef StringRefLoc string_ref_loc;
 
 #pragma pack(pop)
 
-}}} // disk, dbc, ember
+} // disk, dbc, ember

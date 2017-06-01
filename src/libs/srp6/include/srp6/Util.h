@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,7 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstddef>
  
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 	
 BOOST_STRONG_TYPEDEF(std::vector<Botan::byte>, SessionKey);
 
@@ -58,4 +58,4 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
                                     const SessionKey& key);
 
-}} //srp6, ember
+} //srp6, ember

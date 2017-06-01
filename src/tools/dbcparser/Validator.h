@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +21,7 @@
 #include <utility>
 #include <cstddef>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 //todo - move
 struct NameTester {
@@ -83,4 +83,4 @@ public:
 	void validate(const types::Definitions& definitions_);
 };
 
-}} //dbc, ember
+} //dbc, ember

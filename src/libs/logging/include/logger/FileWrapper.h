@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #pragma warning(push)
 #pragma warning(disable: 4996)
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class File final {
 	std::FILE* file_ = nullptr;
@@ -43,6 +43,6 @@ public:
 	File& operator=(const File&) = delete;
 };
 
-}} //log, ember
+} //log, ember
 
 #pragma warning(pop)

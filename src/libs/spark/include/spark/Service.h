@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -30,7 +30,7 @@
 #include <string>
 #include <cstdint>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class Service final {
 	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandle;
@@ -81,4 +81,4 @@ public:
 	}
 };
 
-}} // spark, ember
+} // spark, ember

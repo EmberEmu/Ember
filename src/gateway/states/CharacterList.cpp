@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,7 +24,7 @@
 
 namespace em = ember::messaging;
 
-namespace ember { namespace character_list {
+namespace ember::character_list {
 
 namespace {
 
@@ -255,4 +255,4 @@ void exit(ClientContext* ctx) {
 	}
 }
 
-}} // character_list, ember
+} // character_list, ember

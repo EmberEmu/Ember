@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <botan/bigint.h>
 #include <cstddef>
 
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 
 class Server final {
 	const Botan::BigInt v_, N_, b_;
@@ -29,4 +29,4 @@ public:
 	Botan::BigInt generate_proof(const SessionKey& key, const Botan::BigInt& client_proof) const;
 };
 
-}} //srp6, ember
+} //srp6, ember

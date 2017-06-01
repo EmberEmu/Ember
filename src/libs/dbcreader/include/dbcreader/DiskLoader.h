@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 class DiskLoader final : public Loader {
 	typedef std::function<void(Storage&, const std::string&)> DBCLoadFunc;
@@ -34,4 +34,4 @@ public:
 	Storage load(const std::vector<std::string>& whitelist) const override;
 };
 
-}} // dbc, ember
+} // dbc, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
  
-namespace ember { namespace connection_pool {
+namespace ember::connection_pool {
 
 class exception : public std::runtime_error {
 public:
@@ -32,4 +32,4 @@ public:
 	active_connections(std::string msg) : exception(msg) { };
 };
 
-}} //connection_pool, ember
+} //connection_pool, ember

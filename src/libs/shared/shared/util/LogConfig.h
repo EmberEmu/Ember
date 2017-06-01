@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,8 +12,8 @@
 #include <boost/program_options.hpp>
 #include <memory>
 
-namespace ember { namespace util {
+namespace ember::util {
 
 std::unique_ptr<ember::log::Logger> init_logging(const boost::program_options::variables_map& args);
 
-}} // util, ember
+} // util, ember

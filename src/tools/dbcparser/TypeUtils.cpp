@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <regex>
 #include <cctype>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 const std::unordered_map<std::string, int> type_size_map {
 	{ "int8",           1 },
@@ -140,4 +140,4 @@ types::Base* locate_type_base(const types::Struct& base, const std::string& type
 	return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
-}} //dbc, ember
+} //dbc, ember

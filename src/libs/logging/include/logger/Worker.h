@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +21,7 @@
 #include <tuple>
 #include <condition_variable>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class Worker final {
 	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::vector<char>>> queue_;
@@ -52,4 +52,4 @@ public:
 	}
 };
 
-}} //log, ember
+} //log, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,7 @@
 
 #include <spark/EventDispatcher.h>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 void EventDispatcher::register_handler(EventHandler* handler, messaging::Service service, Mode mode) {
 	std::unique_lock<std::shared_timed_mutex> guard(lock_);
@@ -71,4 +71,4 @@ std::vector<messaging::Service> EventDispatcher::services(Mode mode) const {
 	return services;
 }
 
-}} // spark, ember
+} // spark, ember

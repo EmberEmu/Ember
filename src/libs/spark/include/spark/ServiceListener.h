@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include "Services_generated.h"
 #include <spark/Common.h>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
 
@@ -35,4 +35,4 @@ public:
 	friend class ServiceDiscovery;
 };
 
-}} // spark, ember
+} // spark, ember

@@ -13,7 +13,7 @@
 
 namespace sc = std::chrono;
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger)
                                  : service_(service), logger_(logger) { }
@@ -80,4 +80,4 @@ void TrackingService::on_link_down(const Link& link) {
 	// we don't care about this
 }
 
-}} // spark, ember
+} // spark, ember

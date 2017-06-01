@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class SyslogSink : public Sink {
 	class impl;
@@ -39,4 +39,4 @@ public:
 	void batch_write(const std::vector<std::pair<log::RecordDetail, std::vector<char>>>& records) override;
 };
 
-}} //log, ember
+} //log, ember

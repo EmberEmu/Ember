@@ -16,7 +16,7 @@
 #include <optional>
 #include <cstddef>
 
-namespace ember { namespace grunt {
+namespace ember::grunt {
 
 typedef std::unique_ptr<Packet> PacketHandle;
 
@@ -40,4 +40,4 @@ public:
 	std::optional<PacketHandle> try_deserialise(spark::Buffer& buffer);
 };
 
-}} // grunt, ember
+} // grunt, ember

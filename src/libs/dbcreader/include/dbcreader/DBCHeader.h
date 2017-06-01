@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <boost/endian/arithmetic.hpp>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 namespace be = boost::endian;
 
@@ -29,4 +29,4 @@ struct DBCHeader {
 
 #pragma pack(pop)
 
-}} // dbc, ember
+} // dbc, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 template<typename T>
 class DBCMap {
@@ -61,4 +61,4 @@ public:
 	}
 };
 
-}} // dbc, ember
+} // dbc, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,7 @@
 using Botan::byte;
 using Botan::secure_vector;
 
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 	
 namespace detail {
 
@@ -151,4 +151,4 @@ Botan::BigInt generate_verifier(const std::string& identifier, const std::string
 	return detail::generate(identifier, password, generator, salt, mode);
 }
 
-}} //srp6, ember
+} //srp6, ember

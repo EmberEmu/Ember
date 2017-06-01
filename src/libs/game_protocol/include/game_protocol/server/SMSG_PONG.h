@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace protocol {
+namespace ember::protocol {
 
 namespace be = boost::endian;
 
@@ -43,4 +43,4 @@ public:
 	}
 };
 
-}} // protocol, ember
+} // protocol, ember

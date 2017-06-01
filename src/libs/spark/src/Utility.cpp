@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,7 @@
 
 #include <spark/Utility.h>
 
-namespace ember { namespace spark { namespace detail {
+namespace ember::spark::detail {
 
 std::vector<ServicesType> services_to_underlying(const std::vector<messaging::Service>& services) {
 	std::vector<ServicesType> ret;
@@ -30,4 +30,4 @@ std::vector<messaging::Service> underlying_to_services(const std::vector<Service
 	return ret;
 }
 
-}}} // detail, spark, ember
+} // detail, spark, ember

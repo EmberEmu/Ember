@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,8 +9,8 @@
 #include <conpool/drivers/MySQL/Driver.h>
 #include <string>
 
-namespace ember { namespace drivers {
+namespace ember::drivers {
 
 ember::drivers::MySQL init_db_driver(const std::string& config_path);
 
-}} // drivers, ember
+} // drivers, ember

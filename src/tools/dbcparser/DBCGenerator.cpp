@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,7 +19,7 @@
 
 namespace be = boost::endian;
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 class RecordPrinter : public types::TypeVisitor {
 	ember::spark::ChainedBuffer<4096> buffer_, sb_buffer_;
@@ -126,4 +126,4 @@ void generate_template(const types::Struct* dbc) {
 	LOG_DEBUG_GLOB << "Completed template generation for " << dbc->name << LOG_ASYNC;
 }
 
-}} // dbc, ember
+} // dbc, ember

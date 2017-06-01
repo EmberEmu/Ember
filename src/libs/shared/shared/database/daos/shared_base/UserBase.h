@@ -15,7 +15,7 @@
 #include <string>
 #include <cstdint>
 
-namespace ember { namespace dal {
+namespace ember::dal {
 
 class UserDAO {
 public:
@@ -26,4 +26,4 @@ public:
 	virtual ~UserDAO() = default;
 };
 
-}} //dal, ember
+} //dal, ember

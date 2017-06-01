@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +21,7 @@
 #include <mutex>
 #include <cstdint>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class TrackingService : public EventHandler {
 	struct Request {
@@ -56,4 +56,4 @@ public:
 	void shutdown();
 };
 
-}}
+} // spark, ember

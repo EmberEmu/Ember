@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <fstream>
 #include <cstdint>
 
-namespace ember { namespace drivers {
+namespace ember::drivers {
 
 namespace {
 
@@ -54,4 +54,4 @@ ember::drivers::MySQL init_db_driver(const std::string& config_path) {
 	return {user, pass, host, port, db};
 }
 
-}} // drivers, ember
+} // drivers, ember

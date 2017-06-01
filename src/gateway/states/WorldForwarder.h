@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,11 +12,11 @@
 #include "../Event.h"
 #include <memory>
 
-namespace ember { namespace world {
+namespace ember::world {
 
 void enter(ClientContext* ctx);
 void handle_packet(ClientContext* ctx);
 void handle_event(ClientContext* ctx, const Event* event);
 void exit(ClientContext* ctx);
 
-}} // world, ember
+} // world, ember

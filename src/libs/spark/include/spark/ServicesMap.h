@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class ServicesMap {
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_servers_;
@@ -29,4 +29,4 @@ public:
 	void remove_peer(const Link& link);
 };
 
-}} // spark, ember
+} // spark, ember

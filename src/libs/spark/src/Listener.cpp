@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <spark/SessionManager.h>
 #include <shared/FilterTypes.h>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 Listener::Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port, 
                    SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,
@@ -59,4 +59,4 @@ void Listener::shutdown() {
 	acceptor_.close();
 }
 
-}} // spark, ember
+} // spark, ember

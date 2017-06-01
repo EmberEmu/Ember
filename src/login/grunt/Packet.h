@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <spark/BinaryStream.h>
 #include <spark/SafeBinaryStream.h>
 
-namespace ember { namespace grunt {
+namespace ember::grunt {
 
 struct Packet {
 	enum class State {
@@ -28,4 +28,4 @@ struct Packet {
 	virtual ~Packet() = default;
 };
 
-}} // client, grunt, ember
+} // client, grunt, ember

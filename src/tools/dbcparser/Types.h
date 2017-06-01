@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <vector>
 #include <memory>
 
-namespace ember { namespace dbc { namespace types {
+namespace ember::dbc::types {
 
 struct Struct;
 struct Enum;
@@ -107,4 +107,4 @@ struct Struct : Base {
 	Struct& operator=(Struct& src) = delete;
 };
 
-}}} //types, dbc, ember
+} //types, dbc, ember

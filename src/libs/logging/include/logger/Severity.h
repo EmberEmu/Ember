@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,7 @@
 
 #undef ERROR
 
-namespace ember { namespace log {
+namespace ember::log {
 
 enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR_, FATAL, DISABLED };
 BOOST_STRONG_TYPEDEF(std::uint_fast32_t, Filter);
@@ -23,4 +23,4 @@ struct RecordDetail {
 	Filter type;
 };
 
-}} //log, ember
+} //log, ember

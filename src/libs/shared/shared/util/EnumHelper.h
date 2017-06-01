@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
  * Utility functions for printing out enum values returned from remote
  * Spark services using the FlatBuffers-based protocol
  */
-namespace ember { namespace util {
+namespace ember::util {
 
 template<typename T>
 auto enum_value(T value) {
@@ -51,4 +51,4 @@ std::string fb_status(T value, const char** enums) {
 	return std::string(message) + " (" + std::to_string(enum_value(value)) + ")";
 }
 
-}} // util, ember
+} // util, ember

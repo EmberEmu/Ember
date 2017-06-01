@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,7 @@
 
 #include "WorldForwarder.h"
 
-namespace ember { namespace world {
+namespace ember::world {
 
 void enter(ClientContext* context) {
 
@@ -26,4 +26,4 @@ void exit(ClientContext* context) {
 	//queue_service_temp->free_slot();
 }
 
-}} // world, ember
+} // world, ember

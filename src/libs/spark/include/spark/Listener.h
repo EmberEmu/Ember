@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <logger/Logging.h>
 #include <boost/asio.hpp>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 struct Link;
 class LinkMap;
@@ -41,4 +41,4 @@ public:
 	void shutdown();
 };
 
-}} // spark, ember
+} // spark, ember

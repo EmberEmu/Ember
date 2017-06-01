@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid_io.hpp>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 namespace em = ember::messaging;
 namespace sc = std::chrono;
@@ -122,4 +122,4 @@ void HeartbeatService::shutdown() {
 	timer_.cancel();
 }
 
-}} // spark, ember
+} // spark, ember

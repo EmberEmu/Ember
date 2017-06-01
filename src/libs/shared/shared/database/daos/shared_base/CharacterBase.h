@@ -15,7 +15,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ember { namespace dal {
+namespace ember::dal {
 
 class CharacterDAO {
 public:
@@ -29,4 +29,4 @@ public:
 	virtual ~CharacterDAO() = default;
 };
 
-}} // dal, ember
+} // dal, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <string>
 #include <cstddef>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class exception : public std::runtime_error {
 public:
@@ -30,4 +30,4 @@ public:
 		            buff_size(buff_size), read_size(read_size) { }
 };
 
-}} //spark, ember
+} //spark, ember

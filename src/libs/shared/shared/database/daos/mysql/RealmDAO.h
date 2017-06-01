@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 #include <cppconn/prepared_statement.h>
 #include <memory>
 
-namespace ember { namespace dal { 
+namespace ember::dal { 
 
 using namespace std::chrono_literals;
 
@@ -88,4 +88,4 @@ std::unique_ptr<MySQLRealmDAO<T>> realm_dao(T& pool) {
 	return std::make_unique<MySQLRealmDAO<T>>(pool);
 }
 
-}} //dal, ember
+} //dal, ember

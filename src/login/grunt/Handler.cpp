@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ember { namespace grunt {
+namespace ember::grunt {
 
 void Handler::dump_bad_packet(const spark::buffer_underrun& e, spark::Buffer& buffer,
                               std::size_t offset) {
@@ -110,4 +110,4 @@ std::optional<PacketHandle> Handler::try_deserialise(spark::Buffer& buffer) {
 	}
 }
 
-}} // grunt, ember
+} // grunt, ember

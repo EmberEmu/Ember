@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <set>
 #include <cstdint>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class NetworkSession;
 class EventDispatcher;
@@ -50,4 +50,4 @@ public:
 	void start(NetworkSession& net);
 };
 
-}} // spark, ember
+} // spark, ember

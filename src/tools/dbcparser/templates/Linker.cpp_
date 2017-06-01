@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,7 @@
 #include <dbcreader/Linker.h>
 #include <dbcreader/Storage.h>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 namespace detail {
 
@@ -27,4 +27,4 @@ void link(Storage& storage) {
 <%TEMPLATE_LINKING_FUNCTION_CALLS%>
 }
 
-}} // dbc, ember
+} // dbc, ember

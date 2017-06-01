@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,7 @@
 #include <boost/assert.hpp>
 #include <utility>
 
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 
 Generator::Generator(Group group) {
 	switch(group) {
@@ -164,4 +164,4 @@ Generator::Generator(Group group) {
 	}
 }
 
-}} //srp6, ember
+} //srp6, ember

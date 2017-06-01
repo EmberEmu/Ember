@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 #include <cppconn/prepared_statement.h>
 #include <memory>
 
-namespace ember { namespace dal {
+namespace ember::dal {
 
 using namespace std::chrono_literals;
 
@@ -80,4 +80,4 @@ std::unique_ptr<MySQLIPBanDAO<T>> ip_ban_dao(T& pool) {
 	return std::make_unique<MySQLIPBanDAO<T>>(pool);
 }
 
-}} //dal, ember
+} //dal, ember

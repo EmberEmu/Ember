@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,7 +18,7 @@
 #include <cstdio>
 #include <cstdint>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class FileSink : public Sink {
 public:
@@ -59,4 +59,4 @@ public:
 };
 
 
-}} //log, ember
+} //log, ember

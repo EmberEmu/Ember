@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger)
@@ -224,4 +224,4 @@ MessageHandler::~MessageHandler() {
 	}
 }
 
-}} // spark, ember
+} // spark, ember

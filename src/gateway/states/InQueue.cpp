@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 #include <logger/Logging.h>
 #include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
 
-namespace ember { namespace queue {
+namespace ember::queue {
 
 void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
@@ -61,4 +61,4 @@ void exit(ClientContext* ctx) {
 	}
 }
 
-}} // queue, ember
+} // queue, ember

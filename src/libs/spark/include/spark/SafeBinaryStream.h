@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015-2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 #include <cstddef>
 #include <cstring>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class SafeBinaryStream {
 	Buffer& buffer_;
@@ -110,4 +110,4 @@ public:
 	}
 };
 
-}} // spark, ember
+} // spark, ember

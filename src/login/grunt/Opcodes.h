@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <shared/smartenum.hpp>
 #include <cstdint>
 
-namespace ember { namespace grunt {
+namespace ember::grunt {
 
 smart_enum_class(Opcode, std::uint8_t,
 	CMD_AUTH_LOGON_CHALLENGE      = 0x00,
@@ -39,4 +39,4 @@ enum class ServerLinkOpcodes : std::uint8_t {
 	CMD_GRUNT_CANCEL_UNKNOWN      = 0x26
 };
 
-}} // grunt, ember
+} // grunt, ember

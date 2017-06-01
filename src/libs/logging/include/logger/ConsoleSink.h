@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,7 @@
 
 #include <logger/Sink.h>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class ConsoleSink : public Sink {
 	bool colour_;
@@ -25,4 +25,4 @@ public:
 	void colourise(bool colourise) { colour_ = colourise; }
 };
 
-}} //log, ember
+} //log, ember

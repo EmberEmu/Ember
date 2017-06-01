@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,7 +9,7 @@
 #include <spark/ServiceListener.h>
 #include <spark/ServiceDiscovery.h>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 ServiceListener::~ServiceListener() {
 	sd_client_->remove_listener(this);
@@ -19,4 +19,4 @@ void ServiceListener::search() {
 	sd_client_->locate_service(service_);
 }
 
-}} // spark, ember
+} // spark, ember

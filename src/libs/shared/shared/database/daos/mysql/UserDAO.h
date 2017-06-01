@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@
 #include <chrono>
 #include <memory>
 
-namespace ember { namespace dal { 
+namespace ember::dal { 
 
 using namespace std::chrono_literals;
 
@@ -138,4 +138,4 @@ std::unique_ptr<MySQLUserDAO<T>> user_dao(T& pool) {
 	return std::make_unique<MySQLUserDAO<T>>(pool);
 }
 
-}} // dal, ember
+} // dal, ember

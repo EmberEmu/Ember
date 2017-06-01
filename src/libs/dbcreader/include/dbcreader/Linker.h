@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,10 +8,10 @@
 
 #pragma once
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 struct Storage;
 
 void link(Storage& storage);
 
-}} // dbc, ember
+} // dbc, ember

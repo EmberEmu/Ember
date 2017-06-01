@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace grunt { namespace server {
+namespace ember::grunt::server {
 
 namespace be = boost::endian;
 
@@ -53,4 +53,4 @@ public:
 	}
 };
 
-}}} // client, grunt, ember
+} // client, grunt, ember

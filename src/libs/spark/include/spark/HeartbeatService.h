@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <cstdint>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class Service;
 
@@ -54,4 +54,4 @@ public:
 	void shutdown();
 };
 
-}}
+} // spark, ember

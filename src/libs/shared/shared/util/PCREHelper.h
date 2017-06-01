@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,7 @@
 #include <pcre.h>
 #include <cstddef>
 
-namespace ember { namespace util { namespace pcre {
+namespace ember::util::pcre {
 
 struct Result {
 	std::unique_ptr<::pcre, void(*)(void*)> pcre;
@@ -23,4 +23,4 @@ struct Result {
 Result utf8_jit_compile(std::string expression);
 int match(const std::string& needle, const Result& result);
 
-}}} // utf8, util, ember
+} // utf8, util, ember

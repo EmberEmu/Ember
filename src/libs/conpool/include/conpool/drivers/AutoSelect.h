@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,7 @@
 	#include <conpool/drivers/PostgreSQL/Config.h>
 #endif
 
-namespace ember { namespace drivers {
+namespace ember::drivers {
 
 #ifdef DB_MYSQL
 	typedef MySQL DriverType;
@@ -25,4 +25,4 @@ namespace ember { namespace drivers {
 	static_assert(false, "Cannot compile Ember without defining a DBMS!")
 #endif
 
-}} //drivers, ember
+} //drivers, ember

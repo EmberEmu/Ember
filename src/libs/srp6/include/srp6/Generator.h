@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,7 @@
 #include <botan/bigint.h>
 #include <botan/numthry.h>
 
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 
 struct Generator {
 	enum class Group {
@@ -34,4 +34,4 @@ private:
 	Botan::BigInt g_, N_;
 };
 
-}} //srp6, ember
+} //srp6, ember

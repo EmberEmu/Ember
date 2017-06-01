@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,7 @@
 #include <sstream>
 #include <ctime>
 
-namespace ember { namespace log {
+namespace ember::log {
 
 namespace detail {
 
@@ -90,4 +90,4 @@ Severity severity_string(const std::string& severity) {
 	}
 }
 
-}} // log, ember
+} // log, ember

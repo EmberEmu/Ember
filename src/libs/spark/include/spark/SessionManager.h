@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,7 @@
 #include <set>
 #include <cstddef>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 class NetworkSession;
 
@@ -28,4 +28,4 @@ public:
 	std::size_t count() const;
 };
 
-}} // spark, ember
+} // spark, ember

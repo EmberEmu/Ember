@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember { namespace grunt { namespace client {
+namespace ember::grunt::client {
 
 class LoginProof final : public Packet {
 	enum class ReadState {
@@ -199,4 +199,4 @@ public:
 	}
 };
 
-}}} // client, grunt, ember
+} // client, grunt, ember

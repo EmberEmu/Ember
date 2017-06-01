@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,7 +26,7 @@
 
 namespace bi = boost::interprocess;
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 namespace detail {
 
@@ -109,4 +109,4 @@ Storage DiskLoader::load() const {
 	return storage;		
 }
 
-}} // dbc, ember
+} // dbc, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <cctype>
 #include <cmath>
 
-namespace ember { namespace util {
+namespace ember::util {
 
 inline std::string format_packet(const unsigned char* packet, std::size_t size,
                                  unsigned int columns = 16) {
@@ -52,4 +52,4 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 	return buffer.str();
 }
 
-}} // util, ember
+} // util, ember

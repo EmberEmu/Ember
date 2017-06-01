@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,7 @@
 
 #include <cstddef>
 
-namespace ember { namespace connection_pool {
+namespace ember::connection_pool {
 
 class CheckoutClean {
 protected:
@@ -105,4 +105,4 @@ class AlwaysReuse {
 
 };
 
-}} //connection_pool, ember
+} //connection_pool, ember

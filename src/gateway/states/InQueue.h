@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,11 +12,11 @@
 #include "../Events.h"
 #include <memory>
 
-namespace ember { namespace queue {
+namespace ember::queue {
 
 void enter(ClientContext* ctx);
 void handle_packet(ClientContext* ctx);
 void handle_event(ClientContext* ctx, const Event* event);
 void exit(ClientContext* ctx);
 
-}} // queue, ember
+} // queue, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@ namespace bai = boost::asio::ip;
 
 #undef ERROR
 
-namespace ember { namespace log {
+namespace ember::log {
 
 class SyslogSink::impl : public Sink {
 	enum class SyslogSeverity {
@@ -142,4 +142,4 @@ void SyslogSink::batch_write(const std::vector<std::pair<RecordDetail, std::vect
 	pimpl_->batch_write(records);
 }
 
-}} //log, ember
+} //log, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@ using Botan::BigInt;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 
-namespace ember { namespace srp6 {
+namespace ember::srp6 {
 
 Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6a)
               : v_(v), N_(gen.prime()), b_(b) {
@@ -54,4 +54,4 @@ BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof)
 	return generate_server_proof(A_, client_proof, key);
 }
 
-}} //srp6, ember
+} //srp6, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,10 +10,10 @@
 
 #undef ERROR 
 
-namespace ember { namespace connection_pool {
+namespace ember::connection_pool {
 
 enum class Severity {
 	DEBUG, INFO, WARN, ERROR, FATAL
 };
 
-}} //connection_pool, ember
+} //connection_pool, ember

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,7 @@
 
 #include <functional>
 
-namespace ember { namespace spark {
+namespace ember::spark {
 
 struct Link;
 struct Message;
@@ -23,7 +23,7 @@ struct LocalDispatcher {
 	Handler handle;
 };
 
-}} // spark, ember
+} // spark, ember
 
 #define VERIFY(type, message) \
 	[](auto& message) { return spark::Service::verify<type>(message); }

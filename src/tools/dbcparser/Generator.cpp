@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@
 #include <sstream>
 #include <iostream>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent);
@@ -148,7 +148,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 		for(auto& f : dbc->fields) {
 			std::stringstream curr_field;
 			auto components = extract_components(f.underlying_type);
-			bool array = components.second.is_initialized();
+			bool array = components.second.has_value();
 			bool write_field = false;
 			std::string type;
 
@@ -262,7 +262,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		
 		for(auto& f : dbc.fields) {
 			auto components = extract_components(f.underlying_type);
-			bool array = components.second.is_initialized();
+			bool array = components.second.has_value();
 			bool str_offset = (components.first == "string_ref");
 			bool type_found = false;
 			std::string type;
@@ -536,7 +536,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 	for(auto& f : def.fields) {
 		auto components = extract_components(f.underlying_type);
-		bool array = components.second.is_initialized();
+		bool array = components.second.has_value();
 		bool key = false;
 
 		for(auto& k : f.keys) {
@@ -642,4 +642,4 @@ void generate_disk_source(const types::Definitions& defs, const std::string& out
 	generate_disk_loader(defs, output, template_path);
 }
 
-}} // dbc, ember
+} // dbc, ember

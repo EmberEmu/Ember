@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 	#include <Windows.h>
 #endif
 
-namespace ember { namespace util {
+namespace ember::util {
 
 namespace {
 
@@ -139,4 +139,4 @@ Colour save_output_colour() {
 #endif
 }
 
-}} // util, ember
+} // util, ember

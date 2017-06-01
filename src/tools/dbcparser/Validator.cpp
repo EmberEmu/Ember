@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2014 - 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 #include <typeinfo>
 #include <cstdint>
 
-namespace ember { namespace dbc {
+namespace ember::dbc {
 
 /*
  * Searches DBC definitions for the given foreign key. 
@@ -62,7 +62,7 @@ void Validator::check_foreign_keys(const types::Field& field) {
 			if(!key.ignore_type_mismatch && (*pk)->underlying_type != components.first) {
 				throw exception(":" + field.name + " => "+ key.parent +
 				                " types do not match. Expected " + components.first +
-				                ", found " + pk.get()->underlying_type);
+				                ", found " + (*pk)->underlying_type);
 			}
 		}
 	}
@@ -253,7 +253,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
  * (except the one in which the field resides) as well as any that are
  * sibling nodes of the field (same depth, shared parent).
  *
- * This check is pretty na�ve but it's not worth refactoring everything and
+ * This check is pretty naïve but it's not worth refactoring everything and
  * increasing the complexity to improve it.
  */
 void Validator::check_field_types(const types::Struct* def, const TreeNode<std::string>* curr_def) {
@@ -464,4 +464,4 @@ void Validator::validate(const types::Definitions& definitions) {
 	}
 }
 
-}} //dbc, ember
+} //dbc, ember
