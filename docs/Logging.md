@@ -1,4 +1,4 @@
-#🔥 **Ember Log**
+﻿# 🔥 **Ember Log**
 ---
 
 # Basic overview

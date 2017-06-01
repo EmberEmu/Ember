@@ -1,4 +1,4 @@
-﻿#🔥 **SQL & DBC Data Storage**
+﻿# 🔥 **SQL & DBC Data Storage**
 
 This document serves to outline Ember's usage of SQL and DBC for data storage.
 

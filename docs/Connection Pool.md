@@ -1,7 +1,7 @@
-#🔥 **Ember Database Connection Pool**
+﻿# 🔥 **Ember Database Connection Pool**
 ---
 
-#Basic overview
+# Basic overview
 *Note: For brevity, `pool` is an alias of the namespace `ember::connection_pool`. This alias will be used in all code examples.*
 
 The database connection pool is designed to be a lightweight, high-performance and database agnostic connection manager.

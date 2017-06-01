@@ -1,17 +1,17 @@
 ﻿
-#🔥 **Ember Style Guide**
+# 🔥 **Ember Style Guide**
 ---
 This guide aims to provide advice on both the formatting of code contributions as well as language usage rules of thumb to keep in mind.
 
-##Sections:
+## Sections:
 - [Formatting](#formatting)
 - [Naming Conventions](#naming-conventions)
 - [Language Usage](#language-usage)
 
-##Formatting
+## Formatting
 Code formatting is highly subjective and the rules presented are not claimed as being superior to alternatives but a unified style is important for code readability. A `clang-format` file is included in the project directory to help maintain a unified style.
 
-###Tabs vs. Spaces
+### Tabs vs. Spaces
 Use tabs for indenting and spaces for alignment. Never mix the two on a single line.
 
 For example:
@@ -25,7 +25,7 @@ void foo(const Player& source, const Monster& target, const Loot& drops,
 
 Had tabs and spaces been mixed, correct alignment on the second line would have been reliant upon tabs being set to a fixed width.
 
-###Line Length & Wrapping
+### Line Length & Wrapping
 Try to stick to lines shorter than 100 characters and no longer than 120. Wrap long lines so arguments line up to the beginning of the argument list on the previous line.
 
 For example:
@@ -34,7 +34,7 @@ std::bind(&UDPServer::packet_sent, this, std::placeholders::_1, std::placeholder
           std::placeholders::_3, std::placeholders::_4, packet);
 ```
 
-###Braces & Indenting
+### Braces & Indenting
 A minor variant of [1TBS](https://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS) is followed where opening braces are never placed on their own line. Note that braces are always added, even when only a single statement makes up the body.
 
 For example:
@@ -56,7 +56,7 @@ void foo(int bar) {
 }
 ```
 
-###Namespaces
+### Namespaces
 Namespace bodies should not be indented and a blank line should be added after/before the opening/closing braces respectively. 
 
 For example:
@@ -69,7 +69,7 @@ double calculate_pi(int places);
 } // foo
 ```
 
-###Class Definitions
+### Class Definitions
 ```cpp
 class A : public B {
 public:
@@ -89,7 +89,7 @@ Observations:
 - The access specifiers should be on the same level of indentation as the class name.
 - Place the public section before the private section.
 
-###Comments
+### Comments
 Use `//` for single line comments and `/* ... */` for multi-line comments.
 
 For example:
@@ -104,7 +104,7 @@ void bar(int foo) {
 }
 ```
 
-###Switch/Case
+### Switch/Case
 Indent each case and double-indent each statement.
 
 For example:
@@ -121,13 +121,13 @@ switch(score) {
 }
 ```
 
-###Argument Ordering
+### Argument Ordering
 Order inputs first, followed by outputs.
 ```cpp
 void reticulate_splines(const Spline& source, char** destination);
 ```
 
-###Variable Scope
+### Variable Scope
 
 Minimise the scope of variables as much as possible and initialise them at the point of declaration.
 
@@ -143,17 +143,17 @@ if(player.health() >= MAX_HEALTH) {
 }       
 ```
 
-###Miscellaneous
+### Miscellaneous
 When in doubt have a look for formatting examples in the codebase and follow their lead.
 
-##Naming Conventions
+## Naming Conventions
 
-###Functions
+### Functions
 All lower-case with words separated by underscores. For example:
 ```cpp
 void send_message(string message);
 ```
-###Constants
+### Constants
 All upper-case with words separated by underscores. For example:
 ```cpp
 constexpr int MAX_HEALTH = 100;
@@ -162,19 +162,19 @@ enum class Class {
 	NECROMANCER, PALADIN, SAGE, TAOIST
 };
 ```
-###Variables
+### Variables
 All lower-case with words separated by underscores. For example:
 ```cpp
 int low_mana_threshold = (MAX_MANA / 2) + player.regen_rate();
 ```
-###User-defined Types
+### User-defined Types
 Use CamelCase. For example:
 ```cpp
 class PlayerStats;
 struct ArmourSlots;
 ```
 
-###Namespaces
+### Namespaces
 All lower-case with words separated by underscores. For example:
 ```cpp
 namespace network_comms {
@@ -184,13 +184,13 @@ namespace network_comms {
 } // network_comms
 ```
 
-##Language Usage
+## Language Usage
 This section of the guide is not intended to be a tutorial or a technical reference but rather a quick overview of preferred usage of some language features.
 
-###Header Guards
+### Header Guards
 Use the `#pragma once` preprocessor directive over the more traditional `#ifndef`.
 
-###Header Inclusion Order
+### Header Inclusion Order
 1. Corresponding .h file(s).
 2. Related project headers.
 3. Ember library headers.
@@ -211,7 +211,7 @@ For an example Player.cpp:
 #include <Windows.h>                      // system header
 ```
 
-###Prefer `enum class` over `enum`
+### Prefer `enum class` over `enum`
 ```cpp
 enum TabardColours { RED, BLUE };
 enum ArmourColours { BLUE, PURPLE, MAUVE };
@@ -240,7 +240,7 @@ void recolour_armour(ArmourColours colour) {
 recolour_armour(ArmourColours::BLUE); // no problem, no double definition
 ```
 
-###Argument Passing
+### Argument Passing
 As a general rule, pass built-in types by value and user-defined types by const reference.
 
 ```cpp
@@ -259,7 +259,7 @@ int calculate_damage(const& Actor actor, int damage) {
 calculate_damage(player, damage);
 ```
 
-###Helper Functions
+### Helper Functions
 Consider placing helper functions outside of class definitions as free-standing functions if they do not need access to implementation details.
 ```cpp
 class Player { ... };
@@ -272,12 +272,12 @@ bool teleport_to(const Player& target, const Player& teleportee) {
 }
 ```
 
-###Exceptions
+### Exceptions
 Avoid throwing exceptions in performance-critical code other than to indicate a serious or fatal error.  Outside of performance-critical code, exceptions may be used less sparingly but consider alternatives first.
 
 Exceptions should never be used as flow control to deal with invalid player input (e.g. malformed packets from clients).
 
-###Avoid 'naked' `new`/`delete`
+### Avoid 'naked' `new`/`delete`
 Always opt to use smart pointers (unique_ptr, shared_ptr) over new/delete.
 
 For example:
@@ -301,4 +301,4 @@ void recombobulate(const Player& player) {
 }	
 ```
 
-###Default to `unique_ptr` over `shared_ptr`
+### Default to `unique_ptr` over `shared_ptr`

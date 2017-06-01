@@ -1,4 +1,4 @@
-﻿#🔥 **Libraries**
+﻿# 🔥 **Libraries**
 ---
 
 Ember makes use of a number of third-party libraries. This document gives a brief overview of the libraries used and their purpose.
