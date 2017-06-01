@@ -1,4 +1,4 @@
-# Copyright (c) 2014, 2015, 2016 Ember
+# Copyright (c) 2014, 2015, 2016, 2017 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,11 +16,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin/lib)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19)
-		message(FATAL_ERROR "You need VS2015 or newer to compile Ember on Windows!")
+	add_definitions(-D_HAS_AUTO_PTR_ETC=1)               # Until Boost conforms with C++17
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17") # Until CMake handles this properly
+
+	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
+		message(FATAL_ERROR "You need VS2017 or newer to compile Ember on Windows!")
 	endif()
 endif()
 
@@ -34,20 +37,28 @@ find_package(Threads REQUIRED)
 
 # todo, breaks with 64-bit
 # http://stackoverflow.com/questions/9742003/platform-detection-in-cmake
-if(WIN32)
-	macro(get_WIN32_WINNT version)
-	    if (WIN32 AND CMAKE_SYSTEM_VERSION)
-        	set(ver ${CMAKE_SYSTEM_VERSION})
-	        string(REPLACE "." "" ver ${ver})
-	        string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
+if (WIN32)
+    macro(get_WIN32_WINNT version)
+        if (CMAKE_SYSTEM_VERSION)
+            set(ver ${CMAKE_SYSTEM_VERSION})
+            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
+            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
+            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
+            if ("${verMajor}" MATCHES "10")
+                set(verMajor "A")
+                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
+            endif ("${verMajor}" MATCHES "10")
+            # Remove all remaining '.' characters.
+            string(REPLACE "." "" ver ${ver})
+            # Prepend each digit with a zero.
+            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
+            set(${version} "0x${ver}")
+        endif(CMAKE_SYSTEM_VERSION)
+    endmacro(get_WIN32_WINNT)
 
-	        set(${version} "0x${ver}")
-	    endif()
-	endmacro()
-
-	get_WIN32_WINNT(ver)
-	add_definitions(-D_WIN32_WINNT=${ver})
-endif()
+    get_WIN32_WINNT(ver)
+    add_definitions(-D_WIN32_WINNT=${ver})
+endif(WIN32)
 
 ##############################
 #            Boost           #
@@ -56,7 +67,7 @@ add_definitions(-DBOOST_ALL_NO_LIB)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.61.0 REQUIRED COMPONENTS program_options filesystem locale system)
+find_package(Boost 1.64.0 REQUIRED COMPONENTS program_options filesystem locale system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
