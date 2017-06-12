@@ -30,7 +30,7 @@ private:
 	};
 
 	std::unordered_map<messaging::Service, Handler> handlers_;
-	mutable std::shared_timed_mutex lock_;
+	mutable std::shared_mutex lock_;
 
 public:
 	std::vector<messaging::Service> services(Mode mode) const;
