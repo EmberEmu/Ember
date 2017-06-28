@@ -192,10 +192,15 @@ void FileSink::write(Severity severity, Filter type, const std::vector<char>& re
 
 	rotate_check(prep_size + rec_size, curr_time);
 
-	std::size_t count = std::fwrite(prepend.c_str(), prep_size, 1, *file_);
+	std::size_t count = 0;
+
+	if(prep_size) {
+		count += std::fwrite(prepend.c_str(), prep_size, 1, *file_);
+	}
+
 	count += std::fwrite(record.data(), rec_size, 1, *file_);
 
-	if(count != 2) {
+	if (prep_size && count != 2 || !prep_size && !count) {
 		throw exception("Unable to write log record to file");
 	}
 
