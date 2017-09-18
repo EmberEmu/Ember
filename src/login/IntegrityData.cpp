@@ -46,7 +46,7 @@ IntegrityData::lookup(GameVersion version, grunt::Platform platform, grunt::Syst
 	auto it = data_.find(hash(version.build, platform, os));
 
 	if(it == data_.end()) {
-		return nullptr;
+		return std::nullopt;
 	}
 	
 	return &it->second;
