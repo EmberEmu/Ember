@@ -18,6 +18,7 @@ namespace bfs = boost::filesystem;
 namespace ember {
 
 IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std::string& path) {
+	// todo - replace with constexpr string view arrays
 	std::initializer_list<std::string> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
 	                                            "dbghelp.dll", "unicows.dll" };
 
