@@ -549,7 +549,7 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	// look the client's locale up for sending the correct realm category
 	auto region = locale_map.find(challenge_.locale);
 
-	if(region == locale_map.end() && locale_enforce_) {
+	if(region == locale_map.end()) {
 		return;
 	}
 
@@ -557,8 +557,9 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
 
+	// todo, replace with structured bindings when possible
 	for(auto& realm : *realms | boost::adaptors::map_values) {
-		if(realm.region == region->second || !locale_enforce_) {
+		if(!locale_enforce_ || realm.region == region->second) {
 			response.realms.push_back({ realm, char_count[realm.id] });
 		}
 	}
