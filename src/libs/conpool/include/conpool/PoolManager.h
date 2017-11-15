@@ -165,10 +165,7 @@ public:
 
 #ifndef DEBUG_NO_THREADS
 		while(!stop_) {
-			if(cond_.wait_for(lock, interval_) == std::cv_status::no_timeout) {
-				break;
-			}
-
+			cond_.wait_for(lock, interval_);
 			manage_pool();
 		}
 #else
