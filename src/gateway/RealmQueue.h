@@ -22,7 +22,7 @@ namespace ember {
 
 class ClientConnection;
 
-class RealmQueue {
+class RealmQueue final {
 	typedef std::function<void()> LeaveQueueCB;
 	typedef std::function<void(std::size_t)> UpdateQueueCB;
 
@@ -51,7 +51,7 @@ class RealmQueue {
 	void set_timer();
 
 public:
-	RealmQueue(boost::asio::io_service& service) : timer_(service) { }
+	explicit RealmQueue(boost::asio::io_service& service) : timer_(service) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb, int priority = 0);
 	void dequeue(const ClientUUID& client);
