@@ -11,8 +11,10 @@
 #include "GameVersion.h"
 #include "grunt/Magic.h"
 #include "ExecutablesChecksum.h"
-#include <string>
+#include <initializer_list>
 #include <optional>
+#include <string>
+#include <string_view>
 #include <unordered_map>
 #include <cstdint>
 #include <cstddef>
@@ -25,14 +27,14 @@ class IntegrityData {
 	std::size_t hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const;
 
 	void load_binaries(const std::string& path, std::uint16_t build,
-	                   const std::initializer_list<std::string>& files,
+	                   const std::initializer_list<std::string_view>& files,
 	                   grunt::System system, grunt::Platform platform);
 
 public:
 	IntegrityData(const std::vector<GameVersion>& versions, const std::string& path);
 
 	std::optional<const std::vector<char>*> lookup(GameVersion version, grunt::Platform platform,
-	                                                 grunt::System os) const;
+	                                               grunt::System os) const;
 };
 
 

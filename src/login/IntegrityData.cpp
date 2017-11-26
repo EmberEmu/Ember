@@ -9,7 +9,6 @@
 #include "IntegrityData.h"
 #include <shared/util/FNVHash.h>
 #include <boost/filesystem.hpp>
-#include <initializer_list>
 #include <fstream>
 #include <cstddef>
 
@@ -18,18 +17,17 @@ namespace bfs = boost::filesystem;
 namespace ember {
 
 IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std::string& path) {
-	// todo - replace with constexpr string view arrays
-	std::initializer_list<std::string> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
-	                                            "dbghelp.dll", "unicows.dll" };
+	std::initializer_list<std::string_view> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
+	                                                 "dbghelp.dll", "unicows.dll" };
 
-	std::initializer_list<std::string> macx86 { "MacOS/World of Warcraft", "Info.plist",
-	                                            "Resources/Main.nib/objects.xib",
-	                                            "Resources/wow.icns", "PckgInfo" };
+	std::initializer_list<std::string_view> macx86 { "MacOS/World of Warcraft", "Info.plist",
+	                                                 "Resources/Main.nib/objects.xib",
+	                                                 "Resources/wow.icns", "PkgInfo" };
 
-	std::initializer_list<std::string> macppc { "MacOS/World of Warcraft", "Info.plist",
-	                                            "Resources/Main.nib/objects.xib",
-	                                            "Resources/wow.icns", "PckgInfo" };
-
+	std::initializer_list<std::string_view> macppc { "MacOS/World of Warcraft", "Info.plist",
+	                                                 "Resources/Main.nib/objects.xib",
+	                                                 "Resources/wow.icns", "PkgInfo" };
+	
 	for(auto& version : versions) {
 		load_binaries(path, version.build, winx86, grunt::System::Win, grunt::Platform::x86);
 		load_binaries(path, version.build, macx86, grunt::System::OSX, grunt::Platform::x86);
@@ -54,7 +52,7 @@ IntegrityData::lookup(GameVersion version, grunt::Platform platform, grunt::Syst
 }
 
 void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
-                                  const std::initializer_list<std::string>& files,
+                                  const std::initializer_list<std::string_view>& files,
                                   grunt::System system, grunt::Platform platform) {
 	bfs::path dir(path + grunt::to_string(system) + "_" + grunt::to_string(platform)
 	              + "_" + std::to_string(build));
@@ -70,7 +68,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 	// write all of the binary data into a single buffer
 	for(auto& f : files) {
 		bfs::path fpath = dir;
-		fpath /= f;
+		fpath /= f.data();
 
 		std::ifstream file(fpath.string(), std::ios::binary | std::ios::ate);
 
