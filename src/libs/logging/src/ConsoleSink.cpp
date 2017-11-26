@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,8 +21,8 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 	if(!colour_) {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
-		for(auto& r : records) {
-			write(r.first.severity, r.first.type, r.second, false);
+		for(auto& [detail, data] : records) {
+			write(detail.severity, detail.type, data, false);
 		}
 	}
 }
@@ -33,9 +33,9 @@ void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
-	for(auto& r : records) {
-		if(sink_sev <= r.first.severity && !(sink_filter & r.first.type)) {
-			size += r.second.size();
+	for(auto&& [detail, data] : records) {
+		if(sink_sev <= detail.severity && !(sink_filter &detail.type)) {
+			size += data.size();
 			matches = true;
 		}
 	}
@@ -48,11 +48,11 @@ void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::
 	buffer.reserve(size + (10 * records.size()));
 	std::string severity;
 
-	for(auto& r : records) {
-		if(sink_sev <= r.first.severity && !(sink_filter & r.first.type)) {
-			severity = detail::severity_string(r.first.severity);
+	for(auto&& [detail, data] : records) {
+		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
+			severity = detail::severity_string(detail.severity);
 			std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
-			std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
+			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
 		}
 	}
 

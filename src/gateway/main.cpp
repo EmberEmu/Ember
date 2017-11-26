@@ -213,7 +213,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 }
 
 std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
-	for(auto& record : dbc.values()) {
+	for(auto&& [k, record] : dbc) {
 		if(record.category == realm.category && record.region == realm.region) {
 			return record.name.en_gb;
 		}

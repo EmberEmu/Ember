@@ -42,14 +42,14 @@ class IPBanCache {
 	}
 
 	void load_bans(const std::vector<IPEntry>& bans) {
-		for(auto& ban : bans) {
-			auto address = boost::asio::ip::address::from_string(ban.first);
+		for(auto& [ip, cidr] : bans) {
+			auto address = boost::asio::ip::address::from_string(ip);
 
 			if(address.is_v6()) {
 				throw std::runtime_error("IPv6 bans are not supported but the ban cache encountered one!");
 			}
 
-			std::uint32_t mask = (~0U) << (32 - ban.second);
+			std::uint32_t mask = (~0U) << (32 - cidr);
 			entries_.emplace_back(IPv4Entry{static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask});
 		}
 	}

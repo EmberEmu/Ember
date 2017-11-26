@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -147,9 +147,9 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 	Filter filter = this->filter();
 	bool matches = false;
 
-	for(auto& r : records) {
-		if(severity <= r.first.severity && !(filter & r.first.type)) {
-			size += r.second.size();
+	for(auto&& [detail, data] : records) {
+		if(severity <= detail.severity && !(filter & detail.type)) {
+			size += data.size();
 			matches = true;
 		}
 	}
@@ -161,11 +161,11 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 	std::vector<char> buffer;
 	buffer.reserve(size + (20 * records.size()));
 
-	for(auto& r : records) {
-		if(severity <= r.first.severity && !(filter & r.first.type)) {
-			std::string prepend = std::move(generate_record_detail(r.first.severity, curr_time));
+	for(auto&& [detail, data] : records) {
+		if(severity <= detail.severity && !(filter & detail.type)) {
+			std::string prepend = std::move(generate_record_detail(detail.severity, curr_time));
 			std::copy(prepend.begin(), prepend.end(), std::back_inserter(buffer));
-			std::copy(r.second.begin(), r.second.end(), std::back_inserter(buffer));
+			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
 		}
 	}
 

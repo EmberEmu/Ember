@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -49,9 +49,9 @@ bool PatchGraph::edge_test(const std::vector<Edge>& edges, std::uint16_t to) con
 }
 
 bool PatchGraph::is_path(std::uint16_t from, std::uint16_t to) const {
-	for(auto& entry : adjacency_) {
-		if(entry.first == from) {
-			if(edge_test(entry.second, to)) {
+	for(auto& [index, edges] : adjacency_) {
+		if(index == from) {
+			if(edge_test(edges, to)) {
 				return true;
 			}
 		}
@@ -65,10 +65,10 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 	std::unordered_map<std::uint16_t, std::optional<Node>> prev;
 	std::priority_queue<Node, std::vector<Node>, NodeComp> queue;
 
-	for(auto& v : adjacency_) {
-		distance[v.first] = -1;
+	for(auto& [index, edges] : adjacency_) {
+		distance[index] = -1;
 	
-		for(auto e : v.second) {
+		for(auto e : edges) {
 			distance[e.build_to] = -1;
 		}
 	}

@@ -81,8 +81,8 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 		static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
 
 	// todo, implement an iterator for the buffer at some point
-	buffer[write_index + 0] = final_size.data()[0];
-	buffer[write_index + 1] = final_size.data()[1];
+	buffer[write_index + 0] = std::byte(final_size.data()[0]);
+	buffer[write_index + 1] = std::byte(final_size.data()[1]);
 
 	if(authenticated_) {
 		constexpr std::size_t header_wire_size =
@@ -250,8 +250,8 @@ void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
 	boost::endian::big_int16_t size =
 		static_cast<std::uint16_t>(stream.size() - sizeof(protocol::ServerHeader::size));
 
-	temp_buffer[0] = size.data()[0];
-	temp_buffer[1] = size.data()[1];
+	temp_buffer[0] = std::byte(size.data()[0]);
+	temp_buffer[1] = std::byte(size.data()[1]);
 
 	std::uint8_t in_buff[BLOCK_SIZE];
 	std::uint8_t out_buff[BLOCK_SIZE];

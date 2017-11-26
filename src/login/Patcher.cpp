@@ -29,8 +29,8 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 		patch_bins[hash].emplace_back(patch);
 	}
 
-	for(auto& bin : patch_bins) {
-		graphs_.emplace(bin.first, PatchGraph(bin.second));
+	for(auto& [size, meta] : patch_bins) {
+		graphs_.emplace(size, PatchGraph(meta));
 	}
 }
 

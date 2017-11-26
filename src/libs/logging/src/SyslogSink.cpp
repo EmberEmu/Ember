@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -122,8 +122,8 @@ void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<c
 }
 
 void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
-	for(auto& r : records) {
-		write(r.first.severity, r.first.type, r.second, false);
+	for(auto& [detail, data] : records) {
+		write(detail.severity, detail.type, data, false);
 	}
 }
 

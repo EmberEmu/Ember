@@ -143,7 +143,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 		call << "\t" << "detail::link_" << store_name << "(storage);" << std::endl;
 		
 		func << "void link_" << store_name << "(Storage& storage) {" << std::endl;
-		func << "\t" << "for(auto& i : storage." << store_name << ".values()) {" << std::endl;
+		func << "\t" << "for(auto& [k, i] : storage." << store_name << ") {" << std::endl;
 
 		for(auto& f : dbc->fields) {
 			std::stringstream curr_field;

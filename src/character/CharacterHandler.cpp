@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -354,7 +354,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	bool face_match = false;
 
 	// validate visual customisation options
-	for(auto& section : dbc_.char_sections.values()) {
+	for(auto&& [k, section] : dbc_.char_sections) {
 		if(section.npc_only || section.race_id != character.race
 		   || section.sex != static_cast<dbc::CharSections::Sex>(character.gender)) {
 			continue;
@@ -393,7 +393,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	// facial features (horns, markings, tusks, piercings, hair) validation
 	bool facial_feature_match = false;
 
-	for(auto& style : dbc_.character_facial_hair_styles.values()) {
+	for(auto&& [k, style] : dbc_.character_facial_hair_styles) {
 		if(style.race_id == character.race && style.variation_id == character.facialhair
 		   && style.sex == static_cast<dbc::CharacterFacialHairStyles::Sex>(character.gender)) {
 			facial_feature_match = true;
@@ -490,7 +490,7 @@ protocol::Result CharacterHandler::validate_name(const std::string& name) const 
 
 // This function should be moved when there's a more suitable home for it
 const dbc::FactionGroup* CharacterHandler::pvp_faction(const dbc::FactionTemplate& fac_template) const {
-	for(auto& group : dbc_.faction_group.values()) {
+	for(auto&& [k, group] : dbc_.faction_group) {
 		if(group.internal_name == "Player") {
 			if(fac_template.faction_group_id == (1 << group.mask_id)) {
 				return &group;

@@ -13,7 +13,6 @@
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/util/SafeStaticCast.h>
-#include <boost/range/adaptor/map.hpp>
 #include <stdexcept>
  
 namespace ember {
@@ -547,19 +546,21 @@ void LoginHandler::send_realm_list(const grunt::Packet* packet) {
 	}
 
 	// look the client's locale up for sending the correct realm category
-	auto region = locale_map.find(challenge_.locale);
+	auto it = locale_map.find(challenge_.locale);
 
-	if(region == locale_map.end()) {
+	if(it == locale_map.end()) {
 		return;
 	}
+
+	auto& [key, region] = *it;
 
 	const std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 	auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
 
 	// todo, replace with structured bindings when possible
-	for(auto& realm : *realms | boost::adaptors::map_values) {
-		if(!locale_enforce_ || realm.region == region->second) {
+	for(const auto&& [key, realm] : *realms) {
+		if(!locale_enforce_ || realm.region == region) {
 			response.realms.push_back({ realm, char_count[realm.id] });
 		}
 	}
