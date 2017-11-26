@@ -139,7 +139,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	Config config;
 	config.max_slots = args["realm.max_slots"].as<unsigned int>();
 	config.list_zone_hide = args["quirks.list_zone_hide"].as<bool>();
-	config.realm = realm.get_ptr();
+	config.realm = &realm.value();
 
 	// Determine concurrency level
 	unsigned int concurrency = check_concurrency(logger);
