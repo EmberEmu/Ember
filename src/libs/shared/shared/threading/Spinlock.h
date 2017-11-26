@@ -10,7 +10,7 @@
 
 #include <atomic>
 #include <thread>
-#include <xmmintrin.h>
+#include <intrin.h>
 
 namespace ember {
 
