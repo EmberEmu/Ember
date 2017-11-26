@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2014, 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -279,7 +279,7 @@ public:
 			semaphore_.wait_for(duration - elapsed);
 		}
 
-		return std::move(conn.get());
+		return std::move(conn.value());
 	}
 
 	void return_connection(Connection<ConType>& connection) {

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -287,12 +287,12 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response.salt.size());
 	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response.salt.data());
 
-	auto res = action->get_result();
+	const auto&[status, key] = action->get_result();
 
-	if(res.first == messaging::account::Status::OK) {
+	if(status == messaging::account::Status::OK) {
 		state_ = State::RECONNECT_PROOF;
-		state_data_ = std::make_unique<ReconnectAuthenticator>(user_->username(), res.second, checksum_salt_);
-	} else if(res.first == messaging::account::Status::SESSION_NOT_FOUND) {
+		state_data_ = std::make_unique<ReconnectAuthenticator>(user_->username(), key, checksum_salt_);
+	} else if(status == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response.result = grunt::Result::FAIL_NOACCESS;
 		LOG_DEBUG(logger_) << "Reconnect failed, session not found for "
@@ -300,7 +300,7 @@ void LoginHandler::send_reconnect_challenge(FetchSessionKeyAction* action) {
 	} else {
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << util::fb_status(res.first, messaging::account::EnumNamesStatus())
+		LOG_ERROR(logger_) << util::fb_status(status, messaging::account::EnumNamesStatus())
 		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
 	
