@@ -925,4 +925,4 @@ smart_enum_class(ClientOpcodes, std::uint32_t,
 	CMSG_ACCEPT_LEVEL_GRANT                         = 0x41F
 )
 
-}} // grunt, ember
+} // protocol, ember
