@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016, 2017 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@
 namespace ember::client_integrity {
 
 Botan::secure_vector<Botan::byte> checksum(const Botan::secure_vector<Botan::byte>& seed,
-                                           const std::vector<char>* buffer) {
+                                           const std::vector<std::byte>* buffer) {
 	auto sha160 = std::make_unique<Botan::SHA_160>();
 	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
 	sha160.release(); // ctor didn't throw, relinquish the memory to Botan

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -29,7 +29,7 @@ public:
 	
 	std::string filename;
 	std::uint64_t filesize = 0;
-	std::array<char, 16> md5;
+	std::array<std::byte, 16> md5;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

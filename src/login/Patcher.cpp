@@ -157,15 +157,15 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 	survey_.size = file.tellg();
 	file.seekg(0, std::ios::beg);
 
-	std::vector<char> buffer(static_cast<std::size_t>(survey_.size));
-	file.read(buffer.data(), survey_.size);
+	std::vector<std::byte> buffer(static_cast<std::size_t>(survey_.size));
+	file.read(reinterpret_cast<char*>(buffer.data()), survey_.size);
 
 	if(!file.good()) {
 		throw std::runtime_error("An error occured while reading " + path + "Survey.mpq");
 	}
 
 	auto md5 = util::generate_md5(buffer.data(), buffer.size());
-	std::copy(md5.begin(), md5.end(), survey_.md5.data());
+	std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(survey_.md5.data()));
 	survey_data_ = std::move(buffer);
 }
 
@@ -182,7 +182,7 @@ bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const 
 }
 
 // todo, change how this works
-const std::vector<char>& Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
+const std::vector<std::byte>& Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
 	if(!survey_platform(platform, os)) {
 		throw std::invalid_argument("Attempted to retrieve survey binaries for an unsupported platform!");
 	}
@@ -219,16 +219,16 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 			dirty = true;
 		}
 
-		int value = 0;
+		std::byte value { 0 };
 
 		for(auto c : patch.file_meta.md5) {
 			value |= c;
 		}
 
-		if(!value) {
+		if(!static_cast<int>(value)) {
 			LOG_INFO(logger) << "Calculating MD5 for " << patch.file_meta.name << LOG_SYNC;
 			auto md5 = util::generate_md5(path + patch.file_meta.name);
-			std::copy(md5.begin(), md5.end(), patch.file_meta.md5.data());
+			std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(patch.file_meta.md5.data()));
 			dirty = true;
 		}
 

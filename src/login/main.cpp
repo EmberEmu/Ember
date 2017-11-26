@@ -149,7 +149,6 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
 
-
 	auto patches = ember::Patcher::load_patches(
 		args["patches.bin_path"].as<std::string>(), *patch_dao, logger
 	);

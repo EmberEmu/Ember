@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 
 namespace ember::util {
 
-Botan::secure_vector<Botan::byte> generate_md5(const char* data, const std::size_t len) {
+Botan::secure_vector<Botan::byte> generate_md5(const std::byte* data, const std::size_t len) {
 	Botan::MD5 hasher;
 	return hasher.process(reinterpret_cast<const Botan::byte*>(data), len);
 }

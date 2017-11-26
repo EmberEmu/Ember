@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,6 +17,7 @@
 #include <string>
 #include <optional>
 #include <vector>
+#include <cstddef>
 
 namespace ember {
 
@@ -27,7 +28,7 @@ class Patcher {
 	std::unordered_map<std::size_t, std::vector<PatchMeta>> patch_bins;
 
 	FileMeta survey_;
-	std::vector<char> survey_data_;
+	std::vector<std::byte> survey_data_;
 	std::uint32_t survey_id_;
 
 	const PatchMeta* locate_rollup(const std::vector<PatchMeta>& patches,
@@ -43,7 +44,7 @@ public:
 	FileMeta survey_meta() const;
 	std::uint32_t survey_id() const;
 	bool survey_platform(grunt::Platform platform, grunt::System os) const;
-	const std::vector<char>& survey_data(grunt::Platform platform, grunt::System os) const;
+	const std::vector<std::byte>& survey_data(grunt::Platform platform, grunt::System os) const;
 
 	// Patching
 	std::optional<PatchMeta> find_patch(const GameVersion& client_version, grunt::Locale locale,

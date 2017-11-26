@@ -10,16 +10,15 @@
 
 #include <array>
 #include <string>
-#include <sstream>
 #include <cstdint>
-#include <string>
+#include <cstddef>
 
 namespace ember {
 
 struct FileMeta {
 	std::string path;
 	std::string name;
-	std::array<char, 16> md5;
+	std::array<std::byte, 16> md5;
 	std::uint64_t size;
 };
 

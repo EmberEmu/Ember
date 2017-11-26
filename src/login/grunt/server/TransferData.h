@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,7 +31,7 @@ public:
 	TransferData() : Packet(Opcode::CMD_XFER_DATA) {}
 
 	std::uint16_t size = 0;
-	std::array<char, MAX_CHUNK_SIZE> chunk;
+	std::array<std::byte, MAX_CHUNK_SIZE> chunk;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

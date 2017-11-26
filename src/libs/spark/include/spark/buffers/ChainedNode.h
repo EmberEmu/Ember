@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,7 +21,7 @@ struct ChainedNode {
 
 template<typename std::size_t BlockSize>
 struct BufferBlock {
-	std::array<char, BlockSize> storage;
+	std::array<std::byte, BlockSize> storage;
 	std::size_t read_offset = 0;
 	std::size_t write_offset = 0;
 	ChainedNode node;
@@ -31,7 +31,7 @@ struct BufferBlock {
 		write_offset = 0;
 	}
 
-	std::size_t write(const char* source, std::size_t length) {
+	std::size_t write(const std::byte* source, std::size_t length) {
 		std::size_t write_len = BlockSize - write_offset;
 
 		if(write_len > length) {
@@ -43,7 +43,7 @@ struct BufferBlock {
 		return write_len;
 	}
 
-	std::size_t copy(char* destination, std::size_t length) const {
+	std::size_t copy(std::byte* destination, std::size_t length) const {
 		std::size_t read_len = BlockSize - read_offset;
 
 		if(read_len > length) {
@@ -54,7 +54,7 @@ struct BufferBlock {
 		return read_len;
 	}
 
-	std::size_t read(char* destination, std::size_t length, bool allow_optimise = false) {
+	std::size_t read(std::byte* destination, std::size_t length, bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
 		read_offset += read_len;
 
@@ -111,19 +111,19 @@ struct BufferBlock {
 		return size;
 	}
 
-	const char* read_data() const {
+	const std::byte* read_data() const {
 		return storage.data() + read_offset;
 	}
 
-	char* write_data() {
+	std::byte* write_data() {
 		return storage.data() + write_offset;
 	}
 
-	char& operator[](const std::size_t index) {
+	std::byte& operator[](const std::size_t index) {
 		return *(storage.data() + index);
 	}
 
-	char& operator[](const std::size_t index) const {
+	std::byte& operator[](const std::size_t index) const {
 		return *(storage.data() + index);
 	}
 };

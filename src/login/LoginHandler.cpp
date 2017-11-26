@@ -716,7 +716,7 @@ void LoginHandler::transfer_chunk() {
 		survey_mpq += safe_static_cast<int>(transfer_state_.offset);
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {
-		transfer_state_.file.read(response.chunk.data(), read_size);
+		transfer_state_.file.read(reinterpret_cast<char*>(response.chunk.data()), read_size);
 
 		if(!transfer_state_.file.good()) {
 			LOG_ERROR(logger_) << "Patch reading failed during transfer" << LOG_ASYNC;

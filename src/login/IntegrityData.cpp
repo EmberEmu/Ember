@@ -40,7 +40,7 @@ IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std
 	}
 }
 
-std::optional<const std::vector<char>*> 
+std::optional<const std::vector<std::byte>*>
 IntegrityData::lookup(GameVersion version, grunt::Platform platform, grunt::System os) const {
 	auto it = data_.find(hash(version.build, platform, os));
 
@@ -62,7 +62,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 	}
 
 	auto fnv = hash(build, platform, system);
-	std::vector<char> buffer;
+	std::vector<std::byte> buffer;
 	std::size_t write_offset = 0;
 
 	// write all of the binary data into a single buffer
@@ -80,7 +80,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 		file.seekg(0, std::ios::beg);
 		buffer.resize(static_cast<std::size_t>(size) + buffer.size());
 
-		if(!file.read(buffer.data() + write_offset, size)) {
+		if(!file.read(reinterpret_cast<char*>(buffer.data()) + write_offset, size)) {
 			throw std::runtime_error("Unable to read " + fpath.string());
 		}
 

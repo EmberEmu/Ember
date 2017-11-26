@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -114,7 +114,7 @@ public:
 
 		while(remaining) {
 			auto buffer = buffer_from_node(root_.next);
-			remaining -= buffer->read(static_cast<char*>(destination) + length - remaining, remaining, 
+			remaining -= buffer->read(static_cast<std::byte*>(destination) + length - remaining, remaining,
 			                          root_.next == root_.prev);
 
 			if(remaining) {
@@ -133,7 +133,7 @@ public:
 
 		while(remaining) {
 			auto buffer = buffer_from_node(head);
-			remaining -= buffer->copy(static_cast<char*>(destination) + length - remaining, remaining);
+			remaining -= buffer->copy(static_cast<std::byte*>(destination) + length - remaining, remaining);
 
 			if(remaining) {
 				head = head->next;
@@ -200,7 +200,7 @@ public:
 				buffer = buffer_from_node(tail);
 			}
 
-			remaining -= buffer->write(static_cast<const char*>(source) + length - remaining, remaining);
+			remaining -= buffer->write(static_cast<const std::byte*>(source) + length - remaining, remaining);
 			tail = tail->next;
 		}
 
@@ -288,7 +288,7 @@ public:
 		return BlockSize;
 	}
 
-	char& operator[](const std::size_t index) const {
+	std::byte& operator[](const std::size_t index) const {
 		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
 
 		auto head = root_.next;
@@ -304,8 +304,8 @@ public:
 		return (*buffer)[offset_index % BlockSize];
 	}
 
-	char& operator[](const std::size_t index) override {
-		return const_cast<char&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
+	std::byte& operator[](const std::size_t index) override {
+		return const_cast<std::byte&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
 	}
 
 	template<typename std::size_t T>

@@ -22,7 +22,7 @@
 namespace ember {
 
 class IntegrityData {
-	std::unordered_map<std::size_t, std::vector<char>> data_;
+	std::unordered_map<std::size_t, std::vector<std::byte>> data_;
 
 	std::size_t hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const;
 
@@ -33,7 +33,7 @@ class IntegrityData {
 public:
 	IntegrityData(const std::vector<GameVersion>& versions, const std::string& path);
 
-	std::optional<const std::vector<char>*> lookup(GameVersion version, grunt::Platform platform,
+	std::optional<const std::vector<std::byte>*> lookup(GameVersion version, grunt::Platform platform,
 	                                               grunt::System os) const;
 };
 
