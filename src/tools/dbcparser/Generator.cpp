@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -599,10 +599,10 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 
 void generate_storage(const types::Definitions& defs, const std::string& output, const std::string& path) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
-	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>([^]+)<%TEMPLATE_MOVES%>([^]+))");
+	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>)");
 
 	std::stringstream buffer(read_template(path, "Storage.h_"));
-	std::stringstream declarations, moves;
+	std::stringstream declarations;
 
 	for(auto& def : defs) {
 		if(def->type != types::STRUCT) {
@@ -618,10 +618,9 @@ void generate_storage(const types::Definitions& defs, const std::string& output,
 
 		std::string store_name = dbc->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
 		declarations << "\tDBCMap<" << dbc->name << "> " << store_name << ";\n";
-		moves << "\t\t" << store_name << " = std::move(" << store_name << ");\n";
 	}
 
-	std::string replace_pattern("$1" + declarations.str() + "$2" + moves.str() + "$3");
+	std::string replace_pattern("$1" + declarations.str() + "$2");
 	std::string out = std::regex_replace(buffer.str(), pattern, replace_pattern);
 	save_output(output, "Storage.h", out);
 }
