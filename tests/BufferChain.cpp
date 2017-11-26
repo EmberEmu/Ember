@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015, 2016, 2017 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -153,7 +153,6 @@ TEST(ChainedBufferTest, PopFrontPushBack) {
 	std::string output; output.resize(written);
 
 	chain.read(&output[0], written);
-	std::cout << output;
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
