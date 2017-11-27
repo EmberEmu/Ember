@@ -7,7 +7,7 @@
 add_subdirectory(login)
 add_subdirectory(social)
 add_subdirectory(gateway)
-add_subdirectory(world)
+#add_subdirectory(world)
 add_subdirectory(account)
 
 add_subdirectory(character)
@@ -17,3 +17,5 @@ add_subdirectory(character)
 add_subdirectory(libs)
 
 add_subdirectory(tools)
+
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/ DESTINATION ${CMAKE_INSTALL_PREFIX})

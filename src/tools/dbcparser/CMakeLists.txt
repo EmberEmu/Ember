@@ -30,3 +30,5 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} logging spark shared ${Boost_LIBRARIES})
+
+INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)

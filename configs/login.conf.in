@@ -1,0 +1,64 @@
+# Login daemon configuration
+
+[locale]
+enforce = false
+
+[patches]
+bin_path = ""  # path to patch files
+
+[survey]
+enabled = 0
+id = 0         # should be bumped for each new survey
+bin_path = ""  # path to survey.mpq
+
+[integrity]
+enabled = 0    # validate the client's integrity
+bin_path = ""  # path to binaries needed for integrity validation
+
+[network]
+interface = 0.0.0.0 # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
+port = 3724 # Port for the server to listen to client connections on
+tcp_no_delay = true # Toggle Nagle's algorithm
+
+[spark]
+address = 127.0.0.1
+port = 6000
+multicast_interface = 0.0.0.0
+multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
+multicast_port = 6000
+secret_key = changeme
+
+[database]
+config_path = mysql_sample_config.conf
+min_connections = 1
+max_connections = 8
+
+[remote_log]
+service_name = login
+verbosity = none # trace, debug, info, warning, error, fatal or none to disable
+host = localhost
+port = 514
+
+[file_log]
+verbosity = none # trace, debug, info, warning, error, fatal or none to disable
+path = logs/login_%d_%m_%Y.log
+midnight_rotate = 0
+mode = append # if an existing log is found, you can either 'append' to it or 'truncate' it
+size_rotate = 0 # max log size in megabytes - 0 disables
+log_timestamp = 0 # enable/disable timestamping log records
+timestamp_format = [%d/%m/%Y %H:%M:%S] 
+log_severity = 1 # enable/disable writing severity to log records
+
+[console_log]
+verbosity = trace # trace, debug, info, warning, error, fatal or none to disable
+colours = true # colourise the output
+
+[metrics]
+enabled = false
+statsd_host = localhost
+statsd_port = 8125
+
+[monitor]
+enabled = false
+interface = 0.0.0.0
+port = 3900

@@ -31,30 +31,36 @@ struct BufferBlock {
 		write_offset = 0;
 	}
 
-	std::size_t write(const std::byte* source, std::size_t length) {
+	template<typename InT>
+	std::size_t write(const InT source, std::size_t length) {
 		std::size_t write_len = BlockSize - write_offset;
 
 		if(write_len > length) {
 			write_len = length;
 		}
 
-		std::copy(source, source + write_len, storage.data() + write_offset);
+		std::copy(reinterpret_cast<const std::byte*>(source),
+			reinterpret_cast<const std::byte*>(source) + write_len,
+			storage.data() + write_offset);
 		write_offset += write_len;
 		return write_len;
 	}
 
-	std::size_t copy(std::byte* destination, std::size_t length) const {
+	template<typename OutT>
+	std::size_t copy(OutT destination, std::size_t length) const {
 		std::size_t read_len = BlockSize - read_offset;
 
 		if(read_len > length) {
 			read_len = length;
 		}
 
-		std::copy(storage.data() + read_offset, storage.data() + read_offset + read_len, destination);
+		std::copy(storage.data() + read_offset, storage.data() + read_offset + read_len, 
+			reinterpret_cast<std::byte*>(destination));
 		return read_len;
 	}
 
-	std::size_t read(std::byte* destination, std::size_t length, bool allow_optimise = false) {
+	template<typename InT>
+	std::size_t read(InT destination, std::size_t length, bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
 		read_offset += read_len;
 
