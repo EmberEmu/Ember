@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -140,6 +140,11 @@ public:
 	}
 
 	impl& operator <<(const std::string& data) {
+		std::copy(data.begin(), data.end(), std::back_inserter(buffer_.second));
+		return *this;
+	}
+
+	impl& operator <<(const std::string_view& data) {
 		std::copy(data.begin(), data.end(), std::back_inserter(buffer_.second));
 		return *this;
 	}

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -94,6 +94,11 @@ Logger& Logger::operator <<(unsigned int data) {
 }
 
 Logger& Logger::operator <<(const std::string& data) {
+	*pimpl_ << data;
+	return *this;
+}
+
+Logger& Logger::operator <<(const std::string_view& data) {
 	*pimpl_ << data;
 	return *this;
 }

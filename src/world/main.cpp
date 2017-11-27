@@ -12,7 +12,7 @@
 #include <shared/util/LogConfig.h>
 #include <boost/program_options.hpp>
 
-const std::string APP_NAME = "World Server";
+const char* APP_NAME = "World Server";
 
 namespace ember {
 

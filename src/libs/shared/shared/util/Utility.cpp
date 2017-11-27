@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@
 
 namespace ember::util {
 
-std::size_t max_consecutive_check(const std::string& name) {
+std::size_t max_consecutive_check(std::string_view name) {
 	int longest_sequence = 1;
 	int current_sequence = 1;
 	char last_letter = 0;
@@ -42,9 +42,9 @@ std::size_t max_consecutive_check(const std::string& name) {
 	return longest_sequence;
 }
 
-void set_window_title(const std::string& title) {
+void set_window_title(std::string_view title) {
 #ifdef _WIN32
-    SetConsoleTitle(title.c_str());
+    SetConsoleTitle(title.data());
 #elif defined __linux__ || defined __unix__ // todo, test
   	std::cout << "\033]0;" << title << "}\007";
 #endif

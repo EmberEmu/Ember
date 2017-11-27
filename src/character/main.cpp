@@ -28,10 +28,11 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <stdexcept>
 
-const std::string APP_NAME = "Character Daemon";
+const char* APP_NAME = "Character Daemon";
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -43,7 +44,7 @@ namespace ember {
 void launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, const std::string& message, log::Logger* logger);
+void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 
 } // ember
 
@@ -243,7 +244,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return options;
 }
 
-void pool_log_callback(ep::Severity severity, const std::string& message, log::Logger* logger) {
+void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger* logger) {
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {

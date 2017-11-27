@@ -37,9 +37,9 @@ namespace po = boost::program_options;
 
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
+void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
 
-const std::string APP_NAME = "Account Daemon";
+const char* APP_NAME = "Account Daemon";
 
  /*
  * We want to do the minimum amount of work required to get
@@ -166,7 +166,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return options;
 }
 
-void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, std::string_view message, el::Logger* logger) {
 	/*using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {

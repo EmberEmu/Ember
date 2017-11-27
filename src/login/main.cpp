@@ -48,6 +48,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -66,9 +67,9 @@ std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(el::Logger* logger);
 void launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, const std::string& message, el::Logger* logger);
+void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
 
-const std::string APP_NAME = "Login Daemon";
+const char* APP_NAME = "Login Daemon";
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -390,7 +391,7 @@ void print_lib_versions(el::Logger* logger) {
 	LOG_DEBUG(logger) << "- Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
-void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, std::string_view message, el::Logger* logger) {
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {

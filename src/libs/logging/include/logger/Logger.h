@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,6 +11,7 @@
 #include <logger/Severity.h>
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace ember::log {
 
@@ -37,6 +38,7 @@ public:
 	Logger& operator <<(unsigned long long data);
 	Logger& operator <<(unsigned int data);
 	Logger& operator <<(const std::string& data);
+	Logger& operator <<(const std::string_view& data);
 	Logger& operator <<(const char* data);
 	void add_sink(std::unique_ptr<Sink> sink);
 	Severity severity();

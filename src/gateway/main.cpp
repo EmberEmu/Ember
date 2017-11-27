@@ -37,9 +37,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <stdexcept>
 
-const std::string APP_NAME = "Realm Gateway";
+const char* APP_NAME = "Realm Gateway";
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -53,7 +54,7 @@ namespace ember {
 void launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, const std::string& message, log::Logger* logger);
+void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
 
 } // ember
@@ -133,7 +134,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name
 	                 << " (" << cat_name << ")" << LOG_SYNC;
 
-	util::set_window_title(APP_NAME + " - " + realm->name);
+	util::set_window_title(std::string(APP_NAME) + " - " + realm->name);
 
 	// Set config
 	Config config;
@@ -299,7 +300,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	return options;
 }
 
-void pool_log_callback(ep::Severity severity, const std::string& message, log::Logger* logger) {
+void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger* logger) {
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {
