@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014, 2017 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,11 @@
 
 #include <shared/Version.h>
 
-namespace ember { namespace version {
+using namespace std::string_view_literals;
 
-const std::string GIT_HASH = "@GIT_SHA1@";
-const std::string VERSION = "@VERSION@";
+namespace ember::version {
 
-}}
+constexpr std::string_view GIT_HASH = "@GIT_SHA1@"sv;
+constexpr std::string_view VERSION = "@VERSION@"sv;
+
+} // version, ember

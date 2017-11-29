@@ -98,7 +98,7 @@ Logger& Logger::operator <<(const std::string& data) {
 	return *this;
 }
 
-Logger& Logger::operator <<(const std::string_view& data) {
+Logger& Logger::operator <<(const std::string_view data) {
 	*pimpl_ << data;
 	return *this;
 }

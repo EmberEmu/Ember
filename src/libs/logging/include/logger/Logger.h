@@ -38,7 +38,7 @@ public:
 	Logger& operator <<(unsigned long long data);
 	Logger& operator <<(unsigned int data);
 	Logger& operator <<(const std::string& data);
-	Logger& operator <<(const std::string_view& data);
+	Logger& operator <<(const std::string_view data);
 	Logger& operator <<(const char* data);
 	void add_sink(std::unique_ptr<Sink> sink);
 	Severity severity();

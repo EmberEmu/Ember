@@ -46,7 +46,7 @@ class Logger::impl final {
 		buffer_.second.push_back('\n');
 		worker_.queue_.enqueue(std::move(buffer_));
 		worker_.signal();
-		buffer_.second.reserve(64);
+		buffer_.second.reserve(128);
 	}
 
 	void finalise_sync() {
@@ -55,7 +55,7 @@ class Logger::impl final {
 					(std::move(buffer_.first), std::move(buffer_.second), &sem_);
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
-		buffer_.second.reserve(64);
+		buffer_.second.reserve(128);
 		sem_.wait();
 	}
 
@@ -144,7 +144,7 @@ public:
 		return *this;
 	}
 
-	impl& operator <<(const std::string_view& data) {
+	impl& operator <<(const std::string_view data) {
 		std::copy(data.begin(), data.end(), std::back_inserter(buffer_.second));
 		return *this;
 	}
