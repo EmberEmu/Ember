@@ -12,7 +12,7 @@ using namespace std::string_view_literals;
 
 namespace ember::version {
 
-constexpr std::string_view GIT_HASH = "@GIT_SHA1@"sv;
-constexpr std::string_view VERSION = "@VERSION@"sv;
+const std::string_view GIT_HASH = "@GIT_SHA1@"sv;
+const std::string_view VERSION = "@VERSION@"sv;
 
 } // version, ember
