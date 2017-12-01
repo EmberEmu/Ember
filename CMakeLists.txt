@@ -148,3 +148,5 @@ include(BuildDBCLoaders) # temp, maybe
 add_subdirectory(spark-schemas)
 add_subdirectory(tests)
 add_subdirectory(src)
+
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs DESTINATION ${CMAKE_INSTALL_PREFIX})

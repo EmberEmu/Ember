@@ -17,5 +17,3 @@ add_subdirectory(character)
 add_subdirectory(libs)
 
 add_subdirectory(tools)
-
-INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs/ DESTINATION ${CMAKE_INSTALL_PREFIX})
