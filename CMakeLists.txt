@@ -146,6 +146,7 @@ add_definitions(-DDB_MYSQL) #temporary!
 include(BuildDBCLoaders) # temp, maybe
 
 add_subdirectory(spark-schemas)
+enable_testing()
 add_subdirectory(tests)
 add_subdirectory(src)
 
