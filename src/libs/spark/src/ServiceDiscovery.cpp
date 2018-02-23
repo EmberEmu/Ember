@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -91,7 +91,7 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 	}
 }
 
-void ServiceDiscovery::send(std::shared_ptr<flatbuffers::FlatBufferBuilder> msg,
+void ServiceDiscovery::send(const std::shared_ptr<flatbuffers::FlatBufferBuilder>& msg,
 							mcast::Opcode opcode) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto header = messaging::core::CreateHeader(*fbb, static_cast<std::uint16_t>(opcode),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -302,7 +302,8 @@ void ClientConnection::terminate() {
  * until all pending handlers are executed with 'operation_aborted'.
  * That's the theory anyway.
  */
-void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
+ // todo, switch to unique_ptr when VS supports extract
+void ClientConnection::async_shutdown(const std::shared_ptr<ClientConnection>& client) {
 	client->terminate();
 
 	client->service_.post([client]() {

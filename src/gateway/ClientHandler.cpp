@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -52,10 +52,6 @@ void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 	update_event[context_.state](&context_, event.get());
 }
 
-void ClientHandler::handle_event(std::shared_ptr<const Event> event) {
-	update_event[context_.state](&context_, event.get());
-}
-
 void ClientHandler::state_update(ClientState new_state) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK) << client_identify() << ": "
 		<< "State change, " << ClientState_to_string(context_.state)
@@ -79,12 +75,12 @@ void ClientHandler::state_update(ClientState new_state) {
 			<< " failed" << LOG_ASYNC;
 
 		/*
-		* If parsing a known message type fails, there's a good chance that
-		* there's a mistake in the definition. If that's the case, check to see
-		* whether we've ended up reading too much data from the buffer.
-		* If so, messaging framing has likely been lost and the only thing to do
-		* is to disconnect the client.
-		*/
+		 * If parsing a known message type fails, there's a good chance that
+		 * there's a mistake in the definition. If that's the case, check to see
+		 * whether we've ended up reading too much data from the buffer.
+		 * If so, message framing has likely been lost and the only thing to do
+		 * is to disconnect the client.
+		 */
 		if(buffer.size() < end_size) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Message framing lost at " << protocol::to_string(context_.header->opcode)

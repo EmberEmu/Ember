@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -80,31 +80,31 @@ class LoginHandler {
 	TransferState transfer_state_;
 	const bool locale_enforce_;
 
-	void initiate_login(const grunt::Packet* packet);
+	void initiate_login(const grunt::Packet& packet);
 	void initiate_file_transfer(const FileMeta& meta);
 
-	void handle_login_proof(const grunt::Packet* packet);
-	void handle_reconnect_proof(const grunt::Packet* packet);
-	void handle_survey_result(const grunt::Packet* packet);
-	void handle_transfer_ack(const grunt::Packet* packet, bool survey);
+	void handle_login_proof(const grunt::Packet& packet);
+	void handle_reconnect_proof(const grunt::Packet& packet);
+	void handle_survey_result(const grunt::Packet& packet);
+	void handle_transfer_ack(const grunt::Packet& packet, bool survey);
 	void handle_transfer_abort();
 
-	void send_login_challenge(FetchUserAction* action);
+	void send_login_challenge(const FetchUserAction& action);
 	void send_login_proof(grunt::Result result, bool survey = false);
-	void send_reconnect_challenge(FetchSessionKeyAction* action);
+	void send_reconnect_challenge(const FetchSessionKeyAction& action);
 	void send_reconnect_proof(grunt::Result result);
-	void send_realm_list(const grunt::Packet* packet);
+	void send_realm_list(const grunt::Packet& packet);
 	void build_login_challenge(grunt::server::LoginChallenge& packet);
 
-	void on_character_data(FetchCharacterCounts* action);
-	void on_session_write(RegisterSessionAction* action);
-	void on_survey_write(SaveSurveyAction* action);
+	void on_character_data(const FetchCharacterCounts& action);
+	void on_session_write(const RegisterSessionAction& action);
+	void on_survey_write(const SaveSurveyAction& action);
 
 	void transfer_chunk();
-	void set_transfer_offset(const grunt::Packet* packet);
+	void set_transfer_offset(const grunt::Packet& packet);
 
-	bool validate_pin(const grunt::client::LoginProof* packet);
-	bool validate_protocol_version(const grunt::client::LoginChallenge* challenge);
+	bool validate_pin(const grunt::client::LoginProof& packet);
+	bool validate_protocol_version(const grunt::client::LoginChallenge& challenge);
 
 	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
 								   const Botan::BigInt& client_salt, bool reconnect);
@@ -114,18 +114,18 @@ class LoginHandler {
 	                               bool reconnect);
 
 	void fetch_user(grunt::Opcode opcode, const std::string& username);
-	void fetch_session_key(FetchUserAction* action);
+	void fetch_session_key(const FetchUserAction& action);
 
 	void reject_client(const GameVersion& version);
-	void patch_client(const grunt::client::LoginChallenge* version);
+	void patch_client(const grunt::client::LoginChallenge& version);
 
 public:
-	std::function<void(std::shared_ptr<Action> action)> execute_async;
+	std::function<void(const std::shared_ptr<Action>& action)> execute_async;
 	std::function<void(const grunt::Packet&)> send;
 	std::function<void(const grunt::Packet&)> send_chunk;
 
-	bool update_state(std::shared_ptr<Action> action);
-	bool update_state(const grunt::Packet* packet);
+	bool update_state(const Action& action);
+	bool update_state(const grunt::Packet& packet);
 	void on_chunk_complete();
 
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,

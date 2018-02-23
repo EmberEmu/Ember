@@ -10,7 +10,7 @@
 
 namespace ember {
 
-void WorldClients::add(boost::uuids::uuid uuid, std::shared_ptr<ClientConnection> client) {
+void WorldClients::add(boost::uuids::uuid uuid, const std::shared_ptr<ClientConnection>& client) {
 
 }
 
@@ -18,7 +18,7 @@ void WorldClients::remove(boost::uuids::uuid uuid) {
 
 }
 
-void WorldClients::remove(std::shared_ptr<ClientConnection> client) {
+void WorldClients::remove(const std::shared_ptr<ClientConnection>& client) {
 
 }
 

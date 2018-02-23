@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ class SessionManager {
 public:
 	~SessionManager();
 
-	void start(std::shared_ptr<ClientConnection> session);
+	void start(const std::shared_ptr<ClientConnection>& session);
 	void stop(ClientConnection* session);
 	void stop_all();
 	std::size_t count() const;

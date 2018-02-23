@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,7 @@
 
 namespace ember {
 
-void WorldSessions::add_world(WorldID id, std::shared_ptr<WorldConnection> connection) {
+void WorldSessions::add_world(WorldID id, const std::shared_ptr<WorldConnection>& connection) {
 
 }
 
@@ -19,7 +19,7 @@ void WorldSessions::remove_world(WorldID id) {
 
 }
 
-void WorldSessions::remove_world(std::shared_ptr<WorldConnection> connection) {
+void WorldSessions::remove_world(const std::shared_ptr<WorldConnection>& connection) {
 
 }
 

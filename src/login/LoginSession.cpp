@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,12 +39,12 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	std::optional<grunt::PacketHandle> packet = grunt_handler_.try_deserialise(buffer);
+	auto packet = grunt_handler_.try_deserialise(buffer);
 
 	if(packet) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
-			<< grunt::to_string((*packet)->opcode) << LOG_ASYNC;
-		return handler_.update_state(packet->get());
+			<< grunt::to_string(packet->opcode) << LOG_ASYNC;
+		return handler_.update_state(*packet);
 	}
 
 	return true;
@@ -53,7 +53,7 @@ bool LoginSession::handle_packet(spark::Buffer& buffer) try {
 	return false;
 }
 
-void LoginSession::execute_async(std::shared_ptr<Action> action) {
+void LoginSession::execute_async(const std::shared_ptr<Action>& action) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	auto self(shared_from_this());
@@ -67,10 +67,10 @@ void LoginSession::execute_async(std::shared_ptr<Action> action) {
 	});
 }
 
-void LoginSession::async_completion(std::shared_ptr<Action> action) try {
+void LoginSession::async_completion(const std::shared_ptr<Action>& action) try {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	if(!handler_.update_state(action)) {
+	if(!handler_.update_state(*action.get())) {
 		close_session(); // todo change
 	}
 } catch(std::exception& e) {

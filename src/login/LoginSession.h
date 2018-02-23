@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,9 +23,9 @@ class LoginHandlerBuilder;
 class ThreadPool;
 
 class LoginSession final : public NetworkSession {
-	void async_completion(std::shared_ptr<Action> action);
+	void async_completion(const std::shared_ptr<Action>& action);
 	void write_chain(const grunt::Packet& packet, bool notify);
-	void execute_async(std::shared_ptr<Action> action);
+	void execute_async(const std::shared_ptr<Action>& action);
 
 public:
 	ThreadPool& pool_;

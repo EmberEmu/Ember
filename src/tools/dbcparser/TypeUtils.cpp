@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2016 Ember
+/*
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -78,7 +78,7 @@ TypeComponents extract_components(const std::string& type) {
 				if(components.second <= 0) {
 					throw exception("Negative or zero array size found in " + type);
 				}
-			} catch(std::exception) {
+			} catch(std::exception&) {
 				throw exception(matches[2].str() + " is not a valid array entry count"
 					" for " + components.first);
 			}

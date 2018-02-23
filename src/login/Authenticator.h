@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ class ReconnectAuthenticator {
 public:
 	ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
 	                       const Botan::secure_vector<Botan::byte>& salt);
-	bool proof_check(const grunt::client::ReconnectProof* proof);
+	bool proof_check(const grunt::client::ReconnectProof& proof);
 	std::string username() { return rcon_user_; }
 };
 
@@ -48,7 +48,7 @@ class LoginAuthenticator {
 public:
 	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
-	ProofResult proof_check(const grunt::client::LoginProof* proof);
+	ProofResult proof_check(const grunt::client::LoginProof& proof);
 	srp6::SessionKey session_key();
 };
 

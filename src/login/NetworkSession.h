@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -134,7 +134,7 @@ public:
 	}
 
 	template<std::size_t BlockSize>
-	void write_chain(std::shared_ptr<spark::ChainedBuffer<BlockSize>> chain, bool notify) {
+	void write_chain(const std::shared_ptr<spark::ChainedBuffer<BlockSize>>& chain, bool notify) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {

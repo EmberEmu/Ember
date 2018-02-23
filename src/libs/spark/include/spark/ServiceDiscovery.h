@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -52,7 +52,7 @@ class ServiceDiscovery {
 	void handle_locate_answer(const messaging::multicast::LocateResponse* message);
 
 	// packet senders
-	void send(std::shared_ptr<flatbuffers::FlatBufferBuilder> fbb,
+	void send(const std::shared_ptr<flatbuffers::FlatBufferBuilder>& fbb,
 	          messaging::multicast::Opcode opcode);
 	void send_announce(messaging::Service service);
 

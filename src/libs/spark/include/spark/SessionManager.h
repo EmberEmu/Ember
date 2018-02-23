@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,8 +22,8 @@ class SessionManager {
 	std::mutex sessions_lock_;
 
 public:
-	void start(std::shared_ptr<NetworkSession> session);
-	void stop(std::shared_ptr<NetworkSession> session);
+	void start(const std::shared_ptr<NetworkSession>& session);
+	void stop(const std::shared_ptr<NetworkSession>& session);
 	void stop_all();
 	std::size_t count() const;
 };

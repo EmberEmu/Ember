@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,7 +42,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
 }
 
 void EventDispatcher::post_event(const ClientUUID& client,
-                                 std::shared_ptr<const Event>& event) const {
+                                 const std::shared_ptr<const Event>& event) const {
 	auto service = pool_.get_service(client.service());
 
 	// bad service index encoded in the UUID
@@ -60,7 +60,7 @@ void EventDispatcher::post_event(const ClientUUID& client,
 			return;
 		}
 		
-		handler->second->handle_event(event);
+		handler->second->handle_event(event.get());
 	});
 }
 

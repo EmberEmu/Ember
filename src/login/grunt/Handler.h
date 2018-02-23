@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015, 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,14 +18,12 @@
 
 namespace ember::grunt {
 
-typedef std::unique_ptr<Packet> PacketHandle;
-
 class Handler {
 	enum State {
 		NEW_PACKET, READ
 	};
 
-	PacketHandle curr_packet_;
+	std::unique_ptr<Packet> curr_packet_;
 	State state_ = State::NEW_PACKET;
 
 	log::Logger* logger_;
@@ -37,7 +35,7 @@ class Handler {
 public:
 	explicit Handler(log::Logger* logger) : logger_(logger) { }
 
-	std::optional<PacketHandle> try_deserialise(spark::Buffer& buffer);
+	std::unique_ptr<Packet> try_deserialise(spark::Buffer& buffer);
 };
 
 } // grunt, ember

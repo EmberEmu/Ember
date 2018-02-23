@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <memory>
-#include <map>
+#include <unordered_map>
 
 namespace ember {
 
@@ -22,12 +22,12 @@ class WorldSessions {
 		unsigned int instance_id;
 	};
 
-	std::map<WorldID, std::shared_ptr<WorldConnection>> connections_; // todo, change, concurrent
+	std::unordered_map<WorldID, std::shared_ptr<WorldConnection>> connections_; // todo, change, concurrent
 
 public:
-	void add_world(WorldID id, std::shared_ptr<WorldConnection> connection);
+	void add_world(WorldID id, const std::shared_ptr<WorldConnection>& connection);
 	void remove_world(WorldID id);
-	void remove_world(std::shared_ptr<WorldConnection> connection);
+	void remove_world(const std::shared_ptr<WorldConnection>& connection);
 	std::shared_ptr<WorldConnection> locate_world(WorldID id);
 };
 

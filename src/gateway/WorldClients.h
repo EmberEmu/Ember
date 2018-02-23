@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,9 +25,9 @@ class WorldClients {
 	std::map<boost::uuids::uuid, Client> clients_; // todo, use a concurrent map
 
 public:
-	void add(boost::uuids::uuid uuid, std::shared_ptr<ClientConnection> client);
+	void add(boost::uuids::uuid uuid, const std::shared_ptr<ClientConnection>& client);
 	void remove(boost::uuids::uuid uuid);
-	void remove(std::shared_ptr<ClientConnection> client);
+	void remove(const std::shared_ptr<ClientConnection>& client);
 	std::shared_ptr<ClientConnection> locate(boost::uuids::uuid uuid);
 
 };

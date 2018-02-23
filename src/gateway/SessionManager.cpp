@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,12 +12,11 @@
 
 namespace ember {
 
-void SessionManager::start(std::shared_ptr<ClientConnection> session) {
+void SessionManager::start(const std::shared_ptr<ClientConnection>& session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
 
-	auto handle = session.get();
-	sessions_.insert(std::move(session));
-	handle->start();
+	sessions_.insert(session);
+	session->start();
 }
 
 void SessionManager::stop(ClientConnection* session) {

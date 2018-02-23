@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -54,7 +54,7 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	messaging::account::Status get_result() {
+	messaging::account::Status get_result() const {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}
@@ -91,7 +91,7 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	auto get_result() {
+	auto get_result() const {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}
@@ -116,15 +116,15 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	std::optional<User> get_result() {
+	std::optional<User> get_result() const {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}
 
-		return std::move(user_);
+		return user_;
 	}
 
-	std::string username() {
+	std::string username() const {
 		return username_;
 	}
 };
@@ -146,7 +146,7 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	std::unordered_map<std::uint32_t, std::uint32_t> get_result() {
+	std::unordered_map<std::uint32_t, std::uint32_t> get_result() const {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}
@@ -154,7 +154,7 @@ public:
 		return counts_;
 	}
 
-	bool reconnect() {
+	bool reconnect() const {
 		return reconnect_;
 	}
 };
@@ -179,11 +179,11 @@ public:
 		error_ = true;
 	}
 
-	bool error() {
+	bool error() const {
 		return error_;
 	}
 
-	dal::exception exception() {
+	dal::exception exception() const {
 		return exception_;
 	}
 };
