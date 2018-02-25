@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <shared/ClientUUID.h>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 namespace ember {
 
@@ -73,7 +74,7 @@ public:
 	}
 
 	void post_event(const ClientUUID& client, std::unique_ptr<Event> event) const;
-	void post_event(const ClientUUID& client, const std::shared_ptr<const Event>& event) const;
+	void broadcast_event(std::vector<ClientUUID> clients, const std::shared_ptr<const Event>& event) const;
 	void register_handler(ClientHandler* handler);
 	void remove_handler(ClientHandler* handler);
 };
