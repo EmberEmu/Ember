@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <boost/endian/conversion.hpp>
 #include <botan/hmac.h>
 #include <botan/sha160.h>
+#include <gsl/gsl_util>
 #include <memory>
 #include <utility>
 #include <cstddef>
@@ -36,7 +37,7 @@ void PINAuthenticator::set_pin(std::uint64_t pin) {
 std::uint32_t PINAuthenticator::grid_seed() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	grid_seed_ = static_cast<std::uint32_t>(rng::xorshift::next());
+	grid_seed_ = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
 	return grid_seed_;
 }
 
@@ -47,7 +48,7 @@ auto PINAuthenticator::server_salt() -> std::array<std::uint8_t, SALT_LENGTH>& {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	for(std::size_t i = 0; i < server_salt_.size(); ++i) {
-		server_salt_[i] = static_cast<std::uint8_t>(rng::xorshift::next());
+		server_salt_[i] = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
 	}
 	
 	remap_pin_grid();

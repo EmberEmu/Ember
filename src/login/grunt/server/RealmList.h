@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <shared/Realm.h>
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
+#include <gsl/gsl_util>
 #include <cstdint>
 #include <cstddef>
 
@@ -48,7 +49,7 @@ class RealmList final : public Packet {
 		BOOST_ASSERT_MSG(packet_size <= std::numeric_limits<std::uint16_t>::max(),
 		                 "Realm packet too large!");
 
-		return static_cast<std::uint16_t>(packet_size);
+		return gsl::narrow<std::uint16_t>(packet_size);
 	}
 
 	void read_size(spark::SafeBinaryStream& stream) {
@@ -166,7 +167,7 @@ public:
 		stream << opcode;
 		stream << be::native_to_little(calculate_size());
 		stream << be::native_to_little(unknown);
-		stream << static_cast<std::uint8_t>(realms.size());
+		stream << gsl::narrow<std::uint8_t>(realms.size());
 
 		for(auto& entry : realms) {
 			auto& realm = entry.realm;
@@ -175,8 +176,8 @@ public:
 			stream << realm.name;
 			stream << realm.ip;
 			stream << be::native_to_little(realm.population);
-			stream << static_cast<std::uint8_t>(entry.characters);
-			stream << static_cast<std::uint8_t>(realm.category);
+			stream << gsl::narrow_cast<std::uint8_t>(entry.characters);
+			stream << gsl::narrow<std::uint8_t>(realm.category);
 			stream << std::uint8_t(realm.id);
 		}
 

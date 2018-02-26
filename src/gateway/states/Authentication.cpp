@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,7 @@
 #include <logger/Logging.h>
 #include <botan/botan.h>
 #include <botan/sha160.h>
+#include <gsl/gsl_util>
 #include <cstdint>
 
 namespace em = ember::messaging;
@@ -120,7 +121,7 @@ void handle_session_key(ClientContext* ctx, const SessionKeyResponse* event) {
 void send_auth_challenge(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 	protocol::SMSG_AUTH_CHALLENGE response;
-	response.seed = ctx->auth_seed = static_cast<std::uint32_t>(ember::rng::xorshift::next());
+	response.seed = ctx->auth_seed = gsl::narrow_cast<std::uint32_t>(ember::rng::xorshift::next());
 	ctx->connection->send(response);
 }
 

@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
+#include <gsl/gsl_util>
 #include <logger/Logging.h>
 #include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
 
@@ -23,7 +24,7 @@ void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
 
 	protocol::SMSG_AUTH_RESPONSE packet;
 	packet.result = protocol::Result::AUTH_WAIT_QUEUE;
-	packet.queue_position = static_cast<std::uint32_t>(event->position);
+	packet.queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
 	ctx->connection->send(packet);
 }
 

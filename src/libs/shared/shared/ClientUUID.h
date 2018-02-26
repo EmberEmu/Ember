@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <shared/util/FNVHash.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <boost/functional/hash.hpp>
+#include <gsl/gsl_util>
 #include <algorithm>
 #include <cstdint>
 #include <cstddef>
@@ -52,10 +53,10 @@ public:
 		ClientUUID uuid;
 
 		for(std::size_t i = 0; i < sizeof(data_); ++i) {
-			uuid.data_[i] = static_cast<std::uint8_t>(rng::xorshift::next());
+			uuid.data_[i] = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
 		}
 
-		uuid.service_ = static_cast<std::uint8_t>(service_index); // todo
+		uuid.service_ = gsl::narrow<std::uint8_t>(service_index);
 		FNVHash hasher;
 		uuid.hash_ = hasher.update(uuid.data_, sizeof(uuid.data_));
 		return uuid;

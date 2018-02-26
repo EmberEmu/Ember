@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
+#include <gsl/gsl_util>
 #include <zlib.h>
 #include <cstdint>
 #include <cstddef>
@@ -116,7 +117,7 @@ public:
 			throw bad_packet("Compression of survey data failed with code " + std::to_string(ret));
 		}
 
-		stream << be::native_to_little(static_cast<std::uint16_t>(dest_len));
+		stream << be::native_to_little(gsl::narrow<std::uint16_t>(dest_len));
 		stream.put(compressed.data(), dest_len);
 	}
 };

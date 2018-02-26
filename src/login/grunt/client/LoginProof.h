@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <gsl/gsl_util>
 #include <array>
 #include <cstdint>
 #include <cstddef>
@@ -181,7 +182,7 @@ public:
 
 		stream.put(client_checksum.data(), client_checksum.size());
 
-		stream << static_cast<std::uint8_t>(keys.size());
+		stream << gsl::narrow<std::uint8_t>(keys.size());
 
 		for(auto& key : keys) {
 			stream << be::native_to_little(key.unk_1);

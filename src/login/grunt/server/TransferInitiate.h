@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
+#include <gsl/gsl_util>
 #include <cstdint>
 #include <cstddef>
 
@@ -46,7 +47,7 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << static_cast<std::uint8_t>(filename.size());
+		stream << gsl::narrow<std::uint8_t>(filename.size());
 		stream << filename.c_str();
 		stream << filesize;
 		stream.put(md5.data(), md5.size());

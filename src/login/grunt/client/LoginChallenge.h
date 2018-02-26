@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,6 +16,7 @@
 #include "../../GameVersion.h"
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
+#include <gsl/gsl_util>
 #include <string>
 #include <cstdint>
 #include <cstddef>
@@ -117,7 +118,7 @@ public:
 			throw bad_packet("Provided username was too long!");
 		}
 
-		auto size = static_cast<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
+		auto size = gsl::narrow<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
 
 		stream << opcode;
 		stream << protocol_ver;
@@ -132,7 +133,7 @@ public:
 		stream << be::native_to_little(locale);
 		stream << be::native_to_little(timezone_bias);
 		stream << be::native_to_big(ip);
-		stream << static_cast<std::uint8_t>(username.length());
+		stream << gsl::narrow<std::uint8_t>(username.length());
 		stream.put(username.data(), username.length());
 	}
 };

@@ -12,7 +12,7 @@
 #include "grunt/Packets.h"
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
-#include <shared/util/SafeStaticCast.h>
+#include <gsl/gsl_util>
 #include <stdexcept>
  
 namespace ember {
@@ -207,8 +207,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 	const auto& authenticator = std::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
 	const auto& values = authenticator->challenge_reply();
 	packet.B = values.B;
-	packet.g_len = static_cast<std::uint8_t>(values.gen.generator().bytes());
-	packet.g = static_cast<std::uint8_t>(values.gen.generator().to_u32bit());
+	packet.g_len = gsl::narrow<std::uint8_t>(values.gen.generator().bytes());
+	packet.g = gsl::narrow<std::uint8_t>(values.gen.generator().to_u32bit());
 	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet.N = values.gen.prime();
 	packet.s = values.salt;
@@ -686,7 +686,7 @@ void LoginHandler::transfer_chunk() {
 	std::uint16_t read_size = grunt::server::TransferData::MAX_CHUNK_SIZE;
 
 	if(read_size > remaining) {
-		read_size = static_cast<std::uint16_t>(remaining);
+		read_size = gsl::narrow<std::uint16_t>(remaining);
 	}
 
 	grunt::server::TransferData response;
@@ -694,7 +694,7 @@ void LoginHandler::transfer_chunk() {
 
 	if(state_ == State::SURVEY_TRANSFER) {
 		auto survey_mpq = patcher_.survey_data(challenge_.platform, challenge_.os).begin();
-		survey_mpq += safe_static_cast<int>(transfer_state_.offset);
+		survey_mpq += gsl::narrow<int>(transfer_state_.offset);
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {
 		transfer_state_.file.read(reinterpret_cast<char*>(response.chunk.data()), read_size);

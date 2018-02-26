@@ -208,7 +208,7 @@ void Service::rename_character(const spark::Link& link, const spark::Message& me
 	}
 
 	handler_.rename(msg->account_id(), msg->character_id(), msg->name()->str(),
-	               [&, link, token](auto res, auto character) {
+	               [&, link, token](protocol::Result res, std::optional<Character> character) {
 		LOG_DEBUG(logger_) << "Rename response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_rename_response(link, token, res, std::move(character));
 	});
