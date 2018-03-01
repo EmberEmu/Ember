@@ -86,7 +86,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 			auto it = range.first;
 
 			while(it != range.second) {
-				auto handler = handlers_.find(*it);
+				auto handler = handlers_.find(*it++);
 
 				if(handler == handlers_.end()) {
 					LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
@@ -94,7 +94,6 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 				}
 
 				handler->second->handle_event(event.get());
-				++it;
 			}
 		});
 	}
