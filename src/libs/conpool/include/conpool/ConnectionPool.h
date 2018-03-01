@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -312,12 +312,12 @@ public:
 		log_cb_ = callback;
 	}
 
-	bool dirty() const {
+	auto dirty() const {
 		return std::count_if(pool_.begin(), pool_.end(),
 			[](const ConnDetail<ConType>& c) { return c.dirty; });
 	}
 
-	std::size_t checked_out() const {
+	auto checked_out() const {
 		return std::count_if(pool_.begin(), pool_.end(),
 			[](const ConnDetail<ConType>& c) { return c.checked_out; });
 	}
@@ -327,4 +327,4 @@ public:
 	}
 };
 
-} //connection_pool, ember
+} // connection_pool, ember

@@ -40,7 +40,7 @@ auto LoginAuthenticator::proof_check(const grunt::client::LoginProof& proof) -> 
 	                                                 proof.A, B, Botan::BigInt(user_.salt()));
 	sess_key_ = key;
 	return { proof.M1 == M1_S, srp_->generate_proof(key, proof.M1) };
-} catch(srp6::exception& e) {
+} catch(srp6::exception&) {
 	return { false, 0 };
 }
 
