@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -50,9 +50,9 @@ public:
 		};
 
 		Type type;
-		std::uint8_t info_block_present;
-		std::uint8_t key_version;
-		std::uint32_t update_available_flag;
+		be::little_uint8_at info_block_present;
+		be::little_uint8_at key_version;
+		be::little_uint32_at update_available_flag;
 		std::string update_url;
 	};
 
@@ -81,7 +81,7 @@ public:
 					stream.put(public_key_.data(), public_key_.size());
 				}
 
-				stream << be::native_to_little(addon.update_available_flag);
+				stream << addon.update_available_flag;
 			} else {
 				stream << std::uint8_t(0); // 'info block' is not available
 			}

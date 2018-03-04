@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -30,7 +30,7 @@ public:
 
 	TransferData() : Packet(Opcode::CMD_XFER_DATA) {}
 
-	std::uint16_t size = 0;
+	be::little_uint16_at size = 0;
 	std::array<std::byte, MAX_CHUNK_SIZE> chunk;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
@@ -43,15 +43,12 @@ public:
 		stream >> opcode;
 		stream >> size;
 
-		be::little_to_native_inplace(size);
-
-
 		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << be::native_to_little(size);
+		stream << size;
 		stream.put(chunk.data(), size);
 	}
 };

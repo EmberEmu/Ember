@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,6 @@
 #include <botan/botan.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
-#include <boost/endian/conversion.hpp>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -34,18 +33,18 @@ class CMSG_AUTH_SESSION final : public Packet {
 public:
 	struct AddonData {
 		std::string name;
-		std::uint8_t key_version;
-		std::uint32_t crc;
-		std::uint32_t update_url_crc;
+		be::little_uint8_at key_version;
+		be::little_uint32_at crc;
+		be::little_uint32_at update_url_crc;
 	};
 
 	Botan::secure_vector<Botan::byte> digest;
-	std::uint32_t seed;
-	std::uint32_t id;
-	std::uint32_t security;
-	std::uint32_t unk1;
-	std::uint32_t build;
-	std::uint8_t locale;
+	be::little_uint32_at seed;
+	be::little_uint32_at id;
+	be::little_uint32_at security;
+	be::little_uint32_at unk1;
+	be::little_uint32_at build;
+	be::little_uint8_at locale;
 	std::string username;
 	std::vector<AddonData> addons;
 
@@ -102,15 +101,8 @@ public:
 			addon_stream >> data.crc;
 			addon_stream >> data.update_url_crc;
 
-			be::little_to_native_inplace(data.crc);
-			be::little_to_native_inplace(data.update_url_crc);
-
 			addons.emplace_back(std::move(data));
 		}
-
-		be::little_to_native_inplace(build);
-		be::little_to_native_inplace(unk1);
-		be::little_to_native_inplace(seed);
 
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
@@ -118,10 +110,10 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << be::native_to_little(build);
-		stream << be::native_to_little(unk1);
+		stream << build;
+		stream << unk1;
 		stream << username;
-		stream << be::native_to_little(seed);
+		stream << seed;
 		stream.put(digest.data(), digest.size());
 	}
 

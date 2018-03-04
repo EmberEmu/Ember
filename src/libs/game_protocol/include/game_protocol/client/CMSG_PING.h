@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
@@ -22,8 +22,8 @@ class CMSG_PING final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	std::uint32_t sequence_id;
-	std::uint32_t latency;
+	be::little_uint32_at sequence_id;
+	be::little_uint32_at latency;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -31,17 +31,14 @@ public:
 		stream >> sequence_id;
 		stream >> latency;
 
-		be::little_to_native_inplace(sequence_id);
-		be::little_to_native_inplace(latency);
-
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
 		return State::ERRORED;
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << be::native_to_little(sequence_id);
-		stream << be::native_to_little(latency);
+		stream << sequence_id;
+		stream << latency;
 	}
 };
 

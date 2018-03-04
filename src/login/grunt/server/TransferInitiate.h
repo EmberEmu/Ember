@@ -12,7 +12,7 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
 #include <cstdint>
 #include <cstddef>
@@ -29,7 +29,7 @@ public:
 	TransferInitiate() : Packet(Opcode::CMD_XFER_INITIATE) {}
 	
 	std::string filename;
-	std::uint64_t filesize = 0;
+	be::little_uint64_at filesize = 0;
 	std::array<std::byte, 16> md5;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {

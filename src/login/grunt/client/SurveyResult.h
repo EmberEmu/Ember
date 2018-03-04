@@ -12,7 +12,7 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
 #include <zlib.h>
 #include <cstdint>
@@ -26,16 +26,14 @@ class SurveyResult final : public Packet {
 	static const std::size_t MIN_READ_LENGTH = 8;
 	static const std::size_t MAX_SURVEY_LEN  = 8192;
 	State state_ = State::INITIAL;
-	std::uint16_t compressed_size_ = 0;
+
+	be::little_uint16_at compressed_size_ = 0;
 
 	void read_body(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> survey_id;
 		stream >> error;
 		stream >> compressed_size_;
-
-		be::little_to_native_inplace(survey_id);
-		be::little_to_native_inplace(compressed_size_);
 	}
 
 	void read_data(spark::SafeBinaryStream& stream) {
@@ -74,8 +72,8 @@ class SurveyResult final : public Packet {
 public:
 	SurveyResult() : Packet(Opcode::CMD_SURVEY_RESULT) {}
 
-	std::uint32_t survey_id = 0;
-	std::uint8_t error = 0;
+	be::little_uint32_at survey_id = 0;
+	be::little_uint8_at error = 0;
 	std::string data;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
@@ -105,7 +103,7 @@ public:
 		}
 
 		stream << opcode;
-		stream << be::native_to_little(survey_id);
+		stream << survey_id;
 		stream << error;
 
 		std::vector<std::uint8_t> compressed(data.size());
@@ -117,7 +115,7 @@ public:
 			throw bad_packet("Compression of survey data failed with code " + std::to_string(ret));
 		}
 
-		stream << be::native_to_little(gsl::narrow<std::uint16_t>(dest_len));
+		stream << gsl::narrow<std::uint16_t>(dest_len);
 		stream.put(compressed.data(), dest_len);
 	}
 };

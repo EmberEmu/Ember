@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
@@ -27,7 +27,7 @@ class TransferResume final : public Packet {
 public:
 	TransferResume() : Packet(Opcode::CMD_XFER_RESUME) {}
 
-	std::uint64_t offset = 0;
+	be::little_uint64_at offset = 0;
 	
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -39,14 +39,12 @@ public:
 		stream >> opcode;
 		stream >> offset;
 
-		be::little_to_native_inplace(offset);
-
 		return (state_ = State::DONE);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-		stream << be::native_to_little(offset);
+		stream << offset;
 	}
 };
 

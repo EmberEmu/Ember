@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,13 +12,10 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::grunt::client {
-
-namespace be = boost::endian;
 
 class TransferCancel final : public Packet {
 	static const std::size_t WIRE_LENGTH = 1;

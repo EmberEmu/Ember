@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <string>
 #include <cstdint>
 #include <cstddef>
@@ -23,7 +23,7 @@ class CMSG_CHAR_RENAME final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	std::uint64_t id;
+	be::little_uint64_at id;
 	std::string name;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
@@ -32,15 +32,13 @@ public:
 		stream >> id;
 		stream >> name;
 
-		be::little_to_native_inplace(id);
-
 		return (state_ = State::DONE);
 	} catch(spark::buffer_underrun&) {
 		return State::ERRORED;
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << be::native_to_little(id);
+		stream << id;
 		stream << name;
 	}
 };

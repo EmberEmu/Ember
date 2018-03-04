@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <game_protocol/Packet.h>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
@@ -23,19 +23,18 @@ class SMSG_AUTH_CHALLENGE final : public ServerPacket {
 public:
 	SMSG_AUTH_CHALLENGE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE) { }
 
-	std::uint32_t seed;
+	be::little_uint32_at seed;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> seed;
-		be::little_to_native_inplace(seed);
 
 		return state_;
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << be::native_to_little(seed);
+		stream << seed;
 	}
 };
 

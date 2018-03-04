@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@
 #include <botan/bigint.h>
 #include <botan/secmem.h>
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
@@ -53,7 +53,6 @@ class LoginProof final : public Packet {
 		M2 = Botan::BigInt(m2_buff, PROOF_LENGTH);
 
 		stream >> survey_id;
-		be::little_to_native_inplace(survey_id);
 	}
 
 public:
@@ -61,7 +60,7 @@ public:
 
 	Result result;
 	Botan::BigInt M2;
-	std::uint32_t survey_id = 0;
+	be::little_uint32_at survey_id = 0;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -96,7 +95,7 @@ public:
 		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.data(), bytes.size());
-		stream << be::native_to_little(survey_id);
+		stream << survey_id;
 	
 	}
 };

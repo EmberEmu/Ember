@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@
 #include "../ResultCodes.h"
 #include <botan/bigint.h>
 #include <botan/secmem.h>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <array>
 #include <cstdint>
 #include <cstddef>
@@ -69,7 +69,6 @@ class LoginChallenge final : public Packet {
 		// does the stream hold enough bytes to complete the PIN data?
 		if(stream.size() >= (pin_salt.size() + sizeof(pin_grid_seed))) {
 			stream >> pin_grid_seed;
-			be::little_to_native_inplace(pin_grid_seed);
 			stream.get(pin_salt.data(), PIN_SALT_LENGTH);
 			state_ = State::DONE;
 		} else {
@@ -99,7 +98,7 @@ public:
 	Botan::BigInt s;
 	std::array<Botan::byte, CHECKSUM_SALT_LENGTH> checksum_salt;
 	bool two_factor_auth = false;
-	std::uint32_t pin_grid_seed;
+	be::little_uint32_at pin_grid_seed;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 
 	// todo - early abort (wire length change)
@@ -153,7 +152,7 @@ public:
 		stream << two_factor_auth;
 
 		if(two_factor_auth) {
-			stream << be::native_to_little(pin_grid_seed);
+			stream << pin_grid_seed;
 			stream.put(pin_salt.data(), pin_salt.size());
 		}
 	}

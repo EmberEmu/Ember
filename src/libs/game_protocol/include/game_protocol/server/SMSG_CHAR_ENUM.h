@@ -31,7 +31,7 @@ public:
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		be::little_uint8_t char_count;
+		std::uint8_t char_count;
 		stream >> char_count;
 
 		for(auto i = 0; i < char_count; ++i) {

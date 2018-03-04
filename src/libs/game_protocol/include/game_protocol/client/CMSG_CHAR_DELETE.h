@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
@@ -22,7 +22,7 @@ class CMSG_CHAR_DELETE final : public Packet {
 	State state_ = State::INITIAL;
 
 public:
-	std::uint64_t id;
+	be::little_uint64_at id;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

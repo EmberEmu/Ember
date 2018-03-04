@@ -13,6 +13,7 @@
 #include "../ResultCodes.h"
 #include <shared/Realm.h>
 #include <boost/assert.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <gsl/gsl_util>
 #include <cstdint>
@@ -34,8 +35,8 @@ class RealmList final : public Packet {
 	static const std::size_t MAX_REALM_ENTRIES = 255;
 
 	State state_ = State::INITIAL;
-	std::uint16_t size = 0;
-	std::uint8_t realm_count = 0;
+	be::little_uint16_at size = 0;
+	be::little_uint8_at realm_count = 0;
 
 	std::uint16_t calculate_size() const {
 		std::size_t packet_size = ZERO_REALM_BODY_WIRE_LENGTH + 
@@ -55,7 +56,6 @@ class RealmList final : public Packet {
 	void read_size(spark::SafeBinaryStream& stream) {
 		stream >> opcode;
 		stream >> size;
-		be::little_to_native_inplace(size);
 
 		if(!size || size > MAX_ALLOWED_LENGTH) {
 			throw bad_packet("Realm packet size was too large");
@@ -74,7 +74,6 @@ class RealmList final : public Packet {
 		}
 
 		stream >> unknown;
-		be::little_to_native_inplace(unknown);
 		stream >> realm_count;
 
 		for(; realm_count; --realm_count) {
@@ -110,9 +109,6 @@ class RealmList final : public Packet {
 			stream >> realm_id;
 			realm.id = realm_id;
 
-			be::little_to_native_inplace(realm.type);
-			be::little_to_native_inplace(realm.population);
-
 			realms.emplace_back(RealmListEntry{ realm, num_chars });
 		}
 
@@ -121,7 +117,6 @@ class RealmList final : public Packet {
 		}
 
 		stream >> unknown2;
-		be::little_to_native_inplace(unknown2);
 
 		state_ = State::DONE;
 	}
@@ -134,9 +129,9 @@ public:
 
 	RealmList() : Packet(Opcode::CMD_REALM_LIST) {}
 
-	std::uint32_t unknown = 0; // appears to be ignored in public clients
+	be::little_uint32_at unknown = 0; // appears to be ignored in public clients
 	std::vector<RealmListEntry> realms;
-	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
+	be::little_uint16_at unknown2 = 5; // appears to be ignored in public clients
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -165,8 +160,8 @@ public:
 		}
 
 		stream << opcode;
-		stream << be::native_to_little(calculate_size());
-		stream << be::native_to_little(unknown);
+		stream << calculate_size();
+		stream << unknown;
 		stream << gsl::narrow<std::uint8_t>(realms.size());
 
 		for(auto& entry : realms) {
@@ -175,13 +170,13 @@ public:
 			stream << realm.flags;
 			stream << realm.name;
 			stream << realm.ip;
-			stream << be::native_to_little(realm.population);
+			stream << realm.population;
 			stream << gsl::narrow_cast<std::uint8_t>(entry.characters);
 			stream << gsl::narrow<std::uint8_t>(realm.category);
 			stream << std::uint8_t(realm.id);
 		}
 
-		stream << be::native_to_little(unknown2);
+		stream << unknown2;
 	}
 };
 

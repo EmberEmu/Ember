@@ -12,6 +12,7 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
 #include <gsl/gsl_util>
@@ -109,8 +110,8 @@ class LoginProof final : public Packet {
 
 public:
 	struct KeyData {
-		std::uint16_t unk_1;
-		std::uint32_t unk_2;
+		be::little_uint16_at unk_1;
+		be::little_uint32_at unk_2;
 		std::array<std::uint8_t, 4> unk_3;
 		std::array<std::uint8_t, 20> unk_4_hash; // hashed with A or 'salt' if reconnect proof
 	};
@@ -185,8 +186,8 @@ public:
 		stream << gsl::narrow<std::uint8_t>(keys.size());
 
 		for(auto& key : keys) {
-			stream << be::native_to_little(key.unk_1);
-			stream << be::native_to_little(key.unk_2);
+			stream << key.unk_1;
+			stream << key.unk_2;
 			stream.put(key.unk_3.data(), key.unk_3.size());
 			stream.put(key.unk_4_hash.data(), key.unk_4_hash.size());
 		}

@@ -15,6 +15,7 @@
 #include "../ResultCodes.h"
 #include "../../GameVersion.h"
 #include <boost/assert.hpp>
+#include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <gsl/gsl_util>
 #include <string>
@@ -62,8 +63,6 @@ class LoginChallenge final : public Packet {
 		be::little_to_native_inplace(platform);
 		be::little_to_native_inplace(os);
 		be::little_to_native_inplace(locale);
-		be::little_to_native_inplace(timezone_bias);
-		be::big_to_native_inplace(ip);
 	}
 
 	void read_username(spark::SafeBinaryStream& stream) {
@@ -88,8 +87,8 @@ public:
 	Platform platform;
 	System os;
 	Locale locale;
-	std::uint32_t timezone_bias = 0;
-	std::uint32_t ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
+	be::little_uint32_at timezone_bias = 0;
+	be::big_uint32_at ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;
 
 	State read_from_stream(spark::SafeBinaryStream& stream) override {
@@ -131,8 +130,8 @@ public:
 		stream << be::native_to_little(platform);
 		stream << be::native_to_little(os);
 		stream << be::native_to_little(locale);
-		stream << be::native_to_little(timezone_bias);
-		stream << be::native_to_big(ip);
+		stream << timezone_bias;
+		stream << ip;
 		stream << gsl::narrow<std::uint8_t>(username.length());
 		stream.put(username.data(), username.length());
 	}

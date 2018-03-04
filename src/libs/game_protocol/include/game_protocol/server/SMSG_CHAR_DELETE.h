@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,14 +10,11 @@
 
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
-#include <boost/endian/conversion.hpp>
 #include <string>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::protocol {
-
-namespace be = boost::endian;
 
 class SMSG_CHAR_DELETE final : public ServerPacket {
 	State state_ = State::INITIAL;
@@ -38,7 +35,7 @@ public:
 	}
 
 	void write_to_stream(spark::SafeBinaryStream& stream) const override {
-		stream << be::native_to_little(result);
+		stream << result;
 	}
 };
 
