@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,7 +39,7 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 
 		for(std::size_t j = 0; j < columns; ++j) {
 			if(j + offset < size) {
-				buffer << (std::isprint(packet[j + offset])? packet[j + offset] : '.');
+				buffer << static_cast<char>(std::isprint(packet[j + offset])? packet[j + offset] : '.');
 			} else {
 				buffer << " ";
 			}
