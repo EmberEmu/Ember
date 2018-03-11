@@ -48,7 +48,7 @@ public:
 	std::string username;
 	std::vector<AddonData> addons;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		auto initial_stream_size = stream.size();
@@ -92,7 +92,7 @@ public:
 		spark::ChainedBuffer<1024> buffer;
 		buffer.write(dest.data(), dest.size());
 
-		spark::SafeBinaryStream addon_stream(buffer);
+		spark::BinaryStream addon_stream(buffer);
 
 		while(!addon_stream.empty()) {
 			AddonData data;
@@ -105,11 +105,11 @@ public:
 		}
 
 		return (state_ = State::DONE);
-	} catch(spark::buffer_underrun&) {
+	} catch(spark::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::SafeBinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << build;
 		stream << unk1;
 		stream << username;

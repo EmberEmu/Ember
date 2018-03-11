@@ -75,7 +75,7 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 }
 
 void Handler::handle_read(spark::Buffer& buffer, std::size_t offset) try {
-	spark::SafeBinaryStream stream(buffer);
+	spark::BinaryStream stream(buffer);
 	Packet::State state = curr_packet_->read_from_stream(stream);
 
 	switch(state) {

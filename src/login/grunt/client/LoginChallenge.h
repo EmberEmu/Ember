@@ -33,7 +33,7 @@ class LoginChallenge final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_body(spark::SafeBinaryStream& stream) {
+	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream.skip(2); // skip the size field - we don't need it
@@ -65,7 +65,7 @@ class LoginChallenge final : public Packet {
 		be::little_to_native_inplace(locale);
 	}
 
-	void read_username(spark::SafeBinaryStream& stream) {
+	void read_username(spark::BinaryStream& stream) {
 		// does the stream hold enough bytes to complete the username?
 		if(stream.size() >= username.size()) {
 			stream.get(username, username.size());
@@ -91,7 +91,7 @@ public:
 	be::big_uint32_at ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
 	std::string username;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {

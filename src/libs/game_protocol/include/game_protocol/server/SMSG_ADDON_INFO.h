@@ -61,15 +61,15 @@ public:
 	Result result;
 	std::vector<AddonData> addon_data;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		return (state_ = State::DONE);
-	} catch(spark::buffer_underrun&) {
+	} catch(spark::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::SafeBinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 

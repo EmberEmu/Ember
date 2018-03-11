@@ -24,7 +24,7 @@ class TransferCancel final : public Packet {
 public:
 	TransferCancel() : Packet(Opcode::CMD_XFER_CANCEL) {}
 	
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(stream.size() < WIRE_LENGTH) {

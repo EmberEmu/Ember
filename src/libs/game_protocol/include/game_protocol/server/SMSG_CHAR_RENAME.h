@@ -29,7 +29,7 @@ public:
 	be::little_uint64_at id;
 	std::string name;
 	
-	State read_from_stream(spark::SafeBinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> result;
@@ -40,11 +40,11 @@ public:
 		}
 
 		return (state_ = State::DONE);
-	} catch(spark::buffer_underrun&) {
+	} catch(spark::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::SafeBinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << result;
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {

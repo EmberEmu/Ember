@@ -24,7 +24,7 @@ class CMSG_CHAR_CREATE final : public Packet {
 public:
 	CharacterTemplate character;
 	
-	State read_from_stream(spark::SafeBinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> character.name;
@@ -39,11 +39,11 @@ public:
 		stream >> character.outfit_id;
 
 		return (state_ = State::DONE);
-	} catch(spark::buffer_underrun&) {
+	} catch(spark::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::SafeBinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << character.name;
 		stream << character.race;
 		stream << character.class_;

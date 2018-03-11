@@ -38,7 +38,7 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(client_login_challenge, packet_size);
 
@@ -86,7 +86,7 @@ TEST(GruntProtocol, ClientLoginProof) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(client_login_proof, packet_size);
 
@@ -115,7 +115,7 @@ TEST(GruntProtocol, ClientReconnectProof) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(client_reconnect_proof, packet_size);
 
@@ -159,7 +159,7 @@ TEST(GruntProtocol, ClientRequestRealmList) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(request_realm_list, packet_size);
 
@@ -190,7 +190,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	chain.write(server_login_challenge, packet_size);
 
 	// deserialise the packet
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	auto packet = grunt::server::LoginChallenge();
 	packet.read_from_stream(in_stream);
@@ -227,7 +227,7 @@ TEST(GruntProtocol, ServerLoginProof) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(server_login_proof, packet_size);
 
@@ -258,7 +258,7 @@ TEST(GruntProtocol, ServerRealmList) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(realm_list, packet_size);
 
@@ -316,7 +316,7 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(server_reconnect_challenge, packet_size);
 
@@ -351,7 +351,7 @@ TEST(GruntProtocol, ServerReconnectProof) {
 
 	// write the packet bytes into chain
 	spark::ChainedBuffer<1024> chain;
-	spark::SafeBinaryStream in_stream(chain);
+	spark::BinaryStream in_stream(chain);
 	spark::BinaryStream out_stream(chain);
 	chain.write(server_reconnect_proof, packet_size);
 

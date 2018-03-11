@@ -28,7 +28,7 @@ public:
 
 	std::vector<Character> characters;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		std::uint8_t char_count;
@@ -80,7 +80,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::SafeBinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {

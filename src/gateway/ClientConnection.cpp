@@ -28,7 +28,7 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 		crypto_.decrypt(buffer, header_wire_size);
 	}
 
-	spark::SafeBinaryStream stream(inbound_buffer_);
+	spark::BinaryStream stream(inbound_buffer_);
 	stream >> packet_header_.size >> packet_header_.opcode;
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
@@ -71,7 +71,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
 	spark::Buffer& buffer(*outbound_back_);
-	spark::SafeBinaryStream stream(buffer);
+	spark::BinaryStream stream(buffer);
 	const std::size_t write_index = buffer.size(); // the current write index
 
 	stream << std::uint16_t(0) << packet.opcode << packet;
@@ -243,8 +243,8 @@ void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
 	constexpr std::size_t BLOCK_SIZE = 64;
 	spark::ChainedBuffer<4096> temp_buffer;
 	spark::Buffer& buffer(temp_buffer);
-	spark::SafeBinaryStream stream(buffer);
-	spark::SafeBinaryStream out_stream(*outbound_back_);
+	spark::BinaryStream stream(buffer);
+	spark::BinaryStream out_stream(*outbound_back_);
 	stream << std::uint16_t(0) << packet.opcode << packet;
 
 	boost::endian::big_int16_t size =

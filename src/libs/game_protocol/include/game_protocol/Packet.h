@@ -9,7 +9,7 @@
 #pragma once
 
 #include <game_protocol/Opcodes.h>
-#include <spark/SafeBinaryStream.h>
+#include <spark/BinaryStream.h>
 #include <cstdint>
 
 namespace ember::protocol {
@@ -19,8 +19,8 @@ struct Packet {
 		INITIAL, CALL_AGAIN, DONE, ERRORED
 	};
 
-	virtual State read_from_stream(spark::SafeBinaryStream& stream) = 0;
-	virtual void write_to_stream(spark::SafeBinaryStream& stream) const = 0;
+	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
+	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;
 	virtual ~Packet() = default;
 };
 
@@ -30,12 +30,12 @@ struct ServerPacket : public Packet {
 };
 
 // todo, overload this properly
-inline spark::SafeBinaryStream& operator<<(spark::SafeBinaryStream& out, const ServerPacket& packet) {
+inline spark::BinaryStream& operator<<(spark::BinaryStream& out, const ServerPacket& packet) {
 	packet.write_to_stream(out);
 	return out;
 }
 
-//inline spark::SafeBinaryStream& operator>>(spark::SafeBinaryStream& in, Packet& packet) {
+//inline spark::BinaryStream& operator>>(spark::BinaryStream& in, Packet& packet) {
 //	packet.read_from_stream(in); // todo, stream error states
 //	return in;
 //}

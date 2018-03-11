@@ -24,17 +24,17 @@ class CMSG_CHAR_DELETE final : public Packet {
 public:
 	be::little_uint64_at id;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> id;
 
 		return (state_ = State::DONE);
-	} catch(spark::buffer_underrun&) {
+	} catch(spark::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::SafeBinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << id;
 	}
 };

@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/Buffer.h>
+#include <spark/Exception.h>
 #include <algorithm>
 #include <string>
 #include <type_traits>
@@ -18,10 +19,37 @@
 namespace ember::spark {
 
 class BinaryStream {
+public:
+	enum class State {
+		OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
+	};
+
+private:
 	Buffer& buffer_;
+	std::size_t total_read_;
+	const std::size_t read_limit_;
+	State state_;
 
 public:
-	explicit BinaryStream(Buffer& source) : buffer_(source) {}
+	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
+                          : buffer_(source), read_limit_(read_limit), total_read_(0),
+                            state_(State::OK) {}
+
+	void check_read_bounds(std::size_t read_size) {
+		if(read_size > buffer_.size()) {
+			state_ = State::BUFF_LIMIT_ERR;
+			throw buffer_underrun(read_size, total_read_, buffer_.size());
+		}
+
+		const auto req_total_read = total_read_ + read_size;
+
+		if(read_limit_ && req_total_read > read_limit_) {
+			state_ = State::READ_LIMIT_ERR;
+			throw stream_read_limit(read_size, total_read_, read_limit_);
+		}
+
+		total_read_ = req_total_read ;
+	}
 
 	/**  Serialisation **/
 
@@ -55,7 +83,9 @@ public:
 		char byte;
 
 		do { // not overly efficient
+			check_read_bounds(1);
 			buffer_.read(&byte, 1);
+
 			if(byte) {
 				dest.push_back(byte);
 			}
@@ -67,16 +97,19 @@ public:
 	template<typename T>
 	BinaryStream& operator >>(T& data) {
 		static_assert(std::is_trivially_copyable<T>::value, "Cannot safely copy this type");
+		check_read_bounds(sizeof(T));
 		buffer_.read(reinterpret_cast<char*>(&data), sizeof(T));
 		return *this;
 	}
 
 	void get(std::string& dest, std::size_t size) {
+		check_read_bounds(size);
 		dest.resize(size);
 		buffer_.read(dest.data(), size);
 	}
 
 	void get(void* dest, std::size_t size) {
+		check_read_bounds(size);
 		buffer_.read(dest, size);
 	}
 
@@ -87,6 +120,7 @@ public:
 	}
 
 	void skip(std::size_t count) {
+		check_read_bounds(count);
 		buffer_.skip(count);
 	}
 
@@ -96,6 +130,18 @@ public:
 
 	bool empty() {
 		return buffer_.empty();
+	}
+
+	State state() {
+		return state_;
+	}
+
+	std::size_t total_read() {
+		return total_read_;
+	}
+
+	std::size_t read_limit() {
+		return read_limit_;
 	}
 };
 

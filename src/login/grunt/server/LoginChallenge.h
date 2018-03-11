@@ -28,7 +28,7 @@ class LoginChallenge final : public Packet {
 
 	State state_ = State::INITIAL;
 
-	void read_body(spark::SafeBinaryStream& stream) {
+	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> result;
 		stream >> protocol_ver;
@@ -61,7 +61,7 @@ class LoginChallenge final : public Packet {
 		stream >> two_factor_auth;
 	}
 
-	void read_pin_data(spark::SafeBinaryStream& stream) {
+	void read_pin_data(spark::BinaryStream& stream) {
 		if(!two_factor_auth || state_ == State::DONE) {
 			return;
 		}
@@ -102,7 +102,7 @@ public:
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 
 	// todo - early abort (wire length change)
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {

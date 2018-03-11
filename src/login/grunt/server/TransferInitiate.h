@@ -32,7 +32,7 @@ public:
 	be::little_uint64_at filesize = 0;
 	std::array<std::byte, 16> md5;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(stream.size() < WIRE_LENGTH) {

@@ -12,7 +12,7 @@
 #include "EventDispatcher.h"
 #include "states/StateLUT.h"
 #include <game_protocol/Packets.h>
-#include <spark/SafeBinaryStream.h>
+#include <spark/BinaryStream.h>
 
 namespace ember {
 
@@ -63,45 +63,69 @@ void ClientHandler::state_update(ClientState new_state) {
 	enter_states[context_.state](&context_);
 }
 
-// todo, this should go somewhere else
 [[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
-	const auto end_size = buffer.size() - context_.header->size - sizeof(protocol::ClientOpcodes);
+	const auto message_size = context_.header->size - sizeof(protocol::ClientOpcodes);
 
-	spark::SafeBinaryStream stream(buffer);
+	spark::BinaryStream stream(buffer, message_size);
 
 	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Deserialisation of " << protocol::to_string(context_.header->opcode)
-			<< " failed" << LOG_ASYNC;
+		const auto state = stream.state();
 
 		/*
-		 * If parsing a known message type fails, there's a good chance that
-		 * there's a mistake in the definition. If that's the case, check to see
-		 * whether we've ended up reading too much data from the buffer.
-		 * If so, message framing has likely been lost and the only thing to do
-		 * is to disconnect the client.
+		 * READ_LIMIT_ERR:
+		 * Deserialisation failed due to an attempt to read beyond the
+		 * message boundary. This could be caused by an error in the message
+		 * definition or a malicious client spoofing the size in the
+		 * header. We can recover from this.
+		 * 
+		 * BUFF_LIMIT_ERR:
+		 * Deserialisation failed due to a buffer underrun - this should never
+		 * happen and message framing has likely been lost if this ever
+		 * occurs. Don't try to recover.
 		 */
-		if(buffer.size() < end_size) {
+		if(state == spark::BinaryStream::State::READ_LIMIT_ERR) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-				<< "Message framing lost at " << protocol::to_string(context_.header->opcode)
-				<< " for " << connection_.remote_address() << LOG_ASYNC;
-			connection_.close_session();		
+				<< "Deserialisation of "
+				<< protocol::to_string(context_.header->opcode)
+				<< " failed, skipping any remaining data" << LOG_ASYNC;
+
+			stream.skip(stream.read_limit() - stream.total_read());
+		} else if(state == spark::BinaryStream::State::BUFF_LIMIT_ERR) {
+			LOG_ERROR_FILTER(logger_, LF_NETWORK)
+				<< "Message framing lost at "
+				<< protocol::to_string(context_.header->opcode)
+				<< " from " << client_identify() << LOG_ASYNC;
+
+			connection_.close_session();
 		} else {
-			buffer.skip(buffer.size() - end_size);
+			LOG_ERROR_FILTER(logger_, LF_NETWORK)
+				<< "Deserialisation failed but stream has not errored for "
+				<< protocol::to_string(context_.header->opcode)
+				<< " from " << client_identify() << LOG_ASYNC;
+
+			connection_.close_session();
 		}
 
 		return false;
 	}
 
+	if(stream.read_limit() != stream.total_read()) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Skipping superfluous stream data in message "
+			<< protocol::to_string(context_.header->opcode)
+			<< " from " << client_identify() << LOG_ASYNC;
+
+		stream.skip(stream.read_limit() - stream.total_read());
+	}
+
 	return true;
 }
 
-// todo, this should go somewhere else
 void ClientHandler::packet_skip(spark::Buffer& buffer) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 		<< ClientState_to_string(context_.state) << " requested skip of packet "
 		<< protocol::to_string(context_.header->opcode) << " from "
-		<< connection_.remote_address() << LOG_ASYNC;
+		<< client_identify() << LOG_ASYNC;
 
 	buffer.skip(context_.header->size - sizeof(protocol::ClientOpcodes));
 }
@@ -122,12 +146,13 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 }
 
 /*
- * Helper that decides whether to print the username or IP address in
- * log outputs, based on whether authentication has completed
+ * Helper that decides whether to print the IP address or username
+ * and IP address in log outputs, based on whether authentication
+ * has completed
  */
 std::string ClientHandler::client_identify() {
 	if(context_.auth_status == AuthStatus::SUCCESS) {
-		return context_.account_name;
+		return context_.account_name + "(" + context_.connection->remote_address() + ")";
 	} else {
 		return context_.connection->remote_address();
 	}

@@ -32,7 +32,7 @@ public:
 	std::array<Botan::byte, 20> client_checksum;
 	std::uint8_t key_count = 0;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {

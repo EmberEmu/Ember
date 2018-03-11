@@ -29,14 +29,14 @@ class SurveyResult final : public Packet {
 
 	be::little_uint16_at compressed_size_ = 0;
 
-	void read_body(spark::SafeBinaryStream& stream) {
+	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> survey_id;
 		stream >> error;
 		stream >> compressed_size_;
 	}
 
-	void read_data(spark::SafeBinaryStream& stream) {
+	void read_data(spark::BinaryStream& stream) {
 		if(error) {
 			state_ = State::DONE;
 			return;
@@ -76,7 +76,7 @@ public:
 	be::little_uint8_at error = 0;
 	std::string data;
 
-	State read_from_stream(spark::SafeBinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < MIN_READ_LENGTH) {
