@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ class Sessions {
 
 public:
 	explicit Sessions(bool allow_overwrite) : allow_overwrite_(allow_overwrite) { }
-	bool register_session(std::uint32_t account_id, Botan::BigInt key);
+	bool register_session(std::uint32_t account_id, const Botan::BigInt& key);
 	std::optional<Botan::BigInt> lookup_session(std::uint32_t account_id);
 };
 

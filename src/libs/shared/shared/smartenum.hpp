@@ -83,7 +83,7 @@ namespace smart_enum
         else
         {
             result = trimWhitespace(valuesString);
-            valuesString = "";
+            valuesString.clear();
         };
         return result;
     };

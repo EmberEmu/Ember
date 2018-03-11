@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@ public:
 	MetricsImpl(boost::asio::io_service& service, const std::string& host, std::uint16_t port);
 
 	void increment(const char* key, std::intmax_t value = 1) override;
-	void timing(const char* key, std::chrono::milliseconds value) override;
+	void timing(const char* key, const std::chrono::milliseconds& value) override;
 	void gauge(const char* key, std::uintmax_t value, Adjustment adjustment = Adjustment::NONE) override;
 	void set(const char* key, std::intmax_t value) override;
 };

@@ -183,7 +183,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	if(spark_.send(link_, opcode, fbb, [this, cb](auto link, auto message) {
 		handle_rename_reply(link, message, cb);
 	}) != spark::Service::Result::OK) {
-		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, nullptr);
+		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, "");
 	}
 }
 void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const {

@@ -63,7 +63,7 @@ private:
 	void set_timer();
 	void send_health_status();
 	void timer_tick(const boost::system::error_code& ec);
-	void execute_source(Source& source, Severity severity, LogCallback& log,
+	void execute_source(Source& source, Severity severity, const LogCallback& log,
 	                    std::chrono::seconds& last_tick);
 	std::string generate_message();
 	void shutdown();

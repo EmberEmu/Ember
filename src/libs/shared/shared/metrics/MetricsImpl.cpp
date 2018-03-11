@@ -36,7 +36,7 @@ void MetricsImpl::increment(const char* key, std::intmax_t value) {
 	send(format.str());
 }
 
-void MetricsImpl::timing(const char* key, std::chrono::milliseconds value) {
+void MetricsImpl::timing(const char* key, const std::chrono::milliseconds& value) {
 	std::stringstream format;
 	format << key << ":" << value.count() << "|ms";
 	send(format.str());
