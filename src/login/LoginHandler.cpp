@@ -548,7 +548,7 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	grunt::server::RealmList response;
 
 	// todo, replace with structured bindings when possible
-	for(const auto&& [key, realm] : *realms) {
+	for(const auto& [key, realm] : *realms) {
 		if(!locale_enforce_ || realm.region == region) {
 			response.realms.push_back({ realm, char_count[realm.id] });
 		}
