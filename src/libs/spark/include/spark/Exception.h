@@ -27,7 +27,7 @@ public:
 	buffer_underrun(std::size_t read_size, std::size_t total_read, std::size_t buff_size)
 		: exception("Buffer underrun: " + std::to_string(read_size) + " byte read requested, buffer contains "
 		            + std::to_string(buff_size) + " bytes and total bytes read was " + std::to_string(total_read)),
-		            buff_size(buff_size), read_size(read_size), total_read(total_read) { }
+		              buff_size(buff_size), read_size(read_size), total_read(total_read) { }
 };
 
 class stream_read_limit : public exception {
@@ -36,8 +36,8 @@ public:
 
 	stream_read_limit(std::size_t read_size, std::size_t total_read, std::size_t read_limit)
 		: exception("Read boundary exceeded: " + std::to_string(read_size) + " byte read requested, read limit was "
-					+ std::to_string(read_limit) + " bytes and total bytes read was " + std::to_string(total_read)),
-		read_limit(read_limit), read_size(read_size), total_read(total_read) { }
+		            + std::to_string(read_limit) + " bytes and total bytes read was " + std::to_string(total_read)),
+		              read_limit(read_limit), read_size(read_size), total_read(total_read) { }
 };
 
 } //spark, ember
