@@ -13,9 +13,9 @@
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
-#include <gsl/gsl_util>
 #include <logger/Logging.h>
 #include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
+#include <gsl/gsl_util>
 
 namespace ember::queue {
 
