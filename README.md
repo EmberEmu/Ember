@@ -9,6 +9,9 @@ Ember is an educational server emulation project targeting the WoW 1.12.1 protoc
 - A focus on code quality and robustness over features.
 - A modular architecture in contrast with the monolithic architectures of similar projects.
 
+### Community:
+We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg/WpPJzQS).
+
 ### Supported platforms:
 Ember aims to support the following platforms as a minimum:
 
