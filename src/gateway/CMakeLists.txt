@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Ember
+# Copyright (c) 2016 - 2018 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,6 +39,9 @@ set(LIBRARY_HDR
     states/SessionClose.h
     states/ClientContext.h
     states/StateLUT.h
+    logging/PacketLogger.h
+    logging/FBLogger.h
+    logging/PacketSink.h
     )
 
 set(LIBRARY_SRC
@@ -62,6 +65,8 @@ set(LIBRARY_SRC
     states/InQueue.cpp
     states/SessionClose.cpp
     states/StateLUT.cpp
+    logging/FBLogger.cpp
+    logging/PacketLogger.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

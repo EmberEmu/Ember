@@ -26,7 +26,11 @@ void ClientHandler::stop() {
 	state_update(ClientState::SESSION_CLOSED);
 }
 
-void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& buffer) {
+void ClientHandler::handle_message(spark::Buffer& buffer) {
+	protocol::ClientHeader header;
+	spark::BinaryStream stream(buffer);
+	stream >> header.opcode >> header.size;
+
 	context_.header = &header;
 	context_.buffer = &buffer;
 

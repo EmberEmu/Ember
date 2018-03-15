@@ -14,7 +14,7 @@
 namespace ember::protocol {
 
 struct ServerHeader {
-	boost::endian::big_uint16_t size;
+	boost::endian::big_uint16_at size;
 	ServerOpcodes opcode;
 };
 

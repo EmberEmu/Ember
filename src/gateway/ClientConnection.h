@@ -12,6 +12,7 @@
 #include "ConnectionStats.h"
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
+#include "logging/PacketLogger.h"
 #include <game_protocol/PacketHeaders.h> // todo, remove
 #include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
@@ -37,11 +38,16 @@ class ClientConnection final {
 	static constexpr std::size_t INBOUND_SIZE = 1024;
 	static constexpr std::size_t OUTBOUND_SIZE = 2048;
 
+	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
+	static constexpr std::size_t HEADER_WIRE_SIZE =
+		sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
+
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::io_service& service_;
 	boost::asio::ip::tcp::socket socket_;
 
+	spark::ChainedBuffer<HEADER_WIRE_SIZE> header_buffer_;
 	spark::ChainedBuffer<INBOUND_SIZE> inbound_buffer_;
 	std::array<spark::ChainedBuffer<OUTBOUND_SIZE>, 2> outbound_buffers_;
 	spark::ChainedBuffer<OUTBOUND_SIZE>* outbound_front_;
@@ -50,7 +56,7 @@ class ClientConnection final {
 	ClientHandler handler_;
 	ConnectionStats stats_;
 	PacketCrypto crypto_;
-	protocol::ClientHeader packet_header_;
+	protocol::ClientHeader header_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
@@ -58,6 +64,7 @@ class ClientConnection final {
 	bool write_in_progress_;
 	unsigned int compression_level_;
 	const std::string address_;
+	std::unique_ptr<PacketLogger> packet_logger_;
 
 	std::condition_variable stop_condvar_;
 	std::mutex stop_lock_;
@@ -74,7 +81,7 @@ class ClientConnection final {
 	// packet reassembly & dispatching
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
-	void completion_check(spark::Buffer& buffer);
+	void completion_check(const spark::Buffer& buffer);
 	void stream_compress(const protocol::ServerPacket& packet);
 	void swap_buffers();
 
@@ -82,7 +89,7 @@ public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                 ClientUUID uuid, log::Logger* logger)
 	                 : service_(socket.get_io_service()), sessions_(sessions),
-	                   socket_(std::move(socket)), stats_{}, crypto_{}, packet_header_{},
+	                   socket_(std::move(socket)), stats_{}, crypto_{}, header_{},
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false),
 	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),
@@ -95,6 +102,7 @@ public:
 	void set_authenticated(const Botan::BigInt& key);
 	void compression_level(unsigned int level);
 	void latency(std::size_t latency);
+	void log_packets(bool enable);
 
 	const ConnectionStats& stats() const;
 	std::string remote_address();

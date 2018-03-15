@@ -8,7 +8,9 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
+#include "logging/FBLogger.h"
 #include <spark/buffers/BufferSequence.h>
+#include <spark/buffers/NullBuffer.h>
 #include <zlib.h>
 
 namespace ember {
@@ -16,29 +18,27 @@ namespace ember {
 void ClientConnection::parse_header(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
-	constexpr std::size_t header_wire_size
-		= sizeof(protocol::ClientHeader::size) + sizeof(protocol::ClientHeader::opcode);
-
-	if(buffer.size() < header_wire_size) {
+	if(buffer.size() < HEADER_WIRE_SIZE) {
 		return;
 	}
 
 	if(authenticated_) {
-		crypto_.decrypt(buffer, header_wire_size);
+		crypto_.decrypt(buffer, HEADER_WIRE_SIZE);
 	}
+	
+	inbound_buffer_.copy(header_buffer_.front(), HEADER_WIRE_SIZE);
 
-	spark::BinaryStream stream(inbound_buffer_);
-	stream >> packet_header_.size >> packet_header_.opcode;
+	spark::BinaryStream stream(header_buffer_);
+	stream >> header_.size >> header_.opcode;
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
-		<< protocol::to_string(packet_header_.opcode) << LOG_ASYNC;
+		<< protocol::to_string(header_.opcode) << LOG_ASYNC;
 
 	read_state_ = ReadState::BODY;
 }
 
-void ClientConnection::completion_check(spark::Buffer& buffer) {
-	if(buffer.size() < packet_header_.size - sizeof(protocol::ClientHeader::opcode)) {
+void ClientConnection::completion_check(const spark::Buffer& buffer) {
+	if(buffer.size() < header_.size) {
 		return;
 	}
 
@@ -57,7 +57,12 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 
 		if(read_state_ == ReadState::DONE) {
 			++stats_.messages_in;
-			handler_.handle_packet(packet_header_, buffer);
+
+			if(packet_logger_) {
+				packet_logger_->log(buffer, header_.size);
+			}
+
+			handler_.handle_message(buffer);
 			read_state_ = ReadState::HEADER;
 			continue;
 		}
@@ -70,25 +75,15 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
-	spark::Buffer& buffer(*outbound_back_);
-	spark::BinaryStream stream(buffer);
-	const std::size_t write_index = buffer.size(); // the current write index
-
-	stream << std::uint16_t(0) << packet.opcode << packet;
-
-	// calculate the size of the packet that we just streamed and then update the buffer
-	const boost::endian::big_uint16_at final_size =
-		static_cast<std::uint16_t>(stream.size() - write_index) - sizeof(protocol::ServerHeader::size);
-
-	// todo, implement an iterator for the buffer at some point
-	buffer[write_index + 0] = std::byte(final_size.data()[0]);
-	buffer[write_index + 1] = std::byte(final_size.data()[1]);
+	auto header = packet.build_header();
 
 	if(authenticated_) {
-		constexpr std::size_t header_wire_size =
-			sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
-		crypto_.encrypt(buffer, write_index, header_wire_size);
+		crypto_.encrypt(header.size);
+		crypto_.encrypt(header.opcode);
 	}
+
+	spark::BinaryStream stream(*outbound_back_);
+	stream << header.size << header.opcode << packet;
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;
@@ -310,6 +305,15 @@ void ClientConnection::async_shutdown(const std::shared_ptr<ClientConnection>& c
 		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << "Handler for " << client->remote_address()
 			<< " destroyed" << LOG_ASYNC;
 	});
+}
+
+void ClientConnection::log_packets(bool enable) {
+	if(enable) {
+		packet_logger_ = std::make_unique<PacketLogger>();
+		packet_logger_->add_sink(std::make_unique<FBLogger>());
+	} else {
+		packet_logger_.reset();
+	}
 }
 
 } // ember
