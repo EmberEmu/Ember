@@ -22,7 +22,7 @@ class SMSG_AUTH_RESPONSE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_AUTH_RESPONSE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_RESPONSE) { }
+	SMSG_AUTH_RESPONSE() : ServerPacket(protocol::ServerOpcode::SMSG_AUTH_RESPONSE) { }
 
 	Result result;
 	be::little_uint32_at queue_position = 0;

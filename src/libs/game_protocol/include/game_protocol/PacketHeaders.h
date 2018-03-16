@@ -17,12 +17,12 @@ using SizeType = typename boost::endian::big_uint16_at;
 
 struct ServerHeader {
 	SizeType size;
-	ServerOpcodes opcode;
+	ServerOpcode opcode;
 };
 
 struct ClientHeader {
 	SizeType size;
-	ClientOpcodes opcode;
+	ClientOpcode opcode;
 };
 
 } // protocol, ember

@@ -24,7 +24,7 @@ class SMSG_CHAR_ENUM final : public ServerPacket {
 
 
 public:
-	SMSG_CHAR_ENUM() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_ENUM) { }
+	SMSG_CHAR_ENUM() : ServerPacket(protocol::ServerOpcode::SMSG_CHAR_ENUM) { }
 
 	std::vector<Character> characters;
 

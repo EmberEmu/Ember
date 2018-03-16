@@ -56,7 +56,7 @@ public:
 		std::string update_url;
 	};
 
-	SMSG_ADDON_INFO() : ServerPacket(protocol::ServerOpcodes::SMSG_ADDON_INFO) { }
+	SMSG_ADDON_INFO() : ServerPacket(protocol::ServerOpcode::SMSG_ADDON_INFO) { }
 
 	Result result;
 	std::vector<AddonData> addon_data;

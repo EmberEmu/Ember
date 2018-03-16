@@ -28,7 +28,7 @@ void ClientHandler::stop() {
 
 void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType size) {
 	spark::BinaryStream stream(buffer);
-	protocol::ClientOpcodes opcode;
+	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
 	//context_.header = &header;
@@ -36,10 +36,10 @@ void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType siz
 
 	// handle ping & keep-alive as special cases
 	switch(opcode) {
-		case protocol::ClientOpcodes::CMSG_PING:
+		case protocol::ClientOpcode::CMSG_PING:
 			handle_ping(buffer);
 			return;
-		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE: // no response required
+		case protocol::ClientOpcode::CMSG_KEEP_ALIVE: // no response required
 			return;
 		default:
 			break;
@@ -69,7 +69,7 @@ void ClientHandler::state_update(ClientState new_state) {
 
 [[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
 	spark::BinaryStream stream(buffer, context_.msg_size);
-	protocol::ClientOpcodes opcode;
+	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
 	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
@@ -125,7 +125,7 @@ void ClientHandler::state_update(ClientState new_state) {
 	return true;
 }
 
-void ClientHandler::packet_skip(spark::Buffer& buffer, protocol::ClientOpcodes opcode) {
+void ClientHandler::packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 		<< ClientState_to_string(context_.state) << " requested skip of packet "
 		<< protocol::to_string(opcode) << " from "

@@ -20,7 +20,7 @@ class SMSG_CHAR_DELETE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_CHAR_DELETE() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_DELETE) { }
+	SMSG_CHAR_DELETE() : ServerPacket(protocol::ServerOpcode::SMSG_CHAR_DELETE) { }
 
 	Result result;
 	

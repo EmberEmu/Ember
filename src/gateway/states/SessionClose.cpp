@@ -15,7 +15,7 @@ void enter(ClientContext* ctx) {
 	// don't care, for now
 }
 
-void handle_packet(ClientContext* ctx, protocol::ClientOpcodes opcode) {
+void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
 	ctx->handler->packet_skip(*ctx->buffer, opcode);
 }
 

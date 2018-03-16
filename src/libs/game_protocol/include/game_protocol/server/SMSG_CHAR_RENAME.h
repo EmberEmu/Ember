@@ -23,7 +23,7 @@ class SMSG_CHAR_RENAME final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_CHAR_RENAME() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_RENAME) { }
+	SMSG_CHAR_RENAME() : ServerPacket(protocol::ServerOpcode::SMSG_CHAR_RENAME) { }
 
 	Result result;
 	be::little_uint64_at id;

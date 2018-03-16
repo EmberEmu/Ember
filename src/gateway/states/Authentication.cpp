@@ -217,9 +217,9 @@ void enter(ClientContext* ctx) {
 	send_auth_challenge(ctx);
 }
 
-void handle_packet(ClientContext* ctx, protocol::ClientOpcodes opcode) {
+void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
-		case protocol::ClientOpcodes::CMSG_AUTH_SESSION:
+		case protocol::ClientOpcode::CMSG_AUTH_SESSION:
 			handle_authentication(ctx);
 			break;
 		default:

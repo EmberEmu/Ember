@@ -28,8 +28,8 @@ struct Packet {
 };
 
 struct ServerPacket : public Packet {
-	ServerOpcodes opcode;
-	ServerPacket(protocol::ServerOpcodes opcode) : opcode(opcode) { }
+	ServerOpcode opcode;
+	ServerPacket(protocol::ServerOpcode opcode) : opcode(opcode) { }
 
 	ServerHeader build_header() const {
 		spark::BinaryStream stream(spark::NullBuffer{});
