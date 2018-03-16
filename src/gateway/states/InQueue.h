@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,7 @@
 namespace ember::queue {
 
 void enter(ClientContext* ctx);
-void handle_packet(ClientContext* ctx);
+void handle_packet(ClientContext* ctx, protocol::ClientOpcodes opcode);
 void handle_event(ClientContext* ctx, const Event* event);
 void exit(ClientContext* ctx);
 

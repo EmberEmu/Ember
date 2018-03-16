@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include "WorldForwarder.h"
 #include "InQueue.h"
 #include "SessionClose.h"
+#include <game_protocol/Opcodes.h>
 
 namespace ember { 
 
@@ -23,7 +24,7 @@ const event_handler update_event[] = {
     &session_close::handle_event
 };
 
-const state_func update_packet[] = {
+const packet_handler update_packet[] = {
 	&authentication::handle_packet,
 	&queue::handle_packet,
 	&character_list::handle_packet,

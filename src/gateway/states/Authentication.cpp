@@ -48,7 +48,7 @@ void handle_authentication(ClientContext* ctx) {
 	ctx->auth_status = AuthStatus::IN_PROGRESS;
 
 	protocol::CMSG_AUTH_SESSION packet;
-	packet.set_size(ctx->header->size - sizeof(protocol::ClientHeader::opcode));
+	packet.set_size(ctx->msg_size);
 
 	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
 		return;
@@ -217,13 +217,13 @@ void enter(ClientContext* ctx) {
 	send_auth_challenge(ctx);
 }
 
-void handle_packet(ClientContext* ctx) {
-	switch(ctx->header->opcode) {
+void handle_packet(ClientContext* ctx, protocol::ClientOpcodes opcode) {
+	switch(opcode) {
 		case protocol::ClientOpcodes::CMSG_AUTH_SESSION:
 			handle_authentication(ctx);
 			break;
 		default:
-			ctx->handler->packet_skip(*ctx->buffer);
+			ctx->handler->packet_skip(*ctx->buffer, opcode);
 	}
 }
 

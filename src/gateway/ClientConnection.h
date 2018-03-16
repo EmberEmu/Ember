@@ -56,7 +56,7 @@ class ClientConnection final {
 	ClientHandler handler_;
 	ConnectionStats stats_;
 	PacketCrypto crypto_;
-	boost::endian::big_uint16_at msg_size_;
+	protocol::SizeType msg_size_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;

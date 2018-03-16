@@ -48,8 +48,8 @@ void ClientConnection::dispatch_message(spark::Buffer& buffer) {
 		<< protocol::to_string(opcode) << LOG_ASYNC;
 
 	handler_.handle_message(buffer, msg_size_);
-
 }
+
 void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 	while(!buffer.empty()) {
 		if(read_state_ == ReadState::HEADER) {
