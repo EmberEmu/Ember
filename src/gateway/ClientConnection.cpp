@@ -25,26 +25,31 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 	if(authenticated_) {
 		crypto_.decrypt(buffer, HEADER_WIRE_SIZE);
 	}
-	
-	inbound_buffer_.copy(header_buffer_.front(), HEADER_WIRE_SIZE);
 
-	spark::BinaryStream stream(header_buffer_);
-	stream >> header_.size >> header_.opcode;
-
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
-		<< protocol::to_string(header_.opcode) << LOG_ASYNC;
+	spark::BinaryStream stream(buffer);
+	stream >> msg_size_;
 
 	read_state_ = ReadState::BODY;
 }
 
 void ClientConnection::completion_check(const spark::Buffer& buffer) {
-	if(buffer.size() < header_.size) {
+	if(buffer.size() < msg_size_) {
 		return;
 	}
 
 	read_state_ = ReadState::DONE;
 }
 
+void ClientConnection::dispatch_message(spark::Buffer& buffer) {
+	protocol::ClientOpcodes opcode;
+	buffer.copy(&opcode, sizeof(opcode));
+
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
+		<< protocol::to_string(opcode) << LOG_ASYNC;
+
+	handler_.handle_message(buffer, msg_size_);
+
+}
 void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 	while(!buffer.empty()) {
 		if(read_state_ == ReadState::HEADER) {
@@ -59,10 +64,10 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 			++stats_.messages_in;
 
 			if(packet_logger_) {
-				packet_logger_->log(buffer, header_.size);
+				packet_logger_->log(buffer, msg_size_);
 			}
-
-			handler_.handle_message(buffer);
+			
+			dispatch_message(buffer);
 			read_state_ = ReadState::HEADER;
 			continue;
 		}
@@ -89,6 +94,10 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 		write_in_progress_ = true;
 		swap_buffers();
 		write();
+	}
+
+	if(packet_logger_) {
+		packet_logger_->log(packet);
 	}
 			
 	++stats_.messages_out;

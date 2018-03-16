@@ -37,7 +37,7 @@ public:
 	void state_update(ClientState new_state);
 	void packet_skip(spark::Buffer& buffer);
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
-	void handle_message(spark::Buffer& buffer);
+	void handle_message(spark::Buffer& buffer, std::uint16_t size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 

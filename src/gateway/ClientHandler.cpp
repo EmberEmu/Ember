@@ -26,16 +26,16 @@ void ClientHandler::stop() {
 	state_update(ClientState::SESSION_CLOSED);
 }
 
-void ClientHandler::handle_message(spark::Buffer& buffer) {
-	protocol::ClientHeader header;
+void ClientHandler::handle_message(spark::Buffer& buffer, std::uint16_t size) {
 	spark::BinaryStream stream(buffer);
-	stream >> header.opcode >> header.size;
+	protocol::ClientOpcodes opcode;
+	stream >> opcode;
 
-	context_.header = &header;
+	//context_.header = &header;
 	context_.buffer = &buffer;
 
 	// handle ping & keep-alive as special cases
-	switch(header.opcode) {
+	switch(opcode) {
 		case protocol::ClientOpcodes::CMSG_PING:
 			handle_ping(buffer);
 			return;
@@ -68,9 +68,7 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 [[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
-	const auto message_size = context_.header->size - sizeof(protocol::ClientOpcodes);
-
-	spark::BinaryStream stream(buffer, message_size);
+	spark::BinaryStream stream(buffer, context_.header->size);
 
 	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
 		const auto state = stream.state();

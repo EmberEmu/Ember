@@ -16,7 +16,7 @@ namespace ember {
 
 class PacketSink {
 public:
-	virtual void log(spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) = 0;
+	virtual void log(const spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) = 0;
 
 	virtual ~PacketSink() = default;
 };

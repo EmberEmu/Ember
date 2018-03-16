@@ -22,7 +22,5 @@ table Header {
 table Message {
 	timestamp:uint;
 	direction:Direction;
-	opcode:uint;
-	size:uint;
 	payload:[ubyte];
 }

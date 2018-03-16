@@ -29,6 +29,7 @@
 #include <string>
 #include <utility>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember {
 
@@ -40,14 +41,13 @@ class ClientConnection final {
 
 	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
 	static constexpr std::size_t HEADER_WIRE_SIZE =
-		sizeof(protocol::ServerHeader::opcode) + sizeof(protocol::ServerHeader::size);
+		sizeof(protocol::ClientHeader::opcode) + sizeof(protocol::ClientHeader::size);
 
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::io_service& service_;
 	boost::asio::ip::tcp::socket socket_;
 
-	spark::ChainedBuffer<HEADER_WIRE_SIZE> header_buffer_;
 	spark::ChainedBuffer<INBOUND_SIZE> inbound_buffer_;
 	std::array<spark::ChainedBuffer<OUTBOUND_SIZE>, 2> outbound_buffers_;
 	spark::ChainedBuffer<OUTBOUND_SIZE>* outbound_front_;
@@ -56,7 +56,7 @@ class ClientConnection final {
 	ClientHandler handler_;
 	ConnectionStats stats_;
 	PacketCrypto crypto_;
-	protocol::ClientHeader header_;
+	boost::endian::big_uint16_at msg_size_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
@@ -79,6 +79,7 @@ class ClientConnection final {
 	void close_session_sync();
 
 	// packet reassembly & dispatching
+	void dispatch_message(spark::Buffer& buffer);
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(const spark::Buffer& buffer);
@@ -89,7 +90,7 @@ public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                 ClientUUID uuid, log::Logger* logger)
 	                 : service_(socket.get_io_service()), sessions_(sessions),
-	                   socket_(std::move(socket)), stats_{}, crypto_{}, header_{},
+	                   socket_(std::move(socket)), stats_{}, crypto_{}, msg_size_{0},
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false),
 	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),

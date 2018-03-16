@@ -14,7 +14,7 @@ namespace ember {
 
 class FBLogger final : public PacketSink {
 public:
-	void log(spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) override;
+	void log(const spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) override;
 };
 
 } // ember

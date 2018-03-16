@@ -11,7 +11,7 @@
 
 namespace ember {
 
-void FBLogger::log(spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) {
+void FBLogger::log(const spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) {
 
 }
 

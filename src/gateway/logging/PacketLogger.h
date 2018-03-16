@@ -9,7 +9,7 @@
 #pragma once
 
 #include "PacketSink.h"
-#include <spark/BinaryStream.h>
+#include <game_protocol/Packet.h>
 #include <spark/Buffer.h>
 #include <memory>
 #include <vector>
@@ -23,7 +23,8 @@ public:
 	void add_sink(std::unique_ptr<PacketSink> sink);
 	void reset();
 
-	void log(spark::Buffer& buffer, std::size_t length);
+	void log(const spark::Buffer& buffer, std::size_t length);
+	void log(const protocol::ServerPacket& packet);
 };
 
 } // ember
