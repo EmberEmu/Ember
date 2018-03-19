@@ -23,22 +23,19 @@ void PacketLogger::reset() {
 	sinks_.clear();
 }
 
-void PacketLogger::log(const protocol::ServerPacket& packet) {
-	spark::ChainedBuffer<1024> buffer;
+void PacketLogger::log(const protocol::ServerPacket& packet, PacketDirection dir) {
+	spark::ChainedBuffer<128> buffer;
 	spark::BinaryStream stream(buffer);
-	const auto header = packet.build_header();
-	stream << header.size << header.opcode << packet;
-	log(buffer, buffer.size());
+	stream << packet.opcode << packet;
+	log(buffer, buffer.size(), dir);
 }
 
-void PacketLogger::log(const spark::Buffer& buffer, std::size_t length) {
-	auto time = sc::time_point_cast<sc::milliseconds>(sc::system_clock::now());
-	auto timestamp = time.time_since_epoch().count();
+void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir) {
+	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
 
 	for(auto& sink : sinks_) {
-		sink->log(buffer, length, timestamp);
+		sink->log(buffer, length, time, dir);
 	}
 }
 
 } // ember
-

@@ -39,9 +39,10 @@ set(LIBRARY_HDR
     states/SessionClose.h
     states/ClientContext.h
     states/StateLUT.h
-    logging/PacketLogger.h
-    logging/FBLogger.h
-    logging/PacketSink.h
+    packetlog/PacketLogger.h
+    packetlog/PacketSink.h
+    packetlog/FBSink.h
+    packetlog/LogSink.h
     )
 
 set(LIBRARY_SRC
@@ -65,12 +66,13 @@ set(LIBRARY_SRC
     states/InQueue.cpp
     states/SessionClose.cpp
     states/StateLUT.cpp
-    logging/FBLogger.cpp
-    logging/PacketLogger.cpp
+    packetlog/PacketLogger.cpp
+    packetlog/FBSink.cpp
+    packetlog/LogSink.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-add_dependencies(${LIBRARY_NAME} SPARK_SCHEMA_COMPILE)
+add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} dbcreader game_protocol spark logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

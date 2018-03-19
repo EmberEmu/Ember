@@ -23,8 +23,8 @@ public:
 	void add_sink(std::unique_ptr<PacketSink> sink);
 	void reset();
 
-	void log(const spark::Buffer& buffer, std::size_t length);
-	void log(const protocol::ServerPacket& packet);
+	void log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir);
+	void log(const protocol::ServerPacket& packet, PacketDirection dir);
 };
 
 } // ember

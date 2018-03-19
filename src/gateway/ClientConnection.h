@@ -12,7 +12,7 @@
 #include "ConnectionStats.h"
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
-#include "logging/PacketLogger.h"
+#include "packetlog/PacketLogger.h"
 #include <game_protocol/PacketHeaders.h> // todo, remove
 #include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
@@ -103,12 +103,12 @@ public:
 	void set_authenticated(const Botan::BigInt& key);
 	void compression_level(unsigned int level);
 	void latency(std::size_t latency);
-	void log_packets(bool enable);
 
 	const ConnectionStats& stats() const;
 	std::string remote_address();
 
 	// these should be made private, only for use by the handler
+	void log_packets(bool enable);
 	void send(const protocol::ServerPacket& packet);
 	void close_session();
 	void terminate();

@@ -8,7 +8,8 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
-#include "logging/FBLogger.h"
+#include "packetlog/FBSink.h"
+#include "packetlog/LogSink.h"
 #include <spark/buffers/BufferSequence.h>
 #include <spark/buffers/NullBuffer.h>
 #include <zlib.h>
@@ -64,7 +65,7 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 			++stats_.messages_in;
 
 			if(packet_logger_) {
-				packet_logger_->log(buffer, msg_size_);
+				packet_logger_->log(buffer, msg_size_, PacketDirection::INBOUND);
 			}
 			
 			dispatch_message(buffer);
@@ -97,7 +98,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	}
 
 	if(packet_logger_) {
-		packet_logger_->log(packet);
+		packet_logger_->log(packet, PacketDirection::OUTBOUND);
 	}
 			
 	++stats_.messages_out;
@@ -317,9 +318,11 @@ void ClientConnection::async_shutdown(const std::shared_ptr<ClientConnection>& c
 }
 
 void ClientConnection::log_packets(bool enable) {
+	// temp
 	if(enable) {
 		packet_logger_ = std::make_unique<PacketLogger>();
-		packet_logger_->add_sink(std::make_unique<FBLogger>());
+		packet_logger_->add_sink(std::make_unique<FBSink>("temp", "gateway", remote_address()));
+		packet_logger_->add_sink(std::make_unique<LogSink>(*logger_, log::Severity::INFO, remote_address()));
 	} else {
 		packet_logger_.reset();
 	}

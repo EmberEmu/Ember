@@ -46,7 +46,10 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 		}
 
 		offset += columns;
-		buffer << "\n";
+
+		if(i != rows - 1) {
+			buffer << "\n";
+		}
 	}
 
 	return buffer.str();

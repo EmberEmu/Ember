@@ -9,14 +9,19 @@
 #pragma once
 
 #include <spark/Buffer.h>
-#include <cstdint>
 #include <cstddef>
+#include <ctime>
 
 namespace ember {
 
+enum class PacketDirection {
+	INBOUND, OUTBOUND
+};
+
 class PacketSink {
 public:
-	virtual void log(const spark::Buffer& buffer, std::size_t length, std::uint64_t timestamp) = 0;
+	virtual void log(const spark::Buffer& buffer, std::size_t length, const std::time_t& time,
+	                 PacketDirection dir) = 0;
 
 	virtual ~PacketSink() = default;
 };

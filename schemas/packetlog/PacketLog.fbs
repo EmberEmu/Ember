@@ -6,10 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-namespace ember;
+namespace ember.fblog;
 
-enum Direction {
+enum Direction : short {
 	INBOUND, OUTBOUND
+}
+
+enum Type : uint {
+	HEADER, MESSAGE
 }
 
 table Header {
@@ -17,10 +21,11 @@ table Header {
 	host:string;
 	host_desc:string;
 	remote_host:string;
+	time_format:string;
 }
 
 table Message {
-	timestamp:uint;
+	time:string;
 	direction:Direction;
 	payload:[ubyte];
 }
