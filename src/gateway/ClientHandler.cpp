@@ -26,22 +26,25 @@ void ClientHandler::stop() {
 	state_update(ClientState::SESSION_CLOSED);
 }
 
-void ClientHandler::handle_packet(protocol::ClientHeader header, spark::Buffer& buffer) {
-	context_.header = &header;
+void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType size) {
+	protocol::ClientOpcode opcode;
+	buffer.copy(&opcode, sizeof(opcode));
+
 	context_.buffer = &buffer;
+	context_.msg_size = size;
 
 	// handle ping & keep-alive as special cases
-	switch(header.opcode) {
-		case protocol::ClientOpcodes::CMSG_PING:
+	switch(opcode) {
+		case protocol::ClientOpcode::CMSG_PING:
 			handle_ping(buffer);
 			return;
-		case protocol::ClientOpcodes::CMSG_KEEP_ALIVE: // no response required
+		case protocol::ClientOpcode::CMSG_KEEP_ALIVE: // no response required
 			return;
 		default:
 			break;
 	}
 
-	update_packet[context_.state](&context_);
+	update_packet[context_.state](&context_, opcode);
 }
 
 void ClientHandler::handle_event(const Event* event) {
@@ -64,9 +67,10 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 [[nodiscard]] bool ClientHandler::packet_deserialise(protocol::Packet& packet, spark::Buffer& buffer) {
-	const auto message_size = context_.header->size - sizeof(protocol::ClientOpcodes);
+	spark::BinaryStream stream(buffer, context_.msg_size);
 
-	spark::BinaryStream stream(buffer, message_size);
+	protocol::ClientOpcode opcode;
+	stream >> opcode;
 
 	if(packet.read_from_stream(stream) != protocol::Packet::State::DONE) {
 		const auto state = stream.state();
@@ -86,21 +90,21 @@ void ClientHandler::state_update(ClientState new_state) {
 		if(state == spark::BinaryStream::State::READ_LIMIT_ERR) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Deserialisation of "
-				<< protocol::to_string(context_.header->opcode)
+				<< protocol::to_string(opcode)
 				<< " failed, skipping any remaining data" << LOG_ASYNC;
 
 			stream.skip(stream.read_limit() - stream.total_read());
 		} else if(state == spark::BinaryStream::State::BUFF_LIMIT_ERR) {
 			LOG_ERROR_FILTER(logger_, LF_NETWORK)
 				<< "Message framing lost at "
-				<< protocol::to_string(context_.header->opcode)
+				<< protocol::to_string(opcode)
 				<< " from " << client_identify() << LOG_ASYNC;
 
 			connection_.close_session();
 		} else {
 			LOG_ERROR_FILTER(logger_, LF_NETWORK)
 				<< "Deserialisation failed but stream has not errored for "
-				<< protocol::to_string(context_.header->opcode)
+				<< protocol::to_string(opcode)
 				<< " from " << client_identify() << LOG_ASYNC;
 
 			connection_.close_session();
@@ -112,7 +116,7 @@ void ClientHandler::state_update(ClientState new_state) {
 	if(stream.read_limit() != stream.total_read()) {
 		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 			<< "Skipping superfluous stream data in message "
-			<< protocol::to_string(context_.header->opcode)
+			<< protocol::to_string(opcode)
 			<< " from " << client_identify() << LOG_ASYNC;
 
 		stream.skip(stream.read_limit() - stream.total_read());
@@ -121,13 +125,13 @@ void ClientHandler::state_update(ClientState new_state) {
 	return true;
 }
 
-void ClientHandler::packet_skip(spark::Buffer& buffer) {
+void ClientHandler::packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 		<< ClientState_to_string(context_.state) << " requested skip of packet "
-		<< protocol::to_string(context_.header->opcode) << " from "
+		<< protocol::to_string(opcode) << " (" << (uint16_t)opcode << ") from "
 		<< client_identify() << LOG_ASYNC;
 
-	buffer.skip(context_.header->size - sizeof(protocol::ClientOpcodes));
+	buffer.skip(context_.msg_size);
 }
 
 void ClientHandler::handle_ping(spark::Buffer& buffer) {

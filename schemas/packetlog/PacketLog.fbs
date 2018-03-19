@@ -1,0 +1,31 @@
+/*
+ * Copyright (c) 2018 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+namespace ember.fblog;
+
+enum Direction : short {
+	INBOUND, OUTBOUND
+}
+
+enum Type : uint {
+	HEADER, MESSAGE
+}
+
+table Header {
+	version:uint;
+	host:string;
+	host_desc:string;
+	remote_host:string;
+	time_format:string;
+}
+
+table Message {
+	time:string;
+	direction:Direction;
+	payload:[ubyte];
+}

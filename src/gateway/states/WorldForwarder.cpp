@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,7 +14,7 @@ void enter(ClientContext* context) {
 
 }
 
-void handle_packet(ClientContext* context) {
+void handle_packet(ClientContext* context, protocol::ClientOpcode opcode) {
 
 }
 

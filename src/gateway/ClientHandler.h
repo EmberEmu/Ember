@@ -35,9 +35,9 @@ public:
 	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger);
 
 	void state_update(ClientState new_state);
-	void packet_skip(spark::Buffer& buffer);
+	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
 	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
-	void handle_packet(protocol::ClientHeader header, spark::Buffer& buffer);
+	void handle_message(spark::Buffer& buffer, protocol::SizeType size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 

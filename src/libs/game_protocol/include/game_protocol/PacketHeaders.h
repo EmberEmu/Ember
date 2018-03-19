@@ -13,14 +13,16 @@
 
 namespace ember::protocol {
 
+using SizeType = typename boost::endian::big_uint16_at;
+
 struct ServerHeader {
-	boost::endian::big_uint16_t size;
-	ServerOpcodes opcode;
+	SizeType size;
+	ServerOpcode opcode;
 };
 
 struct ClientHeader {
-	boost::endian::big_uint16_at size;
-	ClientOpcodes opcode;
+	SizeType size;
+	ClientOpcode opcode;
 };
 
 } // protocol, ember
