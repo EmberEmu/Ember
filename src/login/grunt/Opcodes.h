@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,7 +34,7 @@ smart_enum_class(Opcode, std::uint8_t,
 
 // These seem to be part of a legacy auth protocol or (more likely) were used by internal services
 // Included for posterity
-enum class ServerLinkOpcodes : std::uint8_t {
+enum class ServerLinkOpcode : std::uint8_t {
 	CMD_GRUNT_AUTH_VERIFY         = 0x02,
 	CMD_GRUNT_CONN_PING           = 0x10,
 	CMD_GRUNT_CONN_PONG           = 0x11,

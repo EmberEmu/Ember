@@ -21,7 +21,7 @@ class SMSG_AUTH_CHALLENGE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_AUTH_CHALLENGE() : ServerPacket(protocol::ServerOpcodes::SMSG_AUTH_CHALLENGE) { }
+	SMSG_AUTH_CHALLENGE() : ServerPacket(protocol::ServerOpcode::SMSG_AUTH_CHALLENGE) { }
 
 	be::little_uint32_at seed;
 

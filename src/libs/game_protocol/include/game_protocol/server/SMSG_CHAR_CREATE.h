@@ -20,7 +20,7 @@ class SMSG_CHAR_CREATE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_CHAR_CREATE() : ServerPacket(protocol::ServerOpcodes::SMSG_CHAR_CREATE) { }
+	SMSG_CHAR_CREATE() : ServerPacket(protocol::ServerOpcode::SMSG_CHAR_CREATE) { }
 
 	Result result;
 	

@@ -50,8 +50,8 @@ void handle_event(ClientContext* ctx, const Event* event) {
 	}
 }
 
-void handle_packet(ClientContext* ctx) {
-	ctx->handler->packet_skip(*ctx->buffer);
+void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
+	ctx->handler->packet_skip(*ctx->buffer, opcode);
 }
 
 void exit(ClientContext* ctx) {

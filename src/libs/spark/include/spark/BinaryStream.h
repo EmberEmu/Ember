@@ -27,13 +27,14 @@ public:
 private:
 	Buffer& buffer_;
 	std::size_t total_read_;
+	std::size_t total_write_;
 	const std::size_t read_limit_;
 	State state_;
 
 public:
 	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
-                          : buffer_(source), read_limit_(read_limit), total_read_(0),
-                            state_(State::OK) {}
+                          : buffer_(source), total_read_(0), total_write_(0),
+                            read_limit_(read_limit), state_(State::OK) {}
 
 	void check_read_bounds(std::size_t read_size) {
 		if(read_size > buffer_.size()) {
@@ -57,23 +58,28 @@ public:
 	BinaryStream& operator <<(const T& data) {
 		static_assert(std::is_trivially_copyable<T>::value, "Cannot safely copy this type");
 		buffer_.write(reinterpret_cast<const char*>(&data), sizeof(T));
+		total_write_ += sizeof(T);
 		return *this;
 	}
 
 	BinaryStream& operator <<(const std::string& data) {
 		buffer_.write(data.data(), data.size());
-		char term = '\0';
+		const char term = '\0';
 		buffer_.write(&term, 1);
+		total_write_ += (data.size() + 1);
 		return *this;
 	}
 
 	BinaryStream& operator <<(const char* data) {
-		buffer_.write(data, std::strlen(data));
+		const auto len = std::strlen(data);
+		buffer_.write(data, len);
+		total_write_ += len;
 		return *this;
 	}
 
 	void put(const void* data, std::size_t size) {
 		buffer_.write(data, size);
+		total_write_ += size;
 	}
 
 	/**  Deserialisation **/
@@ -142,6 +148,10 @@ public:
 
 	std::size_t read_limit() {
 		return read_limit_;
+	}
+
+	std::size_t total_write() {
+		return total_write_;
 	}
 };
 

@@ -19,7 +19,7 @@ class SMSG_LOGOUT_COMPLETE final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_LOGOUT_COMPLETE() : ServerPacket(protocol::ServerOpcodes::SMSG_LOGOUT_COMPLETE) {}
+	SMSG_LOGOUT_COMPLETE() : ServerPacket(protocol::ServerOpcode::SMSG_LOGOUT_COMPLETE) {}
 
 	Result result;
 

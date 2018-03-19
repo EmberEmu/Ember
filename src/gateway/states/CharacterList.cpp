@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -207,25 +207,25 @@ void player_login(ClientContext* ctx) {
 
 void enter(ClientContext* ctx) {}
 
-void handle_packet(ClientContext* ctx) {
-	switch(ctx->header->opcode) {
-		case protocol::ClientOpcodes::CMSG_CHAR_ENUM:
+void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
+	switch(opcode) {
+		case protocol::ClientOpcode::CMSG_CHAR_ENUM:
 			character_enumerate(ctx);
 			break;
-		case protocol::ClientOpcodes::CMSG_CHAR_CREATE:
+		case protocol::ClientOpcode::CMSG_CHAR_CREATE:
 			character_create(ctx);
 			break;
-		case protocol::ClientOpcodes::CMSG_CHAR_DELETE:
+		case protocol::ClientOpcode::CMSG_CHAR_DELETE:
 			character_delete(ctx);
 			break;
-		case protocol::ClientOpcodes::CMSG_CHAR_RENAME:
+		case protocol::ClientOpcode::CMSG_CHAR_RENAME:
 			character_rename(ctx);
 			break;
-		case protocol::ClientOpcodes::CMSG_PLAYER_LOGIN:
+		case protocol::ClientOpcode::CMSG_PLAYER_LOGIN:
 			player_login(ctx);
 			break;
 		default:
-			ctx->handler->packet_skip(*ctx->buffer);
+			ctx->handler->packet_skip(*ctx->buffer, opcode);
 	}
 }
 

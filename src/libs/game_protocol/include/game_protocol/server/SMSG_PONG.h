@@ -22,7 +22,7 @@ class SMSG_PONG final : public ServerPacket {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_PONG() : ServerPacket(protocol::ServerOpcodes::SMSG_PONG) { }
+	SMSG_PONG() : ServerPacket(protocol::ServerOpcode::SMSG_PONG) { }
 
 	be::little_uint32_at sequence_id;
 

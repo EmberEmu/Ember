@@ -29,6 +29,18 @@ public:
 		key_ = std::move(key);
 	}
 
+	template<typename T>
+	void encrypt(T& data) {
+		auto d_bytes = reinterpret_cast<std::uint8_t*>(&data);
+
+		for(std::size_t t = 0; t < sizeof(T); ++t) {
+			send_i_ %= key_.size();
+			std::uint8_t x = (d_bytes[t] ^ key_[send_i_]) + send_j_;
+			++send_i_;
+			d_bytes[t] = send_j_ = x;
+		}
+	}
+
 	void encrypt(spark::Buffer& data, std::size_t offset, std::size_t length) {
 		for(std::size_t t = 0; t < length; ++t) {
 			send_i_ %= key_.size();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@
 
 namespace ember::protocol {
 
-smart_enum_class(ServerOpcodes, std::uint16_t,
+smart_enum_class(ServerOpcode, std::uint16_t,
 	SMSG_DBLOOKUP                                   = 0x003,
 	SMSG_QUERY_OBJECT_POSITION                      = 0x005,
 	SMSG_QUERY_OBJECT_ROTATION                      = 0x007,
@@ -413,7 +413,7 @@ smart_enum_class(ServerOpcodes, std::uint16_t,
 	SMSG_SUMMON_CANCEL                              = 0x423
 )
 
-smart_enum_class(ClientOpcodes, std::uint32_t,
+smart_enum_class(ClientOpcode, std::uint32_t,
 	MSG_NULL_ACTION                                 = 0x000,
 	CMSG_BOOTME                                     = 0x001,
 	CMSG_DBLOOKUP                                   = 0x002,
