@@ -37,7 +37,7 @@ void FBSink::start_log(const std::string& filename, const std::string& host,
 	auto fb_remote = fbb.CreateString(remote_host);
 
 	fblog::HeaderBuilder hb(fbb);
-	hb.add_version(1);
+	hb.add_version(VERSION);
 	hb.add_host(fb_host);
 	hb.add_remote_host(fb_remote);
 	auto header = hb.Finish();

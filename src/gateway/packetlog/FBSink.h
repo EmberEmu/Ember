@@ -14,6 +14,8 @@
 namespace ember {
 
 class FBSink final : public PacketSink {
+	constexpr static std::uint32_t VERSION = 1;
+
 	std::ofstream file_;
 	const std::string time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601
 
