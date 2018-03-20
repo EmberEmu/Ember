@@ -149,6 +149,20 @@ void ClientHandler::handle_ping(spark::Buffer& buffer) {
 	connection_.send(response);
 }
 
+void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
+	timer_.expires_from_now(time);
+	timer_.async_wait([this](const boost::system::error_code& ec) {
+		if(!ec) {
+			const Event event {EventType::TIMER_EXPIRED};
+			handle_event(&event);
+		}
+	});
+}
+
+void ClientHandler::stop_timer() {
+	timer_.cancel();
+}
+
 /*
  * Helper that decides whether to print the IP address or username
  * and IP address in log outputs, based on whether authentication
@@ -162,8 +176,10 @@ std::string ClientHandler::client_identify() {
 	}
 }
 
-ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger)
-                             : context_{}, connection_(connection), logger_(logger), uuid_(uuid) { 
+ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
+                             boost::asio::io_service& service)
+                             : context_{}, connection_(connection), logger_(logger), uuid_(uuid),
+                               timer_(service) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
 	context_.connection = &connection_;
 	context_.handler = this;

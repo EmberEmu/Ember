@@ -10,9 +10,13 @@
 
 #include "ClientContext.h"
 #include "../Events.h"
+#include <chrono>
 #include <memory>
 
 namespace ember::character_list {
+
+using namespace std::chrono_literals;
+constexpr std::chrono::minutes CHAR_LIST_TIMEOUT = 15min;
 
 void enter(ClientContext* ctx);
 void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode);

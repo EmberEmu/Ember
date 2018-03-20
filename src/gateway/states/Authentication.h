@@ -10,9 +10,13 @@
 
 #include "ClientContext.h"
 #include "../Events.h"
+#include <chrono>
 #include <memory>
 
 namespace ember::authentication {
+
+using namespace std::chrono_literals;
+constexpr std::chrono::seconds AUTH_TIMEOUT = 30s;
 
 void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
 

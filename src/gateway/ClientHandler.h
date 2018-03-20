@@ -11,11 +11,12 @@
 #include "Event.h"
 #include "states/ClientContext.h"
 #include <game_protocol/Packet.h>
-#include <game_protocol/PacketHeaders.h> // todo, remove
 #include <spark/Buffer.h>
 #include <logger/Logging.h>
 #include <shared/ClientUUID.h>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <memory>
 
 namespace ember {
@@ -27,12 +28,14 @@ class ClientHandler final {
 	ClientContext context_;
 	const ClientUUID uuid_;
 	log::Logger* logger_;
+	boost::asio::steady_timer timer_;
 
 	std::string client_identify();
 	void handle_ping(spark::Buffer& buffer);
 
 public:
-	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger);
+	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
+	              boost::asio::io_service& service);
 
 	void state_update(ClientState new_state);
 	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
@@ -43,6 +46,9 @@ public:
 
 	void start();
 	void stop();
+
+	void start_timer(const std::chrono::milliseconds& time);
+	void stop_timer();
 
 	const ClientUUID& uuid() const {
 		return uuid_;

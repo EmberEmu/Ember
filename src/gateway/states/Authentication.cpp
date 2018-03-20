@@ -24,6 +24,7 @@
 #include <botan/botan.h>
 #include <botan/sha160.h>
 #include <gsl/gsl_util>
+#include <cstddef>
 #include <cstdint>
 
 namespace em = ember::messaging;
@@ -36,6 +37,7 @@ void handle_authentication(ClientContext* ctx);
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
+void handle_timeout(ClientContext* ctx);
 
 void handle_authentication(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
@@ -213,7 +215,14 @@ void send_auth_result(ClientContext* ctx, protocol::Result result) {
 	ctx->connection->send(response);
 }
 
+void handle_timeout(ClientContext* ctx) {
+	LOG_DEBUG_GLOB << "Authentication timed out for "
+		<< ctx->connection->remote_address() << LOG_ASYNC;
+	ctx->connection->close_session();
+}
+
 void enter(ClientContext* ctx) {
+	ctx->handler->start_timer(AUTH_TIMEOUT);
 	send_auth_challenge(ctx);
 }
 
@@ -229,6 +238,9 @@ void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
 
 void handle_event(ClientContext* ctx, const Event* event) {
 	switch(event->type) {
+		case EventType::TIMER_EXPIRED:
+			handle_timeout(ctx);
+			break;
 		case EventType::ACCOUNT_ID_RESPONSE:
 			handle_account_id(ctx, static_cast<const AccountIDResponse*>(event));
 			break;
@@ -241,7 +253,7 @@ void handle_event(ClientContext* ctx, const Event* event) {
 }
 
 void exit(ClientContext* ctx) {
-	// don't care
+	ctx->handler->stop_timer();
 }
 
 } // authentication, ember

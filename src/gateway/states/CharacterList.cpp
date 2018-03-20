@@ -28,6 +28,8 @@ namespace ember::character_list {
 
 namespace {
 
+void handle_timeout(ClientContext* ctx);
+
 void send_character_list_fail(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
@@ -203,9 +205,17 @@ void player_login(ClientContext* ctx) {
 	}
 }
 
+void handle_timeout(ClientContext* ctx) {
+	LOG_DEBUG_GLOB << "Character list timed out for "
+		<< ctx->connection->remote_address() << LOG_ASYNC;
+	ctx->connection->close_session();
+}
+
 } // unnamed
 
-void enter(ClientContext* ctx) {}
+void enter(ClientContext* ctx) {
+	ctx->handler->start_timer(CHAR_LIST_TIMEOUT);
+}
 
 void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
@@ -231,6 +241,9 @@ void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
 
 void handle_event(ClientContext* ctx, const Event* event) {
 	switch(event->type) {
+		case EventType::TIMER_EXPIRED:
+			handle_timeout(ctx);
+			break;
 		case EventType::CHAR_CREATE_RESPONSE:
 			character_create_completion(ctx, static_cast<const CharCreateResponse*>(event));
 			break;
@@ -249,6 +262,8 @@ void handle_event(ClientContext* ctx, const Event* event) {
 }
 
 void exit(ClientContext* ctx) {
+	ctx->handler->stop_timer();
+
 	if(ctx->state == ClientState::SESSION_CLOSED) {
 		//--test;
 		Locator::queue()->free_slot();
