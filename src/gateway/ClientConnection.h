@@ -13,7 +13,7 @@
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
-#include <game_protocol/PacketHeaders.h> // todo, remove
+#include <game_protocol/PacketHeaders.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
 #include <shared/ClientUUID.h>

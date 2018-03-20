@@ -11,7 +11,6 @@
 #include "packetlog/FBSink.h"
 #include "packetlog/LogSink.h"
 #include <spark/buffers/BufferSequence.h>
-#include <spark/buffers/NullBuffer.h>
 #include <zlib.h>
 
 namespace ember {
