@@ -43,14 +43,15 @@ int compress_message(const protocol::ServerPacket& packet, spark::Buffer& out, i
 
 	while(!stream.empty()) {
 		z_stream.avail_in = stream.size() >= BLOCK_SIZE? BLOCK_SIZE : stream.size();
-		const auto flush = z_stream.avail_in < BLOCK_SIZE? Z_FINISH : Z_NO_FLUSH;
 		stream.get(in_buff, z_stream.avail_in);
+
+		const auto flush = stream.empty()? Z_FINISH : Z_NO_FLUSH;
 
 		do {
 			z_stream.avail_out = BLOCK_SIZE;
 			const int ret = deflate(&z_stream, flush);
 
-			if(ret != Z_OK || ret != Z_STREAM_END) {
+			if(ret != Z_OK && ret != Z_STREAM_END) {
 				return ret;
 			}
 
