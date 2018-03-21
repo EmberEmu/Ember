@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2015 Ember
+/*
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,10 +19,8 @@ namespace ember::connection_pool {
 namespace sc = std::chrono;
 using namespace std::chrono_literals;
 
-const int CACHELINE_SIZE = 64; // todo, use preprocessor?
-
 template<typename ConType>
-struct alignas(CACHELINE_SIZE) ConnDetail {
+struct ConnDetail {
 	ConType conn;
 	unsigned int id = 0;
 	bool empty_slot = true;
