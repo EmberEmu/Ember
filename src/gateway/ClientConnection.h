@@ -83,7 +83,6 @@ class ClientConnection final {
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(const spark::Buffer& buffer);
-	void stream_compress(const protocol::ServerPacket& packet);
 	void swap_buffers();
 
 public:

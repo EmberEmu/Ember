@@ -11,7 +11,6 @@
 #include "packetlog/FBSink.h"
 #include "packetlog/LogSink.h"
 #include <spark/buffers/BufferSequence.h>
-#include <zlib.h>
 
 namespace ember {
 
@@ -240,54 +239,6 @@ void ClientConnection::latency(std::size_t latency) {
 
 void ClientConnection::compression_level(unsigned int level) {
 	compression_level_ = level;
-}
-
-// temp testing function, do not use yet
-void ClientConnection::stream_compress(const protocol::ServerPacket& packet) {
-	constexpr std::size_t BLOCK_SIZE = 64;
-	spark::ChainedBuffer<4096> temp_buffer;
-	spark::Buffer& buffer(temp_buffer);
-	spark::BinaryStream stream(buffer);
-	spark::BinaryStream out_stream(*outbound_back_);
-	stream << std::uint16_t(0) << packet.opcode << packet;
-
-	boost::endian::big_int16_t size =
-		static_cast<std::uint16_t>(stream.size() - sizeof(protocol::ServerHeader::size));
-
-	temp_buffer[0] = std::byte(size.data()[0]);
-	temp_buffer[1] = std::byte(size.data()[1]);
-
-	std::uint8_t in_buff[BLOCK_SIZE];
-	std::uint8_t out_buff[BLOCK_SIZE];
-
-	z_stream z_stream{};
-	z_stream.next_in = in_buff;
-	z_stream.next_out = out_buff;
-
-	deflateInit(&z_stream, compression_level_);
-
-	out_stream << std::uint16_t(0) << std::uint16_t(0x1F6);
-
-	while(!stream.empty()) {
-		z_stream.avail_in = stream.size() >= BLOCK_SIZE? BLOCK_SIZE : stream.size();
-		stream.get(in_buff, z_stream.avail_in);
-
-		do {
-			z_stream.avail_out = BLOCK_SIZE;
-			int ret = deflate(&z_stream, Z_NO_FLUSH);
-
-			if(ret != Z_OK) {
-				throw std::runtime_error("Zlib failed");
-			}
-
-			outbound_back_->write(out_buff, BLOCK_SIZE - z_stream.avail_out);
-		} while(z_stream.avail_out == 0);
-
-
-		outbound_back_->write(out_buff, BLOCK_SIZE - z_stream.avail_out);
-	}
-
-	deflateEnd(&z_stream);
 }
 
 void ClientConnection::terminate() {
