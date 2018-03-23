@@ -257,8 +257,7 @@ void ClientConnection::terminate() {
  * until all pending handlers are executed with 'operation_aborted'.
  * That's the theory anyway.
  */
- // todo, switch to unique_ptr when VS supports extract
-void ClientConnection::async_shutdown(const std::shared_ptr<ClientConnection>& client) {
+void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
 	client->terminate();
 
 	client->service_.post([client]() {

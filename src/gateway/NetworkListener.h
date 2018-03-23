@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,6 +17,7 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
+#include <memory>
 #include <string>
 #include <utility>
 #include <cstdint>
@@ -49,7 +50,7 @@ class NetworkListener {
 					<< boost::lexical_cast<std::string>(socket_.remote_endpoint())
 					<< LOG_ASYNC;
 
-				auto client = std::make_shared<ClientConnection>(
+				auto client = std::make_unique<ClientConnection>(
 					sessions_, std::move(socket_),
 					ClientUUID::generate(index_), logger_
 				);

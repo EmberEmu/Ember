@@ -19,13 +19,13 @@ class ClientConnection;
 struct ConnectionStats;
 
 class SessionManager {
-	std::set<std::shared_ptr<ClientConnection>> sessions_;
+	std::set<std::unique_ptr<ClientConnection>> sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:
 	~SessionManager();
 
-	void start(const std::shared_ptr<ClientConnection>& session);
+	void start(std::unique_ptr<ClientConnection> session);
 	void stop(ClientConnection* session);
 	void stop_all();
 	std::size_t count() const;
