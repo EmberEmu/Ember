@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -165,7 +165,6 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
 	auto& service = service_pool.get_service();
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
@@ -193,14 +192,11 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 
 	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
+	boost::asio::io_service wait_svc;
+	boost::asio::signal_set signals(wait_svc, SIGINT, SIGTERM);
+
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
-		server.shutdown();
-		discovery.shutdown();
-		spark.shutdown();
-		queue_service.shutdown();
-		pool.close();
-		service_pool.stop();
+		LOG_DEBUG(logger) << "Received signal " << signal << LOG_SYNC;
 	});
 
 	service.dispatch([&, logger]() {
@@ -209,6 +205,9 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 
 	service_pool.run();
+	wait_svc.run();
+
+	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }

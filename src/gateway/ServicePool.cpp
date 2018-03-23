@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,6 +25,10 @@ ServicePool::ServicePool(std::size_t pool_size) : pool_size_(pool_size), next_se
 	}
 }
 
+ServicePool::~ServicePool() {
+	stop();
+}
+
 boost::asio::io_service& ServicePool::get_service() {
 	auto& service = *services_[next_service_++];
 	next_service_ %= pool_size_;
@@ -40,27 +44,29 @@ boost::asio::io_service* ServicePool::get_service(std::size_t index) const {
 }
 
 void ServicePool::run() {
-	std::vector<std::thread> threads;
-	auto core_count = std::thread::hardware_concurrency();
+	const auto core_count = std::thread::hardware_concurrency();
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
-		threads.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
+		threads_.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
 			(&boost::asio::io_service::run), services_[i]);
-		set_affinity(threads[i], i % core_count);
-	}
-
-	// blocks until the worker threads exit
-	for(auto& thread : threads) {
-		thread.join();
+		set_affinity(threads_[i], i % core_count);
 	}
 }
 
 void ServicePool::stop() {
+	work_.clear();
+
  	for(auto& service : services_) {
-		service->stop();
+		if(!service->stopped()) {
+			service->stop();
+		}
 	}
 
-	work_.clear();
+	for(auto& thread : threads_) {
+		if(thread.joinable()) {
+			thread.join();
+		}
+	}
 }
 
 std::size_t ServicePool::size() const {
