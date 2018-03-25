@@ -43,11 +43,12 @@ void FBSink::start_log(const std::string& filename, const std::string& host,
 	auto header = hb.Finish();
 	fbb.Finish(header);
 
-	const auto size = be::native_to_little(fbb.GetSize());
-	const auto type = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::HEADER));
+	const auto size = fbb.GetSize();
+	const auto size_le = be::native_to_little(size);
+	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::HEADER));
 
-	file_.write(reinterpret_cast<const char*>(&size), sizeof(size));
-	file_.write(reinterpret_cast<const char*>(&type), sizeof(type));
+	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
+	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
 	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
 }
 
@@ -78,11 +79,12 @@ void FBSink::log(const spark::Buffer& buffer, std::size_t length, const std::tim
 	auto message = mb.Finish();
 	fbb.Finish(message);
 
-	const auto size = be::native_to_little(fbb.GetSize());
-	const auto type = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::MESSAGE));
+	const auto size = fbb.GetSize();
+	const auto size_le = be::native_to_little(size);
+	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::MESSAGE));
 
-	file_.write(reinterpret_cast<const char*>(&size), sizeof(size));
-	file_.write(reinterpret_cast<const char*>(&type), sizeof(type));
+	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
+	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
 	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
 	file_.flush();
 }
