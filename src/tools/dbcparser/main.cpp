@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016 Ember
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -181,10 +181,10 @@ std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
-	po::options_description opt("Generic options");
+	po::options_description opt("Options");
 	opt.add_options()
 		("help,h", "Displays a list of available options")
-		("definitions,d", po::value<std::vector<std::string>>()->multitoken(),
+		("definitions,d", po::value<std::vector<std::string>>()->multitoken()->default_value({"/"}, "/"),
 			"Path to the DBC XML definitions")
 		("output,o", po::value<std::string>()->default_value("output"),
 			"Directory to save output to")
@@ -209,7 +209,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	          .run(), options);
 	po::notify(options);
 
-	if(options.count("help")) {
+	if(options.count("help") || argc <= 1) {
 		std::cout << opt << "\n";
 		std::exit(0);
 	}
