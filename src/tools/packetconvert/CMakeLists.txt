@@ -7,8 +7,10 @@
 set(EXECUTABLE_NAME packetconvert)
 
 set(EXECUTABLE_SRC
-	main.cpp
-	)
+    main.cpp
+    StreamReader.h
+    StreamReader.cpp
+    )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
