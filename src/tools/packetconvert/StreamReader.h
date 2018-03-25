@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include "Sink.h"
 #include "PacketLog_generated.h"
 #include <chrono>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <vector>
 #include <cstdint>
@@ -27,7 +29,7 @@ class StreamReader final {
 	const bool stream_;
 	const std::chrono::seconds interval_;
 	std::streampos stream_size_;
-	std::vector<int> sinks_;
+	std::vector<std::unique_ptr<Sink>> sinks_;
 
 	void handle_buffer(const fblog::Type type, const std::vector<std::uint8_t>& buff);
 	void handle_message(const std::vector<std::uint8_t>& buff);
@@ -40,6 +42,7 @@ public:
 	             std::chrono::seconds interval = std::chrono::seconds(2));
 
 	void process();
+	void add_sink(std::unique_ptr<Sink> sink);
 };
 
 } // ember

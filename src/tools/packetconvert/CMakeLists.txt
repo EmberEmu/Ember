@@ -10,6 +10,9 @@ set(EXECUTABLE_SRC
     main.cpp
     StreamReader.h
     StreamReader.cpp
+    Sink.h
+    ConsoleSink.h
+    ConsoleSink.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})

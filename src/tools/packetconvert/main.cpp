@@ -6,10 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "ConsoleSink.h"
 #include "StreamReader.h"
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 namespace po = boost::program_options;
 
@@ -43,9 +45,11 @@ void launch(const po::variables_map& args) {
 	const auto interval = std::chrono::seconds(args.at("interval").as<unsigned int>());
 	const auto stream = args.at("stream").as<bool>();
 	auto skip = stream? args.at("skip").as<bool>() : false;
+	auto consink = std::make_unique<ConsoleSink>();
 
 	StreamReader reader(file, stream, skip, interval);
-	reader.process();
+	reader.add_sink(std::move(consink));
+;	reader.process();
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
