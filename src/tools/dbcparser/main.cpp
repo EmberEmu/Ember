@@ -20,6 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <stdexcept>
 #include <unordered_map>
@@ -106,16 +107,20 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 }
 
 void print_dbc_table(const edbc::types::Definitions& defs) {
+	const auto comment_len = 45;
+	const auto name_len = 26;
+
 	bprinter::TablePrinter printer(&std::cout);
-	printer.AddColumn("DBC Name", 26);
+	printer.AddColumn("DBC Name", name_len);
 	printer.AddColumn("#", 4);
-	printer.AddColumn("Comment", 45);
+	printer.AddColumn("Comment", comment_len);
 	printer.PrintHeader();
 
 	for(auto& def : defs) {
 		if(def->type == edbc::types::STRUCT) {
 			auto dbc = static_cast<edbc::types::Struct*>(def.get());
-			printer << dbc->name.substr(0, 26) << dbc->fields.size() << dbc->comment;
+			printer << std::string_view(dbc->name).substr(0, name_len) << dbc->fields.size()
+				<< dbc->comment;
 		}
 	}
 }
