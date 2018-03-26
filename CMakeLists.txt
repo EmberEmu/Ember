@@ -21,7 +21,7 @@ set(CMAKE_CXX_STANDARD 17)
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	add_definitions(-D_HAS_AUTO_PTR_ETC=1)               # Until Boost conforms with C++17
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17") # Until CMake handles this properly
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")        # Multiprocessor compilation
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")        # Multiprocessor compilation
     
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
 		message(FATAL_ERROR "You need VS2017 or newer to compile Ember on Windows!")
