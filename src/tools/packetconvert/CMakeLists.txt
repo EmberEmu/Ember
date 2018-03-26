@@ -13,6 +13,7 @@ set(EXECUTABLE_SRC
     Sink.h
     ConsoleSink.h
     ConsoleSink.cpp
+    OutputOption.h	
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})

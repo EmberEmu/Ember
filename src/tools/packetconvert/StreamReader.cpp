@@ -31,13 +31,12 @@ void StreamReader::add_sink(std::unique_ptr<Sink> sink) {
 
 void StreamReader::process() {
 	ReadState state { ReadState::SIZE };
-	std::optional<uint32_t> size;
 	std::optional<fblog::Type> type;
 	std::vector<std::uint8_t> buffer;
 
-	while(stream_ || (!stream_ && stream_size_ != in_.tellg())) {
+	while(stream_ || stream_size_ != in_.tellg()) {
 		if(state == ReadState::SIZE) {
-			size = try_read<std::uint32_t>(in_);
+			auto size = try_read<std::uint32_t>(in_);
 
 			if(!size) {
 				std::this_thread::sleep_for(interval_);
@@ -46,6 +45,7 @@ void StreamReader::process() {
 			}
 
 			boost::endian::little_to_native_inplace(*size);
+			buffer.resize(*size);
 			state = ReadState::TYPE;
 		}
 
@@ -63,8 +63,6 @@ void StreamReader::process() {
 		}
 
 		if(state == ReadState::BODY) {
-			buffer.resize(*size);
-
 			auto ret = try_read(in_, buffer);
 
 			if(!ret) {
