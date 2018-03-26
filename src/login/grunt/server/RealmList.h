@@ -109,7 +109,7 @@ public:
 	}
 
 	std::size_t write_body(spark::BinaryStream& stream) const {
-		const auto initial_size = stream.size();
+		const auto initial_write = stream.total_write();
 
 		stream << unknown;
 		stream << gsl::narrow<std::uint8_t>(realms.size());
@@ -128,7 +128,7 @@ public:
 
 		stream << unknown2;
 
-		return stream.size() - initial_size;
+		return stream.total_write() - initial_write;
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
