@@ -17,6 +17,7 @@
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
 #include <gsl/gsl_util>
+#include <vector>
 #include <cstdint>
 #include <cstddef>
 
@@ -46,7 +47,7 @@ class RealmList final : public Packet {
 		stream >> unknown;
 		stream >> realm_count;
 
-		for(; realm_count; --realm_count) {
+		while(realm_count) {
 			Realm realm;
 			std::uint8_t num_chars;
 
@@ -66,6 +67,7 @@ class RealmList final : public Packet {
 			realm.id = realm_id;
 
 			realms.emplace_back(RealmListEntry{ realm, num_chars });
+			--realm_count;
 		}
 
 		stream >> unknown2;
@@ -112,7 +114,7 @@ public:
 		stream << unknown;
 		stream << gsl::narrow<std::uint8_t>(realms.size());
 
-		for(auto& entry : realms) {
+		for(const auto& entry : realms) {
 			auto& realm = entry.realm;
 			stream << be::native_to_little(realm.type);
 			stream << realm.flags;
