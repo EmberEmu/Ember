@@ -107,7 +107,7 @@ void ClientConnection::write() {
 		return;
 	}
 
-	spark::BufferSequence<OUTBOUND_SIZE> sequence(*outbound_front_);
+	const spark::BufferSequence<OUTBOUND_SIZE> sequence(*outbound_front_);
 
 	socket_.async_send(sequence, create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {

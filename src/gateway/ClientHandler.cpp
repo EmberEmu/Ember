@@ -11,6 +11,7 @@
 #include "Locator.h"
 #include "EventDispatcher.h"
 #include "states/StateLUT.h"
+#include <shared/util/EnumHelper.h>
 #include <game_protocol/Packets.h>
 #include <spark/BinaryStream.h>
 
@@ -128,7 +129,7 @@ void ClientHandler::state_update(ClientState new_state) {
 void ClientHandler::packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 		<< ClientState_to_string(context_.state) << " requested skip of packet "
-		<< protocol::to_string(opcode) << " (" << (uint16_t)opcode << ") from "
+		<< protocol::to_string(opcode) << " (" << util::enum_value(opcode) << ") from "
 		<< client_identify() << LOG_ASYNC;
 
 	buffer.skip(context_.msg_size);

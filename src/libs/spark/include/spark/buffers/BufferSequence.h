@@ -39,7 +39,7 @@ public:
 	}
 
 	boost::asio::const_buffer operator*() const {
-		auto buffer = chain_->buffer_from_node(curr_node_);
+		const auto buffer = chain_->buffer_from_node(curr_node_);
 		return boost::asio::const_buffer(buffer->read_data(), buffer->size());
 	}
 

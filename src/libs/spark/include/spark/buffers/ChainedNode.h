@@ -107,7 +107,7 @@ struct BufferBlock {
 	}
 
 	std::size_t advance_write_cursor(std::size_t size) {
-		std::size_t remaining = free();
+		const std::size_t remaining = free();
 
 		if(remaining < size) {
 			size = remaining;

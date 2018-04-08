@@ -19,9 +19,8 @@
 namespace ember {
 
 class ClientUUID {
-	ClientUUID() : hash_(0) { }
-
-	std::size_t hash_;
+	mutable std::size_t hash_ = 0;
+	mutable bool hashed_ = false;
 
 	union {
 		std::uint8_t data_[16];
@@ -34,6 +33,12 @@ class ClientUUID {
 
 public:
 	inline std::size_t hash() const {
+		if(!hashed_) {
+			FNVHash hasher;
+			hash_ = hasher.update(std::begin(data_), std::end(data_));
+			hashed_ = true;
+		}
+
 		return hash_;
 	}
 
@@ -41,11 +46,9 @@ public:
 		return service_;
 	}
 
-	static ClientUUID from_bytes(const std::uint8_t* data) { // todo
+	static ClientUUID from_bytes(const std::array<std::uint8_t, 16>& data) {
 		ClientUUID uuid;
-		std::copy(data, data + 16, uuid.data_);
-		FNVHash hasher;
-		uuid.hash_ = hasher.update(data, 16);
+		std::copy(data.begin(), data.end(), uuid.data_);
 		return uuid;
 	}
 
@@ -57,8 +60,6 @@ public:
 		}
 
 		uuid.service_ = gsl::narrow<std::uint8_t>(service_index);
-		FNVHash hasher;
-		uuid.hash_ = hasher.update(uuid.data_, sizeof(uuid.data_));
 		return uuid;
 	}
 
@@ -66,7 +67,7 @@ public:
 };
 
 inline bool operator==(const ClientUUID& rhs, const ClientUUID& lhs) {
-	return std::memcmp(rhs.data_, lhs.data_, sizeof(ClientUUID::data_)) == 0;
+	return rhs.hash() == lhs.hash();
 }
 
 } // ember

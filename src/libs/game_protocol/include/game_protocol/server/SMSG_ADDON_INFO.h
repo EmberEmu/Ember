@@ -11,6 +11,7 @@
 #include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <boost/endian/arithmetic.hpp>
+#include <gsl/gsl_util>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -74,7 +75,7 @@ public:
 			stream << addon.type;
 
 			if(addon.key_version || addon.update_available_flag) {
-				stream << std::uint8_t(1); // 'info block' is available
+				stream << gsl::narrow_cast<std::uint8_t>(1); // 'info block' is available
 				stream << addon.key_version; // any value other than zero is stored in the file and must be followed by the public key
 
 				if(addon.key_version) {
@@ -83,13 +84,13 @@ public:
 
 				stream << addon.update_available_flag;
 			} else {
-				stream << std::uint8_t(0); // 'info block' is not available
+				stream << gsl::narrow_cast<std::uint8_t>(0); // 'info block' is not available
 			}
 
 			if(addon.update_url.empty()) {
-				stream << std::uint8_t(0); // URL not present
+				stream << gsl::narrow_cast<std::uint8_t>(0); // URL not present
 			} else {
-				stream << std::uint8_t(1); // URL present
+				stream << gsl::narrow_cast<std::uint8_t>(1); // URL present
 				stream << addon.update_url;
 			}
 		}

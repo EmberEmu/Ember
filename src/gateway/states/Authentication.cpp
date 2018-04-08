@@ -65,7 +65,7 @@ void handle_authentication(ClientContext* ctx) {
 void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx->handler->uuid();
 
 	Locator::account()->locate_account_id(packet.username, [uuid, packet](auto status, auto id) {
 		auto event = std::make_unique<AccountIDResponse>(packet, std::move(status), id);
@@ -97,7 +97,7 @@ void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx->handler->uuid();
 
 	Locator::account()->locate_session(ctx->account_id, [uuid, packet](auto status, auto key) {
 		auto event = std::make_unique<SessionKeyResponse>(packet, status, key);
@@ -181,7 +181,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
 	if(active_players >= Locator::config()->max_slots) {
-		auto uuid = ctx->handler->uuid();
+		const auto uuid = ctx->handler->uuid();
 
 		Locator::queue()->enqueue(uuid,
 			[uuid, packet](std::size_t position) {

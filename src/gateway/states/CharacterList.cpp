@@ -75,7 +75,7 @@ void character_rename(ClientContext* ctx) {
 		return;
 	}
 
-	auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx->handler->uuid();
 
 	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
 	                                       [uuid](auto status, auto result,
@@ -104,7 +104,7 @@ void character_rename_completion(ClientContext* ctx, const CharRenameResponse* e
 void character_enumerate(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx->handler->uuid();
 
 	Locator::character()->retrieve_characters(ctx->account_id,
 	                                          [uuid](auto status, auto characters) {
@@ -148,7 +148,7 @@ void character_create(ClientContext* ctx) {
 		return;
 	}
 
-	auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx->handler->uuid();
 
 	Locator::character()->create_character(ctx->account_id, packet.character,
 	                                       [uuid](auto status, auto result) {
@@ -175,7 +175,7 @@ void character_delete(ClientContext* ctx) {
 		return;
 	}
 
-	auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx->handler->uuid();
 
 	Locator::character()->delete_character(ctx->account_id, packet.id,
 	                                       [uuid](auto status, auto result) {

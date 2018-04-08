@@ -14,6 +14,7 @@
 #include <botan/botan.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
+#include <gsl/gsl_util>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -51,7 +52,7 @@ public:
 	State read_from_stream(spark::BinaryStream& stream) override try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		auto initial_stream_size = stream.size();
+		const auto initial_stream_size = stream.size();
 
 		stream >> build;
 		stream >> unk1;
@@ -67,8 +68,8 @@ public:
 
 		// calculate how much of the remaining stream data belongs to this message
 		// we don't want to consume bytes belongining to any messages that follow
-		auto remaining = size_ - (initial_stream_size - stream.size());
-		uLongf compressed_size = static_cast<uLongf>(remaining);
+		const auto remaining = size_ - (initial_stream_size - stream.size());
+		const uLongf compressed_size = gsl::narrow<uLongf>(remaining);
 
 		if(decompressed_size > 0xFFFFF) {
 			LOG_DEBUG_GLOB << "Rejecting compressed addon data for being too large "  << LOG_ASYNC;
@@ -78,7 +79,7 @@ public:
 		std::vector<std::uint8_t> source(remaining);
 		std::vector<std::uint8_t> dest(decompressed_size);
 		uLongf dest_len = decompressed_size;
-		uLongf source_len = remaining;
+		const uLongf source_len = remaining;
 		stream.get(source.data(), source_len);
 		
 		auto ret = uncompress(dest.data(), &dest_len, source.data(), compressed_size);

@@ -31,7 +31,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
 
 	service->post([client, raw] {
 		auto event = std::unique_ptr<const Event>(raw);
-		auto handler = handlers_.find(client);
+		const auto handler = handlers_.find(client);
 
 		if(handler == handlers_.end()) {
 			LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
@@ -74,7 +74,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 			continue;
 		}
 
-		auto range = std::equal_range(clients_ptr->begin(), clients_ptr->end(), uuid,
+		const auto range = std::equal_range(clients_ptr->begin(), clients_ptr->end(), uuid,
 			[](auto& lhs, auto& rhs) {
 				return lhs.service() > rhs.service();
 			}
@@ -86,7 +86,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 			auto it = range.first;
 
 			while(it != range.second) {
-				auto handler = handlers_.find(*it++);
+				const auto handler = handlers_.find(*it++);
 
 				if(handler == handlers_.end()) {
 					LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;

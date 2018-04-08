@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -38,12 +38,12 @@ class ChainedBuffer final : public Buffer {
 	}
 
 	BufferBlock<BlockSize>* buffer_from_node(ChainedNode* node) const {
-		return reinterpret_cast<BufferBlock<BlockSize>*>(std::size_t(node)
+		return reinterpret_cast<BufferBlock<BlockSize>*>(std::uintptr_t(node)
 			- offsetof(BufferBlock<BlockSize>, node));
 	}
 
 	BufferBlock<BlockSize>* buffer_from_node(const ChainedNode* node) const {
-		return reinterpret_cast<BufferBlock<BlockSize>*>(std::size_t(node)
+		return reinterpret_cast<BufferBlock<BlockSize>*>(std::uintptr_t(node)
 			- offsetof(BufferBlock<BlockSize>, node));
 	}
 
@@ -132,7 +132,7 @@ public:
 		auto head = root_.next;
 
 		while(remaining) {
-			auto buffer = buffer_from_node(head);
+			const auto buffer = buffer_from_node(head);
 			remaining -= buffer->copy(static_cast<std::byte*>(destination) + length - remaining, remaining);
 
 			if(remaining) {
@@ -263,7 +263,7 @@ public:
 
 	void advance_write_cursor(std::size_t size) {
 		auto buffer = buffer_from_node(root_.prev);
-		auto actual = buffer->advance_write_cursor(size);
+		const auto actual = buffer->advance_write_cursor(size);
 		BOOST_ASSERT_MSG(size <= BlockSize && actual == size,
 		                 "Attempted to advance write cursor out of bounds!");
 		size_ += size;
@@ -293,8 +293,8 @@ public:
 
 		auto head = root_.next;
 		auto buffer = buffer_from_node(head);
-		std::size_t offset_index = index + buffer->read_offset;
-		auto node_index = static_cast<std::size_t>(offset_index / BlockSize);
+		const auto offset_index = index + buffer->read_offset;
+		const auto node_index = offset_index / BlockSize;
 
 		for(std::size_t i = 0; i < node_index; ++i) {
 			head = head->next;

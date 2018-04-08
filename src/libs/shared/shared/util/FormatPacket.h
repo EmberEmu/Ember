@@ -8,6 +8,7 @@
 
 #pragma once 
 
+#include <gsl/gsl_util>
 #include <iomanip>
 #include <sstream>
 #include <cstddef>
@@ -29,7 +30,7 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 			buffer << std::hex << std::setfill('0');
 
 			if(j + offset < size) {
-				buffer << std::setw(2) << static_cast<unsigned>(packet[j + offset]) << " ";
+				buffer << std::setw(2) << gsl::narrow_cast<unsigned>(packet[j + offset]) << " ";
 			} else {
 				buffer << "   ";
 			}
@@ -39,7 +40,7 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 
 		for(std::size_t j = 0; j < columns; ++j) {
 			if(j + offset < size) {
-				buffer << static_cast<char>(std::isprint(packet[j + offset])? packet[j + offset] : '.');
+				buffer << gsl::narrow_cast<char>(std::isprint(packet[j + offset])? packet[j + offset] : '.');
 			} else {
 				buffer << " ";
 			}

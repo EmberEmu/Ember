@@ -18,6 +18,7 @@
 #include <boost/asio.hpp>
 #include <boost/endian/conversion.hpp>
 #include <flatbuffers/flatbuffers.h>
+#include <gsl/gsl_util>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -163,7 +164,7 @@ public:
 			return;
 		}
 
-		auto size = static_cast<decltype(message_size_)>(fbb->GetSize());
+		auto size = gsl::narrow<decltype(message_size_)>(fbb->GetSize());
 
 		if(size > MAX_MESSAGE_LENGTH) {
 			LOG_DEBUG_FILTER(logger_, LF_SPARK)

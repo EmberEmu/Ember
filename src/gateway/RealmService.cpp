@@ -28,7 +28,7 @@ RealmService::~RealmService() {
 }
 
 void RealmService::on_message(const spark::Link& link, const spark::Message& message) {
-	auto handler = handlers_.find(static_cast<messaging::realm::Opcode>(message.opcode));
+	const auto handler = handlers_.find(static_cast<messaging::realm::Opcode>(message.opcode));
 
 	if(handler == handlers_.end()) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)

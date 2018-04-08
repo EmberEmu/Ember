@@ -61,7 +61,7 @@ public:
 		}
 
 		service->post([=] {
-			auto handler = handlers_.find(client);
+			const auto handler = handlers_.find(client);
 
 			// client disconnected, nothing to do here
 			if(handler == handlers_.end()) {
