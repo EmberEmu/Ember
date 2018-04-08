@@ -7,7 +7,7 @@
  */
 
 #include "CompressMessage.h"
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <zlib.h>
 #include <cstdint>

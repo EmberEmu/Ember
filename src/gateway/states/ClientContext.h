@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ClientStates.h"
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <game_protocol/PacketHeaders.h>
 #include <string>
 #include <cstdint>

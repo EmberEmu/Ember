@@ -10,7 +10,7 @@
 
 #include "PacketSink.h"
 #include <game_protocol/Packet.h>
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <memory>
 #include <vector>
 

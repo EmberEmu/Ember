@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <gtest/gtest.h>
 
 namespace spark = ember::spark;

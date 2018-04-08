@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/buffers/ChainedNode.h>
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <vector>

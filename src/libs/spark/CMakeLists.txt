@@ -28,13 +28,13 @@ add_library(${LIBRARY_NAME}
             include/spark/EventDispatcher.h
             include/spark/HeartbeatService.h
             include/spark/MessageHandler.h
-            include/spark/Buffer.h
+            include/spark/buffers/Buffer.h
             include/spark/buffers/ChainedBuffer.h
             include/spark/buffers/ChainedNode.h
             include/spark/buffers/BufferSequence.h
             include/spark/buffers/NullBuffer.h
             include/spark/buffers/VectorBufferAdaptor.h
-            include/spark/BinaryStream.h
+            include/spark/buffers/BinaryStream.h
             include/spark/Spark.h
             include/spark/Service.h
             include/spark/Listener.h

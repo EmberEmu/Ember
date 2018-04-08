@@ -8,7 +8,7 @@
 
 #include "DBCGenerator.h"
 #include "TypeUtils.h"
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
 #include <boost/endian/arithmetic.hpp>

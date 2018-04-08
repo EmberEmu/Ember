@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <cstddef>
 #include <ctime>
 

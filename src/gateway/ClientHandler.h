@@ -11,7 +11,7 @@
 #include "Event.h"
 #include "states/ClientContext.h"
 #include <game_protocol/Packet.h>
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <logger/Logging.h>
 #include <shared/ClientUUID.h>
 #include <boost/asio/steady_timer.hpp>

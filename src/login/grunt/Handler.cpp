@@ -8,7 +8,7 @@
 
 #include "Handler.h"
 #include "Packets.h"
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <boost/assert.hpp>
 #include <shared/util/FormatPacket.h>
 #include <vector>

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <game_protocol/Packet.h>
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 
 namespace ember {
 

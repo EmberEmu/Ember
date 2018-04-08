@@ -17,7 +17,7 @@
 #include <game_protocol/Opcodes.h>
 #include <game_protocol/PacketHeaders.h>
 #include <game_protocol/Packets.h>
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>

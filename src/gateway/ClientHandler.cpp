@@ -13,7 +13,7 @@
 #include "states/StateLUT.h"
 #include <shared/util/EnumHelper.h>
 #include <game_protocol/Packets.h>
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 
 namespace ember {
 

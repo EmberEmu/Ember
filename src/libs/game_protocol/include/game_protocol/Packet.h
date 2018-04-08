@@ -10,7 +10,7 @@
 
 #include <game_protocol/Opcodes.h>
 #include <game_protocol/PacketHeaders.h>
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/NullBuffer.h>
 #include <gsl/gsl_util>
 #include <cstdint>

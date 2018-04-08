@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Opcodes.h"
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 
 namespace ember::grunt {
 

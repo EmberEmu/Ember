@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../Buffer.h"
+#include "Buffer.h"
 #include <vector>
 #include <utility>
 #include <cstddef>

@@ -10,4 +10,4 @@
 
 #include <spark/Service.h>
 #include <spark/buffers/ChainedBuffer.h>
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>

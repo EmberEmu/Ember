@@ -8,7 +8,7 @@
 
 #include "PacketLogger.h"
 #include <spark/buffers/ChainedBuffer.h>
-#include <spark/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <chrono>
 
 namespace sc = std::chrono;

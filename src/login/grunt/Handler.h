@@ -10,7 +10,7 @@
 
 #include "Packets.h"
 #include "Exceptions.h"
-#include <spark/Buffer.h>
+#include <spark/buffers/Buffer.h>
 #include <logger/Logging.h>
 #include <memory>
 #include <optional>

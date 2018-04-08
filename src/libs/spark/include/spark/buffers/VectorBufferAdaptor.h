@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../Buffer.h"
+#include "Buffer.h"
 #include <boost/assert.hpp>
 #include <vector>
 #include <utility>
