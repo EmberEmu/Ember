@@ -21,5 +21,5 @@ set(EXECUTABLE_SRC
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../src)
-add_test(NAME unit_tests COMMAND unit_tests)
+gtest_discover_tests(${EXECUTABLE_NAME})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

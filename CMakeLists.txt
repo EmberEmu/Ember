@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.10.3)
 project(Ember)
 
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
@@ -20,7 +20,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	add_definitions(-D_HAS_AUTO_PTR_ETC=1)               # Until Boost conforms with C++17
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17") # Until CMake handles this properly
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")        # Multiprocessor compilation
     
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.10)
@@ -140,6 +139,7 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build
                  EXCLUDE_FROM_ALL)
 
+include(GoogleTest)
 
 add_definitions(-DDB_MYSQL) #temporary!
 
