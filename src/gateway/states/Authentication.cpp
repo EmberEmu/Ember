@@ -50,7 +50,6 @@ void handle_authentication(ClientContext* ctx) {
 	ctx->auth_status = AuthStatus::IN_PROGRESS;
 
 	protocol::CMSG_AUTH_SESSION packet;
-	packet.set_size(ctx->msg_size);
 
 	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
 		return;

@@ -33,6 +33,7 @@ add_library(${LIBRARY_NAME}
             include/spark/buffers/ChainedNode.h
             include/spark/buffers/BufferSequence.h
             include/spark/buffers/NullBuffer.h
+            include/spark/buffers/VectorBufferAdaptor.h
             include/spark/BinaryStream.h
             include/spark/Spark.h
             include/spark/Service.h

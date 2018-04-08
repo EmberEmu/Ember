@@ -10,6 +10,7 @@
 
 #include <game_protocol/Packet.h>
 #include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
 #include <botan/botan.h>
 #include <boost/assert.hpp>
@@ -29,7 +30,6 @@ class CMSG_AUTH_SESSION final : public Packet {
 	static const std::size_t DIGEST_LENGTH = 20;
 
 	State state_ = State::INITIAL;
-	std::uint16_t size_ = 0;
 
 public:
 	struct AddonData {
@@ -66,9 +66,13 @@ public:
 		be::little_uint32_t decompressed_size;
 		stream >> decompressed_size;
 
-		// calculate how much of the remaining stream data belongs to this message
-		// we don't want to consume bytes belongining to any messages that follow
-		const auto remaining = size_ - (initial_stream_size - stream.size());
+		if(!stream.read_limit()) {
+			LOG_ERROR_GLOB << "CMSG_AUTH_SESSION size not specified?" << LOG_ASYNC;
+			return (state_ = State::ERRORED);
+		}
+
+		// calculate how many bytes are left in this message
+		const auto remaining = stream.read_limit() - stream.total_read();
 		const uLongf compressed_size = gsl::narrow<uLongf>(remaining);
 
 		if(decompressed_size > 0xFFFFF) {
@@ -79,8 +83,7 @@ public:
 		std::vector<std::uint8_t> source(remaining);
 		std::vector<std::uint8_t> dest(decompressed_size);
 		uLongf dest_len = decompressed_size;
-		const uLongf source_len = remaining;
-		stream.get(source.data(), source_len);
+		stream.get(source.data(), remaining);
 		
 		auto ret = uncompress(dest.data(), &dest_len, source.data(), compressed_size);
 
@@ -88,11 +91,8 @@ public:
 			LOG_DEBUG_GLOB << "Decompression of addon data failed with code " << ret << LOG_ASYNC;
 			return (state_ = State::ERRORED);
 		}
-		
-		// not overly efficient
-		spark::ChainedBuffer<1024> buffer;
-		buffer.write(dest.data(), dest.size());
-
+	
+		spark::VectorBufferAdaptor buffer(dest);
 		spark::BinaryStream addon_stream(buffer);
 
 		while(!addon_stream.empty()) {
@@ -101,7 +101,6 @@ public:
 			addon_stream >> data.key_version;
 			addon_stream >> data.crc;
 			addon_stream >> data.update_url_crc;
-
 			addons.emplace_back(std::move(data));
 		}
 
@@ -116,10 +115,6 @@ public:
 		stream << username;
 		stream << seed;
 		stream.put(digest.data(), digest.size());
-	}
-
-	void set_size(std::uint16_t size) {
-		size_ = size;
 	}
 };
 
