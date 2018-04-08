@@ -73,7 +73,7 @@ void LoginSession::async_completion(const std::shared_ptr<Action>& action) try {
 	if(!handler_.update_state(*action.get())) {
 		close_session(); // todo change
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	close_session();
 }

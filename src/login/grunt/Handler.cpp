@@ -88,7 +88,7 @@ void Handler::handle_read(spark::Buffer& buffer, std::size_t offset) try {
 		default:
 			BOOST_ASSERT_MSG(false, "Unreachable condition hit!");
 	}
-} catch(spark::buffer_underrun& e) {
+} catch(const spark::buffer_underrun& e) {
 	dump_bad_packet(e, buffer, offset);
 	throw bad_packet(e.what());
 }

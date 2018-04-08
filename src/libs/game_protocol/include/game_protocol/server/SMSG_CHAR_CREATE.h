@@ -28,7 +28,7 @@ public:
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 		stream >> result;
 		return (state_ = State::DONE);
-	} catch(spark::exception&) {
+	} catch(const spark::exception&) {
 		return State::ERRORED;
 	}
 

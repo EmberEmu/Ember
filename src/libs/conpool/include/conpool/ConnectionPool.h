@@ -110,7 +110,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 						cd.sweep = true;
 						return false;
 					}
-				} catch(std::exception& e) {
+				} catch(const std::exception& e) {
 					if(log_cb_) {
 						log_cb_(Severity::DEBUG, "On connection clean: "s + e.what());
 					}
@@ -194,7 +194,7 @@ public:
 
 			try {
 				driver_.close(c.conn);
-			} catch(std::exception& e) { 
+			} catch(const std::exception& e) { 
 				if(log_cb_) {
 					log_cb_(Severity::WARN, "Closing pool, driver threw: "s + e.what());
 				}

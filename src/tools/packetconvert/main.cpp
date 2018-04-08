@@ -29,7 +29,7 @@ int main(int argc, const char* argv[]) try {
 
 	const po::variables_map args = parse_arguments(argc, argv);
 	launch(args);
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }

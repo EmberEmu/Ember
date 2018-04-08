@@ -50,7 +50,7 @@ public:
 		}
 
 		return realms;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -78,7 +78,7 @@ public:
 		}
 
 		return std::nullopt;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 };

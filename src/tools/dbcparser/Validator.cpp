@@ -458,7 +458,7 @@ void Validator::validate(const types::Definitions& definitions) {
 	for(auto& def : *definitions_) {
 		try { //msvc can't handle try/catch blocks inside range-for without nesting
 			validate_definition(def.get());
-		} catch(std::exception& e) {
+		} catch(const std::exception& e) {
 			throw exception(def->name + ": " + e.what());
 		}
 	}

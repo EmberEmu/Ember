@@ -80,7 +80,7 @@ public:
 		}
 
 		return std::nullopt;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 	
@@ -103,7 +103,7 @@ public:
 		}
 
 		return std::nullopt;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -137,7 +137,7 @@ public:
 		}
 
 		return characters;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -152,7 +152,7 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to restore character " + std::to_string(id));
 		}
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -172,7 +172,7 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to delete character " + std::to_string(id));
 		}
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -212,7 +212,7 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to create character");
 		}
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -254,7 +254,7 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update character");
 		}
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 };

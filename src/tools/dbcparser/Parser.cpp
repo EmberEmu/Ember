@@ -276,7 +276,7 @@ types::Definitions Parser::parse(const std::string& path) try {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	return parse_file(path);
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	throw parse_error(path, e.what());
 }
 
@@ -293,7 +293,7 @@ types::Definitions Parser::parse(const std::vector<std::string>& paths) {
 				std::make_move_iterator(parsed.begin()),
 				std::make_move_iterator(parsed.end())
 			);
-		} catch(std::exception& e) {
+		} catch(const std::exception& e) {
 			throw parse_error(path, e.what());
 		}
 	}

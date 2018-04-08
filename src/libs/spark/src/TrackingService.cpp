@@ -33,7 +33,7 @@ void TrackingService::on_message(const Link& link, const Message& message) try {
 	}
 
 	handler->handler(link, message);
-} catch(std::out_of_range) {
+} catch(const std::out_of_range) {
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
 }

@@ -28,7 +28,7 @@ void ThreadPool::shutdown() {
 	for(auto& worker : workers_) {
 		try { // todo move when VS201? is out - apparently they didn't fix this in VS2015 either
 			worker.join();
-		} catch(std::exception& e) {
+		} catch(const std::exception& e) {
 			BOOST_ASSERT_MSG(false, e.what());
 
 			std::lock_guard<std::mutex> guard(log_cb_lock_);

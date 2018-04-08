@@ -32,7 +32,7 @@ public:
 		stream >> sequence_id;
 
 		return (state_ = State::DONE);
-	} catch(spark::exception&) {
+	} catch(const spark::exception&) {
 		return State::ERRORED;
 	}
 

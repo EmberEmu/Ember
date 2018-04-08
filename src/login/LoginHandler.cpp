@@ -59,7 +59,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 	}
 
 	return true;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	state_ = State::CLOSED;
 	return false;
@@ -98,7 +98,7 @@ bool LoginHandler::update_state(const Action& action) try {
 	}
 
 	return true;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	state_ = State::CLOSED;
 	return false;

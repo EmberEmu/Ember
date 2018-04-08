@@ -41,7 +41,7 @@ public:
 		}
 
 		return std::nullopt;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -58,7 +58,7 @@ public:
 		}
 
 		return entries;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -70,7 +70,7 @@ public:
 		stmt->setString(1, ban.first);
 		stmt->setUInt(2, ban.second);
 		stmt->executeQuery();
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 };

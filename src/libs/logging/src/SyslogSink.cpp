@@ -51,7 +51,7 @@ SyslogSink::impl::impl(Severity severity, Filter filter, std::string host, unsig
 	bai::udp::resolver resolver(service_);
 	bai::udp::resolver::query query(host, std::to_string(port));
 	boost::asio::connect(socket_, resolver.resolve(query));
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	throw exception(e.what());
 }
 

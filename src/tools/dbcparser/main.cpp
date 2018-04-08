@@ -53,7 +53,7 @@ int main(int argc, const char* argv[]) try {
 	el::set_global_logger(logger.get());
 
 	return launch(args);
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
@@ -67,7 +67,7 @@ int launch(const po::variables_map& args) try {
 	auto definitions = parser.parse(paths);
 	handle_options(args, definitions);
 	return 0;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
 	return 1;
 }

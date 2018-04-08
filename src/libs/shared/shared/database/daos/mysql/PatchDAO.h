@@ -73,7 +73,7 @@ public:
 		}
 
 		return patches;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -105,7 +105,7 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update patch #" + std::to_string(meta.id));
 		}
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 };

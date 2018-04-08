@@ -47,7 +47,7 @@ class PoolManager {
 	void close(ConnDetail<ConType>& conn) {
 		try {
 			pool_->driver_.close(conn.conn);
-		} catch(std::exception& e) { 
+		} catch(const std::exception& e) { 
 			if(pool_->log_cb_) {
 				pool_->log_cb_(Severity::WARN, "Connection close, driver threw: "s + e.what());
 			}
@@ -63,7 +63,7 @@ class PoolManager {
 		try {
 			conn.error = !pool_->driver_.keep_alive(conn.conn);
 			conn.idle = 0s;
-		} catch(std::exception& e) { 
+		} catch(const std::exception& e) { 
 			conn.error = true;
 
 			if(pool_->log_cb_) {
@@ -88,7 +88,7 @@ class PoolManager {
 		if(pool_->size_ < pool_->min_) {
 			try {
 				pool_->open_connections(pool_->min_ - pool_->size_);
-			} catch(std::exception& e) { 
+			} catch(const std::exception& e) { 
 				guard.unlock();
 
 				if(pool_->log_cb_) {

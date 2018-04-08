@@ -78,7 +78,7 @@ TypeComponents extract_components(const std::string& type) {
 				if(components.second <= 0) {
 					throw exception("Negative or zero array size found in " + type);
 				}
-			} catch(std::exception&) {
+			} catch(const std::exception&) {
 				throw exception(matches[2].str() + " is not a valid array entry count"
 					" for " + components.first);
 			}

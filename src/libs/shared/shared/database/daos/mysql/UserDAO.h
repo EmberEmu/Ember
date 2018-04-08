@@ -52,7 +52,7 @@ public:
 		}
 
 		return std::nullopt;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -83,14 +83,14 @@ public:
 			}
 
 			conn->commit();
-		} catch(std::exception& e) {
+		} catch(const std::exception& e) {
 			conn->rollback();
 			conn->setAutoCommit(true);
 			throw exception(e.what());
 		}
 
 		conn->setAutoCommit(true);
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -106,7 +106,7 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to set last login for account ID " + std::to_string(account_id));
 		}
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 
@@ -128,7 +128,7 @@ public:
 		}
 
 		return counts;
-	} catch(std::exception& e) {
+	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}
 };

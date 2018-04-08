@@ -92,7 +92,7 @@ int main(int argc, const char* argv[]) try {
 	print_lib_versions(logger.get());
 	launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	std::cerr << e.what();
 	return 1;
 }
@@ -266,7 +266,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	for(auto& worker : workers) {
 		worker.join();
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 }
 
