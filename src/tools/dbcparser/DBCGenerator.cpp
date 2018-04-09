@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,6 +12,7 @@
 #include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
 #include <boost/endian/arithmetic.hpp>
+#include <gsl/gsl_util>
 #include <fstream>
 #include <vector>
 #include <cstddef>
@@ -28,21 +29,21 @@ class RecordPrinter : public types::TypeVisitor {
 
 	void generate_field(const std::string& type) {
 		if(type == "int8" || type == "uint8" || type == "bool") {
-			record_ << std::uint8_t(1);
+			record_ << std::uint8_t{1};
 		} else if(type == "int16" || type == "uint16") {
-			record_ << std::uint16_t(1);
+			record_ << std::uint16_t{1};
 		} else if(type == "int32" || type == "uint32" || type == "bool32") {
-			record_ << std::uint32_t(1);
+			record_ << std::uint32_t{1};
 		} else if(type == "float") {
 			record_ << 1.0f;
 		} else if(type == "double") {
 			record_ << 1.0;
 		} else if(type == "string_ref") {
-			record_ << std::uint32_t(string_block_.size());
+			record_ << gsl::narrow<std::uint32_t>(string_block_.size());
 			string_block_ << default_string;
 		} else if(type == "string_ref_loc") {
 			for(int i = 0; i < 9; ++i) {
-				record_ << std::uint32_t(string_block_.size());
+				record_ << gsl::narrow<std::uint32_t>(string_block_.size());
 				string_block_ << default_string;
 			}
 		}
@@ -52,7 +53,7 @@ public:
 	RecordPrinter() : record_(buffer_), string_block_(sb_buffer_) {
 		// DBC editors choke if the block doesn't start with 0 with the first string at offset 1
 		// This is apparently just DBC editors being bad, which is why this tool exists to begin with
-		string_block_ << std::uint8_t(0);
+		string_block_ << std::uint8_t{0};
 	}
 
 	void visit(const types::Struct* type) override {

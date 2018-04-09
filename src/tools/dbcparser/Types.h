@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2015 Ember
+/*
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,8 @@ public:
 	virtual void visit(const types::Struct*) = 0;
 	virtual void visit(const types::Enum*) = 0;
 	virtual void visit(const types::Field*) = 0;
+
+	virtual ~TypeVisitor() = default;
 };
 
 struct Base;
@@ -83,26 +85,8 @@ struct Struct : Base {
 		visitor->visit(this);
 	};
 
-	/* for msvc again - todo, remove in VS2015 */
-	void move_op(Struct& src) {
-		children = std::move(src.children);
-		alias = std::move(src.alias);
-		comment = std::move(src.comment);
-		fields = std::move(src.fields);
-		name = std::move(src.name);
-		dbc = src.dbc;
-		type = src.type;
-	}
-
-	Struct(Struct&& src) : Base(STRUCT) {
-		move_op(src);
-	}
-
-	Struct& operator=(Struct&& src) {
-		move_op(src);
-		return *this;
-	}
-
+	Struct(Struct&& src) = default;
+	Struct& operator=(Struct&& src) = default;
 	Struct(Struct& src) = delete;
 	Struct& operator=(Struct& src) = delete;
 };
