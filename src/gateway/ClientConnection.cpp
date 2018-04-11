@@ -218,7 +218,10 @@ void ClientConnection::close_session() {
 	}
 
 	stopping_ = true;
-	sessions_.stop(this);
+
+	service_.post([this] {
+		sessions_.stop(this);
+	});
 }
 
 /*
