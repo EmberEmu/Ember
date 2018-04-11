@@ -150,5 +150,4 @@ add_subdirectory(schemas)
 enable_testing()
 add_subdirectory(tests)
 add_subdirectory(src)
-
-INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/configs DESTINATION ${CMAKE_INSTALL_PREFIX})
+add_subdirectory(configs)
