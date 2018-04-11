@@ -69,6 +69,7 @@ class ClientConnection final {
 	std::condition_variable stop_condvar_;
 	std::mutex stop_lock_;
 	std::atomic_bool stopped_;
+	bool stopping_;
 
 	// socket I/O
 	void read();
@@ -95,7 +96,7 @@ public:
 	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),
 	                   handler_(*this, uuid, logger, socket.get_io_service()), compression_level_(0),
 	                   outbound_front_(&outbound_buffers_[0]),
-	                   outbound_back_(&outbound_buffers_[1]) { }
+	                   outbound_back_(&outbound_buffers_[1]), stopping_(false) { }
 
 	void start();
 

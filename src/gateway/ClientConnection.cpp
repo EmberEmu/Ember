@@ -199,15 +199,26 @@ void ClientConnection::stop() {
 }
 
 /* 
- * This function should only be used by the handler to allow for the session to be
- * queued for closure after it has returned from processing the current event/packet.
- * Posting rather than dispatching ensures that the object won't be destroyed by the
- * session manager until current processing has finished.
+ * This function must only be called from the io_context responsible for
+ * this object. This function will initiate the following:
+ * 1) Remove the connection from the session manager - multiple calls to
+ *    this function will have no effect. The 'stopping' check is only
+ *    to prevent unnecessary locking & lookups.
+ * 2) Ownership of the object will be passed to async_shutdown, which in
+ *    turn will stop the handler and shutdown/close the socket. This function
+ *    blocks until complete.
+ * 3) Ownership of the object will be moved into a lambda and one final post
+ *    will be made to the associated io_context. Once this final completion handler
+ *    is invoked, the object will be destroyed. This should ensure that the
+ *    object outlives any aborted completion handlers.
  */
 void ClientConnection::close_session() {
-	service_.post([this] {
-		sessions_.stop(this);
-	});
+	if(stopping_) {
+		return;
+	}
+
+	stopping_ = true;
+	sessions_.stop(this);
 }
 
 /*
