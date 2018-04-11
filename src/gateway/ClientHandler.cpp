@@ -155,7 +155,7 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 	timer_.async_wait([this](const boost::system::error_code& ec) {
 		if(!ec) {
 			const Event event {EventType::TIMER_EXPIRED};
-			handle_event(&event);
+			Locator::dispatcher()->post_event(uuid_, event);
 		}
 	});
 }
