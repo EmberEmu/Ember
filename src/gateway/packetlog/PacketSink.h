@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <spark/buffers/Buffer.h>
+#include <vector>
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 
 namespace ember {
@@ -20,8 +21,8 @@ enum class PacketDirection {
 
 class PacketSink {
 public:
-	virtual void log(const spark::Buffer& buffer, std::size_t length, const std::time_t& time,
-	                 PacketDirection dir) = 0;
+	virtual void log(const std::vector<std::uint8_t>& buffer,
+	                 const std::time_t& time, PacketDirection dir) = 0;
 
 	virtual ~PacketSink() = default;
 };

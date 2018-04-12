@@ -26,11 +26,9 @@ void LogSink::start_log() {
 		<< "Starting packet logging for " << remote_host_ << log::flush;
 }
 
-void LogSink::log(const spark::Buffer& buffer, std::size_t length, const std::time_t& time,
+void LogSink::log(const std::vector<std::uint8_t>& buffer, const std::time_t& time,
                   PacketDirection dir) {
-	auto seq_buff = std::make_unique<unsigned char[]>(length);
-	buffer.copy(seq_buff .get(), length);
-	const auto output = util::format_packet(seq_buff.get(), length);
+	const auto output = util::format_packet(buffer.data(), buffer.size());
 
 	const std::string fmt("%H:%M:%S");
 	const std::string_view direction = dir == PacketDirection::INBOUND? "inbound" : "outbound";

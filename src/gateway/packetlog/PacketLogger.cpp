@@ -7,7 +7,7 @@
  */
 
 #include "PacketLogger.h"
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/VectorBufferAdaptor.h>
 #include <spark/buffers/BinaryStream.h>
 #include <chrono>
 
@@ -24,17 +24,24 @@ void PacketLogger::reset() {
 }
 
 void PacketLogger::log(const protocol::ServerPacket& packet, PacketDirection dir) {
-	spark::ChainedBuffer<128> buffer;
-	spark::BinaryStream stream(buffer);
+	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
+	std::vector<std::uint8_t> buffer(64);
+	spark::VectorBufferAdaptor adaptor(buffer);
+	spark::BinaryStream stream(adaptor);
 	stream << packet.opcode << packet;
-	log(buffer, buffer.size(), dir);
+
+	for(auto& sink : sinks_) {
+		sink->log(buffer, time, dir);
+	}
 }
 
 void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir) {
 	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
+	std::vector<std::uint8_t> contig_buffer(length);
+	buffer.copy(contig_buffer.data(), length);
 
 	for(auto& sink : sinks_) {
-		sink->log(buffer, length, time, dir);
+		sink->log(contig_buffer, time, dir);
 	}
 }
 

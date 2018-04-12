@@ -25,7 +25,7 @@ class FBSink final : public PacketSink {
 public:
 	FBSink(const std::string& filename, const std::string& host, const std::string& remote_host);
 
-	void log(const spark::Buffer& buffer, std::size_t length, const std::time_t& time,
+	void log(const std::vector<std::uint8_t>& buffer, const std::time_t& time,
 	         PacketDirection dir) override;
 };
 

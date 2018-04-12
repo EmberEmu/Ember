@@ -56,7 +56,7 @@ void FBSink::start_log(const std::string& filename, const std::string& host,
 	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
 }
 
-void FBSink::log(const spark::Buffer& buffer, std::size_t length, const std::time_t& time, 
+void FBSink::log(const std::vector<std::uint8_t>& buffer, const std::time_t& time, 
                  PacketDirection dir) {
 	std::tm utc_time;
 
@@ -66,11 +66,8 @@ void FBSink::log(const spark::Buffer& buffer, std::size_t length, const std::tim
 	gmtime_r(&time, &utc_time);
 #endif
 
-	auto t_buff = std::make_unique<std::uint8_t[]>(length);
-	buffer.copy(t_buff.get(), length);
-
 	flatbuffers::FlatBufferBuilder fbb;
-	const auto payload = fbb.CreateVector(t_buff.get(), length);
+	const auto payload = fbb.CreateVector(buffer.data(), buffer.size());
 	const auto time_str = log::detail::put_time(utc_time, time_fmt_);
 	const auto fbtime = fbb.CreateString(time_str);
 	const auto fbdir = dir == PacketDirection::INBOUND?

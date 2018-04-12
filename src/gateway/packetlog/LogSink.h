@@ -23,7 +23,7 @@ class LogSink final : public PacketSink {
 public:
 	LogSink(log::Logger& logger, log::Severity severity, std::string remote_host);
 
-	void log(const spark::Buffer& buffer, std::size_t length, const std::time_t& time,
+	void log(const std::vector<std::uint8_t>& buffer, const std::time_t& time,
 	         PacketDirection dir) override;
 
 	~LogSink();
