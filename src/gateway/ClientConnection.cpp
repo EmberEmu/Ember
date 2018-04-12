@@ -11,6 +11,7 @@
 #include "packetlog/FBSink.h"
 #include "packetlog/LogSink.h"
 #include <spark/buffers/BufferSequence.h>
+#include <algorithm>
 
 namespace ember {
 
@@ -91,7 +92,7 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;
-		swap_buffers();
+		std::swap(outbound_front_, outbound_back_);
 		write();
 	}
 
@@ -120,7 +121,7 @@ void ClientConnection::write() {
 				if(!outbound_front_->empty()) {
 					write(); // entire buffer wasn't sent, hit gather-write limits?
 				} else {
-					swap_buffers();
+					std::swap(outbound_front_, outbound_back_);
 
 					if(!outbound_front_->empty()) {
 						write();
@@ -163,16 +164,6 @@ void ClientConnection::read() {
 			}
 		}
 	));
-}
-
-void ClientConnection::swap_buffers() {
-	if(outbound_front_ == &outbound_buffers_.front()) {
-		outbound_front_ = &outbound_buffers_.back();
-		outbound_back_ = &outbound_buffers_.front();
-	} else {
-		outbound_front_ = &outbound_buffers_.front();
-		outbound_back_ = &outbound_buffers_.back();
-	}
 }
 
 void ClientConnection::set_authenticated(const Botan::BigInt& key) {

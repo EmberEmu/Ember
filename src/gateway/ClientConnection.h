@@ -84,7 +84,6 @@ class ClientConnection final {
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(const spark::Buffer& buffer);
-	void swap_buffers();
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
