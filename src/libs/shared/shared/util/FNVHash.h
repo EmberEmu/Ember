@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,10 +20,9 @@ class FNVHash {
 	std::size_t hash_ = INITIAL;
 
 public:
-	template<typename ItBeg, typename ItEnd>
-	std::size_t update(ItBeg begin, ItEnd end) {
-		
-		for(auto it = begin; begin != end; ++begin) {
+	template<typename It>
+	std::size_t update(It begin, const It end) {
+		for(auto it = begin; begin != end; ++it) {
 			hash_ = (hash_ * 0x1000193) ^ static_cast<char>(*it);
 		}
 

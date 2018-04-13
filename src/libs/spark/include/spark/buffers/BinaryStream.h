@@ -31,11 +31,6 @@ private:
 	const std::size_t read_limit_;
 	State state_;
 
-public:
-	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
-                          : buffer_(source), total_read_(0), total_write_(0),
-                            read_limit_(read_limit), state_(State::OK) {}
-
 	void check_read_bounds(std::size_t read_size) {
 		if(read_size > buffer_.size()) {
 			state_ = State::BUFF_LIMIT_ERR;
@@ -51,6 +46,11 @@ public:
 
 		total_read_ = req_total_read ;
 	}
+
+public:
+	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
+                          : buffer_(source), total_read_(0), total_write_(0),
+                            read_limit_(read_limit), state_(State::OK) {}
 
 	/**  Serialisation **/
 
@@ -80,6 +80,13 @@ public:
 	void put(const void* data, std::size_t size) {
 		buffer_.write(data, size);
 		total_write_ += size;
+	}
+
+	template<typename It>
+	void put(It begin, const It end) {
+		for(auto it = begin; it != end; ++it) {
+			*this << *it;
+		}
 	}
 
 	/**  Deserialisation **/
@@ -117,6 +124,13 @@ public:
 	void get(void* dest, std::size_t size) {
 		check_read_bounds(size);
 		buffer_.read(dest, size);
+	}
+
+	template<typename It>
+	void get(It begin, const It end) {
+		for(auto it = begin; it != end; ++it) {
+			*this >> *it;
+		}
 	}
 
 	/**  Misc functions **/ 
