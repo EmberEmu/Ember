@@ -32,7 +32,6 @@ public:
 	virtual bool empty() const = 0;
 	virtual bool can_write_seek() const = 0;
 	virtual void write_seek(std::size_t offset, SeekDir direction) = 0;
-	virtual 
 	virtual std::byte& operator[](const std::size_t index) = 0;
 };
 
