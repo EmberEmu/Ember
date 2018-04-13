@@ -106,6 +106,14 @@ struct BufferBlock {
 		return BlockSize - write_offset;
 	}
 
+	void write_seek(std::size_t offset, bool rewind) {
+		if(rewind) {
+			write_offset -= offset; 
+		} else {
+			write_offset += offset; 
+		}
+	}
+
 	std::size_t advance_write_cursor(std::size_t size) {
 		const std::size_t remaining = free();
 

@@ -269,6 +269,33 @@ public:
 		size_ += size;
 	}
 
+	bool can_write_seek() const override {
+		return true;
+	}
+
+	void write_seek(std::size_t offset, SeekDir direction) override {
+		const bool rewind = direction == SeekDir::SD_BACK;
+		auto tail = root_.prev;
+
+		size_ = rewind? size_ - offset : size_ + offset;
+
+		while(offset) {
+			auto buffer = buffer_from_node(tail);
+			const auto max_seek = rewind? buffer->size() : buffer->free();
+
+			if(max_seek >= offset) {
+				buffer->write_seek(offset, rewind);
+				offset = 0;
+			} else {
+				buffer->write_seek(max_seek, rewind);
+				offset -= max_seek;
+				tail = rewind? tail->prev : tail->next;
+			}
+		}
+
+		root_.prev = tail;
+	}
+
 	void clear() override {
 		ChainedNode* head;
 
@@ -280,7 +307,7 @@ public:
 		size_ = 0;
 	}
 
-	bool empty() override {
+	bool empty() const override {
 		return !size_;
 	}
 	

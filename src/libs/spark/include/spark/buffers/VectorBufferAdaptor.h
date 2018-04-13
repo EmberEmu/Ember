@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Buffer.h"
+#include <spark/buffers/Buffer.h>
 #include <boost/assert.hpp>
 #include <vector>
 #include <utility>
@@ -61,7 +61,7 @@ public:
 		buffer_.clear();
 	}
 
-	bool empty() override {
+	bool empty() const override {
 		return !(buffer_.size() - read_);
 	}
 
@@ -69,20 +69,20 @@ public:
 		return reinterpret_cast<std::byte&>(buffer_[index]);
 	}
 
-	//bool can_write_seek() /*override - todo*/ {
-	//	return true;
-	//}
+	bool can_write_seek() const override {
+		return true;
+	}
 
-	//void write_seek(int val, SeekMode mode) /*override - todo*/ {
-	//	switch(mode) {
-	//		case SeekMode::SM_OFFSET:
-	//			write_ += val;
-	//			break;
-	//		case SeekMode::SM_ABSOLUTE:
-	//			write_ = val;
-	//			break;
-	//	}
-	//}
+	void write_seek(std::size_t offset, SeekDir direction) override {
+		switch(direction) {
+			case SeekDir::SD_BACK:
+				write_ -= offset;
+				break;
+			case SeekDir::SD_FORWARD:
+				write_ += offset;
+				break;
+		}
+	}
 };
 
 } // spark, ember

@@ -219,6 +219,46 @@ TEST(ChainedBufferTest, MoveChain) {
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
+TEST(ChainedBufferTest, WriteSeek) {
+	spark::ChainedBuffer<1> chain; // ensure the data is split over multiple buffer nodes
+	const std::array<std::uint8_t, 6> data {0x00, 0x01, 0x00, 0x00, 0x04, 0x05};
+	const std::array<std::uint8_t, 2> seek_data {0x02, 0x03};
+	const std::array<std::uint8_t, 4> expected_data {0x00, 0x01, 0x02, 0x03};
+
+	chain.write(data.data(), data.size());
+	chain.write_seek(4, spark::SeekDir::SD_BACK);
+	chain.write(seek_data.data(), seek_data.size());
+
+	// make sure the chain is four bytes (6 written, (-)4 rewound, (+)2 rewritten = 4)
+	ASSERT_EQ(chain.size(), 4) << "Chain size is incorrect";
+
+	std::vector<std::uint8_t> out(chain.size());
+	chain.copy(out.data(), out.size());
+
+	ASSERT_EQ(0, std::memcmp(out.data(), expected_data.data(), expected_data.size()))
+		<< "Buffer contains incorrect data pattern";
+
+	// put the write cursor back to its original position and write more data
+	chain.write_seek(2, spark::SeekDir::SD_FORWARD);
+
+	// should be six bytes in there
+	ASSERT_EQ(chain.size(), data.size()) << "Chain size is incorrect";
+
+	const std::array<std::uint8_t, 8> final_data {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+	const std::array<std::uint8_t, 2> new_data {0x06, 0x07};
+	chain.write(new_data.data(), new_data.size());
+
+	// should be eight bytes in there
+	ASSERT_EQ(chain.size(), final_data.size()) << "Chain size is incorrect";
+
+	// check the pattern/sequence/whatever
+	out.resize(chain.size());
+	chain.read(out.data(), out.size());
+
+	ASSERT_EQ(0, std::memcmp(out.data(), final_data.data(), final_data.size()))
+		<< "Buffer contains incorrect data pattern";
+}
+
 TEST(ChainedBufferTest, ReadIterator) {
 	spark::ChainedBuffer<16> chain; // ensure the string is split over multiple buffers
 	spark::BufferSequence<16> sequence(chain);

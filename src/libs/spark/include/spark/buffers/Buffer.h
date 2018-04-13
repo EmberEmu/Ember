@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,10 @@
 
 namespace ember::spark {
 
+enum class SeekDir {
+	SD_BACK, SD_FORWARD
+};
+
 class Buffer {
 public:
 	virtual ~Buffer() = default;
@@ -25,7 +29,10 @@ public:
 	virtual void reserve(std::size_t length) = 0;
 	virtual std::size_t size() const = 0;
 	virtual void clear() = 0;
-	virtual bool empty() = 0;
+	virtual bool empty() const = 0;
+	virtual bool can_write_seek() const = 0;
+	virtual void write_seek(std::size_t offset, SeekDir direction) = 0;
+	virtual 
 	virtual std::byte& operator[](const std::size_t index) = 0;
 };
 
