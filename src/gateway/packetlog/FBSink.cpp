@@ -27,7 +27,7 @@ void FBSink::start_log(const std::string& filename, const std::string& host,
                        const std::string& remote_host) {
 	file_ = std::ofstream(filename, std::fstream::binary | std::fstream::app | std::fstream::out);
 
-	if(!file_.is_open()) {
+	if(!file_) {
 		throw std::runtime_error("Unable to open file for packet logging");
 	}
 

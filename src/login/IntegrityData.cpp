@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2017 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -72,7 +72,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 
 		std::ifstream file(fpath.string(), std::ios::binary | std::ios::ate);
 
-		if(!file.is_open()) {
+		if(!file) {
 			throw std::runtime_error("Unable to open " + fpath.string());
 		}
 

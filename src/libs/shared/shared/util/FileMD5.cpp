@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ Botan::secure_vector<Botan::byte> generate_md5(const std::byte* data, const std:
 Botan::secure_vector<Botan::byte> generate_md5(const std::string& file) {
 	std::ifstream stream(file, std::ios::in | std::ios::binary | std::ios::ate);
 
-	if(!stream.is_open()) {
+	if(!stream) {
 		throw std::runtime_error("Could not open file for MD5, " + file);
 	}
 

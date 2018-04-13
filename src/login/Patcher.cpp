@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -57,7 +57,7 @@ const PatchMeta* Patcher::locate_rollup(const std::vector<PatchMeta>& patches,
 }
 
 std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, grunt::Locale locale,
-                                               grunt::Platform platform, grunt::System os) const {
+                                             grunt::Platform platform, grunt::System os) const {
 	FNVHash hasher;
 	hasher.update(grunt::to_string(locale));
 	hasher.update(grunt::to_string(platform));
@@ -150,8 +150,8 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 	
 	std::ifstream file(path + "Survey.mpq", std::ios::binary | std::ios::ate);
 
-	if(!file.is_open()) {
-		throw std::runtime_error("Unable to open " + path + "Survey.mpq");
+	if(!file) {
+		throw std::runtime_error("Error opening " + path + "Survey.mpq");
 	}
 
 	survey_.size = file.tellg();
@@ -205,8 +205,8 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 		// we open each patch to make sure that it at least exists
 		std::ifstream file(path + patch.file_meta.name, std::ios::binary | std::ios::ate);
 
-		if(!file.is_open()) {
-			throw std::runtime_error("Unable to open patch " + path + patch.file_meta.name);
+		if(!file) {
+			throw std::runtime_error("Error opening patch " + path + patch.file_meta.name);
 		}
 
 		if(patch.file_meta.size == 0) {
@@ -225,7 +225,7 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 			value |= c;
 		}
 
-		if(!static_cast<int>(value)) {
+		if(!static_cast<bool>(value)) {
 			LOG_INFO(logger) << "Calculating MD5 for " << patch.file_meta.name << LOG_SYNC;
 			auto md5 = util::generate_md5(path + patch.file_meta.name);
 			std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(patch.file_meta.md5.data()));

@@ -547,7 +547,6 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
 
-	// todo, replace with structured bindings when possible
 	for(const auto& [key, realm] : *realms) {
 		if(!locale_enforce_ || realm.region == region) {
 			response.realms.push_back({ realm, char_count[realm.id] });
@@ -578,7 +577,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) 
 	LOG_DEBUG(logger_) << "Initiating patch transfer, " << fmeta.name << LOG_ASYNC;
 	std::ifstream patch(fmeta.path + fmeta.name, std::ios::binary | std::ios::beg);
 
-	if(!patch.is_open()) {
+	if(!patch) {
 		LOG_ERROR(logger_) << "Could not open patch, " << fmeta.name << LOG_ASYNC;
 		return;
 	}
