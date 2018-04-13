@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,8 @@
 
 #include <logger/FileSink.h>
 #include <logger/Exception.h>
-#define BOOST_FILESYSTEM_NO_DEPRECATED
-#include <boost/filesystem.hpp>
 #include <algorithm>
+#include <filesystem>
 #include <iterator>
 #include <limits>
 #include <utility>
@@ -20,14 +19,14 @@
 
 namespace ember::log {
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 FileSink::FileSink(Severity severity, Filter filter, std::string file_name, Mode mode)
                    : Sink(severity, filter), file_name_format_(std::move(file_name)) {
 	format_file_name();
 
 	if(mode == Mode::APPEND) {
-		boost::system::error_code ec;
+		std::error_code ec;
 		std::uintmax_t size = fs::file_size(fs::path(file_name_), ec);
 
 		// file_size returns -1 if the file doesn't exist
@@ -53,7 +52,7 @@ FileSink::~FileSink() {
 
 bool FileSink::file_exists(const std::string& name) try {
 	return fs::exists(fs::path(name));
-} catch(boost::filesystem::filesystem_error& e) {
+} catch(std::filesystem::filesystem_error& e) {
 	throw exception(e.what());
 }
 

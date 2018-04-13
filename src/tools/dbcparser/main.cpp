@@ -13,9 +13,9 @@
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/bind.hpp>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -26,7 +26,7 @@
 #include <unordered_map>
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 namespace edbc = ember::dbc;
 namespace el = ember::log;
 
@@ -171,7 +171,7 @@ std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths
 	std::vector<std::string> xml_paths;
 
 	for(auto& path : paths) {
-		if(!boost::filesystem::is_directory(path)) {
+		if(!std::filesystem::is_directory(path)) {
 			throw std::invalid_argument("Invalid path provided, " + path);
 		}
 

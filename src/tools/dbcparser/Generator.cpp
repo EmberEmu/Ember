@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016 Ember
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 #include "TypeUtils.h"
 #include "Types.h"
 #include <logger/Logging.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <regex>
 #include <vector>
 #include <fstream>
@@ -82,10 +82,10 @@ std::string parent_alias(const types::Definitions& defs, const std::string& pare
 void save_output(const std::string& path, const std::string& name, const std::string& output) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	boost::filesystem::path dir(path);
+	std::filesystem::path dir(path);
 
-	if(!(boost::filesystem::exists(dir))) {
-		if(!boost::filesystem::create_directory(dir)) {
+	if(!(std::filesystem::exists(dir))) {
+		if(!std::filesystem::create_directory(dir)) {
 			throw std::runtime_error(path + " does not exist and could not be created");
 		}
 	}
