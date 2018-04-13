@@ -44,11 +44,11 @@ std::uint32_t PINAuthenticator::grid_seed() {
 /* 
  * Returns a completely random 16-byte salt used during hashing
  */
-auto PINAuthenticator::server_salt() -> std::array<std::uint8_t, SALT_LENGTH>& {
+auto PINAuthenticator::server_salt() -> const std::array<std::uint8_t, SALT_LENGTH>& {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	for(std::size_t i = 0; i < server_salt_.size(); ++i) {
-		server_salt_[i] = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
+	for(auto& salt_byte : server_salt_) {
+		salt_byte = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
 	}
 	
 	remap_pin_grid();
@@ -92,7 +92,7 @@ void PINAuthenticator::remap_pin_grid() {
 	std::uint32_t grid_seed = grid_seed_;
 
 	for(std::size_t i = grid.size(); i > 0; --i) {
-		auto remainder = grid_seed % i;
+		const auto remainder = grid_seed % i;
 		grid_seed /= i;
 		*remapped_index = grid[remainder];
 
@@ -116,9 +116,9 @@ void PINAuthenticator::remap_pin_grid() {
 void PINAuthenticator::remap_pin() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	for(std::size_t i = 0; i < pin_bytes_.size(); ++i) {
-		auto index = std::find(remapped_grid.begin(), remapped_grid.end(), pin_bytes_[i]);
-		pin_bytes_[i] = std::distance(remapped_grid.begin(), index);
+	for(auto& pin_byte : pin_bytes_) {
+		const auto index = std::find(remapped_grid.begin(), remapped_grid.end(), pin_byte);
+		pin_byte = std::distance(remapped_grid.begin(), index);
 	}
 }
 
@@ -130,8 +130,8 @@ void PINAuthenticator::remap_pin() {
 void PINAuthenticator::pin_to_ascii() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	for(std::size_t i = 0; i < pin_bytes_.size(); ++i) {
-		pin_bytes_[i] += 0x30;
+	for(auto& pin_byte : pin_bytes_) {
+		pin_byte += 0x30;
 	}
 }
 
@@ -148,24 +148,25 @@ bool PINAuthenticator::validate_pin(const std::array<std::uint8_t, HASH_LENGTH>&
 
 	hasher.update(client_salt_.data(), client_salt_.size());
 	hasher.update(hash);
-	auto final_hash = hasher.final();
+	hash = hasher.final();
 
 	// ensure we computed the same result as the client
-	return std::equal(final_hash.begin(), final_hash.end(), client_hash.begin(), client_hash.end());
+	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
 }
 
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int interval) {
 	std::vector<std::uint8_t> decoded_key((secret.size() + 7) / 8 * 5);
-	int key_size = base32_decode((const uint8_t*)secret.data(), decoded_key.data(), decoded_key.size());
+	const int key_size = base32_decode(reinterpret_cast<const uint8_t*>(secret.data()), decoded_key.data(),
+	                                   decoded_key.size());
 
 	if(key_size == -1) {
 		throw std::invalid_argument("Unable to base32 decode TOTP key, " + secret);
 	}
 
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
-	auto time = std::time(NULL);
-	std::uint64_t now = static_cast<std::uint64_t>(time);
-	std::uint64_t step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
+	const auto time = std::time(NULL);
+	const auto now = static_cast<std::uint64_t>(time);
+	auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
 	auto sha160 = std::make_unique<Botan::SHA_160>();
 	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
@@ -185,7 +186,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	std::uint32_t pin = (hmac_result[offset] & 0x7f) << 24 | (hmac_result[offset + 1] & 0xff) << 16
 	                     | (hmac_result[offset + 2] & 0xff) << 8 | (hmac_result[offset + 3] & 0xff);
 
-    boost::endian::little_to_native_inplace(pin);
+    be::little_to_native_inplace(pin);
 
 	pin &= 0x7FFFFFFF;
 	pin %= 1000000;
