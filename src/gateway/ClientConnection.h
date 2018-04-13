@@ -39,10 +39,6 @@ class ClientConnection final {
 	static constexpr std::size_t INBOUND_SIZE = 1024;
 	static constexpr std::size_t OUTBOUND_SIZE = 2048;
 
-	// ClientHeader struct is not packed - do not do sizeof(protocol::ClientHeader)
-	static constexpr std::size_t HEADER_WIRE_SIZE =
-		sizeof(protocol::ClientHeader::opcode) + sizeof(protocol::ClientHeader::size);
-
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::io_service& service_;

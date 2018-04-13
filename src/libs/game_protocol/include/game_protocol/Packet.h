@@ -30,14 +30,6 @@ struct Packet {
 struct ServerPacket : public Packet {
 	ServerOpcode opcode;
 	ServerPacket(protocol::ServerOpcode opcode) : opcode(opcode) { }
-
-	ServerHeader build_header() const {
-		spark::NullBuffer null_buff;
-		spark::BinaryStream stream(null_buff);
-		stream << opcode;
-		write_to_stream(stream);
-		return { gsl::narrow<std::uint16_t>(stream.total_write()), opcode };
-	}
 };
 
 // todo, overload this properly

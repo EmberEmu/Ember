@@ -121,6 +121,14 @@ public:
 
 	/**  Misc functions **/ 
 
+	bool can_write_seek() const {
+		return buffer_.can_write_seek();
+	}
+
+	void write_seek(std::size_t offset, SeekDir direction) {
+		buffer_.write_seek(offset, direction);
+	}
+
 	std::size_t size() const {
 		return buffer_.size();
 	}

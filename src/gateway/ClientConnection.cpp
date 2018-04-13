@@ -18,12 +18,12 @@ namespace ember {
 void ClientConnection::parse_header(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	if(buffer.size() < HEADER_WIRE_SIZE) {
+	if(buffer.size() < protocol::ClientHeader::WIRE_SIZE) {
 		return;
 	}
 
 	if(authenticated_) {
-		crypto_.decrypt(buffer, HEADER_WIRE_SIZE);
+		crypto_.decrypt(buffer, protocol::ClientHeader::WIRE_SIZE);
 	}
 
 	spark::BinaryStream stream(buffer);
@@ -80,15 +80,25 @@ void ClientConnection::send(const protocol::ServerPacket& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
-	auto header = packet.build_header();
+	spark::BinaryStream stream(*outbound_back_);
+	stream << protocol::SizeType{} << protocol::ServerOpcode{} << packet;
+
+	const auto write_size = gsl::narrow<protocol::SizeType>(stream.total_write());
+
+	protocol::ServerHeader header {
+		write_size - sizeof(protocol::SizeType),
+	    packet.opcode
+	};
 
 	if(authenticated_) {
 		crypto_.encrypt(header.size);
 		crypto_.encrypt(header.opcode);
 	}
 
-	spark::BinaryStream stream(*outbound_back_);
-	stream << header.size << header.opcode << packet;
+	stream.write_seek(write_size, spark::SeekDir::SD_BACK);
+	stream << header.size << header.opcode;
+	stream.write_seek(write_size - protocol::ServerHeader::WIRE_SIZE,
+	                  spark::SeekDir::SD_FORWARD);
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;
