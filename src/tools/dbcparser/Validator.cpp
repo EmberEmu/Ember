@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014 - 2016 Ember
+/*
+ * Copyright (c) 2014 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -455,12 +455,10 @@ void Validator::validate(const types::Definitions& definitions) {
 
 	build_type_tree();
 
-	for(auto& def : *definitions_) {
-		try { //msvc can't handle try/catch blocks inside range-for without nesting
-			validate_definition(def.get());
-		} catch(const std::exception& e) {
-			throw exception(def->name + ": " + e.what());
-		}
+	for(auto& def : *definitions_) try {
+		validate_definition(def.get());
+	} catch(const std::exception& e) {
+		throw exception(def->name + ": " + e.what());
 	}
 }
 

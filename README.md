@@ -27,7 +27,7 @@ This table lists the compilers actively used during development as well as the o
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
 | MSVC  | 19.6 (VS2017) | 19.6 (VS2017) |
-| Clang |     4.0     |     4.0     |
+| Clang |     5.0     |     5.0     |
 | GCC   |     7.0     |     7.0     |
 
 ### Build status:
