@@ -128,8 +128,8 @@ public:
 
 	template<typename It>
 	void get(It begin, const It end) {
-		for(auto it = begin; it != end; ++it) {
-			*this >> *it;
+		for(; begin != end; ++begin) {
+			*this >> *begin;
 		}
 	}
 

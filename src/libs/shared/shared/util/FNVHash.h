@@ -22,8 +22,8 @@ class FNVHash {
 public:
 	template<typename It>
 	std::size_t update(It begin, const It end) {
-		for(auto it = begin; begin != end; ++it) {
-			hash_ = (hash_ * 0x1000193) ^ static_cast<char>(*it);
+		for(; begin != end; ++begin) {
+			hash_ = (hash_ * 0x1000193) ^ static_cast<char>(*begin);
 		}
 
 		return hash_;
