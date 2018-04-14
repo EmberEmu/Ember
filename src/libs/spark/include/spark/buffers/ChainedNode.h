@@ -9,6 +9,7 @@
 #pragma once
 #pragma warning(disable : 4996)
 
+#include <spark/buffers/Buffer.h>
 #include <array>
 #include <cstddef>
 
@@ -106,8 +107,8 @@ struct BufferBlock {
 		return BlockSize - write_offset;
 	}
 
-	void write_seek(std::size_t offset, bool rewind) {
-		if(rewind) {
+	void write_seek(std::size_t offset, SeekDir direction) {
+		if(direction == SeekDir::SD_BACK) {
 			write_offset -= offset; 
 		} else {
 			write_offset += offset; 

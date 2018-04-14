@@ -284,10 +284,10 @@ public:
 			const auto max_seek = rewind? buffer->size() : buffer->free();
 
 			if(max_seek >= offset) {
-				buffer->write_seek(offset, rewind);
+				buffer->write_seek(offset, direction);
 				offset = 0;
 			} else {
-				buffer->write_seek(max_seek, rewind);
+				buffer->write_seek(max_seek, direction);
 				offset -= max_seek;
 				tail = rewind? tail->prev : tail->next;
 			}
