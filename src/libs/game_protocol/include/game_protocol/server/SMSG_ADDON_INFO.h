@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
@@ -16,11 +15,11 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::smsg {
 
 namespace be = boost::endian;
 
-class SMSG_ADDON_INFO final : public ServerPacket {
+class SMSG_ADDON_INFO final {
 	State state_ = State::INITIAL;
 
 	const std::array<std::uint8_t, 256> public_key_ = {
@@ -57,12 +56,10 @@ public:
 		std::string update_url;
 	};
 
-	SMSG_ADDON_INFO() : ServerPacket(protocol::ServerOpcode::SMSG_ADDON_INFO) { }
-
 	Result result;
 	std::vector<AddonData> addon_data;
 
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		return (state_ = State::DONE);
@@ -70,7 +67,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 

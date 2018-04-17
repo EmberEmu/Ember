@@ -8,7 +8,7 @@
 
 #include "LogSink.h"
 #include "../FilterTypes.h"
-#include <shared/util/FormatPacket.h>
+#include <shared/util/Formatpacket.h>
 #include <logger/Utility.h>
 #include <memory>
 #include <string_view>

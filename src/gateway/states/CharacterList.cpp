@@ -34,7 +34,7 @@ void send_character_list_fail(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_CREATE response;
-	response.result = protocol::Result::AUTH_UNAVAILABLE;
+	response->result = protocol::Result::AUTH_UNAVAILABLE;
 	ctx->connection->send(response);
 }
 
@@ -51,7 +51,7 @@ void send_character_list(ClientContext* ctx, std::vector<Character> characters) 
 	}
 
 	protocol::SMSG_CHAR_ENUM response;
-	response.characters = std::move(characters);
+	response->characters = std::move(characters);
 	ctx->connection->send(response);
 }
 
@@ -60,9 +60,9 @@ void send_character_rename(ClientContext* ctx, protocol::Result result,
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_RENAME response;
-	response.result = result;
-	response.id = id;
-	response.name = name;
+	response->result = result;
+	response->id = id;
+	response->name = name;
 	ctx->connection->send(response);
 }
 
@@ -77,7 +77,7 @@ void character_rename(ClientContext* ctx) {
 
 	const auto uuid = ctx->handler->uuid();
 
-	Locator::character()->rename_character(ctx->account_id, packet.id, packet.name,
+	Locator::character()->rename_character(ctx->account_id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
 		auto event = std::make_unique<CharRenameResponse>(status, result, id, name);
@@ -127,7 +127,7 @@ void send_character_delete(ClientContext* ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_DELETE response;
-	response.result = result;
+	response->result = result;
 	ctx->connection->send(response);
 }
 
@@ -135,7 +135,7 @@ void send_character_create(ClientContext* ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_CREATE response;
-	response.result = result;
+	response->result = result;
 	ctx->connection->send(response);
 }
 
@@ -150,7 +150,7 @@ void character_create(ClientContext* ctx) {
 
 	const auto uuid = ctx->handler->uuid();
 
-	Locator::character()->create_character(ctx->account_id, packet.character,
+	Locator::character()->create_character(ctx->account_id, packet->character,
 	                                       [uuid](auto status, auto result) {
 		Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
 	});
@@ -177,7 +177,7 @@ void character_delete(ClientContext* ctx) {
 
 	const auto uuid = ctx->handler->uuid();
 
-	Locator::character()->delete_character(ctx->account_id, packet.id,
+	Locator::character()->delete_character(ctx->account_id, packet->id,
 	                                       [uuid](auto status, auto result) {
 		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
 	});

@@ -8,29 +8,26 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::smsg {
 
 namespace be = boost::endian;
 
-class SMSG_AUTH_RESPONSE final : public ServerPacket {
+class SMSG_AUTH_RESPONSE final {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_AUTH_RESPONSE() : ServerPacket(protocol::ServerOpcode::SMSG_AUTH_RESPONSE) { }
-
 	Result result;
 	be::little_uint32_at queue_position = 0;
 	be::little_uint32_at billing_time = 0;
 	be::little_uint8_at billing_flags = 0;
 	be::little_uint32_at billing_rested = 0;
 
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> result;
@@ -50,7 +47,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << result;
 
 		if(result == Result::AUTH_WAIT_QUEUE) {

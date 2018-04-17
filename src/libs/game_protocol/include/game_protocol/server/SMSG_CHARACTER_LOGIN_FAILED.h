@@ -8,22 +8,19 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::smsg {
 
-class SMSG_CHARACTER_LOGIN_FAILED final : public ServerPacket {
+class SMSG_CHARACTER_LOGIN_FAILED final {
 	State state_ = State::INITIAL;
 
 public:
-	SMSG_CHARACTER_LOGIN_FAILED() : ServerPacket(protocol::ServerOpcode::SMSG_CHARACTER_LOGIN_FAILED) { }
-
 	std::uint8_t reason;
 
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> reason;
@@ -33,7 +30,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << reason;
 	}
 };

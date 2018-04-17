@@ -24,7 +24,8 @@ int compress_message(const spark::Buffer& in, spark::Buffer& out, int compressio
 }
 
 // temp testing function, do not use yet
-int compress_message(const protocol::ServerPacket& packet, spark::Buffer& out, int compression_level) {
+template<typename Packet_t>
+int compress_message(const Packet_t& packet, spark::Buffer& out, int compression_level) {
 	constexpr std::size_t BLOCK_SIZE = 64;
 	spark::ChainedBuffer<4096> temp_buffer;
 	spark::BinaryStream stream(temp_buffer);
@@ -38,7 +39,7 @@ int compress_message(const protocol::ServerPacket& packet, spark::Buffer& out, i
 	z_stream.next_out = out_buff;
 	deflateInit(&z_stream, compression_level);
 
-	stream << packet.opcode << packet;
+	stream << packet->opcode << packet;
 	out_stream << std::uint16_t(0) << protocol::ServerOpcode::SMSG_COMPRESSED_UPDATE_OBJECT;
 
 	while(!stream.empty()) {

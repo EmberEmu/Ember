@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::cmsg {
 
-class CMSG_CHAR_ENUM final : public Packet {
+class CMSG_CHAR_ENUM final {
 	State state_ = State::INITIAL;
 
 public:
 	
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 
@@ -29,7 +28,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		
 	}
 };

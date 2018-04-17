@@ -8,23 +8,22 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::cmsg {
 
 namespace be = boost::endian;
 
-class CMSG_CHAR_DELETE final : public Packet {
+class CMSG_CHAR_DELETE final {
 	State state_ = State::INITIAL;
 
 public:
 	be::little_uint64_at id;
 
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> id;
@@ -34,7 +33,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << id;
 	}
 };

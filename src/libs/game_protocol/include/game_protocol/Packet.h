@@ -8,34 +8,64 @@
 
 #pragma once
 
-#include <game_protocol/Opcodes.h>
 #include <game_protocol/PacketHeaders.h>
 #include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/NullBuffer.h>
 #include <gsl/gsl_util>
 #include <cstdint>
 
 namespace ember::protocol {
 
-struct Packet {
-	enum class State {
-		INITIAL, CALL_AGAIN, DONE, ERRORED
-	};
-
-	virtual State read_from_stream(spark::BinaryStream& stream) = 0;
-	virtual void write_to_stream(spark::BinaryStream& stream) const = 0;
-	virtual ~Packet() = default;
+enum class State {
+	INITIAL, CALL_AGAIN, DONE, ERRORED
 };
 
-struct ServerPacket : public Packet {
-	ServerOpcode opcode;
-	ServerPacket(protocol::ServerOpcode opcode) : opcode(opcode) { }
+template <typename OpcodeT, OpcodeT opcode, typename SizeType, typename BodyT>
+struct Packet final {
+	using Opcode_t = OpcodeT;
+
+	static constexpr OpcodeT opcode = opcode;
+	static constexpr std::size_t HEADER_WIRE_SIZE =
+		sizeof(SizeType) + sizeof(OpcodeT);
+
+	BodyT payload;
+
+	State read_from_stream(spark::BinaryStream& stream) {
+		return payload.read_from_stream(stream);
+	}
+
+	void write_to_stream(spark::BinaryStream& stream) const {
+		const auto initial = stream.total_write();
+		stream << SizeType{0} << opcode;
+		payload.write_to_stream(stream);
+		const auto written = stream.total_write() - initial;
+		
+		stream.write_seek(written, spark::SeekDir::SD_BACK);
+		stream << gsl::narrow<SizeType>(written - sizeof(SizeType));
+		stream.write_seek(written - sizeof(SizeType), spark::SeekDir::SD_FORWARD);
+	}
+
+	friend spark::BinaryStream& operator<<(spark::BinaryStream& stream, const Packet& p) {
+		p.write_to_stream(stream);
+		return stream;
+	}
+
+	BodyT* operator->() {
+		return &payload;
+	}
+
+	const BodyT* operator->() const {
+		return &payload;
+	}
 };
 
-// todo, overload this properly
-inline spark::BinaryStream& operator<<(spark::BinaryStream& out, const ServerPacket& packet) {
-	packet.write_to_stream(out);
-	return out;
-}
+template<ServerOpcode opcode, typename Body>
+struct ServerPacket {
+	using Type = Packet<ServerOpcode, opcode, SizeType, Body>;
+};
+
+template<ClientOpcode opcode, typename Body>
+struct ClientPacket {
+	using Type = Packet<ClientOpcode, opcode, SizeType, Body>;
+};
 
 } // protocol, ember

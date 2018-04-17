@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,27 +8,24 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <shared/database/objects/Character.h>
 #include <boost/endian/conversion.hpp>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::smsg {
 
 namespace be = boost::endian;
 
-class SMSG_CHAR_ENUM final : public ServerPacket {
+class SMSG_CHAR_ENUM final {
 	State state_ = State::INITIAL;
 
 
 public:
-	SMSG_CHAR_ENUM() : ServerPacket(protocol::ServerOpcode::SMSG_CHAR_ENUM) { }
-
 	std::vector<Character> characters;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::BinaryStream& stream) {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		std::uint8_t char_count;
@@ -80,7 +77,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {

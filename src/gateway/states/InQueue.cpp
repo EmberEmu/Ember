@@ -14,7 +14,7 @@
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
 #include <logger/Logging.h>
-#include <game_protocol/server/SMSG_AUTH_RESPONSE.h>
+#include <game_protocol/Packets.h>
 #include <gsl/gsl_util>
 
 namespace ember::queue {
@@ -23,8 +23,8 @@ void handle_queue_update(ClientContext* ctx, const QueuePosition* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE packet;
-	packet.result = protocol::Result::AUTH_WAIT_QUEUE;
-	packet.queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
+	packet->result = protocol::Result::AUTH_WAIT_QUEUE;
+	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
 	ctx->connection->send(packet);
 }
 

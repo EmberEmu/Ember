@@ -104,7 +104,35 @@ public:
 
 	// these should be made private, only for use by the handler
 	void log_packets(bool enable);
-	void send(const protocol::ServerPacket& packet);
+
+	template<typename Packet>
+	void send(const Packet& packet) {
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
+			<< protocol::to_string(packet.opcode) << LOG_ASYNC;
+
+		spark::BinaryStream stream(*outbound_back_);
+		stream << packet;
+
+		if(authenticated_) {
+			stream.write_seek(stream.total_write(), spark::SeekDir::SD_BACK);
+			crypto_.encrypt(*outbound_back_, Packet::HEADER_WIRE_SIZE);
+			stream.write_seek(stream.total_write(), spark::SeekDir::SD_FORWARD);
+		}
+
+
+		if(!write_in_progress_) {
+			write_in_progress_ = true;
+			std::swap(outbound_front_, outbound_back_);
+			write();
+		}
+
+		if(packet_logger_) {
+			packet_logger_->log(packet, PacketDirection::OUTBOUND);
+		}
+
+		++stats_.messages_out;
+	}
+
 	void close_session();
 	void terminate();
 

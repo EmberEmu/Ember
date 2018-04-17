@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
@@ -22,11 +21,11 @@
 #include <cstddef>
 #include <zlib.h>
 
-namespace ember::protocol {
+namespace ember::protocol::cmsg {
 
 namespace be = boost::endian;
 
-class CMSG_AUTH_SESSION final : public Packet {
+class CMSG_AUTH_SESSION final {
 	static const std::size_t DIGEST_LENGTH = 20;
 
 	State state_ = State::INITIAL;
@@ -49,7 +48,7 @@ public:
 	std::string username;
 	std::vector<AddonData> addons;
 
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		const auto initial_stream_size = stream.size();
@@ -109,7 +108,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << build;
 		stream << unk1;
 		stream << username;

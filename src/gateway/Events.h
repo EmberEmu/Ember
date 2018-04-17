@@ -12,7 +12,7 @@
 #include "Account_generated.h"
 #include "Character_generated.h"
 #include <game_protocol/ResultCodes.h>
-#include <game_protocol/client/CMSG_AUTH_SESSION.h>
+#include <game_protocol/Packets.h>
 #include <shared/database/objects/Character.h>
 #include <botan/bigint.h>
 #include <vector>

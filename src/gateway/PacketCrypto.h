@@ -47,6 +47,16 @@ public:
 		}
 	}
 
+	void encrypt(spark::Buffer& data, std::size_t length) {
+		for(std::size_t t = 0; t < length; ++t) {
+			send_i_ %= key_.size();
+			auto& byte = reinterpret_cast<char&>(data[t]); // todo - type change
+			std::uint8_t x = (byte ^ key_[send_i_]) + send_j_;
+			++send_i_;
+			byte = send_j_ = x;
+		}
+	}
+
 	void decrypt(spark::Buffer& data, std::size_t length) {
 		BOOST_ASSERT_MSG(!key_.empty(), "Session key empty when decrypting");
 

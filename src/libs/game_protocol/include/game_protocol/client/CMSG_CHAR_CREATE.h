@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
 #include <game_protocol/ResultCodes.h>
 #include <shared/database/objects/Character.h>
 #include <memory>
@@ -16,15 +15,15 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::protocol {
+namespace ember::protocol::cmsg {
 
-class CMSG_CHAR_CREATE final : public Packet {
+class CMSG_CHAR_CREATE final {
 	State state_ = State::INITIAL;
 
 public:
 	CharacterTemplate character;
 	
-	State read_from_stream(spark::BinaryStream& stream) override try {
+	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> character.name;
@@ -43,7 +42,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << character.name;
 		stream << character.race;
 		stream << character.class_;

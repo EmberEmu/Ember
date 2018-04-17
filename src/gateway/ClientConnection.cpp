@@ -76,43 +76,6 @@ void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
 	}
 }
 
-void ClientConnection::send(const protocol::ServerPacket& packet) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
-		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
-
-	spark::BinaryStream stream(*outbound_back_);
-	stream << protocol::SizeType{} << protocol::ServerOpcode{} << packet;
-
-	const auto write_size = gsl::narrow<protocol::SizeType>(stream.total_write());
-
-	protocol::ServerHeader header {
-		write_size - sizeof(protocol::SizeType),
-	    packet.opcode
-	};
-
-	if(authenticated_) {
-		crypto_.encrypt(header.size);
-		crypto_.encrypt(header.opcode);
-	}
-
-	stream.write_seek(write_size, spark::SeekDir::SD_BACK);
-	stream << header.size << header.opcode;
-	stream.write_seek(write_size - protocol::ServerHeader::WIRE_SIZE,
-	                  spark::SeekDir::SD_FORWARD);
-
-	if(!write_in_progress_) {
-		write_in_progress_ = true;
-		std::swap(outbound_front_, outbound_back_);
-		write();
-	}
-
-	if(packet_logger_) {
-		packet_logger_->log(packet, PacketDirection::OUTBOUND);
-	}
-			
-	++stats_.messages_out;
-}
-
 void ClientConnection::write() {
 	if(!socket_.is_open()) {
 		return;
