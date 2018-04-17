@@ -43,11 +43,11 @@ struct Packet final {
 		return stream;
 	}
 
-	auto* operator->() {
+	auto operator->() {
 		return &payload;
 	}
 
-	const auto* operator->() const {
+	const auto operator->() const {
 		return &payload;
 	}
 };
