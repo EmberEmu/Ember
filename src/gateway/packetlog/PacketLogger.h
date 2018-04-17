@@ -9,8 +9,10 @@
 #pragma once
 
 #include "PacketSink.h"
-#include <game_protocol/Packet.h>
-#include <spark/buffers/Buffer.h>
+#include <protocol/Packets.h>
+#include <spark/buffers/VectorBufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <chrono>
 #include <memory>
 #include <vector>
 
@@ -24,7 +26,19 @@ public:
 	void reset();
 
 	void log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir);
-	void log(const protocol::ServerPacket& packet, PacketDirection dir);
+
+	template<typename PacketT>
+	void log(const PacketT& packet, PacketDirection dir) {
+		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::vector<std::uint8_t> buffer(64);
+		spark::VectorBufferAdaptor adaptor(buffer);
+		spark::BinaryStream stream(adaptor);
+		stream << packet.opcode << packet;
+
+		for(auto& sink : sinks_) {
+			sink->log(buffer, time, dir);
+		}
+	}
 };
 
 } // ember

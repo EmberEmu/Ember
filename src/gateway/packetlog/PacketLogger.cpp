@@ -7,9 +7,6 @@
  */
 
 #include "PacketLogger.h"
-#include <spark/buffers/VectorBufferAdaptor.h>
-#include <spark/buffers/BinaryStream.h>
-#include <chrono>
 
 namespace sc = std::chrono;
 
@@ -21,18 +18,6 @@ void PacketLogger::add_sink(std::unique_ptr<PacketSink> sink) {
 
 void PacketLogger::reset() {
 	sinks_.clear();
-}
-
-void PacketLogger::log(const protocol::ServerPacket& packet, PacketDirection dir) {
-	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
-	std::vector<std::uint8_t> buffer(64);
-	spark::VectorBufferAdaptor adaptor(buffer);
-	spark::BinaryStream stream(adaptor);
-	stream << packet.opcode << packet;
-
-	for(auto& sink : sinks_) {
-		sink->log(buffer, time, dir);
-	}
 }
 
 void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir) {

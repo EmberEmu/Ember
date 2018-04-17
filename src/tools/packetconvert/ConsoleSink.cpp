@@ -7,7 +7,7 @@
  */
 
 #include "ConsoleSink.h"
-#include <game_protocol/Opcodes.h>
+#include <protocol/Opcodes.h>
 #include <shared/util/FormatPacket.h>
 #include <iostream>
 #include <sstream>

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../Event.h"
-#include <game_protocol/Opcodes.h>
+#include <protocol/Opcodes.h>
 #include <memory>
 
 namespace ember { 

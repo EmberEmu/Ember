@@ -10,7 +10,7 @@
 
 #include "Character_generated.h"
 #include <dbcreader/Storage.h>
-#include <game_protocol/ResultCodes.h>
+#include <protocol/ResultCodes.h>
 #include <shared/database/daos/CharacterDAO.h>
 #include <shared/util/PCREHelper.h>
 #include <logger/Logging.h>

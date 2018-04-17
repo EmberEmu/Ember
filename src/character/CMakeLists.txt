@@ -23,9 +23,9 @@ include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${LIBRARY_NAME} dbcreader spark logging game_protocol shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} dbcreader spark logging protocol shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} game_protocol dbcreader spark conpool logging shared  ${PCRE_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} protocol dbcreader spark conpool logging shared  ${PCRE_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

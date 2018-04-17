@@ -18,5 +18,5 @@ set(EXECUTABLE_SRC
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${EXECUTABLE_NAME} shared game_protocol ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} shared protocol ${Boost_LIBRARIES})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)

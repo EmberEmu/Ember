@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Character_generated.h"
-#include <game_protocol/ResultCodes.h>
+#include <protocol/ResultCodes.h>
 #include <spark/Helpers.h>
 #include <spark/Service.h>
 #include <logger/Logging.h>

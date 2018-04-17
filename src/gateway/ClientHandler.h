@@ -10,8 +10,9 @@
 
 #include "Event.h"
 #include "states/ClientContext.h"
-#include <game_protocol/Packet.h>
+#include <protocol/Packets.h>
 #include <spark/buffers/Buffer.h>
+#include <spark/buffers/BinaryStream.h>
 #include <logger/Logging.h>
 #include <shared/ClientUUID.h>
 #include <boost/asio/steady_timer.hpp>
@@ -39,7 +40,10 @@ public:
 
 	void state_update(ClientState new_state);
 	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
-	bool packet_deserialise(protocol::Packet& packet, spark::Buffer& stream);
+
+	template<typename PacketT>
+	bool packet_deserialise(PacketT& packet, spark::Buffer& buffer);
+
 	void handle_message(spark::Buffer& buffer, protocol::SizeType size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
@@ -54,5 +58,7 @@ public:
 		return uuid_;
 	}
 };
+
+#include "ClientHandler.inl"
 
 } // ember

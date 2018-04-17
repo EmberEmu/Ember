@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <game_protocol/Packet.h>
+#include <protocol/Packets.h>
 #include <spark/buffers/Buffer.h>
 
 namespace ember {
 
-int compress_message(const protocol::ServerPacket& packet, spark::Buffer& out, int compression_level);
+template<typename Packet_t>
+int compress_message(const Packet_t& packet, spark::Buffer& out, int compression_level);
 int compress_message(const spark::Buffer& in, spark::Buffer& out, int compression_level);
 
 } // ember

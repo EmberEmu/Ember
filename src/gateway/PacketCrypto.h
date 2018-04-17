@@ -52,7 +52,7 @@ public:
 
 		for(std::size_t t = 0; t < length; ++t) {
 			recv_i_ %= key_.size();
-			auto& byte = reinterpret_cast<char&>(data[t]); // todo - type change
+			auto& byte = reinterpret_cast<char&>(data[t]);
 			std::uint8_t x = (byte - recv_j_) ^ key_[recv_i_];
 			++recv_i_;
 			recv_j_ = byte;

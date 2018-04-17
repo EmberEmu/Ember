@@ -13,9 +13,8 @@
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
-#include <game_protocol/PacketHeaders.h>
-#include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
@@ -74,6 +73,7 @@ class ClientConnection final {
 	// session management
 	void stop();
 	void close_session_sync();
+	void terminate();
 
 	// packet reassembly & dispatching
 	void dispatch_message(spark::Buffer& buffer);
@@ -101,14 +101,14 @@ public:
 
 	const ConnectionStats& stats() const;
 	std::string remote_address();
-
-	// these should be made private, only for use by the handler
 	void log_packets(bool enable);
-	void send(const protocol::ServerPacket& packet);
-	void close_session();
-	void terminate();
+
+	template<typename PacketT> void send(const PacketT& packet);
 
 	static void async_shutdown(std::shared_ptr<ClientConnection> client);
+	void close_session(); // should be made private
 };
+
+#include "ClientConnection.inl"
 
 } // ember
