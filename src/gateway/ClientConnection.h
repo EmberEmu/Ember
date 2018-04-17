@@ -13,9 +13,8 @@
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
-#include <game_protocol/PacketHeaders.h>
-#include <spark/buffers/ChainedBuffer.h>
 #include <logger/Logging.h>
+#include <spark/buffers/ChainedBuffer.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
@@ -74,15 +73,13 @@ class ClientConnection final {
 	// session management
 	void stop();
 	void close_session_sync();
+	void terminate();
 
 	// packet reassembly & dispatching
 	void dispatch_message(spark::Buffer& buffer);
 	void process_buffered_data(spark::Buffer& buffer);
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(const spark::Buffer& buffer);
-
-	void log_packets(bool enable);
-	void terminate();
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
@@ -104,43 +101,14 @@ public:
 
 	const ConnectionStats& stats() const;
 	std::string remote_address();
+	void log_packets(bool enable);
 
-	template<typename PacketT>
-	void send(const PacketT& packet) {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
-			<< protocol::to_string(packet.opcode) << LOG_ASYNC;
-
-		spark::BinaryStream stream(*outbound_back_);
-		stream << PacketT::SizeType{} << PacketT::OpcodeType{} << packet;
-
-		const auto written = stream.total_write();
-		auto size = gsl::narrow<PacketT::SizeType>(written - sizeof(PacketT::SizeType));
-		auto opcode = packet.opcode;
-
-		if(authenticated_) {
-			crypto_.encrypt(size);
-			crypto_.encrypt(opcode);
-		}
-
-		stream.write_seek(written, spark::SeekDir::SD_BACK);
-		stream << size << opcode;
-		stream.write_seek(written - PacketT::HEADER_WIRE_SIZE, spark::SeekDir::SD_FORWARD);
-
-		if(!write_in_progress_) {
-			write_in_progress_ = true;
-			std::swap(outbound_front_, outbound_back_);
-			write();
-		}
-
-		if(packet_logger_) {
-			packet_logger_->log(packet, PacketDirection::OUTBOUND);
-		}
-
-		++stats_.messages_out;
-	}
+	template<typename PacketT> void send(const PacketT& packet);
 
 	static void async_shutdown(std::shared_ptr<ClientConnection> client);
 	void close_session(); // should be made private
 };
+
+#include "ClientConnection.inl"
 
 } // ember

@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <game_protocol/Packets.h>
 #include "ClientConnection.h"
 #include "SessionManager.h"
 #include "packetlog/FBSink.h"

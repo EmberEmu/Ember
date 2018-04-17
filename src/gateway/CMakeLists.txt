@@ -20,9 +20,11 @@ set(LIBRARY_HDR
     ServicePool.h
     NetworkListener.h
     ClientConnection.h
+    ClientConnection.inl
     AccountService.h
     RealmQueue.h
     ClientHandler.h
+    ClientHandler.inl
     PacketCrypto.h
     ConnectionStats.h
     ServerConfig.h

@@ -29,7 +29,7 @@ void ClientHandler::stop() {
 
 void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType size) {
 	protocol::ClientOpcode opcode;
-	buffer.read(&opcode, sizeof(opcode));
+	buffer.copy(&opcode, sizeof(opcode));
 
 	context_.buffer = &buffer;
 	context_.msg_size = size;
