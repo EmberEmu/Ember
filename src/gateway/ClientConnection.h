@@ -111,7 +111,7 @@ public:
 			<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
 		spark::BinaryStream stream(*outbound_back_);
-		stream << PacketT::SizeType{0} << packet.opcode << packet;
+		stream << PacketT::SizeType{0} << PacketT::OpcodeType{0} << packet;
 
 		const auto written = stream.total_write();
 		auto size = gsl::narrow<PacketT::SizeType>(written - sizeof(PacketT::SizeType));

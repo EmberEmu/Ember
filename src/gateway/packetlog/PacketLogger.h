@@ -33,7 +33,7 @@ public:
 		std::vector<std::uint8_t> buffer(64);
 		spark::VectorBufferAdaptor adaptor(buffer);
 		spark::BinaryStream stream(adaptor);
-		stream << packet;
+		stream << packet.opcode << packet;
 
 		for(auto& sink : sinks_) {
 			sink->log(buffer, time, dir);
