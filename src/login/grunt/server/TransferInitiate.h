@@ -40,8 +40,6 @@ public:
 		}
 
 		stream >> opcode;
-
-
 		return (state_ = State::DONE);
 	}
 

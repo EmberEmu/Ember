@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <cstdint>
 #include <shared/smartenum.hpp>
+#include <cstdint>
 
 namespace ember::protocol {
 

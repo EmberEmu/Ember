@@ -10,8 +10,7 @@
 
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BinaryStream.h>
-#include <gsl/gsl_util>
-#include <cstdint>
+#include <cstddef>
 
 namespace ember::protocol {
 

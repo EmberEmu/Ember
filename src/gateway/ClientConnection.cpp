@@ -6,11 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <protocol/Packets.h>
 #include "ClientConnection.h"
 #include "SessionManager.h"
 #include "packetlog/FBSink.h"
 #include "packetlog/LogSink.h"
+#include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>
 #include <algorithm>
 
