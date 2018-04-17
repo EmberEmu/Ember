@@ -12,7 +12,7 @@
 #include "WorldForwarder.h"
 #include "InQueue.h"
 #include "SessionClose.h"
-#include <game_protocol/Opcodes.h>
+#include <protocol/Opcodes.h>
 
 namespace ember { 
 

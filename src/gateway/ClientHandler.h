@@ -10,7 +10,7 @@
 
 #include "Event.h"
 #include "states/ClientContext.h"
-#include <game_protocol/Packets.h>
+#include <protocol/Packets.h>
 #include <spark/buffers/Buffer.h>
 #include <spark/buffers/BinaryStream.h>
 #include <logger/Logging.h>

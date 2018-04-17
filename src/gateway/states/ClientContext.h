@@ -10,7 +10,7 @@
 
 #include "ClientStates.h"
 #include <spark/buffers/Buffer.h>
-#include <game_protocol/PacketHeaders.h>
+#include <protocol/PacketHeaders.h>
 #include <string>
 #include <cstdint>
 

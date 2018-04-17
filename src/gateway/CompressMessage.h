@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <game_protocol/Packets.h>
+#include <protocol/Packets.h>
 #include <spark/buffers/Buffer.h>
 
 namespace ember {

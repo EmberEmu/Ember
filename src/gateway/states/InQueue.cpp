@@ -14,7 +14,7 @@
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
 #include <logger/Logging.h>
-#include <game_protocol/Packets.h>
+#include <protocol/Packets.h>
 #include <gsl/gsl_util>
 
 namespace ember::queue {

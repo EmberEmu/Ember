@@ -14,9 +14,9 @@
 #include "../ClientConnection.h"
 #include "../Locator.h"
 #include "../EventDispatcher.h"
-#include <game_protocol/Opcodes.h>
-#include <game_protocol/PacketHeaders.h>
-#include <game_protocol/Packets.h>
+#include <protocol/Opcodes.h>
+#include <protocol/PacketHeaders.h>
+#include <protocol/Packets.h>
 #include <spark/buffers/Buffer.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/util/xoroshiro128plus.h>
@@ -136,8 +136,8 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
-		protocol::smsg::SMSG_ADDON_INFO::AddonData data;
-		data.type = protocol::smsg::SMSG_ADDON_INFO::AddonData::Type::BLIZZARD;
+		protocol::server::AddonInfo::AddonData data;
+		data.type = protocol::server::AddonInfo::AddonData::Type::BLIZZARD;
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?

@@ -13,7 +13,7 @@
 #include "Character_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <game_protocol/ResultCodes.h>
+#include <protocol/ResultCodes.h>
 #include <logger/Logging.h>
 #include <shared/database/objects/Character.h>
 #include <botan/bigint.h>

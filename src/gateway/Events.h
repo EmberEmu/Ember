@@ -11,8 +11,8 @@
 #include "Event.h"
 #include "Account_generated.h"
 #include "Character_generated.h"
-#include <game_protocol/ResultCodes.h>
-#include <game_protocol/Packets.h>
+#include <protocol/ResultCodes.h>
+#include <protocol/Packets.h>
 #include <shared/database/objects/Character.h>
 #include <botan/bigint.h>
 #include <vector>

@@ -17,8 +17,8 @@
 #include "../EventDispatcher.h"
 #include "../FilterTypes.h"
 #include <logger/Logging.h>
-#include <game_protocol/Packets.h>
-#include <game_protocol/Opcodes.h>
+#include <protocol/Packets.h>
+#include <protocol/Opcodes.h>
 #include <memory>
 #include <vector>
 

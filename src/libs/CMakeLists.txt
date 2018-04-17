@@ -10,6 +10,6 @@ add_subdirectory(srp6)
 add_subdirectory(conpool)
 add_subdirectory(spark)
 
-add_subdirectory(game_protocol)
+add_subdirectory(protocol)
 
 add_subdirectory(dbcreader)
