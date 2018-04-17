@@ -77,9 +77,11 @@ public:
 		return *this;
 	}
 
-	void put(const void* data, std::size_t size) {
-		buffer_.write(data, size);
-		total_write_ += size;
+	template<typename T>
+	void put(const T* data, std::size_t count) {
+		const auto write_size = count * sizeof(T);
+		buffer_.write(data, write_size);
+		total_write_ += write_size;
 	}
 
 	template<typename It>
@@ -121,9 +123,11 @@ public:
 		buffer_.read(dest.data(), size);
 	}
 
-	void get(void* dest, std::size_t size) {
-		check_read_bounds(size);
-		buffer_.read(dest, size);
+	template<typename T>
+	void get(T* dest, std::size_t count) {
+		const auto read_size = count * sizeof(T);
+		check_read_bounds(read_size);
+		buffer_.read(dest, read_size);
 	}
 
 	template<typename It>
