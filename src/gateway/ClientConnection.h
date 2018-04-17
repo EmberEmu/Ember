@@ -119,7 +119,6 @@ public:
 			stream.write_seek(stream.total_write(), spark::SeekDir::SD_FORWARD);
 		}
 
-
 		if(!write_in_progress_) {
 			write_in_progress_ = true;
 			std::swap(outbound_front_, outbound_back_);

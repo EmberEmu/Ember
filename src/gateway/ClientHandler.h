@@ -100,6 +100,7 @@ public:
 
 		return true;
 	};
+
 	void handle_message(spark::Buffer& buffer, protocol::SizeType size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
