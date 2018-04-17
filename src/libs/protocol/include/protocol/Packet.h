@@ -19,13 +19,13 @@ enum class State {
 	INITIAL, CALL_AGAIN, DONE, ERRORED
 };
 
-template <typename HeaderT, typename HeaderT::OpcodeType opcode, typename Payload>
+template <typename HeaderT, typename HeaderT::OpcodeType op_, typename Payload>
 struct Packet final {
 	using OpcodeType = typename HeaderT::OpcodeType;
 	using SizeType = typename HeaderT::SizeType;
 	using PayloadType = Payload;
 
-	static constexpr OpcodeType opcode = opcode;
+	static constexpr OpcodeType opcode = op_;
 	static constexpr std::size_t HEADER_WIRE_SIZE = HeaderT::WIRE_SIZE;
 
 	PayloadType payload;
