@@ -20,6 +20,7 @@ void PacketLogger::reset() {
 	sinks_.clear();
 }
 
+// todo should log size too?
 void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir) {
 	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
 	std::vector<std::uint8_t> contig_buffer(length);

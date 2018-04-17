@@ -27,8 +27,8 @@ public:
 
 	void log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir);
 
-	template<typename Packet_t>
-	void log(const Packet_t& packet, PacketDirection dir) {
+	template<typename PacketT>
+	void log(const PacketT& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::vector<std::uint8_t> buffer(64);
 		spark::VectorBufferAdaptor adaptor(buffer);

@@ -50,7 +50,7 @@ public:
 	void encrypt(spark::Buffer& data, std::size_t length) {
 		for(std::size_t t = 0; t < length; ++t) {
 			send_i_ %= key_.size();
-			auto& byte = reinterpret_cast<char&>(data[t]); // todo - type change
+			auto& byte = reinterpret_cast<char&>(data[t]);
 			std::uint8_t x = (byte ^ key_[send_i_]) + send_j_;
 			++send_i_;
 			byte = send_j_ = x;
@@ -62,7 +62,7 @@ public:
 
 		for(std::size_t t = 0; t < length; ++t) {
 			recv_i_ %= key_.size();
-			auto& byte = reinterpret_cast<char&>(data[t]); // todo - type change
+			auto& byte = reinterpret_cast<char&>(data[t]);
 			std::uint8_t x = (byte - recv_j_) ^ key_[recv_i_];
 			++recv_i_;
 			recv_j_ = byte;

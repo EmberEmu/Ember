@@ -19,29 +19,24 @@ enum class State {
 	INITIAL, CALL_AGAIN, DONE, ERRORED
 };
 
-template <typename OpcodeT, OpcodeT opcode, typename SizeType, typename BodyT>
+template <typename OpT, OpT opcode, typename SizeT, typename BodyT>
 struct Packet final {
-	using Opcode_t = OpcodeT;
+	using OpcodeType = OpT;
+	using SizeType = SizeT;
+	using PayloadType = BodyT;
 
-	static constexpr OpcodeT opcode = opcode;
+	static constexpr OpcodeType opcode = opcode;
 	static constexpr std::size_t HEADER_WIRE_SIZE =
-		sizeof(SizeType) + sizeof(OpcodeT);
+		sizeof(SizeType) + sizeof(OpcodeType);
 
-	BodyT payload;
+	PayloadType payload;
 
 	State read_from_stream(spark::BinaryStream& stream) {
 		return payload.read_from_stream(stream);
 	}
 
 	void write_to_stream(spark::BinaryStream& stream) const {
-		const auto initial = stream.total_write();
-		stream << SizeType{0} << opcode;
 		payload.write_to_stream(stream);
-		const auto written = stream.total_write() - initial;
-		
-		stream.write_seek(written, spark::SeekDir::SD_BACK);
-		stream << gsl::narrow<SizeType>(written - sizeof(SizeType));
-		stream.write_seek(written - sizeof(SizeType), spark::SeekDir::SD_FORWARD);
 	}
 
 	friend spark::BinaryStream& operator<<(spark::BinaryStream& stream, const Packet& p) {
@@ -49,11 +44,11 @@ struct Packet final {
 		return stream;
 	}
 
-	BodyT* operator->() {
+	auto* operator->() {
 		return &payload;
 	}
 
-	const BodyT* operator->() const {
+	const auto* operator->() const {
 		return &payload;
 	}
 };

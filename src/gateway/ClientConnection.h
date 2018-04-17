@@ -81,6 +81,9 @@ class ClientConnection final {
 	void parse_header(spark::Buffer& buffer);
 	void completion_check(const spark::Buffer& buffer);
 
+	void log_packets(bool enable);
+	void terminate();
+
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                 ClientUUID uuid, log::Logger* logger)
@@ -102,22 +105,26 @@ public:
 	const ConnectionStats& stats() const;
 	std::string remote_address();
 
-	// these should be made private, only for use by the handler
-	void log_packets(bool enable);
-
-	template<typename Packet>
-	void send(const Packet& packet) {
+	template<typename PacketT>
+	void send(const PacketT& packet) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 			<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
 		spark::BinaryStream stream(*outbound_back_);
-		stream << packet;
+		stream << PacketT::SizeType{0} << packet.opcode << packet;
+
+		const auto written = stream.total_write();
+		auto size = gsl::narrow<PacketT::SizeType>(written - sizeof(PacketT::SizeType));
+		auto opcode = packet.opcode;
 
 		if(authenticated_) {
-			stream.write_seek(stream.total_write(), spark::SeekDir::SD_BACK);
-			crypto_.encrypt(*outbound_back_, Packet::HEADER_WIRE_SIZE);
-			stream.write_seek(stream.total_write(), spark::SeekDir::SD_FORWARD);
+			crypto_.encrypt(size);
+			crypto_.encrypt(opcode);
 		}
+
+		stream.write_seek(written, spark::SeekDir::SD_BACK);
+		stream << size << opcode;
+		stream.write_seek(written - PacketT::HEADER_WIRE_SIZE, spark::SeekDir::SD_FORWARD);
 
 		if(!write_in_progress_) {
 			write_in_progress_ = true;
@@ -132,10 +139,8 @@ public:
 		++stats_.messages_out;
 	}
 
-	void close_session();
-	void terminate();
-
 	static void async_shutdown(std::shared_ptr<ClientConnection> client);
+	void close_session(); // should be made private
 };
 
 } // ember

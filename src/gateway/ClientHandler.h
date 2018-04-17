@@ -41,12 +41,9 @@ public:
 	void state_update(ClientState new_state);
 	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
 
-	template<typename Packet_t>
-	bool packet_deserialise(Packet_t& packet, spark::Buffer& buffer) {
+	template<typename PacketT>
+	bool packet_deserialise(PacketT& packet, spark::Buffer& buffer) {
 		spark::BinaryStream stream(buffer, context_.msg_size);
-
-		Packet_t::Opcode_t opcode;
-		stream >> opcode;
 
 		if(packet->read_from_stream(stream) != protocol::State::DONE) {
 			const auto state = stream.state();
@@ -66,21 +63,21 @@ public:
 			if(state == spark::BinaryStream::State::READ_LIMIT_ERR) {
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 					<< "Deserialisation of "
-					<< protocol::to_string(opcode)
+					<< protocol::to_string(packet.opcode)
 					<< " failed, skipping any remaining data" << LOG_ASYNC;
 
 				stream.skip(stream.read_limit() - stream.total_read());
 			} else if(state == spark::BinaryStream::State::BUFF_LIMIT_ERR) {
 				LOG_ERROR_FILTER(logger_, LF_NETWORK)
 					<< "Message framing lost at "
-					<< protocol::to_string(opcode)
+					<< protocol::to_string(packet.opcode)
 					<< " from " << client_identify() << LOG_ASYNC;
 
 				connection_.close_session();
 			} else {
 				LOG_ERROR_FILTER(logger_, LF_NETWORK)
 					<< "Deserialisation failed but stream has not errored for "
-					<< protocol::to_string(opcode)
+					<< protocol::to_string(packet.opcode)
 					<< " from " << client_identify() << LOG_ASYNC;
 
 				connection_.close_session();
@@ -92,7 +89,7 @@ public:
 		if(stream.read_limit() != stream.total_read()) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Skipping superfluous stream data in message "
-				<< protocol::to_string(opcode)
+				<< protocol::to_string(packet.opcode)
 				<< " from " << client_identify() << LOG_ASYNC;
 
 			stream.skip(stream.read_limit() - stream.total_read());
