@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,7 @@ namespace ember {
 
 typedef std::unordered_map<std::uint32_t, Realm> RealmMap;
 
-class RealmList {
+class RealmList final {
 	std::shared_ptr<const RealmMap> realms_;
 	mutable std::mutex lock_;
 

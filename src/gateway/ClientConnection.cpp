@@ -204,7 +204,7 @@ void ClientConnection::close_session_sync() {
 	});
 }
 
-std::string ClientConnection::remote_address() {
+std::string ClientConnection::remote_address() const {
 	return address_;
 }
 

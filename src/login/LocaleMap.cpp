@@ -28,4 +28,4 @@ const std::unordered_map<grunt::Locale, dbc::Cfg_Categories::Region> locale_map 
 	{ grunt::Locale::zhTW, dbc::Cfg_Categories::Region::TAIWAN },
 };
 
-};
+} // ember

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2018 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,12 +24,12 @@ class IPBanCache {
 
 	std::vector<IPv4Entry> entries_;
 
-	bool check_ban(const boost::asio::ip::address_v6&& ip) {
+	bool check_ban(const boost::asio::ip::address_v6&& ip) const {
 		//implement
 		return false;
 	}
 
-	bool check_ban(const boost::asio::ip::address_v4&& ip) {
+	bool check_ban(const boost::asio::ip::address_v4&& ip) const {
 		unsigned long ip_long = ip.to_ulong();
 		
 		for(auto& e : entries_) {
@@ -59,7 +59,7 @@ public:
 		load_bans(bans);
 	}
 
-	bool is_banned(const std::string& ip) {
+	bool is_banned(const std::string& ip) const {
 		if(entries_.empty()) {
 			return false;
 		}
@@ -67,7 +67,7 @@ public:
 		return is_banned(boost::asio::ip::address::from_string(ip));
 	}
 
-	bool is_banned(const boost::asio::ip::address& ip) {
+	bool is_banned(const boost::asio::ip::address& ip) const {
 		if(entries_.empty()) {
 			return false;
 		}

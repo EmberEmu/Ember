@@ -100,7 +100,7 @@ public:
 	void latency(std::size_t latency);
 
 	const ConnectionStats& stats() const;
-	std::string remote_address();
+	std::string remote_address() const;
 	void log_packets(bool enable);
 
 	template<typename PacketT> void send(const PacketT& packet);

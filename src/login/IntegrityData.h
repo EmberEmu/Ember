@@ -34,7 +34,7 @@ public:
 	IntegrityData(const std::vector<GameVersion>& versions, const std::string& path);
 
 	std::optional<const std::vector<std::byte>*> lookup(GameVersion version, grunt::Platform platform,
-	                                               grunt::System os) const;
+	                                                    grunt::System os) const;
 };
 
 

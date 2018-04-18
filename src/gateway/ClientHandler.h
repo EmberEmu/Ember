@@ -38,18 +38,17 @@ public:
 	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
 	              boost::asio::io_service& service);
 
-	void state_update(ClientState new_state);
-	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
+	void start();
+	void stop();
 
 	template<typename PacketT>
 	bool packet_deserialise(PacketT& packet, spark::Buffer& buffer);
+	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
 
+	void state_update(ClientState new_state);
 	void handle_message(spark::Buffer& buffer, protocol::SizeType size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
-
-	void start();
-	void stop();
 
 	void start_timer(const std::chrono::milliseconds& time);
 	void stop_timer();

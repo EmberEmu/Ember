@@ -17,7 +17,7 @@ namespace ember {
 
 class NetworkSession;
 
-class SessionManager {
+class SessionManager final {
 	std::set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
 
