@@ -8,11 +8,11 @@
 
 #include "IntegrityData.h"
 #include <shared/util/FNVHash.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <fstream>
 #include <cstddef>
 
-namespace bfs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace ember {
 
@@ -54,10 +54,10 @@ IntegrityData::lookup(GameVersion version, grunt::Platform platform, grunt::Syst
 void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
                                   const std::initializer_list<std::string_view>& files,
                                   grunt::System system, grunt::Platform platform) {
-	bfs::path dir(path + grunt::to_string(system) + "_" + grunt::to_string(platform)
+	fs::path dir(path + grunt::to_string(system) + "_" + grunt::to_string(platform)
 	              + "_" + std::to_string(build));
 
-	if(!bfs::is_directory(dir)) {
+	if(!fs::is_directory(dir)) {
 		return;
 	}
 
@@ -67,7 +67,7 @@ void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
 
 	// write all of the binary data into a single buffer
 	for(auto& f : files) {
-		bfs::path fpath = dir;
+		fs::path fpath = dir;
 		fpath /= f.data();
 
 		std::ifstream file(fpath.string(), std::ios::binary | std::ios::ate);
