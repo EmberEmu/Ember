@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -249,7 +249,7 @@ public:
 		stmt->setUInt(21, character.pet_display);
 		stmt->setUInt(22, character.pet_level);
 		stmt->setUInt(23, character.pet_family);
-		stmt->setUInt(24, character.id);
+		stmt->setUInt64(24, character.id);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update character");
