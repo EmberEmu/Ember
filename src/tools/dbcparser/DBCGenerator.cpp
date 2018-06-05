@@ -96,33 +96,41 @@ void generate_template(const types::Struct* dbc) {
 
 	std::ofstream file(dbc->name + ".dbc", std::ofstream::binary);
 	
+	if(!file) {
+		throw std::runtime_error("Unable to open DBC for template generation");
+	}
+
 	TypeMetrics metrics;
 	walk_dbc_fields(dbc, metrics);
 
 	RecordPrinter printer;
 	walk_dbc_fields(dbc, printer);
 
-	std::vector<char> record_data = printer.record();
-	std::vector<char> string_data = printer.string_block();
+	const std::vector<char> record_data = printer.record();
+	const std::vector<char> string_data = printer.string_block();
 
-	be::big_uint32_t magic('WDBC');
-	be::little_uint32_t records = 1;
-	be::little_uint32_t fields = metrics.fields;
-	be::little_uint32_t record_size = metrics.record_size;
-	be::little_uint32_t string_block_size = string_data.size();
+	const be::big_uint32_t magic('WDBC');
+	const be::little_uint32_t records = 1;
+	const be::little_uint32_t fields = metrics.fields;
+	const be::little_uint32_t record_size = metrics.record_size;
+	const be::little_uint32_t string_block_size = string_data.size();
 	
 	// write header
-	file.write((char*)&magic, sizeof(magic));
-	file.write((char*)&records, sizeof(records));
-	file.write((char*)&fields, sizeof(fields));
-	file.write((char*)&record_size, sizeof(record_size));
-	file.write((char*)&string_block_size, sizeof(string_block_size));
+	file.write(reinterpret_cast<const char*>(&magic), sizeof(magic));
+	file.write(reinterpret_cast<const char*>(&records), sizeof(records));
+	file.write(reinterpret_cast<const char*>(&fields), sizeof(fields));
+	file.write(reinterpret_cast<const char*>(&record_size), sizeof(record_size));
+	file.write(reinterpret_cast<const char*>(&string_block_size), sizeof(string_block_size));
 	
 	// write dummy record
 	file.write(record_data.data(), record_data.size());
 
 	// write string block
 	file.write(string_data.data(), string_data.size());
+
+	if(!file) {
+		throw std::runtime_error("An error occured during DBC template generation");
+	}
 
 	LOG_DEBUG_GLOB << "Completed template generation for " << dbc->name << LOG_ASYNC;
 }
