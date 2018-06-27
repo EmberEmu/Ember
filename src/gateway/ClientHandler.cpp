@@ -11,6 +11,7 @@
 #include "Locator.h"
 #include "EventDispatcher.h"
 #include "states/StateLUT.h"
+#include "FilterTypes.h"
 #include <shared/util/EnumHelper.h>
 #include <protocol/Packets.h>
 #include <spark/buffers/BinaryStream.h>

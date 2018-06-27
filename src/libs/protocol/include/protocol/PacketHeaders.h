@@ -16,16 +16,16 @@ namespace ember::protocol {
 using SizeType = typename boost::endian::big_uint16_at;
 
 struct ServerHeader {
-	using OpcodeType = typename ServerOpcode;
-	using SizeType = typename boost::endian::big_uint16_at;
+	using OpcodeType = ServerOpcode;
+	using SizeType = boost::endian::big_uint16_at;
 
 	static constexpr std::size_t WIRE_SIZE =
 		sizeof(SizeType) + sizeof(OpcodeType);
 };
 
 struct ClientHeader {
-	using OpcodeType = typename ClientOpcode;
-	using SizeType = typename boost::endian::big_uint16_at;
+	using OpcodeType = ClientOpcode;
+	using SizeType = boost::endian::big_uint16_at;
 
 	static constexpr std::size_t WIRE_SIZE =
 		sizeof(SizeType) + sizeof(OpcodeType);
