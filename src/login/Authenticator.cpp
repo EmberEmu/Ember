@@ -21,7 +21,7 @@
 namespace ember {
 
 LoginAuthenticator::LoginAuthenticator(User user) : user_(std::move(user)) {
-	srp_ = std::make_unique<srp6::Server>(gen_, user_.verifier());
+	srp_ = std::make_unique<srp6::Server>(gen_, Botan::BigInt(user_.verifier()));
 }
 
 auto LoginAuthenticator::challenge_reply() -> ChallengeResponse {
