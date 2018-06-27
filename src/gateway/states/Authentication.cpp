@@ -80,7 +80,7 @@ void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 			<< "Account server returned "
 			<< util::fb_status(event->status, em::account::EnumNamesStatus())
 			<< " for " << event->packet->username << " lookup" << LOG_ASYNC;
-		ctx->connection->close_session();
+		ctx->handler->close();
 		return;
 	}
 
@@ -115,7 +115,7 @@ void handle_session_key(ClientContext* ctx, const SessionKeyResponse* event) {
 	if(event->status == em::account::Status::OK) {
 		prove_session(ctx, event->key, event->packet);
 	} else {
-		ctx->connection->close_session();
+		ctx->handler->close();
 	}
 }
 
@@ -169,7 +169,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 
 	if(calc_hash != packet->digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;
-		ctx->connection->close_session(); // key mismatch, client can't decrypt response
+		ctx->handler->close(); // key mismatch, client can't decrypt response
 		return;
 	}
 
@@ -217,7 +217,7 @@ void send_auth_result(ClientContext* ctx, protocol::Result result) {
 void handle_timeout(ClientContext* ctx) {
 	LOG_DEBUG_GLOB << "Authentication timed out for "
 		<< ctx->connection->remote_address() << LOG_ASYNC;
-	ctx->connection->close_session();
+	ctx->handler->close();
 }
 
 void enter(ClientContext* ctx) {

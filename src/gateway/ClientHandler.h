@@ -40,6 +40,7 @@ public:
 
 	void start();
 	void stop();
+	void close();
 
 	template<typename PacketT>
 	bool packet_deserialise(PacketT& packet, spark::Buffer& buffer);

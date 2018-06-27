@@ -208,7 +208,7 @@ void player_login(ClientContext* ctx) {
 void handle_timeout(ClientContext* ctx) {
 	LOG_DEBUG_GLOB << "Character list timed out for "
 		<< ctx->connection->remote_address() << LOG_ASYNC;
-	ctx->connection->close_session();
+	ctx->handler->close();
 }
 
 } // unnamed

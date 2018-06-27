@@ -28,6 +28,10 @@ void ClientHandler::stop() {
 	state_update(ClientState::SESSION_CLOSED);
 }
 
+void ClientHandler::close() {
+	connection_.close_session();
+}
+
 void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType size) {
 	protocol::ClientOpcode opcode;
 	buffer.copy(&opcode, sizeof(opcode));

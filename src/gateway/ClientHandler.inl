@@ -44,14 +44,14 @@ bool ClientHandler::packet_deserialise(PacketT& packet, spark::Buffer& buffer) {
 				<< protocol::to_string(packet.opcode)
 				<< " from " << client_identify() << LOG_ASYNC;
 
-			connection_.close_session();
+			close();
 		} else {
 			LOG_ERROR_FILTER(logger_, LF_NETWORK)
 				<< "Deserialisation failed but stream has not errored for "
 				<< protocol::to_string(packet.opcode)
 				<< " from " << client_identify() << LOG_ASYNC;
 
-			connection_.close_session();
+			close();
 		}
 
 		return false;
