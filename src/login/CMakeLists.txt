@@ -1,4 +1,4 @@
-# Copyright (c) 2014, 2015, 2016 Ember
+# Copyright (c) 2014 - 2018 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -79,9 +79,9 @@ source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${LIBRARY_NAME} dbcreader spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} dbcreader spark srp6 logging shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} dbcreader spark conpool srp6 logging shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} dbcreader spark conpool srp6 logging shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
