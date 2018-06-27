@@ -575,7 +575,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) 
 	auto fmeta = meta->file_meta;
 
 	LOG_DEBUG(logger_) << "Initiating patch transfer, " << fmeta.name << LOG_ASYNC;
-	std::ifstream patch(fmeta.path + fmeta.name, std::ios::binary | std::ios::beg);
+	std::ifstream patch(fmeta.path + fmeta.name, std::ifstream::binary);
 
 	if(!patch) {
 		LOG_ERROR(logger_) << "Could not open patch, " << fmeta.name << LOG_ASYNC;
