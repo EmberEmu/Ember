@@ -21,7 +21,7 @@
 #include <shared/util/EnumHelper.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
-#include <botan/botan.h>
+#include <botan/secmem.h>
 #include <botan/sha160.h>
 #include <gsl/gsl_util>
 #include <cstddef>

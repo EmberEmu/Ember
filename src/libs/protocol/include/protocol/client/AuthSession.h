@@ -11,7 +11,7 @@
 #include <spark/buffers/ChainedBuffer.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
-#include <botan/botan.h>
+#include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
