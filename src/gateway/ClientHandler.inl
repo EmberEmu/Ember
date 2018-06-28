@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "FilterTypes.h"
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/Buffer.h>
 
