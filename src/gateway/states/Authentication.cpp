@@ -162,7 +162,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	Botan::SHA_160 hasher;
 	hasher.update(packet->username);
 	hasher.update_be(boost::endian::native_to_big(unknown));
-	hasher.update_be(boost::endian::native_to_big(packet->seed));
+	hasher.update_be(boost::endian::native_to_big(packet->seed).value());
 	hasher.update_be(boost::endian::native_to_big(ctx->auth_seed));
 	hasher.update(k_bytes);
 	Botan::secure_vector<Botan::byte> calc_hash = hasher.final();
