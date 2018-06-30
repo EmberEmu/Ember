@@ -8,4 +8,5 @@ add_subdirectory(dbcparser)
 
 if(BUILD_OPT_TOOLS)
     add_subdirectory(packetconvert)
+    add_subdirectory(srpgen)
 endif()
