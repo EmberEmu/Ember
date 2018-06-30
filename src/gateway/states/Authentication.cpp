@@ -156,7 +156,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	std::vector<Botan::byte> k_bytes = Botan::BigInt::encode(key);
+	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
 	std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 
 	Botan::SHA_160 hasher;
@@ -165,7 +165,7 @@ void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_A
 	hasher.update_be(boost::endian::native_to_big(packet->seed).value());
 	hasher.update_be(boost::endian::native_to_big(ctx->auth_seed));
 	hasher.update(k_bytes);
-	Botan::secure_vector<Botan::byte> calc_hash = hasher.final();
+	Botan::secure_vector<std::uint8_t> calc_hash = hasher.final();
 
 	if(calc_hash != packet->digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;

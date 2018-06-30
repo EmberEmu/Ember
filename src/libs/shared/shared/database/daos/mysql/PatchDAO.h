@@ -64,10 +64,10 @@ public:
 
 			// sigh.
 			auto md5 = res->getString("md5");
-			Botan::BigInt md5_int(reinterpret_cast<const Botan::byte*>(md5.c_str()), md5.length(),
+			Botan::BigInt md5_int(reinterpret_cast<const std::uint8_t*>(md5.c_str()), md5.length(),
 			                      Botan::BigInt::Base::Hexadecimal);
 			auto md5_enc = Botan::BigInt::encode_1363(md5_int, meta.file_meta.md5.size());
-			std::copy(md5_enc.begin(), md5_enc.end(), reinterpret_cast<Botan::byte*>(meta.file_meta.md5.data()));
+			std::copy(md5_enc.begin(), md5_enc.end(), reinterpret_cast<std::uint8_t*>(meta.file_meta.md5.data()));
 
 			patches.emplace_back(std::move(meta));
 		}
@@ -91,7 +91,7 @@ public:
 		stmt->setBoolean(3, meta.mpq);
 		stmt->setString(4, meta.file_meta.name);
 		stmt->setUInt64(5, meta.file_meta.size);
-		auto md5 = Botan::BigInt::decode(reinterpret_cast<const Botan::byte*>(meta.file_meta.md5.data()),
+		auto md5 = Botan::BigInt::decode(reinterpret_cast<const std::uint8_t*>(meta.file_meta.md5.data()),
 		                                 meta.file_meta.md5.size());
 		std::stringstream md5_str;
 		md5_str << std::hex << md5;

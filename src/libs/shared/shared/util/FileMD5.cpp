@@ -14,12 +14,12 @@
 
 namespace ember::util {
 
-Botan::secure_vector<Botan::byte> generate_md5(const std::byte* data, const std::size_t len) {
+Botan::secure_vector<std::uint8_t> generate_md5(const std::byte* data, const std::size_t len) {
 	Botan::MD5 hasher;
-	return hasher.process(reinterpret_cast<const Botan::byte*>(data), len);
+	return hasher.process(reinterpret_cast<const std::uint8_t*>(data), len);
 }
 
-Botan::secure_vector<Botan::byte> generate_md5(const std::string& file) {
+Botan::secure_vector<std::uint8_t> generate_md5(const std::string& file) {
 	std::ifstream stream(file, std::ios::in | std::ios::binary | std::ios::ate);
 
 	if(!stream) {
@@ -36,7 +36,7 @@ Botan::secure_vector<Botan::byte> generate_md5(const std::string& file) {
 	while(remaining) {
 		std::size_t read_size = remaining >= block_size? block_size : remaining;
 		stream.read(buffer.data(), read_size);
-		hasher.update(reinterpret_cast<const Botan::byte*>(buffer.data()), read_size);
+		hasher.update(reinterpret_cast<const std::uint8_t*>(buffer.data()), read_size);
 		remaining -= read_size;
 
 		if(!stream.good()) {

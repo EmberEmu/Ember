@@ -19,7 +19,7 @@
 namespace ember {
 
 class PacketCrypto final {
-	std::vector<Botan::byte> key_;
+	std::vector<std::uint8_t> key_;
 	std::uint8_t send_i_ = 0;
 	std::uint8_t send_j_ = 0;
 	std::uint8_t recv_i_ = 0;
@@ -27,9 +27,9 @@ class PacketCrypto final {
 
 public:
 	PacketCrypto() = default;
-	explicit PacketCrypto(std::vector<Botan::byte> key) : key_(std::move(key)) {}
+	explicit PacketCrypto(std::vector<std::uint8_t> key) : key_(std::move(key)) {}
 
-	void set_key(std::vector<Botan::byte> key) {
+	void set_key(std::vector<std::uint8_t> key) {
 		key_ = std::move(key);
 	}
 

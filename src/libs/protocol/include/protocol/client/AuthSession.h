@@ -38,7 +38,7 @@ public:
 		be::little_uint32_at update_url_crc;
 	};
 
-	Botan::secure_vector<Botan::byte> digest;
+	Botan::secure_vector<std::uint8_t> digest;
 	be::little_uint32_at seed;
 	be::little_uint32_at id;
 	be::little_uint32_at security;

@@ -28,8 +28,8 @@ class ReconnectChallenge final : public Packet {
 public:
 	ReconnectChallenge() : Packet(Opcode::CMD_AUTH_RECONNECT_CHALLENGE) {}
 	Result result;
-	std::array<Botan::byte, RAND_LENGTH> salt;
-	std::array<Botan::byte, RAND_LENGTH> checksum_salt; // client no longer uses this
+	std::array<std::uint8_t, RAND_LENGTH> salt;
+	std::array<std::uint8_t, RAND_LENGTH> checksum_salt; // client no longer uses this
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

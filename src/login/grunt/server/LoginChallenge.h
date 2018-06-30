@@ -38,7 +38,7 @@ class LoginChallenge final : public Packet {
 			return; // rest of the fields won't be sent
 		}
 
-		Botan::byte b_buff[PUB_KEY_LENGTH];
+		std::uint8_t b_buff[PUB_KEY_LENGTH];
 		stream.get(b_buff, PUB_KEY_LENGTH);
 		std::reverse(std::begin(b_buff), std::end(b_buff));
 		B = Botan::BigInt(b_buff, PUB_KEY_LENGTH);
@@ -47,12 +47,12 @@ class LoginChallenge final : public Packet {
 		stream >> g;
 		stream >> n_len;
 
-		Botan::byte n_buff[PRIME_LENGTH];
+		std::uint8_t n_buff[PRIME_LENGTH];
 		stream.get(n_buff, PRIME_LENGTH);
 		std::reverse(std::begin(n_buff), std::end(n_buff));
 		N = Botan::BigInt(n_buff, PRIME_LENGTH);
 
-		Botan::byte s_buff[SALT_LENGTH];
+		std::uint8_t s_buff[SALT_LENGTH];
 		stream.get(s_buff, SALT_LENGTH);
 		std::reverse(std::begin(s_buff), std::end(s_buff));
 		s = Botan::BigInt(s_buff, SALT_LENGTH);
@@ -96,7 +96,7 @@ public:
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	std::array<Botan::byte, CHECKSUM_SALT_LENGTH> checksum_salt;
+	std::array<std::uint8_t, CHECKSUM_SALT_LENGTH> checksum_salt;
 	bool two_factor_auth = false;
 	be::little_uint32_at pin_grid_seed;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
@@ -132,7 +132,7 @@ public:
 			return; // don't send the rest of the fields
 		}
 		
-		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
+		Botan::secure_vector<std::uint8_t> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.data(), bytes.size());
 

@@ -43,12 +43,12 @@ class LoginProof final : public Packet {
 		stream >> opcode;
 
 		// could just use one buffer but this is safer from silly mistakes
-		Botan::byte a_buff[A_LENGTH];
+		std::uint8_t a_buff[A_LENGTH];
 		stream.get(a_buff, A_LENGTH);
 		std::reverse(std::begin(a_buff), std::end(a_buff));
 		A = Botan::BigInt(a_buff, A_LENGTH);
 
-		Botan::byte m1_buff[M1_LENGTH];
+		std::uint8_t m1_buff[M1_LENGTH];
 		stream.get(m1_buff, M1_LENGTH);
 		std::reverse(std::begin(m1_buff), std::end(m1_buff));
 		M1 = Botan::BigInt(m1_buff, M1_LENGTH);
@@ -173,7 +173,7 @@ public:
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 
-		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
+		Botan::secure_vector<std::uint8_t> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.data(), bytes.size());
 

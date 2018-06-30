@@ -47,7 +47,7 @@ class LoginProof final : public Packet {
 			return;
 		}
 		
-		Botan::byte m2_buff[PROOF_LENGTH];
+		std::uint8_t m2_buff[PROOF_LENGTH];
 		stream.get(m2_buff, PROOF_LENGTH);
 		std::reverse(std::begin(m2_buff), std::end(m2_buff));
 		M2 = Botan::BigInt(m2_buff, PROOF_LENGTH);
@@ -92,7 +92,7 @@ public:
 			return;
 		}
 
-		Botan::secure_vector<Botan::byte> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
+		Botan::secure_vector<std::uint8_t> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.data(), bytes.size());
 		stream << survey_id;

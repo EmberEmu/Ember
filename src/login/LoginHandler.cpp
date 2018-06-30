@@ -367,11 +367,11 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1
 		return false;
 	}
 
-	Botan::secure_vector<Botan::byte> hash;
+	Botan::secure_vector<std::uint8_t> hash;
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		Botan::secure_vector<Botan::byte> checksum(SHA1_LENGTH); // all-zero hash
+		Botan::secure_vector<std::uint8_t> checksum(SHA1_LENGTH); // all-zero hash
 		hash = client_integrity::finalise(checksum, salt, len);
 	} else {
 		auto checksum = client_integrity::checksum(checksum_salt_, *data);

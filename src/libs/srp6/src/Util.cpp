@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,47 +12,46 @@
 #include <botan/secmem.h>
 #include <algorithm>
 
-using Botan::byte;
 using Botan::secure_vector;
 
 namespace ember::srp6 {
 	
 namespace detail {
 
-Botan::BigInt decode_flip(std::vector<byte> val) {
+Botan::BigInt decode_flip(std::vector<std::uint8_t> val) {
 	std::reverse(val.begin(), val.end());
 	return Botan::BigInt::decode(val);
 }
 
-Botan::BigInt decode_flip(secure_vector<byte> val) {
+Botan::BigInt decode_flip(secure_vector<std::uint8_t> val) {
 	std::reverse(val.begin(), val.end());
 	return Botan::BigInt::decode(val);
 }
 
-std::vector<byte> encode_flip(const Botan::BigInt& val) {
-	std::vector<Botan::byte> res(Botan::BigInt::encode(val));
+std::vector<std::uint8_t> encode_flip(const Botan::BigInt& val) {
+	std::vector<std::uint8_t> res(Botan::BigInt::encode(val));
 	std::reverse(res.begin(), res.end());
 	return res;
 }
 
-secure_vector<byte> encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
-	secure_vector<Botan::byte> res(Botan::BigInt::encode_1363(val, padding));
+secure_vector<std::uint8_t> encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
+	secure_vector<std::uint8_t> res(Botan::BigInt::encode_1363(val, padding));
 	std::reverse(res.begin(), res.end());
 	return res;
 }
 
-std::vector<byte> interleaved_hash(std::vector<byte> hash) {
+std::vector<std::uint8_t> interleaved_hash(std::vector<std::uint8_t> hash) {
 	//implemented as described in RFC2945
-	auto begin = std::find_if(hash.begin(), hash.end(), [](byte b) { return b; });
+	auto begin = std::find_if(hash.begin(), hash.end(), [](std::uint8_t b) { return b; });
 	begin = std::distance(begin, hash.end()) % 2 == 0? begin : begin + 1;
 
 	auto bound = std::stable_partition(begin, hash.end(),
 	    [&begin](const auto& x) { return (&x - &*begin) % 2 == 0; });
 
 	Botan::SHA_160 hasher;
-	secure_vector<byte> g(hasher.process(&*begin, std::distance(begin, bound)));
-	secure_vector<byte> h(hasher.process(&*bound, std::distance(bound, hash.end())));
-	std::vector<byte> final;
+	secure_vector<std::uint8_t> g(hasher.process(&*begin, std::distance(begin, bound)));
+	secure_vector<std::uint8_t> h(hasher.process(&*bound, std::distance(bound, hash.end())));
+	std::vector<std::uint8_t> final;
 	final.reserve(g.size());
 
 	for(std::size_t i = 0, j = g.size(); i < j; ++i) {
@@ -93,7 +92,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	hasher.update(identifier);
 	hasher.update(":");
 	hasher.update(password);
-	const secure_vector<byte> hash(hasher.final());
+	const secure_vector<std::uint8_t> hash(hasher.final());
 
 	if(mode == Compliance::RFC5054) {
 		hasher.update(Botan::BigInt::encode(salt));
@@ -114,9 +113,9 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
                                     const Botan::BigInt& salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
 	Botan::SHA_160 hasher;
-	secure_vector<byte> n_hash(hasher.process(detail::encode_flip(N)));
-	secure_vector<byte> g_hash(hasher.process(detail::encode_flip(g)));
-	secure_vector<byte> i_hash(hasher.process(identifier));
+	secure_vector<std::uint8_t> n_hash(hasher.process(detail::encode_flip(N)));
+	secure_vector<std::uint8_t> g_hash(hasher.process(detail::encode_flip(g)));
+	secure_vector<std::uint8_t> i_hash(hasher.process(identifier));
 	
 	for(std::size_t i = 0, j = n_hash.size(); i < j; ++i) {
 		n_hash[i] ^= g_hash[i];

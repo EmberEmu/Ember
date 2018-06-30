@@ -75,7 +75,7 @@ class LoginHandler {
 	const IntegrityData* exe_data_;
 	PINAuthenticator pin_auth_;
 	StateContainer state_data_;
-	Botan::secure_vector<Botan::byte> checksum_salt_;
+	Botan::secure_vector<std::uint8_t> checksum_salt_;
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
 	const bool locale_enforce_;

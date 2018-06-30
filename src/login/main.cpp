@@ -104,7 +104,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
-	rng.randomize(reinterpret_cast<Botan::byte*>(ember::rng::xorshift::seed),
+	rng.randomize(reinterpret_cast<std::uint8_t*>(ember::rng::xorshift::seed),
 	              sizeof(ember::rng::xorshift::seed));
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
