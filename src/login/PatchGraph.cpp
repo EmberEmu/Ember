@@ -17,10 +17,7 @@ namespace ember {
 class NodeComp {
 public:
 	bool operator()(PatchGraph::Node& lhs, PatchGraph::Node& rhs) {
-		if(lhs.weight > rhs.weight)
-			return true;
-		else
-			return false;
+		return lhs.weight > rhs.weight;
 	}
 };
 
