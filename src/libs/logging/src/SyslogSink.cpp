@@ -34,14 +34,16 @@ class SyslogSink::impl : public Sink {
 	SyslogSeverity severity_map(Severity severity);
 
 public:
-	impl(Severity severity, Filter filter, std::string& host, unsigned int port, Facility facility, std::string tag);
+	impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
+	     Facility facility, std::string tag);
 	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush);
 	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& record);
 };
 
-SyslogSink::impl::impl(Severity severity, Filter filter, std::string& host, unsigned int port,
+SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
                        Facility facility, std::string tag) try
-                       : Sink(severity, filter), socket_(service_), host_(bai::host_name()), tag_(std::move(tag)) {
+                       : Sink(severity, filter), socket_(service_), host_(bai::host_name()),
+                         tag_(std::move(tag)) {
 	facility_ = facility;
 
 	if(tag.size() > 32) {
