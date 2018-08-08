@@ -34,12 +34,12 @@ class SyslogSink::impl : public Sink {
 	SyslogSeverity severity_map(Severity severity);
 
 public:
-	impl(Severity severity, Filter filter, std::string host, unsigned int port, Facility facility, std::string tag);
+	impl(Severity severity, Filter filter, std::string& host, unsigned int port, Facility facility, std::string tag);
 	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush);
 	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& record);
 };
 
-SyslogSink::impl::impl(Severity severity, Filter filter, std::string host, unsigned int port,
+SyslogSink::impl::impl(Severity severity, Filter filter, std::string& host, unsigned int port,
                        Facility facility, std::string tag) try
                        : Sink(severity, filter), socket_(service_), host_(bai::host_name()), tag_(std::move(tag)) {
 	facility_ = facility;
@@ -130,7 +130,7 @@ void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std
 SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag)
                        : Sink(severity, filter),
-                         pimpl_(std::make_unique<impl>(severity, filter, host, port, facility, std::move(tag))) {}
+                         pimpl_(std::make_unique<impl>(severity, filter, std::move(host), port, facility, std::move(tag))) {}
 
 SyslogSink::~SyslogSink() = default;
 
