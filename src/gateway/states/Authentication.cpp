@@ -34,7 +34,7 @@ namespace ember::authentication {
 void send_auth_challenge(ClientContext* ctx);
 void send_auth_result(ClientContext* ctx, protocol::Result result);
 void handle_authentication(ClientContext* ctx);
-void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet);
+void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
 void handle_timeout(ClientContext* ctx);
@@ -153,7 +153,7 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 	ctx->connection->send(response);
 }
 
-void prove_session(ClientContext* ctx, Botan::BigInt key, const protocol::CMSG_AUTH_SESSION& packet) {
+void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
