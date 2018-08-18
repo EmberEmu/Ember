@@ -56,7 +56,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 		return lhs.service() < rhs.service();
 	});
 
-	const std::shared_ptr<std::vector<ClientUUID>> clients_ptr;
+	const auto clients_ptr = std::make_shared<decltype(clients)>();
 	clients_ptr->swap(clients);
 
 	const auto size = pool_.size();
