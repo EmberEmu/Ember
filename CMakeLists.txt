@@ -104,7 +104,7 @@ include(${CMAKE_MODULE_PATH}/BuildFlatBuffers.cmake)
 ##############################
 #            zlib            #
 ##############################
-find_package(zlib 1.2.8 REQUIRED)
+find_package(Zlib 1.2.8.0 REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIR})
 
 ##############################
