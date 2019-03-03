@@ -3,8 +3,6 @@
 
 include(FindPackageHandleStandardArgs)
 
-set(_MYSQLCCPP_POSSIBLE_LIB_SUFFIXES lib)
-
 find_path(MYSQLCCPP_ROOT_DIR
           NAMES include/mysql_connection.h
           PATHS ENV MYSQLCCPPROOT
@@ -19,13 +17,13 @@ find_path(MYSQLCCPP_INCLUDE_DIR
 find_library(MYSQLCCPP_LIBRARY_RELEASE
              NAMES mysqlcppconn
              HINTS ${MYSQLCCPP_ROOT_DIR}
-             PATH_SUFFIXES ${_MYSQLCCPP_POSSIBLE_LIB_SUFFIXES}
+             PATH_SUFFIXES lib
              DOC "MySQL Connector/C++ release library")
 
 find_library(MYSQLCCPP_LIBRARY_DEBUG
-             NAMES mysqlcppconnd
+             NAMES mysqlcppconn
              HINTS ${MYSQLCCPP_ROOT_DIR}
-             PATH_SUFFIXES ${_MYSQLCCPP_POSSIBLE_LIB_SUFFIXES}
+             PATH_SUFFIXES libd
              DOC "MySQL Connector/C++ debug library")
 
 if(MYSQLCCPP_LIBRARY_DEBUG AND MYSQLCCPP_LIBRARY_RELEASE)

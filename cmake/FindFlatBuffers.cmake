@@ -24,12 +24,29 @@
 #   for the given flatbuffer schema files.
 #   Returns the header files in ${Name}_OUTPUTS
 
-find_program(FLATBUFFERS_FLATC_EXECUTABLE NAMES flatc)
-find_path(FLATBUFFERS_INCLUDE_DIR NAMES flatbuffers/flatbuffers.h)
-
 include(FindPackageHandleStandardArgs)
+
+find_path(FLATBUFFERS_ROOT_DIR
+          NAMES include/flatbuffers/flatbuffers.h
+          HINTS ${FLATBUFFERS_ROOT_DIR}
+          PATHS ENV FLATBUFFERSROOT
+          DOC "FlatBuffers root directory")
+
+find_path(FLATBUFFERS_INCLUDE_DIR
+          NAMES flatbuffers/flatbuffers.h
+          HINTS ${FLATBUFFERS_ROOT_DIR}
+          PATH_SUFFIXES include
+          DOC "FlatBuffers include directory")
+
+find_program(FLATBUFFERS_FLATC_EXECUTABLE
+             NAMES flatc
+             HINTS ${FLATBUFFERS_ROOT_DIR}
+             PATH_SUFFIXES bin
+             DOC "FlatBuffers flatc.exe")
+
 find_package_handle_standard_args(flatbuffers
-  DEFAULT_MSG FLATBUFFERS_FLATC_EXECUTABLE FLATBUFFERS_INCLUDE_DIR)
+  DEFAULT_MSG FLATBUFFERS_ROOT_DIR FLATBUFFERS_INCLUDE_DIR
+  FLATBUFFERS_FLATC_EXECUTABLE)
 
 if(FLATBUFFERS_FOUND)
   function(FLATBUFFERS_GENERATE_C_HEADERS Name)
@@ -54,3 +71,5 @@ if(FLATBUFFERS_FOUND)
 else()
   set(FLATBUFFERS_INCLUDE_DIR)
 endif()
+
+mark_as_advanced(FLATBUFFERS_INCLUDE_DIR FLATBUFFERS_FLATC_EXECUTABLE)
