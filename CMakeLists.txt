@@ -1,4 +1,4 @@
-# Copyright (c) 2014 - 2018 Ember
+# Copyright (c) 2014 - 2019 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -69,7 +69,7 @@ add_definitions(-DBOOST_ALL_NO_LIB)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.64.0 REQUIRED COMPONENTS program_options locale system)
+find_package(Boost 1.67.0 REQUIRED COMPONENTS program_options locale system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
