@@ -21,6 +21,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 	add_definitions(-D_HAS_AUTO_PTR_ETC=1)               # Until Boost conforms with C++17
+	add_definitions(-D_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING) # Silence erroneous VS2017 warning - check if fixed in VS2019
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")        # Multiprocessor compilation
     
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.13)
