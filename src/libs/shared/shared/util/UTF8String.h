@@ -8,7 +8,7 @@
 
 /*
  * At the moment, this only exists to make it clear which strings hold
- * UTF8 content to decrease the odds making mistakes with size/length, etc.
+ * UTF8 content to decrease the odds of making mistakes with size/length, etc.
  */
 #pragma once
 
