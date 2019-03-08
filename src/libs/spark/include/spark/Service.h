@@ -35,7 +35,7 @@ namespace ember::spark {
 class Service final {
 	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandle;
 
-	boost::asio::io_service& service_;
+	boost::asio::io_context& service_;
 
 	Link link_;
 	EventDispatcher dispatcher_;
@@ -54,7 +54,7 @@ class Service final {
 public:
 	enum class Result { OK, LINK_GONE };
 
-	Service(std::string description, boost::asio::io_service& service,
+	Service(std::string description, boost::asio::io_context& service,
 	        const std::string& interface, std::uint16_t port, log::Logger* logger);
 	~Service();
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -19,16 +19,16 @@ namespace ember {
 class ServicePool final {
 	std::size_t next_service_;
 	std::size_t pool_size_;
-	std::vector<std::shared_ptr<boost::asio::io_service>> services_;
-	std::vector<std::shared_ptr<boost::asio::io_service::work>> work_;
+	std::vector<std::shared_ptr<boost::asio::io_context>> services_;
+	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 	std::vector<std::thread> threads_;
 
 public:
 	explicit ServicePool(std::size_t pool_size);
 	~ServicePool();
 
-	boost::asio::io_service& get_service();
-	boost::asio::io_service* get_service(std::size_t index) const;
+	boost::asio::io_context& get_service();
+	boost::asio::io_context* get_service(std::size_t index) const;
 	void run();
 	void stop();
 	std::size_t size() const;

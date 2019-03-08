@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -44,7 +44,7 @@ class HeartbeatService : public EventHandler {
 	void handle_pong(const Link& link, const Message& message);
 
 public:
-	HeartbeatService(boost::asio::io_service& io_service, const Service* service,
+	HeartbeatService(boost::asio::io_context& io_context, const Service* service,
 	                 log::Logger* logger);
 
 	void on_message(const Link& link, const Message& message) override;

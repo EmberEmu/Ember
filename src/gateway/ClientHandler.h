@@ -36,7 +36,7 @@ class ClientHandler final {
 
 public:
 	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
-	              boost::asio::io_service& service);
+	              boost::asio::io_context& service);
 
 	void start();
 	void stop();

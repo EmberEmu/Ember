@@ -67,7 +67,7 @@ int main(int argc, const char* argv[]) try {
 }
 
 void launch(const po::variables_map& args, el::Logger* logger) try {
-	boost::asio::io_service service;
+	boost::asio::io_context service;
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	auto s_address = args["spark.address"].as<std::string>();

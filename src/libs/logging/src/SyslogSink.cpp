@@ -24,7 +24,7 @@ class SyslogSink::impl : public Sink {
 		EMERGENCY, ALERT, CRITICAL, ERROR_, WARNING, NOTICE, INFORMATIONAL, DEBUG
 	};
 
-	boost::asio::io_service service_;
+	boost::asio::io_context service_;
 	bai::udp::socket socket_;
 	std::string host_;
 	std::string tag_; 

@@ -15,7 +15,7 @@
 
 namespace ember {
 
-MetricsImpl::MetricsImpl(boost::asio::io_service& service, const std::string& host,
+MetricsImpl::MetricsImpl(boost::asio::io_context& service, const std::string& host,
                          std::uint16_t port)
                          : socket_(service), signals_(service, SIGINT, SIGTERM) {
 	signals_.async_wait(std::bind(&MetricsImpl::shutdown, this));

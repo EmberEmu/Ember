@@ -28,7 +28,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 
 	boost::asio::ip::tcp::socket socket_;
-	boost::asio::strand strand_;
+	boost::asio::io_context::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
 	spark::ChainedBuffer<1024> inbound_buffer_;
@@ -113,8 +113,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
-	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_service()),
-	                 strand_(socket.get_io_service()), logger_(logger), stopped_(false),
+	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_context()),
+	                 strand_(socket.get_io_context()), logger_(logger), stopped_(false),
 	                 remote_address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
 
 	virtual void start() {
@@ -161,7 +161,7 @@ public:
 		)));
 	}
 
-	boost::asio::strand& strand() { return strand_;  }
+	boost::asio::io_context::strand& strand() { return strand_;  }
 
 	virtual bool handle_packet(spark::Buffer& buffer) = 0;
 	virtual void on_write_complete() = 0;

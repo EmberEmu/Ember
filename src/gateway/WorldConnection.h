@@ -17,7 +17,7 @@ class WorldConnection final : std::enable_shared_from_this<WorldConnection> {
 	boost::asio::ip::tcp::socket socket_;
 
 public:
-	WorldConnection(boost::asio::io_service& service) : socket_(service) { }
+	WorldConnection(boost::asio::io_context& service) : socket_(service) { }
 };
 
 } // ember

@@ -19,7 +19,7 @@ namespace mcast = ember::messaging::multicast;
 
 namespace ember::spark {
 
-ServiceDiscovery::ServiceDiscovery(boost::asio::io_service& service, std::string address,
+ServiceDiscovery::ServiceDiscovery(boost::asio::io_context& service, std::string address,
                                    std::uint16_t port, const std::string& mcast_iface,
                                    const std::string& mcast_group, std::uint16_t mcast_port,
                                    log::Logger* logger)

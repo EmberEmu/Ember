@@ -192,7 +192,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 
 	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
-	boost::asio::io_service wait_svc;
+	boost::asio::io_context wait_svc;
 	boost::asio::signal_set signals(wait_svc, SIGINT, SIGTERM);
 
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {

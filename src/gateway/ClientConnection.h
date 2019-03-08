@@ -40,7 +40,7 @@ class ClientConnection final {
 
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
-	boost::asio::io_service& service_;
+	boost::asio::io_context& service_;
 	boost::asio::ip::tcp::socket socket_;
 
 	spark::ChainedBuffer<INBOUND_SIZE> inbound_buffer_;
@@ -84,12 +84,12 @@ class ClientConnection final {
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                 ClientUUID uuid, log::Logger* logger)
-	                 : service_(socket.get_io_service()), sessions_(sessions),
+	                 : service_(socket.get_io_context()), sessions_(sessions),
 	                   socket_(std::move(socket)), stats_{}, crypto_{}, msg_size_{0},
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false),
 	                   address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())),
-	                   handler_(*this, uuid, logger, socket.get_io_service()), compression_level_(0),
+	                   handler_(*this, uuid, logger, socket.get_io_context()), compression_level_(0),
 	                   outbound_front_(&outbound_buffers_[0]),
 	                   outbound_back_(&outbound_buffers_[1]), stopping_(false) { }
 

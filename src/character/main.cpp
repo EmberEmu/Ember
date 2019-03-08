@@ -144,7 +144,7 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(ember::FilterType::LF_SPARK);
 
-	boost::asio::io_service service;
+	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	ThreadPool thread_pool(concurrency);

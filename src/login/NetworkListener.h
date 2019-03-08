@@ -25,7 +25,7 @@
 namespace ember {
 
 class NetworkListener {
-	boost::asio::io_service& service_;
+	boost::asio::io_context& service_;
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
@@ -75,7 +75,7 @@ class NetworkListener {
 	}
 
 public:
-	NetworkListener(boost::asio::io_service& service, const std::string& interface, std::uint16_t port,
+	NetworkListener(boost::asio::io_context& service, const std::string& interface, std::uint16_t port,
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger* logger, Metrics& metrics)
 	                : acceptor_(service_, boost::asio::ip::tcp::endpoint(

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -25,7 +25,7 @@ namespace ember::spark {
 
 class TrackingService : public EventHandler {
 	struct Request {
-		Request(boost::asio::io_service& service, boost::uuids::uuid id, Link link,
+		Request(boost::asio::io_context& service, boost::uuids::uuid id, Link link,
 		         TrackingHandler handler)
 		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
 
@@ -38,14 +38,14 @@ class TrackingService : public EventHandler {
 	std::unordered_map<boost::uuids::uuid, std::unique_ptr<Request>,
 	                   boost::hash<boost::uuids::uuid>> handlers_;
 
-	boost::asio::io_service& service_;
+	boost::asio::io_context& service_;
 	log::Logger* logger_;
 	std::mutex lock_;
 
 	void timeout(boost::uuids::uuid id, Link link, const boost::system::error_code& ec);
 
 public:
-	TrackingService(boost::asio::io_service& service, log::Logger* logger);
+	TrackingService(boost::asio::io_context& service, log::Logger* logger);
 
 	void on_message(const Link& link, const Message& message) override;
 	void on_link_up(const Link& link) override;

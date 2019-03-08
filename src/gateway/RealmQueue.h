@@ -10,7 +10,7 @@
 
 #include <shared/ClientUUID.h>
 #include <boost/asio/basic_waitable_timer.hpp>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <list>
 #include <functional>
@@ -51,7 +51,7 @@ class RealmQueue final {
 	void set_timer();
 
 public:
-	explicit RealmQueue(boost::asio::io_service& service) : timer_(service) { }
+	explicit RealmQueue(boost::asio::io_context& service) : timer_(service) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb, int priority = 0);
 	void dequeue(const ClientUUID& client);

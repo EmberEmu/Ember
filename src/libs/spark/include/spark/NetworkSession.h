@@ -37,7 +37,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	enum class ReadState { SIZE_PREFIX, PAYLOAD };
 
 	boost::asio::ip::tcp::socket socket_;
-	boost::asio::strand strand_;
+	boost::asio::io_context::strand strand_;
 
 	ReadState state_;
 	messaging::core::Header* header_;
@@ -142,7 +142,7 @@ public:
 	               : sessions_(sessions), socket_(std::move(socket)), message_size_(0),
 	                 handler_(handler), logger_(logger), stopped_(false),
 	                 state_(ReadState::SIZE_PREFIX), in_buff_(DEFAULT_BUFFER_LENGTH),
-	                 strand_(socket_.get_io_service()),
+	                 strand_(socket_.get_io_context()),
 	                 remote_(socket_.remote_endpoint().address().to_string()
 	                         + ":" + std::to_string(socket_.remote_endpoint().port())) { }
 

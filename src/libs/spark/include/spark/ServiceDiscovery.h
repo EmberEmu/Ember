@@ -33,7 +33,7 @@ class ServiceDiscovery {
 
 	std::string address_;
 	std::uint16_t port_;
-	boost::asio::io_service& service_;
+	boost::asio::io_context& service_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_, remote_ep_;
 	std::array<std::uint8_t, BUFFER_SIZE> buffer_;
@@ -60,7 +60,7 @@ class ServiceDiscovery {
 	void handle_receive(const boost::system::error_code& ec, std::size_t size);
 
 public:
-	ServiceDiscovery(boost::asio::io_service& service, std::string address, std::uint16_t port,
+	ServiceDiscovery(boost::asio::io_context& service, std::string address, std::uint16_t port,
 	                 const std::string& mcast_iface, const std::string& mcast_group,
 	                 std::uint16_t mcast_port, log::Logger* logger);
 

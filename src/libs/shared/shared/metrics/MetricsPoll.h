@@ -9,7 +9,7 @@
 #pragma once
 
 #include <shared/metrics/Metrics.h>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/basic_waitable_timer.hpp>
 #include <chrono>
 #include <functional>
@@ -37,7 +37,7 @@ class MetricsPoll {
 	void timeout(const boost::system::error_code& ec);
 
 public:
-	MetricsPoll(boost::asio::io_service& service, Metrics& metrics);
+	MetricsPoll(boost::asio::io_context& service, Metrics& metrics);
 
 	void add_source(MetricsCB callback, std::chrono::seconds frequency);
 	void shutdown();

@@ -37,7 +37,7 @@
 #include <shared/IPBanCache.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <botan/version.h>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -177,7 +177,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 
 	ember::ThreadPool thread_pool(concurrency);
-	boost::asio::io_service service(concurrency);
+	boost::asio::io_context service(concurrency);
 
 	// Start Spark services
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
@@ -255,8 +255,8 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// start from one to take the main thread into account
 	for(unsigned int i = 1; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
-			(&boost::asio::io_service::run), &service); 
+		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
+			(&boost::asio::io_context::run), &service); 
 	}
 
 	service.run();

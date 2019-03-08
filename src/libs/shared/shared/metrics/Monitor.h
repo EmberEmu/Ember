@@ -52,7 +52,7 @@ private:
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
 	boost::asio::signal_set signals_;
-	boost::asio::strand strand_;
+	boost::asio::io_context::strand strand_;
 
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
 	std::mutex source_lock_;
@@ -69,7 +69,7 @@ private:
 	void shutdown();
 
 public:
-	Monitor(boost::asio::io_service& service, const std::string& interface,
+	Monitor(boost::asio::io_context& service, const std::string& interface,
 	        std::uint16_t port, std::chrono::seconds frequency = 5s);
 
 	void add_source(Source source, Severity severity, LogCallback log_callback);

@@ -18,9 +18,9 @@ ServicePool::ServicePool(std::size_t pool_size) : pool_size_(pool_size), next_se
 	}
 
 	for(std::size_t i = 0; i < pool_size; ++i) {
-		auto io_service = std::make_shared<boost::asio::io_service>();
-		auto work = std::make_shared<boost::asio::io_service::work>(*io_service);
-		services_.emplace_back(io_service);
+		auto io_context = std::make_shared<boost::asio::io_context>();
+		auto work = std::make_shared<boost::asio::io_context::work>(*io_context);
+		services_.emplace_back(io_context);
 		work_.emplace_back(work);
 	}
 }
@@ -29,13 +29,13 @@ ServicePool::~ServicePool() {
 	stop();
 }
 
-boost::asio::io_service& ServicePool::get_service() {
+boost::asio::io_context& ServicePool::get_service() {
 	auto& service = *services_[next_service_++];
 	next_service_ %= pool_size_;
 	return service;
 }
 
-boost::asio::io_service* ServicePool::get_service(std::size_t index) const {
+boost::asio::io_context* ServicePool::get_service(std::size_t index) const {
 	if(index >= services_.size()) {
 		return nullptr;
 	}
@@ -47,8 +47,8 @@ void ServicePool::run() {
 	const auto core_count = std::thread::hardware_concurrency();
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
-		threads_.emplace_back(static_cast<std::size_t(boost::asio::io_service::*)()>
-			(&boost::asio::io_service::run), services_[i]);
+		threads_.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
+			(&boost::asio::io_context::run), services_[i]);
 		set_affinity(threads_[i], i % core_count);
 	}
 }

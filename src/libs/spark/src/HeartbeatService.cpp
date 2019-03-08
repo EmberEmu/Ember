@@ -18,8 +18,8 @@ namespace em = ember::messaging;
 namespace sc = std::chrono;
 using namespace std::placeholders;
 
-HeartbeatService::HeartbeatService(boost::asio::io_service& io_service, const Service* service,
-                                   log::Logger* logger) : timer_(io_service),
+HeartbeatService::HeartbeatService(boost::asio::io_context& io_context, const Service* service,
+                                   log::Logger* logger) : timer_(io_context),
                                    service_(service), logger_(logger) {
 	REGISTER(em::core::Opcode::MSG_PING, em::core::Ping, HeartbeatService::handle_ping);
 	REGISTER(em::core::Opcode::MSG_PONG, em::core::Pong, HeartbeatService::handle_pong);

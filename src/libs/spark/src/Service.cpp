@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,7 +23,7 @@ namespace ember::spark {
 
 namespace bai = boost::asio::ip;
 
-Service::Service(std::string description, boost::asio::io_service& service, const std::string& interface,
+Service::Service(std::string description, boost::asio::io_context& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger)
                  : service_(service), logger_(logger),
                    listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger),
@@ -58,7 +58,7 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 	auto socket = std::make_shared<boost::asio::ip::tcp::socket>(service_);
 
 	boost::asio::async_connect(*socket, endpoint_it,
-		[this, host, port, socket](boost::system::error_code ec, bai::tcp::resolver::iterator it) {
+		[this, host, port, socket](boost::system::error_code ec, bai::tcp::endpoint ep) {
 			if(!ec) {
 				start_session(std::move(*socket));
 			}

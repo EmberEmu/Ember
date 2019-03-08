@@ -125,7 +125,7 @@ std::string ClientHandler::client_identify() {
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
-                             boost::asio::io_service& service)
+                             boost::asio::io_context& service)
                              : context_{}, connection_(connection), logger_(logger), uuid_(uuid),
                                timer_(service) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;

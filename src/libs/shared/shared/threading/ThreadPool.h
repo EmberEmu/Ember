@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -27,8 +27,8 @@ public:
 	typedef std::function<void(Severity, std::string)> LogCallback;
 
 private:
-	boost::asio::io_service service_;
-	boost::asio::io_service::work work_;
+	boost::asio::io_context service_;
+	boost::asio::io_context::work work_;
 	std::vector<std::thread> workers_;
 	LogCallback log_cb_;
 	std::mutex log_cb_lock_;

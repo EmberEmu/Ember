@@ -20,7 +20,7 @@ class EventDispatcher;
 class ServicesMap;
 
 class Listener {
-	boost::asio::io_service& service_;
+	boost::asio::io_context& service_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
 
@@ -34,7 +34,7 @@ class Listener {
 	void start_session(boost::asio::ip::tcp::socket socket);
 
 public:
-	Listener(boost::asio::io_service& service, std::string interface, std::uint16_t port,
+	Listener(boost::asio::io_context& service, std::string interface, std::uint16_t port,
 	         SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,
 	         const Link& link, log::Logger* logger);
 

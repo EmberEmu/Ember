@@ -25,7 +25,7 @@ class MetricsImpl final : public Metrics {
 	void shutdown();
 
 public:
-	MetricsImpl(boost::asio::io_service& service, const std::string& host, std::uint16_t port);
+	MetricsImpl(boost::asio::io_context& service, const std::string& host, std::uint16_t port);
 
 	void increment(const char* key, std::intmax_t value = 1) override;
 	void timing(const char* key, const std::chrono::milliseconds& value) override;

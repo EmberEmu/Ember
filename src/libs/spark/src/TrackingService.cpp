@@ -15,7 +15,7 @@ namespace sc = std::chrono;
 
 namespace ember::spark {
 
-TrackingService::TrackingService(boost::asio::io_service& service, log::Logger* logger)
+TrackingService::TrackingService(boost::asio::io_context& service, log::Logger* logger)
                                  : service_(service), logger_(logger) { }
 
 void TrackingService::on_message(const Link& link, const Message& message) try {

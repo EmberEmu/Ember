@@ -17,7 +17,7 @@
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -80,7 +80,7 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
-	boost::asio::io_service service;
+	boost::asio::io_context service;
 	es::Service spark("social", service, s_address, s_port, logger);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger);

@@ -15,7 +15,7 @@ namespace ember {
 using namespace std::chrono_literals;
 namespace bai = boost::asio::ip;
 
-Monitor::Monitor(boost::asio::io_service& service, const std::string& interface,
+Monitor::Monitor(boost::asio::io_context& service, const std::string& interface,
                  std::uint16_t port, std::chrono::seconds frequency)
                  : timer_(service), strand_(service), TIMER_FREQUENCY(frequency),
                    socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)),
