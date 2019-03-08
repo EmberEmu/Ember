@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@
 #include <logger/Logging.h>
 #include <protocol/Packets.h>
 #include <protocol/Opcodes.h>
+#include <shared/util/UTF8String.h>
 #include <memory>
 #include <vector>
 
@@ -56,7 +57,7 @@ void send_character_list(ClientContext* ctx, std::vector<Character> characters) 
 }
 
 void send_character_rename(ClientContext* ctx, protocol::Result result,
-                           std::uint64_t id = 0, const std::string& name = "") {
+                           std::uint64_t id = 0, const utf8_string& name = "") {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_RENAME response;

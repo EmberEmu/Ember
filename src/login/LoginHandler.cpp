@@ -161,7 +161,7 @@ bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge
 	return false;
 }
 
-void LoginHandler::fetch_user(grunt::Opcode opcode, const std::string& username) {
+void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	switch(opcode) {

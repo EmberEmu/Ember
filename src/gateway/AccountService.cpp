@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -112,7 +112,7 @@ void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb
 	}
 }
 
-void AccountService::locate_account_id(const std::string& username, IDLocateCB cb) const {
+void AccountService::locate_account_id(const utf8_string& username, IDLocateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	const auto opcode = util::enum_value(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);

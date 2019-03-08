@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <spark/buffers/ChainedBuffer.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
+#include <shared/util/UTF8String.h>
 #include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
@@ -45,7 +46,7 @@ public:
 	be::little_uint32_at unk1;
 	be::little_uint32_at build;
 	be::little_uint8_at locale;
-	std::string username;
+	utf8_string username;
 	std::vector<AddonData> addons;
 
 	State read_from_stream(spark::BinaryStream& stream) try {

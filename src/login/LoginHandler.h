@@ -113,7 +113,7 @@ class LoginHandler {
 	                               const std::uint8_t* client_salt, std::size_t len,
 	                               bool reconnect);
 
-	void fetch_user(grunt::Opcode opcode, const std::string& username);
+	void fetch_user(grunt::Opcode opcode, const utf8_string& username);
 	void fetch_session_key(const FetchUserAction& action);
 
 	void reject_client(const GameVersion& version);

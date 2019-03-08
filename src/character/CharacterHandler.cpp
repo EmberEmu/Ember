@@ -71,7 +71,7 @@ void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_i
 }
 
 void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_id,
-                              const std::string& name, RenameCB callback) const {
+                              const utf8_string& name, RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pool_.run([=] {
@@ -246,7 +246,7 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
 }
 
 void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,
-                                 const std::string& name, const RenameCB& callback) const try {
+                                 const utf8_string& name, const RenameCB& callback) const try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto character = dao_.character(character_id);
@@ -415,7 +415,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	return true;
 }
 
-protocol::Result CharacterHandler::validate_name(const std::string& name) const {
+protocol::Result CharacterHandler::validate_name(const utf8_string& name) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	if(name.empty()) {

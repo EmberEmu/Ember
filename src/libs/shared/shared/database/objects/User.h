@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/UTF8String.h>
 #include <string>
 #include <utility>
 #include <cstdint>
@@ -20,7 +21,7 @@ enum class PINMethod {
 
 class User {
 	std::uint32_t id_;
-	std::string user_;
+	utf8_string user_;
 	std::string v_;
 	std::string s_;
 	PINMethod pin_method_;
@@ -32,7 +33,7 @@ class User {
 	bool subscriber_;
 
 public:
-	User(std::uint32_t id, std::string username, std::string salt, std::string verifier,
+	User(std::uint32_t id, utf8_string username, std::string salt, std::string verifier,
 	     PINMethod pin_method, std::uint64_t pin, std::string totp_token, bool banned, bool suspended,
 	     bool survey_request, bool subscriber)
          : id_(id), user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)),
@@ -66,7 +67,7 @@ public:
 		return s_;
 	}
 
-	std::string username() const {
+	utf8_string username() const {
 		return user_;
 	}
 

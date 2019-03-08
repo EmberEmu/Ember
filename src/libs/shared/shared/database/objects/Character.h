@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <shared/util/enum_bitmask.h>
+#include <shared/util/UTF8String.h>
 #include <string>
 #include <cstdint>
 
@@ -19,7 +20,7 @@ struct Vector {
 };
 
 struct CharacterTemplate { // used during creation
-	std::string name;
+	utf8_string name;
 	std::uint8_t race;
 	std::uint8_t class_;
 	std::uint8_t gender;
@@ -51,8 +52,8 @@ struct Character { // used for character list display
 		RENAME                 = 0x4000
 	};
 
-	std::string name;
-	std::string internal_name;
+	utf8_string name;
+	utf8_string internal_name;
 	std::uint64_t id;
 	std::uint32_t account_id;
 	std::uint32_t realm_id;

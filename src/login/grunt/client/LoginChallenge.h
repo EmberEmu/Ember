@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include "../Exceptions.h"
 #include "../ResultCodes.h"
 #include "../../GameVersion.h"
+#include <shared/util/UTF8String.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
@@ -89,7 +90,7 @@ public:
 	Locale locale;
 	be::little_uint32_at timezone_bias = 0;
 	be::big_uint32_at ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
-	std::string username;
+	utf8_string username;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

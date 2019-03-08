@@ -17,16 +17,16 @@
 namespace ember {
 
 class ReconnectAuthenticator {
-	std::string rcon_user_;
+	utf8_string rcon_user_;
 	Botan::secure_vector<std::uint8_t> salt_;
 	srp6::SessionKey sess_key_;
 
 public:
-	ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
+	ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,
 	                       Botan::secure_vector<std::uint8_t> salt);
 
 	bool proof_check(const grunt::client::ReconnectProof& proof);
-	const std::string& username() { return rcon_user_; }
+	const utf8_string& username() { return rcon_user_; }
 };
 
 class LoginAuthenticator {

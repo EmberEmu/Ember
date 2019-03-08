@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -165,7 +165,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 }
 
 void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t character_id,
-                                        const std::string& name, RenameCB cb) const {
+                                        const utf8_string& name, RenameCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 

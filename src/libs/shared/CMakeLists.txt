@@ -1,4 +1,4 @@
-# Copyright (c) 2015, 2016 Ember
+# Copyright (c) 2015 - 2019 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -61,6 +61,7 @@ set(UTIL_SRC
     shared/util/enum_bitmask.h
     shared/util/PCREHelper.h
     shared/util/PCREHelper.cpp
+    shared/util/UTF8String.h
     shared/util/UTF8.h
     shared/util/UTF8.cpp
     shared/util/Utility.h

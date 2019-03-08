@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -156,8 +156,8 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
+	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
-	std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 
 	Botan::SHA_160 hasher;
 	hasher.update(packet->username);

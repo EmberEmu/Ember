@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,7 @@
 #include "ClientStates.h"
 #include <spark/buffers/Buffer.h>
 #include <protocol/PacketHeaders.h>
-#include <string>
+#include <shared/util/UTF8String.h>
 #include <cstdint>
 
 namespace ember {
@@ -31,7 +31,7 @@ struct ClientContext {
 	ClientHandler* handler;
 	ClientConnection* connection;
 	std::uint32_t account_id;
-	std::string account_name;
+	utf8_string account_name;
 	std::uint32_t auth_seed;
 	//std::shared_ptr<WorldConnection> world_conn;
 	AuthStatus auth_status;

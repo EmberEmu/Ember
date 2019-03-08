@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "UTF8String.h"
 #include <string>
 #include <cstddef>
 

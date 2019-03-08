@@ -101,13 +101,13 @@ public:
 };
 
 class FetchUserAction final : public Action {
-	const std::string username_;
+	const utf8_string username_;
 	const dal::UserDAO& user_src_;
 	std::optional<User> user_;
 	std::exception_ptr exception_;
 
 public:
-	FetchUserAction(std::string username, const dal::UserDAO& user_src)
+	FetchUserAction(utf8_string username, const dal::UserDAO& user_src)
 	                : username_(std::move(username)), user_src_(user_src) {}
 
 	virtual void execute() override try {

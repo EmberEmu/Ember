@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <logger/Logging.h>
+#include <shared/util/UTF8String.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>
@@ -53,7 +54,7 @@ public:
 	void on_link_down(const spark::Link& link) override;
 
 	void locate_session(std::uint32_t account_id, SessionLocateCB cb) const;
-	void locate_account_id(const std::string& username, IDLocateCB cb) const;
+	void locate_account_id(const utf8_string& username, IDLocateCB cb) const;
 };
 
 } // ember
