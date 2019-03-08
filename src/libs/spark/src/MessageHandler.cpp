@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -61,7 +61,9 @@ bool MessageHandler::establish_link(NetworkSession& net, const Message& message)
 
 	auto banner = flatbuffers::GetRoot<messaging::core::Banner>(message.data);
 
-	if(!banner->server_uuid() || banner->server_uuid()->size() != boost::uuids::uuid::static_size()
+	const auto uuid = banner->server_uuid();
+
+	if(!uuid || uuid->size() != boost::uuids::uuid::static_size()
 	   || !banner->description()) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
 			<< "[spark] Link failed, incompatible banner: "
@@ -69,7 +71,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const Message& message)
 		return false;
 	}
 
-	std::copy(banner->server_uuid()->begin(), banner->server_uuid()->end(), peer_.uuid.data);
+	std::copy(uuid->begin(), uuid->end(), peer_.uuid.data);
 	peer_.description = banner->description()->str();
 	peer_.net = std::weak_ptr<NetworkSession>(net.shared_from_this());
 
@@ -188,7 +190,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const messaging::core::
 		token.tracked = true;
 	}
 
-	const Message message { header->service(), header->opcode(), size, data, std::move(token) };
+	const Message message { size, header->opcode(), header->service(), data, std::move(token) };
 
 	switch(state_) {
 		case State::HANDSHAKING:

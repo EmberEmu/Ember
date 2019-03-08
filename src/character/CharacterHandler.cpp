@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,8 +23,9 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 
 	Character character{};
 	character.race = options.race();
-	character.name = options.name()->c_str();
-	character.internal_name = options.name()->c_str();
+	const auto char_name = options.name()->c_str();
+	character.name = char_name;
+	character.internal_name = char_name;
 	character.account_id = account_id;
 	character.realm_id = realm_id;
 	character.class_ = options.class_();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,14 +14,15 @@
 
 namespace ember::util {
 
+// todo, not unicode aware
 std::size_t max_consecutive_check(std::string_view name) {
 	int longest_sequence = 1;
 	int current_sequence = 1;
 	char last_letter = 0;
 	bool reset = false;
 
-	for(auto i = name.begin(); i != name.end(); ++i) {
-		if(*i == last_letter) {
+	for(auto c : name) {
+		if(c == last_letter) {
 			++current_sequence;
 			reset = false;
 		} else {
@@ -36,7 +37,7 @@ std::size_t max_consecutive_check(std::string_view name) {
 			current_sequence = 1;
 		}
 
-		last_letter = *i;
+		last_letter = c;
 	}
 
 	return longest_sequence;

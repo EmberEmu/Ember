@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,7 +42,7 @@ class TrackingService : public EventHandler {
 	log::Logger* logger_;
 	std::mutex lock_;
 
-	void timeout(boost::uuids::uuid id, Link link, const boost::system::error_code& ec);
+	void timeout(const boost::uuids::uuid& id, Link link, const boost::system::error_code& ec);
 
 public:
 	TrackingService(boost::asio::io_context& service, log::Logger* logger);

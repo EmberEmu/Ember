@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@ void RealmList::add_realm(Realm realm) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	auto copy = std::make_shared<RealmMap>(*realms_);
-	(*copy)[realm.id] = realm;
+	(*copy)[realm.id] = std::move(realm);
 
 	realms_ = copy;
 }

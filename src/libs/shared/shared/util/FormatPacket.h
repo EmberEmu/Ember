@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,7 +21,7 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
                                  unsigned int columns = 16) {
 	auto rows = static_cast<std::size_t>(std::ceil(size / static_cast<double>(columns)));
 	std::stringstream buffer;
-	auto offset = 0;
+	auto offset = 0u;
 
 	for(std::size_t i = 0; i != rows; ++i) {
 		buffer << std::hex << std::setw(4) << std::setfill('0') << i * columns << "   ";

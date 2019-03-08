@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,8 +19,8 @@ class ConsoleSink final : public Sink {
 	void print_opcode(const fblog::Message& message);
 
 public:
-	void handle(const fblog::Header& header);
-	void handle(const fblog::Message& message);
+	void handle(const fblog::Header& header) override;
+	void handle(const fblog::Message& message) override;
 };
 
 } // ember

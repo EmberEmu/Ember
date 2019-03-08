@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -49,11 +49,10 @@ srp6::SessionKey LoginAuthenticator::session_key() {
 }
 
 ReconnectAuthenticator::ReconnectAuthenticator(std::string username, const Botan::BigInt& session_key,
-                                               const Botan::secure_vector<std::uint8_t>& salt)
-                                               : rcon_user_(std::move(username)) {
+                                               Botan::secure_vector<std::uint8_t> salt)
+                                               : rcon_user_(std::move(username)), salt_(std::move(salt)) {
 	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
 	std::transform(rcon_user_.begin(), rcon_user_.end(), rcon_user_.begin(), ::toupper);
-	salt_ = salt;
 	sess_key_ = Botan::BigInt::encode(session_key);
 }
 

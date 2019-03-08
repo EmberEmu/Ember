@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,7 +27,7 @@ void QoS::measure_bandwidth() {
 	auto timer_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TIMER_FREQUENCY);
 	auto seconds = timer_ms.count() / 1000.0;
 
-	std::size_t out_per_sec = (stats.bytes_out - last_bandwidth_out_) / seconds;
+	auto out_per_sec = (stats.bytes_out - last_bandwidth_out_) / seconds;
 	auto target_bandwidth = (config_.max_bandwidth_out / 100.0) * MAX_BANDWIDTH_PERCENTAGE;
 
 	if(out_per_sec > target_bandwidth) {

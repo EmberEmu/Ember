@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2018 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -71,7 +71,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 		std::vector<std::future<ConType>> futures;
 
 		for(std::size_t i = 0; i < num; ++i) {
-			auto f = std::async([](Driver* driver) {
+			auto f = std::async(std::launch::async, [](Driver* driver) {
 				return driver->open();
 			}, &driver_);
 

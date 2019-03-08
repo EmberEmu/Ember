@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/buffers/Buffer.h>
+#include <gsl/gsl_util>
 #include <botan/types.h>
 #include <boost/assert.hpp>
 #include <array>
@@ -40,7 +41,7 @@ public:
 		auto d_bytes = reinterpret_cast<std::uint8_t*>(&data);
 
 		for(std::size_t t = 0; t < sizeof(T); ++t) {
-			send_i_ %= key_.size();
+			send_i_ %= gsl::narrow_cast<std::uint8_t>(key_.size());
 			std::uint8_t x = (d_bytes[t] ^ key_[send_i_]) + send_j_;
 			++send_i_;
 			d_bytes[t] = send_j_ = x;
@@ -51,7 +52,7 @@ public:
 		BOOST_ASSERT_MSG(!key_.empty(), "Session key empty when decrypting");
 
 		for(std::size_t t = 0; t < length; ++t) {
-			recv_i_ %= key_.size();
+			recv_i_ %= gsl::narrow_cast<std::uint8_t>(key_.size());
 			auto& byte = reinterpret_cast<char&>(data[t]);
 			std::uint8_t x = (byte - recv_j_) ^ key_[recv_i_];
 			++recv_i_;

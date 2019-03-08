@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,7 +39,7 @@ const char* safe_print(T value, const char** enums) {
 	const auto num_val = enum_value(value);
 
 	// can FlatBuffers handle negative enum value printing? Check, todo!
-	if(gsl::narrow<std::size_t>(num_val) < length && enums[num_val] && strlen(enums[num_val]) > 0) {
+	if(gsl::narrow<std::size_t>(num_val) < length && enums[num_val] && enums[num_val][0] != '\0') {
 		return enums[num_val];
 	}
 

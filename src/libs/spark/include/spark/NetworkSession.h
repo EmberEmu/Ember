@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -139,7 +139,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
 	               log::Logger* logger)
-	               : sessions_(sessions), socket_(std::move(socket)), message_size_(0),
+	               : header_(nullptr), sessions_(sessions), socket_(std::move(socket)), message_size_(0),
 	                 handler_(handler), logger_(logger), stopped_(false),
 	                 state_(ReadState::SIZE_PREFIX), in_buff_(DEFAULT_BUFFER_LENGTH),
 	                 strand_(socket_.get_io_context()),

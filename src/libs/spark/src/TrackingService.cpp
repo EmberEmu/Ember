@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -50,7 +50,7 @@ void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id, 
 	handlers_[id] = std::move(request);
 }
 
-void TrackingService::timeout(boost::uuids::uuid id, Link link, const boost::system::error_code& ec) {
+void TrackingService::timeout(const boost::uuids::uuid& id, Link link, const boost::system::error_code& ec) {
 	if(ec) { // timer was cancelled
 		return;
 	}

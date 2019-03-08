@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2018 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ struct Field : IVisitor {
 	std::string comment;
 	std::vector<Key> keys;
 
-	virtual void accept(TypeVisitor* visitor) {
+	virtual void accept(TypeVisitor* visitor) override {
 		visitor->visit(this);
 	};
 };
@@ -70,7 +70,7 @@ struct Enum : Base {
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
 
-	virtual void accept(TypeVisitor* visitor) {
+	virtual void accept(TypeVisitor* visitor) override {
 		visitor->visit(this);
 	};
 };
@@ -81,7 +81,7 @@ struct Struct : Base {
 	std::vector<std::unique_ptr<Base>> children;
 	bool dbc;
 
-	virtual void accept(TypeVisitor* visitor) {
+	virtual void accept(TypeVisitor* visitor) override {
 		visitor->visit(this);
 	};
 
