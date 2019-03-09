@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@
 
 namespace ember::spark {
 
-class VectorBufferAdaptor : public Buffer {
+class VectorBufferAdaptor final : public Buffer {
 	std::vector<std::uint8_t>& buffer_;
 	std::size_t read_;
 	std::size_t write_;
@@ -73,7 +73,7 @@ public:
 		return true;
 	}
 
-	void write_seek(std::size_t offset, SeekDir direction) override {
+	void write_seek(SeekDir direction, std::size_t offset = 0) override {
 		switch(direction) {
 			case SeekDir::SD_BACK:
 				write_ -= offset;
@@ -81,6 +81,8 @@ public:
 			case SeekDir::SD_FORWARD:
 				write_ += offset;
 				break;
+			case SeekDir::SD_START:
+				write_ = 0 + offset;
 		}
 	}
 };

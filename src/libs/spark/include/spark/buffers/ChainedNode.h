@@ -107,8 +107,10 @@ struct BufferBlock {
 		return BlockSize - write_offset;
 	}
 
-	void write_seek(std::size_t offset, SeekDir direction) {
-		if(direction == SeekDir::SD_BACK) {
+	void write_seek(SeekDir direction, std::size_t offset) {
+		if(direction == SeekDir::SD_START) {
+			write_offset = 0;
+		} else if(direction == SeekDir::SD_BACK) {
 			write_offset -= offset; 
 		} else {
 			write_offset += offset; 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,9 +29,9 @@ void ClientConnection::send(const PacketT& packet) {
 		crypto_.encrypt(opcode);
 	}
 
-	stream.write_seek(written, spark::SeekDir::SD_BACK);
+	stream.write_seek(spark::SeekDir::SD_START);
 	stream << size << opcode;
-	stream.write_seek(written - PacketT::HEADER_WIRE_SIZE, spark::SeekDir::SD_FORWARD);
+	stream.write_seek(spark::SeekDir::SD_FORWARD, written - PacketT::HEADER_WIRE_SIZE);
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;

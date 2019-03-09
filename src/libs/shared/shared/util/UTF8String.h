@@ -19,4 +19,3 @@ namespace ember {
 using utf8_string = std::string;
 
 } // ember
-

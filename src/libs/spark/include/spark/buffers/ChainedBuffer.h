@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -273,9 +273,13 @@ public:
 		return true;
 	}
 
-	void write_seek(std::size_t offset, SeekDir direction) override {
-		const bool rewind = direction == SeekDir::SD_BACK;
+	void write_seek(SeekDir direction, std::size_t offset = 0) override {
+		const bool rewind = direction == SeekDir::SD_BACK || direction == SeekDir::SD_START;
 		auto tail = root_.prev;
+
+		if(direction == SeekDir::SD_START) {
+			size_ = 0;
+		}
 
 		size_ = rewind? size_ - offset : size_ + offset;
 
@@ -284,10 +288,10 @@ public:
 			const auto max_seek = rewind? buffer->size() : buffer->free();
 
 			if(max_seek >= offset) {
-				buffer->write_seek(offset, direction);
+				buffer->write_seek(direction, offset);
 				offset = 0;
 			} else {
-				buffer->write_seek(max_seek, direction);
+				buffer->write_seek(direction, max_seek);
 				offset -= max_seek;
 				tail = rewind? tail->prev : tail->next;
 			}

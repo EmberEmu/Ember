@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,7 +27,7 @@ public:
 	bool empty() const override { return true; };
 	bool can_write_seek() const override { return false; }
 
-	void write_seek(std::size_t offset, SeekDir direction) override {
+	void write_seek(SeekDir direction, std::size_t offset = 0) override {
 		throw std::logic_error("Don't do this on a NullBuffer"); 
 	};
 

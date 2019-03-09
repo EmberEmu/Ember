@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -226,7 +226,7 @@ TEST(ChainedBufferTest, WriteSeek) {
 	const std::array<std::uint8_t, 4> expected_data {0x00, 0x01, 0x02, 0x03};
 
 	chain.write(data.data(), data.size());
-	chain.write_seek(4, spark::SeekDir::SD_BACK);
+	chain.write_seek(spark::SeekDir::SD_BACK, 4);
 	chain.write(seek_data.data(), seek_data.size());
 
 	// make sure the chain is four bytes (6 written, (-)4 rewound, (+)2 rewritten = 4)
@@ -239,7 +239,7 @@ TEST(ChainedBufferTest, WriteSeek) {
 		<< "Buffer contains incorrect data pattern";
 
 	// put the write cursor back to its original position and write more data
-	chain.write_seek(2, spark::SeekDir::SD_FORWARD);
+	chain.write_seek(spark::SeekDir::SD_FORWARD, 2);
 
 	// should be six bytes in there
 	ASSERT_EQ(chain.size(), data.size()) << "Chain size is incorrect";
