@@ -1,6 +1,3 @@
-CREATE DATABASE `ember` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `ember`;
-
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
