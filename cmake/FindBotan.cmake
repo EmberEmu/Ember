@@ -41,14 +41,14 @@
 INCLUDE (FindPackageHandleStandardArgs)
 
 FIND_PATH (BOTAN_ROOT_DIR
-  NAMES include/botan/botan.h
+  NAMES include/botan-2/botan/botan.h
   PATHS ENV BOTANROOT
   DOC "Botan root directory")
 
 FIND_PATH (BOTAN_INCLUDE_DIR
   NAMES botan/botan.h
   HINTS ${BOTAN_ROOT_DIR}
-  PATH_SUFFIXES include
+  PATH_SUFFIXES include/botan-2
   DOC "Botan include directory")
 
 FIND_LIBRARY (BOTAN_LIBRARY_DEBUG
