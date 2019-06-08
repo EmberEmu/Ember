@@ -98,7 +98,6 @@ namespace smart_enum
         while(!enumValuesString.empty())
         {
             std::string currentEnumEntry = extractEntry(enumValuesString);
-            std::cout << "Enum entry: " << currentEnumEntry << std::endl;
             size_t equalSignPos = currentEnumEntry.find('=');
 
             if(equalSignPos != std::string::npos)
