@@ -16,7 +16,6 @@
 #elif defined TARGET_OS_MAC
 	// todo
 #elif defined __linux__ || defined __unix__
-	#define _GNU_SOURCE
 	#include <sched.h>
 	#include <pthread.h>
 #endif
