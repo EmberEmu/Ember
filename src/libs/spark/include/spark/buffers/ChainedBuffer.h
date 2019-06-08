@@ -264,7 +264,7 @@ public:
 	void advance_write_cursor(std::size_t size) {
 		auto buffer = buffer_from_node(root_.prev);
 		const auto actual = buffer->advance_write_cursor(size);
-		BOOST_ASSERT_MSG(size <= BlockSize && actual == size,
+		BOOST_ASSERT_MSG(size <= BlockSize && actual <= size,
 		                 "Attempted to advance write cursor out of bounds!");
 		size_ += size;
 	}
