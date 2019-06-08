@@ -1,4 +1,3 @@
-﻿
 # 🔥 **Ember**
 
 ## *An experimental modular MMO server emulator.*
@@ -35,8 +34,8 @@ This table lists the compilers actively used during development as well as the o
 
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
-| MSVC  | 19.7 (VS2017) | 19.7 (VS2017) |
-| Clang |     5.0     |     5.0     |
+| MSVC  | 19.21 (VS2019) | 19.7 (VS2017) |
+| Clang |     8.0     |     5.0     |
 | GCC   |     8.1     |     8.1     |
 
 ### Build status
