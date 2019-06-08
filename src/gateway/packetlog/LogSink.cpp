@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #include "LogSink.h"
 #include "../FilterTypes.h"
-#include <shared/util/Formatpacket.h>
+#include <shared/util/FormatPacket.h>
 #include <logger/Utility.h>
 #include <memory>
 #include <string_view>

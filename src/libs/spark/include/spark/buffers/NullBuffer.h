@@ -31,7 +31,7 @@ public:
 		throw std::logic_error("Don't do this on a NullBuffer"); 
 	};
 
-	std::byte& operator[](const std::size_t index) {
+	std::byte& operator[](const std::size_t index) override {
 		throw std::logic_error("Don't do this on a NullBuffer"); 
 	}
 };

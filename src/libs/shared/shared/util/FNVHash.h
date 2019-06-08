@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,7 +37,7 @@ public:
 
 	template<typename T>
 	typename std::enable_if<std::is_enum<T>::value, std::size_t>::type update(T data) {
-		return update(static_cast<std::underlying_type<T>::type>(data));
+		return update(static_cast<typename std::underlying_type<T>::type>(data));
 	}
 
 	template<typename T>

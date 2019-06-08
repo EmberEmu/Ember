@@ -32,4 +32,4 @@ struct LocalDispatcher {
 	std::bind(&handler, this, std::placeholders::_1, std::placeholders::_2)
 
 #define REGISTER(opcode, type, handler) \
-	handlers_.emplace(opcode, spark::LocalDispatcher { VERIFY(type, ##message), HANDLER(handler) })
+	handlers_.emplace(opcode, spark::LocalDispatcher { VERIFY(type, message), HANDLER(handler) })

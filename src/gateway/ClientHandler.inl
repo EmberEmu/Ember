@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@
 template<typename PacketT>
 bool ClientHandler::packet_deserialise(PacketT& packet, spark::Buffer& buffer) {
 	spark::BinaryStream stream(buffer, context_.msg_size);
-	stream.skip(sizeof(PacketT::OpcodeType));
+	stream.skip(sizeof(typename PacketT::OpcodeType));
 
 	if(packet->read_from_stream(stream) != protocol::State::DONE) {
 		const auto state = stream.state();

@@ -18,10 +18,10 @@ void ClientConnection::send(const PacketT& packet) {
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
 	spark::BinaryStream stream(*outbound_back_);
-	stream << PacketT::SizeType{} << PacketT::OpcodeType{} << packet;
+	stream << typename PacketT::SizeType{} << typename PacketT::OpcodeType{} << packet;
 
 	const auto written = stream.total_write();
-	auto size = gsl::narrow<PacketT::SizeType>(written - sizeof(PacketT::SizeType));
+	auto size = gsl::narrow<typename PacketT::SizeType>(written - sizeof(typename PacketT::SizeType));
 	auto opcode = packet.opcode;
 
 	if(authenticated_) {

@@ -58,6 +58,8 @@ struct Field : IVisitor {
 
 struct Base : IVisitor {
 	explicit Base(Types type_) : type(type_), parent(nullptr) {}
+	virtual ~Base() = default;
+
 	Types type;
 	std::string name;
 	std::string alias;
@@ -65,7 +67,7 @@ struct Base : IVisitor {
 	Base* parent;
 };
 
-struct Enum : Base {
+struct Enum final : Base {
 	Enum() : Base(ENUM) {}
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
@@ -75,7 +77,7 @@ struct Enum : Base {
 	};
 };
 
-struct Struct : Base {
+struct Struct final : Base {
 	Struct() : Base(STRUCT), dbc(false) {}
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
@@ -91,4 +93,4 @@ struct Struct : Base {
 	Struct& operator=(Struct& src) = delete;
 };
 
-} //types, dbc, ember
+} // types, dbc, ember

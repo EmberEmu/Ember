@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #pragma once
+
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -88,22 +89,30 @@ namespace smart_enum
         return result;
     };
     
-    template<typename SizeType>
-    inline std::unordered_map<SizeType, std::string> makeEnumNameMap(std::string enumValuesString)
+    template<typename SizeType, typename Type>
+    inline std::unordered_map<SizeType, std::string> makeEnumNameMap(std::vector<Type>& list, std::string enumValuesString)
     {
         std::unordered_map<SizeType, std::string> nameMap;
-    
         SizeType currentEnumValue = 0;
+
         while(!enumValuesString.empty())
         {
             std::string currentEnumEntry = extractEntry(enumValuesString);
-    
+            std::cout << "Enum entry: " << currentEnumEntry << std::endl;
             size_t equalSignPos = currentEnumEntry.find('=');
+
             if(equalSignPos != std::string::npos)
             {
                 std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
-				
-				if(rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'') {
+                
+                // Handle using util::mcc_char - this makes me sad too
+                if (auto first = rightHandSide.find_first_of('"'), last = rightHandSide.find_last_of('"');
+                    first != std::string::npos && first != last) {
+                    rightHandSide = rightHandSide.substr(first, (last - first) + 1);
+                }
+
+				if((rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'')
+                || (rightHandSide[0] == '"' && rightHandSide[rightHandSide.size() - 1] == '"')) {
 					std::stringstream decimalConvert;
 					decimalConvert << "0x" << std::hex << std::setw(2) << std::setfill('0');
 
@@ -113,12 +122,12 @@ namespace smart_enum
 
 					rightHandSide = decimalConvert.str();
 				}
-
                 currentEnumValue = static_cast<SizeType>(std::stoull(rightHandSide, 0, determine_base(rightHandSide)));
                 currentEnumEntry.erase(equalSignPos);
             }
     
             currentEnumEntry = trimWhitespace(currentEnumEntry);
+            list.emplace_back(static_cast<Type>(currentEnumValue));
             nameMap[currentEnumValue] = currentEnumEntry;
     
             currentEnumValue++;
@@ -126,51 +135,11 @@ namespace smart_enum
         
         return nameMap;
 	}
-    
-    template<typename SizeType, typename Type>
-    std::vector<Type> makeEnumList(std::string enumValuesString)
-    {
-        std::vector<Type> enumList;
-    
-        SizeType currentEnumValue = 0;
-		while(!enumValuesString.empty())
-        {
-            std::string currentEnumEntry = extractEntry(enumValuesString);
-    
-            size_t equalSignPos = currentEnumEntry.find('=');
-            if(equalSignPos != std::string::npos)
-            {
-                std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
-
-				if(rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'') {
-					std::stringstream decimalConvert;
-					decimalConvert << "0x" << std::hex << std::setw(2) << std::setfill('0');
-
-					for(std::size_t i = 1; i < rightHandSide.size() - 1; ++i) {
-						decimalConvert << static_cast<unsigned>(rightHandSide[i]);
-					}
-
-					rightHandSide = decimalConvert.str();
-				}
-
-                currentEnumValue = static_cast<SizeType>(std::stoull(rightHandSide, 0, determine_base(rightHandSide)));
-                currentEnumEntry.erase(equalSignPos);
-            }
-    
-            currentEnumEntry = trimWhitespace(currentEnumEntry);
-    
-            enumList.push_back(static_cast<Type>(currentEnumValue));
-    
-            currentEnumValue++;
-        }
-    
-        return enumList;
-    }
 }
 
 #define smart_enum(Type, Underlying, ...) enum Type : Underlying { __VA_ARGS__}; \
-    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying>(#__VA_ARGS__);\
-    static std::vector<Type> Type##_list = smart_enum::makeEnumList<Underlying, Type>(#__VA_ARGS__);\
+    static std::vector<Type> Type##_list;\
+    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
     \
     inline const std::string Type##_to_string(Type value) try \
     { \
@@ -181,8 +150,8 @@ namespace smart_enum
     \
 
 #define smart_enum_class(Type, Underlying, ...) enum class Type : Underlying { __VA_ARGS__}; \
-    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying>(#__VA_ARGS__);\
-    static std::vector<Type> Type##_list = smart_enum::makeEnumList<Underlying, Type>(#__VA_ARGS__);\
+    static std::vector<Type> Type##_list;\
+    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
     \
     inline const std::string to_string(Type value) try \
     { \

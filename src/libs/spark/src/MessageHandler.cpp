@@ -150,16 +150,16 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 		<< "[spark] Established link: " << peer_.description << ":"
 		<< boost::uuids::to_string(peer_.uuid) << LOG_ASYNC;
 
-	// register peer's services to allow for broadcasting
-	for(auto& i = protocols->proto_out()->begin(); i != protocols->proto_out()->end(); ++i) {
-		services_.register_peer_service(peer_, static_cast<messaging::Service>(*i),
-		                                ServicesMap::Mode::CLIENT);
-	}
+	// // register peer's services to allow for broadcasting
+	// for(const auto& i = protocols->proto_out()->begin(); i != protocols->proto_out()->end(); ++i) {
+	// 	services_.register_peer_service(peer_, static_cast<messaging::Service>(*i),
+	// 	                                ServicesMap::Mode::CLIENT);
+	// }
 
-	for(auto& i = protocols->proto_in()->begin(); i != protocols->proto_in()->end(); ++i) {
-		services_.register_peer_service(peer_, static_cast<messaging::Service>(*i),
-										ServicesMap::Mode::SERVER);
-	}
+	// for(const auto& i = protocols->proto_in()->begin(); i != protocols->proto_in()->end(); ++i) {
+	// 	services_.register_peer_service(peer_, static_cast<messaging::Service>(*i),
+	// 									ServicesMap::Mode::SERVER);
+	// }
 
 	// send the 'link up' event handlers for all matched services
 	for(auto& service : matches_) {
