@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -80,7 +80,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 
 	opt.add_options()
 		("help,h", "Displays a list of available options")
-		("file,f", po::value<std::string>()->default_value(""),
+		("file,f", po::value<std::string>()->required(),
 			"Path to packet capture dump file")
 		("stream,s", po::bool_switch(),
 			"Treat the input as a stream, monitoring for any new packets")
@@ -101,12 +101,13 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(opt)
 	          .style(po::command_line_style::default_style & ~po::command_line_style::allow_guessing)
 	          .run(), options);
-	po::notify(options);
 
 	if(options.count("help") || argc <= 1) {
 		std::cout << opt << "\n";
 		std::exit(0);
 	}
+
+	po::notify(options);
 
 	return options;
 }
