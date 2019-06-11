@@ -50,6 +50,7 @@ table Character {
 	x:float;
 	y:float;
 	z:float;
+	o:float;
 	guild_id:uint;
 	guild_rank:uint;
 	flags:uint;
