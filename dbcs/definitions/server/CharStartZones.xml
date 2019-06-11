@@ -44,8 +44,8 @@
 	</field>
 
 	<field>
-		<type>Vector</type>
+		<type>float</type>
 		<name>orientation</name>
 	</field>
-	
+
 </dbc>
