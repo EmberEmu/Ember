@@ -165,6 +165,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	character.position.x = zone->position.x;
 	character.position.y = zone->position.y;
 	character.position.z = zone->position.z;
+	character.orientation = zone->orientation;
 
 	// populate starting equipment
 	auto items = std::find_if(dbc_.char_start_outfit.begin(), dbc_.char_start_outfit.end(), [&](auto& record) {

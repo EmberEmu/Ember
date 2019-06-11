@@ -49,6 +49,7 @@ class MySQLCharacterDAO final : public CharacterDAO {
 		character.position.x = res->getDouble("x");
 		character.position.y = res->getDouble("y");
 		character.position.z = res->getDouble("z");
+		character.orientation = res->getDouble("o");
 		character.flags = static_cast<Character::Flags>(res->getUInt("flags"));
 		character.first_login = res->getBoolean("first_login");
 		character.pet_display = res->getUInt("pet_display");
@@ -63,7 +64,7 @@ public:
 	std::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
 		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		                          "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
@@ -87,7 +88,7 @@ public:
 	std::optional<Character> character(std::uint64_t id) const override try {
 		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                          "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		                          "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                          "FROM characters c "
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
@@ -110,7 +111,7 @@ public:
 	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
 		std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                    "c.map, c.x, c.y, c.z, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		                    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
 		                    "FROM characters c "
 		                    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
@@ -179,7 +180,7 @@ public:
 	void create(const Character& character) const override try {
 		const std::string query = "INSERT INTO characters (name, account_id, realm_id, race, class, gender, "
 		                          "skin, face, hairstyle, haircolour, facialhair, level, zone, "
-		                          "map, x, y, z, flags, first_login, pet_display, pet_level, "
+		                          "map, x, y, z, o, flags, first_login, pet_display, pet_level, "
 		                          "pet_family, internal_name) "
 		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
@@ -202,12 +203,13 @@ public:
 		stmt->setDouble(15, character.position.x);
 		stmt->setDouble(16, character.position.y);
 		stmt->setDouble(17, character.position.z);
-		stmt->setUInt(18, static_cast<std::uint32_t>(character.flags));
-		stmt->setUInt(19, character.first_login);
-		stmt->setUInt(20, character.pet_display);
-		stmt->setUInt(21, character.pet_level);
-		stmt->setUInt(22, character.pet_family);
-		stmt->setString(23, character.internal_name);
+		stmt->SetDouble(18, character.orientation);
+		stmt->setUInt(19, static_cast<std::uint32_t>(character.flags));
+		stmt->setUInt(20, character.first_login);
+		stmt->setUInt(21, character.pet_display);
+		stmt->setUInt(22, character.pet_level);
+		stmt->setUInt(23, character.pet_family);
+		stmt->setString(24, character.internal_name);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to create character");
@@ -220,7 +222,7 @@ public:
 		const std::string query = "UPDATE characters SET name = ?, internal_name = ?, account_id = ?, "
 		                          "realm_id = ?, race = ?, class = ?, gender = ?, skin = ?, face = ?, "
 		                          "hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
-		                          "map = ?, x = ?, y = ?, z = ?, flags = ?, first_login = ?, pet_display = ?, "
+		                          "map = ?, x = ?, y = ?, z = ?, o = ?, flags = ?, first_login = ?, pet_display = ?, "
 		                          "pet_level = ?, pet_family = ? "
 		                          "WHERE id = ?";
 		
@@ -244,12 +246,13 @@ public:
 		stmt->setDouble(16, character.position.x);
 		stmt->setDouble(17, character.position.y);
 		stmt->setDouble(18, character.position.z);
-		stmt->setUInt(19, static_cast<std::uint32_t>(character.flags));
-		stmt->setUInt(20, character.first_login);
-		stmt->setUInt(21, character.pet_display);
-		stmt->setUInt(22, character.pet_level);
-		stmt->setUInt(23, character.pet_family);
-		stmt->setUInt64(24, character.id);
+		stmt->setDouble(19, character.orientation);
+		stmt->setUInt(20, static_cast<std::uint32_t>(character.flags));
+		stmt->setUInt(21, character.first_login);
+		stmt->setUInt(22, character.pet_display);
+		stmt->setUInt(23, character.pet_level);
+		stmt->setUInt(24, character.pet_family);
+		stmt->setUInt64(25, character.id);
 
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update character");
