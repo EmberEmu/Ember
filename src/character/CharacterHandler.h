@@ -52,6 +52,7 @@ class CharacterHandler {
 	protocol::Result validate_name(const std::string& name) const;
 	bool validate_options(const Character& character, std::uint32_t account_id) const;
 	void populate_items(Character& character, const dbc::CharStartOutfit& outfit) const;
+	void populate_spells(Character& character, const dbc::CharStartSpells& spells) const;
 	void populate_skills(Character& character, const dbc::CharStartSkills& skills) const;
 	const dbc::FactionGroup* pvp_faction(const dbc::FactionTemplate& fac_template) const;
 
