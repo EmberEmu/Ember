@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>CharStartSkills</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>race</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrRaces</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>class_</name>
+		<key>
+			<type>foreign</type>
+			<parent>ChrClasses</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>skill</name>
+		<key>
+			<type>foreign</type>
+			<parent>SkillRaceClassInfo</parent>
+		</key>
+	</field>
+
+</dbc>
