@@ -181,7 +181,17 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 
 	// populate spells information
 
-	// populate talents information
+	// populate starting skills
+	const auto& skills = std::find_if(dbc_.char_start_skills.begin(), dbc_.char_start_skills.end(), [&](auto& record ) {
+		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	});
+
+	if(skills != dbc_.char_start_skills.end()) {
+		populate_skills(character, skills->second)
+	} else { // could be intentional, so we'll keep going
+		LOG_DEBUG(logger_) << "No starting skill data found for race " <<
+			character.race << ", class " << character.class_ << LOG_ASYNC;
+	}
 
 	const char* subzone = nullptr;
 
@@ -510,7 +520,9 @@ const dbc::FactionGroup* CharacterHandler::pvp_faction(const dbc::FactionTemplat
 }
 
 void CharacterHandler::populate_items(Character& character, const dbc::CharStartOutfit& outfit) const {
+}
 
+void CharacterHandler::populate_skills(Character& character, const dbc::CharStartSkills& skills) const {
 }
 
 } // ember
