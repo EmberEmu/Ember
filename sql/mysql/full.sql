@@ -78,6 +78,7 @@ CREATE TABLE `characters` (
   `x` float NOT NULL,
   `y` float NOT NULL,
   `z` float NOT NULL,
+  `o` float NOT NULL,
   `flags` int(11) NOT NULL,
   `first_login` varchar(45) NOT NULL,
   `pet_display` varchar(45) NOT NULL,
