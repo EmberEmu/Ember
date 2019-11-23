@@ -52,7 +52,7 @@ Some additional arguments that you may find useful:
 * `--<login/world>.hostname`, allows you to specify the hostname/address of the machine running the world or login database. Default is assumed to be localhost.
 * `--<world/login>.port`, allows you to specify the port of world or login database. Default is assumed to be 3306.
 * `--transactional-updates`, controls whether SQL updates are applied as a transactions. This allows the update to be rolled back upon failure, leaving the database in its origin state. The default is false. Note that updates to your schema (DDLs) generally cannot be rolled back.
-* `--single-transaction`, controls whether to apply all updates in a single transaction rather than a transaction per update. This option takes precedence over `--transaction-updates`. The default is false. Note that updates to your schema (DDLs) generally cannot be rolled back.
+* `--single-transaction`, controls whether to apply all updates in a single transaction rather than a transaction per update. This option takes precedence over `--transactional-updates`. The default is false. Note that updates to your schema (DDLs) generally cannot be rolled back.
 * `--shutup`, skips the warning shown when running in update or clean install mode. Default is false.
 * `--clean`, drops any existing users and databases that match the arguments given to --install.
 
