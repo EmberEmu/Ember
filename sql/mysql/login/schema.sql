@@ -284,6 +284,18 @@ CREATE TABLE `users` (
   UNIQUE KEY `username_UNIQUE` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `schema_history`;
+CREATE TABLE `schema_history` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `core_version` varchar(45) NOT NULL,
+  `commit` varchar(45) NOT NULL,
+  `install_date` datetime NOT NULL,
+  `installed_by` varchar(45) NOT NULL,
+  `file` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

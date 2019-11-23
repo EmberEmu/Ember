@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <utility>
+#include <cstdint>
 
 namespace sql {
 
@@ -20,7 +21,7 @@ class Driver;
 class Connection;
 class PreparedStatement;
 
-}
+} // sql
 
 namespace ember::drivers {
 
@@ -36,8 +37,8 @@ class MySQL {
 	void close_cache(const sql::Connection* conn) const;
 
 public:
-	MySQL(std::string user, std::string password, const std::string& host,
-	      unsigned short port, std::string db);
+	MySQL(std::string user, std::string password, const std::string& host, std::uint16_t port,
+	      std::string db = "");
 
 	MySQL(MySQL&& rhs) : dsn(std::move(rhs.dsn)), username(std::move(rhs.username)),
 	                     password(std::move(rhs.password)), database(std::move(rhs.database)),
@@ -58,4 +59,4 @@ public:
 	                     sql::PreparedStatement* value);
 };
 
-} //drivers, ember
+} // drivers, ember

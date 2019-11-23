@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,14 +20,19 @@
 namespace ember::drivers {
 
 MySQL::MySQL(std::string user, std::string pass, const std::string& host, unsigned short port,
-             std::string db) : database(db), username(std::move(user)), password(std::move(pass)),
+             std::string db) : database(std::move(db)), username(std::move(user)),
+             password(std::move(pass)),
              dsn(std::string("tcp://" + host + ":" + std::to_string(port))) {
 	driver = get_driver_instance();
 }
 
 sql::Connection* MySQL::open() const {
 	sql::Connection* conn = driver->connect(dsn, username, password);
-	conn->setSchema(database);
+
+	if(!database.empty()) {
+		conn->setSchema(database);
+	}
+
 	conn->setAutoCommit(true);
 	bool opt = true;
 	conn->setClientOption("MYSQL_OPT_RECONNECT", &opt);
