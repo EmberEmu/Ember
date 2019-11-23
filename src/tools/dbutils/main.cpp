@@ -341,7 +341,7 @@ bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
                    std::vector<std::string> migration_paths, const std::string& db) {
 	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
 	const auto transactions = args["transactional-updates"].as<bool>();
-	const auto batched = args["batched-updates"].as<bool>();
+	const auto batched = args["single-transaction"].as<bool>();
 	exec.select_db(db);
 
 	if(batched) {
@@ -519,8 +519,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("clean", po::bool_switch()->default_value(false),
 			"Drops any existing users or databases if there's a clash during --install. "
 			"Useful if you want to restore the database to a clean state or recover from a failed install.")
-		("batched-updates", po::bool_switch()->default_value(false),
-			"Whether to merge updates and apply them in a single transaction. "
+		("single-transaction", po::bool_switch()->default_value(false),
+			"Whether to apply all updates within a single transaction. "
 			"Note that not all migrations can be applied transactionally (e.g. DDL queries).")
 		("transactional-updates", po::bool_switch()->default_value(false),
 			"Whether to use transactions to allow for rolling back updates in the event of failure. "
