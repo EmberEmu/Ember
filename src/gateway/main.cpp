@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ using namespace std::placeholders;
 
 namespace ember {
 
-void launch(const po::variables_map& args, log::Logger* logger);
+int launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
@@ -79,16 +79,17 @@ int main(int argc, const char* argv[]) try {
 	log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	launch(args, logger.get());
+	const auto ret = launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
+	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
-	return 1;
+	return EXIT_FAILURE;
 }
 
 namespace ember {
 
-void launch(const po::variables_map& args, log::Logger* logger) try {
+int launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
@@ -208,8 +209,10 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	wait_svc.run();
 
 	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
 }
 
 std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {

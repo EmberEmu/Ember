@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ namespace es = ember::spark;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 
-void launch(const po::variables_map& args, el::Logger* logger);
+int launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
 
@@ -59,14 +59,15 @@ int main(int argc, const char* argv[]) try {
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	launch(args, logger.get());
+	const auto ret = launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
+	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
-	return 1;
+	return EXIT_FAILURE;
 }
 
-void launch(const po::variables_map& args, el::Logger* logger) try {
+int launch(const po::variables_map& args, el::Logger* logger) try {
 	boost::asio::io_context service;
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
@@ -91,8 +92,10 @@ void launch(const po::variables_map& args, el::Logger* logger) try {
 	service.run();
 
 	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
