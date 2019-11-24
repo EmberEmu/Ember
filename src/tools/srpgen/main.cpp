@@ -10,7 +10,9 @@
 #include <srp6/Generator.h>
 #include <srp6/Util.h>
 #include <boost/program_options.hpp>
+#include <algorithm>
 #include <iostream>
+#include <cctype>
 
 namespace po = boost::program_options;
 
@@ -28,16 +30,19 @@ int main(int argc, const char* argv[]) try {
 void launch(const po::variables_map& args) {
 	using namespace ember;
 
-	const auto username = args["username"].as<std::string>();
-	const auto password = args["password"].as<std::string>();
+	auto username = args["username"].as<std::string>();
+	auto password = args["password"].as<std::string>();
+
+	std::transform(username.begin(), username.end(), username.begin(), ::toupper);
+	std::transform(password.begin(), password.end(), password.begin(), ::toupper);
 
 	auto gen = srp6::Generator(srp6::Generator::Group::_256_BIT);
 	auto salt = srp6::generate_salt(32);
 	auto verifier = srp6::generate_verifier(username, password, gen, salt, srp6::Compliance::GAME);
 
 	std::cout << "Username: " << username << "\n";
-	std::cout << "Verifier: 0x" << std::hex << verifier << "\n";
-	std::cout << "Salt: 0x" << std::hex << salt;
+	std::cout << "Verifier: " << verifier << "\n";
+	std::cout << "Salt: " << salt;
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
