@@ -31,13 +31,13 @@ void MySQLQueryExecutor::create_user(const std::string& username, const std::str
 			throw std::runtime_error("Cannot drop 'root' user, unless you want a broken database");
 		}
 
-		const std::string query("DROP USER IF EXISTS " + username + "@localhost");
+		const std::string query("DROP USER IF EXISTS " + username + "@'%'");
 		const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
 		stmt->execute(query);
 	}
 	
 	std::stringstream query;
-	query << "CREATE USER '" << username << "'@localhost IDENTIFIED BY '"
+	query << "CREATE USER '" << username << "'@'%' IDENTIFIED BY '"
 		  << password << "';";
 	const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
 	stmt->execute(query.str());   
@@ -63,7 +63,7 @@ void MySQLQueryExecutor::grant_user(const std::string& user, const std::string& 
 		query << ", INSERT, DELETE, UPDATE";
 	}
 
-	query << " ON " << db << ".* TO " << user << "@localhost";
+	query << " ON " << db << ".* TO " << user << "@'%'";
 	const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
 	stmt->execute(query.str());
 }

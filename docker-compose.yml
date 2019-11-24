@@ -1,0 +1,137 @@
+version: "3.6"
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    volumes:
+      - /var/lib/docker_mysql:/var/lib/mysql
+    secrets:
+      - mysql_root_secret
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_secret
+    networks:
+      - ember
+
+  login:
+    build: .
+    image: ember-build:latest
+    command: ["run.sh", "login"]
+    restart: always
+    deploy:
+      replicas: 4
+      resources:
+        limits:
+          cpus: "1"
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "3724:3724"
+    networks:
+      - ember
+    depends_on:
+      - "db"
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_secret
+      EMBER_LOGIN_PASSWORD_FILE: /run/secrets/ember_login_secret
+      EMBER_WORLD_PASSWORD_FILE: /run/secrets/ember_world_secret
+    secrets:
+      - mysql_root_secret
+      - ember_login_secret
+      - ember_world_secret
+    env_file:
+      - docker-vars.env
+
+  gateway:
+    build: .
+    image: ember-build:latest
+    command: ["run.sh", "gateway"]
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8085:8085"
+    networks:
+      - ember
+    depends_on:
+      - "db"
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_secret
+      EMBER_LOGIN_PASSWORD_FILE: /run/secrets/ember_login_secret
+      EMBER_WORLD_PASSWORD_FILE: /run/secrets/ember_world_secret
+    secrets:
+      - mysql_root_secret
+      - ember_login_secret
+      - ember_world_secret
+    env_file:
+      - docker-vars.env
+
+  account:
+    build: .
+    image: ember-build:latest
+    command: ["run.sh", "account"]
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+    networks:
+      - ember
+    depends_on:
+      - "db"
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_secret
+      EMBER_LOGIN_PASSWORD_FILE: /run/secrets/ember_login_secret
+      EMBER_WORLD_PASSWORD_FILE: /run/secrets/ember_world_secret
+    secrets:
+      - mysql_root_secret
+      - ember_login_secret
+      - ember_world_secret
+    env_file:
+      - docker-vars.env
+
+  character:
+    build: .
+    image: ember-build:latest
+    command: ["run.sh", "character"]
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+    networks:
+      - ember
+    depends_on:
+      - "db"
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_secret
+      EMBER_LOGIN_PASSWORD_FILE: /run/secrets/ember_login_secret
+      EMBER_WORLD_PASSWORD_FILE: /run/secrets/ember_world_secret
+    secrets:
+      - mysql_root_secret
+      - ember_login_secret
+      - ember_world_secret
+    env_file:
+      - docker-vars.env
+
+secrets:
+  mysql_root_secret:
+    file: ./configs/secrets/mysql_root_pass.txt
+  ember_login_secret:
+    file: ./configs/secrets/ember_login_pass.txt
+  ember_world_secret:
+    file: ./configs/secrets/ember_world_pass.txt
+
+networks:
+  ember:

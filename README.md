@@ -8,9 +8,23 @@ Ember is an educational and research emulator developed to investigate MMO serve
 
 While most emulators strive for feature completeness, Ember aims to be a production quality codebase and deployment architecture.
 
-### Quickstart
+### Docker Quick Start
 
-Ember uses Docker to make development easy. Use our provided images to set an entire development environment up within minutes. See docs/Quickstart.md.
+Ember uses Docker to make it easy to get the project up and running within minutes. Once you have Docker (version 18 and up) installed, simply run...
+
+Linux & MacOS:
+
+```bash
+DOCKER_BUILDKIT=1 && docker build <path to Dockerfile>
+```
+
+Windows:
+
+```cmd
+set DOCKER_BUILDKIT=1 && docker build <path to Dockerfile>
+```
+
+Ember uses `DOCKER_BUILDKIT=1` to enable experimental features that allow for build caching. It can be omitted by setting it as an environmental variable.
 
 Want to do it the traditional way? That's fine too, just see docs/GettingStarted.md.
 

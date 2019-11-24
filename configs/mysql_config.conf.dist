@@ -1,8 +1,8 @@
 # Sample MySQL configuration
 
 [mysql]
-username = ember
-password = ember
-database = ember
+username = default_user
+password = default_password
+database = default_database
 host = 127.0.0.1
 port = 3306

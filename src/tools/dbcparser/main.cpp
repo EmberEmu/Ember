@@ -85,12 +85,13 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 
 	if(args.count("template")) {
 		auto dbc = locate_dbc(args["template"].as<std::string>(), defs);
+		auto out = args["output"].as<std::string>();
 
 		if(dbc == nullptr) {
 			throw std::invalid_argument("Could not find the specified DBC definition");
 		}
 
-		edbc::generate_template(dbc);
+		edbc::generate_template(dbc, out);
 		return;
 	}
 
@@ -191,7 +192,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("help,h", "Displays a list of available options")
 		("definitions,d", po::value<std::vector<std::string>>()->multitoken()->default_value({"/"}, "/"),
 			"Path to the DBC XML definitions")
-		("output,o", po::value<std::string>()->default_value("output"),
+		("output,o", po::value<std::string>()->default_value(""),
 			"Directory to save output to")
 		("templates,t", po::value<std::string>()->default_value("templates/"),
 			"Path to the code generation templates")

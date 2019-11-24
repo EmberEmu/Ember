@@ -27,15 +27,15 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_context& service, std::string
                                      socket_(service), logger_(logger), service_(service),
                                      endpoint_(bai::address::from_string(mcast_group),
                                      mcast_port) {
-	boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
+	// boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
-	socket_.open(listen_endpoint.protocol());
-	socket_.set_option(bai::udp::socket::reuse_address(true));
-	socket_.bind(listen_endpoint);
+	// socket_.open(listen_endpoint.protocol());
+	// socket_.set_option(bai::udp::socket::reuse_address(true));
+	// socket_.bind(listen_endpoint);
 	
-	socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
+	// socket_.set_option(bai::multicast::join_group(bai::address::from_string(mcast_group)));
 
-	receive();
+	// receive();
 }
 
 void ServiceDiscovery::shutdown() {
