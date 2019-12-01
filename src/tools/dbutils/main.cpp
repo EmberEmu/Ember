@@ -408,11 +408,12 @@ bool db_update(const po::variables_map& args, const std::string& db) {
 	auto executor = db_executor(args["database-type"].as<std::string>(), details);
 	const auto db_arg = std::string(db) + ".db-name";
 	const auto& db_name = args[db_arg].as<std::string>();
-	executor->select_db(db_name);
 
 	if(!executor) {
 		throw std::runtime_error("Unable to obtain a database executor. Invalid database type?");
 	}
+
+	executor->select_db(db_name);
 	
 	if(!executor->test_connection()) {
 		throw std::runtime_error("Unable to establish database connection");
