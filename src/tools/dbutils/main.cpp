@@ -7,8 +7,6 @@
  */
 
 #include "DatabaseDetails.h"
-#include "DatabaseSetup.h"
-#include "DatabaseUpdate.h"
 #include "QueryExecutor.h"
 #ifdef DB_MYSQL
 	#include "mysql/MySQLQueryExecutor.h"

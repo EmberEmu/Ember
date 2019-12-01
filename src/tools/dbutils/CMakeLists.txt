@@ -8,8 +8,6 @@ set(EXECUTABLE_NAME dbutils)
 
 # added so the files so up in an IDE's browser
 set(EXECUTABLE_HDR
-    DatabaseSetup.h
-    DatabaseUpdate.h
     DatabaseDetails.h
     QueryExecutor.h
     mysql/MySQLQueryExecutor.h
@@ -17,8 +15,6 @@ set(EXECUTABLE_HDR
 
 set(EXECUTABLE_SRC
     main.cpp
-    DatabaseSetup.cpp
-    DatabaseUpdate.cpp
     mysql/MySQLQueryExecutor.cpp
     )
 
