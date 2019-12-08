@@ -42,8 +42,7 @@ cp dbcs/definitions/client/*.xml dbcs/definitions/
 for file in dbcs/definitions/*.xml
 do
 	file=$(basename -- "$file")
-	file="${file%.*}"
-	$DBCPAR -o dbcs/ -d dbcs/definitions/ --template $file
+	$DBCPAR -o dbcs/ -d dbcs/definitions/$file --dbc-gen
 done
 
 echo "Adding a default user..."

@@ -13,6 +13,6 @@
 
 namespace ember::dbc {
 
-void generate_template(const types::Struct* dbc, const std::string& out_path);
+void generate_dbc_template(const types::Struct* dbc, const std::string& out_path);
 
 } // dbc, ember

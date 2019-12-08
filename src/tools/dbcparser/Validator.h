@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,11 +43,19 @@ private:
 
 typedef std::vector<std::string> TypeStore;
 
-class Validator {
+class Validator final {
+public:
+	enum Options {
+		VAL_DEFAULT           = 1 << 0,
+		VAL_SKIP_FOREIGN_KEYS = 1 << 1
+	};
+
+private:
 	NameTester name_check_;
 	TreeNode<std::string> root_;
 	const types::Definitions* definitions_;
 	std::vector<std::string> names_;
+	Options options_;
 
 	void validate_definition(const types::Base* def);
 	void check_multiple_definitions(const types::Base* def);
@@ -55,7 +63,6 @@ class Validator {
 	void check_foreign_keys(const types::Field& def);
 	std::optional<const types::Field*> locate_fk_parent(const std::string& parent);
 
-	//New
 	void build_type_tree();
 	void recursive_type_parse(TreeNode<std::string>* parent, const types::Base* def);
 	void map_struct_types(TreeNode<std::string>* parent, const types::Struct* def);
@@ -75,12 +82,7 @@ class Validator {
 
 public:
 	Validator() = default;
-
-	void add_definition(const types::Definitions& definition) {
-		//definitions_.emplace_back(&definition);
-	}
-
-	void validate(const types::Definitions& definitions_);
+	void validate(const types::Definitions& definitions_, Options options = VAL_DEFAULT);
 };
 
 } //dbc, ember

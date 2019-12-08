@@ -91,7 +91,7 @@ public:
 	}
 };
 
-void generate_template(const types::Struct* dbc, const std::string& out_path) {
+void generate_dbc_template(const types::Struct* dbc, const std::string& out_path) {
 	LOG_DEBUG_GLOB << "Generating template for " << dbc->name << LOG_ASYNC;
 
 	std::ofstream file(out_path + dbc->name + ".dbc", std::ofstream::binary);

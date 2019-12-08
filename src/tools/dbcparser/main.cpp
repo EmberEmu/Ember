@@ -9,6 +9,7 @@
 #include "Parser.h"
 #include "Generator.h"
 #include "DBCGenerator.h"
+#include "Validator.h"
 #include "bprinter/table_printer.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
@@ -34,9 +35,8 @@ int launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths);
 void print_dbc_table(const edbc::types::Definitions& defs);
-void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& defs);
+void print_dbc_fields(const edbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs);
-edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Definitions& defs);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -73,34 +73,41 @@ int launch(const po::variables_map& args) try {
 }
 
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs) {
+	edbc::Validator validator;
+	edbc::Validator::Options val_opts { edbc::Validator::VAL_SKIP_FOREIGN_KEYS };
+
+	// if we're doing code generation for a DBC that references other DBCs, we
+	// need to make sure that those references are also valid, otherwise we
+	// might generate code that doesn't compile
+	if(args["disk"].as<bool>()) {
+		val_opts = static_cast<edbc::Validator::Options>(val_opts & ~edbc::Validator::VAL_SKIP_FOREIGN_KEYS);
+	}
+
+	validator.validate(defs, val_opts);
+
 	if(args["print-dbcs"].as<bool>()) {
 		print_dbc_table(defs);
 		return;
 	}
 
-	if(args.count("print-fields")) {
-		print_dbc_fields(args["print-fields"].as<std::string>(), defs);
+	if(args["print-fields"].as<bool>()) {
+		print_dbc_fields(defs);
 		return;
 	}
 
-	if(args.count("template")) {
-		auto dbc = locate_dbc(args["template"].as<std::string>(), defs);
+	if(args["dbc-gen"].as<bool>()) {
 		auto out = args["output"].as<std::string>();
 
-		if(dbc == nullptr) {
-			throw std::invalid_argument("Could not find the specified DBC definition");
+		for(const auto& dbc : defs) {
+			if(dbc->type == edbc::types::STRUCT) {
+				edbc::generate_dbc_template(static_cast<const edbc::types::Struct*>(dbc.get()), out);
+			}
 		}
-
-		edbc::generate_template(dbc, out);
-		return;
 	}
-
-	if(args["disk"].as<bool>() || args.count("database")) {
-		edbc::generate_common(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
-	}
-
 
 	if(args["disk"].as<bool>()) {
+		validator.validate(defs);
+		edbc::generate_common(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
 		edbc::generate_disk_source(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
 	}
 
@@ -119,67 +126,65 @@ void print_dbc_table(const edbc::types::Definitions& defs) {
 
 	for(auto& def : defs) {
 		if(def->type == edbc::types::STRUCT) {
-			auto dbc = static_cast<edbc::types::Struct*>(def.get());
+			auto dbc = static_cast<const edbc::types::Struct*>(def.get());
 			printer << std::string_view(dbc->name).substr(0, name_len) << dbc->fields.size()
 				<< dbc->comment;
 		}
 	}
+
+	printer.PrintFooter();
 }
 
-edbc::types::Struct* locate_dbc(const std::string& dbc, const edbc::types::Definitions& defs) {
-	for(auto& def : defs) {
-		if(def->name == dbc) {
-			if(def->type == edbc::types::STRUCT) {
-				return static_cast<edbc::types::Struct*>(def.get());
+void print_dbc_fields(const edbc::types::Definitions& groups) {
+	for(const auto& def : groups) {
+		std::cout << def->name << "\n";
+
+		bprinter::TablePrinter printer(&std::cout);
+		printer.AddColumn("Field", 32);
+		printer.AddColumn("Type", 18);
+		printer.AddColumn("Key", 4);
+		printer.AddColumn("Comment", 20);
+		printer.PrintHeader();
+
+		if(def->type != edbc::types::STRUCT) {
+			continue;
+		}
+
+		const auto dbc = static_cast<const edbc::types::Struct*>(def.get());
+
+		for(const auto& f : dbc->fields) {
+			std::string key;
+
+			switch(f.keys.size()) {
+				case 1:
+					key = f.keys[0].type.data()[0];
+					break;
+				case 2:
+					key = "pf";
+					break;
 			}
-		}
-	}
 
-	return nullptr;
-}
-
-void print_dbc_fields(const std::string& dbc, const edbc::types::Definitions& groups) {
-	auto def = locate_dbc(dbc, groups);
-	
-	if(!def) {
-		throw std::invalid_argument(dbc + " - no such definition to print");
-	}
-
-	bprinter::TablePrinter printer(&std::cout);
-	printer.AddColumn("Field", 32);
-	printer.AddColumn("Type", 18);
-	printer.AddColumn("Key", 4);
-	printer.AddColumn("Comment", 20);
-	printer.PrintHeader();
-
-	for(auto& f : def->fields) {
-		std::string key;
-
-		switch(f.keys.size()) {
-			case 1:
-				key = f.keys[0].type.data()[0];
-				break;
-			case 2:
-				key = "pf";
-				break;
+			printer << f.name << f.underlying_type << key << f.comment;
 		}
 
-		printer << f.name << f.underlying_type << key << f.comment;
+		printer.PrintFooter();
 	}
 }
 
 std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths) {
 	std::vector<std::string> xml_paths;
 
-	for(auto& path : paths) {
-		if(!std::filesystem::is_directory(path)) {
-			throw std::invalid_argument("Invalid path provided, " + path);
-		}
-
-		for(auto& file : fs::directory_iterator(path)) {
-			if(file.path().extension() == ".xml") {
-				xml_paths.emplace_back(file.path().string());
+	for(const std::filesystem::path& path : paths) {
+		if(std::filesystem::is_directory(path)) {
+			for(auto& file : fs::directory_iterator(path)) {
+				if(file.path().extension() == ".xml") {
+					xml_paths.emplace_back(file.path().string());
+				}
 			}
+		} else if(std::filesystem::is_regular_file(path) && path.extension() == ".xml") {
+			xml_paths.emplace_back(path.string());
+		} else {
+			throw std::invalid_argument("Invalid directory or DBC path provided, " + path.string());
 		}
 	}
 
@@ -191,7 +196,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	opt.add_options()
 		("help,h", "Displays a list of available options")
 		("definitions,d", po::value<std::vector<std::string>>()->multitoken()->default_value({"/"}, "/"),
-			"Path to the DBC XML definitions")
+			"Path to a directory containing DBC definitions or a specific DBC definition. "
+			"Multiple paths may be specified but there should be no overlap of DBC definitions.")
 		("output,o", po::value<std::string>()->default_value(""),
 			"Directory to save output to")
 		("templates,t", po::value<std::string>()->default_value("templates/"),
@@ -204,10 +210,14 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 			"Generate files required for loading DBC data from disk")
 		("print-dbcs", po::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")
-		("print-fields", po::value<std::string>(),
-			"Print out of a summary of a specific DBC definition's fields")
-		("template", po::value<std::string>(),
-			"Generate a DBC template file for editing in other tools");
+		("print-fields", po::bool_switch(),
+			"Print out of a summary of the loaded DBC definitions")
+		("dbc-gen", po::bool_switch(),
+			"Generate empty DBC files for editing in other tools")
+		("sql-schema", po::bool_switch(),
+			"Generate SQL DDL from DBC schemas")
+		("sql-data", po::bool_switch(),
+			"Generate SQL DML from DBC files");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(opt)

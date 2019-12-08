@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,9 +7,10 @@
  */
 
 #include "Parser.h"
-#include "Validator.h"
 #include <logger/Logging.h>
 #include <rapidxml_utils.hpp>
+#include <cstddef>
+#include <cstring>
 
 namespace rxml = rapidxml;
 
@@ -297,9 +298,6 @@ types::Definitions Parser::parse(const std::vector<std::string>& paths) {
 			throw parse_error(path, e.what());
 		}
 	}
-
-	Validator validator;
-	validator.validate(defs);
 
 	return defs;
 }

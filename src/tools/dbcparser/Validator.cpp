@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2018 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -315,7 +315,10 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 
 		name_check_(field.name);
 		check_key_types(field);
-		check_foreign_keys(field);
+
+		if(!(options_ & Options::VAL_SKIP_FOREIGN_KEYS)) {
+			check_foreign_keys(field);
+		}
 	}
 
 	for(auto& child : def->children) {
@@ -448,9 +451,13 @@ void Validator::print_type_tree(const TreeNode<std::string>* types, std::size_t 
 	}
 }
 
-void Validator::validate(const types::Definitions& definitions) {
+void Validator::validate(const types::Definitions& definitions, Options options) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
+	// reset the validation state
+	root_ = {};
+	names_.clear();
+	options_ = options;
 	definitions_ = &definitions;
 
 	build_type_tree();
