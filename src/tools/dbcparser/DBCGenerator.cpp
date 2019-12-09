@@ -42,10 +42,12 @@ class RecordPrinter : public types::TypeVisitor {
 			record_ << gsl::narrow<std::uint32_t>(string_block_.size());
 			string_block_ << default_string;
 		} else if(type == "string_ref_loc") {
-			for(int i = 0; i < 9; ++i) {
+			for(const auto& loc : string_ref_loc_regions) {
 				record_ << gsl::narrow<std::uint32_t>(string_block_.size());
 				string_block_ << default_string;
 			}
+		} else {
+			throw std::runtime_error("Encountered an unhandled type, " + type);
 		}
 	}
 
@@ -56,7 +58,7 @@ public:
 		string_block_ << std::uint8_t{0};
 	}
 
-	void visit(const types::Struct* type) override {
+	void visit(const types::Struct* type, const types::Field* parent) override {
 		// we don't care about structs
 	}
 
@@ -64,7 +66,7 @@ public:
 		generate_field(type->underlying_type);
 	}
 
-	void visit(const types::Field* type) override {
+	void visit(const types::Field* type, const types::Base* parent) override {
 		auto components = extract_components(type->underlying_type);
 		std::size_t elements = 1;
 
@@ -101,10 +103,10 @@ void generate_dbc_template(const types::Struct* dbc, const std::string& out_path
 	}
 
 	TypeMetrics metrics;
-	walk_dbc_fields(dbc, metrics);
+	walk_dbc_fields(metrics, dbc, dbc->parent);
 
 	RecordPrinter printer;
-	walk_dbc_fields(dbc, printer);
+	walk_dbc_fields(printer, dbc, dbc->parent);
 
 	const std::vector<char> record_data = printer.record();
 	const std::vector<char> string_data = printer.string_block();

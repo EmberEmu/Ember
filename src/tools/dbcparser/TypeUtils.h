@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2014, 2016 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,12 +9,14 @@
 #pragma once
 
 #include "Types.h"
+#include <array>
 #include <optional>
 #include <utility>
 #include <string>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <string_view>
 #include <stdexcept>
 
 namespace ember::dbc {
@@ -25,17 +27,38 @@ TypeComponents extract_components(const std::string& type);
 std::string pascal_to_underscore(std::string name);
 types::Base* locate_type_base(const types::Struct& base, const std::string& type_name);
 
-const extern std::map<std::string, std::pair<std::string, bool>> type_map;
-const extern std::unordered_map<std::string, int> type_size_map;
-const extern std::unordered_set<std::string> cpp_keywords;
+const extern std::map<std::string, std::pair<std::string_view, bool>> type_map;
+const extern std::unordered_map<std::string_view, int> type_size_map;
+const extern std::unordered_set<std::string_view> cpp_keywords;
+const extern std::array<std::string_view, 8> string_ref_loc_regions;
+
+template<typename T>
+void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* parent) {
+	for(auto f : dbc->fields) {
+		auto components = extract_components(f.underlying_type);
+		auto it = type_map.find(components.first);
+
+		if(it != type_map.end()) {
+			visitor.visit(&f, parent);
+		} else {
+			auto found = locate_type_base(*dbc, components.first);
+
+			if(!found) {
+				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
+			}
+
+			visitor.visit(&f, parent);
+		}
+	}
+}
 
 class TypeMetrics : public types::TypeVisitor {
 public:
 	unsigned int fields = 0;
 	unsigned int record_size = 0;
 
-	void visit(const types::Struct* type) override {
-		// we don't care about structs
+	void visit(const types::Struct* type, const types::Field* parent) override {
+		walk_dbc_fields(*this, type, parent);
 	}
 
 	void visit(const types::Enum* type) override {
@@ -43,9 +66,26 @@ public:
 		record_size += type_size_map.at(type->underlying_type);
 	}
 
-	void visit(const types::Field* type) override {
+	void visit(const types::Field* type, const types::Base* parent) override {
 		auto components = extract_components(type->underlying_type);
-		int scalar_size = type_size_map.at(components.first);
+		int scalar_size = 0;
+
+		if(auto it = type_size_map.find(components.first); it != type_size_map.end()) {
+			scalar_size = it->second;
+		} else {
+			const auto base = locate_type_base(static_cast<const types::Struct&>(*type->parent), components.first);
+
+			if(!base) {
+				throw std::runtime_error("Unable to locate base type");
+			}
+			
+			if(base->type == types::ENUM) {
+				scalar_size = type_size_map.at(static_cast<const types::Enum*>(base)->underlying_type);
+			} else if(base->type == types::STRUCT) {
+				visit(static_cast<const types::Struct*>(base), type);
+				return;
+			}
+		}
 
 		// handle arrays
 		unsigned int additional_fields = 1;
@@ -65,30 +105,4 @@ public:
 	}
 };
 
-template<typename T>
-void walk_dbc_fields(const types::Struct* dbc, T& visitor) {
-	for(auto f : dbc->fields) {
-		// if this is a user-defined struct, we need to go through that type too
-		// if it's an enum, we can just grab the underlying type
-		auto components = extract_components(f.underlying_type);
-		auto it = type_map.find(components.first);
-
-		if(it != type_map.end()) {
-			visitor.visit(&f);
-		} else {
-			auto found = locate_type_base(*dbc, components.first);
-
-			if(!found) {
-				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
-			}
-
-			if(found->type == types::STRUCT) {
-				walk_dbc_fields(static_cast<types::Struct*>(found), visitor);
-			} else if(found->type == types::ENUM) {
-				visitor.visit(static_cast<types::Enum*>(found));
-			}
-		}
-	}
-}
-
-} //dbc, ember
+} // dbc, ember

@@ -17,20 +17,19 @@ namespace ember::dbc::types {
 struct Struct;
 struct Enum;
 struct Field;
+struct Base;
 
 class TypeVisitor {
 public:
-	virtual void visit(const types::Struct*) = 0;
+	virtual void visit(const types::Struct*, const types::Field* parent) = 0;
 	virtual void visit(const types::Enum*) = 0;
-	virtual void visit(const types::Field*) = 0;
+	virtual void visit(const types::Field*, const types::Base* parent) = 0;
 
 	virtual ~TypeVisitor() = default;
 };
 
-struct Base;
-
 enum Types {
-	STRUCT, ENUM
+	STRUCT, ENUM, FIELD
 };
 
 typedef std::vector<std::unique_ptr<Base>> Definitions;
@@ -45,17 +44,6 @@ struct IVisitor {
 	virtual void accept(TypeVisitor* visitor) = 0;
 };
 
-struct Field : IVisitor {
-	std::string underlying_type;
-	std::string name;
-	std::string comment;
-	std::vector<Key> keys;
-
-	virtual void accept(TypeVisitor* visitor) override {
-		visitor->visit(this);
-	};
-};
-
 struct Base : IVisitor {
 	explicit Base(Types type_) : type(type_), parent(nullptr) {}
 	virtual ~Base() = default;
@@ -65,6 +53,16 @@ struct Base : IVisitor {
 	std::string alias;
 	std::string comment;
 	Base* parent;
+};
+
+struct Field final : Base {
+	Field() : Base(FIELD) {}
+	std::string underlying_type;
+	std::vector<Key> keys;
+
+	virtual void accept(TypeVisitor* visitor) override {
+		visitor->visit(this, nullptr);
+	};
 };
 
 struct Enum final : Base {
@@ -84,13 +82,8 @@ struct Struct final : Base {
 	bool dbc;
 
 	virtual void accept(TypeVisitor* visitor) override {
-		visitor->visit(this);
+		visitor->visit(this, nullptr);
 	};
-
-	Struct(Struct&& src) = default;
-	Struct& operator=(Struct&& src) = default;
-	Struct(Struct& src) = delete;
-	Struct& operator=(Struct& src) = delete;
 };
 
 } // types, dbc, ember

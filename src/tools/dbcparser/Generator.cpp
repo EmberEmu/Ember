@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2018 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,6 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 
 namespace ember::dbc {
 
@@ -30,15 +29,15 @@ class StructFieldEnum : public types::TypeVisitor {
 	std::vector<std::string> names_;
 
 public:
-	void visit(const types::Struct* type) override {
-		std::cout << type->name << "\n";
+	void visit(const types::Struct* type, const types::Field* parent) override {
+		// we don't care about structs
 	}
 
 	void visit(const types::Enum* type) override {
 		// we don't care about enums
 	}
 
-	void visit(const types::Field* type) override {
+	void visit(const types::Field* type, const types::Base* parent) override {
 		names_.emplace_back(type->name);
 	}
 
@@ -232,7 +231,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		}
 
 		TypeMetrics metrics;
-		walk_dbc_fields(&dbc, metrics);
+		walk_dbc_fields(metrics, &dbc, dbc.parent);
 
 		std::string store_name = dbc.alias.empty()? pascal_to_underscore(dbc.name) : dbc.alias;
 		bool double_spaced = false;
@@ -259,7 +258,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		functions << "\t\t" << dbc.name << " entry{};" << std::endl;
 		
 		bool is_primary_foreign = false;
-		
+
 		for(auto& f : dbc.fields) {
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.has_value();
@@ -325,7 +324,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				if(base->type == types::ENUM) {
 					cast << "static_cast<" << *t << "::" << type << ">(";
 				} else if(base->type == types::STRUCT) {
-					walk_dbc_fields(static_cast<types::Struct*>(base), enumerator);
+					walk_dbc_fields(enumerator, static_cast<types::Struct*>(base), base->parent);
 				} else {
 					throw std::runtime_error("Unhandled type (not a struct or enum) found: " + components.first + " in DBC: " + dbc.name);
 				}
@@ -336,15 +335,10 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			std::stringstream field;
 			std::vector<std::string> field_left, field_right;
 
-			// hardcoded, bad, like the rest of this file
-			std::vector<std::string> locales = { 
-				"en_gb", "ko_kr", "fr_fr", "de_de", "en_cn", "en_tw", "es_es", "es_mx"
-			};
-
 			if(components.first == "string_ref_loc") {
 				functions << "\n" << (array ? "\t" : "") << "\t\t // string_ref_loc block\n";
 
-				for(auto& locale : locales) {
+				for(auto& locale : string_ref_loc_regions) {
 					functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id." : ".") << locale
 						<< (array ? "[j]" : "") << " = " << "dbc.strings + dbc.records[i]." << f.name << "." << locale << ";" << std::endl;
 				}
@@ -388,7 +382,6 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				functions << "\t\t" << "}" << std::endl << std::endl;
 			}
 		}
-
 		std::string prefix;
 
 		if(is_primary_foreign) {
@@ -419,6 +412,8 @@ void generate_disk_struct_recursive(const types::Struct& def, std::stringstream&
 			case types::ENUM:
 				generate_disk_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
 				break;
+			default:
+				throw std::runtime_error("Unhandled type!");
 		}
 	}
 }
@@ -465,8 +460,6 @@ void generate_disk_defs(const types::Definitions& defs, const std::string& outpu
 		} else if(def->type == types::ENUM) {
 			auto& enum_def = static_cast<types::Enum&>(*def);
 			generate_disk_enum(enum_def, definitions, 0);
-		} else {
-			// todo
 		}
 	}
 
@@ -515,6 +508,8 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 			case types::ENUM:
 				generate_memory_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
 				break;
+			default:
+				throw std::runtime_error("Unhandled type!");
 		}
 	}
 }
@@ -587,8 +582,6 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 			auto& enum_def = static_cast<types::Enum&>(*def);
 			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
 			generate_memory_enum(enum_def, definitions, 0);
-		} else {
-			// todo
 		}
 	}
 

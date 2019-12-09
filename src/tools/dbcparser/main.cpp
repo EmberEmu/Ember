@@ -9,6 +9,8 @@
 #include "Parser.h"
 #include "Generator.h"
 #include "DBCGenerator.h"
+#include "SQLDDLGenerator.h"
+#include "SQLDMLGenerator.h"
 #include "Validator.h"
 #include "bprinter/table_printer.h"
 #include <logger/Logging.h>
@@ -95,9 +97,9 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 		return;
 	}
 
-	if(args["dbc-gen"].as<bool>()) {
-		auto out = args["output"].as<std::string>();
+	const auto& out = args["output"].as<std::string>();
 
+	if(args["dbc-gen"].as<bool>()) {
 		for(const auto& dbc : defs) {
 			if(dbc->type == edbc::types::STRUCT) {
 				edbc::generate_dbc_template(static_cast<const edbc::types::Struct*>(dbc.get()), out);
@@ -106,9 +108,16 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 	}
 
 	if(args["disk"].as<bool>()) {
-		validator.validate(defs);
-		edbc::generate_common(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
-		edbc::generate_disk_source(defs, args["output"].as<std::string>(), args["templates"].as<std::string>());
+		edbc::generate_common(defs, out, args["templates"].as<std::string>());
+		edbc::generate_disk_source(defs, out, args["templates"].as<std::string>());
+	}
+
+	if(args["sql-schema"].as<bool>()) {
+		edbc::generate_sql_ddl(defs, out);
+	}
+
+	if(args["sql-data"].as<bool>()) {
+		//edbc::generate_sql_dml(defs, out);
 	}
 
 	LOG_DEBUG_GLOB << "Done!" << LOG_ASYNC;

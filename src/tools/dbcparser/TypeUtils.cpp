@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2018 Ember
+ * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,22 +14,22 @@
 
 namespace ember::dbc {
 
-const std::unordered_map<std::string, int> type_size_map {
-	{ "int8",           1 },
-	{ "uint8",          1 },
-	{ "int16",          2 },
-	{ "uint16",         2 },
-	{ "int32",          4 },
-	{ "uint32",         4 },
-	{ "bool",           1 },
-	{ "bool32",         4 },
-	{ "string_ref",     4 },
+const std::unordered_map<std::string_view, int> type_size_map {
+	{ "int8",            1 },
+	{ "uint8",           1 },
+	{ "int16",           2 },
+	{ "uint16",          2 },
+	{ "int32",           4 },
+	{ "uint32",          4 },
+	{ "bool",            1 },
+	{ "bool32",          4 },
+	{ "string_ref",      4 },
 	{ "string_ref_loc", 36 },
-	{ "float",          4 },
-	{ "double",         8 }
+	{ "float",           4 },
+	{ "double",          8 }
 };
 
-const std::map<std::string, std::pair<std::string, bool>> type_map {
+const std::map<std::string, std::pair<std::string_view, bool>> type_map {
 	 //type              //real type         //valid enum type?
 	{ "int8",           { "std::int8_t",     true  }},
 	{ "uint8",          { "std::uint8_t",    true  }},
@@ -45,7 +45,7 @@ const std::map<std::string, std::pair<std::string, bool>> type_map {
 	{ "double",         { "double",          false }}
 };
 
-const std::unordered_set<std::string> cpp_keywords {
+const std::unordered_set<std::string_view> cpp_keywords {
 	"alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor"
 	"bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
 	"compl", "const", "constexpr", "const_cast", "continue", "decltype", "default",
@@ -56,7 +56,12 @@ const std::unordered_set<std::string> cpp_keywords {
 	"return", "short", "signed", "sizeof", "static", "static_assert", "static_cast",
 	"struct", "switch", "template", "this", "thread_local", "throw", "true", "try",
 	"typedef", "typeid", "typename", "union", "unsigned", "using", "virtual", "void",
-	"volatile", "wchar_t", "while", "xor", "xor_eq"
+	"volatile", "wchar_t", "while", "xor", "xor_eq", "concept", "char8_t", "consteval",
+	"co_await", "co_return", "co_yield", "requires"
+};
+
+const std::array<std::string_view, 8> string_ref_loc_regions {
+	"en_gb", "ko_kr", "fr_fr", "de_de", "en_cn", "en_tw", "es_es", "es_mx"
 };
 
 /* 

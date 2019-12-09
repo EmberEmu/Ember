@@ -1,4 +1,4 @@
-# Copyright (c) 2014 - 2016 Ember
+# Copyright (c) 2014 - 2019 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,8 @@ set(EXECUTABLE_SRC
 	TreeNode.h
 	DBCGenerator.h
 	DBCGenerator.cpp
+	SQLDDLGenerator.h
+	SQLDDLGenerator.cpp
 	bprinter/table_printer.cpp
 	bprinter/table_printer.h
 	bprinter/impl/table_printer.tpp.h
