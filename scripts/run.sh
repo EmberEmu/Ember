@@ -35,15 +35,7 @@ then
 fi
 
 echo "Generating default DBCs..."
-
-cp dbcs/definitions/server/*.xml dbcs/definitions/
-cp dbcs/definitions/client/*.xml dbcs/definitions/
-
-for file in dbcs/definitions/*.xml
-do
-	file=$(basename -- "$file")
-	$DBCPAR -o dbcs/ -d dbcs/definitions/$file --dbc-gen
-done
+$DBCPAR -o dbcs/ -d dbcs/definitions/client/ dbcs/definitions/server/ --dbc-gen
 
 echo "Adding a default user..."
 OUT="$($SRPGEN -u $EMBER_DEFAULT_USER -p $EMBER_DEFAULT_PASS)"
