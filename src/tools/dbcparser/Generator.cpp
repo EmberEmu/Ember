@@ -343,6 +343,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 						<< (array ? "[j]" : "") << " = " << "dbc.strings + dbc.records[i]." << f.name << "." << locale << ";" << std::endl;
 				}
 
+				functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id." : ".") << "flags"
+						<< (array ? "[j]" : "") << " = " << "dbc.records[i]." << f.name << "." << "flags" << ";" << std::endl;
 				functions << "\n";
 			} else {
 				if(names.empty()) {

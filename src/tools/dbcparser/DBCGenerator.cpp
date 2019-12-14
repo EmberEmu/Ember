@@ -26,6 +26,7 @@ class RecordPrinter : public types::TypeVisitor {
 	ember::spark::ChainedBuffer<4096> buffer_, sb_buffer_;
 	ember::spark::BinaryStream record_, string_block_;
 	const std::string default_string = "Hello, world!";
+	const std::string default_string_loc = "Hello, localised string!";
 
 	void generate_field(const std::string& type) {
 		if(type == "int8" || type == "uint8" || type == "bool") {
@@ -44,8 +45,10 @@ class RecordPrinter : public types::TypeVisitor {
 		} else if(type == "string_ref_loc") {
 			for(const auto& loc : string_ref_loc_regions) {
 				record_ << gsl::narrow<std::uint32_t>(string_block_.size());
-				string_block_ << default_string;
+				string_block_ << default_string_loc;
 			}
+
+			record_ << std::uint32_t{1};
 		} else {
 			throw std::runtime_error("Encountered an unhandled type, " + type);
 		}
@@ -59,21 +62,39 @@ public:
 	}
 
 	void visit(const types::Struct* type, const types::Field* parent) override {
-		// we don't care about structs
+		walk_dbc_fields(*this, type, parent);
 	}
 
 	void visit(const types::Enum* type) override {
 		generate_field(type->underlying_type);
 	}
 
-	void visit(const types::Field* type, const types::Base* parent) override {
-		auto components = extract_components(type->underlying_type);
+	void visit(const types::Field* field, const types::Base* parent) override {
+		auto components = extract_components(field->underlying_type);
 		std::size_t elements = 1;
 
 		// if this is an array, we need to write multiple records
 		if(components.second) {
 			elements = *components.second;
 		}
+
+		if(type_map.find(components.first) == type_map.end()) {
+			const auto found = locate_type_base(static_cast<types::Struct&>(*field->parent), components.first);
+
+			if(!found) {
+				throw std::runtime_error("Unable to locate type base");
+			}
+
+			if(found->type == types::STRUCT) {				
+				visit(static_cast<const types::Struct*>(found), field);
+				return;
+			} else if(found->type == types::ENUM) {
+				const auto type = static_cast<const types::Enum*>(found);
+				components.first = type->underlying_type;
+			} else {
+				throw std::runtime_error("Unhandled type");
+			}
+		} 
 
 		for(std::size_t i = 0; i < elements; ++i) {
 			generate_field(components.first);
@@ -94,7 +115,7 @@ public:
 };
 
 void generate_dbc_template(const types::Struct* dbc, const std::string& out_path) {
-	LOG_DEBUG_GLOB << "Generating template for " << dbc->name << LOG_ASYNC;
+	LOG_INFO_GLOB << "Generating template for " << dbc->name << LOG_ASYNC;
 
 	std::ofstream file(out_path + dbc->name + ".dbc", std::ofstream::binary);
 	
