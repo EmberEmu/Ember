@@ -16,13 +16,14 @@
 
 namespace ember::spark {
 
+template<typename buf_type>
 class VectorBufferAdaptor final : public Buffer {
-	std::vector<std::uint8_t>& buffer_;
+	std::vector<buf_type>& buffer_;
 	std::size_t read_;
 	std::size_t write_;
 
 public:
-	VectorBufferAdaptor(std::vector<std::uint8_t>& buffer) : buffer_(buffer), read_(0), write_(0) {}
+	VectorBufferAdaptor(std::vector<buf_type>& buffer) : buffer_(buffer), read_(0), write_(0) {}
 
 	void read(void* destination, std::size_t length) override {
 		std::memcpy(destination, buffer_.data() + read_, length);

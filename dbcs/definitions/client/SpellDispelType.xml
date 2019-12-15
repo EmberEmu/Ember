@@ -11,7 +11,7 @@
 	</field>
 
 	<field>
-		<type>string_ref</type>
+		<type>string_ref_loc</type>
 		<name>name</name>
 	</field>
 
@@ -21,7 +21,7 @@
 	</field>
 
 	<field>
-		<type>bool32</type>
-		<name>allow_immunity</name>
+		<type>uint32</type>
+		<name>immunity_possible</name>
 	</field>
 </dbc>

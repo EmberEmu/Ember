@@ -65,7 +65,7 @@
 	</field>
 
 	<field>
-		<type>bool32</type>
+		<type>uint32</type>
 		<name>has_missile</name>
 	</field>
 

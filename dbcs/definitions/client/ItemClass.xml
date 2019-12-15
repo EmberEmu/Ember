@@ -32,4 +32,9 @@
 		<type>Class</type>
 		<name>item_class</name>
 	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>class_name</name>
+	</field>
 </dbc>

@@ -97,4 +97,9 @@
 		<type>int32</type>
 		<name>num_skills_up</name>
 	</field>
+
+	<field>
+		<type>int32</type>
+		<name>unknown_padding</name>
+	</field>
 </dbc>

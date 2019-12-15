@@ -21,7 +21,11 @@
 
 	<field>
 		<type>int32</type>
-		<name>anim_kit</name>
+		<name>anim</name>
+		<key>
+			<type>foreign</type>
+			<parent>AnimationData</parent>
+		</key>
 	</field>
 
 	<field>
@@ -134,7 +138,7 @@
 	</field>
 
 	<field>
-		<type>float[4]</type>
+		<type>uint32[4]</type>
 		<name>char_proc</name>
 	</field>
 
@@ -154,7 +158,12 @@
 	</field>
 
 	<field>
-		<type>int32</type>
-		<name>flags</name>
+		<type>uint32</type>
+		<name>unknown1_pad</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>unknown2_pad</name>
 	</field>
 </dbc>

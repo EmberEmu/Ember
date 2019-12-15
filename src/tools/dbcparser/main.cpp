@@ -117,7 +117,7 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 	}
 
 	if(args["sql-data"].as<bool>()) {
-		//edbc::generate_sql_dml(defs, out);
+		edbc::generate_sql_dml(defs, out);
 	}
 
 	LOG_DEBUG_GLOB << "Done!" << LOG_ASYNC;

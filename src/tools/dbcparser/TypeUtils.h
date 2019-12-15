@@ -21,7 +21,8 @@
 
 namespace ember::dbc {
 
-typedef std::pair<std::string, std::optional<int>> TypeComponents;
+using TypeComponents = std::pair<std::string, std::optional<int>>;
+using ComponentCache = std::unordered_map<std::string, TypeComponents>;
 
 TypeComponents extract_components(const std::string& type);
 std::string pascal_to_underscore(std::string name);
@@ -32,10 +33,23 @@ const extern std::unordered_map<std::string_view, int> type_size_map;
 const extern std::unordered_set<std::string_view> cpp_keywords;
 const extern std::array<std::string_view, 8> string_ref_loc_regions;
 
+
 template<typename T>
-void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* parent) {
+void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* parent, ComponentCache* ccache = nullptr) {
 	for(auto f : dbc->fields) {
-		auto components = extract_components(f.underlying_type);
+		TypeComponents components;
+
+		if(ccache) {
+			if(auto it = ccache->find(f.underlying_type); it != ccache->end()) {
+				components = it->second;
+			} else {
+				components = extract_components(f.underlying_type);	
+				(*ccache)[f.underlying_type] = components;
+			}
+		} else {
+			components = extract_components(f.underlying_type);
+		}
+		
 		auto it = type_map.find(components.first);
 
 		if(it != type_map.end()) {

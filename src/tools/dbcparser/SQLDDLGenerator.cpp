@@ -170,7 +170,7 @@ void write_dbc_ddl(const types::Struct& dbc, std::ofstream& out) {
 }
 
 void generate_sql_ddl(const types::Definitions& defs, const std::string& out_path) {
-	std::ofstream file(out_path + "sql_schema.sql");
+	std::ofstream file(out_path + "dbc_schema.sql");
 
 	if(!file) {
 		throw std::runtime_error("Unable to open file for SQL DDL generation");

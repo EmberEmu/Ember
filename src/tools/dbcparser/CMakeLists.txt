@@ -23,9 +23,12 @@ set(EXECUTABLE_SRC
 	DBCGenerator.cpp
 	SQLDDLGenerator.h
 	SQLDDLGenerator.cpp
+	SQLDMLGenerator.h
+	SQLDMLGenerator.cpp
 	bprinter/table_printer.cpp
 	bprinter/table_printer.h
 	bprinter/impl/table_printer.tpp.h
+	DBCHeader.h
 	)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)

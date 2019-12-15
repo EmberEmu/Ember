@@ -6,9 +6,6 @@
 		<type>uint32</type>
 		<name>id</name>
 		<key>
-			<type>primary</type>
-		</key>
-		<key>
 			<type>foreign</key>
 			<parent>ChrRaces</parent>
 		</key>

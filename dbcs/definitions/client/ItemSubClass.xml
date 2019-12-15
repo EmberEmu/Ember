@@ -6,9 +6,6 @@
 		<type>uint32</type>
 		<name>item_class</name>
 		<key>
-			<type>primary</type>
-		</key>
-		<key>
 			<type>foreign</type>
 			<parent>ItemClass</parent>
 		</key>
