@@ -13,10 +13,6 @@
 	<field>
 		<type>uint32</type>
 		<name>subclass_map</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemSubClass</type>
-		</key>
 	</field>
 
 	<enum>

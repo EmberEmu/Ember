@@ -166,7 +166,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 			if(array) {
 				curr_field << (pack_loop_format? "" : "\n") << (double_spaced || first_field? "" : "\n")
 					<< "\t\t" << "for(std::size_t j = 0; j < "
-					<< "sizeof(i." << f.name << ") / sizeof(" << type << ");"
+					<< "i." << f.name << ".size();"
 					<< " ++j) { " << std::endl;
 			} else {
 				curr_field << (!pack_loop_format? "\n" : "");
@@ -538,26 +538,35 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 		for(auto& k : f.keys) {
 			if(k.type == "foreign") {
-				definitions << tab << "\t" << "const " << k.parent << "* " << f.name
-					<< (array ? "[" + std::to_string(*components.second) + "]" : "")
-					<< ";" << std::endl;
+				if(array) {
+					definitions << tab << "\t" << "std::array<const " << k.parent << "*, "
+					            << std::to_string(*components.second) << "> "
+					            << f.name << ";" << std::endl;
+				} else {
+					definitions << tab << "\t" << "const " << k.parent << "* " << f.name << ";" << std::endl;
+				}
 				key = true;
 				break;
 			}
 		}
 		
+
+		std::string field_type;
 		definitions << tab << "\t";
 
 		// if the type isn't in the type map, just assume that it's a user-defined struct/enum
 		if(type_map.find(components.first) != type_map.end()) {
-			definitions << type_map.at(components.first).first;
+			field_type = type_map.at(components.first).first;
 		} else {
-			definitions << components.first;
+			field_type = components.first;
 		}
 
-		definitions << " " << f.name << (key ? "_id" : "")
-			<< (array ? "[" + std::to_string(*components.second) + "]" : "") << ";";
-
+		if(array) {
+			definitions << "std::array<" << field_type << ", " << std::to_string(*components.second)
+		                << "> " << f.name << (key ? "_id" : "") << ";";
+		} else {
+			definitions << field_type << " " << f.name << (key ? "_id" : "") << ";";
+		}
 		if(!f.comment.empty()) {
 			definitions << " // " << f.comment;
 		}

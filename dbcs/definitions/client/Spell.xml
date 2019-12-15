@@ -260,10 +260,6 @@
 	<field>
 		<type>uint32</type>
 		<name>equipped_item_subclass</name>
-		<key>
-			<type>foreign</type>
-			<parent>ItemSubClass</parent>
-		</key>
 	</field>
 
 	<field>

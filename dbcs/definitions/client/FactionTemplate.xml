@@ -20,7 +20,7 @@
 	</field>
 
 	<enum>
-		<type>int32</type>
+		<type>uint32</type>
 		<name>Flags</name>
 		<options>
 			<option name="pvp_flagged" value="0x800" />

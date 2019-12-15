@@ -20,7 +20,7 @@
 	</field>
 
 	<field>
-		<type>int32</type>
+		<type>uint32</type>
 		<name>anim</name>
 		<key>
 			<type>foreign</type>

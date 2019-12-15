@@ -27,11 +27,7 @@
 
 	<field>
 		<type>uint32</type>
-		<name>variation</name>
-		<key>
-			<type>foreign</type>
-			<parent>CharVariations</parent>
-		</key>
+		<name>variation_id</name>
 	</field>
 
 	<field>
