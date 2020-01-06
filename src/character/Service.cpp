@@ -128,6 +128,7 @@ void Service::send_character_list(const spark::Link& link, const spark::Beacon& 
 		cbb.add_x(character.position.x);
 		cbb.add_y(character.position.y);
 		cbb.add_z(character.position.z);
+		cbb.add_o(character.orientation);
 		cbb.add_flags(static_cast<std::uint32_t>(character.flags));
 		cbb.add_first_login(character.first_login);
 		cbb.add_pet_display_id(character.pet_display);

@@ -71,7 +71,7 @@ struct Character { // used for character list display
 	std::uint32_t guild_id;
 	std::uint32_t guild_rank;
 	Vector position;
-	Vector orientation;
+	float orientation;
 	Flags flags;
 	bool first_login;
 	std::uint32_t pet_display;
