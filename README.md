@@ -10,7 +10,7 @@ While most emulators strive for feature completeness, Ember aims to be a product
 
 ### Docker Quick Start
 
-Ember uses Docker to make it easy to get the project up and running within minutes. Once you have Docker (version 18 and up) installed, simply run...
+Ember uses Docker to make it easy to get the project up and running within minutes. Once you have Docker (version 19 and up) installed, simply run...
 
 Linux & MacOS:
 
@@ -21,7 +21,7 @@ DOCKER_BUILDKIT=1 && docker build <path to Dockerfile>
 Windows:
 
 ```cmd
-set DOCKER_BUILDKIT=1 && docker build <path to Dockerfile>
+set "DOCKER_BUILDKIT=1" && docker build <path to Dockerfile>
 ```
 
 Ember uses `DOCKER_BUILDKIT=1` to enable experimental features that allow for build caching. It can be omitted by setting it as an environmental variable.
@@ -36,11 +36,11 @@ We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg
 
 Ember aims to support the following platforms as a minimum:
 
-| Operating System  | Architectures  |
+| Operating System  | Architectures |
 | :------------ |:---------------:|
-| Linux      | x86, x64, ARMv6 (tentative) |
+| Linux         | x86, x64, ARMv7 |
 | Windows       | x86, x64        |
-| Mac OS | x86, x64        |
+| Mac OS        | x86, x64        |
 
 ### Compiler support
 
