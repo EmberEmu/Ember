@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include "EventDispatcher.h"
 #include <logger/Logging.h>
+#include <boost/asio/post.hpp>
 #include <type_traits>
 
 namespace ember {
@@ -23,14 +24,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
 		return;
 	}
 
-	// this is a workaround for ASIO's lack of C++14 support,
-	// otherwise we'd ideally just move event into the lambda
-	// note - this is supported in the standalone (but not Boost) ASIO
-	// https://stackoverflow.com/questions/17211263/how-to-trick-boostasio-to-allow-move-only-handlers/22891509#22891509
-	auto raw = event.release();
-
-	service->post([client, raw] {
-		auto event = std::unique_ptr<const Event>(raw);
+	boost::asio::post(*service, [client, event = std::move(event)] {
 		const auto handler = handlers_.find(client);
 
 		if(handler == handlers_.end()) {
@@ -38,7 +32,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
 			return;
 		}
 
-		handler->second->handle_event(std::move(event));
+		handler->second->handle_event(event.get());
 	});
 }
 
