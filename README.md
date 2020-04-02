@@ -15,7 +15,7 @@ Ember uses Docker to make it easy to get the project up and running within minut
 Linux & MacOS:
 
 ```bash
-DOCKER_BUILDKIT=1 && docker build <path to Dockerfile>
+DOCKER_BUILDKIT=1 docker build <path to Dockerfile>
 ```
 
 Windows:
