@@ -203,7 +203,7 @@ public:
 		stmt->setDouble(15, character.position.x);
 		stmt->setDouble(16, character.position.y);
 		stmt->setDouble(17, character.position.z);
-		stmt->SetDouble(18, character.orientation);
+		stmt->setDouble(18, character.orientation);
 		stmt->setUInt(19, static_cast<std::uint32_t>(character.flags));
 		stmt->setUInt(20, character.first_login);
 		stmt->setUInt(21, character.pet_display);
