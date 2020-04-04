@@ -12,13 +12,6 @@ dist: bionic
 git:
   depth: 1
 
-branches:
-  only:
-    - master
-    - development
-    - coverity
-    - travisupdate
-
 env:
   global:
     - DOCKER_BUILDKIT=1
