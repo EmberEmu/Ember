@@ -44,7 +44,7 @@ Ember aims to support the following platforms as a minimum:
 
 ### Compiler support
 
-This table lists the compilers actively used during development as well as the oldest versions that should support the language features needed to compile the codebase. The minimum versions are not frequently tested, therefore they are not guaranteed to be compatible.
+Any compiler version equal or greater than the supported version should be capable of compiling Ember. Minimum versions support all language features required but will not receive any fixes to support their use (e.g. compiler-specific workarounds).
 
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
@@ -52,12 +52,16 @@ This table lists the compilers actively used during development as well as the o
 | Clang |     8.0     |     5.0     |
 | GCC   |     8.1     |     8.1     |
 
+### Language support
+
+Ember currently targets C++20 but allows for the use of upcoming language additions (e.g. technical specifications and drafts) as long as all three supported compilers provide a reasonable level of support.
+
 ### Build status
 
 |  | master  | development |
 | :------------ |:---------------:|:---------------:|
-| Linux | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=master)](https://travis-ci.org/EmberEmu/Ember) | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=development)](https://travis-ci.org/EmberEmu/Ember) |
-| Windows | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | Soon |
+| TravisCI | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=master)](https://travis-ci.org/EmberEmu/Ember) | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=development)](https://travis-ci.org/EmberEmu/Ember)|
+| AppVeyor | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/development?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/development)  |
 | Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
 
 ### Why WoW 1.12.1?
