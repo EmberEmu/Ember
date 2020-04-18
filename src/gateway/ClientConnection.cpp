@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -205,7 +205,7 @@ void ClientConnection::close_session_sync() {
 }
 
 std::string ClientConnection::remote_address() const {
-	return address_;
+	return ep_.address().to_string();
 }
 
 const ConnectionStats& ClientConnection::stats() const {

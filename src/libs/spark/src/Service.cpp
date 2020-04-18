@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,11 +42,11 @@ void Service::shutdown() {
 	sessions_.stop_all();
 }
 
-void Service::start_session(boost::asio::ip::tcp::socket socket) {
+void Service::start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	MessageHandler m_handler(dispatcher_, services_, link_, true, logger_);
-	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_);
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), ep, m_handler, logger_);
 	sessions_.start(session);
 }
 
@@ -60,7 +60,7 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 	boost::asio::async_connect(*socket, endpoint_it,
 		[this, host, port, socket](boost::system::error_code ec, bai::tcp::endpoint ep) {
 			if(!ec) {
-				start_session(std::move(*socket));
+				start_session(std::move(*socket), ep);
 			}
 
 			LOG_DEBUG_FILTER(logger_, LF_SPARK)

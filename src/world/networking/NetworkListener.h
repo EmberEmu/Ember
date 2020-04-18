@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,6 @@
 #include "GatewayClient.h"
 #include <logger/Logger.h>
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 #include <string>
 #include <utility>
 #include <cstdint>
@@ -41,16 +40,23 @@ class NetworkListener final {
 			}
 
 			if(!ec) {
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Accepted connection "
-					<< boost::lexical_cast<std::string>(socket_.remote_endpoint())
-					<< LOG_ASYNC;
+				const auto ep = socket_.remote_endpoint(ec);
 
-				auto client = std::make_shared<GatewayClient>(
-					sessions_, std::move(socket_), logger_
-				);
+				if(ec) {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Aborted connection" << LOG_ASYNC;
+				} else {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Accepted connection "
+						<< ep.address().to_string()
+						<< LOG_ASYNC;
 
-				sessions_.start(std::move(client));
+					auto client = std::make_shared<GatewayClient>(
+						sessions_, std::move(socket_), ep, logger_
+					);
+
+					sessions_.start(std::move(client));
+				}
 			}
 
 			socket_ = boost::asio::ip::tcp::socket(service_);

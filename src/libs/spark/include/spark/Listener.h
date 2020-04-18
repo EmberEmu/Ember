@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@ class Listener {
 	ServicesMap& services_;
 
 	void accept_connection();
-	void start_session(boost::asio::ip::tcp::socket socket);
+	void start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep);
 
 public:
 	Listener(boost::asio::io_context& service, std::string interface, std::uint16_t port,

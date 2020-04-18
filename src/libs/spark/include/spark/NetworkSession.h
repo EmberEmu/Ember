@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,6 +37,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	enum class ReadState { SIZE_PREFIX, PAYLOAD };
 
 	boost::asio::ip::tcp::socket socket_;
+	const boost::asio::ip::tcp::endpoint ep_;
 	boost::asio::io_context::strand strand_;
 
 	ReadState state_;
@@ -45,7 +46,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	std::vector<std::uint8_t> in_buff_;
 	SessionManager& sessions_;
 	MessageHandler handler_;
-	const std::string remote_;
 	log::Logger* logger_; 
 	bool stopped_;
 
@@ -137,14 +137,13 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, MessageHandler handler,
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
+	               boost::asio::ip::tcp::endpoint ep, MessageHandler handler,
 	               log::Logger* logger)
-	               : header_(nullptr), sessions_(sessions), socket_(std::move(socket)), message_size_(0),
-	                 handler_(handler), logger_(logger), stopped_(false),
+	               : header_(nullptr), sessions_(sessions), socket_(std::move(socket)), ep_(std::move(ep)),
+	                 message_size_(0), handler_(handler), logger_(logger), stopped_(false),
 	                 state_(ReadState::SIZE_PREFIX), in_buff_(DEFAULT_BUFFER_LENGTH),
-	                 strand_(socket_.get_io_context()),
-	                 remote_(socket_.remote_endpoint().address().to_string()
-	                         + ":" + std::to_string(socket_.remote_endpoint().port())) { }
+	                 strand_(socket_.get_io_context()) { }
 
 	void start() {
 		handler_.start(*this);
@@ -155,8 +154,8 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	std::string remote_host() {
-		return remote_;
+	std::string remote_host() const {
+		return ep_.address().to_string();
 	}
 
 	void write(const std::shared_ptr<flatbuffers::FlatBufferBuilder>& fbb) {

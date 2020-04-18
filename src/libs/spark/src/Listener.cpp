@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 #include <spark/NetworkSession.h>
 #include <spark/SessionManager.h>
 #include <shared/FilterTypes.h>
+#include <utility>
 
 namespace ember::spark {
 
@@ -34,23 +35,27 @@ void Listener::accept_connection() {
 		}
 
 		if(!ec) {
-			auto ip = socket_.remote_endpoint().address();
+			const auto ep = socket_.remote_endpoint(ec);
 
-			LOG_DEBUG_FILTER(logger_, LF_SPARK)
-				<< "[spark] Accepted connection from " << ip.to_string() << ":"
-				<< socket_.remote_endpoint().port() << LOG_ASYNC;
+			if(ec) {
+				LOG_DEBUG_FILTER(logger_, LF_SPARK)
+					<< "[spark] Aborted connection attempt" << LOG_ASYNC;
+			} else {
+				LOG_DEBUG_FILTER(logger_, LF_SPARK)
+					<< "[spark] Accepted connection from " << ep.address().to_string() << LOG_ASYNC;
 
-			start_session(std::move(socket_));
+				start_session(std::move(socket_), ep);
+			}
 		}
 
 		accept_connection();
 	});
 }
 
-void Listener::start_session(boost::asio::ip::tcp::socket socket) {
+void Listener::start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 	MessageHandler m_handler(handlers_, services_, link_, false, logger_);
-	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), m_handler, logger_);
+	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), ep, m_handler, logger_);
 	sessions_.start(session);
 }
 

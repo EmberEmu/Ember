@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -49,7 +49,7 @@ class Service final {
 	log::Logger* logger_;
 	
 	void do_connect(const std::string& host, std::uint16_t port);
-	void start_session(boost::asio::ip::tcp::socket socket);
+	void start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep);
 
 public:
 	enum class Result { OK, LINK_GONE };

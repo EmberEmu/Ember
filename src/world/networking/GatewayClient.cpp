@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,8 +21,8 @@ void GatewayClient::read() {
 
 }
 
-std::string GatewayClient::remote_address() {
-	return address_;
+const boost::asio::ip::tcp::endpoint& GatewayClient::remote_endpoint() const {
+	return ep_;
 }
 
 void GatewayClient::start() {
@@ -33,7 +33,7 @@ void GatewayClient::start() {
 
 void GatewayClient::stop() {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-		<< "Closing connection to " << remote_address() << LOG_ASYNC;
+		<< "Closing connection to " << ep_.address().to_string() << LOG_ASYNC;
 
 	//handler_.stop();
 	boost::system::error_code ec; // we don't care about any errors
@@ -89,7 +89,8 @@ void GatewayClient::async_shutdown(std::shared_ptr<GatewayClient> client) {
 	client->terminate();
 
 	client->socket_.get_io_service().post([client]() {
-		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << "Handler for " << client->remote_address()
+		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << "Handler for "
+			<< client->remote_endpoint().address().to_string()
 			<< " destroyed" << LOG_ASYNC;
 	});
 }

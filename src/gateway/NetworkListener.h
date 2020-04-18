@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,6 @@
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -45,17 +44,22 @@ class NetworkListener {
 			}
 
 			if(!ec) {
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Accepted connection "
-					<< boost::lexical_cast<std::string>(socket_.remote_endpoint())
-					<< LOG_ASYNC;
+				const auto ep = socket_.remote_endpoint(ec);
 
-				auto client = std::make_unique<ClientConnection>(
-					sessions_, std::move(socket_),
-					ClientUUID::generate(index_), logger_
-				);
+				if(ec) {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
+				} else {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Accepted connection " << ep.address().to_string() << LOG_ASYNC;
 
-				sessions_.start(std::move(client));
+					auto client = std::make_unique<ClientConnection>(
+						sessions_, std::move(socket_), ep,
+						ClientUUID::generate(index_), logger_
+					);
+
+					sessions_.start(std::move(client));
+				}
 			}
 
 			++index_;

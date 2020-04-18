@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,31 +46,33 @@ class NetworkListener {
 			}
 
 			if(!ec) {
-				auto ip = socket_.remote_endpoint().address();
+				const auto ep = socket_.remote_endpoint(ec);
+				const auto ip = ep.address();
 
-				if(ban_list_.is_banned(ip)) {
+				if(ec) {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
+					metrics_.increment("aborted_connections");
+				} else if(ban_list_.is_banned(ip)) {
 					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 						<< "Rejected connection " << ip.to_string()
 						<< " from banned IP range" << LOG_ASYNC;
 					metrics_.increment("rejected_connections");
-					return;
+				} else {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Accepted connection " << ip.to_string() << LOG_ASYNC;
+					metrics_.increment("accepted_connections");
+					start_session(std::move(socket_), ep);
 				}
-
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Accepted connection " << ip.to_string() << ":"
-					<< socket_.remote_endpoint().port() << LOG_ASYNC;
-				metrics_.increment("accepted_connections");
-
-				start_session(std::move(socket_));
 			}
 
 			accept_connection();
 		});
 	}
 
-	void start_session(boost::asio::ip::tcp::socket socket) {
+	void start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-		auto session = session_create_.create(sessions_, std::move(socket), logger_);
+		auto session = session_create_.create(sessions_, std::move(socket), ep, logger_);
 		sessions_.start(session);
 	}
 

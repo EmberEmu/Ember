@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,6 @@
 #include <spark/buffers/BufferSequence.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -28,6 +27,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 
 	boost::asio::ip::tcp::socket socket_;
+	const boost::asio::ip::tcp::endpoint remote_ep_;
 	boost::asio::io_context::strand strand_;
 	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
 
@@ -112,21 +112,22 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
-	               : sessions_(sessions), socket_(std::move(socket)), timer_(socket.get_io_context()),
-	                 strand_(socket.get_io_context()), logger_(logger), stopped_(false),
-	                 remote_address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
+	               boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
+	               : sessions_(sessions), socket_(std::move(socket)), remote_ep_(ep),
+	                 timer_(socket.get_io_context()), strand_(socket.get_io_context()),
+	                 logger_(logger), stopped_(false) { }
 
 	virtual void start() {
 		read();
 	}
 
-	std::string remote_address() {
-		return remote_address_;
+	const boost::asio::ip::tcp::endpoint& remote_endpoint() const {
+		return remote_ep_;
 	}
 
-	std::uint16_t remote_port() {
-		return socket_.remote_endpoint().port();
+	std::string remote_address() const {
+		return remote_ep_.address().to_string();
 	}
 
 	virtual void close_session() {

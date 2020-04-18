@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,10 +19,11 @@
 namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-                           log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
+                           boost::asio::ip::tcp::endpoint ep, log::Logger* logger,
+                           ThreadPool& pool, const LoginHandlerBuilder& builder)
                            : handler_(builder.create(remote_address())),
                              logger_(logger), pool_(pool), grunt_handler_(logger),
-                             NetworkSession(sessions, std::move(socket), logger) {
+                             NetworkSession(sessions, std::move(socket), std::move(ep), logger) {
 	handler_.send = [&](auto& packet) {
 		write_chain(packet, false);
 	};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,7 @@ class SessionManager;
 
 class GatewayClient final {
 	boost::asio::ip::tcp::socket socket_;
+	const boost::asio::ip::tcp::endpoint ep_;
 
 	SessionManager& sessions_;
 	log::Logger* logger_;
@@ -40,14 +41,14 @@ class GatewayClient final {
 
 public:
 	GatewayClient(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-				  log::Logger* logger)
-	              : sessions_(sessions), logger_(logger), socket_(std::move(socket)),
-	                address_(boost::lexical_cast<std::string>(socket_.remote_endpoint())) { }
+				  boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
+	              : sessions_(sessions), socket_(std::move(socket)), 
+	                ep_(std::move(ep)), logger_(logger) { }
 
 	void start();
 	void close_session();
 	void terminate();
-	std::string remote_address();
+	const boost::asio::ip::tcp::endpoint& remote_endpoint() const;
 
 	static void async_shutdown(std::shared_ptr<GatewayClient> client);
 };
