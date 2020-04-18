@@ -90,8 +90,8 @@ public:
 	                   logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
 	                   authenticated_(false), write_in_progress_(false),
 	                   handler_(*this, uuid, logger, socket.get_io_context()), compression_level_(0),
-	                   outbound_front_(&outbound_buffers_[0]),
-	                   outbound_back_(&outbound_buffers_[1]), stopping_(false) { }
+	                   outbound_front_(&outbound_buffers_.front()),
+	                   outbound_back_(&outbound_buffers_.back()), stopping_(false) { }
 
 	void start();
 
