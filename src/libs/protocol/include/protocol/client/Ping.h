@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,8 +21,8 @@ class Ping final {
 	State state_ = State::INITIAL;
 
 public:
-	be::little_uint32_at sequence_id;
-	be::little_uint32_at latency;
+	be::little_uint32_t sequence_id;
+	be::little_uint32_t latency;
 
 	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

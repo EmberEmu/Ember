@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -88,8 +88,8 @@ public:
 	Platform platform;
 	System os;
 	Locale locale;
-	be::little_uint32_at timezone_bias = 0;
-	be::big_uint32_at ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
+	be::little_uint32_t timezone_bias = 0;
+	be::big_uint32_t ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
 	utf8_string username;
 
 	State read_from_stream(spark::BinaryStream& stream) override {

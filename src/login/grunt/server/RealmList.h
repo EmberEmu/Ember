@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,8 +29,8 @@ class RealmList final : public Packet {
 	static const std::size_t WIRE_LENGTH = 3; // header size 
 
 	State state_ = State::INITIAL;
-	be::little_uint16_at size = 0;
-	be::little_uint8_at realm_count = 0;
+	be::little_uint16_t size = 0;
+	be::little_uint8_t realm_count = 0;
 
 	void read_size(spark::BinaryStream& stream) {
 		stream >> opcode;
@@ -83,9 +83,9 @@ public:
 
 	RealmList() : Packet(Opcode::CMD_REALM_LIST) {}
 
-	be::little_uint32_at unknown = 0; // appears to be ignored in public clients
+	be::little_uint32_t unknown = 0; // appears to be ignored in public clients
 	std::vector<RealmListEntry> realms;
-	be::little_uint16_at unknown2 = 5; // appears to be ignored in public clients
+	be::little_uint16_t unknown2 = 5; // appears to be ignored in public clients
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

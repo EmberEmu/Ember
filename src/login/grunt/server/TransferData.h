@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,7 +30,7 @@ public:
 
 	TransferData() : Packet(Opcode::CMD_XFER_DATA) {}
 
-	be::little_uint16_at size = 0;
+	be::little_uint16_t size = 0;
 	std::array<std::byte, MAX_CHUNK_SIZE> chunk;
 
 	State read_from_stream(spark::BinaryStream& stream) override {

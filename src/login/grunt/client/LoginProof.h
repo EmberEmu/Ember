@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -110,8 +110,8 @@ class LoginProof final : public Packet {
 
 public:
 	struct KeyData {
-		be::little_uint16_at unk_1;
-		be::little_uint32_at unk_2;
+		be::little_uint16_t unk_1;
+		be::little_uint32_t unk_2;
 		std::array<std::uint8_t, 4> unk_3;
 		std::array<std::uint8_t, 20> unk_4_hash; // hashed with A or 'salt' if reconnect proof
 	};

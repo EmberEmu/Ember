@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ class CharacterRename final {
 
 public:
 	Result result;
-	be::little_uint64_at id;
+	be::little_uint64_t id;
 	utf8_string name;
 	
 	State read_from_stream(spark::BinaryStream& stream) try {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,7 +27,7 @@ class TransferResume final : public Packet {
 public:
 	TransferResume() : Packet(Opcode::CMD_XFER_RESUME) {}
 
-	be::little_uint64_at offset = 0;
+	be::little_uint64_t offset = 0;
 	
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

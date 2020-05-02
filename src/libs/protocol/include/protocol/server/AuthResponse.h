@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,10 +22,10 @@ class AuthResponse final {
 
 public:
 	Result result;
-	be::little_uint32_at queue_position = 0;
-	be::little_uint32_at billing_time = 0;
-	be::little_uint8_at billing_flags = 0;
-	be::little_uint32_at billing_rested = 0;
+	be::little_uint32_t queue_position = 0;
+	be::little_uint32_t billing_time = 0;
+	be::little_uint8_t billing_flags = 0;
+	be::little_uint32_t billing_rested = 0;
 
 	State read_from_stream(spark::BinaryStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

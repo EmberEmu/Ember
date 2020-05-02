@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,7 +29,7 @@ public:
 	TransferInitiate() : Packet(Opcode::CMD_XFER_INITIATE) {}
 	
 	std::string filename;
-	be::little_uint64_at filesize = 0;
+	be::little_uint64_t filesize = 0;
 	std::array<std::byte, 16> md5;
 
 	State read_from_stream(spark::BinaryStream& stream) override {

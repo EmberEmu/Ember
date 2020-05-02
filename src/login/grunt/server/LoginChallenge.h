@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -98,7 +98,7 @@ public:
 	Botan::BigInt s;
 	std::array<std::uint8_t, CHECKSUM_SALT_LENGTH> checksum_salt;
 	bool two_factor_auth = false;
-	be::little_uint32_at pin_grid_seed;
+	be::little_uint32_t pin_grid_seed;
 	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
 
 	// todo - early abort (wire length change)

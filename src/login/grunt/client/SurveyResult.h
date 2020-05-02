@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,7 +27,7 @@ class SurveyResult final : public Packet {
 	static const std::size_t MAX_SURVEY_LEN  = 8192;
 	State state_ = State::INITIAL;
 
-	be::little_uint16_at compressed_size_ = 0;
+	be::little_uint16_t compressed_size_ = 0;
 
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
@@ -72,8 +72,8 @@ class SurveyResult final : public Packet {
 public:
 	SurveyResult() : Packet(Opcode::CMD_SURVEY_RESULT) {}
 
-	be::little_uint32_at survey_id = 0;
-	be::little_uint8_at error = 0;
+	be::little_uint32_t survey_id = 0;
+	be::little_uint8_t error = 0;
 	std::string data;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
