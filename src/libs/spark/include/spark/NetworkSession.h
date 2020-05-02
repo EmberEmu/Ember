@@ -38,7 +38,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint ep_;
-	boost::asio::io_context::strand strand_;
 
 	ReadState state_;
 	messaging::core::Header* header_;
@@ -114,7 +113,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		auto self(shared_from_this());
 		const std::uint32_t read_size = state_ == ReadState::SIZE_PREFIX? sizeof(message_size_) : message_size_;
 
-		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size), strand_.wrap(
+		boost::asio::async_read(socket_, boost::asio::buffer(in_buff_, read_size),
 			[this, self](boost::system::error_code ec, std::size_t /*size*/) {
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
@@ -123,7 +122,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 				handle_read();
 			}
-		));
+		);
 	}
 
 	void stop() {
@@ -142,8 +141,7 @@ public:
 	               log::Logger* logger)
 	               : header_(nullptr), sessions_(sessions), socket_(std::move(socket)), ep_(std::move(ep)),
 	                 message_size_(0), handler_(handler), logger_(logger), stopped_(false),
-	                 state_(ReadState::SIZE_PREFIX), in_buff_(DEFAULT_BUFFER_LENGTH),
-	                 strand_(socket_.get_io_context()) { }
+	                 state_(ReadState::SIZE_PREFIX), in_buff_(DEFAULT_BUFFER_LENGTH) { }
 
 	void start() {
 		handler_.start(*this);
@@ -185,13 +183,13 @@ public:
 
 		auto self(shared_from_this());
 
-		socket_.async_send(buffers, strand_.wrap(
+		socket_.async_send(buffers,
 			[this, self, fbb, size_ptr](boost::system::error_code ec, std::size_t /*size*/) {
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				}
 			}
-		));
+		);
 	}
 
 	virtual ~NetworkSession() = default;

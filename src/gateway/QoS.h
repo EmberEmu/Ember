@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/basic_waitable_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <chrono>
 
 namespace ember {
@@ -24,7 +24,7 @@ class QoS {
 	const SessionManager& sessions_;
 	const ServerConfig& config_;	
 	boost::asio::io_context& service_;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	boost::asio::steady_timer timer_;
 
 	std::size_t last_bandwidth_out_;
 

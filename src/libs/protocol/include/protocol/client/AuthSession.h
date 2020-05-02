@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,18 +34,18 @@ class AuthSession final {
 public:
 	struct AddonData {
 		std::string name;
-		be::little_uint8_at key_version;
-		be::little_uint32_at crc;
-		be::little_uint32_at update_url_crc;
+		be::little_uint8_t key_version;
+		be::little_uint32_t crc;
+		be::little_uint32_t update_url_crc;
 	};
 
 	Botan::secure_vector<std::uint8_t> digest;
-	be::little_uint32_at seed;
-	be::little_uint32_at id;
-	be::little_uint32_at security;
-	be::little_uint32_at unk1;
-	be::little_uint32_at build;
-	be::little_uint8_at locale;
+	be::little_uint32_t seed;
+	be::little_uint32_t id;
+	be::little_uint32_t security;
+	be::little_uint32_t unk1;
+	be::little_uint32_t build;
+	be::little_uint8_t locale;
 	utf8_string username;
 	std::vector<AddonData> addons;
 

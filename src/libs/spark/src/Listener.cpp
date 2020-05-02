@@ -19,7 +19,7 @@ Listener::Listener(boost::asio::io_context& service, std::string interface, std:
                    const Link& link, log::Logger* logger)
                    : service_(service), acceptor_(service, boost::asio::ip::tcp::endpoint(
                      boost::asio::ip::address::from_string(interface), port)), link_(link),
-                     socket_(service), sessions_(sessions), logger_(logger),
+                     socket_(boost::asio::make_strand(service_)), sessions_(sessions), logger_(logger),
                      handlers_(handlers), services_(services) {
 	acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -45,6 +45,7 @@ void Listener::accept_connection() {
 					<< "[spark] Accepted connection from " << ep.address().to_string() << LOG_ASYNC;
 
 				start_session(std::move(socket_), ep);
+				socket_ = boost::asio::ip::tcp::socket(boost::asio::make_strand(service_));
 			}
 		}
 

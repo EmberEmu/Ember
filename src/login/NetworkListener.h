@@ -25,7 +25,7 @@
 namespace ember {
 
 class NetworkListener {
-	boost::asio::io_context& service_;
+	boost::asio::io_context& io_context;
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::socket socket_;
@@ -66,6 +66,7 @@ class NetworkListener {
 				}
 			}
 
+			socket_ = boost::asio::ip::tcp::socket(boost::asio::make_strand(io_context));
 			accept_connection();
 		});
 	}
@@ -77,13 +78,13 @@ class NetworkListener {
 	}
 
 public:
-	NetworkListener(boost::asio::io_context& service, const std::string& interface, std::uint16_t port,
+	NetworkListener(boost::asio::io_context& io_context, const std::string& interface, std::uint16_t port,
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger* logger, Metrics& metrics)
-	                : acceptor_(service_, boost::asio::ip::tcp::endpoint(
+	                : acceptor_(io_context, boost::asio::ip::tcp::endpoint(
 	                            boost::asio::ip::address::from_string(interface), port)),
-	                  service_(service), socket_(service_), logger_(logger), ban_list_(bans),
-	                  signals_(service_, SIGINT, SIGTERM), session_create_(session_create),
+	                  io_context(io_context), socket_(boost::asio::make_strand(io_context)), logger_(logger),
+	                  ban_list_(bans), signals_(io_context, SIGINT, SIGTERM), session_create_(session_create),
 	                  metrics_(metrics) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));

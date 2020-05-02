@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -162,7 +162,7 @@ void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol:
 	Botan::SHA_160 hasher;
 	hasher.update(packet->username);
 	hasher.update_be(boost::endian::native_to_big(unknown));
-	hasher.update_be(boost::endian::native_to_big(packet->seed).value());
+	hasher.update_be(boost::endian::big_int32_t(packet->seed));
 	hasher.update_be(boost::endian::native_to_big(ctx->auth_seed));
 	hasher.update(k_bytes);
 	Botan::secure_vector<std::uint8_t> calc_hash = hasher.final();

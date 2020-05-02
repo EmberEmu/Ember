@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <shared/ClientUUID.h>
-#include <boost/asio/basic_waitable_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <list>
@@ -43,7 +43,7 @@ class RealmQueue final {
 
 	const std::chrono::milliseconds TIMER_FREQUENCY { 250 };
 
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	boost::asio::steady_timer timer_;
 	std::list<QueueEntry> queue_;
 	std::mutex lock_;
 

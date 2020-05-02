@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -48,7 +48,7 @@ public:
 
 private:
 	const std::chrono::seconds TIMER_FREQUENCY;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	boost::asio::steady_timer timer_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
 	boost::asio::signal_set signals_;

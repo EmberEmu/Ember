@@ -11,6 +11,7 @@
 #include "FilterTypes.h"
 #include <shared/metrics/Metrics.h>
 #include <shared/threading/ThreadPool.h>
+#include <boost/asio/post.hpp>
 #include <exception>
 #include <functional>
 #include <memory>
@@ -62,7 +63,7 @@ void LoginSession::execute_async(const std::shared_ptr<Action>& action) {
 	pool_.run([action, this, self] {
 		action->execute();
 
-		strand().post([action, this, self] {
+		boost::asio::post(get_executor(), [action, this, self] {
 			async_completion(action);
 		});
 	});

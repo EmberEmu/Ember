@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,8 +15,8 @@ namespace sc = std::chrono;
 
 namespace ember::spark {
 
-TrackingService::TrackingService(boost::asio::io_context& service, log::Logger* logger)
-                                 : service_(service), logger_(logger) { }
+TrackingService::TrackingService(boost::asio::io_context& io_context, log::Logger* logger)
+                                 : io_context_(io_context), logger_(logger) { }
 
 void TrackingService::on_message(const Link& link, const Message& message) try {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
@@ -42,7 +42,7 @@ void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id, 
                                        sc::milliseconds timeout) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
-	auto request = std::make_unique<Request>(service_, id, link, handler);
+	auto request = std::make_unique<Request>(io_context_, id, link, handler);
 	request->timer.expires_from_now(timeout);
 	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, link, std::placeholders::_1));
 

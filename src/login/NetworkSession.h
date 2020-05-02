@@ -28,8 +28,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint remote_ep_;
-	boost::asio::io_context::strand strand_;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	boost::asio::steady_timer timer_;
 
 	spark::ChainedBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
@@ -50,8 +49,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 		set_timer();
 
-		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
-			strand_.wrap(create_alloc_handler(allocator_,
+		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()), 
+			create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(stopped_) {
 					return;
@@ -71,18 +70,16 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 					close_session();
 				}
 			}
-		)));
+		));
 	}
 
 	void set_timer() {
 		auto self(shared_from_this());
 
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
-		timer_.async_wait(strand_.wrap(
-			[this, self](const boost::system::error_code& ec) {
-				timeout(ec);
-			}
-		));
+		timer_.async_wait([this, self](const boost::system::error_code& ec) {
+			timeout(ec);
+		});
 	}
 
 	void timeout(const boost::system::error_code& ec) {
@@ -99,7 +96,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	void stop() {
 		auto self(shared_from_this());
 
-		strand_.post([this, self] {
+		boost::asio::post(socket_.get_executor(), [this, self] {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
@@ -115,8 +112,7 @@ public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	               boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), remote_ep_(ep),
-	                 timer_(socket.get_io_context()), strand_(socket.get_io_context()),
-	                 logger_(logger), stopped_(false) { }
+	                 timer_(socket.get_executor()), logger_(logger), stopped_(false) { }
 
 	virtual void start() {
 		read();
@@ -146,8 +142,7 @@ public:
 
 		spark::BufferSequence<BlockSize> sequence(*chain);
 
-		socket_.async_send(sequence,
-			strand_.wrap(create_alloc_handler(allocator_,
+		socket_.async_send(sequence, create_alloc_handler(allocator_,
 			[=](boost::system::error_code ec, std::size_t size) {
 				chain->skip(size);
 
@@ -159,10 +154,12 @@ public:
 					on_write_complete();
 				}
 			}
-		)));
+		));
 	}
 
-	boost::asio::io_context::strand& strand() { return strand_;  }
+	boost::asio::executor get_executor() {
+		return socket_.get_executor();
+	}
 
 	virtual bool handle_packet(spark::Buffer& buffer) = 0;
 	virtual void on_write_complete() = 0;

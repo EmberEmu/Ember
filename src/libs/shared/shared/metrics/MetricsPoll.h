@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 
 #include <shared/metrics/Metrics.h>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/basic_waitable_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <chrono>
 #include <functional>
 #include <mutex>
@@ -30,7 +30,7 @@ class MetricsPoll {
 	};
 
 	std::mutex lock_;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	boost::asio::steady_timer timer_;
 	std::vector<MetricMeta> callbacks_;
 	Metrics& metrics_;
 

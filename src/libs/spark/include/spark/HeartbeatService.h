@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,8 @@
 #include <spark/EventHandler.h>
 #include <spark/Helpers.h>
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <chrono>
 #include <forward_list>
 #include <functional>
@@ -32,7 +33,7 @@ class HeartbeatService : public EventHandler {
 	const Service* service_;
 	std::forward_list<Link> peers_;
 	std::mutex lock_;
-	boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer_;
+	boost::asio::steady_timer timer_;
 	std::unordered_map<messaging::core::Opcode, LocalDispatcher> handlers_;
 
 	log::Logger* logger_;

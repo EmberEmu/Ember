@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,8 @@
 #include <spark/Link.h>
 #include <spark/EventHandler.h>
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -29,7 +30,7 @@ class TrackingService : public EventHandler {
 		         TrackingHandler handler)
 		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
 
-		boost::asio::basic_waitable_timer<std::chrono::steady_clock> timer;
+		boost::asio::steady_timer timer;
 		boost::uuids::uuid id;
 		TrackingHandler handler;
 		const Link link;
@@ -38,14 +39,14 @@ class TrackingService : public EventHandler {
 	std::unordered_map<boost::uuids::uuid, std::unique_ptr<Request>,
 	                   boost::hash<boost::uuids::uuid>> handlers_;
 
-	boost::asio::io_context& service_;
+	boost::asio::io_context& io_context_;
 	log::Logger* logger_;
 	std::mutex lock_;
 
 	void timeout(const boost::uuids::uuid& id, Link link, const boost::system::error_code& ec);
 
 public:
-	TrackingService(boost::asio::io_context& service, log::Logger* logger);
+	TrackingService(boost::asio::io_context& io_context, log::Logger* logger);
 
 	void on_message(const Link& link, const Message& message) override;
 	void on_link_up(const Link& link) override;

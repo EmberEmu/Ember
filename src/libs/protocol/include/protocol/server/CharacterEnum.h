@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 
 #include <shared/database/objects/Character.h>
 #include <boost/endian/conversion.hpp>
+#include <boost/endian/buffers.hpp>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -58,9 +59,19 @@ public:
 			be::little_to_native_inplace(c.id);
 			be::little_to_native_inplace(c.zone);
 			be::little_to_native_inplace(c.map);
-			be::little_to_native_inplace(c.position.x);
-			be::little_to_native_inplace(c.position.y);
-			be::little_to_native_inplace(c.position.z);
+
+			be::little_float32_buf_t wire { c.position.x };
+			be::little_to_native_inplace(wire);
+			c.position.x = wire.value();
+
+			wire = c.position.y;
+			be::little_to_native_inplace(wire);
+			c.position.y = wire.value();
+
+			wire = c.position.z;
+			be::little_to_native_inplace(wire);
+			c.position.z = wire.value();
+		
 			be::little_to_native_inplace(c.guild_id);
 			be::little_to_native_inplace(c.flags);
 			be::little_to_native_inplace(c.pet_display);
@@ -92,10 +103,10 @@ public:
 			stream << c.facialhair;
 			stream << c.level;
 			stream << be::native_to_little(c.zone);
-			stream << c.map;
-			stream << be::native_to_little(c.position.x);
-			stream << be::native_to_little(c.position.y);
-			stream << be::native_to_little(c.position.z);
+			stream << be::native_to_little(c.map);
+			stream << be::native_to_little(be::native_float32_buf_t(c.position.x));
+			stream << be::native_to_little(be::native_float32_buf_t(c.position.y));
+			stream << be::native_to_little(be::native_float32_buf_t(c.position.z));
 			stream << be::native_to_little(c.guild_id);
 			stream << be::native_to_little(c.flags);
 			stream << static_cast<std::uint8_t>(c.first_login);

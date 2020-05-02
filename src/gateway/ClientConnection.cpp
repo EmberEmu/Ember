@@ -184,7 +184,7 @@ void ClientConnection::close_session() {
 
 	stopping_ = true;
 
-	service_.post([this] {
+	boost::asio::post(socket_.get_executor(), [this] {
 		sessions_.stop(this);
 	});
 }
@@ -196,7 +196,7 @@ void ClientConnection::close_session() {
  * it will be closed immediately, 'in line', rather than blocking indefinitely.
  */
 void ClientConnection::close_session_sync() {
-	service_.dispatch([&] {
+	boost::asio::dispatch(socket_.get_executor(), [&] {
 		stop();
 
 		std::unique_lock<std::mutex> ul(stop_lock_);
@@ -239,7 +239,7 @@ void ClientConnection::terminate() {
 void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
 	client->terminate();
 
-	client->service_.post([client]() {
+	boost::asio::post(client->socket_.get_executor(), [client]() {
 		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << "Handler for " << client->remote_address()
 			<< " destroyed" << LOG_ASYNC;
 	});
