@@ -63,7 +63,7 @@ public:
 			meta.rollup = res->getBoolean("rollup");
 
 			// sigh.
-			auto md5 = res->getString("md5");
+			auto md5 = res->getString("MD5");
 			Botan::BigInt md5_int(reinterpret_cast<const std::uint8_t*>(md5.c_str()), md5.length(),
 			                      Botan::BigInt::Base::Hexadecimal);
 			auto md5_enc = Botan::BigInt::encode_1363(md5_int, meta.file_meta.md5.size());

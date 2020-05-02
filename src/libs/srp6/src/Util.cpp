@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2016 Ember
+ * Copyright (c) 2014 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,9 +7,8 @@
  */
 
 #include <srp6/Util.h>
-#include <botan/sha160.h>
+#include <botan/hash.h>
 #include <botan/numthry.h>
-#include <botan/secmem.h>
 #include <algorithm>
 
 using Botan::secure_vector;
@@ -48,9 +47,9 @@ std::vector<std::uint8_t> interleaved_hash(std::vector<std::uint8_t> hash) {
 	auto bound = std::stable_partition(begin, hash.end(),
 	    [&begin](const auto& x) { return (&x - &*begin) % 2 == 0; });
 
-	Botan::SHA_160 hasher;
-	secure_vector<std::uint8_t> g(hasher.process(&*begin, std::distance(begin, bound)));
-	secure_vector<std::uint8_t> h(hasher.process(&*bound, std::distance(bound, hash.end())));
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	secure_vector<std::uint8_t> g(hasher->process(&*begin, std::distance(begin, bound)));
+	secure_vector<std::uint8_t> h(hasher->process(&*bound, std::distance(bound, hash.end())));
 	std::vector<std::uint8_t> final;
 	final.reserve(g.size());
 
@@ -64,45 +63,45 @@ std::vector<std::uint8_t> interleaved_hash(std::vector<std::uint8_t> hash) {
 
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
                         Compliance mode) {
-	Botan::SHA_160 hasher;
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 
 	if(mode == Compliance::RFC5054) {
-		hasher.update(Botan::BigInt::encode_1363(A, padding));
-		hasher.update(Botan::BigInt::encode_1363(B, padding));
-		return Botan::BigInt::decode(hasher.final());
+		hasher->update(Botan::BigInt::encode_1363(A, padding));
+		hasher->update(Botan::BigInt::encode_1363(B, padding));
+		return Botan::BigInt::decode(hasher->final());
 	} else {
-		hasher.update(encode_flip_1363(A, padding));
-		hasher.update(encode_flip_1363(B, padding));
-		return decode_flip(hasher.final());
+		hasher->update(encode_flip_1363(A, padding));
+		hasher->update(encode_flip_1363(B, padding));
+		return decode_flip(hasher->final());
 	}
 }
 
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	//k = H(N, PAD(g)) in SRP6a
-	Botan::SHA_160 hasher;
-	hasher.update(Botan::BigInt::encode(N));
-	hasher.update(Botan::BigInt::encode_1363(g, N.bytes()));
-	return Botan::BigInt::decode(hasher.final());
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	hasher->update(Botan::BigInt::encode(N));
+	hasher->update(Botan::BigInt::encode_1363(g, N.bytes()));
+	return Botan::BigInt::decode(hasher->final());
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
                         const Botan::BigInt& salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
-	Botan::SHA_160 hasher;
-	hasher.update(identifier);
-	hasher.update(":");
-	hasher.update(password);
-	const secure_vector<std::uint8_t> hash(hasher.final());
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	hasher->update(identifier);
+	hasher->update(":");
+	hasher->update(password);
+	const secure_vector<std::uint8_t> hash(hasher->final());
 
 	if(mode == Compliance::RFC5054) {
-		hasher.update(Botan::BigInt::encode(salt));
+		hasher->update(Botan::BigInt::encode(salt));
 	} else {
-		hasher.update(detail::encode_flip(salt));
+		hasher->update(detail::encode_flip(salt));
 	}
 
-	hasher.update(hash);
-	return (mode == Compliance::RFC5054)? Botan::BigInt::decode(hasher.final())
-	                                      : detail::decode_flip(hasher.final());
+	hasher->update(hash);
+	return (mode == Compliance::RFC5054)? Botan::BigInt::decode(hasher->final())
+	                                      : detail::decode_flip(hasher->final());
 }
 
 } //detail
@@ -112,32 +111,32 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
                                     const Botan::BigInt& A, const Botan::BigInt& B,
                                     const Botan::BigInt& salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
-	Botan::SHA_160 hasher;
-	secure_vector<std::uint8_t> n_hash(hasher.process(detail::encode_flip(N)));
-	secure_vector<std::uint8_t> g_hash(hasher.process(detail::encode_flip(g)));
-	secure_vector<std::uint8_t> i_hash(hasher.process(identifier));
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	secure_vector<std::uint8_t> n_hash(hasher->process(detail::encode_flip(N)));
+	secure_vector<std::uint8_t> g_hash(hasher->process(detail::encode_flip(g)));
+	secure_vector<std::uint8_t> i_hash(hasher->process(identifier));
 	
 	for(std::size_t i = 0, j = n_hash.size(); i < j; ++i) {
 		n_hash[i] ^= g_hash[i];
 	}
 
-	hasher.update(n_hash);
-	hasher.update(i_hash);
-	hasher.update(detail::encode_flip(salt));
-	hasher.update(detail::encode_flip(A));
-	hasher.update(detail::encode_flip(B));
-	hasher.update(key);
-	return detail::decode_flip(hasher.final());
+	hasher->update(n_hash);
+	hasher->update(i_hash);
+	hasher->update(detail::encode_flip(salt));
+	hasher->update(detail::encode_flip(A));
+	hasher->update(detail::encode_flip(B));
+	hasher->update(key);
+	return detail::decode_flip(hasher->final());
 }
 
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
                                     const SessionKey& key) {
 	//M = H(A, M, K)
-	Botan::SHA_160 hasher;
-	hasher.update(detail::encode_flip(A));
-	hasher.update(detail::encode_flip(proof));
-	hasher.update(key);
-	return detail::decode_flip(hasher.final());
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	hasher->update(detail::encode_flip(A));
+	hasher->update(detail::encode_flip(proof));
+	hasher->update(key);
+	return detail::decode_flip(hasher->final());
 }
 
 Botan::BigInt generate_salt(std::size_t salt_len) {

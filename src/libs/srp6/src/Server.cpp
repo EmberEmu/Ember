@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2014, 2015 Ember
+ * Copyright (c) 2014 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,6 @@
 
 #include <srp6/Server.h>
 #include <botan/numthry.h>
-#include <botan/sha160.h>
 #include <botan/auto_rng.h>
 #include <botan/rng.h>
 #include <utility>

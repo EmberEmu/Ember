@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@
 #include <srp6/Server.h>
 #include <srp6/Client.h>
 #include <shared/database/daos/UserDAO.h>
-#include <botan/sha160.h>
+#include <botan/hash.h>
 #include <algorithm>
 #include <sstream>
 #include <vector>
@@ -57,12 +57,12 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan
 }
 
 bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof& packet) {
-	Botan::SHA_160 hasher;
-	hasher.update(rcon_user_);
-	hasher.update(packet.salt.data(), packet.salt.size());
-	hasher.update(salt_);
-	hasher.update(sess_key_);
-	auto res = hasher.final();
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	hasher->update(rcon_user_);
+	hasher->update(packet.salt.data(), packet.salt.size());
+	hasher->update(salt_);
+	hasher->update(sess_key_);
+	auto res = hasher->final();
 	return std::equal(res.begin(), res.end(), std::begin(packet.proof), std::end(packet.proof));
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,8 +10,8 @@
 #include <shared/util/xoroshiro128plus.h>
 #include <shared/util/base32.h>
 #include <boost/endian/conversion.hpp>
+#include <botan/hash.h>
 #include <botan/hmac.h>
-#include <botan/sha160.h>
 #include <gsl/gsl_util>
 #include <memory>
 #include <utility>
@@ -141,14 +141,14 @@ bool PINAuthenticator::validate_pin(const std::array<std::uint8_t, HASH_LENGTH>&
 	pin_to_ascii();
 
 	// x = H(client_salt | H(server_salt | ascii(pin_bytes)))
-	Botan::SHA_160 hasher;
-	hasher.update(server_salt_.data(), server_salt_.size());
-	hasher.update(pin_bytes_.data(), pin_bytes_.size());
-	auto hash = hasher.final();
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	hasher->update(server_salt_.data(), server_salt_.size());
+	hasher->update(pin_bytes_.data(), pin_bytes_.size());
+	auto hash = hasher->final();
 
-	hasher.update(client_salt_.data(), client_salt_.size());
-	hasher.update(hash);
-	hash = hasher.final();
+	hasher->update(client_salt_.data(), client_salt_.size());
+	hasher->update(hash);
+	hash = hasher->final();
 
 	// ensure we computed the same result as the client
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
@@ -168,7 +168,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	const auto now = static_cast<std::uint64_t>(time);
 	auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
-	auto sha160 = std::make_unique<Botan::SHA_160>();
+	auto sha160 = Botan::HashFunction::create_or_throw("SHA-1");
 	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
 	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
 

@@ -21,8 +21,8 @@
 #include <shared/util/EnumHelper.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
+#include <botan/hash.h>
 #include <botan/secmem.h>
-#include <botan/sha160.h>
 #include <gsl/gsl_util>
 #include <cstddef>
 #include <cstdint>
@@ -159,13 +159,14 @@ void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol:
 	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
 
-	Botan::SHA_160 hasher;
-	hasher.update(packet->username);
-	hasher.update_be(boost::endian::native_to_big(unknown));
-	hasher.update_be(boost::endian::big_int32_t(packet->seed));
-	hasher.update_be(boost::endian::native_to_big(ctx->auth_seed));
-	hasher.update(k_bytes);
-	Botan::secure_vector<std::uint8_t> calc_hash = hasher.final();
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	BOOST_ASSERT_MSG(hasher, "Botan appears to be missing functionality");
+	hasher->update(packet->username);
+	hasher->update_be(boost::endian::native_to_big(unknown));
+	hasher->update_be(boost::endian::big_int32_t(packet->seed));
+	hasher->update_be(boost::endian::native_to_big(ctx->auth_seed));
+	hasher->update(k_bytes);
+	Botan::secure_vector<std::uint8_t> calc_hash = hasher->final();
 
 	if(calc_hash != packet->digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;

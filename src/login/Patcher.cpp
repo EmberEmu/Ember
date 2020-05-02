@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -164,7 +164,7 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 		throw std::runtime_error("An error occured while reading " + path + "Survey.mpq");
 	}
 
-	auto md5 = util::generate_md5(buffer.data(), buffer.size());
+	auto md5 = util::generate_md5(*buffer.data(), buffer.size());
 	std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(survey_.md5.data()));
 	survey_data_ = std::move(buffer);
 }
