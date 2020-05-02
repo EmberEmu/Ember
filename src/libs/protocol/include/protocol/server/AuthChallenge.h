@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <protocol/Packet.h>
+#include <spark/buffers/BinaryStream.h>
 #include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>

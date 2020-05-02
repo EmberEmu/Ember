@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/ChainedBuffer.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
+#include <protocol/Packet.h>
 #include <logger/Logging.h>
 #include <shared/util/UTF8String.h>
 #include <botan/secmem.h>

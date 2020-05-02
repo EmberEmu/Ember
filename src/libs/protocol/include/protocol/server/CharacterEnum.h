@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <protocol/Packet.h>
+#include <spark/buffers/BinaryStream.h>
 #include <shared/database/objects/Character.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/endian/buffers.hpp>

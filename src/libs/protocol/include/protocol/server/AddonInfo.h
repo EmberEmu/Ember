@@ -8,9 +8,13 @@
 
 #pragma once
 
+
+#include <protocol/Packet.h>
 #include <protocol/ResultCodes.h>
+#include <spark/buffers/BinaryStream.h>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
+#include <array>
 #include <vector>
 #include <cstdint>
 #include <cstddef>

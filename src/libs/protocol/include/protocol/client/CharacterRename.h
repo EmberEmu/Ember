@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <protocol/ResultCodes.h>
+#include <protocol/Packet.h>
+#include <spark/buffers/BinaryStream.h>
 #include <shared/util/UTF8String.h>
 #include <boost/endian/arithmetic.hpp>
 #include <cstdint>
