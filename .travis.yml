@@ -28,7 +28,7 @@ before_install:
     - sudo apt-get update
     - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
     - docker pull docker/dockerfile:experimental
-    - docker pull ubuntu:eoan
+    - docker pull ubuntu:focal
 
 script:
     - docker build . --progress=plain
