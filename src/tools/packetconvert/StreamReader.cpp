@@ -20,7 +20,7 @@ StreamReader::StreamReader(std::ifstream& in, bool stream, bool skip, std::chron
 	stream_size_ = in.tellg();
 	in.seekg(0);
 
-	if(!in || in.flags() & in.binary) {
+	if(!in) {
 		throw std::runtime_error("Packet dump stream error");
 	}
 }
