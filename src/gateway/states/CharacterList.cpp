@@ -29,17 +29,17 @@ namespace ember::character_list {
 
 namespace {
 
-void handle_timeout(ClientContext* ctx);
+void handle_timeout(ClientContext& ctx);
 
-void send_character_list_fail(ClientContext* ctx) {
+void send_character_list_fail(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_CREATE response;
 	response->result = protocol::Result::AUTH_UNAVAILABLE;
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void send_character_list(ClientContext* ctx, std::vector<Character> characters) {
+void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// emulate a quirk of the retail server
@@ -53,10 +53,10 @@ void send_character_list(ClientContext* ctx, std::vector<Character> characters) 
 
 	protocol::SMSG_CHAR_ENUM response;
 	response->characters = std::move(characters);
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void send_character_rename(ClientContext* ctx, protocol::Result result,
+void send_character_rename(ClientContext& ctx, protocol::Result result,
                            std::uint64_t id = 0, const utf8_string& name = "") {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
@@ -64,21 +64,21 @@ void send_character_rename(ClientContext* ctx, protocol::Result result,
 	response->result = result;
 	response->id = id;
 	response->name = name;
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void character_rename(ClientContext* ctx) {
+void character_rename(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_CHAR_RENAME packet;
 
-	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
 		return;
 	}
 
-	const auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->rename_character(ctx->account_id, packet->id, packet->name,
+	Locator::character()->rename_character(ctx.account_id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
 		auto event = std::make_unique<CharRenameResponse>(status, result, id, name);
@@ -86,7 +86,7 @@ void character_rename(ClientContext* ctx) {
 	});
 }
 
-void character_rename_completion(ClientContext* ctx, const CharRenameResponse* event) {
+void character_rename_completion(ClientContext& ctx, const CharRenameResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::Result result = protocol::Result::CHAR_NAME_FAILURE;
@@ -102,19 +102,19 @@ void character_rename_completion(ClientContext* ctx, const CharRenameResponse* e
 	}
 }
 
-void character_enumerate(ClientContext* ctx) {
+void character_enumerate(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->retrieve_characters(ctx->account_id,
+	Locator::character()->retrieve_characters(ctx.account_id,
 	                                          [uuid](auto status, auto characters) {
 		auto event = std::make_unique<CharEnumResponse>(status, std::move(characters));
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
-void character_enumerate_completion(ClientContext* ctx, const CharEnumResponse* event) {
+void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(event->status == em::character::Status::OK) {
@@ -124,40 +124,40 @@ void character_enumerate_completion(ClientContext* ctx, const CharEnumResponse* 
 	}
 }
 
-void send_character_delete(ClientContext* ctx, protocol::Result result) {
+void send_character_delete(ClientContext& ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_DELETE response;
 	response->result = result;
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void send_character_create(ClientContext* ctx, protocol::Result result) {
+void send_character_create(ClientContext& ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_CREATE response;
 	response->result = result;
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void character_create(ClientContext* ctx) {
+void character_create(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_CHAR_CREATE packet;
 
-	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
 		return;
 	}
 
-	const auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->create_character(ctx->account_id, packet->character,
+	Locator::character()->create_character(ctx.account_id, packet->character,
 	                                       [uuid](auto status, auto result) {
 		Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
 	});
 }
 
-void character_create_completion(ClientContext* ctx, const CharCreateResponse* event) {
+void character_create_completion(ClientContext& ctx, const CharCreateResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(event->status == em::character::Status::OK) {
@@ -167,24 +167,24 @@ void character_create_completion(ClientContext* ctx, const CharCreateResponse* e
 	}
 }
 
-void character_delete(ClientContext* ctx) {
+void character_delete(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_CHAR_DELETE packet;
 
-	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
 		return;
 	}
 
-	const auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->delete_character(ctx->account_id, packet->id,
+	Locator::character()->delete_character(ctx.account_id, packet->id,
 	                                       [uuid](auto status, auto result) {
 		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
 	});
 }
 
-void character_delete_completion(ClientContext* ctx, const CharDeleteResponse* event) {
+void character_delete_completion(ClientContext& ctx, const CharDeleteResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(event->status == em::character::Status::OK) {
@@ -194,31 +194,31 @@ void character_delete_completion(ClientContext* ctx, const CharDeleteResponse* e
 	}
 }
 
-void player_login(ClientContext* ctx) {
+void player_login(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	ctx->handler->state_update(ClientState::WORLD_ENTER);
+	ctx.handler->state_update(ClientState::WORLD_ENTER);
 
 	protocol::CMSG_PLAYER_LOGIN packet;
 
-	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
 		return;
 	}
 }
 
-void handle_timeout(ClientContext* ctx) {
+void handle_timeout(ClientContext& ctx) {
 	LOG_DEBUG_GLOB << "Character list timed out for "
-		<< ctx->connection->remote_address() << LOG_ASYNC;
-	ctx->handler->close();
+		<< ctx.connection->remote_address() << LOG_ASYNC;
+	ctx.handler->close();
 }
 
 } // unnamed
 
-void enter(ClientContext* ctx) {
-	ctx->handler->start_timer(CHAR_LIST_TIMEOUT);
+void enter(ClientContext& ctx) {
+	ctx.handler->start_timer(CHAR_LIST_TIMEOUT);
 }
 
-void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
+void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
 		case protocol::ClientOpcode::CMSG_CHAR_ENUM:
 			character_enumerate(ctx);
@@ -236,11 +236,11 @@ void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
 			player_login(ctx);
 			break;
 		default:
-			ctx->handler->packet_skip(*ctx->buffer, opcode);
+			ctx.handler->packet_skip(*ctx.buffer, opcode);
 	}
 }
 
-void handle_event(ClientContext* ctx, const Event* event) {
+void handle_event(ClientContext& ctx, const Event* event) {
 	switch(event->type) {
 		case EventType::TIMER_EXPIRED:
 			handle_timeout(ctx);
@@ -262,10 +262,10 @@ void handle_event(ClientContext* ctx, const Event* event) {
 	}
 }
 
-void exit(ClientContext* ctx) {
-	ctx->handler->stop_timer();
+void exit(ClientContext& ctx) {
+	ctx.handler->stop_timer();
 
-	if(ctx->state == ClientState::SESSION_CLOSED) {
+	if(ctx.state == ClientState::SESSION_CLOSED) {
 		//--test;
 		Locator::queue()->free_slot();
 	}

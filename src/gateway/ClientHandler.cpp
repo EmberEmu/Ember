@@ -20,7 +20,7 @@ namespace ember {
 
 void ClientHandler::start() {
 	Locator::dispatcher()->register_handler(this);
-	enter_states[context_.state](&context_);
+	enter_states[context_.state](context_);
 }
 
 void ClientHandler::stop() {
@@ -50,15 +50,15 @@ void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType siz
 			break;
 	}
 
-	update_packet[context_.state](&context_, opcode);
+	update_packet[context_.state](context_, opcode);
 }
 
 void ClientHandler::handle_event(const Event* event) {
-	update_event[context_.state](&context_, event);
+	update_event[context_.state](context_, event);
 }
 
 void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
-	update_event[context_.state](&context_, event.get());
+	update_event[context_.state](context_, event.get());
 }
 
 void ClientHandler::state_update(ClientState new_state) {
@@ -68,8 +68,8 @@ void ClientHandler::state_update(ClientState new_state) {
 
 	context_.prev_state = context_.state;
 	context_.state = new_state;
-	exit_states[context_.prev_state](&context_);
-	enter_states[context_.state](&context_);
+	exit_states[context_.prev_state](context_);
+	enter_states[context_.state](context_);
 }
 
 void ClientHandler::packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode) {

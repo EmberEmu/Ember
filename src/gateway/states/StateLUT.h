@@ -16,9 +16,9 @@ namespace ember {
 
 struct ClientContext;
 
-typedef void(*state_func)(ClientContext*);
-typedef void(*event_handler)(ClientContext*, const Event*);
-typedef void(*packet_handler)(ClientContext*, protocol::ClientOpcode);
+typedef void(*state_func)(ClientContext&);
+typedef void(*event_handler)(ClientContext&, const Event*);
+typedef void(*packet_handler)(ClientContext&, protocol::ClientOpcode);
 
 extern const state_func enter_states[];
 extern const state_func exit_states[];

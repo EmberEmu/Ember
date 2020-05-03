@@ -31,27 +31,27 @@ namespace em = ember::messaging;
 
 namespace ember::authentication {
 
-void send_auth_challenge(ClientContext* ctx);
-void send_auth_result(ClientContext* ctx, protocol::Result result);
-void handle_authentication(ClientContext* ctx);
-void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet);
-void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
-void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
-void handle_timeout(ClientContext* ctx);
+void send_auth_challenge(ClientContext& ctx);
+void send_auth_result(ClientContext& ctx, protocol::Result result);
+void handle_authentication(ClientContext& ctx);
+void prove_session(ClientContext& ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet);
+void fetch_session_key(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
+void fetch_account_id(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
+void handle_timeout(ClientContext& ctx);
 
-void handle_authentication(ClientContext* ctx) {
+void handle_authentication(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// prevent repeated auth attempts
-	if(ctx->auth_status != AuthStatus::NOT_AUTHED) {
+	if(ctx.auth_status != AuthStatus::NOT_AUTHED) {
 		return;
 	}
 	
-	ctx->auth_status = AuthStatus::IN_PROGRESS;
+	ctx.auth_status = AuthStatus::IN_PROGRESS;
 
 	protocol::CMSG_AUTH_SESSION packet;
 
-	if(!ctx->handler->packet_deserialise(packet, *ctx->buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
 		return;
 	}
 
@@ -61,10 +61,10 @@ void handle_authentication(ClientContext* ctx) {
 	fetch_account_id(ctx, packet);
 }
 
-void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void fetch_account_id(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx.handler->uuid();
 
 	Locator::account()->locate_account_id(packet->username, [uuid, packet](auto status, auto id) {
 		auto event = std::make_unique<AccountIDResponse>(packet, std::move(status), id);
@@ -72,7 +72,7 @@ void fetch_account_id(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pac
 	});
 }
 
-void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
+void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(event->status != em::account::Status::OK) {
@@ -80,12 +80,12 @@ void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 			<< "Account server returned "
 			<< util::fb_status(event->status, em::account::EnumNamesStatus())
 			<< " for " << event->packet->username << " lookup" << LOG_ASYNC;
-		ctx->handler->close();
+		ctx.handler->close();
 		return;
 	}
 
 	if(event->account_id) {
-		ctx->account_id = event->account_id;
+		ctx.account_id = event->account_id;
 		fetch_session_key(ctx, event->packet);
 	} else {
 		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
@@ -93,40 +93,40 @@ void handle_account_id(ClientContext* ctx, const AccountIDResponse* event) {
 	}
 }
 
-void fetch_session_key(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void fetch_session_key(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const auto uuid = ctx->handler->uuid();
+	const auto uuid = ctx.handler->uuid();
 
-	Locator::account()->locate_session(ctx->account_id, [uuid, packet](auto status, auto key) {
+	Locator::account()->locate_session(ctx.account_id, [uuid, packet](auto status, auto key) {
 		auto event = std::make_unique<SessionKeyResponse>(packet, status, key);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
-void handle_session_key(ClientContext* ctx, const SessionKeyResponse* event) {
+void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 	LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 		<< "Account server returned "
 		<< util::fb_status(event->status, em::account::EnumNamesStatus())
 		<< " for " << event->packet->username << LOG_ASYNC;
 
-	ctx->auth_status = AuthStatus::FAILED; // default unless overridden by success
+	ctx.auth_status = AuthStatus::FAILED; // default unless overridden by success
 
 	if(event->status == em::account::Status::OK) {
 		prove_session(ctx, event->key, event->packet);
 	} else {
-		ctx->handler->close();
+		ctx.handler->close();
 	}
 }
 
-void send_auth_challenge(ClientContext* ctx) {
+void send_auth_challenge(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 	protocol::SMSG_AUTH_CHALLENGE response;
-	response->seed = ctx->auth_seed = gsl::narrow_cast<std::uint32_t>(ember::rng::xorshift::next());
-	ctx->connection->send(response);
+	response->seed = ctx.auth_seed = gsl::narrow_cast<std::uint32_t>(ember::rng::xorshift::next());
+	ctx.connection->send(response);
 }
 
-void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void send_addon_data(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_ADDON_INFO response;
@@ -150,10 +150,10 @@ void send_addon_data(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& pack
 		response->addon_data.emplace_back(std::move(data));
 	}
 
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet) {
+void prove_session(ClientContext& ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
@@ -163,24 +163,24 @@ void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol:
 	hasher->update(packet->username);
 	hasher->update_be(unknown);
 	hasher->update(packet->seed.data(), sizeof(packet->seed));
-	hasher->update_be(boost::endian::native_to_big(ctx->auth_seed));
+	hasher->update_be(boost::endian::native_to_big(ctx.auth_seed));
 	hasher->update(k_bytes);
 	const auto& hash = hasher->final();
 
 	if(hash != packet->digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;
-		ctx->handler->close(); // key mismatch, client can't decrypt response
+		ctx.handler->close(); // key mismatch, client can't decrypt response
 		return;
 	}
 
-	ctx->connection->set_authenticated(key);
-	ctx->account_name = packet->username;
-	ctx->auth_status = AuthStatus::SUCCESS;
+	ctx.connection->set_authenticated(key);
+	ctx.account_name = packet->username;
+	ctx.auth_status = AuthStatus::SUCCESS;
 
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
 	if(active_players >= Locator::config()->max_slots) {
-		const auto uuid = ctx->handler->uuid();
+		const auto uuid = ctx.handler->uuid();
 
 		Locator::queue()->enqueue(uuid,
 			[uuid, packet](std::size_t position) {
@@ -192,50 +192,50 @@ void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol:
 			}
 		);
 
-		ctx->handler->state_update(ClientState::IN_QUEUE);
+		ctx.handler->state_update(ClientState::IN_QUEUE);
 		return;
 	}
 
 	auth_success(ctx, packet);
 }
 
-void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void auth_success(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 	send_auth_result(ctx, protocol::Result::AUTH_OK);
 	send_addon_data(ctx, packet);
-	ctx->handler->state_update(ClientState::CHARACTER_LIST);
+	ctx.handler->state_update(ClientState::CHARACTER_LIST);
 }
 
-void send_auth_result(ClientContext* ctx, protocol::Result result) {
+void send_auth_result(ClientContext& ctx, protocol::Result result) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE response;
 	response->result = result;
-	ctx->connection->send(response);
+	ctx.connection->send(response);
 }
 
-void handle_timeout(ClientContext* ctx) {
+void handle_timeout(ClientContext& ctx) {
 	LOG_DEBUG_GLOB << "Authentication timed out for "
-		<< ctx->connection->remote_address() << LOG_ASYNC;
-	ctx->handler->close();
+		<< ctx.connection->remote_address() << LOG_ASYNC;
+	ctx.handler->close();
 }
 
-void enter(ClientContext* ctx) {
-	ctx->handler->start_timer(AUTH_TIMEOUT);
+void enter(ClientContext& ctx) {
+	ctx.handler->start_timer(AUTH_TIMEOUT);
 	send_auth_challenge(ctx);
 }
 
-void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
+void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
 		case protocol::ClientOpcode::CMSG_AUTH_SESSION:
 			handle_authentication(ctx);
 			break;
 		default:
-			ctx->handler->packet_skip(*ctx->buffer, opcode);
+			ctx.handler->packet_skip(*ctx.buffer, opcode);
 	}
 }
 
-void handle_event(ClientContext* ctx, const Event* event) {
+void handle_event(ClientContext& ctx, const Event* event) {
 	switch(event->type) {
 		case EventType::TIMER_EXPIRED:
 			handle_timeout(ctx);
@@ -251,8 +251,8 @@ void handle_event(ClientContext* ctx, const Event* event) {
 	}
 }
 
-void exit(ClientContext* ctx) {
-	ctx->handler->stop_timer();
+void exit(ClientContext& ctx) {
+	ctx.handler->stop_timer();
 }
 
 } // authentication, ember

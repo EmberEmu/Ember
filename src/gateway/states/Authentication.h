@@ -18,11 +18,11 @@ namespace ember::authentication {
 using namespace std::chrono_literals;
 constexpr std::chrono::seconds AUTH_TIMEOUT = 30s;
 
-void auth_success(ClientContext* ctx, const protocol::CMSG_AUTH_SESSION& packet);
+void auth_success(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
 
-void enter(ClientContext* ctx);
-void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode);
-void handle_event(ClientContext* ctx, const Event* event);
-void exit(ClientContext* ctx);
+void enter(ClientContext& ctx);
+void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode);
+void handle_event(ClientContext& ctx, const Event* event);
+void exit(ClientContext& ctx);
 
 } // authentication, ember

@@ -11,19 +11,19 @@
 
 namespace ember::session_close {
 
-void enter(ClientContext* ctx) {
+void enter(ClientContext& ctx) {
 	// don't care, for now
 }
 
-void handle_packet(ClientContext* ctx, protocol::ClientOpcode opcode) {
-	ctx->handler->packet_skip(*ctx->buffer, opcode);
+void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
+	ctx.handler->packet_skip(*ctx.buffer, opcode);
 }
 
-void handle_event(ClientContext* ctx, const Event* event) {
+void handle_event(ClientContext& ctx, const Event* event) {
     // don't care, for now
 }
 
-void exit(ClientContext* ctx) {
+void exit(ClientContext& ctx) {
 	// don't care, for now
 }
 
