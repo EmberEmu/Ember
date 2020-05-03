@@ -17,4 +17,5 @@ set(FB_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/packetlog/PacketLog.fbs
 )
 
+set(FLATC_ARGS "--gen-mutable" "--scoped-enums")
 build_flatbuffers("${FB_HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")

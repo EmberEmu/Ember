@@ -17,7 +17,6 @@ namespace ember::util {
 
 Botan::secure_vector<std::uint8_t> generate_md5(const std::byte& data, const std::size_t len) {
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	BOOST_ASSERT_MSG(hasher, "Botan appears to be missing functionality");
 	return hasher->process(reinterpret_cast<const std::uint8_t*>(&data), len);
 }
 
@@ -32,7 +31,6 @@ Botan::secure_vector<std::uint8_t> generate_md5(const std::string& file) {
 	stream.seekg(0, std::ios::beg);
 
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	BOOST_ASSERT_MSG(hasher, "Botan appears to be missing functionality");
 	std::size_t block_size = hasher->hash_block_size();
 	std::vector<char> buffer(block_size);
 

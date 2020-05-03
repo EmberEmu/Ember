@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2015, 2016 Ember
+ * Copyright (c) 2014 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -92,9 +92,9 @@ TEST(srp6a, RFC5054_TestVectors) {
 	                           "41BB59B6D5979B5C00A172B4A2A5903A0BDCAF8A709585EB2AFAFA8F"
 	                           "3499B200210DCC1F10EB33943CD67FC88A2F39A4BE5BEC4EC0A3212D"
 	                           "C346D7E474B29EDE8A469FFECA686E5A");
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(client.session_key(expected_B, salt, srp::Compliance::RFC5054)))
+	EXPECT_EQ(expected_key, Botan::BigInt::decode(client.session_key(expected_B, salt, srp::Compliance::RFC5054).t))
 		<< "Client key did not match expected value!";
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(server.session_key(expected_A, srp::Compliance::RFC5054)))
+	EXPECT_EQ(expected_key, Botan::BigInt::decode(server.session_key(expected_A, srp::Compliance::RFC5054).t))
 		<< "Server key did not match expected value!";
 }
 

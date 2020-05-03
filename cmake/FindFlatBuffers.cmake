@@ -24,6 +24,8 @@
 #   for the given flatbuffer schema files.
 #   Returns the header files in ${Name}_OUTPUTS
 
+set(FLATBUFFERS_CMAKE_DIR ${CMAKE_CURRENT_LIST_DIR})
+
 find_program(FLATBUFFERS_FLATC_EXECUTABLE NAMES flatc)
 find_path(FLATBUFFERS_INCLUDE_DIR NAMES flatbuffers/flatbuffers.h)
 
@@ -43,6 +45,7 @@ if(FLATBUFFERS_FOUND)
       add_custom_command(OUTPUT ${FLATC_OUTPUT}
         COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE}
         ARGS -c -o "${CMAKE_CURRENT_BINARY_DIR}/" ${FILE}
+        DEPENDS ${FILE}
         COMMENT "Building C++ header for ${FILE}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endforeach()
@@ -54,3 +57,5 @@ if(FLATBUFFERS_FOUND)
 else()
   set(FLATBUFFERS_INCLUDE_DIR)
 endif()
+
+include("${FLATBUFFERS_CMAKE_DIR}/BuildFlatBuffers.cmake")

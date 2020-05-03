@@ -8,20 +8,17 @@
 
 #include "ExecutablesChecksum.h"
 #include <botan/hash.h>
-#include <botan/hmac.h>
+#include <botan/mac.h>
 #include <memory>
 
 namespace ember::client_integrity {
 
 Botan::secure_vector<std::uint8_t> checksum(const Botan::secure_vector<std::uint8_t>& seed,
                                             const std::vector<std::byte>* buffer) {
-	auto sha160 = Botan::HashFunction::create_or_throw("SHA-1");
-	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
-	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
-
-	hmac.set_key(seed);
-	hmac.update(reinterpret_cast<const std::uint8_t*>(buffer->data()), buffer->size());
-	return hmac.final();
+	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
+	hmac->set_key(seed);
+	hmac->update(reinterpret_cast<const std::uint8_t*>(buffer->data()), buffer->size());
+	return hmac->final();
 }
 
 Botan::secure_vector<std::uint8_t> finalise(const Botan::secure_vector<std::uint8_t>& checksum,

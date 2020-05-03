@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -113,7 +113,7 @@ void HeartbeatService::trigger_pings(const boost::system::error_code& ec) {
 
 void HeartbeatService::set_timer() {
 	timer_.expires_from_now(PING_FREQUENCY);
-	timer_.async_wait([&](auto& ec) {
+	timer_.async_wait([&](auto ec) {
 		trigger_pings(ec);
 	});
 }

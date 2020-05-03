@@ -11,7 +11,7 @@
 #include <shared/util/base32.h>
 #include <boost/endian/conversion.hpp>
 #include <botan/hash.h>
-#include <botan/hmac.h>
+#include <botan/mac.h>
 #include <gsl/gsl_util>
 #include <memory>
 #include <utility>
@@ -168,19 +168,16 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	const auto now = static_cast<std::uint64_t>(time);
 	auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
-	auto sha160 = Botan::HashFunction::create_or_throw("SHA-1");
-	Botan::HMAC hmac(sha160.get()); // Botan takes ownership
-	sha160.release(); // ctor didn't throw, relinquish the memory to Botan
-
-	hmac.set_key(decoded_key.data(), key_size);
+	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
+	hmac->set_key(decoded_key.data(), key_size);
 
 #if defined(BOOST_LITTLE_ENDIAN) 
-	hmac.update_be(step);
+	hmac->update_be(step);
 #else
-	hmac.update(step);
+	hmac->update(step);
 #endif
 
-	auto hmac_result = hmac.final();
+	const auto& hmac_result = hmac->final();
 
 	unsigned int offset = hmac_result[19] & 0xF;
 	std::uint32_t pin = (hmac_result[offset] & 0x7f) << 24 | (hmac_result[offset + 1] & 0xff) << 16

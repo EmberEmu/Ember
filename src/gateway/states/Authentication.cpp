@@ -160,15 +160,14 @@ void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol:
 	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	BOOST_ASSERT_MSG(hasher, "Botan appears to be missing functionality");
 	hasher->update(packet->username);
-	hasher->update_be(boost::endian::native_to_big(unknown));
-	hasher->update_be(boost::endian::big_int32_t(packet->seed));
+	hasher->update_be(unknown);
+	hasher->update_be(packet->seed);
 	hasher->update_be(boost::endian::native_to_big(ctx->auth_seed));
 	hasher->update(k_bytes);
-	Botan::secure_vector<std::uint8_t> calc_hash = hasher->final();
+	const auto& hash = hasher->final();
 
-	if(calc_hash != packet->digest) {
+	if(hash != packet->digest) {
 		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;
 		ctx->handler->close(); // key mismatch, client can't decrypt response
 		return;
