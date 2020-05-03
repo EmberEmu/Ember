@@ -34,6 +34,7 @@ set(LIBRARY_HDR
     WorldClients.h
     CharacterService.h
     CompressMessage.h
+    Routing.h
     states/ClientStates.h
     states/Authentication.h
     states/CharacterList.h

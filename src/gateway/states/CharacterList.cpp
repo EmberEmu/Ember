@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -197,7 +197,7 @@ void character_delete_completion(ClientContext* ctx, const CharDeleteResponse* e
 void player_login(ClientContext* ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	ctx->handler->state_update(ClientState::IN_WORLD);
+	ctx->handler->state_update(ClientState::WORLD_ENTER);
 
 	protocol::CMSG_PLAYER_LOGIN packet;
 
