@@ -10,6 +10,7 @@
 #include "../Routing.h"
 #include "../FilterTypes.h"
 #include <logger/Logging.h>
+#include <shared/util/EnumHelper.h>
 
 namespace ember::world {
 
@@ -24,8 +25,8 @@ void handle_packet(ClientContext& context, protocol::ClientOpcode opcode) {
 		auto& [op, route] = *it;
 		route_packet(context, opcode, route);
 	} else {
-		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Received unroutable packet, "
-			<< protocol::to_string(opcode)
+		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Unroutable message, "
+			<< protocol::to_string(opcode) << " (" << util::enum_value(opcode) << ")"
 			<< " from " << context.account_name << LOG_ASYNC;
 	}
 }
