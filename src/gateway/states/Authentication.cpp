@@ -162,7 +162,7 @@ void prove_session(ClientContext* ctx, const Botan::BigInt& key, const protocol:
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	hasher->update(packet->username);
 	hasher->update_be(unknown);
-	hasher->update_be(packet->seed);
+	hasher->update(packet->seed.data(), sizeof(packet->seed));
 	hasher->update_be(boost::endian::native_to_big(ctx->auth_seed));
 	hasher->update(k_bytes);
 	const auto& hash = hasher->final();
