@@ -48,9 +48,9 @@ Any compiler version equal or greater than the supported version should be capab
 
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
-| MSVC  | 19.21 (VS2019) | 19.7 (VS2017) |
-| Clang |     8.0     |     5.0     |
-| GCC   |     8.1     |     8.1     |
+| MSVC  | 19.26 (VS2019) | 19.26 (VS2019) |
+| Clang |     10     |     10     |
+| GCC   |     10     |     10     |
 
 ### Language support
 
