@@ -345,9 +345,9 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) {
 
 bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& hash,
                                              const Botan::BigInt& salt, bool reconnect) {
-	auto decoded = Botan::BigInt::encode(salt);
-	std::reverse(decoded.begin(), decoded.end());
-	return validate_client_integrity(hash, decoded, reconnect);
+	auto encoded = Botan::BigInt::encode(salt);
+	std::reverse(encoded.begin(), encoded.end());
+	return validate_client_integrity(hash, encoded, reconnect);
 }
 
 bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& client_hash,
@@ -508,9 +508,8 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
-	const std::span<std::uint8_t> salt_span(proof.salt);
 
-	if(!validate_client_integrity(proof.client_checksum, salt_span, true)) {
+	if(!validate_client_integrity(proof.client_checksum, proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
 	}
