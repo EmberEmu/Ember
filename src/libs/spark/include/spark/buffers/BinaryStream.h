@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,6 +17,9 @@
 #include <cstring>
 
 namespace ember::spark {
+
+template<typename T>
+concept trivially_copyable = std::is_trivially_copyable<T>::value;
 
 class BinaryStream final {
 public:
@@ -54,11 +57,9 @@ public:
 
 	/**  Serialisation **/
 
-	template<typename T>
-	BinaryStream& operator <<(const T& data) {
-		static_assert(std::is_trivially_copyable<T>::value, "Cannot safely copy this type");
-		buffer_.write(reinterpret_cast<const char*>(&data), sizeof(T));
-		total_write_ += sizeof(T);
+	BinaryStream& operator <<(const trivially_copyable auto& data) {
+		buffer_.write(reinterpret_cast<const char*>(&data), sizeof(data));
+		total_write_ += sizeof(data);
 		return *this;
 	}
 
@@ -105,15 +106,14 @@ public:
 				dest.push_back(byte);
 			}
 		} while(byte && buffer_.size() > 0);
-		
+
 		return *this;
 	}
 
-	template<typename T>
-	BinaryStream& operator >>(T& data) {
-		static_assert(std::is_trivially_copyable<T>::value, "Cannot safely copy this type");
-		check_read_bounds(sizeof(T));
-		buffer_.read(reinterpret_cast<char*>(&data), sizeof(T));
+
+	BinaryStream& operator >>(trivially_copyable auto& data) {
+		check_read_bounds(sizeof(data));
+		buffer_.read(reinterpret_cast<char*>(&data), sizeof(data));
 		return *this;
 	}
 

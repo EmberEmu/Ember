@@ -36,7 +36,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
 	});
 }
 
-/* 
+/*
  * This function is intended only for broadcasts of a single event to a
  * large number of clients. The goal here is to minimise the number of
  * posts required to dispatch the events to all specified clients, given that
@@ -103,7 +103,7 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 
 void EventDispatcher::remove_handler(ClientHandler* handler) {
 	auto service = pool_.get_service(handler->uuid().service());
-	
+
 	service->dispatch([=] {
 		handlers_.erase(handler->uuid());
 	});

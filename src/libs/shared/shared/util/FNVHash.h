@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,11 +9,15 @@
 #pragma once
 
 #include <gsl/span>
+#include <concepts>
 #include <string>
 #include <type_traits>
 #include <cstddef>
 
 namespace ember {
+
+template<typename T>
+concept is_enum = std::is_enum<T>::value;
 
 class FNVHash {
 	static constexpr std::size_t INITIAL = 0x811C9DC5;
@@ -29,14 +33,13 @@ public:
 		return hash_;
 	}
 
-	template<typename T>
-	typename std::enable_if<std::is_integral<T>::value, std::size_t>::type update(T data) {
-		const auto span = gsl::make_span(&data, sizeof(T));
+	std::size_t update(std::integral auto data) {
+		const auto span = gsl::make_span(&data, sizeof(data));
 		return update(span.begin(), span.end());
 	}
 
-	template<typename T>
-	typename std::enable_if<std::is_enum<T>::value, std::size_t>::type update(T data) {
+	template<is_enum T>
+	std::size_t update(T data) {
 		return update(static_cast<typename std::underlying_type<T>::type>(data));
 	}
 

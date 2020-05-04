@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,12 +14,14 @@ namespace ember {
 
 template<typename Enum>
 struct EnableBitMask {
-	static constexpr bool enable = false;
+	static constexpr bool value = false;
 };
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type
-operator|(Enum lhs, Enum rhs) {
+template<typename T>
+concept bitmask_enum = EnableBitMask<T>::value && std::is_enum<T>::value;
+
+template<bitmask_enum Enum>
+Enum operator|(Enum lhs, Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 	return static_cast<Enum> (
 		static_cast<underlying>(lhs) |
@@ -27,9 +29,8 @@ operator|(Enum lhs, Enum rhs) {
 	);
 }
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type
-operator&(Enum lhs, Enum rhs) {
+template<bitmask_enum Enum>
+Enum operator&(Enum lhs, Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 	return static_cast<Enum> (
 		static_cast<underlying>(lhs) &
@@ -37,9 +38,8 @@ operator&(Enum lhs, Enum rhs) {
 	);
 }
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type
-operator^(Enum lhs, Enum rhs) {
+template<bitmask_enum Enum>
+Enum operator^(Enum lhs, Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 	return static_cast<Enum> (
 		static_cast<underlying>(lhs) ^
@@ -47,18 +47,16 @@ operator^(Enum lhs, Enum rhs) {
 	);
 }
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type
-operator~(Enum rhs) {
+template<bitmask_enum Enum>
+Enum operator~(Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 	return static_cast<Enum> (
 		~static_cast<underlying>(rhs)
 	);
 }
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type &
-operator|=(Enum &lhs, Enum rhs) {
+template<bitmask_enum Enum>
+Enum operator|=(Enum &lhs, Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 	lhs = static_cast<Enum> (
 		static_cast<underlying>(lhs) |
@@ -68,9 +66,8 @@ operator|=(Enum &lhs, Enum rhs) {
 	return lhs;
 }
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type &
-operator&=(Enum &lhs, Enum rhs) {
+template<bitmask_enum Enum>
+Enum operator&=(Enum &lhs, Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 	lhs = static_cast<Enum> (
 		static_cast<underlying>(lhs) &
@@ -80,9 +77,8 @@ operator&=(Enum &lhs, Enum rhs) {
 	return lhs;
 }
 
-template<typename Enum>
-typename std::enable_if<EnableBitMask<Enum>::enable, Enum>::type &
-operator^=(Enum &lhs, Enum rhs) {
+template<bitmask_enum Enum>
+Enum operator^=(Enum &lhs, Enum rhs) {
 	using underlying = typename std::underlying_type<Enum>::type;
 
 	lhs = static_cast<Enum> (
@@ -97,7 +93,7 @@ operator^=(Enum &lhs, Enum rhs) {
 template<>                               \
 struct EnableBitMask<x>                  \
 {                                        \
-    static constexpr bool enable = true; \
+    static constexpr bool value = true; \
 };
 
 } // ember

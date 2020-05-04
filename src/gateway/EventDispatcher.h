@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include "ClientHandler.h"
 #include "ServicePool.h"
 #include <shared/ClientUUID.h>
+#include <concepts>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -49,9 +50,7 @@ public:
 		});
 	}
 
-	template<typename EventType>
-	typename std::enable_if<std::is_base_of<Event, EventType>::value>::type
-	post_event(const ClientUUID& client, const EventType& event) const {
+	auto post_event(const ClientUUID& client, const std::derived_from<Event> auto& event) const {
 		auto service = pool_.get_service(client.service());
 
 		// bad service index encoded in the UUID

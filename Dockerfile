@@ -9,8 +9,7 @@ RUN apt-get -y update && apt-get install -y \
  && apt-get -y install cmake \
  && apt-get -y install git \
  && apt-get -y install wget \
- # dragging libstdc++-9 in for std::filesystem
- && apt-get -y install libstdc++-9-dev \
+ && apt-get -y install libstdc++-10-dev \
  && apt-get -y install software-properties-common \
  # Install required library packages
  && apt-get install -y libbotan-2-dev \
