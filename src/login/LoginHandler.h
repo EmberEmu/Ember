@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,6 +24,7 @@
 #include <fstream>
 #include <functional>
 #include <memory>
+#include <span>
 #include <string>
 #include <optional>
 #include <unordered_map>
@@ -110,8 +111,7 @@ class LoginHandler {
 								   const Botan::BigInt& client_salt, bool reconnect);
 
 	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
-	                               const std::uint8_t* client_salt, std::size_t len,
-	                               bool reconnect);
+	                               std::span<std::uint8_t> client_salt, bool reconnect);
 
 	void fetch_user(grunt::Opcode opcode, const utf8_string& username);
 	void fetch_session_key(const FetchUserAction& action);

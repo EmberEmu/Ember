@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -347,12 +347,11 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1
                                              const Botan::BigInt& salt, bool reconnect) {
 	auto decoded = Botan::BigInt::encode(salt);
 	std::reverse(decoded.begin(), decoded.end());
-	return validate_client_integrity(hash, decoded.data(), decoded.size(), reconnect);
+	return validate_client_integrity(hash, decoded, reconnect);
 }
 
 bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& client_hash,
-                                             const std::uint8_t* salt, std::size_t len,
-                                             bool reconnect) {
+                                             const std::span<uint8_t> salt, bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	// ensure checking is enabled
@@ -372,10 +371,10 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
 		Botan::secure_vector<std::uint8_t> checksum(SHA1_LENGTH); // all-zero hash
-		hash = client_integrity::finalise(checksum, salt, len);
+		hash = client_integrity::finalise(checksum, salt);
 	} else {
 		auto checksum = client_integrity::checksum(checksum_salt_, *data);
-		hash = client_integrity::finalise(checksum, salt, len);
+		hash = client_integrity::finalise(checksum, salt);
 	}
 
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
@@ -385,7 +384,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
-	
+
 	if(!validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
 		send_login_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
@@ -509,9 +508,9 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
-	
-	if(!validate_client_integrity(proof.client_checksum, proof.salt.data(),
-	                              proof.salt.size(), true)) {
+	const std::span<std::uint8_t> salt_span(proof.salt);
+
+	if(!validate_client_integrity(proof.client_checksum, salt_span, true)) {
 		send_reconnect_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
 	}

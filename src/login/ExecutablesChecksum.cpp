@@ -9,7 +9,6 @@
 #include "ExecutablesChecksum.h"
 #include <botan/hash.h>
 #include <botan/mac.h>
-#include <memory>
 
 namespace ember::client_integrity {
 
@@ -22,9 +21,9 @@ Botan::secure_vector<std::uint8_t> checksum(const Botan::secure_vector<std::uint
 }
 
 Botan::secure_vector<std::uint8_t> finalise(const Botan::secure_vector<std::uint8_t>& checksum,
-                                            const std::uint8_t* client_seed, std::size_t len) {
+                                            const std::span<uint8_t> client_seed) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	hasher->update(client_seed, len);
+	hasher->update(client_seed.data(), client_seed.size_bytes());
 	hasher->update(checksum);
 	return hasher->final();
 }

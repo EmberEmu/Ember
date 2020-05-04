@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <gsl/span>
 #include <concepts>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <cstddef>
@@ -33,8 +33,9 @@ public:
 		return hash_;
 	}
 
-	std::size_t update(std::integral auto data) {
-		const auto span = gsl::make_span(&data, sizeof(data));
+	template<std::integral T>
+	std::size_t update(T data) {
+		const std::span<T> span(&data, sizeof(data));
 		return update(span.begin(), span.end());
 	}
 
@@ -44,8 +45,7 @@ public:
 	}
 
 	template<typename T>
-	std::size_t update(const T* data, std::size_t len) {
-		const auto span = gsl::make_span(&data, sizeof(T));
+	std::size_t update(std::span<T> span) {
 		return update(span.begin(), span.end());
 	}
 
