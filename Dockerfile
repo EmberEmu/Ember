@@ -4,13 +4,12 @@ FROM ubuntu:focal AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
-RUN apt-get -y update && apt-get install -y \
+RUN apt-get -y update && apt-get -y upgrade \
  && apt-get -y install clang \
  && apt-get -y install cmake \
  && apt-get -y install git \
  && apt-get -y install wget \
  && apt-get -y install libstdc++-10-dev \
- && apt-get -y install software-properties-common \
  # Install required library packages
  && apt-get install -y libbotan-2-dev \
  && apt-get install -y libmysqlcppconn-dev \
