@@ -11,15 +11,16 @@
 #include <spark/buffers/Buffer.h>
 #include <spark/Exception.h>
 #include <algorithm>
+#include <concepts>
 #include <string>
 #include <type_traits>
 #include <cstddef>
 #include <cstring>
 
-namespace ember::spark {
-
 template<typename T>
 concept trivially_copyable = std::is_trivially_copyable<T>::value;
+
+namespace ember::spark {
 
 class BinaryStream final {
 public:
