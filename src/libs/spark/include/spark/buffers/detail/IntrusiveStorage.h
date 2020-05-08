@@ -11,6 +11,8 @@
 
 #include <spark/buffers/Buffer.h>
 #include <array>
+#include <concepts>
+#include <type_traits>
 #include <cstddef>
 
 namespace ember::spark::detail {
@@ -20,10 +22,13 @@ struct IntrusiveNode {
 	IntrusiveNode* prev;
 };
 
-template<typename std::size_t BlockSize>
+template<decltype(auto) BlockSize>
+requires std::unsigned_integral<decltype(BlockSize)>
 struct IntrusiveStorage {
-	std::size_t read_offset = 0;
-	std::size_t write_offset = 0;
+	using OffsetType = std::remove_const_t<decltype(BlockSize)>;
+
+	OffsetType read_offset = 0;
+	OffsetType write_offset = 0;
 	IntrusiveNode node {};
 	std::array<std::byte, BlockSize> storage;
 

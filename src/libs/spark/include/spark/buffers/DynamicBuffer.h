@@ -12,18 +12,24 @@
 #include <spark/buffers/Buffer.h>
 #include <boost/assert.hpp>
 #include <algorithm>
+#include <concepts>
 #include <vector>
 #include <utility>
 #include <cstddef>
 
 namespace ember::spark {
 
-template<typename std::size_t BlockSize>
+template<decltype(auto) BlockSize>
 class BufferSequence;
 
-template<typename std::size_t BlockSize>
+template<decltype(auto) BlockSize>
+concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
+
+template<decltype(auto) BlockSize>
+requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public Buffer {
-	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize>;
+	using UnsignedBlockSize = typename std::make_unsigned<decltype(BlockSize)>::type;
+	using IntrusiveStorage = typename detail::IntrusiveStorage<UnsignedBlockSize(BlockSize)>;
 	using IntrusiveNode = detail::IntrusiveNode;
 
 	IntrusiveNode root_;
@@ -342,7 +348,7 @@ public:
 		return const_cast<std::byte&>(static_cast<const DynamicBuffer<BlockSize>&>(*this)[index]);
 	}
 
-	template<typename std::size_t T>
+	template<decltype(auto)>
 	friend class BufferSequence;
 };
 

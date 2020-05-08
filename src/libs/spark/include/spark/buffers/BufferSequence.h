@@ -7,19 +7,14 @@
  */
 
 #include <boost/asio/buffer.hpp>
+#include <spark/buffers/DynamicBuffer.h>
+#include <concepts>
 #include <utility>
 #include <cstddef>
 
 namespace ember::spark {
 
-template<typename std::size_t BlockSize>
-class DynamicBuffer;
-
-namespace detail {
-	struct IntrusiveNode;
-} // detail
-
-template<typename std::size_t BlockSize>
+template<decltype(auto) BlockSize>
 class BufferSequence {
 	const DynamicBuffer<BlockSize>* buffer_;
 

@@ -130,7 +130,7 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	template<std::size_t BlockSize>
+	template<decltype(auto) BlockSize>
 	void write_chain(const std::shared_ptr<spark::DynamicBuffer<BlockSize>>& chain, bool notify) {
 		auto self(shared_from_this());
 

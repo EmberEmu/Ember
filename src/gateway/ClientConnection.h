@@ -35,8 +35,8 @@ namespace ember {
 class SessionManager;
 
 class ClientConnection final {
-	static constexpr std::size_t INBOUND_SIZE = 1024;
-	static constexpr std::size_t OUTBOUND_SIZE = 2048;
+	static constexpr std::uint16_t INBOUND_SIZE { 1024 };
+	static constexpr std::uint16_t OUTBOUND_SIZE { 2048 };
 
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
