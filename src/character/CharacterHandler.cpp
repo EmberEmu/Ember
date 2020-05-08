@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,7 +39,7 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 	character.flags = Character::Flags::NONE;
 	character.first_login = true;
 
-	pool_.run([=] {
+	pool_.run([=, this] {
 		do_create(account_id, realm_id, character, callback);
 	});
 }
@@ -47,7 +47,7 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 void CharacterHandler::restore(std::uint64_t id, ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	pool_.run([=] {
+	pool_.run([=, this] {
 		do_restore(id, callback);
 	});
 }
@@ -56,7 +56,7 @@ void CharacterHandler::erase(std::uint32_t account_id, std::uint32_t realm_id,
                              std::uint64_t character_id, ResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	pool_.run([=] {
+	pool_.run([=, this] {
 		do_erase(account_id, realm_id, character_id, callback);
 	});
 }
@@ -65,7 +65,7 @@ void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_i
                                  EnumResultCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	pool_.run([=] {
+	pool_.run([=, this] {
 		do_enumerate(account_id, realm_id, callback);
 	});
 }
@@ -74,7 +74,7 @@ void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_
                               const utf8_string& name, RenameCB callback) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	pool_.run([=] {
+	pool_.run([=, this] {
 		do_rename(account_id, character_id, name, callback);
 	});
 }

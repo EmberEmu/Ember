@@ -143,7 +143,7 @@ public:
 		spark::BufferSequence<BlockSize> sequence(*chain);
 
 		socket_.async_send(sequence, create_alloc_handler(allocator_,
-			[=](boost::system::error_code ec, std::size_t size) {
+			[=, this](boost::system::error_code ec, std::size_t size) {
 				chain->skip(size);
 
 				if(ec && ec != boost::asio::error::operation_aborted) {
