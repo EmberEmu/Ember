@@ -485,11 +485,11 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 			" world, character, login")
 		("world.root-user", po::value<std::string>()->default_value("root"),
 			"A root database user, or at least one with liberal permissions.")
-		("world.root-password", po::value<std::string>()->default_value("root"),
+		("world.root-password", po::value<std::string>()->default_value(""),
 			"The password for the provided root user.")
 		("login.root-user", po::value<std::string>()->default_value("root"),
 			"A root database user, or at least one with liberal permissions.")
-		("login.root-password", po::value<std::string>()->default_value("root"),
+		("login.root-password", po::value<std::string>()->default_value(""),
 			"The password for the provided root user.")
 		("login.set-user", po::value<std::string>(),
 			"The login user to create when initial setting up the databases.")

@@ -32,7 +32,7 @@ When running with `--install`, the tool assumes that it must create the database
 A usage example for updating an existing database:
 
 ```bash
-dbutils
+./dbutils \
     --update=login world \
     --login.root-user=root \
     --login.root-password=root \
