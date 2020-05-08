@@ -25,13 +25,14 @@ RUN apt-get -y update && apt-get -y upgrade \
  && wget -q https://patch-diff.githubusercontent.com/raw/boostorg/endian/pull/44.patch \
  && git apply --unsafe-paths --directory=/usr/local 44.patch
 
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 \
+  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
+
 # Copy source
 ARG working_dir=/usr/src/ember
 COPY . ${working_dir}
 WORKDIR ${working_dir}
-RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 \
-  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
-RUN core_count=$("nproc")
+
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
@@ -50,7 +51,7 @@ RUN --mount=type=cache,target=build \
     -DDISABLE_EMBER_THREADS=${disable_threads} \
     -DBOTAN_ROOT_DIR=/usr/include/botan-2/ \
     -DBOTAN_LIBRARY=/usr/lib/x86_64-linux-gnu/libbotan-2.so \
-    && cd build && make -j${core_count} install && make test 
+    && cd build && make -j$(nproc) install && make test 
 
 FROM ubuntu:focal AS run_environment
 ARG install_dir=/usr/local/bin
