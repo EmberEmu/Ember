@@ -12,7 +12,7 @@
 #include "Core_generated.h"
 #include <spark/MessageHandler.h>
 #include <spark/SessionManager.h>
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <shared/FilterTypes.h>
 #include <logger/Logging.h>
 #include <boost/asio.hpp>

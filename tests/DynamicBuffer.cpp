@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #define BUFFER_SEQUENCE_DEBUG
 #include <spark/buffers/BufferSequence.h>
 #undef BUFFER_SEQUENCE_DEBUG
@@ -19,8 +19,8 @@
 
 namespace spark = ember::spark;
 
-TEST(ChainedBufferTest, Size) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, Size) {
+	spark::DynamicBuffer<32> chain;
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 
 	chain.reserve(50);
@@ -40,8 +40,8 @@ TEST(ChainedBufferTest, Size) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
-TEST(ChainedBufferTest, ReadWriteConsistency) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, ReadWriteConsistency) {
+	spark::DynamicBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	int num = 41521;
 
@@ -59,8 +59,8 @@ TEST(ChainedBufferTest, ReadWriteConsistency) {
 	ASSERT_EQ(0, chain.size()) << "Chain should be empty";
 }
 
-TEST(ChainedBufferTest, ReserveFetchConsistency) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, ReserveFetchConsistency) {
+	spark::DynamicBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	const std::size_t text_len = sizeof(text);
 
@@ -89,8 +89,8 @@ TEST(ChainedBufferTest, ReserveFetchConsistency) {
 	ASSERT_STREQ(text, output.c_str()) << "Read produced incorrect result";
 }
 
-TEST(ChainedBufferTest, Skip) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, Skip) {
+	spark::DynamicBuffer<32> chain;
 	int foo = 960;
 	int bar = 296;
 
@@ -103,8 +103,8 @@ TEST(ChainedBufferTest, Skip) {
 	ASSERT_EQ(bar, foo) << "Skip produced incorrect result";
 }
 
-TEST(ChainedBufferTest, Clear) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, Clear) {
+	spark::DynamicBuffer<32> chain;
 	const int iterations = 100;
 
 	for(int i = 0; i < iterations; ++i) {
@@ -116,9 +116,9 @@ TEST(ChainedBufferTest, Clear) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
-TEST(ChainedBufferTest, AttachTail) {
-	spark::ChainedBuffer<32> chain;
-	spark::BufferBlock<32>* buffer = chain.allocate();
+TEST(DynamicBufferTest, AttachTail) {
+	spark::DynamicBuffer<32> chain;
+	auto buffer = chain.allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
 	std::size_t written = buffer->write(text.c_str(), text.length());
@@ -136,9 +136,9 @@ TEST(ChainedBufferTest, AttachTail) {
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
 
-TEST(ChainedBufferTest, PopFrontPushBack) {
-	spark::ChainedBuffer<32> chain;
-	spark::BufferBlock<32>* buffer = chain.allocate();
+TEST(DynamicBufferTest, PopFrontPushBack) {
+	spark::DynamicBuffer<32> chain;
+	auto buffer = chain.allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
 	std::size_t written = buffer->write(text.c_str(), text.length());
@@ -157,8 +157,8 @@ TEST(ChainedBufferTest, PopFrontPushBack) {
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
 
-TEST(ChainedBufferTest, RetrieveTail) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, RetrieveTail) {
+	spark::DynamicBuffer<32> chain;
 	std::string text("This string is < 32 bytes"); // could this fail on exotic platforms?
 	chain.write(text.data(), text.length());
 
@@ -166,8 +166,8 @@ TEST(ChainedBufferTest, RetrieveTail) {
 	ASSERT_EQ(0, std::memcmp(text.data(), tail->storage.data(), text.length())) << "Tail data is incorrect";
 }
 
-TEST(ChainedBufferTest, Copy) {
-	spark::ChainedBuffer<32> chain;
+TEST(DynamicBufferTest, Copy) {
+	spark::DynamicBuffer<32> chain;
 	int output, foo = 54543;
 	chain.write(&foo, sizeof(int));
 	ASSERT_EQ(sizeof(int), chain.size());
@@ -176,8 +176,8 @@ TEST(ChainedBufferTest, Copy) {
 	ASSERT_EQ(foo, output) << "Copy output is incorrect";
 }
 
-TEST(ChainedBufferTest, CopyChain) {
-	spark::ChainedBuffer<sizeof(int)> chain, chain2;
+TEST(DynamicBufferTest, CopyChain) {
+	spark::DynamicBuffer<sizeof(int)> chain, chain2;
 	int foo = 5491;
 	int output;
 
@@ -202,8 +202,8 @@ TEST(ChainedBufferTest, CopyChain) {
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
-TEST(ChainedBufferTest, MoveChain) {
-	spark::ChainedBuffer<32> chain, chain2;
+TEST(DynamicBufferTest, MoveChain) {
+	spark::DynamicBuffer<32> chain, chain2;
 	int foo = 23113;
 
 	chain.write(&foo, sizeof(int));
@@ -219,8 +219,8 @@ TEST(ChainedBufferTest, MoveChain) {
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
-TEST(ChainedBufferTest, WriteSeek) {
-	spark::ChainedBuffer<1> chain; // ensure the data is split over multiple buffer nodes
+TEST(DynamicBufferTest, WriteSeek) {
+	spark::DynamicBuffer<1> chain; // ensure the data is split over multiple buffer nodes
 	const std::array<std::uint8_t, 6> data {0x00, 0x01, 0x00, 0x00, 0x04, 0x05};
 	const std::array<std::uint8_t, 2> seek_data {0x02, 0x03};
 	const std::array<std::uint8_t, 4> expected_data {0x00, 0x01, 0x02, 0x03};
@@ -259,8 +259,8 @@ TEST(ChainedBufferTest, WriteSeek) {
 		<< "Buffer contains incorrect data pattern";
 }
 
-TEST(ChainedBufferTest, ReadIterator) {
-	spark::ChainedBuffer<16> chain; // ensure the string is split over multiple buffers
+TEST(DynamicBufferTest, ReadIterator) {
+	spark::DynamicBuffer<16> chain; // ensure the string is split over multiple buffers
 	spark::BufferSequence<16> sequence(chain);
 	std::string skip("Skipping");
 	std::string input("The quick brown fox jumps over the lazy dog");
@@ -278,8 +278,8 @@ TEST(ChainedBufferTest, ReadIterator) {
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
 }
 
-TEST(ChainedBufferTest, ASIOIteratorRegressionTest) {
-	spark::ChainedBuffer<1> chain;
+TEST(DynamicBufferTest, ASIOIteratorRegressionTest) {
+	spark::DynamicBuffer<1> chain;
 	spark::BufferSequence<1> sequence(chain);
 
 	// 119 bytes (size of 1.12.1 LoginChallenge packet)

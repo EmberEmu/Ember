@@ -11,7 +11,7 @@
 #include "DBCHeader.h"
 #include <logger/Logging.h>
 #include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <fstream>
 #include <vector>

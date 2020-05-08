@@ -11,7 +11,7 @@
 #include "SessionManager.h"
 #include "FilterTypes.h"
 #include <logger/Logging.h>
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/BufferSequence.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio.hpp>
@@ -30,7 +30,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const boost::asio::ip::tcp::endpoint remote_ep_;
 	boost::asio::steady_timer timer_;
 
-	spark::ChainedBuffer<1024> inbound_buffer_;
+	spark::DynamicBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // temp - should be passed in
 	const std::string remote_address_;
@@ -131,7 +131,7 @@ public:
 	}
 
 	template<std::size_t BlockSize>
-	void write_chain(const std::shared_ptr<spark::ChainedBuffer<BlockSize>>& chain, bool notify) {
+	void write_chain(const std::shared_ptr<spark::DynamicBuffer<BlockSize>>& chain, bool notify) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {

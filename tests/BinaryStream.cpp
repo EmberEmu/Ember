@@ -7,7 +7,7 @@
  */
 
 #include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
 #include <algorithm>
@@ -28,7 +28,7 @@ TEST(BinaryStream, MessageReadLimit) {
 	};
 
 	// write the ping packet data twice to the buffer
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	buffer.write(ping.data(), ping.size());
 	buffer.write(ping.data(), ping.size());
 
@@ -52,7 +52,7 @@ TEST(BinaryStream, BufferLimit) {
 	};
 
 	// write the ping packet data to the buffer
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	buffer.write(ping.data(), ping.size());
 
 	// read all data back out
@@ -68,7 +68,7 @@ TEST(BinaryStream, BufferLimit) {
 }
 
 TEST(BinaryStream, ReadWriteInts) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 
 	const std::uint16_t in { 100 };
@@ -88,7 +88,7 @@ TEST(BinaryStream, ReadWriteInts) {
 }
 
 TEST(BinaryStream, ReadWriteStdString) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
@@ -106,7 +106,7 @@ TEST(BinaryStream, ReadWriteStdString) {
 }
 
 TEST(BinaryStream, ReadWriteCString) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 	const char* in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
@@ -125,7 +125,7 @@ TEST(BinaryStream, ReadWriteCString) {
 }
 
 TEST(BinaryStream, ReadWriteVector) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
@@ -159,7 +159,7 @@ TEST(BinaryStream, ReadWriteVector) {
 }
 
 TEST(BinaryStream, Clear) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 	stream << 0xBADF00D;
 
@@ -173,7 +173,7 @@ TEST(BinaryStream, Clear) {
 }
 
 TEST(BinaryStream, Skip) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 
 	const std::uint64_t in {0xBADF00D};
@@ -191,13 +191,13 @@ TEST(BinaryStream, Skip) {
 }
 
 TEST(BinaryStream, CanWriteSeek) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 	ASSERT_EQ(buffer.can_write_seek(), stream.can_write_seek());
 }
 
 TEST(BinaryStream, GetPut) {
-	spark::ChainedBuffer<32> buffer;
+	spark::DynamicBuffer<32> buffer;
 	spark::BinaryStream stream(buffer);
 	std::vector<std::uint8_t> in { 1, 2, 3, 4, 5 };
 	std::vector<std::uint8_t> out(in.size());

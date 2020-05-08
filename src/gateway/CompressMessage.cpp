@@ -8,7 +8,7 @@
 
 #include "CompressMessage.h"
 #include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <zlib.h>
 #include <cstdint>
 #include <cstddef>
@@ -27,7 +27,7 @@ int compress_message(const spark::Buffer& in, spark::Buffer& out, int compressio
 template<typename Packet_t>
 int compress_message(const Packet_t& packet, spark::Buffer& out, int compression_level) {
 	constexpr std::size_t BLOCK_SIZE = 64;
-	spark::ChainedBuffer<4096> temp_buffer;
+	spark::DynamicBuffer<4096> temp_buffer;
 	spark::BinaryStream stream(temp_buffer);
 	spark::BinaryStream out_stream(out);
 

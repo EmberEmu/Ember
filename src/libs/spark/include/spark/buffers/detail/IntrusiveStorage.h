@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,19 +13,19 @@
 #include <array>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::detail {
 
-struct ChainedNode {
-	ChainedNode* next;
-	ChainedNode* prev;
+struct IntrusiveNode {
+	IntrusiveNode* next;
+	IntrusiveNode* prev;
 };
 
 template<typename std::size_t BlockSize>
-struct BufferBlock {
-	std::array<std::byte, BlockSize> storage;
+struct IntrusiveStorage {
 	std::size_t read_offset = 0;
 	std::size_t write_offset = 0;
-	ChainedNode node {};
+	IntrusiveNode node {};
+	std::array<std::byte, BlockSize> storage;
 
 	void reset() {
 		read_offset = 0;
@@ -145,4 +145,4 @@ struct BufferBlock {
 	}
 };
 
-} // spark, ember
+} // detail, spark, ember

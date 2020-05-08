@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,19 +13,23 @@
 namespace ember::spark {
 
 template<typename std::size_t BlockSize>
-class ChainedBuffer;
+class DynamicBuffer;
+
+namespace detail {
+	struct IntrusiveNode;
+} // detail
 
 template<typename std::size_t BlockSize>
 class BufferSequence {
-	const ChainedBuffer<BlockSize>* chain_;
+	const DynamicBuffer<BlockSize>* buffer_;
 
 public:
-	BufferSequence(const ChainedBuffer<BlockSize>& chain) : chain_(&chain) { }
+	BufferSequence(const DynamicBuffer<BlockSize>& buffer) : buffer_(&buffer) { }
 
 class const_iterator {
 public:
-	const_iterator(const ChainedBuffer<BlockSize>* chain, const ChainedNode* curr_node)
-		: chain_(chain), curr_node_(curr_node) {}
+	const_iterator(const DynamicBuffer<BlockSize>* buffer, const detail::IntrusiveNode* curr_node)
+		: buffer_(buffer), curr_node_(curr_node) {}
 
 	const_iterator& operator++() {
 		curr_node_ = curr_node_->next;
@@ -39,7 +43,7 @@ public:
 	}
 
 	boost::asio::const_buffer operator*() const {
-		const auto buffer = chain_->buffer_from_node(curr_node_);
+		const auto buffer = buffer_->buffer_from_node(curr_node_);
 		return boost::asio::const_buffer(buffer->read_data(), buffer->size());
 	}
 
@@ -55,22 +59,22 @@ public:
 
 #ifdef BUFFER_SEQUENCE_DEBUG
 	std::pair<const char*, std::size_t> get_buffer() {
-		auto buffer = chain_->buffer_from_node(curr_node_);
+		auto buffer = buffer_->buffer_from_node(curr_node_);
 		return std::make_pair<char*, std::size_t>(const_cast<char*>(reinterpret_cast<const char*>(buffer->read_data())), buffer->size());
 	}
 #endif
 
 private:
-	const ChainedBuffer<BlockSize>* chain_;
-	const ChainedNode* curr_node_;
+	const DynamicBuffer<BlockSize>* buffer_;
+	const detail::IntrusiveNode* curr_node_;
 };
 
 const_iterator begin() const {
-	return const_iterator(chain_, chain_->root_.next);
+	return const_iterator(buffer_, buffer_->root_.next);
 }
 
 const_iterator end() const {
-	return const_iterator(chain_, &chain_->root_);
+	return const_iterator(buffer_, &buffer_->root_);
 }
 
 friend class const_iterator;

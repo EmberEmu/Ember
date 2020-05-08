@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/buffers/ChainedNode.h>
+#include <spark/buffers/detail/IntrusiveStorage.h>
 #include <spark/buffers/Buffer.h>
 #include <boost/assert.hpp>
 #include <algorithm>
@@ -22,32 +22,35 @@ template<typename std::size_t BlockSize>
 class BufferSequence;
 
 template<typename std::size_t BlockSize>
-class ChainedBuffer final : public Buffer {
-	ChainedNode root_;
+class DynamicBuffer final : public Buffer {
+	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize>;
+	using IntrusiveNode = detail::IntrusiveNode;
+
+	IntrusiveNode root_;
 	std::size_t size_;
 
-	void link_tail_node(ChainedNode* node) {
+	void link_tail_node(IntrusiveNode* node) {
 		node->next = &root_;
 		node->prev = root_.prev;
 		root_.prev = root_.prev->next = node;
 	}
 
-	void unlink_node(ChainedNode* node) {
+	void unlink_node(IntrusiveNode* node) {
 		node->next->prev = node->prev;
 		node->prev->next = node->next;
 	}
 
-	BufferBlock<BlockSize>* buffer_from_node(ChainedNode* node) const {
-		return reinterpret_cast<BufferBlock<BlockSize>*>(std::uintptr_t(node)
-			- offsetof(BufferBlock<BlockSize>, node));
+	IntrusiveStorage* buffer_from_node(IntrusiveNode* node) const {
+		return reinterpret_cast<IntrusiveStorage*>(std::uintptr_t(node)
+			- offsetof(IntrusiveStorage, node));
 	}
 
-	BufferBlock<BlockSize>* buffer_from_node(const ChainedNode* node) const {
-		return reinterpret_cast<BufferBlock<BlockSize>*>(std::uintptr_t(node)
-			- offsetof(BufferBlock<BlockSize>, node));
+	IntrusiveStorage* buffer_from_node(const IntrusiveNode* node) const {
+		return reinterpret_cast<IntrusiveStorage*>(std::uintptr_t(node)
+			- offsetof(IntrusiveStorage, node));
 	}
 
-	void move(ChainedBuffer& rhs) {
+	void move(DynamicBuffer& rhs) {
 		if(this == &rhs) { // self-assignment
 			return;
 		}
@@ -64,8 +67,8 @@ class ChainedBuffer final : public Buffer {
 		rhs.root_.prev = &rhs.root_;
 	}
 
-	void copy(const ChainedBuffer& rhs) {
-		const ChainedNode* head = rhs.root_.next;
+	void copy(const DynamicBuffer& rhs) {
+		const IntrusiveNode* head = rhs.root_.next;
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
@@ -79,8 +82,8 @@ class ChainedBuffer final : public Buffer {
 		}
 	}
 	
-	void offset_buffers(std::vector<BufferBlock<BlockSize>*>& buffers, std::size_t offset) {
-		buffers.erase(std::remove_if(buffers.begin(), buffers.end(), [&](BufferBlock<BlockSize>* block) {
+	void offset_buffers(std::vector<IntrusiveStorage*>& buffers, std::size_t offset) {
+		buffers.erase(std::remove_if(buffers.begin(), buffers.end(), [&](IntrusiveStorage* block) {
 			if(block->size() > offset) {
 				block->read_offset += offset;
 				block->write_offset -= offset;
@@ -92,21 +95,21 @@ class ChainedBuffer final : public Buffer {
 	}
 
 public:
-	ChainedBuffer() { // todo - change in VS2015
+	DynamicBuffer() { // todo - change in VS2015
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
 		push_back(allocate());
 	}
 
-	~ChainedBuffer() {
+	~DynamicBuffer() {
 		clear();
 	}
 
-	ChainedBuffer& operator=(ChainedBuffer&& rhs) { move(rhs); return *this;  }
-	ChainedBuffer(ChainedBuffer&& rhs) {  move(rhs); }
-	ChainedBuffer(const ChainedBuffer& rhs) { copy(rhs); }
-	ChainedBuffer& operator=(const ChainedBuffer& rhs) { clear(); copy(rhs); return *this;  }
+	DynamicBuffer& operator=(DynamicBuffer&& rhs) { move(rhs); return *this;  }
+	DynamicBuffer(DynamicBuffer&& rhs) {  move(rhs); }
+	DynamicBuffer(const DynamicBuffer& rhs) { copy(rhs); }
+	DynamicBuffer& operator=(const DynamicBuffer& rhs) { clear(); copy(rhs); return *this;  }
 
 	void read(void* destination, std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
@@ -141,10 +144,10 @@ public:
 		}
 	}
 
-	std::vector<BufferBlock<BlockSize>*> fetch_buffers(std::size_t length, std::size_t offset = 0) {
+	std::vector<IntrusiveStorage*> fetch_buffers(std::size_t length, std::size_t offset = 0) {
 		std::size_t total = length + offset;
 		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
-		std::vector<BufferBlock<BlockSize>*> buffers;
+		std::vector<IntrusiveStorage*> buffers;
 		auto head = root_.next;
 
 		while(total) {
@@ -187,10 +190,10 @@ public:
 
 	void write(const void* source, std::size_t length) override {
 		std::size_t remaining = length;
-		ChainedNode* tail = root_.prev;
+		IntrusiveNode* tail = root_.prev;
 
 		while(remaining) {
-			BufferBlock<BlockSize>* buffer;
+			IntrusiveStorage* buffer;
 
 			if(tail == &root_) {
 				buffer = allocate();
@@ -209,10 +212,10 @@ public:
 
 	void reserve(std::size_t length) override {
 		std::size_t remaining = length;
-		ChainedNode* tail = root_.prev;
+		IntrusiveNode* tail = root_.prev;
 
 		while(remaining) {
-			BufferBlock<BlockSize>* buffer;
+			IntrusiveStorage* buffer;
 
 			if(tail == &root_) {
 				buffer = allocate();
@@ -233,11 +236,11 @@ public:
 		return size_;
 	}
 
-	BufferBlock<BlockSize>* back() {
+	IntrusiveStorage* back() {
 		return buffer_from_node(root_.prev);
 	}
 
-	BufferBlock<BlockSize>* front() {
+	IntrusiveStorage* front() {
 		return buffer_from_node(root_.next);
 	}
 
@@ -248,16 +251,16 @@ public:
 		return buffer;
 	}
 
-	void push_back(BufferBlock<BlockSize>* buffer) {
+	void push_back(IntrusiveStorage* buffer) {
 		link_tail_node(&buffer->node);
 		size_ += buffer->write_offset;
 	}
 
-	BufferBlock<BlockSize>* allocate() const {
-		return new BufferBlock<BlockSize>(); // todo, actual allocator
+	IntrusiveStorage* allocate() const {
+		return new IntrusiveStorage(); // todo, actual allocator
 	}
 
-	void deallocate(BufferBlock<BlockSize>* buffer) const {
+	void deallocate(IntrusiveStorage* buffer) const {
 		delete buffer; // todo, actual allocator
 	}
 
@@ -301,7 +304,7 @@ public:
 	}
 
 	void clear() override {
-		ChainedNode* head;
+		IntrusiveNode* head;
 
 		while((head = root_.next) != &root_) {
 			unlink_node(head);
@@ -336,7 +339,7 @@ public:
 	}
 
 	std::byte& operator[](const std::size_t index) override {
-		return const_cast<std::byte&>(static_cast<const ChainedBuffer<BlockSize>&>(*this)[index]);
+		return const_cast<std::byte&>(static_cast<const DynamicBuffer<BlockSize>&>(*this)[index]);
 	}
 
 	template<typename std::size_t T>

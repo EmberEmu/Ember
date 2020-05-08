@@ -14,7 +14,7 @@
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
 #include <logger/Logging.h>
-#include <spark/buffers/ChainedBuffer.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
@@ -43,10 +43,10 @@ class ClientConnection final {
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint ep_;
 
-	spark::ChainedBuffer<INBOUND_SIZE> inbound_buffer_;
-	std::array<spark::ChainedBuffer<OUTBOUND_SIZE>, 2> outbound_buffers_;
-	spark::ChainedBuffer<OUTBOUND_SIZE>* outbound_front_;
-	spark::ChainedBuffer<OUTBOUND_SIZE>* outbound_back_;
+	spark::DynamicBuffer<INBOUND_SIZE> inbound_buffer_;
+	std::array<spark::DynamicBuffer<OUTBOUND_SIZE>, 2> outbound_buffers_;
+	spark::DynamicBuffer<OUTBOUND_SIZE>* outbound_front_;
+	spark::DynamicBuffer<OUTBOUND_SIZE>* outbound_back_;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;

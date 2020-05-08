@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/buffers/ChainedNode.h>
+#include <spark/buffers/detail/IntrusiveStorage.h>
 #include <gtest/gtest.h>
 #include <memory>
 
 namespace spark = ember::spark;
 
-TEST(BufferTest, Size) {
+TEST(IntrusiveStorageTest, Size) {
 	const int iterations = 5;
-	spark::BufferBlock<sizeof(int) * iterations> buffer;
+	spark::detail::IntrusiveStorage<sizeof(int) * iterations> buffer;
 	int foo = 24221;
 	std::size_t written = 0;
 
@@ -31,9 +31,9 @@ TEST(BufferTest, Size) {
 	ASSERT_EQ(sizeof(int) * iterations, buffer.size()) << "Buffer size is incorrect";
 }
 
-TEST(BufferTest, ReadWriteConsistency) {
+TEST(IntrusiveStorageTest, ReadWriteConsistency) {
 	const char text[] = "The quick brown fox jumps over the lazy dog";
-	spark::BufferBlock<sizeof(text)> buffer;
+	spark::detail::IntrusiveStorage<sizeof(text)> buffer;
 
 	std::size_t written = buffer.write(text, sizeof(text));
 	ASSERT_EQ(sizeof(text), written) << "Incorrect write size";
@@ -48,9 +48,9 @@ TEST(BufferTest, ReadWriteConsistency) {
 }
 
 
-TEST(BufferTest, Skip) {
+TEST(IntrusiveStorageTest, Skip) {
 	const char text[] = "The quick brown fox jumps over the lazy dog";
-	spark::BufferBlock<sizeof(text)> buffer;
+	spark::detail::IntrusiveStorage<sizeof(text)> buffer;
 
 	buffer.write(text, sizeof(text));
 	auto text_out = std::make_unique<char[]>(sizeof(text));

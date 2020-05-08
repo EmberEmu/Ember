@@ -29,8 +29,8 @@ add_library(${LIBRARY_NAME}
             include/spark/HeartbeatService.h
             include/spark/MessageHandler.h
             include/spark/buffers/Buffer.h
-            include/spark/buffers/ChainedBuffer.h
-            include/spark/buffers/ChainedNode.h
+            include/spark/buffers/DynamicBuffer.h
+            include/spark/buffers/detail/IntrusiveStorage.h
             include/spark/buffers/BufferSequence.h
             include/spark/buffers/NullBuffer.h
             include/spark/buffers/VectorBufferAdaptor.h
