@@ -53,7 +53,8 @@ class RealmQueue final {
 public:
 	explicit RealmQueue(boost::asio::io_context& service) : timer_(service) { }
 
-	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb, int priority = 0);
+	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
+	             LeaveQueueCB on_leave_cb, int priority = 0);
 	void dequeue(const ClientUUID& client);
 	void free_slot();
 	void shutdown();

@@ -18,7 +18,7 @@ enum class State {
 
 struct Context {
 	State state { State::TEMPORARY };
-    std::uint16_t character_guid {};
+	std::uint16_t character_guid {};
 };
 
 } // world_enter, ember

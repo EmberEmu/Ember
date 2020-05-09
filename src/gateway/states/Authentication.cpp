@@ -192,7 +192,8 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key,
 	ctx.account_name = packet->username;
 	auth_ctx.state = State::SUCCESS;
 
-	 // todo, keeping accurate player counts will involve the world server
+	 // todo, allowing for multiple gateways to connect to a single world server
+	 // will require an external service to keep track of available slots
 	unsigned int active_players = 0;
 
 	if(active_players < Locator::config()->max_slots) {

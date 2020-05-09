@@ -37,8 +37,8 @@ void RealmQueue::update_clients() {
 	set_timer();
 }
 
-void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQueueCB on_leave_cb,
-                         int priority) {
+void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
+                         LeaveQueueCB on_leave_cb, int priority) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(queue_.empty()) {
@@ -52,8 +52,10 @@ void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb, LeaveQue
 	queue_.sort();
 }
 
-/* Signals that a currently queued player has decided to disconnect rather
- * hang around in the queue */
+/* 
+ * Signals that a currently queued player has decided to disconnect rather
+ * hang around in the queue
+ */
 void RealmQueue::dequeue(const ClientUUID& client) {
 	std::lock_guard<std::mutex> guard(lock_);
 
@@ -69,8 +71,10 @@ void RealmQueue::dequeue(const ClientUUID& client) {
 	}
 }
 
-/* Signals that a player occupying a server slot has disconnected, thus
- * allowing the player at the front of the queue to connect */
+/* 
+ * Signals that a player occupying a server slot has disconnected, thus
+ * allowing the player at the front of the queue to connect
+ */
 void RealmQueue::free_slot() {
 	std::lock_guard<std::mutex> guard(lock_);
 
