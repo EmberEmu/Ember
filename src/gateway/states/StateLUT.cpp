@@ -10,7 +10,6 @@
 #include "Authentication.h"
 #include "CharacterList.h"
 #include "WorldForwarder.h"
-#include "InQueue.h"
 #include "SessionClose.h"
 #include <protocol/Opcodes.h>
 
@@ -18,7 +17,6 @@ namespace ember {
 
 const event_handler update_event[] = {
     &authentication::handle_event,
-    &queue::handle_event,
     &character_list::handle_event,
     &world::handle_event,
     &session_close::handle_event
@@ -26,7 +24,6 @@ const event_handler update_event[] = {
 
 const packet_handler update_packet[] = {
 	&authentication::handle_packet,
-	&queue::handle_packet,
 	&character_list::handle_packet,
 	&world::handle_packet,
 	&session_close::handle_packet
@@ -34,7 +31,6 @@ const packet_handler update_packet[] = {
 
 const state_func exit_states[] = {
 	&authentication::exit,
-	&queue::exit,
 	&character_list::exit,
 	&world::exit,
 	&session_close::exit
@@ -42,7 +38,6 @@ const state_func exit_states[] = {
 
 const state_func enter_states[] = {
 	&authentication::enter,
-	&queue::enter,
 	&character_list::enter,
 	&world::enter,
 	&session_close::enter

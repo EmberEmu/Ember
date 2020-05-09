@@ -31,9 +31,15 @@ namespace em = ember::messaging;
 
 namespace ember::authentication {
 
+using AddonData = protocol::client::AuthSession::AddonData;
+
 void send_auth_challenge(ClientContext& ctx);
 void send_auth_result(ClientContext& ctx, protocol::Result result);
 void handle_authentication(ClientContext& ctx);
+void handle_queue_update(ClientContext& ctx, const QueuePosition* event);
+void handle_queue_success(ClientContext& ctx);
+void auth_success(ClientContext& ctx, const std::vector<AddonData>& addons);
+void auth_queue(ClientContext& ctx, const std::vector<AddonData>& addons);
 void prove_session(ClientContext& ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_session_key(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
 void fetch_account_id(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
@@ -133,13 +139,13 @@ void send_auth_challenge(ClientContext& ctx) {
 	ctx.connection->send(response);
 }
 
-void send_addon_data(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void send_addon_data(ClientContext& ctx, const std::vector<AddonData>& addons) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::SMSG_ADDON_INFO response;
 
 	// todo, use AddonData.dbc
-	for(auto& addon : packet->addons) {
+	for(const auto& addon : addons) {
 		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
@@ -148,7 +154,7 @@ void send_addon_data(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& pack
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
-			LOG_DEBUG_GLOB << "Repairing " << addon.name << "..." << LOG_ASYNC;
+			LOG_DEBUG_GLOB << "Repairing " << addon.name << LOG_ASYNC;
 			data.key_version = 1;
 		} else {
 			data.key_version = 0;
@@ -186,32 +192,40 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key,
 	ctx.account_name = packet->username;
 	auth_ctx.state = State::SUCCESS;
 
-	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
+	 // todo, keeping accurate player counts will involve the world server
+	unsigned int active_players = 0;
 
-	if(active_players >= Locator::config()->max_slots) {
-		const auto uuid = ctx.handler->uuid();
-
-		Locator::queue()->enqueue(uuid,
-			[uuid, packet](std::size_t position) {
-				Locator::dispatcher()->post_event(uuid, QueuePosition(position));
-			},
-			[uuid, packet]() {
-				auto event = std::make_unique<QueueSuccess>(std::move(packet));
-				Locator::dispatcher()->post_event(uuid, std::move(event));
-			}
-		);
-
-		ctx.handler->state_update(ClientState::IN_QUEUE);
-		return;
+	if(active_players < Locator::config()->max_slots) {
+		auth_success(ctx, packet->addons);
+	} else {
+		auth_queue(ctx, packet->addons);
 	}
 
-	auth_success(ctx, packet);
+	ctx.handler->stop_timer();
 }
 
-void auth_success(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void auth_queue(ClientContext& ctx, const std::vector<AddonData>& addons) {
+	const auto& uuid = ctx.handler->uuid();
+	auto& state_ctx = std::get<Context>(ctx.state_ctx);
+	state_ctx.addon_data = addons;
+
+	Locator::queue()->enqueue(uuid,
+		[uuid](const std::size_t position) {
+			Locator::dispatcher()->post_event(uuid, QueuePosition(position));
+		},
+		[uuid]() {
+			const Event event { EventType::QUEUE_SUCCESS };
+			Locator::dispatcher()->post_event(uuid, event);
+		}
+	);
+
+	LOG_DEBUG_GLOB << ctx.account_name << " added to queue" << LOG_ASYNC;
+}
+
+void auth_success(ClientContext& ctx, const std::vector<AddonData>& addons) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 	send_auth_result(ctx, protocol::Result::AUTH_OK);
-	send_addon_data(ctx, packet);
+	send_addon_data(ctx, addons);
 	ctx.handler->state_update(ClientState::CHARACTER_LIST);
 }
 
@@ -221,6 +235,21 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 	protocol::SMSG_AUTH_RESPONSE response;
 	response->result = result;
 	ctx.connection->send(response);
+}
+
+void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	protocol::SMSG_AUTH_RESPONSE packet;
+	packet->result = protocol::Result::AUTH_WAIT_QUEUE;
+	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
+	ctx.connection->send(packet);
+}
+
+void handle_queue_success(ClientContext& ctx) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	const auto& state_ctx = std::get<Context>(ctx.state_ctx);
+	auth_success(ctx, state_ctx.addon_data);
 }
 
 void handle_timeout(ClientContext& ctx) {
@@ -256,13 +285,23 @@ void handle_event(ClientContext& ctx, const Event* event) {
 		case EventType::SESSION_KEY_RESPONSE:
 			handle_session_key(ctx, static_cast<const SessionKeyResponse*>(event));
 			break;
+		case EventType::QUEUE_UPDATE_POSITION:
+			handle_queue_update(ctx, static_cast<const QueuePosition*>(event));
+			break;
+		case EventType::QUEUE_SUCCESS:
+			handle_queue_success(ctx);
+			break;
 		default:
 			break;
 	}
 }
 
 void exit(ClientContext& ctx) {
-	ctx.handler->stop_timer();
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+
+	if(auth_ctx.state == State::IN_QUEUE) {
+		Locator::queue()->dequeue(ctx.handler->uuid());
+	}
 }
 
 } // authentication, ember

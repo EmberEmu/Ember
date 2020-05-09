@@ -14,7 +14,6 @@ namespace ember {
 
 smart_enum(ClientState, int,
 	AUTHENTICATING,
-	IN_QUEUE,
 	CHARACTER_LIST,
 	WORLD_ENTER,
 	WORLD_TRANSFER,

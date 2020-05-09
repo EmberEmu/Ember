@@ -39,7 +39,6 @@ set(LIBRARY_HDR
     states/Authentication.h
     states/CharacterList.h
     states/WorldForwarder.h
-    states/InQueue.h
     states/SessionClose.h
     states/ClientContext.h
     states/StateLUT.h
@@ -70,7 +69,6 @@ set(LIBRARY_SRC
     states/Authentication.cpp
     states/CharacterList.cpp
     states/WorldForwarder.cpp
-    states/InQueue.cpp
     states/SessionClose.cpp
     states/StateLUT.cpp
     packetlog/PacketLogger.cpp

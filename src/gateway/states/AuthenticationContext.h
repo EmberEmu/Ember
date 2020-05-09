@@ -8,17 +8,19 @@
 
 #pragma once
 
+#include <protocol/client/AuthSession.h>
 #include <cstdint>
 
 namespace ember::authentication {
 
 enum class State {
-	NOT_AUTHED, IN_PROGRESS, SUCCESS, FAILED
+	NOT_AUTHED, IN_PROGRESS, IN_QUEUE, SUCCESS, FAILED
 };
 
 struct Context {
 	State state { State::NOT_AUTHED };
 	std::uint32_t seed {};
+	std::vector<protocol::client::AuthSession::AddonData> addon_data;
 };
 
 } // authentication, ember
