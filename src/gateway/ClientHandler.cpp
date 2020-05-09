@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -117,7 +117,7 @@ void ClientHandler::stop_timer() {
  * has completed
  */
 std::string ClientHandler::client_identify() {
-	if(context_.auth_status == AuthStatus::SUCCESS) {
+	if(context_.state > ClientState::AUTHENTICATING) {
 		return context_.account_name + "(" + context_.connection->remote_address() + ")";
 	} else {
 		return context_.connection->remote_address();

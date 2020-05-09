@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,9 +9,12 @@
 #pragma once
 
 #include "ClientStates.h"
+#include "AuthenticationContext.h"
+#include "WorldEnterContext.h"
 #include <spark/buffers/Buffer.h>
 #include <protocol/PacketHeaders.h>
 #include <shared/util/UTF8String.h>
+#include <variant>
 #include <cstdint>
 
 namespace ember {
@@ -19,9 +22,15 @@ namespace ember {
 class ClientHandler;
 class ClientConnection;
 
-enum class AuthStatus {
-	NOT_AUTHED, IN_PROGRESS, SUCCESS, FAILED
+struct WorldContext {
+	//std::shared_ptr<WorldConnection> world_conn;
 };
+
+using StateContext = 
+	std::variant<
+		authentication::Context,
+		world_enter::Context
+	>;
 
 struct ClientContext {
 	spark::Buffer* buffer;
@@ -30,11 +39,9 @@ struct ClientContext {
 	ClientState prev_state;
 	ClientHandler* handler;
 	ClientConnection* connection;
+	StateContext state_ctx;
 	std::uint32_t account_id;
 	utf8_string account_name;
-	std::uint32_t auth_seed;
-	//std::shared_ptr<WorldConnection> world_conn;
-	AuthStatus auth_status;
 };
 
 } // ember

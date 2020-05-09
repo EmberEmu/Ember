@@ -10,7 +10,6 @@
 
 #include "ClientContext.h"
 #include "../Event.h"
-#include <memory>
 
 namespace ember::world {
 

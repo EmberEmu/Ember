@@ -43,12 +43,13 @@ void handle_authentication(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// prevent repeated auth attempts
-	if(ctx.auth_status != AuthStatus::NOT_AUTHED) {
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+
+	if(auth_ctx.state != State::NOT_AUTHED) {
 		return;
 	}
-	
-	ctx.auth_status = AuthStatus::IN_PROGRESS;
 
+	auth_ctx.state = State::IN_PROGRESS;
 	protocol::CMSG_AUTH_SESSION packet;
 
 	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
@@ -57,7 +58,10 @@ void handle_authentication(ClientContext& ctx) {
 
 	LOG_DEBUG_GLOB << "Received session proof from " << packet->username << LOG_ASYNC;
 
-	// todo - check game build
+	if(packet->build == 0) {
+		// todo - check game build
+	}
+
 	fetch_account_id(ctx, packet);
 }
 
@@ -88,7 +92,8 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 		ctx.account_id = event->account_id;
 		fetch_session_key(ctx, event->packet);
 	} else {
-		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Account ID lookup for failed for "
+		LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
+			<< "Account ID lookup for failed for "
 			<< event->packet->username << LOG_ASYNC;
 	}
 }
@@ -110,7 +115,8 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 		<< util::fb_status(event->status, em::account::EnumNamesStatus())
 		<< " for " << event->packet->username << LOG_ASYNC;
 
-	ctx.auth_status = AuthStatus::FAILED; // default unless overridden by success
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+	auth_ctx.state = State::FAILED; // default unless overridden by success
 
 	if(event->status == em::account::Status::OK) {
 		prove_session(ctx, event->key, event->packet);
@@ -121,8 +127,9 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 
 void send_auth_challenge(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	protocol::SMSG_AUTH_CHALLENGE response;
-	response->seed = ctx.auth_seed = gsl::narrow_cast<std::uint32_t>(ember::rng::xorshift::next());
+	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
 	ctx.connection->send(response);
 }
 
@@ -153,17 +160,19 @@ void send_addon_data(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& pack
 	ctx.connection->send(response);
 }
 
-void prove_session(ClientContext& ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet) {
+void prove_session(ClientContext& ctx, const Botan::BigInt& key,
+                   const protocol::CMSG_AUTH_SESSION& packet) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
 	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	hasher->update(packet->username);
 	hasher->update_be(unknown);
 	hasher->update(packet->seed.data(), sizeof(packet->seed));
-	hasher->update_be(boost::endian::native_to_big(ctx.auth_seed));
+	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
 	hasher->update(k_bytes);
 	const auto& hash = hasher->final();
 
@@ -175,7 +184,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key, const protocol:
 
 	ctx.connection->set_authenticated(key);
 	ctx.account_name = packet->username;
-	ctx.auth_status = AuthStatus::SUCCESS;
+	auth_ctx.state = State::SUCCESS;
 
 	unsigned int active_players = 0; // todo, keeping accurate player counts will involve the world server
 
@@ -221,6 +230,7 @@ void handle_timeout(ClientContext& ctx) {
 }
 
 void enter(ClientContext& ctx) {
+	ctx.state_ctx = Context{};
 	ctx.handler->start_timer(AUTH_TIMEOUT);
 	send_auth_challenge(ctx);
 }

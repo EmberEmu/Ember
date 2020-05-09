@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2018 Ember
+# Copyright (c) 2016 - 2020 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,6 +43,8 @@ set(LIBRARY_HDR
     states/SessionClose.h
     states/ClientContext.h
     states/StateLUT.h
+    states/AuthenticationContext.h
+    states/WorldEnterContext.h
     packetlog/PacketLogger.h
     packetlog/PacketSink.h
     packetlog/FBSink.h
