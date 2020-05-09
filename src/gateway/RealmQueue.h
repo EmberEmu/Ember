@@ -21,8 +21,10 @@
 namespace ember {
 
 class ClientConnection;
+using namespace std::chrono_literals;
 
 class RealmQueue final {
+
 	typedef std::function<void()> LeaveQueueCB;
 	typedef std::function<void(std::size_t)> UpdateQueueCB;
 
@@ -41,7 +43,8 @@ class RealmQueue final {
 		}
 	};
 
-	const std::chrono::milliseconds TIMER_FREQUENCY { 250 };
+	static constexpr std::chrono::milliseconds DEFAULT_FREQUENCY { 250 };
+	const std::chrono::milliseconds frequency_;
 
 	boost::asio::steady_timer timer_;
 	std::list<QueueEntry> queue_;
@@ -52,7 +55,8 @@ class RealmQueue final {
 	void set_timer();
 
 public:
-	explicit RealmQueue(boost::asio::io_context& service) : timer_(service), dirty_(false) { }
+	RealmQueue(boost::asio::io_context& service, std::chrono::milliseconds frequency = DEFAULT_FREQUENCY)
+	           : timer_(service), frequency_(frequency), dirty_(false) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
 	             LeaveQueueCB on_leave_cb, int priority = 0);
