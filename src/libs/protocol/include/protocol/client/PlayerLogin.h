@@ -10,6 +10,7 @@
 
 #include <protocol/Packet.h>
 #include <spark/buffers/BinaryStream.h>
+#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
@@ -39,4 +40,4 @@ public:
 	}
 };
 
-} // cmsg, protocol, ember
+} // client, protocol, ember

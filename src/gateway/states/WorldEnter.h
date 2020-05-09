@@ -8,17 +8,15 @@
 
 #pragma once
 
-#include <cstdint>
+#include "ClientContext.h"
+#include "../Events.h"
+#include <protocol/Opcodes.h>
 
 namespace ember::world_enter {
 
-enum class State {
-	INITIATED
-};
-
-struct Context {
-	State state { State::INITIATED };
-	std::uint64_t character_id {};
-};
+void enter(ClientContext& ctx);
+void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode);
+void handle_event(ClientContext& ctx, const Event* event);
+void exit(ClientContext& ctx);
 
 } // world_enter, ember

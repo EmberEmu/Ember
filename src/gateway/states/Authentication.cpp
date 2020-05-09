@@ -24,6 +24,7 @@
 #include <botan/hash.h>
 #include <botan/secmem.h>
 #include <gsl/gsl_util>
+#include <utility>
 #include <cstddef>
 #include <cstdint>
 

@@ -43,6 +43,7 @@ set(LIBRARY_HDR
     states/ClientContext.h
     states/StateLUT.h
     states/AuthenticationContext.h
+    states/WorldEnter.h
     states/WorldEnterContext.h
     packetlog/PacketLogger.h
     packetlog/PacketSink.h
@@ -71,6 +72,7 @@ set(LIBRARY_SRC
     states/WorldForwarder.cpp
     states/SessionClose.cpp
     states/StateLUT.cpp
+    states/WorldEnter.cpp
     packetlog/PacketLogger.cpp
     packetlog/FBSink.cpp
     packetlog/LogSink.cpp

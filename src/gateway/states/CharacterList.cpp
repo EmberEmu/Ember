@@ -204,6 +204,12 @@ void player_login(ClientContext& ctx) {
 	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
 		return;
 	}
+
+	Locator::dispatcher()->post_event(
+		ctx.handler->uuid(), PlayerLogin(packet->character_id)
+	);
+
+	ctx.handler->state_update(ClientState::WORLD_ENTER);
 }
 
 void handle_timeout(ClientContext& ctx) {

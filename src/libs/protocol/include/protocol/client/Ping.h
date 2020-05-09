@@ -42,4 +42,4 @@ public:
 	}
 };
 
-} // cmsg, protocol, ember
+} // client, protocol, ember

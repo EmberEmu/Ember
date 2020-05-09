@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,14 @@
 #include <cstddef>
 
 namespace ember {
+
+struct PlayerLogin : Event {
+	explicit PlayerLogin(std::uint64_t character_id)
+	                     : Event{ EventType::PLAYER_LOGIN },
+	                       character_id_(character_id) { }
+
+	const std::uint64_t character_id_;
+};
 
 struct QueuePosition : Event {
 	explicit QueuePosition(std::size_t position) 
