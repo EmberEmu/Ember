@@ -46,12 +46,13 @@ class RealmQueue final {
 	boost::asio::steady_timer timer_;
 	std::list<QueueEntry> queue_;
 	std::mutex lock_;
+	bool dirty_;
 
 	void update_clients();
 	void set_timer();
 
 public:
-	explicit RealmQueue(boost::asio::io_context& service) : timer_(service) { }
+	explicit RealmQueue(boost::asio::io_context& service) : timer_(service), dirty_(false) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
 	             LeaveQueueCB on_leave_cb, int priority = 0);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,6 +27,11 @@ void RealmQueue::set_timer() {
  */
 void RealmQueue::update_clients() {
 	std::lock_guard<std::mutex> guard(lock_);
+
+	if(!dirty_) {
+		return;
+	}
+
 	std::size_t position = 1;
 
 	for(auto& entry : queue_) {
@@ -35,6 +40,7 @@ void RealmQueue::update_clients() {
 	}
 
 	set_timer();
+	dirty_ = false;
 }
 
 void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
@@ -50,6 +56,7 @@ void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
 	// guaranteed to be a stable sort - not the most efficient way to have queue priority
 	// but allows for multiple priority levels without multiple hard-coded queues
 	queue_.sort();
+	dirty_ = true;
 }
 
 /* 
@@ -69,6 +76,8 @@ void RealmQueue::dequeue(const ClientUUID& client) {
 	if(queue_.empty()) {
 		timer_.cancel();
 	}
+
+	dirty_ = true;
 }
 
 /* 
@@ -89,6 +98,8 @@ void RealmQueue::free_slot() {
 	if(queue_.empty()) {
 		timer_.cancel();
 	}
+
+	dirty_ = true;
 }
 
 void RealmQueue::shutdown() {
