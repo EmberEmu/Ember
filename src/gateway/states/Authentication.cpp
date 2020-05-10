@@ -171,7 +171,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 		return;
 	}
 
-	ctx.connection->set_authenticated(key);
+	ctx.connection->set_key(key);
 	ctx.account_name = packet->username;
 
 	 // todo, allowing for multiple gateways to connect to a single world server

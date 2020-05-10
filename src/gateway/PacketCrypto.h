@@ -27,7 +27,6 @@ class PacketCrypto final {
 	std::uint8_t recv_j_ = 0;
 
 public:
-	PacketCrypto() = default;
 	explicit PacketCrypto(std::vector<std::uint8_t> key) : key_(std::move(key)) {}
 
 	void set_key(std::vector<std::uint8_t> key) {

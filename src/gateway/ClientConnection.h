@@ -24,6 +24,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <memory>
+#include <optional>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -50,12 +51,11 @@ class ClientConnection final {
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
-	PacketCrypto crypto_;
+	std::optional<PacketCrypto> crypt_;
 	protocol::SizeType msg_size_;
 	SessionManager& sessions_;
 	ASIOAllocator allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
-	bool authenticated_;
 	bool write_in_progress_;
 	unsigned int compression_level_;
 	const std::string address_;
@@ -84,16 +84,16 @@ class ClientConnection final {
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	                 boost::asio::ip::tcp::endpoint ep, ClientUUID uuid, log::Logger* logger)
-	                 : sessions_(sessions), socket_(std::move(socket)), ep_(ep), stats_{}, crypto_{},
+	                 : sessions_(sessions), socket_(std::move(socket)), ep_(ep), stats_{},
 	                   msg_size_{0}, logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
-	                   authenticated_(false), write_in_progress_(false),
+	                   write_in_progress_(false),
 	                   handler_(*this, uuid, logger, socket_.get_executor()), compression_level_(0),
 	                   outbound_front_(&outbound_buffers_.front()),
 	                   outbound_back_(&outbound_buffers_.back()), stopping_(false) { }
 
 	void start();
 
-	void set_authenticated(const Botan::BigInt& key);
+	void set_key(const Botan::BigInt& key);
 	void compression_level(unsigned int level);
 	void latency(std::size_t latency);
 

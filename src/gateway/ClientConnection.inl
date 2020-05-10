@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2019 Ember
+ * Copyright (c) 2018 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,9 +24,9 @@ void ClientConnection::send(const PacketT& packet) {
 	auto size = gsl::narrow<typename PacketT::SizeType>(written - sizeof(typename PacketT::SizeType));
 	auto opcode = packet.opcode;
 
-	if(authenticated_) {
-		crypto_.encrypt(size);
-		crypto_.encrypt(opcode);
+	if(crypt_) {
+		crypt_->encrypt(size);
+		crypt_->encrypt(opcode);
 	}
 
 	stream.write_seek(spark::SeekDir::SD_START);

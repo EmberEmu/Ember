@@ -23,8 +23,8 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 		return;
 	}
 
-	if(authenticated_) {
-		crypto_.decrypt(buffer, protocol::ClientHeader::WIRE_SIZE);
+	if(crypt_) {
+		crypt_->decrypt(buffer, protocol::ClientHeader::WIRE_SIZE);
 	}
 
 	spark::BinaryStream stream(buffer);
@@ -141,10 +141,9 @@ void ClientConnection::read() {
 	));
 }
 
-void ClientConnection::set_authenticated(const Botan::BigInt& key) {
+void ClientConnection::set_key(const Botan::BigInt& key) {
 	auto k_bytes = Botan::BigInt::encode(key);
-	crypto_.set_key(std::move(k_bytes));
-	authenticated_ = true;
+	crypt_ = PacketCrypto(std::move(k_bytes));
 }
 
 void ClientConnection::start() {
