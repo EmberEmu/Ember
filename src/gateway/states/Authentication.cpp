@@ -100,7 +100,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(event->status != em::account::Status::OK) {
-		CLIENT_ERROR_FILTER_GLOB(ctx, LF_NETWORK)
+		CLIENT_ERROR_FILTER_GLOB(LF_NETWORK, ctx)
 			<< "Account server returned "
 			<< util::fb_status(event->status, em::account::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
@@ -114,7 +114,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 		auth_ctx.account_id = event->account_id;
 		fetch_session_key(ctx, event->account_id);
 	} else {
-		LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
+		CLIENT_DEBUG_FILTER_GLOB(LF_NETWORK, ctx)
 			<< "Account ID lookup for failed for "
 			<< auth_ctx.packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
@@ -136,7 +136,7 @@ void fetch_session_key(ClientContext& ctx, const std::uint32_t account_id) {
 void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
+	CLIENT_DEBUG_FILTER_GLOB(LF_NETWORK, ctx)
 		<< "Account server returned "
 		<< util::fb_status(event->status, em::account::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;

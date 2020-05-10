@@ -28,22 +28,22 @@
 #define CLIENT_FATAL(logger, ctx) \
 	LOG_FATAL(logger) << ctx.handler->client_identify()
 
-#define CLIENT_TRACE_FILTER(logger, ctx, type) \
+#define CLIENT_TRACE_FILTER(logger, type, ctx) \
     LOG_TRACE_FILTER(logger, type) << ctx.handler->client_identify()
 
-#define CLIENT_DEBUG_FILTER(logger, ctx, type) \
+#define CLIENT_DEBUG_FILTER(logger, type, ctx) \
 	LOG_DEBUG_FILTER(logger, type) << ctx.handler->client_identify()
 
-#define CLIENT_INFO_FILTER(logger, ctx, type) \
+#define CLIENT_INFO_FILTER(logger, type, ctx) \
 	LOG_INFO_FILTER(logger, type) << ctx.handler->client_identify()
 
-#define CLIENT_WARN_FILTER(logger, ctx, type) \
+#define CLIENT_WARN_FILTER(logger, type, ctx) \
 	LOG_WARN_FILTER(logger, type) << ctx.handler->client_identify()
 
-#define CLIENT_ERROR_FILTER(logger, ctx, type) \
+#define CLIENT_ERROR_FILTER(logger, type, ctx) \
 	LOG_ERROR_FILTER(logger, type) << ctx.handler->client_identify()
 
-#define CLIENT_FATAL_FILTER(logger, ctx, type) \
+#define CLIENT_FATAL_FILTER(logger, type, ctx) \
 	LOG_FATAL_FILTER(logger, type) << ctx.handler->client_identify()
 
 #define CLIENT_TRACE_GLOB(ctx) \
@@ -64,20 +64,20 @@
 #define CLIENT_FATAL_GLOB(ctx) \
 	CLIENT_FATAL(ember::log::get_logger(), ctx)
 
-#define CLIENT_TRACE_FILTER_GLOB(ctx, filter) \
-	CLIENT_TRACE_FILTER(ember::log::get_logger(), ctx, filter)
+#define CLIENT_TRACE_FILTER_GLOB(filter, ctx) \
+	CLIENT_TRACE_FILTER(ember::log::get_logger(), filter, ctx)
 
-#define CLIENT_DEBUG_FILTER_GLOB(ctx, filter) \
-	CLIENT_DEBUG_FILTER(ember::log::get_logger(), ctx, filter)
+#define CLIENT_DEBUG_FILTER_GLOB(filter, ctx) \
+	CLIENT_DEBUG_FILTER(ember::log::get_logger(), filter, ctx)
 
-#define CLIENT_INFO_FILTER_GLOB(ctx, filter) \
-	CLIENT_INFO_FILTER(ember::log::get_logger(), ctx, filter)
+#define CLIENT_INFO_FILTER_GLOB(filter, ctx) \
+	CLIENT_INFO_FILTER(ember::log::get_logger(), filter, ctx)
 
-#define CLIENT_WARN_FILTER_GLOB(ctx, filter) \
-	CLIENT_WARN_FILTER(ember::log::get_logger(), ctx, filter)
+#define CLIENT_WARN_FILTER_GLOB(filter, ctx) \
+	CLIENT_WARN_FILTER(ember::log::get_logger(), filter, ctx)
 
-#define CLIENT_ERROR_FILTER_GLOB(ctx, filter) \
-	CLIENT_ERROR_FILTER(ember::log::get_logger(), ctx, filter)
+#define CLIENT_ERROR_FILTER_GLOB(filter, ctx) \
+	CLIENT_ERROR_FILTER(ember::log::get_logger(), filter, ctx)
 
-#define CLIENT_FATAL_FILTER_GLOB(ctx, filter) \
-	CLIENT_FATAL_FILTER(ember::log::get_logger(), ctx, filter)
+#define CLIENT_FATAL_FILTER_GLOB(filter, ctx) \
+	CLIENT_FATAL_FILTER(ember::log::get_logger(), filter, ctx)

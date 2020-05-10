@@ -37,7 +37,7 @@ void ClientHandler::handle_message(spark::BinaryStream& stream) {
 	context_.stream = &stream;
 	stream >> opcode_;
 
-	CLIENT_TRACE_FILTER(logger_, context_, LF_NETWORK)
+	CLIENT_TRACE_FILTER(logger_, LF_NETWORK, context_)
 		<< " -> " << protocol::to_string(opcode_) << LOG_ASYNC;
 
 	// handle ping & keep-alive as special cases
@@ -63,7 +63,7 @@ void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 }
 
 void ClientHandler::state_update(ClientState new_state) {
-	CLIENT_DEBUG_FILTER(logger_, context_, LF_NETWORK)
+	CLIENT_DEBUG_FILTER(logger_, LF_NETWORK, context_)
 		<< "State change, " << ClientState_to_string(context_.state)
 		<< " => " << ClientState_to_string(new_state) << LOG_SYNC;
 
@@ -74,7 +74,7 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 void ClientHandler::packet_skip(spark::BinaryStream& stream) {
-	CLIENT_DEBUG_FILTER(logger_, context_, LF_NETWORK)
+	CLIENT_DEBUG_FILTER(logger_, LF_NETWORK, context_)
 		<< ClientState_to_string(context_.state) << " skipping "
 		<< protocol::to_string(opcode_)
 		<< " (" << util::enum_value(opcode_) << ")" << LOG_ASYNC;
