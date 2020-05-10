@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@
 		*logger << ember::log::Severity::DEBUG
 #else
 #define LOG_DEBUG(logger) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -36,7 +36,7 @@ if(false) { \
 		*logger << ember::log::Severity::INFO
 #else
 #define LOG_INFO(logger) \
-if(false) {	\
+	if(false) {	\
 		*logger
 #endif
 
@@ -46,7 +46,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 		*logger << ember::log::Severity::WARN
 #else
 #define LOG_WARN(logger) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -56,7 +56,7 @@ if(false) { \
 		*logger << ember::log::Severity::ERROR_
 #else
 #define LOG_ERROR(logger) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -67,7 +67,7 @@ if(false) { \
 		*logger << ember::log::Severity::FATAL
 #else
 #define LOG_FATAL(logger) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -77,7 +77,7 @@ if(false) { \
 		*logger << ember::log::Severity::TRACE << ember::log::Filter(type)
 #else
 #define LOG_TRACE_FILTER(logger, type) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -87,7 +87,7 @@ if(false) { \
 		*logger << ember::log::Severity::DEBUG << ember::log::Filter(type)
 #else
 #define LOG_DEBUG_FILTER(logger, type) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -97,7 +97,7 @@ if(false) { \
 		*logger << ember::log::Severity::INFO << ember::log::Filter(type)
 #else
 #define LOG_INFO_FILTER(logger, type) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -107,7 +107,7 @@ if(false) { \
 		*logger << ember::log::Severity::WARN << ember::log::Filter(type)
 #else
 #define LOG_WARN_FILTER(logger, type) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -117,7 +117,7 @@ if(false) { \
 		*logger << ember::log::Severity::ERROR_ << ember::log::Filter(type)
 #else
 #define LOG_ERROR_FILTER(logger, type) \
-if(false) { \
+	if(false) { \
 		*logger
 #endif
 
@@ -128,7 +128,7 @@ if(false) { \
 		*logger << ember::log::Severity::FATAL << ember::log::Filter(type)
 #else
 #define LOG_FATAL_FILTER(logger, type) \
-if(false) \
+	if(false) \
 		*logger
 #endif
 

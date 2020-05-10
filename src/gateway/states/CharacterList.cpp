@@ -16,6 +16,7 @@
 #include "../ClientConnection.h"
 #include "../EventDispatcher.h"
 #include "../FilterTypes.h"
+#include "../ClientLogHelper.h"
 #include <logger/Logging.h>
 #include <protocol/Packets.h>
 #include <protocol/Opcodes.h>
@@ -78,7 +79,7 @@ void character_rename(ClientContext& ctx) {
 
 	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->rename_character(ctx.account_id, packet->id, packet->name,
+	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
 		auto event = std::make_unique<CharRenameResponse>(status, result, id, name);
@@ -107,7 +108,7 @@ void character_enumerate(ClientContext& ctx) {
 
 	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->retrieve_characters(ctx.account_id,
+	Locator::character()->retrieve_characters(ctx.client_id->id,
 	                                          [uuid](auto status, auto characters) {
 		auto event = std::make_unique<CharEnumResponse>(status, std::move(characters));
 		Locator::dispatcher()->post_event(uuid, std::move(event));
@@ -151,7 +152,7 @@ void character_create(ClientContext& ctx) {
 
 	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->create_character(ctx.account_id, packet->character,
+	Locator::character()->create_character(ctx.client_id->id, packet->character,
 	                                       [uuid](auto status, auto result) {
 		Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
 	});
@@ -178,7 +179,7 @@ void character_delete(ClientContext& ctx) {
 
 	const auto uuid = ctx.handler->uuid();
 
-	Locator::character()->delete_character(ctx.account_id, packet->id,
+	Locator::character()->delete_character(ctx.client_id->id, packet->id,
 	                                       [uuid](auto status, auto result) {
 		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
 	});
@@ -213,8 +214,7 @@ void player_login(ClientContext& ctx) {
 }
 
 void handle_timeout(ClientContext& ctx) {
-	LOG_DEBUG_GLOB << "Character list timed out for "
-		<< ctx.connection->remote_address() << LOG_ASYNC;
+	CLIENT_DEBUG_GLOB(ctx) << "Character list timed out" << LOG_ASYNC;
 	ctx.handler->close();
 }
 

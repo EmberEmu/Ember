@@ -42,12 +42,6 @@ void ClientConnection::completion_check(const spark::Buffer& buffer) {
 }
 
 void ClientConnection::dispatch_message(spark::Buffer& buffer) {
-	protocol::ClientOpcode opcode;
-	buffer.copy(&opcode, sizeof(opcode));
-
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
-		<< protocol::to_string(opcode) << LOG_ASYNC;
-
 	spark::BinaryStream stream(buffer, msg_size_);
 	handler_.handle_message(stream);
 }

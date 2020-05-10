@@ -33,8 +33,9 @@ class ClientHandler final {
 	log::Logger* logger_;
 	boost::asio::steady_timer timer_;
 	protocol::ClientOpcode opcode_;
+	mutable std::string client_id_basic_;
+	mutable std::string client_id_full_;
 
-	std::string client_identify();
 	void handle_ping(spark::BinaryStream& stream);
 
 public:
@@ -44,6 +45,7 @@ public:
 	void start();
 	void stop();
 	void close();
+	const std::string& client_identify() const;
 
 	template<typename PacketT>
 	bool packet_deserialise(PacketT& packet, spark::BinaryStream& stream);

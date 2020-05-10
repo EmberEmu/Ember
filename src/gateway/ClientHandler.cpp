@@ -12,6 +12,7 @@
 #include "EventDispatcher.h"
 #include "states/StateLUT.h"
 #include "FilterTypes.h"
+#include "ClientLogHelper.h"
 #include <shared/util/EnumHelper.h>
 #include <protocol/Packets.h>
 #include <spark/buffers/BinaryStream.h>
@@ -36,6 +37,9 @@ void ClientHandler::handle_message(spark::BinaryStream& stream) {
 	context_.stream = &stream;
 	stream >> opcode_;
 
+	CLIENT_TRACE_FILTER(logger_, context_, LF_NETWORK)
+		<< " -> " << protocol::to_string(opcode_) << LOG_ASYNC;
+
 	// handle ping & keep-alive as special cases
 	switch(opcode_) {
 		case protocol::ClientOpcode::CMSG_PING:
@@ -59,7 +63,7 @@ void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 }
 
 void ClientHandler::state_update(ClientState new_state) {
-	LOG_DEBUG_FILTER(logger_, LF_NETWORK) << client_identify() << ": "
+	CLIENT_DEBUG_FILTER(logger_, context_, LF_NETWORK)
 		<< "State change, " << ClientState_to_string(context_.state)
 		<< " => " << ClientState_to_string(new_state) << LOG_SYNC;
 
@@ -70,10 +74,10 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 void ClientHandler::packet_skip(spark::BinaryStream& stream) {
-	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-		<< ClientState_to_string(context_.state) << " requested skip of packet "
-		<< protocol::to_string(opcode_) << " (" << util::enum_value(opcode_) << ") from "
-		<< client_identify() << LOG_ASYNC;
+	CLIENT_DEBUG_FILTER(logger_, context_, LF_NETWORK)
+		<< ClientState_to_string(context_.state) << " skipping "
+		<< protocol::to_string(opcode_)
+		<< " (" << util::enum_value(opcode_) << ")" << LOG_ASYNC;
 
 	stream.skip(stream.read_limit() - stream.total_read());
 }
@@ -113,12 +117,22 @@ void ClientHandler::stop_timer() {
  * and IP address in log outputs, based on whether authentication
  * has completed
  */
-std::string ClientHandler::client_identify() {
-	if(context_.state > ClientState::AUTHENTICATING) {
-		return context_.account_name + "(" + context_.connection->remote_address() + ")";
-	} else {
-		return context_.connection->remote_address();
+const std::string& ClientHandler::client_identify() const {	
+	if(client_id_basic_.empty()) {
+		client_id_basic_ = connection_.remote_address() + " ";
 	}
+
+	if(context_.client_id) {
+		if(client_id_full_.empty()) {
+			client_id_full_ = client_id_basic_ + "( " +
+			context_.client_id->username + ", " + 
+			std::to_string(context_.client_id->id) + ") ";
+		}
+
+		return client_id_full_;
+	}
+
+	return client_id_basic_;
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,

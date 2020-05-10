@@ -18,9 +18,10 @@ enum class State {
 };
 
 struct Context {
-	State state { State::NOT_AUTHED };
-	std::uint32_t seed {};
-	protocol::CMSG_AUTH_SESSION packet {};
+	State state;
+	std::uint32_t seed;
+	std::uint32_t account_id;
+	protocol::CMSG_AUTH_SESSION packet;
 };
 
 } // authentication, ember

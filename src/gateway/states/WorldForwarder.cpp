@@ -27,7 +27,7 @@ void handle_packet(ClientContext& context, protocol::ClientOpcode opcode) {
 	} else {
 		LOG_DEBUG_FILTER_GLOB(LF_NETWORK) << "Unroutable message, "
 			<< protocol::to_string(opcode) << " (" << util::enum_value(opcode) << ")"
-			<< " from " << context.account_name << LOG_ASYNC;
+			<< " from " << context.client_id->username << LOG_ASYNC;
 	}
 }
 

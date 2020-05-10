@@ -14,6 +14,7 @@
 #include <spark/buffers/Buffer.h>
 #include <protocol/PacketHeaders.h>
 #include <shared/util/UTF8String.h>
+#include <optional>
 #include <variant>
 #include <cstdint>
 
@@ -32,6 +33,11 @@ using StateContext =
 		world_enter::Context
 	>;
 
+struct ClientID {
+	std::uint32_t id;
+	utf8_string username;
+};
+
 struct ClientContext {
 	spark::BinaryStream* stream;
 	ClientState state;
@@ -39,8 +45,7 @@ struct ClientContext {
 	ClientHandler* handler;
 	ClientConnection* connection;
 	StateContext state_ctx;
-	std::uint32_t account_id;
-	utf8_string account_name;
+	std::optional<ClientID> client_id;
 };
 
 } // ember

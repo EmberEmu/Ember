@@ -14,6 +14,7 @@
 #include "../ClientConnection.h"
 #include "../Locator.h"
 #include "../EventDispatcher.h"
+#include "../ClientLogHelper.h"
 #include <protocol/Opcodes.h>
 #include <protocol/PacketHeaders.h>
 #include <protocol/Packets.h>
@@ -71,7 +72,7 @@ void handle_authentication(ClientContext& ctx) {
 		return;
 	}
 
-	LOG_DEBUG_GLOB << "Received session proof from "
+	CLIENT_DEBUG_GLOB(ctx) << "Received session proof for "
 		<< auth_ctx.packet->username << LOG_ASYNC;
 
 	if(auth_ctx.packet->build == 0) {
@@ -99,7 +100,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(event->status != em::account::Status::OK) {
-		LOG_ERROR_FILTER_GLOB(LF_NETWORK)
+		CLIENT_ERROR_FILTER_GLOB(ctx, LF_NETWORK)
 			<< "Account server returned "
 			<< util::fb_status(event->status, em::account::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
@@ -110,8 +111,8 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	}
 
 	if(event->account_id) {
-		ctx.account_id = event->account_id;
-		fetch_session_key(ctx, ctx.account_id);
+		auth_ctx.account_id = event->account_id;
+		fetch_session_key(ctx, event->account_id);
 	} else {
 		LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 			<< "Account ID lookup for failed for "
@@ -165,14 +166,14 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	const auto& hash = hasher->final();
 
 	if(hash != packet->digest) {
-		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;
+		CLIENT_DEBUG_GLOB(ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
 		ctx.handler->close(); // key mismatch, client can't decrypt response
 		return;
 	}
 
 	ctx.connection->set_key(key);
-	ctx.account_name = packet->username;
+	ctx.client_id = { auth_ctx.account_id, packet->username };
 
 	 // todo, allowing for multiple gateways to connect to a single world server
 	 // will require an external service to keep track of available slots
@@ -204,7 +205,7 @@ void send_addon_data(ClientContext& ctx) {
 
 	// todo, use AddonData.dbc
 	for(const auto& addon : addons) {
-		LOG_DEBUG_GLOB << "Addon: " << addon.name << ", Key version: " << addon.key_version
+		CLIENT_DEBUG_GLOB(ctx) << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
 		protocol::server::AddonInfo::AddonData data;
@@ -212,7 +213,7 @@ void send_addon_data(ClientContext& ctx) {
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
-			LOG_DEBUG_GLOB << "Repairing " << addon.name << LOG_ASYNC;
+			CLIENT_DEBUG_GLOB(ctx) << "Repairing " << addon.name << LOG_ASYNC;
 			data.key_version = 1;
 		} else {
 			data.key_version = 0;
@@ -240,7 +241,7 @@ void auth_queue(ClientContext& ctx) {
 	);
 
 	auth_state(ctx, State::IN_QUEUE);
-	LOG_DEBUG_GLOB << ctx.account_name << " added to queue" << LOG_ASYNC;
+	CLIENT_DEBUG_GLOB(ctx) << "added to queue" << LOG_ASYNC;
 }
 
 void auth_success(ClientContext& ctx) {
@@ -250,7 +251,7 @@ void auth_success(ClientContext& ctx) {
 	send_addon_data(ctx);
 	auth_state(ctx, State::SUCCESS);
 	ctx.handler->state_update(ClientState::CHARACTER_LIST);
-	LOG_DEBUG_GLOB << ctx.account_name << " authenticated" << LOG_ASYNC;
+	CLIENT_DEBUG_GLOB(ctx) << "authenticated" << LOG_ASYNC;
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
@@ -276,8 +277,7 @@ void handle_queue_success(ClientContext& ctx) {
 }
 
 void handle_timeout(ClientContext& ctx) {
-	LOG_DEBUG_GLOB << "Authentication timed out for "
-		<< ctx.connection->remote_address() << LOG_ASYNC;
+	CLIENT_DEBUG_GLOB(ctx) << "Authentication timed out" << LOG_ASYNC;
 	ctx.handler->close();
 }
 

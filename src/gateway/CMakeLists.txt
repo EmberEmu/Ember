@@ -35,6 +35,7 @@ set(LIBRARY_HDR
     CharacterService.h
     CompressMessage.h
     Routing.h
+    ClientLogHelper.h
     states/ClientStates.h
     states/Authentication.h
     states/CharacterList.h
