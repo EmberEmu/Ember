@@ -67,7 +67,7 @@ void handle_authentication(ClientContext& ctx) {
 
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(!ctx.handler->packet_deserialise(auth_ctx.packet, *ctx.buffer)) {
+	if(!ctx.handler->packet_deserialise(auth_ctx.packet, *ctx.stream)) {
 		return;
 	}
 
@@ -293,7 +293,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			handle_authentication(ctx);
 			break;
 		default:
-			ctx.handler->packet_skip(*ctx.buffer, opcode);
+			ctx.handler->packet_skip(*ctx.stream);
 	}
 }
 

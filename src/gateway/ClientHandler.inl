@@ -12,10 +12,7 @@
 #include <spark/buffers/Buffer.h>
 
 template<typename PacketT>
-bool ClientHandler::packet_deserialise(PacketT& packet, spark::Buffer& buffer) {
-	spark::BinaryStream stream(buffer, context_.msg_size);
-	stream.skip(sizeof(typename PacketT::OpcodeType));
-
+bool ClientHandler::packet_deserialise(PacketT& packet, spark::BinaryStream& stream) {
 	if(packet->read_from_stream(stream) != protocol::State::DONE) {
 		const auto state = stream.state();
 

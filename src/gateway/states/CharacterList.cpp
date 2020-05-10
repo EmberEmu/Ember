@@ -72,7 +72,7 @@ void character_rename(ClientContext& ctx) {
 
 	protocol::CMSG_CHAR_RENAME packet;
 
-	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
@@ -145,7 +145,7 @@ void character_create(ClientContext& ctx) {
 
 	protocol::CMSG_CHAR_CREATE packet;
 
-	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
@@ -172,7 +172,7 @@ void character_delete(ClientContext& ctx) {
 
 	protocol::CMSG_CHAR_DELETE packet;
 
-	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
@@ -201,7 +201,7 @@ void player_login(ClientContext& ctx) {
 
 	protocol::CMSG_PLAYER_LOGIN packet;
 
-	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
+	if(!ctx.handler->packet_deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
@@ -242,7 +242,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			player_login(ctx);
 			break;
 		default:
-			ctx.handler->packet_skip(*ctx.buffer, opcode);
+			ctx.handler->packet_skip(*ctx.stream);
 	}
 }
 

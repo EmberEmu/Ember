@@ -32,9 +32,10 @@ class ClientHandler final {
 	const ClientUUID uuid_;
 	log::Logger* logger_;
 	boost::asio::steady_timer timer_;
+	protocol::ClientOpcode opcode_;
 
 	std::string client_identify();
-	void handle_ping(spark::Buffer& buffer);
+	void handle_ping(spark::BinaryStream& stream);
 
 public:
 	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
@@ -45,11 +46,11 @@ public:
 	void close();
 
 	template<typename PacketT>
-	bool packet_deserialise(PacketT& packet, spark::Buffer& buffer);
-	void packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode);
+	bool packet_deserialise(PacketT& packet, spark::BinaryStream& stream);
+	void packet_skip(spark::BinaryStream& stream);
 
 	void state_update(ClientState new_state);
-	void handle_message(spark::Buffer& buffer, protocol::SizeType size);
+	void handle_message(spark::BinaryStream& stream);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 

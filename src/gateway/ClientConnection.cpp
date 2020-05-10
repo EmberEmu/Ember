@@ -48,7 +48,8 @@ void ClientConnection::dispatch_message(spark::Buffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " -> "
 		<< protocol::to_string(opcode) << LOG_ASYNC;
 
-	handler_.handle_message(buffer, msg_size_);
+	spark::BinaryStream stream(buffer, msg_size_);
+	handler_.handle_message(stream);
 }
 
 void ClientConnection::process_buffered_data(spark::Buffer& buffer) {

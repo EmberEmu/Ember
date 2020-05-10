@@ -32,17 +32,14 @@ void ClientHandler::close() {
 	connection_.close_session();
 }
 
-void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType size) {
-	protocol::ClientOpcode opcode;
-	buffer.copy(&opcode, sizeof(opcode));
-
-	context_.buffer = &buffer;
-	context_.msg_size = size;
+void ClientHandler::handle_message(spark::BinaryStream& stream) {
+	context_.stream = &stream;
+	stream >> opcode_;
 
 	// handle ping & keep-alive as special cases
-	switch(opcode) {
+	switch(opcode_) {
 		case protocol::ClientOpcode::CMSG_PING:
-			handle_ping(buffer);
+			handle_ping(stream);
 			return;
 		case protocol::ClientOpcode::CMSG_KEEP_ALIVE: // no response required
 			return;
@@ -50,7 +47,7 @@ void ClientHandler::handle_message(spark::Buffer& buffer, protocol::SizeType siz
 			break;
 	}
 
-	update_packet[context_.state](context_, opcode);
+	update_packet[context_.state](context_, opcode_);
 }
 
 void ClientHandler::handle_event(const Event* event) {
@@ -72,21 +69,21 @@ void ClientHandler::state_update(ClientState new_state) {
 	enter_states[context_.state](context_);
 }
 
-void ClientHandler::packet_skip(spark::Buffer& buffer, protocol::ClientOpcode opcode) {
+void ClientHandler::packet_skip(spark::BinaryStream& stream) {
 	LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 		<< ClientState_to_string(context_.state) << " requested skip of packet "
-		<< protocol::to_string(opcode) << " (" << util::enum_value(opcode) << ") from "
+		<< protocol::to_string(opcode_) << " (" << util::enum_value(opcode_) << ") from "
 		<< client_identify() << LOG_ASYNC;
 
-	buffer.skip(context_.msg_size);
+	stream.skip(stream.read_limit() - stream.total_read());
 }
 
-void ClientHandler::handle_ping(spark::Buffer& buffer) {
+void ClientHandler::handle_ping(spark::BinaryStream& stream) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_PING packet;
 
-	if(!packet_deserialise(packet, buffer)) {
+	if(!packet_deserialise(packet, stream)) {
 		return;
 	}
 

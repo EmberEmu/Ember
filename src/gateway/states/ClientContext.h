@@ -33,8 +33,7 @@ using StateContext =
 	>;
 
 struct ClientContext {
-	spark::Buffer* buffer;
-	protocol::SizeType msg_size;
+	spark::BinaryStream* stream;
 	ClientState state;
 	ClientState prev_state;
 	ClientHandler* handler;
