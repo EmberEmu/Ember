@@ -39,97 +39,152 @@ void send_auth_result(ClientContext& ctx, protocol::Result result);
 void handle_authentication(ClientContext& ctx);
 void handle_queue_update(ClientContext& ctx, const QueuePosition* event);
 void handle_queue_success(ClientContext& ctx);
-void auth_success(ClientContext& ctx, const std::vector<AddonData>& addons);
-void auth_queue(ClientContext& ctx, const std::vector<AddonData>& addons);
-void prove_session(ClientContext& ctx, const Botan::BigInt& key, const protocol::CMSG_AUTH_SESSION& packet);
-void fetch_session_key(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
-void fetch_account_id(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet);
+void auth_success(ClientContext& ctx);
+void auth_queue(ClientContext& ctx);
+void prove_session(ClientContext& ctx, const Botan::BigInt& key);
+void fetch_session_key(ClientContext& ctx, std::uint32_t account_id);
+void fetch_account_id(ClientContext& ctx, const std::string& username);
 void handle_timeout(ClientContext& ctx);
+void send_addon_data(ClientContext& ctx);
+
+void auth_state(ClientContext& ctx, State state) {
+	auto& state_ctx = std::get<Context>(ctx.state_ctx);
+	state_ctx.state = state;
+}
+
+State auth_state(ClientContext& ctx) {
+	auto& state_ctx = std::get<Context>(ctx.state_ctx);
+	return state_ctx.state;
+}
 
 void handle_authentication(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// prevent repeated auth attempts
+	if(auth_state(ctx) != State::NOT_AUTHED) {
+		return;
+	}
+
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(auth_ctx.state != State::NOT_AUTHED) {
+	if(!ctx.handler->packet_deserialise(auth_ctx.packet, *ctx.buffer)) {
 		return;
 	}
 
-	auth_ctx.state = State::IN_PROGRESS;
-	protocol::CMSG_AUTH_SESSION packet;
+	LOG_DEBUG_GLOB << "Received session proof from "
+		<< auth_ctx.packet->username << LOG_ASYNC;
 
-	if(!ctx.handler->packet_deserialise(packet, *ctx.buffer)) {
-		return;
-	}
-
-	LOG_DEBUG_GLOB << "Received session proof from " << packet->username << LOG_ASYNC;
-
-	if(packet->build == 0) {
+	if(auth_ctx.packet->build == 0) {
 		// todo - check game build
 	}
 
-	fetch_account_id(ctx, packet);
+	auth_state(ctx, State::IN_PROGRESS);
+	fetch_account_id(ctx, auth_ctx.packet->username);
 }
 
-void fetch_account_id(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void fetch_account_id(ClientContext& ctx, const std::string& username) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	const auto uuid = ctx.handler->uuid();
 
-	Locator::account()->locate_account_id(packet->username, [uuid, packet](auto status, auto id) {
-		auto event = std::make_unique<AccountIDResponse>(packet, std::move(status), id);
+	Locator::account()->locate_account_id(username, [uuid](auto status, auto id) {
+		auto event = std::make_unique<AccountIDResponse>(std::move(status), id);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
 void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(event->status != em::account::Status::OK) {
 		LOG_ERROR_FILTER_GLOB(LF_NETWORK)
 			<< "Account server returned "
 			<< util::fb_status(event->status, em::account::EnumNamesStatus())
-			<< " for " << event->packet->username << " lookup" << LOG_ASYNC;
+			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
+
+		auth_state(ctx, State::FAILED);
 		ctx.handler->close();
 		return;
 	}
 
 	if(event->account_id) {
 		ctx.account_id = event->account_id;
-		fetch_session_key(ctx, event->packet);
+		fetch_session_key(ctx, ctx.account_id);
 	} else {
 		LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 			<< "Account ID lookup for failed for "
-			<< event->packet->username << LOG_ASYNC;
+			<< auth_ctx.packet->username << LOG_ASYNC;
+		auth_state(ctx, State::FAILED);
+		ctx.handler->close();
 	}
 }
 
-void fetch_session_key(ClientContext& ctx, const protocol::CMSG_AUTH_SESSION& packet) {
+void fetch_session_key(ClientContext& ctx, const std::uint32_t account_id) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	const auto uuid = ctx.handler->uuid();
 
-	Locator::account()->locate_session(ctx.account_id, [uuid, packet](auto status, auto key) {
-		auto event = std::make_unique<SessionKeyResponse>(packet, status, key);
+	Locator::account()->locate_session(account_id, [uuid](auto status, auto key) {
+		auto event = std::make_unique<SessionKeyResponse>(status, key);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
 void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+
 	LOG_DEBUG_FILTER_GLOB(LF_NETWORK)
 		<< "Account server returned "
 		<< util::fb_status(event->status, em::account::EnumNamesStatus())
-		<< " for " << event->packet->username << LOG_ASYNC;
-
-	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
-	auth_ctx.state = State::FAILED; // default unless overridden by success
+		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
 
 	if(event->status == em::account::Status::OK) {
-		prove_session(ctx, event->key, event->packet);
+		prove_session(ctx, event->key);
 	} else {
+		auth_state(ctx, State::FAILED);
 		ctx.handler->close();
 	}
+}
+
+void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
+	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
+	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+	const auto& packet = auth_ctx.packet;
+
+	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	hasher->update(packet->username);
+	hasher->update_be(unknown);
+	hasher->update(packet->seed.data(), sizeof(packet->seed));
+	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
+	hasher->update(k_bytes);
+	const auto& hash = hasher->final();
+
+	if(hash != packet->digest) {
+		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;
+		auth_state(ctx, State::FAILED);
+		ctx.handler->close(); // key mismatch, client can't decrypt response
+		return;
+	}
+
+	ctx.connection->set_authenticated(key);
+	ctx.account_name = packet->username;
+
+	 // todo, allowing for multiple gateways to connect to a single world server
+	 // will require an external service to keep track of available slots
+	unsigned int active_players = 0;
+
+	if(active_players < Locator::config()->max_slots) {
+		auth_success(ctx);
+	} else {
+		auth_queue(ctx);
+	}
+
+	ctx.handler->stop_timer();
 }
 
 void send_auth_challenge(ClientContext& ctx) {
@@ -140,9 +195,11 @@ void send_auth_challenge(ClientContext& ctx) {
 	ctx.connection->send(response);
 }
 
-void send_addon_data(ClientContext& ctx, const std::vector<AddonData>& addons) {
+void send_addon_data(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
+	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+	const auto& addons = auth_ctx.packet->addons;
 	protocol::SMSG_ADDON_INFO response;
 
 	// todo, use AddonData.dbc
@@ -167,49 +224,10 @@ void send_addon_data(ClientContext& ctx, const std::vector<AddonData>& addons) {
 	ctx.connection->send(response);
 }
 
-void prove_session(ClientContext& ctx, const Botan::BigInt& key,
-                   const protocol::CMSG_AUTH_SESSION& packet) {
+void auth_queue(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
-	std::vector<std::uint8_t> k_bytes = Botan::BigInt::encode(key);
-	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
-
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	hasher->update(packet->username);
-	hasher->update_be(unknown);
-	hasher->update(packet->seed.data(), sizeof(packet->seed));
-	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
-	hasher->update(k_bytes);
-	const auto& hash = hasher->final();
-
-	if(hash != packet->digest) {
-		LOG_DEBUG_GLOB << "Received bad digest from " << packet->username << LOG_ASYNC;
-		ctx.handler->close(); // key mismatch, client can't decrypt response
-		return;
-	}
-
-	ctx.connection->set_authenticated(key);
-	ctx.account_name = packet->username;
-	auth_ctx.state = State::SUCCESS;
-
-	 // todo, allowing for multiple gateways to connect to a single world server
-	 // will require an external service to keep track of available slots
-	unsigned int active_players = 0;
-
-	if(active_players < Locator::config()->max_slots) {
-		auth_success(ctx, packet->addons);
-	} else {
-		auth_queue(ctx, packet->addons);
-	}
-
-	ctx.handler->stop_timer();
-}
-
-void auth_queue(ClientContext& ctx, const std::vector<AddonData>& addons) {
 	const auto& uuid = ctx.handler->uuid();
-	auto& state_ctx = std::get<Context>(ctx.state_ctx);
-	state_ctx.addon_data = addons;
 
 	Locator::queue()->enqueue(uuid,
 		[uuid](const std::size_t position) {
@@ -221,14 +239,18 @@ void auth_queue(ClientContext& ctx, const std::vector<AddonData>& addons) {
 		}
 	);
 
+	auth_state(ctx, State::IN_QUEUE);
 	LOG_DEBUG_GLOB << ctx.account_name << " added to queue" << LOG_ASYNC;
 }
 
-void auth_success(ClientContext& ctx, const std::vector<AddonData>& addons) {
+void auth_success(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+
 	send_auth_result(ctx, protocol::Result::AUTH_OK);
-	send_addon_data(ctx, addons);
+	send_addon_data(ctx);
+	auth_state(ctx, State::SUCCESS);
 	ctx.handler->state_update(ClientState::CHARACTER_LIST);
+	LOG_DEBUG_GLOB << ctx.account_name << " authenticated" << LOG_ASYNC;
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
@@ -250,8 +272,7 @@ void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
 
 void handle_queue_success(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
-	const auto& state_ctx = std::get<Context>(ctx.state_ctx);
-	auth_success(ctx, state_ctx.addon_data);
+	auth_success(ctx);
 }
 
 void handle_timeout(ClientContext& ctx) {

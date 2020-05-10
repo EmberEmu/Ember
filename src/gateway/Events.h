@@ -38,32 +38,20 @@ struct QueuePosition : Event {
 	std::size_t position;
 };
 
-struct QueueSuccess : Event {
-	explicit QueueSuccess(protocol::CMSG_AUTH_SESSION packet)
-	                      : Event { EventType::QUEUE_SUCCESS },
-	                        packet(std::move(packet)) { }
-
-	protocol::CMSG_AUTH_SESSION packet;
-};
-
 struct AccountIDResponse : Event {
-	AccountIDResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status,
-	                  std::uint32_t id)
+	AccountIDResponse(messaging::account::Status status, std::uint32_t id)
 	                  : Event { EventType::ACCOUNT_ID_RESPONSE },
-	                    packet(std::move(packet)), status(status), account_id(id) { }
+	                    status(status), account_id(id) { }
 
-	protocol::CMSG_AUTH_SESSION packet;
 	messaging::account::Status status;
 	std::uint32_t account_id;
 };
 
 struct SessionKeyResponse : Event {
-	SessionKeyResponse(protocol::CMSG_AUTH_SESSION packet, messaging::account::Status status,
-	                   Botan::BigInt key)
+	SessionKeyResponse(messaging::account::Status status, Botan::BigInt key)
 	                   : Event { EventType::SESSION_KEY_RESPONSE },
-	                     packet(std::move(packet)), status(status), key(key) { }
+	                     status(status), key(key) { }
 
-	protocol::CMSG_AUTH_SESSION packet;
 	messaging::account::Status status;
 	Botan::BigInt key;
 };

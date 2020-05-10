@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <protocol/client/AuthSession.h>
+#include <protocol/Packets.h>
 #include <cstdint>
 
 namespace ember::authentication {
@@ -20,7 +20,7 @@ enum class State {
 struct Context {
 	State state { State::NOT_AUTHED };
 	std::uint32_t seed {};
-	std::vector<protocol::client::AuthSession::AddonData> addon_data;
+	protocol::CMSG_AUTH_SESSION packet {};
 };
 
 } // authentication, ember
