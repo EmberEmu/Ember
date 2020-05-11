@@ -89,8 +89,8 @@ void fetch_account_id(ClientContext& ctx, const std::string& username) {
 	const auto uuid = ctx.handler->uuid();
 
 	Locator::account()->locate_account_id(username, [uuid](auto status, auto id) {
-		auto event = std::make_unique<AccountIDResponse>(std::move(status), id);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		AccountIDResponse event(std::move(status), id);
+		Locator::dispatcher()->post_event(uuid, event);
 	});
 }
 
@@ -128,8 +128,8 @@ void fetch_session_key(ClientContext& ctx, const std::uint32_t account_id) {
 	const auto uuid = ctx.handler->uuid();
 
 	Locator::account()->locate_session(account_id, [uuid](auto status, auto key) {
-		auto event = std::make_unique<SessionKeyResponse>(status, key);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		SessionKeyResponse event(status, key);
+		Locator::dispatcher()->post_event(uuid, event);
 	});
 }
 

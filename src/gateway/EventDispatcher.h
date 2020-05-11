@@ -50,7 +50,7 @@ public:
 		});
 	}
 
-	auto post_event(const ClientUUID& client, const std::derived_from<Event> auto& event) const {
+	auto post_event(const ClientUUID& client, std::derived_from<Event> auto event) const {
 		auto service = pool_.get_service(client.service());
 
 		// bad service index encoded in the UUID
@@ -59,7 +59,7 @@ public:
 			return;
 		}
 
-		service->post([=] {
+		service->post([=, event = std::move(event)] {
 			const auto handler = handlers_.find(client);
 
 			// client disconnected, nothing to do here
@@ -73,7 +73,7 @@ public:
 	}
 
 	void post_event(const ClientUUID& client, std::unique_ptr<Event> event) const;
-	void broadcast_event(std::vector<ClientUUID> clients, const std::shared_ptr<const Event>& event) const;
+	void broadcast_event(std::vector<ClientUUID> clients, std::shared_ptr<const Event> event) const;
 	void register_handler(ClientHandler* handler);
 	void remove_handler(ClientHandler* handler);
 };

@@ -50,7 +50,7 @@ struct AccountIDResponse : Event {
 struct SessionKeyResponse : Event {
 	SessionKeyResponse(messaging::account::Status status, Botan::BigInt key)
 	                   : Event { EventType::SESSION_KEY_RESPONSE },
-	                     status(status), key(key) { }
+	                     status(status), key(std::move(key)) { }
 
 	messaging::account::Status status;
 	Botan::BigInt key;

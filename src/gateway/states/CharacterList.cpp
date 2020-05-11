@@ -82,8 +82,8 @@ void character_rename(ClientContext& ctx) {
 	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
-		auto event = std::make_unique<CharRenameResponse>(status, result, id, name);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		CharRenameResponse event(status, result, id, name);
+		Locator::dispatcher()->post_event(uuid, event);
 	});
 }
 
@@ -110,7 +110,7 @@ void character_enumerate(ClientContext& ctx) {
 
 	Locator::character()->retrieve_characters(ctx.client_id->id,
 	                                          [uuid](auto status, auto characters) {
-		auto event = std::make_unique<CharEnumResponse>(status, std::move(characters));
+		CharEnumResponse event(status, std::move(characters));
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }

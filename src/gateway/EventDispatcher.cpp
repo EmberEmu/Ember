@@ -45,7 +45,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
  * Callers should move the client UUID vector into this function.
  */
 void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
-                                      const std::shared_ptr<const Event>& event) const {
+                                      std::shared_ptr<const Event> event) const {
 	std::sort(clients.begin(), clients.end(), [](auto& lhs, auto& rhs) {
 		return lhs.service() < rhs.service();
 	});
@@ -76,7 +76,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 
 		auto service = pool_.get_service(i);
 
-		service->post([clients_ptr, range, event] {
+		service->post([clients_ptr, range, event = std::move(event)] {
 			auto it = range.first;
 
 			while(it != range.second) {
