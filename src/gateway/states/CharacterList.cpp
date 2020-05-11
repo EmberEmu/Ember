@@ -83,7 +83,7 @@ void character_rename(ClientContext& ctx) {
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
 		CharRenameResponse event(status, result, id, name);
-		Locator::dispatcher()->post_event(uuid, event);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
