@@ -170,7 +170,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	hasher->update(k_bytes.data(), k_bytes.size());
 	const auto& hash = hasher->final();
 
-	if(hash != packet->digest) {
+	if(std::equal(hash.begin(), hash.end(), packet->digest.begin(), packet->digest.end())) {
 		CLIENT_DEBUG_GLOB(ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
 		ctx.handler->close(); // key mismatch, client can't decrypt response

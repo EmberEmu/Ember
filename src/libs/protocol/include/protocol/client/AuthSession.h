@@ -18,6 +18,7 @@
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
+#include <array>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -41,7 +42,7 @@ public:
 		be::little_uint32_t update_url_crc;
 	};
 
-	Botan::secure_vector<std::uint8_t> digest;
+	std::array<std::uint8_t, DIGEST_LENGTH> digest;
 	be::little_uint32_t seed;
 	be::little_uint32_t id;
 	be::little_uint32_t security;
@@ -60,8 +61,6 @@ public:
 		stream >> unk1;
 		stream >> username;
 		stream >> seed;
-
-		digest.resize(DIGEST_LENGTH);
 		stream.get(digest.data(), DIGEST_LENGTH);
 		
 		// handle compressed addon data
