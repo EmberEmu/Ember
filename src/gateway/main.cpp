@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,6 @@
 #include "Locator.h"
 #include "FilterTypes.h"
 #include "RealmQueue.h"
-#include "ServicePool.h"
 #include "AccountService.h"
 #include "EventDispatcher.h"
 #include "CharacterService.h"
@@ -29,6 +28,7 @@
 #include <dbcreader/DBCReader.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/threading/ServicePool.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>

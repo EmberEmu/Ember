@@ -9,12 +9,12 @@
 #pragma once
 
 #include "FilterTypes.h"
-#include "ServicePool.h"
 #include "SessionManager.h"
 #include "ClientConnection.h"
 #include <logger/Logger.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
+#include <shared/threading/ServicePool.h>
 #include <boost/asio.hpp>
 #include <memory>
 #include <string>

@@ -17,7 +17,6 @@ set(LIBRARY_HDR
     SessionManager.h
     FilterTypes.h
     RealmService.h
-    ServicePool.h
     NetworkListener.h
     ClientConnection.h
     ClientConnection.inl
@@ -58,7 +57,6 @@ set(LIBRARY_SRC
     SessionManager.cpp
     ClientConnection.cpp
     RealmService.cpp
-    ServicePool.cpp
     AccountService.cpp
     RealmQueue.cpp
     ClientHandler.cpp

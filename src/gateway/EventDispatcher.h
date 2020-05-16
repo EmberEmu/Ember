@@ -10,7 +10,7 @@
 
 #include "Event.h"
 #include "ClientHandler.h"
-#include "ServicePool.h"
+#include <shared/threading/ServicePool.h>
 #include <shared/ClientUUID.h>
 #include <concepts>
 #include <memory>

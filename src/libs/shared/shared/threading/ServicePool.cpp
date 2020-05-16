@@ -8,20 +8,19 @@
 
 #include "ServicePool.h"
 #include <shared/threading/Affinity.h>
+#include <utility>
 #include <stdexcept>
 
 namespace ember {
 
-ServicePool::ServicePool(std::size_t pool_size) : pool_size_(pool_size), next_service_(0) {
+ServicePool::ServicePool(const std::size_t pool_size) : pool_size_(pool_size), next_service_(0) {
 	if(pool_size == 0) {
 		throw std::runtime_error("Cannot have an empty ASIO IO service pool!");
 	}
 
 	for(std::size_t i = 0; i < pool_size; ++i) {
-		auto io_context = std::make_shared<boost::asio::io_context>();
-		auto work = std::make_shared<boost::asio::io_context::work>(*io_context);
-		services_.emplace_back(io_context);
-		work_.emplace_back(work);
+		auto ctx = services_.emplace_back(std::make_shared<boost::asio::io_context>());
+		work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*ctx));
 	}
 }
 
@@ -35,7 +34,7 @@ boost::asio::io_context& ServicePool::get_service() {
 	return service;
 }
 
-boost::asio::io_context* ServicePool::get_service(std::size_t index) const {
+boost::asio::io_context* ServicePool::get_service(const std::size_t index) const {
 	if(index >= services_.size()) {
 		return nullptr;
 	}
