@@ -74,9 +74,9 @@ void handle_authentication(ClientContext& ctx) {
 
 	CLIENT_DEBUG_GLOB(ctx) << "Received session proof for "
 		<< auth_ctx.packet->username << LOG_ASYNC;
-
+	
 	if(auth_ctx.packet->build == 0) {
-		// todo - check game build
+		// todo - check game build & server ID
 	}
 
 	auth_state(ctx, State::IN_PROGRESS);

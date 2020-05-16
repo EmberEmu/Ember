@@ -46,7 +46,7 @@ public:
 	be::little_uint32_t seed;
 	be::little_uint32_t id;
 	be::little_uint32_t security;
-	be::little_uint32_t unk1;
+	be::little_uint32_t server_id;
 	be::little_uint32_t build;
 	be::little_uint8_t locale;
 	utf8_string username;
@@ -58,7 +58,7 @@ public:
 		const auto initial_stream_size = stream.size();
 
 		stream >> build;
-		stream >> unk1;
+		stream >> server_id;
 		stream >> username;
 		stream >> seed;
 		stream.get(digest.data(), DIGEST_LENGTH);
@@ -112,7 +112,7 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const {
 		stream << build;
-		stream << unk1;
+		stream << server_id;
 		stream << username;
 		stream << seed;
 		stream.put(digest.data(), digest.size());
