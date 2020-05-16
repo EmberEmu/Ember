@@ -65,12 +65,16 @@ void PINAuthenticator::pin_to_bytes(std::uint64_t pin) {
 	pin_bytes_.clear();
 
 	while(pin != 0) {
+		if(pin_bytes_.size() == pin_bytes_.capacity()) {
+			throw std::invalid_argument("Provided PIN was too long");	
+		}
+	
 		pin_bytes_.push_back(pin % 10);
 		pin /= 10;
 	}
 	
-	if(pin_bytes_.size() < MIN_PIN_LENGTH || pin_bytes_.size() > MAX_PIN_LENGTH) {
-		throw std::invalid_argument("Incorrect PIN length provided");
+	if(pin_bytes_.size() < MIN_PIN_LENGTH) {
+		throw std::invalid_argument("Provided PIN was too short");
 	}
 
 	std::reverse(pin_bytes_.begin(), pin_bytes_.end());

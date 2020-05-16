@@ -24,6 +24,7 @@
 #include <logger/Logging.h>
 #include <botan/hash.h>
 #include <botan/secmem.h>
+#include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
 #include <utility>
 #include <cstddef>
@@ -154,8 +155,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	// Encode the key without requiring an allocation
 	static constexpr auto key_size_hint = 32; 
-	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes;
-	k_bytes.resize(key.bytes());
+	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(key.bytes());
 	key.binary_encode(k_bytes.data(), k_bytes.size());
 
 	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client

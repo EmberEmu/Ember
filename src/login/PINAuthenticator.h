@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/Logging.h>
+#include <boost/container/static_vector.hpp>
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -28,7 +29,7 @@ class PINAuthenticator final {
 	std::array<std::uint8_t, SALT_LENGTH> server_salt_;
 	std::array<std::uint8_t, HASH_LENGTH> client_hash_;
 	std::array<std::uint8_t, GRID_SIZE> remapped_grid;
-	std::vector<std::uint8_t> pin_bytes_;
+	boost::container::static_vector<std::uint8_t, MAX_PIN_LENGTH> pin_bytes_;
 
 	log::Logger* logger_;
 
