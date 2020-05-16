@@ -135,9 +135,8 @@ void ClientConnection::read() {
 	));
 }
 
-void ClientConnection::set_key(const Botan::BigInt& key) {
-	auto k_bytes = Botan::BigInt::encode(key);
-	crypt_ = PacketCrypto(std::move(k_bytes));
+void ClientConnection::set_key(const std::span<std::uint8_t>& key) {
+	crypt_ = PacketCrypto(key);
 }
 
 void ClientConnection::start() {
