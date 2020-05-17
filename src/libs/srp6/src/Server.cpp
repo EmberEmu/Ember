@@ -8,18 +8,16 @@
 
 #include <srp6/Server.h>
 #include <botan/numthry.h>
-#include <botan/auto_rng.h>
 #include <botan/rng.h>
 #include <utility>
 
 using Botan::BigInt;
 using Botan::power_mod;
-using Botan::AutoSeeded_RNG;
 
 namespace ember::srp6 {
 
-Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6a)
-              : v_(v), N_(gen.prime()), b_(b) {
+Server::Server(const Generator& gen, BigInt v, BigInt b, bool srp6a)
+              : v_(std::move(v)), N_(gen.prime()), b_(std::move(b)) {
 	if(srp6a) {
 		k_ = std::move(detail::compute_k(gen.generator(), N_));
 	}
@@ -27,8 +25,8 @@ Server::Server(const Generator& gen, const BigInt& v, const BigInt& b, bool srp6
 	B_ = (k_ * v_ + gen(b_)) % N_;
 }
 
-Server::Server(const Generator& gen, const BigInt& v, std::size_t key_size, bool srp6a)
-               : Server(gen, v, BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
+Server::Server(const Generator& gen, BigInt v, std::size_t key_size, bool srp6a)
+               : Server(gen, std::move(v), BigInt(rng, key_size * 8) % gen.prime(),
                  srp6a) { }
 
 SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave_override) {
@@ -45,8 +43,15 @@ SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave
 	A_ = A;
 	BigInt u = detail::scrambler(A, B_, N_.bytes(), mode);
 	BigInt S = power_mod(A * power_mod(v_, u, N_), b_, N_);
-	return interleave? SessionKey(detail::interleaved_hash(detail::encode_flip(S)))
-	                   : SessionKey(Botan::BigInt::encode(S));
+
+	if(interleave) {
+		return SessionKey(detail::interleaved_hash(detail::encode_flip(S)));
+	} else {
+		KeyType key;
+		key.resize(S.bytes());
+		S.binary_encode(key.data(), key.size());
+		return SessionKey(key);
+	}
 }
 
 BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof) const {

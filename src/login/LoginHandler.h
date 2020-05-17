@@ -75,7 +75,7 @@ class LoginHandler {
 	const AccountService& acct_svc_;
 	const IntegrityData* exe_data_;
 	StateContainer state_data_;
-	Botan::secure_vector<std::uint8_t> checksum_salt_;
+	std::array<std::uint8_t, CHECKSUM_SALT_LEN> checksum_salt_;
 	PINAuthenticator::SaltBytes pin_salt_;
 	std::uint32_t pin_grid_seed_;
 	grunt::client::LoginChallenge challenge_;

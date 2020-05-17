@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,21 +13,27 @@
 #include <botan/auto_rng.h>
 #include <botan/secmem.h>
 #include <boost/serialization/strong_typedef.hpp>
+#include <boost/container/small_vector.hpp>
+#include <span>
 #include <cstddef>
  
 namespace ember::srp6 {
 	
-BOOST_STRONG_TYPEDEF(std::vector<std::uint8_t>, SessionKey);
+constexpr auto SMALL_VEC_LENGTH = 32;
+constexpr auto INTERLEAVE_LENGTH = 40;
+
+using SmallVec = boost::container::small_vector<std::uint8_t, SMALL_VEC_LENGTH>;
+using KeyType = boost::container::small_vector<std::uint8_t, INTERLEAVE_LENGTH>;
+BOOST_STRONG_TYPEDEF(KeyType, SessionKey);
 
 enum class Compliance { RFC5054, GAME };
 
 namespace detail {
 
-std::vector<std::uint8_t> interleaved_hash(std::vector<std::uint8_t> hash);
-std::vector<std::uint8_t> encode_flip(const Botan::BigInt& val);
-Botan::secure_vector<std::uint8_t> encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
-Botan::BigInt decode_flip(std::vector<std::uint8_t> val);
-Botan::BigInt decode_flip(Botan::secure_vector<std::uint8_t> val);
+KeyType interleaved_hash(SmallVec hash);
+SmallVec encode_flip(const Botan::BigInt& val);
+SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
+Botan::BigInt decode_flip(std::span<std::uint8_t> val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
                         Compliance mode);
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);

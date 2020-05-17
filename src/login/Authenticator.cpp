@@ -49,19 +49,19 @@ srp6::SessionKey LoginAuthenticator::session_key() {
 }
 
 ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,
-                                               Botan::secure_vector<std::uint8_t> salt)
-                                               : rcon_user_(std::move(username)), salt_(std::move(salt)) {
+                                               const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt)
+                                               : rcon_user_(std::move(username)), salt_(salt) {
 	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
 	std::transform(rcon_user_.begin(), rcon_user_.end(), rcon_user_.begin(), ::toupper);
-	sess_key_ = Botan::BigInt::encode(session_key);
+	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
 }
 
 bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof& packet) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	hasher->update(rcon_user_);
 	hasher->update(packet.salt.data(), packet.salt.size());
-	hasher->update(salt_);
-	hasher->update(sess_key_);
+	hasher->update(salt_.data(), salt_.size());
+	hasher->update(sess_key_.t.data(), sess_key_.t.size());
 	auto res = hasher->final();
 	return std::equal(res.begin(), res.end(), std::begin(packet.proof), std::end(packet.proof));
 }

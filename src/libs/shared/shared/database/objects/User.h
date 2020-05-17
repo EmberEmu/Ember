@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ public:
 		return pin_method_;
 	}
 
-	std::string totp_token() const{
+	const std::string& totp_token() const {
 		return totp_token_;
 	}
 
@@ -59,11 +59,11 @@ public:
 		return pin_;
 	}
 
-	std::string verifier() const {
+	const std::string& verifier() const {
 		return v_;
 	}
 
-	std::string salt() const {
+	const std::string& salt() const {
 		return s_;
 	}
 

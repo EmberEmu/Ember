@@ -11,6 +11,7 @@
 #include <logger/Logging.h>
 #include <boost/container/static_vector.hpp>
 #include <array>
+#include <span>
 #include <cstdint>
 #include <vector>
 
@@ -44,7 +45,8 @@ public:
 	PINAuthenticator(const SaltBytes& server_salt, const SaltBytes& client_salt,
 	                 std::uint32_t seed, log::Logger* logger);
 
-	bool validate_pin(std::uint32_t pin, const HashBytes& hash);
+	HashBytes calculate_hash(const std::uint32_t pin);
+	bool validate_pin(std::uint32_t pin, std::span<const std::uint8_t> hash);
 
 	static SaltBytes generate_salt();
 	static std::uint32_t generate_seed();

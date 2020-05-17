@@ -12,16 +12,16 @@
 
 namespace ember::client_integrity {
 
-Botan::secure_vector<std::uint8_t> checksum(const Botan::secure_vector<std::uint8_t>& seed,
+Botan::secure_vector<std::uint8_t> checksum(const std::span<const std::uint8_t> seed,
                                             const std::vector<std::byte>* buffer) {
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
-	hmac->set_key(seed);
+	hmac->set_key(seed.data(), seed.size());
 	hmac->update(reinterpret_cast<const std::uint8_t*>(buffer->data()), buffer->size());
 	return hmac->final();
 }
 
 Botan::secure_vector<std::uint8_t> finalise(const Botan::secure_vector<std::uint8_t>& checksum,
-                                            const std::span<uint8_t> client_seed) {
+                                            const std::span<const uint8_t> client_seed) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	hasher->update(client_seed.data(), client_seed.size_bytes());
 	hasher->update(checksum);

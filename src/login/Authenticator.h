@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,19 +11,22 @@
 #include "grunt/Packets.h"
 #include <srp6/Server.h>
 #include <shared/database/objects/User.h>
+#include <array>
 #include <memory>
 #include <string>
 
 namespace ember {
 
+constexpr auto CHECKSUM_SALT_LEN = 16;
+
 class ReconnectAuthenticator {
 	utf8_string rcon_user_;
-	Botan::secure_vector<std::uint8_t> salt_;
+	std::array<std::uint8_t, CHECKSUM_SALT_LEN> salt_;
 	srp6::SessionKey sess_key_;
 
 public:
 	ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,
-	                       Botan::secure_vector<std::uint8_t> salt);
+	                       const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt);
 
 	bool proof_check(const grunt::client::ReconnectProof& proof);
 	const utf8_string& username() { return rcon_user_; }

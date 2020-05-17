@@ -92,9 +92,13 @@ TEST(srp6a, RFC5054_TestVectors) {
 	                           "41BB59B6D5979B5C00A172B4A2A5903A0BDCAF8A709585EB2AFAFA8F"
 	                           "3499B200210DCC1F10EB33943CD67FC88A2F39A4BE5BEC4EC0A3212D"
 	                           "C346D7E474B29EDE8A469FFECA686E5A");
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(client.session_key(expected_B, salt, srp::Compliance::RFC5054).t))
+
+	const auto& c_sess_key = client.session_key(expected_B, salt, srp::Compliance::RFC5054).t;
+	const auto& s_sess_key = server.session_key(expected_A, srp::Compliance::RFC5054).t;
+
+	EXPECT_EQ(expected_key, Botan::BigInt::decode(c_sess_key.data(), c_sess_key.size()))
 		<< "Client key did not match expected value!";
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(server.session_key(expected_A, srp::Compliance::RFC5054).t))
+	EXPECT_EQ(expected_key, Botan::BigInt::decode(s_sess_key.data(), s_sess_key.size()))
 		<< "Server key did not match expected value!";
 }
 
@@ -139,7 +143,7 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 	Botan::BigInt M1_S = srp::generate_client_proof("CHAOSVEX", key, gen.prime(), gen.generator(),
 	                                                A, server.public_ephemeral(), salt);
 	Botan::BigInt M2_S = server.generate_proof(key, M1);
-	
+
 	EXPECT_EQ(M1, M1_S) << "Server's calculated client proof did not match the replayed proof!";
 	EXPECT_EQ(M2, M2_S) << "Server's proof did not match the replayed proof!";
 }

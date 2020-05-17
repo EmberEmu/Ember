@@ -112,7 +112,7 @@ void PINAuthenticator::pin_to_ascii() {
 	}
 }
 
-bool PINAuthenticator::validate_pin(const std::uint32_t pin, const HashBytes& client_hash) {
+auto PINAuthenticator::calculate_hash(const std::uint32_t pin) -> HashBytes {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pin_to_bytes(pin); // convert to byte array
@@ -120,16 +120,24 @@ bool PINAuthenticator::validate_pin(const std::uint32_t pin, const HashBytes& cl
 	pin_to_ascii();
 
 	// x = H(client_salt | H(server_salt | ascii(pin_bytes)))
+	HashBytes hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	BOOST_ASSERT_MSG(hasher->output_length() == hash.size(), "Bad hash size");
 	hasher->update(server_salt_.data(), server_salt_.size());
 	hasher->update(pin_bytes_.data(), pin_bytes_.size());
-	auto hash = hasher->final();
+	hasher->final(hash.data());
 
 	hasher->update(client_salt_.data(), client_salt_.size());
-	hasher->update(hash);
-	hash = hasher->final();
+	hasher->update(hash.data(), hash.size());
+	hasher->final(hash.data());
+	return hash;
+}
 
-	// ensure we computed the same result as the client
+bool PINAuthenticator::validate_pin(const std::uint32_t pin,
+                                    const std::span<const std::uint8_t> client_hash) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	const auto& hash = calculate_hash(pin);
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
 }
 

@@ -220,8 +220,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 		packet.pin_salt = pin_salt_ = PINAuthenticator::generate_salt();
 	}
 
-	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(16);
-	std::copy(checksum_salt_.begin(), checksum_salt_.end(), packet.checksum_salt.data());
+	Botan::AutoSeeded_RNG().randomize(checksum_salt_.data(), checksum_salt_.size());
+	packet.checksum_salt = checksum_salt_;
 }
 
 void LoginHandler::send_login_challenge(const FetchUserAction& action) {
@@ -279,8 +279,8 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 	grunt::server::ReconnectChallenge response;
 	response.result = grunt::Result::SUCCESS;
 
-	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(response.salt.size());
-	std::copy(checksum_salt_.begin(), checksum_salt_.end(), response.salt.data());
+	Botan::AutoSeeded_RNG().randomize(checksum_salt_.data(), checksum_salt_.size());
+	response.salt = checksum_salt_;
 
 	const auto&[status, key] = action.get_result();
 

@@ -16,10 +16,10 @@
 
 namespace ember::client_integrity {
 
-Botan::secure_vector<std::uint8_t> checksum(const Botan::secure_vector<std::uint8_t>& seed,
-                                            const std::vector<std::byte>* buffer);
+Botan::secure_vector<std::uint8_t>
+checksum(std::span<const std::uint8_t> seed, const std::vector<std::byte>* buffer);
 
-Botan::secure_vector<std::uint8_t> finalise(const Botan::secure_vector<std::uint8_t>& checksum,
-                                            std::span<uint8_t> seed);
+Botan::secure_vector<std::uint8_t>
+finalise(const Botan::secure_vector<std::uint8_t>& checksum, const std::span<const uint8_t> seed);
 
 } // client_integrity, ember
