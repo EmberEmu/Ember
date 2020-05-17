@@ -216,8 +216,8 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 
 	if(user_->pin_method() != PINMethod::NONE) {
 		packet.two_factor_auth = true;
-		packet.pin_grid_seed = pin_auth_.grid_seed();
-		packet.pin_salt = pin_auth_.server_salt();
+		packet.pin_grid_seed = pin_grid_seed_ = PINAuthenticator::generate_seed();
+		packet.pin_salt = pin_salt_ = PINAuthenticator::generate_salt();
 	}
 
 	checksum_salt_ = Botan::AutoSeeded_RNG().random_vec(16);
@@ -315,19 +315,16 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) {
 		return false;
 	}
 
+	PINAuthenticator pin_auth(pin_salt_, packet.pin_salt, pin_grid_seed_, logger_);
 	bool result = false;
 
-	pin_auth_.set_client_hash(packet.pin_hash);
-	pin_auth_.set_client_salt(packet.pin_salt);
-
 	if(user_->pin_method() == PINMethod::FIXED) {
-		pin_auth_.set_pin(user_->pin());
-		result = pin_auth_.validate_pin(packet.pin_hash);
+		result = pin_auth.validate_pin(user_->pin(), packet.pin_hash);
 	} else if(user_->pin_method() == PINMethod::TOTP) {
 		for(int interval = -1; interval < 2; ++interval) { // try time intervals -1 to +1
-			pin_auth_.set_pin(PINAuthenticator::generate_totp_pin(user_->totp_token(), interval));
+			const auto& pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
 
-			if(pin_auth_.validate_pin(packet.pin_hash)) {
+			if(pin_auth.validate_pin(pin, packet.pin_hash)) {
 				result = true;
 				break;
 			}

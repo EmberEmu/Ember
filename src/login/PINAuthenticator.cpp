@@ -23,43 +23,16 @@ namespace ember {
 
 namespace be = boost::endian;
 
-void PINAuthenticator::set_pin(std::uint64_t pin) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	pin_to_bytes(pin); // convert to byte array
-	remap_pin();       // calculate the expected input sequence
-}
-
-/*
- * Random number used by the client to 'randomise' the numpad layout.
- * We use this later on to remap our input grid to match that of the client.
- */
-std::uint32_t PINAuthenticator::grid_seed() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	grid_seed_ = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
-	return grid_seed_;
-}
-
-/* 
- * Returns a completely random 16-byte salt used during hashing
- */
-auto PINAuthenticator::server_salt() -> const std::array<std::uint8_t, SALT_LENGTH>& {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	for(auto& salt_byte : server_salt_) {
-		salt_byte = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
-	}
-	
-	remap_pin_grid();
-	return server_salt_;
-}
+PINAuthenticator::PINAuthenticator(const SaltBytes& server_salt, const SaltBytes& client_salt,
+                                   const std::uint32_t seed, log::Logger* logger)
+                                   : logger_(logger), grid_seed_(seed), server_salt_(server_salt),
+                                     client_salt_(client_salt) { }
 
 /*
  * Converts a PIN such as '16785' into an array of bytes
  * {1, 6, 7, 8, 5} used during the hashing process.
  */
-void PINAuthenticator::pin_to_bytes(std::uint64_t pin) {
+void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pin_bytes_.clear();
@@ -139,9 +112,11 @@ void PINAuthenticator::pin_to_ascii() {
 	}
 }
 
-bool PINAuthenticator::validate_pin(const std::array<std::uint8_t, HASH_LENGTH>& client_hash) {
+bool PINAuthenticator::validate_pin(const std::uint32_t pin, const HashBytes& client_hash) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
+	pin_to_bytes(pin); // convert to byte array
+	remap_pin();       // calculate the expected input sequence
 	pin_to_ascii();
 
 	// x = H(client_salt | H(server_salt | ascii(pin_bytes)))
@@ -192,6 +167,27 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	pin &= 0x7FFFFFFF;
 	pin %= 1000000;
 	return pin;
+}
+
+/*
+ * Random number used by the client to 'randomise' the numpad layout.
+ * We use this later on to remap our input grid to match that of the client.
+ */
+std::uint32_t PINAuthenticator::generate_seed() {
+	return gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
+}
+
+/* 
+ * Returns a completely random 16-byte salt used during hashing
+ */
+auto PINAuthenticator::generate_salt() -> SaltBytes {
+	SaltBytes server_salt;
+
+	for(auto& byte : server_salt) {
+		byte = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
+	}
+	
+	return server_salt;
 }
 
 } // ember

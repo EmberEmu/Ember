@@ -17,43 +17,37 @@
 namespace ember {
 
 class PINAuthenticator final {
+public:
 	static constexpr int MIN_PIN_LENGTH =  4;
 	static constexpr int MAX_PIN_LENGTH = 10;
 	static constexpr int GRID_SIZE      = 10;
 	static constexpr int SALT_LENGTH    = 16;
 	static constexpr int HASH_LENGTH    = 20;
 	
-	std::uint64_t pin_;
-	std::uint32_t grid_seed_;
-	std::array<std::uint8_t, SALT_LENGTH> client_salt_;
-	std::array<std::uint8_t, SALT_LENGTH> server_salt_;
-	std::array<std::uint8_t, HASH_LENGTH> client_hash_;
+	using SaltBytes = std::array<std::uint8_t, SALT_LENGTH>;
+	using HashBytes = std::array<std::uint8_t, HASH_LENGTH>;
+
+private:
+	log::Logger* logger_;
+	const std::uint32_t grid_seed_;
+	SaltBytes server_salt_;
+	SaltBytes client_salt_;
 	std::array<std::uint8_t, GRID_SIZE> remapped_grid;
 	boost::container::static_vector<std::uint8_t, MAX_PIN_LENGTH> pin_bytes_;
 
-	log::Logger* logger_;
-
 	void pin_to_ascii();
 	void remap_pin_grid();
-	void pin_to_bytes(std::uint64_t pin);
+	void pin_to_bytes(std::uint32_t pin);
 	void remap_pin();
 
 public:
-	explicit PINAuthenticator(log::Logger* logger) : logger_(logger), pin_(0), grid_seed_(0) {}
+	PINAuthenticator(const SaltBytes& server_salt, const SaltBytes& client_salt,
+	                 std::uint32_t seed, log::Logger* logger);
 
-	const std::array<std::uint8_t, SALT_LENGTH>& server_salt();
-	std::uint32_t grid_seed();
-	void set_pin(std::uint64_t pin);
-	bool validate_pin(const std::array<std::uint8_t, HASH_LENGTH>& hash);
+	bool validate_pin(std::uint32_t pin, const HashBytes& hash);
 
-	void set_client_hash(const std::array<std::uint8_t, HASH_LENGTH>& hash) {
-		client_hash_ = hash;
-	}
-
-	void set_client_salt(const std::array<std::uint8_t, SALT_LENGTH>& salt) {
-		client_salt_ = salt;
-	}
-
+	static SaltBytes generate_salt();
+	static std::uint32_t generate_seed();
 	static std::uint32_t generate_totp_pin(const std::string& secret, int interval);
 };
 

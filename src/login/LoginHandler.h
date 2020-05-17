@@ -74,9 +74,10 @@ class LoginHandler {
 	const std::string source_;
 	const AccountService& acct_svc_;
 	const IntegrityData* exe_data_;
-	PINAuthenticator pin_auth_;
 	StateContainer state_data_;
 	Botan::secure_vector<std::uint8_t> checksum_salt_;
+	PINAuthenticator::SaltBytes pin_salt_;
+	std::uint32_t pin_grid_seed_;
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
 	const bool locale_enforce_;
@@ -133,8 +134,7 @@ public:
 	             std::string source, Metrics& metrics, bool locale_enforce)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics),
-	               pin_auth_(logger), exe_data_(exe_data), transfer_state_{},
-	               locale_enforce_(locale_enforce) { }
+	               exe_data_(exe_data), transfer_state_{}, locale_enforce_(locale_enforce) { }
 };
 
 } // ember
