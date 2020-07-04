@@ -24,6 +24,7 @@
 #include <logger/Logging.h>
 #include <botan/hash.h>
 #include <botan/secmem.h>
+#include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
 #include <utility>
@@ -154,7 +155,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// Encode the key without requiring an allocation
-	static constexpr auto key_size_hint = 32; 
+	static constexpr auto key_size_hint = 32;
 	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(key.bytes());
 	key.binary_encode(k_bytes.data(), k_bytes.size());
 
@@ -163,14 +164,16 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	const auto& packet = auth_ctx.packet;
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	std::array<std::uint8_t, 20> hash;
+	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(packet->username);
 	hasher->update_be(unknown);
 	hasher->update(packet->seed.data(), sizeof(packet->seed));
 	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
 	hasher->update(k_bytes.data(), k_bytes.size());
-	const auto& hash = hasher->final();
+	hasher->final(hash.data());
 
-	if(std::equal(hash.begin(), hash.end(), packet->digest.begin(), packet->digest.end())) {
+	if(hash != packet->digest) {
 		CLIENT_DEBUG_GLOB(ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
 		ctx.handler->close(); // key mismatch, client can't decrypt response
