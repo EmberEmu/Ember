@@ -20,10 +20,7 @@ RUN apt-get -y update && apt-get -y upgrade \
  && tar -zxf boost_1_75_0.tar.gz \
  && cd boost_1_75_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
- && ./b2 link=static install -d0 -j 2 cxxflags="-std=c++20" \
- # Patch Boost to fix a regression
- && wget -q https://patch-diff.githubusercontent.com/raw/boostorg/endian/pull/44.patch \
- && git apply --unsafe-paths --directory=/usr/local 44.patch
+ && ./b2 link=static install -d0 -j 2 cxxflags="-std=c++20"
 
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 \
   && update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
