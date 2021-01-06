@@ -157,7 +157,7 @@ public:
 		));
 	}
 
-	boost::asio::executor get_executor() {
+	boost::asio::any_io_executor get_executor() {
 		return socket_.get_executor();
 	}
 

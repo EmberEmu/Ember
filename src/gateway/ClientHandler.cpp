@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -136,7 +136,7 @@ const std::string& ClientHandler::client_identify() const {
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
-                             boost::asio::executor executor)
+                             boost::asio::any_io_executor executor)
                              : context_{}, connection_(connection), logger_(logger), uuid_(uuid),
                                timer_(executor) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
