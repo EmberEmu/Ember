@@ -13,7 +13,7 @@
 
 namespace ember::protocol {
 
-using SizeType = typename boost::endian::big_uint16_at;
+using SizeType = boost::endian::big_uint16_at;
 
 struct ServerHeader {
 	using OpcodeType = ServerOpcode;
