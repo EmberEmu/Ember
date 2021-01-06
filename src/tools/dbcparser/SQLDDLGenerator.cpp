@@ -23,7 +23,7 @@ class DDLPrinter final : public types::TypeVisitor {
 	std::string suffix_;
 
 public:
-	DDLPrinter(const types::Struct& dbc) {
+	explicit DDLPrinter(const types::Struct& dbc) {
 		const auto name = dbc.alias.empty()? dbc.name : dbc.alias;
 		out_ << "CREATE TABLE `" << pascal_to_underscore(name) << "` (" << "\n";
 	}

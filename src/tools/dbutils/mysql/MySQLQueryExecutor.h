@@ -17,7 +17,7 @@ class MySQLQueryExecutor final : public QueryExecutor {
 	std::unique_ptr<sql::Connection> conn_;
 
 public:
-	MySQLQueryExecutor(DatabaseDetails details);
+	explicit MySQLQueryExecutor(DatabaseDetails details);
 
 	bool test_connection() override;
 	void create_user(const std::string& username, const std::string& password, bool drop) override;

@@ -110,7 +110,6 @@ public:
 			std::uint32_t offset, flags = 0;
 
 			for(const auto& loc : string_ref_loc_regions) {
-				std::uint32_t offset = 0;
 				stream_ >> offset;
 				std::stringstream qstr;
 				qstr << std::quoted(read_string(offset));
