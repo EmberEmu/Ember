@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2020 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -113,9 +113,9 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	}
 
 	hasher->update(hash.data(), hash.size());
+	hasher->final(hash.data());
 
 	if(mode == Compliance::RFC5054) {
-		hasher->final(hash.data());
 		return Botan::BigInt::decode(hash.data(), hash.size());
 	} else {
 		return detail::decode_flip(hash);
