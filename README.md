@@ -12,6 +12,9 @@ While most emulators strive for feature completeness, Ember aims to be a product
 
 Ember uses Docker to make it easy to get the project up and running within minutes. Once you have Docker (version 19 and up) installed, simply run...
 
+
+**Docker 19:**
+
 Linux & MacOS:
 
 ```bash
@@ -24,7 +27,12 @@ Windows:
 set "DOCKER_BUILDKIT=1" && docker build <path to Dockerfile>
 ```
 
-Ember uses `DOCKER_BUILDKIT=1` to enable experimental features that allow for build caching. It can be omitted by setting it as an environmental variable.
+Ember uses `DOCKER_BUILDKIT=1` to enable experimental features in Docker 19 that allow for build caching. It can be omitted by setting it as an environmental variable.
+
+**Docker 20+:**
+```
+docker build <path to Dockerfile>
+```
 
 Want to do it the traditional way? That's fine too, just see docs/GettingStarted.md.
 
