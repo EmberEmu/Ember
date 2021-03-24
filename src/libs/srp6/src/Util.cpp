@@ -11,6 +11,7 @@
 #include <botan/numthry.h>
 #include <boost/assert.hpp>
 #include <algorithm>
+#include <array>
 #include <iostream>
 
 constexpr auto SHA1_LEN = 20;
