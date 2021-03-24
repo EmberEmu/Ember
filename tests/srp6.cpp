@@ -167,3 +167,26 @@ TEST_F(srp6SessionTest, ClientNegativeEphemeral) {
 	EXPECT_THROW(client_->session_key(Botan::BigInt("-10"), salt_), srp::exception)
 		<< "Public ephemeral key should never be negative!";
 }
+
+TEST(srp6Regressions, ComputeX) {
+	std::string username = "alice";
+	std::string password = "password123";
+	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
+	srp::Generator gen(srp::Generator::Group::_1024_BIT);
+
+	Botan::BigInt expected_x("0x7E5250F2CB894FD9703611318C387A773FD52C09");
+	Botan::BigInt x = srp::detail::compute_x(username, password, salt, srp::Compliance::GAME);
+	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
+}
+
+TEST(srp6Regressions, GenerateUser) {
+	std::string username = "alice";
+	std::string password = "password123";
+	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
+
+	auto gen = srp::Generator(srp::Generator::Group::_256_BIT);
+	auto verifier = srp::generate_verifier(username, password, gen, salt, srp::Compliance::GAME);
+	
+	Botan::BigInt expected_v("0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A");
+	ASSERT_EQ(expected_v, verifier) << "Verifier was calculated incorrectly!";
+}
