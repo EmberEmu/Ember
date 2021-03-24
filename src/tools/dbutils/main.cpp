@@ -40,7 +40,7 @@ using namespace ember;
 namespace po = boost::program_options;
 namespace el = ember::log;
 
-const std::unordered_map<std::string_view, const std::vector<std::string_view>> db_arg_map {
+const std::unordered_map<std::string_view, const std::vector<std::string_view>> db_args {
 	{ "login", { "login.root-user", "login.root-password" }},
 	{ "world", { "world.root-user", "world.root-password" }}
 };
@@ -101,7 +101,6 @@ std::unique_ptr<QueryExecutor> db_executor(const std::string& type,
 
 int launch(const po::variables_map& args) try {
 	validate_options(args);
-	bool success = true;
 
 	if(!args["install"].empty()) {
 		LOG_INFO_GLOB << "Starting database setup process..." << LOG_SYNC;
@@ -144,6 +143,8 @@ int launch(const po::variables_map& args) try {
 		}
 	}
 
+	bool success = true;
+
 	if(!args["update"].empty()) {
 		LOG_INFO_GLOB << "Starting database update process..." << LOG_SYNC;
 
@@ -157,9 +158,9 @@ int launch(const po::variables_map& args) try {
 
 		const auto& dbs = args["update"].as<std::vector<std::string>>();
 
-		for(const auto& db : dbs) {
-			success &= db_update(args, db);
-		}
+		success = !std::any_of(dbs.begin(), dbs.end(), [&](const auto& db) {
+			return !db_update(args, db);
+		});
 	}
 
 	if(success) {
@@ -195,7 +196,7 @@ bool validate_db_names(const std::vector<std::string>& input_names) {
 	std::vector<std::string_view> bad_names;
 	std::vector<std::string_view> input(input_names.begin(), input_names.end());
 
-	for(const auto& [key, value] : db_arg_map) {
+	for(const auto& [key, value] : db_args) {
 		valid_names.emplace_back(key);
 	}
 
@@ -213,10 +214,10 @@ bool validate_db_names(const std::vector<std::string>& input_names) {
 	return bad_names.empty();
 }
 
-void validate_db_args(const po::variables_map& args, const std::string& mode) {
+void validate_db_args(const po::variables_map& po_args, const std::string& mode) {
 	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
 
-	const auto& dbs = args[mode].as<std::vector<std::string>>();
+	const auto& dbs = po_args[mode].as<std::vector<std::string>>();
 
 	if(!validate_db_names(dbs)) {
 		throw std::invalid_argument(
@@ -226,13 +227,14 @@ void validate_db_args(const po::variables_map& args, const std::string& mode) {
 	}
 
 	// ensure that all arguments required for managing this DB are present
-	for(const auto& db : dbs) {
-		for(const auto& argument : db_arg_map.at(db)) {
-			if(args[argument.data()].empty()) {
-				throw std::invalid_argument(
-					std::string("Missing argument for ") + db + ": " + argument.data()
-				);
-			}
+	for(const auto& db_name : dbs) {
+		const auto args = db_args.at(db_name);
+		const auto missing_arg = std::find_if(args.begin(), args.end(), [&](const auto& arg) {
+			return po_args[arg.data()].empty();
+		});
+
+		if(missing_arg != args.end()) {
+			throw std::invalid_argument(std::string("Missing argument for ") + db_name + ": " + missing_arg->data());
 		}
 	}
 }
