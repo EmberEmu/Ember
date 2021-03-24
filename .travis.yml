@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2020 Ember
+# Copyright (c) 2015 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,7 +7,7 @@
 # Everything on the build machines is out of date.
 
 language: cpp
-dist: bionic
+dist: focal
 
 git:
   depth: 1
@@ -16,19 +16,6 @@ env:
   global:
     - DOCKER_BUILDKIT=1
     - secure: "QEjAwdyTIKC23olE3wKevwJT/wskkxedicR3BTsVIznC6gFhSilYDHQl7WZZnUygZpoCM2xGJVwb9d+CCultf5eLsJinJG3bR5wdAmtZeYcT8EwSVGqSexUQKxci/fxgISw/YTybIyT8j5f61tJ5/7bwouvhhBnYPlgcbU0QuzZRe4RD7F9bL9lzT18LeenecpnJseJFL9iUgRoiOYRQss7Zru1GcKfo89kWPdNsu8j49EqEpMQNRP9zQiyagGRwCVeTvDjd54mRedoUKciANiwKjjpqM0ZHZ9Ogpl44TV0EfPzT0jA10I46sliSYEoSNwvHx0JSAi02zXIJeww2rafYiCwiClXz7SWlJ2GAJVkUw7U12x0OJEArpyVrU7uJmPmFSuGNPI7F2mTM1OE80zN/iAUv6iARo7/Yo67ZOTSbl9YtFn5RpVA9fo0U+HSWAHZwIAHLn48BMwsgGjMPB0dqoEnc2jK7ayhMxxv+QoybQPXuAjy22kBEYjHuRpdglBJNkcFmgKprJOcqJR4/bkMv1XPPNptSPoXQgttoBCqQs+syFP13xFGtg7IUUBCnr6z5CiYktul9xTJWMUKFtpVjYJLk4lvkWSuW9ine4bZUvC3Yj9mcT2TjC2aN/inG9xZmGsQ/SnOgtt+Ou/6n8nPhnnuS7KN/A/CSEdzkhjo="
-
-addons:
-  apt:
-    packages:
-      - docker-ce
-
-before_install:
-    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    - sudo apt-get update
-    - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-    - docker pull docker/dockerfile:experimental
-    - docker pull ubuntu:focal
 
 script:
     - docker build . --progress=plain
