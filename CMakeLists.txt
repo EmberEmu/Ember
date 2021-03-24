@@ -5,7 +5,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.12.4)
-set(CMAKE_SYSTEM_VERSION 8.1)
 project(Ember)
 
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
