@@ -267,7 +267,6 @@ DatabaseDetails db_details(const po::variables_map& args, const std::string& db)
 	const auto& root_pass = args[root_pass_arg].as<std::string>();
 	const auto& hostname = args[hostname_arg].as<std::string>();
 	const auto port = args[port_arg].as<std::uint16_t>();
-	const auto database { std::string(db) };
 
 	return {
 		.username = root_user,
@@ -419,16 +418,14 @@ bool db_update(const po::variables_map& args, const std::string& db) {
 		throw std::runtime_error("Unable to establish database connection");
 	}
 
-	std::stringstream path;
 	const auto& db_type = args["database-type"].as<std::string>();
-	path << args["sql-dir"].as<std::string>() << db_type << "/" << db << "/migrations";
-	std::vector<std::string> migration_paths;
+	const std::filesystem::path migrations_dir(args["sql-dir"].as<std::string>() + db_type + "/" + db + "/migrations");
 
 	// Fetch details of all applied migrations on this database
 	const auto& applied_migrations = executor->migrations();
 	std::vector<std::filesystem::path> paths;
 
-	for(const auto& it : std::filesystem::directory_iterator(path.str())) {
+	for(const auto& it : std::filesystem::directory_iterator(migrations_dir)) {
 		if(it.path().extension() != ".sql") {
 			continue;
 		}
@@ -437,6 +434,7 @@ bool db_update(const po::variables_map& args, const std::string& db) {
 	}
 
 	std::sort(paths.begin(), paths.end());
+	std::vector<std::string> migration_paths;
 
 	for(const auto& path : paths) {
 		// filter out any migrations older than the last applied migration
