@@ -64,7 +64,7 @@ user=${EMBER_LOGIN_DB_USER}
 password=${EMBER_LOGIN_DB_PASS}
 EOF
 QUERY="INSERT INTO users (username, s, v, creation_date, subscriber, survey_request,  \
-     pin_method, pin, totp_key) VALUES ('$EMBER_DEFAULT_USER', '$SALT', '$VERIFIER', UTC_TIMESTAMP, \
+     pin_method, pin, totp_key) VALUES ('$EMBER_DEFAULT_USER', X'$SALT', '$VERIFIER', UTC_TIMESTAMP, \
 	 b'1', b'0', b'0', b'0', b'0');"
 mysql --defaults-extra-file=$CNFFILE -h db -D $EMBER_LOGIN_DB -e "$QUERY"
 

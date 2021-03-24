@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2015 Ember
+/*
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <srp6/Exception.h>
 #include <botan/bigint.h>
 #include <string>
+#include <vector>
 #include <cstddef>
 
 namespace ember::srp6 {
@@ -21,7 +22,7 @@ class Client final {
 	const Generator gen_;
 	const Botan::BigInt v_, a_;
 	Botan::BigInt A_, B_, k_{ 3 };
-	Botan::BigInt salt_;
+	std::vector<std::uint8_t> salt_;
 	std::string identifier_, password_;
 
 public:
@@ -29,7 +30,7 @@ public:
 	       bool srp6a = false);
 	Client(std::string identifier, std::string password, Generator gen, Botan::BigInt a,
 	       bool srp6a = false);
-	SessionKey session_key(const Botan::BigInt& B, const Botan::BigInt& salt,
+	SessionKey session_key(const Botan::BigInt& B, const std::vector<std::uint8_t>& salt,
 	                       Compliance mode = Compliance::GAME, bool interleave_override = false);
 	Botan::BigInt generate_proof(const SessionKey& key) const;
 	inline const Botan::BigInt& public_ephemeral() const { return A_; }

@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014 - 2020 Ember
+/*
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <boost/container/small_vector.hpp>
 #include <span>
+#include <vector>
 #include <cstddef>
  
 namespace ember::srp6 {
@@ -38,28 +39,30 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
                         Compliance mode);
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-                        const Botan::BigInt& salt, Compliance mode);
+                        const std::vector<std::uint8_t>& salt, Compliance mode);
 
 inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& x) {
 	return generator(x);
 }
 
 inline Botan::BigInt generate(const std::string& identifier, const std::string& password,
-                              const Generator& gen, const Botan::BigInt& salt, Compliance mode) {
+                              const Generator& gen, const std::vector<std::uint8_t>& salt,
+                              Compliance mode) {
 	Botan::BigInt x = compute_x(identifier, password, salt, mode);
 	return compute_v(gen, x);
 }
 
 } //detail
 
-Botan::BigInt generate_salt(std::size_t salt_len);
+std::vector<std::uint8_t> generate_salt(std::size_t len);
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
-                                const Generator& generator, const Botan::BigInt& salt, Compliance mode);
+                                const Generator& generator, const std::vector<std::uint8_t>& salt,
+                                Compliance mode);
 
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,
-                                    const Botan::BigInt& B, const Botan::BigInt& salt);
+                                    const Botan::BigInt& B, const std::vector<std::uint8_t>& salt);
 
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
                                     const SessionKey& key);

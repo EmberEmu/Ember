@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,7 +43,11 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			User user(res->getUInt("id"), res->getString("username"), res->getString("s"),
+			auto salt_it = res->getBlob("s");
+			std::vector<std::uint8_t> salt((std::istreambuf_iterator<char>(*salt_it)),
+				std::istreambuf_iterator<char>());
+
+			User user(res->getUInt("id"), res->getString("username"), std::move(salt),
 			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),
 			          res->getUInt64("pin"), res->getString("totp_key"), res->getBoolean("banned"),
 			          res->getBoolean("suspended"), res->getBoolean("survey_request"),

@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2015 Ember
+/*
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,8 +34,8 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 	}
 }
 
-SessionKey Client::session_key(const BigInt& B, const Botan::BigInt& salt, Compliance mode,
-                               bool interleave_override) {
+SessionKey Client::session_key(const BigInt& B, const std::vector<std::uint8_t>& salt,
+                               Compliance mode, bool interleave_override) {
 	bool interleave = (mode == Compliance::GAME);
 	
 	if(interleave_override) {

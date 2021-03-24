@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <shared/util/UTF8String.h>
 #include <string>
 #include <utility>
+#include <vector>
 #include <cstdint>
 
 namespace ember {
@@ -23,7 +24,7 @@ class User {
 	std::uint32_t id_;
 	utf8_string user_;
 	std::string v_;
-	std::string s_;
+	std::vector<std::uint8_t> s_;
 	PINMethod pin_method_;
 	std::uint64_t pin_;
 	std::string totp_token_;
@@ -33,7 +34,7 @@ class User {
 	bool subscriber_;
 
 public:
-	User(std::uint32_t id, utf8_string username, std::string salt, std::string verifier,
+	User(std::uint32_t id, utf8_string username, std::vector<std::uint8_t> salt, std::string verifier,
 	     PINMethod pin_method, std::uint64_t pin, std::string totp_token, bool banned, bool suspended,
 	     bool survey_request, bool subscriber)
          : id_(id), user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)),
@@ -63,7 +64,7 @@ public:
 		return v_;
 	}
 
-	const std::string& salt() const {
+	const std::vector<std::uint8_t>& salt() const {
 		return s_;
 	}
 

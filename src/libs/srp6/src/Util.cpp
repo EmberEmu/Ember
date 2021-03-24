@@ -96,7 +96,7 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-                        const Botan::BigInt& salt, Compliance mode) {
+                        const std::vector<std::uint8_t>& salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, SHA1_LEN> hash;
@@ -107,9 +107,10 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	hasher->final(hash.data());
 
 	if(mode == Compliance::RFC5054) {
-		hasher->update(Botan::BigInt::encode(salt));
+		hasher->update(salt);
 	} else {
-		const auto& salt_enc = detail::encode_flip(salt);
+		SmallVec salt_enc(salt.begin(), salt.end());
+		std::reverse(salt_enc.begin(), salt_enc.end());
 		hasher->update(salt_enc.data(), salt_enc.size());
 	}
 
@@ -128,7 +129,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g,
                                     const Botan::BigInt& A, const Botan::BigInt& B,
-                                    const Botan::BigInt& salt) {
+                                    const std::vector<std::uint8_t>& salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, SHA1_LEN> n_hash, g_hash, i_hash, out;
@@ -148,9 +149,10 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 
 	hasher->update(n_hash.data(), n_hash.size());
 	hasher->update(i_hash.data(), i_hash.size());
-	const auto& salt_enc = detail::encode_flip(salt);
 	const auto& a_enc = detail::encode_flip(A);
 	const auto& b_enc = detail::encode_flip(B);
+	SmallVec salt_enc(salt.begin(), salt.end());
+	std::reverse(salt_enc.begin(), salt_enc.end());
 	hasher->update(salt_enc.data(), salt_enc.size());
 	hasher->update(a_enc.data(), a_enc.size());
 	hasher->update(b_enc.data(), b_enc.size());
@@ -174,12 +176,13 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	return detail::decode_flip(hash_out);
 }
 
-Botan::BigInt generate_salt(std::size_t salt_len) {
-	return Botan::BigInt::decode(Botan::AutoSeeded_RNG().random_vec(salt_len));
+std::vector<std::uint8_t> generate_salt(const std::size_t len) {
+	const auto rng = Botan::AutoSeeded_RNG().random_vec(len);
+	return { rng.begin(), rng.end() };
 }
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
-                                const Generator& generator, const Botan::BigInt& salt,
+                                const Generator& generator, const std::vector<std::uint8_t>& salt,
                                 Compliance mode) {
 	return detail::generate(identifier, password, generator, salt, mode);
 }

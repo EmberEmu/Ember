@@ -273,7 +273,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
-  `s` varchar(255) NOT NULL,
+  `s` binary(32) NOT NULL,
   `v` varchar(255) NOT NULL,
   `creation_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `subscriber` bit(1) NOT NULL DEFAULT b'1',

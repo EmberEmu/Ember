@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,7 +37,7 @@ auto LoginAuthenticator::proof_check(const grunt::client::LoginProof& proof) -> 
 
 	Botan::BigInt B = srp_->public_ephemeral();
 	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
-	                                                 proof.A, B, Botan::BigInt(user_.salt()));
+	                                                 proof.A, B, user_.salt());
 	sess_key_ = key;
 	return { proof.M1 == M1_S, srp_->generate_proof(key, proof.M1) };
 } catch(srp6::exception&) {

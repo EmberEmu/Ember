@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2020 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,7 +33,7 @@ public:
 
 	std::string identifier_, password_;
 	Botan::BigInt verifier_;
-	Botan::BigInt salt_;
+	std::vector<std::uint8_t> salt_;
 	std::unique_ptr<srp::Generator> gen_;
 	std::unique_ptr<srp::Server> server_;
 	std::unique_ptr<srp::Client> client_;
@@ -42,7 +42,7 @@ public:
 TEST(srp6a, RFC5054_TestVectors) {
 	std::string identifier = "alice";
 	std::string password = "password123";
-	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
+	const auto salt = Botan::BigInt::encode(Botan::BigInt(("0xBEB25379D1A8581EB5A727673A2441EE")));
 	srp::Generator gen(srp::Generator::Group::_1024_BIT);
 	
 	Botan::BigInt expected_k("0x7556AA045AEF2CDD07ABAF0F665C3E818913186F");
@@ -140,8 +140,8 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 	srp::Server server(gen, verifier, b);
 
 	srp::SessionKey key = server.session_key(A);
-	Botan::BigInt M1_S = srp::generate_client_proof("CHAOSVEX", key, gen.prime(), gen.generator(),
-	                                                A, server.public_ephemeral(), salt);
+	Botan::BigInt M1_S = srp::generate_client_proof("CHAOSVEX", key, gen.prime(), gen.generator(), A,
+	                                                server.public_ephemeral(), Botan::BigInt::encode(salt));
 	Botan::BigInt M2_S = server.generate_proof(key, M1);
 
 	EXPECT_EQ(M1, M1_S) << "Server's calculated client proof did not match the replayed proof!";
@@ -175,7 +175,7 @@ TEST(srp6Regressions, ComputeX) {
 	srp::Generator gen(srp::Generator::Group::_1024_BIT);
 
 	Botan::BigInt expected_x("0x7E5250F2CB894FD9703611318C387A773FD52C09");
-	Botan::BigInt x = srp::detail::compute_x(username, password, salt, srp::Compliance::GAME);
+	Botan::BigInt x = srp::detail::compute_x(username, password, Botan::BigInt::encode(salt), srp::Compliance::GAME);
 	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
 }
 
@@ -185,7 +185,7 @@ TEST(srp6Regressions, GenerateUser) {
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
 
 	auto gen = srp::Generator(srp::Generator::Group::_256_BIT);
-	auto verifier = srp::generate_verifier(username, password, gen, salt, srp::Compliance::GAME);
+	auto verifier = srp::generate_verifier(username, password, gen, Botan::BigInt::encode(salt), srp::Compliance::GAME);
 	
 	Botan::BigInt expected_v("0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A");
 	ASSERT_EQ(expected_v, verifier) << "Verifier was calculated incorrectly!";
