@@ -1,10 +1,11 @@
-# Copyright (c) 2014 - 2020 Ember
+# Copyright (c) 2014 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.12.4)
+set(CMAKE_SYSTEM_VERSION 8.1)
 project(Ember)
 
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
@@ -21,6 +22,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	set(CMAKE_SYSTEM_VERSION 10.0)
 	add_definitions(-D_HAS_AUTO_PTR_ETC=1)               # Until Boost conforms with C++17
 	add_definitions(-D_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING) # Silence erroneous VS2017 warning - check if fixed in VS2019
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")        # Multiprocessor compilation
