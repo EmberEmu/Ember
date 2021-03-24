@@ -219,13 +219,12 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 			dirty = true;
 		}
 
-		std::byte value { 0 };
+		// check whether the hash is all zeroes and calculate it if so
+		const auto calc_md5 = std::all_of(patch.file_meta.md5.begin(), patch.file_meta.md5.end(),
+			[](const auto& byte) { return byte == std::byte{ 0 }; }
+		);
 
-		for(auto c : patch.file_meta.md5) {
-			value |= c;
-		}
-
-		if(!static_cast<bool>(value)) {
+		if(calc_md5) {
 			LOG_INFO(logger) << "Calculating MD5 for " << patch.file_meta.name << LOG_SYNC;
 			auto md5 = util::generate_md5(path + patch.file_meta.name);
 			std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(patch.file_meta.md5.data()));
