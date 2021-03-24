@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Ember
+ * Copyright (c) 2019 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -228,9 +228,9 @@ void validate_db_args(const po::variables_map& args, const std::string& mode) {
 	// ensure that all arguments required for managing this DB are present
 	for(const auto& db : dbs) {
 		for(const auto& argument : db_arg_map.at(db)) {
-			if(args[argument.begin()].empty()) {
+			if(args[argument.data()].empty()) {
 				throw std::invalid_argument(
-					std::string("Missing argument for ") + db + ": " + argument.begin()
+					std::string("Missing argument for ") + db + ": " + argument.data()
 				);
 			}
 		}
@@ -359,7 +359,7 @@ bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
 				exec.execute(query);
 			}
 
-			const std::string filename = std::filesystem::path(path).filename();
+			const std::string filename = std::filesystem::path(path).filename().string();
 			std::regex pattern(R"((\w+)_(...+)_(\w+))");
 			std::smatch matches;
 
