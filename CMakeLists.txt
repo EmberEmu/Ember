@@ -70,7 +70,7 @@ add_definitions(-DBOOST_ALL_NO_LIB)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost 1.73.0 REQUIRED COMPONENTS program_options system)
+find_package(Boost 1.75.0 REQUIRED COMPONENTS program_options system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
@@ -86,7 +86,7 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ##############################
 #            Botan           #
 ##############################
-find_package(Botan 2.4.0 REQUIRED)
+find_package(Botan 2.14.0 REQUIRED)
 include_directories(${BOTAN_INCLUDE_DIRS})
 
 ##############################
