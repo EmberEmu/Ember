@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,16 +42,15 @@ class LoginProof final : public Packet {
 	void read_body(spark::BinaryStream& stream) {
 		stream >> opcode;
 
-		// could just use one buffer but this is safer from silly mistakes
-		std::uint8_t a_buff[A_LENGTH];
-		stream.get(a_buff, A_LENGTH);
+		std::array<std::uint8_t, A_LENGTH> a_buff;
+		stream.get(a_buff.data(), a_buff.size());
 		std::reverse(std::begin(a_buff), std::end(a_buff));
-		A = Botan::BigInt(a_buff, A_LENGTH);
+		A = Botan::BigInt(a_buff.data(), a_buff.size());
 
-		std::uint8_t m1_buff[M1_LENGTH];
-		stream.get(m1_buff, M1_LENGTH);
+		std::array<std::uint8_t, M1_LENGTH> m1_buff;
+		stream.get(m1_buff.data(), m1_buff.size());
 		std::reverse(std::begin(m1_buff), std::end(m1_buff));
-		M1 = Botan::BigInt(m1_buff, M1_LENGTH);
+		M1 = Botan::BigInt(m1_buff.data(), m1_buff.size());
 
 		stream.get(client_checksum.data(), client_checksum.size());
 		stream >> key_count_;
@@ -173,7 +172,7 @@ public:
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 
-		Botan::secure_vector<std::uint8_t> bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
+		auto bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
 		std::reverse(std::begin(bytes), std::end(bytes));
 		stream.put(bytes.data(), bytes.size());
 
