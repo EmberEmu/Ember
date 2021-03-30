@@ -114,7 +114,7 @@ TEST_F(srp6SessionTest, SelfAuthentication) {
 
 	Botan::BigInt expected_c_proof = srp::generate_client_proof(identifier_, s_key, gen_->prime(),
 	                                                            gen_->generator(), A, B, salt_);
-	Botan::BigInt expected_s_proof = srp::generate_server_proof(A, c_proof, c_key);
+	Botan::BigInt expected_s_proof = srp::generate_server_proof(A, c_proof, c_key, gen_->prime().bytes());
 
 	EXPECT_EQ(expected_c_proof, c_proof) << "Server could not verify client proof!";
 	EXPECT_EQ(expected_s_proof, s_proof) << "Client could not verify server proof!";
@@ -168,7 +168,7 @@ TEST_F(srp6SessionTest, ClientNegativeEphemeral) {
 		<< "Public ephemeral key should never be negative!";
 }
 
-TEST(srp6Regressions, ComputeX) {
+TEST(srp6Regressions, SaltZeroPad_ComputeX) {
 	std::string username = "alice";
 	std::string password = "password123";
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
@@ -179,7 +179,7 @@ TEST(srp6Regressions, ComputeX) {
 	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
 }
 
-TEST(srp6Regressions, GenerateUser) {
+TEST(srp6Regressions, SaltZeroPad_GenerateUser) {
 	std::string username = "alice";
 	std::string password = "password123";
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
@@ -189,4 +189,22 @@ TEST(srp6Regressions, GenerateUser) {
 	
 	Botan::BigInt expected_v("0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A");
 	ASSERT_EQ(expected_v, verifier) << "Verifier was calculated incorrectly!";
+}
+
+TEST(srp6Regressions, NPad_GenerateClientProof) {
+	const Botan::BigInt g(7);
+	const Botan::BigInt prime("0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
+	const Botan::BigInt a("0x52DFA6644066547BD7360AD2A23AE91DB544FADB8F4DCA86B4184481102E4089");
+	const Botan::BigInt b("0x809C1BC78BDB3873D286FDADF38D1524348C9CA5AB63E7793EF6A7944C5A8D");
+	const auto key = srp::detail::to_key(Botan::BigInt("0x42C6518D6F338C050717427B18F7C6B6131C968B0CFC20C43AAAD61625F286DA55E24BF6A2CBDC79"));
+
+	const std::vector<std::uint8_t> salt {
+		0x40, 0x1A, 0x08, 0x7D, 0x89, 0x73, 0x9D, 0xD9, 0xE4, 0x2F, 0x1E, 0x7E, 0x41, 0x65, 0xFD, 0xA4,
+		0x21, 0x41, 0xF4, 0xFD, 0x4A, 0xD3, 0x2D, 0x03, 0xC1, 0xF2, 0x07, 0x66, 0x88, 0x06, 0xE5, 0x41
+	};
+
+	const auto c_proof = srp::generate_client_proof("TEST", key, prime, g, a, b, salt);
+	const Botan::BigInt expected_cproof("0xF9C97B36A797001F7D31CC0EB3E741B8B216B564");
+
+	ASSERT_EQ(expected_cproof, c_proof) << "Client proof was calculated incorrectly!";
 }

@@ -12,7 +12,6 @@
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <array>
-#include <iostream>
 
 constexpr auto SHA1_LEN = 20;
 
@@ -124,6 +123,12 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	}
 }
 
+SessionKey to_key(const Botan::BigInt value) {
+	KeyType key(40);
+	value.binary_encode(key.data(), key.size());
+	return SessionKey(key);
+}
+
 } //detail
 
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
@@ -149,8 +154,8 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 
 	hasher->update(n_hash.data(), n_hash.size());
 	hasher->update(i_hash.data(), i_hash.size());
-	const auto& a_enc = detail::encode_flip(A);
-	const auto& b_enc = detail::encode_flip(B);
+	const auto& a_enc = detail::encode_flip_1363(A, N.bytes());
+	const auto& b_enc = detail::encode_flip_1363(B, N.bytes());
 	SmallVec salt_enc(salt.begin(), salt.end());
 	std::reverse(salt_enc.begin(), salt_enc.end());
 	hasher->update(salt_enc.data(), salt_enc.size());
@@ -162,13 +167,13 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 }
 
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
-                                    const SessionKey& key) {
+                                    const SessionKey& key, const std::size_t padding) {
 	//M = H(A, M, K)
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	std::array<std::uint8_t, SHA1_LEN> hash_out;
-	const auto& a_enc = detail::encode_flip(A);
-	const auto& proof_enc = detail::encode_flip(proof);
+	const auto& a_enc = detail::encode_flip_1363(A, padding);
+	const auto& proof_enc = detail::encode_flip_1363(proof, SHA1_LEN);
 	hasher->update(a_enc.data(), a_enc.size());
 	hasher->update(proof_enc.data(), proof_enc.size());
 	hasher->update(key.t.data(), key.t.size());

@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014 - 2020 Ember
+/*
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -55,7 +55,7 @@ SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave
 }
 
 BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof) const {
-	return generate_server_proof(A_, client_proof, key);
+	return generate_server_proof(A_, client_proof, key, N_.bytes());
 }
 
 } //srp6, ember

@@ -40,6 +40,7 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
                         const std::vector<std::uint8_t>& salt, Compliance mode);
+SessionKey to_key(const Botan::BigInt value);
 
 inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& x) {
 	return generator(x);
@@ -65,6 +66,6 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
                                     const Botan::BigInt& B, const std::vector<std::uint8_t>& salt);
 
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
-                                    const SessionKey& key);
+                                    const SessionKey& key, const std::size_t padding);
 
 } //srp6, ember
