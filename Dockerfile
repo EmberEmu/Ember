@@ -16,9 +16,9 @@ RUN apt-get -y update && apt-get -y upgrade \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
- && wget -q https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz \
- && tar -zxf boost_1_75_0.tar.gz \
- && cd boost_1_75_0 \
+ && wget -q https://dl.bintray.com/boostorg/release/1.76.0/source/boost_1_76_0.tar.gz \
+ && tar -zxf boost_1_76_0.tar.gz \
+ && cd boost_1_76_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
  && ./b2 link=static install -d0 -j 2 cxxflags="-std=c++20"
 
