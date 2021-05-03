@@ -176,7 +176,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		populate_items(character, items->second);
 	} else { // could be intentional, so we'll keep going
 		LOG_DEBUG(logger_) << "No starting item data found for race " <<
-			character.race << ", class " << character.class_ << LOG_ASYNC;
+			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
 	}
 
 	// populate starting spells
@@ -188,7 +188,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		populate_spells(character, spells->second)
 	} else { // could be intentional, so we'll keep going
 		LOG_DEBUG(logger_) << "No starting spell data found for race " <<
-			character.race << ", class " << character.class_ << LOG_ASYNC;
+			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
 	}
 
 	// populate starting skills
@@ -200,7 +200,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		populate_skills(character, skills->second)
 	} else { // could be intentional, so we'll keep going
 		LOG_DEBUG(logger_) << "No starting skill data found for race " <<
-			character.race << ", class " << character.class_ << LOG_ASYNC;
+			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
 	}
 
 	const char* subzone = nullptr;
