@@ -185,7 +185,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	});
 
 	if(spells != dbc_.char_start_spells.end()) {
-		populate_spells(character, spells->second)
+		populate_spells(character, spells->second);
 	} else { // could be intentional, so we'll keep going
 		LOG_DEBUG(logger_) << "No starting spell data found for race " <<
 			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
@@ -197,7 +197,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	});
 
 	if(skills != dbc_.char_start_skills.end()) {
-		populate_skills(character, skills->second)
+		populate_skills(character, skills->second);
 	} else { // could be intentional, so we'll keep going
 		LOG_DEBUG(logger_) << "No starting skill data found for race " <<
 			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;

@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<dbc>
+	<name>SkillLine</name>
+
+	<field>
+		<type>uint32</type>
+		<name>id</name>
+		<key>
+			<type>primary</type>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>category</name>
+		<key>
+			<type>foreign</type>
+			<parent>SkillLineCategory</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>skill_costs</name>
+		<key>
+			<type>foreign</type>
+			<parent>SkillCostsData</parent>
+		</key>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>display_name</name>
+	</field>
+
+	<field>
+		<type>string_ref_loc</type>
+		<name>description</name>
+	</field>
+
+	<field>
+		<type>uint32</type>
+		<name>spell_icon</name>
+		<key>
+			<type>foreign</type>
+			<parent>SpellIcon</parent>
+		</key>
+	</field>
+</dbc>
