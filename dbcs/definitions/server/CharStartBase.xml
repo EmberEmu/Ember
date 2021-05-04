@@ -36,14 +36,5 @@
 			<parent>CharStartZones</parent>
 		</key>
 	</field>
-
-	<field comment="todo, delete - unused">
-		<type>uint32</type>
-		<name>outfit</name>
-		<key>
-			<type>foreign</type>
-			<parent>CharStartOutfit</parent>
-		</key>
-	</field>
 	
 </dbc>

@@ -168,20 +168,40 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	character.orientation = zone->orientation;
 
 	// populate starting equipment
-	auto items = std::find_if(dbc_.char_start_outfit.begin(), dbc_.char_start_outfit.end(), [&](auto& record) {
+	const auto& items = std::find_if(dbc_.char_start_outfit.begin(), dbc_.char_start_outfit.end(), [&](auto& record) {
 		return record.second.race_id == character.race && record.second.class__id == character.class_;
 	});
 
 	if(items != dbc_.char_start_outfit.end()) {
 		populate_items(character, items->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG(logger_) << "No starting item data found for race" <<
-			character.race << ", class " << character.class_ << LOG_ASYNC;
+		LOG_DEBUG(logger_) << "No starting item data found for race " <<
+			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
 	}
 
-	// populate spells information
+	// populate starting spells
+	const auto& spells = std::find_if(dbc_.char_start_spells.begin(), dbc_.char_start_spells.end(), [&](auto& record ) {
+		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	});
 
-	// populate talents information
+	if(spells != dbc_.char_start_spells.end()) {
+		populate_spells(character, spells->second)
+	} else { // could be intentional, so we'll keep going
+		LOG_DEBUG(logger_) << "No starting spell data found for race " <<
+			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
+	}
+
+	// populate starting skills
+	const auto& skills = std::find_if(dbc_.char_start_skills.begin(), dbc_.char_start_skills.end(), [&](auto& record ) {
+		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	});
+
+	if(skills != dbc_.char_start_skills.end()) {
+		populate_skills(character, skills->second)
+	} else { // could be intentional, so we'll keep going
+		LOG_DEBUG(logger_) << "No starting skill data found for race " <<
+			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
+	}
 
 	const char* subzone = nullptr;
 
@@ -510,7 +530,12 @@ const dbc::FactionGroup* CharacterHandler::pvp_faction(const dbc::FactionTemplat
 }
 
 void CharacterHandler::populate_items(Character& character, const dbc::CharStartOutfit& outfit) const {
+}
 
+void CharacterHandler::populate_spells(Character& character, const dbc::CharStartSpells& spells) const {
+}
+
+void CharacterHandler::populate_skills(Character& character, const dbc::CharStartSkills& skills) const {
 }
 
 } // ember

@@ -88,7 +88,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	auto dbc_store = loader.load({
 		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
-		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartTalents",
+		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartSkills",
 		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
 		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
 	});
