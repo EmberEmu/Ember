@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -121,7 +121,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 	std::stringstream functions, calls;
 
 	for(auto& def : defs) {
-		if(def->type != types::STRUCT) {
+		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
 			
@@ -220,7 +220,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 	std::stringstream functions, insertions, calls;
 
 	for(auto& def : defs) {
-		if(def->type != types::STRUCT) {
+		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
 		
@@ -321,9 +321,9 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc.name);
 				}
 
-				if(base->type == types::ENUM) {
+				if(base->type == types::Type::ENUM) {
 					cast << "static_cast<" << *t << "::" << type << ">(";
-				} else if(base->type == types::STRUCT) {
+				} else if(base->type == types::Type::STRUCT) {
 					walk_dbc_fields(enumerator, static_cast<types::Struct*>(base), base->parent);
 				} else {
 					throw std::runtime_error("Unhandled type (not a struct or enum) found: " + components.first + " in DBC: " + dbc.name);
@@ -408,10 +408,10 @@ void generate_disk_struct_recursive(const types::Struct& def, std::stringstream&
 
 	for(auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
-			case types::STRUCT:
+			case types::Type::STRUCT:
 				generate_disk_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
 				break;
-			case types::ENUM:
+			case types::Type::ENUM:
 				generate_disk_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
 				break;
 			default:
@@ -457,9 +457,9 @@ void generate_disk_defs(const types::Definitions& defs, const std::string& outpu
 	std::stringstream definitions;
 
 	for(auto& def : defs) {
-		if(def->type == types::STRUCT) {
+		if(def->type == types::Type::STRUCT) {
 			generate_disk_struct(static_cast<types::Struct&>(*def), definitions, 0);
-		} else if(def->type == types::ENUM) {
+		} else if(def->type == types::Type::ENUM) {
 			auto& enum_def = static_cast<types::Enum&>(*def);
 			generate_disk_enum(enum_def, definitions, 0);
 		}
@@ -504,10 +504,10 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 
 	for(auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
-			case types::STRUCT:
+			case types::Type::STRUCT:
 				generate_memory_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
 				break;
-			case types::ENUM:
+			case types::Type::ENUM:
 				generate_memory_enum(static_cast<types::Enum&>(*child), definitions, indent + 1);
 				break;
 			default:
@@ -586,10 +586,10 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 	std::stringstream forward_decls, definitions;
 
 	for(auto& def : defs) {
-		if(def->type == types::STRUCT) {
+		if(def->type == types::Type::STRUCT) {
 			forward_decls << "struct " << def->name << ";" << std::endl;
 			generate_memory_struct(static_cast<types::Struct&>(*def), definitions, 0);
-		} else if(def->type == types::ENUM) {
+		} else if(def->type == types::Type::ENUM) {
 			auto& enum_def = static_cast<types::Enum&>(*def);
 			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
 			generate_memory_enum(enum_def, definitions, 0);
@@ -609,7 +609,7 @@ void generate_storage(const types::Definitions& defs, const std::string& output,
 	std::stringstream declarations;
 
 	for(auto& def : defs) {
-		if(def->type != types::STRUCT) {
+		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
 

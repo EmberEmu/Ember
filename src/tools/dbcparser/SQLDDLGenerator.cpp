@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Ember
+ * Copyright (c) 2019 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -109,7 +109,7 @@ public:
 				throw std::runtime_error("Unable to locate type base");
 			}
 
-			if(found->type == types::STRUCT) {
+			if(found->type == types::Type::STRUCT) {
 				if(components.second) {
 					for(auto i = 0u; i < *components.second; ++i) {
 						suffix_ = std::to_string(i);
@@ -120,7 +120,7 @@ public:
 				} else {
 					visit(static_cast<const types::Struct*>(found), field);
 				}
-			} else if(found->type == types::ENUM) {
+			} else if(found->type == types::Type::ENUM) {
 				const auto type = static_cast<const types::Enum*>(found);
 				auto i = 0u;
 
@@ -177,7 +177,7 @@ void generate_sql_ddl(const types::Definitions& defs, const std::string& out_pat
 	}
 	
 	for(const auto& def : defs) {
-		if(def->type != types::STRUCT) {
+		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
 

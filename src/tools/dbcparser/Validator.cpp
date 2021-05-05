@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@ std::optional<const types::Field*> Validator::locate_fk_parent(const std::string
 			continue;
 		}
 
-		if(def->type != types::STRUCT) {
+		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
 			
@@ -91,7 +91,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 
 	std::vector<std::string> sym_names;
 
-	if(def->type == types::STRUCT) {
+	if(def->type == types::Type::STRUCT) {
 		auto def_s = static_cast<const types::Struct*>(def);
 
 		for(auto& symbol : def_s->children) {
@@ -101,7 +101,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 				throw exception("Multiple definitions of " + symbol->name);
 			}
 		}
-	} else if(def->type == types::ENUM) {
+	} else if(def->type == types::Type::ENUM) {
 		auto def_s = static_cast<const types::Enum*>(def);
 
 		for(auto& symbol : def_s->options) {
@@ -186,10 +186,10 @@ void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Str
 		auto node = std::make_unique<TreeNode<std::string>>();
 
 		switch(child->type) {
-			case types::STRUCT:
+			case types::Type::STRUCT:
 				map_struct_types(node.get(), static_cast<types::Struct*>(child.get()));
 				break;
-			case types::ENUM:
+			case types::Type::ENUM:
 				add_user_type(node.get(), static_cast<types::Enum*>(child.get())->name);
 				break;
 			default:
@@ -205,10 +205,10 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	switch(def->type) {
-		case types::STRUCT:
+		case types::Type::STRUCT:
 			map_struct_types(parent, static_cast<const types::Struct*>(def));
 			break;
-		case types::ENUM:
+		case types::Type::ENUM:
 			add_user_type(parent, def->name);
 			break;
 		default:
@@ -323,10 +323,10 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 
 	for(auto& child : def->children) {
 		switch(child->type) {
-			case types::STRUCT:
+			case types::Type::STRUCT:
 				validate_struct(static_cast<const types::Struct*>(child.get()), node);
 				break;
-			case types::ENUM:
+			case types::Type::ENUM:
 				validate_enum(static_cast<const types::Enum*>(child.get()));
 				break;
 			default:
@@ -409,10 +409,10 @@ void Validator::validate_definition(const types::Base* def) {
 	LOG_DEBUG_GLOB << "Validating " << def->name << LOG_ASYNC;
 
 	switch(def->type) {
-		case types::STRUCT:
+		case types::Type::STRUCT:
 			validate_struct(static_cast<const types::Struct*>(def), &root_);
 			break;
-		case types::ENUM:
+		case types::Type::ENUM:
 			validate_enum(static_cast<const types::Enum*>(def));
 			break;
 		default:

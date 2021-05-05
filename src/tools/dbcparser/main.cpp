@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -101,7 +101,7 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 
 	if(args["dbc-gen"].as<bool>()) {
 		for(const auto& dbc : defs) {
-			if(dbc->type == edbc::types::STRUCT) {
+			if(dbc->type == edbc::types::Type::STRUCT) {
 				edbc::generate_dbc_template(static_cast<const edbc::types::Struct*>(dbc.get()), out);
 			}
 		}
@@ -134,7 +134,7 @@ void print_dbc_table(const edbc::types::Definitions& defs) {
 	printer.PrintHeader();
 
 	for(auto& def : defs) {
-		if(def->type == edbc::types::STRUCT) {
+		if(def->type == edbc::types::Type::STRUCT) {
 			auto dbc = static_cast<const edbc::types::Struct*>(def.get());
 			printer << std::string_view(dbc->name).substr(0, name_len) << dbc->fields.size()
 				<< dbc->comment;
@@ -155,7 +155,7 @@ void print_dbc_fields(const edbc::types::Definitions& groups) {
 		printer.AddColumn("Comment", 20);
 		printer.PrintHeader();
 
-		if(def->type != edbc::types::STRUCT) {
+		if(def->type != edbc::types::Type::STRUCT) {
 			continue;
 		}
 

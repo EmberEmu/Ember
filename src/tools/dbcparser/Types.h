@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@ public:
 	virtual ~TypeVisitor() = default;
 };
 
-enum Types {
+enum class Type {
 	STRUCT, ENUM, FIELD
 };
 
@@ -45,10 +45,10 @@ struct IVisitor {
 };
 
 struct Base : IVisitor {
-	explicit Base(Types type_) : type(type_), parent(nullptr) {}
+	explicit Base(Type type_) : type(type_), parent(nullptr) {}
 	virtual ~Base() = default;
 
-	Types type;
+	Type type;
 	std::string name;
 	std::string alias;
 	std::string comment;
@@ -56,7 +56,7 @@ struct Base : IVisitor {
 };
 
 struct Field final : Base {
-	Field() : Base(FIELD) {}
+	Field() : Base(Type::FIELD) {}
 	std::string underlying_type;
 	std::vector<Key> keys;
 
@@ -66,7 +66,7 @@ struct Field final : Base {
 };
 
 struct Enum final : Base {
-	Enum() : Base(ENUM) {}
+	Enum() : Base(Type::ENUM) {}
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
 
@@ -76,7 +76,7 @@ struct Enum final : Base {
 };
 
 struct Struct final : Base {
-	Struct() : Base(STRUCT), dbc(false) {}
+	Struct() : Base(Type::STRUCT), dbc(false) {}
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
 	bool dbc;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -85,10 +85,10 @@ public:
 				throw std::runtime_error("Unable to locate type base");
 			}
 
-			if(found->type == types::STRUCT) {				
+			if(found->type == types::Type::STRUCT) {
 				visit(static_cast<const types::Struct*>(found), field);
 				return;
-			} else if(found->type == types::ENUM) {
+			} else if(found->type == types::Type::ENUM) {
 				const auto type = static_cast<const types::Enum*>(found);
 				components.first = type->underlying_type;
 			} else {
