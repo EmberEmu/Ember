@@ -68,7 +68,6 @@ Ember currently targets C++20 but allows for the use of upcoming language additi
 
 |  | master  | development |
 | :------------ |:---------------:|:---------------:|
-| TravisCI | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=master)](https://travis-ci.org/EmberEmu/Ember) | [![Build Status](https://travis-ci.org/EmberEmu/Ember.svg?branch=development)](https://travis-ci.org/EmberEmu/Ember)|
 | AppVeyor | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/development?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/development)  |
 | Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
 
