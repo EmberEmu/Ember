@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,10 +46,10 @@ class MySQLCharacterDAO final : public CharacterDAO {
 		character.map = res->getUInt("map");
 		character.guild_id = res->getUInt("guild_id");
 		character.guild_rank = res->getUInt("guild_rank");
-		character.position.x = res->getDouble("x");
-		character.position.y = res->getDouble("y");
-		character.position.z = res->getDouble("z");
-		character.orientation = res->getDouble("o");
+		character.position.x = static_cast<float>(res->getDouble("x"));
+		character.position.y = static_cast<float>(res->getDouble("y"));
+		character.position.z = static_cast<float>(res->getDouble("z"));
+		character.orientation = static_cast<float>(res->getDouble("o"));
 		character.flags = static_cast<Character::Flags>(res->getUInt("flags"));
 		character.first_login = res->getBoolean("first_login");
 		character.pet_display = res->getUInt("pet_display");

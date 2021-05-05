@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include "TypeUtils.h"
 #include "Exception.h"
+#include <gsl/gsl_util>
 #include <exception>
 #include <regex>
 #include <cctype>
@@ -78,11 +79,13 @@ TypeComponents extract_components(const std::string& type) {
 
 		if(!matches[2].str().empty()) {
 			try {
-				components.second = std::stoi(matches[2].str());
+				const auto array_size = std::stoi(matches[2].str());
 
-				if(components.second <= 0) {
+				if(array_size <= 0) {
 					throw exception("Negative or zero array size found in " + type);
 				}
+
+				components.second = gsl::narrow_cast<unsigned int>(array_size);
 			} catch(const std::exception&) {
 				throw exception(matches[2].str() + " is not a valid array entry count"
 					" for " + components.first);

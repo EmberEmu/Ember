@@ -48,7 +48,7 @@ struct IntrusiveStorage {
 		std::copy(reinterpret_cast<const std::byte*>(source),
 			reinterpret_cast<const std::byte*>(source) + write_len,
 			storage.data() + write_offset);
-		write_offset += write_len;
+		write_offset += static_cast<OffsetType>(write_len);
 		return write_len;
 	}
 
@@ -68,7 +68,7 @@ struct IntrusiveStorage {
 	template<typename InT>
 	std::size_t read(InT destination, std::size_t length, bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
-		read_offset += read_len;
+		read_offset += static_cast<OffsetType>(read_len);
 
 		if(read_offset == write_offset && allow_optimise) {
 			reset();
@@ -84,7 +84,7 @@ struct IntrusiveStorage {
 			skip_len = length;
 		}
 
-		read_offset += skip_len;
+		read_offset += static_cast<OffsetType>(skip_len);
 
 		if(read_offset == write_offset && allow_optimise) {
 			reset();
@@ -100,7 +100,7 @@ struct IntrusiveStorage {
 			reserve_len = length;
 		}
 
-		write_offset += reserve_len;
+		write_offset += static_cast<OffsetType>(reserve_len);
 		return reserve_len;
 	}
 
@@ -116,9 +116,9 @@ struct IntrusiveStorage {
 		if(direction == SeekDir::SD_START) {
 			write_offset = 0;
 		} else if(direction == SeekDir::SD_BACK) {
-			write_offset -= offset; 
+			write_offset -= static_cast<OffsetType>(offset);
 		} else {
-			write_offset += offset; 
+			write_offset += static_cast<OffsetType>(offset);
 		}
 	}
 
@@ -129,7 +129,7 @@ struct IntrusiveStorage {
 			size = remaining;
 		}
 
-		write_offset += size;
+		write_offset += static_cast<OffsetType>(size);
 		return size;
 	}
 
