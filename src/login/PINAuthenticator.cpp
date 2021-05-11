@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <botan/hash.h>
 #include <botan/mac.h>
 #include <gsl/gsl_util>
+#include <bit>
 #include <memory>
 #include <utility>
 #include <cstddef>
@@ -26,7 +27,9 @@ namespace be = boost::endian;
 PINAuthenticator::PINAuthenticator(const SaltBytes& server_salt, const SaltBytes& client_salt,
                                    const std::uint32_t seed, log::Logger* logger)
                                    : logger_(logger), grid_seed_(seed), server_salt_(server_salt),
-                                     client_salt_(client_salt) { }
+                                     client_salt_(client_salt) {
+	remap_pin_grid();
+}
 
 /*
  * Converts a PIN such as '16785' into an array of bytes
@@ -158,11 +161,11 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	hmac->set_key(decoded_key.data(), key_size);
 
-#if defined(BOOST_LITTLE_ENDIAN) 
-	hmac->update_be(step);
-#else
-	hmac->update(step);
-#endif
+	if constexpr(std::endian::native == std::endian::little) {
+		hmac->update_be(step);
+	} else {
+		hmac->update(step);
+	}
 
 	const auto& hmac_result = hmac->final();
 
