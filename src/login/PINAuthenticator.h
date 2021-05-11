@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,6 @@
 #include <array>
 #include <span>
 #include <cstdint>
-#include <vector>
 
 namespace ember {
 
@@ -22,6 +21,7 @@ public:
 	static constexpr int MIN_PIN_LENGTH =  4;
 	static constexpr int MAX_PIN_LENGTH = 10;
 	static constexpr int GRID_SIZE      = 10;
+	static constexpr int KEY_LENGTH     = 10;
 	static constexpr int SALT_LENGTH    = 16;
 	static constexpr int HASH_LENGTH    = 20;
 	
