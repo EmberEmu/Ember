@@ -11,6 +11,7 @@
 #include "../Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
+#include "../KeyData.h"
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <botan/bigint.h>
@@ -86,8 +87,8 @@ class LoginProof final : public Packet {
 
 	bool read_key_data(spark::BinaryStream& stream) {
 		// could use a macro to take care of this - not using sizeof(KeyData) to avoid having to #pragma pack
-		auto key_data_size = sizeof(KeyData::unk_1) + sizeof(KeyData::unk_2) 
-		                     + sizeof(KeyData::unk_3) + sizeof(KeyData::unk_4_hash);
+		auto key_data_size = sizeof(KeyData::product) + sizeof(KeyData::pub_value) 
+		                     + sizeof(KeyData::len) + sizeof(KeyData::hash);
 		key_data_size *= key_count_;
 
 		if(stream.size() < key_data_size) {
@@ -96,10 +97,10 @@ class LoginProof final : public Packet {
 
 		for(auto i = 0; i < key_count_; ++i) {
 			KeyData data;
-			stream >> data.unk_1;
-			stream >> data.unk_2;
-			stream.get(data.unk_3.data(), data.unk_3.size());
-			stream.get(data.unk_4_hash.data(), data.unk_4_hash.size());
+			stream >> data.len;
+			stream >> data.pub_value;
+			stream.get(data.product.data(), data.product.size());
+			stream.get(data.hash.data(), data.hash.size());
 			keys.emplace_back(data);
 		}
 
@@ -108,13 +109,6 @@ class LoginProof final : public Packet {
 	}
 
 public:
-	struct KeyData {
-		be::little_uint16_t unk_1;
-		be::little_uint32_t unk_2;
-		std::array<std::uint8_t, 4> unk_3;
-		std::array<std::uint8_t, 20> unk_4_hash; // hashed with A or 'salt' if reconnect proof
-	};
-
 	LoginProof() : Packet(Opcode::CMD_AUTH_LOGON_PROOF) {}
 
 	Botan::BigInt A;
@@ -185,10 +179,10 @@ public:
 		stream << gsl::narrow<std::uint8_t>(keys.size());
 
 		for(auto& key : keys) {
-			stream << key.unk_1;
-			stream << key.unk_2;
-			stream.put(key.unk_3.data(), key.unk_3.size());
-			stream.put(key.unk_4_hash.data(), key.unk_4_hash.size());
+			stream << key.len;
+			stream << key.pub_value;
+			stream.put(key.product.data(), key.product.size());
+			stream.put(key.hash.data(), key.hash.size());
 		}
 
 		stream << two_factor_auth;

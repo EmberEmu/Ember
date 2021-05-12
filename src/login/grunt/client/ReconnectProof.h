@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include "../Opcodes.h"
 #include "../Packet.h"
 #include "../Exceptions.h"
+#include "../KeyData.h"
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
@@ -31,6 +32,7 @@ public:
 	std::array<std::uint8_t, 20> proof;
 	std::array<std::uint8_t, 20> client_checksum;
 	std::uint8_t key_count = 0;
+	std::vector<KeyData> keys;
 
 	State read_from_stream(spark::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -44,6 +46,7 @@ public:
 		stream.get(proof.data(), proof.size());
 		stream.get(client_checksum.data(), client_checksum.size());
 		stream >> key_count;
+		// todo, read key data here
 
 		return (state_ = State::DONE);
 	}
@@ -54,6 +57,13 @@ public:
 		stream.put(proof.data(), proof.size());
 		stream.put(client_checksum.data(), client_checksum.size());
 		stream << key_count;
+
+		for (auto& key : keys) {
+			stream << key.len;
+			stream << key.pub_value;
+			stream.put(key.product.data(), key.product.size());
+			stream.put(key.hash.data(), key.hash.size());
+		}
 	}
 };
 
