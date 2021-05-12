@@ -26,7 +26,7 @@ class User {
 	std::string v_;
 	std::vector<std::uint8_t> s_;
 	PINMethod pin_method_;
-	std::uint64_t pin_;
+	std::uint32_t pin_;
 	std::string totp_token_;
 	bool banned_;
 	bool suspended_;
@@ -35,7 +35,7 @@ class User {
 
 public:
 	User(std::uint32_t id, utf8_string username, std::vector<std::uint8_t> salt, std::string verifier,
-	     PINMethod pin_method, std::uint64_t pin, std::string totp_token, bool banned, bool suspended,
+	     PINMethod pin_method, std::uint32_t pin, std::string totp_token, bool banned, bool suspended,
 	     bool survey_request, bool subscriber)
          : id_(id), user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)),
 	       pin_(pin), pin_method_(pin_method), totp_token_(std::move(totp_token)),
@@ -56,7 +56,7 @@ public:
 		return totp_token_;
 	}
 
-	std::uint64_t pin() const {
+	std::uint32_t pin() const {
 		return pin_;
 	}
 

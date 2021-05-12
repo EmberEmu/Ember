@@ -49,7 +49,7 @@ public:
 
 			User user(res->getUInt("id"), res->getString("username"), std::move(salt),
 			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),
-			          res->getUInt64("pin"), res->getString("totp_key"), res->getBoolean("banned"),
+			          res->getUInt("pin"), res->getString("totp_key"), res->getBoolean("banned"),
 			          res->getBoolean("suspended"), res->getBoolean("survey_request"),
 			          res->getBoolean("subscriber"));
 			return user;
