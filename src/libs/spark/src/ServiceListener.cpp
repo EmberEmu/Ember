@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,8 @@
 
 namespace ember::spark {
 
+inline namespace sdv1 {
+
 ServiceListener::~ServiceListener() {
 	sd_client_->remove_listener(this);
 }
@@ -18,5 +20,7 @@ ServiceListener::~ServiceListener() {
 void ServiceListener::search() {
 	sd_client_->locate_service(service_);
 }
+
+} // sdv1
 
 } // spark, ember

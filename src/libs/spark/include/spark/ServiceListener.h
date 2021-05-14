@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015, 2016 Ember
+/*
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,8 @@
 #include <spark/Common.h>
 
 namespace ember::spark {
+
+inline namespace sdv1 {
 
 typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
 
@@ -34,5 +36,7 @@ public:
 
 	friend class ServiceDiscovery;
 };
+
+} // sdv1
 
 } // spark, ember
