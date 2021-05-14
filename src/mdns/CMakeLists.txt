@@ -30,3 +30,5 @@ target_link_libraries(${LIBRARY_NAME} logging shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logging shared ${Boost_LIBRARIES})
+
+INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
