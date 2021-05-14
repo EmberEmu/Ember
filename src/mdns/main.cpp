@@ -86,7 +86,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
-		("config,c", po::value<std::string>()->default_value("dns.conf"),
+		("config,c", po::value<std::string>()->default_value("mdns.conf"),
 			 "Path to the configuration file");
 
 	po::positional_options_description pos;

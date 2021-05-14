@@ -1,16 +1,16 @@
-# mDNS daemon configuration
+# MDNS daemon configuration
 
-[mdns_iface]
-ipv4_iface = 224.0.0.251
-ipv6_iface = FF02::FB
+[mdns]
+interface = 0.0.0.0
+group = 224.0.0.251 # FF02::FB for IPv6
 port = 5353
 
-[spark]
-address = 127.0.0.1
-port = 6003
-multicast_interface = 0.0.0.0
-multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
-multicast_port = 6000
+#[spark]
+#address = 127.0.0.1
+#port = 6003
+#multicast_interface = 0.0.0.0
+#multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
+#multicast_port = 6000
 #secret_key = changeme
 
 [remote_log]
