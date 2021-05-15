@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Handler.h"
+#include "DNSDefines.h"
 #include "Socket.h"
 #include <boost/asio.hpp>
 #include <span>
@@ -17,18 +18,16 @@
 
 namespace ember::dns {
 
-const std::size_t MAX_DGRAM_SIZE = 1024;
-
 class MulticastSocket : public Socket {
     boost::asio::io_context& context_;
     boost::asio::ip::udp::socket socket_;
     boost::asio::ip::udp::endpoint ep_, remote_ep_;
 
     Handler* handler_;
-    std::array<std::byte, MAX_DGRAM_SIZE> buffer_;
+    std::array<std::byte, MAX_DGRAM_LEN> buffer_;
 
     void receive();
-    void handle_datagram(std::span<std::byte> buffer);
+    void handle_datagram(const std::span<std::byte> datagram, const boost::asio::ip::udp::endpoint ep);
 
 public:
     MulticastSocket(boost::asio::io_context& context,

@@ -7,6 +7,7 @@
  */
 
 #include "MulticastSocket.h"
+#include <logger/Logging.h>
 
 namespace ember::dns {
 
@@ -29,6 +30,8 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context,
 }
 
 void MulticastSocket::receive() {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
 	socket_.async_receive_from(boost::asio::buffer(buffer_.data(), buffer_.size()), remote_ep_,
         [this](const boost::system::error_code& ec, const std::size_t size) {
             if(ec && ec == boost::asio::error::operation_aborted) {
@@ -36,7 +39,7 @@ void MulticastSocket::receive() {
 	        }
 
 	        if(!ec) {
-		        handle_datagram({buffer_.data(), size});
+		        handle_datagram({buffer_.data(), size}, remote_ep_);
 	        }
 
 	        receive();
@@ -44,20 +47,45 @@ void MulticastSocket::receive() {
     );
 }
 
-void MulticastSocket::handle_datagram(std::span<std::byte> buffer) {
+void MulticastSocket::handle_datagram(const std::span<std::byte> datagram,
+                                      const boost::asio::ip::udp::endpoint ep) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
     if(!handler_) {
-        // log
+		LOG_ERROR_GLOB << "No packet handler installed?" << LOG_ASYNC; // todo, rework
         return;
     }
 
-    handler_->handle_datagram(buffer);
+	auto max_size = 0u;
+
+	if(ep.protocol() == boost::asio::ip::udp::v4()) {
+		max_size = MAX_DGRAM_PAYLOAD_IPV4;
+	} else if(ep.protocol() == boost::asio::ip::udp::v6()) {
+		max_size = MAX_DGRAM_PAYLOAD_IPV6;
+	} else {
+		LOG_ERROR_GLOB
+			<< "Apparently this isn't IPv4 or IPv6, so congratulations on the"
+			<< " interplanetary IoT network or bug in the library."
+			<< LOG_ASYNC;
+		max_size = MAX_DGRAM_PAYLOAD_IPV6;
+	}
+
+	if(datagram.size() > max_size) {
+		LOG_WARN_GLOB
+			<< "Datagram exceeded maximum permitted size of "
+			<< max_size << " bytes. Skipping." << LOG_ASYNC;
+		return;
+	}
+
+    handler_->handle_datagram(datagram);
 }
 
 void MulticastSocket::send() {
-
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 }
 
 void MulticastSocket::register_handler(Handler* handler) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
     handler_ = handler;
 }
 

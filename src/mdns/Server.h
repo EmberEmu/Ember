@@ -14,9 +14,11 @@
 namespace ember::dns {
 
 class Socket;
+class Parser;
 
 class Server : public Handler {
     Socket& socket_;
+	Parser& parser_;
     log::Logger* logger_;
 
     void handle_query(std::span<const std::byte> datagram);
@@ -24,7 +26,7 @@ class Server : public Handler {
     void handle_datagram(std::span<const std::byte> datagram) override;
 
 public:
-    Server(Socket& socket, log::Logger* logger);
+    Server(Socket& socket, Parser& parser, log::Logger* logger);
 };
 
 } // dns, ember
