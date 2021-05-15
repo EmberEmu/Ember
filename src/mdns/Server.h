@@ -11,13 +11,14 @@
 #include "Handler.h"
 #include "Parser.h"
 #include <logger/Logging.h>
+#include <memory>
 
 namespace ember::dns {
 
 class Socket;
 
 class Server final : public Handler {
-    Socket& socket_;
+    std::unique_ptr<Socket> socket_;
 	Parser parser_;
     log::Logger* logger_;
 
@@ -26,8 +27,10 @@ class Server final : public Handler {
     void handle_datagram(std::span<const std::byte> datagram) override;
 
 public:
-    Server(Socket& socket, log::Logger* logger);
+    Server(std::unique_ptr<Socket> socket, log::Logger* logger);
 	~Server();
+
+	void shutdown();
 };
 
 } // dns, ember

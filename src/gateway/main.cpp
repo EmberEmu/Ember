@@ -169,7 +169,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger);
+	                                  mcast_port, logger);
 
 	RealmQueue queue_service(service_pool.get_service());
 	RealmService realm_svc(*realm, spark, discovery, logger);
