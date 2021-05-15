@@ -20,6 +20,10 @@ Server::Server(Socket& socket, log::Logger* logger)
     socket_.register_handler(this);
 }
 
+Server::~Server() {
+	socket_.deregister_handler(this);
+}
+
 void Server::handle_query(std::span<const std::byte> datagram) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 

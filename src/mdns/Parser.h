@@ -20,7 +20,7 @@ smart_enum_class(Result, std::uint8_t,
 );
   
 
-class Parser {
+class Parser final {
 public:
     static Result validate(std::span<const std::byte> buffer);
     static Flags extract_flags(std::uint16_t flags);

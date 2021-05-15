@@ -9,14 +9,14 @@
 #pragma once
 
 #include "Handler.h"
+#include "Parser.h"
 #include <logger/Logging.h>
 
 namespace ember::dns {
 
 class Socket;
-class Parser;
 
-class Server : public Handler {
+class Server final : public Handler {
     Socket& socket_;
 	Parser parser_;
     log::Logger* logger_;
@@ -27,6 +27,7 @@ class Server : public Handler {
 
 public:
     Server(Socket& socket, log::Logger* logger);
+	~Server();
 };
 
 } // dns, ember

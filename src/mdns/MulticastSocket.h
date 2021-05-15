@@ -18,7 +18,7 @@
 
 namespace ember::dns {
 
-class MulticastSocket : public Socket {
+class MulticastSocket final : public Socket {
     boost::asio::io_context& context_;
     boost::asio::ip::udp::socket socket_;
     boost::asio::ip::udp::endpoint ep_, remote_ep_;
@@ -37,6 +37,7 @@ public:
 
     void send() override;
     void register_handler(Handler* handler) override;
+	void deregister_handler(const Handler* handler) override;
 };
 
 } // dns, ember
