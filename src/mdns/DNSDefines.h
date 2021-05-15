@@ -126,4 +126,24 @@ struct Question {
     ClassCode cc;
 };
 
+/*
+ * Controls the maximum allowable datagram size
+ * 
+ * This does not take the MTU into consideration,
+ * so fragmentation may occur before hitting these
+ * limits.
+ */
+constexpr auto UDP_HDR_SIZE = 8u;
+constexpr auto IPV4_HDR_SIZE = 20u;
+constexpr auto IPV6_HDR_SIZE = 40u;
+
+/* 
+ * rfc6762 s17
+ * Even when fragmentation is used, a Multicast DNS packet, including IP
+ * and UDP headers, MUST NOT exceed 9000 bytes.
+ */
+constexpr auto MAX_DGRAM_LEN = 9000;
+constexpr auto MAX_DGRAM_PAYLOAD_IPV4 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV4_HDR_SIZE);
+constexpr auto MAX_DGRAM_PAYLOAD_IPV6 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV6_HDR_SIZE);
+
 } // dns, ember

@@ -7,6 +7,7 @@
  */
 
 #include "Server.h"
+#include "Parser.h"
 #include "MulticastSocket.h"
 #include <logger/Logging.h>
 #include <shared/Banner.h>
@@ -73,8 +74,9 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	
 	boost::asio::io_context service(1);
 
+	dns::Parser parser;
 	dns::MulticastSocket socket(service, iface, group, port);
-	dns::Server server(socket, logger);
+	dns::Server server(socket, parser, logger);
 
 	service.run();
 } catch(std::exception& e) {

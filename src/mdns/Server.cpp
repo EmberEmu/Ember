@@ -14,19 +14,23 @@
 
 namespace ember::dns {
 
-Server::Server(Socket& socket, log::Logger* logger) : socket_(socket), logger_(logger) {
+Server::Server(Socket& socket, Parser& parser, log::Logger* logger)
+               : socket_(socket), parser_(parser), logger_(logger) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
     socket_.register_handler(this);
 }
 
 void Server::handle_query(std::span<const std::byte> datagram) {
-    
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 
 void Server::handle_response(std::span<const std::byte> datagram) {
-    
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 
 void Server::handle_datagram(std::span<const std::byte> datagram) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
     if(Parser::validate(datagram) != Result::VALIDATE_OK) {
         LOG_DEBUG(logger_) << "Validation failed with error code" << LOG_SYNC;
         return;
