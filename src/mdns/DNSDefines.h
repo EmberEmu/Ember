@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/smartenum.hpp>
 #include <boost/endian.hpp>
 #include <string_view>
 #include <variant>
@@ -46,27 +47,101 @@ enum class QR {
     QUERY, REPLY
 };
 
-enum class Opcode {
-    QUERY, IQUERY, STATUS
-};
-
 enum class ResCode {
     NOERROR, FORMERR, SERVFAIL, NXDOMAIN
 };
 
-enum class RRType : std::uint16_t {
-    A = 1, AAAA = 28, AFSDB = 18, APL = 42, CAA = 257, CDNSKEY = 60, CDS = 59,
-    CERT = 37, CNAME = 5, CSYNC = 62, DHCID = 49, DLV = 32769, DNAME = 39,
-    DNSKEY = 48, DS = 43, HINFO = 13, HIP = 55, IPSECKEY = 45,
-    KEY = 25, KX = 36, LOC = 29, MX = 15, NAPTR = 35, NS = 2, NSEC = 47,
-    NSEC3 = 50, NSEC3PARAM = 51, OPENPGPKEY = 61, PTR = 12, RRSIG = 46,
-    RP = 17, SIG = 24, SMIMEA = 53, SOA = 6, SRV = 33, SSHFP = 44, TA = 32768,
-    TKEY = 249, TLSA = 52, TSIG = 250, TXT = 16, URI = 256, ZONEMD = 63
-};
+smart_enum_class(RecordType, std::uint16_t,
+	A          = 1,
+	AAAA       = 28,
+	AFSDB      = 18,
+	APL        = 42,
+	CAA        = 257,
+	CDNSKEY    = 60,
+	CDS        = 59,
+	CERT       = 47,
+	CNAME      = 5,
+	DHCID      = 49,
+	DLV        = 32769,
+	DNAME      = 39,
+	DNSKEY     = 48,
+	DS         = 43,
+	HIP        = 55,
+	IPSECKEY   = 45,
+	KEY        = 25,
+	KX         = 36,
+	LOC        = 29,
+	MX         = 15,
+	NAPTR      = 35,
+	NS         = 2,
+	NSEC       = 47,
+	NSEC3      = 50,
+	NSEC3PARAM = 51,
+	OPENPGPKEY = 61,
+	PTR        = 12,
+	RRSIG      = 46,
+	RP         = 17,
+	SIG        = 24,
+	SOA        = 6,
+	SRV        = 33,
+	SSHFP      = 44,
+	TA         = 32769,
+	TKEY       = 249,
+	TLSA       = 52,
+	TSIG       = 250,
+	TXT        = 16,
+	URI        = 256,
 
-enum class ClassCode : std::uint16_t {
-    IN = 1, CH = 3, HS = 4
-};
+	// misc
+	ALL        = 255,
+	AXFR       = 252,
+	IXFR       = 251,
+	OPT        = 41,
+
+	// obsolete
+	MD         = 3,
+	MF         = 4,
+	MAILA      = 254,
+	MB         = 7,
+	MG         = 8,
+	MR         = 9,
+	MINFO      = 14,
+	MAILB      = 253,
+	WKS        = 11,
+	NB         = 32,
+	NBSTAT     = 33,
+	NULL_      = 10,
+	A6         = 38,
+	NXT        = 30,
+	KEY_       = 25,
+	SIG_       = 24,
+	HINFO      = 13,
+	RP_        = 17,
+	X25        = 19,
+	ISDN       = 20,
+	RT         = 21,
+	NSAP       = 22,
+	NSAP_PTR   = 23,
+	PX         = 26,
+	EID        = 31,
+	NIMLOC     = 32,
+	ATMA       = 34,
+	APL_       = 42,
+	SINK       = 40,
+	GPOS       = 27,
+	UINFO      = 100,
+	UID        = 101,
+	GID        = 102,
+	UNSPEC     = 103,
+	SPF        = 99
+)
+
+smart_enum_class(Class, std::uint16_t,
+	CLASS_IN = 1, // Internet
+	CLASS_CS = 2, // CSNET, obsolete
+	CLASS_CH = 3, // Chaos
+	CLASS_HS = 4, // Hesiod
+)
 
 struct Ptr {
 
@@ -82,27 +157,41 @@ struct Srv {
     std::string_view protocol;
     std::string_view name;
     std::uint32_t ttl;
-    ClassCode ccode;
+	Class ccode;
     std::uint16_t priority;
     std::uint16_t weight;
     std::uint16_t port;
     std::string_view host;
 };
 
+smart_enum_class(Opcode, std::uint16_t,
+	STANDARD_QUERY
+)
+
+smart_enum_class(ReplyCode, std::uint16_t,
+	REPLY_NO_ERROR, FORMAT_ERROR,
+	SERVER_FAILURE, NAME_ERROR,
+	NOT_IMPLEMENTED, REFUSED
+)
+
 struct Flags {
-    std::uint16_t qr     : 1;
-    std::uint16_t opcode : 4;
-    std::uint16_t aa     : 1;
-    std::uint16_t tc     : 1;
-    std::uint16_t rd     : 1;
-    std::uint16_t ra     : 1;
-    std::uint16_t z      : 3;
-    std::uint16_t rcode  : 4;
+	std::uint16_t qr  : 1; // response
+	Opcode opcode     : 4; // opcode
+	std::uint16_t aa  : 1; // authoritative
+	std::uint16_t tc  : 1; // truncated
+	std::uint16_t rd  : 1; // recursion_desired
+	std::uint16_t ra  : 1; // recursion_available
+	std::uint16_t z   : 1; // reserved
+	std::uint16_t answer_authenticated  : 1; // todo
+	std::uint16_t non_auth_unacceptable : 1; // todo
+	ReplyCode rcode:   4; // reply_code
 };
 
+// flags are extracted rather than overlaid as the standard
+// allows for implementation-defined field reordering
 struct Header {
     big_uint16_t id;
-    big_uint16_t flags;
+	big_uint16_t flags;
     big_uint16_t questions;
     big_uint16_t answers;
     big_uint16_t authority_rrs;
@@ -113,8 +202,8 @@ static_assert(sizeof(Header) == DNS_HDR_SIZE, "Bad header size");
 
 struct Answer {
     std::string_view name;
-    RRType type;
-    ClassCode ccode;
+	RecordType type;
+	Class ccode;
     std::uint32_t ttl;
     std::uint16_t rdlen;
     RecordData record;
@@ -122,9 +211,54 @@ struct Answer {
 
 struct Question {
     std::string_view name;
-    RRType type;
-    ClassCode cc;
+	RecordType type;
+	Class cc;
 };
+
+//struct RecordEntry {
+//	std::string name;
+//	boost::asio::ip::address answer;
+//	RecordType type;
+//	std::uint32_t ttl;
+//};
+
+//struct Record_Authority {
+//	std::string master_name;
+//	std::string responsible_name;
+//	std::uint32_t serial;
+//	std::uint32_t refresh_interval;
+//	std::uint32_t retry_interval;
+//	std::uint32_t expire_interval;
+//	std::uint32_t negative_caching_ttl;
+//};
+//
+//struct Record_A {
+//	std::uint32_t ip;
+//};
+//
+//struct Record_AAAA {
+//	std::array<unsigned char, 16> ip;
+//};
+//
+//struct ResourceRecord {
+//	std::string name;
+//	RecordType type;
+//	Class resource_class;
+//	std::uint32_t ttl;
+//	std::uint16_t rdata_len;
+//	std::variant<Record_A, Record_AAAA,
+//		Record_Authority> rdata;
+//};
+//
+//
+//struct Query {
+//	Header header;
+//	std::vector<Question> questions;
+//	std::vector<ResourceRecord> answers;
+//	std::vector<ResourceRecord> authorities;
+//	std::vector<ResourceRecord> additional;
+//};
+
 
 /*
  * Controls the maximum allowable datagram size

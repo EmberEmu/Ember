@@ -9,20 +9,21 @@
 #pragma once
 
 #include "DNSDefines.h"
+#include <shared/smartenum.hpp>
 #include <span>
 #include <cstddef>
 
 namespace ember::dns {
 
-enum class Result {
-    VALIDATE_OK,
-    VALIDATE_BAD_HDR
-};
+smart_enum_class(Result, std::uint8_t,
+	OK, HEADER_TOO_SMALL, PAYLOAD_TOO_LARGE
+);
+  
 
 class Parser {
 public:
     static Result validate(std::span<const std::byte> buffer);
-    static Flags extract_flags(const Header& header);
+    static Flags extract_flags(std::uint16_t flags);
     static const Header* header_overlay(std::span<const std::byte> buffer);
 };
 
