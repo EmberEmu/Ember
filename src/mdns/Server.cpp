@@ -14,8 +14,8 @@
 
 namespace ember::dns {
 
-Server::Server(Socket& socket, Parser& parser, log::Logger* logger)
-               : socket_(socket), parser_(parser), logger_(logger) {
+Server::Server(Socket& socket, log::Logger* logger)
+               : socket_(socket), logger_(logger) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
     socket_.register_handler(this);
 }

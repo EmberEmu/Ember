@@ -72,11 +72,10 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto group = args["mdns.group"].as<std::string>();
 	const auto port = args["mdns.port"].as<std::uint16_t>();
 	
-	boost::asio::io_context service(1);
+	boost::asio::io_context service(1); // todo
 
-	dns::Parser parser;
 	dns::MulticastSocket socket(service, iface, group, port);
-	dns::Server server(socket, parser, logger);
+	dns::Server server(socket, logger);
 
 	service.run();
 } catch(std::exception& e) {
