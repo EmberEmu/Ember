@@ -14,14 +14,24 @@
 
 namespace ember::dns {
 
-Server::Server(Socket& socket, log::Logger* logger)
-               : socket_(socket), logger_(logger) {
+Server::Server(std::unique_ptr<Socket> socket, log::Logger* logger)
+               : socket_(std::move(socket)), logger_(logger) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-    socket_.register_handler(this);
+    socket_->register_handler(this);
 }
 
 Server::~Server() {
-	socket_.deregister_handler(this);
+	shutdown();
+}
+
+void Server::shutdown() {
+	if(!socket_) {
+		return;
+	}
+
+	// todo, broadcast withdrawal of services?
+	socket_->deregister_handler(this);
+	socket_.reset();
 }
 
 void Server::handle_query(std::span<const std::byte> datagram) {

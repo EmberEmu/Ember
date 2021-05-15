@@ -18,7 +18,6 @@ namespace ember::dns {
 smart_enum_class(Result, std::uint8_t,
 	OK, HEADER_TOO_SMALL, PAYLOAD_TOO_LARGE
 );
-  
 
 class Parser final {
 public:

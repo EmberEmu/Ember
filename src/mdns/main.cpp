@@ -18,7 +18,9 @@
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <utility>
 #include <cstddef>
 
 namespace el = ember::log;
@@ -27,7 +29,7 @@ using namespace std::chrono_literals;
 
 namespace ember {
 
-void launch(const po::variables_map& args, log::Logger* logger);
+int launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
@@ -53,9 +55,9 @@ int main(int argc, const char* argv[]) try {
 	ember::log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	ember::launch(args, logger.get());
+	const auto ret = ember::launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
-	return EXIT_SUCCESS;
+	return ret;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return EXIT_FAILURE;
@@ -63,7 +65,7 @@ int main(int argc, const char* argv[]) try {
 
 namespace ember {
 
-void launch(const po::variables_map& args, log::Logger* logger) try {
+int launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
@@ -73,13 +75,27 @@ void launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto port = args["mdns.port"].as<std::uint16_t>();
 	
 	boost::asio::io_context service(1); // todo
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
-	dns::MulticastSocket socket(service, iface, group, port);
-	dns::Server server(socket, logger);
+	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port);
+	dns::Server server(std::move(socket), logger);
+	
+	signals.async_wait([&](const boost::system::error_code& error, int signal) {
+		LOG_DEBUG(logger) << "Received signal " << signal << LOG_SYNC;
+		server.shutdown();
+	});
+
+	service.dispatch([logger]() {
+		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+	});
 
 	service.run();
+
+	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	return EXIT_SUCCESS;
 } catch(std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
