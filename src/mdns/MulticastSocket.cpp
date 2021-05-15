@@ -89,4 +89,14 @@ void MulticastSocket::register_handler(Handler* handler) {
     handler_ = handler;
 }
 
+void MulticastSocket::deregister_handler(const Handler* handler) {
+	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
+	if(handler != handler_) {
+		LOG_ERROR_GLOB << "Attempted to deregister handler that wasn't registered" << LOG_ASYNC;
+	}
+
+	handler_ = nullptr;
+}
+
 } // dns, ember

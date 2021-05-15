@@ -16,6 +16,7 @@ class Socket {
 public:
     virtual void send() = 0;
     virtual void register_handler(Handler*) = 0;
+	virtual void deregister_handler(const Handler*) = 0;
     virtual ~Socket() = default;
 };
 
