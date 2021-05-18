@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,8 +17,11 @@
 
 namespace ember::util {
 
-inline std::string format_packet(const unsigned char* packet, std::size_t size,
-                                 unsigned int columns = 16) {
+template<typename T>
+inline std::string format_packet(const T* packet, std::size_t size,
+                                 unsigned int columns = 16)
+{
+	auto data = reinterpret_cast<const unsigned char*>(packet);
 	auto rows = static_cast<std::size_t>(std::ceil(size / static_cast<double>(columns)));
 	std::stringstream buffer;
 	auto offset = 0u;
@@ -30,7 +33,7 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 			buffer << std::hex << std::setfill('0');
 
 			if(j + offset < size) {
-				buffer << std::setw(2) << gsl::narrow_cast<unsigned>(packet[j + offset]) << " ";
+				buffer << std::setw(2) << gsl::narrow_cast<unsigned>(data[j + offset]) << " ";
 			} else {
 				buffer << "   ";
 			}
@@ -40,7 +43,7 @@ inline std::string format_packet(const unsigned char* packet, std::size_t size,
 
 		for(std::size_t j = 0; j < columns; ++j) {
 			if(j + offset < size) {
-				buffer << gsl::narrow_cast<char>(std::isprint(packet[j + offset])? packet[j + offset] : '.');
+				buffer << gsl::narrow_cast<char>(std::isprint(data[j + offset])? data[j + offset] : '.');
 			} else {
 				buffer << " ";
 			}
