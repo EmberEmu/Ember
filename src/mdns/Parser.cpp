@@ -43,11 +43,11 @@ std::uint16_t Parser::encode_flags(const Flags flags) {
 	return encoded;
 }
 
-const Header* Parser::header_overlay(std::span<const std::byte> buffer) {
+const Header* Parser::header_overlay(std::span<const std::uint8_t> buffer) {
     return reinterpret_cast<const Header*>(buffer.data());
 }
 
-Result Parser::validate(std::span<const std::byte> buffer) {
+Result Parser::validate(std::span<const std::uint8_t> buffer) {
 	if(buffer.size() < DNS_HDR_SIZE) {
 		return Result::HEADER_TOO_SMALL;
 	}
@@ -59,13 +59,6 @@ Result Parser::validate(std::span<const std::byte> buffer) {
     return Result::OK;
 }
 
-//
-//std::uint16_t Serialisation::encode_flags(const Flags& flags) {
-//	std::uint16_t enc = 0;
-
-//	return enc;
-//}
-//
 //// todo: replace this monstrosity with a regex
 //void Serialisation::write_label_notation(std::string_view name, BinaryStream& stream) {
 //	std::string_view segment(name);
