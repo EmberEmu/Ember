@@ -22,9 +22,9 @@ class Server final : public Handler {
 	Parser parser_;
     log::Logger* logger_;
 
-    void handle_query(std::span<const std::byte> datagram);
-    void handle_response(std::span<const std::byte> datagram);
-    void handle_datagram(std::span<const std::byte> datagram) override;
+    void handle_query(std::span<const std::uint8_t> datagram);
+    void handle_response(std::span<const std::uint8_t> datagram);
+    void handle_datagram(std::span<const std::uint8_t> datagram) override;
 
 public:
     Server(std::unique_ptr<Socket> socket, log::Logger* logger);

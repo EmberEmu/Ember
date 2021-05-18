@@ -15,7 +15,7 @@ namespace ember::dns {
 
 class Handler {
 public:
-    virtual void handle_datagram(std::span<const std::byte> datagram) = 0;
+    virtual void handle_datagram(std::span<const std::uint8_t> datagram) = 0;
     virtual ~Handler() = default;
 };
 

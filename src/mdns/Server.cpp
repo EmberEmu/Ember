@@ -34,7 +34,7 @@ void Server::shutdown() {
 	socket_.reset();
 }
 
-void Server::handle_query(std::span<const std::byte> datagram) {
+void Server::handle_query(std::span<const std::uint8_t> datagram) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	//Query out{};
@@ -87,11 +87,11 @@ void Server::handle_query(std::span<const std::byte> datagram) {
 	//return out;
 }
 
-void Server::handle_response(std::span<const std::byte> datagram) {
+void Server::handle_response(std::span<const std::uint8_t> datagram) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 
-void Server::handle_datagram(std::span<const std::byte> datagram) {
+void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	const auto& result = Parser::validate(datagram);
@@ -101,8 +101,8 @@ void Server::handle_datagram(std::span<const std::byte> datagram) {
         return;
     }
 
-	// todo
-	std::cout << util::format_packet((unsigned char*)datagram.data(), datagram.size()) << "\n";
+	// todo: temp
+	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
 
     const auto header = Parser::header_overlay(datagram);
     const auto flags = Parser::decode_flags(header->flags);

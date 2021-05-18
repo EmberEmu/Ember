@@ -21,10 +21,10 @@ smart_enum_class(Result, std::uint8_t,
 
 class Parser final {
 public:
-    static Result validate(std::span<const std::byte> buffer);
+    static Result validate(std::span<const std::uint8_t> buffer);
     static Flags decode_flags(std::uint16_t flags);
 	static std::uint16_t encode_flags(Flags flags);
-    static const Header* header_overlay(std::span<const std::byte> buffer);
+    static const Header* header_overlay(std::span<const std::uint8_t> buffer);
 };
 
 } // dns, ember
