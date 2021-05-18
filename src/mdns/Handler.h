@@ -9,7 +9,7 @@
 #pragma once
 
 #include <span>
-#include <cstddef>
+#include <cstdint>
 
 namespace ember::dns {
 
