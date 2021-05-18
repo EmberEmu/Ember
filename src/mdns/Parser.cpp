@@ -44,13 +44,10 @@ std::uint16_t Parser::encode_flags(const Flags flags) {
 }
 
 const Header* Parser::header_overlay(std::span<const std::byte> buffer) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
     return reinterpret_cast<const Header*>(buffer.data());
 }
 
 Result Parser::validate(std::span<const std::byte> buffer) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
-
 	if(buffer.size() < DNS_HDR_SIZE) {
 		return Result::HEADER_TOO_SMALL;
 	}
