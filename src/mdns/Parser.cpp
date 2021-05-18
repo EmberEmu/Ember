@@ -11,22 +11,36 @@
 
 namespace ember::dns {
 
-Flags Parser::extract_flags(const std::uint16_t flags) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
-
-	// todo, fix casting mess
+Flags Parser::decode_flags(const std::uint16_t flags) {
 	const Flags parsed {
-		.qr = (uint16_t)((flags & QR_MASK) >> QR_OFFSET),
-		.opcode = (Opcode)((flags & OPCODE_MASK) >> OPCODE_OFFSET),
-		.aa = (uint16_t)((flags & AA_MASK) >> AA_OFFSET),
-		.tc = (uint16_t)((flags & TC_MASK) >> TC_OFFSET),
-		.rd = (uint16_t)((flags & RD_MASK) >> RD_OFFSET),
-		.ra = (uint16_t)((flags & RA_MASK) >> RA_OFFSET),
-		.z = (uint16_t)((flags & Z_MASK) >> Z_OFFSET),
-		.rcode = (ReplyCode)((flags & RCODE_MASK) >> RCODE_OFFSET)
+		.qr = (flags & QR_MASK) >> QR_OFFSET,
+		.opcode = static_cast<Opcode>((flags & OPCODE_MASK) >> OPCODE_OFFSET),
+		.aa = (flags & AA_MASK) >> AA_OFFSET,
+		.tc = (flags & TC_MASK) >> TC_OFFSET,
+		.rd = (flags & RD_MASK) >> RD_OFFSET,
+		.ra = (flags & RA_MASK) >> RA_OFFSET,
+		.z = (flags & Z_MASK) >> Z_OFFSET,
+		.ad = (flags & AD_MASK) >> AD_OFFSET,
+		.cd = (flags & CD_MASK) >> CD_OFFSET,
+		.rcode = static_cast<ReplyCode>((flags & RCODE_MASK) >> RCODE_OFFSET)
 	};
 
     return parsed;
+}
+
+std::uint16_t Parser::encode_flags(const Flags flags) {
+	std::uint16_t encoded = 0;
+	encoded |= flags.qr << QR_OFFSET;
+	encoded |= static_cast<std::uint8_t>(flags.opcode) << OPCODE_OFFSET;
+	encoded |= flags.aa << AA_OFFSET;
+	encoded |= flags.tc << TC_OFFSET;
+	encoded |= flags.rd << RD_OFFSET;
+	encoded |= flags.ra << RA_OFFSET;
+	encoded |= flags.z << Z_OFFSET;
+	encoded |= flags.ad << AD_OFFSET;
+	encoded |= flags.cd << CD_OFFSET;
+	encoded |= static_cast<std::uint8_t>(flags.rcode) << RCODE_OFFSET;
+	return encoded;
 }
 
 const Header* Parser::header_overlay(std::span<const std::byte> buffer) {
@@ -48,33 +62,10 @@ Result Parser::validate(std::span<const std::byte> buffer) {
     return Result::OK;
 }
 
-//Flags Serialisation::decode_flags(std::uint16_t flags) {
-//	Flags dec{};
-//	dec.response = (flags >> 15) & 1;
-//	dec.opcode = static_cast<Opcode>((flags >> 11) & 4);
-//	dec.authoritative = (flags >> 10) & 1;
-//	dec.truncated = (flags >> 9) & 1;
-//	dec.recursion_desired = (flags >> 8) & 1;
-//	dec.recursion_available = (flags >> 7) & 1;
-//	dec.reserved = (flags >> 6) & 1;
-//	dec.answer_authenticated = (flags >> 5) & 1;
-//	dec.non_auth_unacceptable = (flags >> 4) & 1;
-//	dec.reply_code = static_cast<ReplyCode>(flags & 4);
-//	return dec;
-//}
 //
 //std::uint16_t Serialisation::encode_flags(const Flags& flags) {
 //	std::uint16_t enc = 0;
-//	enc |= flags.response << 15;
-//	enc |= static_cast<std::underlying_type<Opcode>::type>(flags.opcode) << 11;
-//	enc |= flags.authoritative << 10;
-//	enc |= flags.truncated << 9;
-//	enc |= flags.recursion_desired << 8;
-//	enc |= flags.recursion_available << 7;
-//	enc |= flags.reserved << 6;
-//	enc |= flags.answer_authenticated << 5;
-//	enc |= flags.non_auth_unacceptable << 4;
-//	enc |= static_cast<std::underlying_type<ReplyCode>::type>(flags.reply_code);
+
 //	return enc;
 //}
 //

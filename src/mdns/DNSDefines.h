@@ -32,6 +32,8 @@ constexpr auto TC_OFFSET     = 6;
 constexpr auto RD_OFFSET     = 7;
 constexpr auto RA_OFFSET     = 8;
 constexpr auto Z_OFFSET      = 9;
+constexpr auto AD_OFFSET     = 10;
+constexpr auto CD_OFFSET     = 11;
 constexpr auto RCODE_OFFSET  = 12;
 
 constexpr auto QR_MASK     = 0x01 << QR_OFFSET;
@@ -40,7 +42,9 @@ constexpr auto AA_MASK     = 0x01 << AA_OFFSET;
 constexpr auto TC_MASK     = 0x01 << TC_OFFSET;
 constexpr auto RD_MASK     = 0x01 << RD_OFFSET;
 constexpr auto RA_MASK     = 0x01 << RA_OFFSET;
-constexpr auto Z_MASK      = 0x07 << Z_OFFSET;
+constexpr auto Z_MASK      = 0x01 << Z_OFFSET;
+constexpr auto AD_MASK     = 0x01 << AD_OFFSET;
+constexpr auto CD_MASK     = 0x01 << CD_OFFSET;
 constexpr auto RCODE_MASK  = 0x0F << RCODE_OFFSET;
 
 enum class QR {
@@ -165,7 +169,7 @@ struct Srv {
 };
 
 smart_enum_class(Opcode, std::uint16_t,
-	STANDARD_QUERY
+	STANDARD_QUERY, IQUERY, STATUS
 )
 
 smart_enum_class(ReplyCode, std::uint16_t,
@@ -174,21 +178,28 @@ smart_enum_class(ReplyCode, std::uint16_t,
 	NOT_IMPLEMENTED, REFUSED
 )
 
+/* 
+ * This whole thing is really 16 bits on the wire but
+ * keeping it as int32 removes some obnoxious casting
+*/
 struct Flags {
-	std::uint16_t qr  : 1; // response
-	Opcode opcode     : 4; // opcode
-	std::uint16_t aa  : 1; // authoritative
-	std::uint16_t tc  : 1; // truncated
-	std::uint16_t rd  : 1; // recursion_desired
-	std::uint16_t ra  : 1; // recursion_available
-	std::uint16_t z   : 1; // reserved
-	std::uint16_t answer_authenticated  : 1; // todo
-	std::uint16_t non_auth_unacceptable : 1; // todo
-	ReplyCode rcode:   4; // reply_code
+	std::int32_t qr; // response
+	Opcode opcode; // opcode
+	std::int32_t aa; // authoritative
+	std::int32_t tc; // truncated
+	std::int32_t rd; // recursion_desired
+	std::int32_t ra; // recursion_available
+	std::int32_t z; // reserved
+	std::int32_t ad; // answer_authenticated
+	std::int32_t cd; // non_auth_unacceptable
+	ReplyCode rcode; // reply_code
 };
 
-// flags are extracted rather than overlaid as the standard
-// allows for implementation-defined field reordering
+/*
+ * 'flags' isn't of type 'Flags' because the standard allows for
+ * implementation-defined reordering of bitfields, meaning it isn't
+ * strictly correct to transpose the wire flags without deserialisation
+ */
 struct Header {
     big_uint16_t id;
 	big_uint16_t flags;

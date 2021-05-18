@@ -105,7 +105,7 @@ void Server::handle_datagram(std::span<const std::byte> datagram) {
 	std::cout << util::format_packet((unsigned char*)datagram.data(), datagram.size()) << "\n";
 
     const auto header = Parser::header_overlay(datagram);
-    const auto flags = Parser::extract_flags(header->flags);
+    const auto flags = Parser::decode_flags(header->flags);
     
 	// temp
 	LOG_DEBUG(logger_) << "ID: " << header->id << LOG_ASYNC;
