@@ -29,12 +29,24 @@ class Parser final {
 	using Names = std::unordered_map<std::uint16_t, std::string>;
 	using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
+	// deserialisation
 	static std::string parse_label_notation(spark::BinaryStream& stream);
 	static void parse_header(Query& query, spark::BinaryStream& stream);
 	static void parse_questions(Query& query, Names& names, spark::BinaryStream& stream);
 	static std::string parse_name(Names& names, spark::BinaryStream& stream);
 	static ResourceRecord parse_resource_record(Names& names, spark::BinaryStream& stream);
 	static void parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream);
+
+	// serialisation
+	static void write(const Query& query, spark::BinaryStream& stream);
+	static void write_header(const Query& query, spark::BinaryStream& stream);
+	static Pointers write_questions(const Query& query, spark::BinaryStream& stream);
+	static std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream);
+	static void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
+	                                  spark::BinaryStream& stream);
+	static void write_resource_records(const Query& query, const Pointers& ptrs,
+	                                   spark::BinaryStream& stream);
+	static void write_label_notation(std::string_view name, spark::BinaryStream& stream);
 
 public:
     static Result validate(std::span<const std::uint8_t> buffer);

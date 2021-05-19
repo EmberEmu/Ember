@@ -9,6 +9,7 @@
 #include "Parser.h"
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
+#include <gsl/gsl_util>
 #include <boost/endian.hpp>
 
 namespace be = boost::endian;
@@ -150,12 +151,12 @@ std::string Parser::parse_name(Names& names, spark::BinaryStream& stream) {
 	stream.buffer()->copy(&notation, 1);
 	notation >>= 6;
 
-	if (notation == 0) { // string/label notation
-		const auto name_offset = stream.total_read();
+	if(notation == 0) { // string/label notation
+		const auto name_offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
 		const auto name = parse_label_notation(stream);
 		names[name_offset] = name;
 		return name;
-	} else if (notation == 3) { // pointer notation
+	} else if(notation == 3) { // pointer notation
 		std::uint16_t name_offset;
 		stream >> name_offset;
 		be::big_to_native_inplace(name_offset);
@@ -204,151 +205,142 @@ void Parser::parse_resource_records(Query& query, Names& names, spark::BinaryStr
 	}
 }
 
-//void Parser::write(const Query& query, BinaryStream& stream) {
-//	write_header(query, stream);
-//	const auto ptrs = write_questions(query, stream);
-//	write_resource_records(query, stream, ptrs);
-//}
+void Parser::write(const Query& query, spark::BinaryStream& stream) {
+	write_header(query, stream);
+	const auto ptrs = write_questions(query, stream);
+	write_resource_records(query, ptrs, stream);
+}
 
-//
-//void Serialisation::write_header(const Query& query, BinaryStream& stream) {
-//	stream << be::native_to_big(query.header.id);
-//	stream << be::native_to_big(encode_flags(query.header.flags));
-//	stream << be::native_to_big(query.header.questions);
-//	stream << be::native_to_big(query.header.answers);
-//	stream << be::native_to_big(query.header.authorities);
-//	stream << be::native_to_big(query.header.additional);
-//}
-//
-//auto Serialisation::write_questions(const Query& query, BinaryStream& stream) {
-//	NamePointers pointers;
-//
-//	for (auto& question : query.questions) {
-//		pointers[question.name] = gsl::narrow<std::uint16_t>(stream.total_write());
-//		write_label_notation(question.name, stream);
-//		stream << be::native_to_big(static_cast<std::uint16_t>(question.type));
-//		stream << be::native_to_big(static_cast<std::uint16_t>(question.rclass));
-//	}
-//
-//	return pointers;
-//}
-//
-//std::size_t Serialisation::write_rdata(const ResourceRecord& rr, BinaryStream& stream) {
-//	const auto write = stream.total_write();
-//
-//	if (std::holds_alternative<Record_A>(rr.rdata)) {
-//		const auto& data = std::get<Record_A>(rr.rdata);
-//		stream << be::native_to_big(data.ip);
-//	}
-//	else if (std::holds_alternative<Record_AAAA>(rr.rdata)) {
-//		const auto& data = std::get<Record_AAAA>(rr.rdata);
-//		stream.put(data.ip.data(), data.ip.size());
-//	}
-//	else {
-//		throw std::runtime_error("Don't know how to serialise this record data");
-//	}
-//
-//	return stream.total_write() - write;
-//}
-//
-//void Serialisation::write_resource_record(const ResourceRecord& rr, BinaryStream& stream,
-//	const NamePointers& ptrs) {
-//	auto it = ptrs.find(rr.name);
-//
-//	/*
-//	* Names in resource records are encoded as either strings
-//	* or as pointers to existing strings in the buffer, for
-//	* compression purposes. The first two bits specifies the
-//	* encoding used. If the two leftmost bits are set to 1,
-//	* pointer encoding is used. If the two leftmost bits
-//	* are set to 0, string encoding is used.
-//	*
-//	* The remaining bits in pointer notation represent the
-//	* offset within the packet that contains the name string.
-//	*
-//	* The remaining bits in string notation represent the
-//	* length of the string segment that follows.
-//	*
-//	* <00><000000>         = string encoding  ( 8 bits)
-//	* <11><00000000000000> = pointer encoding (16 bits)
-//	*/
-//	if (it == ptrs.end()) {
-//		// must be <= 63 bytes (6 bits for length encoding)
-//		write_label_notation(rr.name, stream);
-//	}
-//	else {
-//		std::uint16_t ptr = it->second; // should make sure this fits within 30 bits
-//		ptr ^= (3 << 14); // set two LSBs to signal pointer encoding
-//		stream << be::native_to_big(ptr);
-//	}
-//
-//	stream << be::native_to_big(static_cast<std::uint16_t>(rr.type));
-//	stream << be::native_to_big(static_cast<std::uint16_t>(rr.resource_class));
-//	stream << be::native_to_big(rr.ttl);
-//
-//	if (stream.can_write_seek()) {
-//		const auto seek = stream.total_write();
-//		stream << std::uint16_t(0);
-//		const auto rdata_len = write_rdata(rr, stream);
-//		const auto new_seek = stream.total_write();
-//		stream.write_seek(seek, SeekMode::SM_ABSOLUTE);
-//		stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
-//		stream.write_seek(new_seek, SeekMode::SM_ABSOLUTE);
-//	}
-//	else {
-//		NullBuffer null_buff;
-//		BinaryStream null_stream(null_buff);
-//		const auto rdata_len = write_rdata(rr, null_stream);
-//		stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
-//		write_rdata(rr, stream);
-//	}
-//}
-//
-//void Serialisation::write_resource_records(const Query& query, BinaryStream& stream,
-//	const NamePointers& ptrs) {
-//	for (auto& rr : query.answers) {
-//		write_resource_record(rr, stream, ptrs);
-//	}
-//
-//	for (auto& rr : query.authorities) {
-//		write_resource_record(rr, stream, ptrs);
-//	}
-//
-//	for (auto& rr : query.additional) {
-//		write_resource_record(rr, stream, ptrs);
-//	}
-//}
-//
 
-//// todo: replace this monstrosity with a regex
-//void Serialisation::write_label_notation(std::string_view name, BinaryStream& stream) {
-//	std::string_view segment(name);
-//	auto last = 0;
-//
-//	while (true) {
-//		auto index = segment.find_first_of('.', last);
-//
-//		if (index == std::string::npos && segment.size()) {
-//			segment = segment.substr(1, -1);
-//			stream << std::uint8_t(segment.size());
-//			stream.put(segment.data(), segment.size());
-//			break;
-//		}
-//		else if (index == std::string::npos) {
-//			break;
-//		}
-//		else {
-//			const std::string_view print_segment = segment.substr(0, index);
-//			segment = segment.substr(last ? index : index + 1, -1);
-//			stream << std::uint8_t(print_segment.size());
-//			stream.put(print_segment.data(), print_segment.size());
-//		}
-//
-//		last = index;
-//	}
-//
-//	stream << '\0';
-//}
-//
+void Parser::write_header(const Query& query, spark::BinaryStream& stream) {
+	stream << be::native_to_big(query.header.id);
+	stream << be::native_to_big(encode_flags(query.header.flags));
+	stream << be::native_to_big(query.header.questions);
+	stream << be::native_to_big(query.header.answers);
+	stream << be::native_to_big(query.header.authority_rrs);
+	stream << be::native_to_big(query.header.additional_rrs);
+}
+
+auto Parser::write_questions(const Query& query, spark::BinaryStream& stream) -> Pointers {
+	Pointers pointers;
+
+	for(auto& question : query.questions) {
+		pointers[question.name] = gsl::narrow<std::uint16_t>(stream.total_write());
+		write_label_notation(question.name, stream);
+		stream << be::native_to_big(static_cast<std::uint16_t>(question.type));
+		stream << be::native_to_big(static_cast<std::uint16_t>(question.cc));
+	}
+
+	return pointers;
+}
+
+std::size_t Parser::write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream) {
+	const auto write = stream.total_write();
+
+	if(std::holds_alternative<Record_A>(rr.rdata)) {
+		const auto& data = std::get<Record_A>(rr.rdata);
+		stream << be::native_to_big(data.ip);
+	}
+	else if(std::holds_alternative<Record_AAAA>(rr.rdata)) {
+		const auto& data = std::get<Record_AAAA>(rr.rdata);
+		stream.put(data.ip.data(), data.ip.size());
+	}
+	else {
+		throw std::runtime_error("Don't know how to serialise this record data");
+	}
+
+	return stream.total_write() - write;
+}
+
+void Parser::write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
+                                   spark::BinaryStream& stream) {
+	auto it = ptrs.find(rr.name);
+
+	/*
+	* Names in resource records are encoded as either strings
+	* or as pointers to existing strings in the buffer, for
+	* compression purposes. The first two bits specifies the
+	* encoding used. If the two leftmost bits are set to 1,
+	* pointer encoding is used. If the two leftmost bits
+	* are set to 0, string encoding is used.
+	*
+	* The remaining bits in pointer notation represent the
+	* offset within the packet that contains the name string.
+	*
+	* The remaining bits in string notation represent the
+	* length of the string segment that follows.
+	*
+	* <00><000000>         = string encoding  ( 8 bits)
+	* <11><00000000000000> = pointer encoding (16 bits)
+	*/
+	if(it == ptrs.end()) {
+		// must be <= 63 bytes (6 bits for length encoding)
+		write_label_notation(rr.name, stream);
+	} else {
+		std::uint16_t ptr = it->second; // should make sure this fits within 30 bits
+		ptr ^= (3 << 14); // set two LSBs to signal pointer encoding
+		stream << be::native_to_big(ptr);
+	}
+
+	stream << be::native_to_big(static_cast<std::uint16_t>(rr.type));
+	stream << be::native_to_big(static_cast<std::uint16_t>(rr.resource_class));
+	stream << be::native_to_big(rr.ttl);
+
+	if(!stream.can_write_seek()) {
+		// todo
+	}
+	
+	const auto seek = stream.total_write();
+	stream << std::uint16_t(0);
+	const auto rdata_len = write_rdata(rr, stream);
+	const auto new_seek = stream.total_write();
+	stream.write_seek(spark::SeekDir::SD_START, seek);
+	stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
+	stream.write_seek(spark::SeekDir::SD_START, new_seek);
+}
+
+void Parser::write_resource_records(const Query& query, const Pointers& ptrs,
+                                    spark::BinaryStream& stream) {
+	for(auto& rr : query.answers) {
+		write_resource_record(rr, ptrs, stream);
+	}
+
+	for(auto& rr : query.authorities) {
+		write_resource_record(rr, ptrs, stream);
+	}
+
+	for(auto& rr : query.additional) {
+		write_resource_record(rr, ptrs, stream);
+	}
+}
+
+
+// todo: replace this monstrosity with a regex
+void Parser::write_label_notation(std::string_view name, spark::BinaryStream& stream) {
+	std::string_view segment(name);
+	auto last = 0;
+
+	while(true) {
+		auto index = segment.find_first_of('.', last);
+
+		if(index == std::string::npos && segment.size()) {
+			segment = segment.substr(1, -1);
+			stream << std::uint8_t(segment.size());
+			stream.put(segment.data(), segment.size());
+			break;
+		} else if (index == std::string::npos) {
+			break;
+		} else {
+			const std::string_view print_segment = segment.substr(0, index);
+			segment = segment.substr(last ? index : index + 1, -1);
+			stream << std::uint8_t(print_segment.size());
+			stream.put(print_segment.data(), print_segment.size());
+		}
+
+		last = index;
+	}
+
+	stream << '\0';
+}
 
 } // dns, ember

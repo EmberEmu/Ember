@@ -95,11 +95,11 @@ TEST(DNSParser, HeaderOverlay) {
 	*/// todo, readd flags test
 }
 
-// validate a random real-world mdns query
-TEST(DNSParser, ValidateQuery) {
-	const auto res = dns::Parser::validate(valid_query);
-	EXPECT_EQ(res, dns::Result::OK);
-}
+//// validate a random real-world mdns query
+//TEST(DNSParser, ValidateQuery) {
+//	const auto res = dns::Parser::validate(valid_query);
+//	EXPECT_EQ(res, dns::Result::OK);
+//}
 
 // intentionally don't pass enough data for a valid header
 TEST(DNSParser, Parser_HeaderBounds) {
