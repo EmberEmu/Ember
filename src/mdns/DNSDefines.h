@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Ember
+ * Copyright (c) 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,11 +10,33 @@
 
 #include <shared/smartenum.hpp>
 #include <boost/endian.hpp>
+#include <array>
 #include <string_view>
 #include <variant>
 #include <cstdint>
 
 namespace ember::dns {
+
+/*
+ * Controls the maximum allowable datagram size
+ * 
+ * This does not take the MTU into consideration,
+ * so fragmentation may occur before hitting these
+ * limits.
+ */
+constexpr auto UDP_HDR_SIZE = 8u;
+constexpr auto IPV4_HDR_SIZE = 20u;
+constexpr auto IPV6_HDR_SIZE = 40u;
+
+/* 
+ * rfc6762 s17
+ * Even when fragmentation is used, a Multicast DNS packet, including IP
+ * and UDP headers, MUST NOT exceed 9000 bytes.
+ */
+constexpr auto MAX_DGRAM_LEN = 9000;
+constexpr auto MAX_DGRAM_PAYLOAD_IPV4 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV4_HDR_SIZE);
+constexpr auto MAX_DGRAM_PAYLOAD_IPV6 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV6_HDR_SIZE);
+
 
 struct Srv;
 struct Txt;
@@ -152,20 +174,20 @@ struct Ptr {
 };
 
 struct Txt { 
-    std::string_view key;
-    std::string_view value;
+    std::string key;
+    std::string value;
 };
 
 struct Srv {
-    std::string_view service;
-    std::string_view protocol;
-    std::string_view name;
+    std::string service;
+    std::string protocol;
+    std::string name;
     std::uint32_t ttl;
 	Class ccode;
     std::uint16_t priority;
     std::uint16_t weight;
     std::uint16_t port;
-    std::string_view host;
+    std::string host;
 };
 
 smart_enum_class(Opcode, std::uint16_t,
@@ -195,24 +217,17 @@ struct Flags {
 	ReplyCode rcode; // reply_code
 };
 
-/*
- * 'flags' isn't of type 'Flags' because the standard allows for
- * implementation-defined reordering of bitfields, meaning it isn't
- * strictly correct to transpose the wire flags without deserialisation
- */
 struct Header {
-    big_uint16_t id;
-	big_uint16_t flags;
-    big_uint16_t questions;
-    big_uint16_t answers;
-    big_uint16_t authority_rrs;
-    big_uint16_t additional_rrs;
+    std::uint16_t id;
+	Flags flags;
+	std::uint16_t questions;
+	std::uint16_t answers;
+	std::uint16_t authority_rrs;
+	std::uint16_t additional_rrs;
 };
 
-static_assert(sizeof(Header) == DNS_HDR_SIZE, "Bad header size");
-
 struct Answer {
-    std::string_view name;
+    std::string name;
 	RecordType type;
 	Class ccode;
     std::uint32_t ttl;
@@ -221,74 +236,54 @@ struct Answer {
 };
 
 struct Question {
-    std::string_view name;
+    std::string name;
 	RecordType type;
 	Class cc;
 };
 
-//struct RecordEntry {
-//	std::string name;
-//	boost::asio::ip::address answer;
-//	RecordType type;
-//	std::uint32_t ttl;
-//};
+struct RecordEntry {
+	std::string name;
+	//boost::asio::ip::address answer; todo
+	RecordType type;
+	std::uint32_t ttl;
+};
 
-//struct Record_Authority {
-//	std::string master_name;
-//	std::string responsible_name;
-//	std::uint32_t serial;
-//	std::uint32_t refresh_interval;
-//	std::uint32_t retry_interval;
-//	std::uint32_t expire_interval;
-//	std::uint32_t negative_caching_ttl;
-//};
-//
-//struct Record_A {
-//	std::uint32_t ip;
-//};
-//
-//struct Record_AAAA {
-//	std::array<unsigned char, 16> ip;
-//};
-//
-//struct ResourceRecord {
-//	std::string name;
-//	RecordType type;
-//	Class resource_class;
-//	std::uint32_t ttl;
-//	std::uint16_t rdata_len;
-//	std::variant<Record_A, Record_AAAA,
-//		Record_Authority> rdata;
-//};
-//
-//
-//struct Query {
-//	Header header;
-//	std::vector<Question> questions;
-//	std::vector<ResourceRecord> answers;
-//	std::vector<ResourceRecord> authorities;
-//	std::vector<ResourceRecord> additional;
-//};
+struct Record_Authority {
+	std::string master_name;
+	std::string responsible_name;
+	std::uint32_t serial;
+	std::uint32_t refresh_interval;
+	std::uint32_t retry_interval;
+	std::uint32_t expire_interval;
+	std::uint32_t negative_caching_ttl;
+};
 
+struct Record_A {
+	std::uint32_t ip;
+};
 
-/*
- * Controls the maximum allowable datagram size
- * 
- * This does not take the MTU into consideration,
- * so fragmentation may occur before hitting these
- * limits.
- */
-constexpr auto UDP_HDR_SIZE = 8u;
-constexpr auto IPV4_HDR_SIZE = 20u;
-constexpr auto IPV6_HDR_SIZE = 40u;
+struct Record_AAAA {
+	std::array<unsigned char, 16> ip;
+};
 
-/* 
- * rfc6762 s17
- * Even when fragmentation is used, a Multicast DNS packet, including IP
- * and UDP headers, MUST NOT exceed 9000 bytes.
- */
-constexpr auto MAX_DGRAM_LEN = 9000;
-constexpr auto MAX_DGRAM_PAYLOAD_IPV4 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV4_HDR_SIZE);
-constexpr auto MAX_DGRAM_PAYLOAD_IPV6 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV6_HDR_SIZE);
+struct ResourceRecord {
+	std::string name;
+	RecordType type;
+	Class resource_class;
+	std::uint32_t ttl;
+	std::uint16_t rdata_len;
+	std::variant<
+		Record_A, Record_AAAA,
+		Record_Authority
+	> rdata;
+};
+
+struct Query {
+	Header header;
+	std::vector<Question> questions;
+	std::vector<ResourceRecord> answers;
+	std::vector<ResourceRecord> authorities;
+	std::vector<ResourceRecord> additional;
+};
 
 } // dns, ember

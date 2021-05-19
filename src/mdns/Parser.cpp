@@ -7,9 +7,28 @@
  */
 
 #include "Parser.h"
+#include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
+#include <boost/endian.hpp>
+
+namespace be = boost::endian;
 
 namespace ember::dns {
+
+std::pair<dns::Result, std::optional<Query>> Parser::read(std::span<const std::uint8_t> buffer) {
+	// todo, improve the adaptor to remove the need for this stuff
+	std::vector<std::uint8_t> vec(buffer.begin(), buffer.end());
+	spark::VectorBufferAdaptor adaptor(vec);
+	spark::BinaryStream stream(adaptor, vec.size());
+
+	Query query;
+	Names names;
+	parse_header(query, stream);
+	parse_questions(query, names, stream);
+	parse_resource_records(query, names, stream);
+
+	return { Result::OK, query };
+}
 
 Flags Parser::decode_flags(const std::uint16_t flags) {
 	const Flags parsed {
@@ -48,8 +67,15 @@ const Header* Parser::header_overlay(std::span<const std::uint8_t> buffer) {
 }
 
 Result Parser::validate(std::span<const std::uint8_t> buffer) {
+	// header validation
 	if(buffer.size() < DNS_HDR_SIZE) {
 		return Result::HEADER_TOO_SMALL;
+	}
+
+	const auto header = header_overlay(buffer);
+
+	if(header->questions == 0) {
+		return Result::NO_QUESTIONS;
 	}
 
 	if(buffer.size() > MAX_DGRAM_LEN) {
@@ -59,54 +85,131 @@ Result Parser::validate(std::span<const std::uint8_t> buffer) {
     return Result::OK;
 }
 
-//// todo: replace this monstrosity with a regex
-//void Serialisation::write_label_notation(std::string_view name, BinaryStream& stream) {
-//	std::string_view segment(name);
-//	auto last = 0;
-//
-//	while (true) {
-//		auto index = segment.find_first_of('.', last);
-//
-//		if (index == std::string::npos && segment.size()) {
-//			segment = segment.substr(1, -1);
-//			stream << std::uint8_t(segment.size());
-//			stream.put(segment.data(), segment.size());
-//			break;
-//		}
-//		else if (index == std::string::npos) {
-//			break;
-//		}
-//		else {
-//			const std::string_view print_segment = segment.substr(0, index);
-//			segment = segment.substr(last ? index : index + 1, -1);
-//			stream << std::uint8_t(print_segment.size());
-//			stream.put(print_segment.data(), print_segment.size());
-//		}
-//
-//		last = index;
-//	}
-//
-//	stream << '\0';
+std::string Parser::parse_label_notation(spark::BinaryStream& stream) {
+	std::stringstream name;
+	std::uint8_t length;
+	stream >> length;
+
+	while (length) {
+		std::string segment;
+		stream.get(segment, length);
+		name << segment;
+		stream >> length;
+
+		if (length) {
+			name << ".";
+		}
+	}
+
+	return name.str();
+}
+
+void Parser::parse_header(Query& query, spark::BinaryStream& stream) {
+	stream >> query.header.id;
+	std::uint16_t flags;
+	stream >> flags;
+	stream >> query.header.questions;
+	stream >> query.header.answers;
+	stream >> query.header.authority_rrs;
+	stream >> query.header.additional_rrs;
+
+	be::big_to_native_inplace(query.header.id);
+	be::big_to_native_inplace(flags);
+	query.header.flags = decode_flags(flags);
+	be::big_to_native_inplace(query.header.questions);
+	be::big_to_native_inplace(query.header.answers);
+	be::big_to_native_inplace(query.header.authority_rrs);
+	be::big_to_native_inplace(query.header.additional_rrs);
+}
+
+void Parser::parse_questions(Query& query, Names& names, spark::BinaryStream& stream) {
+	if(!query.header.questions) {
+		return;
+	}
+
+	for(auto i = 0u; i < query.header.questions; ++i) {
+		Question question;
+		question.name = parse_name(names, stream);
+		std::uint16_t type = 0, cc = 0;
+		stream >> type;
+		stream >> cc;
+		be::big_to_native_inplace(type);
+		be::big_to_native_inplace(cc);
+		question.type = static_cast<RecordType>(type);
+		question.cc = static_cast<Class>(cc);
+		query.questions.emplace_back(std::move(question));
+	}
+}
+
+/*
+ * See the comment in write_resource_record() if you want to know what's
+ * going on here
+ */
+std::string Parser::parse_name(Names& names, spark::BinaryStream& stream) {
+	std::uint8_t notation = 0;
+	stream.buffer()->copy(&notation, 1);
+	notation >>= 6;
+
+	if (notation == 0) { // string/label notation
+		const auto name_offset = stream.total_read();
+		const auto name = parse_label_notation(stream);
+		names[name_offset] = name;
+		return name;
+	} else if (notation == 3) { // pointer notation
+		std::uint16_t name_offset;
+		stream >> name_offset;
+		be::big_to_native_inplace(name_offset);
+
+		auto it = names.find(name_offset ^ (3 << 14));
+
+		if (it == names.end()) {
+			throw std::runtime_error("Invalid name offset");
+		}
+
+		return it->second;
+	} else {
+		throw std::runtime_error("Unknown name notation - parse error?");
+	}
+}
+
+ResourceRecord Parser::parse_resource_record(Names& names, spark::BinaryStream& stream) {
+	ResourceRecord record;
+
+	record.name = parse_name(names, stream);
+	stream >> record.type;
+	stream >> record.resource_class;
+	stream >> record.ttl;
+	stream >> record.rdata_len;
+
+	be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(record.type));
+	be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(record.resource_class));
+	be::big_to_native_inplace(record.ttl);
+	be::big_to_native_inplace(record.rdata_len);
+
+	stream.skip(record.rdata_len); // not actually going to parse this
+	return record;
+}
+
+void Parser::parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream) {
+	for(auto i = 0u; i < query.header.answers; ++i) {
+		query.answers.emplace_back(std::move(parse_resource_record(names, stream)));
+	}
+
+	for(auto i = 0u; i < query.header.authority_rrs; ++i) {
+		query.authorities.emplace_back(std::move(parse_resource_record(names, stream)));
+	}
+
+	for(auto i = 0u; i < query.header.additional_rrs; ++i) {
+		query.additional.emplace_back(std::move(parse_resource_record(names, stream)));
+	}
+}
+
+//void Parser::write(const Query& query, BinaryStream& stream) {
+//	write_header(query, stream);
+//	const auto ptrs = write_questions(query, stream);
+//	write_resource_records(query, stream, ptrs);
 //}
-//
-//std::string Serialisation::parse_label_notation(BinaryStream& stream) {
-//	std::stringstream name;
-//	std::uint8_t length;
-//	stream >> length;
-//
-//	while (length) {
-//		std::string segment;
-//		stream.get(segment, length);
-//		name << segment;
-//		stream >> length;
-//
-//		if (length) {
-//			name << ".";
-//		}
-//	}
-//
-//	return name.str();
-//}
+
 //
 //void Serialisation::write_header(const Query& query, BinaryStream& stream) {
 //	stream << be::native_to_big(query.header.id);
@@ -216,120 +319,36 @@ Result Parser::validate(std::span<const std::uint8_t> buffer) {
 //	}
 //}
 //
-//void Serialisation::parse_header(Query& query, BinaryStream& stream) {
-//	stream >> query.header.id;
-//	std::uint16_t flags;
-//	stream >> flags;
-//	stream >> query.header.questions;
-//	stream >> query.header.answers;
-//	stream >> query.header.authorities;
-//	stream >> query.header.additional;
+
+//// todo: replace this monstrosity with a regex
+//void Serialisation::write_label_notation(std::string_view name, BinaryStream& stream) {
+//	std::string_view segment(name);
+//	auto last = 0;
 //
-//	be::big_to_native_inplace(query.header.id);
-//	be::big_to_native_inplace(flags);
-//	query.header.flags = decode_flags(flags);
-//	be::big_to_native_inplace(query.header.questions);
-//	be::big_to_native_inplace(query.header.answers);
-//	be::big_to_native_inplace(query.header.authorities);
-//	be::big_to_native_inplace(query.header.additional);
-//}
+//	while (true) {
+//		auto index = segment.find_first_of('.', last);
 //
-//void Serialisation::parse_questions(Query& query, NameMap& names, BinaryStream& stream) {
-//	if (!query.header.questions) {
-//		return;
-//	}
-//
-//	for (auto i = 0; i < query.header.questions; ++i) {
-//		Question question;
-//		question.name = parse_name(stream, names);
-//		stream >> question.type;
-//		stream >> question.rclass;
-//
-//		be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(question.type));
-//		be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(question.rclass));
-//		query.questions.emplace_back(std::move(question));
-//	}
-//}
-//
-///*
-// * See the comment in write_resource_record() if you want to know what's
-// * going on here
-// */
-//std::string Serialisation::parse_name(BinaryStream& stream, NameMap& names) {
-//	std::uint8_t notation;
-//	stream.buffer()->copy(&notation, 1);
-//	notation >>= 6;
-//
-//	if (notation == 0) { // string/label notation
-//		const auto name_offset = stream.total_read();
-//		const auto name = parse_label_notation(stream);
-//		names[name_offset] = name;
-//		return name;
-//	}
-//	else if (notation == 3) { // pointer notation
-//		std::uint16_t name_offset;
-//		stream >> name_offset;
-//		be::big_to_native_inplace(name_offset);
-//
-//		auto it = names.find(name_offset ^ (3 << 14));
-//
-//		if (it == names.end()) {
-//			throw std::runtime_error("Invalid name offset");
+//		if (index == std::string::npos && segment.size()) {
+//			segment = segment.substr(1, -1);
+//			stream << std::uint8_t(segment.size());
+//			stream.put(segment.data(), segment.size());
+//			break;
+//		}
+//		else if (index == std::string::npos) {
+//			break;
+//		}
+//		else {
+//			const std::string_view print_segment = segment.substr(0, index);
+//			segment = segment.substr(last ? index : index + 1, -1);
+//			stream << std::uint8_t(print_segment.size());
+//			stream.put(print_segment.data(), print_segment.size());
 //		}
 //
-//		return it->second;
-//	}
-//	else {
-//		throw std::runtime_error("Unknown name notation - parse error?");
-//	}
-//}
-//
-//ResourceRecord Serialisation::parse_resource_record(BinaryStream& stream, NameMap& names) {
-//	ResourceRecord record;
-//
-//	record.name = parse_name(stream, names);
-//	stream >> record.type;
-//	stream >> record.resource_class;
-//	stream >> record.ttl;
-//	stream >> record.rdata_len;
-//
-//	be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(record.type));
-//	be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(record.resource_class));
-//	be::big_to_native_inplace(record.ttl);
-//	be::big_to_native_inplace(record.rdata_len);
-//
-//	stream.skip(record.rdata_len); // not actually going to parse this
-//	return record;
-//}
-//
-//void Serialisation::parse_resource_records(Query& query, NameMap& names, BinaryStream& stream) {
-//	for (auto i = 0; i < query.header.answers; ++i) {
-//		query.answers.emplace_back(std::move(parse_resource_record(stream, names)));
+//		last = index;
 //	}
 //
-//	for (auto i = 0; i < query.header.authorities; ++i) {
-//		query.authorities.emplace_back(std::move(parse_resource_record(stream, names)));
-//	}
-//
-//	for (auto i = 0; i < query.header.additional; ++i) {
-//		query.additional.emplace_back(std::move(parse_resource_record(stream, names)));
-//	}
+//	stream << '\0';
 //}
 //
-//void Serialisation::write(const Query& query, BinaryStream& stream) {
-//	write_header(query, stream);
-//	const auto ptrs = write_questions(query, stream);
-//	write_resource_records(query, stream, ptrs);
-//}
-//
-//Query Serialisation::read(BinaryStream& stream) {
-//	Query query;
-//	NameMap names;
-//	parse_header(query, stream);
-//	parse_questions(query, names, stream);
-//	parse_resource_records(query, names, stream);
-//	return query;
-//}
-
 
 } // dns, ember

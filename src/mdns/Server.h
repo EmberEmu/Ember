@@ -22,8 +22,8 @@ class Server final : public Handler {
 	Parser parser_;
     log::Logger* logger_;
 
-    void handle_query(std::span<const std::uint8_t> datagram);
-    void handle_response(std::span<const std::uint8_t> datagram);
+    void handle_question(const Query& query);
+    void handle_response(const Query& query);
     void handle_datagram(std::span<const std::uint8_t> datagram) override;
 
 public:

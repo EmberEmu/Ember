@@ -180,6 +180,10 @@ public:
 	std::size_t total_write() {
 		return total_write_;
 	}
+
+	Buffer* buffer() {
+		return &buffer_;
+	}
 };
 
 } // spark, ember

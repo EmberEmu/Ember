@@ -26,7 +26,7 @@ set(LIBRARY_SRC
 
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} logging shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} logging shared spark ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logging shared ${Boost_LIBRARIES} Threads::Threads)

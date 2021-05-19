@@ -24,18 +24,36 @@ Server::~Server() {
 	shutdown();
 }
 
-void Server::shutdown() {
-	if(!socket_) {
-		return;
-	}
+void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// todo, broadcast withdrawal of services?
-	socket_->deregister_handler(this);
-	socket_.reset();
+	// todo: temp
+	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
+
+	const auto [result, query] = Parser::read(datagram);
+
+	// temp
+	LOG_DEBUG(logger_) << "ID: " << query->header.id << LOG_ASYNC;
+	LOG_DEBUG(logger_) << "Questions: " << query->header.questions << LOG_ASYNC;
+
+	if (query->header.flags.qr == 0) {
+		handle_question(*query);
+	}
+	else {
+		handle_response(*query);
+	}
 }
 
-void Server::handle_query(std::span<const std::uint8_t> datagram) {
+void Server::handle_question(const Query& query) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	LOG_WARN_GLOB << query.questions.size() << LOG_SYNC;
+
+	for(auto query : query.questions) {
+		LOG_WARN_GLOB << query.name << LOG_SYNC;
+		LOG_WARN_GLOB << to_string(query.cc) << LOG_SYNC;
+		LOG_WARN_GLOB << to_string(query.type) << LOG_SYNC;
+	}
 
 	//Query out{};
 	//out.questions = query.questions;
@@ -87,35 +105,18 @@ void Server::handle_query(std::span<const std::uint8_t> datagram) {
 	//return out;
 }
 
-void Server::handle_response(std::span<const std::uint8_t> datagram) {
+void Server::handle_response(const Query& query) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 
-void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+void Server::shutdown() {
+	if(!socket_) {
+		return;
+	}
 
-	const auto& result = Parser::validate(datagram);
-
-    if(result != Result::OK) {
-        LOG_DEBUG(logger_) << "DNS validation failed, " << to_string(result) << LOG_ASYNC;
-        return;
-    }
-
-	// todo: temp
-	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
-
-    const auto header = Parser::header_overlay(datagram);
-    const auto flags = Parser::decode_flags(header->flags);
-    
-	// temp
-	LOG_DEBUG(logger_) << "ID: " << header->id << LOG_ASYNC;
-	LOG_DEBUG(logger_) << "Questions: " << header->questions << LOG_ASYNC;
-
-    if(flags.qr == 0) {
-        handle_query(datagram);
-    } else {
-        handle_response(datagram);
-    }
+	// todo, broadcast withdrawal of services?
+	socket_->deregister_handler(this);
+	socket_.reset();
 }
 
 //void print_record(log::Logger& logger, const ResourceRecord& record) {
