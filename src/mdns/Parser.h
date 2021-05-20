@@ -22,7 +22,9 @@
 namespace ember::dns {
 
 smart_enum_class(Result, std::uint8_t,
-	OK, HEADER_TOO_SMALL, PAYLOAD_TOO_LARGE, NO_QUESTIONS
+	OK, HEADER_TOO_SMALL, PAYLOAD_TOO_LARGE, NO_QUESTIONS, BAD_NAME_OFFSET,
+	BAD_NAME_NOTATION, UNHANDLED_RECORD_TYPE, STREAM_ERROR, NAME_PARSE_ERROR,
+	RR_PARSE_ERROR, QUESTION_PARSE_ERROR, HEADER_PARSE_ERROR, LABEL_PARSE_ERROR
 );
 
 class Parser final {
@@ -38,7 +40,6 @@ class Parser final {
 	static void parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream);
 
 	// serialisation
-	static void write(const Query& query, spark::BinaryStream& stream);
 	static void write_header(const Query& query, spark::BinaryStream& stream);
 	static Pointers write_questions(const Query& query, spark::BinaryStream& stream);
 	static std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream);
@@ -49,11 +50,12 @@ class Parser final {
 	static void write_label_notation(std::string_view name, spark::BinaryStream& stream);
 
 public:
-    static Result validate(std::span<const std::uint8_t> buffer);
     static Flags decode_flags(std::uint16_t flags);
 	static std::uint16_t encode_flags(Flags flags);
     static const Header* header_overlay(std::span<const std::uint8_t> buffer);
+
 	static std::pair<dns::Result, std::optional<Query>> read(std::span<const std::uint8_t> buffer);
+	static void write(const Query& query, spark::BinaryStream& stream);
 };
 
 } // dns, ember

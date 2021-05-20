@@ -16,19 +16,35 @@ namespace be = boost::endian;
 
 namespace ember::dns {
 
-std::pair<dns::Result, std::optional<Query>> Parser::read(std::span<const std::uint8_t> buffer) {
+std::pair<dns::Result, std::optional<Query>> Parser::read(std::span<const std::uint8_t> buffer) try {
+	if(buffer.size() > MAX_DGRAM_LEN) {
+		return { Result::PAYLOAD_TOO_LARGE, std::nullopt };
+	}
+
 	// todo, improve the adaptor to remove the need for this stuff
 	std::vector<std::uint8_t> vec(buffer.begin(), buffer.end());
 	spark::VectorBufferAdaptor adaptor(vec);
-	spark::BinaryStream stream(adaptor, vec.size());
+	spark::BinaryStream stream(adaptor, buffer.size());
 
 	Query query;
 	Names names;
+
 	parse_header(query, stream);
+
+	if(query.header.questions == 0) {
+		return { Result::NO_QUESTIONS, std::nullopt };
+	}
+
 	parse_questions(query, names, stream);
 	parse_resource_records(query, names, stream);
 
+	if(stream.state() != spark::BinaryStream::State::OK) {
+		return { Result::STREAM_ERROR, std::nullopt };
+	}
+
 	return { Result::OK, query };
+} catch(Result& r) {
+	return { r, std::nullopt };
 }
 
 Flags Parser::decode_flags(const std::uint16_t flags) {
@@ -67,26 +83,7 @@ const Header* Parser::header_overlay(std::span<const std::uint8_t> buffer) {
     return reinterpret_cast<const Header*>(buffer.data());
 }
 
-Result Parser::validate(std::span<const std::uint8_t> buffer) {
-	// header validation
-	if(buffer.size() < DNS_HDR_SIZE) {
-		return Result::HEADER_TOO_SMALL;
-	}
-
-	const auto header = header_overlay(buffer);
-
-	if(header->questions == 0) {
-		return Result::NO_QUESTIONS;
-	}
-
-	if(buffer.size() > MAX_DGRAM_LEN) {
-		return Result::PAYLOAD_TOO_LARGE;
-	}
-
-    return Result::OK;
-}
-
-std::string Parser::parse_label_notation(spark::BinaryStream& stream) {
+std::string Parser::parse_label_notation(spark::BinaryStream& stream) try {
 	std::stringstream name;
 	std::uint8_t length;
 	stream >> length;
@@ -103,9 +100,11 @@ std::string Parser::parse_label_notation(spark::BinaryStream& stream) {
 	}
 
 	return name.str();
+} catch(spark::stream_read_limit&) {
+	throw Result::LABEL_PARSE_ERROR;
 }
 
-void Parser::parse_header(Query& query, spark::BinaryStream& stream) {
+void Parser::parse_header(Query& query, spark::BinaryStream& stream) try {
 	stream >> query.header.id;
 	std::uint16_t flags;
 	stream >> flags;
@@ -121,9 +120,11 @@ void Parser::parse_header(Query& query, spark::BinaryStream& stream) {
 	be::big_to_native_inplace(query.header.answers);
 	be::big_to_native_inplace(query.header.authority_rrs);
 	be::big_to_native_inplace(query.header.additional_rrs);
+} catch(spark::stream_read_limit&) {
+	throw Result::HEADER_PARSE_ERROR;
 }
 
-void Parser::parse_questions(Query& query, Names& names, spark::BinaryStream& stream) {
+void Parser::parse_questions(Query& query, Names& names, spark::BinaryStream& stream) try {
 	if(!query.header.questions) {
 		return;
 	}
@@ -140,55 +141,64 @@ void Parser::parse_questions(Query& query, Names& names, spark::BinaryStream& st
 		question.cc = static_cast<Class>(cc);
 		query.questions.emplace_back(std::move(question));
 	}
+} catch(spark::stream_read_limit&) {
+	throw Result::QUESTION_PARSE_ERROR;
 }
 
 /*
  * See the comment in write_resource_record() if you want to know what's
  * going on here
  */
-std::string Parser::parse_name(Names& names, spark::BinaryStream& stream) {
+std::string Parser::parse_name(Names& names, spark::BinaryStream& stream) try {
 	std::uint8_t notation = 0;
 	stream.buffer()->copy(&notation, 1);
-	notation >>= 6;
+	notation >>= NOTATION_OFFSET;
 
-	if(notation == 0) { // string/label notation
+	if(notation == NOTATION_STR) {
 		const auto name_offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
 		const auto name = parse_label_notation(stream);
 		names[name_offset] = name;
 		return name;
-	} else if(notation == 3) { // pointer notation
+	} else if(notation == NOTATION_PTR) {
 		std::uint16_t name_offset;
 		stream >> name_offset;
 		be::big_to_native_inplace(name_offset);
 
 		auto it = names.find(name_offset ^ (3 << 14));
 
-		if (it == names.end()) {
-			throw std::runtime_error("Invalid name offset");
+		if(it == names.end()) {
+			throw Result::BAD_NAME_OFFSET;
 		}
 
 		return it->second;
 	} else {
-		throw std::runtime_error("Unknown name notation - parse error?");
+		throw Result::BAD_NAME_NOTATION;
 	}
+} catch(spark::stream_read_limit&) {
+	throw Result::NAME_PARSE_ERROR;
 }
 
-ResourceRecord Parser::parse_resource_record(Names& names, spark::BinaryStream& stream) {
+ResourceRecord Parser::parse_resource_record(Names& names, spark::BinaryStream& stream) try {
 	ResourceRecord record;
-
 	record.name = parse_name(names, stream);
-	stream >> record.type;
-	stream >> record.resource_class;
+	std::uint16_t type = 0, rc = 0;
+	stream >> type;
+	stream >> rc;
 	stream >> record.ttl;
 	stream >> record.rdata_len;
 
-	be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(record.type));
-	be::big_to_native_inplace(reinterpret_cast<std::uint16_t&>(record.resource_class));
+	be::big_to_native_inplace(type);
+	be::big_to_native_inplace(rc);
 	be::big_to_native_inplace(record.ttl);
 	be::big_to_native_inplace(record.rdata_len);
 
-	stream.skip(record.rdata_len); // not actually going to parse this
+	record.resource_class = static_cast<Class>(rc);
+	record.type = static_cast<RecordType>(rc);
+
+	stream.skip(record.rdata_len); // todo, not actually going to parse this
 	return record;
+} catch(spark::stream_read_limit&) {
+	throw Result::RR_PARSE_ERROR;
 }
 
 void Parser::parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream) {
@@ -210,7 +220,6 @@ void Parser::write(const Query& query, spark::BinaryStream& stream) {
 	const auto ptrs = write_questions(query, stream);
 	write_resource_records(query, ptrs, stream);
 }
-
 
 void Parser::write_header(const Query& query, spark::BinaryStream& stream) {
 	stream << be::native_to_big(query.header.id);
@@ -257,28 +266,28 @@ void Parser::write_resource_record(const ResourceRecord& rr, const Pointers& ptr
 	auto it = ptrs.find(rr.name);
 
 	/*
-	* Names in resource records are encoded as either strings
-	* or as pointers to existing strings in the buffer, for
-	* compression purposes. The first two bits specifies the
-	* encoding used. If the two leftmost bits are set to 1,
-	* pointer encoding is used. If the two leftmost bits
-	* are set to 0, string encoding is used.
-	*
-	* The remaining bits in pointer notation represent the
-	* offset within the packet that contains the name string.
-	*
-	* The remaining bits in string notation represent the
-	* length of the string segment that follows.
-	*
-	* <00><000000>         = string encoding  ( 8 bits)
-	* <11><00000000000000> = pointer encoding (16 bits)
-	*/
+	 * Names in resource records are encoded as either strings
+	 * or as pointers to existing strings in the buffer, for
+	 * compression purposes. The first two bits specify the
+	 * encoding used. If the two leftmost bits are set to 1,
+	 * pointer encoding is used. If the two leftmost bits
+	 * are set to 0, string encoding is used.
+	 *
+	 * The remaining bits in pointer notation represent the
+	 * offset within the packet that contains the name string.
+	 *
+	 * The remaining bits in string notation represent the
+	 * length of the string segment that follows.
+	 *
+	 * <00><000000>         = string encoding  ( 8 bits)
+	 * <11><00000000000000> = pointer encoding (16 bits)
+	 */
 	if(it == ptrs.end()) {
 		// must be <= 63 bytes (6 bits for length encoding)
 		write_label_notation(rr.name, stream);
 	} else {
 		std::uint16_t ptr = it->second; // should make sure this fits within 30 bits
-		ptr ^= (3 << 14); // set two LSBs to signal pointer encoding
+		ptr ^= (3 << 14);               // set two LSBs to signal pointer encoding
 		stream << be::native_to_big(ptr);
 	}
 
@@ -314,7 +323,6 @@ void Parser::write_resource_records(const Query& query, const Pointers& ptrs,
 	}
 }
 
-
 // todo: replace this monstrosity with a regex
 void Parser::write_label_notation(std::string_view name, spark::BinaryStream& stream) {
 	std::string_view segment(name);
@@ -328,7 +336,7 @@ void Parser::write_label_notation(std::string_view name, spark::BinaryStream& st
 			stream << std::uint8_t(segment.size());
 			stream.put(segment.data(), segment.size());
 			break;
-		} else if (index == std::string::npos) {
+		} else if(index == std::string::npos) {
 			break;
 		} else {
 			const std::string_view print_segment = segment.substr(0, index);

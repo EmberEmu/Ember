@@ -69,6 +69,10 @@ constexpr auto AD_MASK     = 0x01 << AD_OFFSET;
 constexpr auto CD_MASK     = 0x01 << CD_OFFSET;
 constexpr auto RCODE_MASK  = 0x0F << RCODE_OFFSET;
 
+constexpr auto NOTATION_OFFSET = 0x06;
+constexpr auto NOTATION_STR = 0x00;
+constexpr auto NOTATION_PTR = 0x03;
+
 enum class QR {
     QUERY, REPLY
 };

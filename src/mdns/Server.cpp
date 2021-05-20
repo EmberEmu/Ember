@@ -32,9 +32,13 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 
 	const auto [result, query] = Parser::read(datagram);
 
-	// temp
-	LOG_DEBUG(logger_) << "ID: " << query->header.id << LOG_ASYNC;
-	LOG_DEBUG(logger_) << "Questions: " << query->header.questions << LOG_ASYNC;
+	if(result != Result::OK) {
+		LOG_WARN(logger_) << "DNS query parsing failed: " << to_string(result) << LOG_ASYNC;
+		return;
+	} else if(!query) {
+		LOG_ERROR(logger_) << "Parsing succeeded but nullopt encountered" << LOG_ASYNC;
+		return;
+	}
 
 	if (query->header.flags.qr == 0) {
 		handle_question(*query);

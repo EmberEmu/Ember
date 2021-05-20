@@ -101,12 +101,12 @@ TEST(DNSParser, HeaderOverlay) {
 //	EXPECT_EQ(res, dns::Result::OK);
 //}
 
-// intentionally don't pass enough data for a valid header
-TEST(DNSParser, Parser_HeaderBounds) {
-	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
-	const auto res = dns::Parser::validate({ header.data(), header.size() - 1 });
-	EXPECT_EQ(res, dns::Result::HEADER_TOO_SMALL);
-}
+//// intentionally don't pass enough data for a valid header
+//TEST(DNSParser, Parser_HeaderBounds) {
+//	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
+//	const auto res = dns::Parser::validate({ header.data(), header.size() - 1 });
+//	EXPECT_EQ(res, dns::Result::HEADER_TOO_SMALL);
+//}
 
 // intentionally pass too much data for a valid payload
 //TEST(DNSParser, Parser_PayloadBounds) {
