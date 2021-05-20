@@ -199,8 +199,15 @@ ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryStream& 
 	record.resource_class = static_cast<Class>(rc);
 	record.type = static_cast<RecordType>(rc);
 
-	stream.skip(record.rdata_len); // todo, not actually going to parse this
+	parse_rdata(record, stream);
 	return record;
+} catch(spark::buffer_underrun&) {
+	throw Result::RR_PARSE_ERROR;
+}
+
+void parse_rdata(ResourceRecord& rr, spark::BinaryStream& stream) try {
+	stream.skip(rr.rdata_len);
+	throw Result::UNHANDLED_RDATA; // worry about this later
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }

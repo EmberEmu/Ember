@@ -171,6 +171,7 @@ smart_enum_class(Class, std::uint16_t,
 	CLASS_CS = 2, // CSNET, obsolete
 	CLASS_CH = 3, // Chaos
 	CLASS_HS = 4, // Hesiod
+	CLASS_ANY = 255
 )
 
 struct Ptr {

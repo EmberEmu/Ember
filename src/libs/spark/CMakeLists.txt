@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2020 Ember
+# Copyright (c) 2015 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,6 +35,9 @@ add_library(${LIBRARY_NAME}
             include/spark/buffers/NullBuffer.h
             include/spark/buffers/VectorBufferAdaptor.h
             include/spark/buffers/BinaryStream.h
+            include/spark/buffers/BinaryInStream.h
+            include/spark/buffers/BinaryOutStream.h
+            include/spark/buffers/StreamBase.h
             include/spark/Spark.h
             include/spark/Service.h
             include/spark/Listener.h

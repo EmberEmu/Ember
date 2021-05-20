@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <spark/buffers/BinaryInStream.h>
+#include <spark/buffers/BinaryOutStream.h>
+#include <spark/buffers/StreamBase.h>
 #include <spark/buffers/Buffer.h>
 #include <spark/Exception.h>
 #include <algorithm>
@@ -17,125 +20,72 @@
 #include <cstddef>
 #include <cstring>
 
-template<typename T>
-concept trivially_copyable = std::is_trivially_copyable<T>::value;
-
 namespace ember::spark {
 
 class BinaryStream final {
 public:
-	enum class State {
-		OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
-	};
+	using State = StreamStateBase;
 
 private:
+	BinaryInStream bin_;
+	BinaryOutStream bout_;
 	Buffer& buffer_;
-	std::size_t total_read_;
-	std::size_t total_write_;
-	const std::size_t read_limit_;
-	State state_;
-
-	void check_read_bounds(std::size_t read_size) {
-		if(read_size > buffer_.size()) {
-			state_ = State::BUFF_LIMIT_ERR;
-			throw buffer_underrun(read_size, total_read_, buffer_.size());
-		}
-
-		const auto req_total_read = total_read_ + read_size;
-
-		if(read_limit_ && req_total_read > read_limit_) {
-			state_ = State::READ_LIMIT_ERR;
-			throw stream_read_limit(read_size, total_read_, read_limit_);
-		}
-
-		total_read_ = req_total_read ;
-	}
 
 public:
 	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
-                          : buffer_(source), total_read_(0), total_write_(0),
-                            read_limit_(read_limit), state_(State::OK) {}
+                          : buffer_(source), bin_(source), bout_(source, read_limit) {}
 
 	/**  Serialisation **/
 
 	BinaryStream& operator <<(const trivially_copyable auto& data) {
-		buffer_.write(reinterpret_cast<const char*>(&data), sizeof(data));
-		total_write_ += sizeof(data);
+		bin_ << data;
 		return *this;
 	}
 
 	BinaryStream& operator <<(const std::string& data) {
-		buffer_.write(data.data(), data.size());
-		const char term = '\0';
-		buffer_.write(&term, 1);
-		total_write_ += (data.size() + 1);
+		bin_ << data;
 		return *this;
 	}
 
 	BinaryStream& operator <<(const char* data) {
-		const auto len = std::strlen(data);
-		buffer_.write(data, len);
-		total_write_ += len;
+		bin_ << data;
 		return *this;
 	}
 
 	template<typename T>
 	void put(const T* data, std::size_t count) {
-		const auto write_size = count * sizeof(T);
-		buffer_.write(data, write_size);
-		total_write_ += write_size;
-	}
+		bin_.put(data, count);
+;	}
 
 	template<typename It>
 	void put(It begin, const It end) {
-		for(auto it = begin; it != end; ++it) {
-			*this << *it;
-		}
+		bin_.put(begin, end);
 	}
 
 	/**  Deserialisation **/
 
-	// terminates when it hits a null-byte or consumes all data in the buffer
 	BinaryStream& operator >>(std::string& dest) {
-		char byte;
-
-		do { // not overly efficient
-			check_read_bounds(1);
-			buffer_.read(&byte, 1);
-
-			if(byte) {
-				dest.push_back(byte);
-			}
-		} while(byte && buffer_.size() > 0);
-
+		bout_ >> dest;
 		return *this;
 	}
 
-
 	BinaryStream& operator >>(trivially_copyable auto& data) {
-		check_read_bounds(sizeof(data));
-		buffer_.read(reinterpret_cast<char*>(&data), sizeof(data));
+		bout_ >> data;
 		return *this;
 	}
 
 	void get(std::string& dest, std::size_t size) {
-		check_read_bounds(size);
-		dest.resize(size);
-		buffer_.read(dest.data(), size);
+		bout_.get(dest, size);
 	}
 
 	template<typename T>
 	void get(T* dest, std::size_t count) {
-		const auto read_size = count * sizeof(T);
-		check_read_bounds(read_size);
-		buffer_.read(dest, read_size);
+		bout_.get(dest, count);
 	}
 
 	template<typename It>
 	void get(It begin, const It end) {
-		for(; begin != end; ++begin) {
-			*this >> *begin;
-		}
+		bout_.get(begin, end);
 	}
 
 	/**  Misc functions **/ 
@@ -153,8 +103,7 @@ public:
 	}
 
 	void skip(std::size_t count) {
-		check_read_bounds(count);
-		buffer_.skip(count);
+		bout_.skip(count);
 	}
 
 	void clear() {
@@ -166,19 +115,19 @@ public:
 	}
 
 	State state() {
-		return state_;
+		return bout_.state();
 	}
 
 	std::size_t total_read() {
-		return total_read_;
+		return bout_.total_read();
 	}
 
 	std::size_t read_limit() {
-		return read_limit_;
+		return bout_.read_limit();
 	}
 
 	std::size_t total_write() {
-		return total_write_;
+		return bin_.total_write();
 	}
 
 	Buffer* buffer() {

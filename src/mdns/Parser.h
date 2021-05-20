@@ -24,7 +24,8 @@ namespace ember::dns::parser {
 smart_enum_class(Result, std::uint8_t,
 	OK, PAYLOAD_TOO_LARGE, NO_QUESTIONS, BAD_NAME_OFFSET,
 	BAD_NAME_NOTATION, UNHANDLED_RECORD_TYPE, STREAM_ERROR, NAME_PARSE_ERROR,
-	RR_PARSE_ERROR, QUESTION_PARSE_ERROR, HEADER_PARSE_ERROR, LABEL_PARSE_ERROR
+	RR_PARSE_ERROR, QUESTION_PARSE_ERROR, HEADER_PARSE_ERROR, LABEL_PARSE_ERROR,
+	UNHANDLED_RDATA
 );
 
 namespace detail {
@@ -40,6 +41,7 @@ std::string parse_name(Names& names, spark::BinaryStream& stream);
 ResourceRecord parse_resource_record(Names& names, spark::BinaryStream& stream);
 void parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream);
 Flags decode_flags(std::uint16_t flags);
+void parse_rdata(ResourceRecord& rr, spark::BinaryStream& stream);
 
 // serialisation
 void write_header(const Query& query, spark::BinaryStream& stream);
