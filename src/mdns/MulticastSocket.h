@@ -38,6 +38,7 @@ public:
     void send(std::unique_ptr<std::vector<std::uint8_t>> buffer) override;
     void register_handler(Handler* handler) override;
 	void deregister_handler(const Handler* handler) override;
+	void close() override;
 };
 
 } // dns, ember

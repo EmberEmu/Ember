@@ -17,6 +17,7 @@ public:
     virtual void send(std::unique_ptr<std::vector<std::uint8_t>> buffer) = 0;
     virtual void register_handler(Handler*) = 0;
 	virtual void deregister_handler(const Handler*) = 0;
+	virtual void close() = 0;
     virtual ~Socket() = default;
 };
 

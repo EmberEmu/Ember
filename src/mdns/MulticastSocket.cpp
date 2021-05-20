@@ -32,6 +32,10 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context,
 void MulticastSocket::receive() {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
+	if(!socket_.is_open()) {
+		return;
+	}
+
 	socket_.async_receive_from(boost::asio::buffer(buffer_.data(), buffer_.size()), remote_ep_,
         [this](const boost::system::error_code& ec, const std::size_t size) {
             if(ec && ec == boost::asio::error::operation_aborted) {
@@ -83,6 +87,10 @@ void MulticastSocket::handle_datagram(const std::span<std::uint8_t> datagram,
 void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
+	if(!socket_.is_open()) {
+		return;
+	}
+
 	const auto ba_buf = boost::asio::buffer(*buffer);
 
 	socket_.async_send_to(ba_buf, ep_,
@@ -109,6 +117,12 @@ void MulticastSocket::deregister_handler(const Handler* handler) {
 	}
 
 	handler_ = nullptr;
+}
+
+void MulticastSocket::close() {
+	boost::system::error_code ec; // we don't care about any errors
+	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.close(ec);
 }
 
 } // dns, ember

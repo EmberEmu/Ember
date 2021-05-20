@@ -40,7 +40,7 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 		return;
 	}
 
-	if (query->header.flags.qr == 0) {
+	if(query->header.flags.qr == 0) {
 		handle_question(*query);
 	}
 	else {
@@ -114,13 +114,8 @@ void Server::handle_response(const Query& query) {
 }
 
 void Server::shutdown() {
-	if(!socket_) {
-		return;
-	}
-
 	// todo, broadcast withdrawal of services?
-	socket_->deregister_handler(this);
-	socket_.reset();
+	socket_->close();
 }
 
 //void print_record(log::Logger& logger, const ResourceRecord& record) {
