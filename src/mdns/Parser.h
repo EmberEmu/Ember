@@ -39,23 +39,20 @@ void parse_questions(Query& query, Names& names, spark::BinaryStream& stream);
 std::string parse_name(Names& names, spark::BinaryStream& stream);
 ResourceRecord parse_resource_record(Names& names, spark::BinaryStream& stream);
 void parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream);
+Flags decode_flags(std::uint16_t flags);
 
 // serialisation
 void write_header(const Query& query, spark::BinaryStream& stream);
 Pointers write_questions(const Query& query, spark::BinaryStream& stream);
 std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream);
-void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
-                           spark::BinaryStream& stream);
-void write_resource_records(const Query& query, const Pointers& ptrs,
-                            spark::BinaryStream& stream);
+void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs, spark::BinaryStream& stream);
+void write_resource_records(const Query& query, const Pointers& ptrs, spark::BinaryStream& stream);
 void write_label_notation(std::string_view name, spark::BinaryStream& stream);
+std::uint16_t encode_flags(Flags flags);
 
 } // detail
 
-Flags decode_flags(std::uint16_t flags);
-std::uint16_t encode_flags(Flags flags);
-
-std::pair<Result, std::optional<Query>> read(std::span<const std::uint8_t> buffer);
-void write(const Query& query, spark::BinaryStream& stream);
+std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t> buffer);
+void serialise(const Query& query, spark::BinaryStream& stream);
 
 } // parsing, dns, ember

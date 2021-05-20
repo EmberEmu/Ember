@@ -30,13 +30,13 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 	// todo: temp
 	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
 
-	const auto [result, query] = parser::read(datagram);
+	const auto [result, query] = parser::deserialise(datagram);
 
 	if(result != parser::Result::OK) {
-		LOG_WARN(logger_) << "DNS query parsing failed: " << to_string(result) << LOG_ASYNC;
+		LOG_WARN(logger_) << "DNS query deserialising failed: " << to_string(result) << LOG_ASYNC;
 		return;
 	} else if(!query) {
-		LOG_ERROR(logger_) << "Parsing succeeded but nullopt encountered" << LOG_ASYNC;
+		LOG_ERROR(logger_) << "Deserialising succeeded but nullopt encountered" << LOG_ASYNC;
 		return;
 	}
 

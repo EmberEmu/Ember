@@ -16,7 +16,7 @@ namespace be = boost::endian;
 
 namespace ember::dns::parser {
 
-std::pair<Result, std::optional<Query>> read(std::span<const std::uint8_t> buffer) try {
+std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t> buffer) try {
 	if(buffer.size() > MAX_DGRAM_LEN) {
 		return { Result::PAYLOAD_TOO_LARGE, std::nullopt };
 	}
@@ -47,11 +47,13 @@ std::pair<Result, std::optional<Query>> read(std::span<const std::uint8_t> buffe
 	return { r, std::nullopt };
 }
 
-void write(const Query& query, spark::BinaryStream& stream) {
+void serialise(const Query& query, spark::BinaryStream& stream) {
 	detail::write_header(query, stream);
 	const auto ptrs = detail::write_questions(query, stream);
 	detail::write_resource_records(query, ptrs, stream);
 }
+
+namespace detail {
 
 Flags decode_flags(const std::uint16_t flags) {
 	const Flags parsed {
@@ -84,8 +86,6 @@ std::uint16_t encode_flags(const Flags flags) {
 	encoded |= static_cast<std::uint8_t>(flags.rcode) << RCODE_OFFSET;
 	return encoded;
 }
-
-namespace detail {
 
 std::string parse_label_notation(spark::BinaryStream& stream) try {
 	std::stringstream name;

@@ -54,7 +54,7 @@ TEST(DNSParser, FlagsEncode) {
 		.rcode = dns::ReplyCode::REFUSED
 	};
 	
-	const auto encoded = dns::parser::encode_flags(flags);
+	const auto encoded = dns::parser::detail::encode_flags(flags);
 	EXPECT_EQ(encoded, expected);
 }
 
@@ -62,7 +62,7 @@ TEST(DNSParser, FlagsEncode) {
 // structure output matches the input value
 TEST(DNSParser, FlagsDecode) {
 	const std::uint16_t flags = 0b0101'1'0'1'0'1'0'1'0001'1;
-	const auto decoded = dns::parser::decode_flags(flags);
+	const auto decoded = dns::parser::detail::decode_flags(flags);
 	EXPECT_EQ(decoded.qr, 1);
 	EXPECT_EQ(decoded.opcode, dns::Opcode::IQUERY);
 	EXPECT_EQ(decoded.aa, 1);
@@ -79,8 +79,8 @@ TEST(DNSParser, FlagsDecode) {
 // and encoded, producing the same set of flags at the end
 TEST(DNSParser, FlagsRoundtrip) {
 	const std::uint16_t flags = rand() % std::numeric_limits<std::uint16_t>::max();
-	const auto decoded = dns::parser::decode_flags(flags);
-	const auto output = dns::parser::encode_flags(decoded);
+	const auto decoded = dns::parser::detail::decode_flags(flags);
+	const auto output = dns::parser::detail::encode_flags(decoded);
 	EXPECT_EQ(flags, output) << "Header flags mismatch after decode -> encode round-trip";
 }
 
