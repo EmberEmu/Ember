@@ -82,10 +82,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
 		LOG_DEBUG(logger) << "Received signal " << signal << LOG_SYNC;
-
-		service.post([&]() {
-			server.shutdown();
-		});
+		server.shutdown();
 	});
 
 	service.dispatch([logger]() {
