@@ -80,8 +80,20 @@ void MulticastSocket::handle_datagram(const std::span<std::uint8_t> datagram,
     handler_->handle_datagram(datagram);
 }
 
-void MulticastSocket::send() {
+void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+
+	const auto ba_buf = boost::asio::buffer(*buffer);
+
+	socket_.async_send_to(ba_buf, ep_,
+		[buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
+			if(ec) {
+				LOG_ERROR_GLOB
+					<< "Error on sending datagram: "
+					<< ec.message() << ", size " << size << LOG_ASYNC;
+			}
+		}
+	);
 }
 
 void MulticastSocket::register_handler(Handler* handler) {

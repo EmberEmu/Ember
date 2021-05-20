@@ -35,7 +35,7 @@ public:
                     const std::string& mcast_group,
                     std::uint16_t port);
 
-    void send() override;
+    void send(std::unique_ptr<std::vector<std::uint8_t>> buffer) override;
     void register_handler(Handler* handler) override;
 	void deregister_handler(const Handler* handler) override;
 };
