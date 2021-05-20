@@ -19,7 +19,6 @@ class Socket;
 
 class Server final : public Handler {
     std::unique_ptr<Socket> socket_;
-	Parser parser_;
     log::Logger* logger_;
 
     void handle_question(const Query& query);
