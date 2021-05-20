@@ -84,33 +84,34 @@ TEST(DNSParser, FlagsRoundtrip) {
 	EXPECT_EQ(flags, output) << "Header flags mismatch after decode -> encode round-trip";
 }
 
-// validate a random real-world mdns query header
-TEST(DNSParser, HeaderOverlay) {
-	/*const auto header = dns::Parser::header_overlay(valid_query);
-	EXPECT_EQ(header->id, 0) << "Incorrect query ID";
-	EXPECT_EQ(header->questions, 1) << "Incorrect number of questions";
-	EXPECT_EQ(header->authority_rrs, 0) << "Incorrect authority RRs";
-	EXPECT_EQ(header->answers, 0) << "Incorrect number of answers";
-	EXPECT_EQ(header->additional_rrs, 0) << "Incorrect number of additional RRs";
-	*/// todo, readd flags test
+// deserialise a random real-world mdns query
+TEST(DNSParser, DeserialiseQuery) {
+	const auto [res, query] = dns::parser::deserialise(valid_query);
+	EXPECT_EQ(res, dns::parser::Result::OK);
+	EXPECT_TRUE(query);
+
+	// todo, check header
+	EXPECT_EQ(query->questions.size(), 1);
+	EXPECT_EQ(query->additional.size(), 0);
+	EXPECT_EQ(query->answers.size(), 0);
+	EXPECT_EQ(query->authorities.size(), 0);
+
+	// check question
+	EXPECT_EQ(query->questions[0].name, "_googlecast._tcp.local");
+	EXPECT_EQ(query->questions[0].cc, dns::Class::CLASS_IN);
+	EXPECT_EQ(query->questions[0].type, dns::RecordType::PTR);
 }
 
-//// validate a random real-world mdns query
-//TEST(DNSParser, ValidateQuery) {
-//	const auto res = dns::Parser::validate(valid_query);
-//	EXPECT_EQ(res, dns::Result::OK);
-//}
-
-//// intentionally don't pass enough data for a valid header
-//TEST(DNSParser, Parser_HeaderBounds) {
-//	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
-//	const auto res = dns::Parser::validate({ header.data(), header.size() - 1 });
-//	EXPECT_EQ(res, dns::Result::HEADER_TOO_SMALL);
-//}
+// intentionally don't pass enough data for a valid header
+TEST(DNSParser, Parser_HeaderBounds) {
+	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
+	const auto [res, query] = dns::parser::deserialise({ header.data(), header.size() - 1 });
+	EXPECT_EQ(res, dns::parser::Result::HEADER_PARSE_ERROR);
+}
 
 // intentionally pass too much data for a valid payload
-//TEST(DNSParser, Parser_PayloadBounds) {
-//	constexpr std::array<std::uint8_t, DNS_MAX_PAYLOAD_SIZE + 1> payload { 0 };
-//	const auto res = dns::Parser::validate(payload);
-//	EXPECT_EQ(res, dns::Result::PAYLOAD_TOO_LARGE);
-//}
+TEST(DNSParser, Parser_PayloadBounds) {
+	constexpr std::array<std::uint8_t, DNS_MAX_PAYLOAD_SIZE + 1> payload { 0 };
+	const auto [res, query] = dns::parser::deserialise(payload);
+	EXPECT_EQ(res, dns::parser::Result::PAYLOAD_TOO_LARGE);
+}

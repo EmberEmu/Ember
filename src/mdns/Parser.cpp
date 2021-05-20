@@ -24,7 +24,7 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	// todo, improve the adaptor to remove the need for this stuff
 	std::vector<std::uint8_t> vec(buffer.begin(), buffer.end());
 	spark::VectorBufferAdaptor adaptor(vec);
-	spark::BinaryStream stream(adaptor, buffer.size());
+	spark::BinaryStream stream(adaptor);
 
 	Query query;
 	detail::Names names;
@@ -104,7 +104,7 @@ std::string parse_label_notation(spark::BinaryStream& stream) try {
 	}
 
 	return name.str();
-} catch(spark::stream_read_limit&) {
+} catch(spark::buffer_underrun&) {
 	throw Result::LABEL_PARSE_ERROR;
 }
 
@@ -124,7 +124,7 @@ void parse_header(Query& query, spark::BinaryStream& stream) try {
 	be::big_to_native_inplace(query.header.answers);
 	be::big_to_native_inplace(query.header.authority_rrs);
 	be::big_to_native_inplace(query.header.additional_rrs);
-} catch(spark::stream_read_limit&) {
+} catch(spark::buffer_underrun&) {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
@@ -145,7 +145,7 @@ void parse_questions(Query& query, detail::Names& names, spark::BinaryStream& st
 		question.cc = static_cast<Class>(cc);
 		query.questions.emplace_back(std::move(question));
 	}
-} catch(spark::stream_read_limit&) {
+} catch(spark::buffer_underrun&) {
 	throw Result::QUESTION_PARSE_ERROR;
 }
 
@@ -178,7 +178,7 @@ std::string parse_name(detail::Names& names, spark::BinaryStream& stream) try {
 	} else {
 		throw Result::BAD_NAME_NOTATION;
 	}
-} catch(spark::stream_read_limit&) {
+} catch(spark::buffer_underrun&) {
 	throw Result::NAME_PARSE_ERROR;
 }
 
@@ -201,7 +201,7 @@ ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryStream& 
 
 	stream.skip(record.rdata_len); // todo, not actually going to parse this
 	return record;
-} catch(spark::stream_read_limit&) {
+} catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
