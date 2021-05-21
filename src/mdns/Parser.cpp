@@ -139,6 +139,13 @@ void parse_questions(Query& query, detail::Names& names, spark::BinaryInStream& 
 		stream >> cc;
 		be::big_to_native_inplace(type);
 		be::big_to_native_inplace(cc);
+
+		// handle unicast response flag
+		if(cc & UNICAST_RESP_MASK) {
+			cc ^= UNICAST_RESP_MASK;
+			question.meta.accepts_unicast_response = true;
+		}
+
 		question.type = static_cast<RecordType>(type);
 		question.cc = static_cast<Class>(cc);
 		query.questions.emplace_back(std::move(question));

@@ -73,6 +73,9 @@ constexpr auto NOTATION_OFFSET = 0x06;
 constexpr auto NOTATION_STR = 0x00;
 constexpr auto NOTATION_PTR = 0x03;
 
+constexpr auto UNICAST_RESP_OFFSET = 0x0F;
+constexpr auto UNICAST_RESP_MASK = 0x01 << UNICAST_RESP_OFFSET;
+
 enum class QR {
     QUERY, REPLY
 };
@@ -240,10 +243,15 @@ struct Answer {
     RecordData record;
 };
 
+struct QMeta {
+	bool accepts_unicast_response;
+};
+
 struct Question {
     std::string name;
 	RecordType type;
 	Class cc;
+	QMeta meta;
 };
 
 struct RecordEntry {
