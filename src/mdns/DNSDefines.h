@@ -245,6 +245,7 @@ struct Answer {
 
 struct QMeta {
 	bool accepts_unicast_response;
+	std::vector<std::string> labels;
 };
 
 struct Question {

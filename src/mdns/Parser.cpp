@@ -32,9 +32,7 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	if(query.header.questions == 0) {
 		return { Result::NO_QUESTIONS, std::nullopt };
 	}
-
-	detail::parse_questions(query, names, stream);
-	detail::parse_resource_records(query, names, stream);
+	detail::parse_records(query, names, stream);
 
 	if(stream.state() != spark::BinaryInStream::State::OK) {
 		return { Result::STREAM_ERROR, std::nullopt };
@@ -90,15 +88,10 @@ std::string parse_label_notation(spark::BinaryInStream& stream) try {
 	std::uint8_t length;
 	stream >> length;
 
-	while(length) {
+	if(length) {
 		std::string segment;
 		stream.get(segment, length);
 		name << segment;
-		stream >> length;
-
-		if(length) {
-			name << ".";
-		}
 	}
 
 	return name.str();
@@ -126,70 +119,97 @@ void parse_header(Query& query, spark::BinaryInStream& stream) try {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
-void parse_questions(Query& query, detail::Names& names, spark::BinaryInStream& stream) try {
-	if(!query.header.questions) {
-		return;
+Question parse_question(detail::Names& names, spark::BinaryInStream& stream) try {
+	Question question;
+	question.meta.labels = parse_labels(names, stream);
+	question.name = labels_to_name(question.meta.labels);
+	std::uint16_t type = 0, cc = 0;
+	stream >> type;
+	stream >> cc;
+	be::big_to_native_inplace(type);
+	be::big_to_native_inplace(cc);
+
+	// handle unicast response flag
+	if(cc & UNICAST_RESP_MASK) {
+		cc ^= UNICAST_RESP_MASK;
+		question.meta.accepts_unicast_response = true;
 	}
 
-	for(auto i = 0u; i < query.header.questions; ++i) {
-		Question question;
-		question.name = parse_name(names, stream);
-		std::uint16_t type = 0, cc = 0;
-		stream >> type;
-		stream >> cc;
-		be::big_to_native_inplace(type);
-		be::big_to_native_inplace(cc);
-
-		// handle unicast response flag
-		if(cc & UNICAST_RESP_MASK) {
-			cc ^= UNICAST_RESP_MASK;
-			question.meta.accepts_unicast_response = true;
-		}
-
-		question.type = static_cast<RecordType>(type);
-		question.cc = static_cast<Class>(cc);
-		query.questions.emplace_back(std::move(question));
-	}
+	question.type = static_cast<RecordType>(type);
+	question.cc = static_cast<Class>(cc);
+	return question;
 } catch(spark::buffer_underrun&) {
 	throw Result::QUESTION_PARSE_ERROR;
+}
+
+std::string labels_to_name(const std::vector<std::string>& labels) {
+	std::stringstream ss;
+
+	for(auto it = labels.begin(); it != labels.end();) {
+		ss << *it++;
+
+		if(it != labels.end()) {
+			ss << ".";
+		}
+	}
+
+	return ss.str();
 }
 
 /*
  * See the comment in write_resource_record() if you want to know what's
  * going on here
  */
-std::string parse_name(detail::Names& names, spark::BinaryInStream& stream) try {
-	std::uint8_t notation = 0;
-	stream.buffer()->copy(&notation, 1);
-	notation >>= NOTATION_OFFSET;
+std::vector<std::string> parse_labels(detail::Names& names, spark::BinaryInStream& stream) try {
+	std::vector<std::string> labels;
 
-	if(notation == NOTATION_STR) {
-		const auto name_offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
-		const auto name = parse_label_notation(stream);
-		names[name_offset] = name;
-		return name;
-	} else if(notation == NOTATION_PTR) {
-		std::uint16_t name_offset;
-		stream >> name_offset;
-		be::big_to_native_inplace(name_offset);
+	while(true) {
+		std::uint8_t notation = 0;
+		stream.buffer()->copy(&notation, 1);
 
-		auto it = names.find(name_offset ^ (3 << 14));
-
-		if(it == names.end()) {
-			throw Result::BAD_NAME_OFFSET;
+		if(notation == 0) {
+			const auto offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
+			names[offset] = "";
+			stream.skip(1);
+			break;
 		}
 
-		return it->second;
-	} else {
-		throw Result::BAD_NAME_NOTATION;
+		notation >>= NOTATION_OFFSET;
+
+		if(notation == NOTATION_STR) {
+			const auto name_offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
+			auto name = parse_label_notation(stream);
+			names[name_offset] = name;
+			labels.emplace_back(std::move(name));
+		} else if(notation == NOTATION_PTR) {
+			be::big_uint16_t name_offset;
+			stream >> name_offset;
+
+			auto it = names.find(name_offset ^ (3 << 14));
+
+			if(it == names.end()) {
+				throw Result::BAD_NAME_OFFSET;
+			}
+			
+			for(auto i = it; it != names.end() && !it->second.empty(); ++it) {
+				labels.emplace_back(it->second);
+			}
+
+			break;
+		} else {
+			throw Result::BAD_NAME_NOTATION;
+		}
 	}
+
+	return labels;
 } catch(spark::buffer_underrun&) {
 	throw Result::NAME_PARSE_ERROR;
 }
 
 ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryInStream& stream) try {
 	ResourceRecord record;
-	record.name = parse_name(names, stream);
+	const auto labels = parse_labels(names, stream);
+	record.name = labels_to_name(labels);
 	std::uint16_t type = 0, rc = 0;
 	stream >> type;
 	stream >> rc;
@@ -217,7 +237,11 @@ void parse_rdata(ResourceRecord& rr, spark::BinaryInStream& stream) try {
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_resource_records(Query& query, detail::Names& names, spark::BinaryInStream& stream) {
+void parse_records(Query& query, detail::Names& names, spark::BinaryInStream& stream) {
+	for (auto i = 0u; i < query.header.questions; ++i) {
+		query.questions.emplace_back(std::move(parse_question(names, stream)));
+	}
+
 	for(auto i = 0u; i < query.header.answers; ++i) {
 		query.answers.emplace_back(std::move(parse_resource_record(names, stream)));
 	}
