@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <protocol/ResultCodes.h>
 #include <spark/buffers/BinaryStream.h>
 #include <shared/util/UTF8String.h>
+#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <string>
 #include <cstdint>
@@ -29,7 +30,7 @@ public:
 	be::little_uint64_t id;
 	utf8_string name;
 	
-	State read_from_stream(spark::BinaryStream& stream) try {
+	State read_from_stream(spark::BinaryInStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> result;
@@ -44,7 +45,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const {
+	void write_to_stream(spark::BinaryOutStream& stream) const {
 		stream << result;
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {

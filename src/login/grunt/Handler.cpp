@@ -21,7 +21,7 @@ void Handler::dump_bad_packet(const spark::buffer_underrun& e, spark::Buffer& bu
 	std::size_t valid_bytes = offset - buffer.size();
 
 	spark::BinaryStream stream(buffer);
-	stream.clear(); // discard any remaining data, we don't care about it anymore
+	stream.skip(stream.size()); // discard any remaining data, we don't care about it anymore
 
 	// recombobulate the data by serialising the packet
 	curr_packet_->write_to_stream(stream);

@@ -7,7 +7,7 @@
  */
 
 #include "Parser.h"
-#include <spark/buffers/VectorBufferAdaptor.h>
+#include <spark/buffers/SpanBufferAdaptor.h>
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
@@ -21,10 +21,8 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 		return { Result::PAYLOAD_TOO_LARGE, std::nullopt };
 	}
 
-	// todo, improve the adaptor to remove the need for this stuff
-	std::vector<std::uint8_t> vec(buffer.begin(), buffer.end());
-	spark::VectorBufferAdaptor adaptor(vec);
-	spark::BinaryStream stream(adaptor);
+	spark::SpanBufferAdaptor adaptor(buffer);
+	spark::BinaryInStream stream(adaptor);
 
 	Query query;
 	detail::Names names;
@@ -38,7 +36,7 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	detail::parse_questions(query, names, stream);
 	detail::parse_resource_records(query, names, stream);
 
-	if(stream.state() != spark::BinaryStream::State::OK) {
+	if(stream.state() != spark::BinaryInStream::State::OK) {
 		return { Result::STREAM_ERROR, std::nullopt };
 	}
 
@@ -87,7 +85,7 @@ std::uint16_t encode_flags(const Flags flags) {
 	return encoded;
 }
 
-std::string parse_label_notation(spark::BinaryStream& stream) try {
+std::string parse_label_notation(spark::BinaryInStream& stream) try {
 	std::stringstream name;
 	std::uint8_t length;
 	stream >> length;
@@ -108,7 +106,7 @@ std::string parse_label_notation(spark::BinaryStream& stream) try {
 	throw Result::LABEL_PARSE_ERROR;
 }
 
-void parse_header(Query& query, spark::BinaryStream& stream) try {
+void parse_header(Query& query, spark::BinaryInStream& stream) try {
 	stream >> query.header.id;
 	std::uint16_t flags;
 	stream >> flags;
@@ -128,7 +126,7 @@ void parse_header(Query& query, spark::BinaryStream& stream) try {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
-void parse_questions(Query& query, detail::Names& names, spark::BinaryStream& stream) try {
+void parse_questions(Query& query, detail::Names& names, spark::BinaryInStream& stream) try {
 	if(!query.header.questions) {
 		return;
 	}
@@ -153,7 +151,7 @@ void parse_questions(Query& query, detail::Names& names, spark::BinaryStream& st
  * See the comment in write_resource_record() if you want to know what's
  * going on here
  */
-std::string parse_name(detail::Names& names, spark::BinaryStream& stream) try {
+std::string parse_name(detail::Names& names, spark::BinaryInStream& stream) try {
 	std::uint8_t notation = 0;
 	stream.buffer()->copy(&notation, 1);
 	notation >>= NOTATION_OFFSET;
@@ -182,7 +180,7 @@ std::string parse_name(detail::Names& names, spark::BinaryStream& stream) try {
 	throw Result::NAME_PARSE_ERROR;
 }
 
-ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryStream& stream) try {
+ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryInStream& stream) try {
 	ResourceRecord record;
 	record.name = parse_name(names, stream);
 	std::uint16_t type = 0, rc = 0;
@@ -205,14 +203,14 @@ ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryStream& 
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_rdata(ResourceRecord& rr, spark::BinaryStream& stream) try {
+void parse_rdata(ResourceRecord& rr, spark::BinaryInStream& stream) try {
 	stream.skip(rr.rdata_len);
 	throw Result::UNHANDLED_RDATA; // worry about this later
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_resource_records(Query& query, detail::Names& names, spark::BinaryStream& stream) {
+void parse_resource_records(Query& query, detail::Names& names, spark::BinaryInStream& stream) {
 	for(auto i = 0u; i < query.header.answers; ++i) {
 		query.answers.emplace_back(std::move(parse_resource_record(names, stream)));
 	}

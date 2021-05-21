@@ -166,7 +166,7 @@ TEST(BinaryStream, Clear) {
 	ASSERT_TRUE(!stream.empty());
 	ASSERT_TRUE(!buffer.empty());
 
-	stream.clear();
+	stream.skip(stream.size());
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_TRUE(buffer.empty());

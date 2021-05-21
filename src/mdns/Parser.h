@@ -34,14 +34,14 @@ using Names = std::unordered_map<std::uint16_t, std::string>;
 using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
 // deserialisation
-std::string parse_label_notation(spark::BinaryStream& stream);
-void parse_header(Query& query, spark::BinaryStream& stream);
-void parse_questions(Query& query, Names& names, spark::BinaryStream& stream);
-std::string parse_name(Names& names, spark::BinaryStream& stream);
-ResourceRecord parse_resource_record(Names& names, spark::BinaryStream& stream);
-void parse_resource_records(Query& query, Names& names, spark::BinaryStream& stream);
+std::string parse_label_notation(spark::BinaryInStream& stream);
+void parse_header(Query& query, spark::BinaryInStream& stream);
+void parse_questions(Query& query, Names& names, spark::BinaryInStream& stream);
+std::string parse_name(Names& names, spark::BinaryInStream& stream);
+ResourceRecord parse_resource_record(Names& names, spark::BinaryInStream& stream);
+void parse_resource_records(Query& query, Names& names, spark::BinaryInStream& stream);
 Flags decode_flags(std::uint16_t flags);
-void parse_rdata(ResourceRecord& rr, spark::BinaryStream& stream);
+void parse_rdata(ResourceRecord& rr, spark::BinaryInStream& stream);
 
 // serialisation
 void write_header(const Query& query, spark::BinaryStream& stream);

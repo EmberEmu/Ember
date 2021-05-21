@@ -8,14 +8,19 @@
 
 #pragma once
 
-#include <spark/buffers/BufferIn.h>
-#include <spark/buffers/BufferOut.h>
+#include <cstddef>
 
 namespace ember::spark {
 
-class Buffer : public BufferIn, public BufferOut {
+template<typename T>
+concept byte_oriented = sizeof(T) == 1;
+
+class BufferBase {
 public:
-	virtual ~Buffer() = default;
+	virtual std::size_t size() const = 0;
+	virtual bool empty() const = 0;
+	virtual std::byte& operator[](const std::size_t index) = 0; // todo, find a way to remove this
+	virtual ~BufferBase() = default;
 };
 
 } // spark, ember

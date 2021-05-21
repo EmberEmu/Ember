@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2019 Ember
+ * Copyright (c) 2018 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,14 +9,13 @@
 #pragma once
 
 #include <spark/buffers/Buffer.h>
-#include <boost/assert.hpp>
 #include <vector>
 #include <utility>
 #include <cstddef>
 
 namespace ember::spark {
 
-template<typename buf_type>
+template<byte_oriented buf_type>
 class VectorBufferAdaptor final : public Buffer {
 	std::vector<buf_type>& buffer_;
 	std::size_t read_;
@@ -56,10 +55,6 @@ public:
 
 	std::size_t size() const override {
 		return buffer_.size() - read_;
-	}
-
-	void clear() override {
-		buffer_.clear();
 	}
 
 	bool empty() const override {

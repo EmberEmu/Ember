@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <protocol/Packet.h>
 #include <protocol/ResultCodes.h>
 #include <spark/buffers/BinaryStream.h>
+#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
 #include <array>
@@ -63,7 +64,7 @@ public:
 	Result result;
 	std::vector<AddonData> addon_data;
 
-	State read_from_stream(spark::BinaryStream& stream) try {
+	State read_from_stream(spark::BinaryInStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		return (state_ = State::DONE);
@@ -71,7 +72,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const {
+	void write_to_stream(spark::BinaryOutStream& stream) const {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 

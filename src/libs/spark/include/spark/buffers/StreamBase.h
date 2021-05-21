@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <spark/buffers/BufferBase.h>
+#include <type_traits>
+
 namespace ember::spark {
 
 template<typename T>
@@ -15,6 +18,25 @@ concept trivially_copyable = std::is_trivially_copyable<T>::value;
 
 enum class StreamStateBase {
 	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
+};
+
+
+class StreamBase {
+	BufferBase& buffer_;
+
+public:
+	explicit StreamBase(BufferBase& buffer) : buffer_(buffer) { }
+
+
+	std::size_t size() const {
+		return buffer_.size();
+	}
+
+	bool empty() {
+		return buffer_.empty();
+	}
+
+	virtual ~StreamBase() = default;
 };
 
 } // spark, ember

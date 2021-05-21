@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <protocol/Packet.h>
 #include <protocol/ResultCodes.h>
 #include <spark/buffers/BinaryStream.h>
+#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
@@ -29,7 +30,7 @@ public:
 	be::little_uint8_t billing_flags = 0;
 	be::little_uint32_t billing_rested = 0;
 
-	State read_from_stream(spark::BinaryStream& stream) try {
+	State read_from_stream(spark::BinaryInStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> result;
@@ -49,7 +50,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const {
+	void write_to_stream(spark::BinaryOutStream& stream) const {
 		stream << result;
 
 		if(result == Result::AUTH_WAIT_QUEUE) {

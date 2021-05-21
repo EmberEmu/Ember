@@ -28,12 +28,16 @@ add_library(${LIBRARY_NAME}
             include/spark/EventDispatcher.h
             include/spark/HeartbeatService.h
             include/spark/MessageHandler.h
+            include/spark/buffers/BufferBase.h
+            include/spark/buffers/BufferIn.h
+            include/spark/buffers/BufferOut.h
             include/spark/buffers/Buffer.h
             include/spark/buffers/DynamicBuffer.h
             include/spark/buffers/detail/IntrusiveStorage.h
             include/spark/buffers/BufferSequence.h
             include/spark/buffers/NullBuffer.h
             include/spark/buffers/VectorBufferAdaptor.h
+            include/spark/buffers/SpanBufferAdaptor.h
             include/spark/buffers/BinaryStream.h
             include/spark/buffers/BinaryInStream.h
             include/spark/buffers/BinaryOutStream.h

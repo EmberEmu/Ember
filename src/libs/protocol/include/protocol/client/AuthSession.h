@@ -52,7 +52,7 @@ public:
 	utf8_string username;
 	std::vector<AddonData> addons;
 
-	State read_from_stream(spark::BinaryStream& stream) try {
+	State read_from_stream(spark::BinaryInStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		const auto initial_stream_size = stream.size();
@@ -110,7 +110,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const {
+	void write_to_stream(spark::BinaryOutStream& stream) const {
 		stream << build;
 		stream << server_id;
 		stream << username;
