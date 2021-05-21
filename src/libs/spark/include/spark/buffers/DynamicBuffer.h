@@ -324,7 +324,7 @@ public:
 		return !size_;
 	}
 	
-	constexpr std::size_t block_size() const {
+	std::size_t block_size() const {
 		return BlockSize;
 	}
 
