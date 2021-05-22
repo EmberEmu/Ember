@@ -280,6 +280,10 @@ struct Record_AAAA {
 	std::array<unsigned char, 16> ip;
 };
 
+struct Record_PTR {
+	std::string ptrdname;
+};
+
 struct ResourceRecord {
 	std::string name;
 	RecordType type;
@@ -288,7 +292,7 @@ struct ResourceRecord {
 	std::uint16_t rdata_len;
 	std::variant<
 		Record_A, Record_AAAA,
-		Record_Authority
+		Record_Authority, Record_PTR
 	> rdata;
 };
 

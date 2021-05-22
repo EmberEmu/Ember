@@ -28,10 +28,6 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	detail::Names names;
 
 	detail::parse_header(query, stream);
-
-	if(query.header.questions == 0) {
-		return { Result::NO_QUESTIONS, std::nullopt };
-	}
 	detail::parse_records(query, names, stream);
 
 	if(stream.state() != spark::BinaryInStream::State::OK) {
@@ -221,24 +217,57 @@ ResourceRecord parse_resource_record(detail::Names& names, spark::BinaryInStream
 	be::big_to_native_inplace(record.ttl);
 	be::big_to_native_inplace(record.rdata_len);
 
-	record.resource_class = static_cast<Class>(rc);
-	record.type = static_cast<RecordType>(rc);
+	// handle unicast response flag
+	if (rc & UNICAST_RESP_MASK) {
+		rc ^= UNICAST_RESP_MASK; // todo, add metadata for this?
+	}
 
-	parse_rdata(record, stream);
+	record.type = static_cast<RecordType>(type);
+	record.resource_class = static_cast<Class>(rc);
+	parse_rdata(record, names, stream);
 	return record;
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_rdata(ResourceRecord& rr, spark::BinaryInStream& stream) try {
-	stream.skip(rr.rdata_len);
-	throw Result::UNHANDLED_RDATA; // worry about this later
+void parse_rdata(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) try {
+	switch(rr.type) {
+		case RecordType::PTR:
+			parse_rdata_ptr(rr, names, stream);
+			break;
+		case RecordType::A:
+			parse_rdata_a(rr, stream);
+			break;
+		case RecordType::AAAA:
+			parse_rdata_aaaa(rr, stream);
+			break;
+		default:
+			throw Result::UNHANDLED_RDATA;
+	}
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
+void parse_rdata_a(ResourceRecord& rr, spark::BinaryInStream& stream) {
+	Record_A rdata;
+	stream >> rdata;
+	rr.rdata = rdata;
+}
+
+void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryInStream& stream) {
+	Record_AAAA rdata;
+	stream >> rdata.ip;
+	rr.rdata = rdata;
+}
+
+void parse_rdata_ptr(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) {
+	Record_PTR rdata;
+	rdata.ptrdname = labels_to_name(parse_labels(names, stream));
+	rr.rdata = rdata;
+}
+
 void parse_records(Query& query, detail::Names& names, spark::BinaryInStream& stream) {
-	for (auto i = 0u; i < query.header.questions; ++i) {
+	for(auto i = 0u; i < query.header.questions; ++i) {
 		query.questions.emplace_back(std::move(parse_question(names, stream)));
 	}
 

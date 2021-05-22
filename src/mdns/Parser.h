@@ -43,8 +43,11 @@ std::vector<std::string> parse_labels(Names& names, spark::BinaryInStream& strea
 ResourceRecord parse_resource_record(Names& names, spark::BinaryInStream& stream);
 void parse_records(Query& query, Names& names, spark::BinaryInStream& stream);
 Flags decode_flags(std::uint16_t flags);
-void parse_rdata(ResourceRecord& rr, spark::BinaryInStream& stream);
 std::string labels_to_name(const std::vector<std::string>& labels);
+void parse_rdata(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream);
+void parse_rdata_ptr(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream);
+void parse_rdata_a(ResourceRecord& rr, spark::BinaryInStream& stream);
+void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryInStream& stream);
 
 // serialisation
 void write_header(const Query& query, spark::BinaryStream& stream);
