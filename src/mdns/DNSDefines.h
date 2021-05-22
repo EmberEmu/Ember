@@ -282,6 +282,15 @@ struct Record_PTR {
 	std::string ptrdname;
 };
 
+struct Record_CNAME {
+	std::string cname;
+};
+
+struct Record_HINFO {
+	std::string cpu;
+	std::string os;
+};
+
 struct Record_TXT {
 	std::vector<std::string> txt;
 };
@@ -325,7 +334,8 @@ struct ResourceRecord {
 		Record_Authority, Record_PTR,
 		Record_TXT, Record_MX,
 		Record_SOA, Record_URI,
-		Record_SRV
+		Record_SRV, Record_CNAME,
+		Record_HINFO
 	> rdata;
 };
 

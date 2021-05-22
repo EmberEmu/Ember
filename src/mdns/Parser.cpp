@@ -255,11 +255,34 @@ void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStre
 		case RecordType::SRV:
 			parse_rdata_srv(rr, labels, stream);
 			break;
+		case RecordType::CNAME:
+			parse_rdata_cname(rr, labels, stream);
+			break;
+		case RecordType::HINFO:
+			parse_rdata_hinfo(rr, stream);
+			break;
 		default:
 			throw Result::UNHANDLED_RDATA;
 	}
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
+}
+
+void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryInStream& stream) {
+	Record_HINFO rdata;
+	
+	// cpu
+	std::uint8_t strlen = 0;
+	stream >> strlen;
+	rdata.cpu.resize(strlen);
+	stream.get(rdata.cpu.data(), rdata.cpu.size());
+
+	// os
+	stream >> strlen;
+	rdata.os.resize(strlen);
+	stream.get(rdata.os.data(), rdata.os.size());
+
+	rr.rdata = rdata;
 }
 
 void parse_rdata_a(ResourceRecord& rr, spark::BinaryInStream& stream) {
@@ -271,6 +294,12 @@ void parse_rdata_a(ResourceRecord& rr, spark::BinaryInStream& stream) {
 void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryInStream& stream) {
 	Record_AAAA rdata;
 	stream >> rdata.ip;
+	rr.rdata = rdata;
+}
+
+void parse_rdata_cname(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+	Record_CNAME rdata;
+	rdata.cname = labels_to_name(parse_labels(labels, stream));
 	rr.rdata = rdata;
 }
 
@@ -301,7 +330,6 @@ void parse_rdata_ptr(ResourceRecord& rr, detail::Labels& labels, spark::BinaryIn
 	rdata.ptrdname = labels_to_name(parse_labels(labels, stream));
 	rr.rdata = rdata;
 }
-
 
 void parse_rdata_txt(ResourceRecord& rr, spark::BinaryInStream& stream) {
 	// read the entire rdata into a single buffer rather than piecemeal
