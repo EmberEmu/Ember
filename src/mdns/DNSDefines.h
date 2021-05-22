@@ -9,7 +9,6 @@
 #pragma once
 
 #include <shared/smartenum.hpp>
-#include <boost/endian.hpp>
 #include <array>
 #include <string_view>
 #include <variant>
@@ -43,7 +42,6 @@ struct Txt;
 struct Ptr;
 
 using RecordData = std::variant<Ptr, Srv, Txt>;
-using big_uint16_t = boost::endian::big_uint16_at;
 
 constexpr auto DNS_HDR_SIZE = 12;
 
@@ -142,7 +140,7 @@ smart_enum_class(RecordType, std::uint16_t,
 	MAILB      = 253,
 	WKS        = 11,
 	NB         = 32,
-	NBSTAT     = 33,
+	// NBSTAT     = 33,
 	NULL_      = 10,
 	A6         = 38,
 	NXT        = 30,
@@ -284,6 +282,38 @@ struct Record_PTR {
 	std::string ptrdname;
 };
 
+struct Record_TXT {
+	std::vector<std::string> txt;
+};
+
+struct Record_MX {
+	std::uint16_t preference;
+	std::string exchange;
+};
+
+struct Record_URI {
+	std::uint16_t priority;
+	std::uint16_t weight;
+	std::string target;
+};
+
+struct Record_SRV {
+	std::uint16_t priority;
+	std::uint16_t weight;
+	std::uint16_t port;
+	std::string target;
+};
+
+struct Record_SOA {
+	std::string mname;
+	std::string rname;
+	std::uint32_t serial;
+	std::uint32_t refresh;
+	std::uint32_t retry;
+	std::uint32_t expire;
+	std::uint32_t minimum;
+};
+
 struct ResourceRecord {
 	std::string name;
 	RecordType type;
@@ -292,7 +322,10 @@ struct ResourceRecord {
 	std::uint16_t rdata_len;
 	std::variant<
 		Record_A, Record_AAAA,
-		Record_Authority, Record_PTR
+		Record_Authority, Record_PTR,
+		Record_TXT, Record_MX,
+		Record_SOA, Record_URI,
+		Record_SRV
 	> rdata;
 };
 

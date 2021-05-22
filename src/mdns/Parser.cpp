@@ -8,6 +8,7 @@
 
 #include "Parser.h"
 #include <spark/buffers/SpanBufferAdaptor.h>
+#include <spark/buffers/VectorBufferAdaptor.h>
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
@@ -241,6 +242,21 @@ void parse_rdata(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream
 		case RecordType::AAAA:
 			parse_rdata_aaaa(rr, stream);
 			break;
+		case RecordType::SOA:
+			parse_rdata_soa(rr, names, stream);
+			break;
+		case RecordType::MX:
+			parse_rdata_mx(rr, names, stream);
+			break;
+		case RecordType::TXT:
+			parse_rdata_txt(rr, stream);
+			break;
+		case RecordType::URI:
+			parse_rdata_uri(rr, names, stream);
+			break;
+		case RecordType::SRV:
+			parse_rdata_srv(rr, names, stream);
+			break;
 		default:
 			throw Result::UNHANDLED_RDATA;
 	}
@@ -260,9 +276,80 @@ void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryInStream& stream) {
 	rr.rdata = rdata;
 }
 
+void parse_rdata_srv(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) {
+	Record_SRV rdata;
+	stream >> rdata.priority;
+	stream >> rdata.weight;
+	stream >> rdata.port;
+	rdata.target = labels_to_name(parse_labels(names, stream));
+	be::big_to_native_inplace(rdata.priority);
+	be::big_to_native_inplace(rdata.weight);
+	be::big_to_native_inplace(rdata.port);
+	rr.rdata = rdata;
+}
+
+void parse_rdata_uri(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) {
+	Record_URI rdata;
+	stream >> rdata.priority;
+	stream >> rdata.weight;
+	rdata.target = labels_to_name(parse_labels(names, stream));
+	be::big_to_native_inplace(rdata.priority);
+	be::big_to_native_inplace(rdata.weight);
+	rr.rdata = rdata;
+}
+
 void parse_rdata_ptr(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) {
 	Record_PTR rdata;
 	rdata.ptrdname = labels_to_name(parse_labels(names, stream));
+	rr.rdata = rdata;
+}
+
+
+void parse_rdata_txt(ResourceRecord& rr, spark::BinaryInStream& stream) {
+	// read the entire rdata into a single buffer rather than piecemeal
+	// from the main stream - makes the logic slightly cleaner
+	std::vector<std::uint8_t> rdbytes(rr.rdata_len);
+	stream.get(rdbytes.data(), rdbytes.size());
+	spark::VectorBufferAdaptor buffadap(rdbytes);
+	spark::BinaryInStream rdstream(buffadap);
+	Record_TXT rdata;
+	
+	while(!rdstream.empty()) {
+		std::uint8_t length;
+		rdstream >> length;
+		std::string data;
+		data.resize(length);
+		rdstream.get(data, length);
+		rdata.txt.emplace_back(data);
+	}
+
+	rr.rdata = rdata;
+}
+
+void parse_rdata_mx(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) {
+	Record_MX rdata;
+	stream >> rdata.preference;
+	be::big_to_native_inplace(rdata.preference);
+	rdata.exchange = labels_to_name(parse_labels(names, stream));
+	rr.rdata = rdata;
+}
+
+void parse_rdata_soa(ResourceRecord& rr, detail::Names& names, spark::BinaryInStream& stream) {
+	Record_SOA rdata;
+	rdata.mname = labels_to_name(parse_labels(names, stream));
+	rdata.rname = labels_to_name(parse_labels(names, stream));
+	stream >> rdata.serial;
+	stream >> rdata.refresh;
+	stream >> rdata.retry;
+	stream >> rdata.expire;
+	stream >> rdata.minimum;
+
+	be::big_to_native_inplace(rdata.serial);
+	be::big_to_native_inplace(rdata.refresh);
+	be::big_to_native_inplace(rdata.retry);
+	be::big_to_native_inplace(rdata.expire);
+	be::big_to_native_inplace(rdata.minimum);
+
 	rr.rdata = rdata;
 }
 
