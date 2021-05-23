@@ -15,6 +15,7 @@ set(LIBRARY_HDR
     Socket.h
     DNSDefines.h
     Handler.h
+    SparkHandler.h
     )
 
 set(LIBRARY_SRC
@@ -22,6 +23,7 @@ set(LIBRARY_SRC
     MulticastSocket.cpp
     Parser.cpp
     Server.cpp
+    SparkHandler.cpp
     )
 
 

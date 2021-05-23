@@ -5,13 +5,9 @@ interface = 0.0.0.0
 group = 224.0.0.251 # FF02::FB for IPv6
 port = 5353
 
-#[spark]
-#address = 127.0.0.1
-#port = 6003
-#multicast_interface = 0.0.0.0
-#multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
-#multicast_port = 6000
-#secret_key = changeme
+[spark]
+address = 127.0.0.1
+port = 6010
 
 [remote_log]
 service_name = account
@@ -37,8 +33,3 @@ colours = true
 enabled = false
 statsd_host = localhost
 statsd_port = 8125
-
-[monitor]
-enabled = false
-interface = 0.0.0.0
-port = 3900

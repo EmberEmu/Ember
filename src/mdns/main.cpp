@@ -9,11 +9,13 @@
 #include "Server.h"
 #include "Parser.h"
 #include "MulticastSocket.h"
+#include "SparkHandler.h"
 #include <logger/Logging.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/Utility.h>
+#include <spark/Spark.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/program_options.hpp>
 #include <fstream>
@@ -73,16 +75,24 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto iface = args["mdns.interface"].as<std::string>();
 	const auto group = args["mdns.group"].as<std::string>();
 	const auto port = args["mdns.port"].as<std::uint16_t>();
-	
-	boost::asio::io_context service(1); // todo
+	const auto spark_iface = args["spark.address"].as<std::string>();
+	const auto spark_port = args["spark.port"].as<std::uint16_t>();
+
+	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
+	// start multicast DNS services
 	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port);
 	dns::Server server(std::move(socket), logger);
+
+	// start Spark services
+	auto spark = std::make_unique<spark::Service>(APP_NAME, service, spark_iface, spark_port, logger);
+	dns::SparkHandler spark_handler(std::move(spark));
 	
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_DEBUG(logger) << "Received signal " << signal << LOG_SYNC;
+		LOG_TRACE(logger) << __func__ << signal << LOG_SYNC;
 		server.shutdown();
+		spark_handler.shutdown();
 	});
 
 	service.dispatch([logger]() {
@@ -115,6 +125,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("mdns.interface", po::value<std::string>()->required())
 		("mdns.group", po::value<std::string>()->required())
 		("mdns.port", po::value<std::uint16_t>()->default_value(5353))
+		("spark.address", po::value<std::string>()->required())
+		("spark.port", po::value<std::uint16_t>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", po::value<bool>()->required())
