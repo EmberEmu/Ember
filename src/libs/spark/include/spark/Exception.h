@@ -12,9 +12,7 @@
 #include <string>
 #include <cstddef>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class exception : public std::runtime_error {
 public:
@@ -41,7 +39,5 @@ public:
 		            + std::to_string(read_limit) + " bytes and total bytes read was " + std::to_string(total_read)),
 		              read_limit(read_limit), read_size(read_size), total_read(total_read) { }
 };
-
-} // sparkv1
 
 } //spark, ember

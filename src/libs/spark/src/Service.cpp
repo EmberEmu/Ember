@@ -19,9 +19,7 @@
 
 using namespace std::chrono_literals;
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 namespace bai = boost::asio::ip;
 
@@ -153,7 +151,5 @@ Service::~Service() {
 	dispatcher_.remove_handler(&hb_service_);
 	dispatcher_.remove_handler(&track_service_);
 }
-
-} // sparkv1
 
 } // spark, ember

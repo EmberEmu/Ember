@@ -19,9 +19,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger)
@@ -227,7 +225,5 @@ MessageHandler::~MessageHandler() {
 		dispatcher_.notify_link_down(static_cast<messaging::Service>(service), peer_);
 	}
 }
-
-} // sparkv1
 
 } // spark, ember

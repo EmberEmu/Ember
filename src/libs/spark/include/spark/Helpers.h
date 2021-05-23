@@ -10,9 +10,7 @@
 
 #include <functional>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 struct Link;
 struct Message;
@@ -24,8 +22,6 @@ struct LocalDispatcher {
 	Verifier verify;
 	Handler handle;
 };
-
-} // sparkv1
 
 } // spark, ember
 

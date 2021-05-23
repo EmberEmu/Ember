@@ -9,9 +9,7 @@
 #include <spark/SessionManager.h>
 #include <spark/NetworkSession.h>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 void SessionManager::start(const std::shared_ptr<NetworkSession>& session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
@@ -37,7 +35,5 @@ void SessionManager::stop_all() {
 std::size_t SessionManager::count() const {
 	return sessions_.size();
 }
-
-} // sparkv1
 
 } // spark, ember

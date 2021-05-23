@@ -29,9 +29,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
@@ -198,7 +196,5 @@ public:
 
 	friend class SessionManager;
 };
-
-}
 
 } // spark, ember

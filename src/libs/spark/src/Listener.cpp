@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <shared/FilterTypes.h>
 #include <utility>
 
-namespace ember::spark {
+namespace ember::spark::inline v1 {
 
 Listener::Listener(boost::asio::io_context& service, std::string interface, std::uint16_t port, 
                    SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,

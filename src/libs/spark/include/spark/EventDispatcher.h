@@ -17,9 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class EventDispatcher {
 public:
@@ -42,7 +40,5 @@ public:
 	void notify_link_down(messaging::Service service, const Link& link) const;
 	void dispatch_message(messaging::Service service, const Link& link, const Message& message) const;
 };
-
-} // sparkv1
 
 } // spark, ember

@@ -14,9 +14,7 @@
 #include <set>
 #include <cstdint>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class NetworkSession;
 class EventDispatcher;
@@ -51,7 +49,5 @@ public:
 	                    const std::uint8_t* data, std::uint32_t size);
 	void start(NetworkSession& net);
 };
-
-} // sparkv1
 
 } // spark, ember

@@ -9,9 +9,7 @@
 #include <spark/ServiceListener.h>
 #include <spark/ServiceDiscovery.h>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 ServiceListener::~ServiceListener() {
 	sd_client_->remove_listener(this);
@@ -20,7 +18,5 @@ ServiceListener::~ServiceListener() {
 void ServiceListener::search() {
 	sd_client_->locate_service(service_);
 }
-
-} // sparkv1
 
 } // spark, ember

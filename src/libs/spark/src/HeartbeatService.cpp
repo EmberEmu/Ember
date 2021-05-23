@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,7 @@
 #include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid_io.hpp>
 
-namespace ember::spark {
+namespace ember::spark::inline v1 {
 
 namespace em = ember::messaging;
 namespace sc = std::chrono;

@@ -12,9 +12,7 @@
 #include "Services_generated.h"
 #include <spark/Common.h>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
 
@@ -36,7 +34,5 @@ public:
 
 	friend class ServiceDiscovery;
 };
-
-} // sparkv1
 
 } // spark, ember

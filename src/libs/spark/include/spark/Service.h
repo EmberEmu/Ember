@@ -30,9 +30,7 @@
 #include <string>
 #include <cstdint>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class Service final {
 	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandle;
@@ -82,7 +80,5 @@ public:
 		return root->Verify(verifier);
 	}
 };
-
-} // sparkv1
 
 } // spark, ember

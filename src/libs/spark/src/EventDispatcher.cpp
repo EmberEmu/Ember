@@ -8,7 +8,7 @@
 
 #include <spark/EventDispatcher.h>
 
-namespace ember::spark {
+namespace ember::spark::inline v1 {
 
 void EventDispatcher::register_handler(EventHandler* handler, messaging::Service service, Mode mode) {
 	std::unique_lock<std::shared_mutex> guard(lock_);

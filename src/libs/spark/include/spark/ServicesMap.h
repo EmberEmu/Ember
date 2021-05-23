@@ -14,9 +14,7 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class ServicesMap {
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_servers_;
@@ -30,7 +28,5 @@ public:
 	void register_peer_service(const Link& link, messaging::Service service, Mode type);
 	void remove_peer(const Link& link);
 };
-
-} // sparkv1
 
 } // spark, ember

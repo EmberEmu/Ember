@@ -12,9 +12,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ember::spark::detail {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1::detail {
 
 typedef std::underlying_type<messaging::Service>::type ServicesType;
 
@@ -22,6 +20,5 @@ typedef std::underlying_type<messaging::Service>::type ServicesType;
 std::vector<ServicesType> services_to_underlying(const std::vector<messaging::Service>& services);
 std::vector<messaging::Service> underlying_to_services(const std::vector<ServicesType>& services);
 
-} // sparkv1
 
 } // detail, spark, ember

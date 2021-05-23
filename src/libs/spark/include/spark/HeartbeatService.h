@@ -22,9 +22,7 @@
 #include <unordered_map>
 #include <cstdint>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class Service;
 
@@ -56,7 +54,5 @@ public:
 
 	void shutdown();
 };
-
-} // sparkv1
 
 } // spark, ember

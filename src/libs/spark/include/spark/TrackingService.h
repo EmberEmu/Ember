@@ -22,9 +22,7 @@
 #include <mutex>
 #include <cstdint>
 
-namespace ember::spark {
-
-inline namespace sparkv1 {
+namespace ember::spark::inline v1 {
 
 class TrackingService : public EventHandler {
 	struct Request {
@@ -58,7 +56,5 @@ public:
 	                      std::chrono::milliseconds timeout);
 	void shutdown();
 };
-
-} // sparkv1
 
 } // spark, ember

@@ -38,6 +38,10 @@ set(CORE
     include/spark/Helpers.h
 )
 
+set(COREv2
+    include/spark/v2/Service.h
+)
+
 set(IO_SRC
     include/spark/buffers/BufferBase.h
     include/spark/buffers/BufferIn.h
@@ -58,10 +62,12 @@ set(IO_SRC
 add_library(
     ${LIBRARY_NAME}
     ${CORE}
+    ${COREv2}
     ${IO_SRC}
 )
 
 source_group("Core" FILES ${CORE})
+source_group("Corev2" FILES ${COREv2})
 source_group("IO" FILES ${IO_SRC})
 
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
