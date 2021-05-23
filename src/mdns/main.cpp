@@ -87,7 +87,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	// start Spark services
 	auto spark = std::make_unique<spark::Service>(APP_NAME, service, spark_iface, spark_port, logger);
-	dns::SparkHandler spark_handler(std::move(spark));
+	dns::SparkHandler spark_handler(std::move(spark), logger);
 	
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
 		LOG_TRACE(logger) << __func__ << signal << LOG_SYNC;
