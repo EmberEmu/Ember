@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2018 Ember
+# Copyright (c) 2016 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,8 @@ set(FB_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Core.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/RealmStatus.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Multicast.fbs
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/Spark.fbs
 
     ${CMAKE_CURRENT_SOURCE_DIR}/packetlog/PacketLog.fbs
 )
