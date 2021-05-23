@@ -31,6 +31,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 4;  // 4KB
@@ -196,5 +198,7 @@ public:
 
 	friend class SessionManager;
 };
+
+}
 
 } // spark, ember

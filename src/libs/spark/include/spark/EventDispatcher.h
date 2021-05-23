@@ -19,6 +19,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class EventDispatcher {
 public:
 	enum class Mode { CLIENT, SERVER, BOTH };
@@ -40,5 +42,7 @@ public:
 	void notify_link_down(messaging::Service service, const Link& link) const;
 	void dispatch_message(messaging::Service service, const Link& link, const Message& message) const;
 };
+
+} // sparkv1
 
 } // spark, ember

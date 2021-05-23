@@ -21,6 +21,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger)
                                : dispatcher_(dispatcher), self_(link), initiator_(initiator),
@@ -225,5 +227,7 @@ MessageHandler::~MessageHandler() {
 		dispatcher_.notify_link_down(static_cast<messaging::Service>(service), peer_);
 	}
 }
+
+} // sparkv1
 
 } // spark, ember

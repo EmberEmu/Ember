@@ -26,7 +26,7 @@
 
 namespace ember::spark {
 
-inline namespace sdv1 {
+inline namespace sparkv1 {
 
 typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
 
@@ -74,6 +74,6 @@ public:
 	friend class ServiceListener;
 };
 
-} // sdv1
+} // sparkv1
 
 } // spark, ember

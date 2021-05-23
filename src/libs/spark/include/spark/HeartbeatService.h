@@ -24,6 +24,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class Service;
 
 class HeartbeatService : public EventHandler {
@@ -54,5 +56,7 @@ public:
 
 	void shutdown();
 };
+
+} // sparkv1
 
 } // spark, ember

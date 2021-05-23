@@ -19,7 +19,7 @@ namespace mcast = ember::messaging::multicast;
 
 namespace ember::spark {
 
-inline namespace sdv1 {
+inline namespace sparkv1 {
 
 ServiceDiscovery::ServiceDiscovery(boost::asio::io_context& service, std::string address,
                                    std::uint16_t port, const std::string& mcast_iface,
@@ -185,6 +185,6 @@ void ServiceDiscovery::remove_service(messaging::Service service) {
 	services_.erase(std::remove(services_.begin(), services_.end(), service), services_.end());
 }
 
-} // sdv1
+} // sparkv1
 
 } // spark, ember

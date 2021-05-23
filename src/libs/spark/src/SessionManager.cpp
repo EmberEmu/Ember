@@ -11,6 +11,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 void SessionManager::start(const std::shared_ptr<NetworkSession>& session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
 	sessions_.insert(session);
@@ -36,5 +38,6 @@ std::size_t SessionManager::count() const {
 	return sessions_.size();
 }
 
+} // sparkv1
 
 } // spark, ember

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 - 2020 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,6 +31,8 @@
 #include <cstdint>
 
 namespace ember::spark {
+
+inline namespace sparkv1 {
 
 class Service final {
 	typedef std::shared_ptr<flatbuffers::FlatBufferBuilder> BufferHandle;
@@ -80,5 +82,7 @@ public:
 		return root->Verify(verifier);
 	}
 };
+
+} // sparkv1
 
 } // spark, ember

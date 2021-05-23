@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,6 +13,8 @@
 #include <string>
 
 namespace ember::spark {
+
+inline namespace sparkv1 {
 
 class NetworkSession;
 
@@ -29,5 +31,7 @@ inline bool operator==(const Link& lhs, const Link& rhs) {
 inline bool operator!=(const Link& lhs, const Link& rhs) {
 	return !(lhs == rhs);
 }
+
+} // sparkv1
 
 } // spark, ember

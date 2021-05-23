@@ -15,6 +15,8 @@ namespace sc = std::chrono;
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 TrackingService::TrackingService(boost::asio::io_context& io_context, log::Logger* logger)
                                  : io_context_(io_context), logger_(logger) { }
 
@@ -79,5 +81,7 @@ void TrackingService::on_link_up(const Link& link) {
 void TrackingService::on_link_down(const Link& link) {
 	// we don't care about this
 }
+
+} // sparkv1
 
 } // spark, ember

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,6 +12,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 struct Message;
 struct Link;
 
@@ -23,5 +25,7 @@ public:
 
 	virtual ~EventHandler() = default;
 };
+
+} // sparkv1
 
 } // spark, ember

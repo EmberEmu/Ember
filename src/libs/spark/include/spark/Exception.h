@@ -14,6 +14,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class exception : public std::runtime_error {
 public:
 	exception() : std::runtime_error("An unknown Spark exception occured!") { }
@@ -39,5 +41,7 @@ public:
 		            + std::to_string(read_limit) + " bytes and total bytes read was " + std::to_string(total_read)),
 		              read_limit(read_limit), read_size(read_size), total_read(total_read) { }
 };
+
+} // sparkv1
 
 } //spark, ember

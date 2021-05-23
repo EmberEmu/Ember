@@ -11,7 +11,7 @@
 
 namespace ember::spark {
 
-inline namespace sdv1 {
+inline namespace sparkv1 {
 
 ServiceListener::~ServiceListener() {
 	sd_client_->remove_listener(this);
@@ -21,6 +21,6 @@ void ServiceListener::search() {
 	sd_client_->locate_service(service_);
 }
 
-} // sdv1
+} // sparkv1
 
 } // spark, ember

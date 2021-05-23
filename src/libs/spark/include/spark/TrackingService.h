@@ -24,6 +24,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class TrackingService : public EventHandler {
 	struct Request {
 		Request(boost::asio::io_context& service, boost::uuids::uuid id, Link link,
@@ -56,5 +58,7 @@ public:
 	                      std::chrono::milliseconds timeout);
 	void shutdown();
 };
+
+} // sparkv1
 
 } // spark, ember

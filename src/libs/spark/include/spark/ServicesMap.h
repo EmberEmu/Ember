@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,6 +16,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class ServicesMap {
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_servers_;
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_clients_;
@@ -28,5 +30,7 @@ public:
 	void register_peer_service(const Link& link, messaging::Service service, Mode type);
 	void remove_peer(const Link& link);
 };
+
+} // sparkv1
 
 } // spark, ember

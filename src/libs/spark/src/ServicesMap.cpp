@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,6 +9,8 @@
 #include <spark/ServicesMap.h>
 
 namespace ember::spark {
+
+inline namespace sparkv1 {
 
 std::vector<Link> ServicesMap::peer_services(messaging::Service service, Mode type) const {
 	std::lock_guard<std::mutex> guard(lock_);
@@ -51,5 +53,7 @@ void ServicesMap::remove_peer(const Link& link) {
 		}), list.second.end());
 	}
 }
+
+} // sparkv1
 
 } // spark, ember

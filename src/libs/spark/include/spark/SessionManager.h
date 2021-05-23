@@ -15,6 +15,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 class NetworkSession;
 
 class SessionManager {
@@ -27,5 +29,7 @@ public:
 	void stop_all();
 	std::size_t count() const;
 };
+
+} // sparkv1
 
 } // spark, ember

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,6 +12,8 @@
 
 namespace ember::spark {
 
+inline namespace sparkv1 {
+
 struct Link;
 struct Message;
 
@@ -22,6 +24,8 @@ struct LocalDispatcher {
 	Verifier verify;
 	Handler handle;
 };
+
+} // sparkv1
 
 } // spark, ember
 
