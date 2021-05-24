@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -57,7 +57,7 @@ bool FileSink::file_exists(const std::string& name) try {
 }
 
 void FileSink::set_initial_rotation() {
-	auto max = std::numeric_limits<decltype(rotations_)>::max();
+	constexpr auto max = std::numeric_limits<decltype(rotations_)>::max();
 
 	while(file_exists(file_name_ + std::to_string(rotations_)) && rotations_ < max) {
 		++rotations_;
@@ -203,7 +203,7 @@ void FileSink::write(Severity severity, Filter type, const std::vector<char>& re
 		throw exception("Unable to write log record to file");
 	}
 
-	current_size_ += (prep_size + rec_size);
+	current_size_ += (static_cast<std::uintmax_t>(prep_size) + rec_size);
 
 	if(flush) {
 		if(std::fflush(*file_) != 0) {
