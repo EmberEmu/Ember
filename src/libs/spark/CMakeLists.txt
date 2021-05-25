@@ -40,6 +40,8 @@ set(CORE
 
 set(COREv2
     include/spark/v2/Service.h
+    include/spark/v2/Context.h
+    src/v2/Context.cpp
 )
 
 set(IO_SRC

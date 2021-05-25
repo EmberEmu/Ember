@@ -15,7 +15,7 @@ set(LIBRARY_HDR
     Socket.h
     DNSDefines.h
     Handler.h
-    SparkHandler.h
+    RequestHandler.h
     )
 
 set(LIBRARY_SRC
@@ -23,11 +23,12 @@ set(LIBRARY_SRC
     MulticastSocket.cpp
     Parser.cpp
     Server.cpp
-    SparkHandler.cpp
+    RequestHandler.cpp
     )
 
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_dependencies(${LIBRARY_NAME} SPARKC_SERVICE_COMPILE)
 target_link_libraries(${LIBRARY_NAME} logging shared spark ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

@@ -15,12 +15,12 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include "flatbuffers/util.h"
 
 namespace po = boost::program_options;
 namespace el = ember::log;
 
 int launch(const po::variables_map& args);
+void process_schema(const std::string& schema);
 void init_logger(ember::log::Logger* logger, const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
@@ -35,31 +35,36 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const po::variables_map& args) try {
+	const auto output = args["out"].as<std::string>();
+
 	for(const auto& schema : args["schemas"].as<std::vector<std::string>>()) {
 		LOG_INFO_GLOB << "Processing " << schema << LOG_SYNC;
-
-		std::vector<char> buffer;
-		std::ifstream file(schema, std::ios::in | std::ios::binary | std::ios::ate);
-
-		if(!file.is_open()) {
-			throw std::runtime_error("Unable to open binary schema (fbsb)");
-		}
-
-		std::streamsize size = file.tellg();
-		file.seekg(0, std::ios::beg);
-		buffer.resize(static_cast<std::size_t>(size));
-
-		if(!file.read(buffer.data(), buffer.size())) {
-			throw std::runtime_error("Unable to read binary schema (fbsb)");
-		}
-
-		ember::SchemaParser parser(buffer);
+		process_schema(schema);
 	}
 
 	return EXIT_SUCCESS;
 } catch (const std::exception& e) {
 	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
+}
+
+void process_schema(const std::string& schema) {
+	std::vector<std::uint8_t> buffer;
+	std::ifstream file(schema, std::ios::in | std::ios::binary | std::ios::ate);
+
+	if (!file.is_open()) {
+		throw std::runtime_error("Unable to open binary schema (bfbs)");
+	}
+
+	std::streamsize size = file.tellg();
+	file.seekg(0, std::ios::beg);
+	buffer.resize(static_cast<std::size_t>(size));
+
+	if (!file.read(reinterpret_cast<char*>(buffer.data()), buffer.size())) {
+		throw std::runtime_error("Unable to read binary schema (bfbs)");
+	}
+
+	ember::SchemaParser parser(buffer);
 }
 
 void init_logger(ember::log::Logger* logger, const po::variables_map& args) {

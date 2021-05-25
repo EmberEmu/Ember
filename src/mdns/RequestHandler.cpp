@@ -8,26 +8,24 @@
 
 #pragma once
 
-#include "SparkHandler.h"
+#include "RequestHandler.h"
 
 namespace ember::dns {
 
-SparkHandler::SparkHandler(std::unique_ptr<spark::Service> service, log::Logger* logger)
-	: service_(std::move(service)), logger_(logger) {}
+RequestHandler::RequestHandler(log::Logger* logger) : logger_(logger) {}
 
-void SparkHandler::shutdown() {
-	service_->shutdown();
+void RequestHandler::shutdown() {
 }
 
-void SparkHandler::on_message(const spark::Link& link, const spark::Message& message) {
+void RequestHandler::on_message(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 
-void SparkHandler::on_link_up(const spark::Link& link) {
+void RequestHandler::on_link_up(const spark::Link& link) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 
-void SparkHandler::on_link_down(const spark::Link& link) {
+void RequestHandler::on_link_down(const spark::Link& link) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 }
 

@@ -16,12 +16,11 @@
 
 namespace ember::dns {
 
-class SparkHandler final : public spark::EventHandler {
-	std::unique_ptr<spark::Service> service_;
+class RequestHandler final : public spark::EventHandler {
 	log::Logger* logger_;
 
 public:
-	SparkHandler(std::unique_ptr<spark::Service> service, log::Logger* logger);
+	RequestHandler(log::Logger* logger);
 	void shutdown();
 
 	void on_message(const spark::Link& link, const spark::Message& message) override;

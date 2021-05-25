@@ -155,6 +155,7 @@ add_definitions(-DDB_MYSQL) #temporary!
 
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 include(BuildDBCLoaders) # temp, maybe
+include(BuildSparkServices) # temp, maybe
 
 add_subdirectory(schemas)
 enable_testing()

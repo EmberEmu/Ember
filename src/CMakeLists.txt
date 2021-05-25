@@ -10,11 +10,6 @@ add_subdirectory(gateway)
 #add_subdirectory(world)
 add_subdirectory(account)
 add_subdirectory(mdns)
-
 add_subdirectory(character)
-#add_subdirectory(game)
-#add_subdirectory(instancemaster)
-#add_subdirectory(instanceslave)
 add_subdirectory(libs)
-
 add_subdirectory(tools)

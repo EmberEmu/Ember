@@ -9,7 +9,7 @@
 #include "Server.h"
 #include "Parser.h"
 #include "MulticastSocket.h"
-#include "SparkHandler.h"
+#include "RequestHandler.h"
 #include <logger/Logging.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
@@ -87,13 +87,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start Spark services
-	auto spark = std::make_unique<spark::Service>(APP_NAME, service, spark_iface, spark_port, logger);
-	dns::SparkHandler spark_handler(std::move(spark), logger);
+	spark::v2::Context context(service, spark_iface, spark_port, logger);
+	dns::RequestHandler handler(logger);
+	//context.register_service(&handler);
 	
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
 		LOG_TRACE(logger) << __func__ << signal << LOG_SYNC;
 		server.shutdown();
-		spark_handler.shutdown();
+		context.shutdown();
 	});
 
 	service.dispatch([logger]() {

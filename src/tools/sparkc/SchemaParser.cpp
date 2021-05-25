@@ -9,16 +9,21 @@
 #include "SchemaParser.h"
 #include <flatbuffers/reflection.h>
 #include <flatbuffers/reflection_generated.h>
-#include <shared/util/FormatPacket.h>
+#include <stdexcept>
 #include <iostream>
+
 namespace ember {
 
-SchemaParser::SchemaParser(std::vector<char> buffer) : buffer_(std::move(buffer)) {
+SchemaParser::SchemaParser(std::vector<std::uint8_t> buffer) : buffer_(std::move(buffer)) {
 	verify();
+
+	auto& s = *reflection::GetSchema(buffer_.data());
+	auto root_table = s.root_table();
+	std::cout << root_table->name()->c_str();
 }
 
 void SchemaParser::verify() {
-	flatbuffers::Verifier verifier(reinterpret_cast<std::uint8_t*>(buffer_.data()), buffer_.size());
+	flatbuffers::Verifier verifier(buffer_.data(), buffer_.size());
 
 	if(!reflection::VerifySchemaBuffer(verifier)) {
 		throw std::runtime_error("Schema verification failed!");

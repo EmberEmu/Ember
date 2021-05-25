@@ -16,10 +16,10 @@ namespace ember {
 
 class SchemaParser {
 public:
-	SchemaParser(std::vector<char> buffer);
+	SchemaParser(std::vector<std::uint8_t> buffer);
 
 private:
-	std::vector<char> buffer_;
+	std::vector<std::uint8_t> buffer_;
 
 	void verify();
 };

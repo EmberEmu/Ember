@@ -9,3 +9,5 @@ table HelloRequest {
 rpc_service HelloService {
   SayHello(HelloRequest):HelloReply;
 }
+
+root_type HelloRequest;
