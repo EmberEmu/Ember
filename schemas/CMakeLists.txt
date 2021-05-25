@@ -14,7 +14,8 @@ set(FB_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/RealmStatus.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Multicast.fbs
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/Spark.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/Spark.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/Test.fbs
 
     ${CMAKE_CURRENT_SOURCE_DIR}/packetlog/PacketLog.fbs
 )

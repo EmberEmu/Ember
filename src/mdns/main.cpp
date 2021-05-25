@@ -72,18 +72,19 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
+	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
 	const auto iface = args["mdns.interface"].as<std::string>();
 	const auto group = args["mdns.group"].as<std::string>();
 	const auto port = args["mdns.port"].as<std::uint16_t>();
-	const auto spark_iface = args["spark.address"].as<std::string>();
-	const auto spark_port = args["spark.port"].as<std::uint16_t>();
-
-	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	// start multicast DNS services
 	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port);
 	dns::Server server(std::move(socket), logger);
+
+	const auto spark_iface = args["spark.address"].as<std::string>();
+	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start Spark services
 	auto spark = std::make_unique<spark::Service>(APP_NAME, service, spark_iface, spark_port, logger);

@@ -1,4 +1,4 @@
-# Copyright (c) 2014 - 2019 Ember
+# Copyright (c) 2014 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,6 +6,7 @@
 
 add_subdirectory(dbcparser)
 add_subdirectory(dbutils)
+add_subdirectory(sparkc)
 
 if(BUILD_OPT_TOOLS)
     add_subdirectory(packetconvert)
