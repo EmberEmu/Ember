@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Ember
+# Copyright (c) 2015 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,5 +30,5 @@ add_library(${LIBRARY_NAME}
             include/logger/Severity.h
 )
 
-target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES} Threads::Threads)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
