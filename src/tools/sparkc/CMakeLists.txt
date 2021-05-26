@@ -15,5 +15,5 @@ set(EXECUTABLE_SRC
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} logging shared ${Boost_LIBRARIES} ${flatbuffers})
+target_link_libraries(${EXECUTABLE_NAME} logging shared ${Boost_LIBRARIES} ${flatbuffers} Threads::Threads)
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
