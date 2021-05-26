@@ -11,7 +11,7 @@
 #include "FilterTypes.h"
 #include "SessionManager.h"
 #include "ClientConnection.h"
-#include <logger/Logger.h>
+#include <logger/Logging.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ServicePool.h>

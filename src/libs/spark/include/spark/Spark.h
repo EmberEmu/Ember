@@ -12,5 +12,5 @@
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/BinaryStream.h>
 
+#include <spark/v2/Server.h>
 #include <spark/v2/Service.h>
-#include <spark/v2/Context.h>

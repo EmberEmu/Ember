@@ -87,14 +87,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start Spark services
-	spark::v2::Context context(service, spark_iface, spark_port, logger);
+	spark::v2::Server spark(service, spark_iface, spark_port, logger);
 	dns::RequestHandler handler(logger);
 	//context.register_service(&handler);
 	
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
 		LOG_TRACE(logger) << __func__ << signal << LOG_SYNC;
 		server.shutdown();
-		context.shutdown();
+		spark.shutdown();
 	});
 
 	service.dispatch([logger]() {

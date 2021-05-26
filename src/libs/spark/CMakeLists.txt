@@ -40,8 +40,12 @@ set(CORE
 
 set(COREv2
     include/spark/v2/Service.h
-    include/spark/v2/Context.h
-    src/v2/Context.cpp
+    include/spark/v2/Server.h
+    include/spark/v2/ClientConnection.h
+    include/spark/v2/NetworkListener.h
+    include/spark/v2/SocketAcceptor.h
+    src/v2/Server.cpp
+    src/v2/ClientConnection.cpp
 )
 
 set(IO_SRC
