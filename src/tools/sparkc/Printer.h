@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <string>
+#include <sstream>
+#include <string_view>
 #include <cstdint>
 
 namespace ember {
@@ -23,12 +26,15 @@ public:
 
 	void indent();
 	void outdent();
-	void print();
+	void print(std::string_view string);
+	std::string output();
 
 private:
 	const std::uint8_t indent_width_ = 1;
 	const IndentStyle indent_style_ = IndentStyle::TAB;
-	std::uint8_t indent_level_ = 0;
+
+	std::stringstream stream_;
+	unsigned int indent_level_ = 0;
 };
 
 } // ember
