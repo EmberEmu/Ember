@@ -16,7 +16,7 @@ namespace ember {
 
 class SchemaParser {
 public:
-	SchemaParser(std::vector<std::uint8_t> buffer);
+	explicit SchemaParser(std::vector<std::uint8_t> buffer);
 
 private:
 	std::vector<std::uint8_t> buffer_;

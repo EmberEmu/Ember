@@ -20,7 +20,7 @@ class RequestHandler final : public spark::EventHandler {
 	log::Logger* logger_;
 
 public:
-	RequestHandler(log::Logger* logger);
+	explicit RequestHandler(log::Logger* logger);
 	void shutdown();
 
 	void on_message(const spark::Link& link, const spark::Message& message) override;
