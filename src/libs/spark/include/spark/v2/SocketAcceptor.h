@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <boost/asio.hpp> // todo
+#include <boost/asio/ip/tcp.hpp>
 
 namespace ember::spark::v2 {
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+//#include "RequestHandler_Generated.h"
 #include <spark/Service.h>
 #include <logger/Logging.h>
 #include <memory>
@@ -16,16 +17,16 @@
 
 namespace ember::dns {
 
-class RequestHandler final : public spark::EventHandler {
+class RequestHandler final /*: public RequestHandler::Service*/ {
 	log::Logger* logger_;
 
 public:
 	explicit RequestHandler(log::Logger* logger);
 	void shutdown();
 
-	void on_message(const spark::Link& link, const spark::Message& message) override;
-	void on_link_up(const spark::Link& link) override;
-	void on_link_down(const spark::Link& link) override;
+	void on_message(const spark::Link& link, const spark::Message& message);
+	void on_link_up(const spark::Link& link);
+	void on_link_down(const spark::Link& link);
 };
 
 } // dns, ember

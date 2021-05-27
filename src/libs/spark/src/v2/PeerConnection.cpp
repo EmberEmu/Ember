@@ -6,12 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
+#include <spark/v2/PeerConnection.h>
 
 namespace ember::spark::v2 {
 
-class ClientConnection {
-public:
-};
+PeerConnection::PeerConnection(boost::asio::ip::tcp::socket socket)
+	: socket_(std::move(socket)) {}
 
 } // spark, ember

@@ -6,10 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/v2/ClientConnection.h>
+#pragma once
+
+#include <boost/asio/ip/tcp.hpp>
 
 namespace ember::spark::v2 {
 
+class PeerConnection {
+	boost::asio::ip::tcp::socket socket_;
 
+public:
+	PeerConnection(boost::asio::ip::tcp::socket socket);
+};
 
 } // spark, ember
