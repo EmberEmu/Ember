@@ -8,8 +8,14 @@
 
 #include <spark/v2/Server.h>
 #include <spark/v2/PeerConnection.h>
+#include <spark/v2/PeerHandler.h>
+#include <spark/v2/RemotePeer.h>
+#include <boost/asio/ip/tcp.hpp>
 
 namespace ember::spark::v2 {
+
+using Socket = boost::asio::ip::tcp::socket;	
+using RemotePeerHandler = RemotePeer<PeerHandler, PeerConnection<Socket>, Socket>;
 
 Server::Server(boost::asio::io_context& context, const std::string& iface,
                const std::uint16_t port, log::Logger* logger)
@@ -17,8 +23,7 @@ Server::Server(boost::asio::io_context& context, const std::string& iface,
 
 void Server::accept(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	PeerConnection conn(std::move(socket));
-	//auto handler = std::make_unique<PeerHandler>(std::move(conn));
+	auto peer = std::make_unique<RemotePeerHandler>(std::move(socket));
 	
 }
 

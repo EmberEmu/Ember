@@ -6,10 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/v2/PeerConnection.h>
+#pragma once
 
 namespace ember::spark::v2 {
 
-
+class Dispatcher {
+public:
+	virtual ~Dispatcher() = default;
+};
 
 } // spark, ember

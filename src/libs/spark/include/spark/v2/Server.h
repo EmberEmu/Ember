@@ -12,7 +12,7 @@
 #include <spark/v2/NetworkListener.h>
 #include <spark/v2/SocketAcceptor.h>
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
 #include <string>
 #include <cstdint>
 

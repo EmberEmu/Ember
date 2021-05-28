@@ -42,10 +42,14 @@ set(COREv2
     include/spark/v2/Service.h
     include/spark/v2/Server.h
     include/spark/v2/PeerConnection.h
+    include/spark/v2/PeerHandler.h
+    include/spark/v2/RemotePeer.h
+    include/spark/v2/Dispatcher.h
     include/spark/v2/NetworkListener.h
     include/spark/v2/SocketAcceptor.h
     src/v2/Server.cpp
     src/v2/PeerConnection.cpp
+    src/v2/PeerHandler.cpp
 )
 
 set(IO_SRC

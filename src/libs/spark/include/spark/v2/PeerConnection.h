@@ -8,15 +8,20 @@
 
 #pragma once
 
-#include <boost/asio/ip/tcp.hpp>
+#include <spark/v2/Dispatcher.h>
+#include <concepts>
 
 namespace ember::spark::v2 {
 
-class PeerConnection {
-	boost::asio::ip::tcp::socket socket_;
+template<std::movable Socket>
+class PeerConnection final {
+	Dispatcher& dispatcher_;
+	Socket socket_;
 
 public:
-	PeerConnection(boost::asio::ip::tcp::socket socket);
+	PeerConnection(Dispatcher& dispatcher, Socket socket)
+		: dispatcher_(dispatcher), socket_(std::move(socket)) {}
+	PeerConnection(PeerConnection&&) = default;
 };
 
 } // spark, ember
