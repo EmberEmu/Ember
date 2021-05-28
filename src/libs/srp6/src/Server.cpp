@@ -48,7 +48,7 @@ SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N_.bytes())));
 	} else {
 		KeyType key;
-		key.resize(S.bytes());
+		key.resize(N_.bytes());
 		S.binary_encode(key.data(), key.size());
 		return SessionKey(key);
 	}

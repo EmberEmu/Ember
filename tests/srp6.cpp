@@ -209,7 +209,7 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 	ASSERT_EQ(expected_cproof, c_proof) << "Client proof was calculated incorrectly!";
 }
 
-TEST(srp6Regression, SPad_VerifyKey) {
+TEST(srp6Regressions, SPad_VerifyKey) {
 	const std::string identifier("TEST");
 	const std::string password("TEST");
 	srp::Generator gen(srp::Generator::Group::_256_BIT);
