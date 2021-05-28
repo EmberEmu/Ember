@@ -31,7 +31,7 @@ enum class Compliance { RFC5054, GAME };
 
 namespace detail {
 
-KeyType interleaved_hash(SmallVec hash);
+KeyType interleaved_hash(SmallVec key);
 SmallVec encode_flip(const Botan::BigInt& val);
 SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
 Botan::BigInt decode_flip(std::span<std::uint8_t> val);

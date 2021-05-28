@@ -208,3 +208,18 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 
 	ASSERT_EQ(expected_cproof, c_proof) << "Client proof was calculated incorrectly!";
 }
+
+TEST(srp6Regression, SPad_VerifyKey) {
+	const std::string identifier("TEST");
+	const std::string password("TEST");
+	srp::Generator gen(srp::Generator::Group::_256_BIT);
+	const Botan::BigInt v("0x570B18E774242FAC149DB63458E8BA7C67C8CCD18F8C1B2779848703523AF502");
+	const Botan::BigInt s_pub_key("0x86E1548D434951A2C96A33E5517A5D126A21EEC6959DC4E93C9ABFE085DDA08C"); // B
+	const Botan::BigInt c_pub_key("0x3AD9948BCEE582A3BFCEABC895B22FB3F0208E5D444D07CAA580CE24B1DEFC70"); // A
+	const Botan::BigInt s_priv_key("0x3865DD04A190926F04B241820503B53F8BF21B2C161FB2FE038B662943936A53"); // b
+	srp::Server server(gen, v, s_priv_key);
+	srp::SessionKey key = server.session_key(c_pub_key);
+	Botan::BigInt sbytes(key.t.data(), key.t.size());
+	Botan::BigInt correct_key("0xEE57F5996D4EEDFFDE38EE79492AB4A5E57CD25C3CE98B035D4BA9A7E05D56C0DAF0F30D9797C216");
+	EXPECT_EQ(correct_key, sbytes) << "Computed key incorrectly";
+}

@@ -39,12 +39,12 @@ SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 	return res;
 }
 
-KeyType interleaved_hash(SmallVec hash) {
+KeyType interleaved_hash(SmallVec key) {
 	//implemented as described in RFC2945
-	auto begin = std::find_if(hash.begin(), hash.end(), [](std::uint8_t b) { return b; });
-	begin = std::distance(begin, hash.end()) % 2 == 0? begin : begin + 1;
+	auto begin = std::find_if(key.begin(), key.end(), [](std::uint8_t b) { return b; });
+	begin = std::distance(begin, key.end()) % 2 == 0? begin : begin + 1;
 
-	auto bound = std::stable_partition(begin, hash.end(),
+	auto bound = std::stable_partition(begin, key.end(),
 	    [&begin](const auto& x) { return (&x - &*begin) % 2 == 0; });
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
@@ -52,7 +52,7 @@ KeyType interleaved_hash(SmallVec hash) {
 	std::array<std::uint8_t, SHA1_LEN> g, h;
 	hasher->update(&*begin, std::distance(begin, bound));
 	hasher->final(g.data());
-	hasher->update(&*bound, std::distance(bound, hash.end()));
+	hasher->update(&*bound, std::distance(bound, key.end()));
 	hasher->final(h.data());
 
 	KeyType final(INTERLEAVE_LENGTH);
