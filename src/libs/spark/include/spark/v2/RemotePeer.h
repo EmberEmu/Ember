@@ -11,6 +11,7 @@
 #include <spark/v2/PeerHandler.h>
 #include <spark/v2/PeerConnection.h>
 #include <spark/v2/Dispatcher.h>
+#include <logger/Logging.h>
 #include <concepts>
 #include <utility>
 
@@ -20,17 +21,18 @@ template<typename Handler, typename Connection, typename Socket>
 class RemotePeer final : public Dispatcher {
 	Handler handler_;
 	Connection conn_;
+	log::Logger* log_;
 
 public:
-	explicit RemotePeer(Socket socket)
-		: handler_(*this), conn_(*this, std::move(socket)) {}
+	explicit RemotePeer(Socket socket, log::Logger* log)
+		: handler_(*this), conn_(*this, std::move(socket)), log_(log) {}
 
 	void send() {
-
+		LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 	}
 
-	void receive() {
-
+	void receive() override {
+		LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 	}
 };
 

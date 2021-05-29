@@ -12,6 +12,7 @@ namespace ember::spark::v2 {
 
 class Dispatcher {
 public:
+	virtual void receive() = 0;
 	virtual ~Dispatcher() = default;
 };
 

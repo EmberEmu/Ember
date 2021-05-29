@@ -23,8 +23,8 @@ Server::Server(boost::asio::io_context& context, const std::string& iface,
 
 void Server::accept(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	auto peer = std::make_unique<RemotePeerHandler>(std::move(socket));
-	
+	auto peer = std::make_unique<RemotePeerHandler>(std::move(socket), logger_);
+	peer.release(); // todo, temporarily useful memory leak
 }
 
 void Server::register_service(spark::v2::Service* service) {

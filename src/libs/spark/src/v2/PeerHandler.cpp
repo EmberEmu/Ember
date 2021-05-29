@@ -10,6 +10,6 @@
 
 namespace ember::spark::v2 {
 
-
+PeerHandler::PeerHandler(Dispatcher& dispatcher) : dispatch_(dispatcher) {}
 
 } // spark, ember

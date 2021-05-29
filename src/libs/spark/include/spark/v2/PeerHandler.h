@@ -16,7 +16,7 @@ class PeerHandler final {
 	Dispatcher& dispatch_;
 
 public:
-	PeerHandler(Dispatcher& dispatcher) : dispatch_(dispatcher) {}
+	PeerHandler(Dispatcher& dispatcher);
 };
 
 } // spark, ember
