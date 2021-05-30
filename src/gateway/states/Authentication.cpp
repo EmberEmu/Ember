@@ -88,7 +88,7 @@ void handle_authentication(ClientContext& ctx) {
 void fetch_account_id(ClientContext& ctx, const std::string& username) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const auto uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler->uuid();
 
 	Locator::account()->locate_account_id(username, [uuid](auto status, auto id) {
 		AccountIDResponse event(std::move(status), id);
@@ -127,7 +127,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 void fetch_session_key(ClientContext& ctx, const std::uint32_t account_id) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const auto uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler->uuid();
 
 	Locator::account()->locate_session(account_id, [uuid](auto status, auto key) {
 		SessionKeyResponse event(status, key);

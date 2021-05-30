@@ -65,7 +65,7 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 	for(auto& [index, edges] : adjacency_) {
 		distance[index] = -1;
 	
-		for(auto e : edges) {
+		for(const auto& e : edges) {
 			distance[e.build_to] = -1;
 		}
 	}
@@ -102,7 +102,7 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 	auto it = prev.find(to);
 
 	while(it != prev.end()) {
-		auto node = *prev[to];
+		auto& node = *prev[to];
 		path.push_front(node);
 		to = node.from;
 		it = prev.find(to);
