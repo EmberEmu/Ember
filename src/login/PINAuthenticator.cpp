@@ -164,7 +164,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	if constexpr(std::endian::native == std::endian::little) {
 		hmac->update_be(step);
 	} else {
-		hmac->update(step);
+		hmac->update_le(step);
 	}
 
 	const auto& hmac_result = hmac->final();
