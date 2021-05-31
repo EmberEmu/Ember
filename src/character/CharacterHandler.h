@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -77,7 +77,7 @@ public:
 	CharacterHandler(std::vector<util::pcre::Result> profane_names,
 	                 std::vector<util::pcre::Result> reserved_names,
 	                 std::vector<util::pcre::Result> spam_names,
-	                 dbc::Storage& dbc, const dal::CharacterDAO& dao,
+	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
 	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger)
 	                 : profane_names_(std::move(profane_names)),
 	                   reserved_names_(std::move(reserved_names)),

@@ -210,8 +210,6 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 }
 
 TEST(srp6Regressions, SPad_VerifyKey) {
-	const std::string identifier("TEST");
-	const std::string password("TEST");
 	const srp::Generator gen(srp::Generator::Group::_256_BIT);
 	const Botan::BigInt v("0x570B18E774242FAC149DB63458E8BA7C67C8CCD18F8C1B2779848703523AF502");
 	const Botan::BigInt c_pub_key("0x3AD9948BCEE582A3BFCEABC895B22FB3F0208E5D444D07CAA580CE24B1DEFC70"); // A

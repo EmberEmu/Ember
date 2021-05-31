@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -539,12 +539,17 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	auto& [key, region] = *it;
 
 	const std::shared_ptr<const RealmMap> realms = realm_list_.realms();
-	auto& char_count = std::get<CharacterCount>(state_data_);
+	const auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
 
 	for(const auto& [key, realm] : *realms) {
 		if(!locale_enforce_ || realm.region == region) {
-			response.realms.push_back({ realm, char_count[realm.id] });
+			if(auto count = char_count.find(realm.id); count != char_count.end()) {
+				response.realms.emplace_back(realm, count->second);
+			} else {
+				response.realms.emplace_back(realm, 0);
+			}
+
 		}
 	}
 

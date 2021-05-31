@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ namespace ember {
 
 class NodeComp {
 public:
-	bool operator()(PatchGraph::Node& lhs, PatchGraph::Node& rhs) {
+	bool operator()(const PatchGraph::Node& lhs, const PatchGraph::Node& rhs) {
 		return lhs.weight > rhs.weight;
 	}
 };

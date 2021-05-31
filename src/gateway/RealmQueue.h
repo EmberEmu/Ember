@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -55,8 +55,8 @@ class RealmQueue final {
 	void set_timer();
 
 public:
-	RealmQueue(boost::asio::io_context& service, std::chrono::milliseconds frequency = DEFAULT_FREQUENCY)
-	           : timer_(service), frequency_(frequency), dirty_(false) { }
+	explicit RealmQueue(boost::asio::io_context& service, std::chrono::milliseconds frequency = DEFAULT_FREQUENCY)
+	                    : timer_(service), frequency_(frequency), dirty_(false) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
 	             LeaveQueueCB on_leave_cb, int priority = 0);

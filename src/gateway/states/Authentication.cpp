@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -56,7 +56,7 @@ void auth_state(ClientContext& ctx, State state) {
 }
 
 State auth_state(ClientContext& ctx) {
-	auto& state_ctx = std::get<Context>(ctx.state_ctx);
+	const auto& state_ctx = std::get<Context>(ctx.state_ctx);
 	return state_ctx.state;
 }
 
@@ -136,7 +136,7 @@ void fetch_session_key(ClientContext& ctx, const std::uint32_t account_id) {
 }
 
 void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
-	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	CLIENT_DEBUG_FILTER_GLOB(LF_NETWORK, ctx)
 		<< "Account server returned "
@@ -207,7 +207,7 @@ void send_auth_challenge(ClientContext& ctx) {
 void send_addon_data(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	const auto& addons = auth_ctx.packet->addons;
 	protocol::SMSG_ADDON_INFO response;
 
@@ -328,7 +328,7 @@ void handle_event(ClientContext& ctx, const Event* event) {
 }
 
 void exit(ClientContext& ctx) {
-	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
+	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(auth_ctx.state == State::IN_QUEUE) {
 		Locator::queue()->dequeue(ctx.handler->uuid());

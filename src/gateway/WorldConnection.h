@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,7 @@ class WorldConnection final : std::enable_shared_from_this<WorldConnection> {
 	boost::asio::ip::tcp::socket socket_;
 
 public:
-	WorldConnection(boost::asio::io_context& service) : socket_(service) { }
+	explicit WorldConnection(boost::asio::io_context& service) : socket_(service) { }
 };
 
 } // ember

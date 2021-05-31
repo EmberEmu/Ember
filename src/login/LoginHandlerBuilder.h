@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ class LoginHandlerBuilder {
 public:
 	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const IntegrityData* exe_data,
 	                    const dal::UserDAO& user_dao, const AccountService& acct_svc,
-	                    RealmList& realm_list, Metrics& metrics, bool locale_enforce)
+	                    const RealmList& realm_list, Metrics& metrics, bool locale_enforce)
 	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao), acct_svc_(acct_svc),
 	                      realm_list_(realm_list), metrics_(metrics), exe_data_(exe_data),
 	                      locale_enforce_(locale_enforce) {}
