@@ -13,6 +13,7 @@
 #include <botan/hash.h>
 #include <botan/mac.h>
 #include <gsl/gsl_util>
+#include <algorithm>
 #include <bit>
 #include <memory>
 #include <utility>
@@ -110,9 +111,8 @@ void PINAuthenticator::remap_pin() {
 void PINAuthenticator::pin_to_ascii() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	for(auto& pin_byte : pin_bytes_) {
-		pin_byte += 0x30;
-	}
+	std::transform(pin_bytes_.begin(), pin_bytes_.end(), pin_bytes_.begin(),
+		[](auto pin_byte) { return pin_byte += 0x30; });
 }
 
 auto PINAuthenticator::calculate_hash(const std::uint32_t pin) -> HashBytes {
@@ -193,11 +193,7 @@ std::uint32_t PINAuthenticator::generate_seed() {
  */
 auto PINAuthenticator::generate_salt() -> SaltBytes {
 	SaltBytes server_salt;
-
-	for(auto& byte : server_salt) {
-		byte = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
-	}
-	
+	std::generate(server_salt.begin(), server_salt.end(), generate_seed);
 	return server_salt;
 }
 
