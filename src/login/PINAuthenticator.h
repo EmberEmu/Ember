@@ -12,6 +12,7 @@
 #include <boost/container/static_vector.hpp>
 #include <array>
 #include <span>
+#include <string>
 #include <cstdint>
 
 namespace ember {
