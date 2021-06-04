@@ -544,10 +544,11 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 
 	for(const auto& [key, realm] : *realms) {
 		if(!locale_enforce_ || realm.region == region) {
+			// todo, emplace_back when Clang supports parenthesized initialization of aggregates (P0960R3)
 			if(auto count = char_count.find(realm.id); count != char_count.end()) {
-				response.realms.emplace_back(realm, count->second);
+				response.realms.push_back({ realm, count->second });
 			} else {
-				response.realms.emplace_back(realm, 0);
+				response.realms.push_back({ realm, 0 });
 			}
 
 		}
