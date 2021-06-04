@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/Clock.h>
 #include <logger/Logging.h>
 #include <boost/container/static_vector.hpp>
 #include <array>
@@ -51,7 +52,8 @@ public:
 
 	static SaltBytes generate_salt();
 	static std::uint32_t generate_seed();
-	static std::uint32_t generate_totp_pin(const std::string& secret, int interval);
+	static std::uint32_t generate_totp_pin(const std::string& secret, int interval,
+	                                       const util::Clock& clock = util::Clock());
 };
 
 } // ember

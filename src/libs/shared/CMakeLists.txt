@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2020 Ember
+# Copyright (c) 2015 - 2021 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -80,6 +80,7 @@ set(UTIL_SRC
     shared/util/FNVHash.h
     shared/util/EnumHelper.h
     shared/util/MulticharConstant.h
+    shared/util/Clock.h
 )
 
 set(METRICS_SRC

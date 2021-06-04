@@ -144,7 +144,8 @@ bool PINAuthenticator::validate_pin(const std::uint32_t pin,
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
 }
 
-std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int interval) {
+std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int interval,
+                                                  const util::Clock& clock) {
 	boost::container::static_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
 	const int key_size = base32_decode(reinterpret_cast<const uint8_t*>(secret.data()), decoded_key.data(),
 	                                   decoded_key.size());
@@ -154,8 +155,8 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	}
 
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
-	const auto time = std::time(NULL);
-	const auto now = static_cast<std::uint64_t>(time);
+	const auto time = clock.now();
+	const auto now = std::chrono::time_point_cast<std::chrono::seconds>(time).time_since_epoch().count();
 	auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
