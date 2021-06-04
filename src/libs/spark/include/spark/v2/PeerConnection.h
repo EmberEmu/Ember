@@ -119,7 +119,7 @@ public:
 		const auto buff_raw = buffer.get();
 
 		socket_.async_send(buff_raw, 
-			[buffer = std::move(buffer)](boost::system::error_code ec, std::size_t size) {
+			[this, buffer = std::move(buffer)](boost::system::error_code ec, std::size_t size) {
 				if(!ec) {
 
 				} else if(ec != boost::asio::error::operation_aborted) {
