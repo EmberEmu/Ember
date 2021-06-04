@@ -17,6 +17,7 @@ set(EXECUTABLE_SRC
     Patcher.cpp
     IPBan.cpp
     DNS.cpp
+    PINAuthenticator.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
