@@ -51,7 +51,6 @@ struct MockClock final : ember::util::ClockBase {
  * from a known good authentication session
  */
 TEST_F(PINAuthenticator, StaticPIN) {
-	MockClock clock(1622776360);
 	const auto pin = 456801u;
 
 	const ember::PINAuthenticator::SaltBytes client_salt {
