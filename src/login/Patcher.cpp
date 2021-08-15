@@ -173,20 +173,17 @@ FileMeta Patcher::survey_meta() const {
 	return survey_;
 }
 
+// todo, only supports x86 Windows for the time being
 bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const {
 	if(platform != grunt::Platform::x86 || os != grunt::System::Win) {
 		return false;
 	}
 
-	return true;
+	return !survey_data(platform, os).empty();
 }
 
 // todo, change how this works
 const std::vector<std::byte>& Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
-	if(!survey_platform(platform, os)) {
-		throw std::invalid_argument("Attempted to retrieve survey binaries for an unsupported platform!");
-	}
-
 	return survey_data_;
 }
 
