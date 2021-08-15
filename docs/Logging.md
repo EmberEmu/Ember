@@ -1,4 +1,4 @@
-﻿# 🔥 **Ember Log**
+# 🔥 **Ember Log**
 ---
 
 # Basic overview
@@ -92,6 +92,16 @@ LOG_INFO(logger) << "This is a blocking entry!" << LOG_SYNC; // blocking log ent
 
 ### LOG_SYNC vs LOG_ASYNC
 LOG_ASYNC should be the preferred method of logging. It will always return immediately, without blocking the thread while the message is flushed by the sinks. In contrast, LOG_SYNC will block the thread's execution until the message has been flushed by the sinks. This could be useful when attempting to insert log entries for crash debugging in the absence of a crash handler.
+
+#### Formatted Messages
+An alternative to the stream interface is to use string formatting. The underlying mechanism uses C++20's std::format library and so the logger follows the same rules with the exception that a formatted string with no arguments passed will be logged without being parsed.
+```cpp
+LOG_DEBUG_FMT(logger, "They're taking the {} to {}", "Hobbits", "Isengard"); // They're taking the Hobbits to Isengard
+LOG_DEBUG_FMT(logger, "The quick brown {1} jumps over the lazy {0}", "dog", "fox"); // The quick brown fox jumps over the lazy dog
+LOG_DEBUG_FMT(logger, "This won't be parsed for arguments {0}{1}"); // This won't be parsed for arguments {0}{1}
+```
+
+Note that formatted logging is async only.
 
 # Global Logging
 Although it is not recommended for normal development, it may be useful to perform logging in a section of the code that doesn't have access to a logger object. For those situations, you should set a logger object as the global logger:

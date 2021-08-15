@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -170,6 +170,60 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 
 #define LOG_ASYNC ember::log::flush; }
 #define LOG_SYNC  ember::log::flush_sync; }
+
+#if !NO_LOGGING && !NO_TRACE_LOGGING
+#define LOG_TRACE_FMT(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::TRACE) \
+		logger->fmt_write(ember::log::Severity::TRACE, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_TRACE_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_DEBUG_LOGGING
+#define LOG_DEBUG_FMT(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::DEBUG) \
+		logger->fmt_write(ember::log::Severity::DEBUG, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_DEBUG_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_INFO_LOGGING
+#define LOG_INFO_FMT(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::INFO) \
+		logger->fmt_write(ember::log::Severity::INFO, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_INFO_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_WARN_LOGGING
+#define LOG_WARN_FMT(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::WARN) \
+		logger->fmt_write(ember::log::Severity::WARN, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_WARN_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_ERROR_LOGGING
+#define LOG_ERROR_FMT(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::ERROR_) \
+		logger->fmt_write(ember::log::Severity::ERROR_, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_ERROR_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_FATAL_LOGGING
+#define LOG_FATAL_FMT(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::FATAL) \
+		logger->fmt_write(ember::log::Severity::FATAL, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_FATAL_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
 
 // used to generate decorated output (e.g. 'namespace::func' vs simply 'func')
 #if _MSC_VER && !__INTEL_COMPILER
