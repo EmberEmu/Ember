@@ -78,7 +78,7 @@ public:
 			elements = *components.second;
 		}
 
-		if(type_map.find(components.first) == type_map.end()) {
+		if(!type_map.contains(components.first)) {
 			const auto found = locate_type_base(static_cast<types::Struct&>(*field->parent), components.first);
 
 			if(!found) {

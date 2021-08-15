@@ -151,7 +151,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 			bool write_field = false;
 			std::string type;
 
-			if(type_map.find(components.first) == type_map.end()) {
+			if(!type_map.contains(components.first)) {
 				auto t = locate_type(*dbc, components.first);
 
 				if(!t) {
@@ -266,8 +266,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			bool type_found = false;
 			std::string type;
 
-			if(type_map.find(components.first) != type_map.end()) {
-				type = type_map.at(components.first).first;
+			if(auto it = type_map.find(components.first); it != type_map.end()) {
+				type = it->second.first;
 				type_found = true;
 			} else {
 				type = components.first;
@@ -308,7 +308,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			std::stringstream cast;
 			StructFieldEnum enumerator;
 
-			if(type_map.find(components.first) == type_map.end()) { // user-defined type handling
+			if(!type_map.contains(components.first)) { // user-defined type handling
 				auto t = locate_type(dbc, type);
 
 				if(!t) {
@@ -555,8 +555,8 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 		definitions << tab << "\t";
 
 		// if the type isn't in the type map, just assume that it's a user-defined struct/enum
-		if(type_map.find(components.first) != type_map.end()) {
-			field_type = type_map.at(components.first).first;
+		if(auto it = type_map.find(components.first); it != type_map.end()) {
+			field_type = it->second.first;
 		} else {
 			field_type = components.first;
 		}

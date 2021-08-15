@@ -32,10 +32,8 @@ bool PatchGraph::edge_test(const std::vector<Edge>& edges, std::uint16_t to) con
 		if(e.build_to == to) {
 			return true;
 		}
-		
-		auto it = adjacency_.find(e.build_to);
 
-		if(it != adjacency_.end()) {
+		if(auto it = adjacency_.find(e.build_to); it != adjacency_.end()) {
 			if(edge_test(it->second, to)) {
 				return true;
 			}
@@ -81,9 +79,7 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 			break; // terminate search, found the path we care about
 		}
 
-		auto it = adjacency_.find(next.from);
-
-		if(it == adjacency_.end()) {
+		if(!adjacency_.contains(next.from)) {
 			continue; // no adjacent nodes
 		}
 

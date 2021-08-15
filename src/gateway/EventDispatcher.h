@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -38,10 +38,8 @@ public:
 		}
 
 		service->post([client, work] {
-			auto handler = handlers_.find(client);
-
 			// client disconnected, nothing to do here
-			if(handler == handlers_.end()) {
+			if(!handlers_.contains(client)) {
 				LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
 				return;
 			}

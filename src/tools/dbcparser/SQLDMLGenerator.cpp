@@ -136,7 +136,7 @@ public:
 		}
 
 		// handle primitive types
-		if(type_map.find(components.first) != type_map.end()) {
+		if(type_map.contains(components.first)) {
 			auto i = 0u;
 
 			do {

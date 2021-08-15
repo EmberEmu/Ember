@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014 - 2019 Ember
+/*
+ * Copyright (c) 2014 - 2021 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@ struct NameTester {
 	NameTester() : regex_("^[A-Za-z_][A-Za-z_0-9]*$") { }
 
 	void operator()(const std::string& name) const {
-		if(cpp_keywords.find(name) != cpp_keywords.end()) {
+		if(cpp_keywords.contains(name)) {
 			throw exception(name + " is a reserved word and cannot be used as an identifier");
 		}
 

@@ -263,7 +263,7 @@ void Validator::check_field_types(const types::Struct* def, const TreeNode<std::
 		auto components = extract_components(field.underlying_type);
 
 		// check to see whether type is an in-built type
-		if(type_map.find(components.first) != type_map.end()) {
+		if(type_map.contains(components.first)) {
 			continue;
 		}
 
@@ -383,7 +383,7 @@ void Validator::validate_enum_options(const types::Enum* def) {
 		name_check_(def->name);
 		validate_enum_option_value(def->underlying_type, option.second);
 
-		if(options.find(option.first) != options.end()) {
+		if(options.contains(option.first)) {
 			throw exception("Multiple definitions of " + option.first + " in " + def->name);
 		}
 

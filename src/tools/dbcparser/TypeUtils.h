@@ -49,10 +49,8 @@ void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* pa
 		} else {
 			components = extract_components(f.underlying_type);
 		}
-		
-		auto it = type_map.find(components.first);
 
-		if(it != type_map.end()) {
+		if(type_map.contains(components.first)) {
 			visitor.visit(&f, parent);
 		} else {
 			auto found = locate_type_base(*dbc, components.first);

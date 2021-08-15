@@ -82,7 +82,7 @@ public:
 		const auto components = extract_components(field->underlying_type);
 
 		// handle primitive types
-		if(type_map.find(components.first) != type_map.end()) {
+		if(type_map.contains(components.first)) {
 			if(components.second) { // array
 				for(auto i = 0u; i < *components.second; ++i) {
 					auto column = std::move(generate_column(qualified_name + "_" + std::to_string(i), components.first));
