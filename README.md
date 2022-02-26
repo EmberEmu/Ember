@@ -56,7 +56,7 @@ Any compiler version equal or greater than the supported version should be capab
 
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
-| MSVC  | 19.29 (VS2019) | 19.2 (VS2019) |
+| MSVC  | 19.29 (VS2019) | 19.29 (VS2019) |
 | Clang |     10 + libstdc++12     |     10 + libstdc++12     |
 | GCC   |     12     |     10 + libstdc++12     |
 
