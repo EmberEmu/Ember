@@ -455,7 +455,7 @@ void Validator::validate(const types::Definitions& definitions, Options options)
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	// reset the validation state
-	root_ = {};
+	root_ = TreeNode<std::string>();
 	names_.clear();
 	options_ = options;
 	definitions_ = &definitions;
