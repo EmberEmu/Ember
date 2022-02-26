@@ -7,6 +7,7 @@
  */
 
 #include <spark/EventDispatcher.h>
+#include <mutex>
 
 namespace ember::spark::inline v1 {
 
