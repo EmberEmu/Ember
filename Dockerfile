@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:groovy AS builder
+FROM ubuntu:jammy AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
@@ -9,7 +9,7 @@ RUN apt-get -y update && apt-get -y upgrade \
  && apt-get -y install cmake \
  && apt-get -y install git \
  && apt-get -y install wget \
- && apt-get -y install libstdc++-10-dev \
+ && apt-get -y install libstdc++-12-dev \
  # Install required library packages
  && apt-get install -y libbotan-2-dev \
  && apt-get install -y libmysqlcppconn-dev \
@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=build \
     -DBOTAN_LIBRARY=/usr/lib/x86_64-linux-gnu/libbotan-2.so \
     && cd build && make -j$(nproc) install && make test 
 
-FROM ubuntu:focal AS run_environment
+FROM ubuntu:jammy AS run_environment
 ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
