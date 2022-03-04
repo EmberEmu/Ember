@@ -59,7 +59,7 @@ SessionKey Client::session_key(const BigInt& B, const std::vector<std::uint8_t>&
 	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
 	
 	if(interleave) {
-		return SessionKey(detail::interleaved_hash(detail::encode_flip(S)));
+		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, B_.bytes())));
 	} else {
 		KeyType key;
 		key.resize(S.bytes());
