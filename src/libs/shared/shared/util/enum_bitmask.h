@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,7 @@ struct EnableBitMask {
 };
 
 template<typename T>
-concept bitmask_enum = EnableBitMask<T>::value && std::is_enum<T>::value;
+concept bitmask_enum = EnableBitMask<T>::value && std::is_scoped_enum<T>::value;
 
 template<bitmask_enum Enum>
 Enum operator|(Enum lhs, Enum rhs) {

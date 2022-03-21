@@ -18,7 +18,7 @@
 namespace ember {
 
 template<typename T>
-concept is_enum = std::is_enum<T>::value;
+concept is_scoped_enum = std::is_scoped_enum<T>::value;
 
 class FNVHash {
 	static constexpr std::size_t INITIAL = 0x811C9DC5;
@@ -40,7 +40,7 @@ public:
 		return update(span.begin(), span.end());
 	}
 
-	template<is_enum T>
+	template<is_scoped_enum T>
 	std::size_t update(T data) {
 		return update(std::to_underlying(data));
 	}

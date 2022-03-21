@@ -11,6 +11,7 @@
 #include <gsl/gsl_util>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <cstddef>
 
 /*
@@ -31,7 +32,7 @@ const char* safe_print(T value, const char* const* enums) {
 		++length;
 	}
 
-	const auto num_val = enum_value(value);
+	const auto num_val = std::to_underlying(value);
 
 	// can FlatBuffers handle negative enum value printing? Check, todo!
 	if(gsl::narrow<std::size_t>(num_val) < length && enums[num_val] && enums[num_val][0] != '\0') {
@@ -44,7 +45,7 @@ const char* safe_print(T value, const char* const* enums) {
 template<typename T>
 std::string fb_status(T value, const char* const* enums) {
 	auto message = safe_print(value, enums);
-	return std::string(message) + " (" + std::to_string(enum_value(value)) + ")";
+	return std::string(message) + " (" + std::to_string(std::to_underlying(value)) + ")";
 }
 
 } // util, ember
