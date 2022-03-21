@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <span>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <cstddef>
 
 namespace ember {
@@ -41,7 +42,7 @@ public:
 
 	template<is_enum T>
 	std::size_t update(T data) {
-		return update(static_cast<typename std::underlying_type<T>::type>(data));
+		return update(std::to_underlying(data));
 	}
 
 	template<typename T>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,11 +18,6 @@
  * Spark services using the FlatBuffers-based protocol
  */
 namespace ember::util {
-
-template<typename T>
-auto enum_value(T value) {
-	return static_cast<typename std::underlying_type<T>::type>(value);
-}
 
 // makes sure converting an enum value to a string isn't going to cause a crash
 // in the case of a protocol mismatch

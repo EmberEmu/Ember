@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,7 +7,7 @@
  */
 
 #include "RealmService.h"
-#include <shared/util/EnumHelper.h>
+#include <utility>
 
 namespace em = ember::messaging;
 
@@ -59,7 +59,7 @@ void RealmService::set_offline() {
 
 void RealmService::send_status(const spark::Link& link, const spark::Message& message) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	const auto opcode = util::enum_value(em::realm::Opcode::SMSG_REALM_STATUS);
+	const auto opcode = std::to_underlying(em::realm::Opcode::SMSG_REALM_STATUS);
 	auto fbb = build_status();
 	spark_.send(link, opcode, fbb, message.token);
 }
@@ -74,11 +74,11 @@ std::shared_ptr<flatbuffers::FlatBufferBuilder> RealmService::build_status() con
 	builder.add_id(realm_.id);
 	builder.add_name(fb_name);
 	builder.add_ip(fb_ip);
-	builder.add_flags(util::enum_value(realm_.flags));
+	builder.add_flags(std::to_underlying(realm_.flags));
 	builder.add_population(realm_.population);
-	builder.add_category(util::enum_value(realm_.category));
-	builder.add_region(util::enum_value(realm_.region));
-	builder.add_type(util::enum_value(realm_.type));
+	builder.add_category(std::to_underlying(realm_.category));
+	builder.add_region(std::to_underlying(realm_.region));
+	builder.add_type(std::to_underlying(realm_.type));
 	fbb->Finish(builder.Finish());
 
 	return fbb;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,8 +8,8 @@
 
 #include "Service.h"
 #include "CharacterHandler.h"
-#include <shared/util/EnumHelper.h>
 #include <string>
+#include <utility>
 #include <cstdint>
 
 namespace em = ember::messaging;
@@ -104,7 +104,7 @@ void Service::send_character_list(const spark::Link& link, const spark::Beacon& 
                                   const std::vector<Character>& characters) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto opcode = util::enum_value(em::character::Opcode::SMSG_CHAR_ENUM);
+	auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_ENUM);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	std::vector<flatbuffers::Offset<em::character::Character>> chars;
@@ -150,7 +150,7 @@ void Service::send_rename_response(const spark::Link& link, const spark::Beacon&
                                    protocol::Result result, const std::optional<Character>& character) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto opcode = util::enum_value(em::character::Opcode::SMSG_CHAR_RENAME);
+	auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_RENAME);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::character::RenameResponseBuilder rb(*fbb);
 	rb.add_status(messaging::character::Status::OK);
@@ -171,7 +171,7 @@ void Service::send_response(const spark::Link& link, const spark::Beacon& token,
                             em::character::Status status, protocol::Result result) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto opcode = util::enum_value(em::character::Opcode::SMSG_CHAR_RESPONSE);
+	auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_RESPONSE);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::character::CreateResponseBuilder rb(*fbb);
 

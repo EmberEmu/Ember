@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,6 +17,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 namespace ember::spark::inline v1 {
@@ -130,8 +131,8 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 	// we don't care about matches for core service, todo, get rid of this somehow?
 	auto matches = std::count_if(matches_.begin(), matches_.end(),
 		[](auto service) {
-			return service != static_cast<std::underlying_type<messaging::Service>::type>(messaging::Service::CORE_HEARTBEAT)
-				&& service != static_cast<std::underlying_type<messaging::Service>::type>(messaging::Service::CORE_TRACKING);
+			return service != std::to_underlying(messaging::Service::CORE_HEARTBEAT)
+				&& service != std::to_underlying(messaging::Service::CORE_TRACKING);
 		}
 	);
 

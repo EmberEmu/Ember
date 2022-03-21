@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #include "RealmService.h"
 #include "RealmList.h"
-#include <shared/util/EnumHelper.h>
+#include <utility>
 
 namespace em = ember::messaging;
 
@@ -116,7 +116,7 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 void RealmService::request_realm_status(const spark::Link& link) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = util::enum_value(messaging::realm::Opcode::CMSG_REALM_STATUS);
+	const auto opcode = std::to_underlying(messaging::realm::Opcode::CMSG_REALM_STATUS);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	messaging::realm::RequestRealmStatusBuilder msg(*fbb);
 	msg.Finish();

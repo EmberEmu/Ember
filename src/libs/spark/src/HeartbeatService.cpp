@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,8 @@
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
 #include <shared/FilterTypes.h>
-#include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid_io.hpp>
+#include <utility>
 
 namespace ember::spark::inline v1 {
 
@@ -78,7 +78,7 @@ void HeartbeatService::handle_pong(const Link& link, const Message& message) {
 
 void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	std::uint16_t opcode = util::enum_value(messaging::core::Opcode::MSG_PING);
+	std::uint16_t opcode = std::to_underlying(messaging::core::Opcode::MSG_PING);
 	auto msg = messaging::core::CreatePing(*fbb, time);
 	fbb->Finish(msg);
 	service_->send(link, opcode, fbb);
@@ -86,7 +86,7 @@ void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 
 void HeartbeatService::send_pong(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	std::uint16_t opcode = util::enum_value(messaging::core::Opcode::MSG_PONG);
+	std::uint16_t opcode = std::to_underlying(messaging::core::Opcode::MSG_PONG);
 	auto msg = messaging::core::CreatePong(*fbb, time);
 	fbb->Finish(msg);
 	service_->send(link, opcode, fbb);

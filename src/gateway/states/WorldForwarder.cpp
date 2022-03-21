@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@
 #include "../ClientLogHelper.h"
 #include "../ClientHandler.h"
 #include <logger/Logging.h>
-#include <shared/util/EnumHelper.h>
+#include <utility>
 
 namespace ember::world {
 
@@ -28,7 +28,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 		route_packet(ctx, opcode, route);
 	} else {
 		CLIENT_DEBUG_FILTER_GLOB(LF_NETWORK, ctx) << "Unroutable message, "
-			<< protocol::to_string(opcode) << " (" << util::enum_value(opcode) << ")"
+			<< protocol::to_string(opcode) << " (" << std::to_underlying(opcode) << ")"
 			<< " from " << ctx.client_id->username << LOG_ASYNC;
 	}
 }

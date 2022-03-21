@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,8 +7,8 @@
  */
 
 #include "AccountService.h"
-#include <shared/util/EnumHelper.h>
 #include <boost/uuid/uuid.hpp>
+#include <utility>
 
 namespace em = ember::messaging;
 
@@ -98,7 +98,7 @@ void AccountService::handle_id_locate_reply(const spark::Link& link,
 void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = util::enum_value(em::account::Opcode::CMSG_SESSION_LOOKUP);
+	const auto opcode = std::to_underlying(em::account::Opcode::CMSG_SESSION_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	auto builder = em::account::SessionLookupBuilder(*fbb);
@@ -115,7 +115,7 @@ void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb
 void AccountService::locate_account_id(const utf8_string& username, IDLocateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = util::enum_value(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);
+	const auto opcode = std::to_underlying(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto fb_username = fbb->CreateString(username);
 

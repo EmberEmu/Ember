@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <shared/util/EnumHelper.h>
 #include <gsl/gsl_util>
 #include <stdexcept>
+#include <utility>
  
 namespace ember {
 
@@ -331,7 +332,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) {
 		}
 	} else {
 		LOG_ERROR(logger_) << "Unknown TOTP method, "
-		                   << util::enum_value(user_->pin_method()) << LOG_ASYNC;
+		                   << std::to_underlying(user_->pin_method()) << LOG_ASYNC;
 	}
 
 	LOG_DEBUG(logger_) << "PIN authentication for " << user_->username()

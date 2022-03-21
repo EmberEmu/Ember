@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,9 +13,9 @@
 #include "states/StateLUT.h"
 #include "FilterTypes.h"
 #include "ClientLogHelper.h"
-#include <shared/util/EnumHelper.h>
 #include <protocol/Packets.h>
 #include <spark/buffers/BinaryStream.h>
+#include <utility>
 
 namespace ember {
 
@@ -77,7 +77,7 @@ void ClientHandler::packet_skip(spark::BinaryStream& stream) {
 	CLIENT_DEBUG_FILTER(logger_, LF_NETWORK, context_)
 		<< ClientState_to_string(context_.state) << " skipping "
 		<< protocol::to_string(opcode_)
-		<< " (" << util::enum_value(opcode_) << ")" << LOG_ASYNC;
+		<< " (" << std::to_underlying(opcode_) << ")" << LOG_ASYNC;
 
 	stream.skip(stream.read_limit() - stream.total_read());
 }
