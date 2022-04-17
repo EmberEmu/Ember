@@ -253,7 +253,7 @@ public:
 			semaphore_.acquire();
 		}
 
-		return std::move(conn.get());
+		return std::move(conn.value());
 	}
 
 	/*

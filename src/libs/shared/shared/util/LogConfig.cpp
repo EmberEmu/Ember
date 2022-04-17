@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -50,7 +50,7 @@ std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::Seve
 	sink->log_date(args["file_log.log_timestamp"].as<bool>());
 	sink->time_format(args["file_log.timestamp_format"].as<std::string>());
 	sink->midnight_rotate(args["file_log.midnight_rotate"].as<bool>());
-	return std::move(sink);
+	return sink;
 }
 
 std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::Severity severity) {
@@ -58,7 +58,7 @@ std::unique_ptr<el::Sink> init_console_sink(const po::variables_map& args, el::S
 	auto colourise = args["console_log.colours"].as<bool>();
 	auto sink = std::make_unique<el::ConsoleSink>(severity, el::Filter(filter));
 	sink->colourise(colourise);
-	return std::move(sink);
+	return sink;
 }
 
 } // unnamed
