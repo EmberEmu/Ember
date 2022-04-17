@@ -70,7 +70,7 @@ public:
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 		                          "WHERE internal_name = ? AND realm_id = ? AND c.deletion_date IS NULL";
 
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, name);
 		stmt->setUInt(2, realm_id);
@@ -94,7 +94,7 @@ public:
 		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 		                          "WHERE c.id = ? AND c.deletion_date IS NULL";
 
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt64(1, id);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -122,7 +122,7 @@ public:
 			query.append("AND c.realm_id = ? ");
 		}
 
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
 
@@ -146,7 +146,7 @@ public:
 		const std::string query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
 	
 
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt64(1, id);
 
@@ -166,7 +166,7 @@ public:
 			query = "DELETE FROM characters WHERE id = ?";
 		}
 
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt64(1, id);
 		
@@ -184,7 +184,7 @@ public:
 		                          "pet_family, internal_name) "
 		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, character.name);
 		stmt->setUInt(2, character.account_id);
@@ -226,7 +226,7 @@ public:
 		                          "pet_level = ?, pet_family = ? "
 		                          "WHERE id = ?";
 		
-		auto conn = pool_.wait_connection(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, character.name);
 		stmt->setString(2, character.internal_name);

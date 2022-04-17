@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,7 +31,7 @@ public:
 	std::optional<std::uint32_t> get_mask(const std::string& ip) const override try {
 		const std::string query = "SELECT cidr FROM ip_bans WHERE ip = ?";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, ip);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -48,7 +48,7 @@ public:
 	std::vector<IPEntry> all_bans() const override try {
 		const std::string query = "SELECT ip, cidr FROM ip_bans";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<IPEntry> entries;
@@ -65,7 +65,7 @@ public:
 	void ban(const IPEntry& ban) const override try {
 		const std::string query = "INSERT INTO ip_bans (ip, cidr) VALUES (?, ?)";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, ban.first);
 		stmt->setUInt(2, ban.second);

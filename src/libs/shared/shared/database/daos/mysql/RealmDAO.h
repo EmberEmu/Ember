@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,7 +32,7 @@ public:
 		const std::string query = "SELECT id, name, ip, type, flags, category, "
 		                          "region, creation_setting, population FROM realms";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<Realm> realms;
@@ -59,7 +59,7 @@ public:
 		                          "region, creation_setting, population FROM realms "
 		                          "WHERE id = ?";
 	
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setInt(1, id);
 

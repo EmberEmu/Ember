@@ -230,14 +230,14 @@ public:
 		}
 	}
 
-	Connection<ConType> get_connection() {
+	std::optional<Connection<ConType>> try_acquire() {
 		std::optional<Connection<ConType>> conn(get_connection_attempt());
 
 		if(!conn) {
-			throw no_free_connections();
+			return std::nullopt;
 		}
 
-		return std::move(conn.get());
+		return conn;
 	}
 
 	/*
@@ -246,7 +246,7 @@ public:
 	 * thread, only that a connection has been added to the pool/made available
 	 * for reuse.
 	 */
-	Connection<ConType> wait_connection() {
+	Connection<ConType> acquire() {
 		std::optional<Connection<ConType>> conn;
 		
 		while(!(conn = get_connection_attempt())) {
@@ -264,7 +264,7 @@ public:
 	 * are available, it will wait for the next notification and keep trying until
 	 * either the time has elapsed or it manages to get a connection.
 	 */
-	Connection<ConType> wait_connection(std::chrono::milliseconds duration) {
+	Connection<ConType> try_acquire_for(std::chrono::milliseconds duration) {
 		auto start = sc::high_resolution_clock::now();
 		std::optional<Connection<ConType>> conn;
 

@@ -41,7 +41,7 @@ public:
 		                          "LEFT JOIN locales l ON patches.locale = l.id "
 		                          "LEFT JOIN operating_systems os ON patches.os = os.id";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<PatchMeta> patches;
@@ -83,7 +83,7 @@ public:
 		                          "`architecture` = ?, `os` = ?, `rollup` = ? "
 		                          "WHERE id = ?";
 
-		auto conn = pool_.wait_connection(60s);
+		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 
 		stmt->setUInt(1, meta.build_from);
