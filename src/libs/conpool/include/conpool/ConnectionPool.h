@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,6 @@
 #include "Exception.h"
 #include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
-#include <shared/threading/Semaphore.h>
 #include <boost/assert.hpp>
 #include <optional>
 #include <utility>
@@ -27,6 +26,7 @@
 #include <chrono>
 #include <atomic>
 #include <vector>
+#include <semaphore>
 #include <cstddef>
 
 namespace ember::connection_pool {
@@ -54,7 +54,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 	std::vector<ConnDetail<ConType>> pool_;
 	std::vector<std::atomic<bool>> pool_guards_;
 
-	Semaphore<std::mutex> semaphore_;
+	std::counting_semaphore<1024> semaphore_ {0};
 	std::function<void(Severity, std::string)> log_cb_;
 	std::atomic_bool closed_;
 
@@ -88,7 +88,7 @@ class Pool : private ReusePolicy, private GrowthPolicy {
 
 			*pool_it = std::move(ConnDetail<ConType>(f.get(), pool_it->id));
 			++size_;
-			semaphore_.signal();
+			semaphore_.release();
 		}
 	}
 
@@ -250,7 +250,7 @@ public:
 		std::optional<Connection<ConType>> conn;
 		
 		while(!(conn = get_connection_attempt())) {
-			semaphore_.wait();
+			semaphore_.acquire();
 		}
 
 		return std::move(conn.get());
@@ -276,7 +276,7 @@ public:
 				throw no_free_connections();
 			}
 
-			semaphore_.wait_for(duration - elapsed);
+			semaphore_.try_acquire_for(duration - elapsed);
 		}
 
 		return std::move(conn.value());
@@ -301,7 +301,7 @@ public:
 
 		driver_.thread_exit();
 		manager_.check_exceptions();
-		semaphore_.signal();
+		semaphore_.release();
 	}
 
 	std::size_t size() const {

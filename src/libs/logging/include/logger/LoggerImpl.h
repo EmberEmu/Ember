@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,6 @@
 #include <logger/Severity.h>
 #include <logger/Logger.h>
 #include <logger/concurrentqueue.h>
-#include <shared/threading/Semaphore.h>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -24,6 +23,7 @@
 #include <mutex>
 #include <utility>
 #include <tuple>
+#include <semaphore>
 #include <condition_variable>
 #include <thread>
 #include <cstddef>
@@ -40,7 +40,7 @@ class Logger::impl final {
 	Worker worker_;
 
 	static thread_local std::pair<RecordDetail, std::vector<char>> buffer_;
-	static thread_local Semaphore<std::mutex> sem_;
+	static thread_local std::binary_semaphore sem_;
 
 	void finalise() {
 		buffer_.second.push_back('\n');
@@ -51,12 +51,12 @@ class Logger::impl final {
 
 	void finalise_sync() {
 		buffer_.second.push_back('\n');
-		auto r = std::make_tuple<RecordDetail, std::vector<char>, Semaphore<std::mutex>*>
+		auto r = std::make_tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>
 					(std::move(buffer_.first), std::move(buffer_.second), &sem_);
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
 		buffer_.second.reserve(128);
-		sem_.wait();
+		sem_.acquire();
 	}
 
 public:
@@ -176,6 +176,6 @@ public:
 };
 
 thread_local std::pair<RecordDetail, std::vector<char>> Logger::impl::buffer_;
-thread_local Semaphore<std::mutex> Logger::impl::sem_;
+thread_local std::binary_semaphore Logger::impl::sem_(0);
 
 } //log, ember

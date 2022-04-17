@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,13 +18,13 @@ Worker::~Worker() {
 }
 
 void Worker::process_outstanding_sync() {
-	std::tuple<RecordDetail, std::vector<char>, Semaphore<std::mutex>*> item;
+	std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*> item;
 
 	while(queue_sync_.try_dequeue(item)) {
 		for(auto& s : sinks_) {
 			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item), true);
 		}
-		std::get<2>(item)->signal();
+		std::get<2>(item)->release();
 	}
 }
 
@@ -58,7 +58,7 @@ void Worker::run() {
 #ifndef DEBUG_NO_THREADS
 	while(!stop_) {
 #endif
-		sem_.wait();
+		sem_.acquire();
 		process_outstanding();
 		process_outstanding_sync();
 #ifndef DEBUG_NO_THREADS
@@ -73,7 +73,7 @@ void Worker::start() {
 void Worker::stop() {
 	if(thread_.joinable()) {
 		stop_ = true;
-		sem_.signal();
+		sem_.release();
 		thread_.join();
 		process_outstanding();
 		process_outstanding_sync();

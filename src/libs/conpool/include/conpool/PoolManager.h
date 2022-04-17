@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2015 Ember
+/*
+ * Copyright (c) 2014 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -77,7 +77,7 @@ class PoolManager {
 		pool_->pool_guards_[conn.id].store(false, std::memory_order_relaxed);
 
 		if(!conn.error) {
-			pool_->semaphore_.signal();
+			pool_->semaphore_.release();
 		}
 	}
 
