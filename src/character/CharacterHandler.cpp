@@ -443,22 +443,24 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		return protocol::Result::CHAR_NAME_NO_NAME;
 	}
 
-	bool valid = false;
-	std::size_t name_length = util::utf8::length(name, valid);
+	const bool valid = util::utf8::is_valid(name);
 
-	if(!valid) { // wasn't a valid UTF-8 encoded string
+	// wasn't a valid UTF-8 encoded string
+	if(!valid) {
 		return protocol::Result::CHAR_NAME_FAILURE;
 	}
+	
+	const std::size_t length = util::utf8::length(name);
 
-	if(name_length > MAX_NAME_LENGTH) {
+	if(length > MAX_NAME_LENGTH) {
 		return protocol::Result::CHAR_NAME_TOO_LONG;
 	}
 
-	if(name_length < MIN_NAME_LENGTH) {
+	if(length < MIN_NAME_LENGTH) {
 		return protocol::Result::CHAR_NAME_TOO_SHORT;
 	}
 
-	if(util::max_consecutive_check(name) > MAX_CONSECUTIVE_LETTERS) { // todo, not unicode aware
+	if(util::utf8::max_consecutive(name) > MAX_CONSECUTIVE_LETTERS) {
 		return protocol::Result::CHAR_NAME_THREE_CONSECUTIVE;
 	}
 

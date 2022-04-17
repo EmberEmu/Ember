@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2016 Ember
+/*
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,20 +11,47 @@
 
 namespace ember::util::utf8 {
 
-std::size_t length(const std::string& utf8_string, bool& valid) try {
-	valid = true;
-	return ::utf8::distance(utf8_string.begin(), utf8_string.end());
-} catch(::utf8::exception&) {
-	valid = false;
-	return 0;
+// Operates on codepoints
+std::size_t max_consecutive(const utf8_string& string) {
+	const auto data_beg = string.data();
+	const auto data_end = string.data() + string.size();
+	auto beg = ::utf8::iterator(data_beg, data_beg, data_end);
+	auto end = ::utf8::iterator(data_end, data_beg, data_end);
+	auto it = beg;
+
+	std::size_t current_run = 0;
+	std::size_t longest_run = 0;
+	std::uint32_t last = 0;
+
+	while (it != end) {
+		std::uint32_t current = *it;
+		
+		if(current == last && it != beg) {
+			++current_run;
+		} else {
+			current_run = 0;
+		}
+
+		if(current_run > longest_run) {
+			longest_run = current_run;
+		}
+
+		last = current;
+	}
+
+	return longest_run;
 }
 
-bool is_valid(const std::string& utf8_string) {
-	return ::utf8::is_valid(utf8_string.begin(), utf8_string.end());
+std::size_t length(const utf8_string& string) {
+	return ::utf8::distance(string.begin(), string.end());
 }
 
-bool is_valid(const char* utf8_string, std::size_t byte_length) {
-	return ::utf8::is_valid(utf8_string, utf8_string + byte_length);
+bool is_valid(const utf8_string& string) {
+	return ::utf8::is_valid(string.begin(), string.end());
+}
+
+bool is_valid(const char* string, const std::size_t byte_length) {
+	return ::utf8::is_valid(string, string + byte_length);
 }
 
 } // utf8, util, ember

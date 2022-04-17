@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,33 +15,26 @@
 
 namespace ember::util {
 
-// todo, not unicode aware
-std::size_t max_consecutive_check(std::string_view name) {
-	int longest_sequence = 1;
-	int current_sequence = 1;
-	char last_letter = 0;
-	bool reset = false;
+std::size_t max_consecutive(std::string_view name) {
+	std::size_t current_run = 0;
+	std::size_t longest_run = 0;
+	char last = 0;
 
 	for(auto c : name) {
-		if(c == last_letter) {
-			++current_sequence;
-			reset = false;
+		if(c == last) {
+			++current_run;
 		} else {
-			reset = true;
+			current_run = 1;
 		}
 
-		if(current_sequence > longest_sequence) {
-			longest_sequence = current_sequence;
+		if(current_run > longest_run) {
+			longest_run = current_run;
 		}
 
-		if(reset) {
-			current_sequence = 1;
-		}
-
-		last_letter = c;
+		last = c;
 	}
 
-	return longest_sequence;
+	return longest_run;
 }
 
 void set_window_title(std::string_view title) {
