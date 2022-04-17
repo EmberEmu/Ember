@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2019 Ember
+ * Copyright (c) 2014 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,23 +19,23 @@
 namespace ember {
 
 class Spinlock {
-	typedef enum { LOCKED, UNLOCKED } State;
+	enum class State { LOCKED, UNLOCKED };
 	std::atomic<State> state;
 
 public:
-	Spinlock() : state(UNLOCKED) {}
+	Spinlock() : state(State::UNLOCKED) {}
 
 	void lock() {
-		if(state.exchange(LOCKED, std::memory_order_acquire) == UNLOCKED) {
-			return;
-		}
-
 		while(true) {
+			if(state.exchange(State::LOCKED, std::memory_order_acquire) == State::UNLOCKED) {
+				return;
+			}
+
 			for(int i = 0; i < 1000; ++i) {
 				_mm_pause();
 
-				if(state.exchange(LOCKED, std::memory_order_acquire) == UNLOCKED) {
-					return;
+				if(state.load(std::memory_order_relaxed) == State::UNLOCKED) {
+					break;
 				}
 			}
 
@@ -44,7 +44,7 @@ public:
 	}
 
 	void unlock() {
-		state.store(UNLOCKED, std::memory_order_release);
+		state.store(State::UNLOCKED, std::memory_order_release);
 	}
 };
 
