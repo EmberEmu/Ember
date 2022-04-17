@@ -242,7 +242,7 @@ public:
 
 	/*
 	 * This function checks for a connection in a loop because being woken up
-	 * from wait_for doesn't guarantee that a connection will be available for the
+	 * from acquire doesn't guarantee that a connection will be available for the
 	 * thread, only that a connection has been added to the pool/made available
 	 * for reuse.
 	 */
@@ -257,7 +257,7 @@ public:
 	}
 
 	/*
-	 * This function handles its own timing because being woken up from wait_for
+	 * This function handles its own timing because being woken up from try_acquire_for
 	 * doesn't guarantee that a connection will be available for the thread,
 	 * only that a connection has been added to the pool/made available for reuse.
 	 * Therefore, if the thread is woken up, it will check for a connection. If none
@@ -276,7 +276,10 @@ public:
 				throw no_free_connections();
 			}
 
-			semaphore_.try_acquire_for(duration - elapsed);
+			// If no connections are added while we're waiting, give up
+			if(!semaphore_.try_acquire_for(duration - elapsed)) {
+				throw no_free_connections();
+			}
 		}
 
 		return std::move(conn.value());
