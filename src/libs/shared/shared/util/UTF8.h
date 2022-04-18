@@ -9,12 +9,15 @@
 #pragma once
 
 #include "UTF8String.h"
+#include <locale>
 #include <string>
 #include <cstddef>
 
 namespace ember::util::utf8 {
 
-std::size_t max_consecutive(const utf8_string& string);
+utf8_string name_format(const utf8_string& string, const std::locale& locale);
+bool is_alpha(const utf8_string& string, const std::locale& locale);
+std::size_t max_consecutive(const utf8_string& string, bool case_insensitive = false, const std::locale& locale = std::locale());
 std::size_t length(const utf8_string& utf8_string);
 bool is_valid(const utf8_string& utf8_string);
 bool is_valid(const char* utf8_string, std::size_t byte_length);

@@ -15,12 +15,16 @@
 
 namespace ember::util {
 
-std::size_t max_consecutive(std::string_view name) {
+std::size_t max_consecutive(std::string_view name, const bool case_insensitive, const std::locale& locale) {
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;
 	char last = 0;
 
 	for(auto c : name) {
+		if(case_insensitive) {
+			c = std::tolower(c, locale);
+		}
+
 		if(c == last) {
 			++current_run;
 		} else {

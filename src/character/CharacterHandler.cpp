@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2022 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,6 @@
 #include <shared/util/Utility.h>
 #include <shared/util/UTF8.h>
 #include <shared/threading/ThreadPool.h>
-#include <utf8cpp/utf8.h>
 #include <boost/assert.hpp>
 
 namespace ember {
@@ -98,6 +97,8 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		callback(result);
 		return;
 	}
+
+	character.name = util::utf8::name_format(character.name, std::locale());
 
 	const std::optional<Character>& res = dao_.character(character.name, realm_id);
 
@@ -294,18 +295,19 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 
-	const std::optional<Character>& match = dao_.character(name, character->realm_id);
+	character->name = util::utf8::name_format(name, std::locale());
+
+	const std::optional<Character>& match = dao_.character(character->name, character->realm_id);
 
 	if(match) {
 		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, std::nullopt);
 		return;
 	}
-
+	
 	LOG_DEBUG(logger_) << "Renaming " << character->name << " => " << name << ", #"
 		<< character->id << LOG_ASYNC;
 
-	character->name = name;
-	character->internal_name = name;
+	character->internal_name = character->name;
 	character->flags ^= Character::Flags::RENAME;
 
 	dao_.update(*character);
@@ -443,10 +445,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		return protocol::Result::CHAR_NAME_NO_NAME;
 	}
 
-	const bool valid = util::utf8::is_valid(name);
-
-	// wasn't a valid UTF-8 encoded string
-	if(!valid) {
+	if(!util::utf8::is_valid(name)) {
 		return protocol::Result::CHAR_NAME_FAILURE;
 	}
 	
@@ -460,24 +459,20 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		return protocol::Result::CHAR_NAME_TOO_SHORT;
 	}
 
-	if(util::utf8::max_consecutive(name) > MAX_CONSECUTIVE_LETTERS) {
+	// todo, add a config option to restrict names to ASCII
+
+	if(util::utf8::max_consecutive(name, true) > MAX_CONSECUTIVE_LETTERS) {
 		return protocol::Result::CHAR_NAME_THREE_CONSECUTIVE;
 	}
 
-	// this is probably all horribly wrong
-	//std::vector<wchar_t> utf16_name;
-	//utf8::unchecked::utf8to16(name.begin(), name.end(), std::back_inserter(utf16_name));
+	if(!util::utf8::is_alpha(name, std::locale())) {
+		return protocol::Result::CHAR_NAME_ONLY_LETTERS;
+	}
 
-	//bool alpha_only = std::find_if(utf16_name.begin(), utf16_name.end(), [&](wchar_t c) {
-	//	return !std::iswalpha(c);
-	//}) != utf16_name.end();
-
-	//if(!alpha_only) {
-	//	return protocol::Result::CHAR_NAME_ONLY_LETTERS;
-	//}
+	const auto& formatted_name = util::utf8::name_format(name, std::locale());
 
 	for(auto& regex : reserved_names_) {
-		int ret = util::pcre::match(name, regex);
+		int ret = util::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;
@@ -488,7 +483,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 	}
 
 	for(auto& regex : profane_names_) {
-		int ret = util::pcre::match(name, regex);
+		int ret = util::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_PROFANE;
@@ -499,7 +494,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 	}
 
 	for(auto& regex : spam_names_) {
-		int ret = util::pcre::match(name, regex);
+		int ret = util::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;
