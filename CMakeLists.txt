@@ -143,6 +143,7 @@ include(BuildDBCLoaders) # temp, maybe
 include(BuildSparkServices) # temp, maybe
 
 add_subdirectory(schemas)
+set(cmake_ctest_arguments "CTEST_OUTPUT_ON_FAILURE")
 enable_testing()
 add_subdirectory(tests)
 add_subdirectory(src)
