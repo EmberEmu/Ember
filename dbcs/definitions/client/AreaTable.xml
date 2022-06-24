@@ -124,7 +124,7 @@
 		<name>liquid_type</name>
 		<key>
 			<type>foreign</type>
-			<parent>LiquidType</type>
+			<parent>LiquidType</parent>
 		</key>
 	</field>
 
