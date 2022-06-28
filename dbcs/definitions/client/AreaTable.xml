@@ -33,7 +33,7 @@
 		<name>area_bit</name>
 	</field>
 
-	<enum>
+	<flag>
 		<type>int32</type>
 		<name>AreaFlags</name>
 		<options>
@@ -48,7 +48,7 @@
 			<option name="area_flag_city" value="0x100" />
 			<option name="area_flag_test" value="0x200" />
 		</options>
-	</enum>
+	</flag>
 
 	<field>
 		<type>AreaFlags</type>
