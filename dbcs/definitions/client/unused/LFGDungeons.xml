@@ -31,8 +31,8 @@
 		<options>
 			<option name="group_instance" value="0x01" />
 			<option name="raid_instance" value="0x02" />
-			<option name="world_zone" value="0x03" />
-			<option name="battleground" value="0x04" />
+			<option name="world_zone" value="0x04" />
+			<option name="battleground" value="0x05" />
 		</options>
 	</enum>
 
