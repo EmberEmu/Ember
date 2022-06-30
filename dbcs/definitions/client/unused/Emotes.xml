@@ -24,7 +24,7 @@
 		</key>
 	</field>
 
-	<enum>
+	<flag>
 		<type>int32</type>
 		<name>EmoteFlags</name>
 		<options>
@@ -34,7 +34,7 @@
 			<option name="shout" value="0x40" />
 			<option name="laugh" value="0x80" />
 		</options>
-	</enum>
+	</flag>
 
 	<field>
 		<type>EmoteFlags</type>
