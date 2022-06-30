@@ -10,7 +10,7 @@
 		</key>
 	</field>
 
-	<enum>
+	<flag>
 		<type>int32</type>
 		<name>ChannelFlags</name>
 		<options>
@@ -24,7 +24,7 @@
 			<option name="defence" value="0x10000" />
 			<option name="unselected" value="0x40000" />
 		</options>
-	</enum>
+	</flag>
 
 	<field>
 		<type>ChannelFlags</type>
