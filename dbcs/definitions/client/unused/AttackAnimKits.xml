@@ -28,6 +28,11 @@
 		</key>
 	</field>
 
+	<field>
+		<type>uint32</type>
+		<name>animation_frequency</name>
+	</field>
+
 	<enum>
 		<type>int32</type>
 		<name>AttackHand</name>
@@ -40,10 +45,5 @@
 	<field>
 		<type>AttackHand</type>
 		<name>flags</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>unknown</name>
 	</field>
 </dbc>

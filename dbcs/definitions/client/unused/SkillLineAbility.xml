@@ -15,7 +15,7 @@
 		<name>skill_line</name>
 		<key>
 			<type>foreign</type>
-			<parent>SkillLine</type>
+			<parent>SkillLine</parent>
 		</key>
 	</field>
 

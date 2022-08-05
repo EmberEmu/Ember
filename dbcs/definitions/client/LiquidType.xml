@@ -21,7 +21,7 @@
 		<options>
 			<option name="fire" value="0x00" />
 			<option name="slime" value="0x02" />
-			<option name="water" value="0x04" />
+			<option name="water" value="0x03" />
 		</options>
 	</enum>
 

@@ -3,7 +3,7 @@
 <dbc>
 	<name>ChrRaces</name>
 
-	<enum>
+	<flag>
 		<type>uint32</type>
 		<name>Flags</name>
 		<options>
@@ -13,7 +13,7 @@
 			<option name="can_current_form_mount" value="0x04" />
 			<option name="unknown2" value="0x08" />
 		</options>
-	</enum>
+	</flag>
 
 	<field>
 		<type>uint32</type>

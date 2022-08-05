@@ -19,7 +19,7 @@
 		<type>uint32</type>
 		<name>race</name>
 		<key>
-			<type>foreign</key>
+			<type>foreign</type>
 			<parent>ChrRaces</parent>
 		</key>
 	</field>

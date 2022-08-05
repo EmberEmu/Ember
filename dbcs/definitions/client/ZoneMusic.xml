@@ -40,7 +40,7 @@
 		<name>day_sound</name>
 		<key>
 			<type>foreign</type>
-			<parent>SoundEntries</type>
+			<parent>SoundEntries</parent>
 		</key>
 	</field>
 

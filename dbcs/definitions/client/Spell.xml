@@ -240,7 +240,7 @@
 
 	<field>
 		<type>int32[8]</type>
-		<name>regent</name>
+		<name>reagent</name>
 	</field>
 
 	<field>

@@ -15,7 +15,7 @@
 		<name>map</name>
 		<key>
 			<type>foreign</type>
-			<parent>Map</type>
+			<parent>Map</parent>
 		</key>
 	</field>
 
