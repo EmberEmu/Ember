@@ -50,7 +50,7 @@ TEST(TextUtilities, StringLength_UTF8) {
 	EXPECT_EQ(len, 0);
 }
 
-TEST(TextUtilities, NameFormat_ASCII) {
+TEST(TextUtilities, DISABLED_NameFormat_ASCII) {
 	// Lower
 	std::string str = "bankalt";
 	auto formatted = util::utf8::name_format(str, std::locale());
@@ -373,7 +373,7 @@ TEST(TextUtilities, ConsecutiveCheck_ASCII_CaseSensitive) {
 	EXPECT_EQ(res, 4);
 }
 
-TEST(TextUtilities, ConsecutiveCheck_UTF8_CaseInsensitive) {
+TEST(TextUtilities, DISABLED_ConsecutiveCheck_UTF8_CaseInsensitive) {
 	std::string text = "";
 	auto res = util::utf8::max_consecutive(text, true);
 	EXPECT_EQ(res, 0);
