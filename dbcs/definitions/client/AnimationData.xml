@@ -15,7 +15,7 @@
 		<name>name</name>
 	</field>
 
-	<flag>
+	<enum>
 		<type>int32</type>
 		<name>WeaponFlags</name>
 		<options>
@@ -24,7 +24,7 @@
 			<option name="sheathe_weapons_automatically_2" value="0x10" />
 			<option name="unsheathe_weapons" value="0x20" />
 		</options>
-	</flag>
+	</enum>
 
 	<field>
 		<type>WeaponFlags</type>

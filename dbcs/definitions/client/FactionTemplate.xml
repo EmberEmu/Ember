@@ -19,14 +19,14 @@
 		</key>
 	</field>
 
-	<flag>
+  <enum>
 		<type>uint32</type>
 		<name>Flags</name>
 		<options>
 			<option name="pvp_flagged" value="0x800" />
 			<option name="attack_pvping_players" value="0x1000" />
 		</options>
-	</flag>
+	</enum>
 
 	<field>
 		<type>Flags</type>

@@ -56,7 +56,7 @@
 		<type>int32</type>
 		<name>SizeClass</name>
 		<options>
-			<option name="none" value="-0x01" />
+			<option name="none" value="-1" />
 			<option name="small" value="0x00" />
 			<option name="medium" value="0x01" />
 			<option name="large" value="0x02" />
