@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2023 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,13 +27,19 @@ namespace ember {
 namespace bai = boost::asio::ip;
 
 class NetworkListener {
-	boost::asio::ip::tcp::acceptor acceptor_;
+	using tcp_acceptor = boost::asio::basic_socket_acceptor<
+		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
+
+	using tcp_socket = boost::asio::basic_stream_socket<
+		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
+
+	tcp_acceptor acceptor_;
 
 	SessionManager sessions_;
 	std::size_t index_;
 	ServicePool& pool_;
 	log::Logger* logger_;
-	boost::asio::ip::tcp::socket socket_;
+	tcp_socket socket_;
 
 	void accept_connection() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
@@ -64,7 +70,7 @@ class NetworkListener {
 
 			++index_;
 			index_ %= pool_.size();
-			socket_ = boost::asio::ip::tcp::socket(*pool_.get_service(index_));
+			socket_ = tcp_socket(*pool_.get_service(index_));
 			accept_connection();
 		});
 	}
