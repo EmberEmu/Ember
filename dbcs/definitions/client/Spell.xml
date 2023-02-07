@@ -51,14 +51,210 @@
 		</key>
 	</field>
 
+	<enum>
+		<type>uint32</type>
+		<name>Attributes</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="proc_failure_burns_charge" value="0x00000001" />
+			<option name="uses_ranged_slot" value="0x00000002" />
+			<option name="on_next_swing_no_damage" value="0x00000004" />
+			<option name="need_exotic_ammo" value="0x00000008" />
+			<option name="is_ability" value="0x00000010" />
+			<option name="is_tradeskill" value="0x00000020" />
+			<option name="passive" value="0x00000040" />
+			<option name="do_not_display" value="0x00000080" />
+			<option name="do_not_log" value="0x00000100" />
+			<option name="held_item_only" value="0x00000200" />
+			<option name="on_next_swing" value="0x00000400" />
+			<option name="wearer_casts_proc_trigger" value="0x00000800" />
+			<option name="daytime_only" value="0x00001000" />
+			<option name="night_only" value="0x00002000" />
+			<option name="only_indoors" value="0x00004000" />
+			<option name="only_outdoors" value="0x00008000" />
+			<option name="not_shapeshift" value="0x00010000" />
+			<option name="only_stealthed" value="0x00020000" />
+			<option name="do_not_sheath" value="0x00040000" />
+			<option name="scales_with_creature_level" value="0x00080000" />
+			<option name="cancels_auto_attack_combat" value="0x00100000" />
+			<option name="no_active_defense" value="0x00200000" />
+			<option name="track_target_in_cast_player_only" value="0x00400000" />
+			<option name="allow_cast_while_dead" value="0x00800000" />
+			<option name="allow_while_mounted" value="0x01000000" />
+			<option name="cooldown_on_event" value="0x02000000" />
+			<option name="aura_is_debuff" value="0x04000000" />
+			<option name="allow_while_sitting" value="0x08000000" />
+			<option name="not_in_combat_only_peaceful" value="0x10000000" />
+			<option name="no_immunities" value="0x20000000" />
+			<option name="heartbeat_resist" value="0x40000000" />
+			<option name="no_aura_cancel" value="0x80000000" />
+		</options>
+	</enum>
+
 	<field>
-		<type>int32</type>
+		<type>Attributes</type>
 		<name>attributes</name>
 	</field>
 
+	<enum>
+		<type>uint32</type>
+		<name>AttributesEx1</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="dismiss_pet_first" value="0x00000001" />
+			<option name="use_all_mana" value="0x00000002" />
+			<option name="is_channeled" value="0x00000004" />
+			<option name="no_redirection" value="0x00000008" />
+			<option name="no_skill_increase" value="0x00000010" />
+			<option name="allow_while_stealthed" value="0x00000020" />
+			<option name="is_self_channeled" value="0x00000040" />
+			<option name="no_reflection" value="0x00000080" />
+			<option name="only_peaceful_targets" value="0x00000100" />
+			<option name="initiates_combat_enables_auto_attack" value="0x00000200" />
+			<option name="no_threat" value="0x00000400" />
+			<option name="aura_unique" value="0x00000800" />
+			<option name="failure_breaks_stealth" value="0x00001000" />
+			<option name="toggle_farsight" value="0x00002000" />
+			<option name="track_target_in_channel" value="0x00004000" />
+			<option name="immunity_purges_effect" value="0x00008000" />
+			<option name="immunity_to_hostile_and_friendly_effects" value="0x00010000" />
+			<option name="no_autocast_ai" value="0x00020000" />
+			<option name="prevents_anim" value="0x00040000" />
+			<option name="exclude_caster" value="0x00080000" />
+			<option name="finishing_move_damage" value="0x00100000" />
+			<option name="threat_only_on_miss" value="0x00200000" />
+			<option name="finishing_move_duration" value="0x00400000" />
+			<option name="unk23" value="0x00800000" />
+			<option name="special_skillup" value="0x01000000" />
+			<option name="aura_stays_after_combat" value="0x02000000" />
+			<option name="require_all_targets" value="0x04000000" />
+			<option name="discount_power_on_miss" value="0x08000000" />
+			<option name="no_aura_icon" value="0x10000000" />
+			<option name="name_in_channel_bar" value="0x20000000" />
+			<option name="combo_on_block" value="0x40000000" />
+			<option name="cast_when_learned" value="0x80000000" />
+		</options>
+	</enum>
+
 	<field>
-		<type>int32[4]</type>
-		<name>attributes_ex</name>
+		<type>AttributesEx1</type>
+		<name>attributes_ex1</name>
+	</field>
+
+	<enum>
+		<type>uint32</type>
+		<name>AttributesEx2</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="allow_dead_target" value="0x00000001" />
+			<option name="no_shapeshift_ui" value="0x00000002" />
+			<option name="ignore_line_of_sight" value="0x00000004" />
+			<option name="allow_low_level_buff" value="0x00000008" />
+			<option name="use_shapeshift_bar" value="0x00000010" />
+			<option name="auto_repeat" value="0x00000020" />
+			<option name="cannot_cast_on_tapped" value="0x00000040" />
+			<option name="do_not_report_spell_failure" value="0x00000080" />
+			<option name="include_in_advanced_combat_log" value="0x00000100" />
+			<option name="always_cast_as_unit" value="0x00000200" />
+			<option name="special_taming_flag" value="0x00000400" />
+			<option name="no_target_per_second_costs" value="0x00000800" />
+			<option name="chain_from_caster" value="0x00001000" />
+			<option name="enchant_own_item_only" value="0x00002000" />
+			<option name="allow_while_invisible" value="0x00004000" />
+			<option name="unk15" value="0x00008000" />
+			<option name="no_active_pets" value="0x00010000" />
+			<option name="do_not_reset_combat_timers" value="0x00020000" />
+			<option name="req_dead_pet" value="0x00040000" />
+			<option name="allow_while_not_shapeshifted" value="0x00080000" />
+			<option name="initiate_combat_post_cast" value="0x00100000" />
+			<option name="fail_on_all_targets_immune" value="0x00200000" />
+			<option name="no_initial_threat" value="0x00400000" />
+			<option name="proc_cooldown_on_failure" value="0x00800000" />
+			<option name="item_cast_with_owner_skill" value="0x01000000" />
+			<option name="dont_block_mana_regen" value="0x02000000" />
+			<option name="no_school_immunities" value="0x04000000" />
+			<option name="ignore_weaponskill" value="0x08000000" />
+			<option name="not_an_action" value="0x10000000" />
+			<option name="cant_crit" value="0x20000000" />
+			<option name="active_threat" value="0x40000000" />
+			<option name="retain_item_cast" value="0x80000000" />
+		</options>
+	</enum>
+
+	<field>
+	<type>AttributesEx2</type>
+	<name>attributes_ex2</name>
+	</field>
+
+	<enum>
+		<type>uint32</type>
+		<name>AttributesEx3</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="pvp_enabling" value="0x00000001" />
+			<option name="no_proc_equip_requirement" value="0x00000002" />
+			<option name="no_casting_bar_text" value="0x00000004" />
+			<option name="completely_blocked" value="0x00000008" />
+			<option name="no_res_timer" value="0x00000010" />
+			<option name="no_durability_loss" value="0x00000020" />
+			<option name="no_avoidance" value="0x00000040" />
+			<option name="dot_stacking_rule" value="0x00000080" />
+			<option name="only_on_player" value="0x00000100" />
+			<option name="not_a_proc" value="0x00000200" />
+			<option name="requires_main_hand_weapon" value="0x00000400" />
+			<option name="only_battlegrounds" value="0x00000800" />
+			<option name="only_on_ghosts" value="0x00001000" />
+			<option name="hide_channel_bar" value="0x00002000" />
+			<option name="hide_in_raid_filter" value="0x00004000" />
+			<option name="normal_ranged_attack" value="0x00008000" />
+			<option name="suppress_caster_procs" value="0x00010000" />
+			<option name="suppress_target_procs" value="0x00020000" />
+			<option name="always_hit" value="0x00040000" />
+			<option name="instant_target_procs" value="0x00080000" />
+			<option name="allow_aura_while_dead" value="0x00100000" />
+			<option name="only_proc_outdoors" value="0x00200000" />
+			<option name="casting_cancels_autorepeat" value="0x00400000" />
+			<option name="no_damage_history" value="0x00800000" />
+			<option name="requires_offhand_weapon" value="0x01000000" />
+			<option name="treat_as_periodic" value="0x02000000" />
+			<option name="can_proc_from_procs" value="0x04000000" />
+			<option name="only_proc_on_caster" value="0x08000000" />
+			<option name="ignore_caster_and_target_restrictions" value="0x10000000" />
+			<option name="ignore_caster_modifiers" value="0x20000000" />
+			<option name="do_not_display_range" value="0x40000000" />
+			<option name="not_on_aoe_immune" value="0x80000000" />
+		</options>
+	</enum>
+
+	<field>
+		<type>AttributesEx3</type>
+		<name>attributes_ex3</name>
+	</field>
+
+	<enum>
+		<type>uint32</type>
+		<name>AttributesEx4</name>
+		<options>
+			<option name="none" value="0x00" />
+			<option name="no_cast_log" value="0x00000001" />
+			<option name="class_trigger_only_on_target" value="0x00000002" />
+			<option name="aura_expires_offline" value="0x00000004" />
+			<option name="no_helpful_threat" value="0x00000008" />
+			<option name="no_harmful_threat" value="0x00000010" />
+			<option name="allow_client_targeting" value="0x00000020" />
+			<option name="cannot_be_stolen" value="0x00000040" />
+			<option name="allow_cast_while_casting" value="0x00000080" />
+			<option name="ignore_damage_taken_modifiers" value="0x00000100" />
+			<option name="combat_feedback_when_usable" value="0x00000200" />
+			<option name="weapon_speed_cost_scaling" value="0x00000400" />
+			<option name="no_partial_immunity" value="0x00000800" />
+		</options>
+	</enum>
+
+
+	<field>
+		<type>AttributesEx4</type>
+		<name>attributes_ex4</name>
 	</field>
 
 	<field>
