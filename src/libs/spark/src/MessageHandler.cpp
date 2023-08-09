@@ -31,12 +31,13 @@ MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& s
 void MessageHandler::send_negotiation(NetworkSession& net) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
-	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto in = fbb->CreateVector(dispatcher_.services(EventDispatcher::Mode::SERVER));
-	auto out = fbb->CreateVector(dispatcher_.services(EventDispatcher::Mode::CLIENT));
-	auto msg = messaging::core::CreateNegotiate(*fbb, in, out);
-	fbb->Finish(msg);
-	net.write(fbb);
+	// Disable for now
+	//auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
+	//auto in = fbb->CreateVector(dispatcher_.services(EventDispatcher::Mode::SERVER));
+	//auto out = fbb->CreateVector(dispatcher_.services(EventDispatcher::Mode::CLIENT));
+	//auto msg = messaging::core::CreateNegotiate(*fbb, in, out);
+	//fbb->Finish(msg);
+	//net.write(fbb);
 }
 
 void MessageHandler::send_banner(NetworkSession& net) {
