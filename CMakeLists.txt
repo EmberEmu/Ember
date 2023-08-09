@@ -1,4 +1,4 @@
-# Copyright (c) 2014 - 2022 Ember
+# Copyright (c) 2014 - 2023 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+if(MSVC)
 	set(CMAKE_SYSTEM_VERSION 10.0)
 	add_definitions(-D_HAS_AUTO_PTR_ETC=1)               # Until Boost conforms with C++17
 	add_definitions(-D_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING) # Silence erroneous VS2017 warning - check if fixed in VS2019

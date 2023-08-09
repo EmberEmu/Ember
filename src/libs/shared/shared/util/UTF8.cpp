@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2023 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,10 @@
 
 #include "UTF8.h"
 #include <utf8cpp/utf8.h>
+#include <cctype>
 #include <locale>
+#include <cstdint>
+#include <cstddef>
 
 namespace ember::util::utf8 {
 
@@ -22,9 +25,9 @@ utf8_string name_format(const utf8_string& string, const std::locale& locale) {
 
 	while(it != end) {
 		if(it == beg) {
-			*it.base() = std::toupper(*it, locale);
+			*it.base() = std::toupper(static_cast<unsigned char>(*it), locale);
 		} else {
-			*it.base() = std::tolower(*it, locale);
+			*it.base() = std::tolower(static_cast<unsigned char>(*it), locale);
 		}
 
 		++it;

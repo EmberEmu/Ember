@@ -57,12 +57,12 @@ Any compiler version equal or greater than the supported version should be capab
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
 | MSVC  | 19.30 (VS2022) | 19.30 (VS2022) |
-| Clang |     11 + libstdc++12     |     10 + libstdc++12     |
-| GCC   |     12     |     11 + libstdc++12     |
+| Clang |     17     |     17     |
+| GCC   |     13     |     13     |
 
 ### Language support
 
-Ember currently targets C++20 but allows for the use of upcoming language additions (e.g. technical specifications and drafts) as long as all three supported compilers provide a reasonable level of support.
+Ember currently targets C++23 but allows for the use of upcoming language additions (e.g. technical specifications and drafts) as long as all three supported compilers provide a reasonable level of support.
 
 ### Build status
 

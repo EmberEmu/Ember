@@ -1,29 +1,37 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:jammy AS builder
+FROM ubuntu:mantic AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
 RUN apt-get -y update && apt-get -y upgrade \
- && apt-get -y install clang \
+ && apt-get -y install software-properties-common \
+ && apt-get -y install wget \
+ # GCC stuff
+ #&& apt-get -y install build-essential gcc g++ \
+ # Clang stuff
+ && wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null \
+ && add-apt-repository -y 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main' \
+ && apt update \
+ && apt-get -y install clang-17 \
+ && update-alternatives --install /usr/bin/cc cc /usr/bin/clang-17 100 \
+ && update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-17 100 \
+ && update-alternatives --install /usr/bin/clang clang /usr/bin/clang-17 100 \
+ && update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-17 100 \
+ && apt-get -y install libstdc++-13-dev \
  && apt-get -y install cmake \
  && apt-get -y install git \
- && apt-get -y install wget \
- && apt-get -y install libstdc++-12-dev \
  # Install required library packages
  && apt-get install -y libbotan-2-dev \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
- && wget -q https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz \
- && tar -zxf boost_1_76_0.tar.gz \
- && cd boost_1_76_0 \
+ && wget -q https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_1_82_0.tar.gz \
+ && tar -zxf boost_1_82_0.tar.gz \
+ && cd boost_1_82_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
  && ./b2 link=static install -d0 -j 2 cxxflags="-std=c++2b"
-
-RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang 100 \
-  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++ 100
 
 # Copy source
 ARG working_dir=/usr/src/ember

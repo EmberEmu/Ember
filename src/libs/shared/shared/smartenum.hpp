@@ -164,3 +164,4 @@ namespace smart_enum
         outStream << to_string(value);\
         return outStream;\
     }
+    

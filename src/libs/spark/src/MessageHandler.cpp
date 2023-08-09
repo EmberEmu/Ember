@@ -32,8 +32,8 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	auto in = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER)));
-	auto out = fbb->CreateVector(detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT)));
+	auto in = fbb->CreateVector(dispatcher_.services(EventDispatcher::Mode::SERVER));
+	auto out = fbb->CreateVector(dispatcher_.services(EventDispatcher::Mode::CLIENT));
 	auto msg = messaging::core::CreateNegotiate(*fbb, in, out);
 	fbb->Finish(msg);
 	net.write(fbb);
@@ -118,15 +118,16 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 //	std::sort(protocols->proto_in()->begin(), protocols->proto_in()->end());   // remote servers
 //	std::sort(protocols->proto_out()->begin(), protocols->proto_out()->end()); // remote clients
 
+	// Removed to shut GCC up, replacing anyway
 	// match our clients to their servers
-	std::set_intersection(clients.begin(), clients.end(),
-						  protocols->proto_in()->begin(), protocols->proto_in()->end(),
-	                      std::inserter(matches_, matches_.begin()));
+	// std::set_intersection(clients.begin(), clients.end(),
+	// 					  protocols->proto_in()->begin(), protocols->proto_in()->end(),
+	//                       std::inserter(matches_, matches_.begin()));
 
 	// match their clients to our servers
-	std::set_intersection(protocols->proto_out()->begin(), protocols->proto_out()->end(),
-						  clients.begin(), clients.end(),
-	                      std::inserter(matches_, matches_.begin()));
+	// std::set_intersection(protocols->proto_out()->begin(), protocols->proto_out()->end(),
+	// 					  clients.begin(), clients.end(),
+	//                       std::inserter(matches_, matches_.begin()));
 
 	// we don't care about matches for core service, todo, get rid of this somehow?
 	auto matches = std::count_if(matches_.begin(), matches_.end(),
