@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Ember
+# Copyright (c) 2016 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,3 +17,4 @@ set(LIBRARY_SRC
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
+set_target_properties(game PROPERTIES FOLDER "Services")

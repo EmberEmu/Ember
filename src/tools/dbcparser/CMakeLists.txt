@@ -1,4 +1,4 @@
-# Copyright (c) 2014 - 2019 Ember
+# Copyright (c) 2014 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,3 +37,4 @@ add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
 target_link_libraries(${EXECUTABLE_NAME} logging spark shared ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
+set_target_properties(dbc-parser PROPERTIES FOLDER "Tools")

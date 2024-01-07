@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2021 Ember
+# Copyright (c) 2015 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -125,3 +125,4 @@ include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp ${PROJECT_BINARY_DIR}/src)
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(${LIBRARY_NAME} logging conpool)
+set_target_properties(shared PROPERTIES FOLDER "Libraries")

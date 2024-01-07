@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Ember
+# Copyright (c) 2016 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,3 +24,4 @@ target_link_libraries(${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
+set_target_properties(world libworld PROPERTIES FOLDER "Services")

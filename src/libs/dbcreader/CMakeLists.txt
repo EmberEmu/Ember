@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Ember
+# Copyright (c) 2016 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,3 +34,4 @@ add_library(${LIBRARY_NAME} ${DBC_HDR} ${DBC_SRC}
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_BINARY_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set_target_properties(dbcreader PROPERTIES FOLDER "Libraries")
