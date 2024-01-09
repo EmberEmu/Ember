@@ -9,12 +9,7 @@ add_subdirectory(logging)
 add_subdirectory(srp6)
 add_subdirectory(conpool)
 add_subdirectory(spark)
-
 add_subdirectory(protocol)
-
 add_subdirectory(dbcreader)
 add_subdirectory(dnssd)
 add_subdirectory(stun)
-
-set_target_properties(spark PROPERTIES FOLDER "Utilities")
-set_target_properties(stun PROPERTIES FOLDER "Utilities")

@@ -32,12 +32,28 @@ void launch(const po::variables_map& args) {
 	const auto host = args["host"].as<std::string>();
 	const auto port = args["port"].as<std::uint16_t>();
 	const auto protocol = args["protocol"].as<std::string>();
+	
+	auto proto = stun::Protocol::UDP;
+
+	if (protocol == "tcp") {
+		proto = stun::Protocol::TCP;
+	} else if (protocol == "tls_tcp") {
+		proto = stun::Protocol::TLS_TCP;
+	} else if (protocol != "udp") {
+		throw std::invalid_argument("Unknown protocol specified");
+	}
 
 	// todo, std::print when supported
 	std::cout << std::format("Connecting to {}:{} ({})...", host, port, protocol);
 
 	stun::Client client;
-	client.connect(host, port, stun::Protocol::UDP);
+	client.connect(host, port, proto);
+	std::future<std::string> result = client.mapped_address();
+	
+	// todo, std::print when supported
+	std::cout << std::format("STUN provider returned our address as {}", result.get());
+	
+	//while (1) _sleep(500);
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
@@ -50,7 +66,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
 
-	if(options.count("help") || argc <= 1) {
+	if(options.count("help")) {
 		std::cout << cmdline_opts << "\n";
 		std::exit(0);
 	}
