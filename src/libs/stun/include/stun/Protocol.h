@@ -56,10 +56,10 @@ struct Header {
 	union {
 		struct {
 			be::big_uint32_t cookie;
-			be::big_uint8_t trans_id_5389[12];
+			std::uint8_t trans_id_5389[12];
 		};
 		struct {
-			be::big_uint8_t trans_id_3489[16];
+			std::uint8_t trans_id_3489[16];
 		};
 	};
 };

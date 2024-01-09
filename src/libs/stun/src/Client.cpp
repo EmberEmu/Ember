@@ -15,9 +15,10 @@
 #include <boost/asio.hpp>
 #include <boost/endian.hpp>
 #include <stdexcept>
+#include <utility>
 #include <vector>
+#include <cstddef>
 
-#include <array> // todo temp?
 #include <iostream> // todo temp
 
 namespace ember::stun {
@@ -40,7 +41,7 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 	switch(protocol) {
 	case Protocol::UDP:
 		transport_ = std::make_unique<DatagramTransport>(ctx_, host, port,
-			[this](std::vector<std::uint8_t> buffer) { handle_response(buffer); });
+			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
 		break;
 	case Protocol::TCP:
 		transport_ = std::make_unique<StreamTransport>(host, port);
@@ -60,11 +61,11 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	spark::VectorBufferAdaptor<std::uint8_t> vba(buffer);
 	spark::BinaryInStream stream(vba);
 
-	Header header;
+	Header header{};
 	stream >> header.type;
 	stream >> header.length;
 	stream >> header.cookie;
-	stream.get(header.trans_id_5389, 12);
+	stream.get(header.trans_id_5389, sizeof(header.trans_id_5389));
 
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
 		// todo
@@ -89,7 +90,7 @@ void Client::handle_attributes(spark::BinaryInStream& stream) {
 
 	switch(attribute) {
 		case Attributes::MAPPED_ADDRESS:
-			std::cout << "Mapped\n";
+			handle_mapped_address(stream, length);
 			break;
 		case Attributes::XOR_MAPPED_ADDRESS:
 			handle_xor_mapped_address(stream, length);
@@ -99,13 +100,43 @@ void Client::handle_attributes(spark::BinaryInStream& stream) {
 
 void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key) {
 	for (std::size_t i = 0u; i < buffer.size();) {
-		for (std::size_t j = 0u; j < sizeof(MAGIC_COOKIE); ++j) {
+		for (std::size_t j = 0u; j < key.size(); ++j) {
 			buffer[i] ^= key.data()[j];
 			++i;
 		}
 	}
 }
+
+void Client::handle_mapped_address(spark::BinaryInStream& stream, const std::uint16_t length) {
+	if (mode_ == RFCMode::RFC5389) {
+		// todo, warning
+	}
+
+	stream.skip(1); // skip reserved byte
+	AddressFamily addr_fam = AddressFamily::IPV4;
+	stream >> addr_fam;
+
+	if(addr_fam != AddressFamily::IPV4) {
+		// todo, error
+	}
+
+	std::uint16_t port = 0;
+	stream >> port;
+	be::big_to_native_inplace(port);
+
+	std::uint32_t ipv4 = 0;
+	stream >> ipv4;
+	be::big_to_native_inplace(ipv4);
+
+	boost::asio::ip::address_v4 addr(ipv4);
+	std::cout << addr.to_string() << ":" << port;
+}
+
 void Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const std::uint16_t length) {
+	if(mode_ == RFCMode::RFC3489) {
+		// todo, warning
+	}
+
 	stream.skip(1); // skip reserved byte
 	AddressFamily addr_fam = AddressFamily::IPV4;
 	stream >> addr_fam;
