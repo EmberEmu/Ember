@@ -53,8 +53,15 @@ enum class MessageType : std::uint16_t {
 struct Header {
 	be::big_uint16_t type;
 	be::big_uint16_t length;
-	be::big_uint32_t cookie;
-	be::big_uint8_t trans_id[12];
+	union {
+		struct {
+			be::big_uint32_t cookie;
+			be::big_uint8_t trans_id_5389[12];
+		};
+		struct {
+			be::big_uint8_t trans_id_3489[16];
+		};
+	};
 };
 
 // rfc5389 attributes spec

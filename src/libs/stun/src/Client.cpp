@@ -64,7 +64,7 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	stream >> header.type;
 	stream >> header.length;
 	stream >> header.cookie;
-	stream.get(header.trans_id, 12);
+	stream.get(header.trans_id_5389, 12);
 
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
 		// todo
@@ -145,18 +145,23 @@ std::future<std::string> Client::mapped_address() {
 	Header header { };
 	header.type = (uint16_t)Attributes::MAPPED_ADDRESS;
 	header.length = 0;
-	header.trans_id[0] = 5;
 
 	if(mode_ == RFCMode::RFC5389) {
+		header.trans_id_5389[0] = 5;
 		header.cookie = MAGIC_COOKIE;
 	} else {
-		header.cookie = 0;
+		header.trans_id_3489[0] = 5;
 	}
 
 	stream << header.type;
 	stream << header.length;
-	stream << header.cookie;
-	stream << header.trans_id;
+
+	if(mode_ == RFCMode::RFC5389) {
+		stream << header.cookie;
+		stream << header.trans_id_5389;
+	} else {
+		stream << header.trans_id_3489;
+	}
 
 	transport_->send(data);
 	return result.get_future();
@@ -170,7 +175,7 @@ void Client::software() {
 	Header header{ };
 	header.type = (uint16_t)Attributes::SOFTWARE;
 	header.length = 0;
-	header.trans_id[0] = 5;
+	header.trans_id_5389[0] = 5;
 
 	if (mode_ == RFCMode::RFC5389) {
 		header.cookie = MAGIC_COOKIE;
