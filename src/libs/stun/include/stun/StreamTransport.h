@@ -27,7 +27,7 @@ public:
 	StreamTransport(const std::string& host, std::uint16_t port);
 
 	void connect() override;
-	void send(std::span<std::uint8_t> message) override;
+	void send(std::vector<std::uint8_t> message) override;
 	void receive();
 	void close();
 };

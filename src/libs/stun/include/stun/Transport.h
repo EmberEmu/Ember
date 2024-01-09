@@ -10,6 +10,7 @@
 
 #include <span>
 #include <string>
+#include <vector>
 #include <cstdint>
 
 namespace ember::stun {
@@ -17,7 +18,7 @@ namespace ember::stun {
 class Transport {
 public:
 	virtual void connect() = 0;
-	virtual void send(std::span<std::uint8_t> message) = 0;
+	virtual void send(std::vector<std::uint8_t> message) = 0;
 	virtual ~Transport() = default;
 };
 

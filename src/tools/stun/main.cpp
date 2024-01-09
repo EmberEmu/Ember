@@ -46,14 +46,14 @@ void launch(const po::variables_map& args) {
 	// todo, std::print when supported
 	std::cout << std::format("Connecting to {}:{} ({})...", host, port, protocol);
 
-	stun::Client client(stun::RFCMode::RFC3489);
+	stun::Client client(stun::RFCMode::RFC5389);
 	client.connect(host, port, proto);
 	std::future<std::string> result = client.mapped_address();
 	
 	// todo, std::print when supported
-	std::cout << std::format("STUN provider returned our address as {}", result.get());
-	
-	//while (1) _sleep(500);
+	//std::cout << std::format("STUN provider returned our address as {}", result.get());
+
+	while (1) _sleep(500);
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

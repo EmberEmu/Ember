@@ -11,7 +11,6 @@
 #include <stun/Transport.h>
 #include <boost/asio.hpp>
 #include <span>
-#include <vector>
 #include <cstdint>
 
 namespace ember::stun {
@@ -34,7 +33,7 @@ public:
 	~DatagramTransport() override;
 
 	void connect() override;
-	void send(std::span<std::uint8_t> message);
+	void send(std::vector<std::uint8_t> message);
 	void receive();
 	void close();
 };

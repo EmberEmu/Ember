@@ -174,7 +174,7 @@ std::future<std::string> Client::mapped_address() {
 	spark::BinaryOutStream stream(buffer);
 
 	Header header { };
-	header.type = (uint16_t)Attributes::MAPPED_ADDRESS;
+	header.type = std::to_underlying(MessageType::BINDING_REQUEST);
 	header.length = 0;
 
 	if(mode_ == RFCMode::RFC5389) {
@@ -199,24 +199,24 @@ std::future<std::string> Client::mapped_address() {
 }
 
 void Client::software() {
-	std::vector<std::uint8_t> data;
-	spark::VectorBufferAdaptor buffer(data);
-	spark::BinaryOutStream stream(buffer);
+	//std::vector<std::uint8_t> data;
+	//spark::VectorBufferAdaptor buffer(data);
+	//spark::BinaryOutStream stream(buffer);
 
-	Header header{ };
-	header.type = (uint16_t)Attributes::SOFTWARE;
-	header.length = 0;
-	header.trans_id_5389[0] = 5;
+	//Header header{ };
+	//header.type = (uint16_t)Attributes::SOFTWARE;
+	//header.length = 0;
+	//header.trans_id_5389[0] = 5;
 
-	if (mode_ == RFCMode::RFC5389) {
-		header.cookie = MAGIC_COOKIE;
-	}
-	else {
-		header.cookie = 0;
-	}
+	//if (mode_ == RFCMode::RFC5389) {
+	//	header.cookie = MAGIC_COOKIE;
+	//}
+	//else {
+	//	header.cookie = 0;
+	//}
 
-	stream << header;
-	transport_->send(data);
+	//stream << header;
+	//transport_->send(data);
 }
 
 } // stun, ember

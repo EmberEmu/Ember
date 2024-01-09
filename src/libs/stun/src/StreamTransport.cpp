@@ -19,7 +19,7 @@ void StreamTransport::connect() {
 	boost::asio::connect(socket_, resolver.resolve(query));
 }
 
-void StreamTransport::send(std::span<std::uint8_t> message) {
+void StreamTransport::send(std::vector<std::uint8_t> message) {
 
 }
 

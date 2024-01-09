@@ -7,7 +7,7 @@
  */
 
 #include <stun/DatagramTransport.h>
-
+#include <iostream>
 namespace ember::stun {
 
 DatagramTransport::DatagramTransport(ba::io_context& ctx, const std::string& host,
@@ -24,9 +24,12 @@ void DatagramTransport::connect() {
 	ep_ = boost::asio::connect(socket_, resolver.resolve(query));
 }
 
-void DatagramTransport::send(std::span<std::uint8_t> message) {
-	socket_.async_send_to(boost::asio::buffer(message.data(), message.size_bytes()), ep_,
-		[this](boost::system::error_code ec, std::size_t /*bytes_sent*/) {
+void DatagramTransport::send(std::vector<std::uint8_t> message) {
+	auto datagram = std::make_unique<std::vector<std::uint8_t>>(std::move(message));
+	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
+
+	socket_.async_send_to(buffer, ep_,
+		[this, dg = std::move(datagram)](boost::system::error_code ec, std::size_t /*bytes_sent*/) {
 			if(!ec) {
 				receive();
 			}
