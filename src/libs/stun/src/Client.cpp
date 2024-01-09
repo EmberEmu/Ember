@@ -12,6 +12,7 @@
 #include <stun/StreamTransport.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
+#include <shared/util/FNVHash.h>
 #include <boost/asio.hpp>
 #include <boost/endian.hpp>
 #include <stdexcept>
@@ -74,18 +75,39 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
 		// todo
+		return;
 	}
 
 	if(header.length < ATTR_HEADER_LENGTH) {
 		// todo
+		return;
 	}
 
-	handle_attributes(stream);
+	// Check to see whether this is a response that we're expecting
+	const auto hash = header_hash(header);
+
+	if(!transactions_.contains(hash)) {
+		return;
+	}
+
+	Transaction& transaction = transactions_[hash];
+
+	MessageType type{ static_cast<std::uint16_t>(header.type) };
+
+	if (type == MessageType::BINDING_ERROR_RESPONSE) {
+		handle_error_response(stream);
+	} else {
+		handle_attributes(stream, transaction);
+	}
 } catch(const std::exception& e) {
 	std::cout << e.what(); // temp
 }
 
-void Client::handle_attributes(spark::BinaryInStream& stream) {
+void Client::handle_error_response(spark::BinaryInStream& stream) {
+
+}
+
+void Client::handle_attributes(spark::BinaryInStream& stream, Transaction& tx) {
 	Attributes attribute;
 	be::big_uint16_t length;
 	stream >> attribute;
@@ -101,6 +123,8 @@ void Client::handle_attributes(spark::BinaryInStream& stream) {
 			handle_xor_mapped_address(stream, length);
 			break;
 	}
+
+	tx.promise.set_value("Hello, world!"); // temp
 }
 
 void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key) {
@@ -208,8 +232,38 @@ std::future<std::string> Client::mapped_address() {
 		stream.put(header.tx_id_3489.begin(), header.tx_id_3489.end());
 	}
 
+	Transaction transaction{};
+
+	if (mode_ == RFCMode::RFC5389) {
+		std::copy(header.tx_id_5389.begin(), header.tx_id_5389.end(), transaction.tx_id);
+	} else {
+		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(), transaction.tx_id);
+	}
+
+	transaction.promise = std::promise<std::string>();
+	auto future = transaction.promise.get_future();
+	const auto hash = header_hash(header);
+	transactions_[hash] = std::move(transaction);
+
 	transport_->send(data);
-	return result.get_future();
+	return future;
+}
+
+std::size_t Client::header_hash(const Header& header) {
+	/*
+	 * Hash the transaction ID to use as a key for future lookup.
+	 * FNV is used because it's already in the project, not for any
+	 * particular property. Odds of a collision are very low. 
+	 */
+	FNVHash fnv;
+
+	if(mode_ == RFCMode::RFC5389) {
+		fnv.update(header.tx_id_5389.begin(), header.tx_id_5389.end());
+	} else {
+		fnv.update(header.tx_id_3489.begin(), header.tx_id_3489.end());
+	}
+
+	return fnv.hash();
 }
 
 void Client::software() {

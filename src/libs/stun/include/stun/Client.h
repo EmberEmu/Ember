@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <stun/Protocol.h>
 #include <stun/Transport.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
@@ -18,6 +19,7 @@
 #include <string>
 #include <thread>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember::stun {
 
@@ -29,8 +31,8 @@ enum RFCMode {
 	RFC5389, RFC3489
 };
 
-struct Request {
-	std::uint8_t transaction_id[12];
+struct Transaction {
+	std::uint32_t tx_id[4];
 	std::uint8_t retries;
 	std::chrono::milliseconds retry_timeout;
 	std::promise<std::string> promise;
@@ -51,12 +53,14 @@ class Client {
 	std::random_device rd_;
 	std::mt19937 mt_;
 
-	std::unordered_map<int, Request> requests_;
-	std::promise<std::string> result; // temp todo
+	// todo, thread safety (worker thread may access, figure this out)
+	std::unordered_map<std::size_t, Transaction> transactions_;
 
+	std::size_t header_hash(const Header& header);
 	void rng_store(std::uint64_t rng, std::span<std::uint8_t> buffer);
 	void handle_response(std::vector<std::uint8_t> buffer);
-	void handle_attributes(spark::BinaryInStream& stream);
+	void handle_attributes(spark::BinaryInStream& stream, Transaction& tx);
+	void handle_error_response(spark::BinaryInStream& stream);
 	void handle_xor_mapped_address(spark::BinaryInStream& stream, std::uint16_t length);
 	void handle_mapped_address(spark::BinaryInStream& stream, std::uint16_t length);
 	void xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key);

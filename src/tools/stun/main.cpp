@@ -51,9 +51,7 @@ void launch(const po::variables_map& args) {
 	std::future<std::string> result = client.mapped_address();
 	
 	// todo, std::print when supported
-	//std::cout << std::format("STUN provider returned our address as {}", result.get());
-
-	while (1) _sleep(500);
+	std::cout << std::format("STUN provider returned our address as {}", result.get());
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
