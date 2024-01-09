@@ -23,7 +23,7 @@
 
 namespace ember::stun {
 
-Client::Client(RFCMode mode) : mode_(mode) {
+Client::Client(RFCMode mode) : mode_(mode), mt_(rd_()) {
 	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);
@@ -65,7 +65,12 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	stream >> header.type;
 	stream >> header.length;
 	stream >> header.cookie;
-	stream.get(header.trans_id_5389, sizeof(header.trans_id_5389));
+
+	if(mode_ == RFCMode::RFC5389) {
+		stream.get(header.tx_id_5389.begin(), header.tx_id_5389.end());
+	} else {
+		stream.get(header.tx_id_3489.begin(), header.tx_id_3489.end());
+	}
 
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
 		// todo
@@ -168,6 +173,10 @@ void Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const std:
 	}
 }
 
+void Client::rng_store(const std::uint64_t rng, std::span<std::uint8_t> buffer) {
+	//std::copy(reinterpret_cast<rng)
+}
+
 std::future<std::string> Client::mapped_address() {
 	std::vector<std::uint8_t> data;
 	spark::VectorBufferAdaptor buffer(data);
@@ -178,10 +187,15 @@ std::future<std::string> Client::mapped_address() {
 	header.length = 0;
 
 	if(mode_ == RFCMode::RFC5389) {
-		header.trans_id_5389[0] = 5;
 		header.cookie = MAGIC_COOKIE;
+
+		for(auto& ele : header.tx_id_5389) {
+			ele = mt_();
+		}
 	} else {
-		header.trans_id_3489[0] = 5;
+		for(auto& ele : header.tx_id_3489) {
+			ele = mt_();
+		}
 	}
 
 	stream << header.type;
@@ -189,9 +203,9 @@ std::future<std::string> Client::mapped_address() {
 
 	if(mode_ == RFCMode::RFC5389) {
 		stream << header.cookie;
-		stream << header.trans_id_5389;
+		stream.put(header.tx_id_5389.begin(), header.tx_id_5389.end());
 	} else {
-		stream << header.trans_id_3489;
+		stream.put(header.tx_id_3489.begin(), header.tx_id_3489.end());
 	}
 
 	transport_->send(data);

@@ -46,7 +46,7 @@ void launch(const po::variables_map& args) {
 	// todo, std::print when supported
 	std::cout << std::format("Connecting to {}:{} ({})...", host, port, protocol);
 
-	stun::Client client(stun::RFCMode::RFC5389);
+	stun::Client client;
 	client.connect(host, port, proto);
 	std::future<std::string> result = client.mapped_address();
 	

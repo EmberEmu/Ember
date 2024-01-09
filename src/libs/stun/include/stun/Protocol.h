@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <array>
 #include <string>
 #include <cstdint>
 #include <boost/endian/arithmetic.hpp>
@@ -56,10 +57,10 @@ struct Header {
 	union {
 		struct {
 			be::big_uint32_t cookie;
-			std::uint8_t trans_id_5389[12];
+			std::array<std::uint32_t, 3> tx_id_5389;
 		};
 		struct {
-			std::uint8_t trans_id_3489[16];
+			std::array<std::uint32_t, 4> tx_id_3489;
 		};
 	};
 };

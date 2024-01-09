@@ -49,11 +49,12 @@ class Client {
 	bool connected_ = false;
 	RFCMode mode_;
 	std::random_device rd_;
-	std::mt19937_64 mt_;
+	std::mt19937 mt_;
 
 	std::unordered_map<int, Request> requests_;
 	std::promise<std::string> result; // temp todo
 
+	void rng_store(std::uint64_t rng, std::span<std::uint8_t> buffer);
 	void handle_response(std::vector<std::uint8_t> buffer);
 	void handle_attributes(spark::BinaryInStream& stream);
 	void handle_xor_mapped_address(spark::BinaryInStream& stream, std::uint16_t length);
