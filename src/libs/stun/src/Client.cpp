@@ -13,6 +13,7 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <shared/util/FNVHash.h>
+#include <boost/assert.hpp>
 #include <boost/asio.hpp>
 #include <boost/endian.hpp>
 #include <stdexcept>
@@ -36,6 +37,15 @@ Client::~Client() {
 	ctx_.stop();
 }
 
+void Client::log_callback(LogCB callback, const Verbosity verbosity) {
+	if(!callback) {
+		throw std::invalid_argument("Logging callback cannot be null");
+	}
+
+	logger_ = callback;
+	verbosity_ = verbosity;
+}
+
 void Client::connect(const std::string& host, const std::uint16_t port, const Protocol protocol) {
 	transport_.reset();
 
@@ -49,6 +59,8 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 		break;
 	case Protocol::TLS_TCP:
 		throw std::runtime_error("TLS_TCP STUN isn't handled yet");
+	default:
+		throw std::invalid_argument("Unknown protocol value specified");
 	}
 
 	transport_->connect();
@@ -56,7 +68,8 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 
 void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	if(buffer.size() < HEADER_LENGTH) {
-		return; // just ignore this message
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BUFFER_LT_HEADER);
+		return; // RFC says invalid messages should be discarded
 	}
 
 	spark::VectorBufferAdaptor<std::uint8_t> vba(buffer);
@@ -74,12 +87,12 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	}
 
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
-		// todo
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_COOKIE_MISSING);
 		return;
 	}
 
 	if(header.length < ATTR_HEADER_LENGTH) {
-		// todo
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BAD_HEADER_LENGTH);
 		return;
 	}
 
@@ -87,6 +100,7 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	const auto hash = header_hash(header);
 
 	if(!transactions_.contains(hash)) {
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_TX_NOT_FOUND);
 		return;
 	}
 
@@ -137,16 +151,19 @@ void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::u
 }
 
 void Client::handle_mapped_address(spark::BinaryInStream& stream, const std::uint16_t length) {
+	// shouldn't receive this attribute in RFC5389 mode but we'll allow it
 	if (mode_ == RFCMode::RFC5389) {
-		// todo, warning
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC5389_INVALID_ATTRIBUTE);
 	}
 
 	stream.skip(1); // skip reserved byte
 	AddressFamily addr_fam = AddressFamily::IPV4;
 	stream >> addr_fam;
 
+	// Only IPv4 is supported prior to RFC5389
 	if(addr_fam != AddressFamily::IPV4) {
-		// todo, error
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
+		return;
 	}
 
 	std::uint16_t port = 0;
@@ -162,8 +179,9 @@ void Client::handle_mapped_address(spark::BinaryInStream& stream, const std::uin
 }
 
 void Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const std::uint16_t length) {
+	// shouldn't receive this attribute in RFC3489 mode but we'll allow it
 	if(mode_ == RFCMode::RFC3489) {
-		// todo, warning
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
 	}
 
 	stream.skip(1); // skip reserved byte

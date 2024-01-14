@@ -7,10 +7,10 @@
  */
 
 #include <stun/Client.h>
-
 #include <boost/program_options.hpp>
 #include <format>
 #include <iostream>
+#include <utility>
 #include <cstdint>
 
 namespace po = boost::program_options;
@@ -43,15 +43,45 @@ void launch(const po::variables_map& args) {
 		throw std::invalid_argument("Unknown protocol specified");
 	}
 
-	// todo, std::print when supported
-	std::cout << std::format("Connecting to {}:{} ({})...", host, port, protocol);
+	// todo, std::print when supported by all compilers
+	std::cout << std::format("Connecting to {}:{} ({})...\n", host, port, protocol);
 
 	stun::Client client;
 	client.connect(host, port, proto);
 	std::future<std::string> result = client.mapped_address();
 	
-	// todo, std::print when supported
-	std::cout << std::format("STUN provider returned our address as {}", result.get());
+	// todo, std::print when supported by all compilers
+	std::cout << std::format("STUN provider returned our address as {}\n", result.get());
+}
+
+void log(stun::Verbosity verbosity, stun::LogReason reason) {
+	std::string_view verbstr{};
+
+	switch(verbosity) {
+		case stun::Verbosity::STUN_LOG_TRIVIAL:
+			verbstr = "[trivial]";
+			break;
+		case stun::Verbosity::STUN_LOG_DEBUG:
+			verbstr = "[debug]";
+			break;
+		case stun::Verbosity::STUN_LOG_INFO:
+			verbstr = "[info]";
+			break;
+		case stun::Verbosity::STUN_LOG_WARN:
+			verbstr = "[warn]";
+			break;
+		case stun::Verbosity::STUN_LOG_ERROR:
+			verbstr = "[error]";
+			break;
+		case stun::Verbosity::STUN_LOG_FATAL:
+			verbstr = "[fatal]";
+			break;
+		default:
+			verbstr = "[unknown]";
+	}
+
+	// todo, std::print when supported by all compilers
+	std::cout << std::format("{} {} ({})\n", verbstr, stun::to_string(reason), std::to_underlying(reason));
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

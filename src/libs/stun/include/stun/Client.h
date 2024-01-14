@@ -10,6 +10,7 @@
 
 #include <stun/Protocol.h>
 #include <stun/Transport.h>
+#include <stun/Logging.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
@@ -52,6 +53,8 @@ class Client {
 	RFCMode mode_;
 	std::random_device rd_;
 	std::mt19937 mt_;
+	LogCB logger_ = [](Verbosity, LogReason){};
+	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, Transaction> transactions_;
@@ -68,6 +71,8 @@ class Client {
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);
 	~Client();
+
+	void log_callback(LogCB callback, Verbosity verbosity);
 	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
 	std::future<std::string> mapped_address();
 	void software();
