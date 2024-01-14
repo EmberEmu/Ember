@@ -60,7 +60,6 @@ class Client {
 	std::unordered_map<std::size_t, Transaction> transactions_;
 
 	std::size_t header_hash(const Header& header);
-	void rng_store(std::uint64_t rng, std::span<std::uint8_t> buffer);
 	void handle_response(std::vector<std::uint8_t> buffer);
 	void handle_attributes(spark::BinaryInStream& stream, Transaction& tx);
 	void handle_error_response(spark::BinaryInStream& stream);

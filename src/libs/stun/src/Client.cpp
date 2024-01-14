@@ -215,10 +215,6 @@ void Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const std:
 	}
 }
 
-void Client::rng_store(const std::uint64_t rng, std::span<std::uint8_t> buffer) {
-	//std::copy(reinterpret_cast<rng)
-}
-
 std::future<std::string> Client::mapped_address() {
 	std::vector<std::uint8_t> data;
 	spark::VectorBufferAdaptor buffer(data);
