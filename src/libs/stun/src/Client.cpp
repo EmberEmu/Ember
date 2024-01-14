@@ -131,10 +131,10 @@ void Client::handle_attributes(spark::BinaryInStream& stream, Transaction& tx) {
 
 	switch(attribute) {
 		case Attributes::MAPPED_ADDRESS:
-			handle_mapped_address(stream, length);
+			handle_mapped_address(stream);
 			break;
 		case Attributes::XOR_MAPPED_ADDRESS:
-			handle_xor_mapped_address(stream, length);
+			handle_xor_mapped_address(stream);
 			break;
 	}
 
@@ -150,7 +150,7 @@ void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::u
 	}
 }
 
-void Client::handle_mapped_address(spark::BinaryInStream& stream, const std::uint16_t length) {
+void Client::handle_mapped_address(spark::BinaryInStream& stream) {
 	// shouldn't receive this attribute in RFC5389 mode but we'll allow it
 	if (mode_ == RFCMode::RFC5389) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC5389_INVALID_ATTRIBUTE);
@@ -178,7 +178,7 @@ void Client::handle_mapped_address(spark::BinaryInStream& stream, const std::uin
 	std::cout << addr.to_string() << ":" << port;
 }
 
-void Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const std::uint16_t length) {
+void Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 	// shouldn't receive this attribute in RFC3489 mode but we'll allow it
 	if(mode_ == RFCMode::RFC3489) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
@@ -222,7 +222,6 @@ std::future<std::string> Client::mapped_address() {
 
 	Header header { };
 	header.type = std::to_underlying(MessageType::BINDING_REQUEST);
-	header.length = 0;
 
 	if(mode_ == RFCMode::RFC5389) {
 		header.cookie = MAGIC_COOKIE;

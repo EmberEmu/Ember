@@ -63,8 +63,8 @@ class Client {
 	void handle_response(std::vector<std::uint8_t> buffer);
 	void handle_attributes(spark::BinaryInStream& stream, Transaction& tx);
 	void handle_error_response(spark::BinaryInStream& stream);
-	void handle_xor_mapped_address(spark::BinaryInStream& stream, std::uint16_t length);
-	void handle_mapped_address(spark::BinaryInStream& stream, std::uint16_t length);
+	void handle_xor_mapped_address(spark::BinaryInStream& stream);
+	void handle_mapped_address(spark::BinaryInStream& stream);
 	void xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key);
 
 public:
