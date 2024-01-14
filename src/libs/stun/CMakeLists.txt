@@ -1,4 +1,4 @@
-# Copyright (c) 2022 - 2024 Ember
+# Copyright (c) 2023 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,8 @@ add_library(${LIBRARY_NAME}
            include/stun/DatagramTransport.h
            include/stun/StreamTransport.h
            include/stun/Protocol.h
-		   include/stun/Logging.h
+           include/stun/Logging.h
+           include/stun/Attributes.h
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp

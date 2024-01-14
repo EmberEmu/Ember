@@ -34,6 +34,7 @@ enum class Verbosity {
 smart_enum_class(LogReason, std::uint8_t,
 	RESP_BUFFER_LT_HEADER,            // buffer was smaller than the fixed header length
 	RESP_IPV6_NOT_VALID,              // received an IPv6 flag in RFC3489 mode (IPv4 only)
+	RESP_ADDR_FAM_NOT_VALID,          // address family was not valid (not IPv4 or IPv6)
 	RESP_COOKIE_MISSING,              // magic cookie value was incorrect in RFC5389 mode
 	RESP_BAD_HEADER_LENGTH,           // header specified attribute length as shorter than attribute header length
 	RESP_TX_NOT_FOUND,                // transaction ID was not found in the mapping, could be a delayed response
@@ -41,6 +42,6 @@ smart_enum_class(LogReason, std::uint8_t,
 	RESP_RFC3489_INVALID_ATTRIBUTE,   // encountered an attribute that isn't valid for RFC3489
 );
 
-typedef std::function<void(Verbosity, LogReason reason)> LogCB;
+using LogCB = std::function<void(Verbosity, LogReason reason)>;
 
 } // stun, ember

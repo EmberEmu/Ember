@@ -121,24 +121,29 @@ void Client::handle_error_response(spark::BinaryInStream& stream) {
 
 }
 
-void Client::handle_attributes(spark::BinaryInStream& stream, Transaction& tx) {
-	Attributes attribute;
+std::vector<attributes::Attribute> Client::handle_attributes(spark::BinaryInStream& stream, Transaction& tx) {
+	Attributes attr_type;
 	be::big_uint16_t length;
-	stream >> attribute;
+	stream >> attr_type;
 	stream >> length;
 
-	be::big_to_native_inplace(attribute);
+	be::big_to_native_inplace(attr_type);
 
-	switch(attribute) {
+	std::vector<attributes::Attribute> attributes;
+
+	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
-			handle_mapped_address(stream);
+			attributes.emplace_back(*handle_mapped_address(stream));
 			break;
 		case Attributes::XOR_MAPPED_ADDRESS:
-			handle_xor_mapped_address(stream);
+			//attributes.emplace_back(handle_xor_mapped_address(stream));
 			break;
 	}
 
-	tx.promise.set_value("Hello, world!"); // temp
+	// temp
+	auto temp = std::get<attributes::MappedAddress>(attributes[0]);
+	tx.promise.set_value(temp);
+	return attributes;
 }
 
 void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key) {
@@ -150,30 +155,36 @@ void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::u
 	}
 }
 
-void Client::handle_mapped_address(spark::BinaryInStream& stream) {
+std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::BinaryInStream& stream) {
 	stream.skip(1); // skip reserved byte
 	AddressFamily addr_fam = AddressFamily::IPV4;
 	stream >> addr_fam;
 
 	// Only IPv4 is supported prior to RFC5389
-	if(addr_fam != AddressFamily::IPV4) {
+	if(mode_ == RFCMode::RFC3489 && addr_fam != AddressFamily::IPV4) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
-		return;
+		return std::nullopt;
 	}
 
-	std::uint16_t port = 0;
-	stream >> port;
-	be::big_to_native_inplace(port);
+	if(addr_fam != AddressFamily::IPV4 && addr_fam != AddressFamily::IPV6) {
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		return std::nullopt;
+	}
 
-	std::uint32_t ipv4 = 0;
-	stream >> ipv4;
-	be::big_to_native_inplace(ipv4);
+	// todo, handle IPv6 for RFC5389
 
-	boost::asio::ip::address_v4 addr(ipv4);
-	std::cout << addr.to_string() << ":" << port;
+	attributes::MappedAddress attr{};
+	attr.family = AddressFamily::IPV4;
+
+	stream >> attr.port;
+	be::big_to_native_inplace(attr.port);
+	stream >> attr.ipv4;
+	be::big_to_native_inplace(attr.ipv4);
+
+	return attr;
 }
 
-void Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
+std::optional<attributes::XorMappedAddress> Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 	// shouldn't receive this attribute in RFC3489 mode but we'll allow it
 	if(mode_ == RFCMode::RFC3489) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
@@ -191,14 +202,14 @@ void Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 	port ^= magic;
 	be::big_to_native_inplace(port);
 
+	attributes::XorMappedAddress attr{};
+
 	if(addr_fam == AddressFamily::IPV4) {
-		std::uint32_t ipv4 = 0;
-		stream >> ipv4;
-		be::big_to_native_inplace(ipv4);
-		ipv4 ^= MAGIC_COOKIE;
-		boost::asio::ip::address_v4 addr(ipv4);
-		std::cout << addr.to_string();
+		stream >> attr.ipv4;
+		be::big_to_native_inplace(attr.ipv4);
+		attr.ipv4 ^= MAGIC_COOKIE;
 	} else if(addr_fam == AddressFamily::IPV6) {
+		// todo
 		/*
 		spark::VectorBufferAdaptor<std::uint8_t> vba(xor_data);
 		spark::BinaryInStream xor_stream(vba);
@@ -206,11 +217,14 @@ void Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 		xor_stream >> ipv6;
 		be::big_to_native_inplace(ipv6);*/
 	} else {
-		// todo
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		return std::nullopt;
 	}
+
+	return attr;
 }
 
-std::future<std::string> Client::mapped_address() {
+std::future<attributes::MappedAddress> Client::external_address() {
 	std::vector<std::uint8_t> data;
 	spark::VectorBufferAdaptor buffer(data);
 	spark::BinaryOutStream stream(buffer);
@@ -248,7 +262,7 @@ std::future<std::string> Client::mapped_address() {
 		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(), transaction.tx_id);
 	}
 
-	transaction.promise = std::promise<std::string>();
+	transaction.promise = std::promise<attributes::MappedAddress>();
 	auto future = transaction.promise.get_future();
 	const auto hash = header_hash(header);
 	transactions_[hash] = std::move(transaction);
@@ -275,24 +289,7 @@ std::size_t Client::header_hash(const Header& header) {
 }
 
 void Client::software() {
-	//std::vector<std::uint8_t> data;
-	//spark::VectorBufferAdaptor buffer(data);
-	//spark::BinaryOutStream stream(buffer);
 
-	//Header header{ };
-	//header.type = (uint16_t)Attributes::SOFTWARE;
-	//header.length = 0;
-	//header.trans_id_5389[0] = 5;
-
-	//if (mode_ == RFCMode::RFC5389) {
-	//	header.cookie = MAGIC_COOKIE;
-	//}
-	//else {
-	//	header.cookie = 0;
-	//}
-
-	//stream << header;
-	//transport_->send(data);
 }
 
 } // stun, ember

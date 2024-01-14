@@ -18,7 +18,7 @@ namespace ember::stun {
 namespace ba = boost::asio;
 
 class DatagramTransport final : public Transport {
-	typedef std::function<void(std::vector<std::uint8_t>)> ReceiveCallback;
+	using ReceiveCallback = std::function<void(std::vector<std::uint8_t>)>;
 
 	ba::io_context& ctx_;
 	ba::ip::udp::socket socket_;

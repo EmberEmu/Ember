@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Ember
+ * Copyright (c) 2023 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 
 #include <stun/Client.h>
+#include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <format>
 #include <iostream>
@@ -50,10 +51,12 @@ void launch(const po::variables_map& args) {
 	stun::Client client(stun::RFC3489);
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
 	client.connect(host, port, proto);
-	std::future<std::string> result = client.mapped_address();
-	
+	std::future<stun::attributes::MappedAddress> result = client.external_address();
+	const auto address = result.get();
+
 	// todo, std::print when supported by all compilers
-	std::cout << std::format("STUN provider returned our address as {}\n", result.get());
+	std::cout << std::format("STUN provider returned our address as {}:{}",
+		boost::asio::ip::address_v4(address.ipv4).to_string(), address.port);
 }
 
 void log_cb(stun::Verbosity verbosity, stun::LogReason reason) {

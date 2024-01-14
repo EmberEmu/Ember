@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <stun/Attributes.h>
 #include <stun/Protocol.h>
 #include <stun/Transport.h>
 #include <stun/Logging.h>
@@ -16,6 +17,7 @@
 #include <chrono>
 #include <future>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <thread>
@@ -36,7 +38,7 @@ struct Transaction {
 	std::uint32_t tx_id[4];
 	std::uint8_t retries;
 	std::chrono::milliseconds retry_timeout;
-	std::promise<std::string> promise;
+	std::promise<attributes::MappedAddress> promise; // temp
 };
 
 class Client {
@@ -61,11 +63,13 @@ class Client {
 
 	std::size_t header_hash(const Header& header);
 	void handle_response(std::vector<std::uint8_t> buffer);
-	void handle_attributes(spark::BinaryInStream& stream, Transaction& tx);
-	void handle_error_response(spark::BinaryInStream& stream);
-	void handle_xor_mapped_address(spark::BinaryInStream& stream);
-	void handle_mapped_address(spark::BinaryInStream& stream);
+	std::vector<attributes::Attribute> handle_attributes(spark::BinaryInStream& stream, Transaction& tx);
 	void xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key);
+
+	// attribute handlers
+	void handle_error_response(spark::BinaryInStream& stream);
+	std::optional<attributes::XorMappedAddress> handle_xor_mapped_address(spark::BinaryInStream& stream);
+	std::optional<attributes::MappedAddress> handle_mapped_address(spark::BinaryInStream& stream);
 
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);
@@ -73,7 +77,7 @@ public:
 
 	void log_callback(LogCB callback, Verbosity verbosity);
 	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
-	std::future<std::string> mapped_address();
+	std::future<attributes::MappedAddress> external_address();
 	void software();
 };
 
