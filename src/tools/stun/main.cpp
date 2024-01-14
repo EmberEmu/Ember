@@ -19,6 +19,7 @@ using namespace ember;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
+void log_cb(stun::Verbosity verbosity, stun::LogReason reason);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -46,7 +47,8 @@ void launch(const po::variables_map& args) {
 	// todo, std::print when supported by all compilers
 	std::cout << std::format("Connecting to {}:{} ({})...\n", host, port, protocol);
 
-	stun::Client client;
+	stun::Client client(stun::RFC3489);
+	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
 	client.connect(host, port, proto);
 	std::future<std::string> result = client.mapped_address();
 	
@@ -54,7 +56,7 @@ void launch(const po::variables_map& args) {
 	std::cout << std::format("STUN provider returned our address as {}\n", result.get());
 }
 
-void log(stun::Verbosity verbosity, stun::LogReason reason) {
+void log_cb(stun::Verbosity verbosity, stun::LogReason reason) {
 	std::string_view verbstr{};
 
 	switch(verbosity) {

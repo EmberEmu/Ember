@@ -78,9 +78,9 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	Header header{};
 	stream >> header.type;
 	stream >> header.length;
-	stream >> header.cookie;
 
 	if(mode_ == RFCMode::RFC5389) {
+		stream >> header.cookie;
 		stream.get(header.tx_id_5389.begin(), header.tx_id_5389.end());
 	} else {
 		stream.get(header.tx_id_3489.begin(), header.tx_id_3489.end());
@@ -151,11 +151,6 @@ void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::u
 }
 
 void Client::handle_mapped_address(spark::BinaryInStream& stream) {
-	// shouldn't receive this attribute in RFC5389 mode but we'll allow it
-	if (mode_ == RFCMode::RFC5389) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC5389_INVALID_ATTRIBUTE);
-	}
-
 	stream.skip(1); // skip reserved byte
 	AddressFamily addr_fam = AddressFamily::IPV4;
 	stream >> addr_fam;
