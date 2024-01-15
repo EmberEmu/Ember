@@ -54,16 +54,11 @@ struct Transaction {
 } // detail
 
 class Client {
-	enum class State {
-		INITIAL, CONNECTING, CONNECTED, DISCONNECTED
-	} state_ = State::INITIAL;
-
 	boost::asio::io_context ctx_;
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
 	std::unique_ptr<Transport> transport_;
-	bool connected_ = false;
 	RFCMode mode_;
 	std::random_device rd_;
 	std::mt19937 mt_;
