@@ -58,7 +58,8 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
 		break;
 	case Protocol::TCP:
-		transport_ = std::make_unique<StreamTransport>(host, port);
+		/*transport_ = std::make_unique<StreamTransport>(ctx_, host, port,
+			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });*/
 		break;
 	case Protocol::TLS_TCP:
 		throw std::runtime_error("TLS_TCP STUN isn't handled yet");
@@ -286,10 +287,8 @@ Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 
 	// XOR port with the magic cookie
 	stream >> attr.port;
-	auto magic = MAGIC_COOKIE;
-	be::native_to_big_inplace(magic);
-	attr.port ^= magic;
 	be::big_to_native_inplace(attr.port);
+	attr.port ^= MAGIC_COOKIE >> 16;
 
 	if(addr_fam == AddressFamily::IPV4) {
 		stream >> attr.ipv4;
