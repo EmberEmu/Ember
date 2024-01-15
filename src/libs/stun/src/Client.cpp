@@ -103,9 +103,11 @@ void Client::binding_request(detail::Transaction::VariantPromise vp) {
 	detail::Transaction transaction{};
 
 	if(mode_ == RFCMode::RFC5389) {
-		std::copy(header.tx_id_5389.begin(), header.tx_id_5389.end(), transaction.tx_id);
+		std::copy(header.tx_id_5389.begin(), header.tx_id_5389.end(),
+			transaction.tx_id.begin());
 	} else {
-		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(), transaction.tx_id);
+		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(),
+			transaction.tx_id.begin());
 	}
 
 	transaction.promise = std::move(vp);
@@ -224,10 +226,11 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 		case Attributes::MAPPED_ADDRESS:
 			attributes.emplace_back(*handle_mapped_address(stream));
 			break;
-		[[fallthrough]];
 		case Attributes::XOR_MAPPED_ADDRESS:
+			attributes.emplace_back(*handle_xor_mapped_address(stream, tx));
+			break;
 		case Attributes::XOR_MAPPED_ADDR_OPT:
-			attributes.emplace_back(*handle_xor_mapped_address(stream));
+			attributes.emplace_back(*handle_xor_mapped_address_opt(stream, tx));
 			break;
 		//default:
 			// todo, check to see if there's a required attribute we didn't understand
@@ -262,8 +265,11 @@ std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::Bi
 			return std::nullopt;
 		}
 
-		// todo, handle IPv6 for RFC5389
-
+		stream.get(attr.ipv6.begin(), attr.ipv6.end());
+		
+		for(auto& bytes : attr.ipv6) {
+			be::big_to_native_inplace(bytes);
+		}
 	} else {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
 		return std::nullopt;
@@ -273,29 +279,41 @@ std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::Bi
 }
 
 std::optional<attributes::XorMappedAddress>
-Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
+Client::handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detail::Transaction& tx) {
 	// shouldn't receive this attribute in RFC3489 mode but we'll allow it
-	if(mode_ == RFCMode::RFC3489) {
+	if (mode_ == RFCMode::RFC3489) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
 	}
 
-	stream.skip(1); // skip reserved byte
-	AddressFamily addr_fam = AddressFamily::IPV4;
-	stream >> addr_fam;
+	return handle_xor_mapped_address(stream, tx);
+}
 
+std::optional<attributes::XorMappedAddress>
+Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
+	stream.skip(1); // skip reserved byte
 	attributes::XorMappedAddress attr{};
+	stream >> attr.family;
 
 	// XOR port with the magic cookie
 	stream >> attr.port;
 	be::big_to_native_inplace(attr.port);
 	attr.port ^= MAGIC_COOKIE >> 16;
 
-	if(addr_fam == AddressFamily::IPV4) {
+	if(attr.family == AddressFamily::IPV4) {
 		stream >> attr.ipv4;
 		be::big_to_native_inplace(attr.ipv4);
 		attr.ipv4 ^= MAGIC_COOKIE;
-	} else if(addr_fam == AddressFamily::IPV6) {
-		// todo
+	} else if(attr.family == AddressFamily::IPV6) {
+		stream.get(attr.ipv6.begin(), attr.ipv6.end());
+		
+		for (auto& bytes : attr.ipv6) {
+			be::big_to_native_inplace(bytes);
+		}
+
+		attr.ipv6[0] ^= MAGIC_COOKIE;
+		attr.ipv6[1] ^= tx.tx_id[0];
+		attr.ipv6[2] ^= tx.tx_id[1];
+		attr.ipv6[3] ^= tx.tx_id[2];
 	} else {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
 		return std::nullopt;

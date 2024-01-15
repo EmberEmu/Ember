@@ -14,6 +14,7 @@
 #include <stun/Logging.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
+#include <array>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -44,7 +45,7 @@ struct Transaction {
 		std::promise<std::vector<attributes::Attribute>>
 	>;
 
-	std::uint32_t tx_id[4];
+	std::array<std::uint32_t, 4> tx_id;
 	std::uint8_t retries;
 	std::chrono::milliseconds retry_timeout;
 	VariantPromise promise;
@@ -82,8 +83,11 @@ class Client {
 
 	// attribute handlers
 	void handle_error_response(spark::BinaryInStream& stream);
+
 	std::optional<attributes::XorMappedAddress>
-		handle_xor_mapped_address(spark::BinaryInStream& stream);
+		handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detail::Transaction& tx);
+	std::optional<attributes::XorMappedAddress>
+		handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx);
 	std::optional<attributes::MappedAddress>
 		handle_mapped_address(spark::BinaryInStream& stream);
 
