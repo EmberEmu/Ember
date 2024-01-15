@@ -16,25 +16,36 @@
 
 namespace ember::stun::attributes {
 
-namespace detail {
-	struct Address_RFC3489 {
-		std::uint32_t ipv4;
-		std::uint16_t port;
-	};
+// can't be bothered with strong typedefs to reduce duplication here,
+// which would be needed to differentiate between them in the variant
+struct MappedAddress {
+	AddressFamily family;
+	std::uint32_t ipv4;
+	std::array<std::uint32_t, 4> ipv6;
+	std::uint16_t port;
+};
 
-	struct Address_RFC5389 {
-		AddressFamily family;
-		std::uint32_t ipv4;
-		std::array<std::uint32_t, 4> ipv6;
-		std::uint16_t port;
-	};
-} // detail
+struct XorMappedAddress {
+	AddressFamily family;
+	std::uint32_t ipv4;
+	std::array<std::uint32_t, 4> ipv6;
+	std::uint16_t port;
+};
 
-using MappedAddress = detail::Address_RFC5389;
-using XorMappedAddress = detail::Address_RFC5389;
-using ChangedAddress = detail::Address_RFC3489;
-using SourceAddress = detail::Address_RFC3489;
-using ReflectedFrom = detail::Address_RFC3489;
+struct ChangedAddress {
+	std::uint32_t ipv4;
+	std::uint16_t port;
+};
+
+struct SourceAddress {
+	std::uint32_t ipv4;
+	std::uint16_t port;
+};
+
+struct ReflectedFrom {
+	std::uint32_t ipv4;
+	std::uint16_t port;
+};
 
 // "variable length opaque value"
 class Username {
@@ -46,13 +57,13 @@ class Password {
 };
 
 using Attribute = std::variant<
-	MappedAddress
-	//XorMappedAddress,
-	//ChangedAddress,
-	//SourceAddress,
-	//ReflectedFrom,
-	//Username,
-	//Password
+	MappedAddress,
+	XorMappedAddress,
+	ChangedAddress,
+	SourceAddress,
+	ReflectedFrom,
+	Username,
+	Password
 >;
 
 // todo

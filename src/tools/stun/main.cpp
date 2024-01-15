@@ -48,7 +48,7 @@ void launch(const po::variables_map& args) {
 	// todo, std::print when supported by all compilers
 	std::cout << std::format("Connecting to {}:{} ({})...\n", host, port, protocol);
 
-	stun::Client client(stun::RFC3489);
+	stun::Client client;
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
 	client.connect(host, port, proto);
 	std::future<stun::attributes::MappedAddress> result = client.external_address();

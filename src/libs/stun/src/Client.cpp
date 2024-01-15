@@ -23,6 +23,9 @@
 
 #include <iostream> // todo temp
 
+template<class>
+inline constexpr bool always_false_v = false;
+
 namespace ember::stun {
 
 Client::Client(RFCMode mode) : mode_(mode), mt_(rd_()) {
@@ -66,6 +69,51 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 	transport_->connect();
 }
 
+void Client::binding_request(detail::Transaction::VariantPromise vp) {
+	std::vector<std::uint8_t> data;
+	spark::VectorBufferAdaptor buffer(data);
+	spark::BinaryOutStream stream(buffer);
+
+	Header header{ };
+	header.type = std::to_underlying(MessageType::BINDING_REQUEST);
+
+	if(mode_ == RFCMode::RFC5389) {
+		header.cookie = MAGIC_COOKIE;
+
+		for(auto& ele : header.tx_id_5389) {
+			ele = mt_();
+		}
+	} else {
+		for(auto& ele : header.tx_id_3489) {
+			ele = mt_();
+		}
+	}
+
+	stream << header.type;
+	stream << header.length;
+
+	if(mode_ == RFCMode::RFC5389) {
+		stream << header.cookie;
+		stream.put(header.tx_id_5389.begin(), header.tx_id_5389.end());
+	} else {
+		stream.put(header.tx_id_3489.begin(), header.tx_id_3489.end());
+	}
+
+	detail::Transaction transaction{};
+
+	if(mode_ == RFCMode::RFC5389) {
+		std::copy(header.tx_id_5389.begin(), header.tx_id_5389.end(), transaction.tx_id);
+	} else {
+		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(), transaction.tx_id);
+	}
+
+	transaction.promise = std::move(vp);
+	const auto hash = header_hash(header);
+	transactions_[hash] = std::move(transaction);
+
+	transport_->send(data);
+}
+
 void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	if(buffer.size() < HEADER_LENGTH) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BUFFER_LT_HEADER);
@@ -104,15 +152,52 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		return;
 	}
 
-	Transaction& transaction = transactions_[hash];
+	detail::Transaction& transaction = transactions_[hash];
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
 
-	if (type == MessageType::BINDING_ERROR_RESPONSE) {
+	if(type == MessageType::BINDING_ERROR_RESPONSE) {
 		handle_error_response(stream);
-	} else {
-		handle_attributes(stream, transaction);
 	}
+
+	if(type != MessageType::BINDING_RESPONSE) {
+		// todo
+	}
+
+	const auto attributes = handle_attributes(stream, transaction);
+
+	// figure out which attributes we care about
+	std::visit([&](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
+
+		if constexpr(std::is_same_v<T, std::promise<attributes::MappedAddress>>) {
+			for(const auto& attr : attributes) {
+				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
+					arg.set_value(std::get<attributes::MappedAddress>(attr));
+					return;
+				}
+
+				// XorMappedAddress will also do - we just need an external address
+				if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
+					const auto xma = std::get<attributes::XorMappedAddress>(attr);
+
+					const attributes::MappedAddress ma{
+						.family = xma.family,
+						.ipv4 = xma.ipv4,
+						.ipv6 = xma.ipv6,
+						.port = xma.port
+					};
+
+					arg.set_value(ma);
+					return;
+				}
+			}
+		} else if constexpr(std::is_same_v<T, std::promise<std::vector<attributes::Attribute>>>) {
+			arg.set_value(attributes);
+		} else {
+			static_assert(always_false_v<T>, "Unhandled variant type");
+		}
+	}, transaction.promise);
 } catch(const std::exception& e) {
 	std::cout << e.what(); // temp
 }
@@ -121,7 +206,8 @@ void Client::handle_error_response(spark::BinaryInStream& stream) {
 
 }
 
-std::vector<attributes::Attribute> Client::handle_attributes(spark::BinaryInStream& stream, Transaction& tx) {
+std::vector<attributes::Attribute>
+Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx) {
 	Attributes attr_type;
 	be::big_uint16_t length;
 	stream >> attr_type;
@@ -136,13 +222,10 @@ std::vector<attributes::Attribute> Client::handle_attributes(spark::BinaryInStre
 			attributes.emplace_back(*handle_mapped_address(stream));
 			break;
 		case Attributes::XOR_MAPPED_ADDRESS:
-			//attributes.emplace_back(handle_xor_mapped_address(stream));
+			attributes.emplace_back(*handle_xor_mapped_address(stream));
 			break;
 	}
 
-	// temp
-	auto temp = std::get<attributes::MappedAddress>(attributes[0]);
-	tx.promise.set_value(temp);
 	return attributes;
 }
 
@@ -184,7 +267,8 @@ std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::Bi
 	return attr;
 }
 
-std::optional<attributes::XorMappedAddress> Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
+std::optional<attributes::XorMappedAddress>
+Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 	// shouldn't receive this attribute in RFC3489 mode but we'll allow it
 	if(mode_ == RFCMode::RFC3489) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
@@ -194,15 +278,14 @@ std::optional<attributes::XorMappedAddress> Client::handle_xor_mapped_address(sp
 	AddressFamily addr_fam = AddressFamily::IPV4;
 	stream >> addr_fam;
 
+	attributes::XorMappedAddress attr{};
+
 	// XOR port with the magic cookie
-	std::uint16_t port = 0;
-	stream >> port;
+	stream >> attr.port;
 	auto magic = MAGIC_COOKIE;
 	be::native_to_big_inplace(magic);
-	port ^= magic;
-	be::big_to_native_inplace(port);
-
-	attributes::XorMappedAddress attr{};
+	attr.port ^= magic;
+	be::big_to_native_inplace(attr.port);
 
 	if(addr_fam == AddressFamily::IPV4) {
 		stream >> attr.ipv4;
@@ -225,49 +308,10 @@ std::optional<attributes::XorMappedAddress> Client::handle_xor_mapped_address(sp
 }
 
 std::future<attributes::MappedAddress> Client::external_address() {
-	std::vector<std::uint8_t> data;
-	spark::VectorBufferAdaptor buffer(data);
-	spark::BinaryOutStream stream(buffer);
-
-	Header header { };
-	header.type = std::to_underlying(MessageType::BINDING_REQUEST);
-
-	if(mode_ == RFCMode::RFC5389) {
-		header.cookie = MAGIC_COOKIE;
-
-		for(auto& ele : header.tx_id_5389) {
-			ele = mt_();
-		}
-	} else {
-		for(auto& ele : header.tx_id_3489) {
-			ele = mt_();
-		}
-	}
-
-	stream << header.type;
-	stream << header.length;
-
-	if(mode_ == RFCMode::RFC5389) {
-		stream << header.cookie;
-		stream.put(header.tx_id_5389.begin(), header.tx_id_5389.end());
-	} else {
-		stream.put(header.tx_id_3489.begin(), header.tx_id_3489.end());
-	}
-
-	Transaction transaction{};
-
-	if (mode_ == RFCMode::RFC5389) {
-		std::copy(header.tx_id_5389.begin(), header.tx_id_5389.end(), transaction.tx_id);
-	} else {
-		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(), transaction.tx_id);
-	}
-
-	transaction.promise = std::promise<attributes::MappedAddress>();
-	auto future = transaction.promise.get_future();
-	const auto hash = header_hash(header);
-	transactions_[hash] = std::move(transaction);
-
-	transport_->send(data);
+	std::promise<attributes::MappedAddress> promise;
+	auto future = promise.get_future();
+	detail::Transaction::VariantPromise vp(std::move(promise));
+	binding_request(std::move(vp));
 	return future;
 }
 

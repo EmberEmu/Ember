@@ -21,6 +21,7 @@
 #include <random>
 #include <string>
 #include <thread>
+#include <variant>
 #include <cstdint>
 #include <cstddef>
 
@@ -34,12 +35,22 @@ enum RFCMode {
 	RFC5389, RFC3489
 };
 
+namespace detail {
+
 struct Transaction {
+	// :grimacing:
+	using VariantPromise = std::variant <
+		std::promise<attributes::MappedAddress>,
+		std::promise<std::vector<attributes::Attribute>>
+	>;
+
 	std::uint32_t tx_id[4];
 	std::uint8_t retries;
 	std::chrono::milliseconds retry_timeout;
-	std::promise<attributes::MappedAddress> promise; // temp
+	VariantPromise promise;
 };
+
+} // detail
 
 class Client {
 	enum class State {
@@ -59,17 +70,22 @@ class Client {
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 
 	// todo, thread safety (worker thread may access, figure this out)
-	std::unordered_map<std::size_t, Transaction> transactions_;
+	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 
 	std::size_t header_hash(const Header& header);
-	void handle_response(std::vector<std::uint8_t> buffer);
-	std::vector<attributes::Attribute> handle_attributes(spark::BinaryInStream& stream, Transaction& tx);
 	void xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key);
+
+	void handle_response(std::vector<std::uint8_t> buffer);
+	std::vector<attributes::Attribute>
+		handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx);
+	void binding_request(detail::Transaction::VariantPromise vp);
 
 	// attribute handlers
 	void handle_error_response(spark::BinaryInStream& stream);
-	std::optional<attributes::XorMappedAddress> handle_xor_mapped_address(spark::BinaryInStream& stream);
-	std::optional<attributes::MappedAddress> handle_mapped_address(spark::BinaryInStream& stream);
+	std::optional<attributes::XorMappedAddress>
+		handle_xor_mapped_address(spark::BinaryInStream& stream);
+	std::optional<attributes::MappedAddress>
+		handle_mapped_address(spark::BinaryInStream& stream);
 
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);
