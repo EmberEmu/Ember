@@ -68,25 +68,26 @@ struct Header {
 // rfc5389 attributes spec
 enum class Attributes : std::uint16_t {
 	// Comprehension required
-	MAPPED_ADDRESS     = 0x0001,
-	RESPONSE_ADDRESS   = 0x0002, // rfc3489
-	CHANGE_REQUEST     = 0x0003, // rfc3489
-	SOURCE_ADDRESS     = 0x0004, // rfc3489
-	CHANGED_ADDRESS    = 0x0005, // rfc3489
-	USERNAME           = 0x0006,
-	PASSWORD           = 0x0007, // rfc3489
-	MESSAGE_INTEGRITY  = 0x0008,
-	ERROR_CODE         = 0x0009,
-	UNKNOWN_ATTRIBUTES = 0x000a,
-	REFLECTED_FROM     = 0x000b, // rfc3489
-	REALM              = 0x0014,
-	NONCE              = 0x0015,
-	XOR_MAPPED_ADDRESS = 0x0020,
+	MAPPED_ADDRESS      = 0x0001,
+	RESPONSE_ADDRESS    = 0x0002, // rfc3489
+	CHANGE_REQUEST      = 0x0003, // rfc3489
+	SOURCE_ADDRESS      = 0x0004, // rfc3489
+	CHANGED_ADDRESS     = 0x0005, // rfc3489
+	USERNAME            = 0x0006,
+	PASSWORD            = 0x0007, // rfc3489
+	MESSAGE_INTEGRITY   = 0x0008,
+	ERROR_CODE          = 0x0009,
+	UNKNOWN_ATTRIBUTES  = 0x000a,
+	REFLECTED_FROM      = 0x000b, // rfc3489
+	REALM               = 0x0014,
+	NONCE               = 0x0015,
+	XOR_MAPPED_ADDRESS  = 0x0020,
 
 	// Comprehension optional
-	SOFTWARE           = 0x8022,
-	ALTERNATE_SERVER   = 0x8023,
-	FINGERPRINT        = 0x8028
+	XOR_MAPPED_ADDR_OPT = 0x8020,
+	SOFTWARE            = 0x8022,
+	ALTERNATE_SERVER    = 0x8023,
+	FINGERPRINT         = 0x8028
 };
 
 enum class Errors {

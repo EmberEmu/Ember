@@ -46,7 +46,7 @@ void launch(const po::variables_map& args) {
 	}
 
 	// todo, std::print when supported by all compilers
-	std::cout << std::format("Connecting to {}:{} ({})...\n", host, port, protocol);
+	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
 
 	stun::Client client;
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
@@ -59,7 +59,7 @@ void launch(const po::variables_map& args) {
 		boost::asio::ip::address_v4(address.ipv4).to_string(), address.port);
 }
 
-void log_cb(stun::Verbosity verbosity, stun::LogReason reason) {
+void log_cb(const stun::Verbosity verbosity, const stun::LogReason reason) {
 	std::string_view verbstr{};
 
 	switch(verbosity) {

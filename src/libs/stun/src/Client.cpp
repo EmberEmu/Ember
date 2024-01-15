@@ -158,6 +158,7 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 
 	if(type == MessageType::BINDING_ERROR_RESPONSE) {
 		handle_error_response(stream);
+		// todo
 	}
 
 	if(type != MessageType::BINDING_RESPONSE) {
@@ -217,13 +218,18 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 
 	std::vector<attributes::Attribute> attributes;
 
+	// todo, actual error handling
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
 			attributes.emplace_back(*handle_mapped_address(stream));
 			break;
+		[[fallthrough]];
 		case Attributes::XOR_MAPPED_ADDRESS:
+		case Attributes::XOR_MAPPED_ADDR_OPT:
 			attributes.emplace_back(*handle_xor_mapped_address(stream));
 			break;
+		//default:
+			// todo, check to see if there's a required attribute we didn't understand
 	}
 
 	return attributes;
@@ -240,30 +246,28 @@ void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::u
 
 std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::BinaryInStream& stream) {
 	stream.skip(1); // skip reserved byte
-	AddressFamily addr_fam = AddressFamily::IPV4;
-	stream >> addr_fam;
+	attributes::MappedAddress attr{};
+	stream >> attr.family;
+	stream >> attr.port;
 
-	// Only IPv4 is supported prior to RFC5389
-	if(mode_ == RFCMode::RFC3489 && addr_fam != AddressFamily::IPV4) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
-		return std::nullopt;
-	}
+	if(attr.family == AddressFamily::IPV4) {
+		attr.family = AddressFamily::IPV4;
+		be::big_to_native_inplace(attr.port);
+		stream >> attr.ipv4;
+		be::big_to_native_inplace(attr.ipv4);
+	} else if(attr.family == AddressFamily::IPV6) {
+		if(mode_ == RFCMode::RFC3489) {
+			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
+			return std::nullopt;
+		}
 
-	if(addr_fam != AddressFamily::IPV4 && addr_fam != AddressFamily::IPV6) {
+		// todo, handle IPv6 for RFC5389
+
+	} else {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
 		return std::nullopt;
 	}
-
-	// todo, handle IPv6 for RFC5389
-
-	attributes::MappedAddress attr{};
-	attr.family = AddressFamily::IPV4;
-
-	stream >> attr.port;
-	be::big_to_native_inplace(attr.port);
-	stream >> attr.ipv4;
-	be::big_to_native_inplace(attr.ipv4);
-
+	
 	return attr;
 }
 
@@ -293,12 +297,6 @@ Client::handle_xor_mapped_address(spark::BinaryInStream& stream) {
 		attr.ipv4 ^= MAGIC_COOKIE;
 	} else if(addr_fam == AddressFamily::IPV6) {
 		// todo
-		/*
-		spark::VectorBufferAdaptor<std::uint8_t> vba(xor_data);
-		spark::BinaryInStream xor_stream(vba);
-		std::uint64_t ipv6 = 0;
-		xor_stream >> ipv6;
-		be::big_to_native_inplace(ipv6);*/
 	} else {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
 		return std::nullopt;
