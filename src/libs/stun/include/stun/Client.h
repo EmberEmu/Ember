@@ -74,8 +74,6 @@ class Client {
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 
 	std::size_t header_hash(const Header& header);
-	void xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key);
-
 	void handle_response(std::vector<std::uint8_t> buffer);
 	std::vector<attributes::Attribute>
 		handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx);

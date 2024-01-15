@@ -239,15 +239,6 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 	return attributes;
 }
 
-void Client::xor_buffer(std::span<std::uint8_t> buffer, const std::vector<std::uint8_t>& key) {
-	for (std::size_t i = 0u; i < buffer.size();) {
-		for (std::size_t j = 0u; j < key.size(); ++j) {
-			buffer[i] ^= key.data()[j];
-			++i;
-		}
-	}
-}
-
 std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::BinaryInStream& stream) {
 	stream.skip(1); // skip reserved byte
 	attributes::MappedAddress attr{};
