@@ -279,17 +279,17 @@ std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::Bi
 }
 
 std::optional<attributes::XorMappedAddress>
-Client::handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detail::Transaction& tx) {
-	// shouldn't receive this attribute in RFC3489 mode but we'll allow it
+Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
 	if (mode_ == RFCMode::RFC3489) {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
+		return std::nullopt;
 	}
 
-	return handle_xor_mapped_address(stream, tx);
+	return handle_xor_mapped_address_opt(stream, tx);
 }
 
 std::optional<attributes::XorMappedAddress>
-Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
+Client::handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detail::Transaction& tx) {
 	stream.skip(1); // skip reserved byte
 	attributes::XorMappedAddress attr{};
 	stream >> attr.family;
