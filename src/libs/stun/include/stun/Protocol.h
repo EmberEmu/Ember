@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include <boost/endian/arithmetic.hpp>
 #include <array>
 #include <string>
+#include <unordered_map>
 #include <cstdint>
-#include <boost/endian/arithmetic.hpp>
 
 /* 
                 STUN header as defined by RFC5389
@@ -100,5 +101,14 @@ enum class Errors {
 	STALE_NONCE       = 438,
 	SERVER_ERROR      = 500
 };
+
+enum RFCMode {
+	RFC5389 = 0x01,
+	RFC3489 = 0x02,
+	RFC_BOTH = RFC5389 | RFC3489
+};
+
+using AttrReqBy = std::unordered_map<Attributes, RFCMode>;
+extern AttrReqBy attr_req_lut;
 
 } // stun, ember

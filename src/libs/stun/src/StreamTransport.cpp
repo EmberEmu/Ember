@@ -10,7 +10,6 @@
 #include <stun/Protocol.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
-#include <iostream> // todo
 
 namespace ember::stun {
 
@@ -41,6 +40,7 @@ void StreamTransport::send(std::vector<std::uint8_t> message) {
 			}
 		});
 }
+
 void StreamTransport::receive() {
 	switch (state_) {
 		case ReadState::READ_BODY:
@@ -75,7 +75,7 @@ void StreamTransport::read(const std::size_t size, const std::size_t offset) {
 	boost::asio::async_read(socket_, buffer,
 		[this](boost::system::error_code ec, std::size_t size) {
 			if (ec && ec != boost::asio::error::operation_aborted) {
-				//close_session();
+				//close_session(); todo
 				return;
 			}
 

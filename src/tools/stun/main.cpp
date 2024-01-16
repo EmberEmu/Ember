@@ -51,12 +51,17 @@ void launch(const po::variables_map& args) {
 	stun::Client client;
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
 	client.connect(host, port, proto);
-	std::future<stun::attributes::MappedAddress> result = client.external_address();
+	auto result = client.external_address();
 	const auto address = result.get();
 
-	// todo, std::print when supported by all compilers
-	std::cout << std::format("STUN provider returned our address as {}:{}",
-		boost::asio::ip::address_v4(address.ipv4).to_string(), address.port);
+	if(address) {
+		// todo, std::print when supported by all compilers
+		std::cout << std::format("STUN provider returned our address as {}:{}",
+			boost::asio::ip::address_v4(address->ipv4).to_string(), address->port);
+	} else {
+		std::cout << std::format("Error occurred during STUN transaction: {}",
+			std::to_underlying(address.error()));
+	}
 }
 
 void log_cb(const stun::Verbosity verbosity, const stun::LogReason reason) {

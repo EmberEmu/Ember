@@ -40,6 +40,9 @@ smart_enum_class(LogReason, std::uint8_t,
 	RESP_TX_NOT_FOUND,                // transaction ID was not found in the mapping, could be a delayed response
 	RESP_RFC5389_INVALID_ATTRIBUTE,   // encountered an attribute that isn't valid for RFC5389
 	RESP_RFC3489_INVALID_ATTRIBUTE,   // encountered an attribute that isn't valid for RFC3489
+	RESP_UNKNOWN_OPT_ATTRIBUTE,       // encountered an optional attribute that we couldn't parse
+	RESP_UNKNOWN_REQ_ATTRIBUTE,       // encountered a required attribute that we couldn't parse
+	RESP_BAD_REQ_ATTR_SERVER          // server sent us a required attribute that it shouldn't have
 );
 
 using LogCB = std::function<void(Verbosity, LogReason reason)>;

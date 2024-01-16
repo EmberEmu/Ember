@@ -16,6 +16,7 @@
 #include <boost/asio/io_context.hpp>
 #include <array>
 #include <chrono>
+#include <expected>
 #include <future>
 #include <memory>
 #include <optional>
@@ -32,17 +33,13 @@ enum Protocol {
 	UDP, TCP, TLS_TCP
 };
 
-enum RFCMode {
-	RFC5389, RFC3489
-};
-
 namespace detail {
 
 struct Transaction {
 	// :grimacing:
 	using VariantPromise = std::variant <
-		std::promise<attributes::MappedAddress>,
-		std::promise<std::vector<attributes::Attribute>>
+		std::promise<std::expected<attributes::MappedAddress, LogReason>>,
+		std::promise<std::expected<std::vector<attributes::Attribute>, LogReason>>
 	>;
 
 	std::array<std::uint32_t, 4> tx_id;
@@ -77,12 +74,11 @@ class Client {
 	// attribute handlers
 	void handle_error_response(spark::BinaryInStream& stream);
 
-	std::optional<attributes::XorMappedAddress>
-		handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detail::Transaction& tx);
-	std::optional<attributes::XorMappedAddress>
-		handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx);
-	std::optional<attributes::MappedAddress>
-		handle_mapped_address(spark::BinaryInStream& stream);
+	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
+	                                        detail::Transaction& tx);
+	attributes::XorMappedAddress handle_xor_mapped_address(spark::BinaryInStream& stream,
+	                                                       const detail::Transaction& tx);
+	attributes::MappedAddress handle_mapped_address(spark::BinaryInStream& stream);
 
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);
@@ -90,7 +86,7 @@ public:
 
 	void log_callback(LogCB callback, Verbosity verbosity);
 	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
-	std::future<attributes::MappedAddress> external_address();
+	std::future<std::expected<attributes::MappedAddress, LogReason>> external_address();
 	void software();
 };
 

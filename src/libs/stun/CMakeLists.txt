@@ -17,6 +17,7 @@ add_library(${LIBRARY_NAME}
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp
+           src/Protocol.cpp
            )
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})

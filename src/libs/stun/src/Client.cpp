@@ -168,39 +168,41 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		// todo
 	}
 
-	const auto attributes = handle_attributes(stream, transaction);
+	//const auto attributes = handle_attributes(stream, transaction);
 
-	// figure out which attributes we care about
-	std::visit([&](auto&& arg) {
-		using T = std::decay_t<decltype(arg)>;
+	//// figure out which attributes we care about
+	//std::visit([&](auto&& arg) {
+	//	using T = std::decay_t<decltype(arg)>;
 
-		if constexpr(std::is_same_v<T, std::promise<attributes::MappedAddress>>) {
-			for(const auto& attr : attributes) {
-				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
-					arg.set_value(std::get<attributes::MappedAddress>(attr));
-					return;
-				}
+	//	if constexpr(std::is_same_v<T,
+	//		std::promise<std::expected<attributes::MappedAddress, LogReason>>>) {
+	//		for(const auto& attr : attributes) {
+	//			/*if(std::holds_alternative<attributes::MappedAddress>(attr)) {
+	//				arg.set_value(std::get<attributes::MappedAddress>(attr));
+	//				return;
+	//			}*/
 
-				// XorMappedAddress will also do - we just need an external address
-				if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
-					const auto xma = std::get<attributes::XorMappedAddress>(attr);
+	//			// XorMappedAddress will also do - we just need an external address
+	//			//if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
+	//			//	const auto xma = std::get<attributes::XorMappedAddress>(attr);
 
-					const attributes::MappedAddress ma{
-						.family = xma.family,
-						.ipv4 = xma.ipv4,
-						.ipv6 = xma.ipv6,
-						.port = xma.port
-					};
+	//			//	const attributes::MappedAddress ma{
+	//			//		.family = xma.family,
+	//			//		.ipv4 = xma.ipv4,
+	//			//		.ipv6 = xma.ipv6,
+	//			//		.port = xma.port
+	//			//	};
 
-					arg.set_value(ma);
-					return;
-				}
-			}
-		} else if constexpr(std::is_same_v<T, std::promise<std::vector<attributes::Attribute>>>) {
-			arg.set_value(attributes);
-		} else {
-			static_assert(always_false_v<T>, "Unhandled variant type");
-		}
+	//			//	arg.set_value(ma);
+	//			//	return;
+	//			//}
+	//		}
+	//	} else if constexpr(std::is_same_v<T,
+	//		std::promise<std::expected<std::vector<attributes::Attribute>,LogReason>>>) {
+	//		arg.set_value(attributes);
+	//	} else {
+	//		static_assert(always_false_v<T>, "Unhandled variant type");
+	//	}
 	}, transaction.promise);
 } catch(const std::exception& e) {
 	std::cout << e.what(); // temp
@@ -210,8 +212,8 @@ void Client::handle_error_response(spark::BinaryInStream& stream) {
 
 }
 
-std::vector<attributes::Attribute>
-Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx) {
+std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInStream& stream,
+                                                               detail::Transaction& tx) {
 	Attributes attr_type;
 	be::big_uint16_t length;
 	stream >> attr_type;
@@ -219,27 +221,69 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 
 	be::big_to_native_inplace(attr_type);
 
-	std::vector<attributes::Attribute> attributes;
+	attributes::Attribute attribute;
+
+	/*
+	 * If this attribute is marked as required, we'll look it up in the map
+	 * to check whether we know what it is and more importantly whose fault
+	 * it is if we can't finish parsing the message, given our current RFC mode
+	 */
+	const bool required = (std::to_underlying(attr_type) >> 15) ^ 1;
+
+	if(required) {
+		// might be our fault but probably not
+		if(!attr_req_lut.contains(attr_type)) {
+			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_UNKNOWN_REQ_ATTRIBUTE);
+			throw std::exception("todo"); // todo, abort all parsing here
+		}
+
+		const auto rfc = attr_req_lut[attr_type];
+		
+		// definitely not our fault... probably
+		if(!(rfc & mode_)) {
+			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BAD_REQ_ATTR_SERVER);
+			throw std::exception("todo"); // todo, abort all parsing here
+		}
+	}
 
 	// todo, actual error handling
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
-			attributes.emplace_back(*handle_mapped_address(stream));
-			break;
-		case Attributes::XOR_MAPPED_ADDRESS:
-			attributes.emplace_back(*handle_xor_mapped_address(stream, tx));
+			return handle_mapped_address(stream);
 			break;
 		case Attributes::XOR_MAPPED_ADDR_OPT:
-			attributes.emplace_back(*handle_xor_mapped_address_opt(stream, tx));
+			[[fallthrough]];
+		case Attributes::XOR_MAPPED_ADDRESS:
+			return handle_xor_mapped_address(stream, tx);
 			break;
-		//default:
-			// todo, check to see if there's a required attribute we didn't understand
+		case Attributes::OTHER_ADDRESS:
+			// todo
+			break;
+		/*case Attributes::RESPONSE_ORIGIN:
+			break;*/
+	}
+
+	stream.skip(length);
+
+	logger_(Verbosity::STUN_LOG_DEBUG, required?
+		LogReason::RESP_UNKNOWN_REQ_ATTRIBUTE : LogReason::RESP_UNKNOWN_OPT_ATTRIBUTE);
+
+	// todo, error handling
+	return std::nullopt;
+}
+
+std::vector<attributes::Attribute>
+Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx) {
+	std::vector<attributes::Attribute> attributes;
+
+	while(!stream.empty()) {
+		attributes.emplace_back(extract_attribute(stream, tx));
 	}
 
 	return attributes;
 }
 
-std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::BinaryInStream& stream) {
+attributes::MappedAddress Client::handle_mapped_address(spark::BinaryInStream& stream) {
 	stream.skip(1); // skip reserved byte
 	attributes::MappedAddress attr{};
 	stream >> attr.family;
@@ -253,7 +297,7 @@ std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::Bi
 	} else if(attr.family == AddressFamily::IPV6) {
 		if(mode_ == RFCMode::RFC3489) {
 			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
-			return std::nullopt;
+			throw std::exception("todo"); // todo
 		}
 
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
@@ -263,24 +307,14 @@ std::optional<attributes::MappedAddress> Client::handle_mapped_address(spark::Bi
 		}
 	} else {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
-		return std::nullopt;
+		throw std::exception("todo"); // todo
 	}
 	
 	return attr;
 }
 
-std::optional<attributes::XorMappedAddress>
+attributes::XorMappedAddress
 Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
-	if (mode_ == RFCMode::RFC3489) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_RFC3489_INVALID_ATTRIBUTE);
-		return std::nullopt;
-	}
-
-	return handle_xor_mapped_address_opt(stream, tx);
-}
-
-std::optional<attributes::XorMappedAddress>
-Client::handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detail::Transaction& tx) {
 	stream.skip(1); // skip reserved byte
 	attributes::XorMappedAddress attr{};
 	stream >> attr.family;
@@ -307,14 +341,14 @@ Client::handle_xor_mapped_address_opt(spark::BinaryInStream& stream, const detai
 		attr.ipv6[3] ^= tx.tx_id[2];
 	} else {
 		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
-		return std::nullopt;
+		throw std::exception("todo"); // todo
 	}
 
 	return attr;
 }
 
-std::future<attributes::MappedAddress> Client::external_address() {
-	std::promise<attributes::MappedAddress> promise;
+std::future<std::expected<attributes::MappedAddress, LogReason>> Client::external_address() {
+	std::promise<std::expected<attributes::MappedAddress, LogReason>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	binding_request(std::move(vp));
