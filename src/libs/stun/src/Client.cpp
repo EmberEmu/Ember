@@ -168,41 +168,41 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		// todo
 	}
 
-	//const auto attributes = handle_attributes(stream, transaction);
+	const auto attributes = handle_attributes(stream, transaction);
 
-	//// figure out which attributes we care about
-	//std::visit([&](auto&& arg) {
-	//	using T = std::decay_t<decltype(arg)>;
+	// figure out which attributes we care about
+	std::visit([&](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
 
-	//	if constexpr(std::is_same_v<T,
-	//		std::promise<std::expected<attributes::MappedAddress, LogReason>>>) {
-	//		for(const auto& attr : attributes) {
-	//			/*if(std::holds_alternative<attributes::MappedAddress>(attr)) {
-	//				arg.set_value(std::get<attributes::MappedAddress>(attr));
-	//				return;
-	//			}*/
+		if constexpr(std::is_same_v<T,
+			std::promise<std::expected<attributes::MappedAddress, LogReason>>>) {
+			for(const auto& attr : attributes) {
+				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
+					arg.set_value(std::get<attributes::MappedAddress>(attr));
+					return;
+				}
 
-	//			// XorMappedAddress will also do - we just need an external address
-	//			//if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
-	//			//	const auto xma = std::get<attributes::XorMappedAddress>(attr);
+				// XorMappedAddress will also do - we just need an external address
+				if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
+					const auto xma = std::get<attributes::XorMappedAddress>(attr);
 
-	//			//	const attributes::MappedAddress ma{
-	//			//		.family = xma.family,
-	//			//		.ipv4 = xma.ipv4,
-	//			//		.ipv6 = xma.ipv6,
-	//			//		.port = xma.port
-	//			//	};
+					const attributes::MappedAddress ma{
+						.family = xma.family,
+						.ipv4 = xma.ipv4,
+						.ipv6 = xma.ipv6,
+						.port = xma.port
+					};
 
-	//			//	arg.set_value(ma);
-	//			//	return;
-	//			//}
-	//		}
-	//	} else if constexpr(std::is_same_v<T,
-	//		std::promise<std::expected<std::vector<attributes::Attribute>,LogReason>>>) {
-	//		arg.set_value(attributes);
-	//	} else {
-	//		static_assert(always_false_v<T>, "Unhandled variant type");
-	//	}
+					arg.set_value(ma);
+					return;
+				}
+			}
+		} else if constexpr(std::is_same_v<T,
+			std::promise<std::expected<std::vector<attributes::Attribute>,LogReason>>>) {
+			arg.set_value(attributes);
+		} else {
+			static_assert(always_false_v<T>, "Unhandled variant type");
+		}
 	}, transaction.promise);
 } catch(const std::exception& e) {
 	std::cout << e.what(); // temp
@@ -277,7 +277,11 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 	std::vector<attributes::Attribute> attributes;
 
 	while(!stream.empty()) {
-		attributes.emplace_back(extract_attribute(stream, tx));
+		auto attribute = extract_attribute(stream, tx);
+
+		if(attribute) {
+			attributes.emplace_back(std::move(*attribute));
+		}
 	}
 
 	return attributes;
