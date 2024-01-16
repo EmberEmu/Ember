@@ -58,8 +58,8 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
 		break;
 	case Protocol::TCP:
-		/*transport_ = std::make_unique<StreamTransport>(ctx_, host, port,
-			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });*/
+		transport_ = std::make_unique<StreamTransport>(ctx_, host, port,
+			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
 		break;
 	case Protocol::TLS_TCP:
 		throw std::runtime_error("TLS_TCP STUN isn't handled yet");

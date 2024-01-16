@@ -10,7 +10,8 @@
 
 #include <stun/Transport.h>
 #include <boost/asio.hpp>
-#include <span>
+#include <functional>
+#include <vector>
 #include <cstdint>
 
 namespace ember::stun {
@@ -28,13 +29,13 @@ class DatagramTransport final : public Transport {
 	const std::uint16_t port_;
 	ReceiveCallback rcb_;
 
+	void receive();
 public:
 	DatagramTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port, ReceiveCallback rcb);
 	~DatagramTransport() override;
 
 	void connect() override;
 	void send(std::vector<std::uint8_t> message);
-	void receive();
 	void close();
 };
 

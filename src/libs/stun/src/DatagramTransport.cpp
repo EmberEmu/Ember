@@ -7,12 +7,12 @@
  */
 
 #include <stun/DatagramTransport.h>
-#include <iostream>
+
 namespace ember::stun {
 
 DatagramTransport::DatagramTransport(ba::io_context& ctx, const std::string& host,
                                      std::uint16_t port, ReceiveCallback rcb)
-	: ctx_(ctx), host_(host), port_(port), socket_(ctx, ba::ip::udp::endpoint(ba::ip::udp::v4(), 0)), rcb_(rcb) { }
+	: ctx_(ctx), host_(host), port_(port), socket_(ctx), rcb_(rcb) { }
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
@@ -24,6 +24,7 @@ void DatagramTransport::connect() {
 	ep_ = boost::asio::connect(socket_, resolver.resolve(query));
 }
 
+// todo, proper queue
 void DatagramTransport::send(std::vector<std::uint8_t> message) {
 	auto datagram = std::make_unique<std::vector<std::uint8_t>>(std::move(message));
 	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());

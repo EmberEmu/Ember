@@ -7,20 +7,81 @@
  */
 
 #include <stun/StreamTransport.h>
+#include <stun/Protocol.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/VectorBufferAdaptor.h>
+#include <iostream> // todo
 
 namespace ember::stun {
 
-	StreamTransport::StreamTransport(const std::string& host, std::uint16_t port)
-	: host_(host), port_(port), socket_(ctx_, ba::ip::udp::endpoint(ba::ip::udp::v4(), 0)) { }
+StreamTransport::StreamTransport(ba::io_context& ctx, const std::string& host,
+                                 std::uint16_t port, ReceiveCallback rcb)
+	: ctx_(ctx), host_(host), port_(port),
+      socket_(ctx), rcb_(rcb) { }
+
+StreamTransport::~StreamTransport() {
+	socket_.close();
+}
 
 void StreamTransport::connect() {
-	ba::ip::udp::resolver resolver(ctx_);
-	ba::ip::udp::resolver::query query(host_, std::to_string(port_));
-	boost::asio::connect(socket_, resolver.resolve(query));
+	ba::ip::tcp::resolver resolver(ctx_);
+	auto endpoints = resolver.resolve(host_, std::to_string(port_));
+	boost::asio::connect(socket_, endpoints); // not async, todo, error handle
+	receive();
 }
 
 void StreamTransport::send(std::vector<std::uint8_t> message) {
+	auto data = std::make_unique<std::vector<std::uint8_t>>(std::move(message));
+	auto buffer = boost::asio::buffer(data->data(), data->size());
 
+	ba::async_write(socket_, buffer,
+		[this, d = std::move(data)](boost::system::error_code ec, std::size_t /*sent*/) {
+			if (!ec) {
+				// todo
+			}
+		});
+}
+void StreamTransport::receive() {
+	switch (state_) {
+		case ReadState::READ_BODY:
+			state_ = ReadState::READ_DONE;
+			read(get_length(), HEADER_LENGTH);
+			break;
+		case ReadState::READ_DONE:
+			state_ = ReadState::READ_HEADER;
+			rcb_(std::move(buffer_));
+			[[fallthrough]];
+		case ReadState::READ_HEADER:
+			state_ = ReadState::READ_BODY;
+			read(HEADER_LENGTH, 0);
+			break;
+	}
+}
+
+std::size_t StreamTransport::get_length() {
+	spark::VectorBufferAdaptor<std::uint8_t> vba(buffer_);
+	spark::BinaryStream stream(vba);
+
+	Header header{};
+	stream >> header.type;
+	stream >> header.length;
+	return header.length;
+}
+
+void StreamTransport::read(const std::size_t size, const std::size_t offset) {
+	buffer_.resize(buffer_.size() + size); // todo, cap size
+	const auto buffer = boost::asio::buffer(buffer_.data() + offset, size);
+
+	boost::asio::async_read(socket_, buffer,
+		[this](boost::system::error_code ec, std::size_t size) {
+			if (ec && ec != boost::asio::error::operation_aborted) {
+				//close_session();
+				return;
+			}
+
+			receive();
+		}
+	);
 }
 
 } // stun, ember

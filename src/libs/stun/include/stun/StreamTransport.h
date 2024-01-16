@@ -17,18 +17,30 @@ namespace ember::stun {
 namespace ba = boost::asio;
 
 class StreamTransport final : public Transport {
-	ba::io_context ctx_;
-	ba::ip::udp::socket socket_;
+	using ReceiveCallback = std::function<void(std::vector<std::uint8_t>)>;
+
+	enum class ReadState {
+		READ_HEADER, READ_BODY, READ_DONE
+	} state_ = ReadState::READ_HEADER;
+
+	ba::io_context& ctx_;
+	ba::ip::tcp::socket socket_;
+	ba::ip::tcp::endpoint ep_;
 
 	const std::string host_;
 	const std::uint16_t port_;
+	ReceiveCallback rcb_;
+	std::vector<std::uint8_t> buffer_;
 
+	std::size_t get_length();
+	void read(std::size_t size, std::size_t offset);
+	void receive();
 public:
-	StreamTransport(const std::string& host, std::uint16_t port);
+	StreamTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port, ReceiveCallback rcb);
+	~StreamTransport() override;
 
 	void connect() override;
 	void send(std::vector<std::uint8_t> message) override;
-	void receive();
 	void close();
 };
 

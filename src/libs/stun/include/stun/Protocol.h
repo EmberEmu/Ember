@@ -35,6 +35,7 @@ namespace be = boost::endian;
 
 constexpr std::uint8_t HEADER_LENGTH = 20;
 constexpr std::uint8_t ATTR_HEADER_LENGTH = 4;
+constexpr std::uint8_t HEADER_LEN_OFFSET = 2;
 
 constexpr std::uint32_t MAGIC_COOKIE = 0x2112A442;
 
