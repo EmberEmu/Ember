@@ -211,10 +211,6 @@ void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::At
 	}, tx.promise);
 }
 
-void Client::handle_error_response(spark::BinaryInStream& stream) {
-
-}
-
 template<typename T>
 auto Client::extract_ipv4_pair(spark::BinaryInStream& stream) {
 	stream.skip(1); // skip padding byte
@@ -300,11 +296,12 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	}
 
 	// todo, actual error handling
+	// todo, binding response success only, handle other responses
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
 			return extract_ip_pair<attributes::MappedAddress>(stream);
 			break;
-		case Attributes::XOR_MAPPED_ADDR_OPT:
+		case Attributes::XOR_MAPPED_ADDR_OPT: // it's a faaaaake!
 			[[fallthrough]];
 		case Attributes::XOR_MAPPED_ADDRESS:
 			return handle_xor_mapped_address(stream, tx);
@@ -321,8 +318,19 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 		case Attributes::RESPONSE_ORIGIN:
 			return extract_ip_pair<attributes::ResponseOrigin>(stream);
 			break;
+		case Attributes::REFLECTED_FROM:
+			return extract_ipv4_pair<attributes::ReflectedFrom>(stream);
+			break;
+		case Attributes::RESPONSE_ADDRESS:
+			return extract_ipv4_pair<attributes::ResponseAddress>(stream);
+			break;
+		case Attributes::MESSAGE_INTEGRITY:
+			// todo
+			break;
+		case Attributes::MESSAGE_INTEGRITY_SHA256:
+			// todo
+			break;
 	}
-
 
 	logger_(Verbosity::STUN_LOG_DEBUG, required?
 		Error::RESP_UNKNOWN_REQ_ATTRIBUTE : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
@@ -383,7 +391,17 @@ Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::T
 	return attr;
 }
 
-std::future<std::expected<attributes::MappedAddress, Error>> Client::external_address() {
+std::future<std::expected<std::vector<attributes::Attribute>, Error>> 
+Client::binding_request() {
+	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
+	auto future = promise.get_future();
+	detail::Transaction::VariantPromise vp(std::move(promise));
+	binding_request(std::move(vp));
+	return future;
+}
+
+std::future<std::expected<attributes::MappedAddress, Error>>
+Client::external_address() {
 	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));

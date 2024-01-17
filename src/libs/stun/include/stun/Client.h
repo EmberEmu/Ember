@@ -75,9 +75,6 @@ class Client {
 		handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx);
 	void binding_request(detail::Transaction::VariantPromise vp);
 
-	// attribute handlers
-	void handle_error_response(spark::BinaryInStream& stream);
-
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
 	                                                       detail::Transaction& tx);
 	attributes::XorMappedAddress handle_xor_mapped_address(spark::BinaryInStream& stream,

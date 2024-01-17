@@ -36,6 +36,7 @@ struct ReflectedFrom { IPV4_ONLY };
 struct SourceAddress { IPV4_ONLY };
 struct ResponseOrigin { IP_BOTH };
 struct OtherAddress { IP_BOTH };
+struct ResponseAddress { IPV4_ONLY };
 
 // "variable length opaque value"
 class Username {
@@ -54,6 +55,7 @@ using Attribute = std::variant<
 	ChangedAddress,
 	SourceAddress,
 	ReflectedFrom,
+	ResponseAddress,
 	Username,
 	Password
 >;
