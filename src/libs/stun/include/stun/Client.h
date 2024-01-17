@@ -84,6 +84,11 @@ class Client {
 	                                                       std::size_t length);
 	attributes::ErrorCode parse_error_code(spark::BinaryInStream& stream,
 	                                       std::size_t length);
+	attributes::MessageIntegrity parse_message_integrity(spark::BinaryInStream& stream);
+	attributes::MessageIntegrity256 parse_message_integrity_sha256(spark::BinaryInStream& stream);
+	attributes::Username parse_username(spark::BinaryInStream& stream, std::size_t size);
+	attributes::Software parse_software(spark::BinaryInStream& stream, std::size_t size);
+	attributes::Fingerprint parse_fingerprint(spark::BinaryInStream& stream);
 
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);

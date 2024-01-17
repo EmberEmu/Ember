@@ -299,36 +299,34 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
 			return extract_ip_pair<attributes::MappedAddress>(stream);
-			break;
 		case Attributes::XOR_MAPPED_ADDR_OPT: // it's a faaaaake!
 			[[fallthrough]];
 		case Attributes::XOR_MAPPED_ADDRESS:
 			return parse_xor_mapped_address(stream, tx);
-			break;
 		case Attributes::CHANGED_ADDRESS:
 			return extract_ipv4_pair<attributes::ChangedAddress>(stream);
-			break;
 		case Attributes::SOURCE_ADDRESS:
 			return extract_ipv4_pair<attributes::SourceAddress>(stream);
-			break;
 		case Attributes::OTHER_ADDRESS:
 			return extract_ip_pair<attributes::OtherAddress>(stream);
-			break;
 		case Attributes::RESPONSE_ORIGIN:
 			return extract_ip_pair<attributes::ResponseOrigin>(stream);
-			break;
 		case Attributes::REFLECTED_FROM:
 			return extract_ipv4_pair<attributes::ReflectedFrom>(stream);
-			break;
 		case Attributes::RESPONSE_ADDRESS:
 			return extract_ipv4_pair<attributes::ResponseAddress>(stream);
-			break;
 		case Attributes::MESSAGE_INTEGRITY:
-			// todo
-			break;
+			return parse_message_integrity(stream);
 		case Attributes::MESSAGE_INTEGRITY_SHA256:
-			// todo
-			break;
+			return parse_message_integrity_sha256(stream);
+		case Attributes::USERNAME:
+			return parse_username(stream, length);
+		case Attributes::SOFTWARE:
+			return parse_software(stream, length);
+		case Attributes::ALTERNATE_SERVER:
+			return extract_ip_pair<attributes::AlternateServer>(stream);
+		case Attributes::FINGERPRINT:
+			return parse_fingerprint(stream);
 	}
 
 	logger_(Verbosity::STUN_LOG_DEBUG, required?
@@ -341,18 +339,66 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	return std::nullopt;
 }
 
+attributes::Fingerprint Client::parse_fingerprint(spark::BinaryInStream& stream) {
+	attributes::Fingerprint attr{};
+	stream >> attr.crc32;
+	be::big_to_native_inplace(attr.crc32);
+	return attr;
+}
+
+attributes::Software
+Client::parse_software(spark::BinaryInStream& stream, const std::size_t size) {
+	// UTF8 encoded sequence of less than 128 characters (which can be as long as 763 bytes)
+	if(size > 763) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_SOFTWARE_ATTR);
+	}
+
+	attributes::Software attr{};
+	attr.description.resize(size);
+	stream.get(attr.description.begin(), attr.description.end());
+	return attr;
+}
+
+attributes::MessageIntegrity
+Client::parse_message_integrity(spark::BinaryInStream& stream) {
+	attributes::MessageIntegrity attr{};
+	stream.get(attr.hmac_sha1.begin(), attr.hmac_sha1.end());
+	return attr;
+}
+
+attributes::MessageIntegrity256
+Client::parse_message_integrity_sha256(spark::BinaryInStream& stream) {
+	attributes::MessageIntegrity256 attr{};
+
+	if (stream.size() < 16 || stream.size() > attr.hmac_sha256.size()) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_HMAC_SHA_ATTR);
+		throw std::exception("todo"); // todo error
+	}
+
+	stream.get(attr.hmac_sha256.begin(), attr.hmac_sha256.begin() + stream.size());
+	return attr;
+}
+
+attributes::Username
+Client::parse_username(spark::BinaryInStream& stream, const std::size_t size) {
+	attributes::Username attr{};
+	attr.username.resize(size);
+	stream.get(attr.username.begin(), attr.username.end());
+	return attr;
+}
+
 attributes::ErrorCode
 Client::parse_error_code(spark::BinaryInStream& stream, std::size_t length) {
-	attributes::ErrorCode ec{};
-	stream >> ec.code;
+	attributes::ErrorCode attr{};
+	stream >> attr.code;
 
-	if(ec.code & 0xFFE00000) {
+	if(attr.code & 0xFFE00000) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
 	}
 
 	// (╯°□°）╯︵ ┻━┻
-	const auto code = (ec.code >> 8) & 0x07;
-	const auto num = ec.code & 0xFF;
+	const auto code = (attr.code >> 8) & 0x07;
+	const auto num = attr.code & 0xFF;
 
 	if(code < 300 || code >= 700) {
 		if(mode_ == RFCMode::RFC5389) {
@@ -366,7 +412,7 @@ Client::parse_error_code(spark::BinaryInStream& stream, std::size_t length) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
 	}
 
-	ec.code = (code * 100) + num;
+	attr.code = (code * 100) + num;
 
 	std::string reason;
 	reason.resize(length - sizeof(attributes::ErrorCode::code));
@@ -376,7 +422,7 @@ Client::parse_error_code(spark::BinaryInStream& stream, std::size_t length) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_STRING_BAD_PAD);
 	}
 
-	return ec;
+	return attr;
 }
 
 attributes::UnknownAttributes

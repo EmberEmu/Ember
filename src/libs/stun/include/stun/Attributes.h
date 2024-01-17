@@ -14,6 +14,7 @@
 #include <variant>
 #include <vector>
 #include <cstdint>
+#include <cstddef>
 
 namespace ember::stun::attributes {
 
@@ -31,6 +32,7 @@ namespace ember::stun::attributes {
 	std::uint16_t port;
 
 struct MappedAddress { IP_BOTH };
+struct AlternateServer { IP_BOTH };
 struct XorMappedAddress { IP_BOTH };
 struct ChangedAddress { IPV4_ONLY };
 struct ReflectedFrom { IPV4_ONLY };
@@ -57,6 +59,22 @@ struct ErrorCode {
 	std::string reason;
 };
 
+struct MessageIntegrity {
+	std::array<std::byte, 20> hmac_sha1;
+};
+
+struct MessageIntegrity256 {
+	std::array<std::byte, 32> hmac_sha256;
+};
+
+struct Software {
+	std::string description;
+};
+
+struct Fingerprint {
+	std::uint32_t crc32;
+};
+
 using Attribute = std::variant<
 	MappedAddress,
 	XorMappedAddress,
@@ -67,17 +85,14 @@ using Attribute = std::variant<
 	ReflectedFrom,
 	ResponseAddress,
 	UnknownAttributes,
+	MessageIntegrity,
+	MessageIntegrity256,
 	ErrorCode,
 	Username,
-	Password
+	Password,
+	Software,
+	AlternateServer,
+	Fingerprint
 >;
-
-// todo
-//0x0008 : MESSAGE - INTEGRITY
-//0x0014 : REALM
-//0x0015 : NONCE
-//0x8022: SOFTWARE
-//0x8023 : ALTERNATE - SERVER
-//0x8028 : FINGERPRINT
 
 } // stun, ember

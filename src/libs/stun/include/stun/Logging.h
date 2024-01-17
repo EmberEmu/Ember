@@ -45,7 +45,9 @@ smart_enum_class(Error, std::uint8_t,
 	RESP_BAD_REQ_ATTR_SERVER,         // received required attribute that it shouldn't have,
 	RESP_UNK_ATTR_BAD_PAD,            // received UNKNOWN-ATTRIBUTES that wasn't a multiple of 4 bytes
 	RESP_ERROR_STRING_BAD_PAD,        // received error reason that wasn't a multiple of 4 bytes
-	RESP_ERROR_CODE_OUT_OF_RANGE      // received error code that was out of range
+	RESP_ERROR_CODE_OUT_OF_RANGE,     // received error code that was out of range
+	RESP_BAD_HMAC_SHA_ATTR,           // received a bad SHA HMAC attribute
+	RESP_BAD_SOFTWARE_ATTR            // received a bad software attribute
 );
 
 using LogCB = std::function<void(Verbosity, Error)>;
