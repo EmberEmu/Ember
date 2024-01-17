@@ -168,8 +168,13 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		// todo
 	}
 
-	const auto attributes = handle_attributes(stream, transaction);
+	auto attributes = handle_attributes(stream, transaction);
+	fulfill_promise(transaction, std::move(attributes));
+} catch(const std::exception& e) {
+	std::cout << e.what(); // temp
+}
 
+void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
 	// figure out which attributes we care about
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
@@ -199,17 +204,65 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 			}
 		} else if constexpr(std::is_same_v<T,
 			std::promise<std::expected<std::vector<attributes::Attribute>,LogReason>>>) {
-			arg.set_value(attributes);
+			arg.set_value(std::move(attributes));
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
-	}, transaction.promise);
-} catch(const std::exception& e) {
-	std::cout << e.what(); // temp
+	}, tx.promise);
 }
 
 void Client::handle_error_response(spark::BinaryInStream& stream) {
 
+}
+
+template<typename T>
+auto Client::extract_ipv4_pair(spark::BinaryInStream& stream) {
+	stream.skip(1); // skip padding byte
+
+ 	T attr{};
+	stream >> attr.family;
+	stream >> attr.port;
+	be::big_to_native_inplace(attr.port);
+	stream >> attr.ipv4;
+	be::big_to_native_inplace(attr.ipv4);
+
+	if(attr.family != AddressFamily::IPV4) {
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		throw std::exception("todo"); // todo
+	}
+
+	return attr;
+}
+
+template<typename T>
+auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
+	stream.skip(1); // skip reserved byte
+	T attr{};
+	stream >> attr.family;
+	stream >> attr.port;
+
+	if(attr.family == AddressFamily::IPV4) {
+		attr.family = AddressFamily::IPV4;
+		be::big_to_native_inplace(attr.port);
+		stream >> attr.ipv4;
+		be::big_to_native_inplace(attr.ipv4);
+	} else if(attr.family == AddressFamily::IPV6) {
+		if(mode_ == RFCMode::RFC3489) {
+			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
+			throw std::exception("todo"); // todo
+		}
+
+		stream.get(attr.ipv6.begin(), attr.ipv6.end());
+		
+		for(auto& bytes : attr.ipv6) {
+			be::big_to_native_inplace(bytes);
+		}
+	} else {
+		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		throw std::exception("todo"); // todo
+	}
+	
+	return attr;
 }
 
 std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInStream& stream,
@@ -249,26 +302,35 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	// todo, actual error handling
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
-			return handle_mapped_address(stream);
+			return extract_ip_pair<attributes::MappedAddress>(stream);
 			break;
 		case Attributes::XOR_MAPPED_ADDR_OPT:
 			[[fallthrough]];
 		case Attributes::XOR_MAPPED_ADDRESS:
 			return handle_xor_mapped_address(stream, tx);
 			break;
-		case Attributes::OTHER_ADDRESS:
-			// todo
+		case Attributes::CHANGED_ADDRESS:
+			return extract_ipv4_pair<attributes::ChangedAddress>(stream);
 			break;
-		/*case Attributes::RESPONSE_ORIGIN:
-			break;*/
+		case Attributes::SOURCE_ADDRESS:
+			return extract_ipv4_pair<attributes::SourceAddress>(stream);
+			break;
+		case Attributes::OTHER_ADDRESS:
+			return extract_ip_pair<attributes::OtherAddress>(stream);
+			break;
+		case Attributes::RESPONSE_ORIGIN:
+			return extract_ip_pair<attributes::ResponseOrigin>(stream);
+			break;
 	}
 
-	stream.skip(length);
 
 	logger_(Verbosity::STUN_LOG_DEBUG, required?
 		LogReason::RESP_UNKNOWN_REQ_ATTRIBUTE : LogReason::RESP_UNKNOWN_OPT_ATTRIBUTE);
 
-	// todo, error handling
+	// todo assert required
+	// todo error handling
+
+	stream.skip(length);
 	return std::nullopt;
 }
 
@@ -285,36 +347,6 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 	}
 
 	return attributes;
-}
-
-attributes::MappedAddress Client::handle_mapped_address(spark::BinaryInStream& stream) {
-	stream.skip(1); // skip reserved byte
-	attributes::MappedAddress attr{};
-	stream >> attr.family;
-	stream >> attr.port;
-
-	if(attr.family == AddressFamily::IPV4) {
-		attr.family = AddressFamily::IPV4;
-		be::big_to_native_inplace(attr.port);
-		stream >> attr.ipv4;
-		be::big_to_native_inplace(attr.ipv4);
-	} else if(attr.family == AddressFamily::IPV6) {
-		if(mode_ == RFCMode::RFC3489) {
-			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
-			throw std::exception("todo"); // todo
-		}
-
-		stream.get(attr.ipv6.begin(), attr.ipv6.end());
-		
-		for(auto& bytes : attr.ipv6) {
-			be::big_to_native_inplace(bytes);
-		}
-	} else {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
-		throw std::exception("todo"); // todo
-	}
-	
-	return attr;
 }
 
 attributes::XorMappedAddress

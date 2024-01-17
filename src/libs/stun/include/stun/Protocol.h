@@ -70,27 +70,36 @@ struct Header {
 // rfc5389 attributes spec
 enum class Attributes : std::uint16_t {
 	// Comprehension required
-	MAPPED_ADDRESS      = 0x0001,
-	RESPONSE_ADDRESS    = 0x0002, // rfc3489 only
-	CHANGE_REQUEST      = 0x0003, // rfc3489 only
-	SOURCE_ADDRESS      = 0x0004, // rfc3489 only
-	CHANGED_ADDRESS     = 0x0005, // rfc3489 only
-	USERNAME            = 0x0006,
-	PASSWORD            = 0x0007, // rfc3489 only
-	MESSAGE_INTEGRITY   = 0x0008,
-	ERROR_CODE          = 0x0009,
-	UNKNOWN_ATTRIBUTES  = 0x000a,
-	REFLECTED_FROM      = 0x000b, // rfc3489 only
-	REALM               = 0x0014,
-	NONCE               = 0x0015,
-	XOR_MAPPED_ADDRESS  = 0x0020,
+	MAPPED_ADDRESS           = 0x0001,
+	RESPONSE_ADDRESS         = 0x0002, // rfc3489 only
+	CHANGE_REQUEST           = 0x0003, // rfc3489 & rfc5780 (reinstated)
+	SOURCE_ADDRESS           = 0x0004, // rfc3489 only
+	CHANGED_ADDRESS          = 0x0005, // rfc3489 only
+	USERNAME                 = 0x0006,
+	PASSWORD                 = 0x0007, // rfc3489 only
+	MESSAGE_INTEGRITY        = 0x0008,
+	ERROR_CODE               = 0x0009,
+	UNKNOWN_ATTRIBUTES       = 0x000a,
+	REFLECTED_FROM           = 0x000b, // rfc3489 only
+	REALM                    = 0x0014,
+	NONCE                    = 0x0015,
+	XOR_MAPPED_ADDRESS       = 0x0020,
+	PADDING                  = 0x0026, // rfc5780
+	RESPONSE_PORT            = 0x0027, // rfc5780
+	MESSAGE_INTEGRITY_SHA256 = 0x001c, // rfc8489
+	PASSWORD_ALGORITHM       = 0x001d, // rfc8489
+	USERHASH                 = 0x001e, // rfc8489
 
 	// Comprehension optional
-	XOR_MAPPED_ADDR_OPT = 0x8020, // todo, which RFC?
+	PASSWORD_ALGORITHMS = 0x8002, // rfc8489
+	ALTERNATE_DOMAIN    = 0x8003, // rfc8489
+	XOR_MAPPED_ADDR_OPT = 0x8020, // rfc3489 *draft*
 	SOFTWARE            = 0x8022,
 	ALTERNATE_SERVER    = 0x8023,
+	CACHE_TIMEOUT       = 0x8027, // rfc5780
 	FINGERPRINT         = 0x8028,
-	OTHER_ADDRESS       = 0x802C // todo, which RFC?
+	RESPONSE_ORIGIN     = 0x802B, // rfc5780
+	OTHER_ADDRESS       = 0x802C  // rfc5780 ("OTHER-ADDRESS uses the same attribute number as CHANGED-ADDRESS", RFC error?)
 };
 
 enum class Errors {
@@ -105,6 +114,7 @@ enum class Errors {
 enum RFCMode {
 	RFC5389 = 0x01,
 	RFC3489 = 0x02,
+	RFC5780 = 0x04,
 	RFC_BOTH = RFC5389 | RFC3489
 };
 

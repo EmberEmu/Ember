@@ -18,34 +18,24 @@ namespace ember::stun::attributes {
 
 // can't be bothered with strong typedefs to reduce duplication here,
 // which would be needed to differentiate between them in the variant
-struct MappedAddress {
-	AddressFamily family;
-	std::uint32_t ipv4;
-	std::array<std::uint32_t, 4> ipv6;
+#define IP_BOTH                        \
+	AddressFamily family;              \
+	std::uint32_t ipv4;                \
+	std::array<std::uint32_t, 4> ipv6; \
 	std::uint16_t port;
-};
 
-struct XorMappedAddress {
-	AddressFamily family;
-	std::uint32_t ipv4;
-	std::array<std::uint32_t, 4> ipv6;
+#define IPV4_ONLY                      \
+	AddressFamily family;              \
+	std::uint32_t ipv4;                \
 	std::uint16_t port;
-};
 
-struct ChangedAddress {
-	std::uint32_t ipv4;
-	std::uint16_t port;
-};
-
-struct SourceAddress {
-	std::uint32_t ipv4;
-	std::uint16_t port;
-};
-
-struct ReflectedFrom {
-	std::uint32_t ipv4;
-	std::uint16_t port;
-};
+struct MappedAddress { IP_BOTH };
+struct XorMappedAddress { IP_BOTH };
+struct ChangedAddress { IPV4_ONLY };
+struct ReflectedFrom { IPV4_ONLY };
+struct SourceAddress { IPV4_ONLY };
+struct ResponseOrigin { IP_BOTH };
+struct OtherAddress { IP_BOTH };
 
 // "variable length opaque value"
 class Username {
@@ -59,6 +49,8 @@ class Password {
 using Attribute = std::variant<
 	MappedAddress,
 	XorMappedAddress,
+	ResponseOrigin,
+	OtherAddress,
 	ChangedAddress,
 	SourceAddress,
 	ReflectedFrom,

@@ -65,6 +65,10 @@ class Client {
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 
+	template<typename T> auto extract_ip_pair(spark::BinaryInStream& stream);
+	template<typename T> auto extract_ipv4_pair(spark::BinaryInStream& stream);
+
+	void fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes);
 	std::size_t header_hash(const Header& header);
 	void handle_response(std::vector<std::uint8_t> buffer);
 	std::vector<attributes::Attribute>
