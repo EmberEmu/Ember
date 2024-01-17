@@ -77,9 +77,13 @@ class Client {
 
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
 	                                                       detail::Transaction& tx);
-	attributes::XorMappedAddress handle_xor_mapped_address(spark::BinaryInStream& stream,
+	attributes::XorMappedAddress parse_xor_mapped_address(spark::BinaryInStream& stream,
 	                                                       const detail::Transaction& tx);
-	attributes::MappedAddress handle_mapped_address(spark::BinaryInStream& stream);
+	attributes::MappedAddress parse_mapped_address(spark::BinaryInStream& stream);
+	attributes::UnknownAttributes parse_unknown_attributes(spark::BinaryInStream& stream,
+	                                                       std::size_t length);
+	attributes::ErrorCode parse_error_code(spark::BinaryInStream& stream,
+	                                       std::size_t length);
 
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);

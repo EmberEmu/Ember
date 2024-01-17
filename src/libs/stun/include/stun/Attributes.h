@@ -10,6 +10,7 @@
 
 #include <stun/Protocol.h>
 #include <array>
+#include <string>
 #include <variant>
 #include <vector>
 #include <cstdint>
@@ -39,12 +40,21 @@ struct OtherAddress { IP_BOTH };
 struct ResponseAddress { IPV4_ONLY };
 
 // "variable length opaque value"
-class Username {
+struct Username {
 	std::vector<std::uint8_t> username;
 };
 
-class Password {
+struct Password {
 	std::vector<std::uint8_t> password;
+};
+
+struct UnknownAttributes {
+	std::vector<Attributes> attributes;
+};
+
+struct ErrorCode {
+	std::uint32_t code;
+	std::string reason;
 };
 
 using Attribute = std::variant<
@@ -56,14 +66,14 @@ using Attribute = std::variant<
 	SourceAddress,
 	ReflectedFrom,
 	ResponseAddress,
+	UnknownAttributes,
+	ErrorCode,
 	Username,
 	Password
 >;
 
 // todo
 //0x0008 : MESSAGE - INTEGRITY
-//0x0009 : ERROR - CODE
-//0x000A : UNKNOWN - ATTRIBUTES
 //0x0014 : REALM
 //0x0015 : NONCE
 //0x8022: SOFTWARE

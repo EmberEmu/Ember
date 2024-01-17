@@ -160,7 +160,7 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
 
 	if(type == MessageType::BINDING_ERROR_RESPONSE) {
-		handle_error_response(stream);
+		// handle_error_response(stream);
 		// todo
 	}
 
@@ -199,7 +199,6 @@ void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::At
 					};
 
 					arg.set_value(ma);
-					return;
 				}
 			}
 		} else if constexpr(std::is_same_v<T,
@@ -304,7 +303,7 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 		case Attributes::XOR_MAPPED_ADDR_OPT: // it's a faaaaake!
 			[[fallthrough]];
 		case Attributes::XOR_MAPPED_ADDRESS:
-			return handle_xor_mapped_address(stream, tx);
+			return parse_xor_mapped_address(stream, tx);
 			break;
 		case Attributes::CHANGED_ADDRESS:
 			return extract_ipv4_pair<attributes::ChangedAddress>(stream);
@@ -342,6 +341,66 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	return std::nullopt;
 }
 
+attributes::ErrorCode
+Client::parse_error_code(spark::BinaryInStream& stream, std::size_t length) {
+	attributes::ErrorCode ec{};
+	stream >> ec.code;
+
+	if(ec.code & 0xFFE00000) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+	}
+
+	// (╯°□°）╯︵ ┻━┻
+	const auto code = (ec.code >> 8) & 0x07;
+	const auto num = ec.code & 0xFF;
+
+	if(code < 300 || code >= 700) {
+		if(mode_ == RFCMode::RFC5389) {
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+		} else if(code < 100) { // original RFC has a wider range (1xx - 6xx)
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+		}
+	}
+
+	if(num > 99) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+	}
+
+	ec.code = (code * 100) + num;
+
+	std::string reason;
+	reason.resize(length - sizeof(attributes::ErrorCode::code));
+	stream.get(reason.begin(), reason.end());
+
+	if(reason.size() % 4) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_STRING_BAD_PAD);
+	}
+
+	return ec;
+}
+
+attributes::UnknownAttributes
+Client::parse_unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
+	if(length % 2) {
+		throw std::exception("todo"); // todo error
+	}
+	
+	attributes::UnknownAttributes attr{};
+
+	while(length) {
+		Attributes attr_type;
+		stream >> attr_type;
+		be::big_to_native_inplace(attr_type);
+		attr.attributes.emplace_back(attr_type);
+	}
+
+	if(attr.attributes.size() % 2) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNK_ATTR_BAD_PAD);
+	}
+
+	return attr;
+}
+
 std::vector<attributes::Attribute>
 Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx) {
 	std::vector<attributes::Attribute> attributes;
@@ -358,7 +417,7 @@ Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx
 }
 
 attributes::XorMappedAddress
-Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
+Client::parse_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
 	stream.skip(1); // skip reserved byte
 	attributes::XorMappedAddress attr{};
 	stream >> attr.family;
