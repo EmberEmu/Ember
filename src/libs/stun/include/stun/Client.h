@@ -38,8 +38,8 @@ namespace detail {
 struct Transaction {
 	// :grimacing:
 	using VariantPromise = std::variant <
-		std::promise<std::expected<attributes::MappedAddress, LogReason>>,
-		std::promise<std::expected<std::vector<attributes::Attribute>, LogReason>>
+		std::promise<std::expected<attributes::MappedAddress, Error>>,
+		std::promise<std::expected<std::vector<attributes::Attribute>, Error>>
 	>;
 
 	std::array<std::uint32_t, 4> tx_id;
@@ -59,7 +59,7 @@ class Client {
 	RFCMode mode_;
 	std::random_device rd_;
 	std::mt19937 mt_;
-	LogCB logger_ = [](Verbosity, LogReason){};
+	LogCB logger_ = [](Verbosity, Error){};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 
 	// todo, thread safety (worker thread may access, figure this out)
@@ -90,7 +90,8 @@ public:
 
 	void log_callback(LogCB callback, Verbosity verbosity);
 	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
-	std::future<std::expected<attributes::MappedAddress, LogReason>> external_address();
+	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
+	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
 	void software();
 };
 

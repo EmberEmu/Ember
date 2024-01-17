@@ -20,7 +20,7 @@ using namespace ember;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void log_cb(stun::Verbosity verbosity, stun::LogReason reason);
+void log_cb(stun::Verbosity verbosity, stun::Error reason);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -64,7 +64,7 @@ void launch(const po::variables_map& args) {
 	}
 }
 
-void log_cb(const stun::Verbosity verbosity, const stun::LogReason reason) {
+void log_cb(const stun::Verbosity verbosity, const stun::Error reason) {
 	std::string_view verbstr{};
 
 	switch(verbosity) {

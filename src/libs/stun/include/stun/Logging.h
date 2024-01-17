@@ -31,7 +31,7 @@ enum class Verbosity {
  * Opting to provide the client (ourselves) with a reason enumeration rather than
  * a string to make localising easier, if it ever gets that far.
  */
-smart_enum_class(LogReason, std::uint8_t,
+smart_enum_class(Error, std::uint8_t,
 	RESP_BUFFER_LT_HEADER,            // buffer was smaller than the fixed header length
 	RESP_IPV6_NOT_VALID,              // received an IPv6 flag in RFC3489 mode (IPv4 only)
 	RESP_ADDR_FAM_NOT_VALID,          // address family was not valid (not IPv4 or IPv6)
@@ -45,6 +45,6 @@ smart_enum_class(LogReason, std::uint8_t,
 	RESP_BAD_REQ_ATTR_SERVER          // server sent us a required attribute that it shouldn't have
 );
 
-using LogCB = std::function<void(Verbosity, LogReason reason)>;
+using LogCB = std::function<void(Verbosity, Error)>;
 
 } // stun, ember

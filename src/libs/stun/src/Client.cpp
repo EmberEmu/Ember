@@ -119,7 +119,7 @@ void Client::binding_request(detail::Transaction::VariantPromise vp) {
 
 void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	if(buffer.size() < HEADER_LENGTH) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BUFFER_LT_HEADER);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BUFFER_LT_HEADER);
 		return; // RFC says invalid messages should be discarded
 	}
 
@@ -138,12 +138,12 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	}
 
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_COOKIE_MISSING);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_COOKIE_MISSING);
 		return;
 	}
 
 	if(header.length < ATTR_HEADER_LENGTH) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BAD_HEADER_LENGTH);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_HEADER_LENGTH);
 		return;
 	}
 
@@ -151,7 +151,7 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	const auto hash = header_hash(header);
 
 	if(!transactions_.contains(hash)) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_TX_NOT_FOUND);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
 		return;
 	}
 
@@ -180,7 +180,7 @@ void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::At
 		using T = std::decay_t<decltype(arg)>;
 
 		if constexpr(std::is_same_v<T,
-			std::promise<std::expected<attributes::MappedAddress, LogReason>>>) {
+			std::promise<std::expected<attributes::MappedAddress, Error>>>) {
 			for(const auto& attr : attributes) {
 				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
 					arg.set_value(std::get<attributes::MappedAddress>(attr));
@@ -203,7 +203,7 @@ void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::At
 				}
 			}
 		} else if constexpr(std::is_same_v<T,
-			std::promise<std::expected<std::vector<attributes::Attribute>,LogReason>>>) {
+			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
 			arg.set_value(std::move(attributes));
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
@@ -227,7 +227,7 @@ auto Client::extract_ipv4_pair(spark::BinaryInStream& stream) {
 	be::big_to_native_inplace(attr.ipv4);
 
 	if(attr.family != AddressFamily::IPV4) {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
 		throw std::exception("todo"); // todo
 	}
 
@@ -248,7 +248,7 @@ auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
 		be::big_to_native_inplace(attr.ipv4);
 	} else if(attr.family == AddressFamily::IPV6) {
 		if(mode_ == RFCMode::RFC3489) {
-			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_IPV6_NOT_VALID);
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_IPV6_NOT_VALID);
 			throw std::exception("todo"); // todo
 		}
 
@@ -258,7 +258,7 @@ auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
 			be::big_to_native_inplace(bytes);
 		}
 	} else {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
 		throw std::exception("todo"); // todo
 	}
 	
@@ -286,7 +286,7 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	if(required) {
 		// might be our fault but probably not
 		if(!attr_req_lut.contains(attr_type)) {
-			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_UNKNOWN_REQ_ATTRIBUTE);
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNKNOWN_REQ_ATTRIBUTE);
 			throw std::exception("todo"); // todo, abort all parsing here
 		}
 
@@ -294,7 +294,7 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 		
 		// definitely not our fault... probably
 		if(!(rfc & mode_)) {
-			logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_BAD_REQ_ATTR_SERVER);
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
 			throw std::exception("todo"); // todo, abort all parsing here
 		}
 	}
@@ -325,7 +325,7 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 
 
 	logger_(Verbosity::STUN_LOG_DEBUG, required?
-		LogReason::RESP_UNKNOWN_REQ_ATTRIBUTE : LogReason::RESP_UNKNOWN_OPT_ATTRIBUTE);
+		Error::RESP_UNKNOWN_REQ_ATTRIBUTE : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
 
 	// todo assert required
 	// todo error handling
@@ -376,15 +376,15 @@ Client::handle_xor_mapped_address(spark::BinaryInStream& stream, const detail::T
 		attr.ipv6[2] ^= tx.tx_id[1];
 		attr.ipv6[3] ^= tx.tx_id[2];
 	} else {
-		logger_(Verbosity::STUN_LOG_DEBUG, LogReason::RESP_ADDR_FAM_NOT_VALID);
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
 		throw std::exception("todo"); // todo
 	}
 
 	return attr;
 }
 
-std::future<std::expected<attributes::MappedAddress, LogReason>> Client::external_address() {
-	std::promise<std::expected<attributes::MappedAddress, LogReason>> promise;
+std::future<std::expected<attributes::MappedAddress, Error>> Client::external_address() {
+	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	binding_request(std::move(vp));
