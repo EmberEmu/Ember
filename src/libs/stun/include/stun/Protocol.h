@@ -119,6 +119,8 @@ enum RFCMode {
 };
 
 using AttrReqBy = std::unordered_map<Attributes, RFCMode>;
+using AttrValidIn = std::unordered_map<Attributes, MessageType>;
 extern AttrReqBy attr_req_lut;
+extern AttrValidIn attr_valid_lut;
 
 } // stun, ember

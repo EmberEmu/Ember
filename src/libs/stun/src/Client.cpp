@@ -159,16 +159,13 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
 
-	if(type == MessageType::BINDING_ERROR_RESPONSE) {
-		// handle_error_response(stream);
-		// todo
+	if(type != MessageType::BINDING_RESPONSE &&
+		type != MessageType::BINDING_ERROR_RESPONSE) {
+		// todo, unhandled response type
+		throw std::exception("todo");
 	}
 
-	if(type != MessageType::BINDING_RESPONSE) {
-		// todo
-	}
-
-	auto attributes = handle_attributes(stream, transaction);
+	auto attributes = handle_attributes(stream, transaction, type);
 	fulfill_promise(transaction, std::move(attributes));
 } catch(const std::exception& e) {
 	std::cout << e.what(); // temp
@@ -261,41 +258,23 @@ auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
 }
 
 std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInStream& stream,
-                                                               detail::Transaction& tx) {
+                                                               detail::Transaction& tx,
+                                                               const MessageType type) {
 	Attributes attr_type;
 	be::big_uint16_t length;
 	stream >> attr_type;
 	stream >> length;
-
 	be::big_to_native_inplace(attr_type);
 
 	attributes::Attribute attribute;
-
-	/*
-	 * If this attribute is marked as required, we'll look it up in the map
-	 * to check whether we know what it is and more importantly whose fault
-	 * it is if we can't finish parsing the message, given our current RFC mode
-	 */
 	const bool required = (std::to_underlying(attr_type) >> 15) ^ 1;
+	const bool attr_valid = check_attr_validity(attr_type, type, required);
 
-	if(required) {
-		// might be our fault but probably not
-		if(!attr_req_lut.contains(attr_type)) {
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNKNOWN_REQ_ATTRIBUTE);
-			throw std::exception("todo"); // todo, abort all parsing here
-		}
-
-		const auto rfc = attr_req_lut[attr_type];
-		
-		// definitely not our fault... probably
-		if(!(rfc & mode_)) {
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
-			throw std::exception("todo"); // todo, abort all parsing here
-		}
+	if(!attr_valid) {
+		throw std::exception("todo"); // todo error handling
 	}
 
 	// todo, actual error handling
-	// todo, binding response success only, handle other responses
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
 			return extract_ip_pair<attributes::MappedAddress>(stream);
@@ -327,6 +306,10 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 			return extract_ip_pair<attributes::AlternateServer>(stream);
 		case Attributes::FINGERPRINT:
 			return parse_fingerprint(stream);
+		case Attributes::ERROR_CODE:
+			return parse_error_code(stream, length);
+		case Attributes::UNKNOWN_ATTRIBUTES:
+			return parse_unknown_attributes(stream, length);
 	}
 
 	logger_(Verbosity::STUN_LOG_DEBUG, required?
@@ -337,6 +320,125 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 
 	stream.skip(length);
 	return std::nullopt;
+}
+
+bool Client::check_attr_validity(const Attributes attr_type, const MessageType msg_type,
+                                 const bool required) {
+	/*
+	 * If this attribute is marked as required, we'll look it up in the map
+	 * to check whether we know what it is and more importantly whose fault
+	 * it is if we can't finish parsing the message, given our current RFC mode
+	 */
+	if(required) {
+		if(const auto rfc = attr_req_lut.find(attr_type); rfc != attr_req_lut.end()) {
+			if (!(rfc->second & mode_)) { // definitely not our fault... probably
+				logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
+				return false;
+			}
+		}
+		else {
+			// might be our fault but probably not
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNKNOWN_REQ_ATTRIBUTE);
+			return false;
+		}
+	}
+
+	// Check whether this attribute is valid for the given response type
+	if(const auto entry = attr_valid_lut.find(attr_type); entry != attr_valid_lut.end()) {
+		if(entry->second != msg_type) { // not valid for this type
+			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
+			return false;
+		}
+	} else { // not valid for *any* response type
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
+		return false;
+	}
+
+	return true;
+}
+
+std::vector<attributes::Attribute>
+Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx, const MessageType type) {
+	std::vector<attributes::Attribute> attributes;
+
+	while(!stream.empty()) {
+		auto attribute = extract_attribute(stream, tx, type);
+
+		if(attribute) {
+			attributes.emplace_back(std::move(*attribute));
+		}
+	}
+
+	return attributes;
+}
+
+std::future<std::expected<std::vector<attributes::Attribute>, Error>> 
+Client::binding_request() {
+	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
+	auto future = promise.get_future();
+	detail::Transaction::VariantPromise vp(std::move(promise));
+	binding_request(std::move(vp));
+	return future;
+}
+
+std::future<std::expected<attributes::MappedAddress, Error>>
+Client::external_address() {
+	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
+	auto future = promise.get_future();
+	detail::Transaction::VariantPromise vp(std::move(promise));
+	binding_request(std::move(vp));
+	return future;
+}
+
+std::size_t Client::header_hash(const Header& header) {
+	/*
+	 * Hash the transaction ID to use as a key for future lookup.
+	 * FNV is used because it's already in the project, not for any
+	 * particular property. Odds of a collision are very low. 
+	 */
+	FNVHash fnv;
+
+	if(mode_ == RFCMode::RFC5389) {
+		fnv.update(header.tx_id_5389.begin(), header.tx_id_5389.end());
+	} else {
+		fnv.update(header.tx_id_3489.begin(), header.tx_id_3489.end());
+	}
+
+	return fnv.hash();
+}
+
+attributes::XorMappedAddress
+Client::parse_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
+	stream.skip(1); // skip reserved byte
+	attributes::XorMappedAddress attr{};
+	stream >> attr.family;
+
+	// XOR port with the magic cookie
+	stream >> attr.port;
+	be::big_to_native_inplace(attr.port);
+	attr.port ^= MAGIC_COOKIE >> 16;
+
+	if(attr.family == AddressFamily::IPV4) {
+		stream >> attr.ipv4;
+		be::big_to_native_inplace(attr.ipv4);
+		attr.ipv4 ^= MAGIC_COOKIE;
+	} else if(attr.family == AddressFamily::IPV6) {
+		stream.get(attr.ipv6.begin(), attr.ipv6.end());
+		
+		for (auto& bytes : attr.ipv6) {
+			be::big_to_native_inplace(bytes);
+		}
+
+		attr.ipv6[0] ^= MAGIC_COOKIE;
+		attr.ipv6[1] ^= tx.tx_id[0];
+		attr.ipv6[2] ^= tx.tx_id[1];
+		attr.ipv6[3] ^= tx.tx_id[2];
+	} else {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
+		throw std::exception("todo"); // todo
+	}
+
+	return attr;
 }
 
 attributes::Fingerprint Client::parse_fingerprint(spark::BinaryInStream& stream) {
@@ -408,7 +510,7 @@ Client::parse_error_code(spark::BinaryInStream& stream, std::size_t length) {
 		}
 	}
 
-	if(num > 99) {
+	if(num >= 100) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
 	}
 
@@ -445,94 +547,6 @@ Client::parse_unknown_attributes(spark::BinaryInStream& stream, std::size_t leng
 	}
 
 	return attr;
-}
-
-std::vector<attributes::Attribute>
-Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx) {
-	std::vector<attributes::Attribute> attributes;
-
-	while(!stream.empty()) {
-		auto attribute = extract_attribute(stream, tx);
-
-		if(attribute) {
-			attributes.emplace_back(std::move(*attribute));
-		}
-	}
-
-	return attributes;
-}
-
-attributes::XorMappedAddress
-Client::parse_xor_mapped_address(spark::BinaryInStream& stream, const detail::Transaction& tx) {
-	stream.skip(1); // skip reserved byte
-	attributes::XorMappedAddress attr{};
-	stream >> attr.family;
-
-	// XOR port with the magic cookie
-	stream >> attr.port;
-	be::big_to_native_inplace(attr.port);
-	attr.port ^= MAGIC_COOKIE >> 16;
-
-	if(attr.family == AddressFamily::IPV4) {
-		stream >> attr.ipv4;
-		be::big_to_native_inplace(attr.ipv4);
-		attr.ipv4 ^= MAGIC_COOKIE;
-	} else if(attr.family == AddressFamily::IPV6) {
-		stream.get(attr.ipv6.begin(), attr.ipv6.end());
-		
-		for (auto& bytes : attr.ipv6) {
-			be::big_to_native_inplace(bytes);
-		}
-
-		attr.ipv6[0] ^= MAGIC_COOKIE;
-		attr.ipv6[1] ^= tx.tx_id[0];
-		attr.ipv6[2] ^= tx.tx_id[1];
-		attr.ipv6[3] ^= tx.tx_id[2];
-	} else {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
-		throw std::exception("todo"); // todo
-	}
-
-	return attr;
-}
-
-std::future<std::expected<std::vector<attributes::Attribute>, Error>> 
-Client::binding_request() {
-	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
-	auto future = promise.get_future();
-	detail::Transaction::VariantPromise vp(std::move(promise));
-	binding_request(std::move(vp));
-	return future;
-}
-
-std::future<std::expected<attributes::MappedAddress, Error>>
-Client::external_address() {
-	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
-	auto future = promise.get_future();
-	detail::Transaction::VariantPromise vp(std::move(promise));
-	binding_request(std::move(vp));
-	return future;
-}
-
-std::size_t Client::header_hash(const Header& header) {
-	/*
-	 * Hash the transaction ID to use as a key for future lookup.
-	 * FNV is used because it's already in the project, not for any
-	 * particular property. Odds of a collision are very low. 
-	 */
-	FNVHash fnv;
-
-	if(mode_ == RFCMode::RFC5389) {
-		fnv.update(header.tx_id_5389.begin(), header.tx_id_5389.end());
-	} else {
-		fnv.update(header.tx_id_3489.begin(), header.tx_id_3489.end());
-	}
-
-	return fnv.hash();
-}
-
-void Client::software() {
-
 }
 
 } // stun, ember

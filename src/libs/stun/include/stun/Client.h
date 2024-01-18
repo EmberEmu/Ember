@@ -72,11 +72,13 @@ class Client {
 	std::size_t header_hash(const Header& header);
 	void handle_response(std::vector<std::uint8_t> buffer);
 	std::vector<attributes::Attribute>
-		handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx);
+		handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx, MessageType type);
 	void binding_request(detail::Transaction::VariantPromise vp);
 
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
-	                                                       detail::Transaction& tx);
+	                                                       detail::Transaction& tx,
+	                                                       MessageType type);
+	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
 	attributes::XorMappedAddress parse_xor_mapped_address(spark::BinaryInStream& stream,
 	                                                       const detail::Transaction& tx);
 	attributes::MappedAddress parse_mapped_address(spark::BinaryInStream& stream);
@@ -98,7 +100,6 @@ public:
 	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
-	void software();
 };
 
 } // stun, ember

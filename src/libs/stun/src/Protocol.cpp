@@ -28,4 +28,25 @@ AttrReqBy attr_req_lut {
 	{ Attributes::OTHER_ADDRESS,      RFCMode::RFC_BOTH }
 };
 
+// we don't handle shared secret types, YAGNI
+AttrValidIn attr_valid_lut {
+	{ Attributes::MAPPED_ADDRESS,               MessageType::BINDING_RESPONSE       },
+	{ Attributes::SOURCE_ADDRESS,               MessageType::BINDING_RESPONSE       },
+	{ Attributes::CHANGED_ADDRESS,              MessageType::BINDING_RESPONSE       },
+	{ Attributes::PASSWORD,                     MessageType::BINDING_RESPONSE       },
+	{ Attributes::MESSAGE_INTEGRITY,            MessageType::BINDING_RESPONSE       },
+	{ Attributes::ERROR_CODE,                   MessageType::BINDING_ERROR_RESPONSE },
+	{ Attributes::UNKNOWN_ATTRIBUTES,           MessageType::BINDING_ERROR_RESPONSE },
+	{ Attributes::REFLECTED_FROM,               MessageType::BINDING_RESPONSE       },
+	{ Attributes::REALM,                        MessageType::BINDING_RESPONSE       },
+	{ Attributes::NONCE,                        MessageType::BINDING_RESPONSE       },
+	{ Attributes::XOR_MAPPED_ADDRESS,           MessageType::BINDING_RESPONSE       },
+	{ Attributes::XOR_MAPPED_ADDR_OPT,          MessageType::BINDING_RESPONSE       },
+	{ Attributes::OTHER_ADDRESS,                MessageType::BINDING_RESPONSE       },
+	{ Attributes::RESPONSE_ORIGIN,              MessageType::BINDING_RESPONSE       },
+	{ Attributes::RESPONSE_ORIGIN,              MessageType::BINDING_RESPONSE       },
+	{ Attributes::MESSAGE_INTEGRITY_SHA256,     MessageType::BINDING_RESPONSE       },
+	{ Attributes::FINGERPRINT,                  MessageType::BINDING_RESPONSE       },
+};
+
 } // stun, ember
