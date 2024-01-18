@@ -14,6 +14,7 @@
 #include <expected>
 #include <future>
 #include <variant>
+#include <vector>
 #include <cstddef>
 #include <cstdint>
 
