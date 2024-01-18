@@ -137,11 +137,6 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		stream.get(header.tx_id_3489.begin(), header.tx_id_3489.end());
 	}
 
-	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_COOKIE_MISSING);
-		return;
-	}
-
 	// Check to see whether this is a response that we're expecting
 	const auto hash = header_hash(header);
 
@@ -150,24 +145,40 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		return;
 	}
 
-	if(header.length < ATTR_HEADER_LENGTH) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_HEADER_LENGTH);
+	detail::Transaction& transaction = transactions_[hash];
+
+	if(auto error = validate_header(header); error != Error::OK) {
+		fail_transaction(transaction, error);
 		return;
+	}
+
+	MessageType type{ static_cast<std::uint16_t>(header.type) };
+	process_transaction(stream, transaction, type);
+} catch(const spark::exception& e) {
+	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
+}
+
+Error Client::validate_header(const Header& header) {
+	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
+		return Error::RESP_COOKIE_MISSING;
+	}
+
+	if(header.length < ATTR_HEADER_LENGTH) {
+		return Error::RESP_BAD_HEADER_LENGTH;
 	}
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
 
 	if(type != MessageType::BINDING_RESPONSE &&
 		type != MessageType::BINDING_ERROR_RESPONSE) {
-		// todo, unhandled response type
-		throw std::exception("todo");
+		return Error::RESP_UNHANDLED_RESP_TYPE;
 	}
 
-	detail::Transaction& transaction = transactions_[hash];
-	process_transaction(stream, transaction, type);
-} catch(const std::exception& e) {
-	// todo, error promise, erase transaction
-	std::cout << e.what(); // temp
+	return Error::OK;
+}
+
+void Client::fail_transaction(detail::Transaction& tx, const Error error) {
+	// todo, error promise, erase tx
 }
 
 void Client::process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx,
@@ -175,10 +186,14 @@ void Client::process_transaction(spark::BinaryInStream& stream, detail::Transact
 	auto attributes = handle_attributes(stream, tx, type);
 	fulfill_promise(tx, std::move(attributes));
 	transactions_.erase(tx.hash);
-} catch (const std::exception& e) {
+} catch (const spark::exception&) {
+	// todo, error promise
+	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
+	transactions_.erase(tx.hash);
+} catch (const Error& e) {
+	logger_(Verbosity::STUN_LOG_DEBUG, e);
 	// todo, error promise
 	transactions_.erase(tx.hash);
-	std::cout << e.what(); // todo
 }
 
 void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
@@ -229,8 +244,7 @@ auto Client::extract_ipv4_pair(spark::BinaryInStream& stream) {
 	be::big_to_native_inplace(attr.ipv4);
 
 	if(attr.family != AddressFamily::IPV4) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
-		throw std::exception("todo"); // todo
+		throw Error::RESP_ADDR_FAM_NOT_VALID;
 	}
 
 	return attr;
@@ -250,8 +264,7 @@ auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
 		be::big_to_native_inplace(attr.ipv4);
 	} else if(attr.family == AddressFamily::IPV6) {
 		if(mode_ == RFCMode::RFC3489) {
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_IPV6_NOT_VALID);
-			throw std::exception("todo"); // todo
+			throw Error::RESP_IPV6_NOT_VALID;
 		}
 
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
@@ -260,8 +273,7 @@ auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
 			be::big_to_native_inplace(bytes);
 		}
 	} else {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
-		throw std::exception("todo"); // todo
+		throw Error::RESP_ADDR_FAM_NOT_VALID;
 	}
 	
 	return attr;
@@ -281,7 +293,7 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 	const bool attr_valid = check_attr_validity(attr_type, type, required);
 
 	if(!attr_valid) {
-		throw std::exception("todo"); // todo error handling
+		throw Error::RESP_UNEXPECTED_ATTR;
 	}
 
 	// todo, actual error handling
@@ -444,8 +456,7 @@ Client::parse_xor_mapped_address(spark::BinaryInStream& stream, const detail::Tr
 		attr.ipv6[2] ^= tx.tx_id[1];
 		attr.ipv6[3] ^= tx.tx_id[2];
 	} else {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ADDR_FAM_NOT_VALID);
-		throw std::exception("todo"); // todo
+		throw Error::RESP_ADDR_FAM_NOT_VALID;
 	}
 
 	return attr;
@@ -482,9 +493,9 @@ attributes::MessageIntegrity256
 Client::parse_message_integrity_sha256(spark::BinaryInStream& stream) {
 	attributes::MessageIntegrity256 attr{};
 
+	// todo, fingerprint could come after, don't read until the end, use length!
 	if (stream.size() < 16 || stream.size() > attr.hmac_sha256.size()) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_HMAC_SHA_ATTR);
-		throw std::exception("todo"); // todo error
+		throw Error::RESP_BAD_HMAC_SHA_ATTR;
 	}
 
 	stream.get(attr.hmac_sha256.begin(), attr.hmac_sha256.begin() + stream.size());
@@ -540,7 +551,7 @@ Client::parse_error_code(spark::BinaryInStream& stream, std::size_t length) {
 attributes::UnknownAttributes
 Client::parse_unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 	if(length % 2) {
-		throw std::exception("todo"); // todo error
+		throw Error::RESP_UNK_ATTR_BAD_PAD;
 	}
 	
 	attributes::UnknownAttributes attr{};

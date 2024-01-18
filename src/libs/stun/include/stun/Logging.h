@@ -32,6 +32,8 @@ enum class Verbosity {
  * a string to make localising easier, if it ever gets that far.
  */
 smart_enum_class(Error, std::uint8_t,
+	OK,                               // s'all good, man                                
+	BUFFER_PARSE_ERROR,               // buffer stream reported an error, probably a bad attribute
 	RESP_BUFFER_LT_HEADER,            // buffer was smaller than the fixed header length
 	RESP_IPV6_NOT_VALID,              // received an IPv6 flag in RFC3489 mode (IPv4 only)
 	RESP_ADDR_FAM_NOT_VALID,          // address family was not valid (not IPv4 or IPv6)
@@ -42,12 +44,14 @@ smart_enum_class(Error, std::uint8_t,
 	RESP_RFC3489_INVALID_ATTRIBUTE,   // received attribute that isn't valid for RFC3489
 	RESP_UNKNOWN_OPT_ATTRIBUTE,       // received optional attribute that we couldn't parse
 	RESP_UNKNOWN_REQ_ATTRIBUTE,       // received required attribute that we couldn't parse
-	RESP_BAD_REQ_ATTR_SERVER,         // received required attribute that it shouldn't have,
+	RESP_BAD_REQ_ATTR_SERVER,         // received required attribute that it shouldn't have
 	RESP_UNK_ATTR_BAD_PAD,            // received UNKNOWN-ATTRIBUTES that wasn't a multiple of 4 bytes
 	RESP_ERROR_STRING_BAD_PAD,        // received error reason that wasn't a multiple of 4 bytes
 	RESP_ERROR_CODE_OUT_OF_RANGE,     // received error code that was out of range
 	RESP_BAD_HMAC_SHA_ATTR,           // received a bad SHA HMAC attribute
-	RESP_BAD_SOFTWARE_ATTR            // received a bad software attribute
+	RESP_BAD_SOFTWARE_ATTR,           // received a bad software attribute
+	RESP_UNEXPECTED_ATTR,             // received an unexpected attribute
+	RESP_UNHANDLED_RESP_TYPE          // received an unhandled response type
 );
 
 using LogCB = std::function<void(Verbosity, Error)>;

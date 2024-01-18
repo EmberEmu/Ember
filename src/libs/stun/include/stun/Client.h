@@ -60,6 +60,8 @@ class Client {
 	                                                     MessageType type);
 	void binding_request(detail::Transaction::VariantPromise vp);
 
+	Error validate_header(const Header& header);
+	void fail_transaction(detail::Transaction& tx, Error error);
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
 	                                                       const detail::Transaction& tx,
 	                                                       MessageType type);
