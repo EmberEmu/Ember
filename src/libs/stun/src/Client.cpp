@@ -62,7 +62,7 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
 		break;
 	case Protocol::TLS_TCP:
-		throw std::runtime_error("TLS_TCP STUN isn't handled yet");
+		throw std::runtime_error("TLS_TCP STUN isn't supported");
 	default:
 		throw std::invalid_argument("Unknown protocol value specified");
 	}
@@ -111,8 +111,8 @@ void Client::binding_request(detail::Transaction::VariantPromise vp) {
 	}
 
 	transaction.promise = std::move(vp);
-	const auto hash = header_hash(header);
-	transactions_[hash] = std::move(transaction);
+	transaction.hash = header_hash(header);
+	transactions_[transaction.hash] = std::move(transaction);
 
 	transport_->send(data);
 }
@@ -142,11 +142,6 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		return;
 	}
 
-	if(header.length < ATTR_HEADER_LENGTH) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_HEADER_LENGTH);
-		return;
-	}
-
 	// Check to see whether this is a response that we're expecting
 	const auto hash = header_hash(header);
 
@@ -155,7 +150,10 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		return;
 	}
 
-	detail::Transaction& transaction = transactions_[hash];
+	if(header.length < ATTR_HEADER_LENGTH) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_HEADER_LENGTH);
+		return;
+	}
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
 
@@ -165,10 +163,22 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 		throw std::exception("todo");
 	}
 
-	auto attributes = handle_attributes(stream, transaction, type);
-	fulfill_promise(transaction, std::move(attributes));
+	detail::Transaction& transaction = transactions_[hash];
+	process_transaction(stream, transaction, type);
 } catch(const std::exception& e) {
+	// todo, error promise, erase transaction
 	std::cout << e.what(); // temp
+}
+
+void Client::process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx,
+                                 const MessageType type) try {
+	auto attributes = handle_attributes(stream, tx, type);
+	fulfill_promise(tx, std::move(attributes));
+	transactions_.erase(tx.hash);
+} catch (const std::exception& e) {
+	// todo, error promise
+	transactions_.erase(tx.hash);
+	std::cout << e.what(); // todo
 }
 
 void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
@@ -258,7 +268,7 @@ auto Client::extract_ip_pair(spark::BinaryInStream& stream) {
 }
 
 std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInStream& stream,
-                                                               detail::Transaction& tx,
+                                                               const detail::Transaction& tx,
                                                                const MessageType type) {
 	Attributes attr_type;
 	be::big_uint16_t length;
@@ -358,7 +368,7 @@ bool Client::check_attr_validity(const Attributes attr_type, const MessageType m
 }
 
 std::vector<attributes::Attribute>
-Client::handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx, const MessageType type) {
+Client::handle_attributes(spark::BinaryInStream& stream, const detail::Transaction& tx, const MessageType type) {
 	std::vector<attributes::Attribute> attributes;
 
 	while(!stream.empty()) {

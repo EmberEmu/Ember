@@ -43,6 +43,7 @@ struct Transaction {
 	>;
 
 	std::array<std::uint32_t, 4> tx_id;
+	std::size_t hash;
 	std::uint8_t retries;
 	std::chrono::milliseconds retry_timeout;
 	VariantPromise promise;
@@ -68,15 +69,17 @@ class Client {
 	template<typename T> auto extract_ip_pair(spark::BinaryInStream& stream);
 	template<typename T> auto extract_ipv4_pair(spark::BinaryInStream& stream);
 
+	void process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx, MessageType type);
 	void fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes);
 	std::size_t header_hash(const Header& header);
 	void handle_response(std::vector<std::uint8_t> buffer);
-	std::vector<attributes::Attribute>
-		handle_attributes(spark::BinaryInStream& stream, detail::Transaction& tx, MessageType type);
+	std::vector<attributes::Attribute> handle_attributes(spark::BinaryInStream& stream,
+	                                                     const detail::Transaction& tx,
+	                                                     MessageType type);
 	void binding_request(detail::Transaction::VariantPromise vp);
 
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
-	                                                       detail::Transaction& tx,
+	                                                       const detail::Transaction& tx,
 	                                                       MessageType type);
 	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
 	attributes::XorMappedAddress parse_xor_mapped_address(spark::BinaryInStream& stream,
