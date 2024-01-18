@@ -14,6 +14,7 @@ add_library(${LIBRARY_NAME}
            include/stun/Protocol.h
            include/stun/Logging.h
            include/stun/Attributes.h
+           include/stun/Transaction.h
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp

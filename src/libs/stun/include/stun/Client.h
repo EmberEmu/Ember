@@ -10,12 +10,11 @@
 
 #include <stun/Attributes.h>
 #include <stun/Protocol.h>
+#include <stun/Transaction.h>
 #include <stun/Transport.h>
 #include <stun/Logging.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
-#include <array>
-#include <chrono>
 #include <expected>
 #include <future>
 #include <memory>
@@ -23,33 +22,16 @@
 #include <random>
 #include <string>
 #include <thread>
-#include <variant>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::stun {
 
+constexpr auto DEFAULT_TX_TIMEOUT = 500;
+
 enum Protocol {
 	UDP, TCP, TLS_TCP
 };
-
-namespace detail {
-
-struct Transaction {
-	// :grimacing:
-	using VariantPromise = std::variant <
-		std::promise<std::expected<attributes::MappedAddress, Error>>,
-		std::promise<std::expected<std::vector<attributes::Attribute>, Error>>
-	>;
-
-	std::array<std::uint32_t, 4> tx_id;
-	std::size_t hash;
-	std::uint8_t retries;
-	std::chrono::milliseconds retry_timeout;
-	VariantPromise promise;
-};
-
-} // detail
 
 class Client {
 	boost::asio::io_context ctx_;
