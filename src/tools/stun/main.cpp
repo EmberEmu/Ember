@@ -55,9 +55,18 @@ void launch(const po::variables_map& args) {
 	const auto address = result.get();
 
 	if(address) {
+		std::string addr_str;
+
+		if(address->family == stun::AddressFamily::IPV4) {
+			addr_str = boost::asio::ip::address_v4(address->ipv4).to_string();
+		} else {
+			boost::asio::ip::address_v6::bytes_type bytes;
+			std::copy(address->ipv6.begin(), address->ipv6.end(), bytes.data());
+			addr_str = boost::asio::ip::address_v6(bytes).to_string();
+		}
+
 		// todo, std::print when supported by all compilers
-		std::cout << std::format("STUN provider returned our address as {}:{}",
-			boost::asio::ip::address_v4(address->ipv4).to_string(), address->port);
+		std::cout << std::format("STUN provider returned our address as {}:{}", addr_str, address->port);
 	} else {
 		std::cout << std::format("STUN request failed: {} ({})",
 			stun::to_string(address.error()), std::to_underlying(address.error()));

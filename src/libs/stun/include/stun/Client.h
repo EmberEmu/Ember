@@ -55,19 +55,23 @@ class Client {
 	template<typename T> auto extract_ip_pair(spark::BinaryInStream& stream);
 	template<typename T> auto extract_ipv4_pair(spark::BinaryInStream& stream);
 
-	void transaction_timer(detail::Transaction& tx);
+	// Transaction stuff
+	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
 	void process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx, MessageType type);
-	void fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes);
+	void complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes);
+	void abort_transaction(detail::Transaction& tx, Error error);
+	void transaction_timer(detail::Transaction& tx);
 	std::size_t tx_hash(const TxID& tx_id);
+	void set_tcp_timer(detail::Transaction& tx);
+	void set_udp_timer(detail::Transaction& tx);
+
 	void handle_response(std::vector<std::uint8_t> buffer);
 	std::vector<attributes::Attribute> handle_attributes(spark::BinaryInStream& stream,
 	                                                     const detail::Transaction& tx,
 	                                                     MessageType type);
 	void binding_request(detail::Transaction& tx);
 
-	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
 	Error validate_header(const Header& header);
-	void fail_transaction(detail::Transaction& tx, Error error);
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
 	                                                       const detail::Transaction& tx,
 	                                                       MessageType type);
@@ -85,6 +89,7 @@ class Client {
 	attributes::Username parse_username(spark::BinaryInStream& stream, std::size_t size);
 	attributes::Software parse_software(spark::BinaryInStream& stream, std::size_t size);
 	attributes::Fingerprint parse_fingerprint(spark::BinaryInStream& stream);
+	void on_connection_error(const boost::system::error_code& error);
 
 public:
 	Client(RFCMode mode = RFCMode::RFC5389);

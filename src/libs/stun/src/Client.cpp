@@ -21,8 +21,6 @@
 #include <vector>
 #include <cstddef>
 
-#include <iostream> // todo temp
-
 using namespace std::chrono_literals;
 
 template<class>
@@ -58,11 +56,13 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 	switch(protocol) {
 	case Protocol::UDP:
 		transport_ = std::make_unique<DatagramTransport>(ctx_, host, port,
-			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
+			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
+			[this](const boost::system::error_code& ec) { on_connection_error(ec); });
 		break;
 	case Protocol::TCP:
 		transport_ = std::make_unique<StreamTransport>(ctx_, host, port,
-			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); });
+			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
+			[this](const boost::system::error_code& ec) { on_connection_error(ec); });
 		break;
 	case Protocol::TLS_TCP:
 		throw std::runtime_error("TLS_TCP STUN isn't supported");
@@ -71,51 +71,6 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 	}
 
 	transport_->connect();
-}
-
-void Client::transaction_timer(detail::Transaction& tx) {
-	if(protocol_ != Protocol::UDP) {
-		tx.timer.expires_from_now(tx.timeout);
-		tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
-			if(ec) {
-				return;
-			}
-
-			if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
-				fail_transaction(tx, Error::NO_RESPONSE_RECEIVED);
-			}
-		});
-
-		return;
-	}
-
-	tx.timer.expires_from_now(tx.timeout);
-	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
-		if(ec) {
-			return;
-		}
-
-		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
-			auto& tx = entry->second;
-
-			// RFC algorithm decided by interpretive dance
-			if(tx.retries_left) {
-				if (tx.retries_left != tx.max_retries) {
-					tx.timeout *= 2;
-				}
-				
-				--tx.retries_left;
-
-				if(!tx.retries_left) {
-					tx.timeout = tx.initial_to * detail::TX_RM;
-				}
-
-				binding_request(tx);
-			} else {
-				fail_transaction(tx, Error::NO_RESPONSE_RECEIVED);
-			}
-		}
-	});
 }
 
 void Client::binding_request(detail::Transaction& tx) {
@@ -199,7 +154,7 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	transaction.timer.cancel();
 
 	if(auto error = validate_header(header); error != Error::OK) {
-		fail_transaction(transaction, error);
+		abort_transaction(transaction, error);
 		return;
 	}
 
@@ -228,7 +183,7 @@ Error Client::validate_header(const Header& header) {
 	return Error::OK;
 }
 
-void Client::fail_transaction(detail::Transaction& tx, const Error error) {
+void Client::abort_transaction(detail::Transaction& tx, const Error error) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 
@@ -249,15 +204,14 @@ void Client::fail_transaction(detail::Transaction& tx, const Error error) {
 void Client::process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx,
                                  const MessageType type) try {
 	auto attributes = handle_attributes(stream, tx, type);
-	fulfill_promise(tx, std::move(attributes));
-	transactions_.erase(tx.hash);
+	complete_transaction(tx, std::move(attributes));
 } catch (const spark::exception&) {
-	fail_transaction(tx, Error::BUFFER_PARSE_ERROR);
+	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
 } catch (const Error& e) {
-	fail_transaction(tx, e);
+	abort_transaction(tx, e);
 }
 
-void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
+void Client::complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
 	// figure out which attributes we care about
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
@@ -291,6 +245,8 @@ void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::At
 			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
 	}, tx.promise);
+
+	transactions_.erase(tx.hash);
 }
 
 template<typename T>
@@ -631,6 +587,57 @@ Client::parse_unknown_attributes(spark::BinaryInStream& stream, std::size_t leng
 	return attr;
 }
 
+void Client::set_udp_timer(detail::Transaction& tx) {
+	tx.timer.expires_from_now(tx.timeout);
+	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
+		if(ec) {
+			return;
+		}
+
+		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
+			auto& tx = entry->second;
+
+			// RFC algorithm decided by interpretive dance
+			if(tx.retries_left) {
+				if (tx.retries_left != tx.max_retries) {
+					tx.timeout *= 2;
+				}
+				
+				--tx.retries_left;
+
+				if(!tx.retries_left) {
+					tx.timeout = tx.initial_to * detail::TX_RM;
+				}
+
+				binding_request(tx);
+			} else {
+				abort_transaction(tx, Error::NO_RESPONSE_RECEIVED);
+			}
+		}
+	});
+}
+
+void Client::set_tcp_timer(detail::Transaction& tx) {
+	tx.timer.expires_from_now(tx.timeout);
+	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
+		if(ec) {
+			return;
+		}
+
+		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
+			abort_transaction(tx, Error::NO_RESPONSE_RECEIVED);
+		}
+	});
+}
+
+void Client::transaction_timer(detail::Transaction& tx) {
+	if(protocol_ != Protocol::UDP) {
+		set_tcp_timer(tx);
+	} else {
+		set_udp_timer(tx);
+	}
+}
+
 void Client::set_udp_initial_timeout(std::chrono::milliseconds timeout) {
 	if(timeout <= 0ms) {
 		throw std::invalid_argument("Timeout must be > 0ms");
@@ -641,7 +648,7 @@ void Client::set_udp_initial_timeout(std::chrono::milliseconds timeout) {
 
 void Client::set_max_udp_retries(int retries) {
 	if(retries < 0) {
-		std::invalid_argument("UDP retries cannot be negative");
+		throw std::invalid_argument("UDP retries cannot be negative");
 	}
 
 	max_udp_retries_ = retries;
@@ -653,6 +660,18 @@ void Client::set_tcp_timeout(std::chrono::milliseconds timeout) {
 	}
 
 	tcp_timeout_ = timeout;
+}
+
+void Client::on_connection_error(const boost::system::error_code& ec) {
+	for (auto& [k, v] : transactions_) {
+		if(ec == boost::asio::error::connection_aborted) {
+			abort_transaction(v, Error::CONNECTION_ABORTED);
+		} else if (ec == boost::asio::error::connection_reset) {
+			abort_transaction(v, Error::CONNECTION_RESET);
+		} else {
+			abort_transaction(v, Error::CONNECTION_ERROR);
+		}
+	}
 }
 
 } // stun, ember

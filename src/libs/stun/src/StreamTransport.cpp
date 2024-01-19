@@ -14,9 +14,10 @@
 namespace ember::stun {
 
 StreamTransport::StreamTransport(ba::io_context& ctx, const std::string& host,
-                                 std::uint16_t port, ReceiveCallback rcb)
+                                 std::uint16_t port, ReceiveCallback rcb,
+                                 OnConnectionError ecb)
 	: ctx_(ctx), host_(host), port_(port),
-      socket_(ctx), rcb_(rcb) { }
+      socket_(ctx), rcb_(rcb), ecb_(ecb) { }
 
 StreamTransport::~StreamTransport() {
 	socket_.close();
@@ -74,12 +75,15 @@ void StreamTransport::read(const std::size_t size, const std::size_t offset) {
 
 	boost::asio::async_read(socket_, buffer,
 		[this](boost::system::error_code ec, std::size_t size) {
-			if (ec && ec != boost::asio::error::operation_aborted) {
-				//close_session(); todo
+			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			}
 
-			receive();
+			if(!ec) {
+				receive();
+			} else {
+				ecb_(ec);
+			}
 		}
 	);
 }

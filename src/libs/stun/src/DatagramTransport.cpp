@@ -11,8 +11,9 @@
 namespace ember::stun {
 
 DatagramTransport::DatagramTransport(ba::io_context& ctx, const std::string& host,
-                                     std::uint16_t port, ReceiveCallback rcb)
-	: ctx_(ctx), host_(host), port_(port), socket_(ctx), rcb_(rcb) { }
+                                     std::uint16_t port, ReceiveCallback rcb,
+                                     OnConnectionError ecb)
+	: ctx_(ctx), host_(host), port_(port), socket_(ctx), rcb_(rcb), ecb_(ecb) { }
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
@@ -40,9 +41,13 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 void DatagramTransport::receive() {
 	socket_.async_receive_from(boost::asio::null_buffers(), ep_,
 		[this](boost::system::error_code ec, std::size_t /*length*/) {
-			if(ec) {
+			if(ec == boost::asio::error::operation_aborted) {
+				return;
+			} else if(ec) {
+				ecb_(ec);
 				return;
 			}
+
 
 			std::vector<std::uint8_t> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
@@ -51,6 +56,8 @@ void DatagramTransport::receive() {
 
 			if(!ec) {
 				rcb_(std::move(buffer));
+			} else {
+				ecb_(ec);
 			}
 		});
 }

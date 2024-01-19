@@ -18,6 +18,7 @@ namespace ba = boost::asio;
 
 class StreamTransport final : public Transport {
 	using ReceiveCallback = std::function<void(std::vector<std::uint8_t>)>;
+	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
 
 	enum class ReadState {
 		READ_HEADER, READ_BODY, READ_DONE
@@ -30,13 +31,15 @@ class StreamTransport final : public Transport {
 	const std::string host_;
 	const std::uint16_t port_;
 	ReceiveCallback rcb_;
+	OnConnectionError ecb_;
 	std::vector<std::uint8_t> buffer_;
 
 	std::size_t get_length();
 	void read(std::size_t size, std::size_t offset);
 	void receive();
 public:
-	StreamTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port, ReceiveCallback rcb);
+	StreamTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port,
+		ReceiveCallback rcb, OnConnectionError ecb);
 	~StreamTransport() override;
 
 	void connect() override;

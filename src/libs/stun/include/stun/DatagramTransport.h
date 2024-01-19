@@ -20,6 +20,7 @@ namespace ba = boost::asio;
 
 class DatagramTransport final : public Transport {
 	using ReceiveCallback = std::function<void(std::vector<std::uint8_t>)>;
+	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
 
 	ba::io_context& ctx_;
 	ba::ip::udp::socket socket_;
@@ -28,10 +29,12 @@ class DatagramTransport final : public Transport {
 	const std::string host_;
 	const std::uint16_t port_;
 	ReceiveCallback rcb_;
+	OnConnectionError ecb_;
 
 	void receive();
 public:
-	DatagramTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port, ReceiveCallback rcb);
+	DatagramTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port,
+		ReceiveCallback rcb, OnConnectionError ecb);
 	~DatagramTransport() override;
 
 	void connect() override;
