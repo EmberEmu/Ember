@@ -53,18 +53,20 @@ enum class MessageType : std::uint16_t {
 	SHARED_SECRET_ERROR_RESPONSE = 0x0112
 };
 
+union TxID {
+	struct {
+		std::array<std::uint32_t, 3> id_5389;
+	};
+	struct {
+		std::array<std::uint32_t, 4> id_3489;
+	};
+};
+
 struct Header {
 	be::big_uint16_t type;
 	be::big_uint16_t length;
-	union {
-		struct {
-			be::big_uint32_t cookie;
-			std::array<std::uint32_t, 3> tx_id_5389;
-		};
-		struct {
-			std::array<std::uint32_t, 4> tx_id_3489;
-		};
-	};
+	be::big_uint32_t cookie;
+	TxID tx_id;
 };
 
 // rfc5389 attributes spec

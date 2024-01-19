@@ -50,6 +50,7 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 }
 
 void Client::connect(const std::string& host, const std::uint16_t port, const Protocol protocol) {
+	protocol_ = protocol;
 	transport_.reset();
 
 	switch(protocol) {
@@ -70,51 +71,91 @@ void Client::connect(const std::string& host, const std::uint16_t port, const Pr
 	transport_->connect();
 }
 
-void Client::binding_request(detail::Transaction::VariantPromise vp) {
+void Client::transaction_timer(detail::Transaction& tx) {
+	if(protocol_ != Protocol::UDP) {
+		tx.timer.expires_from_now(tx.timeout);
+		tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
+			if(ec) {
+				return;
+			}
+
+			if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
+				fail_transaction(tx, Error::NO_RESPONSE_RECEIVED);
+			}
+		});
+
+		return;
+	}
+
+	tx.timer.expires_from_now(tx.timeout);
+	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
+		if(ec) {
+			return;
+		}
+
+		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
+			auto& tx = entry->second;
+
+			// RFC algorithm decided by interpretive dance
+			if(tx.retries_left) {
+				if (tx.retries_left != tx.max_retries) {
+					tx.timeout *= 2;
+				}
+				
+				--tx.retries_left;
+
+				if(!tx.retries_left) {
+					tx.timeout = tx.initial_to * detail::TX_RM;
+				}
+
+				binding_request(tx);
+			} else {
+				fail_transaction(tx, Error::NO_RESPONSE_RECEIVED);
+			}
+		}
+	});
+}
+
+void Client::binding_request(detail::Transaction& tx) {
 	std::vector<std::uint8_t> data;
 	spark::VectorBufferAdaptor buffer(data);
 	spark::BinaryOutStream stream(buffer);
 
 	Header header{ };
 	header.type = std::to_underlying(MessageType::BINDING_REQUEST);
-
-	if(mode_ == RFCMode::RFC5389) {
-		header.cookie = MAGIC_COOKIE;
-
-		for(auto& ele : header.tx_id_5389) {
-			ele = mt_();
-		}
-	} else {
-		for(auto& ele : header.tx_id_3489) {
-			ele = mt_();
-		}
-	}
-
 	stream << header.type;
 	stream << header.length;
+	header.cookie = MAGIC_COOKIE;
 
 	if(mode_ == RFCMode::RFC5389) {
 		stream << header.cookie;
-		stream.put(header.tx_id_5389.begin(), header.tx_id_5389.end());
+		stream.put(tx.tx_id.id_5389.begin(), tx.tx_id.id_5389.end());
 	} else {
-		stream.put(header.tx_id_3489.begin(), header.tx_id_3489.end());
+		stream.put(tx.tx_id.id_3489.begin(), tx.tx_id.id_3489.end());
 	}
+	
+	transaction_timer(tx);
+	transport_->send(data);
+}
 
-	detail::Transaction transaction{};
+detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromise vp) {
+	const auto timeout = protocol_ == UDP? detail::UDP_TX_TIMEOUT : detail::TCP_TX_TIMEOUT;
+	detail::Transaction tx(ctx_, timeout);
+	tx.promise = std::move(vp);
 
 	if(mode_ == RFCMode::RFC5389) {
-		std::copy(header.tx_id_5389.begin(), header.tx_id_5389.end(),
-			transaction.tx_id.begin());
+		for(auto& ele : tx.tx_id.id_5389) {
+			ele = mt_();
+		}
 	} else {
-		std::copy(header.tx_id_3489.begin(), header.tx_id_3489.end(),
-			transaction.tx_id.begin());
+		for(auto& ele : tx.tx_id.id_3489) {
+			ele = mt_();
+		}
 	}
 
-	transaction.promise = std::move(vp);
-	transaction.hash = header_hash(header);
-	transactions_[transaction.hash] = std::move(transaction);
-
-	transport_->send(data);
+	tx.hash = tx_hash(tx.tx_id);
+	auto entry = transactions_.emplace(tx.hash, std::move(tx));
+	return entry.first->second;
 }
 
 void Client::handle_response(std::vector<std::uint8_t> buffer) try {
@@ -132,20 +173,21 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 
 	if(mode_ == RFCMode::RFC5389) {
 		stream >> header.cookie;
-		stream.get(header.tx_id_5389.begin(), header.tx_id_5389.end());
+		stream.get(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end());
 	} else {
-		stream.get(header.tx_id_3489.begin(), header.tx_id_3489.end());
+		stream.get(header.tx_id.id_3489.begin(), header.tx_id.id_3489.end());
 	}
 
 	// Check to see whether this is a response that we're expecting
-	const auto hash = header_hash(header);
+	const auto hash = tx_hash(header.tx_id);
 
 	if(!transactions_.contains(hash)) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
 		return;
 	}
 
-	detail::Transaction& transaction = transactions_[hash];
+	detail::Transaction& transaction = transactions_.at(hash);
+	transaction.timer.cancel();
 
 	if(auto error = validate_header(header); error != Error::OK) {
 		fail_transaction(transaction, error);
@@ -178,7 +220,21 @@ Error Client::validate_header(const Header& header) {
 }
 
 void Client::fail_transaction(detail::Transaction& tx, const Error error) {
-	// todo, error promise, erase tx
+	std::visit([&](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
+
+		if constexpr(std::is_same_v<T,
+			std::promise<std::expected<attributes::MappedAddress, Error>>>) {
+			arg.set_value(std::unexpected(error));
+		} else if constexpr(std::is_same_v<T,
+			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
+			arg.set_value(std::unexpected(error));
+		} else {
+			static_assert(always_false_v<T>, "Unhandled variant type");
+		}
+	}, tx.promise);
+
+	transactions_.erase(tx.hash);
 }
 
 void Client::process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx,
@@ -187,13 +243,9 @@ void Client::process_transaction(spark::BinaryInStream& stream, detail::Transact
 	fulfill_promise(tx, std::move(attributes));
 	transactions_.erase(tx.hash);
 } catch (const spark::exception&) {
-	// todo, error promise
-	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
-	transactions_.erase(tx.hash);
+	fail_transaction(tx, Error::BUFFER_PARSE_ERROR);
 } catch (const Error& e) {
-	logger_(Verbosity::STUN_LOG_DEBUG, e);
-	// todo, error promise
-	transactions_.erase(tx.hash);
+	fail_transaction(tx, e);
 }
 
 void Client::fulfill_promise(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
@@ -296,7 +348,6 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 		throw Error::RESP_UNEXPECTED_ATTR;
 	}
 
-	// todo, actual error handling
 	switch(attr_type) {
 		case Attributes::MAPPED_ADDRESS:
 			return extract_ip_pair<attributes::MappedAddress>(stream);
@@ -319,7 +370,7 @@ std::optional<attributes::Attribute> Client::extract_attribute(spark::BinaryInSt
 		case Attributes::MESSAGE_INTEGRITY:
 			return parse_message_integrity(stream);
 		case Attributes::MESSAGE_INTEGRITY_SHA256:
-			return parse_message_integrity_sha256(stream);
+			return parse_message_integrity_sha256(stream, length);
 		case Attributes::USERNAME:
 			return parse_username(stream, length);
 		case Attributes::SOFTWARE:
@@ -399,7 +450,8 @@ Client::binding_request() {
 	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
-	binding_request(std::move(vp));
+	auto& tx = start_transaction(std::move(vp));
+	binding_request(tx);
 	return future;
 }
 
@@ -408,11 +460,12 @@ Client::external_address() {
 	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
-	binding_request(std::move(vp));
+	auto& tx = start_transaction(std::move(vp));
+	binding_request(tx);
 	return future;
 }
 
-std::size_t Client::header_hash(const Header& header) {
+std::size_t Client::tx_hash(const TxID& tx_id) {
 	/*
 	 * Hash the transaction ID to use as a key for future lookup.
 	 * FNV is used because it's already in the project, not for any
@@ -421,9 +474,9 @@ std::size_t Client::header_hash(const Header& header) {
 	FNVHash fnv;
 
 	if(mode_ == RFCMode::RFC5389) {
-		fnv.update(header.tx_id_5389.begin(), header.tx_id_5389.end());
+		fnv.update(tx_id.id_5389.begin(), tx_id.id_5389.end());
 	} else {
-		fnv.update(header.tx_id_3489.begin(), header.tx_id_3489.end());
+		fnv.update(tx_id.id_3489.begin(), tx_id.id_3489.end());
 	}
 
 	return fnv.hash();
@@ -452,9 +505,9 @@ Client::parse_xor_mapped_address(spark::BinaryInStream& stream, const detail::Tr
 		}
 
 		attr.ipv6[0] ^= MAGIC_COOKIE;
-		attr.ipv6[1] ^= tx.tx_id[0];
-		attr.ipv6[2] ^= tx.tx_id[1];
-		attr.ipv6[3] ^= tx.tx_id[2];
+		attr.ipv6[1] ^= tx.tx_id.id_5389[0];
+		attr.ipv6[2] ^= tx.tx_id.id_5389[1];
+		attr.ipv6[3] ^= tx.tx_id.id_5389[2];
 	} else {
 		throw Error::RESP_ADDR_FAM_NOT_VALID;
 	}
@@ -490,15 +543,14 @@ Client::parse_message_integrity(spark::BinaryInStream& stream) {
 }
 
 attributes::MessageIntegrity256
-Client::parse_message_integrity_sha256(spark::BinaryInStream& stream) {
+Client::parse_message_integrity_sha256(spark::BinaryInStream& stream, const std::size_t length) {
 	attributes::MessageIntegrity256 attr{};
 
-	// todo, fingerprint could come after, don't read until the end, use length!
-	if (stream.size() < 16 || stream.size() > attr.hmac_sha256.size()) {
+	if (length < 16 || length > attr.hmac_sha256.size()) {
 		throw Error::RESP_BAD_HMAC_SHA_ATTR;
 	}
 
-	stream.get(attr.hmac_sha256.begin(), attr.hmac_sha256.begin() + stream.size());
+	stream.get(attr.hmac_sha256.begin(), attr.hmac_sha256.begin() + length);
 	return attr;
 }
 

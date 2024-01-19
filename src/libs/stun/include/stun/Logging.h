@@ -32,7 +32,8 @@ enum class Verbosity {
  * a string to make localising easier, if it ever gets that far.
  */
 smart_enum_class(Error, std::uint8_t,
-	OK,                               // s'all good, man                                
+	OK,                               // s'all good, man,
+	NO_RESPONSE_RECEIVED,             // as it says on the tin
 	BUFFER_PARSE_ERROR,               // buffer stream reported an error, probably a bad attribute
 	RESP_BUFFER_LT_HEADER,            // buffer was smaller than the fixed header length
 	RESP_IPV6_NOT_VALID,              // received an IPv6 flag in RFC3489 mode (IPv4 only)

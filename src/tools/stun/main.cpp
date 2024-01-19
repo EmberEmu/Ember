@@ -59,8 +59,8 @@ void launch(const po::variables_map& args) {
 		std::cout << std::format("STUN provider returned our address as {}:{}",
 			boost::asio::ip::address_v4(address->ipv4).to_string(), address->port);
 	} else {
-		std::cout << std::format("Error occurred during STUN transaction: {}",
-			std::to_underlying(address.error()));
+		std::cout << std::format("STUN request failed: {} ({})",
+			stun::to_string(address.error()), std::to_underlying(address.error()));
 	}
 }
 
