@@ -15,6 +15,7 @@
 #include <stun/Logging.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
+#include <chrono>
 #include <expected>
 #include <future>
 #include <memory>
@@ -43,6 +44,10 @@ class Client {
 	LogCB logger_ = [](Verbosity, Error){};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 	Protocol protocol_;
+
+	int max_udp_retries_ = 0;
+	std::chrono::milliseconds udp_initial_timeout_ { 0 };
+	std::chrono::milliseconds tcp_timeout_ { 0 };
 
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
@@ -89,6 +94,9 @@ public:
 	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
+	void set_udp_initial_timeout(std::chrono::milliseconds timeout);
+	void set_max_udp_retries(int retries);
+	void set_tcp_timeout(std::chrono::milliseconds timeout);
 };
 
 } // stun, ember

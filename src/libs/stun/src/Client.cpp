@@ -23,6 +23,8 @@
 
 #include <iostream> // todo temp
 
+using namespace std::chrono_literals;
+
 template<class>
 inline constexpr bool always_false_v = false;
 
@@ -139,8 +141,15 @@ void Client::binding_request(detail::Transaction& tx) {
 }
 
 detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromise vp) {
-	const auto timeout = protocol_ == UDP? detail::UDP_TX_TIMEOUT : detail::TCP_TX_TIMEOUT;
-	detail::Transaction tx(ctx_, timeout);
+	auto timeout = protocol_ == UDP? udp_initial_timeout_ : tcp_timeout_;
+
+	if(timeout == 0ms) {
+		timeout = protocol_ == UDP? detail::UDP_TX_TIMEOUT : detail::TCP_TX_TIMEOUT;
+	}
+
+	auto max_retries = max_udp_retries_? max_udp_retries_ : detail::MAX_UDP_RETRIES;
+
+	detail::Transaction tx(ctx_, timeout, max_retries);
 	tx.promise = std::move(vp);
 
 	if(mode_ == RFCMode::RFC5389) {
@@ -620,6 +629,30 @@ Client::parse_unknown_attributes(spark::BinaryInStream& stream, std::size_t leng
 	}
 
 	return attr;
+}
+
+void Client::set_udp_initial_timeout(std::chrono::milliseconds timeout) {
+	if(timeout <= 0ms) {
+		throw std::invalid_argument("Timeout must be > 0ms");
+	}
+
+	udp_initial_timeout_ = timeout;
+}
+
+void Client::set_max_udp_retries(int retries) {
+	if(retries < 0) {
+		std::invalid_argument("UDP retries cannot be negative");
+	}
+
+	max_udp_retries_ = retries;
+}
+
+void Client::set_tcp_timeout(std::chrono::milliseconds timeout) {
+	if(timeout <= 0ms) {
+		throw std::invalid_argument("Timeout must be > 0ms");
+	}
+
+	tcp_timeout_ = timeout;
 }
 
 } // stun, ember
