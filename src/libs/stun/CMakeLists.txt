@@ -15,10 +15,13 @@ add_library(${LIBRARY_NAME}
            include/stun/Logging.h
            include/stun/Attributes.h
            include/stun/Transaction.h
+           include/stun/Parser.h
+           include/stun/Parser.inl
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp
            src/Protocol.cpp
+           src/Parser.cpp
            )
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})

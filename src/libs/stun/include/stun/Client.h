@@ -13,6 +13,7 @@
 #include <stun/Transaction.h>
 #include <stun/Transport.h>
 #include <stun/Logging.h>
+#include <stun/Parser.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
@@ -37,6 +38,7 @@ class Client {
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
+	Parser parser_;
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
 	std::random_device rd_;
@@ -52,9 +54,6 @@ class Client {
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 
-	template<typename T> auto extract_ip_pair(spark::BinaryInStream& stream);
-	template<typename T> auto extract_ipv4_pair(spark::BinaryInStream& stream);
-
 	// Transaction stuff
 	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
 	void process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx, MessageType type);
@@ -64,31 +63,8 @@ class Client {
 	std::size_t tx_hash(const TxID& tx_id);
 	void set_tcp_timer(detail::Transaction& tx);
 	void set_udp_timer(detail::Transaction& tx);
-
 	void handle_response(std::vector<std::uint8_t> buffer);
-	std::vector<attributes::Attribute> handle_attributes(spark::BinaryInStream& stream,
-	                                                     const detail::Transaction& tx,
-	                                                     MessageType type);
 	void binding_request(detail::Transaction& tx);
-
-	Error validate_header(const Header& header);
-	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
-	                                                       const detail::Transaction& tx,
-	                                                       MessageType type);
-	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
-	attributes::XorMappedAddress parse_xor_mapped_address(spark::BinaryInStream& stream,
-	                                                       const detail::Transaction& tx);
-	attributes::MappedAddress parse_mapped_address(spark::BinaryInStream& stream);
-	attributes::UnknownAttributes parse_unknown_attributes(spark::BinaryInStream& stream,
-	                                                       std::size_t length);
-	attributes::ErrorCode parse_error_code(spark::BinaryInStream& stream,
-	                                       std::size_t length);
-	attributes::MessageIntegrity parse_message_integrity(spark::BinaryInStream& stream);
-	attributes::MessageIntegrity256 parse_message_integrity_sha256(spark::BinaryInStream& stream,
-	                                                               std::size_t length);
-	attributes::Username parse_username(spark::BinaryInStream& stream, std::size_t size);
-	attributes::Software parse_software(spark::BinaryInStream& stream, std::size_t size);
-	attributes::Fingerprint parse_fingerprint(spark::BinaryInStream& stream);
 	void on_connection_error(const boost::system::error_code& error);
 
 public:
