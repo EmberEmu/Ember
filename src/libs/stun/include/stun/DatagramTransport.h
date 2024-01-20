@@ -19,7 +19,7 @@ namespace ember::stun {
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
-class DatagramTransport final : public TransportBase {
+class DatagramTransport final : public Transport {
 	ba::io_context ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;

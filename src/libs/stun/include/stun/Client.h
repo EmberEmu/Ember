@@ -29,6 +29,8 @@
 
 namespace ember::stun {
 
+class Transport;
+
 class Client {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
 

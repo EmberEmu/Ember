@@ -30,6 +30,7 @@ namespace ember::stun {
 
 Client::Client(std::unique_ptr<Transport> transport, RFCMode mode)
 	: transport_(std::move(transport)), parser_(mode), mode_(mode), mt_(rd_()) {
+	// should probably do this in the transport but whatever
 	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*transport_->executor()));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), transport_->executor());

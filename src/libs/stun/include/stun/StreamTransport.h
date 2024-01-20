@@ -17,7 +17,7 @@ namespace ember::stun {
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
-class StreamTransport final : public TransportBase {
+class StreamTransport final : public Transport {
 	enum class ReadState {
 		READ_HEADER, READ_BODY, READ_DONE
 	} state_ = ReadState::READ_HEADER;

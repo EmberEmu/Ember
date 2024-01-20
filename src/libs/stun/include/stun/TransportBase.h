@@ -18,7 +18,7 @@
 
 namespace ember::stun {
 
-class TransportBase {
+class Transport {
 public:
 	using ReceiveCallback = std::function<void(std::vector<std::uint8_t>)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
@@ -33,7 +33,7 @@ public:
 	virtual std::chrono::milliseconds timeout() = 0;
 	virtual unsigned int retries() = 0;
 
-	virtual ~TransportBase() = default;
+	virtual ~Transport() = default;
 
 	virtual void set_callbacks(ReceiveCallback rcb, OnConnectionError ecb) {
 		if(!rcb || !ecb) {
