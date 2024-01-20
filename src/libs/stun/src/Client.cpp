@@ -28,16 +28,16 @@ inline constexpr bool always_false_v = false;
 
 namespace ember::stun {
 
-Client::Client(RFCMode mode) : parser_(mode), mode_(mode), mt_(rd_()) {
-	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
+Client::Client(std::unique_ptr<Transport> transport, RFCMode mode)
+	: transport_(std::move(transport)), parser_(mode), mode_(mode), mt_(rd_()) {
+	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*transport_->executor()));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &ctx_);
+		(&boost::asio::io_context::run), transport_->executor());
 }
 
 Client::~Client() {
 	work_.clear();
 	transport_.reset();
-	ctx_.stop();
 }
 
 void Client::log_callback(LogCB callback, const Verbosity verbosity) {
@@ -50,26 +50,11 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 	parser_.set_logger(callback, verbosity);
 }
 
-void Client::connect(const std::string& host, const std::uint16_t port, const Protocol protocol) {
-	protocol_ = protocol;
-	transport_.reset();
-
-	switch(protocol) {
-	case Protocol::UDP:
-		transport_ = std::make_unique<DatagramTransport>(ctx_, host, port,
-			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
-			[this](const boost::system::error_code& ec) { on_connection_error(ec); });
-		break;
-	case Protocol::TCP:
-		transport_ = std::make_unique<StreamTransport>(ctx_, host, port,
-			[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
-			[this](const boost::system::error_code& ec) { on_connection_error(ec); });
-		break;
-	case Protocol::TLS_TCP:
-		throw std::runtime_error("TLS_TCP STUN isn't supported");
-	default:
-		throw std::invalid_argument("Unknown protocol value specified");
-	}
+void Client::connect() {
+	transport_->set_callbacks(
+		[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
+		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
+	);
 
 	transport_->connect();
 }
@@ -97,15 +82,8 @@ void Client::binding_request(detail::Transaction& tx) {
 }
 
 detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromise vp) {
-	auto timeout = protocol_ == UDP? udp_initial_timeout_ : tcp_timeout_;
-
-	if(timeout == 0ms) {
-		timeout = protocol_ == UDP? detail::UDP_TX_TIMEOUT : detail::TCP_TX_TIMEOUT;
-	}
-
-	auto max_retries = max_udp_retries_? max_udp_retries_ : detail::MAX_UDP_RETRIES;
-
-	detail::Transaction tx(ctx_, timeout, max_retries);
+	detail::Transaction tx(transport_->executor()->get_executor(),
+		transport_->timeout(), transport_->retries());
 	tx.promise = std::move(vp);
 
 	if(mode_ == RFCMode::RFC5389) {
@@ -259,7 +237,7 @@ std::size_t Client::tx_hash(const TxID& tx_id) {
 	return fnv.hash();
 }
 
-void Client::set_udp_timer(detail::Transaction& tx) {
+void Client::transaction_timer(detail::Transaction& tx) {
 	tx.timer.expires_from_now(tx.timeout);
 	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
 		if(ec) {
@@ -278,7 +256,7 @@ void Client::set_udp_timer(detail::Transaction& tx) {
 				--tx.retries_left;
 
 				if(!tx.retries_left) {
-					tx.timeout = tx.initial_to * detail::TX_RM;
+					tx.timeout = tx.initial_to * TX_RM;
 				}
 
 				binding_request(tx);
@@ -287,51 +265,6 @@ void Client::set_udp_timer(detail::Transaction& tx) {
 			}
 		}
 	});
-}
-
-void Client::set_tcp_timer(detail::Transaction& tx) {
-	tx.timer.expires_from_now(tx.timeout);
-	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
-		if(ec) {
-			return;
-		}
-
-		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
-			abort_transaction(tx, Error::NO_RESPONSE_RECEIVED);
-		}
-	});
-}
-
-void Client::transaction_timer(detail::Transaction& tx) {
-	if(protocol_ != Protocol::UDP) {
-		set_tcp_timer(tx);
-	} else {
-		set_udp_timer(tx);
-	}
-}
-
-void Client::set_udp_initial_timeout(std::chrono::milliseconds timeout) {
-	if(timeout <= 0ms) {
-		throw std::invalid_argument("Timeout must be > 0ms");
-	}
-
-	udp_initial_timeout_ = timeout;
-}
-
-void Client::set_max_udp_retries(int retries) {
-	if(retries < 0) {
-		throw std::invalid_argument("UDP retries cannot be negative");
-	}
-
-	max_udp_retries_ = retries;
-}
-
-void Client::set_tcp_timeout(std::chrono::milliseconds timeout) {
-	if(timeout <= 0ms) {
-		throw std::invalid_argument("Timeout must be > 0ms");
-	}
-
-	tcp_timeout_ = timeout;
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {

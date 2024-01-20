@@ -21,6 +21,8 @@ using namespace ember;
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void log_cb(stun::Verbosity verbosity, stun::Error reason);
+std::unique_ptr<stun::Transport> create_transport(std::string_view host,
+	std::uint16_t port, std::string_view protocol);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -35,22 +37,13 @@ void launch(const po::variables_map& args) {
 	const auto port = args["port"].as<std::uint16_t>();
 	const auto protocol = args["protocol"].as<std::string>();
 	
-	auto proto = stun::Protocol::UDP;
-
-	if (protocol == "tcp") {
-		proto = stun::Protocol::TCP;
-	} else if (protocol == "tls_tcp") {
-		proto = stun::Protocol::TLS_TCP;
-	} else if (protocol != "udp") {
-		throw std::invalid_argument("Unknown protocol specified");
-	}
-
 	// todo, std::print when supported by all compilers
 	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
 
-	stun::Client client;
+	auto transport = create_transport(host, port, protocol);
+	stun::Client client(std::move(transport));
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
-	client.connect(host, port, proto);
+	client.connect();
 	auto result = client.external_address();
 	const auto address = result.get();
 
@@ -70,6 +63,17 @@ void launch(const po::variables_map& args) {
 	} else {
 		std::cout << std::format("STUN request failed: {} ({})",
 			stun::to_string(address.error()), std::to_underlying(address.error()));
+	}
+}
+
+std::unique_ptr<stun::Transport> create_transport(std::string_view host, std::uint16_t port,
+                                                  std::string_view protocol) {
+	if(protocol == "tcp") {
+		return std::make_unique<stun::StreamTransport>(host, port);
+	} else if(protocol == "udp") {
+		return std::make_unique<stun::DatagramTransport>(host, port);
+	} else {
+		throw std::invalid_argument("Unknown protocol specified");
 	}
 }
 

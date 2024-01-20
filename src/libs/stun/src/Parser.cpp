@@ -10,6 +10,11 @@
 
 namespace ember::stun {
 
+void Parser::set_logger(LogCB logger, const Verbosity verbosity) {
+	logger_ = logger;
+	verbosity_ = verbosity;
+}
+
 Error Parser::validate_header(const Header& header) {
 	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
 		return Error::RESP_COOKIE_MISSING;

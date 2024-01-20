@@ -29,12 +29,9 @@
 
 namespace ember::stun {
 
-enum Protocol {
-	UDP, TCP, TLS_TCP
-};
-
 class Client {
-	boost::asio::io_context ctx_;
+	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
+
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
@@ -45,11 +42,6 @@ class Client {
 	std::mt19937 mt_;
 	LogCB logger_ = [](Verbosity, Error){};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
-	Protocol protocol_;
-
-	int max_udp_retries_ = 0;
-	std::chrono::milliseconds udp_initial_timeout_ { 0 };
-	std::chrono::milliseconds tcp_timeout_ { 0 };
 
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
@@ -61,23 +53,18 @@ class Client {
 	void abort_transaction(detail::Transaction& tx, Error error);
 	void transaction_timer(detail::Transaction& tx);
 	std::size_t tx_hash(const TxID& tx_id);
-	void set_tcp_timer(detail::Transaction& tx);
-	void set_udp_timer(detail::Transaction& tx);
 	void handle_response(std::vector<std::uint8_t> buffer);
 	void binding_request(detail::Transaction& tx);
 	void on_connection_error(const boost::system::error_code& error);
 
 public:
-	Client(RFCMode mode = RFCMode::RFC5389);
+	Client(std::unique_ptr<Transport> transport, RFCMode mode = RFCMode::RFC5389);
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
-	void connect(const std::string& host, std::uint16_t port, const Protocol protocol);
+	void connect();
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
-	void set_udp_initial_timeout(std::chrono::milliseconds timeout);
-	void set_max_udp_retries(int retries);
-	void set_tcp_timeout(std::chrono::milliseconds timeout);
 };
 
 } // stun, ember

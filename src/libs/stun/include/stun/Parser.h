@@ -30,7 +30,8 @@ class Parser {
 public:
 	Parser(RFCMode mode) : mode_(mode) {}
 
-	void set_logger(LogCB logger, const Verbosity verbosity) { logger_ = logger; verbosity_ = verbosity; } // todo, move
+	void set_logger(LogCB logger, const Verbosity verbosity);
+
 	Error validate_header(const Header& header);
 	Header header_from_stream(spark::BinaryInStream& stream);
 	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);

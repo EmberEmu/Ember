@@ -10,10 +10,9 @@
 
 namespace ember::stun {
 
-DatagramTransport::DatagramTransport(ba::io_context& ctx, const std::string& host,
-                                     std::uint16_t port, ReceiveCallback rcb,
-                                     OnConnectionError ecb)
-	: ctx_(ctx), host_(host), port_(port), socket_(ctx), rcb_(rcb), ecb_(ecb) { }
+DatagramTransport::DatagramTransport(std::string_view host, std::uint16_t port,
+	std::chrono::milliseconds timeout, unsigned int retries)
+	: host_(host), port_(port), socket_(ctx_), timeout_(timeout), retries_(retries) { }
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
@@ -60,6 +59,22 @@ void DatagramTransport::receive() {
 				ecb_(ec);
 			}
 		});
+}
+
+void DatagramTransport::close() {
+
+}
+
+std::chrono::milliseconds DatagramTransport::timeout() {
+	return timeout_;
+}
+
+unsigned int DatagramTransport::retries() {
+	return retries_;
+}
+
+boost::asio::io_context* DatagramTransport::executor() {
+	return &ctx_;
 }
 
 } // stun, ember

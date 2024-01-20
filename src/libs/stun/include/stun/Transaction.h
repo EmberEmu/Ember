@@ -22,15 +22,8 @@
 
 namespace ember::stun::detail {
 
-constexpr std::chrono::milliseconds UDP_TX_TIMEOUT { 500 };
-constexpr std::chrono::milliseconds TCP_TX_TIMEOUT { 39500 };
-constexpr auto TX_RM { 16 }; // RFC drops magic number, refuses to elaborate
-constexpr auto MAX_UDP_RETRIES = 7;
-
 struct Transaction {
-	Transaction(boost::asio::io_context& ctx,
-		std::chrono::milliseconds timeout,
-		int max_retries = MAX_UDP_RETRIES)
+	Transaction(boost::asio::any_io_executor ctx, std::chrono::milliseconds timeout, int max_retries)
 		: timer(ctx), timeout(timeout), initial_to(timeout),
 		retries_left(max_retries), max_retries(max_retries) {}
 

@@ -13,11 +13,9 @@
 
 namespace ember::stun {
 
-StreamTransport::StreamTransport(ba::io_context& ctx, const std::string& host,
-                                 std::uint16_t port, ReceiveCallback rcb,
-                                 OnConnectionError ecb)
-	: ctx_(ctx), host_(host), port_(port),
-      socket_(ctx), rcb_(rcb), ecb_(ecb) { }
+StreamTransport::StreamTransport(std::string_view host, std::uint16_t port,
+	std::chrono::milliseconds timeout)
+	: host_(host), port_(port), timeout_(timeout), socket_(ctx_) { }
 
 StreamTransport::~StreamTransport() {
 	socket_.close();
@@ -86,6 +84,22 @@ void StreamTransport::read(const std::size_t size, const std::size_t offset) {
 			}
 		}
 	);
+}
+
+void StreamTransport::close() {
+
+}
+
+std::chrono::milliseconds StreamTransport::timeout() {
+	return timeout_;
+}
+
+unsigned int StreamTransport::retries() {
+	return 0;
+}
+
+boost::asio::io_context* StreamTransport::executor() {
+	return &ctx_;
 }
 
 } // stun, ember

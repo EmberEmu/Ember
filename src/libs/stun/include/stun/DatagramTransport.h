@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <stun/Transport.h>
+#include <stun/TransportBase.h>
 #include <boost/asio.hpp>
 #include <functional>
 #include <vector>
@@ -17,29 +17,31 @@
 namespace ember::stun {
 
 namespace ba = boost::asio;
+using namespace std::chrono_literals;
 
-class DatagramTransport final : public Transport {
-	using ReceiveCallback = std::function<void(std::vector<std::uint8_t>)>;
-	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
-
-	ba::io_context& ctx_;
+class DatagramTransport final : public TransportBase {
+	ba::io_context ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
 
 	const std::string host_;
 	const std::uint16_t port_;
-	ReceiveCallback rcb_;
-	OnConnectionError ecb_;
+
+	const std::chrono::milliseconds timeout_;
+	const unsigned int retries_;
 
 	void receive();
 public:
-	DatagramTransport(ba::io_context& ctx, const std::string& host, std::uint16_t port,
-		ReceiveCallback rcb, OnConnectionError ecb);
+	DatagramTransport(std::string_view host, std::uint16_t port,
+		std::chrono::milliseconds timeout = 500ms, unsigned int retries = 7);
 	~DatagramTransport() override;
 
 	void connect() override;
-	void send(std::vector<std::uint8_t> message);
-	void close();
+	void send(std::vector<std::uint8_t> message) override;
+	void close() override;
+	std::chrono::milliseconds timeout() override;
+	unsigned int retries() override;
+	boost::asio::io_context* executor() override;
 };
 
 } // stun, ember
