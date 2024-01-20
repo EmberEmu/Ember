@@ -11,6 +11,7 @@
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
 #include <functional>
+#include <string>
 #include <vector>
 #include <cstdint>
 

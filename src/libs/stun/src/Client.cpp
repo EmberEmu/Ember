@@ -8,12 +8,11 @@
 
 #include <stun/Client.h>
 #include <stun/Protocol.h>
-#include <stun/DatagramTransport.h>
-#include <stun/StreamTransport.h>
-#include <spark/buffers/BinaryStream.h>
+#include <stun/Transport.h>
+#include <spark/buffers/BinaryInStream.h>
+#include <spark/buffers/BinaryOutStream.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <shared/util/FNVHash.h>
-#include <boost/assert.hpp>
 #include <boost/asio.hpp>
 #include <boost/endian.hpp>
 #include <stdexcept>

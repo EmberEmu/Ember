@@ -10,7 +10,11 @@
 
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
+#include <string>
 #include <string_view>
+#include <vector>
+#include <cstddef>
+#include <cstdint>
 
 namespace ember::stun {
 

@@ -11,12 +11,9 @@
 #include <stun/Attributes.h>
 #include <stun/Protocol.h>
 #include <stun/Transaction.h>
-#include <stun/Transport.h>
 #include <stun/Logging.h>
 #include <stun/Parser.h>
-#include <spark/buffers/BinaryInStream.h>
 #include <boost/asio/io_context.hpp>
-#include <chrono>
 #include <expected>
 #include <future>
 #include <memory>
@@ -26,6 +23,10 @@
 #include <thread>
 #include <cstdint>
 #include <cstddef>
+
+namespace ember::spark {
+	class BinaryInStream;
+}
 
 namespace ember::stun {
 
