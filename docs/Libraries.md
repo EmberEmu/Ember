@@ -15,48 +15,44 @@ Code generation allows for quick iteration of the inter-server protocols, backwa
 
 Boost is a large collection of libraries that perform a wide range of tasks. Ember uses the following subset of Boost libraries:
 
-#### Boost ASIO
+### Boost ASIO
 
 ASIO is an ***AS***ynchronous ***I/O*** library that primarily deals with networking. 
 
 All of Ember's networking, whether it's the client handling or Spark, our inter-server networking library, is layered on top of Boost ASIO.
 
-#### Boost Endian
+### Boost Endian
 
 Endian is used for ensuring that network data is the correct endianness. For example, if Ember is compiled for a big-endian architecture, Boost Endian will ensure that network message fields are still encoded in little-endian (the encoding required by the game client).
 
-#### Boost Locale
+### Boost Locale
 
 Locale is used for handling localisation issues, such as character names / chat messages in languages other than English.
 
-#### Boost Filesystem
 
-Filesystem is used for filesystem navigation and directory enumeration in various places.
-
-#### Boost Program Options
+### Boost Program Options
 
 Program Options is designed for reading configuration files and handling command-line arguments.
 
 Ember's command-line argument and configuration file handling is done with this library.
 
-#### Boost Serialisation
+### Boost Serialisation
 
 Boost Serialisation allows for easy serialisation/deserialisation of data structures for saving/loading to/from disk.
 
 Ember uses serialisation for handling patch data caches.
 
-#### Boost DLL ***(Currently unused!)***
+### Boost DLL ***(Currently unused!)***
 
 Boost DLL is by Ember's plugin system for cross-platform handling of dynamic libraries.
 
-#### Misc
+### Misc
 
 A number of smaller, often header-only, Boost facilities are used. These include:
 * Strong typedef
-* Flatmap
+* Flatmap & Small Vector
 * UUID generation
 * Assert
-* Optional
 * Various algorithms
 
 ## Botan
