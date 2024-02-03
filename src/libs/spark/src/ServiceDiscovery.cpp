@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,6 @@
 #include <spark/ServiceDiscovery.h>
 #include <spark/ServiceListener.h>
 #include <shared/FilterTypes.h>
-#include <boost/lexical_cast.hpp>
 
 namespace bai = boost::asio::ip;
 namespace mcast = ember::messaging::multicast;
@@ -87,7 +86,7 @@ void ServiceDiscovery::handle_packet(std::size_t size) {
 		default:
 			LOG_WARN_FILTER(logger_, LF_SPARK)
 				<< "[spark] Received an unknown multicast packet type from "
-				<< boost::lexical_cast<std::string>(remote_ep_.address()) << LOG_ASYNC;
+				<< remote_ep_.address().to_string() << LOG_ASYNC;
 	}
 }
 

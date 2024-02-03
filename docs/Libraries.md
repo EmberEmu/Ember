@@ -1,4 +1,4 @@
-﻿# 🔥 **Libraries**
+# 🔥 **Libraries**
 ---
 
 Ember makes use of a number of third-party libraries. This document gives a brief overview of the libraries used and their purpose.
@@ -54,7 +54,6 @@ Boost DLL is by Ember's plugin system for cross-platform handling of dynamic lib
 A number of smaller, often header-only, Boost facilities are used. These include:
 * Strong typedef
 * Flatmap
-* Lexical cast
 * UUID generation
 * Assert
 * Optional
@@ -104,6 +103,6 @@ Google Breakpad is a crash handling library used by Ember to produce stack trace
 
 Breakpad also allows for submission of the generated stack traces to a Mozilla Socorro-based analysis server.
 
-## ICU
+## ICU ***(Currently unused!)***
 
 ICU is unicode library used in conjunction with Boost Locale for handling localisation issues, such as the collation and correct validation of character names in various languages.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,6 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
 #include <array>
 #include <atomic>
 #include <condition_variable>
