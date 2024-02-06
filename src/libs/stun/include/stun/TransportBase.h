@@ -12,6 +12,7 @@
 #include <boost/system/error_code.hpp>
 #include <functional>
 #include <span>
+#include <string_view>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -26,7 +27,7 @@ public:
 	ReceiveCallback rcb_;
 	OnConnectionError ecb_;
 
-	virtual void connect() = 0;
+	virtual void connect(std::string_view host, std::uint16_t port) = 0;
 	virtual void close() = 0;
 	virtual void send(std::vector<std::uint8_t> message) = 0;
 	virtual boost::asio::io_context* executor() = 0;

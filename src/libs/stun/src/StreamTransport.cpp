@@ -13,17 +13,16 @@
 
 namespace ember::stun {
 
-StreamTransport::StreamTransport(std::string_view host, std::uint16_t port,
-	std::chrono::milliseconds timeout)
-	: host_(host), port_(port), timeout_(timeout), socket_(ctx_) { }
+StreamTransport::StreamTransport(std::chrono::milliseconds timeout)
+	: timeout_(timeout), socket_(ctx_) { }
 
 StreamTransport::~StreamTransport() {
 	socket_.close();
 }
 
-void StreamTransport::connect() {
+void StreamTransport::connect(std::string_view host, const std::uint16_t port) {
 	ba::ip::tcp::resolver resolver(ctx_);
-	auto endpoints = resolver.resolve(host_, std::to_string(port_));
+	auto endpoints = resolver.resolve(host, std::to_string(port));
 	boost::asio::connect(socket_, endpoints); // not async, todo, error handle
 	receive();
 }

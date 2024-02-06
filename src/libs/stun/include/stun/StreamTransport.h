@@ -30,8 +30,6 @@ class StreamTransport final : public Transport {
 	ba::ip::tcp::socket socket_;
 	ba::ip::tcp::endpoint ep_;
 
-	const std::string host_;
-	const std::uint16_t port_;
 	std::vector<std::uint8_t> buffer_;
 
 	const std::chrono::milliseconds timeout_;
@@ -40,11 +38,10 @@ class StreamTransport final : public Transport {
 	void read(std::size_t size, std::size_t offset);
 	void receive();
 public:
-	StreamTransport(std::string_view host, std::uint16_t port,
-		std::chrono::milliseconds timeout = 39500ms);
+	StreamTransport(std::chrono::milliseconds timeout = 39500ms);
 	~StreamTransport() override;
 
-	void connect() override;
+	void connect(std::string_view host, std::uint16_t port) override;
 	void send(std::vector<std::uint8_t> message) override;
 	void close() override;
 	std::chrono::milliseconds timeout() override;

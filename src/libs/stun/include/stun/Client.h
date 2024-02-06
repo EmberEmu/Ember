@@ -65,7 +65,7 @@ public:
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
-	void connect();
+	void connect(std::string_view host, std::uint16_t port);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
 };

@@ -10,18 +10,17 @@
 
 namespace ember::stun {
 
-DatagramTransport::DatagramTransport(std::string_view host, std::uint16_t port,
-	std::chrono::milliseconds timeout, unsigned int retries)
-	: host_(host), port_(port), socket_(ctx_), timeout_(timeout), retries_(retries) { }
+DatagramTransport::DatagramTransport(std::chrono::milliseconds timeout, unsigned int retries)
+	: socket_(ctx_), timeout_(timeout), retries_(retries) { }
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
 }
 
-void DatagramTransport::connect() {
+void DatagramTransport::connect(std::string_view host, const std::uint16_t port) {
 	ba::ip::udp::resolver resolver(ctx_);
-	ba::ip::udp::resolver::query query(host_, std::to_string(port_));
-	ep_ = boost::asio::connect(socket_, resolver.resolve(query));
+	auto endpoints = resolver.resolve(host, std::to_string(port));
+	ep_ = boost::asio::connect(socket_, endpoints);
 }
 
 // todo, proper queue

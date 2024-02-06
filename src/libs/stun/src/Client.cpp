@@ -50,13 +50,13 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 	parser_.set_logger(callback, verbosity);
 }
 
-void Client::connect() {
+void Client::connect(std::string_view host, const std::uint16_t port) {
 	transport_->set_callbacks(
 		[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
 		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
 	);
 
-	transport_->connect();
+	transport_->connect(host, port);
 }
 
 void Client::binding_request(detail::Transaction& tx) {
