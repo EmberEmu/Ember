@@ -55,7 +55,11 @@ smart_enum_class(Error, std::uint8_t,
 	RESP_BAD_HMAC_SHA_ATTR,           // received a bad SHA HMAC attribute
 	RESP_BAD_SOFTWARE_ATTR,           // received a bad software attribute
 	RESP_UNEXPECTED_ATTR,             // received an unexpected attribute
-	RESP_UNHANDLED_RESP_TYPE          // received an unhandled response type
+	RESP_UNHANDLED_RESP_TYPE,         // received an unhandled response type
+	RESP_MISSING_ATTR,                // response was missing an expected attribute
+	RESP_BINDING_ERROR,               // server responded with an error 
+	RESP_BAD_REDIRECT,                // server tried to redirect us to a server we've already tried
+	RESP_UNK_MESSAGE_TYPE             // unknown or unhandled message type
 );
 
 using LogCB = std::function<void(Verbosity, Error)>;

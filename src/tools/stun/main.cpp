@@ -57,7 +57,7 @@ void launch(const po::variables_map& args) {
 		if(address->family == stun::AddressFamily::IPV4) {
 			addr_str = boost::asio::ip::address_v4(address->ipv4).to_string();
 		} else {
-			boost::asio::ip::address_v6::bytes_type bytes;
+			boost::asio::ip::address_v6::bytes_type bytes{};
 			std::copy(address->ipv6.begin(), address->ipv6.end(), bytes.data());
 			addr_str = boost::asio::ip::address_v6(bytes).to_string();
 		}

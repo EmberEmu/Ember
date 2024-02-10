@@ -41,6 +41,7 @@ struct Transaction {
 	boost::asio::steady_timer timer;
 	const int max_retries{};
 	int retries_left{};
+	int redirects{};
 };
 
 } // detail, stun, ember

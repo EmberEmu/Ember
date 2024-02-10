@@ -34,6 +34,7 @@ class Transport;
 
 class Client {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
+	const int MAX_REDIRECTS = 5;
 
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
@@ -45,27 +46,31 @@ class Client {
 	std::mt19937 mt_;
 	LogCB logger_ = [](Verbosity, Error){};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
+	std::unordered_map<std::string, std::chrono::steady_clock::time_point> dest_hist_;
 
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 
 	// Transaction stuff
 	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
-	void process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx, MessageType type);
 	void complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes);
-	void abort_transaction(detail::Transaction& tx, Error error);
+	void abort_transaction(detail::Transaction& tx, Error error, bool erase = true);
 	void transaction_timer(detail::Transaction& tx);
 	std::size_t tx_hash(const TxID& tx_id);
-	void handle_response(std::vector<std::uint8_t> buffer);
+	void handle_message(std::vector<std::uint8_t> buffer);
+	void handle_binding_resp(spark::BinaryInStream& stream, detail::Transaction& tx);
+	void handle_binding_err_resp(spark::BinaryInStream& stream, detail::Transaction& tx);
 	void binding_request(detail::Transaction& tx);
 	void on_connection_error(const boost::system::error_code& error);
 
+	template<typename T>
+	std::optional<T> retrieve_attribute(const std::vector<attributes::Attribute>& attrs);
 public:
 	Client(std::unique_ptr<Transport> transport, RFCMode mode = RFCMode::RFC5389);
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
-	void connect(std::string_view host, std::uint16_t port);
+	void connect(const std::string& host, std::uint16_t port);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
 };

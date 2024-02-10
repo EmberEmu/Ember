@@ -50,9 +50,11 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 	parser_.set_logger(callback, verbosity);
 }
 
-void Client::connect(std::string_view host, const std::uint16_t port) {
+void Client::connect(const std::string& host, const std::uint16_t port) {
+	dest_hist_[host] = std::chrono::steady_clock::now();
+
 	transport_->set_callbacks(
-		[this](std::vector<std::uint8_t> buffer) { handle_response(std::move(buffer)); },
+		[this](std::vector<std::uint8_t> buffer) { handle_message(std::move(buffer)); },
 		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
 	);
 
@@ -101,7 +103,7 @@ detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromi
 	return entry.first->second;
 }
 
-void Client::handle_response(std::vector<std::uint8_t> buffer) try {
+void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 	if(buffer.size() < HEADER_LENGTH) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BUFFER_LT_HEADER);
 		return; // RFC says invalid messages should be discarded
@@ -129,12 +131,19 @@ void Client::handle_response(std::vector<std::uint8_t> buffer) try {
 	}
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
-	process_transaction(stream, transaction, type);
+
+	if(type == MessageType::BINDING_RESPONSE) {
+		handle_binding_resp(stream, transaction);
+	} else if(type == MessageType::BINDING_ERROR_RESPONSE) {
+		handle_binding_err_resp(stream, transaction);
+	} else {
+		abort_transaction(transaction, Error::RESP_UNK_MESSAGE_TYPE);
+	}
 } catch(const spark::exception& e) {
 	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
 }
 
-void Client::abort_transaction(detail::Transaction& tx, const Error error) {
+void Client::abort_transaction(detail::Transaction& tx, const Error error, const bool erase) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 
@@ -149,16 +158,88 @@ void Client::abort_transaction(detail::Transaction& tx, const Error error) {
 		}
 	}, tx.promise);
 
-	transactions_.erase(tx.hash);
+	if(erase) {
+		transactions_.erase(tx.hash);
+	}
 }
 
-void Client::process_transaction(spark::BinaryInStream& stream, detail::Transaction& tx,
-                                 const MessageType type) try {
-	auto attributes = parser_.extract_attributes(stream, tx.tx_id, type);
+void Client::handle_binding_resp(spark::BinaryInStream& stream, detail::Transaction& tx) try {
+	auto attributes = parser_.extract_attributes(stream, tx.tx_id, MessageType::BINDING_RESPONSE);
 	complete_transaction(tx, std::move(attributes));
 } catch (const spark::exception&) {
 	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
 } catch (const Error& e) {
+	abort_transaction(tx, e);
+}
+
+void Client::handle_binding_err_resp(spark::BinaryInStream& stream, detail::Transaction& tx) try {
+	auto attributes = parser_.extract_attributes(stream, tx.tx_id, MessageType::BINDING_ERROR_RESPONSE);
+	const auto& error_attr = retrieve_attribute<attributes::ErrorCode>(attributes);
+
+	if(!error_attr) {
+		abort_transaction(tx, Error::RESP_MISSING_ATTR);
+		return;
+	}
+
+	if(Errors(error_attr->code) == Errors::TRY_ALTERNATE) {
+		// insurance policy against being bounced around servers
+		if(tx.redirects >= MAX_REDIRECTS) {
+			abort_transaction(tx, Error::RESP_BAD_REDIRECT);
+			return;
+		}
+
+		++tx.redirects;
+
+		const auto alt_attr = retrieve_attribute<attributes::AlternateServer>(attributes);
+
+		if(!alt_attr) {
+			abort_transaction(tx, Error::RESP_MISSING_ATTR);
+			return;
+		}
+
+		/*
+		 * RFC states "The IP address family MUST be identical
+		 * to that of the source IP address of the request".
+		 * I don't have a reliable way of doing this, so going to ignore it.
+		 */
+
+		boost::asio::ip::address address;
+
+		if(alt_attr->family == AddressFamily::IPV4) {
+			address = boost::asio::ip::address_v4(alt_attr->ipv4);
+		} else if(alt_attr->family == AddressFamily::IPV6) {
+			boost::asio::ip::address_v6::bytes_type bytes{};
+			std::copy(alt_attr->ipv6.begin(), alt_attr->ipv6.end(), bytes.data());
+			address = boost::asio::ip::address_v6(bytes);
+		} else {
+			abort_transaction(tx, Error::RESP_BAD_REDIRECT);
+			return;
+		}
+
+		const auto& ip = address.to_string();
+
+		// check we haven't resent to this address previously to prevent a redirect loop
+		if(auto entry = dest_hist_.find(ip); entry != dest_hist_.end()) {
+			if(std::chrono::steady_clock::now() - entry->second < 5min) {
+				abort_transaction(tx, Error::RESP_BAD_REDIRECT);
+				return;
+			}
+		}
+
+		// start a new transaction to try to fulfill the request
+		auto& new_tx = start_transaction(std::move(tx.promise));
+		new_tx.redirects = tx.redirects; // persist redirect counter
+		transactions_.erase(tx.hash);
+
+		// retry the request
+		transport_->connect(ip, alt_attr->port);
+		binding_request(new_tx);
+	} else {
+		abort_transaction(tx, Error::RESP_BINDING_ERROR);
+	}
+} catch(const spark::exception&) {
+	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+} catch(const Error& e) {
 	abort_transaction(tx, e);
 }
 
@@ -268,15 +349,28 @@ void Client::transaction_timer(detail::Transaction& tx) {
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {
-	for (auto& [k, v] : transactions_) {
+	for(auto& [k, v] : transactions_) {
 		if(ec == boost::asio::error::connection_aborted) {
-			abort_transaction(v, Error::CONNECTION_ABORTED);
-		} else if (ec == boost::asio::error::connection_reset) {
-			abort_transaction(v, Error::CONNECTION_RESET);
+			abort_transaction(v, Error::CONNECTION_ABORTED, false);
+		} else if(ec == boost::asio::error::connection_reset) {
+			abort_transaction(v, Error::CONNECTION_RESET, false);
 		} else {
-			abort_transaction(v, Error::CONNECTION_ERROR);
+			abort_transaction(v, Error::CONNECTION_ERROR, false);
 		}
 	}
+
+	transactions_.clear();
+}
+
+template<typename T>
+std::optional<T> Client::retrieve_attribute(const std::vector<attributes::Attribute>& attrs) {
+	for(const auto& attr : attrs) {
+		if(const T* val = std::get_if<T>(&attr)) {
+			return *val;
+		}
+	}
+
+	return std::nullopt;
 }
 
 } // stun, ember
