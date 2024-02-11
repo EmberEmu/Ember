@@ -65,7 +65,7 @@ class Client {
 	template<typename T>
 	std::optional<T> retrieve_attribute(const std::vector<attributes::Attribute>& attrs);
 	std::uint32_t calculate_fingerprint(const std::vector<std::uint8_t>& buffer, std::size_t offset);
-	void process_message(MessageType type, spark::BinaryInStream& stream,
+	void process_message(const Header& header, spark::BinaryInStream& stream,
 	                     const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
 
 public:
@@ -76,7 +76,7 @@ public:
 	void connect(const std::string& host, std::uint16_t port);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
-	void detect_nat();
+	std::future<std::expected<NAT, Error>> detect_nat();
 };
 
 } // stun, ember

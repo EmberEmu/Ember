@@ -30,7 +30,8 @@ struct Transaction {
 	// :grimacing:
 	using VariantPromise = std::variant<
 		std::promise<std::expected<attributes::MappedAddress, Error>>,
-		std::promise<std::expected<std::vector<attributes::Attribute>, Error>>
+		std::promise<std::expected<std::vector<attributes::Attribute>, Error>>,
+		std::promise<std::expected<NAT, Error>>
 	>;
 
 	TxID tx_id{};

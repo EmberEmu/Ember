@@ -133,28 +133,26 @@ void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 		return;
 	}
 
-	MessageType type{ static_cast<std::uint16_t>(header.type) };
-	process_message(type, stream, buffer, transaction);
+	process_message(header, stream, buffer, transaction);
 } catch(const spark::exception& e) {
 	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
 }
 
-void Client::process_message(const MessageType type, spark::BinaryInStream& stream,
+void Client::process_message(const Header& header, spark::BinaryInStream& stream,
                              const std::vector<std::uint8_t>& buffer,
                              detail::Transaction& tx) try {
+	const MessageType type{ static_cast<std::uint16_t>(header.type) };
 	auto attributes = parser_.extract_attributes(stream, tx.tx_id, type);
 
 	if(auto offset = parser_.fingerprint_offset()) {
 		const auto crc32 = calculate_fingerprint(buffer, offset);
 		const auto fingerprint = retrieve_attribute<attributes::Fingerprint>(attributes);
 
-		if(fingerprint) {
-			if(crc32 != fingerprint->crc32) {
-				abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
-				return;
-			}
-		} else {
-			BOOST_ASSERT_MSG(true, "Fingerprint must be present when offset is present");
+		BOOST_ASSERT_MSG(fingerprint, "Fingerprint must be present when offset is present");
+
+		if(crc32 != fingerprint->crc32) {
+			abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+			return;
 		}
 	}
 
@@ -174,16 +172,7 @@ void Client::process_message(const MessageType type, spark::BinaryInStream& stre
 void Client::abort_transaction(detail::Transaction& tx, const Error error, const bool erase) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
-
-		if constexpr(std::is_same_v<T,
-			std::promise<std::expected<attributes::MappedAddress, Error>>>) {
-			arg.set_value(std::unexpected(error));
-		} else if constexpr(std::is_same_v<T,
-			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
-			arg.set_value(std::unexpected(error));
-		} else {
-			static_assert(always_false_v<T>, "Unhandled variant type");
-		}
+		arg.set_value(std::unexpected(error));
 	}, tx.promise);
 
 	if(erase) {
@@ -304,6 +293,9 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 		} else if constexpr(std::is_same_v<T,
 			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
 			arg.set_value(std::move(attributes));
+		} else if constexpr(std::is_same_v<T,
+			std::promise<std::expected<NAT, Error>>>) {
+			// todo
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
@@ -404,8 +396,15 @@ std::optional<T> Client::retrieve_attribute(const std::vector<attributes::Attrib
 	return std::nullopt;
 }
 
-void Client::detect_nat() {
+std::future<std::expected<NAT, Error>> Client::detect_nat() {
+	std::promise<std::expected<NAT, Error>> promise;
+	auto future = promise.get_future();
+	detail::Transaction::VariantPromise vp(std::move(promise));
+	auto& tx = start_transaction(std::move(vp));
+	
+	// todo
 
+	return future;
 }
 
 } // stun, ember

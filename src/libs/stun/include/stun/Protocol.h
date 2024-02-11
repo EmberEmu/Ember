@@ -120,6 +120,14 @@ enum RFCMode {
 	RFC_BOTH = RFC5389 | RFC3489
 };
 
+enum class NAT {
+	NONE,
+	FULL_CONE,
+	RESTRICTED_CONE,
+	PORT_RESTRICTED_CONE,
+	SYMMETRIC
+};
+
 using AttrReqBy = std::unordered_map<Attributes, RFCMode>;
 using AttrValidIn = std::unordered_map<Attributes, MessageType>;
 extern AttrReqBy attr_req_lut;
