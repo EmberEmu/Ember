@@ -62,9 +62,10 @@ class Client {
 	void handle_binding_err_resp(spark::BinaryInStream& stream, detail::Transaction& tx);
 	void binding_request(detail::Transaction& tx);
 	void on_connection_error(const boost::system::error_code& error);
-
 	template<typename T>
 	std::optional<T> retrieve_attribute(const std::vector<attributes::Attribute>& attrs);
+	std::uint32_t calculate_fingerprint(spark::BinaryInStream& stream, std::size_t offset);
+
 public:
 	Client(std::unique_ptr<Transport> transport, RFCMode mode = RFCMode::RFC5389);
 	~Client();
@@ -73,6 +74,7 @@ public:
 	void connect(const std::string& host, std::uint16_t port);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
+	void detect_nat();
 };
 
 } // stun, ember

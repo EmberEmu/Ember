@@ -26,6 +26,8 @@ class Parser {
 	RFCMode mode_;
 	LogCB logger_ = [](Verbosity, Error) {};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
+	std::size_t msg_integrity_offset_ = 0;
+	std::size_t fingerprint_offset_ = 0;
 
 public:
 	Parser(RFCMode mode) : mode_(mode) {}
@@ -55,6 +57,9 @@ public:
 	// extract a single attribute from a stream
 	std::optional<attributes::Attribute>
 	extract_attribute(spark::BinaryInStream& stream, const TxID& id, MessageType type);
+
+	std::size_t message_integrity_offset() const;
+	std::size_t fingerprint_offset() const;
 };
 
 #include <stun/Parser.inl>

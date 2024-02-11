@@ -7,6 +7,7 @@
  */
 
 #include <stun/Parser.h>
+#include <cassert>
 
 namespace ember::stun {
 
@@ -72,6 +73,14 @@ attributes::Fingerprint Parser::fingerprint(spark::BinaryInStream& stream) {
 	stream >> attr.crc32;
 	be::big_to_native_inplace(attr.crc32);
 	return attr;
+}
+
+std::size_t Parser::fingerprint_offset() const {
+	return fingerprint_offset_;
+}
+
+std::size_t Parser::message_integrity_offset() const {
+	return msg_integrity_offset_;
 }
 
 Header Parser::header_from_stream(spark::BinaryInStream& stream)
@@ -193,13 +202,30 @@ Parser::unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 std::vector<attributes::Attribute>
 Parser::extract_attributes(spark::BinaryInStream& stream, const TxID& id, const MessageType type) {
 	std::vector<attributes::Attribute> attributes;
+	bool has_msg_integrity = false;
 
 	while(!stream.empty()) {
 		auto attribute = extract_attribute(stream, id, type);
 
-		if(attribute) {
-			attributes.emplace_back(std::move(*attribute));
+		if(!attribute) {
+			continue;
 		}
+
+		// if the MESSAGE-INTEGRITY attribute is present, we need to ignore
+		// everything that follows except for the FINGERPRINT attribute
+		if(has_msg_integrity && !std::get_if<attributes::Fingerprint>(&(*attribute))) {
+			fingerprint_offset_ = stream.total_read() - sizeof(attributes::Fingerprint);
+			assert(msg_integrity_offset_ < stream.total_read());
+			break;
+		}
+
+		if(!has_msg_integrity && std::get_if<attributes::MessageIntegrity>(&(*attribute))) {
+			msg_integrity_offset_ = stream.total_read() - sizeof(attributes::MessageIntegrity);
+			assert(msg_integrity_offset_ < stream.total_read());
+			has_msg_integrity = true;
+		}
+
+		attributes.emplace_back(std::move(*attribute));
 	}
 
 	return attributes;

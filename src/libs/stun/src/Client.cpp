@@ -15,6 +15,8 @@
 #include <shared/util/FNVHash.h>
 #include <boost/asio.hpp>
 #include <boost/endian.hpp>
+#include <botan/hash.h>
+#include <botan/bigint.h>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -163,8 +165,38 @@ void Client::abort_transaction(detail::Transaction& tx, const Error error, const
 	}
 }
 
+std::uint32_t Client::calculate_fingerprint(spark::BinaryInStream& stream,
+                                            const std::size_t offset) {
+	// inefficient to copy the buffer when we already have it elsewhere, refactor todo?
+	const auto stream_buff = stream.buffer();
+	std::vector<std::uint8_t> buffer(offset);
+	stream_buff->copy(buffer.data(), buffer.size());
+
+	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
+	crc_func->update(buffer.data(), buffer.size());
+	auto vec = crc_func->final();
+	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
+	return crc32;
+}
+
+
 void Client::handle_binding_resp(spark::BinaryInStream& stream, detail::Transaction& tx) try {
 	auto attributes = parser_.extract_attributes(stream, tx.tx_id, MessageType::BINDING_RESPONSE);
+
+	if(auto offset = parser_.fingerprint_offset()) {
+		const auto crc32 = calculate_fingerprint(stream, offset);
+		const auto fingerprint = retrieve_attribute<attributes::Fingerprint>(attributes);
+
+		if(fingerprint) {
+			if(crc32 != fingerprint->crc32) {
+				abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+				return;
+			}
+		} else {
+			assert(true); // todo
+		}
+	}
+
 	complete_transaction(tx, std::move(attributes));
 } catch (const spark::exception&) {
 	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
@@ -371,6 +403,10 @@ std::optional<T> Client::retrieve_attribute(const std::vector<attributes::Attrib
 	}
 
 	return std::nullopt;
+}
+
+void Client::detect_nat() {
+
 }
 
 } // stun, ember

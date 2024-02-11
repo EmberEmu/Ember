@@ -25,6 +25,6 @@ add_library(${LIBRARY_NAME}
            src/Parser.cpp
            )
 
-target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} shared spark ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(stun PROPERTIES FOLDER "Libraries")

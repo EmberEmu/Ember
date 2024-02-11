@@ -59,7 +59,8 @@ smart_enum_class(Error, std::uint8_t,
 	RESP_MISSING_ATTR,                // response was missing an expected attribute
 	RESP_BINDING_ERROR,               // server responded with an error 
 	RESP_BAD_REDIRECT,                // server tried to redirect us to a server we've already tried
-	RESP_UNK_MESSAGE_TYPE             // unknown or unhandled message type
+	RESP_UNK_MESSAGE_TYPE,            // unknown or unhandled message type
+	RESP_INVALID_FINGERPRINT          // crc32 in the fingerprint didn't match our own calculation
 );
 
 using LogCB = std::function<void(Verbosity, Error)>;
