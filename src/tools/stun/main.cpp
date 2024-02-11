@@ -45,9 +45,8 @@ void launch(const po::variables_map& args) {
 	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
 
 	auto transport = create_transport(protocol);
-	stun::Client client(std::move(transport));
+	stun::Client client(std::move(transport), host, port);
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
-	client.connect(host, port);
 	auto result = client.external_address();
 	const auto address = result.get();
 

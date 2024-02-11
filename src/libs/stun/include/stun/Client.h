@@ -47,6 +47,8 @@ class Client {
 	LogCB logger_ = [](Verbosity, Error){};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> dest_hist_;
+	std::string host_;
+	std::uint16_t port_;
 
 	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
@@ -67,13 +69,14 @@ class Client {
 	std::uint32_t calculate_fingerprint(const std::vector<std::uint8_t>& buffer, std::size_t offset);
 	void process_message(const Header& header, spark::BinaryInStream& stream,
 	                     const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
+	void connect(const std::string& host, std::uint16_t port);
 
 public:
-	Client(std::unique_ptr<Transport> transport, RFCMode mode = RFCMode::RFC5389);
+	Client(std::unique_ptr<Transport> transport, std::string host,
+	       std::uint16_t port, RFCMode mode = RFCMode::RFC5389);
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
-	void connect(const std::string& host, std::uint16_t port);
 	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
 	std::future<std::expected<NAT, Error>> detect_nat();

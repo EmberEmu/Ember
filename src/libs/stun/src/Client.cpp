@@ -30,8 +30,11 @@ inline constexpr bool always_false_v = false;
 
 namespace ember::stun {
 
-Client::Client(std::unique_ptr<Transport> transport, RFCMode mode)
-	: transport_(std::move(transport)), parser_(mode), mode_(mode), mt_(rd_()) {
+Client::Client(std::unique_ptr<Transport> transport, std::string host,
+               const std::uint16_t port, RFCMode mode)
+	: transport_(std::move(transport)),
+      host_(std::move(host)), port_(port),
+      parser_(mode), mode_(mode), mt_(rd_()) {
 	transport_->set_callbacks(
 		[this](std::vector<std::uint8_t> buffer) { handle_message(std::move(buffer)); },
 		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
@@ -305,6 +308,7 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 
 std::future<std::expected<std::vector<attributes::Attribute>, Error>> 
 Client::binding_request() {
+	connect(host_, port_);
 	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
@@ -315,6 +319,7 @@ Client::binding_request() {
 
 std::future<std::expected<attributes::MappedAddress, Error>>
 Client::external_address() {
+	connect(host_, port_);
 	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
