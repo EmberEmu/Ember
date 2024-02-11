@@ -215,13 +215,13 @@ Parser::extract_attributes(spark::BinaryInStream& stream, const TxID& id, const 
 		// everything that follows except for the FINGERPRINT attribute
 		if(has_msg_integrity && !std::get_if<attributes::Fingerprint>(&(*attribute))) {
 			fingerprint_offset_ = stream.total_read() - sizeof(attributes::Fingerprint);
-			BOOST_ASSERT_MSG("Offset underflow", msg_integrity_offset_ < stream.total_read());
+			BOOST_ASSERT(msg_integrity_offset_ < stream.total_read());
 			break;
 		}
 
 		if(!has_msg_integrity && std::get_if<attributes::MessageIntegrity>(&(*attribute))) {
 			msg_integrity_offset_ = stream.total_read() - sizeof(attributes::MessageIntegrity);
-			BOOST_ASSERT_MSG("Offset underflow", msg_integrity_offset_ < stream.total_read());
+			BOOST_ASSERT(msg_integrity_offset_ < stream.total_read());
 			has_msg_integrity = true;
 		}
 
