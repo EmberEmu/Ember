@@ -58,13 +58,15 @@ class Client {
 	void transaction_timer(detail::Transaction& tx);
 	std::size_t tx_hash(const TxID& tx_id);
 	void handle_message(std::vector<std::uint8_t> buffer);
-	void handle_binding_resp(spark::BinaryInStream& stream, detail::Transaction& tx);
-	void handle_binding_err_resp(spark::BinaryInStream& stream, detail::Transaction& tx);
+	void handle_binding_resp(const std::vector<attributes::Attribute>& attributes, detail::Transaction& tx);
+	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes, detail::Transaction& tx);
 	void binding_request(detail::Transaction& tx);
 	void on_connection_error(const boost::system::error_code& error);
 	template<typename T>
 	std::optional<T> retrieve_attribute(const std::vector<attributes::Attribute>& attrs);
-	std::uint32_t calculate_fingerprint(spark::BinaryInStream& stream, std::size_t offset);
+	std::uint32_t calculate_fingerprint(const std::vector<std::uint8_t>& buffer, std::size_t offset);
+	void process_message(MessageType type, spark::BinaryInStream& stream,
+	                     const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
 
 public:
 	Client(std::unique_ptr<Transport> transport, RFCMode mode = RFCMode::RFC5389);

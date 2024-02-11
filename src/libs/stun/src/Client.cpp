@@ -14,6 +14,7 @@
 #include <spark/buffers/VectorBufferAdaptor.h>
 #include <shared/util/FNVHash.h>
 #include <boost/asio.hpp>
+#include <boost/assert.hpp>
 #include <boost/endian.hpp>
 #include <botan/hash.h>
 #include <botan/bigint.h>
@@ -133,16 +134,41 @@ void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 	}
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
-
-	if(type == MessageType::BINDING_RESPONSE) {
-		handle_binding_resp(stream, transaction);
-	} else if(type == MessageType::BINDING_ERROR_RESPONSE) {
-		handle_binding_err_resp(stream, transaction);
-	} else {
-		abort_transaction(transaction, Error::RESP_UNK_MESSAGE_TYPE);
-	}
+	process_message(type, stream, buffer, transaction);
 } catch(const spark::exception& e) {
 	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
+}
+
+void Client::process_message(const MessageType type, spark::BinaryInStream& stream,
+                             const std::vector<std::uint8_t>& buffer,
+                             detail::Transaction& tx) try {
+	auto attributes = parser_.extract_attributes(stream, tx.tx_id, type);
+
+	if(auto offset = parser_.fingerprint_offset()) {
+		const auto crc32 = calculate_fingerprint(buffer, offset);
+		const auto fingerprint = retrieve_attribute<attributes::Fingerprint>(attributes);
+
+		if(fingerprint) {
+			if(crc32 != fingerprint->crc32) {
+				abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+				return;
+			}
+		} else {
+			BOOST_ASSERT_MSG(true, "Fingerprint must be present when offset is present");
+		}
+	}
+
+	if(type == MessageType::BINDING_RESPONSE) {
+		handle_binding_resp(std::move(attributes), tx);
+	} else if(type == MessageType::BINDING_ERROR_RESPONSE) {
+		handle_binding_err_resp(std::move(attributes), tx);
+	} else {
+		abort_transaction(tx, Error::RESP_UNK_MESSAGE_TYPE);
+	}
+} catch (const spark::exception&) {
+	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+} catch (const Error& e) {
+	abort_transaction(tx, e);
 }
 
 void Client::abort_transaction(detail::Transaction& tx, const Error error, const bool erase) {
@@ -165,47 +191,24 @@ void Client::abort_transaction(detail::Transaction& tx, const Error error, const
 	}
 }
 
-std::uint32_t Client::calculate_fingerprint(spark::BinaryInStream& stream,
+std::uint32_t Client::calculate_fingerprint(const std::vector<std::uint8_t>& buffer,
                                             const std::size_t offset) {
-	// inefficient to copy the buffer when we already have it elsewhere, refactor todo?
-	const auto stream_buff = stream.buffer();
-	std::vector<std::uint8_t> buffer(offset);
-	stream_buff->copy(buffer.data(), buffer.size());
-
+	BOOST_ASSERT(buffer.size() >= offset);
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
-	crc_func->update(buffer.data(), buffer.size());
+	crc_func->update(buffer.data(), offset);
 	auto vec = crc_func->final();
 	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
 	return crc32;
 }
 
 
-void Client::handle_binding_resp(spark::BinaryInStream& stream, detail::Transaction& tx) try {
-	auto attributes = parser_.extract_attributes(stream, tx.tx_id, MessageType::BINDING_RESPONSE);
-
-	if(auto offset = parser_.fingerprint_offset()) {
-		const auto crc32 = calculate_fingerprint(stream, offset);
-		const auto fingerprint = retrieve_attribute<attributes::Fingerprint>(attributes);
-
-		if(fingerprint) {
-			if(crc32 != fingerprint->crc32) {
-				abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
-				return;
-			}
-		} else {
-			assert(true); // todo
-		}
-	}
-
+void Client::handle_binding_resp(const std::vector<attributes::Attribute>& attributes,
+                                 detail::Transaction& tx) {
 	complete_transaction(tx, std::move(attributes));
-} catch (const spark::exception&) {
-	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
-} catch (const Error& e) {
-	abort_transaction(tx, e);
 }
 
-void Client::handle_binding_err_resp(spark::BinaryInStream& stream, detail::Transaction& tx) try {
-	auto attributes = parser_.extract_attributes(stream, tx.tx_id, MessageType::BINDING_ERROR_RESPONSE);
+void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
+                                     detail::Transaction& tx) {
 	const auto& error_attr = retrieve_attribute<attributes::ErrorCode>(attributes);
 
 	if(!error_attr) {
@@ -269,10 +272,6 @@ void Client::handle_binding_err_resp(spark::BinaryInStream& stream, detail::Tran
 	} else {
 		abort_transaction(tx, Error::RESP_BINDING_ERROR);
 	}
-} catch(const spark::exception&) {
-	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
-} catch(const Error& e) {
-	abort_transaction(tx, e);
 }
 
 void Client::complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
