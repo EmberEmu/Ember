@@ -32,6 +32,11 @@ namespace ember::stun {
 
 Client::Client(std::unique_ptr<Transport> transport, RFCMode mode)
 	: transport_(std::move(transport)), parser_(mode), mode_(mode), mt_(rd_()) {
+	transport_->set_callbacks(
+		[this](std::vector<std::uint8_t> buffer) { handle_message(std::move(buffer)); },
+		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
+	);
+
 	// should probably do this in the transport but whatever
 	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*transport_->executor()));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
@@ -55,12 +60,6 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 
 void Client::connect(const std::string& host, const std::uint16_t port) {
 	dest_hist_[host] = std::chrono::steady_clock::now();
-
-	transport_->set_callbacks(
-		[this](std::vector<std::uint8_t> buffer) { handle_message(std::move(buffer)); },
-		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
-	);
-
 	transport_->connect(host, port);
 }
 
