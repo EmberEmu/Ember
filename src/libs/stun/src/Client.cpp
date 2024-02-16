@@ -187,13 +187,13 @@ std::uint32_t Client::calculate_fingerprint(const std::vector<std::uint8_t>& buf
 	BOOST_ASSERT(buffer.size() >= offset);
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
 	crc_func->update(buffer.data(), offset);
-	auto vec = crc_func->final();
+	const auto vec = crc_func->final();
 	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
 	return crc32;
 }
 
 
-void Client::handle_binding_resp(const std::vector<attributes::Attribute>& attributes,
+void Client::handle_binding_resp(std::vector<attributes::Attribute> attributes,
                                  detail::Transaction& tx) {
 	complete_transaction(tx, std::move(attributes));
 }
@@ -280,7 +280,7 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 
 				// XorMappedAddress will also do - we just need an external address
 				if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
-					const auto xma = std::get<attributes::XorMappedAddress>(attr);
+					const auto& xma = std::get<attributes::XorMappedAddress>(attr);
 
 					const attributes::MappedAddress ma{
 						.family = xma.family,
@@ -308,7 +308,7 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 
 std::future<std::expected<std::vector<attributes::Attribute>, Error>> 
 Client::binding_request() {
-	connect(host_, port_);
+	connect(host_, port_); // todo, should be made async
 	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
@@ -319,7 +319,7 @@ Client::binding_request() {
 
 std::future<std::expected<attributes::MappedAddress, Error>>
 Client::external_address() {
-	connect(host_, port_);
+	connect(host_, port_); // todo, should be made async
 	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
