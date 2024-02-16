@@ -161,7 +161,7 @@ void Client::process_message(const Header& header, spark::BinaryInStream& stream
 	if(type == MessageType::BINDING_RESPONSE) {
 		handle_binding_resp(std::move(attributes), tx);
 	} else if(type == MessageType::BINDING_ERROR_RESPONSE) {
-		handle_binding_err_resp(std::move(attributes), tx);
+		handle_binding_err_resp(attributes, tx);
 	} else {
 		abort_transaction(tx, Error::RESP_UNK_MESSAGE_TYPE);
 	}
@@ -283,10 +283,10 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 					const auto& xma = std::get<attributes::XorMappedAddress>(attr);
 
 					const attributes::MappedAddress ma{
-						.family = xma.family,
 						.ipv4 = xma.ipv4,
 						.ipv6 = xma.ipv6,
-						.port = xma.port
+						.port = xma.port,
+						.family = xma.family
 					};
 
 					arg.set_value(ma);

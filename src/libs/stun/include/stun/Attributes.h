@@ -21,15 +21,15 @@ namespace ember::stun::attributes {
 // can't be bothered with strong typedefs to reduce duplication here,
 // which would be needed to differentiate between them in the variant
 #define IP_BOTH                        \
-	AddressFamily family;              \
 	std::uint32_t ipv4;                \
 	std::array<std::uint32_t, 4> ipv6; \
-	std::uint16_t port;
+	std::uint16_t port;                \
+	AddressFamily family;
 
 #define IPV4_ONLY                      \
-	AddressFamily family;              \
 	std::uint32_t ipv4;                \
-	std::uint16_t port;
+	std::uint16_t port;                \
+	AddressFamily family;
 
 struct MappedAddress { IP_BOTH };
 struct AlternateServer { IP_BOTH };

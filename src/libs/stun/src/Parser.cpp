@@ -149,7 +149,7 @@ Parser::error_code(spark::BinaryInStream& stream, std::size_t length) {
 	}
 
 	// (╯°□°）╯︵ ┻━┻
-	const auto code = (attr.code >> 8) & 0x07;
+	const auto code = ((attr.code >> 8) & 0x07) * 100;
 	const auto num = attr.code & 0xFF;
 
 	if(code < 300 || code >= 700) {
@@ -164,7 +164,7 @@ Parser::error_code(spark::BinaryInStream& stream, std::size_t length) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
 	}
 
-	attr.code = (code * 100) + num;
+	attr.code = code + num;
 
 	std::string reason;
 	reason.resize(length - sizeof(attributes::ErrorCode::code));
@@ -190,6 +190,7 @@ Parser::unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 		stream >> attr_type;
 		be::big_to_native_inplace(attr_type);
 		attr.attributes.emplace_back(attr_type);
+		length -= sizeof(attr_type);
 	}
 
 	if(attr.attributes.size() % 2) {
@@ -239,7 +240,6 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 	stream >> length;
 	be::big_to_native_inplace(attr_type);
 
-	attributes::Attribute attribute;
 	const bool required = (std::to_underlying(attr_type) >> 15) ^ 1;
 	const bool attr_valid = check_attr_validity(attr_type, type, required);
 
