@@ -279,7 +279,7 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 				}
 
 				// XorMappedAddress will also do - we just need an external address
-				if (std::holds_alternative<attributes::XorMappedAddress>(attr)) {
+				if(std::holds_alternative<attributes::XorMappedAddress>(attr)) {
 					const auto& xma = std::get<attributes::XorMappedAddress>(attr);
 
 					const attributes::MappedAddress ma{
@@ -290,11 +290,13 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 					};
 
 					arg.set_value(ma);
+					return;
 				}
 			}
 		} else if constexpr(std::is_same_v<T,
 			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
 			arg.set_value(std::move(attributes));
+			return;
 		} else if constexpr(std::is_same_v<T,
 			std::promise<std::expected<NAT, Error>>>) {
 			// todo

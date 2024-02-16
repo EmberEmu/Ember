@@ -243,7 +243,7 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 	const bool required = (std::to_underlying(attr_type) >> 15) ^ 1;
 	const bool attr_valid = check_attr_validity(attr_type, type, required);
 
-	if(!attr_valid) {
+	if(!attr_valid && required) {
 		throw Error::RESP_UNEXPECTED_ATTR;
 	}
 
@@ -284,9 +284,6 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 			return unknown_attributes(stream, length);
 	}
 
-	logger_(Verbosity::STUN_LOG_DEBUG, required?
-		Error::RESP_UNKNOWN_REQ_ATTRIBUTE : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
-
 	// todo assert required
 	// todo error handling
 
@@ -318,11 +315,13 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	// Check whether this attribute is valid for the given response type
 	if(const auto entry = attr_valid_lut.find(attr_type); entry != attr_valid_lut.end()) {
 		if(entry->second != msg_type) { // not valid for this type
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
+			logger_(Verbosity::STUN_LOG_DEBUG,
+				required? Error::RESP_BAD_REQ_ATTR_SERVER : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
 			return false;
 		}
 	} else { // not valid for *any* response type
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
+		logger_(Verbosity::STUN_LOG_DEBUG,
+			required ? Error::RESP_BAD_REQ_ATTR_SERVER : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
 		return false;
 	}
 

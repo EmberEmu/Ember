@@ -44,9 +44,9 @@ AttrValidIn attr_valid_lut {
 	{ Attributes::XOR_MAPPED_ADDR_OPT,          MessageType::BINDING_RESPONSE       },
 	{ Attributes::OTHER_ADDRESS,                MessageType::BINDING_RESPONSE       },
 	{ Attributes::RESPONSE_ORIGIN,              MessageType::BINDING_RESPONSE       },
-	{ Attributes::RESPONSE_ORIGIN,              MessageType::BINDING_RESPONSE       },
 	{ Attributes::MESSAGE_INTEGRITY_SHA256,     MessageType::BINDING_RESPONSE       },
 	{ Attributes::FINGERPRINT,                  MessageType::BINDING_RESPONSE       },
+	{ Attributes::SOFTWARE,                     MessageType::BINDING_RESPONSE       }
 };
 
 } // stun, ember
