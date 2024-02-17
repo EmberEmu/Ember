@@ -86,7 +86,7 @@ void StreamTransport::read(const std::size_t size, const std::size_t offset) {
 }
 
 void StreamTransport::close() {
-
+	socket_.close();
 }
 
 std::chrono::milliseconds StreamTransport::timeout() {
@@ -99,6 +99,14 @@ unsigned int StreamTransport::retries() {
 
 boost::asio::io_context* StreamTransport::executor() {
 	return &ctx_;
+}
+
+std::string StreamTransport::local_ip() {
+	return socket_.local_endpoint().address().to_string();
+}
+
+std::uint16_t StreamTransport::local_port() {
+	return socket_.local_endpoint().port();
 }
 
 } // stun, ember

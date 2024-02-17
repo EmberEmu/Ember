@@ -39,6 +39,8 @@ public:
 	std::chrono::milliseconds timeout() override;
 	unsigned int retries() override;
 	boost::asio::io_context* executor() override;
+	std::string local_ip() override;
+	std::uint16_t local_port() override;
 };
 
 } // stun, ember

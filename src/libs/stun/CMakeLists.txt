@@ -18,6 +18,7 @@ add_library(${LIBRARY_NAME}
            include/stun/Transaction.h
            include/stun/Parser.h
            include/stun/Parser.inl
+           include/stun/Util.h
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp

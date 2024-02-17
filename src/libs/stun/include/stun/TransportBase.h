@@ -33,6 +33,8 @@ public:
 	virtual boost::asio::io_context* executor() = 0;
 	virtual std::chrono::milliseconds timeout() = 0;
 	virtual unsigned int retries() = 0;
+	virtual std::string local_ip() = 0;
+	virtual std::uint16_t local_port() = 0;
 
 	virtual ~Transport() = default;
 

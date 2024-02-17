@@ -51,21 +51,23 @@ void launch(const po::variables_map& args) {
 	const auto address = result.get();
 
 	if(address) {
-		std::string addr_str;
-
-		if(address->family == stun::AddressFamily::IPV4) {
-			addr_str = boost::asio::ip::address_v4(address->ipv4).to_string();
-		} else {
-			boost::asio::ip::address_v6::bytes_type bytes{};
-			std::copy(address->ipv6.begin(), address->ipv6.end(), bytes.data());
-			addr_str = boost::asio::ip::address_v6(bytes).to_string();
-		}
+		const std::string& ip = stun::extract_ip_to_string(*address);
 
 		// todo, std::print when supported by all compilers
-		std::cout << std::format("STUN provider returned our address as {}:{}", addr_str, address->port);
+		std::cout << std::format("STUN provider returned our address as {}:{}\n", ip, address->port);
+	} else {
+		std::cout << std::format("STUN request failed: {} ({})\n",
+			stun::to_string(address.error()), std::to_underlying(address.error()));
+	}
+
+	auto nat_res = client.nat_present();
+	const auto nat_detected = nat_res.get();
+
+	if(nat_detected) {
+		std::cout << std::format("NAT detected: {}", *nat_detected? "Yes" : "No");
 	} else {
 		std::cout << std::format("STUN request failed: {} ({})",
-			stun::to_string(address.error()), std::to_underlying(address.error()));
+			stun::to_string(nat_detected.error()), std::to_underlying(nat_detected.error()));
 	}
 }
 

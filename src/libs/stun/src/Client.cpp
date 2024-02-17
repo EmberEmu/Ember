@@ -192,9 +192,33 @@ std::uint32_t Client::calculate_fingerprint(const std::vector<std::uint8_t>& buf
 	return crc32;
 }
 
+void Client::set_nat_present(const std::vector<attributes::Attribute>& attributes) {
+	attributes::MappedAddress mapped{};
+	const auto xma = retrieve_attribute<attributes::XorMappedAddress>(attributes);
+
+	// we don't care if it's a mapped or xormapped attribute, as long we have one
+	if(xma) {
+		mapped.family = xma->family;
+		mapped.ipv4 = xma->ipv4;
+		mapped.ipv6 = xma->ipv6;
+		mapped.port = xma->port;
+	} else {
+		const auto ma = retrieve_attribute<attributes::MappedAddress>(attributes);
+
+		if(!ma) {
+			return;
+		}
+
+		mapped = *ma;
+	}
+	
+	const std::string& bind_ip = extract_ip_to_string(mapped);
+	is_nat_present_ = (transport_->local_ip() != bind_ip);
+}
 
 void Client::handle_binding_resp(std::vector<attributes::Attribute> attributes,
                                  detail::Transaction& tx) {
+	set_nat_present(attributes);
 	complete_transaction(tx, std::move(attributes));
 }
 
@@ -266,7 +290,6 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 }
 
 void Client::complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
-	// figure out which attributes we care about
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 
@@ -293,13 +316,20 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 					return;
 				}
 			}
+
+			arg.set_value(std::unexpected(Error::RESP_MISSING_ATTR));
 		} else if constexpr(std::is_same_v<T,
 			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
 			arg.set_value(std::move(attributes));
-			return;
 		} else if constexpr(std::is_same_v<T,
 			std::promise<std::expected<NAT, Error>>>) {
 			// todo
+		} else if constexpr(std::is_same_v<T, std::promise<std::expected<bool, Error>>>) {
+			if(is_nat_present_) {
+				arg.set_value(*is_nat_present_);
+			} else {
+				arg.set_value(std::unexpected(Error::RESP_MISSING_ATTR));
+			}
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
@@ -391,18 +421,7 @@ void Client::on_connection_error(const boost::system::error_code& ec) {
 	transactions_.clear();
 }
 
-template<typename T>
-std::optional<T> Client::retrieve_attribute(const std::vector<attributes::Attribute>& attrs) {
-	for(const auto& attr : attrs) {
-		if(const T* val = std::get_if<T>(&attr)) {
-			return *val;
-		}
-	}
-
-	return std::nullopt;
-}
-
-std::future<std::expected<NAT, Error>> Client::detect_nat() {
+std::future<std::expected<NAT, Error>> Client::detect_nat_type() {
 	std::promise<std::expected<NAT, Error>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
@@ -410,6 +429,22 @@ std::future<std::expected<NAT, Error>> Client::detect_nat() {
 	
 	// todo
 
+	return future;
+}
+
+std::future<std::expected<bool, Error>> Client::nat_present() {
+	std::promise<std::expected<bool, Error>> promise;
+	auto future = promise.get_future();
+
+	if(is_nat_present_) {
+		promise.set_value(*is_nat_present_);
+		return future;
+	}
+
+	connect(host_, port_); // todo, should be made async
+	detail::Transaction::VariantPromise vp(std::move(promise));
+	auto& tx = start_transaction(std::move(vp));
+	binding_request(tx);
 	return future;
 }
 

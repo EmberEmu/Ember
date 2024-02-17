@@ -61,7 +61,7 @@ void DatagramTransport::receive() {
 }
 
 void DatagramTransport::close() {
-
+	socket_.close();
 }
 
 std::chrono::milliseconds DatagramTransport::timeout() {
@@ -74,6 +74,14 @@ unsigned int DatagramTransport::retries() {
 
 boost::asio::io_context* DatagramTransport::executor() {
 	return &ctx_;
+}
+
+std::string DatagramTransport::local_ip() {
+	return socket_.local_endpoint().address().to_string();
+}
+
+std::uint16_t DatagramTransport::local_port() {
+	return socket_.local_endpoint().port();
 }
 
 } // stun, ember
