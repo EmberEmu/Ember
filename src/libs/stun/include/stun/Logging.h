@@ -64,7 +64,7 @@ smart_enum_class(Error, std::uint8_t,
 );
 
 struct ErrorRet {
-	explicit ErrorRet(Error error, attributes::ErrorCode ec = {})
+	explicit ErrorRet(Error reason, attributes::ErrorCode ec = {})
 		: reason(reason), ec(std::move(ec)) {}
 	Error reason;
 	attributes::ErrorCode ec;

@@ -18,6 +18,7 @@
 #include <expected>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <random>
 #include <string>
@@ -52,8 +53,8 @@ class Client {
 	std::uint16_t port_;
 	std::optional<bool> is_nat_present_;
 
-	// todo, thread safety (worker thread may access, figure this out)
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
+	std::mutex mutex_;
 
 	// Transaction stuff
 	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
@@ -80,6 +81,8 @@ class Client {
 	void connect(const std::string& host, std::uint16_t port);
 	void set_nat_present(const std::vector<attributes::Attribute>& attributes);
 	void on_connection_error(const boost::system::error_code& error);
+	
+	template<typename T> std::future<T> basic_request();
 
 public:
 	Client(std::unique_ptr<Transport> transport, std::string host,
@@ -89,7 +92,7 @@ public:
 	void log_callback(LogCB callback, Verbosity verbosity);
 	std::future<std::expected<attributes::MappedAddress, ErrorRet>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> binding_request();
-	std::future<std::expected<NAT, ErrorRet>> detect_nat_type();
+	std::future<std::expected<NAT, ErrorRet>> nat_type();
 	std::future<std::expected<bool, ErrorRet>> nat_present();
 };
 

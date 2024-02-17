@@ -16,10 +16,6 @@ namespace ember::stun {
 StreamTransport::StreamTransport(std::chrono::milliseconds timeout)
 	: timeout_(timeout), socket_(ctx_) { }
 
-StreamTransport::~StreamTransport() {
-	socket_.close();
-}
-
 void StreamTransport::connect(std::string_view host, const std::uint16_t port) {
 	ba::ip::tcp::resolver resolver(ctx_);
 	auto endpoints = resolver.resolve(host, std::to_string(port));
@@ -27,16 +23,37 @@ void StreamTransport::connect(std::string_view host, const std::uint16_t port) {
 	receive();
 }
 
-void StreamTransport::send(std::vector<std::uint8_t> message) {
-	auto data = std::make_unique<std::vector<std::uint8_t>>(std::move(message));
+void StreamTransport::do_write() {
+	auto data = std::move(queue_.front());
 	auto buffer = boost::asio::buffer(data->data(), data->size());
+	queue_.pop();
 
 	ba::async_write(socket_, buffer,
 		[this, d = std::move(data)](boost::system::error_code ec, std::size_t /*sent*/) {
-			if (!ec) {
-				// todo
+			if(ec == boost::asio::error::operation_aborted) {
+				return;
+			} else if(ec) {
+				ecb_(ec);
+				return;
 			}
-		});
+
+			if(!queue_.empty()) {
+				do_write();
+			}
+		}
+	);
+}
+
+void StreamTransport::send(std::vector<std::uint8_t> message) {
+	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
+
+	ctx_.post([&, data]() mutable {
+		queue_.emplace(std::move(data));
+
+		if(queue_.size() == 1) {
+			do_write();
+		}
+	});
 }
 
 void StreamTransport::receive() {

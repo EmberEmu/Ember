@@ -10,6 +10,8 @@
 
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
+#include <queue>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -33,13 +35,15 @@ class StreamTransport final : public Transport {
 	std::vector<std::uint8_t> buffer_;
 
 	const std::chrono::milliseconds timeout_;
-
+	std::queue<std::shared_ptr<std::vector<std::uint8_t>>> queue_;
 	std::size_t get_length();
 	void read(std::size_t size, std::size_t offset);
 	void receive();
+	void do_write();
+
 public:
 	StreamTransport(std::chrono::milliseconds timeout = 39500ms);
-	~StreamTransport() override;
+	~StreamTransport() {};
 
 	void connect(std::string_view host, std::uint16_t port) override;
 	void send(std::vector<std::uint8_t> message) override;

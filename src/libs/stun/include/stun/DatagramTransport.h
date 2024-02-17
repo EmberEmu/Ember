@@ -11,6 +11,8 @@
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
 #include <functional>
+#include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -28,7 +30,11 @@ class DatagramTransport final : public Transport {
 	const std::chrono::milliseconds timeout_;
 	const unsigned int retries_;
 
+	std::queue<std::shared_ptr<std::vector<std::uint8_t>>> queue_;
+	std::vector<std::uint8_t> buffer_;
+
 	void receive();
+	void do_write();
 public:
 	DatagramTransport(std::chrono::milliseconds timeout = 500ms, unsigned int retries = 7);
 	~DatagramTransport() override;

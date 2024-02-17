@@ -67,7 +67,8 @@ void launch(const po::variables_map& args) {
 		std::cout << std::format("NAT detected: {}", *nat_detected? "Yes" : "No");
 	} else {
 		std::cout << std::format("STUN request failed: {} ({})",
-			stun::to_string(nat_detected.error().reason), std::to_underlying(nat_detected.error().reason));
+			stun::to_string(nat_detected.error().reason),
+			std::to_underlying(nat_detected.error().reason));
 	}
 }
 
@@ -108,16 +109,17 @@ void log_cb(const stun::Verbosity verbosity, const stun::Error reason) {
 	}
 
 	// todo, std::print when supported by all compilers
-	std::cout << std::format("{} {} ({})\n", verbstr, stun::to_string(reason), std::to_underlying(reason));
+	std::cout << std::format("{} {} ({})\n",
+		verbstr, stun::to_string(reason), std::to_underlying(reason));
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
-		("host,h", po::value<std::string>()->default_value("stun.l.google.com"), "Host")
-		("port,p", po::value<std::uint16_t>()->default_value(19302), "Port")
-		("protocol,c", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp, tls_tcp)");
+		("host,h", po::value<std::string>()->default_value("stunserver.stunprotocol.org"), "Host")
+		("port,p", po::value<std::uint16_t>()->default_value(3479), "Port")
+		("protocol,c", po::value<std::string>()->default_value("tcp"), "Protocol (udp, tcp, tls_tcp)");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);

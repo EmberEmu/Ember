@@ -47,8 +47,8 @@ Client::Client(std::unique_ptr<Transport> transport, std::string host,
 }
 
 Client::~Client() {
+	transport_->executor()->stop();
 	work_.clear();
-	transport_.reset();
 }
 
 void Client::log_callback(LogCB callback, const Verbosity verbosity) {
@@ -90,7 +90,9 @@ void Client::binding_request(detail::Transaction& tx) {
 
 detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromise vp) {
 	detail::Transaction tx(transport_->executor()->get_executor(),
-		transport_->timeout(), transport_->retries());
+						   transport_->timeout(),
+						   transport_->retries());
+
 	tx.promise = std::move(vp);
 
 	if(mode_ == RFCMode::RFC5389) {
@@ -109,6 +111,8 @@ detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromi
 }
 
 void Client::handle_message(std::vector<std::uint8_t> buffer) try {
+	std::lock_guard<std::mutex> guard(mutex_);
+
 	if(buffer.size() < HEADER_LENGTH) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BUFFER_LT_HEADER);
 		return; // RFC says invalid messages should be discarded
@@ -294,7 +298,8 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 	}
 }
 
-void Client::complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes) {
+void Client::complete_transaction(detail::Transaction& tx,
+                                  std::vector<attributes::Attribute> attributes) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 
@@ -343,10 +348,11 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 	transactions_.erase(tx.hash);
 }
 
-std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> 
-Client::binding_request() {
-	connect(host_, port_); // todo, should be made async
-	std::promise<std::expected<std::vector<attributes::Attribute>, ErrorRet>> promise;
+template<typename T>
+std::future<T> Client::basic_request() {
+	std::lock_guard<std::mutex> guard(mutex_);
+	connect(host_, port_); // todo, async
+	std::promise<T> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
@@ -354,15 +360,12 @@ Client::binding_request() {
 	return future;
 }
 
-std::future<std::expected<attributes::MappedAddress, ErrorRet>>
-Client::external_address() {
-	connect(host_, port_); // todo, should be made async
-	std::promise<std::expected<attributes::MappedAddress, ErrorRet>> promise;
-	auto future = promise.get_future();
-	detail::Transaction::VariantPromise vp(std::move(promise));
-	auto& tx = start_transaction(std::move(vp));
-	binding_request(tx);
-	return future;
+auto Client::binding_request() -> std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> {
+	return basic_request<std::expected<std::vector<attributes::Attribute>, ErrorRet>>();
+}
+
+auto Client::external_address() -> std::future<std::expected<attributes::MappedAddress, ErrorRet>> {
+	return basic_request<std::expected<attributes::MappedAddress, ErrorRet>>();
 }
 
 std::size_t Client::tx_hash(const TxID& tx_id) {
@@ -389,6 +392,8 @@ void Client::transaction_timer(detail::Transaction& tx) {
 			return;
 		}
 
+		std::lock_guard<std::mutex> guard(mutex_);
+
 		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
 			auto& tx = entry->second;
 
@@ -413,6 +418,8 @@ void Client::transaction_timer(detail::Transaction& tx) {
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {
+	std::lock_guard<std::mutex> guard(mutex_);
+
 	for(auto& [k, v] : transactions_) {
 		if(ec == boost::asio::error::connection_aborted) {
 			abort_transaction(v, Error::CONNECTION_ABORTED, {}, false);
@@ -426,7 +433,8 @@ void Client::on_connection_error(const boost::system::error_code& ec) {
 	transactions_.clear();
 }
 
-std::future<std::expected<NAT, ErrorRet>> Client::detect_nat_type() {
+std::future<std::expected<NAT, ErrorRet>> Client::nat_type() {
+	std::lock_guard<std::mutex> guard(mutex_);
 	std::promise<std::expected<NAT, ErrorRet>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
@@ -438,6 +446,7 @@ std::future<std::expected<NAT, ErrorRet>> Client::detect_nat_type() {
 }
 
 std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
+	std::lock_guard<std::mutex> guard(mutex_);
 	std::promise<std::expected<bool, ErrorRet>> promise;
 	auto future = promise.get_future();
 
@@ -446,7 +455,7 @@ std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
 		return future;
 	}
 
-	connect(host_, port_); // todo, should be made async
+	connect(host_, port_); // todo, async
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
 	binding_request(tx);

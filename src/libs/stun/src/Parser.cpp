@@ -284,9 +284,6 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 			return unknown_attributes(stream, length);
 	}
 
-	// todo assert required
-	// todo error handling
-
 	stream.skip(length);
 	return std::nullopt;
 }

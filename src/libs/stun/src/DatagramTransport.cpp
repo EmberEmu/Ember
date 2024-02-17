@@ -7,6 +7,7 @@
  */
 
 #include <stun/DatagramTransport.h>
+#include <iostream>
 
 namespace ember::stun {
 
@@ -21,24 +22,16 @@ void DatagramTransport::connect(std::string_view host, const std::uint16_t port)
 	ba::ip::udp::resolver resolver(ctx_);
 	auto endpoints = resolver.resolve(host, std::to_string(port));
 	ep_ = boost::asio::connect(socket_, endpoints);
+	receive();
 }
 
-// todo, proper queue
-void DatagramTransport::send(std::vector<std::uint8_t> message) {
-	auto datagram = std::make_unique<std::vector<std::uint8_t>>(std::move(message));
+void DatagramTransport::do_write() {
+	auto datagram = std::move(queue_.front());
 	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
+	queue_.pop();
 
 	socket_.async_send_to(buffer, ep_,
 		[this, dg = std::move(datagram)](boost::system::error_code ec, std::size_t /*bytes_sent*/) {
-			if(!ec) {
-				receive();
-			}
-		});
-}
-
-void DatagramTransport::receive() {
-	socket_.async_receive_from(boost::asio::null_buffers(), ep_,
-		[this](boost::system::error_code ec, std::size_t /*length*/) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
@@ -46,10 +39,37 @@ void DatagramTransport::receive() {
 				return;
 			}
 
+			if(!queue_.empty()) {
+				do_write();
+			}
+		}
+	);
+}
 
+void DatagramTransport::send(std::vector<std::uint8_t> message) {
+	auto datagram = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
+
+	ctx_.post([&, datagram = std::move(datagram)]() mutable {
+		queue_.emplace(std::move(datagram));
+
+		if(queue_.size() == 1) {
+			do_write();
+		}
+	});
+}
+
+void DatagramTransport::receive() {
+	socket_.async_receive(boost::asio::null_buffers(),
+		[this](boost::system::error_code ec, std::size_t length) {
+			if(ec == boost::asio::error::operation_aborted) {
+				return;
+			} else if(ec) {
+				ecb_(ec);
+				return;
+			}
 			std::vector<std::uint8_t> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
-			std::size_t recv = socket_.receive_from(boost::asio::buffer(buffer), ep_, flags, ec);
+			std::size_t recv = socket_.receive(boost::asio::buffer(buffer), flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {
