@@ -57,20 +57,29 @@ class Client {
 
 	// Transaction stuff
 	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
-	void complete_transaction(detail::Transaction& tx, std::vector<attributes::Attribute> attributes);
-	void abort_transaction(detail::Transaction& tx, Error error, bool erase = true);
+	void complete_transaction(detail::Transaction& tx,
+	                          std::vector<attributes::Attribute> attributes);
+	void abort_transaction(detail::Transaction& tx, Error error,
+	                       attributes::ErrorCode = {}, bool erase = true);
 	void transaction_timer(detail::Transaction& tx);
 	std::size_t tx_hash(const TxID& tx_id);
+
+	// Message handling stuff
 	void handle_message(std::vector<std::uint8_t> buffer);
-	void handle_binding_resp(std::vector<attributes::Attribute> attributes, detail::Transaction& tx);
-	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes, detail::Transaction& tx);
+	void handle_binding_resp(std::vector<attributes::Attribute> attributes,
+	                         detail::Transaction& tx);
+	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
+	                             detail::Transaction& tx);
 	void binding_request(detail::Transaction& tx);
-	void on_connection_error(const boost::system::error_code& error);
-	std::uint32_t calculate_fingerprint(const std::vector<std::uint8_t>& buffer, std::size_t offset);
+	std::uint32_t calculate_fingerprint(const std::vector<std::uint8_t>& buffer,
+	                                    std::size_t offset);
 	void process_message(const Header& header, spark::BinaryInStream& stream,
-	                     const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
+	                     const std::vector<std::uint8_t>& buffer,
+	                     detail::Transaction& tx);
+
 	void connect(const std::string& host, std::uint16_t port);
 	void set_nat_present(const std::vector<attributes::Attribute>& attributes);
+	void on_connection_error(const boost::system::error_code& error);
 
 public:
 	Client(std::unique_ptr<Transport> transport, std::string host,
@@ -78,10 +87,10 @@ public:
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
-	std::future<std::expected<attributes::MappedAddress, Error>> external_address();
-	std::future<std::expected<std::vector<attributes::Attribute>, Error>> binding_request();
-	std::future<std::expected<NAT, Error>> detect_nat_type();
-	std::future<std::expected<bool, Error>> nat_present();
+	std::future<std::expected<attributes::MappedAddress, ErrorRet>> external_address();
+	std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> binding_request();
+	std::future<std::expected<NAT, ErrorRet>> detect_nat_type();
+	std::future<std::expected<bool, ErrorRet>> nat_present();
 };
 
 } // stun, ember

@@ -53,7 +53,7 @@ Parser::xor_mapped_address(spark::BinaryInStream& stream, const TxID& id) {
 	} else if(attr.family == AddressFamily::IPV6) {
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
 		
-		for (auto& bytes : attr.ipv6) {
+		for(auto& bytes : attr.ipv6) {
 			be::big_to_native_inplace(bytes);
 		}
 
@@ -321,7 +321,7 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 		}
 	} else { // not valid for *any* response type
 		logger_(Verbosity::STUN_LOG_DEBUG,
-			required ? Error::RESP_BAD_REQ_ATTR_SERVER : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
+			required? Error::RESP_BAD_REQ_ATTR_SERVER : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
 		return false;
 	}
 

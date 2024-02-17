@@ -171,10 +171,11 @@ void Client::process_message(const Header& header, spark::BinaryInStream& stream
 	abort_transaction(tx, e);
 }
 
-void Client::abort_transaction(detail::Transaction& tx, const Error error, const bool erase) {
+void Client::abort_transaction(detail::Transaction& tx, const Error error,
+                               attributes::ErrorCode ec, const bool erase) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
-		arg.set_value(std::unexpected(error));
+		arg.set_value(std::unexpected(ErrorRet(error)));
 	}, tx.promise);
 
 	if(erase) {
@@ -224,14 +225,14 @@ void Client::handle_binding_resp(std::vector<attributes::Attribute> attributes,
 
 void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
                                      detail::Transaction& tx) {
-	const auto& error_attr = retrieve_attribute<attributes::ErrorCode>(attributes);
+	const auto& ec = retrieve_attribute<attributes::ErrorCode>(attributes);
 
-	if(!error_attr) {
+	if(!ec) {
 		abort_transaction(tx, Error::RESP_MISSING_ATTR);
 		return;
 	}
 
-	if(Errors(error_attr->code) == Errors::TRY_ALTERNATE) {
+	if(Errors(ec->code) == Errors::TRY_ALTERNATE) {
 		// insurance policy against being bounced around servers
 		if(tx.redirects >= MAX_REDIRECTS) {
 			abort_transaction(tx, Error::RESP_BAD_REDIRECT);
@@ -285,7 +286,11 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 		transport_->connect(ip, alt_attr->port);
 		binding_request(new_tx);
 	} else {
-		abort_transaction(tx, Error::RESP_BINDING_ERROR);
+		if(ec) {
+			abort_transaction(tx, Error::RESP_BINDING_ERROR, *ec);
+		} else {
+			abort_transaction(tx, Error::RESP_BINDING_ERROR);
+		}
 	}
 }
 
@@ -294,7 +299,7 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 		using T = std::decay_t<decltype(arg)>;
 
 		if constexpr(std::is_same_v<T,
-			std::promise<std::expected<attributes::MappedAddress, Error>>>) {
+			std::promise<std::expected<attributes::MappedAddress, ErrorRet>>>) {
 			for(const auto& attr : attributes) {
 				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
 					arg.set_value(std::get<attributes::MappedAddress>(attr));
@@ -317,18 +322,18 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 				}
 			}
 
-			arg.set_value(std::unexpected(Error::RESP_MISSING_ATTR));
+			arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
 		} else if constexpr(std::is_same_v<T,
-			std::promise<std::expected<std::vector<attributes::Attribute>, Error>>>) {
+			std::promise<std::expected<std::vector<attributes::Attribute>, ErrorRet>>>) {
 			arg.set_value(std::move(attributes));
 		} else if constexpr(std::is_same_v<T,
-			std::promise<std::expected<NAT, Error>>>) {
+			std::promise<std::expected<NAT, ErrorRet>>>) {
 			// todo
-		} else if constexpr(std::is_same_v<T, std::promise<std::expected<bool, Error>>>) {
+		} else if constexpr(std::is_same_v<T, std::promise<std::expected<bool, ErrorRet>>>) {
 			if(is_nat_present_) {
 				arg.set_value(*is_nat_present_);
 			} else {
-				arg.set_value(std::unexpected(Error::RESP_MISSING_ATTR));
+				arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
 			}
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
@@ -338,10 +343,10 @@ void Client::complete_transaction(detail::Transaction& tx, std::vector<attribute
 	transactions_.erase(tx.hash);
 }
 
-std::future<std::expected<std::vector<attributes::Attribute>, Error>> 
+std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> 
 Client::binding_request() {
 	connect(host_, port_); // todo, should be made async
-	std::promise<std::expected<std::vector<attributes::Attribute>, Error>> promise;
+	std::promise<std::expected<std::vector<attributes::Attribute>, ErrorRet>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
@@ -349,10 +354,10 @@ Client::binding_request() {
 	return future;
 }
 
-std::future<std::expected<attributes::MappedAddress, Error>>
+std::future<std::expected<attributes::MappedAddress, ErrorRet>>
 Client::external_address() {
 	connect(host_, port_); // todo, should be made async
-	std::promise<std::expected<attributes::MappedAddress, Error>> promise;
+	std::promise<std::expected<attributes::MappedAddress, ErrorRet>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
@@ -410,19 +415,19 @@ void Client::transaction_timer(detail::Transaction& tx) {
 void Client::on_connection_error(const boost::system::error_code& ec) {
 	for(auto& [k, v] : transactions_) {
 		if(ec == boost::asio::error::connection_aborted) {
-			abort_transaction(v, Error::CONNECTION_ABORTED, false);
+			abort_transaction(v, Error::CONNECTION_ABORTED, {}, false);
 		} else if(ec == boost::asio::error::connection_reset) {
-			abort_transaction(v, Error::CONNECTION_RESET, false);
+			abort_transaction(v, Error::CONNECTION_RESET, {}, false);
 		} else {
-			abort_transaction(v, Error::CONNECTION_ERROR, false);
+			abort_transaction(v, Error::CONNECTION_ERROR, {}, false);
 		}
 	}
 
 	transactions_.clear();
 }
 
-std::future<std::expected<NAT, Error>> Client::detect_nat_type() {
-	std::promise<std::expected<NAT, Error>> promise;
+std::future<std::expected<NAT, ErrorRet>> Client::detect_nat_type() {
+	std::promise<std::expected<NAT, ErrorRet>> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
@@ -432,8 +437,8 @@ std::future<std::expected<NAT, Error>> Client::detect_nat_type() {
 	return future;
 }
 
-std::future<std::expected<bool, Error>> Client::nat_present() {
-	std::promise<std::expected<bool, Error>> promise;
+std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
+	std::promise<std::expected<bool, ErrorRet>> promise;
 	auto future = promise.get_future();
 
 	if(is_nat_present_) {

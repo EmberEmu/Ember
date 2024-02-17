@@ -57,7 +57,7 @@ void launch(const po::variables_map& args) {
 		std::cout << std::format("STUN provider returned our address as {}:{}\n", ip, address->port);
 	} else {
 		std::cout << std::format("STUN request failed: {} ({})\n",
-			stun::to_string(address.error()), std::to_underlying(address.error()));
+			stun::to_string(address.error().reason), std::to_underlying(address.error().reason));
 	}
 
 	auto nat_res = client.nat_present();
@@ -67,7 +67,7 @@ void launch(const po::variables_map& args) {
 		std::cout << std::format("NAT detected: {}", *nat_detected? "Yes" : "No");
 	} else {
 		std::cout << std::format("STUN request failed: {} ({})",
-			stun::to_string(nat_detected.error()), std::to_underlying(nat_detected.error()));
+			stun::to_string(nat_detected.error().reason), std::to_underlying(nat_detected.error().reason));
 	}
 }
 

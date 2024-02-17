@@ -32,7 +32,7 @@ enum class Verbosity {
  * a string to make localising easier, if it ever gets that far.
  */
 smart_enum_class(Error, std::uint8_t,
-	OK,                               // s'all good, man,
+	OK,                               // s'all good, man
 	NO_RESPONSE_RECEIVED,             
 	CONNECTION_ABORTED,               
 	CONNECTION_RESET,
@@ -62,6 +62,13 @@ smart_enum_class(Error, std::uint8_t,
 	RESP_UNK_MESSAGE_TYPE,            // unknown or unhandled message type
 	RESP_INVALID_FINGERPRINT          // crc32 in the fingerprint didn't match our own calculation
 );
+
+struct ErrorRet {
+	explicit ErrorRet(Error error, attributes::ErrorCode ec = {})
+		: reason(reason), ec(std::move(ec)) {}
+	Error reason;
+	attributes::ErrorCode ec;
+};
 
 using LogCB = std::function<void(Verbosity, Error)>;
 
