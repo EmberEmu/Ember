@@ -32,14 +32,17 @@ class DatagramTransport final : public Transport {
 
 	std::queue<std::shared_ptr<std::vector<std::uint8_t>>> queue_;
 	std::vector<std::uint8_t> buffer_;
+	ba::ip::udp::resolver resolver_;
 
 	void receive();
 	void do_write();
+	void do_connect(ba::ip::udp::resolver::results_type results, OnConnect cb);
+
 public:
 	DatagramTransport(std::chrono::milliseconds timeout = 500ms, unsigned int retries = 7);
 	~DatagramTransport() override;
 
-	void connect(std::string_view host, std::uint16_t port) override;
+	void connect(std::string_view host, std::uint16_t port, OnConnect cb) override;
 	void send(std::vector<std::uint8_t> message) override;
 	void close() override;
 	std::chrono::milliseconds timeout() override;

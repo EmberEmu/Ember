@@ -61,12 +61,14 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 	parser_.set_logger(callback, verbosity);
 }
 
-void Client::connect(const std::string& host, const std::uint16_t port) {
+void Client::connect(const std::string& host, const std::uint16_t port, Transport::OnConnect cb) {
 	dest_hist_[host] = std::chrono::steady_clock::now();
-	transport_->connect(host, port);
+	transport_->connect(host, port, cb);
 }
 
 void Client::binding_request(detail::Transaction& tx) {
+	std::lock_guard<std::mutex> guard(mutex_);
+
 	std::vector<std::uint8_t> data;
 	spark::VectorBufferAdaptor buffer(data);
 	spark::BinaryOutStream stream(buffer);
@@ -257,21 +259,7 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 		 * to that of the source IP address of the request".
 		 * I don't have a reliable way of doing this, so going to ignore it.
 		 */
-
-		boost::asio::ip::address address;
-
-		if(alt_attr->family == AddressFamily::IPV4) {
-			address = boost::asio::ip::address_v4(alt_attr->ipv4);
-		} else if(alt_attr->family == AddressFamily::IPV6) {
-			boost::asio::ip::address_v6::bytes_type bytes{};
-			std::copy(alt_attr->ipv6.begin(), alt_attr->ipv6.end(), bytes.data());
-			address = boost::asio::ip::address_v6(bytes);
-		} else {
-			abort_transaction(tx, Error::RESP_BAD_REDIRECT);
-			return;
-		}
-
-		const auto& ip = address.to_string();
+		const std::string& ip = extract_ip_to_string(*alt_attr);
 
 		// check we haven't resent to this address previously to prevent a redirect loop
 		if(auto entry = dest_hist_.find(ip); entry != dest_hist_.end()) {
@@ -287,8 +275,9 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 		transactions_.erase(tx.hash);
 
 		// retry the request
-		transport_->connect(ip, alt_attr->port);
-		binding_request(new_tx);
+		transport_->connect(ip, alt_attr->port, [&]() {
+			binding_request(new_tx);
+		});
 	} else {
 		if(ec) {
 			abort_transaction(tx, Error::RESP_BINDING_ERROR, *ec);
@@ -351,12 +340,15 @@ void Client::complete_transaction(detail::Transaction& tx,
 template<typename T>
 std::future<T> Client::basic_request() {
 	std::lock_guard<std::mutex> guard(mutex_);
-	connect(host_, port_); // todo, async
 	std::promise<T> promise;
 	auto future = promise.get_future();
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
-	binding_request(tx);
+
+	connect(host_, port_, [&]() {
+		binding_request(tx);
+	});
+
 	return future;
 }
 
@@ -455,10 +447,13 @@ std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
 		return future;
 	}
 
-	connect(host_, port_); // todo, async
 	detail::Transaction::VariantPromise vp(std::move(promise));
 	auto& tx = start_transaction(std::move(vp));
-	binding_request(tx);
+	
+	connect(host_, port_, [&]() {
+		binding_request(tx);
+	});
+
 	return future;
 }
 

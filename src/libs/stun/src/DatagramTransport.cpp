@@ -7,22 +7,39 @@
  */
 
 #include <stun/DatagramTransport.h>
-#include <iostream>
 
 namespace ember::stun {
 
 DatagramTransport::DatagramTransport(std::chrono::milliseconds timeout, unsigned int retries)
-	: socket_(ctx_), timeout_(timeout), retries_(retries) { }
+	: socket_(ctx_), timeout_(timeout), retries_(retries), resolver_(ctx_) { }
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
 }
 
-void DatagramTransport::connect(std::string_view host, const std::uint16_t port) {
-	ba::ip::udp::resolver resolver(ctx_);
-	auto endpoints = resolver.resolve(host, std::to_string(port));
-	ep_ = boost::asio::connect(socket_, endpoints);
-	receive();
+void DatagramTransport::connect(std::string_view host, const std::uint16_t port, OnConnect cb) {
+	resolver_.async_resolve(host, std::to_string(port),
+		[&, cb](const boost::system::error_code& ec, ba::ip::udp::resolver::results_type results) {
+			if(!ec) {
+				do_connect(std::move(results), cb);
+			} else {
+				ecb_(ec);
+			}
+		}
+	);
+}
+
+void DatagramTransport::do_connect(ba::ip::udp::resolver::results_type results, OnConnect cb) {
+	boost::asio::async_connect(socket_, results.begin(), results.end(),
+		[&, cb, results](const boost::system::error_code& ec, ba::ip::udp::resolver::iterator) {
+			if(!ec) {
+				cb();
+				receive();
+			} else {
+				ecb_(ec);
+			}
+		}
+	);
 }
 
 void DatagramTransport::do_write() {
@@ -30,7 +47,7 @@ void DatagramTransport::do_write() {
 	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
 	queue_.pop();
 
-	socket_.async_send_to(buffer, ep_,
+	socket_.async_send(buffer,
 		[this, dg = std::move(datagram)](boost::system::error_code ec, std::size_t /*bytes_sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;

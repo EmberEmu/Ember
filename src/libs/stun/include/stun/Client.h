@@ -13,6 +13,7 @@
 #include <stun/Transaction.h>
 #include <stun/Logging.h>
 #include <stun/Parser.h>
+#include <stun/Transport.h>
 #include <stun/Util.h>
 #include <boost/asio/io_context.hpp>
 #include <expected>
@@ -31,8 +32,6 @@ namespace ember::spark {
 }
 
 namespace ember::stun {
-
-class Transport;
 
 class Client {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
@@ -53,6 +52,11 @@ class Client {
 	std::uint16_t port_;
 	std::optional<bool> is_nat_present_;
 
+	/*
+	 * The transaction map is protected by locking at each 'entry point' into
+	 * the class. The user entry points are the public functions and the
+	 * transport worker entry points are defined by the callbacks.
+	 */
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 	std::mutex mutex_;
 
@@ -78,7 +82,7 @@ class Client {
 	                     const std::vector<std::uint8_t>& buffer,
 	                     detail::Transaction& tx);
 
-	void connect(const std::string& host, std::uint16_t port);
+	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect cb);
 	void set_nat_present(const std::vector<attributes::Attribute>& attributes);
 	void on_connection_error(const boost::system::error_code& error);
 	

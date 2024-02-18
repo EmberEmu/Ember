@@ -14,13 +14,31 @@
 namespace ember::stun {
 
 StreamTransport::StreamTransport(std::chrono::milliseconds timeout)
-	: timeout_(timeout), socket_(ctx_) { }
+	: timeout_(timeout), socket_(ctx_), resolver_(ctx_) { }
 
-void StreamTransport::connect(std::string_view host, const std::uint16_t port) {
-	ba::ip::tcp::resolver resolver(ctx_);
-	auto endpoints = resolver.resolve(host, std::to_string(port));
-	boost::asio::connect(socket_, endpoints); // not async, todo, error handle
-	receive();
+void StreamTransport::connect(std::string_view host, const std::uint16_t port, OnConnect cb) {
+	resolver_.async_resolve(host, std::to_string(port),
+		[&, cb](const boost::system::error_code& ec, ba::ip::tcp::resolver::results_type results) {
+			if(!ec) {
+				do_connect(std::move(results), cb);
+			} else {
+				ecb_(ec);
+			}
+		}
+	);
+}
+
+void StreamTransport::do_connect(ba::ip::tcp::resolver::results_type results, OnConnect cb) {
+	boost::asio::async_connect(socket_, results.begin(), results.end(),
+		[&, cb, results](const boost::system::error_code& ec, ba::ip::tcp::resolver::iterator) {
+			if(!ec) {
+				cb();
+				receive();
+			} else {
+				ecb_(ec);
+			}
+		}
+	);
 }
 
 void StreamTransport::do_write() {
