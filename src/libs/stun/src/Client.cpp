@@ -90,8 +90,8 @@ void Client::binding_request(detail::Transaction& tx) {
 
 detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromise vp) {
 	detail::Transaction tx(transport_->executor()->get_executor(),
-						   transport_->timeout(),
-						   transport_->retries());
+	                       transport_->timeout(),
+	                       transport_->retries());
 
 	tx.promise = std::move(vp);
 
