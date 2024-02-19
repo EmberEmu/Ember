@@ -57,3 +57,22 @@ auto Parser::extract_ipv4_pair(spark::BinaryInStream& stream) {
 
 	return attr;
 }
+
+template<typename T>
+auto Parser::extract_utf8_text(spark::BinaryInStream& stream, const std::size_t size) {
+	// UTF8 encoded sequence of less than 128 characters (which can be as long as 763 bytes)
+	if(size > 763) {
+		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_SOFTWARE_ATTR);
+	}
+
+	T attr{};
+	attr.value.resize(size);
+	stream.get(attr.value.begin(), attr.value.end());
+
+	// must be padded to the nearest four bytes
+	if(auto mod = size % 4) {
+		stream.skip(4 - mod);
+	}
+
+	return attr;
+}

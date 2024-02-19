@@ -37,6 +37,7 @@ namespace be = boost::endian;
 constexpr std::uint8_t HEADER_LENGTH = 20;
 constexpr std::uint8_t ATTR_HEADER_LENGTH = 4;
 constexpr std::uint8_t HEADER_LEN_OFFSET = 2;
+constexpr std::uint8_t FP_ATTR_LENGTH = 8;
 
 constexpr std::uint32_t MAGIC_COOKIE = 0x2112A442;
 
@@ -86,6 +87,8 @@ enum class Attributes : std::uint16_t {
 	REALM                    = 0x0014,
 	NONCE                    = 0x0015,
 	XOR_MAPPED_ADDRESS       = 0x0020,
+	PRIORITY                 = 0x0024, // rfc8445
+	USE_CANDIDATE            = 0x0025, // rfc8445
 	PADDING                  = 0x0026, // rfc5780
 	RESPONSE_PORT            = 0x0027, // rfc5780
 	MESSAGE_INTEGRITY_SHA256 = 0x001c, // rfc8489
@@ -100,6 +103,8 @@ enum class Attributes : std::uint16_t {
 	ALTERNATE_SERVER    = 0x8023,
 	CACHE_TIMEOUT       = 0x8027, // rfc5780
 	FINGERPRINT         = 0x8028,
+	ICE_CONTROLLED      = 0x8029, // rfc8445
+	ICE_CONTROLLING     = 0x802a, // rfc8445
 	RESPONSE_ORIGIN     = 0x802B, // rfc5780
 	OTHER_ADDRESS       = 0x802C  // rfc5780 ("OTHER-ADDRESS uses the same attribute number as CHANGED-ADDRESS", RFC error?)
 };
@@ -110,14 +115,15 @@ enum class Errors {
 	UNAUTHORISED      = 401,
 	UNKNOWN_ATTRIBUTE = 420,
 	STALE_NONCE       = 438,
+	ROLE_CONFLICT     = 487, // rfc8445
 	SERVER_ERROR      = 500
 };
 
 enum RFCMode {
-	RFC5389 = 0x01,
-	RFC3489 = 0x02,
-	RFC5780 = 0x04,
-	RFC_BOTH = RFC5389 | RFC3489
+	RFC5389,
+	RFC3489,
+	RFC5780,
+	RFC8445
 };
 
 enum class NAT {
@@ -128,7 +134,7 @@ enum class NAT {
 	SYMMETRIC
 };
 
-using AttrReqBy = std::unordered_map<Attributes, RFCMode>;
+using AttrReqBy = std::unordered_map<Attributes, std::vector<RFCMode>>;
 using AttrValidIn = std::unordered_map<Attributes, MessageType>;
 extern AttrReqBy attr_req_lut;
 extern AttrValidIn attr_valid_lut;

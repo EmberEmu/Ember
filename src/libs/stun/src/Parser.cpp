@@ -7,7 +7,14 @@
  */
 
 #include <stun/Parser.h>
+#include <spark/buffers/SpanBufferAdaptor.h>
+#include <spark/buffers/BinaryInStream.h>
 #include <boost/assert.hpp>
+#include <botan/hash.h>
+#include <botan/mac.h>
+#include <botan/bigint.h>
+#include <span>
+#include <stdexcept>
 
 namespace ember::stun {
 
@@ -17,7 +24,7 @@ void Parser::set_logger(LogCB logger, const Verbosity verbosity) {
 }
 
 Error Parser::validate_header(const Header& header) {
-	if(mode_ == RFCMode::RFC5389 && header.cookie != MAGIC_COOKIE) {
+	if(mode_ != RFCMode::RFC3489 && header.cookie != MAGIC_COOKIE) {
 		return Error::RESP_COOKIE_MISSING;
 	}
 
@@ -52,20 +59,55 @@ Parser::xor_mapped_address(spark::BinaryInStream& stream, const TxID& id) {
 		attr.ipv4 ^= MAGIC_COOKIE;
 	} else if(attr.family == AddressFamily::IPV6) {
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
-		
-		for(auto& bytes : attr.ipv6) {
-			be::big_to_native_inplace(bytes);
-		}
 
-		attr.ipv6[0] ^= MAGIC_COOKIE;
-		attr.ipv6[1] ^= id.id_5389[0];
-		attr.ipv6[2] ^= id.id_5389[1];
-		attr.ipv6[3] ^= id.id_5389[2];
+		std::array<std::uint8_t, 16> trans_id {
+			0x21, 0x12, 0xA4, 0x42 // magic cookie bytes
+		};
+
+		std::memcpy(trans_id.data() + sizeof(MAGIC_COOKIE), id.id_5389.data(),
+			sizeof(trans_id) / sizeof(trans_id[0]));
+		
+		for(std::size_t i = 0; i < attr.ipv6.size(); ++i) {
+			attr.ipv6[i] ^= trans_id[i];
+		}
 	} else {
 		throw Error::RESP_ADDR_FAM_NOT_VALID;
 	}
 
 	return attr;
+}
+
+std::size_t Parser::attribute_offset(Attributes attr) {
+	spark::SpanBufferAdaptor sba(buffer_);
+	spark::BinaryInStream stream(sba);
+	stream.skip(HEADER_LENGTH);
+
+	const Header hdr = header();
+
+	while((stream.total_read() - HEADER_LENGTH) < hdr.length) {
+		const auto curr_offset = stream.total_read();
+		Attributes curr_attr{};
+		be::big_uint16_t length{};
+
+		stream >> curr_attr;
+		stream >> length;
+
+		be::big_to_native_inplace(curr_attr);
+
+		if(curr_attr == attr) {
+			return curr_offset;
+		}
+
+		// attributes must be padded to four byte boundaries but
+		// the padding bytes are not included in the len field
+		if(auto mod = length % 4) {
+			length += 4 - mod;
+		}
+
+		stream.skip(length);
+	}
+
+	return 0;
 }
 
 attributes::Fingerprint Parser::fingerprint(spark::BinaryInStream& stream) {
@@ -75,21 +117,15 @@ attributes::Fingerprint Parser::fingerprint(spark::BinaryInStream& stream) {
 	return attr;
 }
 
-std::size_t Parser::fingerprint_offset() const {
-	return fingerprint_offset_;
-}
+Header Parser::header() {
+	spark::SpanBufferAdaptor sba(buffer_);
+;	spark::BinaryInStream stream(sba);
 
-std::size_t Parser::message_integrity_offset() const {
-	return msg_integrity_offset_;
-}
-
-Header Parser::header_from_stream(spark::BinaryInStream& stream)
-{
 	Header header{};
 	stream >> header.type;
 	stream >> header.length;
 
-	if(mode_ == RFCMode::RFC5389) {
+	if(mode_ != RFCMode::RFC3489) {
 		stream >> header.cookie;
 		stream.get(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end());
 	} else {
@@ -97,19 +133,6 @@ Header Parser::header_from_stream(spark::BinaryInStream& stream)
 	}
 
 	return header;
-}
-
-attributes::Software
-Parser::software(spark::BinaryInStream& stream, const std::size_t size) {
-	// UTF8 encoded sequence of less than 128 characters (which can be as long as 763 bytes)
-	if(size > 763) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_SOFTWARE_ATTR);
-	}
-
-	attributes::Software attr{};
-	attr.description.resize(size);
-	stream.get(attr.description.begin(), attr.description.end());
-	return attr;
 }
 
 attributes::MessageIntegrity
@@ -134,8 +157,14 @@ Parser::message_integrity_sha256(spark::BinaryInStream& stream, const std::size_
 attributes::Username
 Parser::username(spark::BinaryInStream& stream, const std::size_t size) {
 	attributes::Username attr{};
-	attr.username.resize(size);
-	stream.get(attr.username.begin(), attr.username.end());
+	attr.value.resize(size);
+	stream.get(attr.value.begin(), attr.value.end());
+
+	// must be padded to the nearest four bytes
+	if(auto mod = size % 4) {
+		stream.skip(4 - mod);
+	}
+
 	return attr;
 }
 
@@ -153,7 +182,7 @@ Parser::error_code(spark::BinaryInStream& stream, std::size_t length) {
 	const auto num = attr.code & 0xFF;
 
 	if(code < 300 || code >= 700) {
-		if(mode_ == RFCMode::RFC5389) {
+		if(mode_ != RFCMode::RFC3489) {
 			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
 		} else if(code < 100) { // original RFC has a wider range (1xx - 6xx)
 			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
@@ -200,13 +229,19 @@ Parser::unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 	return attr;
 }
 
-std::vector<attributes::Attribute>
-Parser::extract_attributes(spark::BinaryInStream& stream, const TxID& id, const MessageType type) {
+std::vector<attributes::Attribute> Parser::extract_attributes() {
+	spark::SpanBufferAdaptor sba(buffer_);
+	spark::BinaryInStream stream(sba);
+	stream.skip(HEADER_LENGTH);
+
+	const Header hdr = header();
+	const MessageType type{ static_cast<std::uint16_t>(hdr.type) };
+
 	std::vector<attributes::Attribute> attributes;
 	bool has_msg_integrity = false;
 
-	while(!stream.empty()) {
-		auto attribute = extract_attribute(stream, id, type);
+	while((stream.total_read() - HEADER_LENGTH) < hdr.length) {
+		auto attribute = extract_attribute(stream, hdr.tx_id, type);
 
 		if(!attribute) {
 			continue;
@@ -215,14 +250,10 @@ Parser::extract_attributes(spark::BinaryInStream& stream, const TxID& id, const 
 		// if the MESSAGE-INTEGRITY attribute is present, we need to ignore
 		// everything that follows except for the FINGERPRINT attribute
 		if(has_msg_integrity && !std::get_if<attributes::Fingerprint>(&(*attribute))) {
-			fingerprint_offset_ = stream.total_read() - sizeof(attributes::Fingerprint);
-			BOOST_ASSERT(msg_integrity_offset_ < stream.total_read());
 			break;
 		}
 
 		if(!has_msg_integrity && std::get_if<attributes::MessageIntegrity>(&(*attribute))) {
-			msg_integrity_offset_ = stream.total_read() - sizeof(attributes::MessageIntegrity);
-			BOOST_ASSERT(msg_integrity_offset_ < stream.total_read());
 			has_msg_integrity = true;
 		}
 
@@ -273,7 +304,7 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 		case Attributes::USERNAME:
 			return username(stream, length);
 		case Attributes::SOFTWARE:
-			return software(stream, length);
+			return extract_utf8_text<attributes::Software>(stream, length);
 		case Attributes::ALTERNATE_SERVER:
 			return extract_ip_pair<attributes::AlternateServer>(stream);
 		case Attributes::FINGERPRINT:
@@ -282,10 +313,45 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 			return error_code(stream, length);
 		case Attributes::UNKNOWN_ATTRIBUTES:
 			return unknown_attributes(stream, length);
+		case Attributes::REALM:
+			return extract_utf8_text<attributes::Realm>(stream, length);
+		case Attributes::NONCE:
+			return extract_utf8_text<attributes::Nonce>(stream, length);
+		case Attributes::PADDING:
+			return extract_utf8_text<attributes::Padding>(stream, length);
+		case Attributes::ICE_CONTROLLING:
+			return ice_controlling(stream);
+		case Attributes::ICE_CONTROLLED:
+			return ice_controlled(stream);
+		case Attributes::PRIORITY:
+			return priority(stream);
+		case Attributes::USE_CANDIDATE:
+			return attributes::UseCandidate{};
 	}
 
 	stream.skip(length);
 	return std::nullopt;
+}
+
+attributes::IceControlled Parser::ice_controlled(spark::BinaryInStream& stream) {
+	attributes::IceControlled attr{};
+	stream >> attr.value;
+	be::big_to_native_inplace(attr.value);
+	return attr;
+}
+
+attributes::IceControlling Parser::ice_controlling(spark::BinaryInStream& stream) {
+	attributes::IceControlling attr{};
+	stream >> attr.value;
+	be::big_to_native_inplace(attr.value);
+	return attr;
+}
+
+attributes::Priority Parser::priority(spark::BinaryInStream& stream) {
+	attributes::Priority attr{};
+	stream >> attr.value;
+	be::big_to_native_inplace(attr.value);
+	return attr;
 }
 
 bool Parser::check_attr_validity(const Attributes attr_type, const MessageType msg_type,
@@ -297,7 +363,8 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	 */
 	if(required) {
 		if(const auto rfc = attr_req_lut.find(attr_type); rfc != attr_req_lut.end()) {
-			if (!(rfc->second & mode_)) { // definitely not our fault... probably
+			const auto res = std::find(rfc->second.begin(), rfc->second.end(), mode_);
+			if(res == rfc->second.end()) { // definitely not our fault... probably
 				logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
 				return false;
 			}
@@ -307,6 +374,11 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNKNOWN_REQ_ATTRIBUTE);
 			return false;
 		}
+	}
+
+	// if we're parsing a request, don't bother checking
+	if(msg_type == MessageType::BINDING_REQUEST) {
+		return true;
 	}
 
 	// Check whether this attribute is valid for the given response type
@@ -323,6 +395,84 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	}
 
 	return true;
+}
+
+std::uint32_t Parser::calculate_fingerprint() {
+	const auto offset = attribute_offset(Attributes::FINGERPRINT);
+
+	if(!offset) {
+		throw std::runtime_error("FINGERPRINT not found, cannot calculate HMAC-SHA1");
+	}
+
+	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
+	crc_func->update(buffer_.data(), offset);
+	const auto vec = crc_func->final();
+	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
+	return crc32 ^ 0x5354554e;
+}
+
+// not entirely compliant with the RFC because it's missing a salsprep impl
+std::vector<std::uint8_t> Parser::calculate_msg_integrity(std::span<const std::uint8_t> username,
+														  std::string_view realm,
+                                                          std::string_view password) {
+	const auto msgi_offset = attribute_offset(Attributes::MESSAGE_INTEGRITY);
+	const auto fp_offset = attribute_offset(Attributes::FINGERPRINT);
+
+	if(!msgi_offset) {
+		throw std::runtime_error("MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
+	}
+
+	const std::string concat = std::format(":{}:{}", realm, password);
+	auto hasher = Botan::HashFunction::create_or_throw("MD5");
+	std::size_t block_size = hasher->hash_block_size();
+	hasher->update(username.data(), username.size_bytes());
+	hasher->update(reinterpret_cast<const std::uint8_t*>(concat.data()), concat.size());
+	const auto md5 = hasher->final_stdvec();
+	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
+	hmac->set_key(md5.data(), md5.size());
+
+	if(fp_offset) {
+		hmac_helper(hmac.get(), msgi_offset);
+	} else {
+		hmac->update(buffer_.data(), msgi_offset);
+	}
+
+	return hmac->final_stdvec();
+}
+
+// not entirely compliant with the RFC because it's missing a salsprep impl
+std::vector<std::uint8_t> Parser::calculate_msg_integrity(std::string_view password) {
+	const auto msgi_offset = attribute_offset(Attributes::MESSAGE_INTEGRITY);
+
+	if(!msgi_offset) {
+		throw std::runtime_error("MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
+	}
+
+	const auto fp_offset = attribute_offset(Attributes::FINGERPRINT);
+
+	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
+	hmac->set_key(reinterpret_cast<const std::uint8_t*>(password.data()), password.size());
+
+	if(fp_offset) {
+		hmac_helper(hmac.get(), msgi_offset);
+	} else {
+		hmac->update(buffer_.data(), msgi_offset);
+	}
+
+	return hmac->final_stdvec();
+}
+
+/* 
+* If the FINGERPRINT attribute is present, we need to adjust the
+* header length to exclude it (pretend it isn't there) and then
+* hash everything upto the MESSAGE-INTEGRITY attribute
+*/
+void Parser::hmac_helper(Botan::MessageAuthenticationCode* hmac, const std::size_t msgi_offset) {
+	Header hdr = header();
+	hdr.length -= FP_ATTR_LENGTH;
+	hmac->update(buffer_.data(), HEADER_LEN_OFFSET);
+	hmac->update_be(hdr.length);
+	hmac->update(buffer_.data() + 4, msgi_offset - 4);
 }
 
 } // stun, ember

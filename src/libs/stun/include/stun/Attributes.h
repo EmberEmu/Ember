@@ -22,7 +22,7 @@ namespace ember::stun::attributes {
 // which would be needed to differentiate between them in the variant
 #define IP_BOTH                        \
 	std::uint32_t ipv4;                \
-	std::array<std::uint32_t, 4> ipv6; \
+	std::array<std::uint8_t, 16> ipv6; \
 	std::uint16_t port;                \
 	AddressFamily family;
 
@@ -43,11 +43,11 @@ struct ResponseAddress { IPV4_ONLY };
 
 // "variable length opaque value"
 struct Username {
-	std::vector<std::uint8_t> username;
+	std::vector<std::uint8_t> value;
 };
 
 struct Password {
-	std::vector<std::uint8_t> password;
+	std::vector<std::uint8_t> value;
 };
 
 struct UnknownAttributes {
@@ -60,20 +60,46 @@ struct ErrorCode {
 };
 
 struct MessageIntegrity {
-	std::array<std::byte, 20> hmac_sha1;
+	std::array<std::uint8_t, 20> hmac_sha1;
 };
 
 struct MessageIntegrity256 {
-	std::array<std::byte, 32> hmac_sha256;
+	std::array<std::uint8_t, 32> hmac_sha256;
 };
 
 struct Software {
-	std::string description;
+	std::string value;
 };
 
 struct Fingerprint {
 	std::uint32_t crc32;
 };
+
+struct Realm {
+	std::string value;
+};
+
+struct Nonce {
+	std::string value;
+};
+
+struct Padding {
+	std::string value;
+};
+
+struct Priority {
+	std::uint32_t value;
+};
+
+struct IceControlled {
+	std::uint64_t value;
+};
+
+struct IceControlling {
+	std::uint64_t value;
+};
+
+struct UseCandidate {};
 
 using Attribute = std::variant<
 	MappedAddress,
@@ -92,7 +118,14 @@ using Attribute = std::variant<
 	Password,
 	Software,
 	AlternateServer,
-	Fingerprint
+	Fingerprint,
+	Realm,
+	Nonce,
+	Padding,
+	Priority,
+	IceControlled,
+	IceControlling,
+	UseCandidate
 >;
 
 } // stun, ember

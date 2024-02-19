@@ -11,21 +11,25 @@
 namespace ember::stun {
 
 AttrReqBy attr_req_lut {
-	{ Attributes::MAPPED_ADDRESS,     RFCMode::RFC_BOTH },
-	{ Attributes::RESPONSE_ADDRESS,   RFCMode::RFC3489  },
-	{ Attributes::CHANGE_REQUEST,     RFCMode::RFC3489  },
-	{ Attributes::SOURCE_ADDRESS,     RFCMode::RFC3489  },
-	{ Attributes::CHANGED_ADDRESS,    RFCMode::RFC3489  },
-	{ Attributes::USERNAME,           RFCMode::RFC_BOTH },
-	{ Attributes::PASSWORD,           RFCMode::RFC3489  },
-	{ Attributes::MESSAGE_INTEGRITY,  RFCMode::RFC_BOTH },
-	{ Attributes::ERROR_CODE,         RFCMode::RFC_BOTH },
-	{ Attributes::UNKNOWN_ATTRIBUTES, RFCMode::RFC_BOTH },
-	{ Attributes::REFLECTED_FROM,     RFCMode::RFC3489  },
-	{ Attributes::REALM,              RFCMode::RFC5389  },
-	{ Attributes::NONCE,              RFCMode::RFC5389  },
-	{ Attributes::XOR_MAPPED_ADDRESS, RFCMode::RFC5389  },
-	{ Attributes::OTHER_ADDRESS,      RFCMode::RFC_BOTH }
+	{ Attributes::MAPPED_ADDRESS,     { RFC3489, RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::RESPONSE_ADDRESS,   { RFC3489 }},
+	{ Attributes::CHANGE_REQUEST,     { RFC3489, RFC5780, RFC8445 }},
+	{ Attributes::SOURCE_ADDRESS,     { RFC3489 }},
+	{ Attributes::CHANGED_ADDRESS,    { RFC3489 }},
+	{ Attributes::USERNAME,           { RFC3489, RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::PASSWORD,           { RFC3489 }},
+	{ Attributes::MESSAGE_INTEGRITY,  { RFC3489, RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::ERROR_CODE,         { RFC3489, RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::UNKNOWN_ATTRIBUTES, { RFC3489, RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::REFLECTED_FROM,     { RFC3489 }},
+	{ Attributes::REALM,              { RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::NONCE,              { RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::XOR_MAPPED_ADDRESS, { RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::OTHER_ADDRESS,      { RFC3489, RFC5389, RFC5780, RFC8445 }},
+	{ Attributes::PADDING,            { RFC5780, RFC8445 }},
+	{ Attributes::RESPONSE_PORT,      { RFC5780, RFC8445 }},
+	{ Attributes::PRIORITY,           { RFC8445 }},
+	{ Attributes::USE_CANDIDATE,      { RFC8445 }}
 };
 
 // we don't handle shared secret types, YAGNI
@@ -46,7 +50,11 @@ AttrValidIn attr_valid_lut {
 	{ Attributes::RESPONSE_ORIGIN,              MessageType::BINDING_RESPONSE       },
 	{ Attributes::MESSAGE_INTEGRITY_SHA256,     MessageType::BINDING_RESPONSE       },
 	{ Attributes::FINGERPRINT,                  MessageType::BINDING_RESPONSE       },
-	{ Attributes::SOFTWARE,                     MessageType::BINDING_RESPONSE       }
+	{ Attributes::SOFTWARE,                     MessageType::BINDING_RESPONSE       },
+	{ Attributes::NONCE,                        MessageType::BINDING_RESPONSE       },
+	{ Attributes::REALM,                        MessageType::BINDING_RESPONSE       },
+	{ Attributes::PADDING,                      MessageType::BINDING_RESPONSE       },
+	{ Attributes::USERNAME,                     MessageType::BINDING_RESPONSE       }
 };
 
 } // stun, ember

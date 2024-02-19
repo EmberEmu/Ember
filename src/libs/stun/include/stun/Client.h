@@ -40,7 +40,6 @@ class Client {
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
-	Parser parser_;
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
 	std::random_device rd_;
@@ -76,10 +75,7 @@ class Client {
 	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
 	                             detail::Transaction& tx);
 	void binding_request(detail::Transaction& tx);
-	std::uint32_t calculate_fingerprint(const std::vector<std::uint8_t>& buffer,
-	                                    std::size_t offset);
-	void process_message(const Header& header, spark::BinaryInStream& stream,
-	                     const std::vector<std::uint8_t>& buffer,
+	void process_message(const std::vector<std::uint8_t>& buffer,
 	                     detail::Transaction& tx);
 
 	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect cb);

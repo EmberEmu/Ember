@@ -16,8 +16,6 @@
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
-#include <botan/hash.h>
-#include <botan/bigint.h>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -34,7 +32,7 @@ Client::Client(std::unique_ptr<Transport> transport, std::string host,
                const std::uint16_t port, RFCMode mode)
 	: transport_(std::move(transport)),
       host_(std::move(host)), port_(port),
-      parser_(mode), mode_(mode), mt_(rd_()) {
+      mode_(mode), mt_(rd_()) {
 	transport_->set_callbacks(
 		[this](std::vector<std::uint8_t> buffer) { handle_message(std::move(buffer)); },
 		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
@@ -58,7 +56,6 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 
 	logger_ = callback;
 	verbosity_ = verbosity;
-	parser_.set_logger(callback, verbosity);
 }
 
 void Client::connect(const std::string& host, const std::uint16_t port, Transport::OnConnect cb) {
@@ -120,10 +117,10 @@ void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 		return; // RFC says invalid messages should be discarded
 	}
 
-	spark::VectorBufferAdaptor<std::uint8_t> vba(buffer);
-	spark::BinaryInStream stream(vba);
+	Parser parser(buffer, mode_);
+	parser.set_logger(logger_, verbosity_);
 
-	const Header& header = parser_.header_from_stream(stream);
+	const Header& header = parser.header();
 
 	// Check to see whether this is a response that we're expecting
 	const auto hash = tx_hash(header.tx_id);
@@ -136,30 +133,31 @@ void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 	detail::Transaction& transaction = transactions_.at(hash);
 	transaction.timer.cancel();
 
-	if(auto error = parser_.validate_header(header); error != Error::OK) {
+	if(auto error = parser.validate_header(header); error != Error::OK) {
 		abort_transaction(transaction, error);
 		return;
 	}
 
-	process_message(header, stream, buffer, transaction);
+	process_message(buffer, transaction);
 } catch(const spark::exception& e) {
 	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
 }
 
-void Client::process_message(const Header& header, spark::BinaryInStream& stream,
-                             const std::vector<std::uint8_t>& buffer,
+void Client::process_message(const std::vector<std::uint8_t>& buffer,
                              detail::Transaction& tx) try {
+	Parser parser(buffer, mode_);
+	parser.set_logger(logger_, verbosity_);
+	const auto header = parser.header();
+
 	const MessageType type{ static_cast<std::uint16_t>(header.type) };
-	auto attributes = parser_.extract_attributes(stream, tx.tx_id, type);
+	auto attributes = parser.extract_attributes();
 
-	if(auto offset = parser_.fingerprint_offset()) {
-		const auto crc32 = calculate_fingerprint(buffer, offset);
-		const auto fingerprint = retrieve_attribute<attributes::Fingerprint>(attributes);
+	if(parser.attribute_offset(Attributes::FINGERPRINT)) {
+		const auto crc32 = parser.calculate_fingerprint();
+		const auto fp = retrieve_attribute<attributes::Fingerprint>(attributes);
 
-		BOOST_ASSERT_MSG(fingerprint, "Fingerprint must be present when offset is present");
-
-		if(crc32 != fingerprint->crc32) {
-			abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+		if(crc32 != fp->crc32) {
+			abort_transaction(tx, Error::RESP_INVALID_FINGERPRINT);
 			return;
 		}
 	}
@@ -187,16 +185,6 @@ void Client::abort_transaction(detail::Transaction& tx, const Error error,
 	if(erase) {
 		transactions_.erase(tx.hash);
 	}
-}
-
-std::uint32_t Client::calculate_fingerprint(const std::vector<std::uint8_t>& buffer,
-                                            const std::size_t offset) {
-	BOOST_ASSERT(buffer.size() >= offset);
-	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
-	crc_func->update(buffer.data(), offset);
-	const auto vec = crc_func->final();
-	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
-	return crc32;
 }
 
 void Client::set_nat_present(const std::vector<attributes::Attribute>& attributes) {
