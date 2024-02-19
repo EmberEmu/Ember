@@ -71,7 +71,8 @@ Parser::xor_mapped_address(spark::BinaryInStream& stream, const TxID& id) {
 			attr.ipv6[i] ^= trans_id[i];
 		}
 	} else {
-		throw Error::RESP_ADDR_FAM_NOT_VALID;
+		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,
+			"Address family is not valid");
 	}
 
 	return attr;
@@ -147,7 +148,8 @@ Parser::message_integrity_sha256(spark::BinaryInStream& stream, const std::size_
 	attributes::MessageIntegrity256 attr{};
 
 	if (length < 16 || length > attr.hmac_sha256.size()) {
-		throw Error::RESP_BAD_HMAC_SHA_ATTR;
+		throw parse_error(Error::RESP_BAD_HMAC_SHA_ATTR,
+			"Invalid message integrity length");
 	}
 
 	stream.get(attr.hmac_sha256.begin(), attr.hmac_sha256.begin() + length);
@@ -209,7 +211,8 @@ Parser::error_code(spark::BinaryInStream& stream, std::size_t length) {
 attributes::UnknownAttributes
 Parser::unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 	if(length % 2) {
-		throw Error::RESP_UNK_ATTR_BAD_PAD;
+		throw parse_error(Error::RESP_UNK_ATTR_BAD_PAD,
+			"Bad UNKNOWN-ATTRIBUTES length");
 	}
 	
 	attributes::UnknownAttributes attr{};
@@ -229,7 +232,7 @@ Parser::unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 	return attr;
 }
 
-std::vector<attributes::Attribute> Parser::extract_attributes() {
+std::vector<attributes::Attribute> Parser::attributes() {
 	spark::SpanBufferAdaptor sba(buffer_);
 	spark::BinaryInStream stream(sba);
 	stream.skip(HEADER_LENGTH);
@@ -275,7 +278,8 @@ std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInSt
 	const bool attr_valid = check_attr_validity(attr_type, type, required);
 
 	if(!attr_valid && required) {
-		throw Error::RESP_UNEXPECTED_ATTR;
+		throw parse_error(Error::RESP_UNEXPECTED_ATTR,
+			"Encountered an unknown comprehension-required attribute");
 	}
 
 	switch(attr_type) {
@@ -401,7 +405,8 @@ std::uint32_t Parser::calculate_fingerprint() {
 	const auto offset = attribute_offset(Attributes::FINGERPRINT);
 
 	if(!offset) {
-		throw std::runtime_error("FINGERPRINT not found, cannot calculate HMAC-SHA1");
+		throw parse_error(Error::BUFFER_PARSE_ERROR,
+			"FINGERPRINT not found, cannot calculate HMAC-SHA1");
 	}
 
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
@@ -413,13 +418,14 @@ std::uint32_t Parser::calculate_fingerprint() {
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
 std::vector<std::uint8_t> Parser::calculate_msg_integrity(std::span<const std::uint8_t> username,
-														  std::string_view realm,
+                                                          std::string_view realm,
                                                           std::string_view password) {
 	const auto msgi_offset = attribute_offset(Attributes::MESSAGE_INTEGRITY);
 	const auto fp_offset = attribute_offset(Attributes::FINGERPRINT);
 
 	if(!msgi_offset) {
-		throw std::runtime_error("MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
+		throw parse_error(Error::BUFFER_PARSE_ERROR,
+			"MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
 	}
 
 	const std::string concat = std::format(":{}:{}", realm, password);
@@ -445,7 +451,8 @@ std::vector<std::uint8_t> Parser::calculate_msg_integrity(std::string_view passw
 	const auto msgi_offset = attribute_offset(Attributes::MESSAGE_INTEGRITY);
 
 	if(!msgi_offset) {
-		throw std::runtime_error("MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
+		throw parse_error(Error::BUFFER_PARSE_ERROR,
+			"MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
 	}
 
 	const auto fp_offset = attribute_offset(Attributes::FINGERPRINT);

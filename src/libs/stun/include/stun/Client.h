@@ -75,13 +75,10 @@ class Client {
 	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
 	                             detail::Transaction& tx);
 	void binding_request(detail::Transaction& tx);
-	void process_message(const std::vector<std::uint8_t>& buffer,
-	                     detail::Transaction& tx);
-
+	void process_message(const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
 	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect cb);
 	void set_nat_present(const std::vector<attributes::Attribute>& attributes);
 	void on_connection_error(const boost::system::error_code& error);
-	
 	template<typename T> std::future<T> basic_request();
 
 public:

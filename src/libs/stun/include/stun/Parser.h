@@ -12,6 +12,7 @@
 #include <stun/Transaction.h>
 #include <stun/Logging.h>
 #include <stun/Protocol.h>
+#include <stun/Exception.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/endian.hpp>
 #include <cstddef>
@@ -33,18 +34,6 @@ class Parser {
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 	const std::span<const std::uint8_t> buffer_;
 
-	void hmac_helper(Botan::MessageAuthenticationCode* hmac, std::size_t msgi_offset);
-
-public:
-	Parser(std::span<const std::uint8_t> buffer, RFCMode mode) : buffer_(buffer), mode_(mode) {}
-
-	void set_logger(LogCB logger, const Verbosity verbosity);
-
-	Error validate_header(const Header& header);
-	Header header();
-	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
-	std::size_t attribute_offset(Attributes attr);
-
 	// individual attributes
 	template<typename T> auto extract_ip_pair(spark::BinaryInStream& stream);
 	template<typename T> auto extract_ipv4_pair(spark::BinaryInStream& stream);
@@ -60,13 +49,20 @@ public:
 	attributes::IceControlling ice_controlling(spark::BinaryInStream& stream);
 	attributes::IceControlled ice_controlled(spark::BinaryInStream& stream);
 
-	// extract all attributes from a stream
-	std::vector<attributes::Attribute> extract_attributes();
+	std::size_t attribute_offset(Attributes attr);
+	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
+	void hmac_helper(Botan::MessageAuthenticationCode* hmac, std::size_t msgi_offset);
 
-	// extract a single attribute from a stream
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
-                                                           const TxID& id, MessageType type);
+	                                                       const TxID& id, MessageType type);
 
+public:
+	Parser(std::span<const std::uint8_t> buffer, RFCMode mode) : buffer_(buffer), mode_(mode) {}
+	void set_logger(LogCB logger, const Verbosity verbosity);
+
+	Error validate_header(const Header& header);
+	Header header();
+	std::vector<attributes::Attribute> attributes();
 	std::uint32_t calculate_fingerprint();
 	std::vector<std::uint8_t> calculate_msg_integrity(std::string_view password);
 

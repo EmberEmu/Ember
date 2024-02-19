@@ -19,6 +19,7 @@ add_library(${LIBRARY_NAME}
            include/stun/Parser.h
            include/stun/Parser.inl
            include/stun/Util.h
+           include/stun/Exception.h
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp

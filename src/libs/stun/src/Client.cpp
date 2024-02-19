@@ -9,6 +9,7 @@
 #include <stun/Client.h>
 #include <stun/Protocol.h>
 #include <stun/Transport.h>
+#include <stun/Exception.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <spark/buffers/BinaryOutStream.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
@@ -51,7 +52,7 @@ Client::~Client() {
 
 void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 	if(!callback) {
-		throw std::invalid_argument("Logging callback cannot be null");
+		throw exception(Error::BAD_CALLBACK, "Logging callback cannot be null");
 	}
 
 	logger_ = callback;
@@ -148,19 +149,18 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer,
 	Parser parser(buffer, mode_);
 	parser.set_logger(logger_, verbosity_);
 	const auto header = parser.header();
+	const auto attributes = parser.attributes();
 
-	const MessageType type{ static_cast<std::uint16_t>(header.type) };
-	auto attributes = parser.extract_attributes();
-
-	if(parser.attribute_offset(Attributes::FINGERPRINT)) {
+	if(const auto fp = retrieve_attribute<attributes::Fingerprint>(attributes)) {
 		const auto crc32 = parser.calculate_fingerprint();
-		const auto fp = retrieve_attribute<attributes::Fingerprint>(attributes);
 
 		if(crc32 != fp->crc32) {
 			abort_transaction(tx, Error::RESP_INVALID_FINGERPRINT);
 			return;
 		}
 	}
+
+	const MessageType type{ static_cast<std::uint16_t>(header.type) };
 
 	if(type == MessageType::BINDING_RESPONSE) {
 		handle_binding_resp(std::move(attributes), tx);

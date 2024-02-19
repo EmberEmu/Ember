@@ -33,6 +33,7 @@ enum class Verbosity {
  */
 smart_enum_class(Error, std::uint8_t,
 	OK,                               // s'all good, man
+	BAD_CALLBACK,
 	NO_RESPONSE_RECEIVED,             
 	CONNECTION_ABORTED,               
 	CONNECTION_RESET,

@@ -35,7 +35,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), 12);
 	ASSERT_EQ(trans_id, parse_tx_id);
 	
-	const auto attrs = parser.extract_attributes();
+	const auto attrs = parser.attributes();
 
 	// SOFTWARE
 	const auto software = stun::retrieve_attribute<stun::attributes::Software>(attrs);
@@ -88,7 +88,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), sizeof(trans_id));
 	ASSERT_EQ(trans_id, parse_tx_id);
 	
-	const auto attrs = parser.extract_attributes();
+	const auto attrs = parser.attributes();
 
 	// SOFTWARE
 	const auto software = stun::retrieve_attribute<stun::attributes::Software>(attrs);
@@ -140,7 +140,7 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), 12);
 	ASSERT_EQ(trans_id, parse_tx_id);
 	
-	const auto attrs = parser.extract_attributes();
+	const auto attrs = parser.attributes();
 
 	// USERNAME
 	const auto username = stun::retrieve_attribute<stun::attributes::Username>(attrs);
@@ -188,7 +188,7 @@ TEST(STUNVectors, RFC5769_Request) {
 	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), 12);
 	ASSERT_EQ(trans_id, parse_tx_id);
 
-	const auto attrs = parser.extract_attributes();
+	const auto attrs = parser.attributes();
 
 	// USERNAME
 	const auto username = stun::retrieve_attribute<stun::attributes::Username>(attrs);

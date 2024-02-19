@@ -86,7 +86,7 @@ void DatagramTransport::receive() {
 			}
 			std::vector<std::uint8_t> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
-			std::size_t recv = socket_.receive(boost::asio::buffer(buffer), flags, ec);
+			const std::size_t recv = socket_.receive(boost::asio::buffer(buffer), flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {
