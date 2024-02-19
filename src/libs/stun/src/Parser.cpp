@@ -118,7 +118,7 @@ attributes::Fingerprint Parser::fingerprint(spark::BinaryInStream& stream) {
 	return attr;
 }
 
-Header Parser::header() {
+Header Parser::header() try {
 	spark::SpanBufferAdaptor sba(buffer_);
 ;	spark::BinaryInStream stream(sba);
 
@@ -134,6 +134,8 @@ Header Parser::header() {
 	}
 
 	return header;
+} catch(const spark::exception& e) {
+	throw exception(Error::BUFFER_PARSE_ERROR, e.what());
 }
 
 attributes::MessageIntegrity
@@ -232,7 +234,7 @@ Parser::unknown_attributes(spark::BinaryInStream& stream, std::size_t length) {
 	return attr;
 }
 
-std::vector<attributes::Attribute> Parser::attributes() {
+std::vector<attributes::Attribute> Parser::attributes() try {
 	spark::SpanBufferAdaptor sba(buffer_);
 	spark::BinaryInStream stream(sba);
 	stream.skip(HEADER_LENGTH);
@@ -264,10 +266,13 @@ std::vector<attributes::Attribute> Parser::attributes() {
 	}
 
 	return attributes;
+} catch(const spark::exception& e) {
+	throw exception(Error::BUFFER_PARSE_ERROR, e.what());
 }
 
-std::optional<attributes::Attribute> Parser::extract_attribute(spark::BinaryInStream& stream,
-                                                               const TxID& id, const MessageType type) {
+std::optional<attributes::Attribute>
+Parser::extract_attribute(spark::BinaryInStream& stream,
+                          const TxID& id, const MessageType type) {
 	Attributes attr_type;
 	be::big_uint16_t length;
 	stream >> attr_type;
