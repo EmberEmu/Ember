@@ -163,7 +163,6 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer,
 void Client::abort_promise(std::shared_ptr<Transaction::Promise> promise,
                            const Error error) {
 	std::visit([&](auto&& arg) {
-		using T = std::decay_t<decltype(arg)>;
 		arg.set_value(std::unexpected(ErrorRet(error)));
 	}, *promise);
 }
@@ -171,7 +170,6 @@ void Client::abort_promise(std::shared_ptr<Transaction::Promise> promise,
 void Client::abort_transaction(detail::Transaction& tx, const Error error,
                                attributes::ErrorCode ec, const bool erase) {
 	std::visit([&](auto&& arg) {
-		using T = std::decay_t<decltype(arg)>;
 		arg.set_value(std::unexpected(ErrorRet(error)));
 	}, *tx.promise);
 
@@ -278,8 +276,7 @@ void Client::complete_transaction(detail::Transaction& tx,
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 
-		if constexpr(std::is_same_v<T,
-			std::promise<std::expected<attributes::MappedAddress, ErrorRet>>>) {
+		if constexpr(std::is_same_v<T, std::promise<MappedResult>>) {
 			for(const auto& attr : attributes) {
 				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
 					arg.set_value(std::get<attributes::MappedAddress>(attr));
@@ -303,20 +300,22 @@ void Client::complete_transaction(detail::Transaction& tx,
 			}
 
 			arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
-		} else if constexpr(std::is_same_v<T,
-			std::promise<std::expected<std::vector<attributes::Attribute>, ErrorRet>>>) {
+		} else if constexpr(std::is_same_v<T, std::promise<AttributesResult>>) {
 			arg.set_value(std::move(attributes));
-		} else if constexpr(std::is_same_v<T,
-			std::promise<std::expected<NAT, ErrorRet>>>) {
+		} else if constexpr(std::is_same_v<T, std::promise<NATModeResult>>) {
 			// todo
-		} else if constexpr(std::is_same_v<T, std::promise<std::expected<bool, ErrorRet>>>) {
+		} else if constexpr(std::is_same_v<T, std::promise<MappingResult>>) {
+			// todo
+		} else if constexpr(std::is_same_v<T, std::promise<FilteringResult>>) {
+			// todo
+		} else if constexpr(std::is_same_v<T, std::promise<NATResult>>) {
 			if(is_nat_present_) {
 				arg.set_value(*is_nat_present_);
 			} else {
 				arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
 			}
 		} else {
-			// static_assert(always_false_v<T>, "Unhandled variant type"); todo
+			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
 	}, *tx.promise);
 
@@ -450,12 +449,12 @@ std::future<T> Client::basic_request() {
 	return future;
 }
 
-auto Client::binding_request() -> std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> {
-	return basic_request<std::expected<std::vector<attributes::Attribute>, ErrorRet>>();
+std::future<AttributesResult> Client::binding_request() {
+	return basic_request<AttributesResult>();
 }
 
-auto Client::external_address() -> std::future<std::expected<attributes::MappedAddress, ErrorRet>> {
-	return basic_request<std::expected<attributes::MappedAddress, ErrorRet>>();
+std::future<MappedResult> Client::external_address() {
+	return basic_request<MappedResult>();
 }
 
 } // stun, ember

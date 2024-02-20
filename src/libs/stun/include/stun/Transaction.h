@@ -21,7 +21,16 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace ember::stun::detail {
+namespace ember::stun {
+
+using MappedResult     = std::expected<attributes::MappedAddress, ErrorRet>;
+using AttributesResult = std::expected<std::vector<attributes::Attribute>, ErrorRet>;
+using NATModeResult    = std::expected<NAT, ErrorRet>;
+using NATResult        = std::expected<bool, ErrorRet>;
+using FilteringResult  = std::expected<Filtering, ErrorRet>;
+using MappingResult    = std::expected<Mapping, ErrorRet>;
+
+namespace detail {
 
 struct Transaction {
 	Transaction(boost::asio::any_io_executor ctx, std::chrono::milliseconds timeout, int max_retries)
@@ -30,12 +39,12 @@ struct Transaction {
 
 	// :grimacing:
 	using Promise = std::variant<
-		std::promise<std::expected<attributes::MappedAddress, ErrorRet>>,
-		std::promise<std::expected<std::vector<attributes::Attribute>, ErrorRet>>,
-		std::promise<std::expected<NAT, ErrorRet>>,
-		std::promise<std::expected<bool, ErrorRet>>,
-		std::promise<std::expected<Filtering, ErrorRet>>,
-		std::promise<std::expected<Mapping, ErrorRet>>
+		std::promise<MappedResult>,
+		std::promise<AttributesResult>,
+		std::promise<NATModeResult>,
+		std::promise<NATResult>,
+		std::promise<FilteringResult>,
+		std::promise<MappingResult>
 	>;
 
 	TxID id{};
@@ -50,4 +59,4 @@ struct Transaction {
 	std::shared_ptr<std::vector<std::uint8_t>> retry_buffer;
 };
 
-} // detail, stun, ember
+}} // detail, stun, ember

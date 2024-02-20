@@ -104,12 +104,12 @@ public:
 	void options(clientopts opts);
 	clientopts options() const;
 
-	std::future<std::expected<attributes::MappedAddress, ErrorRet>> external_address();
-	std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> binding_request();
-	std::future<std::expected<NAT, ErrorRet>> nat_type();
-	std::future<std::expected<bool, ErrorRet>> nat_present();
-	std::future<std::expected<Mapping, ErrorRet>> mapping();
-	std::future<std::expected<Filtering, ErrorRet>> filtering();
+	std::future<MappedResult> external_address();
+	std::future<AttributesResult> binding_request();
+	std::future<NATModeResult> nat_type();
+	std::future<NATResult> nat_present();
+	std::future<MappingResult> mapping();
+	std::future<FilteringResult> filtering();
 };
 
 } // stun, ember
