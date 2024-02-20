@@ -43,15 +43,16 @@ Client::Client(std::unique_ptr<Transport> transport, std::string host,
 		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
 	);
 
-	// should probably do this in the transport but whatever
-	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*transport_->executor()));
+	// worker used by timers
+	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), transport_->executor());
+		(&boost::asio::io_context::run), &ctx_);
 }
 
 Client::~Client() {
-	transport_->executor()->stop();
 	work_.clear();
+	ctx_.stop();
+	transport_.reset();
 }
 
 void Client::log_callback(LogCB callback, const Verbosity verbosity) {
@@ -85,9 +86,7 @@ void Client::binding_request(std::shared_ptr<Transaction::Promise> promise) {
 Transaction& Client::start_transaction(std::shared_ptr<Transaction::Promise> promise,
                                        std::shared_ptr<std::vector<std::uint8_t>> data,
                                        const std::size_t key) {
-	Transaction tx(transport_->executor()->get_executor(),
-	               transport_->timeout(),
-	               transport_->retries());
+	Transaction tx(ctx_.get_executor(), transport_->timeout(), transport_->retries());
 	tx.key = key;
 	tx.promise = promise;
 	tx.retry_buffer = data;

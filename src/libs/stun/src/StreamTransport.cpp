@@ -14,7 +14,17 @@
 namespace ember::stun {
 
 StreamTransport::StreamTransport(std::chrono::milliseconds timeout)
-	: timeout_(timeout), socket_(ctx_), resolver_(ctx_) { }
+	: timeout_(timeout), socket_(ctx_), resolver_(ctx_) {
+	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
+	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
+		(&boost::asio::io_context::run), &ctx_);
+}
+
+StreamTransport::~StreamTransport() {
+	socket_.close();
+	ctx_.stop();
+	work_.clear();
+}
 
 void StreamTransport::connect(std::string_view host, const std::uint16_t port, OnConnect cb) {
 	resolver_.async_resolve(host, std::to_string(port),
@@ -132,10 +142,6 @@ std::chrono::milliseconds StreamTransport::timeout() {
 
 unsigned int StreamTransport::retries() {
 	return 0;
-}
-
-boost::asio::io_context* StreamTransport::executor() {
-	return &ctx_;
 }
 
 std::string StreamTransport::local_ip() {

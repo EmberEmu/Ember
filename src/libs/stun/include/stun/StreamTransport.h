@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 #include <cstddef>
 #include <cstdint>
@@ -32,6 +33,8 @@ class StreamTransport final : public Transport {
 	ba::ip::tcp::socket socket_;
 	ba::ip::tcp::endpoint ep_;
 	ba::ip::tcp::resolver resolver_;
+	std::jthread worker_;
+	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
 	std::vector<std::uint8_t> buffer_;
 
@@ -45,7 +48,7 @@ class StreamTransport final : public Transport {
 
 public:
 	StreamTransport(std::chrono::milliseconds timeout = 39500ms);
-	~StreamTransport() {};
+	~StreamTransport();
 
 	void connect(std::string_view host, std::uint16_t port, OnConnect cb) override;
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message) override;
@@ -53,7 +56,6 @@ public:
 	void close() override;
 	std::chrono::milliseconds timeout() override;
 	unsigned int retries() override;
-	boost::asio::io_context* executor() override;
 	std::string local_ip() override;
 	std::uint16_t local_port() override;
 };

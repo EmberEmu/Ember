@@ -46,6 +46,7 @@ class Client {
 
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
+	boost::asio::io_context ctx_;
 
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
@@ -58,12 +59,6 @@ class Client {
 	std::uint16_t port_;
 	std::optional<bool> is_nat_present_;
 	clientopts opts_{};
-
-	/*
-	 * The transaction map is protected by locking at each 'entry point' into
-	 * the class. The user entry points are the public functions and the
-	 * transport worker entry points are defined by the callbacks.
-	 */
 	std::unordered_map<std::size_t, detail::Transaction> transactions_;
 	std::mutex mutex_;
 

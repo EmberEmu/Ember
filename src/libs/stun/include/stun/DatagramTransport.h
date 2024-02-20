@@ -26,6 +26,8 @@ class DatagramTransport final : public Transport {
 	ba::io_context ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
+	std::jthread worker_;
+	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
 	const std::chrono::milliseconds timeout_;
 	const unsigned int retries_;
@@ -48,7 +50,6 @@ public:
 	void close() override;
 	std::chrono::milliseconds timeout() override;
 	unsigned int retries() override;
-	boost::asio::io_context* executor() override;
 	std::string local_ip() override;
 	std::uint16_t local_port() override;
 };

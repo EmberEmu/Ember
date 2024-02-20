@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <boost/asio/any_io_executor.hpp>
 #include <boost/system/error_code.hpp>
 #include <functional>
 #include <memory>
@@ -34,7 +33,6 @@ public:
 	virtual void close() = 0;
 	virtual void send(std::vector<std::uint8_t> message) = 0;
 	virtual void send(std::shared_ptr<std::vector<std::uint8_t>> message) = 0;
-	virtual boost::asio::io_context* executor() = 0;
 	virtual std::chrono::milliseconds timeout() = 0;
 	virtual unsigned int retries() = 0;
 	virtual std::string local_ip() = 0;

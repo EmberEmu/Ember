@@ -11,10 +11,16 @@
 namespace ember::stun {
 
 DatagramTransport::DatagramTransport(std::chrono::milliseconds timeout, unsigned int retries)
-	: socket_(ctx_), timeout_(timeout), retries_(retries), resolver_(ctx_) { }
+	: socket_(ctx_), timeout_(timeout), retries_(retries), resolver_(ctx_) { 
+	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
+	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
+		(&boost::asio::io_context::run), &ctx_);
+}
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
+	ctx_.stop();
+	work_.clear();
 }
 
 void DatagramTransport::connect(std::string_view host, const std::uint16_t port, OnConnect cb) {
@@ -111,10 +117,6 @@ std::chrono::milliseconds DatagramTransport::timeout() {
 
 unsigned int DatagramTransport::retries() {
 	return retries_;
-}
-
-boost::asio::io_context* DatagramTransport::executor() {
-	return &ctx_;
 }
 
 std::string DatagramTransport::local_ip() {
