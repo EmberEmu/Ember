@@ -23,7 +23,7 @@ void DatagramTransport::connect(std::string_view host, const std::uint16_t port,
 			if(!ec) {
 				do_connect(std::move(results), cb);
 			} else {
-				ecb_(ec);
+				cb(ec);
 			}
 		}
 	);
@@ -33,11 +33,10 @@ void DatagramTransport::do_connect(ba::ip::udp::resolver::results_type results, 
 	boost::asio::async_connect(socket_, results.begin(), results.end(),
 		[&, cb, results](const boost::system::error_code& ec, ba::ip::udp::resolver::iterator) {
 			if(!ec) {
-				cb();
 				receive();
-			} else {
-				ecb_(ec);
 			}
+
+			cb(ec);
 		}
 	);
 }
@@ -63,16 +62,20 @@ void DatagramTransport::do_write() {
 	);
 }
 
-void DatagramTransport::send(std::vector<std::uint8_t> message) {
-	auto datagram = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-
-	ctx_.post([&, datagram = std::move(datagram)]() mutable {
+void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
+	ctx_.post([&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
 			do_write();
 		}
 	});
+}
+
+void DatagramTransport::send(std::vector<std::uint8_t> message) {
+	auto datagram = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
+	send(std::move(datagram));
+	
 }
 
 void DatagramTransport::receive() {
@@ -84,6 +87,7 @@ void DatagramTransport::receive() {
 				ecb_(ec);
 				return;
 			}
+
 			std::vector<std::uint8_t> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
 			const std::size_t recv = socket_.receive(boost::asio::buffer(buffer), flags, ec);

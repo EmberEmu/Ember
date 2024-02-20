@@ -71,7 +71,14 @@ auto Parser::extract_utf8_text(spark::BinaryInStream& stream, const std::size_t 
 
 	// must be padded to the nearest four bytes
 	if(auto mod = size % 4) {
-		stream.skip(4 - mod);
+		const auto skip_size = 4 - mod;
+
+		if(stream.size() < skip_size) {
+			throw parse_error(Error::BUFFER_PARSE_ERROR,
+				"Textual attribute was not padded correcly");
+		}
+
+		stream.skip(skip_size);
 	}
 
 	return attr;

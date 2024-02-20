@@ -7,6 +7,7 @@
  */
 
 #include <stun/Parser.h>
+#include <stun/detail/Shared.h>
 #include <spark/buffers/SpanBufferAdaptor.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <boost/assert.hpp>
@@ -76,39 +77,6 @@ Parser::xor_mapped_address(spark::BinaryInStream& stream, const TxID& id) {
 	}
 
 	return attr;
-}
-
-std::size_t Parser::attribute_offset(Attributes attr) {
-	spark::SpanBufferAdaptor sba(buffer_);
-	spark::BinaryInStream stream(sba);
-	stream.skip(HEADER_LENGTH);
-
-	const Header hdr = header();
-
-	while((stream.total_read() - HEADER_LENGTH) < hdr.length) {
-		const auto curr_offset = stream.total_read();
-		Attributes curr_attr{};
-		be::big_uint16_t length{};
-
-		stream >> curr_attr;
-		stream >> length;
-
-		be::big_to_native_inplace(curr_attr);
-
-		if(curr_attr == attr) {
-			return curr_offset;
-		}
-
-		// attributes must be padded to four byte boundaries but
-		// the padding bytes are not included in the len field
-		if(auto mod = length % 4) {
-			length += 4 - mod;
-		}
-
-		stream.skip(length);
-	}
-
-	return 0;
 }
 
 attributes::Fingerprint Parser::fingerprint(spark::BinaryInStream& stream) {
@@ -406,85 +374,18 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	return true;
 }
 
-std::uint32_t Parser::calculate_fingerprint() {
-	const auto offset = attribute_offset(Attributes::FINGERPRINT);
-
-	if(!offset) {
-		throw parse_error(Error::BUFFER_PARSE_ERROR,
-			"FINGERPRINT not found, cannot calculate HMAC-SHA1");
-	}
-
-	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
-	crc_func->update(buffer_.data(), offset);
-	const auto vec = crc_func->final();
-	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
-	return crc32 ^ 0x5354554e;
+std::uint32_t Parser::fingerprint() {
+	return detail::fingerprint(buffer_, true);
 }
 
-// not entirely compliant with the RFC because it's missing a salsprep impl
-std::vector<std::uint8_t> Parser::calculate_msg_integrity(std::span<const std::uint8_t> username,
-                                                          std::string_view realm,
-                                                          std::string_view password) {
-	const auto msgi_offset = attribute_offset(Attributes::MESSAGE_INTEGRITY);
-	const auto fp_offset = attribute_offset(Attributes::FINGERPRINT);
-
-	if(!msgi_offset) {
-		throw parse_error(Error::BUFFER_PARSE_ERROR,
-			"MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
-	}
-
-	const std::string concat = std::format(":{}:{}", realm, password);
-	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	std::size_t block_size = hasher->hash_block_size();
-	hasher->update(username.data(), username.size_bytes());
-	hasher->update(reinterpret_cast<const std::uint8_t*>(concat.data()), concat.size());
-	const auto md5 = hasher->final_stdvec();
-	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
-	hmac->set_key(md5.data(), md5.size());
-
-	if(fp_offset) {
-		hmac_helper(hmac.get(), msgi_offset);
-	} else {
-		hmac->update(buffer_.data(), msgi_offset);
-	}
-
-	return hmac->final_stdvec();
+std::vector<std::uint8_t> Parser::msg_integrity(std::span<const std::uint8_t> username,
+                                                std::string_view realm,
+                                                std::string_view password) {
+	return detail::msg_integrity(buffer_, username, realm, password, true);
 }
 
-// not entirely compliant with the RFC because it's missing a salsprep impl
-std::vector<std::uint8_t> Parser::calculate_msg_integrity(std::string_view password) {
-	const auto msgi_offset = attribute_offset(Attributes::MESSAGE_INTEGRITY);
-
-	if(!msgi_offset) {
-		throw parse_error(Error::BUFFER_PARSE_ERROR,
-			"MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
-	}
-
-	const auto fp_offset = attribute_offset(Attributes::FINGERPRINT);
-
-	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
-	hmac->set_key(reinterpret_cast<const std::uint8_t*>(password.data()), password.size());
-
-	if(fp_offset) {
-		hmac_helper(hmac.get(), msgi_offset);
-	} else {
-		hmac->update(buffer_.data(), msgi_offset);
-	}
-
-	return hmac->final_stdvec();
-}
-
-/* 
-* If the FINGERPRINT attribute is present, we need to adjust the
-* header length to exclude it (pretend it isn't there) and then
-* hash everything upto the MESSAGE-INTEGRITY attribute
-*/
-void Parser::hmac_helper(Botan::MessageAuthenticationCode* hmac, const std::size_t msgi_offset) {
-	Header hdr = header();
-	hdr.length -= FP_ATTR_LENGTH;
-	hmac->update(buffer_.data(), HEADER_LEN_OFFSET);
-	hmac->update_be(hdr.length);
-	hmac->update(buffer_.data() + 4, msgi_offset - 4);
+std::vector<std::uint8_t> Parser::msg_integrity(std::string_view password) {
+	return detail::msg_integrity(buffer_, password, true);
 }
 
 } // stun, ember

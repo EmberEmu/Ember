@@ -23,7 +23,9 @@
 #include <optional>
 #include <random>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 #include <cstdint>
 #include <cstddef>
 
@@ -32,6 +34,11 @@ namespace ember::spark {
 }
 
 namespace ember::stun {
+
+const std::string_view SOFTWARE_DESC = "Ember";
+
+using clientopts = int;
+constexpr clientopts SUPPRESS_BANNER = 0x01;
 
 class Client {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
@@ -50,6 +57,7 @@ class Client {
 	std::string host_;
 	std::uint16_t port_;
 	std::optional<bool> is_nat_present_;
+	clientopts opts_{};
 
 	/*
 	 * The transaction map is protected by locking at each 'entry point' into
@@ -60,13 +68,19 @@ class Client {
 	std::mutex mutex_;
 
 	// Transaction stuff
-	detail::Transaction& start_transaction(detail::Transaction::VariantPromise vp);
+	detail::Transaction& start_transaction(std::shared_ptr<detail::Transaction::Promise> promise,
+	                                       std::shared_ptr<std::vector<std::uint8_t>> data,
+	                                       std::size_t key);
+
+	void start_transaction_timer(detail::Transaction& tx);
+
 	void complete_transaction(detail::Transaction& tx,
 	                          std::vector<attributes::Attribute> attributes);
+
 	void abort_transaction(detail::Transaction& tx, Error error,
 	                       attributes::ErrorCode = {}, bool erase = true);
-	void transaction_timer(detail::Transaction& tx);
-	std::size_t tx_hash(const TxID& tx_id);
+
+	void abort_promise(std::shared_ptr<detail::Transaction::Promise> promise, Error error);
 
 	// Message handling stuff
 	void handle_message(std::vector<std::uint8_t> buffer);
@@ -74,7 +88,7 @@ class Client {
 	                         detail::Transaction& tx);
 	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
 	                             detail::Transaction& tx);
-	void binding_request(detail::Transaction& tx);
+	void binding_request(std::shared_ptr<detail::Transaction::Promise> promise);
 	void process_message(const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
 	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect cb);
 	void set_nat_present(const std::vector<attributes::Attribute>& attributes);
@@ -83,14 +97,19 @@ class Client {
 
 public:
 	Client(std::unique_ptr<Transport> transport, std::string host,
-	       std::uint16_t port, RFCMode mode = RFCMode::RFC5389);
+	       std::uint16_t port, RFCMode mode = RFCMode::RFC5780);
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
+	void options(clientopts opts);
+	clientopts options() const;
+
 	std::future<std::expected<attributes::MappedAddress, ErrorRet>> external_address();
 	std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> binding_request();
 	std::future<std::expected<NAT, ErrorRet>> nat_type();
 	std::future<std::expected<bool, ErrorRet>> nat_present();
+	std::future<std::expected<Mapping, ErrorRet>> mapping();
+	std::future<std::expected<Filtering, ErrorRet>> filtering();
 };
 
 } // stun, ember

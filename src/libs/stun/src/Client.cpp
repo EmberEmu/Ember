@@ -7,9 +7,11 @@
  */
 
 #include <stun/Client.h>
-#include <stun/Protocol.h>
 #include <stun/Transport.h>
 #include <stun/Exception.h>
+#include <stun/MessageBuilder.h>
+#include <stun/detail/Shared.h>
+#include <shared/util/xoroshiro128plus.h>
 #include <spark/buffers/BinaryInStream.h>
 #include <spark/buffers/BinaryOutStream.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
@@ -28,6 +30,8 @@ template<class>
 inline constexpr bool always_false_v = false;
 
 namespace ember::stun {
+
+using namespace detail;
 
 Client::Client(std::unique_ptr<Transport> transport, std::string host,
                const std::uint16_t port, RFCMode mode)
@@ -64,49 +68,30 @@ void Client::connect(const std::string& host, const std::uint16_t port, Transpor
 	transport_->connect(host, port, cb);
 }
 
-void Client::binding_request(detail::Transaction& tx) {
-	std::lock_guard<std::mutex> guard(mutex_);
+void Client::binding_request(std::shared_ptr<Transaction::Promise> promise) {
+	MessageBuilder builder(MessageType::BINDING_REQUEST, mode_);
+	auto key = builder.key();
 
-	std::vector<std::uint8_t> data;
-	spark::VectorBufferAdaptor buffer(data);
-	spark::BinaryOutStream stream(buffer);
-
-	Header header{ };
-	header.type = std::to_underlying(MessageType::BINDING_REQUEST);
-	stream << header.type;
-	stream << header.length;
-	header.cookie = MAGIC_COOKIE;
-
-	if(mode_ == RFCMode::RFC5389) {
-		stream << header.cookie;
-		stream.put(tx.tx_id.id_5389.begin(), tx.tx_id.id_5389.end());
-	} else {
-		stream.put(tx.tx_id.id_3489.begin(), tx.tx_id.id_3489.end());
+	if(!(opts_ & SUPPRESS_BANNER)) {
+		builder.add_software(SOFTWARE_DESC);
 	}
-	
-	transaction_timer(tx);
-	transport_->send(data);
+
+	auto data = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+	auto& tx = start_transaction(promise, data, key);
+	transport_->send(std::move(data));
+	start_transaction_timer(tx);
 }
 
-detail::Transaction& Client::start_transaction(detail::Transaction::VariantPromise vp) {
-	detail::Transaction tx(transport_->executor()->get_executor(),
-	                       transport_->timeout(),
-	                       transport_->retries());
-
-	tx.promise = std::move(vp);
-
-	if(mode_ == RFCMode::RFC5389) {
-		for(auto& ele : tx.tx_id.id_5389) {
-			ele = mt_();
-		}
-	} else {
-		for(auto& ele : tx.tx_id.id_3489) {
-			ele = mt_();
-		}
-	}
-
-	tx.hash = tx_hash(tx.tx_id);
-	auto entry = transactions_.emplace(tx.hash, std::move(tx));
+Transaction& Client::start_transaction(std::shared_ptr<Transaction::Promise> promise,
+                                       std::shared_ptr<std::vector<std::uint8_t>> data,
+                                       const std::size_t key) {
+	Transaction tx(transport_->executor()->get_executor(),
+	               transport_->timeout(),
+	               transport_->retries());
+	tx.key = key;
+	tx.promise = promise;
+	tx.retry_buffer = data;
+	auto entry = transactions_.emplace(key, std::move(tx));
 	return entry.first->second;
 }
 
@@ -124,7 +109,7 @@ void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 	const Header& header = parser.header();
 
 	// Check to see whether this is a response that we're expecting
-	const auto hash = tx_hash(header.tx_id);
+	const auto hash = detail::generate_key(header.tx_id, mode_);
 
 	if(!transactions_.contains(hash)) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
@@ -149,10 +134,10 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer,
 	Parser parser(buffer, mode_);
 	parser.set_logger(logger_, verbosity_);
 	const auto header = parser.header();
-	const auto attributes = parser.attributes();
+	auto attributes = parser.attributes();
 
 	if(const auto fp = retrieve_attribute<attributes::Fingerprint>(attributes)) {
-		const auto crc32 = parser.calculate_fingerprint();
+		const auto crc32 = parser.fingerprint();
 
 		if(crc32 != fp->crc32) {
 			abort_transaction(tx, Error::RESP_INVALID_FINGERPRINT);
@@ -175,15 +160,23 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer,
 	abort_transaction(tx, e);
 }
 
+void Client::abort_promise(std::shared_ptr<Transaction::Promise> promise,
+                           const Error error) {
+	std::visit([&](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
+		arg.set_value(std::unexpected(ErrorRet(error)));
+	}, *promise);
+}
+
 void Client::abort_transaction(detail::Transaction& tx, const Error error,
                                attributes::ErrorCode ec, const bool erase) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 		arg.set_value(std::unexpected(ErrorRet(error)));
-	}, tx.promise);
+	}, *tx.promise);
 
 	if(erase) {
-		transactions_.erase(tx.hash);
+		transactions_.erase(tx.key);
 	}
 }
 
@@ -258,13 +251,18 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 		}
 
 		// start a new transaction to try to fulfill the request
-		auto& new_tx = start_transaction(std::move(tx.promise));
+		auto& new_tx = start_transaction(std::move(tx.promise), tx.retry_buffer, tx.key);
 		new_tx.redirects = tx.redirects; // persist redirect counter
-		transactions_.erase(tx.hash);
+		transactions_.erase(tx.key);
 
 		// retry the request
-		transport_->connect(ip, alt_attr->port, [&]() {
-			binding_request(new_tx);
+		transport_->connect(ip, alt_attr->port, [&](const boost::system::error_code& ec) {
+			if(!ec) {
+				transport_->send(new_tx.retry_buffer);
+				start_transaction_timer(new_tx);
+			} else {
+				abort_transaction(new_tx, Error::CONNECTION_ERROR);
+			}
 		});
 	} else {
 		if(ec) {
@@ -318,63 +316,23 @@ void Client::complete_transaction(detail::Transaction& tx,
 				arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
 			}
 		} else {
-			static_assert(always_false_v<T>, "Unhandled variant type");
+			// static_assert(always_false_v<T>, "Unhandled variant type"); todo
 		}
-	}, tx.promise);
+	}, *tx.promise);
 
-	transactions_.erase(tx.hash);
+	transactions_.erase(tx.key);
 }
 
-template<typename T>
-std::future<T> Client::basic_request() {
-	std::lock_guard<std::mutex> guard(mutex_);
-	std::promise<T> promise;
-	auto future = promise.get_future();
-	detail::Transaction::VariantPromise vp(std::move(promise));
-	auto& tx = start_transaction(std::move(vp));
-
-	connect(host_, port_, [&]() {
-		binding_request(tx);
-	});
-
-	return future;
-}
-
-auto Client::binding_request() -> std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> {
-	return basic_request<std::expected<std::vector<attributes::Attribute>, ErrorRet>>();
-}
-
-auto Client::external_address() -> std::future<std::expected<attributes::MappedAddress, ErrorRet>> {
-	return basic_request<std::expected<attributes::MappedAddress, ErrorRet>>();
-}
-
-std::size_t Client::tx_hash(const TxID& tx_id) {
-	/*
-	 * Hash the transaction ID to use as a key for future lookup.
-	 * FNV is used because it's already in the project, not for any
-	 * particular property. Odds of a collision are very low. 
-	 */
-	FNVHash fnv;
-
-	if(mode_ == RFCMode::RFC5389) {
-		fnv.update(tx_id.id_5389.begin(), tx_id.id_5389.end());
-	} else {
-		fnv.update(tx_id.id_3489.begin(), tx_id.id_3489.end());
-	}
-
-	return fnv.hash();
-}
-
-void Client::transaction_timer(detail::Transaction& tx) {
+void Client::start_transaction_timer(Transaction& tx) {
 	tx.timer.expires_from_now(tx.timeout);
-	tx.timer.async_wait([&, hash = tx.hash](const boost::system::error_code& ec) {
+	tx.timer.async_wait([&, key = tx.key](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}
 
 		std::lock_guard<std::mutex> guard(mutex_);
 
-		if(auto entry = transactions_.find(hash); entry != transactions_.end()) {
+		if(auto entry = transactions_.find(key); entry != transactions_.end()) {
 			auto& tx = entry->second;
 
 			// RFC algorithm decided by interpretive dance
@@ -389,7 +347,8 @@ void Client::transaction_timer(detail::Transaction& tx) {
 					tx.timeout = tx.initial_to * TX_RM;
 				}
 
-				binding_request(tx);
+				transport_->send(tx.retry_buffer);
+				start_transaction_timer(tx);
 			} else {
 				abort_transaction(tx, Error::NO_RESPONSE_RECEIVED);
 			}
@@ -398,8 +357,6 @@ void Client::transaction_timer(detail::Transaction& tx) {
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {
-	std::lock_guard<std::mutex> guard(mutex_);
-
 	for(auto& [k, v] : transactions_) {
 		if(ec == boost::asio::error::connection_aborted) {
 			abort_transaction(v, Error::CONNECTION_ABORTED, {}, false);
@@ -414,19 +371,47 @@ void Client::on_connection_error(const boost::system::error_code& ec) {
 }
 
 std::future<std::expected<NAT, ErrorRet>> Client::nat_type() {
-	std::lock_guard<std::mutex> guard(mutex_);
 	std::promise<std::expected<NAT, ErrorRet>> promise;
 	auto future = promise.get_future();
-	detail::Transaction::VariantPromise vp(std::move(promise));
-	auto& tx = start_transaction(std::move(vp));
+	
+	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
 	
 	// todo
 
 	return future;
 }
 
+std::future<std::expected<Filtering, ErrorRet>> Client::filtering() {
+	std::promise<std::expected<Filtering, ErrorRet>> promise;
+	auto future = promise.get_future();
+
+	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
+
+	// todo
+
+	return future;
+}
+
+void Client::options(const clientopts opts) {
+	opts_ = opts; 
+}
+
+clientopts Client::options() const {
+	return opts_;
+}
+
+std::future<std::expected<Mapping, ErrorRet>> Client::mapping() {
+	std::promise<std::expected<Mapping, ErrorRet>> promise;
+	auto future = promise.get_future();
+
+	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
+
+	// todo
+
+	return future;
+}
+
 std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
-	std::lock_guard<std::mutex> guard(mutex_);
 	std::promise<std::expected<bool, ErrorRet>> promise;
 	auto future = promise.get_future();
 
@@ -435,14 +420,42 @@ std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
 		return future;
 	}
 
-	detail::Transaction::VariantPromise vp(std::move(promise));
-	auto& tx = start_transaction(std::move(vp));
+	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
 	
-	connect(host_, port_, [&]() {
-		binding_request(tx);
+	connect(host_, port_, [&, txp](const boost::system::error_code& ec) {
+		if(!ec) {
+			binding_request(txp);
+		} else {
+			abort_promise(txp, Error::UNABLE_TO_CONNECT);
+		}
 	});
 
 	return future;
+}
+
+template<typename T>
+std::future<T> Client::basic_request() {
+	std::promise<T> promise;
+	auto future = promise.get_future();
+	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
+
+	connect(host_, port_, [&, txp](const boost::system::error_code& ec) {
+		if(!ec) {
+			binding_request(txp);
+		} else {
+			abort_promise(txp, Error::UNABLE_TO_CONNECT);
+		}
+	});
+
+	return future;
+}
+
+auto Client::binding_request() -> std::future<std::expected<std::vector<attributes::Attribute>, ErrorRet>> {
+	return basic_request<std::expected<std::vector<attributes::Attribute>, ErrorRet>>();
+}
+
+auto Client::external_address() -> std::future<std::expected<attributes::MappedAddress, ErrorRet>> {
+	return basic_request<std::expected<attributes::MappedAddress, ErrorRet>>();
 }
 
 } // stun, ember

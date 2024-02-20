@@ -119,7 +119,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("help", "Displays a list of available options")
 		("host,h", po::value<std::string>()->default_value("stun.l.google.com"), "Host")
 		("port,p", po::value<std::uint16_t>()->default_value(19302), "Port")
-		("protocol,c", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp, tls_tcp)");
+		("protocol,c", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);

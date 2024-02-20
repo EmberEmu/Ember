@@ -43,6 +43,7 @@ public:
 	~DatagramTransport() override;
 
 	void connect(std::string_view host, std::uint16_t port, OnConnect cb) override;
+	void send(std::shared_ptr<std::vector<std::uint8_t>> message) override;
 	void send(std::vector<std::uint8_t> message) override;
 	void close() override;
 	std::chrono::milliseconds timeout() override;

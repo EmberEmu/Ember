@@ -120,18 +120,30 @@ enum class Errors {
 };
 
 enum RFCMode {
-	RFC5389,
 	RFC3489,
+	RFC5389,
 	RFC5780,
 	RFC8445
 };
 
+enum class Mapping {
+	ENDPOINT_INDEPENDENT,
+	ADDRESS_DEPENDENT,
+	ADDRESS_PORT_DEPENDENT,
+};
+
+enum class Filtering {
+	ENDPOINT_INDEPENDENT,
+	ADDRESS_DEPENDENT,
+	ADDRESS_PORT_DEPENDENT,
+};
+
 enum class NAT {
-	NONE,
+	OPEN_NO_NAT,
 	FULL_CONE,
-	RESTRICTED_CONE,
-	PORT_RESTRICTED_CONE,
-	SYMMETRIC
+	SYMMETRIC,
+	RESTRICTED,
+	PORT_RESTRICTED
 };
 
 using AttrReqBy = std::unordered_map<Attributes, std::vector<RFCMode>>;

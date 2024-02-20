@@ -11,6 +11,7 @@
 #include <boost/asio/any_io_executor.hpp>
 #include <boost/system/error_code.hpp>
 #include <functional>
+#include <memory>
 #include <span>
 #include <string_view>
 #include <string>
@@ -23,7 +24,7 @@ class Transport {
 public:
 	using OnReceive = std::function<void(std::vector<std::uint8_t>)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
-	using OnConnect = std::function<void()>;
+	using OnConnect = std::function<void(const boost::system::error_code&)>;
 
 	OnReceive rcb_;
 	OnConnectionError ecb_;
@@ -32,6 +33,7 @@ public:
 	virtual void connect(std::string_view host, std::uint16_t port, OnConnect cb) = 0;
 	virtual void close() = 0;
 	virtual void send(std::vector<std::uint8_t> message) = 0;
+	virtual void send(std::shared_ptr<std::vector<std::uint8_t>> message) = 0;
 	virtual boost::asio::io_context* executor() = 0;
 	virtual std::chrono::milliseconds timeout() = 0;
 	virtual unsigned int retries() = 0;

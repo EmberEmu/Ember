@@ -15,6 +15,7 @@
 #include <chrono>
 #include <expected>
 #include <future>
+#include <memory>
 #include <variant>
 #include <vector>
 #include <cstddef>
@@ -28,22 +29,25 @@ struct Transaction {
 		retries_left(max_retries), max_retries(max_retries) {}
 
 	// :grimacing:
-	using VariantPromise = std::variant<
+	using Promise = std::variant<
 		std::promise<std::expected<attributes::MappedAddress, ErrorRet>>,
 		std::promise<std::expected<std::vector<attributes::Attribute>, ErrorRet>>,
 		std::promise<std::expected<NAT, ErrorRet>>,
-		std::promise<std::expected<bool, ErrorRet>>
+		std::promise<std::expected<bool, ErrorRet>>,
+		std::promise<std::expected<Filtering, ErrorRet>>,
+		std::promise<std::expected<Mapping, ErrorRet>>
 	>;
 
-	TxID tx_id{};
-	std::size_t hash{};
+	TxID id{};
+	std::size_t key{};
 	std::chrono::milliseconds timeout;
 	const std::chrono::milliseconds initial_to;
-	VariantPromise promise;
+	std::shared_ptr<Promise> promise;
 	boost::asio::steady_timer timer;
 	const int max_retries{};
 	int retries_left{};
 	int redirects{};
+	std::shared_ptr<std::vector<std::uint8_t>> retry_buffer;
 };
 
 } // detail, stun, ember

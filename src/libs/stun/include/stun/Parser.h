@@ -49,9 +49,7 @@ class Parser {
 	attributes::IceControlling ice_controlling(spark::BinaryInStream& stream);
 	attributes::IceControlled ice_controlled(spark::BinaryInStream& stream);
 
-	std::size_t attribute_offset(Attributes attr);
 	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
-	void hmac_helper(Botan::MessageAuthenticationCode* hmac, std::size_t msgi_offset);
 
 	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
 	                                                       const TxID& id, MessageType type);
@@ -63,12 +61,12 @@ public:
 	Error validate_header(const Header& header);
 	Header header();
 	std::vector<attributes::Attribute> attributes();
-	std::uint32_t calculate_fingerprint();
-	std::vector<std::uint8_t> calculate_msg_integrity(std::string_view password);
+	std::uint32_t fingerprint();
+	std::vector<std::uint8_t> msg_integrity(std::string_view password);
 
-	std::vector<std::uint8_t> calculate_msg_integrity(std::span<const std::uint8_t> username,
-	                                                  std::string_view realm,
-	                                                  std::string_view password);
+	std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> username,
+	                                        std::string_view realm,
+	                                        std::string_view password);
 };
 
 #include <stun/Parser.inl>

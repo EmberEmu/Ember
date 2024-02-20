@@ -9,7 +9,9 @@
 #include "STUNVectors.h"
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/SpanBufferAdaptor.h>
+#include <shared/util/FormatPacket.h>
 #include <stun/Client.h>
+#include <stun/MessageBuilder.h>
 #include <gtest/gtest.h>
 #include <array>
 #include <variant>
@@ -54,7 +56,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attrs);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, 0xc07d4c96);
-	ASSERT_EQ(fp->crc32, parser.calculate_fingerprint());
+	ASSERT_EQ(fp->crc32, parser.fingerprint());
 
 	// MESSAGE-INTEGRITY
 	const auto msgi = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attrs);
@@ -66,7 +68,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 	};
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
-	const auto res = parser.calculate_msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
+	const auto res = parser.msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
 	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
 }
 
@@ -106,7 +108,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attrs);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, 0xc8fb0b4c);
-	ASSERT_EQ(fp->crc32, parser.calculate_fingerprint());
+	ASSERT_EQ(fp->crc32, parser.fingerprint());
 
 	// MESSAGE-INTEGRITY
 	const auto msgi = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attrs);
@@ -118,7 +120,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	};
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
-	const auto res = parser.calculate_msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
+	const auto res = parser.msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
 	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
 }
 
@@ -166,7 +168,7 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 	};
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
-	const auto res = parser.calculate_msg_integrity(username->value, realm->value, "TheMatrIX");
+	const auto res = parser.msg_integrity(username->value, realm->value, "TheMatrIX");
 	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
 }
 
@@ -223,12 +225,89 @@ TEST(STUNVectors, RFC5769_Request) {
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
 
-	const auto res = parser.calculate_msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
+	const auto res = parser.msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
 	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
 
 	// FINGERPRINT
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attrs);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, 0xe57a3bcf);
-	ASSERT_EQ(fp->crc32, parser.calculate_fingerprint());
+	ASSERT_EQ(fp->crc32, parser.fingerprint());
+}
+
+TEST(STUNVectors, Builder_CRC32) {
+	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	const auto buffer = builder.final(true);
+
+	stun::Parser parser(buffer, stun::RFC5780);
+	const auto attributes = parser.attributes();
+
+	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attributes);
+	ASSERT_TRUE(fp);
+	ASSERT_EQ(fp->crc32, parser.fingerprint());
+}
+
+TEST(STUNVectors, Builder_MessageIntegrity) {
+	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	const auto buffer = builder.final("Banana");
+
+	stun::Parser parser(buffer, stun::RFC5780);
+	const auto attributes = parser.attributes();
+
+	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
+	ASSERT_TRUE(attr);
+	const auto calc = parser.msg_integrity("Banana");
+	ASSERT_TRUE(std::equal(attr->hmac_sha1.begin(), attr->hmac_sha1.end(), calc.begin(), calc.end()));
+}
+
+TEST(STUNVectors, Builder_MessageIntegrityFull) {
+	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	std::vector<std::uint8_t> username { 0x63, 0x68, 0x61, 0x6F, 0x73, 0x76, 0x65, 0x78 };
+	const auto buffer = builder.final(username, "lightshope.org", "bAhzJk!/kM");
+
+	stun::Parser parser(buffer, stun::RFC5780);
+	const auto attributes = parser.attributes();
+
+	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
+	ASSERT_TRUE(attr);
+	const auto calc = parser.msg_integrity(username, "lightshope.org", "bAhzJk!/kM");
+	ASSERT_TRUE(std::equal(attr->hmac_sha1.begin(), attr->hmac_sha1.end(), calc.begin(), calc.end()));
+}
+
+TEST(STUNVectors, Builder_MessageIntegrityCRC32) {
+	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	const auto buffer = builder.final("Banana", true);
+
+	stun::Parser parser(buffer, stun::RFC5780);
+	const auto attributes = parser.attributes();
+
+	// FINGERPRINT
+	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attributes);
+	ASSERT_TRUE(fp);
+	ASSERT_EQ(fp->crc32, parser.fingerprint());
+
+	// MESSAGE-INTEGRITY
+	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
+	ASSERT_TRUE(attr);
+	const auto calc = parser.msg_integrity("Banana");
+	ASSERT_TRUE(std::equal(attr->hmac_sha1.begin(), attr->hmac_sha1.end(), calc.begin(), calc.end()));
+}
+
+TEST(STUNVectors, Builder_Software) {
+	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	builder.add_software("Ember!");
+	const auto buffer = builder.final(true);
+
+	stun::Parser parser(buffer, stun::RFC5780);
+	const auto attributes = parser.attributes();
+
+	// SOFTWARE
+	const auto attr = stun::retrieve_attribute<stun::attributes::Software>(attributes);
+	ASSERT_TRUE(attr);
+	ASSERT_EQ(attr->value, "Ember!");
+
+	// FINGERPRINT
+	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attributes);
+	ASSERT_TRUE(fp);
+	ASSERT_EQ(fp->crc32, parser.fingerprint());
 }

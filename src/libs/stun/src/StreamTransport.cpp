@@ -22,7 +22,7 @@ void StreamTransport::connect(std::string_view host, const std::uint16_t port, O
 			if(!ec) {
 				do_connect(std::move(results), cb);
 			} else {
-				ecb_(ec);
+				cb(ec);
 			}
 		}
 	);
@@ -32,11 +32,10 @@ void StreamTransport::do_connect(ba::ip::tcp::resolver::results_type results, On
 	boost::asio::async_connect(socket_, results.begin(), results.end(),
 		[&, cb, results](const boost::system::error_code& ec, ba::ip::tcp::resolver::iterator) {
 			if(!ec) {
-				cb();
 				receive();
-			} else {
-				ecb_(ec);
 			}
+
+			cb(ec);
 		}
 	);
 }
@@ -62,16 +61,19 @@ void StreamTransport::do_write() {
 	);
 }
 
-void StreamTransport::send(std::vector<std::uint8_t> message) {
-	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-
-	ctx_.post([&, data]() mutable {
-		queue_.emplace(std::move(data));
+void StreamTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
+	ctx_.post([&, message]() mutable {
+		queue_.emplace(std::move(message));
 
 		if(queue_.size() == 1) {
 			do_write();
 		}
 	});
+}
+
+void StreamTransport::send(std::vector<std::uint8_t> message) {
+	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
+	send(std::move(data));
 }
 
 void StreamTransport::receive() {

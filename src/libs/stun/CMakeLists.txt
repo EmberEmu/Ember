@@ -20,11 +20,15 @@ add_library(${LIBRARY_NAME}
            include/stun/Parser.inl
            include/stun/Util.h
            include/stun/Exception.h
+           include/stun/detail/Shared.h
+           include/stun/MessageBuilder.h
            src/Client.cpp
            src/DatagramTransport.cpp
            src/StreamTransport.cpp
            src/Protocol.cpp
            src/Parser.cpp
+           src/MessageBuilder.cpp
+           src/detail/Shared.cpp
            )
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
