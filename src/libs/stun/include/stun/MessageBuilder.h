@@ -1,10 +1,10 @@
 /*
-* Copyright (c) 2024 Ember
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-*/
+ * Copyright (c) 2024 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
 #pragma once
 
@@ -21,7 +21,6 @@
 namespace ember::stun {
 
 class MessageBuilder final {
-	RFCMode mode_;
 	std::vector<std::uint8_t> buffer_;
 	spark::VectorBufferAdaptor<std::uint8_t> vba_;
 	spark::BinaryStream stream_;
@@ -47,6 +46,8 @@ public:
 
 	std::size_t key() const;
 	void add_software(std::string_view value);
+	void add_change_request(bool ip, bool port);
+	void add_response_port(std::uint16_t port);
 
 	std::vector<std::uint8_t> final(bool fingerprint = false);
 

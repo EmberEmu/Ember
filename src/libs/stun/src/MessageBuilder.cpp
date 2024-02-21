@@ -1,10 +1,10 @@
 /*
-* Copyright (c) 2024 Ember
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-*/
+ * Copyright (c) 2024 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
 #include <stun/MessageBuilder.h>
 #include <stun/Exception.h>
@@ -54,7 +54,7 @@ void MessageBuilder::generate_tx_id(Header& header) {
 	std::random_device rd;
 	std::mt19937 mt(rd());
 
-	if(mode_ != RFC3489) {
+	if(header.cookie == MAGIC_COOKIE) {
 		for(auto& ele : header.tx_id.id_5389) {
 			ele = mt();
 		}
@@ -69,7 +69,7 @@ void MessageBuilder::write_header(Header& header) {
 	stream_ << header.type;
 	stream_ << header.length;
 
-	if(mode_ != RFC3489) {
+	if(header.cookie == MAGIC_COOKIE) {
 		stream_ << header.cookie;
 		stream_.put(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end());
 	} else {
@@ -87,8 +87,8 @@ void MessageBuilder::add_textual(Attributes attr, std::span<const T> value) {
 	auto length = value.size_bytes();
 	std::size_t pad_size = 0;
 
-	if(auto mod = length % 4) {
-		pad_size = 4 - mod;
+	if(auto mod = length % PADDING_ROUND) {
+		pad_size = PADDING_ROUND - mod;
 	}
 
 	stream_ << attr_be(attr);
@@ -99,6 +99,23 @@ void MessageBuilder::add_textual(Attributes attr, std::span<const T> value) {
 
 void MessageBuilder::add_software(std::string_view value) {
 	add_textual<const char>(Attributes::SOFTWARE, value);
+}
+
+void MessageBuilder::add_change_request(const bool ip, const bool port) {
+	std::uint32_t value{};
+	value |= ip? CHANGE_IP_MASK : 0;
+	value |= port? CHANGE_PORT_MASK : 0;
+
+	stream_ << attr_be(Attributes::CHANGE_REQUEST);
+	stream_ << len_be(CHANGE_REQUEST_BODY_LEN);
+	stream_ << be::big_uint32_t(value);
+}
+
+void MessageBuilder::add_response_port(std::uint16_t port) {
+	stream_ << attr_be(Attributes::RESPONSE_PORT);
+	stream_ << len_be(RESPONSE_PORT_BODY_LEN);
+	stream_ << be::big_uint16_t(port);
+	write_padding(2);
 }
 
 void MessageBuilder::set_header_length(const std::uint16_t length) {
@@ -112,7 +129,7 @@ void MessageBuilder::add_fingerprint() {
 	set_header_length(detail::read_header(buffer_).length + 8);
 	const auto fp = detail::fingerprint(buffer_, false);
 	stream_ << attr_be(Attributes::FINGERPRINT);
-	stream_ << len_be(4);
+	stream_ << len_be(FINGERPRINT_BODY_LEN);
 	stream_ << be::big_uint32_t(fp);
 }
 

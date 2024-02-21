@@ -14,6 +14,7 @@
 #include <stun/Logging.h>
 #include <stun/Parser.h>
 #include <stun/Transport.h>
+#include <stun/MessageBuilder.h>
 #include <stun/Util.h>
 #include <boost/asio/io_context.hpp>
 #include <expected>
@@ -40,6 +41,12 @@ const std::string_view SOFTWARE_DESC = "Ember";
 using clientopts = int;
 constexpr clientopts SUPPRESS_BANNER = 0x01;
 
+enum class Protocol {
+	TCP, UDP
+};
+
+using namespace detail;
+
 class Client {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
 	const int MAX_REDIRECTS = 5;
@@ -48,6 +55,7 @@ class Client {
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 	boost::asio::io_context ctx_;
 
+	Protocol proto_;
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
 	std::random_device rd_;
@@ -59,40 +67,41 @@ class Client {
 	std::uint16_t port_;
 	std::optional<bool> is_nat_present_;
 	clientopts opts_{};
-	std::unordered_map<std::size_t, detail::Transaction> transactions_;
+	std::unique_ptr<Transaction> tx_;
 	std::mutex mutex_;
 
 	// Transaction stuff
-	detail::Transaction& start_transaction(std::shared_ptr<detail::Transaction::Promise> promise,
-	                                       std::shared_ptr<std::vector<std::uint8_t>> data,
-	                                       std::size_t key);
-
-	void start_transaction_timer(detail::Transaction& tx);
-
-	void complete_transaction(detail::Transaction& tx,
-	                          std::vector<attributes::Attribute> attributes);
-
-	void abort_transaction(detail::Transaction& tx, Error error,
-	                       attributes::ErrorCode = {}, bool erase = true);
-
-	void abort_promise(std::shared_ptr<detail::Transaction::Promise> promise, Error error);
+	void start_transaction_timer();
+	void complete_transaction();
+	void create_transaction(Transaction::Promise promise);
+	void abort_transaction(Error error, attributes::ErrorCode = {}, bool erase = true);
 
 	// Message handling stuff
-	void handle_message(std::vector<std::uint8_t> buffer);
-	void handle_binding_resp(std::vector<attributes::Attribute> attributes,
-	                         detail::Transaction& tx);
-	void handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
-	                             detail::Transaction& tx);
-	void binding_request(std::shared_ptr<detail::Transaction::Promise> promise);
-	void process_message(const std::vector<std::uint8_t>& buffer, detail::Transaction& tx);
-	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect cb);
-	void set_nat_present(const std::vector<attributes::Attribute>& attributes);
+	void handle_message(const std::vector<std::uint8_t>& buffer);
+	void handle_binding_req();
+	void handle_binding_resp();
+	void handle_binding_err_resp();
+	void handle_no_response();
+
+	MessageBuilder build_request(bool change_ip = false, bool change_port = false);
+	void process_message(const std::vector<std::uint8_t>& buffer);
+	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect&& cb);
+	void set_nat_present();
 	void on_connection_error(const boost::system::error_code& error);
 	template<typename T> std::future<T> basic_request();
+	template<typename T> std::future<T> behaviour_test(const detail::TestState state);
+
+	void perform_connectivity_test();
+	void perform_mapping_test2();
+	void perform_mapping_test3();
+	void mapping_test_result();
+	void perform_filtering_test2();
+	void perform_filtering_test3();
+	void perform_hairpinning_test();
 
 public:
-	Client(std::unique_ptr<Transport> transport, std::string host,
-	       std::uint16_t port, RFCMode mode = RFCMode::RFC5780);
+	Client(std::string host, std::uint16_t port, Protocol protocol,
+	       RFCMode mode = RFCMode::RFC5780);
 	~Client();
 
 	void log_callback(LogCB callback, Verbosity verbosity);
@@ -101,10 +110,10 @@ public:
 
 	std::future<MappedResult> external_address();
 	std::future<AttributesResult> binding_request();
-	std::future<NATModeResult> nat_type();
 	std::future<NATResult> nat_present();
-	std::future<MappingResult> mapping();
-	std::future<FilteringResult> filtering();
+	std::future<BehaviourResult> mapping();
+	std::future<BehaviourResult> filtering();
+	std::future<HairpinResult> hairpinning();
 };
 
 } // stun, ember

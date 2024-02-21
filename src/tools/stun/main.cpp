@@ -26,7 +26,7 @@ using namespace ember;
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void log_cb(stun::Verbosity verbosity, stun::Error reason);
-std::unique_ptr<stun::Transport> create_transport(std::string_view protocol);
+void print_error(std::string_view test, const stun::ErrorRet& error);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -44,8 +44,9 @@ void launch(const po::variables_map& args) {
 	// todo, std::print when supported by all compilers
 	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
 
-	auto transport = create_transport(protocol);
-	stun::Client client(std::move(transport), host, port);
+	const auto proto = protocol == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP;
+
+	stun::Client client(host, port, proto);
 	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
 	auto result = client.external_address();
 	const auto address = result.get();
@@ -56,29 +57,54 @@ void launch(const po::variables_map& args) {
 		// todo, std::print when supported by all compilers
 		std::cout << std::format("STUN provider returned our address as {}:{}\n", ip, address->port);
 	} else {
-		std::cout << std::format("STUN request failed: {} ({})\n",
-			stun::to_string(address.error().reason), std::to_underlying(address.error().reason));
+		print_error("STUN", address.error());
 	}
 
 	auto nat_res = client.nat_present();
 	const auto nat_detected = nat_res.get();
 
 	if(nat_detected) {
-		std::cout << std::format("NAT detected: {}", *nat_detected? "Yes" : "No");
+		std::cout << std::format("NAT detected: {}\n", *nat_detected? "Yes" : "No");
 	} else {
-		std::cout << std::format("STUN request failed: {} ({})",
-			stun::to_string(nat_detected.error().reason),
-			std::to_underlying(nat_detected.error().reason));
+		print_error("STUN", nat_detected.error());
+	}
+
+	auto map_res = client.mapping();
+	const auto mapping = map_res.get();
+
+	if(mapping) {
+		std::cout << std::format("Mapping type: {}\n", stun::to_string(*mapping));
+	} else {
+		print_error("Mapping", mapping.error());
+	}
+	
+	auto hairpin_res = client.hairpinning();
+	const auto hairpinning = hairpin_res.get();
+
+	if(hairpinning) {
+		std::cout << std::format("Hairpin: {}\n", stun::to_string(*hairpinning));
+	} else {
+		print_error("Hairpin", hairpinning.error());
+	}
+
+	auto filter_res = client.filtering();
+	const auto filtering = filter_res.get();
+
+	if(filtering) {
+		std::cout << std::format("Filtering: {}\n", stun::to_string(*filtering));
+	} else {
+		print_error("Filtering", filtering.error());
 	}
 }
 
-std::unique_ptr<stun::Transport> create_transport(std::string_view protocol) {
-	if(protocol == "tcp") {
-		return std::make_unique<stun::StreamTransport>();
-	} else if(protocol == "udp") {
-		return std::make_unique<stun::DatagramTransport>();
-	} else {
-		throw std::invalid_argument("Unknown protocol specified");
+void print_error(std::string_view test, const stun::ErrorRet& error) {
+	std::cout << std::format("{} test failed: {} ({})\n", test,
+		stun::to_string(error.reason),
+		std::to_underlying(error.reason));
+
+	if(error.ec.code) {
+		std::cout << std::format("Server error code: {}, ({})\n",
+			error.ec.code, error.ec.reason);
 	}
 }
 

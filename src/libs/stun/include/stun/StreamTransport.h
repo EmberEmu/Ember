@@ -44,13 +44,13 @@ class StreamTransport final : public Transport {
 	void read(std::size_t size, std::size_t offset);
 	void receive();
 	void do_write();
-	void do_connect(ba::ip::tcp::resolver::results_type results, OnConnect cb);
+	void do_connect(ba::ip::tcp::resolver::results_type results, OnConnect&& cb);
 
 public:
 	StreamTransport(std::chrono::milliseconds timeout = 39500ms);
 	~StreamTransport();
 
-	void connect(std::string_view host, std::uint16_t port, OnConnect cb) override;
+	void connect(std::string_view host, std::uint16_t port, OnConnect&& cb) override;
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message) override;
 	void send(std::vector<std::uint8_t> message) override;
 	void close() override;

@@ -40,6 +40,8 @@ smart_enum_class(Error, std::uint8_t,
 	CONNECTION_ERROR,
 	UNABLE_TO_CONNECT,
 	BAD_ATTRIBUTE_DATA,
+	UDP_TEST_ONLY,
+	UNSUPPORTED_BY_SERVER,            // a test wasn't supported by the server
 	BUFFER_PARSE_ERROR,               // buffer stream reported an error, probably a bad attribute
 	RESP_BUFFER_LT_HEADER,            // buffer was smaller than the fixed header length
 	RESP_IPV6_NOT_VALID,              // received an IPv6 flag in RFC3489 mode (IPv4 only)

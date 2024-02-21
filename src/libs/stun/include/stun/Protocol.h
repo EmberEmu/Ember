@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/smartenum.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <array>
 #include <string>
@@ -38,6 +39,14 @@ constexpr std::uint8_t HEADER_LENGTH = 20;
 constexpr std::uint8_t ATTR_HEADER_LENGTH = 4;
 constexpr std::uint8_t HEADER_LEN_OFFSET = 2;
 constexpr std::uint8_t FP_ATTR_LENGTH = 8;
+constexpr std::uint8_t PADDING_ROUND = 4;
+constexpr std::uint8_t RESPONSE_PORT_BODY_LEN = 4;
+constexpr std::uint8_t CHANGE_REQUEST_BODY_LEN = 4;
+constexpr std::uint8_t FINGERPRINT_BODY_LEN = 4;
+constexpr std::uint8_t RESPONSE_PORT_LEN = 4;
+
+constexpr std::uint8_t CHANGE_IP_MASK = 0x01 << 2;
+constexpr std::uint8_t CHANGE_PORT_MASK = 0x01 << 1;
 
 constexpr std::uint32_t MAGIC_COOKIE = 0x2112A442;
 
@@ -126,25 +135,15 @@ enum RFCMode {
 	RFC8445
 };
 
-enum class Mapping {
+smart_enum_class(Hairpinning, std::uint8_t,
+	SUPPORTED, NOT_SUPPORTED
+);
+
+smart_enum_class(Behaviour, std::uint8_t,
 	ENDPOINT_INDEPENDENT,
 	ADDRESS_DEPENDENT,
-	ADDRESS_PORT_DEPENDENT,
-};
-
-enum class Filtering {
-	ENDPOINT_INDEPENDENT,
-	ADDRESS_DEPENDENT,
-	ADDRESS_PORT_DEPENDENT,
-};
-
-enum class NAT {
-	OPEN_NO_NAT,
-	FULL_CONE,
-	SYMMETRIC,
-	RESTRICTED,
-	PORT_RESTRICTED
-};
+	ADDRESS_PORT_DEPENDENT
+);
 
 using AttrReqBy = std::unordered_map<Attributes, std::vector<RFCMode>>;
 using AttrValidIn = std::unordered_map<Attributes, MessageType>;

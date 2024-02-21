@@ -26,6 +26,7 @@ class DatagramTransport final : public Transport {
 	ba::io_context ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
+	ba::ip::udp::endpoint remote_ep_;
 	std::jthread worker_;
 	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
@@ -38,13 +39,14 @@ class DatagramTransport final : public Transport {
 
 	void receive();
 	void do_write();
-	void do_connect(ba::ip::udp::resolver::results_type results, OnConnect cb);
 
 public:
+	using OnResolve = std::function<void(const ba::ip::udp::endpoint&)>;
+
 	DatagramTransport(std::chrono::milliseconds timeout = 500ms, unsigned int retries = 7);
 	~DatagramTransport() override;
 
-	void connect(std::string_view host, std::uint16_t port, OnConnect cb) override;
+	void connect(std::string_view host, std::uint16_t port, OnConnect&& cb) override;
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message) override;
 	void send(std::vector<std::uint8_t> message) override;
 	void close() override;

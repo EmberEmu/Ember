@@ -29,7 +29,7 @@ public:
 	OnConnectionError ecb_;
 	OnConnect ocb_;
 
-	virtual void connect(std::string_view host, std::uint16_t port, OnConnect cb) = 0;
+	virtual void connect(std::string_view host, std::uint16_t port, OnConnect&& cb) = 0;
 	virtual void close() = 0;
 	virtual void send(std::vector<std::uint8_t> message) = 0;
 	virtual void send(std::shared_ptr<std::vector<std::uint8_t>> message) = 0;

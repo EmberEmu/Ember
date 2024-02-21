@@ -7,7 +7,8 @@
  */
 
 #include <stun/Client.h>
-#include <stun/Transport.h>
+#include <stun/DatagramTransport.h>
+#include <stun/StreamTransport.h>
 #include <stun/Exception.h>
 #include <stun/MessageBuilder.h>
 #include <stun/detail/Shared.h>
@@ -33,25 +34,39 @@ namespace ember::stun {
 
 using namespace detail;
 
-Client::Client(std::unique_ptr<Transport> transport, std::string host,
-               const std::uint16_t port, RFCMode mode)
-	: transport_(std::move(transport)),
-      host_(std::move(host)), port_(port),
-      mode_(mode), mt_(rd_()) {
-	transport_->set_callbacks(
-		[this](std::vector<std::uint8_t> buffer) { handle_message(std::move(buffer)); },
-		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
-	);
+Client::Client(std::string host, const std::uint16_t port, Protocol proto, RFCMode mode)
+	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode), mt_(rd_()) {
 
 	// worker used by timers
 	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &ctx_);
+						   (&boost::asio::io_context::run), &ctx_);
+
+	switch(proto) {
+		case Protocol::TCP:
+			transport_ = std::make_unique<StreamTransport>();
+			break;
+		case Protocol::UDP:
+			transport_ = std::make_unique<DatagramTransport>();
+			break;
+	}
+
+	transport_->set_callbacks(
+		[this](std::vector<std::uint8_t> buffer) { handle_message(buffer); },
+		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
+	);
+}
+
+void Client::create_transaction(Transaction::Promise promise) {
+	tx_ = std::make_unique<Transaction>(
+		ctx_.get_executor(), transport_->timeout(), transport_->retries()
+	);
+
+	tx_->promise = std::move(promise);
 }
 
 Client::~Client() {
 	work_.clear();
-	ctx_.stop();
 	transport_.reset();
 }
 
@@ -64,37 +79,27 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 	verbosity_ = verbosity;
 }
 
-void Client::connect(const std::string& host, const std::uint16_t port, Transport::OnConnect cb) {
+void Client::connect(const std::string& host, const std::uint16_t port,
+                     Transport::OnConnect&& cb) {
 	dest_hist_[host] = std::chrono::steady_clock::now();
-	transport_->connect(host, port, cb);
+	transport_->connect(host, port, std::move(cb));
 }
 
-void Client::binding_request(std::shared_ptr<Transaction::Promise> promise) {
+MessageBuilder Client::build_request(const bool change_ip, const bool change_port) {
 	MessageBuilder builder(MessageType::BINDING_REQUEST, mode_);
-	auto key = builder.key();
 
 	if(!(opts_ & SUPPRESS_BANNER)) {
 		builder.add_software(SOFTWARE_DESC);
 	}
 
-	auto data = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-	auto& tx = start_transaction(promise, data, key);
-	transport_->send(std::move(data));
-	start_transaction_timer(tx);
+	if(change_ip || change_port) {
+		builder.add_change_request(change_ip, change_port);
+	}
+
+	return builder;
 }
 
-Transaction& Client::start_transaction(std::shared_ptr<Transaction::Promise> promise,
-                                       std::shared_ptr<std::vector<std::uint8_t>> data,
-                                       const std::size_t key) {
-	Transaction tx(ctx_.get_executor(), transport_->timeout(), transport_->retries());
-	tx.key = key;
-	tx.promise = promise;
-	tx.retry_buffer = data;
-	auto entry = transactions_.emplace(key, std::move(tx));
-	return entry.first->second;
-}
-
-void Client::handle_message(std::vector<std::uint8_t> buffer) try {
+void Client::handle_message(const std::vector<std::uint8_t>& buffer) try {
 	std::lock_guard<std::mutex> guard(mutex_);
 
 	if(buffer.size() < HEADER_LENGTH) {
@@ -110,26 +115,24 @@ void Client::handle_message(std::vector<std::uint8_t> buffer) try {
 	// Check to see whether this is a response that we're expecting
 	const auto hash = detail::generate_key(header.tx_id, mode_);
 
-	if(!transactions_.contains(hash)) {
+	if(tx_->key != hash) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
 		return;
 	}
 
-	detail::Transaction& transaction = transactions_.at(hash);
-	transaction.timer.cancel();
+	tx_->timer.cancel();
 
 	if(auto error = parser.validate_header(header); error != Error::OK) {
-		abort_transaction(transaction, error);
+		abort_transaction(error);
 		return;
 	}
 
-	process_message(buffer, transaction);
+	process_message(buffer);
 } catch(const spark::exception& e) {
 	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
 }
 
-void Client::process_message(const std::vector<std::uint8_t>& buffer,
-                             detail::Transaction& tx) try {
+void Client::process_message(const std::vector<std::uint8_t>& buffer) try {
 	Parser parser(buffer, mode_);
 	parser.set_logger(logger_, verbosity_);
 	const auto header = parser.header();
@@ -139,47 +142,43 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer,
 		const auto crc32 = parser.fingerprint();
 
 		if(crc32 != fp->crc32) {
-			abort_transaction(tx, Error::RESP_INVALID_FINGERPRINT);
+			abort_transaction(Error::RESP_INVALID_FINGERPRINT);
 			return;
 		}
 	}
 
+	tx_->attributes = std::move(attributes);
+
 	const MessageType type{ static_cast<std::uint16_t>(header.type) };
 
-	if(type == MessageType::BINDING_RESPONSE) {
-		handle_binding_resp(std::move(attributes), tx);
-	} else if(type == MessageType::BINDING_ERROR_RESPONSE) {
-		handle_binding_err_resp(attributes, tx);
-	} else {
-		abort_transaction(tx, Error::RESP_UNK_MESSAGE_TYPE);
+	switch(type) {
+		case MessageType::BINDING_RESPONSE:
+			handle_binding_resp();
+			break;
+		case MessageType::BINDING_ERROR_RESPONSE:
+			handle_binding_err_resp();
+			break;
+		case MessageType::BINDING_REQUEST:
+			handle_binding_req();
+			break;
+		default:
+			abort_transaction(Error::RESP_UNK_MESSAGE_TYPE);
 	}
 } catch (const spark::exception&) {
-	abort_transaction(tx, Error::BUFFER_PARSE_ERROR);
+	abort_transaction(Error::BUFFER_PARSE_ERROR);
 } catch (const Error& e) {
-	abort_transaction(tx, e);
+	abort_transaction(e);
 }
 
-void Client::abort_promise(std::shared_ptr<Transaction::Promise> promise,
-                           const Error error) {
+void Client::abort_transaction(const Error error, attributes::ErrorCode ec, const bool erase) {
 	std::visit([&](auto&& arg) {
-		arg.set_value(std::unexpected(ErrorRet(error)));
-	}, *promise);
+		arg.set_value(std::unexpected(ErrorRet(error, ec)));
+	}, tx_->promise);
 }
 
-void Client::abort_transaction(detail::Transaction& tx, const Error error,
-                               attributes::ErrorCode ec, const bool erase) {
-	std::visit([&](auto&& arg) {
-		arg.set_value(std::unexpected(ErrorRet(error)));
-	}, *tx.promise);
-
-	if(erase) {
-		transactions_.erase(tx.key);
-	}
-}
-
-void Client::set_nat_present(const std::vector<attributes::Attribute>& attributes) {
+void Client::set_nat_present() {
 	attributes::MappedAddress mapped{};
-	const auto xma = retrieve_attribute<attributes::XorMappedAddress>(attributes);
+	const auto xma = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
 
 	// we don't care if it's a mapped or xormapped attribute, as long we have one
 	if(xma) {
@@ -188,7 +187,7 @@ void Client::set_nat_present(const std::vector<attributes::Attribute>& attribute
 		mapped.ipv6 = xma->ipv6;
 		mapped.port = xma->port;
 	} else {
-		const auto ma = retrieve_attribute<attributes::MappedAddress>(attributes);
+		const auto ma = retrieve_attribute<attributes::MappedAddress>(tx_->attributes);
 
 		if(!ma) {
 			return;
@@ -201,34 +200,210 @@ void Client::set_nat_present(const std::vector<attributes::Attribute>& attribute
 	is_nat_present_ = (transport_->local_ip() != bind_ip);
 }
 
-void Client::handle_binding_resp(std::vector<attributes::Attribute> attributes,
-                                 detail::Transaction& tx) {
-	set_nat_present(attributes);
-	complete_transaction(tx, std::move(attributes));
+void Client::handle_binding_req() {
+	if(tx_->data.state == TestState::HAIRPIN_AWAIT_RESP) {
+		tx_->data.hairpinning_result = Hairpinning::SUPPORTED;
+		complete_transaction();
+	} else {
+		abort_transaction(Error::RESP_UNHANDLED_RESP_TYPE);
+	}
 }
 
-void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& attributes,
-                                     detail::Transaction& tx) {
-	const auto& ec = retrieve_attribute<attributes::ErrorCode>(attributes);
+void Client::perform_mapping_test3() {
+	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
+
+	if(!xma_attr) {
+		abort_transaction(Error::RESP_MISSING_ATTR);
+		return;
+	}
+		
+	if(*xma_attr != tx_->data.xmapped) {
+		const auto alternate_address = extract_ip_to_string(tx_->data.otheradd);
+
+		connect(alternate_address, port_, [&](const boost::system::error_code& ec) {
+			if(!ec) {
+				create_transaction(std::move(tx_->promise));
+				auto builder = build_request();
+				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+				tx_->data.state = TestState::MAPPING_TEST_3;
+				tx_->key = builder.key();
+				tx_->retry_buffer = buffer;
+				transport_->send(buffer);
+			} else {
+				abort_transaction(Error::UNABLE_TO_CONNECT);
+			}
+		});
+	} else {
+		tx_->data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
+		complete_transaction();
+	}
+}
+
+void Client::perform_filtering_test2() {
+	const auto oa_attr = retrieve_attribute<attributes::OtherAddress>(tx_->attributes);
+
+	if(!oa_attr) {
+		abort_transaction(Error::UNSUPPORTED_BY_SERVER);
+		return;
+	}
+
+	create_transaction(std::move(tx_->promise));
+	auto builder = build_request(true, false);
+	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+	tx_->data.state = TestState::FILTERING_TEST_2;
+	tx_->key = builder.key();
+	tx_->retry_buffer = buffer;
+	start_transaction_timer();
+	transport_->send(buffer);
+}
+
+void Client::perform_filtering_test3() {
+	create_transaction(std::move(tx_->promise));
+	auto builder = build_request(false, true);
+	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+	tx_->data.state = TestState::FILTERING_TEST_3;
+	tx_->retry_buffer = buffer;
+	tx_->key = builder.key();
+	start_transaction_timer();
+	transport_->send(buffer);
+}
+
+void Client::mapping_test_result() {
+	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
+
+	if(!xma_attr) {
+		abort_transaction(Error::RESP_MISSING_ATTR);
+		return;
+	}
+
+	if(tx_->data.xmapped == xma_attr) {
+		tx_->data.behaviour_result = Behaviour::ADDRESS_DEPENDENT;
+		complete_transaction();
+	} else {
+		tx_->data.behaviour_result = Behaviour::ADDRESS_PORT_DEPENDENT;
+		complete_transaction();
+	}
+}
+
+void Client::perform_hairpinning_test() {
+	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
+
+	if(!xma_attr) {
+		abort_transaction(Error::RESP_MISSING_ATTR);
+		return;
+	}
+
+	const auto bind_ip = extract_ip_to_string(*xma_attr);
+
+	transport_->connect(bind_ip, xma_attr->port, [&](const boost::system::error_code& ec) {
+		if(!ec) {
+			create_transaction(std::move(tx_->promise));
+			auto builder = build_request();
+			auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+			tx_->data.state = TestState::HAIRPIN_AWAIT_RESP;
+			tx_->key = builder.key();
+			tx_->retry_buffer = buffer;
+			start_transaction_timer();
+			transport_->send(buffer);
+		} else {
+			abort_transaction(Error::UNABLE_TO_CONNECT);
+		}
+	});
+}
+
+void Client::perform_mapping_test2() {
+	const auto oa_attr = retrieve_attribute<attributes::OtherAddress>(tx_->attributes);
+	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
+
+	if(!oa_attr || !xma_attr) {
+		abort_transaction(Error::UNSUPPORTED_BY_SERVER);
+		return;
+	}
+
+	auto& data = tx_->data;
+	data.otheradd = *oa_attr;
+	data.xmapped = *xma_attr;
+
+	const auto bind_ip = extract_ip_to_string(*xma_attr);
+
+	if(bind_ip == transport_->local_ip()
+		&& xma_attr->port == transport_->local_port()) {
+		data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
+		complete_transaction();
+	} else {
+		auto alternate_address = extract_ip_to_string(*oa_attr);
+			
+		connect(alternate_address, port_, [&](const boost::system::error_code& ec) {
+			if(!ec) {
+				create_transaction(std::move(tx_->promise));
+				auto builder = build_request();
+				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+				tx_->retry_buffer = buffer;
+				tx_->key = builder.key();
+				start_transaction_timer();
+				transport_->send(buffer);
+			} else {
+				abort_transaction(Error::UNABLE_TO_CONNECT);
+			}
+		});
+	}
+}
+void Client::handle_binding_resp() {
+	set_nat_present();
+	
+	switch(tx_->data.state) {
+		case TestState::BASIC:
+			complete_transaction();
+			break;
+		case TestState::MAPPING_TEST_1:
+			perform_mapping_test2();
+			break;
+		case TestState::MAPPING_TEST_2:
+			perform_mapping_test3();
+			break;
+		case TestState::MAPPING_TEST_3:
+			mapping_test_result();
+			break;
+		case TestState::HAIRPIN:
+			perform_hairpinning_test();
+			break;
+		case TestState::FILTERING_TEST_1:
+			perform_filtering_test2();
+			break;
+		case TestState::FILTERING_TEST_2:
+			tx_->data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
+			complete_transaction();
+			break;
+		case TestState::FILTERING_TEST_3:
+			tx_->data.behaviour_result = Behaviour::ADDRESS_DEPENDENT;
+			complete_transaction();
+			break;
+		default:
+			abort_transaction(Error::CONNECTION_ERROR);
+	}
+}
+
+void Client::handle_binding_err_resp() {
+	const auto& ec = retrieve_attribute<attributes::ErrorCode>(tx_->attributes);
 
 	if(!ec) {
-		abort_transaction(tx, Error::RESP_MISSING_ATTR);
+		abort_transaction(Error::RESP_MISSING_ATTR);
 		return;
 	}
 
 	if(Errors(ec->code) == Errors::TRY_ALTERNATE) {
 		// insurance policy against being bounced around servers
-		if(tx.redirects >= MAX_REDIRECTS) {
-			abort_transaction(tx, Error::RESP_BAD_REDIRECT);
+		if(tx_->redirects >= MAX_REDIRECTS) {
+			abort_transaction(Error::RESP_BAD_REDIRECT);
 			return;
 		}
 
-		++tx.redirects;
+		++tx_->redirects;
 
-		const auto alt_attr = retrieve_attribute<attributes::AlternateServer>(attributes);
+		const auto alt_attr = retrieve_attribute<attributes::AlternateServer>(tx_->attributes);
 
 		if(!alt_attr) {
-			abort_transaction(tx, Error::RESP_MISSING_ATTR);
+			abort_transaction(Error::RESP_MISSING_ATTR);
 			return;
 		}
 
@@ -242,71 +417,70 @@ void Client::handle_binding_err_resp(const std::vector<attributes::Attribute>& a
 		// check we haven't resent to this address previously to prevent a redirect loop
 		if(auto entry = dest_hist_.find(ip); entry != dest_hist_.end()) {
 			if(std::chrono::steady_clock::now() - entry->second < 5min) {
-				abort_transaction(tx, Error::RESP_BAD_REDIRECT);
+				abort_transaction(Error::RESP_BAD_REDIRECT);
 				return;
 			}
 		}
 
-		// start a new transaction to try to fulfill the request
-		auto& new_tx = start_transaction(std::move(tx.promise), tx.retry_buffer, tx.key);
-		new_tx.redirects = tx.redirects; // persist redirect counter
-		transactions_.erase(tx.key);
-
 		// retry the request
 		transport_->connect(ip, alt_attr->port, [&](const boost::system::error_code& ec) {
 			if(!ec) {
-				transport_->send(new_tx.retry_buffer);
-				start_transaction_timer(new_tx);
+				auto redirects = tx_->redirects;
+				create_transaction(std::move(tx_->promise));
+				auto builder = build_request();
+				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+				tx_->retry_buffer = buffer;
+				tx_->key = builder.key();
+				tx_->redirects = redirects;
+				start_transaction_timer();
+				transport_->send(buffer);
 			} else {
-				abort_transaction(new_tx, Error::CONNECTION_ERROR);
+				abort_transaction(Error::CONNECTION_ERROR);
 			}
 		});
 	} else {
 		if(ec) {
-			abort_transaction(tx, Error::RESP_BINDING_ERROR, *ec);
+			abort_transaction(Error::RESP_BINDING_ERROR, *ec);
 		} else {
-			abort_transaction(tx, Error::RESP_BINDING_ERROR);
+			abort_transaction(Error::RESP_BINDING_ERROR);
 		}
 	}
 }
 
-void Client::complete_transaction(detail::Transaction& tx,
-                                  std::vector<attributes::Attribute> attributes) {
+void Client::complete_transaction() {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 
 		if constexpr(std::is_same_v<T, std::promise<MappedResult>>) {
-			for(const auto& attr : attributes) {
-				if(std::holds_alternative<attributes::MappedAddress>(attr)) {
-					arg.set_value(std::get<attributes::MappedAddress>(attr));
-					return;
-				}
-
-				// XorMappedAddress will also do - we just need an external address
-				if(std::holds_alternative<attributes::XorMappedAddress>(attr)) {
-					const auto& xma = std::get<attributes::XorMappedAddress>(attr);
-
-					const attributes::MappedAddress ma{
-						.ipv4 = xma.ipv4,
-						.ipv6 = xma.ipv6,
-						.port = xma.port,
-						.family = xma.family
-					};
-
-					arg.set_value(ma);
-					return;
-				}
+			auto mapped = retrieve_attribute<attributes::MappedAddress>(tx_->attributes);
+			
+			if(mapped) {
+				arg.set_value(*mapped);
+				return;
 			}
 
-			arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
+			// XorMappedAddress will also do - we just need an external address
+			auto xmapped = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
+
+			if(!xmapped) {
+				arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
+				return;
+			}
+
+			const attributes::MappedAddress ma{
+				.ipv4 = xmapped->ipv4,
+				.ipv6 = xmapped->ipv6,
+				.port = xmapped->port,
+				.family = xmapped->family
+			};
+
+			arg.set_value(ma);
 		} else if constexpr(std::is_same_v<T, std::promise<AttributesResult>>) {
-			arg.set_value(std::move(attributes));
-		} else if constexpr(std::is_same_v<T, std::promise<NATModeResult>>) {
-			// todo
-		} else if constexpr(std::is_same_v<T, std::promise<MappingResult>>) {
-			// todo
-		} else if constexpr(std::is_same_v<T, std::promise<FilteringResult>>) {
-			// todo
+			arg.set_value(std::move(tx_->attributes));
+		} else if constexpr(std::is_same_v<T, std::promise<BehaviourResult>>) {
+			arg.set_value(tx_->data.behaviour_result);
+		} else if constexpr(std::is_same_v<T, std::promise<HairpinResult>>) {
+			arg.set_value(tx_->data.hairpinning_result);
 		} else if constexpr(std::is_same_v<T, std::promise<NATResult>>) {
 			if(is_nat_present_) {
 				arg.set_value(*is_nat_present_);
@@ -316,78 +490,64 @@ void Client::complete_transaction(detail::Transaction& tx,
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
-	}, *tx.promise);
-
-	transactions_.erase(tx.key);
+	}, tx_->promise);
 }
 
-void Client::start_transaction_timer(Transaction& tx) {
-	tx.timer.expires_from_now(tx.timeout);
-	tx.timer.async_wait([&, key = tx.key](const boost::system::error_code& ec) {
+void Client::handle_no_response() {
+	switch(tx_->data.state) {
+		case TestState::HAIRPIN_AWAIT_RESP:
+			tx_->data.hairpinning_result = Hairpinning::NOT_SUPPORTED;
+			complete_transaction();
+			break;
+		case TestState::FILTERING_TEST_2:
+			perform_filtering_test3();
+			break;
+		case TestState::FILTERING_TEST_3:
+			tx_->data.behaviour_result = Behaviour::ADDRESS_PORT_DEPENDENT;
+			complete_transaction();
+			break;
+		default:
+			abort_transaction(Error::NO_RESPONSE_RECEIVED);
+	}
+}
+
+void Client::start_transaction_timer() {
+	tx_->timer.expires_from_now(tx_->timeout);
+	tx_->timer.async_wait([&](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}
 
 		std::lock_guard<std::mutex> guard(mutex_);
 
-		if(auto entry = transactions_.find(key); entry != transactions_.end()) {
-			auto& tx = entry->second;
-
-			// RFC algorithm decided by interpretive dance
-			if(tx.retries_left) {
-				if (tx.retries_left != tx.max_retries) {
-					tx.timeout *= 2;
-				}
-				
-				--tx.retries_left;
-
-				if(!tx.retries_left) {
-					tx.timeout = tx.initial_to * TX_RM;
-				}
-
-				transport_->send(tx.retry_buffer);
-				start_transaction_timer(tx);
-			} else {
-				abort_transaction(tx, Error::NO_RESPONSE_RECEIVED);
+		// RFC algorithm decided by interpretive dance
+		if(tx_->retries_left) {
+			if (tx_->retries_left != tx_->max_retries) {
+				tx_->timeout *= 2;
 			}
+				
+			--tx_->retries_left;
+
+			if(!tx_->retries_left) {
+				tx_->timeout = tx_->initial_to * TX_RM;
+			}
+
+			start_transaction_timer();
+			transport_->send(tx_->retry_buffer);
+		} else {
+			handle_no_response();
 		}
 	});
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {
-	for(auto& [k, v] : transactions_) {
-		if(ec == boost::asio::error::connection_aborted) {
-			abort_transaction(v, Error::CONNECTION_ABORTED, {}, false);
-		} else if(ec == boost::asio::error::connection_reset) {
-			abort_transaction(v, Error::CONNECTION_RESET, {}, false);
-		} else {
-			abort_transaction(v, Error::CONNECTION_ERROR, {}, false);
-		}
+	if(ec == boost::asio::error::connection_aborted) {
+		abort_transaction(Error::CONNECTION_ABORTED);
+	} else if(ec == boost::asio::error::connection_reset) {
+		abort_transaction(Error::CONNECTION_RESET);
+	} else {
+		abort_transaction(Error::CONNECTION_ERROR);
 	}
-
-	transactions_.clear();
-}
-
-std::future<std::expected<NAT, ErrorRet>> Client::nat_type() {
-	std::promise<std::expected<NAT, ErrorRet>> promise;
-	auto future = promise.get_future();
-	
-	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
-	
-	// todo
-
-	return future;
-}
-
-std::future<std::expected<Filtering, ErrorRet>> Client::filtering() {
-	std::promise<std::expected<Filtering, ErrorRet>> promise;
-	auto future = promise.get_future();
-
-	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
-
-	// todo
-
-	return future;
 }
 
 void Client::options(const clientopts opts) {
@@ -398,19 +558,17 @@ clientopts Client::options() const {
 	return opts_;
 }
 
-std::future<std::expected<Mapping, ErrorRet>> Client::mapping() {
-	std::promise<std::expected<Mapping, ErrorRet>> promise;
-	auto future = promise.get_future();
-
-	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
-
-	// todo
-
-	return future;
+void Client::perform_connectivity_test() {
+	auto builder = build_request();  
+	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+	tx_->retry_buffer = buffer;
+	tx_->key = builder.key();
+	transport_->send(buffer);
+	start_transaction_timer();
 }
 
-std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
-	std::promise<std::expected<bool, ErrorRet>> promise;
+std::future<NATResult> Client::nat_present() {
+	std::promise<NATResult> promise;
 	auto future = promise.get_future();
 
 	if(is_nat_present_) {
@@ -418,13 +576,14 @@ std::future<std::expected<bool, ErrorRet>> Client::nat_present() {
 		return future;
 	}
 
-	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
-	
-	connect(host_, port_, [&, txp](const boost::system::error_code& ec) {
+	create_transaction(std::move(promise));
+
+	connect(host_, port_, [&](const boost::system::error_code& ec) {
 		if(!ec) {
-			binding_request(txp);
+			tx_->data.state = TestState::BASIC;
+			perform_connectivity_test();
 		} else {
-			abort_promise(txp, Error::UNABLE_TO_CONNECT);
+			abort_transaction(Error::UNABLE_TO_CONNECT);
 		}
 	});
 
@@ -435,17 +594,57 @@ template<typename T>
 std::future<T> Client::basic_request() {
 	std::promise<T> promise;
 	auto future = promise.get_future();
-	auto txp = std::make_shared<Transaction::Promise>(std::move(promise));
 
-	connect(host_, port_, [&, txp](const boost::system::error_code& ec) {
+	create_transaction(std::move(promise));
+
+	connect(host_, port_, [&](const boost::system::error_code& ec) {
 		if(!ec) {
-			binding_request(txp);
+			tx_->data.state = TestState::BASIC;
+			perform_connectivity_test();
 		} else {
-			abort_promise(txp, Error::UNABLE_TO_CONNECT);
+			abort_transaction(Error::UNABLE_TO_CONNECT);
 		}
 	});
 
 	return future;
+}
+
+template<typename T>
+std::future<T> Client::behaviour_test(const TestState state) {
+	std::promise<T> promise;
+	auto future = promise.get_future();
+
+	if(proto_ == Protocol::TCP) {
+		promise.set_value(std::unexpected(ErrorRet(Error::UDP_TEST_ONLY)));
+		return future;
+	}
+
+	create_transaction(std::move(promise));
+	tx_->data.state = state;
+
+	connect(host_, port_, [&](const boost::system::error_code& ec) {
+		if(!ec) {
+			perform_connectivity_test();
+		} else {
+			abort_transaction(Error::UNABLE_TO_CONNECT);
+		}
+	});
+
+	return future;
+}
+
+
+std::future<BehaviourResult> Client::filtering() {
+	return behaviour_test<BehaviourResult>(TestState::FILTERING_TEST_1);
+}
+
+std::future<BehaviourResult> Client::mapping() {
+	return behaviour_test<BehaviourResult>(TestState::MAPPING_TEST_1);
+}
+
+// RFC allows it over TCP but we don't support it
+std::future<HairpinResult> Client::hairpinning() {
+	return behaviour_test<HairpinResult>(TestState::HAIRPIN);
 }
 
 std::future<AttributesResult> Client::binding_request() {

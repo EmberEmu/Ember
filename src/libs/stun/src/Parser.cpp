@@ -34,12 +34,6 @@ Error Parser::validate_header(const Header& header) {
 	}
 
 	MessageType type{ static_cast<std::uint16_t>(header.type) };
-
-	if(type != MessageType::BINDING_RESPONSE &&
-		type != MessageType::BINDING_ERROR_RESPONSE) {
-		return Error::RESP_UNHANDLED_RESP_TYPE;
-	}
-
 	return Error::OK;
 }
 
@@ -145,6 +139,8 @@ Parser::error_code(spark::BinaryInStream& stream, std::size_t length) {
 	attributes::ErrorCode attr{};
 	stream >> attr.code;
 
+	be::big_to_native_inplace(attr.code);
+
 	if(attr.code & 0xFFE00000) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
 	}
@@ -167,12 +163,11 @@ Parser::error_code(spark::BinaryInStream& stream, std::size_t length) {
 
 	attr.code = code + num;
 
-	std::string reason;
-	reason.resize(length - sizeof(attributes::ErrorCode::code));
-	stream.get(reason.begin(), reason.end());
+	attr.reason.resize(length - sizeof(attributes::ErrorCode::code));
+	stream.get(attr.reason.begin(), attr.reason.end());
 
-	if(reason.size() % 4) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_STRING_BAD_PAD);
+	if(auto mod = attr.reason.size() % 4) {
+		stream.skip(4 - mod);
 	}
 
 	return attr;

@@ -26,11 +26,12 @@ StreamTransport::~StreamTransport() {
 	work_.clear();
 }
 
-void StreamTransport::connect(std::string_view host, const std::uint16_t port, OnConnect cb) {
+void StreamTransport::connect(std::string_view host, const std::uint16_t port, OnConnect&& cb) {
 	resolver_.async_resolve(host, std::to_string(port),
-		[&, cb](const boost::system::error_code& ec, ba::ip::tcp::resolver::results_type results) {
+		[&, cb = std::move(cb)](const boost::system::error_code& ec,
+		        ba::ip::tcp::resolver::results_type results) mutable {
 			if(!ec) {
-				do_connect(std::move(results), cb);
+				do_connect(std::move(results), std::move(cb));
 			} else {
 				cb(ec);
 			}
@@ -38,10 +39,12 @@ void StreamTransport::connect(std::string_view host, const std::uint16_t port, O
 	);
 }
 
-void StreamTransport::do_connect(ba::ip::tcp::resolver::results_type results, OnConnect cb) {
+void StreamTransport::do_connect(ba::ip::tcp::resolver::results_type results, OnConnect&& cb) {
 	boost::asio::async_connect(socket_, results.begin(), results.end(),
-		[&, cb, results](const boost::system::error_code& ec, ba::ip::tcp::resolver::iterator) {
+		[&, cb = std::move(cb), results](const boost::system::error_code& ec,
+		                 ba::ip::tcp::resolver::iterator) {
 			if(!ec) {
+				state_ = ReadState::READ_HEADER;
 				receive();
 			}
 
