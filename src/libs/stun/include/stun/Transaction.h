@@ -70,7 +70,6 @@ struct Transaction {
 	std::vector<attributes::Attribute> attributes;
 	State state{};
 
-	// bunch of todo stuff
 	struct TestData {
 		attributes::XorMappedAddress xmapped{};
 		attributes::OtherAddress otheradd{};

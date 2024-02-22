@@ -52,7 +52,7 @@ public:
 	std::vector<std::uint8_t> final(bool fingerprint = false);
 
 	std::vector<std::uint8_t> final(const char* const password,
-									bool fingerprint = false);
+	                                bool fingerprint = false);
 
 	std::vector<std::uint8_t> final(std::string_view password,
 	                                bool fingerprint = false);
