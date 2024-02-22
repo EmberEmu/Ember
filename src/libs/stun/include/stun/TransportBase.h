@@ -9,9 +9,9 @@
 #pragma once
 
 #include <boost/system/error_code.hpp>
+#include <chrono>
 #include <functional>
 #include <memory>
-#include <span>
 #include <string_view>
 #include <string>
 #include <vector>

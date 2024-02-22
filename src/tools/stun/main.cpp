@@ -7,6 +7,7 @@
  */
 
 #include <stun/Client.h>
+#include <stun/Utility.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <stun/Client.h>

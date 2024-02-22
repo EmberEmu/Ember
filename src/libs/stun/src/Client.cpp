@@ -12,6 +12,7 @@
 #include <stun/Exception.h>
 #include <stun/Parser.h>
 #include <stun/MessageBuilder.h>
+#include <stun/Utility.h>
 #include <stun/detail/Shared.h>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>

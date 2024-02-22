@@ -13,8 +13,6 @@
 #include <stun/Transaction.h>
 #include <stun/Logging.h>
 #include <stun/Transport.h>
-#include <stun/MessageBuilder.h>
-#include <stun/Util.h>
 #include <boost/asio/io_context.hpp>
 #include <expected>
 #include <future>

@@ -11,13 +11,8 @@
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
 #include <queue>
-#include <memory>
-#include <string>
-#include <string_view>
 #include <thread>
-#include <vector>
 #include <cstddef>
-#include <cstdint>
 
 namespace ember::stun {
 

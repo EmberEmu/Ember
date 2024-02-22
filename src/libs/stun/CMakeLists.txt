@@ -18,7 +18,7 @@ add_library(${LIBRARY_NAME}
            include/stun/Transaction.h
            include/stun/Parser.h
            include/stun/Parser.inl
-           include/stun/Util.h
+           include/stun/Utility.h
            include/stun/Exception.h
            include/stun/detail/Shared.h
            include/stun/MessageBuilder.h
