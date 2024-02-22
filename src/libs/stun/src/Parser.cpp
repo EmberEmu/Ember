@@ -52,18 +52,19 @@ Parser::xor_mapped_address(spark::BinaryInStream& stream, const TxID& id) {
 		stream >> attr.ipv4;
 		be::big_to_native_inplace(attr.ipv4);
 		attr.ipv4 ^= MAGIC_COOKIE;
-	} else if(attr.family == AddressFamily::IPV6) {
+	} else if(attr.family == AddressFamily::IPV6 && mode_ != RFC3489) {
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
+		const std::uint32_t cookie[1]{ be::native_to_big(MAGIC_COOKIE) };
+		const auto cookie_bytes = std::as_bytes(std::span(cookie));
+		const auto tx_bytes = std::as_bytes(std::span(id.id_5389));
+		const auto ipv6_bytes = std::as_writable_bytes(std::span(attr.ipv6));
 
-		std::array<std::uint8_t, 16> trans_id {
-			0x21, 0x12, 0xA4, 0x42 // magic cookie bytes
-		};
+		for(std::size_t i = 0; i < cookie_bytes.size(); ++i) {
+			ipv6_bytes[i] ^= cookie_bytes[i];
+		}
 
-		std::memcpy(trans_id.data() + sizeof(MAGIC_COOKIE), id.id_5389.data(),
-			sizeof(trans_id) / sizeof(trans_id[0]));
-		
-		for(std::size_t i = 0; i < attr.ipv6.size(); ++i) {
-			attr.ipv6[i] ^= trans_id[i];
+		for(std::size_t i = 0; i < tx_bytes.size(); ++i) {
+			ipv6_bytes[i + sizeof(MAGIC_COOKIE)] ^= tx_bytes[i];
 		}
 	} else {
 		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,

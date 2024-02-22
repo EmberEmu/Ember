@@ -41,8 +41,6 @@ class DatagramTransport final : public Transport {
 	void do_write();
 
 public:
-	using OnResolve = std::function<void(const ba::ip::udp::endpoint&)>;
-
 	DatagramTransport(std::chrono::milliseconds timeout = 500ms, unsigned int retries = 7);
 	~DatagramTransport() override;
 

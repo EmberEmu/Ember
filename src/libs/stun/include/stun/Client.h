@@ -67,6 +67,9 @@ class Client {
 	void complete_transaction();
 	void create_transaction(Transaction::Promise promise);
 	void abort_transaction(Error error, attributes::ErrorCode = {}, bool erase = true);
+	void rearm_transaction(State state, std::size_t key,
+						   std::shared_ptr<std::vector<std::uint8_t>> buffer,
+	                       Transaction::TestData data = {});
 
 	// Message handling stuff
 	void handle_message(const std::vector<std::uint8_t>& buffer);
@@ -75,7 +78,9 @@ class Client {
 	void handle_binding_err_resp();
 	void handle_no_response();
 
-	MessageBuilder build_request(bool change_ip = false, bool change_port = false);
+	std::pair<std::shared_ptr<std::vector<std::uint8_t>>, std::size_t>
+		build_request(bool change_ip = false, bool change_port = false);
+
 	void process_message(const std::vector<std::uint8_t>& buffer);
 	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect&& cb);
 	void set_nat_present();

@@ -25,9 +25,7 @@ std::string extract_ip_to_string(const T& address) {
 	if(address.family == AddressFamily::IPV4) {
 		addr_str = boost::asio::ip::address_v4(address.ipv4).to_string();
 	} else if(address.family == AddressFamily::IPV6) {
-		boost::asio::ip::address_v6::bytes_type bytes{};
-		std::copy(address.ipv6.begin(), address.ipv6.end(), bytes.data());
-		addr_str = boost::asio::ip::address_v6(bytes).to_string();
+		addr_str = boost::asio::ip::address_v6(address.ipv6).to_string();
 	} else {
 		throw std::invalid_argument("Unable to extract address");
 	}

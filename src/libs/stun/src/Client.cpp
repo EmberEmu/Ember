@@ -31,6 +31,7 @@ namespace ember::stun {
 
 using namespace detail;
 
+
 Client::Client(std::string host, const std::uint16_t port, Protocol proto, RFCMode mode)
 	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode) {
 
@@ -79,10 +80,23 @@ void Client::log_callback(LogCB callback, const Verbosity verbosity) {
 void Client::connect(const std::string& host, const std::uint16_t port,
                      Transport::OnConnect&& cb) {
 	dest_hist_[host] = std::chrono::steady_clock::now();
-	transport_->connect(host, port, std::move(cb));
+
+	// wrap the callback to save error checking and locking duplication
+	transport_->connect(host, port, 
+		[&, cb = std::move(cb)](const boost::system::error_code& ec) {
+			std::lock_guard<std::mutex> guard(mutex_);
+
+			if(!ec) {
+				cb(ec);
+			} else {
+				abort_transaction(Error::UNABLE_TO_CONNECT);
+			}
+		}
+	);
 }
 
-MessageBuilder Client::build_request(const bool change_ip, const bool change_port) {
+std::pair<std::shared_ptr<std::vector<std::uint8_t>>, std::size_t>
+Client::build_request(const bool change_ip, const bool change_port) {
 	MessageBuilder builder(MessageType::BINDING_REQUEST, mode_);
 
 	if(!(opts_ & SUPPRESS_BANNER)) {
@@ -93,7 +107,8 @@ MessageBuilder Client::build_request(const bool change_ip, const bool change_por
 		builder.add_change_request(change_ip, change_port);
 	}
 
-	return builder;
+	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+	return { buffer, builder.key() };
 }
 
 void Client::handle_message(const std::vector<std::uint8_t>& buffer) try {
@@ -222,23 +237,25 @@ void Client::perform_mapping_test3() {
 		const auto alternate_address = extract_ip_to_string(tx_->data.otheradd);
 
 		connect(alternate_address, port_, [&](const boost::system::error_code& ec) {
-			if(!ec) {
-				create_transaction(std::move(tx_->promise));
-				auto builder = build_request();
-				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-				tx_->state = State::MAPPING_TEST_3;
-				tx_->key = builder.key();
-				tx_->retry_buffer = buffer;
-				start_transaction_timer();
-				transport_->send(buffer);
-			} else {
-				abort_transaction(Error::UNABLE_TO_CONNECT);
-			}
+			create_transaction(std::move(tx_->promise));
+			auto [buffer, key] = build_request();
+			rearm_transaction(State::MAPPING_TEST_3, key, buffer);
+			start_transaction_timer();
+			transport_->send(buffer);
 		});
 	} else {
 		tx_->data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
 		complete_transaction();
 	}
+}
+
+void Client::rearm_transaction(State state, std::size_t key,
+                               std::shared_ptr<std::vector<std::uint8_t>> buffer,
+                               Transaction::TestData data) {
+	tx_->state = state;
+	tx_->key = key;
+	tx_->retry_buffer = buffer;
+	tx_->data = std::move(data);
 }
 
 void Client::perform_filtering_test2() {
@@ -250,22 +267,16 @@ void Client::perform_filtering_test2() {
 	}
 
 	create_transaction(std::move(tx_->promise));
-	auto builder = build_request(true, false);
-	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-	tx_->state = State::FILTERING_TEST_2;
-	tx_->key = builder.key();
-	tx_->retry_buffer = buffer;
+	auto [buffer, key] = build_request(true, false);
+	rearm_transaction(State::FILTERING_TEST_2, key, buffer);
 	start_transaction_timer();
 	transport_->send(buffer);
 }
 
 void Client::perform_filtering_test3() {
 	create_transaction(std::move(tx_->promise));
-	auto builder = build_request(false, true);
-	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-	tx_->state = State::FILTERING_TEST_3;
-	tx_->retry_buffer = buffer;
-	tx_->key = builder.key();
+	auto [buffer, key] = build_request(false, true);
+	rearm_transaction(State::FILTERING_TEST_3, key, buffer);
 	start_transaction_timer();
 	transport_->send(buffer);
 }
@@ -297,19 +308,12 @@ void Client::perform_hairpinning_test() {
 
 	const auto bind_ip = extract_ip_to_string(*xma_attr);
 
-	transport_->connect(bind_ip, xma_attr->port, [&](const boost::system::error_code& ec) {
-		if(!ec) {
-			create_transaction(std::move(tx_->promise));
-			auto builder = build_request();
-			auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-			tx_->state = State::HAIRPIN_AWAIT_RESP;
-			tx_->key = builder.key();
-			tx_->retry_buffer = buffer;
-			start_transaction_timer();
-			transport_->send(buffer);
-		} else {
-			abort_transaction(Error::UNABLE_TO_CONNECT);
-		}
+	transport_->connect(bind_ip, xma_attr->port, [&](const boost::system::error_code&) {
+		create_transaction(std::move(tx_->promise));
+		auto [buffer, key] = build_request();
+		rearm_transaction(State::HAIRPIN_AWAIT_RESP, key, buffer);
+		start_transaction_timer();
+		transport_->send(buffer);
 	});
 }
 
@@ -335,21 +339,13 @@ void Client::perform_mapping_test2() {
 	} else {
 		auto alternate_address = extract_ip_to_string(*oa_attr);
 			
-		connect(alternate_address, port_, [&](const boost::system::error_code& ec) {
-			if(!ec) {
-				auto data = tx_->data;
-				create_transaction(std::move(tx_->promise));
-				auto builder = build_request();
-				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-				tx_->retry_buffer = buffer;
-				tx_->key = builder.key();
-				tx_->data = data;
-				tx_->state = State::MAPPING_TEST_2;
-				start_transaction_timer();
-				transport_->send(buffer);
-			} else {
-				abort_transaction(Error::UNABLE_TO_CONNECT);
-			}
+		connect(alternate_address, port_, [&](const boost::system::error_code&) {
+			auto data = tx_->data;
+			create_transaction(std::move(tx_->promise));
+			auto [buffer, key] = build_request();
+			rearm_transaction(State::MAPPING_TEST_2, key, buffer, data);
+			start_transaction_timer();
+			transport_->send(buffer);
 		});
 	}
 }
@@ -429,20 +425,15 @@ void Client::handle_binding_err_resp() {
 		}
 
 		// retry the request
-		transport_->connect(ip, alt_attr->port, [&](const boost::system::error_code& ec) {
-			if(!ec) {
-				auto redirects = tx_->redirects;
-				create_transaction(std::move(tx_->promise));
-				auto builder = build_request();
-				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-				tx_->retry_buffer = buffer;
-				tx_->key = builder.key();
-				tx_->redirects = redirects;
-				start_transaction_timer();
-				transport_->send(buffer);
-			} else {
-				abort_transaction(Error::CONNECTION_ERROR);
-			}
+		transport_->connect(ip, alt_attr->port, [&](const boost::system::error_code&) {
+			auto redirects = tx_->redirects;
+			auto state = tx_->state;
+			create_transaction(std::move(tx_->promise));
+			auto [buffer, key] = build_request();
+			rearm_transaction(state, key, buffer);
+			tx_->redirects = redirects;
+			start_transaction_timer();
+			transport_->send(buffer);
 		});
 	} else {
 		if(ec) {
@@ -549,6 +540,8 @@ void Client::start_transaction_timer() {
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {
+	std::lock_guard<std::mutex> guard(mutex_);
+
 	if(ec == boost::asio::error::connection_aborted) {
 		abort_transaction(Error::CONNECTION_ABORTED);
 	} else if(ec == boost::asio::error::connection_reset) {
@@ -567,10 +560,9 @@ clientopts Client::options() const {
 }
 
 void Client::perform_connectivity_test() {
-	auto builder = build_request();  
-	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
+	auto [buffer, key] = build_request();  
 	tx_->retry_buffer = buffer;
-	tx_->key = builder.key();
+	tx_->key = key;
 	transport_->send(buffer);
 	start_transaction_timer();
 }
@@ -584,6 +576,7 @@ std::future<NATResult> Client::nat_present() {
 		return future;
 	}
 
+	std::lock_guard<std::mutex> guard(mutex_);
 	create_transaction(std::move(promise));
 
 	connect(host_, port_, [&](const boost::system::error_code& ec) {
@@ -603,15 +596,12 @@ std::future<T> Client::basic_request() {
 	std::promise<T> promise;
 	auto future = promise.get_future();
 
+	std::lock_guard<std::mutex> guard(mutex_);
 	create_transaction(std::move(promise));
 
-	connect(host_, port_, [&](const boost::system::error_code& ec) {
-		if(!ec) {
-			tx_->state = State::BASIC;
-			perform_connectivity_test();
-		} else {
-			abort_transaction(Error::UNABLE_TO_CONNECT);
-		}
+	connect(host_, port_, [&](const boost::system::error_code&) {
+		tx_->state = State::BASIC;
+		perform_connectivity_test();
 	});
 
 	return future;
@@ -627,15 +617,12 @@ std::future<T> Client::behaviour_test(const State state) {
 		return future;
 	}
 
+	std::lock_guard<std::mutex> guard(mutex_);
 	create_transaction(std::move(promise));
 	tx_->state = state;
 
-	connect(host_, port_, [&](const boost::system::error_code& ec) {
-		if(!ec) {
-			perform_connectivity_test();
-		} else {
-			abort_transaction(Error::UNABLE_TO_CONNECT);
-		}
+	connect(host_, port_, [&](const boost::system::error_code&) {
+		perform_connectivity_test();
 	});
 
 	return future;

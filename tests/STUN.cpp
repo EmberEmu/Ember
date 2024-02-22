@@ -11,6 +11,7 @@
 #include <spark/buffers/SpanBufferAdaptor.h>
 #include <shared/util/FormatPacket.h>
 #include <stun/Client.h>
+#include <stun/Parser.h>
 #include <stun/MessageBuilder.h>
 #include <gtest/gtest.h>
 #include <array>
