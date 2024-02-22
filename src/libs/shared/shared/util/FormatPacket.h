@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <gsl/gsl_util>
 #include <iomanip>
 #include <sstream>
+#include <span>
 #include <cstddef>
 #include <cctype>
 #include <cmath>
@@ -57,6 +58,11 @@ inline std::string format_packet(const T* packet, std::size_t size,
 	}
 
 	return buffer.str();
+}
+
+template<typename T>
+inline std::string format_packet(std::span<const T> packet, unsigned int columns = 16) {
+	return format_packet(packet.data(), packet.size_bytes(), columns);
 }
 
 } // util, ember
