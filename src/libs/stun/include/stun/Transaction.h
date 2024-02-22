@@ -31,7 +31,7 @@ using BehaviourResult  = std::expected<Behaviour, ErrorRet>;
 
 namespace detail {
 
-enum class TestState {
+enum class State {
 	BASIC,
 	MAPPING_TEST_1,
 	MAPPING_TEST_2,
@@ -68,10 +68,10 @@ struct Transaction {
 	int redirects{};
 	std::shared_ptr<std::vector<std::uint8_t>> retry_buffer;
 	std::vector<attributes::Attribute> attributes;
+	State state{};
 
 	// bunch of todo stuff
 	struct TestData {
-		TestState state{};
 		attributes::XorMappedAddress xmapped{};
 		attributes::OtherAddress otheradd{};
 		Behaviour behaviour_result{};

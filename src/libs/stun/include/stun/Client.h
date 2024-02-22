@@ -12,7 +12,6 @@
 #include <stun/Protocol.h>
 #include <stun/Transaction.h>
 #include <stun/Logging.h>
-#include <stun/Parser.h>
 #include <stun/Transport.h>
 #include <stun/MessageBuilder.h>
 #include <stun/Util.h>
@@ -22,17 +21,12 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <random>
 #include <string>
 #include <string_view>
 #include <thread>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
-
-namespace ember::spark {
-	class BinaryInStream;
-}
 
 namespace ember::stun {
 
@@ -58,8 +52,6 @@ class Client {
 	Protocol proto_;
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
-	std::random_device rd_;
-	std::mt19937 mt_;
 	LogCB logger_ = [](Verbosity, Error){};
 	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> dest_hist_;
@@ -89,7 +81,7 @@ class Client {
 	void set_nat_present();
 	void on_connection_error(const boost::system::error_code& error);
 	template<typename T> std::future<T> basic_request();
-	template<typename T> std::future<T> behaviour_test(const detail::TestState state);
+	template<typename T> std::future<T> behaviour_test(const State state);
 
 	void perform_connectivity_test();
 	void perform_mapping_test2();

@@ -15,11 +15,13 @@
 
 namespace ember::stun {
 
+using namespace detail;
+
 MessageBuilder::MessageBuilder(MessageType type, RFCMode mode)
 	: vba_(buffer_), stream_(vba_) {
 	Header header = build_header(type, mode);
 	write_header(header);
-	key_ = detail::generate_key(header.tx_id, mode);
+	key_ = generate_key(header.tx_id, mode);
 }
 
 Header MessageBuilder::build_header(const MessageType type, const RFCMode mode) {
@@ -126,8 +128,8 @@ void MessageBuilder::set_header_length(const std::uint16_t length) {
 }
 
 void MessageBuilder::add_fingerprint() {
-	set_header_length(detail::read_header(buffer_).length + 8);
-	const auto fp = detail::fingerprint(buffer_, false);
+	set_header_length(read_header(buffer_).length + 8);
+	const auto fp = fingerprint(buffer_, false);
 	stream_ << attr_be(Attributes::FINGERPRINT);
 	stream_ << len_be(FINGERPRINT_BODY_LEN);
 	stream_ << be::big_uint32_t(fp);
@@ -163,7 +165,7 @@ std::vector<std::uint8_t> MessageBuilder::final(std::string_view password,
 	finalised_ = true;
 
 	set_header_length((buffer_.size() - HEADER_LENGTH) + 24);
-	const auto hash = detail::msg_integrity(buffer_, password, false);
+	const auto hash = msg_integrity(buffer_, password, false);
 	add_message_integrity(hash);
 
 	if(fingerprint) {
@@ -182,7 +184,7 @@ std::vector<std::uint8_t> MessageBuilder::final(std::span<const std::uint8_t> us
 	finalised_ = true;
 
 	set_header_length((buffer_.size() - HEADER_LENGTH) + 24);
-	const auto hash = detail::msg_integrity(buffer_, username, realm, password, false);
+	const auto hash = msg_integrity(buffer_, username, realm, password, false);
 	add_message_integrity(hash);
 
 	if(fingerprint) {

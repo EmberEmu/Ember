@@ -10,16 +10,13 @@
 #include <stun/DatagramTransport.h>
 #include <stun/StreamTransport.h>
 #include <stun/Exception.h>
+#include <stun/Parser.h>
 #include <stun/MessageBuilder.h>
 #include <stun/detail/Shared.h>
-#include <shared/util/xoroshiro128plus.h>
-#include <spark/buffers/BinaryInStream.h>
-#include <spark/buffers/BinaryOutStream.h>
-#include <spark/buffers/VectorBufferAdaptor.h>
-#include <shared/util/FNVHash.h>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
+#include <chrono>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -35,7 +32,7 @@ namespace ember::stun {
 using namespace detail;
 
 Client::Client(std::string host, const std::uint16_t port, Protocol proto, RFCMode mode)
-	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode), mt_(rd_()) {
+	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode) {
 
 	// worker used by timers
 	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
@@ -113,7 +110,7 @@ void Client::handle_message(const std::vector<std::uint8_t>& buffer) try {
 	const Header& header = parser.header();
 
 	// Check to see whether this is a response that we're expecting
-	const auto hash = detail::generate_key(header.tx_id, mode_);
+	const auto hash = generate_key(header.tx_id, mode_);
 
 	if(tx_->key != hash) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
@@ -201,7 +198,7 @@ void Client::set_nat_present() {
 }
 
 void Client::handle_binding_req() {
-	if(tx_->data.state == TestState::HAIRPIN_AWAIT_RESP) {
+	if(tx_->state == State::HAIRPIN_AWAIT_RESP) {
 		tx_->data.hairpinning_result = Hairpinning::SUPPORTED;
 		complete_transaction();
 	} else {
@@ -225,7 +222,7 @@ void Client::perform_mapping_test3() {
 				create_transaction(std::move(tx_->promise));
 				auto builder = build_request();
 				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-				tx_->data.state = TestState::MAPPING_TEST_3;
+				tx_->state = State::MAPPING_TEST_3;
 				tx_->key = builder.key();
 				tx_->retry_buffer = buffer;
 				transport_->send(buffer);
@@ -250,7 +247,7 @@ void Client::perform_filtering_test2() {
 	create_transaction(std::move(tx_->promise));
 	auto builder = build_request(true, false);
 	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-	tx_->data.state = TestState::FILTERING_TEST_2;
+	tx_->state = State::FILTERING_TEST_2;
 	tx_->key = builder.key();
 	tx_->retry_buffer = buffer;
 	start_transaction_timer();
@@ -261,7 +258,7 @@ void Client::perform_filtering_test3() {
 	create_transaction(std::move(tx_->promise));
 	auto builder = build_request(false, true);
 	auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-	tx_->data.state = TestState::FILTERING_TEST_3;
+	tx_->state = State::FILTERING_TEST_3;
 	tx_->retry_buffer = buffer;
 	tx_->key = builder.key();
 	start_transaction_timer();
@@ -300,7 +297,7 @@ void Client::perform_hairpinning_test() {
 			create_transaction(std::move(tx_->promise));
 			auto builder = build_request();
 			auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
-			tx_->data.state = TestState::HAIRPIN_AWAIT_RESP;
+			tx_->state = State::HAIRPIN_AWAIT_RESP;
 			tx_->key = builder.key();
 			tx_->retry_buffer = buffer;
 			start_transaction_timer();
@@ -351,30 +348,30 @@ void Client::perform_mapping_test2() {
 void Client::handle_binding_resp() {
 	set_nat_present();
 	
-	switch(tx_->data.state) {
-		case TestState::BASIC:
+	switch(tx_->state) {
+		case State::BASIC:
 			complete_transaction();
 			break;
-		case TestState::MAPPING_TEST_1:
+		case State::MAPPING_TEST_1:
 			perform_mapping_test2();
 			break;
-		case TestState::MAPPING_TEST_2:
+		case State::MAPPING_TEST_2:
 			perform_mapping_test3();
 			break;
-		case TestState::MAPPING_TEST_3:
+		case State::MAPPING_TEST_3:
 			mapping_test_result();
 			break;
-		case TestState::HAIRPIN:
+		case State::HAIRPIN:
 			perform_hairpinning_test();
 			break;
-		case TestState::FILTERING_TEST_1:
+		case State::FILTERING_TEST_1:
 			perform_filtering_test2();
 			break;
-		case TestState::FILTERING_TEST_2:
+		case State::FILTERING_TEST_2:
 			tx_->data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
 			complete_transaction();
 			break;
-		case TestState::FILTERING_TEST_3:
+		case State::FILTERING_TEST_3:
 			tx_->data.behaviour_result = Behaviour::ADDRESS_DEPENDENT;
 			complete_transaction();
 			break;
@@ -494,15 +491,15 @@ void Client::complete_transaction() {
 }
 
 void Client::handle_no_response() {
-	switch(tx_->data.state) {
-		case TestState::HAIRPIN_AWAIT_RESP:
+	switch(tx_->state) {
+		case State::HAIRPIN_AWAIT_RESP:
 			tx_->data.hairpinning_result = Hairpinning::NOT_SUPPORTED;
 			complete_transaction();
 			break;
-		case TestState::FILTERING_TEST_2:
+		case State::FILTERING_TEST_2:
 			perform_filtering_test3();
 			break;
-		case TestState::FILTERING_TEST_3:
+		case State::FILTERING_TEST_3:
 			tx_->data.behaviour_result = Behaviour::ADDRESS_PORT_DEPENDENT;
 			complete_transaction();
 			break;
@@ -580,7 +577,7 @@ std::future<NATResult> Client::nat_present() {
 
 	connect(host_, port_, [&](const boost::system::error_code& ec) {
 		if(!ec) {
-			tx_->data.state = TestState::BASIC;
+			tx_->state = State::BASIC;
 			perform_connectivity_test();
 		} else {
 			abort_transaction(Error::UNABLE_TO_CONNECT);
@@ -599,7 +596,7 @@ std::future<T> Client::basic_request() {
 
 	connect(host_, port_, [&](const boost::system::error_code& ec) {
 		if(!ec) {
-			tx_->data.state = TestState::BASIC;
+			tx_->state = State::BASIC;
 			perform_connectivity_test();
 		} else {
 			abort_transaction(Error::UNABLE_TO_CONNECT);
@@ -610,7 +607,7 @@ std::future<T> Client::basic_request() {
 }
 
 template<typename T>
-std::future<T> Client::behaviour_test(const TestState state) {
+std::future<T> Client::behaviour_test(const State state) {
 	std::promise<T> promise;
 	auto future = promise.get_future();
 
@@ -620,7 +617,7 @@ std::future<T> Client::behaviour_test(const TestState state) {
 	}
 
 	create_transaction(std::move(promise));
-	tx_->data.state = state;
+	tx_->state = state;
 
 	connect(host_, port_, [&](const boost::system::error_code& ec) {
 		if(!ec) {
@@ -635,16 +632,16 @@ std::future<T> Client::behaviour_test(const TestState state) {
 
 
 std::future<BehaviourResult> Client::filtering() {
-	return behaviour_test<BehaviourResult>(TestState::FILTERING_TEST_1);
+	return behaviour_test<BehaviourResult>(State::FILTERING_TEST_1);
 }
 
 std::future<BehaviourResult> Client::mapping() {
-	return behaviour_test<BehaviourResult>(TestState::MAPPING_TEST_1);
+	return behaviour_test<BehaviourResult>(State::MAPPING_TEST_1);
 }
 
 // RFC allows it over TCP but we don't support it
 std::future<HairpinResult> Client::hairpinning() {
-	return behaviour_test<HairpinResult>(TestState::HAIRPIN);
+	return behaviour_test<HairpinResult>(State::HAIRPIN);
 }
 
 std::future<AttributesResult> Client::binding_request() {
