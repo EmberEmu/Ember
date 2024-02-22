@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2019 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@ void LogSink::start_log() {
 		<< "Starting packet logging for " << remote_host_ << log::flush;
 }
 
-void LogSink::log(const std::vector<std::uint8_t>& buffer, const std::time_t& time,
+void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
                   PacketDirection dir) {
 	const auto output = util::format_packet(buffer.data(), buffer.size());
 

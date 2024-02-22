@@ -112,7 +112,7 @@ bool StreamReader::try_read(std::ifstream& file, std::vector<std::uint8_t>& buff
 	}
 }
 
-void StreamReader::handle_header(const std::vector<std::uint8_t>& buff) {
+void StreamReader::handle_header(std::span<const std::uint8_t> buff) {
 	const auto header = flatbuffers::GetRoot<fblog::Header>(buff.data());
 	flatbuffers::Verifier verifier(buff.data(), buff.size());
 
@@ -125,7 +125,7 @@ void StreamReader::handle_header(const std::vector<std::uint8_t>& buff) {
 	}
 }
 
-void StreamReader::handle_message(const std::vector<std::uint8_t>& buff) {
+void StreamReader::handle_message(std::span<const std::uint8_t> buff) {
 	auto message = flatbuffers::GetRoot<fblog::Message>(buff.data());
 	flatbuffers::Verifier verifier(buff.data(), buff.size());
 
@@ -138,7 +138,7 @@ void StreamReader::handle_message(const std::vector<std::uint8_t>& buff) {
 	}
 }
 
-void StreamReader::handle_buffer(const fblog::Type type, const std::vector<std::uint8_t>& buff) {
+void StreamReader::handle_buffer(const fblog::Type type, std::span<const std::uint8_t> buff) {
 	switch(type) {
 		case fblog::Type::HEADER:
 			handle_header(buff);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -35,7 +36,7 @@ namespace el = ember::log;
 
 int launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths);
+std::vector<std::string> fetch_definitions(std::span<const std::string> paths);
 void print_dbc_table(const edbc::types::Definitions& defs);
 void print_dbc_fields(const edbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs);
@@ -180,7 +181,7 @@ void print_dbc_fields(const edbc::types::Definitions& groups) {
 	}
 }
 
-std::vector<std::string> fetch_definitions(const std::vector<std::string>& paths) {
+std::vector<std::string> fetch_definitions(std::span<const std::string> paths) {
 	std::vector<std::string> xml_paths;
 
 	for(const std::filesystem::path& path : paths) {

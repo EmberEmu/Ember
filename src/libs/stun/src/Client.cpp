@@ -112,7 +112,7 @@ Client::build_request(const bool change_ip, const bool change_port) {
 	return { buffer, builder.key() };
 }
 
-void Client::handle_message(const std::vector<std::uint8_t>& buffer) try {
+void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 	std::lock_guard<std::mutex> guard(mutex_);
 
 	if(buffer.size() < HEADER_LENGTH) {
@@ -145,7 +145,7 @@ void Client::handle_message(const std::vector<std::uint8_t>& buffer) try {
 	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
 }
 
-void Client::process_message(const std::vector<std::uint8_t>& buffer) try {
+void Client::process_message(std::span<const std::uint8_t> buffer) try {
 	Parser parser(buffer, mode_);
 	parser.set_logger(logger_, verbosity_);
 	const auto header = parser.header();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,9 @@
 
 #include "IntegrityData.h"
 #include <shared/util/FNVHash.h>
+#include <array>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <cstddef>
 
@@ -16,17 +18,17 @@ namespace fs = std::filesystem;
 
 namespace ember {
 
-IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std::string& path) {
-	std::initializer_list<std::string_view> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
-	                                                 "dbghelp.dll", "unicows.dll" };
+IntegrityData::IntegrityData(std::span<const GameVersion> versions, std::string_view path) {
+	std::array<std::string_view, 5> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
+	                                         "dbghelp.dll", "unicows.dll" };
 
-	std::initializer_list<std::string_view> macx86 { "MacOS/World of Warcraft", "Info.plist",
-	                                                 "Resources/Main.nib/objects.xib",
-	                                                 "Resources/wow.icns", "PkgInfo" };
+	std::array<std::string_view, 5> macx86 { "MacOS/World of Warcraft", "Info.plist",
+	                                          "Resources/Main.nib/objects.xib",
+	                                          "Resources/wow.icns", "PkgInfo" };
 
-	std::initializer_list<std::string_view> macppc { "MacOS/World of Warcraft", "Info.plist",
-	                                                 "Resources/Main.nib/objects.xib",
-	                                                 "Resources/wow.icns", "PkgInfo" };
+	std::array<std::string_view, 5> macppc { "MacOS/World of Warcraft", "Info.plist",
+	                                         "Resources/Main.nib/objects.xib",
+	                                         "Resources/wow.icns", "PkgInfo" };
 	
 	for(auto& version : versions) {
 		load_binaries(path, version.build, winx86, grunt::System::Win, grunt::Platform::x86);
@@ -40,22 +42,25 @@ IntegrityData::IntegrityData(const std::vector<GameVersion>& versions, const std
 	}
 }
 
-std::optional<const std::vector<std::byte>*>
-IntegrityData::lookup(GameVersion version, grunt::Platform platform, grunt::System os) const {
+std::optional<std::span<const std::byte>>
+IntegrityData::lookup(const GameVersion version, const grunt::Platform platform,
+                      const grunt::System os) const {
 	auto it = data_.find(hash(version.build, platform, os));
 
 	if(it == data_.end()) {
 		return std::nullopt;
 	}
 	
-	return &it->second;
+	return it->second;
 }
 
-void IntegrityData::load_binaries(const std::string& path, std::uint16_t build,
-                                  const std::initializer_list<std::string_view>& files,
-                                  grunt::System system, grunt::Platform platform) {
-	fs::path dir(path + grunt::to_string(system) + "_" + grunt::to_string(platform)
-	              + "_" + std::to_string(build));
+void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
+                                  std::span<std::string_view> files,
+                                  const grunt::System system,
+                                  const grunt::Platform platform) {
+	const auto full_path = std::format("{}{}_{}_{}", path, grunt::to_string(system),
+		grunt::to_string(platform), std::to_string(build));
+	fs::path dir(full_path);
 
 	if(!fs::is_directory(dir)) {
 		return;

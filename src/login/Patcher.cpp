@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,7 +34,7 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 	}
 }
 
-const PatchMeta* Patcher::locate_rollup(const std::vector<PatchMeta>& patches,
+const PatchMeta* Patcher::locate_rollup(std::span<const PatchMeta> patches,
                                         std::uint16_t from, std::uint16_t to) const {
 	const PatchMeta* meta = nullptr;
 
@@ -164,8 +164,9 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 		throw std::runtime_error("An error occured while reading " + path + "Survey.mpq");
 	}
 
-	auto md5 = util::generate_md5(*buffer.data(), buffer.size());
-	std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(survey_.md5.data()));
+	const auto md5 = util::generate_md5(buffer);
+	const auto md5_bytes = std::as_bytes(std::span(md5));
+	std::copy(md5_bytes.begin(), md5_bytes.end(), survey_.md5.data());
 	survey_data_ = std::move(buffer);
 }
 
@@ -223,8 +224,9 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 
 		if(calc_md5) {
 			LOG_INFO(logger) << "Calculating MD5 for " << patch.file_meta.name << LOG_SYNC;
-			auto md5 = util::generate_md5(path + patch.file_meta.name);
-			std::copy(md5.begin(), md5.end(), reinterpret_cast<unsigned char*>(patch.file_meta.md5.data()));
+			const auto md5 = util::generate_md5(path + patch.file_meta.name);
+			const auto md5_bytes = std::as_bytes(std::span(md5));
+			std::copy(md5_bytes.begin(), md5_bytes.end(), patch.file_meta.md5.data());
 			dirty = true;
 		}
 

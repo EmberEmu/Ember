@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <shared/database/daos/shared_base/IPBanBase.h>
 #include <boost/asio/ip/address.hpp>
 #include <stdexcept>
+#include <span>
 #include <vector>
 #include <cstdint>
 
@@ -41,7 +42,7 @@ class IPBanCache {
 		return false;
 	}
 
-	void load_bans(const std::vector<IPEntry>& bans) {
+	void load_bans(std::span<const IPEntry> bans) {
 		for(auto& [ip, cidr] : bans) {
 			auto address = boost::asio::ip::address::from_string(ip);
 
@@ -55,7 +56,7 @@ class IPBanCache {
 	}
 
 public:
-	IPBanCache(const std::vector<IPEntry>& bans) {
+	IPBanCache(std::span<const IPEntry> bans) {
 		load_bans(bans);
 	}
 

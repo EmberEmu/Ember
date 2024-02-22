@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -101,7 +101,7 @@ void Service::create_character(const spark::Link& link, const spark::Message& me
 
 void Service::send_character_list(const spark::Link& link, const spark::Beacon& token,
                                   em::character::Status status,
-                                  const std::vector<Character>& characters) {
+                                  std::span<const Character> characters) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_ENUM);

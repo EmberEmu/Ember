@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -95,7 +95,7 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
-                        const std::vector<std::uint8_t>& salt, Compliance mode) {
+                        std::span<const std::uint8_t> salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, SHA1_LEN> hash;
@@ -106,7 +106,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	hasher->final(hash.data());
 
 	if(mode == Compliance::RFC5054) {
-		hasher->update(salt);
+		hasher->update(salt.data(), salt.size_bytes());
 	} else {
 		SmallVec salt_enc(salt.begin(), salt.end());
 		std::reverse(salt_enc.begin(), salt_enc.end());
@@ -134,7 +134,7 @@ SessionKey to_key(const Botan::BigInt value) {
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g,
                                     const Botan::BigInt& A, const Botan::BigInt& B,
-                                    const std::vector<std::uint8_t>& salt) {
+                                    std::span<const std::uint8_t> salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, SHA1_LEN> n_hash, g_hash, i_hash, out;
@@ -187,7 +187,7 @@ std::vector<std::uint8_t> generate_salt(const std::size_t len) {
 }
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
-                                const Generator& generator, const std::vector<std::uint8_t>& salt,
+                                const Generator& generator, std::span<const std::uint8_t> salt,
                                 Compliance mode) {
 	return detail::generate(identifier, password, generator, salt, mode);
 }

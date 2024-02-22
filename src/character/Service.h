@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <logger/Logging.h>
 #include <shared/database/objects/Character.h>
 #include <shared/database/daos/CharacterDAO.h>
+#include <span>
 #include <vector>
 
 namespace ember {
@@ -36,7 +37,7 @@ class Service final : public spark::EventHandler {
 
 	void send_character_list(const spark::Link& link, const spark::Beacon& token, 
 	                         messaging::character::Status status,
-	                         const std::vector<Character>& characters);
+	                         std::span<const Character> characters);
 
 	void send_response(const spark::Link& link, const spark::Beacon& token, 
 	                   messaging::character::Status status, protocol::Result result);

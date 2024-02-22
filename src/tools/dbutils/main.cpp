@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021 Ember
+ * Copyright (c) 2019 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@
 #include <shared/Version.h>
 #include <boost/program_options.hpp>
 #include <boost/asio/ip/host_name.hpp>
+#include <array>
 #include <algorithm>
 #include <chrono>
 #include <exception>
@@ -40,7 +41,7 @@ using namespace ember;
 namespace po = boost::program_options;
 namespace el = ember::log;
 
-const std::unordered_map<std::string_view, const std::vector<std::string_view>> db_args {
+const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_args {
 	{ "login", { "login.root-user", "login.root-password" }},
 	{ "world", { "world.root-user", "world.root-password" }}
 };

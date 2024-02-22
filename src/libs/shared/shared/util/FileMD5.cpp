@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,12 +15,13 @@
 
 namespace ember::util {
 
-Botan::secure_vector<std::uint8_t> generate_md5(const std::byte& data, const std::size_t len) {
+std::vector<std::uint8_t> generate_md5(std::span<const std::byte> data) {
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	return hasher->process(reinterpret_cast<const std::uint8_t*>(&data), len);
+	hasher->update(reinterpret_cast<const std::uint8_t*>(&data), data.size_bytes());
+	return hasher->final_stdvec();
 }
 
-Botan::secure_vector<std::uint8_t> generate_md5(const std::string& file) {
+std::vector<std::uint8_t> generate_md5(const std::string& file) {
 	std::ifstream stream(file, std::ios::in | std::ios::binary | std::ios::ate);
 
 	if(!stream) {
@@ -45,7 +46,7 @@ Botan::secure_vector<std::uint8_t> generate_md5(const std::string& file) {
 		}
 	}
 
-	return hasher->final();
+	return hasher->final_stdvec();
 }
 
 } // util, ember

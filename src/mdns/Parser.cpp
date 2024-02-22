@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -139,7 +139,7 @@ Question parse_question(detail::Labels& labels, spark::BinaryInStream& stream) t
 	throw Result::QUESTION_PARSE_ERROR;
 }
 
-std::string labels_to_name(const std::vector<std::string>& labels) {
+std::string labels_to_name(std::span<const std::string> labels) {
 	std::stringstream ss;
 
 	for(auto it = labels.begin(); it != labels.end();) {

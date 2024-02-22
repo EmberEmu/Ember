@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ class LogSink final : public PacketSink {
 public:
 	LogSink(log::Logger& logger, log::Severity severity, std::string remote_host);
 
-	void log(const std::vector<std::uint8_t>& buffer, const std::time_t& time,
+	void log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	         PacketDirection dir) override;
 
 	~LogSink();

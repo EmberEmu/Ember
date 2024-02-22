@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021 Ember
+ * Copyright (c) 2019 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,8 +31,8 @@ class DMLPrinter final : public types::TypeVisitor {
 	std::vector<std::string> values_;
 
 public:
-	DMLPrinter(spark::BinaryStream& stream, const std::vector<std::byte>& data,
-	           std::size_t string_block_index, ComponentCache& ccache) : stream_(stream), data_(data),
+	DMLPrinter(spark::BinaryStream& stream, std::vector<std::byte> data,
+	           std::size_t string_block_index, ComponentCache& ccache) : stream_(stream), data_(std::move(data)),
 			   string_block_index_(string_block_index), ccache_(ccache) { }
 
 	void visit(const types::Struct* structure, const types::Field* parent) override {

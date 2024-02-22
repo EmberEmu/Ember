@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2016 Ember
+/*
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,11 +10,11 @@
 
 #include <dbcreader/Loader.h>
 #include <dbcreader/Storage.h>
+#include <initializer_list>
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 namespace ember::dbc {
 
@@ -31,7 +31,8 @@ public:
 	~DiskLoader() = default;
 
 	Storage load() const override;
-	Storage load(const std::vector<std::string>& whitelist) const override;
+	Storage load(std::initializer_list<const std::string> whitelist) const override;
+	Storage load(std::span<const std::string> whitelist) const override;
 };
 
 } // dbc, ember

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,10 +16,9 @@
 
 namespace ember::client_integrity {
 
-Botan::secure_vector<std::uint8_t>
-checksum(std::span<const std::uint8_t> seed, const std::vector<std::byte>* buffer);
-
-Botan::secure_vector<std::uint8_t>
-finalise(const Botan::secure_vector<std::uint8_t>& checksum, const std::span<const uint8_t> seed);
+std::vector<std::uint8_t> checksum(std::span<const std::uint8_t> seed,
+                                   std::span<const std::byte> buffer);
+std::vector<std::uint8_t> finalise(std::span<const std::uint8_t> checksum,
+                                   std::span<const std::uint8_t> seed);
 
 } // client_integrity, ember

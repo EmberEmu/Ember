@@ -19,6 +19,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -70,7 +71,7 @@ class Client {
 	                       Transaction::TestData data = {});
 
 	// Message handling stuff
-	void handle_message(const std::vector<std::uint8_t>& buffer);
+	void handle_message(std::span<const std::uint8_t> buffer);
 	void handle_binding_req();
 	void handle_binding_resp();
 	void handle_binding_err_resp();
@@ -79,7 +80,7 @@ class Client {
 	std::pair<std::shared_ptr<std::vector<std::uint8_t>>, std::size_t>
 		build_request(bool change_ip = false, bool change_port = false);
 
-	void process_message(const std::vector<std::uint8_t>& buffer);
+	void process_message(std::span<const std::uint8_t> buffer);
 	void connect(const std::string& host, std::uint16_t port, Transport::OnConnect&& cb);
 	void set_nat_present();
 	void on_connection_error(const boost::system::error_code& error);

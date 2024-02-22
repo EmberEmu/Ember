@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2016 Ember
+/*
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <initializer_list>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -18,7 +20,8 @@ struct Storage;
 class Loader {
 public:
 	virtual Storage load() const = 0;
-	virtual Storage load(const std::vector<std::string>& whitelist) const = 0;
+	virtual Storage load(std::initializer_list<const std::string> whitelist) const = 0;
+	virtual Storage load(std::span<const std::string> whitelist) const = 0;
 	virtual ~Loader() = default;
 };
 

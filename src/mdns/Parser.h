@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -36,14 +36,14 @@ using Labels = std::map<std::uint16_t, std::string>;
 using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
 // deserialisation
-std::string parse_label_notation(std::uint8_t length, spark::BinaryInStream& stream);
+std::string parse_label_notation(spark::BinaryInStream& stream);
 void parse_header(Query& query, spark::BinaryInStream& stream);
 Question parse_question(Labels& labels, spark::BinaryInStream& stream);
 std::vector<std::string> parse_labels(Labels& labels, spark::BinaryInStream& stream);
 ResourceRecord parse_resource_record(Labels& labels, spark::BinaryInStream& stream);
 void parse_records(Query& query, Labels& labels, spark::BinaryInStream& stream);
 Flags decode_flags(std::uint16_t flags);
-std::string labels_to_name(const std::vector<std::string>& labels);
+std::string labels_to_name(std::span<const std::string> labels);
 
 void parse_rdata_a(ResourceRecord& rr, spark::BinaryInStream& stream);
 void parse_rdata_txt(ResourceRecord& rr, spark::BinaryInStream& stream);

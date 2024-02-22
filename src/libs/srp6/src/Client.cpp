@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,7 +34,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 	}
 }
 
-SessionKey Client::session_key(const BigInt& B, const std::vector<std::uint8_t>& salt,
+SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> salt, 
                                Compliance mode, bool interleave_override) {
 	bool interleave = (mode == Compliance::GAME);
 	
@@ -47,7 +47,6 @@ SessionKey Client::session_key(const BigInt& B, const std::vector<std::uint8_t>&
 	}
 
 	B_ = B;
-	salt_ = salt;
 
 	BigInt u = detail::scrambler(A_, B, gen_.prime().bytes(), mode);
 
@@ -68,8 +67,8 @@ SessionKey Client::session_key(const BigInt& B, const std::vector<std::uint8_t>&
 	}
 }
 
-BigInt Client::generate_proof(const SessionKey& key) const {
-	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B_, salt_);
+BigInt Client::generate_proof(const SessionKey& key, std::span<std::uint8_t> salt) const {
+	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B_, salt);
 }
 
 } //srp6, ember

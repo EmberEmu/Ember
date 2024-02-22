@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/objects/PatchMeta.h>
 #include <logger/Logging.h>
+#include <span>
 #include <string>
 #include <optional>
 #include <vector>
@@ -31,7 +32,7 @@ class Patcher {
 	std::vector<std::byte> survey_data_;
 	std::uint32_t survey_id_;
 
-	const PatchMeta* locate_rollup(const std::vector<PatchMeta>& patches,
+	const PatchMeta* locate_rollup(std::span<const PatchMeta> patches,
 	                               std::uint16_t from, std::uint16_t to) const;
 
 public:

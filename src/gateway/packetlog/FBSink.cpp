@@ -56,7 +56,7 @@ void FBSink::start_log(const std::string& filename, const std::string& host,
 	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
 }
 
-void FBSink::log(const std::vector<std::uint8_t>& buffer, const std::time_t& time, 
+void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, 
                  PacketDirection dir) {
 	std::tm utc_time;
 

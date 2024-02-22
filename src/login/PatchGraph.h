@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <deque>
 #include <string>
 #include <unordered_map>
+#include <span>
 #include <vector>
 #include <cstdint>
 
@@ -25,8 +26,8 @@ struct Edge {
 class PatchGraph {
 	std::unordered_map<std::uint16_t, std::vector<Edge>> adjacency_;
 
-	void build_graph(const std::vector<PatchMeta>& patches);
-	bool edge_test(const std::vector<Edge>& edges, std::uint16_t to) const;
+	void build_graph(std::span<const PatchMeta> patches);
+	bool edge_test(std::span<const Edge> edges, std::uint16_t to) const;
 
 public:
 	struct Node {
@@ -34,7 +35,7 @@ public:
 		std::uint64_t weight;
 	};
 
-	explicit PatchGraph(const std::vector<PatchMeta>& patches) {
+	explicit PatchGraph(std::span<const PatchMeta> patches) {
 		build_graph(patches);
 	}
 

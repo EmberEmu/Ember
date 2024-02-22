@@ -357,18 +357,18 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1
 		return true;
 	}
 
-	auto data = exe_data_->lookup(challenge_.version, challenge_.platform, challenge_.os);
+	const auto data = exe_data_->lookup(challenge_.version, challenge_.platform, challenge_.os);
 
 	// ensure we have binaries for the platform/version the client is using
 	if(!data) {
 		return false;
 	}
 
-	Botan::secure_vector<std::uint8_t> hash;
+	std::vector<std::uint8_t> hash;
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		Botan::secure_vector<std::uint8_t> checksum(SHA1_LENGTH); // all-zero hash
+		std::vector<std::uint8_t> checksum(SHA1_LENGTH); // all-zero hash
 		hash = client_integrity::finalise(checksum, salt);
 	} else {
 		auto checksum = client_integrity::checksum(checksum_salt_, *data);

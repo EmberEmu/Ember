@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include <srp6/Generator.h>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <array>
 #include <memory>
 #include <string>
 
@@ -109,7 +110,7 @@ TEST_F(srp6SessionTest, SelfAuthentication) {
 	srp::SessionKey s_key = server_->session_key(A);
 	srp::SessionKey c_key = client_->session_key(B, salt_);
 
-	Botan::BigInt c_proof = client_->generate_proof(c_key);
+	Botan::BigInt c_proof = client_->generate_proof(c_key, salt_);
 	Botan::BigInt s_proof = server_->generate_proof(s_key, c_proof);
 
 	Botan::BigInt expected_c_proof = srp::generate_client_proof(identifier_, s_key, gen_->prime(),
@@ -198,7 +199,7 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 	const Botan::BigInt b("0x809C1BC78BDB3873D286FDADF38D1524348C9CA5AB63E7793EF6A7944C5A8D");
 	const auto key = srp::detail::to_key(Botan::BigInt("0x42C6518D6F338C050717427B18F7C6B6131C968B0CFC20C43AAAD61625F286DA55E24BF6A2CBDC79"));
 
-	const std::vector<std::uint8_t> salt {
+	const std::array<std::uint8_t, 32> salt {
 		0x40, 0x1A, 0x08, 0x7D, 0x89, 0x73, 0x9D, 0xD9, 0xE4, 0x2F, 0x1E, 0x7E, 0x41, 0x65, 0xFD, 0xA4,
 		0x21, 0x41, 0xF4, 0xFD, 0x4A, 0xD3, 0x2D, 0x03, 0xC1, 0xF2, 0x07, 0x66, 0x88, 0x06, 0xE5, 0x41
 	};

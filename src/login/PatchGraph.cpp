@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,13 +21,13 @@ public:
 	}
 };
 
-void PatchGraph::build_graph(const std::vector<PatchMeta>& patches) {
+void PatchGraph::build_graph(std::span<const PatchMeta> patches) {
 	for(auto& patch : patches) {
 		adjacency_[patch.build_from].emplace_back(Edge { patch.build_to, patch.file_meta.size });
 	}
 }
 
-bool PatchGraph::edge_test(const std::vector<Edge>& edges, std::uint16_t to) const {
+bool PatchGraph::edge_test(std::span<const Edge> edges, std::uint16_t to) const {
 	for(auto& e : edges) {
 		if(e.build_to == to) {
 			return true;

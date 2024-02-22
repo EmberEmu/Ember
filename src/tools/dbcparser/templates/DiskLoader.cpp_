@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2016 Ember
+/*
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -86,7 +86,11 @@ DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
 <%TEMPLATE_DISK_LOAD_MAP_INSERTION%>
 }
 
-Storage DiskLoader::load(const std::vector<std::string>& whitelist) const {
+Storage DiskLoader::load(std::initializer_list<const std::string> whitelist) const {
+	return load({ whitelist.begin(), whitelist.end() });
+}
+
+Storage DiskLoader::load(std::span<const std::string> whitelist) const {
 	Storage storage;
 
 	for(auto& dbc : whitelist) {
