@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <array>
 #include <concepts>
 #include <type_traits>
+#include <cstring>
 #include <cstddef>
 
 namespace ember::spark::detail {
@@ -45,9 +46,7 @@ struct IntrusiveStorage {
 			write_len = length;
 		}
 
-		std::copy(reinterpret_cast<const std::byte*>(source),
-			reinterpret_cast<const std::byte*>(source) + write_len,
-			storage.data() + write_offset);
+		std::memcpy(storage.data() + write_offset, source, write_len);
 		write_offset += static_cast<OffsetType>(write_len);
 		return write_len;
 	}
@@ -60,8 +59,7 @@ struct IntrusiveStorage {
 			read_len = length;
 		}
 
-		std::copy(storage.data() + read_offset, storage.data() + read_offset + read_len, 
-			reinterpret_cast<std::byte*>(destination));
+		std::memcpy(destination, storage.data() + read_offset, read_len);
 		return read_len;
 	}
 

@@ -68,7 +68,7 @@ public:
 
 	BinaryInStream& operator >>(trivially_copyable auto& data) {
 		check_read_bounds(sizeof(data));
-		buffer_.read(reinterpret_cast<char*>(&data), sizeof(data));
+		buffer_.read(&data, sizeof(data));
 		return *this;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -48,6 +48,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <span>
 #include <string_view>
 #include <stdexcept>
 #include <utility>
@@ -105,8 +106,8 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
-	rng.randomize(reinterpret_cast<std::uint8_t*>(ember::rng::xorshift::seed),
-	              sizeof(ember::rng::xorshift::seed));
+	auto seed_bytes = std::as_writable_bytes(std::span(ember::rng::xorshift::seed));
+	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
 

@@ -55,7 +55,9 @@ public:
 #ifdef BUFFER_SEQUENCE_DEBUG
 	std::pair<const char*, std::size_t> get_buffer() {
 		auto buffer = buffer_->buffer_from_node(curr_node_);
-		return std::make_pair<char*, std::size_t>(const_cast<char*>(reinterpret_cast<const char*>(buffer->read_data())), buffer->size());
+		return std::make_pair<char*, std::size_t>(
+			const_cast<char*>(reinterpret_cast<const char*>(buffer->read_data())), buffer->size()
+		);
 	}
 #endif
 

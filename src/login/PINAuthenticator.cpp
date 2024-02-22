@@ -147,7 +147,8 @@ bool PINAuthenticator::validate_pin(const std::uint32_t pin,
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int interval,
                                                   const util::ClockBase& clock) {
 	boost::container::static_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
-	const int key_size = base32_decode(reinterpret_cast<const uint8_t*>(secret.data()), decoded_key.data(),
+	const int key_size = base32_decode(reinterpret_cast<const uint8_t*>(secret.data()),
+	                                   decoded_key.data(),
 	                                   decoded_key.size());
 
 	if(key_size == -1) {

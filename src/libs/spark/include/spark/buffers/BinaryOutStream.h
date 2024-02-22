@@ -28,7 +28,7 @@ public:
 	explicit BinaryOutStream(BufferOut& source) : StreamBase(source), buffer_(source), total_write_(0) {}
 
 	BinaryOutStream& operator <<(const trivially_copyable auto& data) {
-		buffer_.write(reinterpret_cast<const char*>(&data), sizeof(data));
+		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;
 	}
