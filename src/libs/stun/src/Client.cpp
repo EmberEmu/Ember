@@ -112,7 +112,7 @@ void Client::handle_message(const std::vector<std::uint8_t>& buffer) try {
 	// Check to see whether this is a response that we're expecting
 	const auto hash = generate_key(header.tx_id, mode_);
 
-	if(tx_->key != hash) {
+	if(tx_ && tx_->key != hash) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
 		return;
 	}
@@ -168,9 +168,15 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer) try {
 }
 
 void Client::abort_transaction(const Error error, attributes::ErrorCode ec, const bool erase) {
+	if(!tx_) {
+		return;
+	}
+
 	std::visit([&](auto&& arg) {
 		arg.set_value(std::unexpected(ErrorRet(error, ec)));
 	}, tx_->promise);
+
+	tx_.reset();
 }
 
 void Client::set_nat_present() {
@@ -493,6 +499,8 @@ void Client::complete_transaction() {
 			static_assert(always_false_v<T>, "Unhandled variant type");
 		}
 	}, tx_->promise);
+
+	tx_.reset();
 }
 
 void Client::handle_no_response() {
