@@ -19,14 +19,14 @@ TEST(IntrusiveStorageTest, Size) {
 	std::size_t written = 0;
 
 	for(int i = 0; i < 5; ++i) {
-		written += buffer.write(reinterpret_cast<const char*>(&foo), sizeof(int));
+		written += buffer.write(&foo, sizeof(int));
 	}
 
 	ASSERT_EQ(sizeof(int) * iterations, written) << "Number of bytes written is incorrect";
 	ASSERT_EQ(sizeof(int) * iterations, buffer.size()) << "Buffer size is incorrect";
 
 	// attempt to exceed capacity - write should return 0
-	written = buffer.write(reinterpret_cast<const char*>(&foo), sizeof(int));
+	written = buffer.write(&foo, sizeof(int));
 	ASSERT_EQ(0, written) << "Number of bytes written is incorrect";
 	ASSERT_EQ(sizeof(int) * iterations, buffer.size()) << "Buffer size is incorrect";
 }

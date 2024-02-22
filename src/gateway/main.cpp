@@ -96,7 +96,8 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
-	rng.randomize((std::uint8_t*)ember::rng::xorshift::seed, sizeof(ember::rng::xorshift::seed));
+	auto seed_bytes = std::as_writable_bytes(std::span(ember::rng::xorshift::seed));
+	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
