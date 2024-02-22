@@ -163,8 +163,6 @@ void Client::process_message(const std::vector<std::uint8_t>& buffer) try {
 	}
 } catch (const spark::exception&) {
 	abort_transaction(Error::BUFFER_PARSE_ERROR);
-} catch (const Error& e) {
-	abort_transaction(e);
 }
 
 void Client::abort_transaction(const Error error, attributes::ErrorCode ec, const bool erase) {

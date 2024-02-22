@@ -25,7 +25,8 @@ auto Parser::extract_ip_pair(spark::BinaryInStream& stream) {
 		be::big_to_native_inplace(attr.ipv4);
 	} else if(attr.family == AddressFamily::IPV6) {
 		if(mode_ == RFCMode::RFC3489) {
-			throw Error::RESP_IPV6_NOT_VALID;
+			throw parse_error(Error::RESP_IPV6_NOT_VALID,
+				"IPV6 is not valid in this mode");
 		}
 
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
@@ -34,7 +35,8 @@ auto Parser::extract_ip_pair(spark::BinaryInStream& stream) {
 			be::big_to_native_inplace(bytes);
 		}
 	} else {
-		throw Error::RESP_ADDR_FAM_NOT_VALID;
+		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,
+			"Invalid address family");
 	}
 	
 	return attr;
@@ -52,7 +54,8 @@ auto Parser::extract_ipv4_pair(spark::BinaryInStream& stream) {
 	be::big_to_native_inplace(attr.ipv4);
 
 	if(attr.family != AddressFamily::IPV4) {
-		throw Error::RESP_ADDR_FAM_NOT_VALID;
+		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,
+			"Invalid address family");
 	}
 
 	return attr;
