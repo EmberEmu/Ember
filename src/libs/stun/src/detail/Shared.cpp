@@ -22,6 +22,21 @@ namespace ember::stun::detail {
 
 namespace be = boost::endian;
 
+/* 
+* If the FINGERPRINT attribute is present, we need to adjust the
+* header length to exclude it (pretend it isn't there) and then
+* hash everything upto the MESSAGE-INTEGRITY attribute
+*/
+void hmac_helper(std::span<const std::uint8_t> buffer,
+                 Botan::MessageAuthenticationCode* hmac,
+                 const std::size_t msgi_offset) {
+	Header hdr = read_header(buffer);
+	hdr.length -= FP_ATTR_LENGTH;
+	hmac->update(buffer.data(), HEADER_LEN_OFFSET);
+	hmac->update_be(hdr.length);
+	hmac->update(buffer.data() + 4, msgi_offset - 4);
+}
+
 std::size_t attribute_offset(std::span<const std::uint8_t> buffer, Attributes attr) {
 	spark::SpanBufferAdaptor sba(buffer);
 	spark::BinaryInStream stream(sba);
@@ -134,21 +149,6 @@ std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
 	}
 
 	return hmac->final_stdvec();
-}
-
-/* 
-* If the FINGERPRINT attribute is present, we need to adjust the
-* header length to exclude it (pretend it isn't there) and then
-* hash everything upto the MESSAGE-INTEGRITY attribute
-*/
-void hmac_helper(std::span<const std::uint8_t> buffer,
-                 Botan::MessageAuthenticationCode* hmac,
-                 const std::size_t msgi_offset) {
-	Header hdr = read_header(buffer);
-	hdr.length -= FP_ATTR_LENGTH;
-	hmac->update(buffer.data(), HEADER_LEN_OFFSET);
-	hmac->update_be(hdr.length);
-	hmac->update(buffer.data() + 4, msgi_offset - 4);
 }
 
 bool magic_cookie_present(std::span<const std::uint8_t> buffer) {
