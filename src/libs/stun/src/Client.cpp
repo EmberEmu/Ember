@@ -213,7 +213,7 @@ void Client::perform_mapping_test3() {
 		abort_transaction(Error::RESP_MISSING_ATTR);
 		return;
 	}
-		
+
 	if(*xma_attr != tx_->data.xmapped) {
 		const auto alternate_address = extract_ip_to_string(tx_->data.otheradd);
 
@@ -225,6 +225,7 @@ void Client::perform_mapping_test3() {
 				tx_->state = State::MAPPING_TEST_3;
 				tx_->key = builder.key();
 				tx_->retry_buffer = buffer;
+				start_transaction_timer();
 				transport_->send(buffer);
 			} else {
 				abort_transaction(Error::UNABLE_TO_CONNECT);
@@ -317,11 +318,11 @@ void Client::perform_mapping_test2() {
 		return;
 	}
 
+	const auto bind_ip = extract_ip_to_string(*xma_attr);
+
 	auto& data = tx_->data;
 	data.otheradd = *oa_attr;
 	data.xmapped = *xma_attr;
-
-	const auto bind_ip = extract_ip_to_string(*xma_attr);
 
 	if(bind_ip == transport_->local_ip()
 		&& xma_attr->port == transport_->local_port()) {
@@ -332,11 +333,14 @@ void Client::perform_mapping_test2() {
 			
 		connect(alternate_address, port_, [&](const boost::system::error_code& ec) {
 			if(!ec) {
+				auto data = tx_->data;
 				create_transaction(std::move(tx_->promise));
 				auto builder = build_request();
 				auto buffer = std::make_shared<std::vector<std::uint8_t>>(builder.final(true));
 				tx_->retry_buffer = buffer;
 				tx_->key = builder.key();
+				tx_->data = data;
+				tx_->state = State::MAPPING_TEST_2;
 				start_transaction_timer();
 				transport_->send(buffer);
 			} else {
@@ -345,6 +349,7 @@ void Client::perform_mapping_test2() {
 		});
 	}
 }
+
 void Client::handle_binding_resp() {
 	set_nat_present();
 	
