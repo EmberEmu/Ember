@@ -52,7 +52,6 @@ class Client {
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
 	LogCB logger_ = [](Verbosity, Error){};
-	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> dest_hist_;
 	std::string host_;
 	std::uint16_t port_;
@@ -96,11 +95,12 @@ class Client {
 	void perform_hairpinning_test();
 
 public:
-	Client(std::string host, std::uint16_t port, Protocol protocol,
+	Client(const std::string& bind, std::string host,
+           std::uint16_t port, Protocol protocol,
 	       RFCMode mode = RFCMode::RFC5780);
 	~Client();
 
-	void log_callback(LogCB callback, Verbosity verbosity);
+	void log_callback(LogCB callback);
 	void options(clientopts opts);
 	clientopts options() const;
 

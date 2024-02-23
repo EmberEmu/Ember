@@ -42,7 +42,7 @@ class StreamTransport final : public Transport {
 	void do_connect(ba::ip::tcp::resolver::results_type results, OnConnect&& cb);
 
 public:
-	StreamTransport(std::chrono::milliseconds timeout = 39500ms);
+	StreamTransport(const std::string& bind, std::chrono::milliseconds timeout = 39500ms);
 	~StreamTransport();
 
 	void connect(std::string_view host, std::uint16_t port, OnConnect&& cb) override;

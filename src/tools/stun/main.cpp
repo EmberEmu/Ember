@@ -41,14 +41,15 @@ void launch(const po::variables_map& args) {
 	const auto host = args["host"].as<std::string>();
 	const auto port = args["port"].as<std::uint16_t>();
 	const auto protocol = args["protocol"].as<std::string>();
+	const auto bind = args["bind"].as<std::string>();
 	
 	// todo, std::print when supported by all compilers
 	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
 
 	const auto proto = protocol == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP;
 
-	stun::Client client(host, port, proto);
-	client.log_callback(log_cb, stun::Verbosity::STUN_LOG_TRIVIAL);
+	stun::Client client(bind, host, port, proto);
+	client.log_callback(log_cb);
 	auto result = client.external_address();
 	const auto address = result.get();
 
@@ -146,7 +147,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("help", "Displays a list of available options")
 		("host,h", po::value<std::string>()->default_value("stunserver.stunprotocol.org"), "Host")
 		("port,p", po::value<std::uint16_t>()->default_value(3479), "Port")
-		("protocol,c", po::value<std::string>()->default_value("tcp"), "Protocol (udp, tcp)");
+		("protocol,c", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)")
+		("bind,b", po::value<std::string>()->default_value("0.0.0.0"), "The network interface to bind to");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);

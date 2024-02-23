@@ -19,9 +19,8 @@
 
 namespace ember::stun {
 
-void Parser::set_logger(LogCB logger, const Verbosity verbosity) {
+void Parser::set_logger(LogCB logger) {
 	logger_ = logger;
-	verbosity_ = verbosity;
 }
 
 Error Parser::validate_header(const Header& header) {

@@ -13,8 +13,10 @@
 
 namespace ember::stun {
 
-StreamTransport::StreamTransport(std::chrono::milliseconds timeout)
-	: timeout_(timeout), socket_(ctx_), resolver_(ctx_) {
+StreamTransport::StreamTransport(const std::string& bind, std::chrono::milliseconds timeout)
+	: timeout_(timeout), 
+	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(bind), 0)),
+	  resolver_(ctx_) {
 	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);

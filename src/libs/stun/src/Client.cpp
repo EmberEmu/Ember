@@ -33,7 +33,8 @@ namespace ember::stun {
 using namespace detail;
 
 
-Client::Client(std::string host, const std::uint16_t port, Protocol proto, RFCMode mode)
+Client::Client(const std::string& bind, std::string host, const std::uint16_t port,
+               Protocol proto, RFCMode mode)
 	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode) {
 
 	// worker used by timers
@@ -43,10 +44,10 @@ Client::Client(std::string host, const std::uint16_t port, Protocol proto, RFCMo
 
 	switch(proto) {
 		case Protocol::TCP:
-			transport_ = std::make_unique<StreamTransport>();
+			transport_ = std::make_unique<StreamTransport>(bind);
 			break;
 		case Protocol::UDP:
-			transport_ = std::make_unique<DatagramTransport>();
+			transport_ = std::make_unique<DatagramTransport>(bind);
 			break;
 	}
 
@@ -69,13 +70,12 @@ Client::~Client() {
 	transport_.reset();
 }
 
-void Client::log_callback(LogCB callback, const Verbosity verbosity) {
+void Client::log_callback(LogCB callback) {
 	if(!callback) {
 		throw exception(Error::BAD_CALLBACK, "Logging callback cannot be null");
 	}
 
 	logger_ = callback;
-	verbosity_ = verbosity;
 }
 
 void Client::connect(const std::string& host, const std::uint16_t port,
@@ -121,7 +121,7 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 	}
 
 	Parser parser(buffer, mode_);
-	parser.set_logger(logger_, verbosity_);
+	parser.set_logger(logger_);
 
 	const Header& header = parser.header();
 
@@ -147,7 +147,8 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 
 void Client::process_message(std::span<const std::uint8_t> buffer) try {
 	Parser parser(buffer, mode_);
-	parser.set_logger(logger_, verbosity_);
+	parser.set_logger(logger_);
+
 	const auto header = parser.header();
 	auto attributes = parser.attributes();
 

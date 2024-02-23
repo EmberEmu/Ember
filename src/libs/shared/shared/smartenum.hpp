@@ -24,6 +24,7 @@ SOFTWARE.
 
 #pragma once
 
+#include <logger/Logger.h>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -163,5 +164,12 @@ namespace smart_enum
     {\
         outStream << to_string(value);\
         return outStream;\
+    } \
+    inline log::Logger& operator <<(log::Logger& outStream, Type value) \
+    {\
+        outStream << to_string(value);\
+        return outStream;\
     }
+
+
     

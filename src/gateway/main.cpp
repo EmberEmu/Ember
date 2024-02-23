@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,6 +25,8 @@
 #include <shared/Version.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
+#include <stun/Client.h>
+#include <stun/Utility.h>
 #include <dbcreader/DBCReader.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
@@ -35,7 +37,9 @@
 #include <botan/auto_rng.h>
 #include <chrono>
 #include <iostream>
+#include <format>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <stdexcept>
@@ -51,11 +55,20 @@ using namespace std::placeholders;
 
 namespace ember {
 
+using StunPair = std::pair<std::unique_ptr<stun::Client>, std::future<stun::MappedResult>>;
+
 int launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
+StunPair start_stun_query(const po::variables_map& args, log::Logger* logger);
+void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
+                       log::Logger* logger);
+void handle_stun_results(stun::Client* client, Realm* realm,
+                         std::future<stun::MappedResult> result,
+                         std::uint16_t port,
+                         log::Logger* logger);
 
 } // ember
 
@@ -93,6 +106,8 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
+
+	auto [stun, stun_res ] = start_stun_query(args, logger);
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
@@ -172,6 +187,16 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                                  mcast_port, logger);
 
+	const auto port = args["network.port"].as<std::uint16_t>();
+
+	if(stun) {
+		handle_stun_results(&*stun, &*realm, std::move(stun_res), port, logger);
+		stun.reset();
+	}
+
+	const auto& msg = std::format("Realm will be advertised on {}", realm->ip);
+	LOG_INFO(logger) << msg << LOG_SYNC;
+
 	RealmQueue queue_service(service_pool.get_service());
 	RealmService realm_svc(*realm, spark, discovery, logger);
 	AccountService acct_svc(spark, discovery, logger);
@@ -186,9 +211,8 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	Locator::set(&config);
 	
 	// Start network listener
-	auto interface = args["network.interface"].as<std::string>();
-	auto port = args["network.port"].as<std::uint16_t>();
-	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
+	const auto interface = args["network.interface"].as<std::string>();
+	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
@@ -226,6 +250,84 @@ std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categor
 	throw std::invalid_argument("Unknown category/region combination in database");
 }
 
+void handle_stun_results(stun::Client* client, Realm* realm,
+                         std::future<stun::MappedResult> future,
+                         const std::uint16_t port,
+						 log::Logger* logger) {
+	const auto result = future.get();
+
+	if(!result) {
+		const auto& msg = std::format(
+			"STUN: Query failed ({}), falling back to realm config {}",
+			stun::to_string(result.error().reason), realm->ip
+		);
+
+		LOG_ERROR(logger) << msg << LOG_SYNC;
+		return;
+	}
+
+	const auto& ip = stun::extract_ip_to_string(*result);
+	realm->ip = std::format("{}:{}", ip, port);
+
+	LOG_INFO(logger)
+		<< std::format("STUN: Binding request succeeded ({})", ip)
+		<< LOG_SYNC;
+
+	const auto nat = client->nat_present().get();
+
+	if(!nat) {
+		const auto& msg = std::format(
+			"STUN: Unable to determine if gateway is behind NAT ({})",
+			stun::to_string(nat.error().reason)
+		);
+
+		LOG_WARN(logger) << msg << LOG_SYNC;
+		return;
+	}
+
+	if(*nat) {
+		const auto& msg = std::format(
+			"STUN: Gateway appears to be behind NAT, "
+			"forward port {} for external access", port
+		);
+
+		LOG_INFO(logger) << msg << LOG_SYNC;
+	} else {
+		LOG_INFO(logger)
+			<< "STUN: Gateway does not appear to be behind NAT - "
+				"server is available online (firewall rules permitting)"
+			<< LOG_SYNC;
+	}
+}
+
+StunPair start_stun_query(const po::variables_map& args, log::Logger* logger) {
+	if(!args["stun.enabled"].as<bool>()) {
+		return {};
+	}
+
+	LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
+	const auto proto_arg = args["stun.protocol"].as<std::string>();
+
+	if(proto_arg != "tcp" && proto_arg != "udp") {
+		throw std::invalid_argument("Invalid STUN protocol argument");
+	}
+
+	auto stun = std::make_unique<stun::Client>(
+		args["network.interface"].as<std::string>(),
+		args["stun.server"].as<std::string>(),
+		args["stun.port"].as<std::uint16_t>(),
+		proto_arg == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP
+	);
+
+	stun->log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
+		stun_log_callback(verbosity, reason, logger);
+	});
+
+	auto stun_res = stun->external_address();
+
+	return { std::move(stun), std::move(stun_res) };
+}
+
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Command-line options
 	po::options_description cmdline_opts("Generic options");
@@ -251,6 +353,10 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("spark.multicast_interface", po::value<std::string>()->required())
 		("spark.multicast_group", po::value<std::string>()->required())
 		("spark.multicast_port", po::value<std::uint16_t>()->required())
+		("stun.enabled", po::value<bool>()->required())
+		("stun.server", po::value<std::string>()->required())
+		("stun.port", po::value<std::uint16_t>()->required())
+		("stun.protocol", po::value<std::string>()->required())
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::value<bool>()->required())
@@ -325,6 +431,30 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 		default:
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
+	}
+}
+
+void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
+                       log::Logger* logger) {
+	switch(verbosity) {
+		case stun::Verbosity::STUN_LOG_TRIVIAL:
+			LOG_TRACE(logger) << "[stun] " << reason << LOG_SYNC;
+			break;
+		case stun::Verbosity::STUN_LOG_DEBUG:
+			LOG_DEBUG(logger) << "[stun] " << reason << LOG_SYNC;
+			break;
+		case stun::Verbosity::STUN_LOG_INFO:
+			LOG_INFO(logger) << "[stun] " << reason << LOG_SYNC;
+			break;
+		case stun::Verbosity::STUN_LOG_WARN:
+			LOG_WARN(logger) << "[stun] " << reason << LOG_SYNC;
+			break;
+		case stun::Verbosity::STUN_LOG_ERROR:
+			LOG_ERROR(logger) << "[stun] " << reason << LOG_SYNC;
+			break;
+		case stun::Verbosity::STUN_LOG_FATAL:
+			LOG_FATAL(logger) << "[stun] " << reason << LOG_SYNC;
+			break;
 	}
 }
 

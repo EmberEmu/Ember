@@ -10,8 +10,10 @@
 
 namespace ember::stun {
 
-DatagramTransport::DatagramTransport(std::chrono::milliseconds timeout, unsigned int retries)
-	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string("0.0.0.0"), 0)),
+DatagramTransport::DatagramTransport(const std::string& bind,
+                                     std::chrono::milliseconds timeout,
+                                     unsigned int retries)
+	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 0)),
 	timeout_(timeout), retries_(retries), resolver_(ctx_) {
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);
@@ -86,7 +88,7 @@ void DatagramTransport::receive() {
 				ecb_(ec);
 				return;
 			}
-			
+
 			std::vector<std::uint8_t> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
 			const std::size_t recv = socket_.receive_from(boost::asio::buffer(buffer), ep_, flags, ec);
@@ -115,7 +117,33 @@ unsigned int DatagramTransport::retries() {
 }
 
 std::string DatagramTransport::local_ip() {
-	return socket_.local_endpoint().address().to_string();
+	auto local_ip = socket_.local_endpoint().address().to_string();
+
+	/*
+     * Hack to try to work around ASIO always reporting the local IP as
+	 * 0.0.0.0 when told to listen on every interface - it will not always
+	 * work!
+	 * 
+	 * ASIO can't enumerate NICs, so the only robust solution is to
+	 * encourage the user to explicitly bind to an interface (supported)
+	 */
+	if(local_ip == "0.0.0.0" || local_ip == "::") {
+		ba::ip::tcp::resolver resolver(ctx_);
+		const ba::ip::tcp::resolver::query query(ba::ip::host_name(), "");
+
+		const auto results = resolver.resolve(query);
+
+		for(const auto& entry : results) {
+			if((entry.endpoint().address().is_v4()
+				&& socket_.local_endpoint().address().is_v4())
+				|| (entry.endpoint().address().is_v6()
+				&& socket_.local_endpoint().address().is_v6())) {
+				local_ip = entry.endpoint().address().to_string();
+			}
+		}
+	}
+	
+	return local_ip;
 }
 
 std::uint16_t DatagramTransport::local_port() {

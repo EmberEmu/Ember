@@ -31,7 +31,6 @@ namespace be = boost::endian;
 class Parser {
 	RFCMode mode_;
 	LogCB logger_ = [](Verbosity, Error) {};
-	Verbosity verbosity_ = Verbosity::STUN_LOG_TRIVIAL;
 	const std::span<const std::uint8_t> buffer_;
 
 	// individual attributes
@@ -56,7 +55,7 @@ class Parser {
 
 public:
 	Parser(std::span<const std::uint8_t> buffer, RFCMode mode) : buffer_(buffer), mode_(mode) {}
-	void set_logger(LogCB logger, const Verbosity verbosity);
+	void set_logger(LogCB logger);
 
 	Error validate_header(const Header& header);
 	Header header();
