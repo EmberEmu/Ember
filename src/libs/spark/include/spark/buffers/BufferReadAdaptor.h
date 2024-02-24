@@ -50,7 +50,7 @@ public:
 	}
 
 	const std::byte& operator[](const std::size_t index) const override {
-		throw std::logic_error("Unsupported operation");
+		return reinterpret_cast<const std::byte&>(buffer_[index]);
 	}
 };
 
