@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -108,10 +108,10 @@ class LoginHandler {
 	bool validate_pin(const grunt::client::LoginProof& packet);
 	bool validate_protocol_version(const grunt::client::LoginChallenge& challenge);
 
-	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
+	bool validate_client_integrity(std::span<const std::uint8_t> client_hash,
 								   const Botan::BigInt& client_salt, bool reconnect);
 
-	bool validate_client_integrity(const std::array<std::uint8_t, 20>& client_hash,
+	bool validate_client_integrity(std::span<const std::uint8_t> client_hash,
 	                               std::span<std::uint8_t> client_salt, bool reconnect);
 
 	void fetch_user(grunt::Opcode opcode, const utf8_string& username);

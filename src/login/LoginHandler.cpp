@@ -18,8 +18,6 @@
  
 namespace ember {
 
-const static int SHA1_LENGTH = 20; // should go somewhere else
-
 bool LoginHandler::update_state(const grunt::Packet& packet) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -341,15 +339,16 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) {
 	return result;
 }
 
-bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& hash,
+bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
                                              const Botan::BigInt& salt, bool reconnect) {
 	auto encoded = Botan::BigInt::encode(salt);
 	std::reverse(encoded.begin(), encoded.end());
 	return validate_client_integrity(hash, encoded, reconnect);
 }
 
-bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1_LENGTH>& client_hash,
-                                             const std::span<uint8_t> salt, bool reconnect) {
+bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
+                                             const std::span<uint8_t> salt,
+                                             bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	// ensure checking is enabled
@@ -368,10 +367,11 @@ bool LoginHandler::validate_client_integrity(const std::array<std::uint8_t, SHA1
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		std::vector<std::uint8_t> checksum(SHA1_LENGTH); // all-zero hash
+		constexpr static int SHA1_LENGTH { 20 }; // it's finally somewhere else
+		std::array<std::uint8_t, SHA1_LENGTH> checksum{}; // all-zero hash
 		hash = client_integrity::finalise(checksum, salt);
 	} else {
-		auto checksum = client_integrity::checksum(checksum_salt_, *data);
+		const auto& checksum = client_integrity::checksum(checksum_salt_, *data);
 		hash = client_integrity::finalise(checksum, salt);
 	}
 
