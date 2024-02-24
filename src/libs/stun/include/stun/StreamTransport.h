@@ -10,6 +10,7 @@
 
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
+#include <memory>
 #include <queue>
 #include <thread>
 #include <cstddef>
@@ -29,7 +30,7 @@ class StreamTransport final : public Transport {
 	ba::ip::tcp::endpoint ep_;
 	ba::ip::tcp::resolver resolver_;
 	std::jthread worker_;
-	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
+	std::unique_ptr<boost::asio::io_context::work> work_;
 
 	std::vector<std::uint8_t> buffer_;
 

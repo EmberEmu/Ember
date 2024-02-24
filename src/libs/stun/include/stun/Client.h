@@ -45,7 +45,7 @@ class Client {
 	const int MAX_REDIRECTS = 5;
 
 	std::jthread worker_;
-	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
+	std::unique_ptr<boost::asio::io_context::work> work_;
 	boost::asio::io_context ctx_;
 
 	Protocol proto_;

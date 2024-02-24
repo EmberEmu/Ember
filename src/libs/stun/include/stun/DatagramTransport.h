@@ -10,6 +10,7 @@
 
 #include <stun/TransportBase.h>
 #include <boost/asio.hpp>
+#include <memory>
 #include <queue>
 #include <thread>
 
@@ -24,7 +25,6 @@ class DatagramTransport final : public Transport {
 	ba::ip::udp::endpoint ep_;
 	ba::ip::udp::endpoint remote_ep_;
 	std::jthread worker_;
-	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
 
 	const std::chrono::milliseconds timeout_;
 	const unsigned int retries_;

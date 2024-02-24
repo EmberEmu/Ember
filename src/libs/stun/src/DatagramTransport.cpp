@@ -26,7 +26,6 @@ DatagramTransport::DatagramTransport(const std::string& bind,
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
 	ctx_.stop();
-	work_.clear();
 }
 
 void DatagramTransport::connect(std::string_view host, const std::uint16_t port, OnConnect&& cb) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -367,7 +367,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		constexpr static int SHA1_LENGTH { 20 }; // it's finally somewhere else
+		constexpr static int SHA1_LENGTH{ 20 }; // it's finally somewhere else
 		std::array<std::uint8_t, SHA1_LENGTH> checksum{}; // all-zero hash
 		hash = client_integrity::finalise(checksum, salt);
 	} else {

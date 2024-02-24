@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,12 +11,14 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/VectorBufferAdaptor.h>
+#include <spark/buffers/SpanBufferAdaptor.h>
 #include <protocol/Packet.h>
 #include <logger/Logging.h>
 #include <shared/util/UTF8String.h>
 #include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
+#include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
 #include <array>
 #include <string>
@@ -50,7 +52,7 @@ public:
 	be::little_uint32_t build;
 	be::little_uint8_t locale;
 	utf8_string username;
-	std::vector<AddonData> addons;
+	boost::container::small_vector<AddonData, 64> addons;
 
 	State read_from_stream(spark::BinaryInStream& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
@@ -81,8 +83,8 @@ public:
 			return (state_ = State::ERRORED);
 		}
 		
-		std::vector<std::uint8_t> source(remaining);
-		std::vector<std::uint8_t> dest(decompressed_size);
+		boost::container::small_vector<std::uint8_t, 512> source(remaining);
+		boost::container::small_vector<std::uint8_t, 4096> dest(decompressed_size);
 		uLongf dest_len = decompressed_size;
 		stream.get(source.data(), remaining);
 		
@@ -93,8 +95,8 @@ public:
 			return (state_ = State::ERRORED);
 		}
 	
-		spark::VectorBufferAdaptor buffer(dest);
-		spark::BinaryStream addon_stream(buffer);
+		spark::SpanBufferAdaptor<std::uint8_t> buffer(dest);
+		spark::BinaryInStream addon_stream(buffer);
 
 		while(!addon_stream.empty()) {
 			AddonData data;

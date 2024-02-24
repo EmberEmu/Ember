@@ -32,13 +32,12 @@ namespace ember::stun {
 
 using namespace detail;
 
-
 Client::Client(const std::string& bind, std::string host, const std::uint16_t port,
                Protocol proto, RFCMode mode)
 	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode) {
 
 	// worker used by timers
-	work_.emplace_back(std::make_shared<boost::asio::io_context::work>(ctx_));
+	work_ = std::make_unique<boost::asio::io_context::work>(ctx_);
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 						   (&boost::asio::io_context::run), &ctx_);
 
@@ -66,7 +65,7 @@ void Client::create_transaction(Transaction::Promise promise) {
 }
 
 Client::~Client() {
-	work_.clear();
+	work_.reset();
 	transport_.reset();
 }
 
