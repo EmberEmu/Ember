@@ -12,19 +12,28 @@
 namespace ember::dns {
 
 MulticastSocket::MulticastSocket(boost::asio::io_context& context,
-                                 const std::string& listen_addr,
+                                 const std::string& listen_iface,
                                  const std::string& mcast_group,
                                  const std::uint16_t port)
                                  : context_(context),
                                    socket_(context),
                                    ep_(boost::asio::ip::address::from_string(mcast_group), port) {
-    const auto listen_ip = boost::asio::ip::address::from_string(listen_addr);
+    const auto mcast_iface = boost::asio::ip::address::from_string(listen_iface);
     const auto group_ip = boost::asio::ip::address::from_string(mcast_group);
 
-	boost::asio::ip::udp::endpoint ep(listen_ip, port);
+	boost::asio::ip::udp::endpoint ep(mcast_iface, port);
 	socket_.open(ep.protocol());
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-	socket_.set_option(boost::asio::ip::multicast::join_group(group_ip));
+	auto join_opt = boost::asio::ip::multicast::join_group();
+
+	// ASIO is doing something weird on Windows, this is a hack
+	if(mcast_iface.is_v4()) {
+		join_opt = boost::asio::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
+	} else {
+		join_opt = boost::asio::ip::multicast::join_group(group_ip);
+	}
+
+	socket_.set_option(join_opt);
 	socket_.bind(ep);
     receive();
 }
@@ -36,7 +45,7 @@ void MulticastSocket::receive() {
 		return;
 	}
 
-	socket_.async_receive_from(boost::asio::buffer(buffer_.data(), buffer_.size()), remote_ep_,
+	socket_.async_receive(boost::asio::buffer(buffer_.data(), buffer_.size()),
         [this](const boost::system::error_code& ec, const std::size_t size) {
             if(ec && ec == boost::asio::error::operation_aborted) {
 		        return;

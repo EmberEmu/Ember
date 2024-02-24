@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/buffers/StreamBase.h>
-#include <spark/buffers/BufferOut.h>
+#include <spark/buffers/BufferWrite.h>
 #include <spark/Exception.h>
 #include <algorithm>
 #include <concepts>
@@ -19,21 +19,21 @@
 
 namespace ember::spark {
 
-class BinaryOutStream : virtual public StreamBase {
+class BinaryStreamWriter : virtual public StreamBase {
 private:
-	BufferOut& buffer_;
+	BufferWrite& buffer_;
 	std::size_t total_write_;
 
 public:
-	explicit BinaryOutStream(BufferOut& source) : StreamBase(source), buffer_(source), total_write_(0) {}
+	explicit BinaryStreamWriter(BufferWrite& source) : StreamBase(source), buffer_(source), total_write_(0) {}
 
-	BinaryOutStream& operator <<(const trivially_copyable auto& data) {
+	BinaryStreamWriter& operator <<(const trivially_copyable auto& data) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;
 	}
 
-	BinaryOutStream& operator <<(const std::string& data) {
+	BinaryStreamWriter& operator <<(const std::string& data) {
 		buffer_.write(data.data(), data.size());
 		const char term = '\0';
 		buffer_.write(&term, 1);
@@ -41,7 +41,7 @@ public:
 		return *this;
 	}
 
-	BinaryOutStream& operator <<(const char* data) {
+	BinaryStreamWriter& operator <<(const char* data) {
 		const auto len = std::strlen(data);
 		buffer_.write(data, len);
 		total_write_ += len;
@@ -84,7 +84,7 @@ public:
 		return total_write_;
 	}
 
-	BufferOut* buffer() {
+	BufferWrite* buffer() {
 		return &buffer_;
 	}
 };

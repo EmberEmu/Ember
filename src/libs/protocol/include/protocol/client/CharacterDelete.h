@@ -24,7 +24,7 @@ class CharacterDelete final {
 public:
 	be::little_uint64_t id;
 
-	State read_from_stream(spark::BinaryInStream& stream) try {
+	State read_from_stream(spark::BinaryStreamReader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> id;
@@ -34,7 +34,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryOutStream& stream) const {
+	void write_to_stream(spark::BinaryStreamWriter& stream) const {
 		stream << id;
 	}
 };

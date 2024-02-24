@@ -53,31 +53,40 @@ set(COREv2
 
 set(IO_SRC
     include/spark/buffers/BufferBase.h
-    include/spark/buffers/BufferIn.h
-    include/spark/buffers/BufferOut.h
+    include/spark/buffers/BufferRead.h
+    include/spark/buffers/BufferWrite.h
     include/spark/buffers/Buffer.h
     include/spark/buffers/DynamicBuffer.h
     include/spark/buffers/detail/IntrusiveStorage.h
     include/spark/buffers/BufferSequence.h
     include/spark/buffers/NullBuffer.h
-    include/spark/buffers/VectorBufferAdaptor.h
-    include/spark/buffers/SpanBufferAdaptor.h
     include/spark/buffers/BinaryStream.h
-    include/spark/buffers/BinaryInStream.h
-    include/spark/buffers/BinaryOutStream.h
+    include/spark/buffers/BinaryStreamReader.h
+    include/spark/buffers/BinaryStreamWriter.h
     include/spark/buffers/StreamBase.h
+    include/spark/buffers/BufferAdaptor.h
+    include/spark/buffers/BufferReadAdaptor.h
+    include/spark/buffers/BufferWriteAdaptor.h
 )
+
+set(IO_SRCv2
+    include/spark/v2/buffers/BufferAdaptor.h
+    include/spark/v2/buffers/BinaryStream.h
+)
+
 
 add_library(
     ${LIBRARY_NAME}
     ${CORE}
     ${COREv2}
     ${IO_SRC}
+    ${IO_SRCv2}
 )
 
 source_group("Core" FILES ${CORE})
-source_group("Corev2" FILES ${COREv2})
 source_group("IO" FILES ${IO_SRC})
+source_group("v2\\Core" FILES ${COREv2})
+source_group("v2\\IO" FILES ${IO_SRCv2})
 
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})

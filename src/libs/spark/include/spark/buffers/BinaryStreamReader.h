@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/buffers/StreamBase.h>
-#include <spark/buffers/BufferIn.h>
+#include <spark/buffers/BufferRead.h>
 #include <spark/Exception.h>
 #include <algorithm>
 #include <concepts>
@@ -19,12 +19,12 @@
 
 namespace ember::spark {
 
-class BinaryInStream : virtual public StreamBase {
+class BinaryStreamReader : virtual public StreamBase {
 public:
 	using State = StreamStateBase;
 
 private:
-	BufferIn& buffer_;
+	BufferRead& buffer_;
 	std::size_t total_read_;
 	const std::size_t read_limit_;
 	State state_;
@@ -46,12 +46,12 @@ private:
 	}
 
 public:
-	explicit BinaryInStream(BufferIn& source, std::size_t read_limit = 0)
+	explicit BinaryStreamReader(BufferRead& source, std::size_t read_limit = 0)
                             : StreamBase(source), buffer_(source), total_read_(0),
                               read_limit_(read_limit), state_(State::OK) {}
 
 	// terminates when it hits a null-byte or consumes all data in the buffer
-	BinaryInStream& operator >>(std::string& dest) {
+	BinaryStreamReader& operator >>(std::string& dest) {
 		char byte;
 
 		do { // not overly efficient
@@ -66,7 +66,7 @@ public:
 		return *this;
 	}
 
-	BinaryInStream& operator >>(trivially_copyable auto& data) {
+	BinaryStreamReader& operator >>(trivially_copyable auto& data) {
 		check_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;
@@ -111,7 +111,7 @@ public:
 		return read_limit_;
 	}
 
-	BufferIn* buffer() {
+	BufferRead* buffer() {
 		return &buffer_;
 	}
 };

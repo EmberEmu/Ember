@@ -28,7 +28,7 @@ class CharacterEnum final {
 public:
 	std::vector<Character> characters;
 
-	State read_from_stream(spark::BinaryInStream& stream) {
+	State read_from_stream(spark::BinaryStreamReader& stream) {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		std::uint8_t char_count;
@@ -90,7 +90,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryOutStream& stream) const {
+	void write_to_stream(spark::BinaryStreamWriter& stream) const {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {

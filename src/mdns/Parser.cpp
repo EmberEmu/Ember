@@ -7,8 +7,7 @@
  */
 
 #include "Parser.h"
-#include <spark/buffers/SpanBufferAdaptor.h>
-#include <spark/buffers/VectorBufferAdaptor.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
@@ -22,8 +21,8 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 		return { Result::PAYLOAD_TOO_LARGE, std::nullopt };
 	}
 
-	spark::SpanBufferAdaptor adaptor(buffer);
-	spark::BinaryInStream stream(adaptor);
+	spark::BufferReadAdaptor adaptor(buffer);
+	spark::BinaryStreamReader stream(adaptor);
 
 	Query query;
 	detail::Labels labels;
@@ -31,7 +30,7 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	detail::parse_header(query, stream);
 	detail::parse_records(query, labels, stream);
 
-	if(stream.state() != spark::BinaryInStream::State::OK) {
+	if(stream.state() != spark::BinaryStreamReader::State::OK) {
 		return { Result::STREAM_ERROR, std::nullopt };
 	}
 
@@ -80,7 +79,7 @@ std::uint16_t encode_flags(const Flags flags) {
 	return encoded;
 }
 
-std::string parse_label_notation(spark::BinaryInStream& stream) try {
+std::string parse_label_notation(spark::BinaryStreamReader& stream) try {
 	std::stringstream name;
 	std::uint8_t length;
 	stream >> length;
@@ -96,7 +95,7 @@ std::string parse_label_notation(spark::BinaryInStream& stream) try {
 	throw Result::LABEL_PARSE_ERROR;
 }
 
-void parse_header(Query& query, spark::BinaryInStream& stream) try {
+void parse_header(Query& query, spark::BinaryStreamReader& stream) try {
 	stream >> query.header.id;
 	std::uint16_t flags;
 	stream >> flags;
@@ -116,7 +115,7 @@ void parse_header(Query& query, spark::BinaryInStream& stream) try {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
-Question parse_question(detail::Labels& labels, spark::BinaryInStream& stream) try {
+Question parse_question(detail::Labels& labels, spark::BinaryStreamReader& stream) try {
 	Question question;
 	question.meta.labels = parse_labels(labels, stream);
 	question.name = labels_to_name(question.meta.labels);
@@ -157,7 +156,7 @@ std::string labels_to_name(std::span<const std::string> labels) {
  * See the comment in write_resource_record() if you want to know what's
  * going on here
  */
-std::vector<std::string> parse_labels(detail::Labels& labels, spark::BinaryInStream& stream) try {
+std::vector<std::string> parse_labels(detail::Labels& labels, spark::BinaryStreamReader& stream) try {
 	std::vector<std::string> rrlabels;
 
 	while(true) {
@@ -201,7 +200,7 @@ std::vector<std::string> parse_labels(detail::Labels& labels, spark::BinaryInStr
 	throw Result::NAME_PARSE_ERROR;
 }
 
-ResourceRecord parse_resource_record(detail::Labels& labels, spark::BinaryInStream& stream) try {
+ResourceRecord parse_resource_record(detail::Labels& labels, spark::BinaryStreamReader& stream) try {
 	ResourceRecord record;
 	const auto parsed = parse_labels(labels, stream);
 	record.name = labels_to_name(parsed);
@@ -229,7 +228,7 @@ ResourceRecord parse_resource_record(detail::Labels& labels, spark::BinaryInStre
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) try {
+void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) try {
 	switch(rr.type) {
 		case RecordType::PTR:
 			parse_rdata_ptr(rr, labels, stream);
@@ -268,7 +267,7 @@ void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStre
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryInStream& stream) {
+void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
 	Record_HINFO rdata;
 	
 	// cpu
@@ -285,25 +284,25 @@ void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryInStream& stream) {
 	rr.rdata = rdata;
 }
 
-void parse_rdata_a(ResourceRecord& rr, spark::BinaryInStream& stream) {
+void parse_rdata_a(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
 	Record_A rdata;
 	stream >> rdata;
 	rr.rdata = rdata;
 }
 
-void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryInStream& stream) {
+void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
 	Record_AAAA rdata;
 	stream >> rdata.ip;
 	rr.rdata = rdata;
 }
 
-void parse_rdata_cname(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_rdata_cname(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	Record_CNAME rdata;
 	rdata.cname = labels_to_name(parse_labels(labels, stream));
 	rr.rdata = rdata;
 }
 
-void parse_rdata_srv(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_rdata_srv(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	Record_SRV rdata;
 	stream >> rdata.priority;
 	stream >> rdata.weight;
@@ -315,7 +314,7 @@ void parse_rdata_srv(ResourceRecord& rr, detail::Labels& labels, spark::BinaryIn
 	rr.rdata = rdata;
 }
 
-void parse_rdata_uri(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_rdata_uri(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	Record_URI rdata;
 	stream >> rdata.priority;
 	stream >> rdata.weight;
@@ -325,19 +324,19 @@ void parse_rdata_uri(ResourceRecord& rr, detail::Labels& labels, spark::BinaryIn
 	rr.rdata = rdata;
 }
 
-void parse_rdata_ptr(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_rdata_ptr(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	Record_PTR rdata;
 	rdata.ptrdname = labels_to_name(parse_labels(labels, stream));
 	rr.rdata = rdata;
 }
 
-void parse_rdata_txt(ResourceRecord& rr, spark::BinaryInStream& stream) {
+void parse_rdata_txt(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
 	// read the entire rdata into a single buffer rather than piecemeal
 	// from the main stream - makes the logic slightly cleaner
 	std::vector<std::uint8_t> rdbytes(rr.rdata_len);
 	stream.get(rdbytes.data(), rdbytes.size());
-	spark::VectorBufferAdaptor buffadap(rdbytes);
-	spark::BinaryInStream rdstream(buffadap);
+	spark::BufferReadAdaptor buffadap(rdbytes);
+	spark::BinaryStreamReader rdstream(buffadap);
 	Record_TXT rdata;
 	
 	while(!rdstream.empty()) {
@@ -352,7 +351,7 @@ void parse_rdata_txt(ResourceRecord& rr, spark::BinaryInStream& stream) {
 	rr.rdata = rdata;
 }
 
-void parse_rdata_mx(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_rdata_mx(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	Record_MX rdata;
 	stream >> rdata.preference;
 	be::big_to_native_inplace(rdata.preference);
@@ -360,7 +359,7 @@ void parse_rdata_mx(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInS
 	rr.rdata = rdata;
 }
 
-void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	Record_SOA rdata;
 	rdata.mname = labels_to_name(parse_labels(labels, stream));
 	rdata.rname = labels_to_name(parse_labels(labels, stream));
@@ -379,7 +378,7 @@ void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinaryIn
 	rr.rdata = rdata;
 }
 
-void parse_records(Query& query, detail::Labels& labels, spark::BinaryInStream& stream) {
+void parse_records(Query& query, detail::Labels& labels, spark::BinaryStreamReader& stream) {
 	for(auto i = 0u; i < query.header.questions; ++i) {
 		query.questions.emplace_back(std::move(parse_question(labels, stream)));
 	}
@@ -425,12 +424,10 @@ std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream) {
 	if(std::holds_alternative<Record_A>(rr.rdata)) {
 		const auto& data = std::get<Record_A>(rr.rdata);
 		stream << be::native_to_big(data.ip);
-	}
-	else if(std::holds_alternative<Record_AAAA>(rr.rdata)) {
+	} else if(std::holds_alternative<Record_AAAA>(rr.rdata)) {
 		const auto& data = std::get<Record_AAAA>(rr.rdata);
 		stream.put(data.ip.data(), data.ip.size());
-	}
-	else {
+	} else {
 		throw std::runtime_error("Don't know how to serialise this record data");
 	}
 

@@ -13,7 +13,7 @@
 #include <stun/Logging.h>
 #include <stun/Protocol.h>
 #include <stun/Exception.h>
-#include <spark/buffers/BinaryInStream.h>
+#include <spark/buffers/BinaryStreamReader.h>
 #include <boost/endian.hpp>
 #include <cstddef>
 #include <optional>
@@ -34,23 +34,23 @@ class Parser {
 	const std::span<const std::uint8_t> buffer_;
 
 	// individual attributes
-	template<typename T> auto extract_ip_pair(spark::BinaryInStream& stream);
-	template<typename T> auto extract_ipv4_pair(spark::BinaryInStream& stream);
-	template<typename T> auto extract_utf8_text(spark::BinaryInStream& stream, std::size_t size);
-	attributes::XorMappedAddress xor_mapped_address(spark::BinaryInStream& stream, const TxID& id);
-	attributes::UnknownAttributes unknown_attributes(spark::BinaryInStream& stream, std::size_t length);
-	attributes::ErrorCode error_code(spark::BinaryInStream& stream, std::size_t length);
-	attributes::MessageIntegrity message_integrity(spark::BinaryInStream& stream);
-	attributes::MessageIntegrity256 message_integrity_sha256(spark::BinaryInStream& stream, std::size_t length);
-	attributes::Username username(spark::BinaryInStream& stream, std::size_t size);
-	attributes::Fingerprint fingerprint(spark::BinaryInStream& stream);
-	attributes::Priority priority(spark::BinaryInStream& stream);
-	attributes::IceControlling ice_controlling(spark::BinaryInStream& stream);
-	attributes::IceControlled ice_controlled(spark::BinaryInStream& stream);
+	template<typename T> auto extract_ip_pair(spark::BinaryStreamReader& stream);
+	template<typename T> auto extract_ipv4_pair(spark::BinaryStreamReader& stream);
+	template<typename T> auto extract_utf8_text(spark::BinaryStreamReader& stream, std::size_t size);
+	attributes::XorMappedAddress xor_mapped_address(spark::BinaryStreamReader& stream, const TxID& id);
+	attributes::UnknownAttributes unknown_attributes(spark::BinaryStreamReader& stream, std::size_t length);
+	attributes::ErrorCode error_code(spark::BinaryStreamReader& stream, std::size_t length);
+	attributes::MessageIntegrity message_integrity(spark::BinaryStreamReader& stream);
+	attributes::MessageIntegrity256 message_integrity_sha256(spark::BinaryStreamReader& stream, std::size_t length);
+	attributes::Username username(spark::BinaryStreamReader& stream, std::size_t size);
+	attributes::Fingerprint fingerprint(spark::BinaryStreamReader& stream);
+	attributes::Priority priority(spark::BinaryStreamReader& stream);
+	attributes::IceControlling ice_controlling(spark::BinaryStreamReader& stream);
+	attributes::IceControlled ice_controlled(spark::BinaryStreamReader& stream);
 
 	bool check_attr_validity(Attributes attr_type, MessageType msg_type, bool required);
 
-	std::optional<attributes::Attribute> extract_attribute(spark::BinaryInStream& stream,
+	std::optional<attributes::Attribute> extract_attribute(spark::BinaryStreamReader& stream,
 	                                                       const TxID& id, MessageType type);
 
 public:

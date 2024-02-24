@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/BinaryInStream.h>
-#include <spark/buffers/BinaryOutStream.h>
+#include <spark/buffers/BinaryStreamReader.h>
+#include <spark/buffers/BinaryStreamWriter.h>
 #include <spark/buffers/StreamBase.h>
 #include <spark/buffers/Buffer.h>
 #include <spark/Exception.h>
@@ -20,13 +20,12 @@
 
 namespace ember::spark {
 
-class BinaryStream final : public BinaryInStream, public BinaryOutStream {
+class BinaryStream final : public BinaryStreamReader, public BinaryStreamWriter {
 public:
 	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
-                          : BinaryInStream(source, read_limit), BinaryOutStream(source),
+                          : BinaryStreamReader(source, read_limit), BinaryStreamWriter(source),
 	                        StreamBase(source) {}
 	~BinaryStream() = default;
-
 };
 
 } // spark, ember

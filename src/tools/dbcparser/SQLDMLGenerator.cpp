@@ -12,7 +12,7 @@
 #include <logger/Logging.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
-#include <spark/buffers/VectorBufferAdaptor.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <gsl/gsl_util>
 #include <fstream>
 #include <vector>
@@ -195,7 +195,7 @@ void write_dbc_dml(const types::Struct& dbc, std::ofstream& out, std::vector<std
 		return;
 	}
 
-	spark::VectorBufferAdaptor buffer(data);
+	spark::BufferAdaptor buffer(data);
 	spark::BinaryStream stream(buffer);
 
 	DBCHeader header;

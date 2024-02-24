@@ -108,7 +108,7 @@ public:
 		return state_;
 	}
 
-	std::size_t write_body(spark::BinaryOutStream& stream) const {
+	std::size_t write_body(spark::BinaryStreamWriter& stream) const {
 		const auto initial_write = stream.total_write();
 
 		stream << unknown;
@@ -136,7 +136,7 @@ public:
 
 		// calculate the size by using a null buffer, then write the message for real
 		spark::NullBuffer null_buff;
-		spark::BinaryOutStream null_stream(null_buff);
+		spark::BinaryStreamWriter null_stream(null_buff);
 
 		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_body(null_stream)));
 		write_body(stream);

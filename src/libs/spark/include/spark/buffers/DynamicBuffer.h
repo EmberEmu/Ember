@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -102,6 +102,8 @@ class DynamicBuffer final : public Buffer {
 	}
 
 public:
+	using value_type = IntrusiveStorage::value_type;
+
 	DynamicBuffer() { // todo - change in VS2015
 		root_.next = &root_;
 		root_.prev = &root_;
@@ -329,7 +331,7 @@ public:
 		return BlockSize;
 	}
 
-	std::byte& operator[](const std::size_t index) const {
+	std::byte& byte_at_index(size_t index) const {
 		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
 
 		auto head = root_.next;
@@ -344,9 +346,12 @@ public:
 		buffer = buffer_from_node(head);
 		return (*buffer)[offset_index % BlockSize];
 	}
-
 	std::byte& operator[](const std::size_t index) override {
-		return const_cast<std::byte&>(static_cast<const DynamicBuffer<BlockSize>&>(*this)[index]);
+		return byte_at_index(index);
+	}
+
+	const std::byte& operator[](const std::size_t index) const override {
+		return byte_at_index(index);
 	}
 
 	template<decltype(auto)>

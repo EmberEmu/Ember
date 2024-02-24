@@ -8,8 +8,6 @@
 
 #include "STUNVectors.h"
 #include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/SpanBufferAdaptor.h>
-#include <shared/util/FormatPacket.h>
 #include <stun/Client.h>
 #include <stun/Parser.h>
 #include <stun/Utility.h>
@@ -299,7 +297,6 @@ TEST(STUNVectors, Builder_Software) {
 	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
 	builder.add_software("Ember!");
 	const auto buffer = builder.final(true);
-
 	stun::Parser parser(buffer, stun::RFC5780);
 	const auto attributes = parser.attributes();
 

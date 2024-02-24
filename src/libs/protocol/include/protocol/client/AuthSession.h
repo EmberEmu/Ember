@@ -10,8 +10,7 @@
 
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
-#include <spark/buffers/VectorBufferAdaptor.h>
-#include <spark/buffers/SpanBufferAdaptor.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <protocol/Packet.h>
 #include <logger/Logging.h>
 #include <shared/util/UTF8String.h>
@@ -54,7 +53,7 @@ public:
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
-	State read_from_stream(spark::BinaryInStream& stream) try {
+	State read_from_stream(spark::BinaryStreamReader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		const auto initial_stream_size = stream.size();
@@ -95,8 +94,8 @@ public:
 			return (state_ = State::ERRORED);
 		}
 	
-		spark::SpanBufferAdaptor<std::uint8_t> buffer(dest);
-		spark::BinaryInStream addon_stream(buffer);
+		spark::BufferReadAdaptor buffer(dest);
+		spark::BinaryStreamReader addon_stream(buffer);
 
 		while(!addon_stream.empty()) {
 			AddonData data;
@@ -112,7 +111,7 @@ public:
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryOutStream& stream) const {
+	void write_to_stream(spark::BinaryStreamWriter& stream) const {
 		stream << build;
 		stream << server_id;
 		stream << username;

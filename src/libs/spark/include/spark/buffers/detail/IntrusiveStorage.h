@@ -27,11 +27,12 @@ template<decltype(auto) BlockSize>
 requires std::unsigned_integral<decltype(BlockSize)>
 struct IntrusiveStorage {
 	using OffsetType = std::remove_const_t<decltype(BlockSize)>;
+	using value_type = std::byte;
 
 	OffsetType read_offset = 0;
 	OffsetType write_offset = 0;
 	IntrusiveNode node {};
-	std::array<std::byte, BlockSize> storage;
+	std::array<value_type, BlockSize> storage;
 
 	void reset() {
 		read_offset = 0;

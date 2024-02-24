@@ -29,15 +29,15 @@ struct Packet final {
 
 	PayloadType payload;
 
-	State read_from_stream(spark::BinaryInStream& stream) {
+	State read_from_stream(spark::BinaryStreamReader& stream) {
 		return payload.read_from_stream(stream);
 	}
 
-	void write_to_stream(spark::BinaryOutStream& stream) const {
+	void write_to_stream(spark::BinaryStreamWriter& stream) const {
 		payload.write_to_stream(stream);
 	}
 
-	friend spark::BinaryOutStream& operator<<(spark::BinaryOutStream& stream, const Packet& p) {
+	friend spark::BinaryStreamWriter& operator<<(spark::BinaryStreamWriter& stream, const Packet& p) {
 		p.write_to_stream(stream);
 		return stream;
 	}

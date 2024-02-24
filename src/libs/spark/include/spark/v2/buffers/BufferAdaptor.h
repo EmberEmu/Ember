@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2021 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,36 +8,43 @@
 
 #pragma once
 
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/Utility.h>
 #include <vector>
 #include <utility>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::v2 {
+
+template <typename T>
+concept can_resize = 
+	requires(T t) {
+		{ t.resize( std::size_t() ) } -> std::same_as<void>;
+};
 
 template<byte_oriented buf_type>
-class VectorBufferAdaptor final : public Buffer {
-	std::vector<buf_type>& buffer_;
+class BufferAdaptor final {
+	buf_type& buffer_;
 	std::size_t read_;
 	std::size_t write_;
 
 public:
-	VectorBufferAdaptor(std::vector<buf_type>& buffer) : buffer_(buffer), read_(0), write_(0) {}
+	BufferAdaptor(buf_type& buffer)
+		: buffer_(buffer), read_(0), write_(0) {}
 
-	void read(void* destination, std::size_t length) override {
+	void read(void* destination, std::size_t length) {
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
 	}
 
-	void copy(void* destination, std::size_t length) const override {
+	void copy(void* destination, std::size_t length) const {
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 
-	void skip(std::size_t length) override {
+	void skip(std::size_t length) {
 		read_ += length;
 	}
 
-	void write(const void* source, std::size_t length) override {
+	void write(const void* source, std::size_t length) requires(can_resize<buf_type>) {
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks
@@ -49,27 +56,23 @@ public:
 		write_ += length;
 	}
 	
-	void reserve(std::size_t length) override {
-		buffer_.reserve(length);
-	}
-
-	std::size_t size() const override {
+	std::size_t size() const {
 		return buffer_.size() - read_;
 	}
 
-	bool empty() const override {
+	bool empty() const {
 		return !(buffer_.size() - read_);
 	}
 
-	std::byte& operator[](const std::size_t index) override {
+	std::byte& operator[](const std::size_t index) {
 		return reinterpret_cast<std::byte&>(buffer_[index]);
 	}
 
-	bool can_write_seek() const override {
+	bool can_write_seek() const requires(can_resize<buf_type>) {
 		return true;
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) override {
+	void write_seek(SeekDir direction, std::size_t offset = 0) requires(can_resize<buf_type>) {
 		switch(direction) {
 			case SeekDir::SD_BACK:
 				write_ -= offset;
@@ -83,4 +86,4 @@ public:
 	}
 };
 
-} // spark, ember
+} // v2, spark, ember

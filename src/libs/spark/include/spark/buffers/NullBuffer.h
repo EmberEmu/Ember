@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2021 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <spark/buffers/BufferOut.h>
+#include <spark/buffers/BufferWrite.h>
 #include <stdexcept>
 #include <utility>
 #include <cstddef>
 
 namespace ember::spark {
 
-class NullBuffer final : public BufferOut {
+class NullBuffer final : public BufferWrite {
 public:
 	void write(const void* source, std::size_t length) override {};
 	void reserve(std::size_t length) override {};

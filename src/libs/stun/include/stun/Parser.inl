@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <spark/buffers/BinaryInStream.h>
+#include <spark/buffers/BinaryStreamReader.h>
 #include <boost/endian.hpp>
 
 template<typename T>
-auto Parser::extract_ip_pair(spark::BinaryInStream& stream) {
+auto Parser::extract_ip_pair(spark::BinaryStreamReader& stream) {
 	stream.skip(1); // skip reserved byte
 	T attr{};
 	stream >> attr.family;
@@ -43,7 +43,7 @@ auto Parser::extract_ip_pair(spark::BinaryInStream& stream) {
 }
 
 template<typename T>
-auto Parser::extract_ipv4_pair(spark::BinaryInStream& stream) {
+auto Parser::extract_ipv4_pair(spark::BinaryStreamReader& stream) {
 	stream.skip(1); // skip padding byte
 
 	T attr{};
@@ -62,7 +62,7 @@ auto Parser::extract_ipv4_pair(spark::BinaryInStream& stream) {
 }
 
 template<typename T>
-auto Parser::extract_utf8_text(spark::BinaryInStream& stream, const std::size_t size) {
+auto Parser::extract_utf8_text(spark::BinaryStreamReader& stream, const std::size_t size) {
 	// UTF8 encoded sequence of less than 128 characters (which can be as long as 763 bytes)
 	if(size > 763) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_SOFTWARE_ATTR);

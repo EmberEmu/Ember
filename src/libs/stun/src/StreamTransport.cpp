@@ -9,7 +9,7 @@
 #include <stun/StreamTransport.h>
 #include <stun/Protocol.h>
 #include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/VectorBufferAdaptor.h>
+#include <spark/buffers/BufferAdaptor.h>
 
 namespace ember::stun {
 
@@ -109,7 +109,7 @@ void StreamTransport::receive() {
 }
 
 std::size_t StreamTransport::get_length() {
-	spark::VectorBufferAdaptor<std::uint8_t> vba(buffer_);
+	spark::BufferAdaptor vba(buffer_);
 	spark::BinaryStream stream(vba);
 
 	Header header{};

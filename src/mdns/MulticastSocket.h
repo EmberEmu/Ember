@@ -27,7 +27,8 @@ class MulticastSocket final : public Socket {
     std::array<std::uint8_t, MAX_DGRAM_LEN> buffer_;
 
     void receive();
-    void handle_datagram(const std::span<std::uint8_t> datagram, const boost::asio::ip::udp::endpoint& ep);
+    void handle_datagram(const std::span<std::uint8_t> datagram,
+	                     const boost::asio::ip::udp::endpoint& ep);
 
 public:
     MulticastSocket(boost::asio::io_context& context,
