@@ -138,7 +138,7 @@ public:
 		size_ -= length;
 	}
 
-	void copy(void* destination, std::size_t length) const override {
+	void copy(void* destination, const std::size_t length) const override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer copy too large!");
 		std::size_t remaining = length;
 		auto head = root_.next;
@@ -153,7 +153,8 @@ public:
 		}
 	}
 
-	std::vector<IntrusiveStorage*> fetch_buffers(std::size_t length, std::size_t offset = 0) {
+	std::vector<IntrusiveStorage*> fetch_buffers(const std::size_t length,
+	                                             const std::size_t offset = 0) {
 		std::size_t total = length + offset;
 		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
 		std::vector<IntrusiveStorage*> buffers;
@@ -180,7 +181,7 @@ public:
 		return buffers;
 	}
 
-	void skip(std::size_t length) override {
+	void skip(const std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
 		std::size_t remaining = length;
 
@@ -197,7 +198,7 @@ public:
 		size_ -= length;
 	}
 
-	void write(const void* source, std::size_t length) override {
+	void write(const void* source, const std::size_t length) override {
 		std::size_t remaining = length;
 		IntrusiveNode* tail = root_.prev;
 
@@ -219,7 +220,7 @@ public:
 		size_ += length;
 	}
 
-	void reserve(std::size_t length) override {
+	void reserve(const std::size_t length) override {
 		std::size_t remaining = length;
 		IntrusiveNode* tail = root_.prev;
 
@@ -273,7 +274,7 @@ public:
 		delete buffer; // todo, actual allocator
 	}
 
-	void advance_write_cursor(std::size_t size) {
+	void advance_write_cursor(const std::size_t size) {
 		auto buffer = buffer_from_node(root_.prev);
 		const auto actual = buffer->advance_write_cursor(size);
 		BOOST_ASSERT_MSG(size <= BlockSize && actual <= size,
@@ -285,7 +286,7 @@ public:
 		return true;
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) override {
+	void write_seek(const SeekDir direction, std::size_t offset) override {
 		const bool rewind = direction == SeekDir::SD_BACK || direction == SeekDir::SD_START;
 		auto tail = root_.prev;
 
@@ -331,7 +332,7 @@ public:
 		return BlockSize;
 	}
 
-	std::byte& byte_at_index(size_t index) const {
+	std::byte& byte_at_index(const size_t index) const {
 		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
 
 		auto head = root_.next;

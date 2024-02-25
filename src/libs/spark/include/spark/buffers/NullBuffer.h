@@ -18,12 +18,12 @@ namespace ember::spark {
 class NullBuffer final : public BufferWrite {
 public:
 	void write(const void* source, std::size_t length) override {};
-	void reserve(std::size_t length) override {};
+	void reserve(const std::size_t length) override {};
 	std::size_t size() const override{ return 0; };
 	bool empty() const override { return true; };
 	bool can_write_seek() const override { return false; }
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) override {
+	void write_seek(const SeekDir direction, const std::size_t offset) override {
 		throw std::logic_error("Don't do this on a NullBuffer"); 
 	};
 

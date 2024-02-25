@@ -80,7 +80,7 @@ public:
 		return true;
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) requires(can_resize<buf_type>) {
+	void write_seek(const SeekDir direction, const std::size_t offset) requires(can_resize<buf_type>) {
 		switch(direction) {
 			case SeekDir::SD_BACK:
 				write_ -= offset;

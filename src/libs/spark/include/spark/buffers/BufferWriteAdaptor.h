@@ -36,7 +36,7 @@ public:
 		write_ += length;
 	}
 
-	void reserve(std::size_t length) override {
+	void reserve(const std::size_t length) override {
 		buffer_.reserve(length);
 	}
 
@@ -48,7 +48,7 @@ public:
 		return true;
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) override {
+	void write_seek(const SeekDir direction, const std::size_t offset) override {
 		switch(direction) {
 			case SeekDir::SD_BACK:
 				write_ -= offset;

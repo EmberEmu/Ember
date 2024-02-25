@@ -23,8 +23,8 @@ public:
 	virtual void write(const void* source, std::size_t length) = 0;
 	virtual void reserve(std::size_t length) = 0;
 	virtual bool can_write_seek() const = 0;
-	virtual void write_seek(SeekDir direction, std::size_t offset = 0) = 0;
-	virtual std::byte& operator[](const std::size_t index) = 0;
+	virtual void write_seek(SeekDir direction, std::size_t offset) = 0;
+	virtual std::byte& operator[](std::size_t index) = 0;
 };
 
 } // spark, ember

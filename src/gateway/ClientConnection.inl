@@ -29,7 +29,7 @@ void ClientConnection::send(const PacketT& packet) {
 		crypt_->encrypt(opcode);
 	}
 
-	stream.write_seek(spark::SeekDir::SD_START);
+	stream.write_seek(spark::SeekDir::SD_START, 0);
 	stream << size << opcode;
 	stream.write_seek(spark::SeekDir::SD_FORWARD, written - PacketT::HEADER_WIRE_SIZE);
 

@@ -53,7 +53,7 @@ struct IntrusiveStorage {
 	}
 
 	template<typename OutT>
-	std::size_t copy(OutT destination, std::size_t length) const {
+	std::size_t copy(OutT destination, const std::size_t length) const {
 		std::size_t read_len = BlockSize - read_offset;
 
 		if(read_len > length) {
@@ -65,7 +65,7 @@ struct IntrusiveStorage {
 	}
 
 	template<typename InT>
-	std::size_t read(InT destination, std::size_t length, bool allow_optimise = false) {
+	std::size_t read(InT destination, const std::size_t length, const bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
 		read_offset += static_cast<OffsetType>(read_len);
 
@@ -76,7 +76,7 @@ struct IntrusiveStorage {
 		return read_len;
 	}
 
-	std::size_t skip(std::size_t length, bool allow_optimise = false) {
+	std::size_t skip(const std::size_t length, const bool allow_optimise = false) {
 		std::size_t skip_len = BlockSize - read_offset;
 
 		if(skip_len > length) {
@@ -92,7 +92,7 @@ struct IntrusiveStorage {
 		return skip_len;
 	}
 
-	std::size_t reserve(std::size_t length) {
+	std::size_t reserve(const std::size_t length) {
 		std::size_t reserve_len = BlockSize - write_offset;
 
 		if(reserve_len > length) {
@@ -111,7 +111,7 @@ struct IntrusiveStorage {
 		return BlockSize - write_offset;
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset) {
+	void write_seek(const SeekDir direction, const std::size_t offset) {
 		if(direction == SeekDir::SD_START) {
 			write_offset = 0;
 		} else if(direction == SeekDir::SD_BACK) {

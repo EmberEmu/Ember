@@ -68,7 +68,7 @@ public:
 		return buffer_.can_write_seek();
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) {
+	void write_seek(const SeekDir direction, const std::size_t offset) {
 		buffer_.write_seek(direction, offset);
 	}
 

@@ -52,8 +52,8 @@ class BinaryStream final {
 public:
 	using State = StreamState;
 
-	explicit BinaryStream(buf_type& source, std::size_t read_limit = 0)
-		: buffer_(source), read_limit_(0) {};
+	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
+		: buffer_(source), read_limit_(read_limit) {};
 
 	/*** Write ***/
 
@@ -142,7 +142,7 @@ public:
 		return buffer_.can_write_seek();
 	}
 
-	void write_seek(SeekDir direction, std::size_t offset = 0) requires(writeable<buf_type>) {
+	void write_seek(const SeekDir direction, const std::size_t offset) requires(writeable<buf_type>) {
 		buffer_.write_seek(direction, offset);
 	}
 
@@ -162,7 +162,7 @@ public:
 		return &buffer_;
 	}
 
-	void skip(std::size_t count) {
+	void skip(const std::size_t count) {
 		check_read_bounds(count);
 		buffer_.skip(count);
 	}
