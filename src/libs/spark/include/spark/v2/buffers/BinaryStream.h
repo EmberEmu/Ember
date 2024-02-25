@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <spark/buffers/BufferWrite.h>
+#include <spark/buffers/StreamBase.h>
 #include <spark/buffers/Utility.h>
 #include <spark/Exception.h>
 #include <algorithm>
@@ -21,10 +23,6 @@ template <typename buf_type>
 concept writeable =
 	requires(buf_type t, void* v, std::size_t s) {
 		{ t.write(v, s) } -> std::same_as<void>;
-};
-
-enum class StreamState {
-	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
 };
 
 template<byte_oriented buf_type>
@@ -52,6 +50,8 @@ class BinaryStream final {
 	}
 
 public:
+	using State = StreamState;
+
 	explicit BinaryStream(buf_type& source, std::size_t read_limit = 0)
 		: buffer_(source), read_limit_(0) {};
 
@@ -154,8 +154,7 @@ public:
 		return buffer_.empty();
 	}
 
-	std::size_t total_write() {
-		requires(writeable<buf_type>);
+	std::size_t total_write() requires(writeable<buf_type>) {
 	return total_write_;
 	}
 

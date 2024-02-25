@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <spark/buffers/StreamBase.h>
+#include <spark/buffers/BufferWrite.h>
 #include <spark/buffers/Utility.h>
 #include <vector>
 #include <utility>
@@ -28,6 +30,8 @@ class BufferAdaptor final {
 	std::size_t write_;
 
 public:
+	using value_type = buf_type::value_type;
+
 	BufferAdaptor(buf_type& buffer)
 		: buffer_(buffer), read_(0), write_(0) {}
 

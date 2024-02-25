@@ -9,9 +9,9 @@
 #pragma once
 
 #include <protocol/Packet.h>
-#include <spark/buffers/BinaryStream.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
+#include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
@@ -25,15 +25,18 @@ class AuthChallenge final {
 public:
 	be::little_uint32_t seed;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> seed;
-
-		return state_;
+		return (state_ = State::DONE);
+	} catch(const std::exception&) {
+		state_ = State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		stream << seed;
 	}
 };

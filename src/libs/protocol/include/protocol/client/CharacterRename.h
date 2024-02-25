@@ -9,9 +9,9 @@
 #pragma once
 
 #include <protocol/Packet.h>
-#include <spark/buffers/BinaryStream.h>
 #include <shared/util/UTF8String.h>
 #include <boost/endian/arithmetic.hpp>
+#include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
@@ -26,18 +26,20 @@ public:
 	be::little_uint64_t id;
 	utf8_string name;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) try {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> id;
 		stream >> name;
 
 		return (state_ = State::DONE);
-	} catch(const spark::exception&) {
+	} catch(const std::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		stream << id;
 		stream << name;
 	}

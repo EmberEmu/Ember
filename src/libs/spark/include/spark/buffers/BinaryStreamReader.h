@@ -20,25 +20,21 @@
 namespace ember::spark {
 
 class BinaryStreamReader : virtual public StreamBase {
-public:
-	using State = StreamStateBase;
-
-private:
 	BufferRead& buffer_;
 	std::size_t total_read_;
 	const std::size_t read_limit_;
-	State state_;
+	StreamState state_;
 
 	void check_read_bounds(std::size_t read_size) {
 		if(read_size > buffer_.size()) {
-			state_ = State::BUFF_LIMIT_ERR;
+			state_ = StreamState::BUFF_LIMIT_ERR;
 			throw buffer_underrun(read_size, total_read_, buffer_.size());
 		}
 
 		const auto req_total_read = total_read_ + read_size;
 
 		if(read_limit_ && req_total_read > read_limit_) {
-			state_ = State::READ_LIMIT_ERR;
+			state_ = StreamState::READ_LIMIT_ERR;
 			throw stream_read_limit(read_size, total_read_, read_limit_);
 		}
 
@@ -48,7 +44,7 @@ private:
 public:
 	explicit BinaryStreamReader(BufferRead& source, std::size_t read_limit = 0)
                             : StreamBase(source), buffer_(source), total_read_(0),
-                              read_limit_(read_limit), state_(State::OK) {}
+                              read_limit_(read_limit), state_(StreamState::OK) {}
 
 	// terminates when it hits a null-byte or consumes all data in the buffer
 	BinaryStreamReader& operator >>(std::string& dest) {
@@ -99,7 +95,7 @@ public:
 		buffer_.skip(count);
 	}
 
-	State state() {
+	StreamState state() {
 		return state_;
 	}
 

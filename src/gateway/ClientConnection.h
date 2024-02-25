@@ -10,6 +10,7 @@
 
 #include "ClientHandler.h"
 #include "ConnectionStats.h"
+#include "ConnectionDefines.h"
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
@@ -35,18 +36,15 @@ namespace ember {
 class SessionManager;
 
 class ClientConnection final {
-	static constexpr std::uint16_t INBOUND_SIZE { 1024 };
-	static constexpr std::uint16_t OUTBOUND_SIZE { 2048 };
-
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint ep_;
 
-	spark::DynamicBuffer<INBOUND_SIZE> inbound_buffer_;
-	std::array<spark::DynamicBuffer<OUTBOUND_SIZE>, 2> outbound_buffers_;
-	spark::DynamicBuffer<OUTBOUND_SIZE>* outbound_front_;
-	spark::DynamicBuffer<OUTBOUND_SIZE>* outbound_back_;
+	BufferInType inbound_buffer_;
+	std::array<BufferOutType, 2> outbound_buffers_;
+	BufferOutType* outbound_front_;
+	BufferOutType* outbound_back_;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
@@ -75,10 +73,10 @@ class ClientConnection final {
 	void terminate();
 
 	// packet reassembly & dispatching
-	void dispatch_message(spark::Buffer& buffer);
-	void process_buffered_data(spark::Buffer& buffer);
-	void parse_header(spark::Buffer& buffer);
-	void completion_check(const spark::Buffer& buffer);
+	void dispatch_message(BufferInType& buffer);
+	void process_buffered_data(BufferInType& buffer);
+	void parse_header(BufferInType& buffer);
+	void completion_check(const BufferInType& buffer);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,

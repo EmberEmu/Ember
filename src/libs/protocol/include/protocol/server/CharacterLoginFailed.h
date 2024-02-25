@@ -10,8 +10,8 @@
 
 #include <protocol/Packet.h>
 #include <protocol/ResultCodes.h>
-#include <spark/buffers/BinaryStream.h>
 #include <boost/assert.hpp>
+#include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
@@ -23,17 +23,19 @@ class CharacterLoginFailed final {
 public:
 	std::uint8_t reason;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) try {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> reason;
 
 		return (state_ = State::DONE);
-	} catch(const spark::exception&) {
+	} catch(const std::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		stream << reason;
 	}
 };

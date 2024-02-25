@@ -11,11 +11,11 @@
 
 #include <protocol/Packet.h>
 #include <protocol/ResultCodes.h>
-#include <spark/buffers/BinaryStream.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
 #include <array>
+#include <stdexcept>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -64,15 +64,17 @@ public:
 	Result result;
 	std::vector<AddonData> addon_data;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) try {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		return (state_ = State::DONE);
-	} catch(const spark::exception&) {
+	} catch(const std::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 

@@ -30,7 +30,7 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	detail::parse_header(query, stream);
 	detail::parse_records(query, labels, stream);
 
-	if(stream.state() != spark::BinaryStreamReader::State::OK) {
+	if(stream.state() != spark::StreamState::OK) {
 		return { Result::STREAM_ERROR, std::nullopt };
 	}
 

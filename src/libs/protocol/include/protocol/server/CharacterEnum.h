@@ -9,11 +9,11 @@
 #pragma once
 
 #include <protocol/Packet.h>
-#include <spark/buffers/BinaryStream.h>
 #include <shared/database/objects/Character.h>
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/endian/buffers.hpp>
+#include <stdexcept>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -28,7 +28,8 @@ class CharacterEnum final {
 public:
 	std::vector<Character> characters;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		std::uint8_t char_count;
@@ -86,11 +87,13 @@ public:
 			characters.emplace_back(std::move(c));
 		}
 
-
-		return state_;
+		return (state_ = State::DONE);
+	} catch(const std::exception&) {
+		state_ = State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {

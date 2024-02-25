@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,6 @@
 #pragma once
 
 #include <protocol/PacketHeaders.h>
-#include <spark/buffers/BinaryStream.h>
 #include <cstddef>
 
 namespace ember::protocol {
@@ -29,15 +28,18 @@ struct Packet final {
 
 	PayloadType payload;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) {
+	template<typename reader>
+	State read_from_stream(reader& stream) {
 		return payload.read_from_stream(stream);
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		payload.write_to_stream(stream);
 	}
 
-	friend spark::BinaryStreamWriter& operator<<(spark::BinaryStreamWriter& stream, const Packet& p) {
+	template<typename writer>
+	friend writer& operator<<(writer& stream, const Packet& p) {
 		p.write_to_stream(stream);
 		return stream;
 	}

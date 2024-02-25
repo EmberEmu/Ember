@@ -9,8 +9,8 @@
 #pragma once
 
 #include <protocol/Packet.h>
-#include <spark/buffers/BinaryStream.h>
 #include <shared/database/objects/Character.h>
+#include <stdexcept>
 #include <memory>
 #include <string>
 #include <cstdint>
@@ -24,7 +24,8 @@ class CharacterCreate final {
 public:
 	CharacterTemplate character;
 	
-	State read_from_stream(spark::BinaryStreamReader& stream) try {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> character.name;
@@ -39,11 +40,12 @@ public:
 		stream >> character.outfit_id;
 
 		return (state_ = State::DONE);
-	} catch(const spark::exception&) {
+	} catch(const std::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		stream << character.name;
 		stream << character.race;
 		stream << character.class_;

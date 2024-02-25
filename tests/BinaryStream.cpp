@@ -41,7 +41,7 @@ TEST(BinaryStream, MessageReadLimit) {
 	// attempt to read past the stream message bound
 	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::stream_read_limit)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::BinaryStream::State::READ_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::StreamState::READ_LIMIT_ERR)
 		<< "Unexpected stream state";
 }
 
@@ -63,7 +63,7 @@ TEST(BinaryStream, BufferLimit) {
 	// attempt to read past the buffer bound
 	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::buffer_underrun)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::BinaryStream::State::BUFF_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::StreamState::BUFF_LIMIT_ERR)
 		<< "Unexpected stream state";
 }
 
@@ -83,7 +83,7 @@ TEST(BinaryStream, ReadWriteInts) {
 	ASSERT_EQ(in, out);
 	ASSERT_TRUE(stream.empty());
 	ASSERT_TRUE(buffer.empty());
-	ASSERT_EQ(stream.state(), spark::BinaryStream::State::OK)
+	ASSERT_EQ(stream.state(), spark::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
@@ -101,7 +101,7 @@ TEST(BinaryStream, ReadWriteStdString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::BinaryStream::State::OK)
+	ASSERT_EQ(stream.state(), spark::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
@@ -120,7 +120,7 @@ TEST(BinaryStream, ReadWriteCString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(0, strcmp(in, out.c_str()));
-	ASSERT_EQ(stream.state(), spark::BinaryStream::State::OK)
+	ASSERT_EQ(stream.state(), spark::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
@@ -154,7 +154,7 @@ TEST(BinaryStream, ReadWriteVector) {
 	// read the integers to an output buffer and compare both
 	stream.get(out.begin(), out.end());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::BinaryStream::State::OK)
+	ASSERT_EQ(stream.state(), spark::StreamState::OK)
 		<< "Unexpected stream state";
 }
 

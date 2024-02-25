@@ -33,7 +33,7 @@ void ClientHandler::close() {
 	connection_.close_session();
 }
 
-void ClientHandler::handle_message(spark::BinaryStream& stream) {
+void ClientHandler::handle_message(ClientStream& stream) {
 	context_.stream = &stream;
 	stream >> opcode_;
 
@@ -73,7 +73,7 @@ void ClientHandler::state_update(ClientState new_state) {
 	enter_states[context_.state](context_);
 }
 
-void ClientHandler::packet_skip(spark::BinaryStream& stream) {
+void ClientHandler::packet_skip(ClientStream& stream) {
 	CLIENT_DEBUG_FILTER(logger_, LF_NETWORK, context_)
 		<< ClientState_to_string(context_.state) << " skipping "
 		<< protocol::to_string(opcode_)
@@ -82,7 +82,7 @@ void ClientHandler::packet_skip(spark::BinaryStream& stream) {
 	stream.skip(stream.read_limit() - stream.total_read());
 }
 
-void ClientHandler::handle_ping(spark::BinaryStream& stream) {
+void ClientHandler::handle_ping(ClientStream& stream) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_PING packet;

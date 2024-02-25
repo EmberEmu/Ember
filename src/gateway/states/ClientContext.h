@@ -11,6 +11,7 @@
 #include "ClientStates.h"
 #include "AuthenticationContext.h"
 #include "WorldEnterContext.h"
+#include "../ConnectionDefines.h"
 #include <spark/buffers/Buffer.h>
 #include <protocol/PacketHeaders.h>
 #include <shared/util/UTF8String.h>
@@ -39,7 +40,7 @@ struct ClientID {
 };
 
 struct ClientContext {
-	spark::BinaryStream* stream;
+	ClientStream* stream;
 	ClientState state;
 	ClientState prev_state;
 	ClientHandler* handler;

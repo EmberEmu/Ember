@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,11 +12,12 @@
 #include "packetlog/LogSink.h"
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>
+#include <spark/v2/buffers/BinaryStream.h>
 #include <algorithm>
 
 namespace ember {
 
-void ClientConnection::parse_header(spark::Buffer& buffer) {
+void ClientConnection::parse_header(BufferInType& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(buffer.size() < protocol::ClientHeader::WIRE_SIZE) {
@@ -27,13 +28,13 @@ void ClientConnection::parse_header(spark::Buffer& buffer) {
 		crypt_->decrypt(buffer, protocol::ClientHeader::WIRE_SIZE);
 	}
 
-	spark::BinaryStream stream(buffer);
+	ClientStream stream(buffer);
 	stream >> msg_size_;
 
 	read_state_ = ReadState::BODY;
 }
 
-void ClientConnection::completion_check(const spark::Buffer& buffer) {
+void ClientConnection::completion_check(const BufferInType& buffer) {
 	if(buffer.size() < msg_size_) {
 		return;
 	}
@@ -41,12 +42,12 @@ void ClientConnection::completion_check(const spark::Buffer& buffer) {
 	read_state_ = ReadState::DONE;
 }
 
-void ClientConnection::dispatch_message(spark::Buffer& buffer) {
-	spark::BinaryStream stream(buffer, msg_size_);
+void ClientConnection::dispatch_message(BufferInType& buffer) {
+	ClientStream stream(buffer, msg_size_);
 	handler_.handle_message(stream);
 }
 
-void ClientConnection::process_buffered_data(spark::Buffer& buffer) {
+void ClientConnection::process_buffered_data(BufferInType& buffer) {
 	while(!buffer.empty()) {
 		if(read_state_ == ReadState::HEADER) {
 			parse_header(buffer);
@@ -243,7 +244,9 @@ void ClientConnection::log_packets(bool enable) {
 	if(enable) {
 		packet_logger_ = std::make_unique<PacketLogger>();
 		packet_logger_->add_sink(std::make_unique<FBSink>("temp", "gateway", remote_address()));
-		packet_logger_->add_sink(std::make_unique<LogSink>(*logger_, log::Severity::INFO, remote_address()));
+		packet_logger_->add_sink(
+			std::make_unique<LogSink>(*logger_, log::Severity::INFO, remote_address())
+		);
 	} else {
 		packet_logger_.reset();
 	}

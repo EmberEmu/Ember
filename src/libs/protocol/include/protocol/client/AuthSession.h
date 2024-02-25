@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/DynamicBuffer.h>
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
 #include <protocol/Packet.h>
 #include <logger/Logging.h>
 #include <shared/util/UTF8String.h>
@@ -20,6 +19,7 @@
 #include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
 #include <array>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -53,7 +53,8 @@ public:
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
-	State read_from_stream(spark::BinaryStreamReader& stream) try {
+	template<typename reader>
+	State read_from_stream(reader& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		const auto initial_stream_size = stream.size();
@@ -93,9 +94,9 @@ public:
 			LOG_DEBUG_GLOB << "Decompression of addon data failed with code " << ret << LOG_ASYNC;
 			return (state_ = State::ERRORED);
 		}
-	
-		spark::BufferReadAdaptor buffer(dest);
-		spark::BinaryStreamReader addon_stream(buffer);
+
+		spark::v2::BufferAdaptor buffer(dest);
+		spark::v2::BinaryStream addon_stream(buffer);
 
 		while(!addon_stream.empty()) {
 			AddonData data;
@@ -107,11 +108,12 @@ public:
 		}
 
 		return (state_ = State::DONE);
-	} catch(const spark::exception&) {
+	} catch(const std::exception&) {
 		return State::ERRORED;
 	}
 
-	void write_to_stream(spark::BinaryStreamWriter& stream) const {
+	template<typename writer>
+	void write_to_stream(writer& stream) const {
 		stream << build;
 		stream << server_id;
 		stream << username;
