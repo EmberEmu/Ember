@@ -13,6 +13,7 @@
 #include <spark/Exception.h>
 #include <algorithm>
 #include <concepts>
+#include <ranges>
 #include <string>
 #include <cstddef>
 #include <cstring>
@@ -86,6 +87,13 @@ public:
 		for(; begin != end; ++begin) {
 			*this >> *begin;
 		}
+	}
+
+	template<std::ranges::contiguous_range range>
+	void get(range& dest) {
+		const auto read_size = dest.size() * sizeof(range::value_type);
+		check_read_bounds(read_size);
+		buffer_.read(dest, read_size);
 	}
 
 	/**  Misc functions **/ 

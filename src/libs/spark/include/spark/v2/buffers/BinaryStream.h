@@ -13,8 +13,12 @@
 #include <spark/buffers/Utility.h>
 #include <spark/Exception.h>
 #include <algorithm>
+#include <array>
+#include <concepts>
+#include <ranges>
 #include <string>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 namespace ember::spark::v2 {
@@ -31,7 +35,7 @@ class BinaryStream final {
 	std::size_t total_write_ = 0;
 	std::size_t total_read_ = 0;
 	const std::size_t read_limit_;
-	StreamState state_;
+	StreamState state_ = StreamState::OK;
 
 	void check_read_bounds(const std::size_t read_size) {
 		if(read_size > buffer_.size()) {
@@ -47,6 +51,17 @@ class BinaryStream final {
 		}
 
 		total_read_ = req_total_read;
+	}
+
+	template<std::size_t size>
+	constexpr auto generate_filled(const std::uint8_t value) {
+		std::array<std::uint8_t, size> target{};
+
+		for(std::size_t i = 0; i < size; ++i) {
+			target[i] = value;
+		}
+
+		return target;
 	}
 
 public:
@@ -78,6 +93,13 @@ public:
 		return *this;
 	}
 
+	template<std::ranges::contiguous_range range>
+	void put(range& data) requires(writeable<buf_type>) {
+		const auto write_size = data.size() * sizeof(range::value_type);
+		buffer_.write(data.data(), write_size);
+		total_write_ += write_size;
+	}
+
 	template<typename T>
 	void put(const T* data, std::size_t count) requires(writeable<buf_type>) {
 		const auto write_size = count * sizeof(T);
@@ -90,6 +112,12 @@ public:
 		for(auto it = begin; it != end; ++it) {
 			*this << *it;
 		}
+	}
+
+	template<std::size_t size>
+	void fill(const std::uint8_t value) requires(writeable<buf_type>) {
+		const auto filled = generate_filled<size>(value);
+		buffer_.write(filled.data(), filled.size());
 	}
 
 	/*** Read ***/
@@ -134,6 +162,13 @@ public:
 		for(; begin != end; ++begin) {
 			*this >> *begin;
 		}
+	}
+
+	template<std::ranges::contiguous_range range>
+	void get(range& dest) {
+		const auto read_size = dest.size() * sizeof(range::value_type);
+		check_read_bounds(read_size);
+		buffer_.read(dest, read_size);
 	}
 
 	/**  Misc functions **/
