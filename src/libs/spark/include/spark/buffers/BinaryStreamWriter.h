@@ -38,7 +38,8 @@ private:
 	}
 
 public:
-	explicit BinaryStreamWriter(BufferWrite& source) : StreamBase(source), buffer_(source), total_write_(0) {}
+	explicit BinaryStreamWriter(BufferWrite& source)
+		: StreamBase(source), buffer_(source), total_write_(0) {}
 
 	BinaryStreamWriter& operator <<(const trivially_copyable auto& data) {
 		buffer_.write(&data, sizeof(data));

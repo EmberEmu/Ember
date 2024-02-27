@@ -1,0 +1,431 @@
+/*
+ * Copyright (c) 2024 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+#include <portmap/natpmp/Client.h>
+#include <portmap/natpmp/Deserialise.h>
+#include <portmap/natpmp/Serialise.h>
+#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
+#include <random>
+
+#include <iostream> // todo, zug zug
+
+namespace ember::portmap::natpmp {
+
+namespace bai = boost::asio::ip;
+
+Client::Client(const std::string& interface, std::string gateway)
+	: gateway_(std::move(gateway)), transport_(interface),
+	interface_(interface),
+	resolve_res_(false), has_resolved_(false) {
+
+	transport_.set_callbacks(
+		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
+			handle_message(buffer, ep); 
+		},
+		[&](const boost::system::error_code&) { handle_connection_error(); }
+	);
+
+	transport_.join_group("224.0.0.1");
+
+	transport_.resolve(gateway_, PORT_OUT, [&](const boost::system::error_code& ec) {
+		resolve_res_ = !static_cast<bool>(ec);
+		has_resolved_ = true;
+		has_resolved_.notify_all();
+	});
+}
+
+void Client::handle_connection_error() {
+
+}
+
+ErrorType Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
+	const auto response = deserialise<UnsupportedErrorResponse>(buffer);
+
+	if(response.version != NATPMP_VERSION
+	   || response.opcode != 0
+	   || response.result_code != ResultCode::UNSUPPORTED_VERSION) {
+		// we don't understand this message, at all
+		return ErrorType::SERVER_INCOMPATIBLE;
+	}
+
+	return ErrorType::RETRY_NATPMP;
+} catch(const spark::exception&) {
+	return ErrorType::SERVER_INCOMPATIBLE;
+}
+
+void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	std::uint8_t protocol_version{};
+	stream >> protocol_version;
+
+	auto& promise = std::get<std::promise<MapResult>>(active_promise_);
+
+	if(protocol_version != PCP_VERSION) {
+		const Error error = handle_pmp_to_pcp_error(buffer);
+		promise.set_value(std::unexpected(error));
+		return;
+	}
+
+	pcp::ResponseHeader header{};
+
+	try {
+		header = deserialise<pcp::ResponseHeader>(buffer);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		return;
+	}
+
+	if(!header.response) {
+		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		return;
+	}
+
+	if(header.result != pcp::Result::SUCCESS) {
+		promise.set_value(std::unexpected(
+			Error{ ErrorType::PCP_CODE, header.result }
+		));
+		return;
+	}
+
+	std::span<const std::uint8_t> body_buff = {
+		buffer.begin() + pcp::HEADER_SIZE, buffer.end()
+	};
+
+	try {
+		const auto body = deserialise<pcp::MapResponse>(body_buff);
+		
+		const MappingResult result {
+			.internal_port = body.internal_port,
+			.external_port = body.assigned_external_port,
+			.lifetime = header.lifetime,
+			.secs_since_epoch = header.epoch_time,
+			.external_ip = body.assigned_external_ip
+		};
+
+		promise.set_value(result);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+	}
+}
+
+void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
+	auto message = deserialise<MappingResponse>(buffer);
+}
+
+void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	std::uint8_t protocol_version{};
+	stream >> protocol_version;
+
+	auto& promise = std::get<std::promise<ExternalAddress>>(active_promise_);
+
+	if(protocol_version != NATPMP_VERSION) {
+		promise.set_value(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
+		return;
+	}
+
+	ExtAddressResponse message{};
+
+	try {
+		message = deserialise<ExtAddressResponse>(buffer);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		return;
+	}
+
+	if(message.opcode != NATPMP_RESULT) {
+		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		return;
+	}
+
+	if(message.result_code == ResultCode::SUCCESS) {
+		const auto v4 = bai::address_v4(message.external_ip);
+		const auto v6 = bai::make_address_v6(bai::v4_mapped, v4);
+		promise.set_value(v6.to_bytes());
+	} else {
+		promise.set_value(std::unexpected(
+			Error { ErrorType::PCP_CODE, message.result_code })
+		);
+	}
+}
+
+void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
+	auto future = std::get<std::promise<MapResult>>(prev_promise_).get_future();
+	auto result = future.get();
+	auto promise = std::move(std::get<std::promise<ExternalAddress>>(active_promise_));
+
+	if(result) {
+		promise.set_value(result.value().external_ip);
+	} else if(result.error().type == ErrorType::RETRY_NATPMP) {
+		get_external_address_pmp(std::move(promise));
+	} else {
+		const Error error = result.error();
+		promise.set_value(std::unexpected(error));
+	}
+}
+
+void Client::handle_external_address(std::span<std::uint8_t> buffer) {
+	if(state_ == State::AWAITING_EXTERNAL_ADDRESS_PCP) {
+		handle_external_address_pcp(buffer);
+	} else {
+		handle_external_address_pmp(buffer);
+	}
+}
+
+void Client::finagle_state() {
+	active_promise_ = std::move(promises_.top());
+	promises_.pop();
+	state_ = states_.top();
+	states_.pop();
+}
+
+void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
+	/*
+	 * Upon receiving a response packet, the client MUST check the source IP
+     * address, and silently discard the packet if the address is not the
+     * address of the gateway to which the request was sent.
+	 */
+	if(ep.address().to_string() != gateway_) {
+		return;
+	}
+
+	while(!states_.empty()) {
+		finagle_state();
+		const auto size = states_.size();
+
+		switch(state_) {
+			case State::AWAITING_MAPPING_RESULT_PCP:
+				handle_mapping_pcp(buffer);
+				break;
+			case State::AWAITING_EXTERNAL_ADDRESS_PMP:
+				[[fallthrough]];
+			case State::AWAITING_EXTERNAL_ADDRESS_PCP:
+				handle_external_address(buffer);
+				break;
+		}
+		
+		// a handler has pushed a new state, let it do the work
+		if(states_.size() != size) {
+			break;
+		} else {
+			prev_promise_ = std::move(active_promise_);
+		}
+	}
+
+	if(states_.empty()) {
+		state_ = State::IDLE;
+	}
+}
+
+void Client::add_mapping_natpmp(const RequestMapping& mapping,
+                                std::promise<MapResult> promise) {
+	std::vector<std::uint8_t> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	try {
+		serialise(mapping, stream);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
+		return;
+	}
+
+	states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
+	promises_.emplace(std::move(promise));
+	transport_.send(std::move(buffer));
+}
+
+void Client::announce_pcp() {
+	std::vector<std::uint8_t> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	
+	pcp::RequestHeader header {
+		.version = PCP_VERSION,
+		.opcode = pcp::Opcode::ANNOUNCE,
+		.lifetime = 0
+	};
+
+	const auto address = bai::make_address(interface_);
+	bai::address_v6 v6{};
+
+	if(address.is_v6()) {
+		v6 = address.to_v6();
+	} else {
+		v6 = bai::make_address_v6(bai::v4_mapped, address.to_v4());
+	}
+
+	const auto& bytes = v6.to_bytes();
+	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
+
+	try {
+		serialise(header, stream);
+		transport_.send(std::move(buffer));
+	} catch(const spark::exception&) {
+		//promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
+	}
+}
+
+void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResult> promise) {
+	std::vector<std::uint8_t> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	
+	pcp::RequestHeader header {
+		.version = PCP_VERSION,
+		.opcode = pcp::Opcode::MAP,
+		.lifetime = mapping.lifetime
+	};
+
+	const auto address = bai::make_address(interface_);
+	bai::address_v6 v6{};
+
+	if(address.is_v6()) {
+		v6 = address.to_v6();
+	} else {
+		v6 = bai::make_address_v6(bai::v4_mapped, address.to_v4());
+	}
+
+	const auto& bytes = v6.to_bytes();
+	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
+
+	const auto protocol = (mapping.opcode == Protocol::MAP_TCP)?
+		pcp::Protocol::TCP : pcp::Protocol::UDP;
+
+	pcp::MapRequest map {
+		.protocol = protocol,
+		.internal_port = mapping.internal_port,
+		.suggested_external_port = mapping.external_port
+	};
+
+	std::random_device engine;
+	std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
+
+	try {
+		serialise(header, stream);
+		serialise(map, stream);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
+		return;
+	}
+
+	states_.push(State::AWAITING_MAPPING_RESULT_PCP);
+	promises_.emplace(std::move(promise));
+	transport_.send(std::move(buffer));
+}
+
+void Client::do_delete_mapping(const std::uint16_t internal_port, 
+                               const Protocol protocol,
+                               std::promise<MapResult> promise) {
+	std::vector<std::uint8_t> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	const RequestMapping request {
+		.version = 0,
+		.opcode = protocol,
+		.internal_port = internal_port,
+		.external_port = 0,
+		.lifetime = 0
+	};
+
+	try {
+		serialise(request, stream);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
+		return;
+	}
+
+	state_ = State::AWAITING_DELETE_RESULT_PMP;
+	transport_.send(std::move(buffer));
+}
+
+void Client::get_external_address_pcp(std::promise<ExternalAddress> promise) {
+	std::promise<MapResult> internal_promise;
+
+	RequestMapping request {
+		.opcode = Protocol::MAP_UDP,
+		.internal_port = 9, // discard protocol
+		.external_port = 9,
+		.lifetime = 10
+	};
+
+	promises_.emplace(std::move(promise));
+	states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PCP);
+	add_mapping_pcp(request, std::move(internal_promise));
+}
+
+void Client::get_external_address_pmp(std::promise<ExternalAddress> promise) {
+	std::vector<std::uint8_t> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	RequestExtAddress request{};
+
+	try {
+		serialise(request, stream);
+	} catch(const spark::exception&) {
+		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
+		return;
+	}
+
+	states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PMP);
+	promises_.emplace(std::move(promise));
+	transport_.send(std::move(buffer));
+}
+
+std::future<Client::MapResult> Client::add_mapping(RequestMapping mapping) {
+	has_resolved_.wait(false);
+
+	std::promise<MapResult> promise;
+	std::future<MapResult> future = promise.get_future();
+
+	if(!resolve_res_) {
+		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		return future;
+	}
+
+	add_mapping_pcp(mapping, std::move(promise));
+	return future;
+}
+
+std::future<Client::MapResult> Client::delete_mapping(const std::uint16_t internal_port,
+                                                      const Protocol protocol) {
+	has_resolved_.wait(false);
+
+	std::promise<MapResult> promise;
+	std::future<MapResult> future = promise.get_future();
+
+	do_delete_mapping(internal_port, protocol, std::move(promise));
+	return future;
+}
+
+std::future<Client::MapResult> Client::delete_all(const Protocol protocol) {
+	return delete_mapping(0, protocol);
+}
+
+std::future<Client::ExternalAddress> Client::external_address() {
+	has_resolved_.wait(false);
+
+	std::promise<ExternalAddress> promise;
+	std::future<ExternalAddress> future = promise.get_future();
+
+	if(!resolve_res_) {
+		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
+	}
+
+	get_external_address_pcp(std::move(promise));
+	return future;
+}
+
+} // natpmp, portmap, ember
