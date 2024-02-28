@@ -39,23 +39,37 @@ void launch(const po::variables_map& args) {
 	const auto interface = args["interface"].as<std::string>();
 	const auto gateway = args["gateway"].as<std::string>();
 	const auto protocol = args["protocol"].as<std::string>();
+	const auto deletion = args["delete"].as<bool>();
 	
-	portmap::natpmp::Client client(interface, gateway);
+	auto proto = portmap::natpmp::Protocol::MAP_TCP;
+
+	if(protocol == "udp") {
+		proto = portmap::natpmp::Protocol::MAP_UDP;
+	}
 
 	const portmap::natpmp::RequestMapping request {
-		.opcode = portmap::natpmp::Protocol::MAP_TCP,
+		.opcode = proto,
 		.internal_port = internal,
 		.external_port = external,
-		.lifetime = 7200
+		.lifetime = deletion? 0u : 7200u
 	};
 
-	auto future = client.add_mapping(request);
+	portmap::natpmp::Client client(interface, gateway);
+	std::future<portmap::natpmp::Client::MapResult> future;
+
+	if(deletion) {
+		future = client.delete_mapping(internal, proto);
+	} else {
+		future = client.add_mapping(request);
+	}
+
 	auto result = future.get();
 
 	if(result) {
-		std::cout << std::format("Successful mapping: {} -> {} for {} seconds\n",
-								 result->external_port,
-								 result->internal_port,
+		std::cout << std::format("Successful {}: {} -> {} for {} seconds\n",
+		                         deletion? "deletion" : "mapping",
+		                         result->external_port,
+		                         result->internal_port,
 		                         result->lifetime);
 	} else {
 		std::cout << "Error: could not map port" << std::endl;
@@ -72,7 +86,6 @@ void launch(const po::variables_map& args) {
 		std::cout << "Error: could not retrieve external address" << std::endl;
 		print_error(result.error());
 	}
-
 }
 
 void print_error(const portmap::natpmp::Error& error) {
@@ -94,6 +107,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("external,x", po::value<std::uint16_t>()->default_value(8085), "External port")
 		("interface,f", po::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
 		("gateway,g", po::value<std::string>()->default_value(""), "Gateway address")
+		("delete,d", po::value<bool>()->default_value(false), "Delete mapping")
 		("protocol,p", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)");
 
 	po::variables_map options;

@@ -31,7 +31,7 @@ smart_enum_class(ErrorType, int,
 
 struct Error {
 	Error(ErrorType type)
-		: type(type) {}
+		: type(type), pcp_code{} {}
 	Error(ErrorType type, ResultCode code)
 		: type(type), natpmp_code(code) {}
 	Error(ErrorType type, pcp::Result code)

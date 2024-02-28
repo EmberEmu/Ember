@@ -11,6 +11,7 @@ add_library(${LIBRARY_NAME}
 		   src/natpmp/DatagramTransport.cpp
            include/portmap/Client.h
            include/portmap/natpmp/Client.h
+		   include/portmap/natpmp/Daemon.h
 		   include/portmap/natpmp/DatagramTransport.h
            include/portmap/natpmp/Protocol.h
            include/portmap/natpmp/Serialise.h

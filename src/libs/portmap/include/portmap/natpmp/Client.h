@@ -25,22 +25,23 @@
 namespace ember::portmap::natpmp {
 
 class Client {
-	enum class State {
-		IDLE,
-		AWAITING_MAPPING_RESULT_PMP,
-		AWAITING_MAPPING_RESULT_PCP,
-		AWAITING_DELETE_RESULT_PMP,
-		AWAITING_DELETE_RESULT_PCP,
-		AWAITING_EXTERNAL_ADDRESS_PMP,
-		AWAITING_EXTERNAL_ADDRESS_PCP,
-	};
-
+public:
 	using MapResult = std::expected<MappingResult, Error>;
 	using ExternalAddress = std::expected<std::array<std::uint8_t, 16>, Error>;
 
 	using ClientPromise = std::variant<
 		std::promise<MapResult>, std::promise<ExternalAddress>
 	>;
+
+private:
+	enum class State {
+		IDLE,
+		AWAITING_MAPPING_RESULT_PMP,
+		AWAITING_MAPPING_RESULT_PCP,
+		AWAITING_EXTERNAL_ADDRESS_PMP,
+		AWAITING_EXTERNAL_ADDRESS_PCP,
+	};
+
 
 	DatagramTransport transport_;
 	const std::string gateway_;
@@ -52,6 +53,7 @@ class Client {
 	std::stack<ClientPromise> promises_;
 	ClientPromise prev_promise_;
 	ClientPromise active_promise_;
+	RequestMapping stored_request_{};
 
 	void finagle_state();
 	void announce_pcp();
@@ -62,11 +64,8 @@ class Client {
 
 	void add_mapping_natpmp(const RequestMapping& mapping, std::promise<MapResult> promise);
 	void add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResult> promise);
-	void do_delete_mapping(std::uint16_t internal_port, Protocol protocol,
-	                       std::promise<MapResult> promise);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
-	void handle_external_address(std::span<std::uint8_t> buffer);
 	void handle_external_address_pcp(std::span<std::uint8_t> buffer);
 	void handle_external_address_pmp(std::span<std::uint8_t> buffer);
 
