@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <climits>
 #include <cstddef>
 
 namespace ember {
@@ -34,10 +35,18 @@ public:
 		return hash_;
 	}
 
+	std::size_t update_byte(std::uint8_t value) {
+		hash_ = (hash_ * 0x1000193) ^ value;
+		return hash_;
+	}
+
 	template<std::integral T>
 	std::size_t update(T data) {
-		const std::span<T> span(&data, sizeof(data));
-		return update(span.begin(), span.end());
+		for(std::size_t i = 0; i < sizeof(data); ++i) {
+			update_byte(data >> (CHAR_BIT * i) & 0xff);
+		}
+
+		return hash_;
 	}
 
 	template<is_scoped_enum T>
