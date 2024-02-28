@@ -15,9 +15,9 @@
 
 namespace ember::util {
 
-std::vector<std::uint8_t> generate_md5(std::span<const std::byte> data) {
+std::vector<std::uint8_t> generate_md5(std::span<const std::byte> buffer) {
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	hasher->update(reinterpret_cast<const std::uint8_t*>(&data), data.size_bytes());
+	hasher->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
 	return hasher->final_stdvec();
 }
 
