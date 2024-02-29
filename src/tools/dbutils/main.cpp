@@ -27,6 +27,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <span>
 #include <string>
 #include <string_view>
 #include <regex>
@@ -56,7 +57,7 @@ void db_install(const po::variables_map& args, const std::string& db_name, const
 bool db_update(const po::variables_map& args, const std::string& db_name);
 DatabaseDetails db_details(const po::variables_map& args, const std::string& db);
 bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
-                   std::vector<std::string> migration_paths, const std::string& db);
+                   std::span<std::string> migration_paths, const std::string& db);
 
 int main(int argc, const char* argv[]) try {
 	std::cout << "Build " << ember::version::VERSION << " (" << ember::version::GIT_HASH << ")\n";
@@ -342,7 +343,7 @@ void db_install(const po::variables_map& args, const std::string& db, const bool
 }
 
 bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
-                   std::vector<std::string> migration_paths, const std::string& db) {
+                   std::span<std::string> migration_paths, const std::string& db) {
 	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
 	const auto transactions = args["transactional-updates"].as<bool>();
 	const auto batched = args["single-transaction"].as<bool>();
