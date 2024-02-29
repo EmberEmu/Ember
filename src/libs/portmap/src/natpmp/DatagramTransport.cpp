@@ -30,14 +30,13 @@ DatagramTransport::~DatagramTransport() {
 void DatagramTransport::join_group(const std::string& address) {
 	const auto group_ip = boost::asio::ip::address::from_string(address);
 	const auto mcast_iface = socket_.local_endpoint().address();
-	auto join_opt = boost::asio::ip::multicast::join_group(group_ip);
+	ba::ip::multicast::join_group join_opt{};
 
 	// ASIO is doing something weird on Windows, this is a hack
 	if(mcast_iface.is_v4()) {
-		join_opt = boost::asio::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
-	} else {
-		join_opt = boost::asio::ip::multicast::join_group(group_ip);
+		join_opt = ba::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
 	}
+
 	socket_.set_option(join_opt);
 }
 

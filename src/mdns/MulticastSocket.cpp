@@ -24,7 +24,7 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context,
 	boost::asio::ip::udp::endpoint ep(mcast_iface, port);
 	socket_.open(ep.protocol());
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-	auto join_opt = boost::asio::ip::multicast::join_group();
+	boost::asio::ip::multicast::join_group join_opt{};
 
 	// ASIO is doing something weird on Windows, this is a hack
 	if(mcast_iface.is_v4()) {

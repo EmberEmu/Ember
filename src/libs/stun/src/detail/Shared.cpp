@@ -105,7 +105,6 @@ std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
 
 	const std::string concat = std::format(":{}:{}", realm, password);
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	std::size_t block_size = hasher->hash_block_size();
 	hasher->update(username.data(), username.size_bytes());
 	hasher->update(reinterpret_cast<const std::uint8_t*>(concat.data()), concat.size());
 	const auto md5 = hasher->final_stdvec();
