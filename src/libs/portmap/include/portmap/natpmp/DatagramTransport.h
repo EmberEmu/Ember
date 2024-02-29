@@ -24,7 +24,8 @@ using namespace std::chrono_literals;
 class DatagramTransport final {
 	using OnReceive = std::function<void(std::span<std::uint8_t>, const ba::ip::udp::endpoint&)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
-	using OnResolve = std::function<void(const boost::system::error_code&)>;
+	using OnResolve = std::function<void(const boost::system::error_code&,
+	                                     const ba::ip::udp::endpoint& ep)>;
 
 	OnReceive rcb_;
 	OnConnectionError ecb_;

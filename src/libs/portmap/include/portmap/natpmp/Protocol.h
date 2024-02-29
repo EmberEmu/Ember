@@ -127,6 +127,7 @@ struct RequestMapping {
 	std::uint16_t internal_port;
 	std::uint16_t external_port;
 	std::uint32_t lifetime;
+	std::array<std::uint8_t, 12> nonce;
 };
 
 struct MappingResponse {

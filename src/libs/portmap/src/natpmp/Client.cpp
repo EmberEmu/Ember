@@ -13,6 +13,7 @@
 #include <portmap/natpmp/Serialise.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
+#include <algorithm>
 #include <random>
 
 #include <iostream> // todo, zug zug
@@ -35,7 +36,13 @@ Client::Client(const std::string& interface, std::string gateway)
 
 	transport_.join_group("224.0.0.1");
 
-	transport_.resolve(gateway_, PORT_OUT, [&](const boost::system::error_code& ec) {
+	transport_.resolve(gateway_, PORT_OUT,
+	                   [&](const boost::system::error_code& ec,
+	                       const ba::ip::udp::endpoint& ep) {
+		if(!ec) {
+			gateway_ = ep.address().to_string();		
+		}
+
 		resolve_res_ = !static_cast<bool>(ec);
 		has_resolved_ = true;
 		has_resolved_.notify_all();
@@ -235,7 +242,6 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 	if(buffer.empty()) {
 		return;
 	}
-
 	while(!states_.empty()) {
 		finagle_state();
 		const auto size = states_.size();
@@ -349,8 +355,12 @@ void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResu
 		.suggested_external_port = mapping.external_port
 	};
 
-	std::random_device engine;
-	std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
+	const auto it = std::find(mapping.nonce.begin(), mapping.nonce.end(), true);
+
+	if(it == mapping.nonce.end()) {
+		std::random_device engine;
+		std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
+	}
 
 	try {
 		serialise(header, stream);

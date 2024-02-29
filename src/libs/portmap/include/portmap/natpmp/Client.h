@@ -14,7 +14,6 @@
 #include <array>
 #include <atomic>
 #include <expected>
-#include <algorithm>
 #include <future>
 #include <stack>
 #include <string>
@@ -44,7 +43,7 @@ private:
 
 
 	DatagramTransport transport_;
-	const std::string gateway_;
+	std::string gateway_;
 	const std::string interface_;
 	std::atomic_bool has_resolved_;
 	std::atomic_bool resolve_res_;

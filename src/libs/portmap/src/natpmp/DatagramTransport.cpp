@@ -48,7 +48,7 @@ void DatagramTransport::resolve(std::string_view host, const std::uint16_t port,
 				remote_ep_ = results->endpoint();
 			}
 
-			cb(ec);
+			cb(ec, remote_ep_);
 		}
 	);
 }
