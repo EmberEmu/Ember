@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -112,7 +112,7 @@ public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	               boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), remote_ep_(ep),
-	                 timer_(socket.get_executor()), logger_(logger), stopped_(false) { }
+	                 timer_(socket_.get_executor()), logger_(logger), stopped_(false) { }
 
 	virtual void start() {
 		read();
