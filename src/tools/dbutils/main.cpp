@@ -122,6 +122,10 @@ int launch(const po::variables_map& args) try {
 			const auto& details = db_details(args, db);
 			auto executor = db_executor(args["database-type"].as<std::string>(), details);
 
+			if(!executor) {
+				throw std::runtime_error("Unable to obtain a database executor. Invalid database type?");
+			}
+
 			LOG_INFO_GLOB << "Testing connection " << details.username << "@"
 			      << details.hostname << ":" << details.port
 			      << " for " << db << LOG_SYNC;
