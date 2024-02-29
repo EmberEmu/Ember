@@ -96,7 +96,7 @@ void Service::send_register_reply(const spark::Link& link, em::account::Status s
                                   const spark::Beacon& token) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto opcode = std::to_underlying(em::account::Opcode::SMSG_REGISTER_SESSION);
+	constexpr auto opcode = std::to_underlying(em::account::Opcode::SMSG_REGISTER_SESSION);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	em::account::SessionResponseBuilder rb(*fbb);
 	rb.add_status(status);
@@ -108,7 +108,7 @@ void Service::send_register_reply(const spark::Link& link, em::account::Status s
 void Service::account_lookup(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto opcode = std::to_underlying(em::account::Opcode::SMSG_ACCOUNT_LOOKUP);
+	constexpr auto opcode = std::to_underlying(em::account::Opcode::SMSG_ACCOUNT_LOOKUP);
 	auto msg = flatbuffers::GetRoot<em::account::LookupID>(message.data);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
@@ -125,7 +125,7 @@ void Service::send_locate_reply(const spark::Link& link, const std::optional<Bot
                                 const spark::Beacon& token) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto opcode = std::to_underlying(em::account::Opcode::SMSG_SESSION_LOOKUP);
+	constexpr auto opcode = std::to_underlying(em::account::Opcode::SMSG_SESSION_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	if(key) {

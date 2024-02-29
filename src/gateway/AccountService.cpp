@@ -98,7 +98,7 @@ void AccountService::handle_id_locate_reply(const spark::Link& link,
 void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = std::to_underlying(em::account::Opcode::CMSG_SESSION_LOOKUP);
+	constexpr auto opcode = std::to_underlying(em::account::Opcode::CMSG_SESSION_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	auto builder = em::account::SessionLookupBuilder(*fbb);
@@ -115,7 +115,7 @@ void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb
 void AccountService::locate_account_id(const utf8_string& username, IDLocateCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = std::to_underlying(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);
+	constexpr auto opcode = std::to_underlying(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto fb_username = fbb->CreateString(username);
 

@@ -59,7 +59,7 @@ void RealmService::set_offline() {
 
 void RealmService::send_status(const spark::Link& link, const spark::Message& message) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	const auto opcode = std::to_underlying(em::realm::Opcode::SMSG_REALM_STATUS);
+	constexpr auto opcode = std::to_underlying(em::realm::Opcode::SMSG_REALM_STATUS);
 	auto fbb = build_status();
 	spark_.send(link, opcode, fbb, message.token);
 }

@@ -116,7 +116,7 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 void RealmService::request_realm_status(const spark::Link& link) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = std::to_underlying(messaging::realm::Opcode::CMSG_REALM_STATUS);
+	constexpr auto opcode = std::to_underlying(messaging::realm::Opcode::CMSG_REALM_STATUS);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	messaging::realm::RequestRealmStatusBuilder msg(*fbb);
 	msg.Finish();

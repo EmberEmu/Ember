@@ -138,7 +138,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	const auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_CREATE);
+	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_CREATE);
 
 	em::character::CharacterTemplateBuilder cbb(*fbb);
 	cbb.add_name(fbb->CreateString(character.name));
@@ -170,7 +170,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 
-	const auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_RENAME);
+	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_RENAME);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto fb_name = fbb->CreateString(name);
 
@@ -190,7 +190,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_ENUM);
+	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_ENUM);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	em::character::RetrieveBuilder msg(*fbb);
@@ -209,7 +209,7 @@ void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t 
                                         ResponseCB cb) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_DELETE);
+	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_DELETE);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 
 	em::character::DeleteBuilder msg(*fbb);
