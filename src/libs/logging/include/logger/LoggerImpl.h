@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,7 +34,7 @@ namespace ember::log {
 class Logger::impl final {
 	friend class Logger;
 
-	static constexpr std::size_t BUFFER_RESERVE = 512;
+	static constexpr std::size_t BUFFER_RESERVE = 256;
 
 	Severity severity_ = Severity::DISABLED;
 	Filter filter_ = Filter(0);
@@ -80,8 +80,10 @@ public:
 
 	template<typename T>
 	void copy_to_stream(T& data) {
-		std::string conv = std::to_string(data);
-		std::copy(conv.begin(), conv.end(), std::back_inserter(buffer_.second));
+		const std::string conv { std::to_string(data) };
+		const auto size = buffer_.second.size();
+		buffer_.second.resize(size + conv.size());
+		std::copy(conv.begin(), conv.end(), buffer_.second.data() + size);
 	}
 
 	impl& operator <<(impl& (*m)(impl&)) {
@@ -146,17 +148,24 @@ public:
 	}
 
 	impl& operator <<(const std::string& data) {
-		std::copy(data.begin(), data.end(), std::back_inserter(buffer_.second));
+		const auto size = buffer_.second.size();
+		buffer_.second.resize(size + data.size());
+		std::copy(data.begin(), data.end(), buffer_.second.data() + size);
 		return *this;
 	}
 
 	impl& operator <<(const std::string_view data) {
-		std::copy(data.begin(), data.end(), std::back_inserter(buffer_.second));
+		const auto size = buffer_.second.size();
+		buffer_.second.resize(size + data.size());
+		std::copy(data.begin(), data.end(), buffer_.second.data() + size);
 		return *this;
 	}
 
 	impl& operator <<(const char* data) {
-		std::copy(data, data + std::strlen(data), std::back_inserter(buffer_.second));
+		const auto len = std::strlen(data);
+		const auto size = buffer_.second.size();
+		buffer_.second.resize(size + len);
+		std::copy(data, data + len, buffer_.second.data() + size);
 		return *this;
 	}
 
