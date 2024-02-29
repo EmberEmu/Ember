@@ -112,7 +112,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
-	auto db_config_path = args["database.config_path"].as<std::string>();
+	const auto&  db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
@@ -138,10 +138,10 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	std::locale temp;
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
-	auto s_address = args["spark.address"].as<std::string>();
+	const auto&  s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	auto mcast_group = args["spark.multicast_group"].as<std::string>();
-	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
+	const auto&  mcast_group = args["spark.multicast_group"].as<std::string>();
+	const auto&  mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(ember::FilterType::LF_SPARK);
 
@@ -233,7 +233,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		std::exit(0);
 	}
 
-	std::string config_path = options["config"].as<std::string>();
+	const std::string& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {

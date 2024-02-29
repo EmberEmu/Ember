@@ -55,7 +55,6 @@ class ClientConnection final {
 	log::Logger* logger_;
 	bool write_in_progress_;
 	unsigned int compression_level_;
-	const std::string address_;
 	std::unique_ptr<PacketLogger> packet_logger_;
 
 	std::condition_variable stop_condvar_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <conpool/drivers/MySQL/Driver.h>
 #include <cppconn/prepared_statement.h>
 #include <memory>
+#include <string_view>
 
 namespace ember::dal { 
 
@@ -29,8 +30,8 @@ public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<Realm> get_realms() const override final try {
-		const std::string query = "SELECT id, name, ip, type, flags, category, "
-		                          "region, creation_setting, population FROM realms";
+		const std::string_view query = "SELECT id, name, ip, type, flags, category, "
+		                               "region, creation_setting, population FROM realms";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -55,9 +56,9 @@ public:
 	}
 
 	std::optional<Realm> get_realm(std::uint32_t id) const override final try {
-		const std::string query = "SELECT id, name, ip, type, flags, category, "
-		                          "region, creation_setting, population FROM realms "
-		                          "WHERE id = ?";
+		const std::string_view query = "SELECT id, name, ip, type, flags, category, "
+		                               "region, creation_setting, population FROM realms "
+		                               "WHERE id = ?";
 	
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

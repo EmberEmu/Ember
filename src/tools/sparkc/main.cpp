@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const po::variables_map& args) try {
-	const auto output = args["out"].as<std::string>();
+	const auto& output = args["out"].as<std::string>();
 
 	for(const auto& schema : args["schemas"].as<std::vector<std::string>>()) {
 		LOG_INFO_GLOB << "Processing " << schema << LOG_SYNC;
@@ -68,8 +68,8 @@ void process_schema(const std::string& schema) {
 }
 
 void init_logger(ember::log::Logger* logger, const po::variables_map& args) {
-	const auto con_verbosity = el::severity_string(args["verbosity"].as<std::string>());
-	const auto file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
+	const auto& con_verbosity = el::severity_string(args["verbosity"].as<std::string>());
+	const auto& file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
 	
 	auto fsink = std::make_unique<el::FileSink>(
 		file_verbosity, el::Filter(0), "sparkc.log", el::FileSink::Mode::APPEND

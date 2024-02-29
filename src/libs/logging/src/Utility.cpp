@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -49,7 +49,7 @@ std::string put_time(const std::tm& time, const std::string& format) {
 	return buffer;
 }
 
-std::string severity_string(Severity severity) {
+std::string_view severity_string(Severity severity) {
 	switch(severity) {
 		case Severity::DEBUG:
 			return "[debug] ";

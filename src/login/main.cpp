@@ -114,7 +114,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	unsigned int concurrency = check_concurrency(logger);
 
 	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
-	auto db_config_path = args["database.config_path"].as<std::string>();
+	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
@@ -146,7 +146,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto allowed_clients = client_versions(); // move
 
 	if(args["integrity.enabled"].as<bool>()) {
-		auto bin_path = args["integrity.bin_path"].as<std::string>();
+		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
 		exe_data = std::make_unique<ember::IntegrityData>(allowed_clients, bin_path);
 	}
 
@@ -183,10 +183,10 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start Spark services
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
-	auto s_address = args["spark.address"].as<std::string>();
+	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	auto mcast_group = args["spark.multicast_group"].as<std::string>();
-	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
+	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
+	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
@@ -213,7 +213,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	                                   realm_list, *metrics, args["locale.enforce"].as<bool>());
 	ember::LoginSessionBuilder s_builder(builder, thread_pool);
 
-	auto interface = args["network.interface"].as<std::string>();
+	const auto& interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<std::uint16_t>();
 	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
@@ -350,7 +350,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		std::exit(0);
 	}
 
-	std::string config_path = options["config"].as<std::string>();
+	const auto& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {

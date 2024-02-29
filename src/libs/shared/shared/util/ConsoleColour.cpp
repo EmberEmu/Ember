@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include <shared/util/ConsoleColour.h>
 #include <iostream>
 #include <string>
+#include <string_view>
 
 #ifdef _WIN32
 	#include <Windows.h>
@@ -76,7 +77,7 @@ WORD colour_attribute(Colour colour) {
 
 #else
 
-std::string ansi_sequence(Colour colour) {
+std::string_view ansi_sequence(Colour colour) {
 	switch(colour) {
 		case Colour::BLACK:
 			return "\033[22;30m";

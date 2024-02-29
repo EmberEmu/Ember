@@ -30,7 +30,7 @@ const std::unordered_map<std::string_view, int> type_size_map {
 	{ "double",          8 }
 };
 
-const std::map<std::string, std::pair<std::string_view, bool>> type_map {
+const std::unordered_map<std::string_view, std::pair<std::string_view, bool>> type_map {
 	 //type              //real type         //valid enum type?
 	{ "int8",           { "std::int8_t",     true  }},
 	{ "uint8",          { "std::uint8_t",    true  }},

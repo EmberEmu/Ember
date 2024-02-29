@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -74,10 +74,10 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 
 	// Start Spark services
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
-	auto s_address = args["spark.address"].as<std::string>();
+	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	auto mcast_group = args["spark.multicast_group"].as<std::string>();
-	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
+	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
+	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
 
@@ -181,7 +181,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		std::exit(0);
 	}
 
-	std::string config_path = options["config"].as<std::string>();
+	const auto& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {

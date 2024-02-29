@@ -36,9 +36,9 @@ int main(int argc, const char* argv[]) try {
 void launch(const po::variables_map& args) {
 	const auto internal = args["internal"].as<std::uint16_t>();
 	const auto external = args["external"].as<std::uint16_t>();
-	const auto interface = args["interface"].as<std::string>();
-	const auto gateway = args["gateway"].as<std::string>();
-	const auto protocol = args["protocol"].as<std::string>();
+	const auto& interface = args["interface"].as<std::string>();
+	const auto& gateway = args["gateway"].as<std::string>();
+	const auto& protocol = args["protocol"].as<std::string>();
 	const auto deletion = args["delete"].as<bool>();
 	
 	auto proto = portmap::natpmp::Protocol::MAP_TCP;

@@ -28,7 +28,7 @@ TypeComponents extract_components(const std::string& type);
 std::string pascal_to_underscore(std::string name);
 types::Base* locate_type_base(const types::Struct& base, const std::string& type_name);
 
-const extern std::map<std::string, std::pair<std::string_view, bool>> type_map;
+const extern std::unordered_map<std::string_view, std::pair<std::string_view, bool>> type_map;
 const extern std::unordered_map<std::string_view, int> type_size_map;
 const extern std::unordered_set<std::string_view> cpp_keywords;
 const extern std::array<std::string_view, 8> string_ref_loc_regions;

@@ -38,10 +38,10 @@ int main(int argc, const char* argv[]) try {
 }
 
 void launch(const po::variables_map& args) {
-	const auto host = args["host"].as<std::string>();
+	const auto& host = args["host"].as<std::string>();
 	const auto port = args["port"].as<std::uint16_t>();
-	const auto protocol = args["protocol"].as<std::string>();
-	const auto bind = args["bind"].as<std::string>();
+	const auto& protocol = args["protocol"].as<std::string>();
+	const auto& bind = args["bind"].as<std::string>();
 	
 	// todo, std::print when supported by all compilers
 	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);

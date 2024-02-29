@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,8 +24,8 @@ namespace ember::util {
 namespace {
 
 std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::Severity severity) {
-	auto host = args["remote_log.host"].as<std::string>();
-	auto service = args["remote_log.service_name"].as<std::string>();
+	const auto& host = args["remote_log.host"].as<std::string>();
+	const auto& service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<std::uint16_t>();
 	auto facility = el::SyslogSink::Facility::LOCAL_USE_0;
 	auto filter = args["remote_log.filter-mask"].as<std::uint32_t>();
@@ -33,8 +33,8 @@ std::unique_ptr<el::Sink> init_remote_sink(const po::variables_map& args, el::Se
 }
 
 std::unique_ptr<el::Sink> init_file_sink(const po::variables_map& args, el::Severity severity) {
-	auto mode_str = args["file_log.mode"].as<std::string>();
-	auto path = args["file_log.path"].as<std::string>();
+	const auto& mode_str = args["file_log.mode"].as<std::string>();
+	const auto& path = args["file_log.path"].as<std::string>();
 	auto filter = args["file_log.filter-mask"].as<std::uint32_t>();
 
 	if(mode_str != "append" && mode_str != "truncate") {

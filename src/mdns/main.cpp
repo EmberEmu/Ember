@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -75,15 +75,15 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
-	const auto iface = args["mdns.interface"].as<std::string>();
-	const auto group = args["mdns.group"].as<std::string>();
+	const auto& iface = args["mdns.interface"].as<std::string>();
+	const auto& group = args["mdns.group"].as<std::string>();
 	const auto port = args["mdns.port"].as<std::uint16_t>();
 
 	// start multicast DNS services
 	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port);
 	dns::Server server(std::move(socket), logger);
 
-	const auto spark_iface = args["spark.address"].as<std::string>();
+	const auto& spark_iface = args["spark.address"].as<std::string>();
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start Spark services
@@ -159,7 +159,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		std::exit(0);
 	}
 
-	std::string config_path = options["config"].as<std::string>();
+	const auto& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {

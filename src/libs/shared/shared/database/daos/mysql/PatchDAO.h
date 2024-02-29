@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,6 +17,7 @@
 #include <cppconn/prepared_statement.h>
 #include <memory>
 #include <sstream>
+#include <string_view>
 #include <string>
 #include <vector>
 
@@ -33,13 +34,13 @@ public:
 	MySQLPatchDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<PatchMeta> fetch_patches() const final override try {
-		const std::string query = "SELECT patches.id, `from`, `to`, mpq, name, size, md5, os, rollup, "
-		                          "architecture, locale, os.value AS os_val, "
-		                          "arch.value AS architecture_val, l.value AS locale_val "
-		                          "FROM patches "
-		                          "LEFT JOIN architectures arch ON patches.architecture = arch.id "  
-		                          "LEFT JOIN locales l ON patches.locale = l.id "
-		                          "LEFT JOIN operating_systems os ON patches.os = os.id";
+		const std::string_view query = "SELECT patches.id, `from`, `to`, mpq, name, size, md5, os, rollup, "
+		                               "architecture, locale, os.value AS os_val, "
+		                               "arch.value AS architecture_val, l.value AS locale_val "
+		                               "FROM patches "
+		                               "LEFT JOIN architectures arch ON patches.architecture = arch.id "  
+		                               "LEFT JOIN locales l ON patches.locale = l.id "
+		                               "LEFT JOIN operating_systems os ON patches.os = os.id";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -78,10 +79,10 @@ public:
 	}
 
 	void update(const PatchMeta& meta) const final override try {
-		const std::string query = "UPDATE patches SET `from` = ?, `to` = ?, `mpq` = ?, "
-		                          "`name` = ?, `size` = ?, `md5` = ?, `locale` = ?, "
-		                          "`architecture` = ?, `os` = ?, `rollup` = ? "
-		                          "WHERE id = ?";
+		const std::string_view query = "UPDATE patches SET `from` = ?, `to` = ?, `mpq` = ?, "
+		                               "`name` = ?, `size` = ?, `md5` = ?, `locale` = ?, "
+		                               "`architecture` = ?, `os` = ?, `rollup` = ? "
+		                               "WHERE id = ?";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

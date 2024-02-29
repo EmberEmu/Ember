@@ -81,6 +81,7 @@ set(UTIL_SRC
     shared/util/EnumHelper.h
     shared/util/MulticharConstant.h
     shared/util/Clock.h
+	shared/util/StringHash.h
 )
 
 set(METRICS_SRC

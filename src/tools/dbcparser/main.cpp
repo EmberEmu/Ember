@@ -43,8 +43,8 @@ void handle_options(const po::variables_map& args, const edbc::types::Definition
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
-	auto con_verbosity = el::severity_string(args["verbosity"].as<std::string>());
-	auto file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
+	const auto& con_verbosity = el::severity_string(args["verbosity"].as<std::string>());
+	const auto& file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
 
 	auto logger = std::make_unique<el::Logger>();
 	auto fsink = std::make_unique<el::FileSink>(file_verbosity, el::Filter(0),

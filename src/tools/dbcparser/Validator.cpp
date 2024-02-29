@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,9 +9,11 @@
 #include "Validator.h"
 #include "TypeUtils.h"
 #include <logger/Logging.h>
-#include <limits>
 #include <iostream>
+#include <limits>
+#include <string_view>
 #include <typeinfo>
+#include <unordered_map>
 #include <cstdint>
 
 namespace ember::dbc {
@@ -377,7 +379,7 @@ void Validator::validate_enum_option_value(const std::string& type, const std::s
 void Validator::validate_enum_options(const types::Enum* def) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	std::map<std::string, std::string> options;
+	std::unordered_map<std::string_view, std::string_view> options;
 	
 	for(auto& option : def->options) {
 		name_check_(def->name);
@@ -388,7 +390,7 @@ void Validator::validate_enum_options(const types::Enum* def) {
 		}
 
 		if(std::find_if(options.begin(), options.end(),
-			[option](std::pair<std::string, std::string> i) {
+			[option](std::pair<std::string_view, std::string_view> i) {
 				return i.second == option.second;
 		}) != options.end()) {
 			LOG_DEBUG_GLOB << "Duplicate index found for " << option.first << " in " << def->name

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -119,7 +119,7 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 	}
 
 	if(log_severity_) {
-		std::string sev = detail::severity_string(severity);
+		auto sev = std::string(detail::severity_string(severity));
 
 		if(!log_date_) {
 			prepend = std::move(sev);

@@ -61,7 +61,7 @@ int launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
-std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
+const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
 StunPair start_stun_query(const po::variables_map& args, log::Logger* logger);
 void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
                        log::Logger* logger);
@@ -125,7 +125,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	dbc::link(dbc_store);
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
-	auto db_config_path = args["database.config_path"].as<std::string>();
+	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(ember::drivers::init_db_driver(db_config_path));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
@@ -146,7 +146,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 	
 	// Validate category & region
-	auto cat_name = category_name(*realm, dbc_store.cfg_categories);
+	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
 
 	LOG_INFO(logger) << "Serving as gateway for " << realm->name
 	                 << " (" << cat_name << ")" << LOG_SYNC;
@@ -174,10 +174,10 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	EventDispatcher dispatcher(service_pool);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
-	auto s_address = args["spark.address"].as<std::string>();
+	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	auto mcast_group = args["spark.multicast_group"].as<std::string>();
-	auto mcast_iface = args["spark.multicast_interface"].as<std::string>();
+	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
+	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
@@ -211,7 +211,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	Locator::set(&config);
 	
 	// Start network listener
-	const auto interface = args["network.interface"].as<std::string>();
+	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
@@ -240,7 +240,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	return EXIT_FAILURE;
 }
 
-std::string category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
+const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
 	for(auto&& [k, record] : dbc) {
 		if(record.category == realm.category && record.region == realm.region) {
 			return record.name.en_gb;
@@ -306,7 +306,7 @@ StunPair start_stun_query(const po::variables_map& args, log::Logger* logger) {
 	}
 
 	LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
-	const auto proto_arg = args["stun.protocol"].as<std::string>();
+	const auto& proto_arg = args["stun.protocol"].as<std::string>();
 
 	if(proto_arg != "tcp" && proto_arg != "udp") {
 		throw std::invalid_argument("Invalid STUN protocol argument");
@@ -395,11 +395,11 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		std::exit(0);
 	}
 
-	std::string config_path = options["config"].as<std::string>();
+	const auto& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
-		std::string message("Unable to open configuration file: " + config_path);
+		const std::string message("Unable to open configuration file: " + config_path);
 		throw std::invalid_argument(message);
 	}
 

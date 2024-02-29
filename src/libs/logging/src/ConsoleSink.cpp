@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,11 +46,10 @@ void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::
 
 	std::vector<char> buffer;
 	buffer.reserve(size + (10 * records.size()));
-	std::string severity;
 
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
-			severity = detail::severity_string(detail.severity);
+			const std::string_view severity = detail::severity_string(detail.severity);
 			std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
 			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
 		}
@@ -71,9 +70,9 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 		set_colour(severity);
 	}
 
-	std::string buffer = detail::severity_string(severity);
-	buffer.append(record.begin(), record.end());
-	std::fwrite(buffer.c_str(), buffer.size(), 1, stdout);
+	std::string_view buffer = detail::severity_string(severity);
+	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
+	std::fwrite(record.data(), record.size(), 1, stdout);
 
 
 	if(flush) {

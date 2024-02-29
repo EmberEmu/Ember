@@ -93,18 +93,18 @@ std::string MySQL::version() {
 	return ver.str();
 }
 
-sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, const std::string& key) {
+sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, std::string_view key) {
 	auto stmt = lookup_statement(conn, key);
 	
 	if(!stmt) {
-		stmt = conn->prepareStatement(key);
+		stmt = conn->prepareStatement(std::string(key));
 		cache_statement(conn, key, stmt);
 	}
 
 	return stmt;
 }
 
-sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, const std::string& key) {
+sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, std::string_view key) {
 	auto conn_cache = locate_cache(conn);
 
 	if(!conn_cache) {
@@ -120,10 +120,10 @@ sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, con
 	return conn_cache_it->second;
 }
 
-void MySQL::cache_statement(const sql::Connection* conn, const std::string& key,
+void MySQL::cache_statement(const sql::Connection* conn, std::string_view key,
                             sql::PreparedStatement* value) {
 	std::lock_guard<std::mutex> lock(cache_lock_);
-	cache_[conn][key] = value;
+	cache_[conn].emplace(key, value);
 }
 
 MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {

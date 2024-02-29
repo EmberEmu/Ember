@@ -19,7 +19,9 @@
 #include <dbcreader/MemoryDefs.h>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <format>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <cstdint>
 #include <cstddef>
@@ -86,21 +88,21 @@ DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
 <%TEMPLATE_DISK_LOAD_MAP_INSERTION%>
 }
 
-Storage DiskLoader::load(std::initializer_list<const std::string> whitelist) const {
+Storage DiskLoader::load(std::initializer_list<const std::string_view> whitelist) const {
 	return load({ whitelist.begin(), whitelist.end() });
 }
 
-Storage DiskLoader::load(std::span<const std::string> whitelist) const {
+Storage DiskLoader::load(std::span<const std::string_view> whitelist) const {
 	Storage storage;
 
 	for(auto& dbc : whitelist) {
 		auto it = dbc_map.find(dbc);
 
 		if(it == dbc_map.end()) {
-			throw std::runtime_error("Cannot load an unknown DBC file, " + dbc);
+			throw std::runtime_error(std::format("Cannot load an unknown DBC file, {}", dbc));
 		}
 		
-		log_cb_("Loading " + dbc + " DBC data...");
+		log_cb_(std::format("Loading {} DBC data...", dbc));
 		it->second(storage, dir_path_);
 	}
 

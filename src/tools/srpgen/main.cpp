@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2023 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -55,7 +55,7 @@ void launch(const po::variables_map& args) {
 		return;
 	}
 
-	const auto file = args["sbin"].as<std::string>();
+	const auto& file = args["sbin"].as<std::string>();
 	std::ofstream stream(file, std::ios::binary | std::ios::trunc);
 
 	if(!stream) {

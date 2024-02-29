@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,6 +16,8 @@
 #include <cppconn/prepared_statement.h>
 #include <chrono>
 #include <memory>
+#include <string>
+#include <string_view>
 
 namespace ember::dal { 
 
@@ -62,7 +64,7 @@ public:
 	MySQLCharacterDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
-		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		const std::string_view query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
@@ -86,7 +88,7 @@ public:
 	}
 	
 	std::optional<Character> character(std::uint64_t id) const override try {
-		const std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		const std::string_view query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                          "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
 		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
@@ -143,7 +145,7 @@ public:
 	}
 
 	void restore(std::uint64_t id) const override try {
-		const std::string query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
+		const std::string_view query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
 	
 
 		auto conn = pool_.try_acquire_for(5s);
@@ -158,7 +160,7 @@ public:
 	}
 
 	void delete_character(std::uint64_t id, bool soft_delete) const override try {
-		std::string query;
+		std::string_view query;
 
 		if(soft_delete) {
 			query = "UPDATE characters SET deletion_date = CURTIME(), internal_name = CONCAT(name, id) WHERE id = ?";
@@ -178,11 +180,11 @@ public:
 	}
 
 	void create(const Character& character) const override try {
-		const std::string query = "INSERT INTO characters (name, account_id, realm_id, race, class, gender, "
-		                          "skin, face, hairstyle, haircolour, facialhair, level, zone, "
-		                          "map, x, y, z, o, flags, first_login, pet_display, pet_level, "
-		                          "pet_family, internal_name) "
-		                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		const std::string_view query = "INSERT INTO characters (name, account_id, realm_id, race, class, gender, "
+		                               "skin, face, hairstyle, haircolour, facialhair, level, zone, "
+		                               "map, x, y, z, o, flags, first_login, pet_display, pet_level, "
+		                               "pet_family, internal_name) "
+		                               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -219,12 +221,12 @@ public:
 	}
 
 	void update(const Character& character) const override try {
-		const std::string query = "UPDATE characters SET name = ?, internal_name = ?, account_id = ?, "
-		                          "realm_id = ?, race = ?, class = ?, gender = ?, skin = ?, face = ?, "
-		                          "hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
-		                          "map = ?, x = ?, y = ?, z = ?, o = ?, flags = ?, first_login = ?, pet_display = ?, "
-		                          "pet_level = ?, pet_family = ? "
-		                          "WHERE id = ?";
+		const std::string_view query = "UPDATE characters SET name = ?, internal_name = ?, account_id = ?, "
+		                               "realm_id = ?, race = ?, class = ?, gender = ?, skin = ?, face = ?, "
+		                               "hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
+		                               "map = ?, x = ?, y = ?, z = ?, o = ?, flags = ?, first_login = ?, pet_display = ?, "
+		                               "pet_level = ?, pet_family = ? "
+		                               "WHERE id = ?";
 		
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
