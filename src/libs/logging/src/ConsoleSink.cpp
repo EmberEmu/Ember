@@ -18,7 +18,7 @@
 namespace ember::log {
 
 void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
-	if(!colour_) {
+	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
 		for(auto& [detail, data] : records) {
@@ -65,7 +65,7 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 
 	util::Colour old_colour;
 
-	if(colour_) {
+	if(colour_) [[likely]] {
 		old_colour = util::save_output_colour();
 		set_colour(severity);
 	}
@@ -74,15 +74,14 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
 	std::fwrite(record.data(), record.size(), 1, stdout);
 
+	if(colour_) [[likely]] {
+		util::set_output_colour(old_colour);
+	}
 
 	if(flush) {
 		if(std::fflush(stdout) != 0) {
 			throw exception("Unable to flush log record to console");
 		}
-	}
-
-	if(colour_) {
-		util::set_output_colour(old_colour);
 	}
 }
 
