@@ -88,11 +88,11 @@ std::unique_ptr<QueryExecutor> db_executor(const std::string& type,
 	std::transform(lower_type.begin(), lower_type.end(), lower_type.begin(), ::tolower);
 
 #ifdef DB_MYSQL
-	if(type == "mysql") {
+	if(lower_type == "mysql") {
 		return std::make_unique<MySQLQueryExecutor>(details);
 	}
 #elif DB_POSTGRESQL
-	if(type == "postgresql") {
+	if(lower_type == "postgresql") {
 		throw std::illegal_argument("PostgreSQL is unsupported for the time being.");
 	}
 #endif
