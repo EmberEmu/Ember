@@ -10,6 +10,7 @@
 #include <logger/Exception.h>
 #include <logger/Utility.h>
 #include <shared/util/ConsoleColour.h>
+#include <boost/container/small_vector.hpp>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -70,9 +71,11 @@ void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>&
 		set_colour(severity);
 	}
 
-	std::string_view buffer = detail::severity_string(severity);
+	std::string_view sevsv = detail::severity_string(severity);
+	boost::container::small_vector<char, SV_RESERVE> buffer(record.size() + sevsv.size());
+	std::memcpy(buffer.data(), sevsv.data(), sevsv.size());
+	std::memcpy(buffer.data() + sevsv.size(), record.data(), record.size());
 	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
-	std::fwrite(record.data(), record.size(), 1, stdout);
 
 	if(colour_) [[likely]] {
 		util::set_output_colour(old_colour);
