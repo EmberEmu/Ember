@@ -22,10 +22,9 @@ namespace ember::portmap::natpmp {
 
 namespace bai = boost::asio::ip;
 
-Client::Client(const std::string& interface, std::string gateway)
-	: gateway_(std::move(gateway)), transport_(interface),
-	interface_(interface),
-	resolve_res_(false), has_resolved_(false) {
+Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
+	: ctx_(ctx), gateway_(std::move(gateway)), transport_(interface, ctx),
+	  interface_(interface), resolve_res_(false), has_resolved_(false) {
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
@@ -355,10 +354,13 @@ void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResu
 		.suggested_external_port = mapping.external_port
 	};
 
-	const auto it = std::find(mapping.nonce.begin(), mapping.nonce.end(), true);
+	const auto it = std::find_if(mapping.nonce.begin(), mapping.nonce.end(),
+		[](const std::uint8_t val) {
+			return val != 0;
+		});
 
 	if(it == mapping.nonce.end()) {
-		std::random_device engine;
+;		std::random_device engine;
 		std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
 	}
 

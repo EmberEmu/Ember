@@ -14,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 #include <utility>
 #include <cstdint>
 
@@ -54,7 +55,13 @@ void launch(const po::variables_map& args) {
 		.lifetime = deletion? 0u : 7200u
 	};
 
-	portmap::natpmp::Client client(interface, gateway);
+	boost::asio::io_context ctx;
+	portmap::natpmp::Client client(interface, gateway, ctx);
+
+	// Create an ASIO worker with a single thread
+	auto worker = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
+							   (&boost::asio::io_context::run), &ctx);
+
 	std::future<portmap::natpmp::Client::MapResult> future;
 
 	if(deletion) {
@@ -86,6 +93,8 @@ void launch(const po::variables_map& args) {
 		std::cout << "Error: could not retrieve external address" << std::endl;
 		print_error(result.error());
 	}
+
+	ctx.stop();
 }
 
 void print_error(const portmap::natpmp::Error& error) {

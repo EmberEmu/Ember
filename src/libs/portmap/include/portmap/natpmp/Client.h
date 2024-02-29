@@ -11,6 +11,7 @@
 #include <portmap/natpmp/DatagramTransport.h>
 #include <portmap/natpmp/Protocol.h>
 #include <portmap/natpmp/Results.h>
+#include <boost/asio/io_context.hpp>
 #include <array>
 #include <atomic>
 #include <expected>
@@ -42,6 +43,7 @@ private:
 	};
 
 
+	ba::io_context& ctx_;
 	DatagramTransport transport_;
 	std::string gateway_;
 	const std::string interface_;
@@ -74,7 +76,7 @@ private:
 	ErrorType handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer);
 
 public:
-	Client(const std::string& interface, std::string gateway);
+	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
 
 	std::future<ExternalAddress> external_address();
 	std::future<MapResult> add_mapping(RequestMapping mapping);

@@ -31,11 +31,10 @@ class DatagramTransport final {
 	OnConnectionError ecb_;
 	OnResolve ocb_;
 
-	ba::io_context ctx_;
+	ba::io_context& ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
 	ba::ip::udp::endpoint remote_ep_;
-	std::jthread worker_;
 
 	std::queue<std::shared_ptr<std::vector<std::uint8_t>>> queue_;
 	std::vector<std::uint8_t> buffer_;
@@ -45,7 +44,7 @@ class DatagramTransport final {
 	void do_write();
 
 public:
-	DatagramTransport(const std::string& bind);
+	DatagramTransport(const std::string& bind, ba::io_context& ctx_);
 	~DatagramTransport();
 
 	void set_callbacks(OnReceive rcb, OnConnectionError ecb);

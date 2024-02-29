@@ -10,11 +10,9 @@
 
 namespace ember::portmap::natpmp {
 
-DatagramTransport::DatagramTransport(const std::string& bind)
-	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 5350)), resolver_(ctx_) {
-	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &ctx_);
-
+DatagramTransport::DatagramTransport(const std::string& bind, ba::io_context& ctx)
+	: ctx_(ctx), socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 5350)),
+	  resolver_(ctx_) {
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 
 	ctx_.post([&]() {
