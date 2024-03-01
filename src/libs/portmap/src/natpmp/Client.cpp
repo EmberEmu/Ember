@@ -336,7 +336,7 @@ void Client::timeout_promise() {
 
 void Client::start_retry_timer(const std::chrono::milliseconds timeout, int retries) {
 	timer_.expires_from_now(timeout);
-	timer_.async_wait([&, timeout, retries](const boost::system::error_code& ec) mutable {
+	timer_.async_wait(strand_.wrap([&, timeout, retries](const boost::system::error_code& ec) mutable {
 		if(ec) {
 			return;
 		}
@@ -348,7 +348,7 @@ void Client::start_retry_timer(const std::chrono::milliseconds timeout, int retr
 			finagle_state();
 			timeout_promise();
 		}
-	});
+	}));
 }
 
 ErrorType Client::announce_pcp() {
