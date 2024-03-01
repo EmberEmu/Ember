@@ -7,15 +7,14 @@
 set(LIBRARY_NAME ports)
 
 add_library(${LIBRARY_NAME}
-           src/natpmp/Client.cpp
-		   src/natpmp/DatagramTransport.cpp
-           include/ports/Client.h
-           include/ports/natpmp/Client.h
-		   include/ports/natpmp/Daemon.h
-		   include/ports/natpmp/DatagramTransport.h
-           include/ports/natpmp/Protocol.h
-           include/ports/natpmp/Serialise.h
-           include/ports/natpmp/Deserialise.h
+           src/pcp/Client.cpp
+		   src/pcp/DatagramTransport.cpp
+           include/ports/pcp/Client.h
+		   include/ports/pcp/Daemon.h
+		   include/ports/pcp/DatagramTransport.h
+           include/ports/pcp/Protocol.h
+           include/ports/pcp/Serialise.h
+           include/ports/pcp/Deserialise.h
            )
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})

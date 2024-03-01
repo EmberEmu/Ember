@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <ports/natpmp/Client.h>
-#include <ports/natpmp/Deserialise.h>
-#include <ports/natpmp/Serialise.h>
+#include <ports/pcp/Client.h>
+#include <ports/pcp/Deserialise.h>
+#include <ports/pcp/Serialise.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <algorithm>

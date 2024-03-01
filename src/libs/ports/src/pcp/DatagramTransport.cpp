@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <ports/natpmp/DatagramTransport.h>
+#include <ports/pcp/DatagramTransport.h>
 
 namespace ember::ports {
 

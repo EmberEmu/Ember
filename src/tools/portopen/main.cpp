@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <ports/natpmp/Client.h>
+#include <ports/pcp/Client.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <stdexcept>

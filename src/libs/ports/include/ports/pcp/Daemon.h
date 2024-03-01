@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <ports/natpmp/Client.h>
+#include <ports/pcp/Client.h>
 #include <functional>
 #include <cstdint>
 #include <queue>

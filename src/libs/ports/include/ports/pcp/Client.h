@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <ports/natpmp/DatagramTransport.h>
-#include <ports/natpmp/Protocol.h>
-#include <ports/natpmp/Results.h>
+#include <ports/pcp/DatagramTransport.h>
+#include <ports/pcp/Protocol.h>
+#include <ports/pcp/Results.h>
 #include <boost/asio/io_context.hpp>
 #include <array>
 #include <atomic>

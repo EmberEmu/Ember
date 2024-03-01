@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <ports/natpmp/Protocol.h>
+#include <ports/pcp/Protocol.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <boost/endian.hpp>
