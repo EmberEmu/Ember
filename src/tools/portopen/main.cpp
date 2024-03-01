@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <portmap/natpmp/Client.h>
+#include <ports/natpmp/Client.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <stdexcept>
@@ -24,7 +24,7 @@ using namespace ember;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void print_error(const portmap::natpmp::Error& error);
+void print_error(const ports::Error& error);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -42,13 +42,13 @@ void launch(const po::variables_map& args) {
 	const auto& protocol = args["protocol"].as<std::string>();
 	const auto deletion = args["delete"].as<bool>();
 	
-	auto proto = portmap::natpmp::Protocol::MAP_TCP;
+	auto proto = ports::natpmp::Protocol::TCP;
 
 	if(protocol == "udp") {
-		proto = portmap::natpmp::Protocol::MAP_UDP;
+		proto = ports::natpmp::Protocol::UDP;
 	}
 
-	const portmap::natpmp::RequestMapping request {
+	const ports::natpmp::MapRequest request {
 		.opcode = proto,
 		.internal_port = internal,
 		.external_port = external,
@@ -56,14 +56,14 @@ void launch(const po::variables_map& args) {
 	};
 
 	boost::asio::io_context ctx;
-	portmap::natpmp::Client client(interface, gateway, ctx);
+	ports::Client client(interface, gateway, ctx);
 
 	// Create an ASIO worker with a single thread
 	auto worker = std::jthread(
 		static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
 	);
 
-	std::future<portmap::natpmp::Client::MapResult> future;
+	std::future<ports::Client::MapResult> future;
 
 	if(deletion) {
 		future = client.delete_mapping(internal, proto);
@@ -98,13 +98,13 @@ void launch(const po::variables_map& args) {
 	ctx.stop();
 }
 
-void print_error(const portmap::natpmp::Error& error) {
+void print_error(const ports::Error& error) {
 	std::cout << std::format("Mapping error: {} ({})\n",
 		error.type, std::to_underlying(error.type));
 
-	if(error.type == portmap::natpmp::ErrorType::PCP_CODE) {
+	if(error.type == ports::ErrorType::PCP_CODE) {
 		std::cout << std::format("PCP code: {}\n", error.pcp_code);
-	} else if(error.type == portmap::natpmp::ErrorType::NATPMP_CODE) {
+	} else if(error.type == ports::ErrorType::NATPMP_CODE) {
 		std::cout << std::format("NAT-PMP code: {}\n", error.natpmp_code);
 	}
 }

@@ -16,7 +16,7 @@
 #include <thread>
 #include <cstdint>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
@@ -56,4 +56,4 @@ public:
 	void close();
 };
 
-} // natpmp, portmap, ember
+} // natpmp, ports, ember

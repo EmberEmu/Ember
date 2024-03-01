@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <portmap/natpmp/DatagramTransport.h>
+#include <ports/natpmp/DatagramTransport.h>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 DatagramTransport::DatagramTransport(const std::string& bind, ba::io_context& ctx)
 	: ctx_(ctx), strand_(ctx),
@@ -127,4 +127,4 @@ void DatagramTransport::set_callbacks(OnReceive rcb, OnConnectionError ecb) {
 	ecb_ = ecb;
 }
 
-} // natpmp, portmap, ember
+} // natpmp, ports, ember

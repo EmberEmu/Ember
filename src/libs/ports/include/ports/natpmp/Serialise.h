@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <portmap/natpmp/Protocol.h>
+#include <ports/natpmp/Protocol.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <boost/endian.hpp>
 #include <span>
 #include <cstdint>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 namespace be = boost::endian;
 
@@ -41,7 +41,7 @@ void serialise(const pcp::MapRequest& message, spark::v2::BinaryStream<T> stream
 }
 
 template<typename T>
-void serialise(const RequestMapping& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::MapRequest& message, spark::v2::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << message.reserved;
@@ -51,7 +51,7 @@ void serialise(const RequestMapping& message, spark::v2::BinaryStream<T> stream)
 }
 
 template<typename T>
-void serialise(const MappingResponse& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::MapResponse& message, spark::v2::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << message.result_code;
@@ -62,13 +62,15 @@ void serialise(const MappingResponse& message, spark::v2::BinaryStream<T> stream
 }
 
 template<typename T>
-void serialise(const RequestExtAddress& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::ExtAddressRequest& message,
+               spark::v2::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 }
 
 template<typename T>
-void serialise(const ExtAddressResponse& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::ExtAddressResponse& message,
+               spark::v2::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << be::native_to_big(message.result_code);
@@ -77,11 +79,12 @@ void serialise(const ExtAddressResponse& message, spark::v2::BinaryStream<T> str
 }
 
 template<typename T>
-void serialise(const UnsupportedErrorResponse& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::UnsupportedErrorResponse& message,
+               spark::v2::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << be::native_to_big(message.result_code);
 	stream << be::native_to_big(message.secs_since_epoch);
 }
 
-} // natpmp, portmap, ember
+} // natpmp, ports, ember

@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <shared/smartenum.hpp>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 constexpr std::uint8_t NATPMP_VERSION = 0u;
 constexpr std::uint8_t PCP_VERSION = 2u;
@@ -102,7 +102,9 @@ struct MapResponse {
 
 } // pcp
 
-smart_enum_class(ResultCode, std::uint16_t,
+namespace natpmp {
+
+smart_enum_class(Result, std::uint16_t,
 	SUCCESS,
 	UNSUPPORTED_VERSION,
 	NOT_AUTHORISED,
@@ -116,31 +118,31 @@ enum class RequestOpcode : std::uint8_t {
 };
 
 enum class Protocol : std::uint8_t {
-	MAP_UDP = 0x01,
-	MAP_TCP = 0x02
+	UDP = 0x01,
+	TCP = 0x02
 };
 
-struct RequestMapping {
+struct MapRequest {
 	std::uint8_t version;
 	Protocol opcode;
 	std::uint16_t reserved;
 	std::uint16_t internal_port;
 	std::uint16_t external_port;
 	std::uint32_t lifetime;
-	std::array<std::uint8_t, 12> nonce;
+	std::array<std::uint8_t, 12> nonce; // not part natpmp, exists only for clients
 };
 
-struct MappingResponse {
+struct MapResponse {
 	std::uint8_t version;
 	std::uint8_t opcode;
-	ResultCode result_code;
+	Result result_code;
 	std::uint32_t secs_since_epoch;
 	std::uint16_t internal_port;
 	std::uint16_t external_port;
 	std::uint32_t lifetime;
 };
 
-struct RequestExtAddress {
+struct ExtAddressRequest {
 	std::uint8_t version;
 	RequestOpcode opcode;
 };
@@ -148,7 +150,7 @@ struct RequestExtAddress {
 struct ExtAddressResponse {
 	std::uint8_t version;
 	std::uint8_t opcode;
-	ResultCode result_code;
+	Result result_code;
 	std::uint32_t secs_since_epoch;
 	std::uint32_t external_ip;
 };
@@ -156,11 +158,13 @@ struct ExtAddressResponse {
 struct UnsupportedErrorResponse {
 	std::uint8_t version;
 	std::uint8_t opcode;
-	ResultCode result_code;
+	Result result_code;
 	std::uint32_t secs_since_epoch;
 };
 
-} // natpmp, portmap, ember
+} // natpmp
 
-CREATE_FORMATTER(ember::portmap::natpmp::pcp::Result)
-CREATE_FORMATTER(ember::portmap::natpmp::ResultCode)
+} // ports, ember
+
+CREATE_FORMATTER(ember::ports::pcp::Result)
+CREATE_FORMATTER(ember::ports::natpmp::Result)

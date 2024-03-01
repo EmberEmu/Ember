@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <portmap/natpmp/Client.h>
+#include <ports/natpmp/Client.h>
 #include <functional>
 #include <cstdint>
 #include <queue>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 class Daemon {
 	using ResultHandler = std::function<void(bool)>;
@@ -48,4 +48,4 @@ public:
 	                    ResultHandler&& handler);
 };
 
-} // natpmp, portmap, ember
+} // natpmp, ports, ember

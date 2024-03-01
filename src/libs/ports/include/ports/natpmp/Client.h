@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <portmap/natpmp/DatagramTransport.h>
-#include <portmap/natpmp/Protocol.h>
-#include <portmap/natpmp/Results.h>
+#include <ports/natpmp/DatagramTransport.h>
+#include <ports/natpmp/Protocol.h>
+#include <ports/natpmp/Results.h>
 #include <boost/asio/io_context.hpp>
 #include <array>
 #include <atomic>
@@ -23,7 +23,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 using namespace std::literals;
 
@@ -61,7 +61,7 @@ private:
 	std::atomic<State> state_ { State::IDLE };
 	std::stack<ClientPromise> promises_;
 	ClientPromise active_promise_;
-	RequestMapping stored_request_{};
+	natpmp::MapRequest stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> last_buffer_;
 
 	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
@@ -75,8 +75,8 @@ private:
 	ErrorType get_external_address_pmp();
 	ErrorType get_external_address_pcp();
 
-	ErrorType add_mapping_natpmp(const RequestMapping& mapping);
-	ErrorType add_mapping_pcp(const RequestMapping& mapping);
+	ErrorType add_mapping_natpmp(const natpmp::MapRequest& mapping);
+	ErrorType add_mapping_pcp(const natpmp::MapRequest& mapping);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
 	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result);
@@ -92,9 +92,9 @@ public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
 
 	std::future<ExternalAddress> external_address();
-	std::future<MapResult> add_mapping(RequestMapping mapping);
-	std::future<MapResult> delete_mapping(std::uint16_t internal_port, Protocol protocol);
-	std::future<MapResult> delete_all(Protocol protocol);
+	std::future<MapResult> add_mapping(const natpmp::MapRequest& mapping);
+	std::future<MapResult> delete_mapping(std::uint16_t internal_port, natpmp::Protocol protocol);
+	std::future<MapResult> delete_all(natpmp::Protocol protocol);
 };
 
-} // natpmp, portmap, ember
+} // ports, ember

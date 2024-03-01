@@ -14,7 +14,7 @@
 
 // These are to allow us to map both PCP & NATPMP replies onto
 // a single structure - they are not protocol definitions
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 smart_enum_class(ErrorType, int,
 	SUCCESS,
@@ -33,14 +33,14 @@ smart_enum_class(ErrorType, int,
 struct Error {
 	Error(ErrorType type)
 		: type(type), pcp_code{} {}
-	Error(ErrorType type, ResultCode code)
+	Error(ErrorType type, natpmp::Result code)
 		: type(type), natpmp_code(code) {}
 	Error(ErrorType type, pcp::Result code)
 		: type(type), pcp_code(code) {}
 	ErrorType type;
 
 	union {
-		ResultCode natpmp_code;
+		natpmp::Result natpmp_code;
 		pcp::Result pcp_code;
 	};
 };
@@ -53,6 +53,6 @@ struct MappingResult {
 	std::array<std::uint8_t, 16> external_ip;
 };
 
-} // natpmp, portmap, ember
+} // ports, ember
 
-CREATE_FORMATTER(ember::portmap::natpmp::ErrorType)
+CREATE_FORMATTER(ember::ports::ErrorType)

@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <portmap/natpmp/Client.h>
-#include <portmap/natpmp/Deserialise.h>
-#include <portmap/natpmp/Serialise.h>
+#include <ports/natpmp/Client.h>
+#include <ports/natpmp/Deserialise.h>
+#include <ports/natpmp/Serialise.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <algorithm>
 #include <random>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 namespace bai = boost::asio::ip;
 
@@ -70,11 +70,11 @@ void Client::handle_connection_error() {
 }
 
 ErrorType Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
-	const auto response = deserialise<UnsupportedErrorResponse>(buffer);
+	const auto response = deserialise<natpmp::UnsupportedErrorResponse>(buffer);
 
 	if(response.version != NATPMP_VERSION
 	   || response.opcode != 0
-	   || response.result_code != ResultCode::UNSUPPORTED_VERSION) {
+	   || response.result_code != natpmp::Result::UNSUPPORTED_VERSION) {
 		// we don't understand this message, at all
 		return ErrorType::SERVER_INCOMPATIBLE;
 	}
@@ -165,16 +165,16 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 		return;
 	}
 
-	MappingResponse response{};
+	natpmp::MapResponse response{};
 
 	try {
-		response = deserialise<MappingResponse>(buffer);
+		response = deserialise<natpmp::MapResponse>(buffer);
 	} catch(const spark::exception&) {
 		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
 		return;
 	}
 
-	if(response.result_code != ResultCode::SUCCESS) {
+	if(response.result_code != natpmp::Result::SUCCESS) {
 		promise.set_value(std::unexpected(
 			Error{ ErrorType::NATPMP_CODE, response.result_code }
 		));
@@ -204,10 +204,10 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 		return;
 	}
 
-	ExtAddressResponse message{};
+	natpmp::ExtAddressResponse message{};
 
 	try {
-		message = deserialise<ExtAddressResponse>(buffer);
+		message = deserialise<natpmp::ExtAddressResponse>(buffer);
 	} catch(const spark::exception&) {
 		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
 		return;
@@ -218,7 +218,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 		return;
 	}
 
-	if(message.result_code == ResultCode::SUCCESS) {
+	if(message.result_code == natpmp::Result::SUCCESS) {
 		const auto v4 = bai::address_v4(message.external_ip);
 		const auto v6 = bai::make_address_v6(bai::v4_mapped, v4);
 		promise.set_value(v6.to_bytes());
@@ -300,7 +300,7 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 	}
 }
 
-ErrorType Client::add_mapping_natpmp(const RequestMapping& mapping) {
+ErrorType Client::add_mapping_natpmp(const natpmp::MapRequest& mapping) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -383,7 +383,7 @@ ErrorType Client::announce_pcp() {
 	return ErrorType::SUCCESS;
 }
 
-ErrorType Client::add_mapping_pcp(const RequestMapping& mapping) {
+ErrorType Client::add_mapping_pcp(const natpmp::MapRequest& mapping) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -406,7 +406,7 @@ ErrorType Client::add_mapping_pcp(const RequestMapping& mapping) {
 	const auto& bytes = v6.to_bytes();
 	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
 
-	const auto protocol = (mapping.opcode == Protocol::MAP_TCP)?
+	const auto protocol = (mapping.opcode == natpmp::Protocol::TCP)?
 		pcp::Protocol::TCP : pcp::Protocol::UDP;
 
 	pcp::MapRequest map {
@@ -446,8 +446,8 @@ void Client::send_request(std::vector<std::uint8_t> buffer) {
 ErrorType Client::get_external_address_pcp() {
 	std::promise<MapResult> internal_promise;
 
-	RequestMapping request {
-		.opcode = Protocol::MAP_UDP,
+	natpmp::MapRequest request {
+		.opcode = natpmp::Protocol::UDP,
 		.internal_port = 9, // discard protocol
 		.external_port = 9,
 		.lifetime = 10
@@ -468,7 +468,7 @@ ErrorType Client::get_external_address_pmp() {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	RequestExtAddress request{};
+	natpmp::ExtAddressRequest request{};
 
 	try {
 		serialise(request, stream);
@@ -480,7 +480,7 @@ ErrorType Client::get_external_address_pmp() {
 	return ErrorType::SUCCESS;
 }
 
-std::future<Client::MapResult> Client::add_mapping(RequestMapping mapping) {
+std::future<Client::MapResult> Client::add_mapping(const natpmp::MapRequest& mapping) {
 	has_resolved_.wait(false);
 
 	std::promise<MapResult> promise;
@@ -504,8 +504,8 @@ std::future<Client::MapResult> Client::add_mapping(RequestMapping mapping) {
 }
 
 std::future<Client::MapResult> Client::delete_mapping(const std::uint16_t internal_port,
-                                                      const Protocol protocol) {
-	RequestMapping request {
+                                                      const natpmp::Protocol protocol) {
+	natpmp::MapRequest request {
 		.opcode = protocol,
 		.internal_port = internal_port,
 		.external_port = 0,
@@ -515,7 +515,7 @@ std::future<Client::MapResult> Client::delete_mapping(const std::uint16_t intern
 	return add_mapping(request);
 };
 
-std::future<Client::MapResult> Client::delete_all(const Protocol protocol) {
+std::future<Client::MapResult> Client::delete_all(const natpmp::Protocol protocol) {
 	has_resolved_.wait(false);
 
 	std::promise<MapResult> promise;
@@ -526,7 +526,7 @@ std::future<Client::MapResult> Client::delete_all(const Protocol protocol) {
 		return future;
 	}
 
-	const RequestMapping request {
+	const natpmp::MapRequest request {
 		.opcode = protocol,
 		.internal_port = 0,
 		.external_port = 0,
@@ -569,4 +569,4 @@ std::future<Client::ExternalAddress> Client::external_address() {
 	return future;
 }
 
-} // natpmp, portmap, ember
+} // natpmp, ports, ember

@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <portmap/natpmp/Protocol.h>
+#include <ports/natpmp/Protocol.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <boost/endian.hpp>
 #include <span>
 #include <cstdint>
 
-namespace ember::portmap::natpmp {
+namespace ember::ports {
 
 namespace be = boost::endian;
 
@@ -59,11 +59,11 @@ pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-RequestMapping deserialise(std::span<const std::uint8_t> buffer) {
+natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	RequestMapping message{};
+	natpmp::MapRequest message{};
 	stream >> message.version;
 	stream >> message.opcode;
 	stream >> message.reserved;
@@ -77,11 +77,11 @@ RequestMapping deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-MappingResponse deserialise(std::span<const std::uint8_t> buffer) {
+natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	MappingResponse message{};
+	natpmp::MapResponse message{};
 	stream >> message.version;
 	stream >> message.opcode;
 	stream >> message.result_code;
@@ -97,22 +97,22 @@ MappingResponse deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-RequestExtAddress deserialise(std::span<const std::uint8_t> buffer) {
+natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	RequestExtAddress message{};
+	natpmp::ExtAddressRequest message{};
 	stream >> message.version;
 	stream >> message.opcode;
 	return message;
 }
 
 template<>
-ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
+natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	ExtAddressResponse message{};
+	natpmp::ExtAddressResponse message{};
 	stream >> message.version;
 	stream >> message.opcode;
 	stream >> message.result_code;
@@ -124,11 +124,11 @@ ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
+natpmp::UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	UnsupportedErrorResponse message{};
+	natpmp::UnsupportedErrorResponse message{};
 	stream >> message.version;
 	stream >> message.opcode;
 	stream >> message.result_code;
@@ -138,4 +138,4 @@ UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
 	return message;
 }
 
-} // natpmp, portmap, ember
+} // natpmp, ports, ember
