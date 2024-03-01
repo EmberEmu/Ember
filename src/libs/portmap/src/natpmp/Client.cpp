@@ -227,7 +227,6 @@ void Client::finagle_state() {
 }
 
 void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
-	return;
 	/*
 	 * Upon receiving a response packet, the client MUST check the source IP
      * address, and silently discard the packet if the address is not the
