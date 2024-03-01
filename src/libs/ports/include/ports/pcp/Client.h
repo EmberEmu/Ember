@@ -17,6 +17,7 @@
 #include <expected>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <stack>
 #include <string>
 #include <variant>
@@ -30,8 +31,9 @@ using namespace std::literals;
 constexpr int MAX_RETRIES = 9;
 constexpr auto INITIAL_TIMEOUT = 250ms;
 
-using MapResult = std::expected<MappingResult, Error>;
-using RequestHandler = std::function<void(const MapResult& result)>;
+using Result = std::expected<MappingResult, Error>;
+using RequestHandler = std::function<void(const Result& result)>;
+using AnnounceHandler = std::function<void(std::uint32_t)>;
 
 class Client {
 private:
@@ -58,6 +60,8 @@ private:
 	MapRequest stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> buffer_;
 	bool disable_natpmp_ = false;
+	AnnounceHandler announce_handler_ = {};
+	std::mutex handler_lock_;
 
 	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
 	void timeout_promise();
@@ -82,6 +86,7 @@ private:
 	void handle_mapping_pmp(std::span<std::uint8_t> buffer);
 
 	ErrorCode handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer);
+	bool handle_announce(std::span<std::uint8_t> buffer);
 
 public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
@@ -89,13 +94,14 @@ public:
 	void external_address(RequestHandler handler);
 	void add_mapping(const MapRequest& mapping, RequestHandler handler);
 	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler handler);
-	void delete_all(natpmp::Protocol protocol, RequestHandler handler);
+	void delete_all(Protocol protocol, RequestHandler handler);
 
-	std::future<MapResult> external_address();
-	std::future<MapResult> add_mapping(const MapRequest& mapping);
-	std::future<MapResult> delete_mapping(std::uint16_t internal_port, Protocol protocol);
-	std::future<MapResult> delete_all(natpmp::Protocol protocol);
+	std::future<Result> external_address();
+	std::future<Result> add_mapping(const MapRequest& mapping);
+	std::future<Result> delete_mapping(std::uint16_t internal_port, Protocol protocol);
+	std::future<Result> delete_all(Protocol protocol);
 
+	void announce_handler(AnnounceHandler&& handler);
 	void disable_natpmp(bool disable);
 };
 

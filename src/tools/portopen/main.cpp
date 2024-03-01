@@ -7,6 +7,7 @@
  */
 
 #include <ports/pcp/Client.h>
+#include <ports/pcp/Daemon.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <stdexcept>
@@ -63,7 +64,7 @@ void launch(const po::variables_map& args) {
 		static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
 	);
 
-	std::future<ports::MapResult> future;
+	std::future<ports::Result> future;
 
 	if(deletion) {
 		future = client.delete_mapping(internal, proto);

@@ -9,40 +9,49 @@
 #pragma once
 
 #include <ports/pcp/Client.h>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/io_context.hpp>
+#include <chrono>
 #include <functional>
-#include <cstdint>
 #include <queue>
+#include <vector>
+#include <cstdint>
 
 namespace ember::ports {
 
-class Daemon {
-	using ResultHandler = std::function<void(bool)>;
-	
-	struct Mapping {
-		std::uint16_t internal;
-		std::uint16_t external;
-		std::uint32_t lifetime;
-	};
+using namespace std::literals;
 
-	struct Request {
-		ResultHandler handler;
-		
-		enum class Op {
-			OPEN_MAPPING, DELETE_MAPPING
-		} op_;
+class Daemon {
+	static constexpr auto TIMER_INTERVAL = 15s;
+	static constexpr auto RENEW_WHEN_BELOW = 120s;
+
+	struct Mapping {
+		MapRequest request;
+		std::chrono::steady_clock::time_point expiry;
 	};
 
 	Client& client_;
 	boost::asio::steady_timer timer_;
-	std::queue<Request> tasks_;
-	std::vector<Mapping> active_maps_;
+	boost::asio::io_context::strand strand_;
+	std::vector<Mapping> mappings_;
+	std::queue<Mapping> queue_;
+	std::uint32_t gateway_epoch_{};
+	bool epoch_acquired_ = false;
+	std::chrono::steady_clock::time_point daemon_epoch_;
+
+	void process_queue();
+	void start_renew_timer();
+	void update_mapping(const Result& result);
+	void erase_mapping(const Result& result);
+	void renew_mappings();
+	void renew_mapping(const Mapping& mapping);
+	void check_epoch(std::uint32_t epoch);
 
 public:
-	Daemon(Client& client, boost::asio::io_context& ctx)
-		: client_(client), timer_(ctx) {}
+	Daemon(Client& client, boost::asio::io_context& ctx);
 
-	void add_mapping(MapRequest request, ResultHandler&& handler);
-	void delete_mapping(std::uint16_t internal_port, Protocol protocol, ResultHandler&& handler);
+	void add_mapping(MapRequest request, RequestHandler&& handler);
+	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler&& handler);
 };
 
 } // natpmp, ports, ember

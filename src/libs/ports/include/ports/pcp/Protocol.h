@@ -16,7 +16,6 @@ namespace ember::ports {
 
 constexpr std::uint8_t NATPMP_VERSION = 0u;
 constexpr std::uint8_t PCP_VERSION = 2u;
-constexpr std::uint8_t NATPMP_RESULT = 128u;
 
 constexpr std::uint16_t PORT_OUT = 5351;
 constexpr std::uint16_t PORT_IN = 5350;
@@ -118,14 +117,18 @@ enum class RequestOpcode : std::uint8_t {
 	REQUEST_EXTERNAL = 0x00
 };
 
-enum class Protocol : std::uint8_t {
+enum class Opcode : std::uint8_t {
+	EXT = 0x00,
 	UDP = 0x01,
-	TCP = 0x02
+	TCP = 0x02,
+	RESP_EXT = 128 + EXT,
+	RESP_TCP = 128 + TCP,
+	RESP_UDP = 128 + UDP
 };
 
 struct MapRequest {
 	std::uint8_t version;
-	Protocol opcode;
+	Opcode opcode;
 	std::uint16_t reserved;
 	std::uint16_t internal_port;
 	std::uint16_t external_port;
@@ -134,7 +137,7 @@ struct MapRequest {
 
 struct MapResponse {
 	std::uint8_t version;
-	std::uint8_t opcode;
+	Opcode opcode;
 	Result result_code;
 	std::uint32_t secs_since_epoch;
 	std::uint16_t internal_port;
@@ -149,7 +152,7 @@ struct ExtAddressRequest {
 
 struct ExtAddressResponse {
 	std::uint8_t version;
-	std::uint8_t opcode;
+	Opcode opcode;
 	Result result_code;
 	std::uint32_t secs_since_epoch;
 	std::uint32_t external_ip;
@@ -157,7 +160,7 @@ struct ExtAddressResponse {
 
 struct UnsupportedErrorResponse {
 	std::uint8_t version;
-	std::uint8_t opcode;
+	Opcode opcode;
 	Result result_code;
 	std::uint32_t secs_since_epoch;
 };

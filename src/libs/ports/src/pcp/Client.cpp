@@ -70,7 +70,7 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 	const auto response = deserialise<natpmp::UnsupportedErrorResponse>(buffer);
 
 	if(response.version != NATPMP_VERSION
-	   || response.opcode != 0
+	   || response.opcode != natpmp::Opcode::EXT
 	   || response.result_code != natpmp::Result::UNSUPPORTED_VERSION) {
 		// we don't understand this message, at all
 		return ErrorCode::SERVER_INCOMPATIBLE;
@@ -171,6 +171,12 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 		return;
 	}
 
+	if(response.opcode != natpmp::Opcode::RESP_TCP
+	   && response.opcode != natpmp::Opcode::RESP_UDP) {
+		handler(std::unexpected(ErrorCode::BAD_RESPONSE));
+		return;
+	}
+
 	if(response.result_code != natpmp::Result::SUCCESS) {
 		handler(std::unexpected(
 			Error{ ErrorCode::NATPMP_CODE, response.result_code }
@@ -210,7 +216,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 		return;
 	}
 
-	if(message.opcode != NATPMP_RESULT) {
+	if(message.opcode != natpmp::Opcode::RESP_EXT) {
 		handler(std::unexpected(ErrorCode::BAD_RESPONSE));
 		return;
 	}
@@ -255,19 +261,56 @@ void Client::finagle_state() {
 	states_.pop();
 }
 
+bool Client::handle_announce(std::span<std::uint8_t> buffer) try {
+	std::vector<std::uint8_t> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	std::uint8_t version = 0;
+	stream >> version;
+	
+	if(version == PCP_VERSION) {
+		const auto& header = deserialise<pcp::ResponseHeader>(buffer);
+
+		if(header.opcode != pcp::Opcode::ANNOUNCE || header.lifetime != 0) {
+			return false;
+		}
+
+		std::lock_guard<std::mutex> guard(handler_lock_);
+		announce_handler_(header.epoch_time);
+		return true;
+	} else if(version == NATPMP_VERSION) {
+		const auto& message = deserialise<natpmp::ExtAddressResponse>(buffer);
+
+		if(message.opcode != natpmp::Opcode::EXT) {
+			return false;
+		}
+
+		std::lock_guard<std::mutex> guard(handler_lock_);
+		announce_handler_(message.secs_since_epoch);
+		return true;
+	}
+
+	return false;
+} catch(const spark::exception&) {
+	return false;
+}
+
 void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
 	/*
 	 * Upon receiving a response packet, the client MUST check the source IP
      * address, and silently discard the packet if the address is not the
      * address of the gateway to which the request was sent.
 	 */
-	if(ep.address().to_string() != gateway_) {
+	if(ep.address().to_string() != gateway_ || buffer.empty()) {
+		return;
+	}
+	
+	// announce can be unsolicited, so handle as a special-case
+	if(handle_announce(buffer)) {
 		return;
 	}
 
-	if(buffer.empty()) {
-		return;
-	}
 	while(!states_.empty()) {
 		timer_.cancel();
 		finagle_state();
@@ -307,7 +350,7 @@ ErrorCode Client::add_mapping_natpmp(const MapRequest& request) {
 	spark::v2::BinaryStream stream(adaptor);
 
 	const auto protocol = (request.protocol == Protocol::TCP)?
-		natpmp::Protocol::TCP : natpmp::Protocol::UDP;
+		natpmp::Opcode::TCP : natpmp::Opcode::UDP;
 
 	const natpmp::MapRequest mapping {
 		.opcode = protocol,
@@ -418,9 +461,10 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request) {
 		pcp::Protocol::TCP : pcp::Protocol::UDP;
 
 	pcp::MapRequest map {
+		.nonce = request.nonce,
 		.protocol = protocol,
 		.internal_port = request.internal_port,
-		.suggested_external_port = request.external_port
+		.suggested_external_port = request.external_port,
 	};
 
 	const auto it = std::find_if(request.nonce.begin(), request.nonce.end(),
@@ -480,18 +524,18 @@ ErrorCode Client::get_external_address_pmp() {
 	return ErrorCode::SUCCESS;
 }
 
-std::future<MapResult> Client::add_mapping(const MapRequest& mapping) {
-	auto promise = std::make_shared<std::promise<MapResult>>();
+std::future<Result> Client::add_mapping(const MapRequest& mapping) {
+	auto promise = std::make_shared<std::promise<Result>>();
 	auto future = promise->get_future();
 
-	add_mapping(mapping, [promise](const MapResult& result) {
+	add_mapping(mapping, [promise](const Result& result) {
 		promise->set_value(result);
 	});
 
 	return future;
 }
 
-std::future<MapResult> Client::delete_mapping(const std::uint16_t internal_port,
+std::future<Result> Client::delete_mapping(const std::uint16_t internal_port,
                                                       const Protocol protocol) {
 	MapRequest request {
 		.protocol = protocol,
@@ -503,22 +547,22 @@ std::future<MapResult> Client::delete_mapping(const std::uint16_t internal_port,
 	return add_mapping(request);
 };
 
-std::future<MapResult> Client::delete_all(const natpmp::Protocol protocol) {
-	auto promise = std::make_shared<std::promise<MapResult>>();
+std::future<Result> Client::delete_all(const Protocol protocol) {
+	auto promise = std::make_shared<std::promise<Result>>();
 	auto future = promise->get_future();
 
-	delete_all(protocol, [promise](const MapResult& result) {
+	delete_all(protocol, [promise](const Result& result) {
 		promise->set_value(result);
 	});
 
 	return future;
 }
 
-std::future<MapResult> Client::external_address() {
-	auto promise = std::make_shared<std::promise<MapResult>>();
+std::future<Result> Client::external_address() {
+	auto promise = std::make_shared<std::promise<Result>>();
 	auto future = promise->get_future();
 
-	external_address([promise](const MapResult& result) {
+	external_address([promise](const Result& result) {
 		promise->set_value(result);
 	});
 
@@ -555,7 +599,7 @@ void Client::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 	add_mapping(request, handler);
 }
 
-void Client::delete_all(natpmp::Protocol protocol, RequestHandler handler) {
+void Client::delete_all(Protocol protocol, RequestHandler handler) {
 	has_resolved_.wait(false);
 
 	if(!resolve_res_) {
@@ -563,11 +607,8 @@ void Client::delete_all(natpmp::Protocol protocol, RequestHandler handler) {
 		return;
 	}
 
-	const Protocol proto = (protocol == natpmp::Protocol::TCP)?
-		Protocol::TCP : Protocol::UDP;
-
 	const MapRequest request {
-		.protocol = proto,
+		.protocol = protocol,
 		.internal_port = 0,
 		.external_port = 0,
 		.lifetime = 0
@@ -604,6 +645,15 @@ void Client::external_address(RequestHandler handler) {
 
 void Client::disable_natpmp(const bool disable) {
 	disable_natpmp_ = disable;
+}
+
+void Client::announce_handler(AnnounceHandler&& handler) {
+	if(!handler) {
+		throw std::invalid_argument("Callback cannot be null");
+	}
+
+	std::lock_guard<std::mutex> guard(handler_lock_);
+	announce_handler_ = std::move(handler);
 }
 
 } // natpmp, ports, ember
