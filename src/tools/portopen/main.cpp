@@ -100,11 +100,11 @@ void launch(const po::variables_map& args) {
 
 void print_error(const ports::Error& error) {
 	std::cout << std::format("Mapping error: {} ({})\n",
-		error.type, std::to_underlying(error.type));
+		error.code, std::to_underlying(error.code));
 
-	if(error.type == ports::ErrorType::PCP_CODE) {
+	if(error.code == ports::ErrorCode::PCP_CODE) {
 		std::cout << std::format("PCP code: {}\n", error.pcp_code);
-	} else if(error.type == ports::ErrorType::NATPMP_CODE) {
+	} else if(error.code == ports::ErrorCode::NATPMP_CODE) {
 		std::cout << std::format("NAT-PMP code: {}\n", error.natpmp_code);
 	}
 }

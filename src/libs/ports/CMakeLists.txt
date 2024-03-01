@@ -11,6 +11,7 @@ add_library(${LIBRARY_NAME}
 		   src/pcp/DatagramTransport.cpp
 		   src/pcp/Daemon.cpp
            include/ports/pcp/Client.h
+		   include/ports/pcp/Results.h
 		   include/ports/pcp/Daemon.h
 		   include/ports/pcp/DatagramTransport.h
            include/ports/pcp/Protocol.h

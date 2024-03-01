@@ -16,7 +16,7 @@
 // a single structure - they are not protocol definitions
 namespace ember::ports {
 
-smart_enum_class(ErrorType, int,
+smart_enum_class(ErrorCode, int,
 	SUCCESS,
 	SERVER_INCOMPATIBLE,
 	RESOLVE_FAILURE,
@@ -31,13 +31,13 @@ smart_enum_class(ErrorType, int,
 );
 
 struct Error {
-	Error(ErrorType type)
-		: type(type), pcp_code{} {}
-	Error(ErrorType type, natpmp::Result code)
-		: type(type), natpmp_code(code) {}
-	Error(ErrorType type, pcp::Result code)
-		: type(type), pcp_code(code) {}
-	ErrorType type;
+	Error(ErrorCode code)
+		: code(code), pcp_code{} {}
+	Error(ErrorCode code, natpmp::Result pmpcode)
+		: code(code), natpmp_code(pmpcode) {}
+	Error(ErrorCode code, pcp::Result pcpcode)
+		: code(code), pcp_code(pcpcode) {}
+	ErrorCode code;
 
 	union {
 		natpmp::Result natpmp_code;
@@ -55,4 +55,4 @@ struct MappingResult {
 
 } // ports, ember
 
-CREATE_FORMATTER(ember::ports::ErrorType)
+CREATE_FORMATTER(ember::ports::ErrorCode)

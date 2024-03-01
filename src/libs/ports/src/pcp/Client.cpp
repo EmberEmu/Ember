@@ -59,26 +59,26 @@ void Client::handle_connection_error() {
 	while(!handlers_.empty()) {
 		auto handler = std::move(handlers_.top());
 		handlers_.pop();
-		handler(std::unexpected(ErrorType::CONNECTION_FAILURE));
+		handler(std::unexpected(ErrorCode::CONNECTION_FAILURE));
 	}
 
 	states_ = {};
 	state_ = State::IDLE;
 }
 
-ErrorType Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
+ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 	const auto response = deserialise<natpmp::UnsupportedErrorResponse>(buffer);
 
 	if(response.version != NATPMP_VERSION
 	   || response.opcode != 0
 	   || response.result_code != natpmp::Result::UNSUPPORTED_VERSION) {
 		// we don't understand this message, at all
-		return ErrorType::SERVER_INCOMPATIBLE;
+		return ErrorCode::SERVER_INCOMPATIBLE;
 	}
 
-	return ErrorType::RETRY_NATPMP;
+	return ErrorCode::RETRY_NATPMP;
 } catch(const spark::exception&) {
-	return ErrorType::SERVER_INCOMPATIBLE;
+	return ErrorCode::SERVER_INCOMPATIBLE;
 }
 
 auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result) -> Error {
@@ -96,15 +96,15 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& re
 	try {
 		header = deserialise<pcp::ResponseHeader>(buffer);
 	} catch(const spark::exception&) {
-		return ErrorType::BAD_RESPONSE;
+		return ErrorCode::BAD_RESPONSE;
 	}
 
 	if(!header.response) {
-		return ErrorType::BAD_RESPONSE;
+		return ErrorCode::BAD_RESPONSE;
 	}
 
 	if(header.result != pcp::Result::SUCCESS) {
-		return { ErrorType::PCP_CODE, header.result };
+		return { ErrorCode::PCP_CODE, header.result };
 	}
 
 	std::span<const std::uint8_t> body_buff = {
@@ -122,10 +122,10 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& re
 			.external_ip = body.assigned_external_ip
 		};
 	} catch(const spark::exception&) {
-		return ErrorType::BAD_RESPONSE;
+		return ErrorCode::BAD_RESPONSE;
 	}
 
-	return ErrorType::SUCCESS;
+	return ErrorCode::SUCCESS;
 }
 
 void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
@@ -133,12 +133,12 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 	const auto res = parse_mapping_pcp(buffer, result);
 	auto& handler = active_handler_;
 
-	if(res.type == ErrorType::SUCCESS) {
+	if(res.code == ErrorCode::SUCCESS) {
 		handler(result);
-	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
+	} else if(res.code == ErrorCode::RETRY_NATPMP && !disable_natpmp_) {
 		const auto map_res = add_mapping_natpmp(stored_request_);
 
-		if(map_res == ErrorType::SUCCESS) {
+		if(map_res == ErrorCode::SUCCESS) {
 			states_.emplace(State::AWAIT_MAP_RESULT_NATPMP);
 			handlers_.emplace(std::move(active_handler_));
 		} else {
@@ -158,7 +158,7 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 	auto& handler = active_handler_;
 
 	if(protocol_version != NATPMP_VERSION) {
-		handler(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
+		handler(std::unexpected(ErrorCode::SERVER_INCOMPATIBLE));
 		return;
 	}
 
@@ -167,13 +167,13 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 	try {
 		response = deserialise<natpmp::MapResponse>(buffer);
 	} catch(const spark::exception&) {
-		handler(std::unexpected(ErrorType::BAD_RESPONSE));
+		handler(std::unexpected(ErrorCode::BAD_RESPONSE));
 		return;
 	}
 
 	if(response.result_code != natpmp::Result::SUCCESS) {
 		handler(std::unexpected(
-			Error{ ErrorType::NATPMP_CODE, response.result_code }
+			Error{ ErrorCode::NATPMP_CODE, response.result_code }
 		));
 		return;
 	}
@@ -197,7 +197,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	auto& handler = active_handler_;
 
 	if(protocol_version != NATPMP_VERSION) {
-		handler(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
+		handler(std::unexpected(ErrorCode::SERVER_INCOMPATIBLE));
 		return;
 	}
 
@@ -206,12 +206,12 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	try {
 		message = deserialise<natpmp::ExtAddressResponse>(buffer);
 	} catch(const spark::exception&) {
-		handler(std::unexpected(ErrorType::BAD_RESPONSE));
+		handler(std::unexpected(ErrorCode::BAD_RESPONSE));
 		return;
 	}
 
 	if(message.opcode != NATPMP_RESULT) {
-		handler(std::unexpected(ErrorType::BAD_RESPONSE));
+		handler(std::unexpected(ErrorCode::BAD_RESPONSE));
 		return;
 	}
 
@@ -226,7 +226,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 		handler(res);
 	} else {
 		handler(std::unexpected(
-			Error { ErrorType::PCP_CODE, message.result_code })
+			Error { ErrorCode::PCP_CODE, message.result_code })
 		);
 	}
 }
@@ -237,9 +237,9 @@ void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
 	MappingResult result{};
 	const auto res = parse_mapping_pcp(buffer, result);
 
-	if(res.type == ErrorType::SUCCESS) {
+	if(res.code == ErrorCode::SUCCESS) {
 		handler(result);
-	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
+	} else if(res.code == ErrorCode::RETRY_NATPMP && !disable_natpmp_) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_NATPMP);
 		handlers_.emplace(std::move(handler));
 		get_external_address_pmp();
@@ -301,7 +301,7 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 	}
 }
 
-ErrorType Client::add_mapping_natpmp(const MapRequest& request) {
+ErrorCode Client::add_mapping_natpmp(const MapRequest& request) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -319,11 +319,11 @@ ErrorType Client::add_mapping_natpmp(const MapRequest& request) {
 	try {
 		serialise(mapping, stream);
 	} catch(const spark::exception&) {
-		return ErrorType::INTERNAL_ERROR;
+		return ErrorCode::INTERNAL_ERROR;
 	}
 
 	send_request(std::move(buffer));
-	return ErrorType::SUCCESS;
+	return ErrorCode::SUCCESS;
 }
 
 void Client::timeout_promise() {
@@ -333,7 +333,7 @@ void Client::timeout_promise() {
 
 	do {
 		auto handler = std::move(handlers_.top());
-		handler(std::unexpected(ErrorType::NO_RESPONSE));
+		handler(std::unexpected(ErrorCode::NO_RESPONSE));
 		handlers_.pop();
 	} while(!handlers_.empty());
 
@@ -358,7 +358,7 @@ void Client::start_retry_timer(const std::chrono::milliseconds timeout, const in
 	}));
 }
 
-ErrorType Client::announce_pcp() {
+ErrorCode Client::announce_pcp() {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -385,13 +385,13 @@ ErrorType Client::announce_pcp() {
 		serialise(header, stream);
 		transport_.send(std::move(buffer));
 	} catch(const spark::exception&) {
-		return ErrorType::INTERNAL_ERROR;
+		return ErrorCode::INTERNAL_ERROR;
 	}
 
-	return ErrorType::SUCCESS;
+	return ErrorCode::SUCCESS;
 }
 
-ErrorType Client::add_mapping_pcp(const MapRequest& request) {
+ErrorCode Client::add_mapping_pcp(const MapRequest& request) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -437,11 +437,11 @@ ErrorType Client::add_mapping_pcp(const MapRequest& request) {
 		serialise(header, stream);
 		serialise(map, stream);
 	} catch(const spark::exception&) {
-		return ErrorType::INTERNAL_ERROR;
+		return ErrorCode::INTERNAL_ERROR;
 	}
 
 	send_request(std::move(buffer));
-	return ErrorType::SUCCESS;
+	return ErrorCode::SUCCESS;
 }
 
 void Client::send_request(std::vector<std::uint8_t> buffer) {
@@ -451,7 +451,7 @@ void Client::send_request(std::vector<std::uint8_t> buffer) {
 	transport_.send(std::move(ptr));
 }
 
-ErrorType Client::get_external_address_pcp() {
+ErrorCode Client::get_external_address_pcp() {
 	MapRequest request {
 		.protocol = Protocol::UDP,
 		.internal_port = 9, // discard protocol
@@ -463,7 +463,7 @@ ErrorType Client::get_external_address_pcp() {
 	return res;
 }
 
-ErrorType Client::get_external_address_pmp() {
+ErrorCode Client::get_external_address_pmp() {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -473,11 +473,11 @@ ErrorType Client::get_external_address_pmp() {
 	try {
 		serialise(request, stream);
 	} catch(const spark::exception&) {
-		return ErrorType::INTERNAL_ERROR;
+		return ErrorCode::INTERNAL_ERROR;
 	}
 
 	send_request(std::move(buffer));
-	return ErrorType::SUCCESS;
+	return ErrorCode::SUCCESS;
 }
 
 std::future<MapResult> Client::add_mapping(const MapRequest& mapping) {
@@ -529,13 +529,13 @@ void Client::add_mapping(const MapRequest& mapping, RequestHandler handler) {
 	has_resolved_.wait(false);
 
 	if(!resolve_res_) {
-		handler(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		handler(std::unexpected(ErrorCode::RESOLVE_FAILURE));
 		return;
 	}
 
 	const auto res = add_mapping_pcp(mapping);
 
-	if(res == ErrorType::SUCCESS) {
+	if(res == ErrorCode::SUCCESS) {
 		states_.push(State::AWAIT_MAP_RESULT_PCP);
 		handlers_.emplace(std::move(handler));
 	} else {
@@ -559,7 +559,7 @@ void Client::delete_all(natpmp::Protocol protocol, RequestHandler handler) {
 	has_resolved_.wait(false);
 
 	if(!resolve_res_) {
-		handler(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		handler(std::unexpected(ErrorCode::RESOLVE_FAILURE));
 		return;
 	}
 
@@ -577,7 +577,7 @@ void Client::delete_all(natpmp::Protocol protocol, RequestHandler handler) {
 	// Tested PCP hardware did not accept the same technique as NAT-PMP
 	const auto res = add_mapping_natpmp(request);
 
-	if(res == ErrorType::SUCCESS) {
+	if(res == ErrorCode::SUCCESS) {
 		states_.emplace(State::AWAIT_MAP_RESULT_NATPMP);
 		handlers_.emplace(std::move(handler));
 	} else {
@@ -589,12 +589,12 @@ void Client::external_address(RequestHandler handler) {
 	has_resolved_.wait(false);
 
 	if(!resolve_res_) {
-		handler(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		handler(std::unexpected(ErrorCode::RESOLVE_FAILURE));
 	}
 
 	const auto res = get_external_address_pcp();
 
-	if(res == ErrorType::SUCCESS) {
+	if(res == ErrorCode::SUCCESS) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_PCP);
 		handlers_.emplace(std::move(handler));
 	} else {

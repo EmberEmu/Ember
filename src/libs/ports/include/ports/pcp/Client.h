@@ -63,15 +63,15 @@ private:
 	void timeout_promise();
 
 	void finagle_state();
-	ErrorType announce_pcp();
+	ErrorCode announce_pcp();
 	void handle_connection_error();
 	void send_request(std::vector<std::uint8_t> buffer);
 
-	ErrorType get_external_address_pmp();
-	ErrorType get_external_address_pcp();
+	ErrorCode get_external_address_pmp();
+	ErrorCode get_external_address_pcp();
 
-	ErrorType add_mapping_natpmp(const MapRequest& mapping);
-	ErrorType add_mapping_pcp(const MapRequest& mapping);
+	ErrorCode add_mapping_natpmp(const MapRequest& mapping);
+	ErrorCode add_mapping_pcp(const MapRequest& mapping);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
 	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result);
@@ -81,7 +81,7 @@ private:
 	void handle_mapping_pcp(std::span<std::uint8_t> buffer);
 	void handle_mapping_pmp(std::span<std::uint8_t> buffer);
 
-	ErrorType handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer);
+	ErrorCode handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer);
 
 public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
