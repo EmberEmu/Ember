@@ -64,8 +64,7 @@ private:
 	RequestMapping stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> last_buffer_;
 
-	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT,
-	                       int retries = MAX_RETRIES);
+	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
 	void timeout_promise();
 
 	void finagle_state();

@@ -268,9 +268,10 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 		return;
 	}
 	while(!states_.empty()) {
-		finagle_state();
-		const auto size = states_.size();
 		timer_.cancel();
+		finagle_state();
+
+		const auto size = states_.size();
 
 		switch(state_) {
 			case State::AWAITING_MAPPING_RESULT_PCP:
@@ -332,16 +333,16 @@ void Client::timeout_promise() {
 	state_ = State::IDLE;
 }
 
-void Client::start_retry_timer(const std::chrono::milliseconds timeout, int retries) {
+void Client::start_retry_timer(const std::chrono::milliseconds timeout, const int retries) {
 	timer_.expires_from_now(timeout);
-	timer_.async_wait(strand_.wrap([&, timeout, retries](const boost::system::error_code& ec) mutable {
+	timer_.async_wait(strand_.wrap([&, timeout, retries](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}
 
-		if(retries) {
+		if(retries != MAX_RETRIES) {
 			transport_.send(last_buffer_);
-			start_retry_timer(timeout * 2, --retries);
+			start_retry_timer(timeout * 2, retries + 1);
 		} else {
 			finagle_state();
 			timeout_promise();
