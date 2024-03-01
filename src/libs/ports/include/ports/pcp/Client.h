@@ -33,11 +33,8 @@ constexpr auto INITIAL_TIMEOUT = 250ms;
 class Client {
 public:
 	using MapResult = std::expected<MappingResult, Error>;
-	using ExternalAddress = std::expected<std::array<std::uint8_t, 16>, Error>;
-
-	using ClientPromise = std::variant<
-		std::promise<MapResult>, std::promise<ExternalAddress>
-	>;
+	using ClientPromise = std::promise<MapResult>;
+	using RequestHandler = std::function<void()>;
 
 private:
 	enum class State {
@@ -91,10 +88,16 @@ private:
 public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
 
-	std::future<ExternalAddress> external_address();
+	void external_address(RequestHandler handler);
+	void add_mapping(const MapRequest& mapping, RequestHandler handler);
+	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler handler);
+	void delete_all(natpmp::Protocol protocol, RequestHandler handler);
+
+	std::future<MapResult> external_address();
 	std::future<MapResult> add_mapping(const MapRequest& mapping);
 	std::future<MapResult> delete_mapping(std::uint16_t internal_port, Protocol protocol);
 	std::future<MapResult> delete_all(natpmp::Protocol protocol);
+
 	void disable_natpmp(bool disable);
 };
 

@@ -88,7 +88,7 @@ void launch(const po::variables_map& args) {
 	const auto xresult = xfuture.get();
 
 	if(xresult) {
-		const auto v6 = boost::asio::ip::address_v6(*xresult);
+		const auto v6 = boost::asio::ip::address_v6(xresult->external_ip);
 		std::cout << std::format("External address: {}", v6.to_string());
 	} else {
 		std::cout << "Error: could not retrieve external address" << std::endl;

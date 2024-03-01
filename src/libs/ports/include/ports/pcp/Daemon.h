@@ -33,19 +33,16 @@ class Daemon {
 	};
 
 	Client& client_;
-	boost::asio::io_context& ctx_;
+	boost::asio::steady_timer timer_;
 	std::queue<Request> tasks_;
 	std::vector<Mapping> active_maps_;
 
 public:
 	Daemon(Client& client, boost::asio::io_context& ctx)
-		: client_(client), ctx_(ctx) {}
-	~Daemon();
+		: client_(client), timer_(ctx) {}
 
-	void add_mapping(std::uint16_t internal, std::uint16_t external,
-	                std::uint32_t lifetime, ResultHandler&& handler);
-	void delete_mapping(std::uint16_t internal, std::uint16_t external,
-	                    ResultHandler&& handler);
+	void add_mapping(MapRequest request, ResultHandler&& handler);
+	void delete_mapping(std::uint16_t internal_port, Protocol protocol, ResultHandler&& handler);
 };
 
 } // natpmp, ports, ember

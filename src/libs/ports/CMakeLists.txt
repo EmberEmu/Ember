@@ -9,6 +9,7 @@ set(LIBRARY_NAME ports)
 add_library(${LIBRARY_NAME}
            src/pcp/Client.cpp
 		   src/pcp/DatagramTransport.cpp
+		   src/pcp/Daemon.cpp
            include/ports/pcp/Client.h
 		   include/ports/pcp/Daemon.h
 		   include/ports/pcp/DatagramTransport.h

@@ -59,10 +59,7 @@ void Client::handle_connection_error() {
 	while(!promises_.empty()) {
 		auto promise = std::move(promises_.top());
 		promises_.pop();
-
-		std::visit([&](auto&& arg) {
-			arg.set_value(std::unexpected(ErrorType::CONNECTION_FAILURE));
-		}, active_promise_);
+		active_promise_.set_value(std::unexpected(ErrorType::CONNECTION_FAILURE));
 	}
 
 	states_ = {};
@@ -134,7 +131,7 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& re
 void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 	MappingResult result{};
 	const auto res = parse_mapping_pcp(buffer, result);
-	auto& promise = std::get<std::promise<MapResult>>(active_promise_);
+	auto& promise = active_promise_;
 
 	if(res.type == ErrorType::SUCCESS) {
 		promise.set_value(result);
@@ -158,7 +155,7 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
-	auto& promise = std::get<std::promise<MapResult>>(active_promise_);
+	auto& promise = active_promise_;
 
 	if(protocol_version != NATPMP_VERSION) {
 		promise.set_value(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
@@ -197,7 +194,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
-	auto& promise = std::get<std::promise<ExternalAddress>>(active_promise_);
+	auto& promise = active_promise_;
 
 	if(protocol_version != NATPMP_VERSION) {
 		promise.set_value(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
@@ -221,7 +218,12 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	if(message.result_code == natpmp::Result::SUCCESS) {
 		const auto v4 = bai::address_v4(message.external_ip);
 		const auto v6 = bai::make_address_v6(bai::v4_mapped, v4);
-		promise.set_value(v6.to_bytes());
+
+		MappingResult res {
+			.external_ip = v6.to_bytes()
+		};
+
+		promise.set_value(res);
 	} else {
 		promise.set_value(std::unexpected(
 			Error { ErrorType::PCP_CODE, message.result_code })
@@ -230,14 +232,14 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 }
 
 void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
-	auto promise = std::move(std::get<std::promise<ExternalAddress>>(active_promise_));
+	auto promise = std::move(active_promise_);
 	finagle_state(); // fast-forward to the next state
 	
 	MappingResult result{};
 	const auto res = parse_mapping_pcp(buffer, result);
 
 	if(res.type == ErrorType::SUCCESS) {
-		promise.set_value(result.external_ip);
+		promise.set_value(result);
 	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_NATPMP);
 		promises_.emplace(std::move(promise));
@@ -331,12 +333,9 @@ void Client::timeout_promise() {
 	promises_.emplace(std::move(active_promise_));
 
 	do {
-		active_promise_ = std::move(promises_.top());
+		auto promise = std::move(promises_.top());
+		promise.set_value(std::unexpected(ErrorType::NO_RESPONSE));
 		promises_.pop();
-
-		std::visit([&](auto&& arg) {
-			arg.set_value(std::unexpected(ErrorType::NO_RESPONSE));
-		}, active_promise_);
 	} while(!promises_.empty());
 
 	states_ = {};
@@ -560,10 +559,10 @@ std::future<Client::MapResult> Client::delete_all(const natpmp::Protocol protoco
 	return future;
 }
 
-std::future<Client::ExternalAddress> Client::external_address() {
+std::future<Client::MapResult> Client::external_address() {
 	has_resolved_.wait(false);
 
-	std::promise<ExternalAddress> promise;
+	std::promise<Client::MapResult> promise;
 	auto future = promise.get_future();
 
 	if(!resolve_res_) {
