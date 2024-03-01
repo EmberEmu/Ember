@@ -40,8 +40,8 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 	transport_.join_group("224.0.0.1");
 
 	transport_.resolve(gateway_, PORT_OUT,
-	                   [&](const boost::system::error_code& ec,
-	                       const ba::ip::udp::endpoint& ep) {
+		[&](const boost::system::error_code& ec,
+	        const ba::ip::udp::endpoint& ep) {
 		if(!ec) {
 			gateway_ = ep.address().to_string();		
 		}
@@ -138,7 +138,7 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 
 	if(res.type == ErrorType::SUCCESS) {
 		promise.set_value(result);
-	} else if(res.type == ErrorType::RETRY_NATPMP) {
+	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
 		const auto map_res = add_mapping_natpmp(stored_request_);
 
 		if(map_res == ErrorType::SUCCESS) {
@@ -238,7 +238,7 @@ void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
 
 	if(res.type == ErrorType::SUCCESS) {
 		promise.set_value(result.external_ip);
-	} else if(res.type == ErrorType::RETRY_NATPMP) {
+	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_NATPMP);
 		promises_.emplace(std::move(promise));
 		get_external_address_pmp();
@@ -567,6 +567,10 @@ std::future<Client::ExternalAddress> Client::external_address() {
 	}
 
 	return future;
+}
+
+void Client::disable_natpmp(const bool disable) {
+	disable_natpmp_ = disable;
 }
 
 } // natpmp, ports, ember

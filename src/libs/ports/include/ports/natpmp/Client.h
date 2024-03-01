@@ -62,6 +62,7 @@ private:
 	ClientPromise active_promise_;
 	natpmp::MapRequest stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> buffer_;
+	bool disable_natpmp_ = false;
 
 	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
 	void timeout_promise();
@@ -94,6 +95,7 @@ public:
 	std::future<MapResult> add_mapping(const natpmp::MapRequest& mapping);
 	std::future<MapResult> delete_mapping(std::uint16_t internal_port, natpmp::Protocol protocol);
 	std::future<MapResult> delete_all(natpmp::Protocol protocol);
+	void disable_natpmp(bool disable);
 };
 
 } // ports, ember
