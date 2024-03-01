@@ -17,6 +17,7 @@
 namespace ember::portmap::natpmp {
 
 smart_enum_class(ErrorType, int,
+	SUCCESS,
 	SERVER_INCOMPATIBLE,
 	RESOLVE_FAILURE,
 	CONNECTION_FAILURE,

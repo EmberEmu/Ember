@@ -65,24 +65,14 @@ ErrorType Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 	return ErrorType::SERVER_INCOMPATIBLE;
 }
 
-void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
+auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result) -> Error {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
-	auto& promise = std::get<std::promise<MapResult>>(active_promise_);
-
 	if(protocol_version != PCP_VERSION) {
-		const auto error = handle_pmp_to_pcp_error(buffer);
-
-		if(error == ErrorType::RETRY_NATPMP) {
-			add_mapping_natpmp(stored_request_, std::move(promise));
-			return;
-		}
-
-		promise.set_value(std::unexpected(error));
-		return;
+		return handle_pmp_to_pcp_error(buffer);
 	}
 
 	pcp::ResponseHeader header{};
@@ -90,20 +80,15 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 	try {
 		header = deserialise<pcp::ResponseHeader>(buffer);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
-		return;
+		return ErrorType::BAD_RESPONSE;
 	}
 
 	if(!header.response) {
-		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
-		return;
+		return ErrorType::BAD_RESPONSE;
 	}
 
 	if(header.result != pcp::Result::SUCCESS) {
-		promise.set_value(std::unexpected(
-			Error{ ErrorType::PCP_CODE, header.result }
-		));
-		return;
+		return { ErrorType::PCP_CODE, header.result };
 	}
 
 	std::span<const std::uint8_t> body_buff = {
@@ -113,17 +98,38 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 	try {
 		const auto body = deserialise<pcp::MapResponse>(body_buff);
 		
-		const MappingResult result {
+		result = MappingResult {
 			.internal_port = body.internal_port,
 			.external_port = body.assigned_external_port,
 			.lifetime = header.lifetime,
 			.secs_since_epoch = header.epoch_time,
 			.external_ip = body.assigned_external_ip
 		};
-
-		promise.set_value(result);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		return ErrorType::BAD_RESPONSE;
+	}
+
+	return ErrorType::SUCCESS;
+}
+
+void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
+	MappingResult result{};
+	const auto res = parse_mapping_pcp(buffer, result);
+	auto& promise = std::get<std::promise<MapResult>>(active_promise_);
+
+	if(res.type == ErrorType::SUCCESS) {
+		promise.set_value(result);
+	} else if(res.type == ErrorType::RETRY_NATPMP) {
+		const auto map_res = add_mapping_natpmp(stored_request_);
+
+		if(map_res == ErrorType::SUCCESS) {
+			states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
+			promises_.emplace(std::move(active_promise_));
+		} else {
+			promise.set_value(std::unexpected(map_res));
+		}
+	} else {
+		promise.set_value(std::unexpected(res));
 	}
 }
 
@@ -205,17 +211,20 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 }
 
 void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
-	auto future = std::get<std::promise<MapResult>>(prev_promise_).get_future();
-	auto result = future.get();
-	auto& promise = std::get<std::promise<ExternalAddress>>(active_promise_);
+	auto promise = std::move(std::get<std::promise<ExternalAddress>>(active_promise_));
+	finagle_state(); // fast-forward to the next state
+	
+	MappingResult result{};
+	const auto res = parse_mapping_pcp(buffer, result);
 
-	if(result) {
-		promise.set_value(result.value().external_ip);
-	} else if(result.error().type == ErrorType::RETRY_NATPMP) {
-		get_external_address_pmp(std::move(promise));
+	if(res.type == ErrorType::SUCCESS) {
+		promise.set_value(result.external_ip);
+	} else if(res.type == ErrorType::RETRY_NATPMP) {
+		states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PMP);
+		promises_.emplace(std::move(promise));
+		get_external_address_pmp();
 	} else {
-		const Error error = result.error();
-		promise.set_value(std::unexpected(error));
+		promise.set_value(std::unexpected(res));
 	}
 }
 
@@ -275,8 +284,7 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 	}
 }
 
-void Client::add_mapping_natpmp(const RequestMapping& mapping,
-                                std::promise<MapResult> promise) {
+ErrorType Client::add_mapping_natpmp(const RequestMapping& mapping) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -284,13 +292,11 @@ void Client::add_mapping_natpmp(const RequestMapping& mapping,
 	try {
 		serialise(mapping, stream);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
-		return;
+		return ErrorType::INTERNAL_ERROR;
 	}
 
-	states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
-	promises_.emplace(std::move(promise));
 	send_request(std::move(buffer));
+	return ErrorType::SUCCESS;
 }
 
 void Client::timeout_promise() {
@@ -328,7 +334,7 @@ void Client::start_retry_timer(const std::chrono::milliseconds timeout, int retr
 	});
 }
 
-void Client::announce_pcp() {
+ErrorType Client::announce_pcp() {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -355,11 +361,13 @@ void Client::announce_pcp() {
 		serialise(header, stream);
 		transport_.send(std::move(buffer));
 	} catch(const spark::exception&) {
-		//promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
+		return ErrorType::INTERNAL_ERROR;
 	}
+
+	return ErrorType::SUCCESS;
 }
 
-void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResult> promise) {
+ErrorType Client::add_mapping_pcp(const RequestMapping& mapping) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -405,23 +413,21 @@ void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResu
 		serialise(header, stream);
 		serialise(map, stream);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
-		return;
+		return ErrorType::INTERNAL_ERROR;
 	}
 
-	states_.push(State::AWAITING_MAPPING_RESULT_PCP);
-	promises_.emplace(std::move(promise));
 	send_request(std::move(buffer));
+	return ErrorType::SUCCESS;
 }
 
 void Client::send_request(std::vector<std::uint8_t> buffer) {
 	auto ptr = std::make_shared<std::vector<std::uint8_t>>(std::move(buffer));
 	last_buffer_ = ptr;
 	start_retry_timer();
-	transport_.send(std::move(buffer));
+	transport_.send(std::move(ptr));
 }
 
-void Client::get_external_address_pcp(std::promise<ExternalAddress> promise) {
+ErrorType Client::get_external_address_pcp() {
 	std::promise<MapResult> internal_promise;
 
 	RequestMapping request {
@@ -431,12 +437,17 @@ void Client::get_external_address_pcp(std::promise<ExternalAddress> promise) {
 		.lifetime = 10
 	};
 
-	promises_.emplace(std::move(promise));
-	states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PCP);
-	add_mapping_pcp(request, std::move(internal_promise));
+	const auto res = add_mapping_pcp(request);
+
+	if(res == ErrorType::SUCCESS) {
+		states_.emplace(State::AWAITING_MAPPING_RESULT_PCP);
+		promises_.emplace(std::move(internal_promise));
+	}
+
+	return res;
 }
 
-void Client::get_external_address_pmp(std::promise<ExternalAddress> promise) {
+ErrorType Client::get_external_address_pmp() {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -446,27 +457,33 @@ void Client::get_external_address_pmp(std::promise<ExternalAddress> promise) {
 	try {
 		serialise(request, stream);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::INTERNAL_ERROR));
-		return;
+		return ErrorType::INTERNAL_ERROR;
 	}
 
-	states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PMP);
-	promises_.emplace(std::move(promise));
 	send_request(std::move(buffer));
+	return ErrorType::SUCCESS;
 }
 
 std::future<Client::MapResult> Client::add_mapping(RequestMapping mapping) {
 	has_resolved_.wait(false);
 
 	std::promise<MapResult> promise;
-	std::future<MapResult> future = promise.get_future();
+	auto future = promise.get_future();
 
 	if(!resolve_res_) {
 		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
 		return future;
 	}
 
-	add_mapping_pcp(mapping, std::move(promise));
+	const auto res = add_mapping_pcp(mapping);
+
+	if(res == ErrorType::SUCCESS) {
+		states_.push(State::AWAITING_MAPPING_RESULT_PCP);
+		promises_.emplace(std::move(promise));
+	} else {
+		promise.set_value(std::unexpected(res));
+	}
+
 	return future;
 }
 
@@ -486,7 +503,7 @@ std::future<Client::MapResult> Client::delete_all(const Protocol protocol) {
 	has_resolved_.wait(false);
 
 	std::promise<MapResult> promise;
-	std::future<MapResult> future = promise.get_future();
+	auto future = promise.get_future();
 
 	if(!resolve_res_) {
 		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
@@ -502,7 +519,15 @@ std::future<Client::MapResult> Client::delete_all(const Protocol protocol) {
 
 	// PCP seems to provide no way to request deletion of all mappings
 	// Tested PCP hardware did not accept the same technique as NAT-PMP
-	add_mapping_natpmp(request, std::move(promise));
+	const auto res = add_mapping_natpmp(request);
+
+	if(res == ErrorType::SUCCESS) {
+		states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
+		promises_.emplace(std::move(promise));
+	} else {
+		promise.set_value(std::unexpected(res));
+	}
+
 	return future;
 }
 
@@ -510,13 +535,21 @@ std::future<Client::ExternalAddress> Client::external_address() {
 	has_resolved_.wait(false);
 
 	std::promise<ExternalAddress> promise;
-	std::future<ExternalAddress> future = promise.get_future();
+	auto future = promise.get_future();
 
 	if(!resolve_res_) {
 		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
 	}
 
-	get_external_address_pcp(std::move(promise));
+	const auto res = get_external_address_pcp();
+
+	if(res == ErrorType::SUCCESS) {
+		states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PCP);
+		promises_.emplace(std::move(promise));
+	} else {
+		promise.set_value(std::unexpected(res));
+	}
+
 	return future;
 }
 

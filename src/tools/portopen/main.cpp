@@ -92,7 +92,7 @@ void launch(const po::variables_map& args) {
 		std::cout << std::format("External address: {}", v6.to_string());
 	} else {
 		std::cout << "Error: could not retrieve external address" << std::endl;
-		print_error(result.error());
+		print_error(xresult.error());
 	}
 
 	ctx.stop();

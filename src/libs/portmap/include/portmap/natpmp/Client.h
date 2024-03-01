@@ -69,17 +69,18 @@ private:
 	void timeout_promise();
 
 	void finagle_state();
-	void announce_pcp();
+	ErrorType announce_pcp();
 	void handle_connection_error();
 	void send_request(std::vector<std::uint8_t> buffer);
 
-	void get_external_address_pmp(std::promise<ExternalAddress> promise);
-	void get_external_address_pcp(std::promise<ExternalAddress> promise);
+	ErrorType get_external_address_pmp();
+	ErrorType get_external_address_pcp();
 
-	void add_mapping_natpmp(const RequestMapping& mapping, std::promise<MapResult> promise);
-	void add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResult> promise);
+	ErrorType add_mapping_natpmp(const RequestMapping& mapping);
+	ErrorType add_mapping_pcp(const RequestMapping& mapping);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
+	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result);
 	void handle_external_address_pcp(std::span<std::uint8_t> buffer);
 	void handle_external_address_pmp(std::span<std::uint8_t> buffer);
 
