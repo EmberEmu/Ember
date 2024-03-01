@@ -270,26 +270,24 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 	while(!states_.empty()) {
 		finagle_state();
 		const auto size = states_.size();
+		timer_.cancel();
 
 		switch(state_) {
 			case State::AWAITING_MAPPING_RESULT_PCP:
-				timer_.cancel();
 				handle_mapping_pcp(buffer);
 				break;
 			case State::AWAITING_MAPPING_RESULT_PMP:
-				timer_.cancel();
 				handle_mapping_pmp(buffer);
 				break;
 			case State::AWAITING_EXTERNAL_ADDRESS_PMP:
-				timer_.cancel();
 				handle_external_address_pmp(buffer);
 				break;
 			case State::AWAITING_EXTERNAL_ADDRESS_PCP:
-				timer_.cancel();
 				handle_external_address_pcp(buffer);
 				break;
 		}
 		
+
 		// a handler has pushed a new state, let it do the work
 		if(states_.size() != size) {
 			break;
