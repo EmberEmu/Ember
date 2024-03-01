@@ -21,8 +21,8 @@ namespace ember::portmap::natpmp {
 namespace bai = boost::asio::ip;
 
 Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
-	: ctx_(ctx), gateway_(std::move(gateway)), transport_(interface, ctx), timer_(ctx),
-	  interface_(interface), resolve_res_(false), has_resolved_(false) {
+	: ctx_(ctx), strand_(ctx), gateway_(std::move(gateway)), transport_(interface, ctx),
+	  timer_(ctx), interface_(interface), resolve_res_(false), has_resolved_(false) {
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
@@ -47,7 +47,20 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 }
 
 void Client::handle_connection_error() {
+	// active_promise_ should never exist if this handler is called
+	// as it's only popped off the stack within the same thread and is
+	// either fulfilled or pushed back on the stack by return
+	while(!promises_.empty()) {
+		auto promise = std::move(promises_.top());
+		promises_.pop();
 
+		std::visit([&](auto&& arg) {
+			arg.set_value(std::unexpected(ErrorType::CONNECTION_FAILURE));
+		}, active_promise_);
+	}
+
+	states_ = {};
+	state_ = State::IDLE;
 }
 
 ErrorType Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
