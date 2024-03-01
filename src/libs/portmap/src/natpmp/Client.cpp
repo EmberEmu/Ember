@@ -274,8 +274,6 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 		// a handler has pushed a new state, let it do the work
 		if(states_.size() != size) {
 			break;
-		} else {
-			prev_promise_ = std::move(active_promise_);
 		}
 	}
 

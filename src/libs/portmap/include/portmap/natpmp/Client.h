@@ -59,7 +59,6 @@ private:
 	std::stack<State> states_;
 	std::atomic<State> state_ { State::IDLE };
 	std::stack<ClientPromise> promises_;
-	ClientPromise prev_promise_;
 	ClientPromise active_promise_;
 	RequestMapping stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> last_buffer_;
