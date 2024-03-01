@@ -30,12 +30,10 @@ using namespace std::literals;
 constexpr int MAX_RETRIES = 9;
 constexpr auto INITIAL_TIMEOUT = 250ms;
 
-class Client {
-public:
-	using MapResult = std::expected<MappingResult, Error>;
-	using ClientPromise = std::promise<MapResult>;
-	using RequestHandler = std::function<void()>;
+using MapResult = std::expected<MappingResult, Error>;
+using RequestHandler = std::function<void(const MapResult& result)>;
 
+class Client {
 private:
 	enum class State {
 		IDLE,
@@ -55,8 +53,8 @@ private:
 	std::atomic_bool resolve_res_;
 	std::stack<State> states_;
 	std::atomic<State> state_ { State::IDLE };
-	std::stack<ClientPromise> promises_;
-	ClientPromise active_promise_;
+	std::stack<RequestHandler> handlers_;
+	RequestHandler active_handler_;
 	MapRequest stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> buffer_;
 	bool disable_natpmp_ = false;

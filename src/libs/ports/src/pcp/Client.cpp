@@ -56,10 +56,10 @@ void Client::handle_connection_error() {
 	// active_promise_ should never exist if this handler is called
 	// as it's only popped off the stack within the same thread and is
 	// either fulfilled or pushed back before handle_message returns
-	while(!promises_.empty()) {
-		auto promise = std::move(promises_.top());
-		promises_.pop();
-		active_promise_.set_value(std::unexpected(ErrorType::CONNECTION_FAILURE));
+	while(!handlers_.empty()) {
+		auto handler = std::move(handlers_.top());
+		handlers_.pop();
+		handler(std::unexpected(ErrorType::CONNECTION_FAILURE));
 	}
 
 	states_ = {};
@@ -131,21 +131,21 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& re
 void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 	MappingResult result{};
 	const auto res = parse_mapping_pcp(buffer, result);
-	auto& promise = active_promise_;
+	auto& handler = active_handler_;
 
 	if(res.type == ErrorType::SUCCESS) {
-		promise.set_value(result);
+		handler(result);
 	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
 		const auto map_res = add_mapping_natpmp(stored_request_);
 
 		if(map_res == ErrorType::SUCCESS) {
 			states_.emplace(State::AWAIT_MAP_RESULT_NATPMP);
-			promises_.emplace(std::move(active_promise_));
+			handlers_.emplace(std::move(active_handler_));
 		} else {
-			promise.set_value(std::unexpected(map_res));
+			handler(std::unexpected(map_res));
 		}
 	} else {
-		promise.set_value(std::unexpected(res));
+		handler(std::unexpected(res));
 	}
 }
 
@@ -155,10 +155,10 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
-	auto& promise = active_promise_;
+	auto& handler = active_handler_;
 
 	if(protocol_version != NATPMP_VERSION) {
-		promise.set_value(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
+		handler(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
 		return;
 	}
 
@@ -167,12 +167,12 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 	try {
 		response = deserialise<natpmp::MapResponse>(buffer);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		handler(std::unexpected(ErrorType::BAD_RESPONSE));
 		return;
 	}
 
 	if(response.result_code != natpmp::Result::SUCCESS) {
-		promise.set_value(std::unexpected(
+		handler(std::unexpected(
 			Error{ ErrorType::NATPMP_CODE, response.result_code }
 		));
 		return;
@@ -185,7 +185,7 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 		.secs_since_epoch = response.secs_since_epoch,
 	};
 
-	promise.set_value(result);
+	handler(result);
 }
 
 void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
@@ -194,10 +194,10 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
-	auto& promise = active_promise_;
+	auto& handler = active_handler_;
 
 	if(protocol_version != NATPMP_VERSION) {
-		promise.set_value(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
+		handler(std::unexpected(ErrorType::SERVER_INCOMPATIBLE));
 		return;
 	}
 
@@ -206,12 +206,12 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	try {
 		message = deserialise<natpmp::ExtAddressResponse>(buffer);
 	} catch(const spark::exception&) {
-		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		handler(std::unexpected(ErrorType::BAD_RESPONSE));
 		return;
 	}
 
 	if(message.opcode != NATPMP_RESULT) {
-		promise.set_value(std::unexpected(ErrorType::BAD_RESPONSE));
+		handler(std::unexpected(ErrorType::BAD_RESPONSE));
 		return;
 	}
 
@@ -223,35 +223,34 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 			.external_ip = v6.to_bytes()
 		};
 
-		promise.set_value(res);
+		handler(res);
 	} else {
-		promise.set_value(std::unexpected(
+		handler(std::unexpected(
 			Error { ErrorType::PCP_CODE, message.result_code })
 		);
 	}
 }
 
 void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
-	auto promise = std::move(active_promise_);
-	finagle_state(); // fast-forward to the next state
+	auto handler = std::move(active_handler_);
 	
 	MappingResult result{};
 	const auto res = parse_mapping_pcp(buffer, result);
 
 	if(res.type == ErrorType::SUCCESS) {
-		promise.set_value(result);
+		handler(result);
 	} else if(res.type == ErrorType::RETRY_NATPMP && !disable_natpmp_) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_NATPMP);
-		promises_.emplace(std::move(promise));
+		handlers_.emplace(std::move(handler));
 		get_external_address_pmp();
 	} else {
-		promise.set_value(std::unexpected(res));
+		handler(std::unexpected(res));
 	}
 }
 
 void Client::finagle_state() {
-	active_promise_ = std::move(promises_.top());
-	promises_.pop();
+	active_handler_ = std::move(handlers_.top());
+	handlers_.pop();
 	state_ = states_.top();
 	states_.pop();
 }
@@ -330,13 +329,13 @@ ErrorType Client::add_mapping_natpmp(const MapRequest& request) {
 void Client::timeout_promise() {
 	// we'll just error all of the promises rather than complicate the
 	// state machine - should only be one request at any given time
-	promises_.emplace(std::move(active_promise_));
+	handlers_.emplace(std::move(active_handler_));
 
 	do {
-		auto promise = std::move(promises_.top());
-		promise.set_value(std::unexpected(ErrorType::NO_RESPONSE));
-		promises_.pop();
-	} while(!promises_.empty());
+		auto handler = std::move(handlers_.top());
+		handler(std::unexpected(ErrorType::NO_RESPONSE));
+		handlers_.pop();
+	} while(!handlers_.empty());
 
 	states_ = {};
 	state_ = State::IDLE;
@@ -453,8 +452,6 @@ void Client::send_request(std::vector<std::uint8_t> buffer) {
 }
 
 ErrorType Client::get_external_address_pcp() {
-	std::promise<MapResult> internal_promise;
-
 	MapRequest request {
 		.protocol = Protocol::UDP,
 		.internal_port = 9, // discard protocol
@@ -463,12 +460,6 @@ ErrorType Client::get_external_address_pcp() {
 	};
 
 	const auto res = add_mapping_pcp(request);
-
-	if(res == ErrorType::SUCCESS) {
-		states_.emplace(State::AWAIT_MAP_RESULT_PCP);
-		promises_.emplace(std::move(internal_promise));
-	}
-
 	return res;
 }
 
@@ -489,30 +480,18 @@ ErrorType Client::get_external_address_pmp() {
 	return ErrorType::SUCCESS;
 }
 
-std::future<Client::MapResult> Client::add_mapping(const MapRequest& mapping) {
-	has_resolved_.wait(false);
+std::future<MapResult> Client::add_mapping(const MapRequest& mapping) {
+	auto promise = std::make_shared<std::promise<MapResult>>();
+	auto future = promise->get_future();
 
-	std::promise<MapResult> promise;
-	auto future = promise.get_future();
-
-	if(!resolve_res_) {
-		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
-		return future;
-	}
-
-	const auto res = add_mapping_pcp(mapping);
-
-	if(res == ErrorType::SUCCESS) {
-		states_.push(State::AWAIT_MAP_RESULT_PCP);
-		promises_.emplace(std::move(promise));
-	} else {
-		promise.set_value(std::unexpected(res));
-	}
+	add_mapping(mapping, [promise](const MapResult& result) {
+		promise->set_value(result);
+	});
 
 	return future;
 }
 
-std::future<Client::MapResult> Client::delete_mapping(const std::uint16_t internal_port,
+std::future<MapResult> Client::delete_mapping(const std::uint16_t internal_port,
                                                       const Protocol protocol) {
 	MapRequest request {
 		.protocol = protocol,
@@ -524,15 +503,64 @@ std::future<Client::MapResult> Client::delete_mapping(const std::uint16_t intern
 	return add_mapping(request);
 };
 
-std::future<Client::MapResult> Client::delete_all(const natpmp::Protocol protocol) {
+std::future<MapResult> Client::delete_all(const natpmp::Protocol protocol) {
+	auto promise = std::make_shared<std::promise<MapResult>>();
+	auto future = promise->get_future();
+
+	delete_all(protocol, [promise](const MapResult& result) {
+		promise->set_value(result);
+	});
+
+	return future;
+}
+
+std::future<MapResult> Client::external_address() {
+	auto promise = std::make_shared<std::promise<MapResult>>();
+	auto future = promise->get_future();
+
+	external_address([promise](const MapResult& result) {
+		promise->set_value(result);
+	});
+
+	return future;
+}
+
+void Client::add_mapping(const MapRequest& mapping, RequestHandler handler) {
 	has_resolved_.wait(false);
 
-	std::promise<MapResult> promise;
-	auto future = promise.get_future();
+	if(!resolve_res_) {
+		handler(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		return;
+	}
+
+	const auto res = add_mapping_pcp(mapping);
+
+	if(res == ErrorType::SUCCESS) {
+		states_.push(State::AWAIT_MAP_RESULT_PCP);
+		handlers_.emplace(std::move(handler));
+	} else {
+		handler(std::unexpected(res));
+	}
+}
+
+void Client::delete_mapping(std::uint16_t internal_port, Protocol protocol,
+                            RequestHandler handler) {
+	MapRequest request {
+		.protocol = protocol,
+		.internal_port = internal_port,
+		.external_port = 0,
+		.lifetime = 0
+	};
+
+	add_mapping(request, handler);
+}
+
+void Client::delete_all(natpmp::Protocol protocol, RequestHandler handler) {
+	has_resolved_.wait(false);
 
 	if(!resolve_res_) {
-		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
-		return future;
+		handler(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		return;
 	}
 
 	const Protocol proto = (protocol == natpmp::Protocol::TCP)?
@@ -551,34 +579,27 @@ std::future<Client::MapResult> Client::delete_all(const natpmp::Protocol protoco
 
 	if(res == ErrorType::SUCCESS) {
 		states_.emplace(State::AWAIT_MAP_RESULT_NATPMP);
-		promises_.emplace(std::move(promise));
+		handlers_.emplace(std::move(handler));
 	} else {
-		promise.set_value(std::unexpected(res));
+		handler(std::unexpected(res));
 	}
-
-	return future;
 }
 
-std::future<Client::MapResult> Client::external_address() {
+void Client::external_address(RequestHandler handler) {
 	has_resolved_.wait(false);
 
-	std::promise<Client::MapResult> promise;
-	auto future = promise.get_future();
-
 	if(!resolve_res_) {
-		promise.set_value(std::unexpected(ErrorType::RESOLVE_FAILURE));
+		handler(std::unexpected(ErrorType::RESOLVE_FAILURE));
 	}
 
 	const auto res = get_external_address_pcp();
 
 	if(res == ErrorType::SUCCESS) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_PCP);
-		promises_.emplace(std::move(promise));
+		handlers_.emplace(std::move(handler));
 	} else {
-		promise.set_value(std::unexpected(res));
+		handler(std::unexpected(res));
 	}
-
-	return future;
 }
 
 void Client::disable_natpmp(const bool disable) {

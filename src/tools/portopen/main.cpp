@@ -63,7 +63,7 @@ void launch(const po::variables_map& args) {
 		static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
 	);
 
-	std::future<ports::Client::MapResult> future;
+	std::future<ports::MapResult> future;
 
 	if(deletion) {
 		future = client.delete_mapping(internal, proto);
