@@ -16,14 +16,12 @@
 #include <algorithm>
 #include <random>
 
-#include <iostream> // todo, zug zug
-
 namespace ember::portmap::natpmp {
 
 namespace bai = boost::asio::ip;
 
 Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
-	: ctx_(ctx), gateway_(std::move(gateway)), transport_(interface, ctx),
+	: ctx_(ctx), gateway_(std::move(gateway)), transport_(interface, ctx), timer_(ctx),
 	  interface_(interface), resolve_res_(false), has_resolved_(false) {
 
 	transport_.set_callbacks(
@@ -229,6 +227,7 @@ void Client::finagle_state() {
 }
 
 void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
+	return;
 	/*
 	 * Upon receiving a response packet, the client MUST check the source IP
      * address, and silently discard the packet if the address is not the
@@ -247,15 +246,19 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 
 		switch(state_) {
 			case State::AWAITING_MAPPING_RESULT_PCP:
+				timer_.cancel();
 				handle_mapping_pcp(buffer);
 				break;
 			case State::AWAITING_MAPPING_RESULT_PMP:
+				timer_.cancel();
 				handle_mapping_pmp(buffer);
 				break;
 			case State::AWAITING_EXTERNAL_ADDRESS_PMP:
+				timer_.cancel();
 				handle_external_address_pmp(buffer);
 				break;
 			case State::AWAITING_EXTERNAL_ADDRESS_PCP:
+				timer_.cancel();
 				handle_external_address_pcp(buffer);
 				break;
 		}
@@ -288,7 +291,42 @@ void Client::add_mapping_natpmp(const RequestMapping& mapping,
 
 	states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
 	promises_.emplace(std::move(promise));
-	transport_.send(std::move(buffer));
+	send_request(std::move(buffer));
+}
+
+void Client::timeout_promise() {
+	// we'll just error all of the promises rather than complicate the
+	// state machine - should only be one request at any given time
+	promises_.emplace(std::move(active_promise_));
+
+	do {
+		active_promise_ = std::move(promises_.top());
+		promises_.pop();
+
+		std::visit([&](auto&& arg) {
+			arg.set_value(std::unexpected(ErrorType::NO_RESPONSE));
+		}, active_promise_);
+	} while(!promises_.empty());
+
+	states_ = {};
+	state_ = State::IDLE;
+}
+
+void Client::start_retry_timer(const std::chrono::milliseconds timeout, int retries) {
+	timer_.expires_from_now(timeout);
+	timer_.async_wait([&, timeout, retries](const boost::system::error_code& ec) mutable {
+		if(ec) {
+			return;
+		}
+
+		if(retries) {
+			transport_.send(last_buffer_);
+			start_retry_timer(timeout * 2, --retries);
+		} else {
+			finagle_state();
+			timeout_promise();
+		}
+	});
 }
 
 void Client::announce_pcp() {
@@ -374,6 +412,12 @@ void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResu
 
 	states_.push(State::AWAITING_MAPPING_RESULT_PCP);
 	promises_.emplace(std::move(promise));
+	send_request(std::move(buffer));
+}
+
+void Client::send_request(std::vector<std::uint8_t> buffer) {
+	last_buffer_ = buffer; // todo
+	start_retry_timer();
 	transport_.send(std::move(buffer));
 }
 
@@ -408,7 +452,7 @@ void Client::get_external_address_pmp(std::promise<ExternalAddress> promise) {
 
 	states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PMP);
 	promises_.emplace(std::move(promise));
-	transport_.send(std::move(buffer));
+	send_request(std::move(buffer));
 }
 
 std::future<Client::MapResult> Client::add_mapping(RequestMapping mapping) {

@@ -59,8 +59,9 @@ void launch(const po::variables_map& args) {
 	portmap::natpmp::Client client(interface, gateway, ctx);
 
 	// Create an ASIO worker with a single thread
-	auto worker = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-							   (&boost::asio::io_context::run), &ctx);
+	auto worker = std::jthread(
+		static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
+	);
 
 	std::future<portmap::natpmp::Client::MapResult> future;
 

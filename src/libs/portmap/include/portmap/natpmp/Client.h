@@ -24,6 +24,11 @@
 
 namespace ember::portmap::natpmp {
 
+using namespace std::literals;
+
+constexpr int MAX_RETRIES = 9;
+constexpr auto INITIAL_TIMEOUT = 250ms;
+
 class Client {
 public:
 	using MapResult = std::expected<MappingResult, Error>;
@@ -44,6 +49,7 @@ private:
 
 
 	ba::io_context& ctx_;
+	ba::steady_timer timer_;
 	DatagramTransport transport_;
 	std::string gateway_;
 	const std::string interface_;
@@ -55,10 +61,16 @@ private:
 	ClientPromise prev_promise_;
 	ClientPromise active_promise_;
 	RequestMapping stored_request_{};
+	std::vector<std::uint8_t> last_buffer_;
+
+	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT,
+	                       int retries = MAX_RETRIES);
+	void timeout_promise();
 
 	void finagle_state();
 	void announce_pcp();
 	void handle_connection_error();
+	void send_request(std::vector<std::uint8_t> buffer);
 
 	void get_external_address_pmp(std::promise<ExternalAddress> promise);
 	void get_external_address_pcp(std::promise<ExternalAddress> promise);
