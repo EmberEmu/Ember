@@ -42,12 +42,11 @@ public:
 private:
 	enum class State {
 		IDLE,
-		AWAITING_MAPPING_RESULT_PMP,
-		AWAITING_MAPPING_RESULT_PCP,
-		AWAITING_EXTERNAL_ADDRESS_PMP,
-		AWAITING_EXTERNAL_ADDRESS_PCP,
+		AWAIT_MAP_RESULT_PCP,
+		AWAIT_MAP_RESULT_NATPMP,
+		AWAIT_EXTERNAL_ADDRESS_PCP,
+		AWAIT_EXTERNAL_ADDRESS_NATPMP,
 	};
-
 
 	ba::io_context& ctx_;
 	ba::steady_timer timer_;
@@ -62,7 +61,7 @@ private:
 	std::stack<ClientPromise> promises_;
 	ClientPromise active_promise_;
 	natpmp::MapRequest stored_request_{};
-	std::shared_ptr<std::vector<std::uint8_t>> last_buffer_;
+	std::shared_ptr<std::vector<std::uint8_t>> buffer_;
 
 	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
 	void timeout_promise();

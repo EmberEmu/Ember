@@ -142,7 +142,7 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 		const auto map_res = add_mapping_natpmp(stored_request_);
 
 		if(map_res == ErrorType::SUCCESS) {
-			states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
+			states_.emplace(State::AWAIT_MAP_RESULT_NATPMP);
 			promises_.emplace(std::move(active_promise_));
 		} else {
 			promise.set_value(std::unexpected(map_res));
@@ -239,7 +239,7 @@ void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
 	if(res.type == ErrorType::SUCCESS) {
 		promise.set_value(result.external_ip);
 	} else if(res.type == ErrorType::RETRY_NATPMP) {
-		states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PMP);
+		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_NATPMP);
 		promises_.emplace(std::move(promise));
 		get_external_address_pmp();
 	} else {
@@ -274,16 +274,16 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 		const auto size = states_.size();
 
 		switch(state_) {
-			case State::AWAITING_MAPPING_RESULT_PCP:
+			case State::AWAIT_MAP_RESULT_PCP:
 				handle_mapping_pcp(buffer);
 				break;
-			case State::AWAITING_MAPPING_RESULT_PMP:
+			case State::AWAIT_MAP_RESULT_NATPMP:
 				handle_mapping_pmp(buffer);
 				break;
-			case State::AWAITING_EXTERNAL_ADDRESS_PMP:
+			case State::AWAIT_EXTERNAL_ADDRESS_NATPMP:
 				handle_external_address_pmp(buffer);
 				break;
-			case State::AWAITING_EXTERNAL_ADDRESS_PCP:
+			case State::AWAIT_EXTERNAL_ADDRESS_PCP:
 				handle_external_address_pcp(buffer);
 				break;
 		}
@@ -341,7 +341,7 @@ void Client::start_retry_timer(const std::chrono::milliseconds timeout, const in
 		}
 
 		if(retries != MAX_RETRIES) {
-			transport_.send(last_buffer_);
+			transport_.send(buffer_);
 			start_retry_timer(timeout * 2, retries + 1);
 		} else {
 			finagle_state();
@@ -438,7 +438,7 @@ ErrorType Client::add_mapping_pcp(const natpmp::MapRequest& mapping) {
 
 void Client::send_request(std::vector<std::uint8_t> buffer) {
 	auto ptr = std::make_shared<std::vector<std::uint8_t>>(std::move(buffer));
-	last_buffer_ = ptr;
+	buffer_ = ptr;
 	start_retry_timer();
 	transport_.send(std::move(ptr));
 }
@@ -456,7 +456,7 @@ ErrorType Client::get_external_address_pcp() {
 	const auto res = add_mapping_pcp(request);
 
 	if(res == ErrorType::SUCCESS) {
-		states_.emplace(State::AWAITING_MAPPING_RESULT_PCP);
+		states_.emplace(State::AWAIT_MAP_RESULT_PCP);
 		promises_.emplace(std::move(internal_promise));
 	}
 
@@ -494,7 +494,7 @@ std::future<Client::MapResult> Client::add_mapping(const natpmp::MapRequest& map
 	const auto res = add_mapping_pcp(mapping);
 
 	if(res == ErrorType::SUCCESS) {
-		states_.push(State::AWAITING_MAPPING_RESULT_PCP);
+		states_.push(State::AWAIT_MAP_RESULT_PCP);
 		promises_.emplace(std::move(promise));
 	} else {
 		promise.set_value(std::unexpected(res));
@@ -538,7 +538,7 @@ std::future<Client::MapResult> Client::delete_all(const natpmp::Protocol protoco
 	const auto res = add_mapping_natpmp(request);
 
 	if(res == ErrorType::SUCCESS) {
-		states_.emplace(State::AWAITING_MAPPING_RESULT_PMP);
+		states_.emplace(State::AWAIT_MAP_RESULT_NATPMP);
 		promises_.emplace(std::move(promise));
 	} else {
 		promise.set_value(std::unexpected(res));
@@ -560,7 +560,7 @@ std::future<Client::ExternalAddress> Client::external_address() {
 	const auto res = get_external_address_pcp();
 
 	if(res == ErrorType::SUCCESS) {
-		states_.emplace(State::AWAITING_EXTERNAL_ADDRESS_PCP);
+		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_PCP);
 		promises_.emplace(std::move(promise));
 	} else {
 		promise.set_value(std::unexpected(res));
