@@ -300,10 +300,20 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 	}
 }
 
-ErrorType Client::add_mapping_natpmp(const natpmp::MapRequest& mapping) {
+ErrorType Client::add_mapping_natpmp(const MapRequest& request) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
+
+	const auto protocol = (request.protocol == Protocol::TCP)?
+		natpmp::Protocol::TCP : natpmp::Protocol::UDP;
+
+	const natpmp::MapRequest mapping {
+		.opcode = protocol,
+		.internal_port = request.internal_port,
+		.external_port = request.external_port,
+		.lifetime = request.lifetime
+	};
 
 	try {
 		serialise(mapping, stream);
@@ -383,7 +393,7 @@ ErrorType Client::announce_pcp() {
 	return ErrorType::SUCCESS;
 }
 
-ErrorType Client::add_mapping_pcp(const natpmp::MapRequest& mapping) {
+ErrorType Client::add_mapping_pcp(const MapRequest& request) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -391,7 +401,7 @@ ErrorType Client::add_mapping_pcp(const natpmp::MapRequest& mapping) {
 	pcp::RequestHeader header {
 		.version = PCP_VERSION,
 		.opcode = pcp::Opcode::MAP,
-		.lifetime = mapping.lifetime
+		.lifetime = request.lifetime
 	};
 
 	const auto address = bai::make_address(interface_);
@@ -406,21 +416,21 @@ ErrorType Client::add_mapping_pcp(const natpmp::MapRequest& mapping) {
 	const auto& bytes = v6.to_bytes();
 	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
 
-	const auto protocol = (mapping.opcode == natpmp::Protocol::TCP)?
+	const auto protocol = (request.protocol == Protocol::TCP)?
 		pcp::Protocol::TCP : pcp::Protocol::UDP;
 
 	pcp::MapRequest map {
 		.protocol = protocol,
-		.internal_port = mapping.internal_port,
-		.suggested_external_port = mapping.external_port
+		.internal_port = request.internal_port,
+		.suggested_external_port = request.external_port
 	};
 
-	const auto it = std::find_if(mapping.nonce.begin(), mapping.nonce.end(),
+	const auto it = std::find_if(request.nonce.begin(), request.nonce.end(),
 		[](const std::uint8_t val) {
 			return val != 0;
 		});
 
-	if(it == mapping.nonce.end()) {
+	if(it == request.nonce.end()) {
 ;		std::random_device engine;
 		std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
 	}
@@ -446,8 +456,8 @@ void Client::send_request(std::vector<std::uint8_t> buffer) {
 ErrorType Client::get_external_address_pcp() {
 	std::promise<MapResult> internal_promise;
 
-	natpmp::MapRequest request {
-		.opcode = natpmp::Protocol::UDP,
+	MapRequest request {
+		.protocol = Protocol::UDP,
 		.internal_port = 9, // discard protocol
 		.external_port = 9,
 		.lifetime = 10
@@ -480,7 +490,7 @@ ErrorType Client::get_external_address_pmp() {
 	return ErrorType::SUCCESS;
 }
 
-std::future<Client::MapResult> Client::add_mapping(const natpmp::MapRequest& mapping) {
+std::future<Client::MapResult> Client::add_mapping(const MapRequest& mapping) {
 	has_resolved_.wait(false);
 
 	std::promise<MapResult> promise;
@@ -504,9 +514,9 @@ std::future<Client::MapResult> Client::add_mapping(const natpmp::MapRequest& map
 }
 
 std::future<Client::MapResult> Client::delete_mapping(const std::uint16_t internal_port,
-                                                      const natpmp::Protocol protocol) {
-	natpmp::MapRequest request {
-		.opcode = protocol,
+                                                      const Protocol protocol) {
+	MapRequest request {
+		.protocol = protocol,
 		.internal_port = internal_port,
 		.external_port = 0,
 		.lifetime = 0
@@ -526,8 +536,11 @@ std::future<Client::MapResult> Client::delete_all(const natpmp::Protocol protoco
 		return future;
 	}
 
-	const natpmp::MapRequest request {
-		.opcode = protocol,
+	const Protocol proto = (protocol == natpmp::Protocol::TCP)?
+		Protocol::TCP : Protocol::UDP;
+
+	const MapRequest request {
+		.protocol = proto,
 		.internal_port = 0,
 		.external_port = 0,
 		.lifetime = 0

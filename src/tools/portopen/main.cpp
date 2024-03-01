@@ -42,14 +42,14 @@ void launch(const po::variables_map& args) {
 	const auto& protocol = args["protocol"].as<std::string>();
 	const auto deletion = args["delete"].as<bool>();
 	
-	auto proto = ports::natpmp::Protocol::TCP;
+	auto proto = ports::Protocol::TCP;
 
 	if(protocol == "udp") {
-		proto = ports::natpmp::Protocol::UDP;
+		proto = ports::Protocol::UDP;
 	}
 
-	const ports::natpmp::MapRequest request {
-		.opcode = proto,
+	const ports::MapRequest request {
+		.protocol = proto,
 		.internal_port = internal,
 		.external_port = external,
 		.lifetime = deletion? 0u : 7200u

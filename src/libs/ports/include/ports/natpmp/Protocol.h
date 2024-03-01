@@ -27,6 +27,7 @@ constexpr auto HEADER_SIZE = 24u;
 
 // defined by IANA
 enum class Protocol : std::uint8_t {
+	ALL = 0x00,
 	TCP = 0x06,
 	UDP = 0x11
 };
@@ -129,7 +130,6 @@ struct MapRequest {
 	std::uint16_t internal_port;
 	std::uint16_t external_port;
 	std::uint32_t lifetime;
-	std::array<std::uint8_t, 12> nonce; // not part natpmp, exists only for clients
 };
 
 struct MapResponse {
@@ -163,6 +163,21 @@ struct UnsupportedErrorResponse {
 };
 
 } // natpmp
+
+  // Types below are used by clients to map to both NAT-PMP & PCP requests
+enum class Protocol {
+	TCP, UDP, BOTH
+};
+
+struct MapRequest {
+	std::uint8_t version;
+	Protocol protocol;
+	std::uint16_t reserved;
+	std::uint16_t internal_port;
+	std::uint16_t external_port;
+	std::uint32_t lifetime;
+	std::array<std::uint8_t, 12> nonce;
+};
 
 } // ports, ember
 

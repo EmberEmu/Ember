@@ -60,7 +60,7 @@ private:
 	std::atomic<State> state_ { State::IDLE };
 	std::stack<ClientPromise> promises_;
 	ClientPromise active_promise_;
-	natpmp::MapRequest stored_request_{};
+	MapRequest stored_request_{};
 	std::shared_ptr<std::vector<std::uint8_t>> buffer_;
 	bool disable_natpmp_ = false;
 
@@ -75,8 +75,8 @@ private:
 	ErrorType get_external_address_pmp();
 	ErrorType get_external_address_pcp();
 
-	ErrorType add_mapping_natpmp(const natpmp::MapRequest& mapping);
-	ErrorType add_mapping_pcp(const natpmp::MapRequest& mapping);
+	ErrorType add_mapping_natpmp(const MapRequest& mapping);
+	ErrorType add_mapping_pcp(const MapRequest& mapping);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
 	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result);
@@ -92,8 +92,8 @@ public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
 
 	std::future<ExternalAddress> external_address();
-	std::future<MapResult> add_mapping(const natpmp::MapRequest& mapping);
-	std::future<MapResult> delete_mapping(std::uint16_t internal_port, natpmp::Protocol protocol);
+	std::future<MapResult> add_mapping(const MapRequest& mapping);
+	std::future<MapResult> delete_mapping(std::uint16_t internal_port, Protocol protocol);
 	std::future<MapResult> delete_all(natpmp::Protocol protocol);
 	void disable_natpmp(bool disable);
 };
