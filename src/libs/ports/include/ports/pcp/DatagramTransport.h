@@ -56,4 +56,4 @@ public:
 	void close();
 };
 
-} // natpmp, ports, ember
+} // ports, ember

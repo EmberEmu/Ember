@@ -656,4 +656,4 @@ void Client::announce_handler(AnnounceHandler&& handler) {
 	announce_handler_ = std::move(handler);
 }
 
-} // natpmp, ports, ember
+} // ports, ember

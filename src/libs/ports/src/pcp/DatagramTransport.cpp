@@ -127,4 +127,4 @@ void DatagramTransport::set_callbacks(OnReceive rcb, OnConnectionError ecb) {
 	ecb_ = ecb;
 }
 
-} // natpmp, ports, ember
+} // ports, ember

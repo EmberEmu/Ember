@@ -58,6 +58,9 @@ void Daemon::process_queue() {
 
 void Daemon::renew_mapping(const Mapping& mapping) {
 	client_.add_mapping(mapping.request, strand_.wrap([&](const Result& result) {
+		// we don't delete the mapping if it fails because testing
+		// showed that it's possible to have inexplicable transient errors
+		// so we'll keep the entry and hope we have better luck next time
 		if(result) {
 			update_mapping(result);
 		}
@@ -185,4 +188,4 @@ void Daemon::erase_mapping(const Result& result) {
 	}
 }
 
-} // natpmp, ports, ember
+} // ports, ember

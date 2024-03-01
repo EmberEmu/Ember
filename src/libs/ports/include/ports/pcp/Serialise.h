@@ -87,4 +87,4 @@ void serialise(const natpmp::UnsupportedErrorResponse& message,
 	stream << be::native_to_big(message.secs_since_epoch);
 }
 
-} // natpmp, ports, ember
+} // ports, ember

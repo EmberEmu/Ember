@@ -22,8 +22,8 @@ namespace ember::ports {
 using namespace std::literals;
 
 class Daemon {
-	static constexpr auto TIMER_INTERVAL = 15s;
-	static constexpr auto RENEW_WHEN_BELOW = 120s;
+	static constexpr auto TIMER_INTERVAL = 30s;
+	static constexpr auto RENEW_WHEN_BELOW = 300s;
 
 	struct Mapping {
 		MapRequest request;
@@ -54,4 +54,4 @@ public:
 	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler&& handler);
 };
 
-} // natpmp, ports, ember
+} // ports, ember
