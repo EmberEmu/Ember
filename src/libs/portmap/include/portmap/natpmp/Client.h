@@ -16,6 +16,7 @@
 #include <atomic>
 #include <expected>
 #include <future>
+#include <memory>
 #include <stack>
 #include <string>
 #include <variant>
@@ -61,7 +62,7 @@ private:
 	ClientPromise prev_promise_;
 	ClientPromise active_promise_;
 	RequestMapping stored_request_{};
-	std::vector<std::uint8_t> last_buffer_;
+	std::shared_ptr<std::vector<std::uint8_t>> last_buffer_;
 
 	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT,
 	                       int retries = MAX_RETRIES);

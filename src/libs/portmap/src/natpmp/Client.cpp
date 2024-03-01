@@ -415,7 +415,8 @@ void Client::add_mapping_pcp(const RequestMapping& mapping, std::promise<MapResu
 }
 
 void Client::send_request(std::vector<std::uint8_t> buffer) {
-	last_buffer_ = buffer; // todo
+	auto ptr = std::make_shared<std::vector<std::uint8_t>>(std::move(buffer));
+	last_buffer_ = ptr;
 	start_retry_timer();
 	transport_.send(std::move(buffer));
 }
