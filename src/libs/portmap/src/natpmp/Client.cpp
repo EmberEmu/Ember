@@ -26,9 +26,15 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
-			handle_message(buffer, ep); 
+			ctx_.dispatch(strand_.wrap([&, buffer = std::move(buffer), ep]() {
+				handle_message(buffer, ep);
+			}));
 		},
-		[&](const boost::system::error_code&) { handle_connection_error(); }
+		[&](const boost::system::error_code&) { 
+			ctx_.dispatch(strand_.wrap([&]() {
+				handle_connection_error(); 
+			}));
+		}
 	);
 
 	transport_.join_group("224.0.0.1");
@@ -49,7 +55,7 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 void Client::handle_connection_error() {
 	// active_promise_ should never exist if this handler is called
 	// as it's only popped off the stack within the same thread and is
-	// either fulfilled or pushed back on the stack by return
+	// either fulfilled or pushed back before handle_message returns
 	while(!promises_.empty()) {
 		auto promise = std::move(promises_.top());
 		promises_.pop();

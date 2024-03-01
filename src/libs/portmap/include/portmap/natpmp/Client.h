@@ -51,7 +51,7 @@ private:
 
 	ba::io_context& ctx_;
 	ba::steady_timer timer_;
-	ba::io_service::strand strand_;
+	ba::io_context::strand strand_;
 	DatagramTransport transport_;
 	std::string gateway_;
 	const std::string interface_;

@@ -32,6 +32,7 @@ class DatagramTransport final {
 	OnResolve ocb_;
 
 	ba::io_context& ctx_;
+	ba::io_context::strand strand_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
 	ba::ip::udp::endpoint remote_ep_;

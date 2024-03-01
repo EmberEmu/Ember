@@ -11,13 +11,14 @@
 namespace ember::portmap::natpmp {
 
 DatagramTransport::DatagramTransport(const std::string& bind, ba::io_context& ctx)
-	: ctx_(ctx), socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 5350)),
+	: ctx_(ctx), strand_(ctx),
+	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 5350)),
 	  resolver_(ctx_) {
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 
-	ctx_.post([&]() {
+	ctx_.post(strand_.wrap([&]() {
 		receive();
-	});
+	}));
 }
 
 DatagramTransport::~DatagramTransport() {
@@ -39,7 +40,7 @@ void DatagramTransport::join_group(const std::string& address) {
 }
 
 void DatagramTransport::resolve(std::string_view host, const std::uint16_t port, OnResolve&& cb) {
-	resolver_.async_resolve(host, std::to_string(port),
+	resolver_.async_resolve(host, std::to_string(port), strand_.wrap(
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		                        ba::ip::udp::resolver::results_type results) {
 			if(!ec) {
@@ -48,7 +49,7 @@ void DatagramTransport::resolve(std::string_view host, const std::uint16_t port,
 
 			cb(ec, remote_ep_);
 		}
-	);
+	));
 }
 
 void DatagramTransport::do_write() {
@@ -56,7 +57,7 @@ void DatagramTransport::do_write() {
 	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
 	queue_.pop();
 
-	socket_.async_send_to(buffer, remote_ep_,
+	socket_.async_send_to(buffer, remote_ep_, strand_.wrap(
 		[this, dg = std::move(datagram)](boost::system::error_code ec,
 		                                 std::size_t /*bytes_sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {
@@ -70,17 +71,17 @@ void DatagramTransport::do_write() {
 				do_write();
 			}
 		}
-	);
+	));
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ctx_.post([&, datagram = std::move(message)]() mutable {
+	ctx_.post(strand_.wrap([&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
 			do_write();
 		}
-	});
+	}));
 }
 
 void DatagramTransport::send(std::vector<std::uint8_t> message) {
@@ -89,7 +90,7 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_receive_from(boost::asio::null_buffers(), ep_,
+	socket_.async_receive_from(boost::asio::null_buffers(), ep_, strand_.wrap(
 		[this](boost::system::error_code ec, std::size_t length) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
@@ -110,7 +111,7 @@ void DatagramTransport::receive() {
 			}
 
 			receive();
-		});
+		}));
 }
 
 void DatagramTransport::close() {
