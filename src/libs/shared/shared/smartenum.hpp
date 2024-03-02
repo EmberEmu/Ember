@@ -141,7 +141,7 @@ namespace smart_enum
     static std::vector<Type> Type##_list;\
     static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
     \
-    inline const std::string Type##_to_string(Type value) try \
+    inline const std::string& Type##_to_string(Type value) try \
     { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \
@@ -153,7 +153,7 @@ namespace smart_enum
     static std::vector<Type> Type##_list;\
     static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
     \
-    inline const std::string to_string(Type value) try \
+    inline const std::string& to_string(Type value) try \
     { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \
