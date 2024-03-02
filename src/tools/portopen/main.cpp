@@ -68,7 +68,7 @@ void launch(const po::variables_map& args) {
 	if(deletion) {
 		future = client.delete_mapping(internal, proto);
 	} else {
-		future = client.add_mapping(request);
+		future = client.add_mapping(request, true);
 	}
 
 	auto result = future.get();

@@ -39,6 +39,7 @@ private:
 	struct Mapping {
 		MapRequest request;
 		std::chrono::steady_clock::time_point expiry;
+		bool strict;
 	};
 
 	Client& client_;
@@ -62,7 +63,7 @@ private:
 public:
 	Daemon(Client& client, boost::asio::io_context& ctx);
 
-	void add_mapping(MapRequest request, RequestHandler&& handler);
+	void add_mapping(MapRequest request, bool strict, RequestHandler&& handler);
 	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler&& handler);
 	void event_handler(EventHandler&& handler);
 };

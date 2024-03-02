@@ -87,4 +87,10 @@ void serialise(const natpmp::UnsupportedErrorResponse& message,
 	stream << be::native_to_big(message.secs_since_epoch);
 }
 
+template<typename T>
+void serialise(const pcp::OptionHeader& header, spark::v2::BinaryStream<T> stream) {
+	stream << header.code;
+	stream << header.reserved;
+	stream << be::native_to_big(header.length);
+}
 } // ports, ember

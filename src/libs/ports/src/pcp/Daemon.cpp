@@ -63,7 +63,7 @@ void Daemon::process_queue() {
 }
 
 void Daemon::renew_mapping(const Mapping& mapping) {
-	client_.add_mapping(mapping.request, strand_.wrap([&](const Result& result) {
+	client_.add_mapping(mapping.request, mapping.strict, strand_.wrap([&](const Result& result) {
 		// we don't auto-delete the mapping if it fails because testing
 		// showed that it's possible to have transient errors,
 		// so we'll keep the entry and hope we have better luck next time
@@ -128,7 +128,7 @@ void Daemon::check_epoch(std::uint32_t epoch) {
 	}
 }
 
-void Daemon::add_mapping(MapRequest request, RequestHandler&& handler) {
+void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handler) {
 	// If there's no ID set, we'll set our own and make sure we keep hold of it
 	// for refreshes (spec requires it to match OG request to refresh)
 	const auto it = std::find_if(request.nonce.begin(), request.nonce.end(),
@@ -142,10 +142,11 @@ void Daemon::add_mapping(MapRequest request, RequestHandler&& handler) {
 	}
 
 	RequestHandler wrapped_handler =
-		[&, request, handler = std::move(handler)](const Result& result) {
+		[&, strict, request, handler = std::move(handler)](const Result& result) {
 		strand_.dispatch([&, request] {
 			if(result) {
 				Mapping mapping{};
+				mapping.strict = strict;
 				mapping.request = request;
 				mapping.request.external_port = result->external_port;
 				mapping.request.external_ip = result->external_ip;
@@ -159,7 +160,7 @@ void Daemon::add_mapping(MapRequest request, RequestHandler&& handler) {
 		handler(result);
 	};
 
-	client_.add_mapping(request, std::move(wrapped_handler));
+	client_.add_mapping(request, strict, std::move(wrapped_handler));
 }
 
 void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,

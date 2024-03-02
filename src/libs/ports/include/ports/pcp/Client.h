@@ -75,7 +75,7 @@ private:
 	ErrorCode get_external_address_pcp();
 
 	ErrorCode add_mapping_natpmp(const MapRequest& mapping);
-	ErrorCode add_mapping_pcp(const MapRequest& mapping);
+	ErrorCode add_mapping_pcp(const MapRequest& mapping, bool strict);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
 	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& result);
@@ -92,12 +92,12 @@ public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
 
 	void external_address(RequestHandler handler);
-	void add_mapping(const MapRequest& mapping, RequestHandler handler);
+	void add_mapping(const MapRequest& mapping, bool strict, RequestHandler handler);
 	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler handler);
 	void delete_all(Protocol protocol, RequestHandler handler);
 
 	std::future<Result> external_address();
-	std::future<Result> add_mapping(const MapRequest& mapping);
+	std::future<Result> add_mapping(const MapRequest& mapping, bool strict = false);
 	std::future<Result> delete_mapping(std::uint16_t internal_port, Protocol protocol);
 	std::future<Result> delete_all(Protocol protocol);
 

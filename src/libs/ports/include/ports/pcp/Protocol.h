@@ -76,12 +76,6 @@ struct ResponseHeader {
 	std::uint32_t options;
 };
 
-struct OptionHeader {
-	std::uint8_t code;
-	std::uint8_t reserved;
-	std::uint16_t length;
-};
-
 struct MapRequest {
 	std::array<std::uint8_t, 12> nonce;
 	Protocol protocol;
@@ -98,6 +92,18 @@ struct MapResponse {
 	std::uint16_t internal_port;
 	std::uint16_t assigned_external_port;
 	std::array<std::uint8_t, 16> assigned_external_ip;
+};
+
+enum class OptionCode : std::uint8_t {
+	THIRD_PARTY    = 0x01,
+	PREFER_FAILURE = 0x02,
+	FILTER         = 0x03
+};
+
+struct OptionHeader {
+	OptionCode code;
+	std::uint8_t reserved;
+	std::uint16_t length;
 };
 
 } // pcp

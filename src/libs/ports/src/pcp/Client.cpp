@@ -435,7 +435,7 @@ ErrorCode Client::announce_pcp() {
 	return ErrorCode::SUCCESS;
 }
 
-ErrorCode Client::add_mapping_pcp(const MapRequest& request) {
+ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -486,6 +486,18 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request) {
 		return ErrorCode::INTERNAL_ERROR;
 	}
 
+	if(strict) {
+		pcp::OptionHeader header {
+			.code = pcp::OptionCode::PREFER_FAILURE
+		};
+
+		try {
+			serialise(header, stream);
+		} catch(const spark::exception&) {
+			return ErrorCode::INTERNAL_ERROR;
+		}
+	}
+
 	send_request(std::move(buffer));
 	return ErrorCode::SUCCESS;
 }
@@ -505,7 +517,7 @@ ErrorCode Client::get_external_address_pcp() {
 		.lifetime = 10
 	};
 
-	const auto res = add_mapping_pcp(request);
+	const auto res = add_mapping_pcp(request, false);
 	return res;
 }
 
@@ -526,11 +538,11 @@ ErrorCode Client::get_external_address_pmp() {
 	return ErrorCode::SUCCESS;
 }
 
-std::future<Result> Client::add_mapping(const MapRequest& mapping) {
+std::future<Result> Client::add_mapping(const MapRequest& mapping, bool strict) {
 	auto promise = std::make_shared<std::promise<Result>>();
 	auto future = promise->get_future();
 
-	add_mapping(mapping, [promise](const Result& result) {
+	add_mapping(mapping, strict, [promise](const Result& result) {
 		promise->set_value(result);
 	});
 
@@ -546,7 +558,7 @@ std::future<Result> Client::delete_mapping(const std::uint16_t internal_port,
 		.lifetime = 0
 	};
 
-	return add_mapping(request);
+	return add_mapping(request, false);
 };
 
 std::future<Result> Client::delete_all(const Protocol protocol) {
@@ -571,7 +583,7 @@ std::future<Result> Client::external_address() {
 	return future;
 }
 
-void Client::add_mapping(const MapRequest& mapping, RequestHandler handler) {
+void Client::add_mapping(const MapRequest& mapping, bool strict, RequestHandler handler) {
 	has_resolved_.wait(false);
 
 	if(!resolve_res_) {
@@ -579,7 +591,7 @@ void Client::add_mapping(const MapRequest& mapping, RequestHandler handler) {
 		return;
 	}
 
-	const auto res = add_mapping_pcp(mapping);
+	const auto res = add_mapping_pcp(mapping, strict);
 
 	if(res == ErrorCode::SUCCESS) {
 		states_.push(State::AWAIT_MAP_RESULT_PCP);
@@ -598,7 +610,7 @@ void Client::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 		.lifetime = 0
 	};
 
-	add_mapping(request, handler);
+	add_mapping(request, false, handler);
 }
 
 void Client::delete_all(Protocol protocol, RequestHandler handler) {
