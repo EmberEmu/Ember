@@ -10,8 +10,9 @@
 #include <boost/endian.hpp>
 #include <gtest/gtest.h>
 #include <array>
-#include <variant>
-#include <cstddef>
+#include <string>
+#include <string_view>
+#include <cstdint>
 
 using namespace ember;
 namespace be = boost::endian;
