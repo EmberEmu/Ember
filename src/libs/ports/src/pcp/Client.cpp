@@ -479,7 +479,7 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 		});
 
 	if(it == request.nonce.end()) {
-;		std::random_device engine;
+		std::random_device engine;
 		std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
 	}
 

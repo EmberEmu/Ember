@@ -164,7 +164,7 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 		});
 
 	if(it == request.nonce.end()) {
-;		std::random_device engine;
+		std::random_device engine;
 		std::generate(request.nonce.begin(), request.nonce.end(), std::ref(engine));
 	}
 
