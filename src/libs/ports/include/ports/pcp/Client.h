@@ -64,7 +64,7 @@ private:
 	std::mutex handler_lock_;
 
 	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
-	void timeout_promise();
+	void timeout_handler();
 
 	void finagle_state();
 	ErrorCode announce_pcp();

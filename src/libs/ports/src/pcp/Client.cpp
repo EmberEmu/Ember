@@ -53,7 +53,7 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 }
 
 void Client::handle_connection_error() {
-	// active_promise_ should never exist if this handler is called
+	// active_handler_ should never exist if this handler is called
 	// as it's only popped off the stack within the same thread and is
 	// either fulfilled or pushed back before handle_message returns
 	while(!handlers_.empty()) {
@@ -114,6 +114,10 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& resul
 	try {
 		const auto body = deserialise<pcp::MapResponse>(body_buff);
 		
+		if(body.nonce != stored_request_.nonce) {
+			return ErrorCode::ID_MISMATCH;
+		}
+
 		result = MapRequest {
 			.internal_port = body.internal_port,
 			.external_port = body.assigned_external_port,
@@ -370,8 +374,8 @@ ErrorCode Client::add_mapping_natpmp(const MapRequest& request) {
 	return ErrorCode::SUCCESS;
 }
 
-void Client::timeout_promise() {
-	// we'll just error all of the promises rather than complicate the
+void Client::timeout_handler() {
+	// we'll just error all of the handlers rather than complicate the
 	// state machine - should only be one request at any given time
 	handlers_.emplace(std::move(active_handler_));
 
@@ -397,7 +401,7 @@ void Client::start_retry_timer(const std::chrono::milliseconds timeout, const in
 			start_retry_timer(timeout * 2, retries + 1);
 		} else {
 			finagle_state();
-			timeout_promise();
+			timeout_handler();
 		}
 	}));
 }
@@ -498,6 +502,8 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 		}
 	}
 
+	stored_request_ = request;
+	stored_request_.nonce = map.nonce;
 	send_request(std::move(buffer));
 	return ErrorCode::SUCCESS;
 }
