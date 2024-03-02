@@ -35,7 +35,13 @@ void Daemon::start_renew_timer() {
 		const auto time = std::chrono::steady_clock::now();
 
 		for(auto& mapping : mappings_) {
-			if((mapping.expiry - time) < RENEW_WHEN_BELOW) {
+			const auto time_remaining = mapping.expiry - time;
+
+			if(time_remaining < 0s) {
+				handler_(Event::MAPPING_EXPIRED, mapping.request);
+			}
+
+			if(time_remaining < RENEW_WHEN_BELOW) {
 				queue_.emplace(mapping);
 			}
 		}
@@ -58,11 +64,14 @@ void Daemon::process_queue() {
 
 void Daemon::renew_mapping(const Mapping& mapping) {
 	client_.add_mapping(mapping.request, strand_.wrap([&](const Result& result) {
-		// we don't delete the mapping if it fails because testing
-		// showed that it's possible to have inexplicable transient errors
+		// we don't auto-delete the mapping if it fails because testing
+		// showed that it's possible to have transient errors,
 		// so we'll keep the entry and hope we have better luck next time
 		if(result) {
+			handler_(Event::RENEWED_MAPPING, mapping.request);
 			update_mapping(result);
+		} else {
+			handler_(Event::FAILED_TO_RENEW, mapping.request);
 		}
 
 		process_queue();
@@ -72,6 +81,8 @@ void Daemon::renew_mapping(const Mapping& mapping) {
 void Daemon::update_mapping(const Result& result) {
 	for(auto& mapping : mappings_) {
 		if(mapping.request.internal_port == result->internal_port) {
+			mapping.request.external_port = result->external_port;
+			mapping.request.external_ip = result->external_ip;
 			const auto time = std::chrono::steady_clock::now();
 			mapping.expiry = time + std::chrono::seconds(result->lifetime);
 		}
@@ -136,9 +147,11 @@ void Daemon::add_mapping(MapRequest request, RequestHandler&& handler) {
 			if(result) {
 				Mapping mapping{};
 				mapping.request = request;
+				mapping.request.external_port = result->external_port;
+				mapping.request.external_ip = result->external_ip;
 				mapping.expiry = std::chrono::steady_clock::now()
 					+ std::chrono::seconds(result->lifetime);
-
+				handler_(Event::ADDED_MAPPING, mapping.request);
 				mappings_.emplace_back(std::move(mapping));
 			}
 		});
@@ -186,6 +199,14 @@ void Daemon::erase_mapping(const Result& result) {
 			++it;
 		}
 	}
+}
+
+void Daemon::event_handler(EventHandler&& handler) {
+	if(!handler) {
+		throw std::invalid_argument("Handler cannot be null");
+	}
+
+	handler_ = std::move(handler);
 }
 
 } // ports, ember

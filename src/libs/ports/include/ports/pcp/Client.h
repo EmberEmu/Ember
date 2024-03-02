@@ -31,7 +31,7 @@ using namespace std::literals;
 constexpr int MAX_RETRIES = 9;
 constexpr auto INITIAL_TIMEOUT = 250ms;
 
-using Result = std::expected<MappingResult, Error>;
+using Result = std::expected<MapRequest, Error>;
 using RequestHandler = std::function<void(const Result& result)>;
 using AnnounceHandler = std::function<void(std::uint32_t)>;
 
@@ -78,7 +78,7 @@ private:
 	ErrorCode add_mapping_pcp(const MapRequest& mapping);
 
 	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
-	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result);
+	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& result);
 	void handle_external_address_pcp(std::span<std::uint8_t> buffer);
 	void handle_external_address_pmp(std::span<std::uint8_t> buffer);
 

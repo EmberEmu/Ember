@@ -22,6 +22,17 @@ namespace ember::ports {
 using namespace std::literals;
 
 class Daemon {
+public:
+	enum class Event {
+		ADDED_MAPPING,
+		RENEWED_MAPPING,
+		FAILED_TO_RENEW,
+		MAPPING_EXPIRED
+	};
+
+	using EventHandler = std::function<void(Event, const MapRequest&)>;
+
+private:
 	static constexpr auto TIMER_INTERVAL = 30s;
 	static constexpr auto RENEW_WHEN_BELOW = 300s;
 
@@ -38,6 +49,7 @@ class Daemon {
 	std::uint32_t gateway_epoch_{};
 	bool epoch_acquired_ = false;
 	std::chrono::steady_clock::time_point daemon_epoch_;
+	EventHandler handler_{};
 
 	void process_queue();
 	void start_renew_timer();
@@ -52,6 +64,7 @@ public:
 
 	void add_mapping(MapRequest request, RequestHandler&& handler);
 	void delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler&& handler);
+	void event_handler(EventHandler&& handler);
 };
 
 } // ports, ember

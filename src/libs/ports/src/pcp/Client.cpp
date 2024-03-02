@@ -81,7 +81,7 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 	return ErrorCode::SERVER_INCOMPATIBLE;
 }
 
-auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& result) -> Error {
+auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& result) -> Error {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
@@ -114,12 +114,13 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& re
 	try {
 		const auto body = deserialise<pcp::MapResponse>(body_buff);
 		
-		result = MappingResult {
+		result = MapRequest {
 			.internal_port = body.internal_port,
 			.external_port = body.assigned_external_port,
 			.lifetime = header.lifetime,
-			.secs_since_epoch = header.epoch_time,
-			.external_ip = body.assigned_external_ip
+			.epoch = header.epoch_time,
+			.nonce = body.nonce,
+			.external_ip = body.assigned_external_ip,
 		};
 	} catch(const spark::exception&) {
 		return ErrorCode::BAD_RESPONSE;
@@ -129,7 +130,7 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MappingResult& re
 }
 
 void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
-	MappingResult result{};
+	MapRequest result{};
 	const auto res = parse_mapping_pcp(buffer, result);
 	auto& handler = active_handler_;
 
@@ -184,11 +185,11 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 		return;
 	}
 
-	const MappingResult result {
+	const MapRequest result {
 		.internal_port = response.internal_port,
 		.external_port = response.external_port,
 		.lifetime = response.lifetime,
-		.secs_since_epoch = response.secs_since_epoch,
+		.epoch = response.secs_since_epoch,
 	};
 
 	handler(result);
@@ -225,7 +226,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 		const auto v4 = bai::address_v4(message.external_ip);
 		const auto v6 = bai::make_address_v6(bai::v4_mapped, v4);
 
-		MappingResult res {
+		MapRequest res {
 			.external_ip = v6.to_bytes()
 		};
 
@@ -240,7 +241,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
 	auto handler = std::move(active_handler_);
 	
-	MappingResult result{};
+	MapRequest result{};
 	const auto res = parse_mapping_pcp(buffer, result);
 
 	if(res.code == ErrorCode::SUCCESS) {
@@ -465,6 +466,7 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request) {
 		.protocol = protocol,
 		.internal_port = request.internal_port,
 		.suggested_external_port = request.external_port,
+		.suggested_external_ip = request.external_ip
 	};
 
 	const auto it = std::find_if(request.nonce.begin(), request.nonce.end(),

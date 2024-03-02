@@ -45,14 +45,6 @@ struct Error {
 	};
 };
 
-struct MappingResult {
-	std::uint16_t internal_port;
-	std::uint16_t external_port;
-	std::uint32_t lifetime;
-	std::uint32_t secs_since_epoch;
-	std::array<std::uint8_t, 16> external_ip;
-};
-
 } // ports, ember
 
 CREATE_FORMATTER(ember::ports::ErrorCode)

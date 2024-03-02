@@ -7,7 +7,6 @@
  */
 
 #include <ports/pcp/Client.h>
-#include <ports/pcp/Daemon.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <stdexcept>

@@ -179,7 +179,9 @@ struct MapRequest {
 	std::uint16_t internal_port;
 	std::uint16_t external_port;
 	std::uint32_t lifetime;
+	std::uint32_t epoch;
 	std::array<std::uint8_t, 12> nonce;
+	std::array<std::uint8_t, 16> external_ip;
 };
 
 } // ports, ember
