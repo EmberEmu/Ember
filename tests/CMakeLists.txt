@@ -20,6 +20,7 @@ set(EXECUTABLE_SRC
     PINAuthenticator.cpp
     UTF8Utilities.cpp
     STUN.cpp
+	FNV.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
