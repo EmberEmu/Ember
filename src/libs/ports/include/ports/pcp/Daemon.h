@@ -12,8 +12,8 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
+#include <deque>
 #include <functional>
-#include <queue>
 #include <vector>
 #include <cstdint>
 
@@ -40,20 +40,25 @@ private:
 		MapRequest request;
 		std::chrono::steady_clock::time_point expiry;
 		bool strict;
+		RequestHandler handler;
 	};
+
+	enum class State {
+		IDLE, TIMER_WAIT, QUEUE
+	} state_ = State::IDLE;
 
 	Client& client_;
 	boost::asio::steady_timer timer_;
 	boost::asio::io_context::strand strand_;
 	std::vector<Mapping> mappings_;
-	std::queue<Mapping> queue_;
+	std::deque<Mapping> queue_;
 	std::uint32_t gateway_epoch_{};
 	bool epoch_acquired_ = false;
 	std::chrono::steady_clock::time_point daemon_epoch_;
 	EventHandler handler_{};
 
 	void process_queue();
-	void start_renew_timer();
+	void start_renew_timer(std::chrono::seconds time = TIMER_INTERVAL);
 	void update_mapping(const Result& result);
 	void erase_mapping(const Result& result);
 	void renew_mappings();

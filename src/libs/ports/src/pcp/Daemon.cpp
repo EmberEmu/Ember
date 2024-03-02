@@ -25,8 +25,10 @@ Daemon::Daemon(Client& client, boost::asio::io_context& ctx)
 	start_renew_timer();
 }
 
-void Daemon::start_renew_timer() {
-	timer_.expires_from_now(TIMER_INTERVAL);
+void Daemon::start_renew_timer(const std::chrono::seconds time) {
+	state_ = State::TIMER_WAIT;
+
+	timer_.expires_from_now(time);
 	timer_.async_wait(strand_.wrap([&](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
@@ -42,7 +44,7 @@ void Daemon::start_renew_timer() {
 			}
 
 			if(time_remaining < RENEW_WHEN_BELOW) {
-				queue_.emplace(mapping);
+				queue_.emplace_back(mapping);
 			}
 		}
 
@@ -50,7 +52,26 @@ void Daemon::start_renew_timer() {
 	}));
 }
 
+/*
+ * This must only be *initiated* from the timer, otherwise there's a risk that
+ * the NAT-PMP/PCP client is issued with multiple mapping requests, even if
+ * everything is done through a strand (concurrent, not parallel, in the
+ * Rob Pike school of thought)
+ * 
+ * Calling it from within the renew handler is also fine, because it only continues
+ * once the previously issued request has been finished
+
+ *         ←←←←←←←←←←←←←←←
+ *         ↓             ↑
+ *         ↓          (empty)
+ *         ↓             ↑
+ * timer elapsed → process queue → (not empty) → renew_mapping
+ *                       ↑                             ↓
+ *                       ↑                    completion handler
+ *                       ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+ */
 void Daemon::process_queue() {
+	state_ = State::QUEUE;
 	timer_.cancel();
 
 	if(queue_.empty()) {
@@ -58,13 +79,15 @@ void Daemon::process_queue() {
 		return;
 	}
 
-	const auto mapping = queue_.front();
-	queue_.pop();
+	auto& mapping = queue_.front();
+	queue_.pop_front();
 	renew_mapping(mapping);
+	mapping.handler = nullptr;
 }
 
 void Daemon::renew_mapping(const Mapping& mapping) {
-	client_.add_mapping(mapping.request, mapping.strict, strand_.wrap([&](const Result& result) {
+	client_.add_mapping(mapping.request, mapping.strict,
+		strand_.wrap([&](const Result& result) mutable {
 		// we don't auto-delete the mapping if it fails because testing
 		// showed that it's possible to have transient errors,
 		// so we'll keep the entry and hope we have better luck next time
@@ -74,6 +97,10 @@ void Daemon::renew_mapping(const Mapping& mapping) {
 			check_epoch(result->epoch);
 		} else {
 			handler_(Event::FAILED_TO_RENEW, mapping.request);
+		}
+
+		if(mapping.handler) {
+			mapping.handler(mapping.request);
 		}
 
 		process_queue();
@@ -93,10 +120,8 @@ void Daemon::update_mapping(const Result& result) {
 
 void Daemon::renew_mappings() {
 	for(const auto& mapping : mappings_) {
-		queue_.emplace(mapping);
+		queue_.emplace_back(mapping);
 	}
-
-	process_queue();
 }
 
 void Daemon::check_epoch(std::uint32_t epoch) {
@@ -143,32 +168,46 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 		std::generate(request.nonce.begin(), request.nonce.end(), std::ref(engine));
 	}
 
-	RequestHandler wrapped_handler =
+	RequestHandler wrapped =
 		[&, strict, request, handler = std::move(handler)](const Result& result) {
-		strand_.dispatch([&, request] {
-			if(result) {
-				Mapping mapping{};
-				mapping.strict = strict;
-				mapping.request = request;
-				mapping.request.external_port = result->external_port;
-				mapping.request.external_ip = result->external_ip;
-				mapping.expiry = std::chrono::steady_clock::now()
-					+ std::chrono::seconds(result->lifetime);
-				handler_(Event::ADDED_MAPPING, mapping.request);
-				mappings_.emplace_back(std::move(mapping));
-				check_epoch(result->epoch);
-			}
-		});
+		if(result) {
+			const auto expiry = std::chrono::steady_clock::now()
+				+ std::chrono::seconds(result->lifetime);
+
+			Mapping mapping {
+				.request = {
+					.external_port = result->external_port,
+					.external_ip = result->external_ip,
+				},
+				.expiry = expiry,
+				.strict = strict,
+			};
+
+			handler_(Event::ADDED_MAPPING, mapping.request);
+			mappings_.emplace_back(std::move(mapping));
+			check_epoch(result->epoch);
+		}
 
 		handler(result);
 	};
 
-	client_.add_mapping(request, strict, std::move(wrapped_handler));
+	Mapping mapping{
+		.request = request,
+		.handler = std::move(wrapped)
+	};
+
+	strand_.post([&, mapping = std::move(mapping)]() mutable {
+		queue_.emplace_front(std::move(mapping));
+
+		if(state_ == State::TIMER_WAIT) {
+			start_renew_timer(0s);
+		}
+	});
 }
 
 void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 							RequestHandler&& handler) {
-	RequestHandler wrapped_handler = 
+	RequestHandler wrapped = 
 		[&, handler = std::move(handler)](const Result& result) {
 		if(result) {
 			strand_.dispatch([&, r = result] {
@@ -179,7 +218,23 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 		handler(result);
 	};
 
-	client_.delete_mapping(internal_port, protocol, std::move(wrapped_handler));
+	const MapRequest request {
+		.protocol = protocol,
+		.internal_port = internal_port,
+	};
+
+	Mapping mapping{
+		.request = request,
+		.handler = std::move(wrapped)
+	};
+
+	strand_.post([&, mapping = std::move(mapping), request]() mutable {
+		queue_.emplace_front(std::move(mapping));
+
+		if(state_ == State::TIMER_WAIT) {
+			start_renew_timer(0s);
+		}
+	});
 }
 
 /*
