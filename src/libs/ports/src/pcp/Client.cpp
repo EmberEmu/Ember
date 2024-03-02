@@ -550,7 +550,7 @@ std::future<Result> Client::add_mapping(const MapRequest& mapping, bool strict) 
 }
 
 std::future<Result> Client::delete_mapping(const std::uint16_t internal_port,
-                                                      const Protocol protocol) {
+                                           const Protocol protocol) {
 	MapRequest request {
 		.protocol = protocol,
 		.internal_port = internal_port,
