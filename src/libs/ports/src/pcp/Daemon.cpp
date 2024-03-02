@@ -34,7 +34,7 @@ void Daemon::start_renew_timer() {
 
 		const auto time = std::chrono::steady_clock::now();
 
-		for(auto& mapping : mappings_) {
+		for(const auto& mapping : mappings_) {
 			const auto time_remaining = mapping.expiry - time;
 
 			if(time_remaining < 0s) {
@@ -57,6 +57,7 @@ void Daemon::process_queue() {
 		start_renew_timer();
 		return;
 	}
+
 	const auto mapping = queue_.front();
 	queue_.pop();
 	renew_mapping(mapping);
@@ -70,6 +71,7 @@ void Daemon::renew_mapping(const Mapping& mapping) {
 		if(result) {
 			handler_(Event::RENEWED_MAPPING, mapping.request);
 			update_mapping(result);
+			check_epoch(result->epoch);
 		} else {
 			handler_(Event::FAILED_TO_RENEW, mapping.request);
 		}
@@ -154,6 +156,7 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 					+ std::chrono::seconds(result->lifetime);
 				handler_(Event::ADDED_MAPPING, mapping.request);
 				mappings_.emplace_back(std::move(mapping));
+				check_epoch(result->epoch);
 			}
 		});
 
