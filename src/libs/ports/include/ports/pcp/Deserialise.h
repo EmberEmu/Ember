@@ -22,6 +22,54 @@ namespace be = boost::endian;
 template<typename T> T deserialise(std::span<const std::uint8_t> buffer){};
 
 template<>
+pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	pcp::OptionHeader message{};
+	stream >> message.code;
+	stream >> message.reserved;
+	stream >> message.length;
+	be::big_to_native_inplace(message.length);
+	return message;
+}
+
+template<>
+pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	pcp::MapRequest message{};
+	stream >> message.nonce;
+	stream >> message.protocol;
+	stream >> message.reserved_0;
+	stream >> message.internal_port;
+	stream >> message.suggested_external_port;
+	stream >> message.suggested_external_ip;
+	be::big_to_native_inplace(message.internal_port);
+	be::big_to_native_inplace(message.suggested_external_port);
+	return message;
+}
+
+template<>
+pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+
+	pcp::RequestHeader message{};
+	stream >> message.version;
+	pcp::Opcode opcode{};
+	stream >> opcode;
+	message.opcode = pcp::Opcode(std::to_underlying(opcode) & 0x7f);
+	message.response = std::to_underlying(opcode) >> 7;
+	stream >> message.reserved_0;
+	stream >> message.lifetime;
+	stream >> message.client_ip;
+	be::big_to_native_inplace(message.lifetime);
+	return message;
+}
+
+template<>
 pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
@@ -31,11 +79,12 @@ pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 	pcp::Opcode opcode{};
 	stream >> opcode;
 	message.opcode = pcp::Opcode(std::to_underlying(opcode) & 0x7f);
-	message.response = std::to_underlying(opcode) & (0x80 >> 7);
+	message.response = std::to_underlying(opcode) >> 7;
 	stream >> message.reserved_0;
 	stream >> message.result;
 	stream >> message.lifetime;
-	stream.get(message.reserved_1.begin(), message.reserved_1.end());
+	stream >> message.epoch_time;
+	stream >> message.reserved_1;
 	be::big_to_native_inplace(message.lifetime);
 	be::big_to_native_inplace(message.epoch_time);
 	return message;
@@ -47,12 +96,12 @@ pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::v2::BinaryStream stream(adaptor);
 
 	pcp::MapResponse message{};
-	stream.get(message.nonce.begin(), message.nonce.end());
+	stream >> message.nonce;
 	stream >> message.protocol;
-	stream.get(message.reserved.begin(), message.reserved.end());
+	stream >> message.reserved;
 	stream >> message.internal_port;
 	stream >> message.assigned_external_port;
-	stream.get(message.assigned_external_ip.begin(), message.assigned_external_ip.end());
+	stream >> message.assigned_external_ip;
 	be::big_to_native_inplace(message.internal_port);
 	be::big_to_native_inplace(message.assigned_external_port);
 	return message;

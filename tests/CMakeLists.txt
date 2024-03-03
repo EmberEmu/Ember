@@ -20,11 +20,12 @@ set(EXECUTABLE_SRC
     PINAuthenticator.cpp
     UTF8Utilities.cpp
     STUN.cpp
-	FNV.cpp
+	FNV1.cpp
+	Ports.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 libmdns stun ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 libmdns stun ports ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../src)
 gtest_discover_tests(${EXECUTABLE_NAME})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

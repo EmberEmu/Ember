@@ -17,14 +17,14 @@
 using namespace ember;
 namespace be = boost::endian;
 
-TEST(FNVHash, HelloWorld) {
+TEST(FNV1, HelloWorld) {
 	FNVHash fnv;
 	fnv.update("Hello, world!");
 	ASSERT_EQ(fnv.finalise(), 0xe84ead66);
 	ASSERT_EQ(fnv.hash(), 0x811c9dc5);
 }
 
-TEST(FNVHash, FinaliseReset) {
+TEST(FNV1, FinaliseReset) {
 	FNVHash fnv;
 	fnv.update("These two hashes should be equal");
 	ASSERT_EQ(fnv.finalise(), 0x49ce320c);
@@ -32,7 +32,7 @@ TEST(FNVHash, FinaliseReset) {
 	ASSERT_EQ(fnv.finalise(), 0x49ce320c);
 }
 
-TEST(FNVHash, StringLiterals) {
+TEST(FNV1, StringLiterals) {
 	FNVHash fnv;
 	fnv.update("The quick brown fox");
 	ASSERT_EQ(fnv.hash(), 0xcb423604);
@@ -40,35 +40,35 @@ TEST(FNVHash, StringLiterals) {
 	ASSERT_EQ(fnv.finalise(), 0x007e0296);
 }
 
-TEST(FNVHash, CStr) {
+TEST(FNV1, CStr) {
 	const char* str = "The quick brown fox jumped over the lazy dog";
 	FNVHash fnv;
 	fnv.update(str);
 	ASSERT_EQ(fnv.finalise(), 0x007e0296);
 }
 
-TEST(FNVHash, STDString) {
+TEST(FNV1, STDString) {
 	const std::string str("The quick brown fox jumped over the lazy dog");
 	FNVHash fnv;
 	fnv.update(str);
 	ASSERT_EQ(fnv.finalise(), 0x007e0296);
 }
 
-TEST(FNVHash, Stringview) {
+TEST(FNV1, Stringview) {
 	const std::string_view str("The quick brown fox jumped over the lazy dog");
 	FNVHash fnv;
 	fnv.update(str.begin(), str.end());
 	ASSERT_EQ(fnv.finalise(), 0x007e0296);
 }
 
-TEST(FNVHash, ByteArray) {
+TEST(FNV1, ByteArray) {
 	const std::array<std::uint8_t, 6> bytes { 0x01, 0xbe, 0xef, 0x13, 0x37, 0x9d };
 	FNVHash fnv;
 	fnv.update(bytes.begin(), bytes.end());
 	ASSERT_EQ(fnv.finalise(), 0x70289e36);
 }
 
-TEST(FNVHash, SingleBytes) {
+TEST(FNV1, SingleBytes) {
 	const std::array<std::uint8_t, 6> bytes { 0x01, 0xbe, 0xef, 0x13, 0x37, 0x9d };
 	FNVHash fnv;
 	fnv.update(bytes[0]);
@@ -80,7 +80,7 @@ TEST(FNVHash, SingleBytes) {
 	ASSERT_EQ(fnv.finalise(), 0x70289e36);
 }
 
-TEST(FNVHash, Integers) {
+TEST(FNV1, Integers) {
 	FNVHash fnv;
 	fnv.update_be(std::uint8_t(0xff));
 	ASSERT_EQ(fnv.hash(), 0x050c5de0);
@@ -94,7 +94,7 @@ TEST(FNVHash, Integers) {
 	ASSERT_EQ(fnv.hash(), 0x715b9f10);
 }
 
-TEST(FNVHash, EndianEquality) {
+TEST(FNV1, EndianEquality) {
 	FNVHash fnv;
 	const auto le_int { be::native_to_little(0xf0cacc1a) };
 	const auto be_int { be::native_to_big(0xf0cacc1a) };
@@ -104,7 +104,7 @@ TEST(FNVHash, EndianEquality) {
 	ASSERT_EQ(fnv.finalise(), 0x48d36a41);
 }
 
-TEST(FNVHash, MixedTypes) {
+TEST(FNV1, MixedTypes) {
 	FNVHash fnv;
 	const char* str = "String";
 	const std::array<std::uint8_t, 2> bytes {0xff, 0xaa};

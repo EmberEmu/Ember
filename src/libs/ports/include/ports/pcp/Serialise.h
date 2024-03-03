@@ -41,6 +41,29 @@ void serialise(const pcp::MapRequest& message, spark::v2::BinaryStream<T> stream
 }
 
 template<typename T>
+void serialise(const pcp::MapResponse& message, spark::v2::BinaryStream<T> stream) {
+	stream << message.nonce;
+	stream << message.protocol;
+	stream << message.reserved;
+	stream << be::native_to_big(message.internal_port);
+	stream << be::native_to_big(message.assigned_external_port);
+	stream << message.assigned_external_ip;
+}
+
+template<typename T>
+void serialise(const pcp::ResponseHeader& message, spark::v2::BinaryStream<T> stream) {
+	stream << message.version;
+	auto opcode = std::to_underlying(message.opcode);
+	opcode |= (message.response << 7);
+	stream << opcode;
+	stream << message.reserved_0;
+	stream << message.result;
+	stream << be::native_to_big(message.lifetime);
+	stream << be::native_to_big(message.epoch_time);
+	stream << message.reserved_1;
+}
+
+template<typename T>
 void serialise(const natpmp::MapRequest& message, spark::v2::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;

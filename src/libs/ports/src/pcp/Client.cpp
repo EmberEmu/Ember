@@ -70,7 +70,7 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 	const auto response = deserialise<natpmp::UnsupportedErrorResponse>(buffer);
 
 	if(response.version != NATPMP_VERSION
-	   || response.opcode != natpmp::Opcode::EXT
+	   || response.opcode != natpmp::Opcode::REQUEST_EXTERNAL
 	   || response.result_code != natpmp::Result::UNSUPPORTED_VERSION) {
 		// we don't understand this message, at all
 		return ErrorCode::SERVER_INCOMPATIBLE;
@@ -287,7 +287,7 @@ bool Client::handle_announce(std::span<std::uint8_t> buffer) try {
 	} else if(version == NATPMP_VERSION) {
 		const auto& message = deserialise<natpmp::ExtAddressResponse>(buffer);
 
-		if(message.opcode != natpmp::Opcode::EXT) {
+		if(message.opcode != natpmp::Opcode::REQUEST_EXTERNAL) {
 			return false;
 		}
 

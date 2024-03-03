@@ -72,8 +72,6 @@ struct ResponseHeader {
 	std::uint32_t lifetime;
 	std::uint32_t epoch_time;
 	std::array<std::uint8_t, 12> reserved_1;
-	std::array<std::uint8_t, 8> data;
-	std::uint32_t options;
 };
 
 struct MapRequest {
@@ -119,15 +117,11 @@ smart_enum_class(Result, std::uint16_t,
 	UNSUPPORTED_OPCODE
 );
 
-enum class RequestOpcode : std::uint8_t {
-	REQUEST_EXTERNAL = 0x00
-};
-
 enum class Opcode : std::uint8_t {
-	EXT = 0x00,
+	REQUEST_EXTERNAL = 0x00,
 	UDP = 0x01,
 	TCP = 0x02,
-	RESP_EXT = 128 + EXT,
+	RESP_EXT = 128 + REQUEST_EXTERNAL,
 	RESP_TCP = 128 + TCP,
 	RESP_UDP = 128 + UDP
 };
@@ -153,7 +147,7 @@ struct MapResponse {
 
 struct ExtAddressRequest {
 	std::uint8_t version;
-	RequestOpcode opcode;
+	Opcode opcode;
 };
 
 struct ExtAddressResponse {
