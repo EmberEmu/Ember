@@ -42,5 +42,5 @@ public:
 	std::deque<Node> path(std::uint16_t from, std::uint16_t to) const;
 	bool is_path(std::uint16_t from, std::uint16_t to) const;
 };
-\
+
 } // ember
