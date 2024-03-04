@@ -23,6 +23,7 @@ set(EXECUTABLE_SRC
 	FNV1.cpp
 	Ports.cpp
 	GameIntegrity.cpp
+	IntegrityData.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
@@ -30,3 +31,4 @@ target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark 
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../src)
 gtest_discover_tests(${EXECUTABLE_NAME})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+INSTALL(DIRECTORY test_data/ DESTINATION ${CMAKE_INSTALL_PREFIX}/test_data)
