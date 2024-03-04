@@ -56,8 +56,10 @@ const PatchMeta* Patcher::locate_rollup(std::span<const PatchMeta> patches,
 	return meta;
 }
 
-std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, grunt::Locale locale,
-                                             grunt::Platform platform, grunt::System os) const {
+std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
+                                             const grunt::Locale locale,
+                                             const grunt::Platform platform,
+                                             const grunt::System os) const {
 	FNVHash hasher;
 	hasher.update(grunt::to_string(locale));
 	hasher.update(grunt::to_string(platform));
@@ -74,8 +76,9 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version, 
 	bool path = false;
 
 	// ensure there's a patch path from the client version to a supported version
-	for(auto& version : versions_) {
+	for(const auto& version : versions_) {
 		if(g_it->second.is_path(build, version.build)) {
+			std::cout << "There is a path\n";
 			path = true;
 			break;
 		}
@@ -183,8 +186,7 @@ bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const 
 	return !survey_data(platform, os).empty();
 }
 
-// todo, change how this works
-const std::vector<std::byte>& Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
+std::span<const std::byte> Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
 	return survey_data_;
 }
 
@@ -192,7 +194,8 @@ std::uint32_t Patcher::survey_id() const {
 	return survey_id_;
 }
 
-std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal::PatchDAO& dao,
+std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
+                                             const dal::PatchDAO& dao,
                                              log::Logger* logger) {
 	auto patches = dao.fetch_patches();
 
@@ -223,7 +226,10 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path, const dal:
 		);
 
 		if(calc_md5) {
-			LOG_INFO(logger) << "Calculating MD5 for " << patch.file_meta.name << LOG_SYNC;
+			if(logger) {
+				LOG_INFO(logger) << "Calculating MD5 for " << patch.file_meta.name << LOG_SYNC;
+			}
+
 			const auto md5 = util::generate_md5(path + patch.file_meta.name);
 			const auto md5_bytes = std::as_bytes(std::span(md5));
 			std::copy(md5_bytes.begin(), md5_bytes.end(), patch.file_meta.md5.data());

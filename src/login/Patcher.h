@@ -45,15 +45,18 @@ public:
 	FileMeta survey_meta() const;
 	std::uint32_t survey_id() const;
 	bool survey_platform(grunt::Platform platform, grunt::System os) const;
-	const std::vector<std::byte>& survey_data(grunt::Platform platform, grunt::System os) const;
+	std::span<const std::byte> survey_data(grunt::Platform platform, grunt::System os) const;
 
 	// Patching
-	std::optional<PatchMeta> find_patch(const GameVersion& client_version, grunt::Locale locale,
-	                                      grunt::Platform platform, grunt::System os) const;
+	std::optional<PatchMeta> find_patch(const GameVersion& client_version,
+	                                    grunt::Locale locale,
+	                                    grunt::Platform platform,
+	                                    grunt::System os) const;
 
 	PatchLevel check_version(const GameVersion& client_version) const;
 
-	static std::vector<PatchMeta> load_patches(const std::string& path, const dal::PatchDAO& dao,
+	static std::vector<PatchMeta> load_patches(const std::string& path,
+	                                           const dal::PatchDAO& dao,
 	                                           log::Logger* logger);
 };
 
