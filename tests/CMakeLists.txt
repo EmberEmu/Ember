@@ -22,6 +22,7 @@ set(EXECUTABLE_SRC
     STUN.cpp
 	FNV1.cpp
 	Ports.cpp
+	GameIntegrity.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
