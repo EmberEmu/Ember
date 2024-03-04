@@ -7,7 +7,6 @@
  */
 
 #include <stun/Protocol.h>
-
 namespace ember::stun {
 
 AttrReqBy attr_req_lut {

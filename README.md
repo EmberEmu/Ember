@@ -57,8 +57,8 @@ Any compiler version equal or greater than the supported version should be capab
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
 | MSVC  | 19.30 (VS2022) | 19.30 (VS2022) |
-| Clang |     17     |     17     |
-| GCC   |     13     |     13     |
+| Clang |     18     |     18     |
+| GCC   |     14     |     14     |
 
 ### Language support
 

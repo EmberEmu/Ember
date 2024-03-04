@@ -12,7 +12,6 @@
 #include <shared/util/FNVHash.h>
 #include <gsl/gsl>
 #include <random>
-
 namespace ember::stun {
 
 using namespace detail;

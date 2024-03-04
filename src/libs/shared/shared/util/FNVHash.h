@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 #include <climits>
+#include <cstdint>
 #include <cstddef>
 
 namespace ember {
@@ -23,11 +24,11 @@ template<typename T>
 concept is_scoped_enum = std::is_scoped_enum<T>::value;
 
 class FNVHash {
-	static constexpr std::size_t INITIAL = 0x811C9DC5;
-	std::size_t hash_ = INITIAL;
+	static constexpr std::uint32_t INITIAL = 0x811C9DC5;
+	std::uint32_t hash_ = INITIAL;
 
 	template<std::integral T>
-	std::size_t update_l2r(T data) {
+	std::uint32_t update_l2r(T data) {
 		const auto shift = ((sizeof(data) - 1) * CHAR_BIT);
 
 		for(std::size_t i = 0; i < sizeof(data); ++i) {
@@ -38,7 +39,7 @@ class FNVHash {
 	}
 
 	template<std::integral T>
-	std::size_t update_r2l(T data) {
+	std::uint32_t update_r2l(T data) {
 		for(std::size_t i = 0; i < sizeof(data); ++i) {
 			update_byte(data >> (CHAR_BIT * i) & 0xff);
 		}
@@ -48,7 +49,7 @@ class FNVHash {
 
 public:
 	template<typename It>
-	std::size_t update(It begin, const It end) {
+	std::uint32_t update(It begin, const It end) {
 		for(; begin != end; ++begin) {
 			hash_ = (hash_ * 0x1000193) ^ static_cast<unsigned char>(*begin);
 		}
@@ -56,18 +57,18 @@ public:
 		return hash_;
 	}
 
-	std::size_t update_byte(std::uint8_t value) {
+	std::uint32_t update_byte(std::uint8_t value) {
 		hash_ = (hash_ * 0x1000193) ^ value;
 		return hash_;
 	}
 
 	template<std::integral T>
-	std::size_t update(T data) {
+	std::uint32_t update(T data) {
 		return update_l2r(data);
 	}
 
 	template<std::integral T>
-	std::size_t update_le(T native_val) {
+	std::uint32_t update_le(T native_val) {
 		if constexpr(std::endian::native == std::endian::little) [[likely]] {
 			return update_r2l(native_val);
 		} else {
@@ -76,7 +77,7 @@ public:
 	}
 
 	template<std::integral T>
-	std::size_t update_be(T native_val) {
+	std::uint32_t update_be(T native_val) {
 		if constexpr(std::endian::native == std::endian::little) [[likely]] {
 			return update_l2r(native_val);
 		} else {
@@ -85,16 +86,16 @@ public:
 	}
 
 	template<is_scoped_enum T>
-	std::size_t update(T data) {
+	std::uint32_t update(T data) {
 		return update(std::to_underlying(data));
 	}
 
 	template<typename T>
-	std::size_t update(std::span<T> span) {
+	std::uint32_t update(std::span<T> span) {
 		return update(span.begin(), span.end());
 	}
 
-	std::size_t update(const std::string& t) {
+	std::uint32_t update(const std::string& t) {
 		return update(t.begin(), t.end());
 	}
 
@@ -102,12 +103,12 @@ public:
 		hash_ = INITIAL;
 	}
 
-	std::size_t hash() const {
+	std::uint32_t hash() const {
 		return hash_;
 	}
 
-	std::size_t finalise() {
-		std::size_t ret = hash_;
+	std::uint32_t finalise() {
+		std::uint32_t ret = hash_;
 		hash_ = INITIAL;
 		return ret;
 	}

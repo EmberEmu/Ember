@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <ports/pcp/Client.h>
 #include <ports/pcp/Deserialise.h>
 #include <ports/pcp/Serialise.h>
@@ -267,7 +265,6 @@ void Client::finagle_state() {
 }
 
 bool Client::handle_announce(std::span<std::uint8_t> buffer) try {
-	std::vector<std::uint8_t> buffer;
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 

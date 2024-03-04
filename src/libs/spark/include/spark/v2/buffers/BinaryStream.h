@@ -95,7 +95,7 @@ public:
 
 	template<std::ranges::contiguous_range range>
 	void put(range& data) requires(writeable<buf_type>) {
-		const auto write_size = data.size() * sizeof(range::value_type);
+		const auto write_size = data.size() * sizeof(typename range::value_type);
 		buffer_.write(data.data(), write_size);
 		total_write_ += write_size;
 	}
