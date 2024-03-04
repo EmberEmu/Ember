@@ -336,7 +336,6 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 				handle_external_address_pcp(buffer);
 				break;
 		}
-		
 
 		// a handler has pushed a new state, let it do the work
 		if(states_.size() != size) {
