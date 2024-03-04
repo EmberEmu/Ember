@@ -23,7 +23,7 @@ public:
 
 void PatchGraph::build_graph(std::span<const PatchMeta> patches) {
 	for(auto& patch : patches) {
-		adjacency_[patch.build_from].emplace_back(Edge { patch.build_to, patch.file_meta.size });
+		adjacency_[patch.build_from].emplace_back(patch.build_to, patch.file_meta.size);
 	}
 }
 
@@ -69,7 +69,7 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 	}
 
 	distance[from] = 0;
-	queue.emplace(Node{from, 0});
+	queue.emplace(from, 0);
 
 	while(!queue.empty()) {
 		auto next = queue.top();
@@ -87,7 +87,7 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 			if(distance.at(next.from) + e.filesize < distance.at(e.build_to)) {
 				distance[e.build_to] = distance.at(next.from) + e.filesize;
 				prev[e.build_to] = next;
-				queue.emplace(Node{e.build_to, distance.at(e.build_to)});
+				queue.emplace(e.build_to, distance.at(e.build_to));
 			}
 		}
 	}

@@ -51,7 +51,7 @@ void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
 		set_timer();
 	}
 
-	queue_.emplace_back(QueueEntry{priority, client, on_update_cb, on_leave_cb});
+	queue_.emplace_back(priority, client, on_update_cb, on_leave_cb);
 
 	// guaranteed to be a stable sort - not the most efficient way to have queue priority
 	// but allows for multiple priority levels without multiple hard-coded queues

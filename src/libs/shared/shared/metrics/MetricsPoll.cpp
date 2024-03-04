@@ -21,7 +21,7 @@ MetricsPoll::MetricsPoll(boost::asio::io_context& service, Metrics& metrics)
 
 void MetricsPoll::add_source(MetricsCB callback, std::chrono::seconds frequency) {
 	std::lock_guard<std::mutex> guard(lock_);
-	callbacks_.emplace_back(MetricMeta{ 0s, frequency, callback });
+	callbacks_.emplace_back(0s, frequency, callback);
 }
 
 void MetricsPoll::shutdown() {

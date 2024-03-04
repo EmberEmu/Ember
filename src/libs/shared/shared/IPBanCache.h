@@ -51,7 +51,7 @@ class IPBanCache {
 			}
 
 			std::uint32_t mask = (~0U) << (32 - cidr);
-			entries_.emplace_back(IPv4Entry{static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask});
+			entries_.emplace_back(static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask);
 		}
 	}
 

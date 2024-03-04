@@ -66,7 +66,7 @@ class RealmList final : public Packet {
 			stream >> realm_id;
 			realm.id = realm_id;
 
-			realms.emplace_back(RealmListEntry{ realm, num_chars });
+			realms.emplace_back(realm, num_chars);
 			--realm_count;
 		}
 
