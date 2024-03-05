@@ -37,15 +37,15 @@ class BinaryStream final {
 	const std::size_t read_limit_;
 	StreamState state_ = StreamState::OK;
 
-	void check_read_bounds(const std::size_t read_size) {
-		if(read_size > buffer_.size()) {
+	inline void check_read_bounds(const std::size_t read_size) {
+		if(read_size > buffer_.size()) [[unlikely]] {
 			state_ = StreamState::BUFF_LIMIT_ERR;
 			throw buffer_underrun(read_size, total_read_, buffer_.size());
 		}
 
 		const auto req_total_read = total_read_ + read_size;
 
-		if(read_limit_ && req_total_read > read_limit_) {
+		if(read_limit_ && req_total_read > read_limit_) [[unlikely]] {
 			state_ = StreamState::READ_LIMIT_ERR;
 			throw stream_read_limit(read_size, total_read_, read_limit_);
 		}

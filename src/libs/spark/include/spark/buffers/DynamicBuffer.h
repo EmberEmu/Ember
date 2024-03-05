@@ -124,16 +124,16 @@ public:
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
 		std::size_t remaining = length;
 
-		while(remaining) {
+		do {
 			auto buffer = buffer_from_node(root_.next);
 			remaining -= buffer->read(static_cast<std::byte*>(destination) + length - remaining, remaining,
 			                          root_.next == root_.prev);
 
-			if(remaining) {
+			if(remaining) [[unlikely]] {
 				unlink_node(root_.next);
 				deallocate(buffer);
 			}
-		}
+		} while(remaining);
 
 		size_ -= length;
 	}
@@ -143,14 +143,14 @@ public:
 		std::size_t remaining = length;
 		auto head = root_.next;
 
-		while(remaining) {
+		do {
 			const auto buffer = buffer_from_node(head);
 			remaining -= buffer->copy(static_cast<std::byte*>(destination) + length - remaining, remaining);
 
 			if(remaining) {
 				head = head->next;
 			}
-		}
+		} while(remaining);
 	}
 
 	std::vector<IntrusiveStorage*> fetch_buffers(const std::size_t length,
@@ -185,15 +185,15 @@ public:
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
 		std::size_t remaining = length;
 
-		while(remaining) {
+		do {
 			auto buffer = buffer_from_node(root_.next);
 			remaining -= buffer->skip(remaining, root_.next == root_.prev);
 
-			if(remaining) {
+			if(remaining) [[unlikely]] {
 				unlink_node(root_.next);
 				deallocate(buffer);
 			}
-		}
+		} while(remaining);
 
 		size_ -= length;
 	}
@@ -202,20 +202,20 @@ public:
 		std::size_t remaining = length;
 		IntrusiveNode* tail = root_.prev;
 
-		while(remaining) {
+		do {
 			IntrusiveStorage* buffer;
 
-			if(tail == &root_) {
+			if(tail != &root_) [[likely]] {
+				buffer = buffer_from_node(tail);
+			} else {
 				buffer = allocate();
 				link_tail_node(&buffer->node);
 				tail = root_.prev;
-			} else {
-				buffer = buffer_from_node(tail);
 			}
 
 			remaining -= buffer->write(static_cast<const std::byte*>(source) + length - remaining, remaining);
 			tail = tail->next;
-		}
+		} while(remaining);
 
 		size_ += length;
 	}
@@ -224,10 +224,10 @@ public:
 		std::size_t remaining = length;
 		IntrusiveNode* tail = root_.prev;
 
-		while(remaining) {
+		do {
 			IntrusiveStorage* buffer;
 
-			if(tail == &root_) {
+			if(tail == &root_) [[unlikely]] {
 				buffer = allocate();
 				link_tail_node(&buffer->node);
 				tail = root_.prev;
@@ -237,7 +237,7 @@ public:
 
 			remaining -= buffer->reserve(remaining);
 			tail = tail->next;
-		}
+		} while(remaining);
 
 		size_ += length;
 	}
