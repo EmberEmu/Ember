@@ -78,7 +78,6 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 	// ensure there's a patch path from the client version to a supported version
 	for(const auto& version : versions_) {
 		if(g_it->second.is_path(build, version.build)) {
-			std::cout << "There is a path\n";
 			path = true;
 			break;
 		}

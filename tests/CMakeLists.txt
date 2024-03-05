@@ -24,6 +24,7 @@ set(EXECUTABLE_SRC
 	Ports.cpp
 	GameIntegrity.cpp
 	IntegrityData.cpp
+	PatchGraph.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
