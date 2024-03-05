@@ -63,7 +63,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator >>(trivially_copyable auto& data) {
+	BinaryStreamReader& operator >>(is_pod auto& data) {
 		check_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;

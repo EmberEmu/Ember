@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -41,7 +41,7 @@ public:
 	explicit BinaryStreamWriter(BufferWrite& source)
 		: StreamBase(source), buffer_(source), total_write_(0) {}
 
-	BinaryStreamWriter& operator <<(const trivially_copyable auto& data) {
+	BinaryStreamWriter& operator <<(const is_pod auto& data) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;

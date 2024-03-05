@@ -12,16 +12,16 @@
 #include <gsl/gsl_util>
 #include <algorithm>
 
-template<typename PacketT>
-void ClientConnection::send(const PacketT& packet) {
+template<typename PacketType>
+void ClientConnection::send(const PacketType& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
 	spark::v2::BinaryStream stream(*outbound_back_);
-	stream << typename PacketT::SizeType{} << typename PacketT::OpcodeType{} << packet;
+	stream << packet;
 
 	const auto written = stream.total_write();
-	auto size = gsl::narrow<typename PacketT::SizeType>(written - sizeof(typename PacketT::SizeType));
+	auto size = gsl::narrow<typename PacketType::SizeType>(written - sizeof(typename PacketType::SizeType));
 	auto opcode = packet.opcode;
 
 	if(crypt_) {
@@ -31,7 +31,7 @@ void ClientConnection::send(const PacketT& packet) {
 
 	stream.write_seek(spark::SeekDir::SD_START, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::SeekDir::SD_FORWARD, written - PacketT::HEADER_WIRE_SIZE);
+	stream.write_seek(spark::SeekDir::SD_FORWARD, written - PacketType::HEADER_WIRE_SIZE);
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;

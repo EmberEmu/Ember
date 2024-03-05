@@ -14,7 +14,7 @@
 namespace ember::spark {
 
 template<typename T>
-concept trivially_copyable = std::is_trivially_copyable<T>::value;
+concept is_pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
 
 enum class StreamState {
 	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR

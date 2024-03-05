@@ -72,7 +72,7 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const trivially_copyable auto& data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(const is_pod auto& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;
@@ -138,7 +138,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator >>(trivially_copyable auto& data) {
+	BinaryStream& operator >>(is_pod auto& data) {
 		check_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;

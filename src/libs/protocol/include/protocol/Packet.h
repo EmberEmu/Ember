@@ -40,6 +40,7 @@ struct Packet final {
 
 	template<typename writer>
 	friend writer& operator<<(writer& stream, const Packet& p) {
+		stream << SizeType{} << OpcodeType{};
 		p.write_to_stream(stream);
 		return stream;
 	}
