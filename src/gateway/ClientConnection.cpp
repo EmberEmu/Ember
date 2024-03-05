@@ -17,7 +17,7 @@
 
 namespace ember {
 
-void ClientConnection::parse_header(BufferInType& buffer) {
+void ClientConnection::parse_header(AdaptorInType& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(buffer.size() < protocol::ClientHeader::WIRE_SIZE) {
@@ -31,10 +31,17 @@ void ClientConnection::parse_header(BufferInType& buffer) {
 	ClientStream stream(buffer);
 	stream >> msg_size_;
 
+	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Invalid message size from " << remote_address() << LOG_ASYNC;
+		close_session();
+		return;
+	}
+
 	read_state_ = ReadState::BODY;
 }
 
-void ClientConnection::completion_check(const BufferInType& buffer) {
+void ClientConnection::completion_check(const AdaptorInType& buffer) {
 	if(buffer.size() < msg_size_) {
 		return;
 	}
@@ -42,35 +49,46 @@ void ClientConnection::completion_check(const BufferInType& buffer) {
 	read_state_ = ReadState::DONE;
 }
 
-void ClientConnection::dispatch_message(BufferInType& buffer) {
+void ClientConnection::dispatch_message(AdaptorInType& buffer) {
 	ClientStream stream(buffer, msg_size_);
 	handler_.handle_message(stream);
 }
 
-void ClientConnection::process_buffered_data(BufferInType& buffer) {
-	while(!buffer.empty()) {
+void ClientConnection::process_buffered_data(BufferInType& buffer,
+                                             const std::size_t size) {
+	std::span span(buffer.data(), size);
+	spark::v2::BufferAdaptor adaptor(span);
+
+	while(!adaptor.empty()) {
 		if(read_state_ == ReadState::HEADER) {
-			parse_header(buffer);
+			parse_header(adaptor);
 		}
 
 		if(read_state_ == ReadState::BODY) {
-			completion_check(buffer);
+			completion_check(adaptor);
 		}
 
 		if(read_state_ == ReadState::DONE) {
 			++stats_.messages_in;
 
 			if(packet_logger_) {
-				packet_logger_->log(buffer, msg_size_, PacketDirection::INBOUND);
+				std::span packet(adaptor.read_ptr(), msg_size_);
+				packet_logger_->log(packet, PacketDirection::INBOUND);
 			}
 			
-			dispatch_message(buffer);
+			dispatch_message(adaptor);
 			read_state_ = ReadState::HEADER;
 			continue;
 		}
 
 		break;
 	}
+
+	// if there are any unread bytes left in the buffer, shift
+	// them to the beginning so we get them next time
+	unread_bytes_ = adaptor.size();
+	const auto read_ptr = adaptor.read_ptr();
+	std::memcpy(inbound_buffer_.data(), read_ptr, unread_bytes_);
 }
 
 void ClientConnection::write() {
@@ -111,23 +129,24 @@ void ClientConnection::read() {
 		return;
 	}
 
-	auto tail = inbound_buffer_.back();
+	const auto begin = inbound_buffer_.data() + unread_bytes_;
+	const auto size = inbound_buffer_.size() - unread_bytes_;
 
-	// if the buffer chain has no more space left, allocate & attach new node
-	if(!tail->free()) {
-		tail = inbound_buffer_.allocate();
-		inbound_buffer_.push_back(tail);
+	if(!size) {
+		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			<< "Inbound buffer full, closing " << remote_address() << LOG_ASYNC;
+		close_session();
+		return;
 	}
 
-	socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()),
+	socket_.async_receive(boost::asio::buffer(begin, size),
 		create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;
 				++stats_.packets_in;
 
-				inbound_buffer_.advance_write_cursor(size);
-				process_buffered_data(inbound_buffer_);
+				process_buffered_data(inbound_buffer_, unread_bytes_ + size);
 				read();
 			} else if(ec != boost::asio::error::operation_aborted) {
 				close_session();

@@ -92,6 +92,10 @@ public:
 				write_ = 0 + offset;
 		}
 	}
+
+	const auto read_ptr() const {
+		return buffer_.data() + read_;
+	}
 };
 
 } // v2, spark, ember

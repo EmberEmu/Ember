@@ -11,6 +11,7 @@
 #include <concepts>
 #include <utility>
 #include <cstddef>
+#include <iostream>
 
 namespace ember::spark {
 

@@ -10,15 +10,20 @@
 
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
+#include <array>
+#include <span>
+#include <cstdint>
 
 namespace ember {
 
 static constexpr std::uint16_t INBOUND_SIZE  { 1024 };
 static constexpr std::uint16_t OUTBOUND_SIZE { 2048 };
 
-using BufferInType = spark::DynamicBuffer<INBOUND_SIZE>;
+using AdaptorInType = spark::v2::BufferAdaptor<std::span<std::uint8_t>>;
+using BufferInType = std::array<std::uint8_t, INBOUND_SIZE>;
 using BufferOutType = spark::DynamicBuffer<OUTBOUND_SIZE>;
 
-using ClientStream = spark::v2::BinaryStream<BufferInType>;
+using ClientStream = spark::v2::BinaryStream<AdaptorInType>;
 
 } // ember

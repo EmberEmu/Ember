@@ -287,14 +287,14 @@ public:
 	}
 
 	void write_seek(const SeekDir direction, std::size_t offset) override {
-		const bool rewind = direction == SeekDir::SD_BACK || direction == SeekDir::SD_START;
+		const bool rewind = direction == SeekDir::SD_BACK;
 		auto tail = root_.prev;
 
-		if(direction == SeekDir::SD_START) {
-			size_ = 0;
+		if(direction == SeekDir::SD_BACK) {
+			size_ -= offset;
+		} else {
+			size_ += offset;
 		}
-
-		size_ = rewind? size_ - offset : size_ + offset;
 
 		while(offset) {
 			auto buffer = buffer_from_node(tail);

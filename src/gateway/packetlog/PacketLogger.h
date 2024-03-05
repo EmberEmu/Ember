@@ -14,6 +14,7 @@
 #include <spark/buffers/BinaryStream.h>
 #include <chrono>
 #include <memory>
+#include <span>
 #include <vector>
 
 namespace ember {
@@ -25,15 +26,17 @@ public:
 	void add_sink(std::unique_ptr<PacketSink> sink);
 	void reset();
 
+	void log(std::span<const std::uint8_t> buffer, PacketDirection dir);
 	void log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir);
 
-	template<typename PacketT>
-	void log(const PacketT& packet, PacketDirection dir) {
+
+	template<protocol::is_packet PacketType>
+	void log(const PacketType& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::vector<std::uint8_t> buffer(64);
 		spark::BufferAdaptor adaptor(buffer);
 		spark::BinaryStream stream(adaptor);
-		stream << packet.opcode << packet;
+		stream << packet;
 
 		for(auto& sink : sinks_) {
 			sink->log(buffer, time, dir);

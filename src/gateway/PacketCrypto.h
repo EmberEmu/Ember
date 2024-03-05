@@ -55,7 +55,8 @@ public:
 		}
 	}
 
-	void decrypt(spark::Buffer& data, const std::size_t length) {
+	template<typename BufferType>
+	void decrypt(BufferType& data, const std::size_t length) {
 		BOOST_ASSERT_MSG(!key_.empty(), "Session key empty when decrypting");
 
 		const auto key_size = gsl::narrow_cast<std::uint8_t>(key_.size());

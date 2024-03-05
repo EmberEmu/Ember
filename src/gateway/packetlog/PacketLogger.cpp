@@ -30,4 +30,12 @@ void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDi
 	}
 }
 
+void PacketLogger::log(std::span<const std::uint8_t> buffer, PacketDirection dir) {
+	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
+
+	for(auto& sink : sinks_) {
+		sink->log(buffer, time, dir);
+	}
+}
+
 } // ember

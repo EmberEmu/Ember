@@ -45,6 +45,7 @@ class ClientConnection final {
 	std::array<BufferOutType, 2> outbound_buffers_;
 	BufferOutType* outbound_front_;
 	BufferOutType* outbound_back_;
+	std::size_t unread_bytes_ = 0;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
@@ -72,10 +73,10 @@ class ClientConnection final {
 	void terminate();
 
 	// packet reassembly & dispatching
-	void dispatch_message(BufferInType& buffer);
-	void process_buffered_data(BufferInType& buffer);
-	void parse_header(BufferInType& buffer);
-	void completion_check(const BufferInType& buffer);
+	void dispatch_message(AdaptorInType& buffer);
+	void process_buffered_data(BufferInType& buffer, std::size_t size);
+	void parse_header(AdaptorInType& buffer);
+	void completion_check(const AdaptorInType& buffer);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,

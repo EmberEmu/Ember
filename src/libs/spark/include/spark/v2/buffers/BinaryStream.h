@@ -178,7 +178,11 @@ public:
 	}
 
 	void write_seek(const SeekDir direction, const std::size_t offset) requires(writeable<buf_type>) {
-		buffer_.write_seek(direction, offset);
+		if(direction == SeekDir::SD_START) {
+			buffer_.write_seek(SeekDir::SD_BACK, total_write_ - offset);
+		} else {
+			buffer_.write_seek(direction, offset);
+		}
 	}
 
 	std::size_t size() const {
