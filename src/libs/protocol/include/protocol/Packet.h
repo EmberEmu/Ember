@@ -21,7 +21,7 @@ enum class State {
 template <typename HeaderT, typename HeaderT::OpcodeType op_, typename Payload>
 struct Packet final {
 	struct packet_tag_t{};
-	using packet_tag = typename packet_tag_t;
+	using packet_tag = packet_tag_t;
 
 	using OpcodeType = typename HeaderT::OpcodeType;
 	using SizeType = typename HeaderT::SizeType;
