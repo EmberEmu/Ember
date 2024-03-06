@@ -71,52 +71,48 @@ TEST(PatcherTest, LoadMD5) {
 	ASSERT_EQ(dao.update_count, 4);
 	ASSERT_EQ(meta.size(), 4);
 
-	// std::byte was a mistake
-	const std::array<std::byte, 16> md5_1_to_2 {
-		std::byte{0x55}, std::byte{0xa5}, std::byte{0x40}, std::byte{0x08},
-		std::byte{0xad}, std::byte{0x1b}, std::byte{0xa5}, std::byte{0x89},
-		std::byte{0xaa}, std::byte{0x21}, std::byte{0x0d}, std::byte{0x26},
-		std::byte{0x29}, std::byte{0xc1}, std::byte{0xdf}, std::byte{0x41}
+	const std::array<std::uint8_t, 16> md5_1_to_2 {
+		0x55, 0xa5, 0x40, 0x08, 0xad, 0x1b, 0xa5, 0x89,
+		0xaa, 0x21, 0x0d, 0x26, 0x29, 0xc1, 0xdf, 0x41
 	};
 
-	const std::array<std::byte, 16> md5_2_to_3 {
-		std::byte{0x9e}, std::byte{0x68}, std::byte{0x8c}, std::byte{0x58},
-		std::byte{0xa5}, std::byte{0x48}, std::byte{0x7b}, std::byte{0x8e},
-		std::byte{0xaf}, std::byte{0x69}, std::byte{0xc9}, std::byte{0xe1},
-		std::byte{0x00}, std::byte{0x5a}, std::byte{0xd0}, std::byte{0xbf}
+	const std::array<std::uint8_t, 16> md5_2_to_3 {
+		0x9e, 0x68, 0x8c, 0x58, 0xa5, 0x48, 0x7b, 0x8e,
+		0xaf, 0x69, 0xc9, 0xe1, 0x00, 0x5a, 0xd0, 0xbf
 	};
 
-	const std::array<std::byte, 16> md5_3_to_4 {
-		std::byte{0x86}, std::byte{0x66}, std::byte{0x68}, std::byte{0x35},
-		std::byte{0x06}, std::byte{0xaa}, std::byte{0xcd}, std::byte{0x90},
-		std::byte{0x0b}, std::byte{0xbd}, std::byte{0x5a}, std::byte{0x74},
-		std::byte{0xac}, std::byte{0x4e}, std::byte{0xdf}, std::byte{0x68}
+	const std::array<std::uint8_t, 16> md5_3_to_4 {
+		0x86, 0x66, 0x68, 0x35, 0x06, 0xaa, 0xcd, 0x90,
+		0x0b, 0xbd, 0x5a, 0x74, 0xac, 0x4e, 0xdf, 0x68
 	};
 
-	const std::array<std::byte, 16> md5_1_to_4 {
-		std::byte{0xec}, std::byte{0x7f}, std::byte{0x7e}, std::byte{0x7b},
-		std::byte{0xb4}, std::byte{0x37}, std::byte{0x42}, std::byte{0xce},
-		std::byte{0x86}, std::byte{0x81}, std::byte{0x45}, std::byte{0xf7},
-		std::byte{0x1d}, std::byte{0x37}, std::byte{0xb5}, std::byte{0x3c}
+	const std::array<std::uint8_t, 16> md5_1_to_4 {
+		0xec, 0x7f, 0x7e, 0x7b, 0xb4, 0x37, 0x42, 0xce,
+		0x86, 0x81, 0x45, 0xf7, 0x1d, 0x37, 0xb5, 0x3c
 	};
 
 	std::array<bool, 4> matches{};
 
+	// std::byte was a mistake
 	for(const auto& m : meta) {
 		if(m.file_meta.name == "1_to_2.patch") {
-			ASSERT_EQ(m.file_meta.md5, md5_1_to_2);
+			const auto bytes = std::as_bytes(std::span(md5_1_to_2));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[0] = true;
 		} else if(m.file_meta.name == "2_to_3.patch") {
-			ASSERT_EQ(m.file_meta.md5, md5_2_to_3);
+			const auto bytes = std::as_bytes(std::span(md5_2_to_3));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[1] = true;
 		} else if(m.file_meta.name == "3_to_4.patch") {
-			ASSERT_EQ(m.file_meta.md5, md5_3_to_4);
+			const auto bytes = std::as_bytes(std::span(md5_3_to_4));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[2] = true;
 		} else if(m.file_meta.name == "1_to_4.patch") {
-			ASSERT_EQ(m.file_meta.md5, md5_1_to_4);
+			const auto bytes = std::as_bytes(std::span(md5_1_to_4));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[3] = true;
 		} else {
