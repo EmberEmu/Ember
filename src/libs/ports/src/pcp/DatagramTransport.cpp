@@ -10,9 +10,9 @@
 
 namespace ember::ports {
 
-DatagramTransport::DatagramTransport(const std::string& bind, ba::io_context& ctx)
+DatagramTransport::DatagramTransport(const std::string& bind, std::uint16_t port, ba::io_context& ctx)
 	: ctx_(ctx), strand_(ctx),
-	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 5350)),
+	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), port)),
 	  resolver_(ctx_) {
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 

@@ -45,7 +45,7 @@ class DatagramTransport final {
 	void do_write();
 
 public:
-	DatagramTransport(const std::string& bind, ba::io_context& ctx_);
+	DatagramTransport(const std::string& bind, std::uint16_t port, ba::io_context& ctx_);
 	~DatagramTransport();
 
 	void set_callbacks(OnReceive rcb, OnConnectionError ecb);

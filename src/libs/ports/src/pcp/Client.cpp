@@ -19,8 +19,10 @@ namespace ember::ports {
 namespace bai = boost::asio::ip;
 
 Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
-	: ctx_(ctx), strand_(ctx), gateway_(std::move(gateway)), transport_(interface, ctx),
-	  timer_(ctx), interface_(interface), resolve_res_(false), has_resolved_(false) {
+	: ctx_(ctx), strand_(ctx), gateway_(std::move(gateway)),
+	  transport_(interface, PORT_IN, ctx),
+	  timer_(ctx), interface_(interface),
+	  resolve_res_(false), has_resolved_(false) {
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {

@@ -10,6 +10,8 @@ add_library(${LIBRARY_NAME}
            src/pcp/Client.cpp
 		   src/pcp/DatagramTransport.cpp
 		   src/pcp/Daemon.cpp
+		   src/upnp/Client.cpp
+		   src/upnp/MulticastSocket.cpp
            include/ports/pcp/Client.h
 		   include/ports/pcp/Results.h
 		   include/ports/pcp/Daemon.h
@@ -17,6 +19,9 @@ add_library(${LIBRARY_NAME}
            include/ports/pcp/Protocol.h
            include/ports/pcp/Serialise.h
            include/ports/pcp/Deserialise.h
+		   include/ports/upnp/Client.h
+		   include/ports/upnp/MulticastSocket.h
+		   include/ports/upnp/HTTPHeaderParser.h
            )
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
