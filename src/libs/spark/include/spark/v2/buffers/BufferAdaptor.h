@@ -68,12 +68,12 @@ public:
 		return !(buffer_.size() - read_);
 	}
 
-	std::byte& operator[](const std::size_t index) {
-		return reinterpret_cast<std::byte&>(buffer_[index]);
+	value_type& operator[](const std::size_t index) {
+		return buffer_[index];
 	}
 
-	const std::byte& operator[](const std::size_t index) const {
-		return reinterpret_cast<std::byte&>(buffer_[index]);
+	const value_type& operator[](const std::size_t index) const {
+		return buffer_[index];
 	}
 
 	bool can_write_seek() const requires(can_resize<buf_type>) {
