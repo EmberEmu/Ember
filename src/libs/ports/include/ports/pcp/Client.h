@@ -15,12 +15,13 @@
 #include <array>
 #include <atomic>
 #include <expected>
+#include <functional>
 #include <future>
 #include <memory>
 #include <mutex>
+#include <span>
 #include <stack>
 #include <string>
-#include <variant>
 #include <vector>
 #include <cstdint>
 
