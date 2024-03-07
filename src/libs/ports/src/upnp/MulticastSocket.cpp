@@ -61,7 +61,7 @@ void MulticastSocket::handle_datagram(std::span<const std::uint8_t> datagram,
 }
 
 void MulticastSocket::send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint ep) {
-	auto ptr = std::make_shared<typename decltype(buffer)>(std::move(buffer));
+	auto ptr = std::make_shared<decltype(buffer)>(std::move(buffer));
 	send(std::move(ptr), ep);
 }
 
