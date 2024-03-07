@@ -11,9 +11,8 @@
 #include <stun/Attributes.h>
 #include <stun/Protocol.h>
 #include <stun/Transaction.h>
+#include <stun/TransportBase.h>
 #include <stun/Logging.h>
-#include <stun/DatagramTransport.h>
-#include <stun/StreamTransport.h>
 #include <boost/asio/io_context.hpp>
 #include <expected>
 #include <future>
@@ -32,14 +31,13 @@ namespace ember::stun {
 
 const std::string_view SOFTWARE_DESC = "Ember";
 
+using namespace detail;
 using clientopts = int;
 constexpr clientopts SUPPRESS_BANNER = 0x01;
 
 enum class Protocol {
 	TCP, UDP
 };
-
-using namespace detail;
 
 class Client {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
