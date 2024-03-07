@@ -8,6 +8,7 @@
 
 #include <ports/upnp/MulticastSocket.h>
 #include <utility>
+#include <iostream> // temp
 
 namespace ember::ports {
 
@@ -39,7 +40,7 @@ void MulticastSocket::receive() {
 		return;
 	}
 
-	socket_.async_receive(boost::asio::buffer(buffer_.data(), buffer_.size()),
+	socket_.async_receive_from(boost::asio::buffer(buffer_.data(), buffer_.size()), remote_ep_,
         [this](const boost::system::error_code& ec, const std::size_t size) {
             if(ec && ec == boost::asio::error::operation_aborted) {
 		        return;
@@ -59,25 +60,36 @@ void MulticastSocket::handle_datagram(std::span<const std::uint8_t> datagram,
 	rcv_handler_(datagram, ep);
 }
 
+void MulticastSocket::send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint ep) {
+	auto ptr = std::make_shared<typename decltype(buffer)>(std::move(buffer));
+	send(std::move(ptr), ep);
+}
+
 void MulticastSocket::send(std::vector<std::uint8_t> buffer) {
 	auto ptr = std::make_shared<typename decltype(buffer)>(std::move(buffer));
 	send(std::move(ptr));
 }
 
-void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer) {
+void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
+                           ba::ip::udp::endpoint ep) {
 	if(!socket_.is_open()) {
 		return;
 	}
 
 	const auto ba_buf = boost::asio::buffer(*buffer);
 
-	socket_.async_send_to(ba_buf, ep_,
+	socket_.async_send_to(ba_buf, ep,
 		[buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
+							  std::cout << "sent\n";
 			if(ec) {
-				// todo
+				std::cout << ec.what();
 			}
 		}
 	);
+}
+
+void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer) {
+	send(std::move(buffer), ep_);
 }
 
 void MulticastSocket::set_callbacks(OnReceive&& rcv) {

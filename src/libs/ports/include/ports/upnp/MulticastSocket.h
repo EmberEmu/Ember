@@ -19,15 +19,18 @@
 
 namespace ember::ports {
 
+namespace ba = boost::asio;
+
 class MulticastSocket final {
+
 	using OnReceive = std::function<void(std::span<const std::uint8_t>,
 	                                     const boost::asio::ip::udp::endpoint&)>;
 
     std::array<std::uint8_t, 4096> buffer_;
 
-    boost::asio::io_context& context_;
-    boost::asio::ip::udp::socket socket_;
-    boost::asio::ip::udp::endpoint ep_, remote_ep_;
+    ba::io_context& context_;
+    ba::ip::udp::socket socket_;
+    ba::ip::udp::endpoint ep_, remote_ep_;
 	
 	OnReceive rcv_handler_{};
 
@@ -41,8 +44,10 @@ public:
                     const std::string& mcast_group,
                     std::uint16_t port);
 
+	void send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint);
 	void send(std::vector<std::uint8_t> buffer);
     void send(std::shared_ptr<std::vector<std::uint8_t>> buffer);
+	void send(std::shared_ptr<std::vector<std::uint8_t>> buffer, ba::ip::udp::endpoint);
     void set_callbacks(OnReceive&& rcv);
 	void close();
 };

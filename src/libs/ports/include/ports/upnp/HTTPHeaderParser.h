@@ -16,10 +16,17 @@
 
 namespace ember::ports::upnp {
 
-int sv_to_int(std::string_view string);
+static int sv_to_int(std::string_view string);
 
 enum class HTTPResponseCode {
 	HTTP_OK = 200
+};
+
+struct HTTPRequest {
+	std::string method;
+	std::string url;
+	std::vector<std::pair<std::string, std::string>> fields;
+	std::string body;
 };
 
 /*
