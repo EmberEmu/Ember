@@ -12,7 +12,8 @@
 #include <stun/Protocol.h>
 #include <stun/Transaction.h>
 #include <stun/Logging.h>
-#include <stun/Transport.h>
+#include <stun/DatagramTransport.h>
+#include <stun/StreamTransport.h>
 #include <boost/asio/io_context.hpp>
 #include <expected>
 #include <future>

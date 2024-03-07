@@ -8,7 +8,6 @@ set(LIBRARY_NAME stun)
 
 add_library(${LIBRARY_NAME}
            include/stun/Client.h
-           include/stun/Transport.h
            include/stun/TransportBase.h
            include/stun/DatagramTransport.h
            include/stun/StreamTransport.h
