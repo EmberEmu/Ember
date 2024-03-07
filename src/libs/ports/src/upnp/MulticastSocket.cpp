@@ -66,7 +66,7 @@ void MulticastSocket::send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoi
 }
 
 void MulticastSocket::send(std::vector<std::uint8_t> buffer) {
-	auto ptr = std::make_shared<typename decltype(buffer)>(std::move(buffer));
+	auto ptr = std::make_shared<decltype(buffer)>(std::move(buffer));
 	send(std::move(ptr));
 }
 
