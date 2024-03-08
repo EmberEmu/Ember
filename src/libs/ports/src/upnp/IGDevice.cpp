@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <ports/upnp/Device.h>
+#include <ports/upnp/IGDevice.h>
 #include <format>
 #include <utility>
 #include <regex>
@@ -15,11 +15,12 @@
 
 namespace ember::ports::upnp {
 
-Device::Device(boost::asio::io_context& ctx, const std::string& location) : ctx_(ctx), port_(80) {
+IGDevice::IGDevice(boost::asio::io_context& ctx, const std::string& location, std::string service)
+	: ctx_(ctx), port_(80), service_(std::move(service)) {
 	parse_location(location);
 }
 
-void Device::parse_location(const std::string& location) {
+void IGDevice::parse_location(const std::string& location) {
 	constexpr auto pattern = R"((?:http:\/\/)(?:((?:[a-zA-Z0-9.-]*))?(?::((?:[1-9]{1}))"
 	                         R"((?:[0-9]{0,4})))?)(\/{1}[a-zA-Z0-9-.]*))";
 	std::regex regex(pattern, std::regex::ECMAScript);
@@ -42,7 +43,7 @@ void Device::parse_location(const std::string& location) {
 	}
 }
 
-std::string Device::build_soap_request(const UPnPActionArgs& action) {
+std::string IGDevice::build_soap_request(const UPnPActionArgs& action) {
 	constexpr std::string_view soap =
 		R"(<?xml version="1.0"?>)" "\r\n"
 		R"(<s:Envelope)" "\r\n"
@@ -65,7 +66,7 @@ std::string Device::build_soap_request(const UPnPActionArgs& action) {
 	return std::format(soap, action.action, action.service, args, action.action);
 }
 
-std::string Device::build_http_request(const HTTPRequest& request) {
+std::string IGDevice::build_http_request(const HTTPRequest& request) {
 	std::string output = std::format("{} {} HTTP/1.1\r\n", request.method, request.url);
 	
 	for(auto& [k, v]: request.fields) {
@@ -81,8 +82,8 @@ std::string Device::build_http_request(const HTTPRequest& request) {
 	return output;
 }
 
-std::vector<std::uint8_t> Device::build_add_map_action(const Mapping& mapping, const std::string& ip) {
-	auto service = dev_desc_xml_->locate_service("urn:schemas-upnp-org:service:WANIPConnection:1");
+std::vector<std::uint8_t> IGDevice::build_add_map_action(const Mapping& mapping, const std::string& ip) {
+	auto service = dev_desc_xml_->locate_service(service_);
 
 	if(!service) {
 		// todo
@@ -98,7 +99,7 @@ std::vector<std::uint8_t> Device::build_add_map_action(const Mapping& mapping, c
 	
 	const UPnPActionArgs args {
 		.action = "AddPortMapping",
-		.service = "urn:schemas-upnp-org:service:WANIPConnection:1",
+		.service = service_,
 		.arguments {
 			{"NewInternalPort",   std::to_string(mapping.internal)},
 			{"NewExternalPort",   std::to_string(mapping.external)},
@@ -112,16 +113,17 @@ std::vector<std::uint8_t> Device::build_add_map_action(const Mapping& mapping, c
 	};
 
 	auto body = build_soap_request(args);
+	auto soap_action = std::format("{}#{}", service_, args.action);
 
 	HTTPRequest request {
 		.method = "POST",
 		.url = control_url->value(),
 		.fields {
-			{ "Host",          http_host_ },
+			{ "Host",           http_host_ },
 			{ "Content-Type",   R"(text/xml; charset="utf-8")" },
 			{ "Content-Length", std::to_string(body.size()) },
 			{ "Connection",     "keep-alive" },
-			{ "SOAPAction",     "urn:schemas-upnp-org:service:WANIPConnection:1#AddPortMapping" },
+			{ "SOAPAction",     std::move(soap_action) },
 		},
 		.body = std::move(body)
 	};
@@ -132,11 +134,11 @@ std::vector<std::uint8_t> Device::build_add_map_action(const Mapping& mapping, c
 	return buffer;
 }
 
-const std::string& Device::host() const {
+const std::string& IGDevice::host() const {
 	return hostname_;
 }
 
-void Device::fetch_device_description(ActionRequest&& request) {
+void IGDevice::fetch_device_description(ActionRequest&& request) {
 	HTTPRequest http_req {
 		.method = "GET",
 		.url = dev_desc_uri_,
@@ -153,7 +155,7 @@ void Device::fetch_device_description(ActionRequest&& request) {
 	request.transport->send(std::move(buffer));
 }
 
-void Device::process_request(ActionRequest&& request) {
+void IGDevice::process_request(ActionRequest&& request) {
 	const auto time = std::chrono::steady_clock::now();
 	
 	// We're controlling the state here rather than just checking the cache
@@ -180,25 +182,25 @@ void Device::process_request(ActionRequest&& request) {
 	}
 }
 
-void Device::execute_request(ActionRequest&& request) {
+void IGDevice::execute_request(ActionRequest&& request) {
 	request.handler();
 }
 
-void Device::on_connection_error(const boost::system::error_code& ec,
+void IGDevice::on_connection_error(const boost::system::error_code& ec,
                                  ActionRequest request) {
 	if(ec) {
 		// todo
 	}
 }
 
-void Device::handle_dev_desc(const HTTPHeader& header, const std::string_view xml) try {
+void IGDevice::handle_dev_desc(const HTTPHeader& header, const std::string_view xml) try {
 	dev_desc_xml_ = std::move(std::make_unique<XMLParser>(xml));
 	desc_cc_ = std::chrono::steady_clock::now();
 } catch(std::exception& e) {
 	std::cout << e.what(); // todo
 }
 
-void Device::on_response(const HTTPHeader& header, const std::span<const char> buffer,
+void IGDevice::on_response(const HTTPHeader& header, const std::span<const char> buffer,
                          ActionRequest request) {
 	const auto length = sv_to_int(header.fields.at("Content-Length")); // todo
 	const std::string_view body { buffer.end() - length, buffer.end() };
@@ -218,7 +220,7 @@ void Device::on_response(const HTTPHeader& header, const std::span<const char> b
 	}
 }
 
-void Device::launch_request(ActionRequest&& request) {
+void IGDevice::launch_request(ActionRequest&& request) {
 	auto shared = shared_from_this();
 
 	request.transport->set_callbacks(
@@ -239,29 +241,34 @@ void Device::launch_request(ActionRequest&& request) {
 	);
 }
 
-void Device::map_port(const Mapping& mapping) {
+void IGDevice::do_port_mapping(const Mapping& mapping, HTTPTransport& transport) {
+	std::string internal_ip = mapping.internal_ip;
+
+	if(internal_ip.empty()) {
+		internal_ip = transport.local_endpoint().address().to_string();
+	}
+
+	auto buffer = build_add_map_action(mapping, internal_ip);
+	transport.send(std::move(buffer));
+}
+
+void IGDevice::map_port(const Mapping& mapping) {
 	auto transport = std::make_shared<HTTPTransport>(ctx_, "0.0.0.0"); // todo
 
 	auto handler = [=, shared_from_this(this)] {
-		std::string internal_ip = mapping.internal_ip;
-
-		if(internal_ip.empty()) {
-			internal_ip = transport->local_endpoint().address().to_string();
-		}
-
-		auto buffer = build_add_map_action(mapping, internal_ip);
-		transport->send(std::move(buffer));
+		do_port_mapping(mapping, *transport);
 	};
 
 	ActionRequest request{
 		.transport = transport,
-		.handler = std::move(handler)
+		.handler = std::move(handler),
+		.name = "AddPortMapping"
 	};
 	
 	launch_request(std::move(request));
 }
 
-void Device::unmap_port(const std::uint16_t external_port) {
+void IGDevice::unmap_port(const std::uint16_t external_port) {
 
 }
 

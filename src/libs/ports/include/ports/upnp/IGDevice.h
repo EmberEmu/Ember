@@ -43,9 +43,10 @@ struct ActionRequest {
 	std::shared_ptr<HTTPTransport> transport;
 	ActionState state = ActionState::DEV_DESC_CACHE;
 	Handler handler;
+	std::string name;
 };
 
-class Device : public std::enable_shared_from_this<Device> {
+class IGDevice : public std::enable_shared_from_this<IGDevice> {
 	boost::asio::io_context& ctx_;
 
 	// device info
@@ -53,6 +54,7 @@ class Device : public std::enable_shared_from_this<Device> {
 	std::string hostname_;
 	std::uint16_t port_;
 	std::string dev_desc_uri_;
+	std::string service_;
 
 	// document cache control
 	std::chrono::steady_clock::time_point desc_cc_;
@@ -66,6 +68,7 @@ class Device : public std::enable_shared_from_this<Device> {
 	void handle_dev_desc(const HTTPHeader& header, const std::string_view xml);
 	void execute_request(ActionRequest&& request);
 	std::vector<std::uint8_t> build_add_map_action(const Mapping& mapping, const std::string& ip);
+	void do_port_mapping(const Mapping& mapping, HTTPTransport& transport);
 
 	// todo, HTTPResponse
 	void on_response(const HTTPHeader& header, std::span<const char> buffer,
@@ -76,11 +79,11 @@ class Device : public std::enable_shared_from_this<Device> {
 	std::string build_soap_request(const UPnPActionArgs& args);
 
 public:
-	Device(boost::asio::io_context& ctx_, const std::string& location);
-	Device(Device&) = default;
-	Device(Device&&) = default;
-	Device& operator=(Device&) = default;
-	Device& operator=(Device&&) = default;
+	IGDevice(boost::asio::io_context& ctx_, const std::string& location, std::string service);
+	IGDevice(IGDevice&) = default;
+	IGDevice(IGDevice&&) = default;
+	IGDevice& operator=(IGDevice&) = default;
+	IGDevice& operator=(IGDevice&&) = default;
 
 	void map_port(const Mapping& mapping);
 	void unmap_port(std::uint16_t external_port);

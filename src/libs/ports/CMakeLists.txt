@@ -12,7 +12,7 @@ add_library(${LIBRARY_NAME}
 		   src/pcp/Daemon.cpp
 		   src/upnp/SSDP.cpp
 		   src/upnp/MulticastSocket.cpp
-		   src/upnp/Device.cpp
+		   src/upnp/IGDevice.cpp
 		   src/upnp/HTTPTransport.cpp
 		   src/upnp/XMLParser.cpp
            include/ports/pcp/Client.h
@@ -25,7 +25,7 @@ add_library(${LIBRARY_NAME}
 		   include/ports/upnp/SSDP.h
 		   include/ports/upnp/MulticastSocket.h
 		   include/ports/upnp/HTTPHeaderParser.h
-		   include/ports/upnp/Device.h
+		   include/ports/upnp/IGDevice.h
 		   include/ports/upnp/HTTPTransport.h
 		   include/ports/upnp/XMLParser.h
 		   include/ports/upnp/XMLVisitor.h

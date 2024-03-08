@@ -51,7 +51,10 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram,
 		return;
 	}
 
-	auto device = std::make_shared<Device>(ctx_, std::string(header.fields["Location"])); // todo
+	auto location = std::string(header.fields["Location"]);
+	auto service = std::string(header.fields["ST"]);
+
+	auto device = std::make_shared<IGDevice>(ctx_, location, service); // todo
 	const bool call_again = handler_(std::move(header), std::move(device));
 
 	if(!call_again) {

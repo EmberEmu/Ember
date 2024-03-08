@@ -10,7 +10,7 @@
 
 #include <ports/upnp/MulticastSocket.h>
 #include <ports/upnp/HTTPHeaderParser.h>
-#include <ports/upnp/Device.h>
+#include <ports/upnp/IGDevice.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 #include <memory>
@@ -24,7 +24,7 @@ constexpr std::uint16_t DEST_PORT { 1900 };
 
 class SSDP {
 public:
-	using LocateHandler = std::function<bool(const HTTPHeader&&, std::shared_ptr<Device>)>;
+	using LocateHandler = std::function<bool(const HTTPHeader&&, std::shared_ptr<IGDevice>)>;
 
 private:
 	boost::asio::io_context& ctx_;
