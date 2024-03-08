@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <boost/container/static_vector.hpp>
 #include <regex>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
 
 namespace ember::ports::upnp {
@@ -37,7 +37,7 @@ struct HTTPHeader {
 	using Field = std::pair<std::string_view, std::string_view>;
 	HTTPResponseCode code;
 	std::string_view text;
-	boost::container::static_vector<Field, 128> fields;
+	std::unordered_map<std::string_view, std::string_view> fields;
 };
 
 enum class ParseState {
@@ -71,9 +71,7 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 			std::regex pattern(R"((\bHTTP\/1.1\b) ([0-9]{3}) ([a-zA-Z ]*))", std::regex::ECMAScript);
 			std::match_results<typename decltype(line)::iterator> results;
 
-			if(!std::regex_search(line.begin(), line.end(), results, pattern)) {
-				return false;
-			}
+			std::regex_search(line.begin(), line.end(), results, pattern);
 
 			if(results.size() != 4) {
 				return false;
@@ -91,11 +89,7 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 				continue;
 			}
 
-			if(header.fields.size() == header.fields.capacity()) {
-				return false;
-			}
-
-			header.fields.emplace_back(line.substr(0, pos),
+			header.fields.emplace(line.substr(0, pos),
 				line.substr(pos + 2, line.size()));
 		}
 

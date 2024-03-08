@@ -18,14 +18,15 @@ SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 	: ctx_(ctx), strand_(ctx),
 	  transport_(ctx, bind, MULTICAST_IPV4_ADDR, DEST_PORT) {
 	transport_.set_callbacks(strand_.wrap(
-		[&](std::span<const std::uint8_t> datagram, const boost::asio::ip::udp::endpoint& ep) {
+		[&](std::span<const std::uint8_t> datagram,
+		    const boost::asio::ip::udp::endpoint& ep) {
 			process_message(datagram, ep);
 		})
 	);
 }
 
 void SSDP::process_message(std::span<const std::uint8_t> datagram,
-                           const boost::asio::ip::udp::endpoint& ep) {
+						   const boost::asio::ip::udp::endpoint& ep) {
 	if(!handler_) {
 		return;
 	}
@@ -35,7 +36,7 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram,
 	);
 
 	HTTPHeader header;
-	
+
 	if(!parse_http_header(txt, header)) {
 		return;
 	}
@@ -50,7 +51,8 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram,
 		return;
 	}
 
-	const bool call_again = handler_(header, { version, ep });
+	auto device = std::make_shared<Device>(ctx_, std::string(header.fields["Location"])); // todo
+	const bool call_again = handler_(std::move(header), std::move(device));
 
 	if(!call_again) {
 		handler_ = {};
@@ -73,8 +75,8 @@ int SSDP::is_wan_ip_device(const HTTPHeader& header) {
 	return 0;
 }
 
-std::vector<std::uint8_t> SSDP::build_ssdp_request(const std::string& type,
-                                                   const std::string& subtype,
+std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
+                                                   std::string_view subtype,
                                                    const int version) {
 	constexpr std::string_view request {
 		R"(M-SEARCH * HTTP/1.1")" "\r\n"
@@ -90,10 +92,8 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(const std::string& type,
 	return buffer;
 }
 
-void SSDP::start_ssdp_search() {
-	auto buffer = build_ssdp_request("service", "WANIPConnection", 1);
-	transport_.send(std::move(buffer));
-	buffer = build_ssdp_request("service", "WANIPConnection", 2);
+void SSDP::start_ssdp_search(std::string_view type, std::string_view subtype, const int version) {
+	auto buffer = build_ssdp_request(type, subtype, version);
 	transport_.send(std::move(buffer));
 }
 
@@ -101,8 +101,18 @@ void SSDP::locate_gateways(LocateHandler&& handler) {
 	handler_ = handler;
 
 	strand_.post([&]() {
-		start_ssdp_search();
+		start_ssdp_search("service", "WANIPConnection", 1);
+		start_ssdp_search("service", "WANIPConnection", 2);
 	});
 }
 
-}; // upnp, ports,
+void SSDP::search(std::string_view type, std::string_view subtype,
+                  const int version, LocateHandler&& handler) {
+	handler_ = handler;
+
+	strand_.post([&]() {
+		start_ssdp_search(type, subtype, version);
+	});
+}
+
+}; // upnp, ports, ember

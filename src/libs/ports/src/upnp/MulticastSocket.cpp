@@ -80,7 +80,6 @@ void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
 
 	socket_.async_send_to(ba_buf, ep,
 		[buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
-							  std::cout << "sent\n";
 			if(ec) {
 				std::cout << ec.what();
 			}

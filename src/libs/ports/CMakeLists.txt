@@ -13,6 +13,8 @@ add_library(${LIBRARY_NAME}
 		   src/upnp/SSDP.cpp
 		   src/upnp/MulticastSocket.cpp
 		   src/upnp/Device.cpp
+		   src/upnp/HTTPTransport.cpp
+		   src/upnp/XMLParser.cpp
            include/ports/pcp/Client.h
 		   include/ports/pcp/Results.h
 		   include/ports/pcp/Daemon.h
@@ -24,8 +26,12 @@ add_library(${LIBRARY_NAME}
 		   include/ports/upnp/MulticastSocket.h
 		   include/ports/upnp/HTTPHeaderParser.h
 		   include/ports/upnp/Device.h
+		   include/ports/upnp/HTTPTransport.h
+		   include/ports/upnp/XMLParser.h
+		   include/ports/upnp/XMLVisitor.h
            )
 
+include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(ports PROPERTIES FOLDER "Libraries")
