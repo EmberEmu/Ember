@@ -9,20 +9,19 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <array>
 #include <functional>
 #include <memory>
 #include <span>
-#include <string_view>
+#include <string>
 #include <vector>
 #include <cstdint>
-#include <cstddef>
 
 namespace ember::ports {
 
 namespace ba = boost::asio;
 
 class MulticastSocket final {
-
 	using OnReceive = std::function<void(std::span<const std::uint8_t>,
 	                                     const boost::asio::ip::udp::endpoint&)>;
 

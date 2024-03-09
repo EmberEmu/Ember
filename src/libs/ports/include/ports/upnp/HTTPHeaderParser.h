@@ -14,10 +14,9 @@
 #include <string_view>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace ember::ports::upnp {
-
-static int sv_to_int(std::string_view string);
 
 enum class HTTPResponseCode {
 	HTTP_OK = 200
@@ -107,24 +106,6 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 	}
 
 	return true;
-}
-
-/*
-  This exists because string_view isn't guaranteed to be null-terminated,
-  (and we know ours isn't) so we can't use the standard atoi functions
-*/ 
-static int sv_to_int(const std::string_view string) {
-	int value = 0;
-	auto length = string.length();
-	auto data = string.data();
-
-	while(length) {
-		value = (value * 10) + (*data - '0');
-		++data;
-		--length;
-	}
-
-	return value;
 }
 
 } // upnp, ports, ember

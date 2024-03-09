@@ -8,7 +8,6 @@
 
 #include <ports/upnp/MulticastSocket.h>
 #include <utility>
-#include <iostream> // temp
 
 namespace ember::ports {
 
@@ -79,9 +78,9 @@ void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
 	const auto ba_buf = boost::asio::buffer(*buffer);
 
 	socket_.async_send_to(ba_buf, ep,
-		[buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
+		[&, buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
 			if(ec) {
-				// todo
+				socket_.close();
 			}
 		}
 	);

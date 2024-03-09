@@ -13,7 +13,12 @@
 #include <ports/upnp/IGDevice.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
+#include <functional>
 #include <memory>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
 #include <cstdint>
 
 namespace ember::ports::upnp {

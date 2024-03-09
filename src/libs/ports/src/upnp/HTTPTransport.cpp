@@ -7,9 +7,8 @@
  */
 
 #include <ports/upnp/HTTPTransport.h>
-#include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/BufferAdaptor.h>
 #include <ports/upnp/HTTPHeaderParser.h>
+#include <ports/upnp/Utility.h>
 
 namespace ember::ports::upnp {
 

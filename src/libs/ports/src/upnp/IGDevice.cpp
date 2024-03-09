@@ -7,6 +7,7 @@
  */
 
 #include <ports/upnp/IGDevice.h>
+#include <ports/upnp/Utility.h>
 #include <format>
 #include <utility>
 #include <regex>
@@ -141,7 +142,7 @@ BufType IGDevice::build_http_post_request(std::string&& body, const std::string&
 	return build_http_request<BufType>(request);
 }
 
-void IGDevice::fetch_device_description(std::shared_ptr<ActionRequest> request) {
+void IGDevice::fetch_device_description(std::shared_ptr<UPnPRequest> request) {
 	HTTPRequest http_req{
 		.method = "GET",
 		.url = dev_desc_uri_,
@@ -156,7 +157,7 @@ void IGDevice::fetch_device_description(std::shared_ptr<ActionRequest> request) 
 	request->transport->send(std::move(buffer));
 }
 
-void IGDevice::fetch_scpd(std::shared_ptr<ActionRequest> request) {
+void IGDevice::fetch_scpd(std::shared_ptr<UPnPRequest> request) {
 	auto scpd_uri = igdd_xml_->get_node_value(service_, "SCPDURL");
 
 	if(!scpd_uri) {
@@ -179,39 +180,39 @@ void IGDevice::fetch_scpd(std::shared_ptr<ActionRequest> request) {
 	request->transport->send(std::move(buffer));
 }
 
-void IGDevice::process_request(std::shared_ptr<ActionRequest> request) {
+void IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
 	const auto time = std::chrono::steady_clock::now();
 
 	// We're controlling the state here rather than just checking the cache
 	// values because we want to avoid a scenario where a device sets a low
 	// cache-control value, triggering an infinite GET loop
-	if(request->state == ActionState::IGDD_CACHE) {
+	if(request->state == UPnPRequest::State::IGDD_CACHE) {
 		if(time > igdd_cc_) {
 			fetch_device_description(request);
 		} else {
-			request->state = ActionState::SCPD_CACHE;
+			request->state = UPnPRequest::State::SCPD_CACHE;
 		}
 	}
 
-	if(request->state == ActionState::SCPD_CACHE) {
+	if(request->state == UPnPRequest::State::SCPD_CACHE) {
 		if(time > scpd_cc_) {
 			fetch_scpd(request);
 		} else {
-			request->state = ActionState::ACTION;
+			request->state = UPnPRequest::State::ACTION;
 		}
 	}
 
-	if(request->state == ActionState::ACTION) {
+	if(request->state == UPnPRequest::State::ACTION) {
 		execute_request(std::move(request));
 	}
 }
 
-void IGDevice::execute_request(std::shared_ptr<ActionRequest> request) {
+void IGDevice::execute_request(std::shared_ptr<UPnPRequest> request) {
 	request->handler(*request->transport);
 }
 
 void IGDevice::on_connection_error(const boost::system::error_code& ec,
-								   std::shared_ptr<ActionRequest> request) {
+								   std::shared_ptr<UPnPRequest> request) {
 	if(ec) {
 		request->callback(false);
 		request->transport.reset();
@@ -228,13 +229,13 @@ void IGDevice::handle_scpd(const HTTPHeader& header, std::string_view body) {
 }
 
 void IGDevice::process_action_result(const HTTPHeader& header,
-									 std::shared_ptr<ActionRequest> request) {
+									 std::shared_ptr<UPnPRequest> request) {
 	request->callback(header.code == HTTPResponseCode::HTTP_OK);
 	request->transport.reset();
 }
 
 void IGDevice::on_response(const HTTPHeader& header, const std::span<const char> buffer,
-						   std::shared_ptr<ActionRequest> request) try {
+						   std::shared_ptr<UPnPRequest> request) try {
 	if(header.code != HTTPResponseCode::HTTP_OK 
 	   || header.fields.find("Content-Length") == header.fields.end()) {
 		request->callback(false);
@@ -246,17 +247,17 @@ void IGDevice::on_response(const HTTPHeader& header, const std::span<const char>
 	const std::string_view body { buffer.end() - length, buffer.end() };
 
 	switch(request->state) {
-		case ActionState::IGDD_CACHE:
+		case UPnPRequest::State::IGDD_CACHE:
 			handle_igdd(header, body);
-			request->state = ActionState::SCPD_CACHE;
+			request->state = UPnPRequest::State::SCPD_CACHE;
 			process_request(std::move(request));
 			break;
-		case ActionState::SCPD_CACHE:
+		case UPnPRequest::State::SCPD_CACHE:
 			handle_scpd(header, body);
-			request->state = ActionState::ACTION;
+			request->state = UPnPRequest::State::ACTION;
 			process_request(std::move(request));
 			break;
-		case ActionState::ACTION:
+		case UPnPRequest::State::ACTION:
 			process_action_result(header, std::move(request));
 			break;
 	}
@@ -265,7 +266,7 @@ void IGDevice::on_response(const HTTPHeader& header, const std::span<const char>
 	request->transport.reset();
 }
 
-void IGDevice::launch_request(std::shared_ptr<ActionRequest> request) {
+void IGDevice::launch_request(std::shared_ptr<UPnPRequest> request) {
 	auto shared = shared_from_this();
 
 	request->transport->set_callbacks(
@@ -331,14 +332,14 @@ void IGDevice::map_port(Mapping mapping, Result cb) {
 
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
 
-	ActionRequest request {
+	UPnPRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
 		.name = "AddPortMapping",
 		.callback = cb
 	};
 
-	auto request_ptr = std::make_shared<ActionRequest>(std::move(request));
+	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
 	launch_request(std::move(request_ptr));
 }
 
@@ -349,14 +350,14 @@ void IGDevice::unmap_port(Mapping mapping, Result cb) {
 		delete_port_mapping(mapping, transport);
 	};
 
-	ActionRequest request {
+	UPnPRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
 		.name = "DeletePortMapping",
 		.callback = cb
 	};
 
-	auto request_ptr = std::make_shared<ActionRequest>(std::move(request));
+	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
 	launch_request(std::move(request_ptr));
 }
 

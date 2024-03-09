@@ -15,7 +15,9 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
@@ -39,17 +41,17 @@ struct UPnPActionArgs {
 	std::vector<std::pair<std::string, std::string>> arguments;
 };
 
-enum class ActionState {
-	IGDD_CACHE, SCPD_CACHE, ACTION
-};
-
 using Result = std::function<void(bool)>;
 
-struct ActionRequest {
+struct UPnPRequest {
 	using Handler = std::function<void(HTTPTransport&)>;
 
+	enum class State {
+		IGDD_CACHE, SCPD_CACHE, ACTION
+	};
+
 	std::unique_ptr<HTTPTransport> transport;
-	ActionState state = ActionState::IGDD_CACHE;
+	State state = State::IGDD_CACHE;
 	Handler handler;
 	std::string name;
 	Result callback;
@@ -77,19 +79,19 @@ private:
 	void handle_scpd(const HTTPHeader& header, std::string_view body);
 	void handle_igdd(const HTTPHeader& header, const std::string_view xml);
 	void parse_location(const std::string& location);
-	void fetch_scpd(std::shared_ptr<ActionRequest> request);
-	void fetch_device_description(std::shared_ptr<ActionRequest> request);
+	void fetch_scpd(std::shared_ptr<UPnPRequest> request);
+	void fetch_device_description(std::shared_ptr<UPnPRequest> request);
 
-	void launch_request(std::shared_ptr<ActionRequest> request);
-	void execute_request(std::shared_ptr<ActionRequest> request);
-	void process_action_result(const HTTPHeader& header, std::shared_ptr<ActionRequest> request);
-	void process_request(std::shared_ptr<ActionRequest> request);
+	void launch_request(std::shared_ptr<UPnPRequest> request);
+	void execute_request(std::shared_ptr<UPnPRequest> request);
+	void process_action_result(const HTTPHeader& header, std::shared_ptr<UPnPRequest> request);
+	void process_request(std::shared_ptr<UPnPRequest> request);
 
 	void on_response(const HTTPHeader& header, std::span<const char> buffer,
-	                 std::shared_ptr<ActionRequest> request);
+	                 std::shared_ptr<UPnPRequest> request);
 
 	void on_connection_error(const boost::system::error_code& ec,
-	                         std::shared_ptr<ActionRequest> request);
+	                         std::shared_ptr<UPnPRequest> request);
 
 	template<typename BufType>
 	BufType build_http_post_request(std::string&& body, const std::string& action,

@@ -36,4 +36,22 @@ struct CaseInsensitive {
 	};
 };
 
+/*
+  This exists because string_view isn't guaranteed to be null-terminated,
+  (and we know ours isn't) so we can't use the standard atoi functions
+*/ 
+static int sv_to_int(const std::string_view string) {
+	int value = 0;
+	auto length = string.length();
+	auto data = string.data();
+
+	while(length) {
+		value = (value * 10) + (*data - '0');
+		++data;
+		--length;
+	}
+
+	return value;
+}
+
 } // upnp, ports, ember

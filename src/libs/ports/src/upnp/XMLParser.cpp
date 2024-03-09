@@ -10,7 +10,6 @@
 
 #include <ports/upnp/XMLParser.h>
 #include <ports/upnp/XMLVisitor.h>
-#include <rapidxml/rapidxml.hpp>
 
 namespace ember::ports::upnp {
 
