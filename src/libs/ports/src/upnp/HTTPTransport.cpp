@@ -162,7 +162,7 @@ void HTTPTransport::start_timer() {
 		}
 
 		if(timeout_.expiry() <= std::chrono::steady_clock::now()) {
-			throw std::exception("Did not receive HTTP response in a timely manner");
+			throw std::runtime_error("Did not receive HTTP response in a timely manner");
 		}
 	});
 }
