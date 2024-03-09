@@ -10,7 +10,6 @@
 #include <format>
 #include <regex>
 #include <string>
-#include <iostream> // temp
 
 namespace ember::ports::upnp {
 
@@ -19,14 +18,13 @@ SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 	  transport_(ctx, bind, MULTICAST_IPV4_ADDR, DEST_PORT) {
 	transport_.set_callbacks(strand_.wrap(
 		[&](std::span<const std::uint8_t> datagram,
-		    const boost::asio::ip::udp::endpoint& ep) {
-			process_message(datagram, ep);
+		    const boost::asio::ip::udp::endpoint&) {
+			process_message(datagram);
 		})
 	);
 }
 
-void SSDP::process_message(std::span<const std::uint8_t> datagram,
-						   const boost::asio::ip::udp::endpoint& ep) {
+void SSDP::process_message(std::span<const std::uint8_t> datagram) {
 	if(!handler_) {
 		return;
 	}
@@ -45,37 +43,17 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram,
 		return;
 	}
 
-	const auto version = is_wan_ip_device(header);
+	auto location = std::string(header.fields["Location"]); // todo
+	auto service = std::string(header.fields["ST"]); // todo
 
-	if(!version) {
-		return;
-	}
+	try {
+		auto device = std::make_shared<IGDevice>(ctx_, location, service);
+		const bool call_again = handler_(std::move(header), std::move(device));
 
-	auto location = std::string(header.fields["Location"]);
-	auto service = std::string(header.fields["ST"]);
-
-	auto device = std::make_shared<IGDevice>(ctx_, location, service); // todo
-	const bool call_again = handler_(std::move(header), std::move(device));
-
-	if(!call_again) {
-		handler_ = {};
-	}
-}
-
-int SSDP::is_wan_ip_device(const HTTPHeader& header) {
-	for(auto& [k, v] : header.fields) {
-		if(k != "ST") { // pretty lazy but it'll do until it won't
-			continue;
+		if(!call_again) {
+			handler_ = {};
 		}
-
-		if(v == "urn:schemas-upnp-org:service:WANIPConnection:1") {
-			return 1;
-		} else if(v == "urn:schemas-upnp-org:service:WANIPConnection:2") {
-			return 2;
-		}
-	}
-
-	return 0;
+	} catch(std::exception&) {}
 }
 
 std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,

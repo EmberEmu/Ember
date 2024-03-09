@@ -15,7 +15,8 @@
 
 namespace ember::ports::upnp {
 
-IGDevice::IGDevice(boost::asio::io_context& ctx, const std::string& location, std::string service)
+IGDevice::IGDevice(boost::asio::io_context& ctx, const std::string& location,
+                   std::string service)
 	: ctx_(ctx), port_(80), service_(std::move(service)) {
 	parse_location(location);
 }

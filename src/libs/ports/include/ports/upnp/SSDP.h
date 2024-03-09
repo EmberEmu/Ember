@@ -36,11 +36,8 @@ private:
 												 std::string_view subtype,
 												 const int version);
 
-	void process_message(std::span<const std::uint8_t> datagram,
-	                     const boost::asio::ip::udp::endpoint& ep);
-
+	void process_message(std::span<const std::uint8_t> datagram);
 	void start_ssdp_search(std::string_view type, std::string_view subtype, int version);
-	int is_wan_ip_device(const HTTPHeader& header);
 
 public:
 	SSDP(const std::string& bind, boost::asio::io_context& ctx);
