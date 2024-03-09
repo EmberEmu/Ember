@@ -101,7 +101,7 @@ void SSDP::search(std::string_view type, std::string_view subtype,
 	handler_ = handler;
 
 	strand_.post([&]() {
-		start_ssdp_search(type, subtype, version);
+		ba::co_spawn(ctx_, start_ssdp_search(type, subtype, version), ba::detached);
 	});
 }
 

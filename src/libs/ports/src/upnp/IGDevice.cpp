@@ -326,7 +326,7 @@ bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 }
 
 void IGDevice::map_port(Mapping mapping, Result cb) {
-	auto handler = [=, shared_from_this(this)](HTTPTransport& transport) mutable {
+	auto handler = [=, this, shared_from_this(this)](HTTPTransport& transport) mutable {
 		add_port_mapping(mapping, transport);
 	};
 
@@ -346,7 +346,7 @@ void IGDevice::map_port(Mapping mapping, Result cb) {
 void IGDevice::unmap_port(Mapping mapping, Result cb) {
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
 
-	auto handler = [=, shared_from_this(this)](HTTPTransport& transport) mutable {
+	auto handler = [=, this, shared_from_this(this)](HTTPTransport& transport) mutable {
 		delete_port_mapping(mapping, transport);
 	};
 
