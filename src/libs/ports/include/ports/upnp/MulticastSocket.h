@@ -49,6 +49,7 @@ public:
     void send(std::shared_ptr<std::vector<std::uint8_t>> buffer);
 	void send(std::shared_ptr<std::vector<std::uint8_t>> buffer, ba::ip::udp::endpoint);
     void set_callbacks(OnReceive&& rcv);
+	std::string local_address() const;
 	void close();
 };
 

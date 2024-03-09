@@ -30,6 +30,9 @@ public:
 
 	rapidxml::xml_node<char>* locate_device(const std::string& type);
 	rapidxml::xml_node<char>* locate_service(const std::string& type);
+
+	std::optional<std::string> get_node_value(const std::string& service,
+	                                          const std::string& node_name);
 };
 
 } // upnp, ports, ember

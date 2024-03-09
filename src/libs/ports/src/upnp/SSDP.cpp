@@ -43,11 +43,17 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram) {
 		return;
 	}
 
-	auto location = std::string(header.fields["Location"]); // todo
-	auto service = std::string(header.fields["ST"]); // todo
+	auto location = std::string(header.fields["Location"]);
+	auto service = std::string(header.fields["ST"]);
+
+	if(location.empty() || service.empty()) {
+		return;
+	}
 
 	try {
-		auto device = std::make_shared<IGDevice>(ctx_, location, service);
+		auto bind = transport_.local_address();
+		auto device = std::make_shared<IGDevice>(ctx_, std::move(bind), service, location);
+
 		const bool call_again = handler_(std::move(header), std::move(device));
 
 		if(!call_again) {

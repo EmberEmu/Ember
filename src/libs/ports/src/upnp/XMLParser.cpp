@@ -81,4 +81,21 @@ rapidxml::xml_node<char>* XMLParser::locate_service(const std::string& type) {
 	return service_search(visitor.devices, type);
 }
 
+std::optional<std::string> XMLParser::get_node_value(const std::string& service,
+                                                     const std::string& node_name) {
+	auto service_node = locate_service(service);
+
+	if(!service_node) {
+		return std::nullopt;
+	}
+
+	auto node = service_node->first_node(node_name.c_str(), 0, false);
+
+	if(!node  || !node ->value()) {
+		return std::nullopt;
+	}
+
+	return node->value();
+}
+
 } // upnp, ports, ember

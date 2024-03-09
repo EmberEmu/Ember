@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <ports/upnp/Utility.h>
 #include <regex>
 #include <string>
 #include <string_view>
@@ -37,7 +38,8 @@ struct HTTPHeader {
 	using Field = std::pair<std::string_view, std::string_view>;
 	HTTPResponseCode code;
 	std::string_view text;
-	std::unordered_map<std::string_view, std::string_view> fields;
+	std::unordered_map<std::string_view, std::string_view,
+		CaseInsensitive::Hash, CaseInsensitive::Comparator> fields;
 };
 
 enum class ParseState {
@@ -111,7 +113,7 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
   This exists because string_view isn't guaranteed to be null-terminated,
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
-static int sv_to_int(std::string_view string) {
+static int sv_to_int(const std::string_view string) {
 	int value = 0;
 	auto length = string.length();
 	auto data = string.data();

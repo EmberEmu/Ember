@@ -81,7 +81,7 @@ void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
 	socket_.async_send_to(ba_buf, ep,
 		[buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
 			if(ec) {
-				std::cout << ec.what();
+				// todo
 			}
 		}
 	);
@@ -99,6 +99,10 @@ void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
+}
+
+std::string MulticastSocket::local_address() const {
+	return socket_.local_endpoint().address().to_string();
 }
 
 } // ports, ember
