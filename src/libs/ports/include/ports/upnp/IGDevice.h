@@ -44,14 +44,18 @@ enum class ActionState {
 };
 
 struct ActionRequest {
-	using Handler = std::function<void()>;
-	std::shared_ptr<HTTPTransport> transport;
+	using Handler = std::function<void(HTTPTransport&)>;
+	std::unique_ptr<HTTPTransport> transport;
 	ActionState state = ActionState::DEV_DESC_CACHE;
 	Handler handler;
 	std::string name;
 };
 
 class IGDevice : public std::enable_shared_from_this<IGDevice> {
+public:
+	using Result = std::function<void()>;
+
+private:
 	boost::asio::io_context& ctx_;
 
 	// device info
@@ -98,8 +102,8 @@ public:
 	IGDevice& operator=(IGDevice&) = default;
 	IGDevice& operator=(IGDevice&&) = default;
 
-	void map_port(Mapping mapping);
-	void unmap_port(Mapping mapping);
+	void map_port(Mapping mapping, Result cb);
+	void unmap_port(Mapping mapping, Result cb);
 
 	const std::string& host() const;
 };

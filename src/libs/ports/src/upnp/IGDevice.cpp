@@ -213,7 +213,7 @@ void IGDevice::process_request(std::shared_ptr<ActionRequest> request) {
 }
 
 void IGDevice::execute_request(std::shared_ptr<ActionRequest> request) {
-	request->handler();
+	request->handler(*request->transport);
 }
 
 void IGDevice::on_connection_error(const boost::system::error_code& ec,
@@ -236,6 +236,11 @@ void IGDevice::handle_scpd(const HTTPHeader& header, std::string_view body) {
 
 void IGDevice::on_response(const HTTPHeader& header, const std::span<const char> buffer,
                            std::shared_ptr<ActionRequest> request) {
+	if(header.code != HTTPResponseCode::HTTP_OK) {
+		// todo
+		return;
+	}
+
 	const auto length = sv_to_int(header.fields.at("Content-Length")); // todo
 	const std::string_view body { buffer.end() - length, buffer.end() };
 
@@ -322,7 +327,7 @@ bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 		mapping.internal_ip = transport.local_endpoint().address().to_string();
 	}
 
-	auto body = build_upnp_del_mapping(mapping);
+	auto body = build_upnp_add_mapping(mapping);
 	auto request = build_http_post_request(std::move(body), "AddPortMapping", *post_uri);
 
 	std::vector<std::uint8_t> buffer(request.size());
@@ -331,15 +336,15 @@ bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	return true;
 }
 
-void IGDevice::map_port(Mapping mapping) {
-	auto transport = std::make_shared<HTTPTransport>(ctx_, "0.0.0.0"); // todo
-
-	auto handler = [=, shared_from_this(this)]() mutable {
-		add_port_mapping(mapping, *transport);
+void IGDevice::map_port(Mapping mapping, Result cb) {
+	auto handler = [=, shared_from_this(this)](HTTPTransport& transport) mutable {
+		add_port_mapping(mapping, transport);
 	};
 
-	ActionRequest request{
-		.transport = transport,
+	auto transport = std::make_unique<HTTPTransport>(ctx_, "0.0.0.0"); // todo
+
+	ActionRequest request {
+		.transport = std::move(transport),
 		.handler = std::move(handler),
 		.name = "AddPortMapping"
 	};
@@ -348,14 +353,14 @@ void IGDevice::map_port(Mapping mapping) {
 	launch_request(std::move(request_ptr));
 }
 
-void IGDevice::unmap_port(Mapping mapping) {
-	auto transport = std::make_shared<HTTPTransport>(ctx_, "0.0.0.0"); // todo
+void IGDevice::unmap_port(Mapping mapping, Result cb) {
+	auto transport = std::make_unique<HTTPTransport>(ctx_, "0.0.0.0"); // todo
 
-	auto handler = [=, shared_from_this(this)]() mutable {
-		delete_port_mapping(mapping, *transport);
+	auto handler = [=, shared_from_this(this)](HTTPTransport& transport) mutable {
+		delete_port_mapping(mapping, transport);
 	};
 
-	ActionRequest request{
+	ActionRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
 		.name = "DeletePortMapping"
