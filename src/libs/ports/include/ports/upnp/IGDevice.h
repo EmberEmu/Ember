@@ -21,11 +21,16 @@
 
 namespace ember::ports::upnp {
 
+enum class Protocol {
+	PROTO_TCP, PROTO_UDP
+};
+
 struct Mapping {
 	std::uint16_t external;
 	std::uint16_t internal;
 	std::uint32_t ttl;
 	std::string internal_ip;
+	Protocol protocol;
 };
 
 struct UPnPActionArgs {
@@ -61,19 +66,26 @@ class IGDevice : public std::enable_shared_from_this<IGDevice> {
 	std::chrono::steady_clock::time_point scpd_cc_;
 	std::unique_ptr<XMLParser> dev_desc_xml_;
 
+	std::string build_upnp_action(const Mapping& mapping);
+	std::string build_http_post_request(std::string&& body,
+	                                    const std::string& action,
+	                                    const std::string& control_url);
 	void parse_location(const std::string& location);
-	void launch_request(ActionRequest&& request);
-	void process_request(ActionRequest&& request);
-	void fetch_device_description(ActionRequest&& request);
+	void launch_request(std::shared_ptr<ActionRequest> request);
+	void process_request(std::shared_ptr<ActionRequest> request);
+	void fetch_device_description(std::shared_ptr<ActionRequest> request);
 	void handle_dev_desc(const HTTPHeader& header, const std::string_view xml);
-	void execute_request(ActionRequest&& request);
-	std::vector<std::uint8_t> build_add_map_action(const Mapping& mapping, const std::string& ip);
-	void do_port_mapping(const Mapping& mapping, HTTPTransport& transport);
-
+	void execute_request(std::shared_ptr<ActionRequest> request);
+	std::optional<std::string> get_node_value(const std::string& service, const std::string& node);
+	bool add_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	bool delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	void fetch_scpd(std::shared_ptr<ActionRequest> request);
+	void handle_scpd(const HTTPHeader& header, std::string_view body);
+	
 	// todo, HTTPResponse
 	void on_response(const HTTPHeader& header, std::span<const char> buffer,
-	                 ActionRequest request);
-	void on_connection_error(const boost::system::error_code& ec, ActionRequest request);
+	                 std::shared_ptr<ActionRequest> request);
+	void on_connection_error(const boost::system::error_code& ec, std::shared_ptr<ActionRequest> request);
 
 	std::string build_http_request(const HTTPRequest& request);
 	std::string build_soap_request(const UPnPActionArgs& args);
@@ -85,8 +97,8 @@ public:
 	IGDevice& operator=(IGDevice&) = default;
 	IGDevice& operator=(IGDevice&&) = default;
 
-	void map_port(const Mapping& mapping);
-	void unmap_port(std::uint16_t external_port);
+	void map_port(Mapping mapping);
+	void unmap_port(Mapping mapping);
 
 	const std::string& host() const;
 };
