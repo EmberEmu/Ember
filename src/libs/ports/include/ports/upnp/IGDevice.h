@@ -66,7 +66,8 @@ class IGDevice : public std::enable_shared_from_this<IGDevice> {
 	std::chrono::steady_clock::time_point scpd_cc_;
 	std::unique_ptr<XMLParser> dev_desc_xml_;
 
-	std::string build_upnp_action(const Mapping& mapping);
+	std::string build_upnp_add_mapping(const Mapping& mapping);
+	std::string build_upnp_del_mapping(const Mapping& mapping);
 	std::string build_http_post_request(std::string&& body,
 	                                    const std::string& action,
 	                                    const std::string& control_url);

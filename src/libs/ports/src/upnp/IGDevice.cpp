@@ -82,7 +82,7 @@ std::string IGDevice::build_http_request(const HTTPRequest& request) {
 	return output;
 }
 
-std::string IGDevice::build_upnp_action(const Mapping& mapping) {
+std::string IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
 	std::string protocol = mapping.protocol == Protocol::PROTO_TCP? "TCP" : "UDP";
 
 	const UPnPActionArgs args {
@@ -97,12 +97,28 @@ std::string IGDevice::build_upnp_action(const Mapping& mapping) {
 			{"NewRemoteHost",     "0"},
 			{"NewInternalClient", mapping.internal_ip},
 			{"NewPortMappingDescription", "Ember"},
-	}
+		}
 	};
 
-	auto body = build_soap_request(args);
-	return body;
+	return build_soap_request(args);
 }
+
+std::string IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
+	std::string protocol = mapping.protocol == Protocol::PROTO_TCP? "TCP" : "UDP";
+
+	const UPnPActionArgs args {
+		.action = "DeletePortMapping",
+		.service = service_,
+		.arguments {
+			{"NewExternalPort",   std::to_string(mapping.external)},
+			{"NewProtocol",       protocol},
+			{"NewRemoteHost",     "0"},	
+		}
+	};
+
+	return build_soap_request(args);
+}
+
 std::string IGDevice::build_http_post_request(std::string&& body,
                                               const std::string& action,
                                               const std::string& control_url) {
@@ -120,9 +136,8 @@ std::string IGDevice::build_http_post_request(std::string&& body,
 		},
 		.body = std::move(body)
 	};
-	
-	auto built = build_http_request(request);
-	return built;
+
+	return build_http_request(request);;
 }
 
 const std::string& IGDevice::host() const {
@@ -279,7 +294,19 @@ std::optional<std::string> IGDevice::get_node_value(const std::string& service,
 }
 
 bool IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
-	return false;
+	auto post_uri = get_node_value(service_, "controlURL");
+
+	if(!post_uri) {
+		return false;
+	}
+
+	auto body = build_upnp_del_mapping(mapping);
+	auto request = build_http_post_request(std::move(body), "DeletePortMapping", *post_uri);
+
+	std::vector<std::uint8_t> buffer(request.size());
+	std::copy(request.begin(), request.end(), buffer.data());
+	transport.send(std::move(buffer));
+	return true;
 }
 
 bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
@@ -295,7 +322,7 @@ bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 		mapping.internal_ip = transport.local_endpoint().address().to_string();
 	}
 
-	auto body = build_upnp_action(mapping);
+	auto body = build_upnp_del_mapping(mapping);
 	auto request = build_http_post_request(std::move(body), "AddPortMapping", *post_uri);
 
 	std::vector<std::uint8_t> buffer(request.size());
