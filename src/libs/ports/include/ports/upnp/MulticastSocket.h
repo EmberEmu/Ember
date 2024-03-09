@@ -10,6 +10,7 @@
 
 #include <boost/asio.hpp>
 #include <array>
+#include <expected>
 #include <functional>
 #include <memory>
 #include <span>
@@ -22,32 +23,25 @@ namespace ember::ports {
 namespace ba = boost::asio;
 
 class MulticastSocket final {
-	using OnReceive = std::function<void(std::span<const std::uint8_t>,
-	                                     const boost::asio::ip::udp::endpoint&)>;
-
     std::array<std::uint8_t, 4096> buffer_;
 
     ba::io_context& context_;
     ba::ip::udp::socket socket_;
     ba::ip::udp::endpoint ep_, remote_ep_;
-	
-	OnReceive rcv_handler_{};
-
-    void receive();
-    void handle_datagram(std::span<const std::uint8_t> datagram,
-	                     const boost::asio::ip::udp::endpoint& ep);
 
 public:
+	using ReceiveType = std::expected<std::span<std::uint8_t>, boost::system::error_code>;
+
     MulticastSocket(boost::asio::io_context& context,
                     const std::string& listen_addr,
                     const std::string& mcast_group,
                     std::uint16_t port);
 
-	void send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint);
-	void send(std::vector<std::uint8_t> buffer);
-    void send(std::shared_ptr<std::vector<std::uint8_t>> buffer);
-	void send(std::shared_ptr<std::vector<std::uint8_t>> buffer, ba::ip::udp::endpoint);
-    void set_callbacks(OnReceive&& rcv);
+	ba::awaitable<bool> send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint);
+	ba::awaitable<bool> send(std::vector<std::uint8_t> buffer);
+	ba::awaitable<bool> send(std::shared_ptr<std::vector<std::uint8_t>> buffer);
+	ba::awaitable<bool> send(std::shared_ptr<std::vector<std::uint8_t>> buffer, ba::ip::udp::endpoint);
+	ba::awaitable<ReceiveType> receive();
 	std::string local_address() const;
 	void close();
 };

@@ -31,67 +31,54 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context, const std::st
 
 	socket_.set_option(join_opt);
 	socket_.bind(ep);
-    receive();
+	ba::co_spawn(context_, receive(), ba::detached);
 }
 
-void MulticastSocket::receive() {
+auto MulticastSocket::receive() -> ba::awaitable<ReceiveType> {
 	if(!socket_.is_open()) {
-		return;
+		co_return std::unexpected(ba::error::not_connected);
 	}
 
-	socket_.async_receive_from(boost::asio::buffer(buffer_.data(), buffer_.size()), remote_ep_,
-        [this](const boost::system::error_code& ec, const std::size_t size) {
-            if(ec && ec == boost::asio::error::operation_aborted) {
-		        return;
-	        }
+	auto buffer = boost::asio::buffer(buffer_.data(), buffer_.size());
+	auto [ec, size] = co_await socket_.async_receive_from(buffer, remote_ep_, as_tuple(ba::use_awaitable));
 
-	        if(!ec) {
-		        handle_datagram({buffer_.data(), size}, remote_ep_);
-	        }
+	if(ec) {
+		co_return std::unexpected(ec);
+	}
 
-	        receive();
-        }
-    );
+	co_return std::span{ buffer_.data(), size };
 }
 
-void MulticastSocket::handle_datagram(std::span<const std::uint8_t> datagram,
-                                      const boost::asio::ip::udp::endpoint& ep) {
-	rcv_handler_(datagram, ep);
-}
-
-void MulticastSocket::send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint ep) {
+ba::awaitable<bool> MulticastSocket::send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint ep) {
 	auto ptr = std::make_shared<decltype(buffer)>(std::move(buffer));
-	send(std::move(ptr), ep);
+	co_return co_await send(std::move(ptr), ep);
 }
 
-void MulticastSocket::send(std::vector<std::uint8_t> buffer) {
+ba::awaitable<bool> MulticastSocket::send(std::vector<std::uint8_t> buffer) {
 	auto ptr = std::make_shared<decltype(buffer)>(std::move(buffer));
-	send(std::move(ptr));
+	co_return co_await send(std::move(ptr));
 }
 
-void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
-                           ba::ip::udp::endpoint ep) {
+ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
+                                          ba::ip::udp::endpoint ep) {
 	if(!socket_.is_open()) {
-		return;
+		co_return false;
 	}
 
 	const auto ba_buf = boost::asio::buffer(*buffer);
 
-	socket_.async_send_to(ba_buf, ep,
-		[&, buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
-			if(ec) {
-				socket_.close();
-			}
-		}
-	);
+	auto [ec, size] = co_await socket_.async_send_to(ba_buf, ep, as_tuple(ba::use_awaitable));
+
+	if(ec) {
+		socket_.close();
+		co_return false;
+	}
+
+	co_return true;
 }
 
-void MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer) {
-	send(std::move(buffer), ep_);
-}
-
-void MulticastSocket::set_callbacks(OnReceive&& rcv) {
-	rcv_handler_ = rcv;
+ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer) {
+	co_return co_await send(std::move(buffer), ep_);
 }
 
 void MulticastSocket::close() {

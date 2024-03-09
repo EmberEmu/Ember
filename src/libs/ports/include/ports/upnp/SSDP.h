@@ -42,7 +42,8 @@ private:
 												 const int version);
 
 	void process_message(std::span<const std::uint8_t> datagram);
-	void start_ssdp_search(std::string_view type, std::string_view subtype, int version);
+	ba::awaitable<void> start_ssdp_search(std::string_view type, std::string_view subtype, int version);
+	ba::awaitable<void> read_broadcasts();
 
 public:
 	SSDP(const std::string& bind, boost::asio::io_context& ctx);

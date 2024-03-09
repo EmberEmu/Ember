@@ -15,12 +15,16 @@ namespace ember::ports::upnp {
 SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 	: ctx_(ctx), strand_(ctx),
 	  transport_(ctx, bind, MULTICAST_IPV4_ADDR, DEST_PORT) {
-	transport_.set_callbacks(strand_.wrap(
-		[&](std::span<const std::uint8_t> datagram,
-		    const boost::asio::ip::udp::endpoint&) {
-			process_message(datagram);
-		})
-	);
+	ba::co_spawn(ctx_, read_broadcasts(), ba::detached);
+}
+
+ba::awaitable<void> SSDP::read_broadcasts() {
+	auto result = co_await transport_.receive();
+
+	if(result) {
+		process_message(*result);
+		ba::co_spawn(ctx_, read_broadcasts(), ba::detached);
+	}
 }
 
 void SSDP::process_message(std::span<const std::uint8_t> datagram) {
@@ -78,17 +82,17 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
 	return buffer;
 }
 
-void SSDP::start_ssdp_search(std::string_view type, std::string_view subtype, const int version) {
+ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type, std::string_view subtype, const int version) {
 	auto buffer = build_ssdp_request(type, subtype, version);
-	transport_.send(std::move(buffer));
+	co_await transport_.send(std::move(buffer));
 }
 
 void SSDP::locate_gateways(LocateHandler&& handler) {
 	handler_ = handler;
 
 	strand_.post([&]() {
-		start_ssdp_search("service", "WANIPConnection", 1);
-		start_ssdp_search("service", "WANIPConnection", 2);
+		ba::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 1), ba::detached);
+		ba::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 2), ba::detached);
 	});
 }
 
