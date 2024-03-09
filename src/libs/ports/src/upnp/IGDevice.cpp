@@ -142,7 +142,7 @@ BufType IGDevice::build_http_post_request(std::string&& body, const std::string&
 	return build_http_request<BufType>(request);
 }
 
-void IGDevice::fetch_device_description(std::shared_ptr<UPnPRequest> request) {
+ba::awaitable<void> IGDevice::request_device_description(std::shared_ptr<UPnPRequest> request) {
 	HTTPRequest http_req{
 		.method = "GET",
 		.url = dev_desc_uri_,
@@ -154,16 +154,14 @@ void IGDevice::fetch_device_description(std::shared_ptr<UPnPRequest> request) {
 	};
 
 	auto buffer = build_http_request<std::vector<std::uint8_t>>(http_req);
-	request->transport->send(std::move(buffer));
+	co_await request->transport->send(std::move(buffer));
 }
 
-void IGDevice::fetch_scpd(std::shared_ptr<UPnPRequest> request) {
+ba::awaitable<void> IGDevice::request_scpd(std::shared_ptr<UPnPRequest> request) {
 	auto scpd_uri = igdd_xml_->get_node_value(service_, "SCPDURL");
 
 	if(!scpd_uri) {
-		request->callback(false);
-		request->transport.reset();
-		return;
+		throw std::invalid_argument("Missing SCPDURL");
 	}
 
 	HTTPRequest http_req{
@@ -177,121 +175,83 @@ void IGDevice::fetch_scpd(std::shared_ptr<UPnPRequest> request) {
 	};
 
 	auto buffer = build_http_request<std::vector<std::uint8_t>>(http_req);
-	request->transport->send(std::move(buffer));
+	co_await request->transport->send(std::move(buffer));
 }
 
-void IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
-	const auto time = std::chrono::steady_clock::now();
+ba::awaitable<void> IGDevice::refresh_scpd(std::shared_ptr<UPnPRequest> request) {
+	co_await request_scpd(request);
+	const auto response = co_await request->transport->receive_http_response();
+	const auto body = http_body_from_response(response);
+	const auto& [header, buffer] = response;
 
-	// We're controlling the state here rather than just checking the cache
-	// values because we want to avoid a scenario where a device sets a low
-	// cache-control value, triggering an infinite GET loop
-	if(request->state == UPnPRequest::State::IGDD_CACHE) {
-		if(time > igdd_cc_) {
-			fetch_device_description(request);
-		} else {
-			request->state = UPnPRequest::State::SCPD_CACHE;
-		}
+	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
+		const auto value = sv_to_int(field->second);
+		scpd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
+	} else {
+		scpd_cc_ = std::chrono::steady_clock::now();
 	}
 
-	if(request->state == UPnPRequest::State::SCPD_CACHE) {
-		if(time > scpd_cc_) {
-			fetch_scpd(request);
-		} else {
-			request->state = UPnPRequest::State::ACTION;
-		}
-	}
-
-	if(request->state == UPnPRequest::State::ACTION) {
-		execute_request(std::move(request));
-	}
+	// we don't actually care about this XML but we might in the future (x to doubt)
+	scpd_xml_ = std::move(std::make_unique<XMLParser>(body));
 }
 
-void IGDevice::execute_request(std::shared_ptr<UPnPRequest> request) {
-	request->handler(*request->transport);
-}
+std::string_view IGDevice::http_body_from_response(const HTTPTransport::Response& response) {
+	const auto& [header, buffer] = response;
 
-void IGDevice::on_connection_error(const boost::system::error_code& ec,
-								   std::shared_ptr<UPnPRequest> request) {
-	if(ec) {
-		request->callback(false);
-		request->transport.reset();
-	}
-}
-
-void IGDevice::handle_igdd(const HTTPHeader& header, const std::string_view xml) {
-	igdd_xml_ = std::move(std::make_unique<XMLParser>(xml));
-	igdd_cc_ = std::chrono::steady_clock::now();
-}
-
-void IGDevice::handle_scpd(const HTTPHeader& header, std::string_view body) {
-	scpd_cc_ = std::chrono::steady_clock::now();
-}
-
-void IGDevice::process_action_result(const HTTPHeader& header,
-									 std::shared_ptr<UPnPRequest> request) {
-	request->callback(header.code == HTTPResponseCode::HTTP_OK);
-	request->transport.reset();
-}
-
-void IGDevice::on_response(const HTTPHeader& header, const std::span<const char> buffer,
-						   std::shared_ptr<UPnPRequest> request) try {
 	if(header.code != HTTPResponseCode::HTTP_OK 
 	   || header.fields.find("Content-Length") == header.fields.end()) {
-		request->callback(false);
-		request->transport.reset();
-		return;
+		throw std::invalid_argument("Bad HTTP response");
 	}
 
 	const auto length = sv_to_int(header.fields.at("Content-Length"));
 	const std::string_view body { buffer.end() - length, buffer.end() };
+	return body;
+}
 
-	switch(request->state) {
-		case UPnPRequest::State::IGDD_CACHE:
-			handle_igdd(header, body);
-			request->state = UPnPRequest::State::SCPD_CACHE;
-			process_request(std::move(request));
-			break;
-		case UPnPRequest::State::SCPD_CACHE:
-			handle_scpd(header, body);
-			request->state = UPnPRequest::State::ACTION;
-			process_request(std::move(request));
-			break;
-		case UPnPRequest::State::ACTION:
-			process_action_result(header, std::move(request));
-			break;
+ba::awaitable<void> IGDevice::refresh_igdd(std::shared_ptr<UPnPRequest> request) {
+	co_await request_device_description(request);
+	const auto response = co_await request->transport->receive_http_response();
+	const auto& [header, buffer] = response;
+	const auto body = http_body_from_response(response);
+
+	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
+		const auto value = sv_to_int(field->second);
+		igdd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
+	} else {
+		igdd_cc_ = std::chrono::steady_clock::now();
 	}
+	
+	igdd_xml_ = std::move(std::make_unique<XMLParser>(body));
+}
+
+ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) try {
+	const auto time = std::chrono::steady_clock::now();
+
+	if(time > igdd_cc_) {
+		co_await refresh_igdd(request);
+	}
+
+	if(time > scpd_cc_) {
+		co_await refresh_scpd(request);
+	}
+
+	auto result = co_await request->handler(*request->transport);;
+	request->callback(result);
 } catch(std::exception&) {
 	request->callback(false);
-	request->transport.reset();
 }
 
-void IGDevice::launch_request(std::shared_ptr<UPnPRequest> request) {
+ba::awaitable<void> IGDevice::launch_request(std::shared_ptr<UPnPRequest> request) {
 	auto shared = shared_from_this();
-
-	request->transport->set_callbacks(
-		[&, shared, request](const HTTPHeader& header, std::span<const char> buffer) {
-			on_response(header, buffer, request);
-		},
-		[&, shared, request](const boost::system::error_code& ec) {
-			on_connection_error(ec, request);
-		}
-	);
-
-	request->transport->connect(hostname_, port_,
-		[&, request, shared](const boost::system::error_code& ec) mutable {
-			if(!ec) {
-				process_request(request);
-			}
-		}
-	);
+	co_await request->transport->connect(hostname_, port_);
+	co_await process_request(request);
 }
 
-bool IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<bool> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		return false;
+		co_return false;
 	}
 
 	auto body = build_upnp_del_mapping(mapping);
@@ -299,15 +259,15 @@ bool IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 		std::move(body), "DeletePortMapping", *post_uri
 	);
 
-	transport.send(std::move(request));
-	return true;
+	co_await transport.send(std::move(request));
+	co_return true;
 }
 
-bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<bool> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		return false;
+		co_return false;
 	}
 
 	std::string internal_ip = mapping.internal_ip;
@@ -321,13 +281,15 @@ bool IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 		std::move(body), "AddPortMapping", *post_uri
 	);
 
-	transport.send(std::move(request));
-	return true;
+	co_await transport.send(std::move(request));
+	co_return true;
 }
 
 void IGDevice::map_port(Mapping mapping, Result cb) {
-	auto handler = [=, this, shared_from_this(this)](HTTPTransport& transport) mutable {
-		add_port_mapping(mapping, transport);
+	auto shared = shared_from_this();
+
+	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<bool> {
+		co_return co_await add_port_mapping(mapping, transport);
 	};
 
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
@@ -340,15 +302,21 @@ void IGDevice::map_port(Mapping mapping, Result cb) {
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	launch_request(std::move(request_ptr));
+	auto executor = ctx_.get_executor();
+
+	boost::asio::dispatch(executor, [=, this]() mutable {
+		ba::co_spawn(ctx_, launch_request(request_ptr), ba::detached);
+	});
 }
 
 void IGDevice::unmap_port(Mapping mapping, Result cb) {
-	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
+	auto shared = shared_from_this();
 
-	auto handler = [=, this, shared_from_this(this)](HTTPTransport& transport) mutable {
-		delete_port_mapping(mapping, transport);
+	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<bool> {
+		co_return co_await delete_port_mapping(mapping, transport);
 	};
+
+	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
 
 	UPnPRequest request {
 		.transport = std::move(transport),
@@ -358,7 +326,11 @@ void IGDevice::unmap_port(Mapping mapping, Result cb) {
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	launch_request(std::move(request_ptr));
+	auto executor = ctx_.get_executor();
+
+	boost::asio::dispatch(executor, [=, this]() mutable {
+		ba::co_spawn(ctx_, launch_request(request_ptr), ba::detached);
+	});
 }
 
 const std::string& IGDevice::host() const {

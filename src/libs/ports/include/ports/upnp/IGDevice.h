@@ -44,14 +44,9 @@ struct UPnPActionArgs {
 using Result = std::function<void(bool)>;
 
 struct UPnPRequest {
-	using Handler = std::function<void(HTTPTransport&)>;
-
-	enum class State {
-		IGDD_CACHE, SCPD_CACHE, ACTION
-	};
+	using Handler = std::function<ba::awaitable<bool>(HTTPTransport&)>;
 
 	std::unique_ptr<HTTPTransport> transport;
-	State state = State::IGDD_CACHE;
 	Handler handler;
 	std::string name;
 	Result callback;
@@ -73,25 +68,21 @@ private:
 	std::chrono::steady_clock::time_point igdd_cc_;
 	std::chrono::steady_clock::time_point scpd_cc_;
 	std::unique_ptr<XMLParser> igdd_xml_;
+	std::unique_ptr<XMLParser> scpd_xml_;
 
-	bool add_port_mapping(Mapping& mapping, HTTPTransport& transport);
-	bool delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<void> refresh_scpd(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> refresh_igdd(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<bool> add_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<bool> delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	void handle_scpd(const HTTPHeader& header, std::string_view body);
-	void handle_igdd(const HTTPHeader& header, const std::string_view xml);
 	void parse_location(const std::string& location);
-	void fetch_scpd(std::shared_ptr<UPnPRequest> request);
-	void fetch_device_description(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> request_scpd(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> request_device_description(std::shared_ptr<UPnPRequest> request);
 
-	void launch_request(std::shared_ptr<UPnPRequest> request);
-	void execute_request(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> launch_request(std::shared_ptr<UPnPRequest> request);
 	void process_action_result(const HTTPHeader& header, std::shared_ptr<UPnPRequest> request);
-	void process_request(std::shared_ptr<UPnPRequest> request);
-
-	void on_response(const HTTPHeader& header, std::span<const char> buffer,
-	                 std::shared_ptr<UPnPRequest> request);
-
-	void on_connection_error(const boost::system::error_code& ec,
-	                         std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
+	std::string_view http_body_from_response(const HTTPTransport::Response& response);
 
 	template<typename BufType>
 	BufType build_http_post_request(std::string&& body, const std::string& action,
@@ -99,7 +90,6 @@ private:
 
 	template<typename BufType>
 	BufType build_http_request(const HTTPRequest& request);
-
 	std::string build_soap_request(const UPnPActionArgs& args);
 	std::string build_upnp_add_mapping(const Mapping& mapping);
 	std::string build_upnp_del_mapping(const Mapping& mapping);

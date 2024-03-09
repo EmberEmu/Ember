@@ -9,97 +9,80 @@
 #include <ports/upnp/HTTPTransport.h>
 #include <ports/upnp/HTTPHeaderParser.h>
 #include <ports/upnp/Utility.h>
+#include <stdexcept>
 
 namespace ember::ports::upnp {
 
 HTTPTransport::HTTPTransport(ba::io_context& ctx, const std::string& bind)
 	: socket_(ctx, ba::ip::tcp::endpoint(ba::ip::address::from_string(bind), 0)),
-	  resolver_(ctx),
-	  timeout_(ctx) {
+	resolver_(ctx),
+	timeout_(ctx) {
 	buffer_.resize(INITIAL_BUFFER_SIZE);
 }
 
 HTTPTransport::~HTTPTransport() {
-	socket_.close();
+	boost::system::error_code ec; // we don't care about any errors
+	socket_.close(ec);
 }
 
-void HTTPTransport::connect(std::string_view host, const std::uint16_t port, OnConnect&& cb) {
-	resolver_.async_resolve(std::string(host), std::to_string(port),
-		[&, cb = std::move(cb)](const boost::system::error_code& ec,
-		        ba::ip::tcp::resolver::results_type results) mutable {
-			if(!ec) {
-				do_connect(std::move(results), std::move(cb));
-			} else {
-				cb(ec);
-			}
-		}
-	);
+ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uint16_t port) {
+	auto results = co_await resolver_.async_resolve(std::string(host),
+													std::to_string(port),
+													ba::use_awaitable);
+	co_await boost::asio::async_connect(socket_, results.begin(), results.end(), ba::use_awaitable);
 }
 
-void HTTPTransport::do_connect(ba::ip::tcp::resolver::results_type results, OnConnect&& cb) {
-	boost::asio::async_connect(socket_, results.begin(), results.end(),
-		[&, cb = std::move(cb), results](const boost::system::error_code& ec,
-		                                 ba::ip::tcp::resolver::iterator) {
-			cb(ec);
-		}
-	);
+ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
+	auto buffer = boost::asio::buffer(message->data(), message->size());
+	co_await ba::async_write(socket_, buffer, as_tuple(ba::use_awaitable));
 }
 
-void HTTPTransport::do_write() {
-	auto data = std::move(queue_.front());
-	auto buffer = boost::asio::buffer(data->data(), data->size());
-	queue_.pop();
-
-	ba::async_write(socket_, buffer,
-		[this, d = std::move(data)](boost::system::error_code ec, std::size_t /*sent*/) {
-			if(ec == boost::asio::error::operation_aborted) {
-				return;
-			} else if(ec) {
-				err_cb_(ec);
-				return;
-			}
-
-			if(!queue_.empty()) {
-				do_write();
-			} else {
-				buffer_.resize(INITIAL_BUFFER_SIZE);
-;				read(0);
-			}
-		}
-	);
-}
-
-void HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	queue_.emplace(std::move(message));
-
-	if(queue_.size() == 1) {
-		do_write();
-	}
-}
-
-void HTTPTransport::send(std::vector<std::uint8_t> message) {
+ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-	send(std::move(data));
+	auto buffer = boost::asio::buffer(data->data(), data->size());
+	co_await ba::async_write(socket_, buffer, as_tuple(ba::use_awaitable));
 }
 
-void HTTPTransport::receive(const std::size_t total_read) {
-	HTTPHeader header;
+auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
+	start_timer();
+
+	bool complete = false;
+	std::size_t total_read = 0;
+	// Check header completion
+	do {
+		total_read += co_await read(total_read);
+		complete = http_headers_completion(total_read);
+	} while(!complete);
+	
 	std::string_view view(buffer_.data(), total_read);
 	constexpr std::string_view header_delim("\r\n\r\n");
 	const auto headers_end = view.find(header_delim);
+	std::string_view header_view { buffer_.data(), headers_end };
+	HTTPHeader header;
 
-	if(headers_end == std::string_view::npos) {
-		read(total_read);
-		return;
+	if(!parse_http_header(header_view, header)) {
+		throw std::invalid_argument("Bad HTTP headers");
 	}
 
-	std::string_view headers_view(buffer_.data(), headers_end);
+	// Check body completion (if present)
+	while(true) {
+		auto remaining = http_body_completion(header, total_read);
 
-	if(!parse_http_header(headers_view, header)) {
-		err_cb_(ba::error::invalid_argument);
-		return;
+		if(!remaining) {
+			break;
+		}
+
+		total_read += co_await read(total_read);
 	}
 
+	timeout_.cancel();
+	co_return std::make_pair(header, std::span(buffer_.data(), total_read));
+}
+
+std::size_t HTTPTransport::http_body_completion(const HTTPHeader& header, const std::size_t total_read) {
+	std::string_view view(buffer_.data(), total_read);
+	constexpr std::string_view header_delim("\r\n\r\n");
+	const auto headers_end = view.find(header_delim);
 	const auto length = header.fields.find("Content-Length");
 
 	if(length != header.fields.end()) {
@@ -107,16 +90,33 @@ void HTTPTransport::receive(const std::size_t total_read) {
 			+ headers_end + header_delim.size();
 		const auto remaining = expected_size - total_read;
 
-		if(remaining) {
-			read(total_read);
-		} else {
-			timeout_.cancel();
-			rcv_cb_(header, { buffer_.data(), total_read });
+		if(remaining > expected_size) {
+			return 0;
 		}
-	} else {
-		timeout_.cancel();
-		rcv_cb_(header, { buffer_.data(), total_read });
+
+		return remaining;
 	}
+	
+	return 0;
+}
+
+bool HTTPTransport::http_headers_completion(const std::size_t total_read) {
+	HTTPHeader header;
+	std::string_view view(buffer_.data(), total_read);
+	constexpr std::string_view header_delim("\r\n\r\n");
+	const auto headers_end = view.find(header_delim);
+
+	if(headers_end == std::string_view::npos) {
+		return false;
+	}
+
+	std::string_view headers_view(buffer_.data(), headers_end);
+
+	if(!parse_http_header(headers_view, header)) {
+		throw std::invalid_argument("Bad HTTP data");
+	}
+
+	return true;
 }
 
 bool HTTPTransport::buffer_resize(const std::size_t offset) {
@@ -144,27 +144,14 @@ bool HTTPTransport::buffer_resize(const std::size_t offset) {
 	return true;
 }
 
-void HTTPTransport::read(const std::size_t offset) {
+ba::awaitable<std::size_t> HTTPTransport::read(const std::size_t offset) {
 	if(!buffer_resize(offset)) {
-		err_cb_(ba::error::message_size);
+		throw std::length_error("Unable to resize HTTP response buffer");
 	}
 
 	const auto buffer = ba::buffer(buffer_.data() + offset, buffer_.size() - offset);
-	start_timer();
-
-	socket_.async_receive(buffer,
-		[this, offset](boost::system::error_code ec, std::size_t size) {
-			if(ec == ba::error::operation_aborted) {
-				return;
-			}
-
-			if(!ec) {
-				receive(size + offset);
- 			} else {
-				err_cb_(ec);
-			}
-		}
-	);
+	auto size = co_await socket_.async_receive(buffer, ba::use_awaitable);
+	co_return size;
 }
 
 void HTTPTransport::start_timer() {
@@ -175,7 +162,7 @@ void HTTPTransport::start_timer() {
 		}
 
 		if(timeout_.expiry() <= std::chrono::steady_clock::now()) {
-			err_cb_(ba::error::timed_out);
+			throw std::exception("Did not receive HTTP response in a timely manner");
 		}
 	});
 }
@@ -186,11 +173,6 @@ void HTTPTransport::close() {
 
 ba::ip::tcp::endpoint HTTPTransport::local_endpoint() const {
 	return socket_.local_endpoint();
-}
-
-void HTTPTransport::set_callbacks(OnReceive receive, OnConnectionError error) {
-	rcv_cb_ = receive;
-	err_cb_ = error;
 }
 
 bool HTTPTransport::is_open() const {

@@ -31,7 +31,10 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context, const std::st
 
 	socket_.set_option(join_opt);
 	socket_.bind(ep);
-	ba::co_spawn(context_, receive(), ba::detached);
+}
+
+MulticastSocket::~MulticastSocket() {
+	close();
 }
 
 auto MulticastSocket::receive() -> ba::awaitable<ReceiveType> {

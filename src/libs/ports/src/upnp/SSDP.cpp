@@ -19,11 +19,13 @@ SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 }
 
 ba::awaitable<void> SSDP::read_broadcasts() {
-	auto result = co_await transport_.receive();
+	while(true) {
+		auto result = co_await transport_.receive();
 
-	if(result) {
-		process_message(*result);
-		ba::co_spawn(ctx_, read_broadcasts(), ba::detached);
+		if(result) {
+			process_message(*result);
+			continue;
+		}
 	}
 }
 

@@ -36,6 +36,7 @@ public:
                     const std::string& listen_addr,
                     const std::string& mcast_group,
                     std::uint16_t port);
+	~MulticastSocket();
 
 	ba::awaitable<bool> send(std::vector<std::uint8_t> buffer, ba::ip::udp::endpoint);
 	ba::awaitable<bool> send(std::vector<std::uint8_t> buffer);
