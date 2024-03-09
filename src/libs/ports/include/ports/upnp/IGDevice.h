@@ -43,18 +43,18 @@ enum class ActionState {
 	DEV_DESC_CACHE, SCPD_CACHE, ACTION, DONE
 };
 
+using Result = std::function<void(bool)>;
+
 struct ActionRequest {
 	using Handler = std::function<void(HTTPTransport&)>;
 	std::unique_ptr<HTTPTransport> transport;
 	ActionState state = ActionState::DEV_DESC_CACHE;
 	Handler handler;
 	std::string name;
+	Result callback;
 };
 
 class IGDevice : public std::enable_shared_from_this<IGDevice> {
-public:
-	using Result = std::function<void()>;
-
 private:
 	boost::asio::io_context& ctx_;
 
@@ -86,7 +86,8 @@ private:
 	bool delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	void fetch_scpd(std::shared_ptr<ActionRequest> request);
 	void handle_scpd(const HTTPHeader& header, std::string_view body);
-	
+	void process_action_result(const HTTPHeader& header, std::shared_ptr<ActionRequest> request);
+
 	// todo, HTTPResponse
 	void on_response(const HTTPHeader& header, std::span<const char> buffer,
 	                 std::shared_ptr<ActionRequest> request);

@@ -165,7 +165,9 @@ void IGDevice::fetch_scpd(std::shared_ptr<ActionRequest> request) {
 	auto scpd_uri = get_node_value(service_, "SCPDURL");
 	
 	if(!scpd_uri) {
-		return; // todo
+		request->callback(false);
+		request->transport->close();
+		return;
 	}
 
 	HTTPRequest http_req {
@@ -219,7 +221,8 @@ void IGDevice::execute_request(std::shared_ptr<ActionRequest> request) {
 void IGDevice::on_connection_error(const boost::system::error_code& ec,
                                    std::shared_ptr<ActionRequest> request) {
 	if(ec) {
-		// todo
+		request->callback(false);
+		request->transport->close();
 	}
 }
 
@@ -234,10 +237,17 @@ void IGDevice::handle_scpd(const HTTPHeader& header, std::string_view body) {
 	scpd_cc_ = std::chrono::steady_clock::now();
 }
 
+void IGDevice::process_action_result(const HTTPHeader& header,
+                                     std::shared_ptr<ActionRequest> request) {
+	request->callback(header.code == HTTPResponseCode::HTTP_OK);
+	request->transport->close();
+}
+
 void IGDevice::on_response(const HTTPHeader& header, const std::span<const char> buffer,
                            std::shared_ptr<ActionRequest> request) {
 	if(header.code != HTTPResponseCode::HTTP_OK) {
-		// todo
+		request->callback(false);
+		request->transport->close();
 		return;
 	}
 
@@ -256,6 +266,7 @@ void IGDevice::on_response(const HTTPHeader& header, const std::span<const char>
 			process_request(std::move(request));
 			break;
 		case ActionState::ACTION:
+			process_action_result(header, std::move(request));
 			break;
 	}
 }
@@ -346,7 +357,8 @@ void IGDevice::map_port(Mapping mapping, Result cb) {
 	ActionRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
-		.name = "AddPortMapping"
+		.name = "AddPortMapping",
+		.callback = cb
 	};
 
 	auto request_ptr = std::make_shared<ActionRequest>(std::move(request));
@@ -363,7 +375,8 @@ void IGDevice::unmap_port(Mapping mapping, Result cb) {
 	ActionRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
-		.name = "DeletePortMapping"
+		.name = "DeletePortMapping",
+		.callback = cb
 	};
 
 	auto request_ptr = std::make_shared<ActionRequest>(std::move(request));

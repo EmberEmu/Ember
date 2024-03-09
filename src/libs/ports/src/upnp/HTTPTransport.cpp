@@ -60,7 +60,7 @@ void HTTPTransport::do_write() {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
-				//ecb_(ec);
+				err_cb_(ec);
 				return;
 			}
 
@@ -95,16 +95,22 @@ void HTTPTransport::receive(const std::size_t total_read) {
 	}
 
 	if(!parse_http_header(view, header)) {
-		// todo
+		err_cb_({}); // todo
 		return;
 	}
 
-	const auto length = header.fields["Content-Length"]; // todo, case insensitive, might not exist
-	const auto expected_size = sv_to_int(length) + headers_term + 4; // todo
-	const auto remaining = expected_size - total_read; // todo, needs a timeout
+	const auto length = header.fields.find("Content-Length"); // todo, case insensitive
 
-	if(remaining) {
-		read(total_read);
+	if(length != header.fields.end()) {
+		const auto expected_size = sv_to_int(length->second) + headers_term + 4; // todo
+		const auto remaining = expected_size - total_read; // todo, needs a timeout
+
+		if(remaining) {
+			read(total_read);
+		} else {
+			rcv_cb_(header, { buffer_.data(), total_read });
+			read(0);
+		}
 	} else {
 		rcv_cb_(header, { buffer_.data(), total_read });
 		read(0);
@@ -134,7 +140,7 @@ void HTTPTransport::read(const std::size_t offset) {
 			if(!ec) {
 				receive(size + offset);
  			} else {
-				//ecb_(ec);
+				err_cb_(ec);
 			}
 		}
 	);
