@@ -16,7 +16,8 @@ enum class ErrorCode {
 	SOAP_ARGUMENTS_MISMATCH    = 0x02,
 	HTTP_BAD_RESPONSE          = 0x80,
 	HTTP_BAD_HEADERS           = 0x81,
-	HTTP_NOT_OK                = 0x82
+	HTTP_NOT_OK                = 0x82,
+	HTTP_HEADER_FIELD_AWOL     = 0x83
 };
 
 } // upnp, ports, ember

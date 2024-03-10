@@ -61,6 +61,7 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram) {
 	auto service = std::string(header.fields["ST"]);
 
 	if(location.empty() || service.empty()) {
+		handler_(std::unexpected(ErrorCode::HTTP_HEADER_FIELD_AWOL));
 		return;
 	}
 
