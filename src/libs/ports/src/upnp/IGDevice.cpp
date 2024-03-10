@@ -43,7 +43,7 @@ void IGDevice::parse_location(const std::string& location) {
 	}
 }
 
-std::string IGDevice::build_soap_request(const UPnPActionArgs& action) {
+std::string IGDevice::build_soap_request(const UPnPActionArgs&& action) {
 	constexpr std::string_view soap =
 		R"(<?xml version="1.0"?>)" "\r\n"
 		R"(<s:Envelope)" "\r\n"
@@ -84,10 +84,10 @@ BufType IGDevice::build_http_request(const HTTPRequest& request) {
 	return output;
 }
 
-std::string IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
+UPnPActionArgs IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
 	std::string protocol = mapping.protocol == Protocol::PROTO_TCP? "TCP" : "UDP";
 
-	const UPnPActionArgs args {
+	UPnPActionArgs args {
 		.action = "AddPortMapping",
 		.service = service_,
 		.arguments {
@@ -102,13 +102,13 @@ std::string IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
 		}
 	};
 
-	return build_soap_request(args);
+	return args;
 }
 
-std::string IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
+UPnPActionArgs IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
 	std::string protocol = mapping.protocol == Protocol::PROTO_TCP? "TCP" : "UDP";
 
-	const UPnPActionArgs args {
+	UPnPActionArgs args {
 		.action = "DeletePortMapping",
 		.service = service_,
 		.arguments {
@@ -118,7 +118,7 @@ std::string IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
 		}
 	};
 
-	return build_soap_request(args);
+	return args;
 }
 
 template<typename BufType>
@@ -196,7 +196,7 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 	}
 
 	// we don't actually care about this XML but we might in the future (x to doubt)
-	scpd_xml_ = std::move(std::make_unique<XMLParser>(body));
+	scpd_xml_ = std::move(std::make_unique<SCPDXMLParser>(body));
 }
 
 std::string_view IGDevice::http_body_from_response(const HTTPTransport::Response& response) {
@@ -247,7 +247,7 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 	request->callback(result);
 } catch(boost::system::error_code&) {
 	request->callback(ErrorCode::NETWORK_FAILURE);
-} catch(std::exception&) {
+} catch(std::exception&)  {
 	request->callback(ErrorCode::HTTP_BAD_RESPONSE);
 }
 
@@ -261,10 +261,17 @@ ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTra
 	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		co_return ErrorCode::HTTP_BAD_RESPONSE;
+		co_return ErrorCode::SOAP_MISSING_URI;
 	}
 
-	auto body = build_upnp_del_mapping(mapping);
+	auto args = build_upnp_del_mapping(mapping);
+
+	if(auto result = validate_soap_arguments(args); result != ErrorCode::SUCCESS) {
+		co_return result;
+	}
+
+	auto body = build_soap_request(std::move(args));
+
 	auto request = build_http_post_request<std::vector<std::uint8_t>>(
 		std::move(body), "DeletePortMapping", *post_uri
 	);
@@ -279,20 +286,55 @@ ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTra
 	co_return ErrorCode::SUCCESS;
 }
 
+/*
+   Checks to ensure that all expected action arguments are present in what
+   we're about to send. However, we do not perform type checking.
+ */
+ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
+	const auto& expected_args = scpd_xml_->arguments(args.action, "in");
+
+	if(expected_args.empty()) {
+		return ErrorCode::SOAP_NO_ARGUMENTS;
+	}
+
+	for(const auto& arg : expected_args) {
+		bool found = false;
+
+		// didn't originally have a use for a map
+		for(const auto& [k, v]: args.arguments) {
+			if(k == arg) {
+				found = true;
+				break;
+			}
+		}
+
+		if(!found) {
+			return ErrorCode::SOAP_ARGUMENTS_MISMATCH;
+		}
+	}
+
+	return ErrorCode::SUCCESS;
+}
+
 ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		co_return ErrorCode::HTTP_BAD_RESPONSE;
+		co_return ErrorCode::SOAP_MISSING_URI;
 	}
-
-	std::string internal_ip = mapping.internal_ip;
 
 	if(mapping.internal_ip.empty()) {
 		mapping.internal_ip = transport.local_endpoint().address().to_string();
 	}
 
-	auto body = build_upnp_add_mapping(mapping);
+	auto args = build_upnp_add_mapping(mapping);
+
+	if(auto result = validate_soap_arguments(args); result != ErrorCode::SUCCESS) {
+		co_return result;
+	}
+
+	auto body = build_soap_request(std::move(args));
+
 	auto request = build_http_post_request<std::vector<std::uint8_t>>(
 		std::move(body), "AddPortMapping", *post_uri
 	);

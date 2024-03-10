@@ -11,6 +11,7 @@
 #include <ports/upnp/HTTPHeaderParser.h>
 #include <ports/upnp/HTTPTransport.h>
 #include <ports/upnp/XMLParser.h>
+#include <ports/upnp/SCPDXMLParser.h>
 #include <ports/upnp/ErrorCode.h>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
@@ -69,7 +70,7 @@ private:
 	std::chrono::steady_clock::time_point igdd_cc_;
 	std::chrono::steady_clock::time_point scpd_cc_;
 	std::unique_ptr<XMLParser> igdd_xml_;
-	std::unique_ptr<XMLParser> scpd_xml_;
+	std::unique_ptr<SCPDXMLParser> scpd_xml_;
 
 	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
 	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
@@ -79,6 +80,7 @@ private:
 	void parse_location(const std::string& location);
 	ba::awaitable<void> request_scpd(HTTPTransport& transport);
 	ba::awaitable<void> request_device_description(HTTPTransport& transport);
+	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 
 	ba::awaitable<void> launch_request(std::shared_ptr<UPnPRequest> request);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
@@ -90,9 +92,9 @@ private:
 
 	template<typename BufType>
 	BufType build_http_request(const HTTPRequest& request);
-	std::string build_soap_request(const UPnPActionArgs& args);
-	std::string build_upnp_add_mapping(const Mapping& mapping);
-	std::string build_upnp_del_mapping(const Mapping& mapping);
+	std::string build_soap_request(const UPnPActionArgs&& args);
+	UPnPActionArgs build_upnp_add_mapping(const Mapping& mapping);
+	UPnPActionArgs build_upnp_del_mapping(const Mapping& mapping);
 
 public:
 	IGDevice(boost::asio::io_context& ctx_, std::string bind,

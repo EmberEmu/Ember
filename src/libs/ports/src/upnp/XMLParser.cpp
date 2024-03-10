@@ -67,7 +67,7 @@ rapidxml::xml_node<char>* XMLParser::locate_device(const std::string& type) {
 }
 
 rapidxml::xml_node<char>* XMLParser::locate_service(const std::string& type) {
-	const auto root = parser_->first_node("root");
+	const auto root = parser_->first_node("root", 0, false);
 
 	if(!root) {
 		return nullptr;
