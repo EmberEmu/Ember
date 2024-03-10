@@ -185,8 +185,12 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 	const auto& [header, buffer] = response;
 
 	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
-		const auto value = sv_to_int(field->second);
-		scpd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
+		try {
+			const auto value = sv_to_int(split_argument(field->second, '='));
+			scpd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
+		} catch(std::invalid_argument&) {
+			scpd_cc_ = std::chrono::steady_clock::now();
+		}
 	} else {
 		scpd_cc_ = std::chrono::steady_clock::now();
 	}
@@ -215,8 +219,12 @@ ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	const auto body = http_body_from_response(response);
 
 	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
-		const auto value = sv_to_int(field->second);
-		igdd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
+		try {
+			const auto value = sv_to_int(split_argument(field->second, '='));
+			igdd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
+		} catch(std::invalid_argument&) {
+			igdd_cc_ = std::chrono::steady_clock::now();
+		}
 	} else {
 		igdd_cc_ = std::chrono::steady_clock::now();
 	}
@@ -235,10 +243,12 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 		co_await refresh_scpd(*request->transport);
 	}
 
-	auto result = co_await request->handler(*request->transport);;
+	auto result = co_await request->handler(*request->transport);
 	request->callback(result);
+} catch(boost::system::error_code&) {
+	request->callback(ErrorCode::NETWORK_FAILURE);
 } catch(std::exception&) {
-	request->callback(false);
+	request->callback(ErrorCode::HTTP_BAD_RESPONSE);
 }
 
 ba::awaitable<void> IGDevice::launch_request(std::shared_ptr<UPnPRequest> request) {
@@ -247,11 +257,11 @@ ba::awaitable<void> IGDevice::launch_request(std::shared_ptr<UPnPRequest> reques
 	co_await process_request(request);
 }
 
-ba::awaitable<bool> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		co_return false;
+		co_return ErrorCode::HTTP_BAD_RESPONSE;
 	}
 
 	auto body = build_upnp_del_mapping(mapping);
@@ -263,17 +273,17 @@ ba::awaitable<bool> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTranspor
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 
 	if(header.code != HTTPResponseCode::HTTP_OK) {
-		co_return false;
+		co_return ErrorCode::HTTP_NOT_OK;
 	}
 
-	co_return true;
+	co_return ErrorCode::SUCCESS;
 }
 
-ba::awaitable<bool> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		co_return false;
+		co_return ErrorCode::HTTP_BAD_RESPONSE;
 	}
 
 	std::string internal_ip = mapping.internal_ip;
@@ -291,16 +301,16 @@ ba::awaitable<bool> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& 
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 	
 	if(header.code != HTTPResponseCode::HTTP_OK) {
-		co_return false;
+		co_return ErrorCode::HTTP_NOT_OK;
 	}
 
-	co_return true;
+	co_return ErrorCode::SUCCESS;
 }
 
 void IGDevice::map_port(Mapping mapping, Result cb) {
 	auto shared = shared_from_this();
 
-	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<bool> {
+	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
 		co_return co_await add_port_mapping(mapping, transport);
 	};
 
@@ -324,7 +334,7 @@ void IGDevice::map_port(Mapping mapping, Result cb) {
 void IGDevice::unmap_port(Mapping mapping, Result cb) {
 	auto shared = shared_from_this();
 
-	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<bool> {
+	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
 		co_return co_await delete_port_mapping(mapping, transport);
 	};
 

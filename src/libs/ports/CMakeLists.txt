@@ -15,6 +15,7 @@ add_library(${LIBRARY_NAME}
 		   src/upnp/IGDevice.cpp
 		   src/upnp/HTTPTransport.cpp
 		   src/upnp/XMLParser.cpp
+		   src/upnp/Utility.cpp
            include/ports/pcp/Client.h
 		   include/ports/pcp/Results.h
 		   include/ports/pcp/Daemon.h
@@ -30,6 +31,7 @@ add_library(${LIBRARY_NAME}
 		   include/ports/upnp/XMLParser.h
 		   include/ports/upnp/XMLVisitor.h
 		   include/ports/upnp/Utility.h
+		   include/ports/upnp/HTTPTypes.h
            )
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)

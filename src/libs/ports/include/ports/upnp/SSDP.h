@@ -9,7 +9,7 @@
 #pragma once
 
 #include <ports/upnp/MulticastSocket.h>
-#include <ports/upnp/HTTPHeaderParser.h>
+#include <ports/upnp/HTTPTypes.h>
 #include <ports/upnp/IGDevice.h>
 #include <ports/upnp/ErrorCode.h>
 #include <boost/asio/io_context.hpp>

@@ -79,7 +79,8 @@ auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
 	co_return std::make_pair(header, std::span(buffer_.data(), total_read));
 }
 
-std::size_t HTTPTransport::http_body_completion(const HTTPHeader& header, const std::size_t total_read) {
+std::size_t HTTPTransport::http_body_completion(const HTTPHeader& header,
+                                                const std::size_t total_read) {
 	std::string_view view(buffer_.data(), total_read);
 	constexpr std::string_view header_delim("\r\n\r\n");
 	const auto headers_end = view.find(header_delim);

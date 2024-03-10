@@ -10,9 +10,9 @@
 
 #include <algorithm>
 #include <string>
+#include <span>
 #include <string_view>
 #include <type_traits>
-#include <cctype>
 
 namespace ember::ports::upnp {
 
@@ -40,18 +40,15 @@ struct CaseInsensitive {
   This exists because string_view isn't guaranteed to be null-terminated,
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
-static int sv_to_int(const std::string_view string) {
-	int value = 0;
-	auto length = string.length();
-	auto data = string.data();
+int sv_to_int(const std::string_view string);
 
-	while(length) {
-		value = (value * 10) + (*data - '0');
-		++data;
-		--length;
-	}
+int span_to_int(std::span<const char> span);
 
-	return value;
-}
+/*
+   Just a quick and dirty func. to extract values from HTTP fields (e.g. "max-age=300")
+   C++ developers arguing about how best to split strings and on why
+   the standard still provides no functionality for it will never not be funny
+ */
+std::string_view split_argument(std::string_view input, const char needle);
 
 } // upnp, ports, ember

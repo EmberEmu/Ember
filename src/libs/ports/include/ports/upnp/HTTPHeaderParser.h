@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <ports/upnp/HTTPTypes.h>
 #include <ports/upnp/Utility.h>
 #include <regex>
 #include <string>
@@ -17,29 +18,6 @@
 #include <vector>
 
 namespace ember::ports::upnp {
-
-enum class HTTPResponseCode {
-	HTTP_OK = 200
-};
-
-struct HTTPRequest {
-	std::string method;
-	std::string url;
-	std::vector<std::pair<std::string, std::string>> fields;
-	std::string body;
-};
-
-/*
-  This is non-owning, so the buffer used to produce it must
-  be kept in scope for at least as long as any instances
-*/
-struct HTTPHeader {
-	using Field = std::pair<std::string_view, std::string_view>;
-	HTTPResponseCode code;
-	std::string_view text;
-	std::unordered_map<std::string_view, std::string_view,
-		CaseInsensitive::Hash, CaseInsensitive::Comparator> fields;
-};
 
 enum class ParseState {
 	RESPONSE_CODE, HEADERS
@@ -78,10 +56,16 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 				return false;
 			}
 
-			auto code = sv_to_int(line.substr(results.position(2), results.length(2)));
-			header.code = HTTPResponseCode{ code };
+			try {
+				auto code = sv_to_int(line.substr(results.position(2), results.length(2)));
+				header.code = HTTPResponseCode{ code };
+			} catch(std::invalid_argument&) {
+				return false;
+			}
+
 			header.text = line.substr(results.position(3), results.length(3));
 			state = ParseState::HEADERS;
+
 		} else if(state == ParseState::HEADERS) {
 			auto pos = line.find_first_of(": ");
 

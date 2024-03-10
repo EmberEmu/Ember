@@ -11,6 +11,7 @@
 #include <ports/upnp/HTTPHeaderParser.h>
 #include <ports/upnp/HTTPTransport.h>
 #include <ports/upnp/XMLParser.h>
+#include <ports/upnp/ErrorCode.h>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <functional>
@@ -41,10 +42,10 @@ struct UPnPActionArgs {
 	std::vector<std::pair<std::string, std::string>> arguments;
 };
 
-using Result = std::function<void(bool)>;
+using Result = std::function<void(ErrorCode)>;
 
 struct UPnPRequest {
-	using Handler = std::function<ba::awaitable<bool>(HTTPTransport&)>;
+	using Handler = std::function<ba::awaitable<ErrorCode>(HTTPTransport&)>;
 
 	std::unique_ptr<HTTPTransport> transport;
 	Handler handler;
@@ -72,8 +73,8 @@ private:
 
 	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
 	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
-	ba::awaitable<bool> add_port_mapping(Mapping& mapping, HTTPTransport& transport);
-	ba::awaitable<bool> delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> add_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	void handle_scpd(const HTTPHeader& header, std::string_view body);
 	void parse_location(const std::string& location);
 	ba::awaitable<void> request_scpd(HTTPTransport& transport);

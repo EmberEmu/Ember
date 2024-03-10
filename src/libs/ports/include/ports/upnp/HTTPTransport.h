@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <ports/upnp/HTTPHeaderParser.h>
+#include <ports/upnp/HTTPTypes.h>
 #include <boost/asio.hpp>
 #include <expected>
 #include <memory>

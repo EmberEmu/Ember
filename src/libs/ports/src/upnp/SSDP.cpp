@@ -7,6 +7,7 @@
  */
 
 #include <ports/upnp/SSDP.h>
+#include <ports/upnp/HTTPHeaderParser.h>
 #include <format>
 #include <regex>
 
