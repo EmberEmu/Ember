@@ -142,7 +142,7 @@ BufType IGDevice::build_http_post_request(std::string&& body, const std::string&
 	return build_http_request<BufType>(request);
 }
 
-ba::awaitable<void> IGDevice::request_device_description(std::shared_ptr<UPnPRequest> request) {
+ba::awaitable<void> IGDevice::request_device_description(HTTPTransport& transport) {
 	HTTPRequest http_req{
 		.method = "GET",
 		.url = dev_desc_uri_,
@@ -154,10 +154,10 @@ ba::awaitable<void> IGDevice::request_device_description(std::shared_ptr<UPnPReq
 	};
 
 	auto buffer = build_http_request<std::vector<std::uint8_t>>(http_req);
-	co_await request->transport->send(std::move(buffer));
+	co_await transport.send(std::move(buffer));
 }
 
-ba::awaitable<void> IGDevice::request_scpd(std::shared_ptr<UPnPRequest> request) {
+ba::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
 	auto scpd_uri = igdd_xml_->get_node_value(service_, "SCPDURL");
 
 	if(!scpd_uri) {
@@ -175,12 +175,12 @@ ba::awaitable<void> IGDevice::request_scpd(std::shared_ptr<UPnPRequest> request)
 	};
 
 	auto buffer = build_http_request<std::vector<std::uint8_t>>(http_req);
-	co_await request->transport->send(std::move(buffer));
+	co_await transport.send(std::move(buffer));
 }
 
-ba::awaitable<void> IGDevice::refresh_scpd(std::shared_ptr<UPnPRequest> request) {
-	co_await request_scpd(request);
-	const auto response = co_await request->transport->receive_http_response();
+ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
+	co_await request_scpd(transport);
+	const auto response = co_await transport.receive_http_response();
 	const auto body = http_body_from_response(response);
 	const auto& [header, buffer] = response;
 
@@ -208,9 +208,9 @@ std::string_view IGDevice::http_body_from_response(const HTTPTransport::Response
 	return body;
 }
 
-ba::awaitable<void> IGDevice::refresh_igdd(std::shared_ptr<UPnPRequest> request) {
-	co_await request_device_description(request);
-	const auto response = co_await request->transport->receive_http_response();
+ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
+	co_await request_device_description(transport);
+	const auto response = co_await transport.receive_http_response();
 	const auto& [header, buffer] = response;
 	const auto body = http_body_from_response(response);
 
@@ -228,11 +228,11 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 	const auto time = std::chrono::steady_clock::now();
 
 	if(time > igdd_cc_) {
-		co_await refresh_igdd(request);
+		co_await refresh_igdd(*request->transport);
 	}
 
 	if(time > scpd_cc_) {
-		co_await refresh_scpd(request);
+		co_await refresh_scpd(*request->transport);
 	}
 
 	auto result = co_await request->handler(*request->transport);;
@@ -260,6 +260,12 @@ ba::awaitable<bool> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTranspor
 	);
 
 	co_await transport.send(std::move(request));
+	const auto& [header, buffer] = co_await transport.receive_http_response();
+
+	if(header.code != HTTPResponseCode::HTTP_OK) {
+		co_return false;
+	}
+
 	co_return true;
 }
 
@@ -282,6 +288,12 @@ ba::awaitable<bool> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& 
 	);
 
 	co_await transport.send(std::move(request));
+	const auto& [header, buffer] = co_await transport.receive_http_response();
+	
+	if(header.code != HTTPResponseCode::HTTP_OK) {
+		co_return false;
+	}
+
 	co_return true;
 }
 

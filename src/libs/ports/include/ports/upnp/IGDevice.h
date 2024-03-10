@@ -70,17 +70,16 @@ private:
 	std::unique_ptr<XMLParser> igdd_xml_;
 	std::unique_ptr<XMLParser> scpd_xml_;
 
-	ba::awaitable<void> refresh_scpd(std::shared_ptr<UPnPRequest> request);
-	ba::awaitable<void> refresh_igdd(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
+	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
 	ba::awaitable<bool> add_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	ba::awaitable<bool> delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	void handle_scpd(const HTTPHeader& header, std::string_view body);
 	void parse_location(const std::string& location);
-	ba::awaitable<void> request_scpd(std::shared_ptr<UPnPRequest> request);
-	ba::awaitable<void> request_device_description(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> request_scpd(HTTPTransport& transport);
+	ba::awaitable<void> request_device_description(HTTPTransport& transport);
 
 	ba::awaitable<void> launch_request(std::shared_ptr<UPnPRequest> request);
-	void process_action_result(const HTTPHeader& header, std::shared_ptr<UPnPRequest> request);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
 	std::string_view http_body_from_response(const HTTPTransport::Response& response);
 
