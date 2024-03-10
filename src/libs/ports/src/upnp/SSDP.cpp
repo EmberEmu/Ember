@@ -26,6 +26,12 @@ ba::awaitable<void> SSDP::read_broadcasts() {
 			process_message(*result);
 			continue;
 		}
+
+		if(result.error() != boost::asio::error::operation_aborted) {
+			handler_(std::unexpected(ErrorCode::NETWORK_FAILURE));
+		}
+
+		break;
 	}
 }
 
@@ -41,10 +47,12 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram) {
 	HTTPHeader header;
 
 	if(!parse_http_header(txt, header)) {
+		handler_(std::unexpected(ErrorCode::HTTP_BAD_HEADERS));
 		return;
 	}
 
 	if(header.code != HTTPResponseCode::HTTP_OK) {
+		handler_(std::unexpected(ErrorCode::HTTP_NOT_OK));
 		return;
 	}
 
@@ -59,12 +67,19 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram) {
 		auto bind = transport_.local_address();
 		auto device = std::make_shared<IGDevice>(ctx_, std::move(bind), service, location);
 
-		const bool call_again = handler_(std::move(header), std::move(device));
+		DeviceResult result {
+			.header = std::move(header),
+			.device = std::move(device),
+		};
+
+		const bool call_again = handler_(std::move(result));
 
 		if(!call_again) {
 			handler_ = {};
 		}
-	} catch(std::exception&) {}
+	} catch(std::exception&) {
+		handler_(std::unexpected(ErrorCode::HTTP_BAD_RESPONSE));
+	}
 }
 
 std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
@@ -86,7 +101,11 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
 
 ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type, std::string_view subtype, const int version) {
 	auto buffer = build_ssdp_request(type, subtype, version);
-	co_await transport_.send(std::move(buffer));
+	const auto result = co_await transport_.send(std::move(buffer));
+
+	if(!result) {
+		handler_(std::unexpected(ErrorCode::NETWORK_FAILURE));
+	}
 }
 
 void SSDP::locate_gateways(LocateHandler&& handler) {

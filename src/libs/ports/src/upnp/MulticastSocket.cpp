@@ -11,9 +11,13 @@
 
 namespace ember::ports {
 
-MulticastSocket::MulticastSocket(boost::asio::io_context& context, const std::string& listen_iface,
-                                 const std::string& mcast_group, const std::uint16_t port)
-	: context_(context), socket_(context), ep_(boost::asio::ip::address::from_string(mcast_group), port) {
+MulticastSocket::MulticastSocket(boost::asio::io_context& context,
+                                 const std::string& listen_iface,
+                                 const std::string& mcast_group,
+	                             const std::uint16_t port)
+	: context_(context), socket_(context),
+	  buffer_{},
+	  ep_(boost::asio::ip::address::from_string(mcast_group), port) {
     const auto mcast_iface = boost::asio::ip::address::from_string(listen_iface);
     const auto group_ip = boost::asio::ip::address::from_string(mcast_group);
 
