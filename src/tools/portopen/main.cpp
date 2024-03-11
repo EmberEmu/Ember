@@ -151,8 +151,8 @@ void use_upnp(const po::variables_map& args) {
 			.protocol = proto
 		};
 
-		auto callback = [&, map](ports::upnp::ErrorCode result) {
-			if(result == ports::upnp::ErrorCode::SUCCESS) {
+		auto callback = [&, map](ports::upnp::ErrorCode ec) {
+			if(!ec) {
 				// todo, print
 				std::cout << std::format("Port {} {} mapping successfully using UPnP\n",
 				                         map.external, deletion? "delete" : "add");
@@ -160,7 +160,7 @@ void use_upnp(const po::variables_map& args) {
 				// todo, print
 				std::cout << std::format("Port {} {} failed using UPnP, error {}\n",
 				                         map.external, deletion? "delete" : "add",
-				                         result.value());
+				                         ec.value());
 			}
 		};
 		

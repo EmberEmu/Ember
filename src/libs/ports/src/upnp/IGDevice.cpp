@@ -252,7 +252,7 @@ ba::awaitable<void> IGDevice::refresh_xml(std::shared_ptr<UPnPRequest> request) 
 }
 
 ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
-	ErrorCode ec{ ErrorCode::SUCCESS };
+	ErrorCode ec { ErrorCode::SUCCESS };
 
 	try {
 		co_await request->transport->connect(hostname_, port_);
@@ -280,8 +280,8 @@ ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping mapping, HTTPT
 
 	auto args = build_upnp_del_mapping(mapping);
 
-	if(auto result = validate_soap_arguments(args); result != ErrorCode::SUCCESS) {
-		co_return result;
+	if(auto ec = validate_soap_arguments(args)) {
+		co_return ec;
 	}
 
 	auto body = build_soap_request(std::move(args));
@@ -345,8 +345,8 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTran
 	}
 
 	auto args = build_upnp_add_mapping(mapping);
-	if(auto result = validate_soap_arguments(args); result != ErrorCode::SUCCESS) {
-		co_return result;
+	if(auto ec = validate_soap_arguments(args)) {
+		co_return ec;
 	}
 
 	auto body = build_soap_request(std::move(args));
