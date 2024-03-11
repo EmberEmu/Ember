@@ -382,8 +382,7 @@ void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	const auto& executor = ctx_.get_executor();
-	ba::co_spawn(ctx_, process_request(request_ptr), ba::detached);
+	ba::co_spawn(ctx_, process_request(std::move(request_ptr)), ba::detached);
 }
 
 void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
@@ -402,8 +401,7 @@ void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	const auto& executor = ctx_.get_executor();
-	ba::co_spawn(ctx_, process_request(request_ptr), ba::detached);
+	ba::co_spawn(ctx_, process_request(std::move(request_ptr)), ba::detached);
 }
 
 const std::string& IGDevice::host() const {
