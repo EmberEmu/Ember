@@ -15,7 +15,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <map>
 #include <unordered_map>
 #include <utility>
 #include <optional>
@@ -32,7 +31,7 @@ smart_enum_class(Result, std::uint8_t,
 
 namespace detail {
 
-using Labels = std::map<std::uint16_t, std::string>;
+using Labels = std::unordered_map<std::uint16_t, std::string>;
 using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
 // deserialisation

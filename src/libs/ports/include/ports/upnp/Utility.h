@@ -41,8 +41,10 @@ struct CaseInsensitive {
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
 int sv_to_int(const std::string_view string);
+long sv_to_long(const std::string_view string);
+long long sv_to_ll(const std::string_view string);
 
-int span_to_int(std::span<const char> span);
+long long span_to_ll(std::span<const char> span);
 
 /*
    Just a quick and dirty func. to extract values from HTTP fields (e.g. "max-age=300")

@@ -47,12 +47,13 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 		}
 
 		if(state == ParseState::RESPONSE_CODE) {
+			constexpr auto expected_matches = 4;
 			std::regex pattern(R"((\bHTTP\/1.1\b) ([0-9]{3}) ([a-zA-Z ]*))", std::regex::ECMAScript);
 			std::match_results<typename decltype(line)::iterator> results;
 
 			std::regex_search(line.begin(), line.end(), results, pattern);
 
-			if(results.size() != 4) {
+			if(results.size() != expected_matches) {
 				return false;
 			}
 
@@ -74,7 +75,7 @@ static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 				continue;
 			}
 
-			header.fields.emplace(line.substr(0, pos),
+			header.fields.try_emplace(line.substr(0, pos),
 				line.substr(pos + 2, line.size()));
 		}
 

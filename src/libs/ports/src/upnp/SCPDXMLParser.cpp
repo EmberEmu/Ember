@@ -74,10 +74,10 @@ std::vector<std::string_view> SCPDXMLParser::arguments(std::string_view action_n
 	while(arg_node) {
 		auto name = arg_node->first_node("name", 0, false);
 
-		if(name->value()) {
+		if(name && name->value()) {
 			auto dir_node = arg_node->first_node("direction", 0, false);
 
-			if(dir_node->value() && dir_node->value() == direction) {
+			if(dir_node && dir_node->value() && dir_node->value() == direction) {
 				
 				arguments.emplace_back(name->value());
 			}

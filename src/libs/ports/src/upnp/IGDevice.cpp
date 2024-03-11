@@ -258,7 +258,7 @@ ba::awaitable<void> IGDevice::launch_request(std::shared_ptr<UPnPRequest> reques
 }
 
 ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
-	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
+	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
 		co_return ErrorCode::SOAP_MISSING_URI;
@@ -317,7 +317,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 }
 
 ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
-	auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
+	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
 		co_return ErrorCode::SOAP_MISSING_URI;

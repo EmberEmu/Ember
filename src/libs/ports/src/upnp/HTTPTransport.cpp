@@ -84,12 +84,12 @@ std::size_t HTTPTransport::http_body_completion(const HTTPHeader& header,
 	std::string_view view(buffer_.data(), total_read);
 	constexpr std::string_view header_delim("\r\n\r\n");
 	const auto headers_end = view.find(header_delim);
-	const auto length = header.fields.find("Content-Length");
+	const auto length_field = header.fields.find("Content-Length");
 
-	if(length != header.fields.end()) {
-		const auto expected_size = sv_to_int(length->second)
-			+ headers_end + header_delim.size();
-		const auto remaining = expected_size - total_read;
+	if(length_field != header.fields.end()) {
+		const std::size_t length = sv_to_ll(length_field->second);
+		const std::size_t expected_size = length + headers_end + header_delim.size();
+		const std::size_t remaining = expected_size - total_read;
 
 		if(remaining > expected_size) {
 			return 0;

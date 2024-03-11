@@ -34,6 +34,7 @@ add_library(${LIBRARY_NAME}
 		   include/ports/upnp/Utility.h
 		   include/ports/upnp/HTTPTypes.h
 		   include/ports/upnp/SCPDXMLParser.h
+		   include/ports/upnp/ErrorCode.h
            )
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
