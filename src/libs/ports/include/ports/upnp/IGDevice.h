@@ -49,7 +49,6 @@ struct UPnPRequest {
 
 	std::unique_ptr<HTTPTransport> transport;
 	Handler handler;
-	std::string name;
 	Result callback;
 	std::shared_ptr<IGDevice> device;
 };
@@ -72,20 +71,19 @@ private:
 	std::unique_ptr<XMLParser> igdd_xml_;
 	std::unique_ptr<SCPDXMLParser> scpd_xml_;
 
+	void parse_location(const std::string& location);
+	ba::awaitable<void> refresh_xml(std::shared_ptr<UPnPRequest> request);
 	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
 	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
+	ba::awaitable<void> request_scpd(HTTPTransport& transport);
+	ba::awaitable<void> request_igdd(HTTPTransport& transport);
 	ba::awaitable<ErrorCode> do_add_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	ba::awaitable<ErrorCode> do_delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
-	void handle_scpd(const HTTPHeader& header, std::string_view body);
-	void parse_location(const std::string& location);
-	ba::awaitable<void> request_scpd(HTTPTransport& transport);
-	ba::awaitable<void> request_device_description(HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 	std::string protocol_to_string(const Protocol protocol);
 
+	void launch_request(UPnPRequest::Handler&& handler, Result&& cb);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
-	ba::awaitable<void> refresh_xml(std::shared_ptr<UPnPRequest> request);
-	std::string_view http_body_from_response(const HTTPTransport::Response& response);
 
 	template<typename BufType>
 	BufType build_http_post_request(std::string&& body, const std::string& action,
@@ -94,6 +92,7 @@ private:
 	template<typename BufType>
 	BufType build_http_request(const HTTPRequest& request);
 	std::string build_soap_request(const UPnPActionArgs&& args);
+	std::string_view http_body_from_response(const HTTPTransport::Response& response);
 	UPnPActionArgs build_upnp_add_mapping(const Mapping& mapping);
 	UPnPActionArgs build_upnp_del_mapping(const Mapping& mapping);
 

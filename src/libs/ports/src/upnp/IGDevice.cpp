@@ -154,7 +154,7 @@ BufType IGDevice::build_http_post_request(std::string&& body, const std::string&
 	return build_http_request<BufType>(request);
 }
 
-ba::awaitable<void> IGDevice::request_device_description(HTTPTransport& transport) {
+ba::awaitable<void> IGDevice::request_igdd(HTTPTransport& transport) {
 	HTTPRequest http_req{
 		.method = "GET",
 		.url = dev_desc_uri_,
@@ -225,7 +225,7 @@ std::string_view IGDevice::http_body_from_response(const HTTPTransport::Response
 }
 
 ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
-	co_await request_device_description(transport);
+	co_await request_igdd(transport);
 	const auto response = co_await transport.receive_http_response();
 	const auto& [header, buffer] = response;
 	const auto body = http_body_from_response(response);
@@ -366,18 +366,13 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping& mapping, HTTPTra
 	co_return ErrorCode::SUCCESS;
 }
 
-void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
-	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
-		co_return co_await do_add_port_mapping(mapping, transport);
-	};
-
+void IGDevice::launch_request(UPnPRequest::Handler&& handler, Result&& cb) {
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
 
 	UPnPRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
-		.name = "AddPortMapping",
-		.callback = cb,
+		.callback = std::move(cb),
 		.device = shared_from_this()
 	};
 
@@ -385,23 +380,20 @@ void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 	ba::co_spawn(ctx_, process_request(std::move(request_ptr)), ba::detached);
 }
 
+void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
+	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
+		co_return co_await do_add_port_mapping(mapping, transport);
+	};
+
+	launch_request(std::move(handler), std::move(cb));
+}
+
 void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
 		co_return co_await do_delete_port_mapping(mapping, transport);
 	};
 
-	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
-
-	UPnPRequest request {
-		.transport = std::move(transport),
-		.handler = std::move(handler),
-		.name = "DeletePortMapping",
-		.callback = cb,
-		.device = shared_from_this()
-	};
-
-	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	ba::co_spawn(ctx_, process_request(std::move(request_ptr)), ba::detached);
+	launch_request(std::move(handler), std::move(cb));
 }
 
 const std::string& IGDevice::host() const {
