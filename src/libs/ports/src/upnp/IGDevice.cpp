@@ -251,19 +251,23 @@ ba::awaitable<void> IGDevice::refresh_xml(std::shared_ptr<UPnPRequest> request) 
 	}
 }
 
-ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) try {
-	co_await request->transport->connect(hostname_, port_);
-	co_await refresh_xml(request);
-	const auto result = co_await request->handler(*request->transport);
-	request->callback(result);
-} catch(boost::system::error_code&) {
-	request->callback(ErrorCode::NETWORK_FAILURE);
-} catch(std::exception&)  {
-	request->callback(ErrorCode::HTTP_BAD_RESPONSE);
+ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
+	ErrorCode ec{ ErrorCode::SUCCESS };
+
+	try {
+		co_await request->transport->connect(hostname_, port_);
+		co_await refresh_xml(request);
+	}  catch(boost::system::error_code&) {
+		ec = ErrorCode::NETWORK_FAILURE;
+	} catch(std::exception&)  {
+		ec = ErrorCode::HTTP_BAD_RESPONSE;
+	}
+
+	co_await request->handler(*request->transport, ec);
 }
 
 
-ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
@@ -325,7 +329,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 	return ErrorCode::SUCCESS;
 }
 
-ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
@@ -361,13 +365,12 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping& mapping, HTTPTra
 	co_return ErrorCode::SUCCESS;
 }
 
-void IGDevice::launch_request(UPnPRequest::Handler&& handler, Result&& cb) {
+void IGDevice::launch_request(UPnPRequest::Handler&& handler) {
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
 
 	UPnPRequest request {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
-		.callback = std::move(cb),
 		.device = shared_from_this()
 	};
 
@@ -376,19 +379,29 @@ void IGDevice::launch_request(UPnPRequest::Handler&& handler, Result&& cb) {
 }
 
 void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
-	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
-		co_return co_await do_add_port_mapping(mapping, transport);
+	auto handler = [=, this](HTTPTransport& transport, ErrorCode ec) -> ba::awaitable<void> {
+		if(!ec) {
+			auto result = co_await do_add_port_mapping(mapping, transport);
+			cb(result);
+		} else {
+			cb(ec);
+		}
 	};
 
-	launch_request(std::move(handler), std::move(cb));
+	launch_request(std::move(handler));
 }
 
 void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
-	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
-		co_return co_await do_delete_port_mapping(mapping, transport);
+	auto handler = [=, this](HTTPTransport& transport, ErrorCode ec) -> ba::awaitable<void> {
+		if(!ec) {
+			auto result = co_await do_delete_port_mapping(mapping, transport);
+			cb(result);
+		} else {
+			cb(ec);
+		}
 	};
 
-	launch_request(std::move(handler), std::move(cb));
+	launch_request(std::move(handler));
 }
 
 const std::string& IGDevice::host() const {

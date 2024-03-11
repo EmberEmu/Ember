@@ -45,11 +45,10 @@ using Result = std::function<void(ErrorCode)>;
 class IGDevice;
 
 struct UPnPRequest {
-	using Handler = std::function<ba::awaitable<ErrorCode>(HTTPTransport&)>;
+	using Handler = std::function<ba::awaitable<void>(HTTPTransport&, ErrorCode)>;
 
 	std::unique_ptr<HTTPTransport> transport;
 	Handler handler;
-	Result callback;
 	std::shared_ptr<IGDevice> device;
 };
 
@@ -77,12 +76,12 @@ private:
 	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
 	ba::awaitable<void> request_scpd(HTTPTransport& transport);
 	ba::awaitable<void> request_igdd(HTTPTransport& transport);
-	ba::awaitable<ErrorCode> do_add_port_mapping(Mapping& mapping, HTTPTransport& transport);
-	ba::awaitable<ErrorCode> do_delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> do_add_port_mapping(Mapping mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> do_delete_port_mapping(Mapping mapping, HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 	std::string protocol_to_string(const Protocol protocol);
 
-	void launch_request(UPnPRequest::Handler&& handler, Result&& cb);
+	void launch_request(UPnPRequest::Handler&& handler);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
 
 	template<typename BufType>

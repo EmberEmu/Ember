@@ -140,7 +140,7 @@ void use_upnp(const po::variables_map& args) {
 
 	ssdp.locate_gateways([&](ports::upnp::LocateResult result) {
 		if(!result) {
-			std::cout << std::to_underlying(result.error()) << '\n';
+			std::cout << result.error() << '\n';
 			return true;
 		}
 
@@ -160,7 +160,7 @@ void use_upnp(const po::variables_map& args) {
 				// todo, print
 				std::cout << std::format("Port {} {} failed using UPnP, error {}\n",
 				                         map.external, deletion? "delete" : "add",
-				                         std::to_underlying(result));
+				                         result.value());
 			}
 		};
 		
