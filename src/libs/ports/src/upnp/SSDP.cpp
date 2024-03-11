@@ -24,11 +24,21 @@ ba::awaitable<void> SSDP::read_broadcasts() {
 		auto result = co_await transport_.receive();
 
 		if(result) {
-			process_message(*result);
-			continue;
-		}
+			auto ec = validate_message(*result);
 
-		if(result.error() != boost::asio::error::operation_aborted) {
+			if(ec && handler_) {
+				handler_(std::unexpected(ec));
+			} else if(handler_) {
+				auto locate_res = build_locate_result(*result);
+				const bool call_again = handler_(std::move(locate_res));
+
+				if(!call_again) {
+					handler_ = {};
+				}
+			}
+
+			continue;
+		} else if(result.error() != boost::asio::error::operation_aborted) {
 			handler_(std::unexpected(ErrorCode::NETWORK_FAILURE));
 		}
 
@@ -36,34 +46,16 @@ ba::awaitable<void> SSDP::read_broadcasts() {
 	}
 }
 
-void SSDP::process_message(std::span<const std::uint8_t> datagram) {
-	if(!handler_) {
-		return;
-	}
-
+LocateResult SSDP::build_locate_result(std::span<const std::uint8_t> datagram) {
 	std::string_view txt(
 		reinterpret_cast<const char*>(datagram.data()), datagram.size()
 	);
 
 	HTTPHeader header;
-
-	if(!parse_http_header(txt, header)) {
-		handler_(std::unexpected(ErrorCode::HTTP_BAD_HEADERS));
-		return;
-	}
-
-	if(header.code != HTTPResponseCode::HTTP_OK) {
-		handler_(std::unexpected(ErrorCode::HTTP_NOT_OK));
-		return;
-	}
+	parse_http_header(txt, header);
 
 	auto location = std::string(header.fields["Location"]);
 	auto service = std::string(header.fields["ST"]);
-
-	if(location.empty() || service.empty()) {
-		handler_(std::unexpected(ErrorCode::HTTP_HEADER_FIELD_AWOL));
-		return;
-	}
 
 	try {
 		auto bind = transport_.local_address();
@@ -73,15 +65,36 @@ void SSDP::process_message(std::span<const std::uint8_t> datagram) {
 			.header = std::move(header),
 			.device = std::move(device),
 		};
-
-		const bool call_again = handler_(std::move(result));
-
-		if(!call_again) {
-			handler_ = {};
-		}
+		
+		return result;
 	} catch(std::exception&) {
-		handler_(std::unexpected(ErrorCode::HTTP_BAD_RESPONSE));
+		return std::unexpected(ErrorCode::HTTP_BAD_RESPONSE);
 	}
+}
+
+ErrorCode SSDP::validate_message(std::span<const std::uint8_t> datagram) {
+	std::string_view txt(
+		reinterpret_cast<const char*>(datagram.data()), datagram.size()
+	);
+
+	HTTPHeader header;
+
+	if(!parse_http_header(txt, header)) {
+		return ErrorCode::HTTP_BAD_HEADERS;
+	}
+
+	if(header.code != HTTPResponseCode::HTTP_OK) {
+		return ErrorCode::HTTP_NOT_OK;
+	}
+
+	auto location = std::string(header.fields["Location"]);
+	auto service = std::string(header.fields["ST"]);
+
+	if(location.empty() || service.empty()) {
+		return ErrorCode::HTTP_HEADER_FIELD_AWOL;
+	}
+
+	return ErrorCode::SUCCESS;
 }
 
 std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
@@ -110,6 +123,53 @@ ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type,
 	if(!result) {
 		handler_(std::unexpected(ErrorCode::NETWORK_FAILURE));
 	}
+}
+
+ba::awaitable<LocateResult> SSDP::locate_gateways(use_awaitable_t) {
+	// this isn't great but it'd need a design rethink
+	auto buffer = build_ssdp_request("service", "WANIPConnection", 1);
+	auto result = co_await transport_.send(std::move(buffer));
+
+	if(!result) {
+		co_return std::unexpected(ErrorCode::NETWORK_FAILURE);
+	}
+
+	buffer = build_ssdp_request("service", "WANIPConnection", 2);
+	result = co_await transport_.send(std::move(buffer));
+
+	if(!result) {
+		co_return std::unexpected(ErrorCode::NETWORK_FAILURE);
+	}
+
+	auto recv_res = co_await transport_.receive();
+
+	if(!recv_res) {
+		if(recv_res.error() == ba::error::operation_aborted) {
+			co_return std::unexpected(ErrorCode::OPERATION_ABORTED);
+		} else {
+			co_return std::unexpected(ErrorCode::NETWORK_FAILURE);
+		}
+	}
+
+	auto proc_res = validate_message(*recv_res);
+
+	if(!proc_res) {
+		co_return std::unexpected(proc_res);
+	}
+
+	co_return build_locate_result(*recv_res);
+}
+
+std::future<LocateResult> SSDP::locate_gateways(use_future_t) {
+	auto promise = std::make_shared<std::promise<LocateResult>>();
+	auto future = promise->get_future();
+	
+	locate_gateways([&, promise](LocateResult result) {
+		promise->set_value(std::move(result));
+		return false;
+	});
+
+	return future;
 }
 
 void SSDP::locate_gateways(LocateHandler&& handler) {

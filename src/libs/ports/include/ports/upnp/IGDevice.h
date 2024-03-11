@@ -53,9 +53,6 @@ struct UPnPRequest {
 	std::shared_ptr<IGDevice> device;
 };
 
-constexpr struct use_future_t{} use_future;
-constexpr struct use_awaitable_t{} use_awaitable;
-
 class IGDevice : public std::enable_shared_from_this<IGDevice> {
 private:
 	boost::asio::io_context& ctx_;

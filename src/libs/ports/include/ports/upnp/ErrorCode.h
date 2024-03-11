@@ -20,6 +20,7 @@ struct ErrorCode {
 		SOAP_MISSING_URI           = 0x03,
 		SOAP_NO_ARGUMENTS          = 0x04,
 		INVALID_MAPPING_ARG        = 0x05,
+		OPERATION_ABORTED          = 0x06,
 		HTTP_BAD_RESPONSE          = 0x80,
 		HTTP_BAD_HEADERS           = 0x81,
 		HTTP_NOT_OK                = 0x82,

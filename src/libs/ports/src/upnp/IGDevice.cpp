@@ -439,7 +439,6 @@ std::future<ErrorCode> IGDevice::add_port_mapping(Mapping mapping, use_future_t)
 
 ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping mapping, use_awaitable_t) {
 	HTTPTransport transport(ctx_, bind_);
-
 	auto res = co_await process_request(transport, use_awaitable);
 
 	if(!res) {
