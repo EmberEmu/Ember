@@ -101,7 +101,9 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
 	return buffer;
 }
 
-ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type, std::string_view subtype, const int version) {
+ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type,
+                                            std::string_view subtype,
+                                            const int version) {
 	auto buffer = build_ssdp_request(type, subtype, version);
 	const auto result = co_await transport_.send(std::move(buffer));
 

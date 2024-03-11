@@ -17,6 +17,7 @@
 #include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <functional>
+#include <future>
 #include <memory>
 #include <span>
 #include <string>
@@ -52,6 +53,9 @@ struct UPnPRequest {
 	std::shared_ptr<IGDevice> device;
 };
 
+constexpr struct use_future_t{} use_future;
+constexpr struct use_awaitable_t{} use_awaitable;
+
 class IGDevice : public std::enable_shared_from_this<IGDevice> {
 private:
 	boost::asio::io_context& ctx_;
@@ -71,7 +75,7 @@ private:
 	std::unique_ptr<SCPDXMLParser> scpd_xml_;
 
 	void parse_location(const std::string& location);
-	ba::awaitable<void> refresh_xml(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> refresh_xml_cache(HTTPTransport& transport);
 	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
 	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
 	ba::awaitable<void> request_scpd(HTTPTransport& transport);
@@ -83,6 +87,7 @@ private:
 
 	void launch_request(UPnPRequest::Handler&& handler);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<ErrorCode> process_request(HTTPTransport& transport, use_awaitable_t);
 
 	template<typename BufType>
 	BufType build_http_post_request(std::string&& body, const std::string& action,
@@ -105,7 +110,12 @@ public:
 	IGDevice& operator=(IGDevice&&) = default;
 
 	void add_port_mapping(Mapping mapping, Result cb);
+	std::future<ErrorCode> add_port_mapping(Mapping mapping, use_future_t);
+	ba::awaitable<ErrorCode> add_port_mapping(Mapping mapping, use_awaitable_t);
+
 	void delete_port_mapping(Mapping mapping, Result cb);
+	std::future<ErrorCode> delete_port_mapping(Mapping mapping, use_future_t);
+	ba::awaitable<ErrorCode> delete_port_mapping(Mapping mapping, use_awaitable_t);
 
 	const std::string& host() const;
 };

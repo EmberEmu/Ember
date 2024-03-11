@@ -239,16 +239,26 @@ ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	igdd_xml_ = std::move(std::make_unique<XMLParser>(body));
 }
 
-ba::awaitable<void> IGDevice::refresh_xml(std::shared_ptr<UPnPRequest> request) {
+ba::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
 	const auto time = std::chrono::steady_clock::now();
 
 	if(time > igdd_cc_) {
-		co_await refresh_igdd(*request->transport);
+		co_await refresh_igdd(transport);
 	}
 
 	if(time > scpd_cc_) {
-		co_await refresh_scpd(*request->transport);
+		co_await refresh_scpd(transport);
 	}
+}
+
+ba::awaitable<ErrorCode> IGDevice::process_request(HTTPTransport& transport, use_awaitable_t) try {
+	co_await transport.connect(hostname_, port_);
+	co_await refresh_xml_cache(transport);	
+	co_return ErrorCode::SUCCESS;
+} catch(boost::system::error_code&) {
+	co_return ErrorCode::NETWORK_FAILURE;
+} catch(std::exception&)  {
+	co_return  ErrorCode::HTTP_BAD_RESPONSE;
 }
 
 ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
@@ -256,7 +266,7 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 
 	try {
 		co_await request->transport->connect(hostname_, port_);
-		co_await refresh_xml(request);
+		co_await refresh_xml_cache(*request->transport);
 	}  catch(boost::system::error_code&) {
 		ec = ErrorCode::NETWORK_FAILURE;
 	} catch(std::exception&)  {
@@ -402,6 +412,52 @@ void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	};
 
 	launch_request(std::move(handler));
+}
+
+ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping mapping, use_awaitable_t) {
+	HTTPTransport transport(ctx_, bind_);
+
+	auto res = co_await process_request(transport, use_awaitable);
+
+	if(!res) {
+		co_return res;
+	}
+
+	co_return co_await do_add_port_mapping(mapping, transport);
+}
+
+std::future<ErrorCode> IGDevice::add_port_mapping(Mapping mapping, use_future_t) {
+	auto promise = std::make_shared<std::promise<ErrorCode>>();
+	auto future = promise->get_future();
+	
+	add_port_mapping(mapping, [&, promise](ErrorCode ec) {
+		promise->set_value(ec);
+	});
+
+	return future;
+}
+
+ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping mapping, use_awaitable_t) {
+	HTTPTransport transport(ctx_, bind_);
+
+	auto res = co_await process_request(transport, use_awaitable);
+
+	if(!res) {
+		co_return res;
+	}
+
+	co_return co_await do_delete_port_mapping(mapping, transport);
+}
+
+std::future<ErrorCode> IGDevice::delete_port_mapping(Mapping mapping, use_future_t) {
+	auto promise = std::make_shared<std::promise<ErrorCode>>();
+	auto future = promise->get_future();
+	
+	delete_port_mapping(mapping, [&, promise](ErrorCode ec) {
+		promise->set_value(ec);
+	});
+
+	return future;
 }
 
 const std::string& IGDevice::host() const {
