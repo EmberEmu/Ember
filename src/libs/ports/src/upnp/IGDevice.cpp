@@ -11,6 +11,7 @@
 #include <format>
 #include <utility>
 #include <regex>
+#include <iostream>
 
 namespace ember::ports::upnp {
 
@@ -243,7 +244,7 @@ ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	igdd_xml_ = std::move(std::make_unique<XMLParser>(body));
 }
 
-ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) try {
+ba::awaitable<void> IGDevice::refresh_xml(std::shared_ptr<UPnPRequest> request) {
 	const auto time = std::chrono::steady_clock::now();
 
 	if(time > igdd_cc_) {
@@ -253,8 +254,12 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 	if(time > scpd_cc_) {
 		co_await refresh_scpd(*request->transport);
 	}
+}
 
-	auto result = co_await request->handler(*request->transport);
+ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) try {
+	co_await request->transport->connect(hostname_, port_);
+	co_await refresh_xml(request);
+	const auto result = co_await request->handler(*request->transport);
 	request->callback(result);
 } catch(boost::system::error_code&) {
 	request->callback(ErrorCode::NETWORK_FAILURE);
@@ -262,11 +267,6 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 	request->callback(ErrorCode::HTTP_BAD_RESPONSE);
 }
 
-ba::awaitable<void> IGDevice::launch_request(std::shared_ptr<UPnPRequest> request) {
-	auto shared = shared_from_this();
-	co_await request->transport->connect(hostname_, port_);
-	co_await process_request(request);
-}
 
 ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
@@ -367,9 +367,7 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping& mapping, HTTPTra
 }
 
 void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
-	auto shared = shared_from_this();
-
-	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
+	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
 		co_return co_await do_add_port_mapping(mapping, transport);
 	};
 
@@ -379,21 +377,17 @@ void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
 		.name = "AddPortMapping",
-		.callback = cb
+		.callback = cb,
+		.device = shared_from_this()
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	auto executor = ctx_.get_executor();
-
-	boost::asio::dispatch(executor, [=, this]() mutable {
-		ba::co_spawn(ctx_, launch_request(request_ptr), ba::detached);
-	});
+	const auto& executor = ctx_.get_executor();
+	ba::co_spawn(ctx_, process_request(request_ptr), ba::detached);
 }
 
 void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
-	auto shared = shared_from_this();
-
-	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
+	auto handler = [&, mapping](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
 		co_return co_await do_delete_port_mapping(mapping, transport);
 	};
 
@@ -403,15 +397,13 @@ void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 		.transport = std::move(transport),
 		.handler = std::move(handler),
 		.name = "DeletePortMapping",
-		.callback = cb
+		.callback = cb,
+		.device = shared_from_this()
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	auto executor = ctx_.get_executor();
-
-	boost::asio::dispatch(executor, [=, this]() mutable {
-		ba::co_spawn(ctx_, launch_request(request_ptr), ba::detached);
-	});
+	const auto& executor = ctx_.get_executor();
+	ba::co_spawn(ctx_, process_request(request_ptr), ba::detached);
 }
 
 const std::string& IGDevice::host() const {

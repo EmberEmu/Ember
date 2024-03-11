@@ -42,6 +42,8 @@ struct UPnPActionArgs {
 
 using Result = std::function<void(ErrorCode)>;
 
+class IGDevice;
+
 struct UPnPRequest {
 	using Handler = std::function<ba::awaitable<ErrorCode>(HTTPTransport&)>;
 
@@ -49,6 +51,7 @@ struct UPnPRequest {
 	Handler handler;
 	std::string name;
 	Result callback;
+	std::shared_ptr<IGDevice> device;
 };
 
 class IGDevice : public std::enable_shared_from_this<IGDevice> {
@@ -80,8 +83,8 @@ private:
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 	std::string protocol_to_string(const Protocol protocol);
 
-	ba::awaitable<void> launch_request(std::shared_ptr<UPnPRequest> request);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
+	ba::awaitable<void> refresh_xml(std::shared_ptr<UPnPRequest> request);
 	std::string_view http_body_from_response(const HTTPTransport::Response& response);
 
 	template<typename BufType>
