@@ -7,6 +7,8 @@
  */
 
 #include <ports/pcp/Client.h>
+#include <ports/upnp/SSDP.h>
+#include <ports/upnp/IGDevice.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <stdexcept>
@@ -25,6 +27,8 @@ using namespace ember;
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void print_error(const ports::Error& error);
+void use_upnp(const po::variables_map& args);
+void use_natpmp(const po::variables_map& args);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
@@ -35,6 +39,25 @@ int main(int argc, const char* argv[]) try {
 }
 
 void launch(const po::variables_map& args) {
+	if(args.contains("upnp")) {
+		use_upnp(args);
+	} else {
+		use_natpmp(args);
+	}
+}
+
+void print_error(const ports::Error& error) {
+	std::cout << std::format("Mapping error: {} ({})\n",
+		error.code, std::to_underlying(error.code));
+
+	if(error.code == ports::ErrorCode::PCP_CODE) {
+		std::cout << std::format("PCP code: {}\n", error.pcp_code);
+	} else if(error.code == ports::ErrorCode::NATPMP_CODE) {
+		std::cout << std::format("NAT-PMP code: {}\n", error.natpmp_code);
+	}
+}
+
+void use_natpmp(const po::variables_map& args) {
 	const auto internal = args["internal"].as<std::uint16_t>();
 	const auto external = args["external"].as<std::uint16_t>();
 	const auto& interface = args["interface"].as<std::string>();
@@ -56,6 +79,7 @@ void launch(const po::variables_map& args) {
 	};
 
 	boost::asio::io_context ctx;
+
 	ports::Client client(interface, gateway, ctx);
 
 	// Create an ASIO worker with a single thread
@@ -98,21 +122,65 @@ void launch(const po::variables_map& args) {
 	ctx.stop();
 }
 
-void print_error(const ports::Error& error) {
-	std::cout << std::format("Mapping error: {} ({})\n",
-		error.code, std::to_underlying(error.code));
+void use_upnp(const po::variables_map& args) {
+	const auto& interface = args["interface"].as<std::string>();
+	const auto& protocol = args["protocol"].as<std::string>();
+	const auto internal = args["internal"].as<std::uint16_t>();
+	const auto external = args["external"].as<std::uint16_t>();
+	const auto deletion = args["delete"].as<bool>();
 
-	if(error.code == ports::ErrorCode::PCP_CODE) {
-		std::cout << std::format("PCP code: {}\n", error.pcp_code);
-	} else if(error.code == ports::ErrorCode::NATPMP_CODE) {
-		std::cout << std::format("NAT-PMP code: {}\n", error.natpmp_code);
+	boost::asio::io_context ctx;
+	ports::upnp::SSDP ssdp(interface, ctx);
+
+	auto proto = ports::upnp::Protocol::PROTO_TCP;
+
+	if(protocol == "udp") {
+		proto = ports::upnp::Protocol::PROTO_UDP;
 	}
+
+	ssdp.locate_gateways([&](ports::upnp::LocateResult result) {
+		if(!result) {
+			std::cout << std::to_underlying(result.error()) << '\n';
+			return true;
+		}
+
+		ports::upnp::Mapping map {
+			.external = external,
+			.internal = internal,
+			.ttl = 0,
+			.protocol = proto
+		};
+
+		auto callback = [&, map](ports::upnp::ErrorCode result) {
+			if(result == ports::upnp::ErrorCode::SUCCESS) {
+				// todo, print
+				std::cout << std::format("Port {} {} mapping successfully using UPnP\n",
+				                         map.external, deletion? "delete" : "add");
+			} else {
+				// todo, print
+				std::cout << std::format("Port {} {} failed using UPnP, error {}\n",
+				                         map.external, deletion? "delete" : "add",
+				                         std::to_underlying(result));
+			}
+		};
+		
+		if(deletion) {
+			result->device->unmap_port(map, callback);
+		} else {
+			result->device->map_port(map, callback);
+		}
+
+		return false;
+	});
+
+	ctx.run();
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
+		("upnp", "Use UPnP rather than NAT-PMP/PCP")
 		("internal,i", po::value<std::uint16_t>()->default_value(8085), "Internal port")
 		("external,x", po::value<std::uint16_t>()->default_value(8085), "External port")
 		("interface,f", po::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
