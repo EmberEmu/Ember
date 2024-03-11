@@ -16,6 +16,7 @@ enum class ErrorCode {
 	SOAP_ARGUMENTS_MISMATCH    = 0x02,
 	SOAP_MISSING_URI           = 0x03,
 	SOAP_NO_ARGUMENTS          = 0x04,
+	INVALID_MAPPING_ARG        = 0x05,
 	HTTP_BAD_RESPONSE          = 0x80,
 	HTTP_BAD_HEADERS           = 0x81,
 	HTTP_NOT_OK                = 0x82,

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <array>
+#include <ports/Protocol.h>
 #include <cstdint>
 #include <shared/smartenum.hpp>
 
@@ -166,11 +167,6 @@ struct UnsupportedErrorResponse {
 };
 
 } // natpmp
-
-  // Types below are used by clients to map to both NAT-PMP & PCP requests
-enum class Protocol {
-	TCP, UDP, BOTH
-};
 
 struct MapRequest {
 	std::uint8_t version;

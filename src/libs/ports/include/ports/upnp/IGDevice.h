@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <ports/Protocol.h>
 #include <ports/upnp/HTTPHeaderParser.h>
 #include <ports/upnp/HTTPTransport.h>
 #include <ports/upnp/XMLParser.h>
@@ -24,10 +25,6 @@
 #include <cstdint>
 
 namespace ember::ports::upnp {
-
-enum class Protocol {
-	PROTO_TCP, PROTO_UDP
-};
 
 struct Mapping {
 	std::uint16_t external;
@@ -74,13 +71,14 @@ private:
 
 	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
 	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
-	ba::awaitable<ErrorCode> add_port_mapping(Mapping& mapping, HTTPTransport& transport);
-	ba::awaitable<ErrorCode> delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> do_add_port_mapping(Mapping& mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> do_delete_port_mapping(Mapping& mapping, HTTPTransport& transport);
 	void handle_scpd(const HTTPHeader& header, std::string_view body);
 	void parse_location(const std::string& location);
 	ba::awaitable<void> request_scpd(HTTPTransport& transport);
 	ba::awaitable<void> request_device_description(HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
+	std::string protocol_to_string(const Protocol protocol);
 
 	ba::awaitable<void> launch_request(std::shared_ptr<UPnPRequest> request);
 	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
@@ -105,8 +103,8 @@ public:
 	IGDevice& operator=(IGDevice&) = default;
 	IGDevice& operator=(IGDevice&&) = default;
 
-	void map_port(Mapping mapping, Result cb);
-	void unmap_port(Mapping mapping, Result cb);
+	void add_port_mapping(Mapping mapping, Result cb);
+	void delete_port_mapping(Mapping mapping, Result cb);
 
 	const std::string& host() const;
 };

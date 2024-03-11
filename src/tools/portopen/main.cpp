@@ -132,10 +132,10 @@ void use_upnp(const po::variables_map& args) {
 	boost::asio::io_context ctx;
 	ports::upnp::SSDP ssdp(interface, ctx);
 
-	auto proto = ports::upnp::Protocol::PROTO_TCP;
+	auto proto = ports::Protocol::TCP;
 
 	if(protocol == "udp") {
-		proto = ports::upnp::Protocol::PROTO_UDP;
+		proto = ports::Protocol::UDP;
 	}
 
 	ssdp.locate_gateways([&](ports::upnp::LocateResult result) {
@@ -165,9 +165,9 @@ void use_upnp(const po::variables_map& args) {
 		};
 		
 		if(deletion) {
-			result->device->unmap_port(map, callback);
+			result->device->delete_port_mapping(map, callback);
 		} else {
-			result->device->map_port(map, callback);
+			result->device->add_port_mapping(map, callback);
 		}
 
 		return false;

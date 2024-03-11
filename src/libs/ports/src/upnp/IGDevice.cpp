@@ -84,8 +84,19 @@ BufType IGDevice::build_http_request(const HTTPRequest& request) {
 	return output;
 }
 
+std::string IGDevice::protocol_to_string(const Protocol protocol) {
+	switch(protocol) {
+		case Protocol::TCP:
+			return "TCP";
+		case Protocol::UDP:
+			return "UDP";
+		default:
+			throw std::invalid_argument("Bad protocol specified");
+	}
+}
+
 UPnPActionArgs IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
-	std::string protocol = mapping.protocol == Protocol::PROTO_TCP? "TCP" : "UDP";
+	auto protocol = protocol_to_string(mapping.protocol);
 
 	UPnPActionArgs args {
 		.action = "AddPortMapping",
@@ -106,7 +117,7 @@ UPnPActionArgs IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
 }
 
 UPnPActionArgs IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
-	std::string protocol = mapping.protocol == Protocol::PROTO_TCP? "TCP" : "UDP";
+	std::string protocol = mapping.protocol == Protocol::TCP? "TCP" : "UDP";
 
 	UPnPActionArgs args {
 		.action = "DeletePortMapping",
@@ -257,11 +268,15 @@ ba::awaitable<void> IGDevice::launch_request(std::shared_ptr<UPnPRequest> reques
 	co_await process_request(request);
 }
 
-ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
 		co_return ErrorCode::SOAP_MISSING_URI;
+	}
+
+	if(mapping.protocol == Protocol::ALL) {
+		co_return ErrorCode::INVALID_MAPPING_ARG;
 	}
 
 	auto args = build_upnp_del_mapping(mapping);
@@ -271,7 +286,6 @@ ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping& mapping, HTTPTra
 	}
 
 	auto body = build_soap_request(std::move(args));
-
 	auto request = build_http_post_request<std::vector<std::uint8_t>>(
 		std::move(body), "DeletePortMapping", *post_uri
 	);
@@ -316,7 +330,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 	return ErrorCode::SUCCESS;
 }
 
-ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping& mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
@@ -327,8 +341,11 @@ ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransp
 		mapping.internal_ip = transport.local_endpoint().address().to_string();
 	}
 
-	auto args = build_upnp_add_mapping(mapping);
+	if(mapping.protocol == Protocol::ALL) {
+		co_return ErrorCode::INVALID_MAPPING_ARG;
+	}
 
+	auto args = build_upnp_add_mapping(mapping);
 	if(auto result = validate_soap_arguments(args); result != ErrorCode::SUCCESS) {
 		co_return result;
 	}
@@ -349,11 +366,11 @@ ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping& mapping, HTTPTransp
 	co_return ErrorCode::SUCCESS;
 }
 
-void IGDevice::map_port(Mapping mapping, Result cb) {
+void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 	auto shared = shared_from_this();
 
 	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
-		co_return co_await add_port_mapping(mapping, transport);
+		co_return co_await do_add_port_mapping(mapping, transport);
 	};
 
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);
@@ -373,11 +390,11 @@ void IGDevice::map_port(Mapping mapping, Result cb) {
 	});
 }
 
-void IGDevice::unmap_port(Mapping mapping, Result cb) {
+void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	auto shared = shared_from_this();
 
 	auto handler = [=, this](HTTPTransport& transport) mutable -> ba::awaitable<ErrorCode> {
-		co_return co_await delete_port_mapping(mapping, transport);
+		co_return co_await do_delete_port_mapping(mapping, transport);
 	};
 
 	auto transport = std::make_unique<HTTPTransport>(ctx_, bind_);

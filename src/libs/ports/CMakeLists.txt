@@ -17,6 +17,7 @@ add_library(${LIBRARY_NAME}
 		   src/upnp/XMLParser.cpp
 		   src/upnp/Utility.cpp
 		   src/upnp/SCPDXMLParser.cpp
+		   include/ports/Protocol.h
            include/ports/pcp/Client.h
 		   include/ports/pcp/Results.h
 		   include/ports/pcp/Daemon.h

@@ -28,7 +28,8 @@ smart_enum_class(ErrorCode, int,
 	WRONG_SOURCE,
 	RETRY_NATPMP,
 	PCP_CODE,
-	NATPMP_CODE
+	NATPMP_CODE,
+	INVALID_PROTOCOL
 );
 
 struct Error {

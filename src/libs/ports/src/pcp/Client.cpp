@@ -352,11 +352,21 @@ ErrorCode Client::add_mapping_natpmp(const MapRequest& request) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 
-	const auto protocol = (request.protocol == Protocol::TCP)?
-		natpmp::Opcode::TCP : natpmp::Opcode::UDP;
+	natpmp::Opcode opcode{};
+	
+	switch(request.protocol) {
+		case Protocol::TCP:
+			opcode = natpmp::Opcode::TCP;
+			break;
+		case Protocol::UDP:
+			opcode = natpmp::Opcode::UDP;
+			break;
+		default:
+			return ErrorCode::INVALID_PROTOCOL;
+	}
 
 	const natpmp::MapRequest mapping {
-		.opcode = protocol,
+		.opcode = opcode,
 		.internal_port = request.internal_port,
 		.external_port = request.external_port,
 		.lifetime = request.lifetime
@@ -460,8 +470,21 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 	const auto& bytes = v6.to_bytes();
 	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
 
-	const auto protocol = (request.protocol == Protocol::TCP)?
-		pcp::Protocol::TCP : pcp::Protocol::UDP;
+	pcp::Protocol protocol{};
+
+	switch(request.protocol) {
+		case Protocol::TCP:
+			protocol = pcp::Protocol::TCP;
+			break;
+		case Protocol::UDP:
+			protocol = pcp::Protocol::UDP;
+			break;
+		case Protocol::ALL:
+			protocol = pcp::Protocol::ALL;
+			break;
+		default:
+			return ErrorCode::INVALID_PROTOCOL;
+	}
 
 	pcp::MapRequest map {
 		.nonce = request.nonce,
