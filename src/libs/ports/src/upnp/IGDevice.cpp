@@ -118,7 +118,7 @@ UPnPActionArgs IGDevice::build_upnp_add_mapping(const Mapping& mapping) {
 }
 
 UPnPActionArgs IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
-	std::string protocol = mapping.protocol == Protocol::TCP? "TCP" : "UDP";
+	std::string protocol = protocol_to_string(mapping.protocol);
 
 	UPnPActionArgs args {
 		.action = "DeletePortMapping",
@@ -192,9 +192,8 @@ ba::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
 
 ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 	co_await request_scpd(transport);
-	const auto response = co_await transport.receive_http_response();
-	const auto body = http_body_from_response(response);
-	const auto& [header, buffer] = response;
+	const auto& [header, buffer] = co_await transport.receive_http_response();
+	const auto body = http_body_view(header, buffer);
 
 	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
 		try {
@@ -207,13 +206,10 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 		scpd_cc_ = std::chrono::steady_clock::now();
 	}
 
-	// we don't actually care about this XML but we might in the future (x to doubt)
 	scpd_xml_ = std::move(std::make_unique<SCPDXMLParser>(body));
 }
 
-std::string_view IGDevice::http_body_from_response(const HTTPTransport::Response& response) {
-	const auto& [header, buffer] = response;
-
+std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<char> buffer) {
 	if(header.code != HTTPResponseCode::HTTP_OK 
 	   || header.fields.find("Content-Length") == header.fields.end()) {
 		throw std::invalid_argument("Bad HTTP response");
@@ -226,9 +222,8 @@ std::string_view IGDevice::http_body_from_response(const HTTPTransport::Response
 
 ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	co_await request_igdd(transport);
-	const auto response = co_await transport.receive_http_response();
-	const auto& [header, buffer] = response;
-	const auto body = http_body_from_response(response);
+	const auto& [header, buffer] = co_await transport.receive_http_response();
+	const auto body = http_body_view(header, buffer);
 
 	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
 		try {

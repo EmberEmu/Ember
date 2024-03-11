@@ -92,7 +92,7 @@ private:
 	template<typename BufType>
 	BufType build_http_request(const HTTPRequest& request);
 	std::string build_soap_request(const UPnPActionArgs&& args);
-	std::string_view http_body_from_response(const HTTPTransport::Response& response);
+	std::string_view http_body_view(const HTTPHeader& header, std::span<char> buffer);
 	UPnPActionArgs build_upnp_add_mapping(const Mapping& mapping);
 	UPnPActionArgs build_upnp_del_mapping(const Mapping& mapping);
 
