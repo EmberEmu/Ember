@@ -42,23 +42,25 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 		interleave = !interleave;
 	}
 
-	if(!(B % gen_.prime()) || B < 0) {
+	const BigInt& N = gen_.prime();
+
+	if(!(B % N) || B < 0) {
 		throw exception("Server's ephemeral key is invalid!");
 	}
 
 	B_ = B;
 
-	BigInt u = detail::scrambler(A_, B, gen_.prime().bytes(), mode);
+	BigInt u = detail::scrambler(A_, B, N.bytes(), mode);
 
 	if(u <= 0) {
 		throw exception("Scrambling parameter <= 0");
 	}
 
 	BigInt x = detail::compute_x(identifier_, password_, salt, mode);
-	BigInt S = power_mod((B - k_ * gen_(x)) % gen_.prime(), a_ + u * x, gen_.prime());
+	BigInt S = power_mod((B - k_ * gen_(x)) % N, a_ + u * x, N);
 	
 	if(interleave) {
-		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, B_.bytes())));
+		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N.bytes())));
 	} else {
 		KeyType key;
 		key.resize(S.bytes());
