@@ -83,7 +83,7 @@ ErrorCode SSDP::validate_message(std::span<const std::uint8_t> datagram) {
 		return ErrorCode::HTTP_BAD_HEADERS;
 	}
 
-	if(header.code != HTTPResponseCode::HTTP_OK) {
+	if(header.code != HTTPStatus::OK) {
 		return ErrorCode::HTTP_NOT_OK;
 	}
 

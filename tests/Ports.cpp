@@ -9,10 +9,12 @@
 #include "PortsVectors.h"
 #include <ports/pcp/Serialise.h>
 #include <ports/pcp/Deserialise.h>
+#include <ports/upnp/HTTPHeaderParser.h>
 #include <boost/endian.hpp>
 #include <gtest/gtest.h>
 #include <boost/asio/ip/address.hpp>
 #include <array>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <cstdint>
@@ -293,4 +295,135 @@ TEST_F(Ports, PCP_TestResponseVector) {
 	ASSERT_EQ(body.protocol, pcp::Protocol::TCP);
 	ASSERT_EQ(body.reserved, reserved);
 	ASSERT_EQ(body.nonce, nonce);
+}
+
+TEST(PortsUPnP, HTTPHeader_Parse) {
+	std::string_view header {
+		R"(HTTP/1.1 200 OK)" "\r\n"
+		R"(Cache-Control: max-age=120)" "\r\n"
+		R"(Connection: Keep-Alive)" "\r\n"
+		R"(Content-Length: 14813)" "\r\n"
+		R"(Content-Type: text/xml)" "\r\n"
+		R"(Date: Tue, 12 Mar 2024 21:42:45 GMT)" "\r\n"
+		R"(ETag: "5B88239F8043B07A")" "\r\n"
+		R"(Expires: Tue, 12 Mar 2024 21:44:45 GMT)" "\r\n"
+		R"(Last-Modified: Fri, 02 Jun 2023 14:34:02 GMT)" "\r\n"
+		R"(Mime-Version: 1.0)" "\r\n"
+		R"(Keep-Alive: timeout=60, max=300)" "\r\n"
+	};
+	
+	upnp::HTTPHeader parsed{};
+	ASSERT_TRUE(upnp::parse_http_header(header, parsed));
+	ASSERT_EQ(parsed.code, upnp::HTTPStatus::OK);
+	ASSERT_EQ(parsed.fields["Cache-Control"], "max-age=120");
+	ASSERT_EQ(parsed.fields["Connection"], "Keep-Alive");
+	ASSERT_EQ(parsed.fields["Content-Length"], "14813");
+	ASSERT_EQ(parsed.fields["Content-Type"], "text/xml");
+	ASSERT_EQ(parsed.fields["Date"], "Tue, 12 Mar 2024 21:42:45 GMT");
+	ASSERT_EQ(parsed.fields["ETag"], R"("5B88239F8043B07A")");
+	ASSERT_EQ(parsed.fields["Expires"], "Tue, 12 Mar 2024 21:44:45 GMT");
+	ASSERT_EQ(parsed.fields["Last-Modified"], "Fri, 02 Jun 2023 14:34:02 GMT");
+	ASSERT_EQ(parsed.fields["Mime-Version"], "1.0");
+	ASSERT_EQ(parsed.fields["Keep-Alive"], "timeout=60, max=300");
+
+
+	header = std::string_view{
+		R"(HTTP/1.1 404 Not Found)" "\r\n"
+		R"(Access-Control-Allow-Origin: *)" "\r\n"
+		R"(Connection: Keep-Alive)" "\r\n"
+		R"(Content-Encoding: gzip)" "\r\n"
+		R"(Content-Type: text/html; charset=utf-8)" "\r\n"
+		R"(Date: Mon, 18 Jul 2016 16:06:00 GMT)" "\r\n"
+		R"(Etag: "c561c68d0ba92bbeb8b0f612a9199f722e3a621a")" "\r\n"
+		R"(Keep-Alive: timeout=5, max=997)" "\r\n"
+		R"(Last-Modified: Mon, 18 Jul 2016 02:36:04 GMT)" "\r\n"
+		R"(Server: Apache)" "\r\n"
+		R"(Set-Cookie: mykey=myvalue; expires=Mon, 17-Jul-2017 16:06:00 GMT; Max-Age=31449600; Path=/; secure)" "\r\n"
+		R"(Transfer-Encoding: chunked)" "\r\n"
+		R"(Vary: Cookie, Accept-Encoding)" "\r\n"
+		R"(X-Backend-Server: developer2.webapp.scl3.mozilla.com)" "\r\n"
+		R"(X-Cache-Info: not cacheable; meta data too large)" "\r\n"
+		R"(X-kuma-revision: 1085259)" "\r\n"
+		R"(x-frame-options: DENY)" "\r\n"
+	};
+	
+	parsed = {};
+	ASSERT_TRUE(upnp::parse_http_header(header, parsed));
+	ASSERT_EQ(parsed.code, upnp::HTTPStatus::NOT_FOUND);
+
+	// make sure the lookup is case-insensitive
+	ASSERT_EQ(parsed.fields["Access-Control-Allow-Origin"], "*");
+	ASSERT_EQ(parsed.fields["aCcesS-COntroL-allow-origiN"], "*");
+	ASSERT_EQ(parsed.fields["ACCESS-CONTROL-ALLOW-ORIGIN"], "*");
+	ASSERT_EQ(parsed.fields["access-control-allow-origin"], "*");
+
+	ASSERT_EQ(parsed.fields["Connection"], "Keep-Alive");
+	ASSERT_EQ(parsed.fields["Content-Encoding"], "gzip");
+	ASSERT_EQ(parsed.fields["Content-Type"], "text/html; charset=utf-8");
+	ASSERT_EQ(parsed.fields["Date"], "Mon, 18 Jul 2016 16:06:00 GMT");
+	ASSERT_EQ(parsed.fields["Etag"], R"("c561c68d0ba92bbeb8b0f612a9199f722e3a621a")");
+	ASSERT_EQ(parsed.fields["Keep-Alive"], "timeout=5, max=997");
+	ASSERT_EQ(parsed.fields["Last-Modified"], "Mon, 18 Jul 2016 02:36:04 GMT");
+	ASSERT_EQ(parsed.fields["Server"], "Apache");
+	ASSERT_EQ(parsed.fields["Set-Cookie"], "mykey=myvalue; expires=Mon, 17-Jul-2017 16:06:00 GMT; Max-Age=31449600; Path=/; secure");
+	ASSERT_EQ(parsed.fields["Transfer-Encoding"], "chunked");
+	ASSERT_EQ(parsed.fields["Vary"], "Cookie, Accept-Encoding");
+	ASSERT_EQ(parsed.fields["X-Backend-Server"], "developer2.webapp.scl3.mozilla.com");
+	ASSERT_EQ(parsed.fields["X-Cache-Info"], "not cacheable; meta data too large");
+	ASSERT_EQ(parsed.fields["X-kuma-revision"], "1085259");
+	ASSERT_EQ(parsed.fields["x-frame-options"], "DENY");
+}
+
+TEST(PortsUPnP, HTTPHeader_Invalid) {
+	std::string_view header {
+		R"(Cache-Control: max-age=120))" "\r\n"
+		R"(Connection: Keep-Alive)" "\r\n"
+		R"(Content-Length: 14813)" "\r\n"
+		R"(Content-Type: text/xml)" "\r\n"
+		R"(Date: Tue, 12 Mar 2024 21:42:45 GMT)" "\r\n"
+		R"(ETag: "5B88239F8043B07A")" "\r\n"
+		R"(Expires: Tue, 12 Mar 2024 21:44:45 GMT)" "\r\n"
+		R"(Last-Modified: Fri, 02 Jun 2023 14:34:02 GMT)" "\r\n"
+		R"(Mime-Version: 1.0)" "\r\n"
+		R"(Keep-Alive: timeout=60, max=300)" "\r\n"
+	};
+
+	upnp::HTTPHeader parsed{};
+	ASSERT_FALSE(upnp::parse_http_header(header, parsed));
+}
+
+TEST(PortsUPnP, SVToInt) {
+	EXPECT_ANY_THROW(upnp::sv_to_int("test"));
+	EXPECT_ANY_THROW(upnp::sv_to_int(" 1234567"));
+	EXPECT_ANY_THROW(upnp::sv_to_int("1234567 "));
+	EXPECT_ANY_THROW(upnp::sv_to_int("a1234567"));
+	EXPECT_ANY_THROW(upnp::sv_to_int("1234567a"));
+	EXPECT_ANY_THROW(upnp::sv_to_int("0xFFFF"));
+	EXPECT_ANY_THROW(upnp::sv_to_int("0b00000001"));
+	EXPECT_EQ(123456789, upnp::sv_to_int("0123456789"));
+	EXPECT_EQ(0, upnp::sv_to_int("0"));
+	constexpr auto int_max = std::numeric_limits<int>::max();
+	const auto int_max_str = std::to_string(int_max);
+	EXPECT_EQ(int_max, upnp::sv_to_int(int_max_str));
+	constexpr auto int_min = std::numeric_limits<int>::min();
+	const auto int_min_str = std::to_string(int_min);
+	EXPECT_EQ(int_min, upnp::sv_to_int(int_min_str));
+}
+
+TEST(PortsUPnP, SVToLong) {
+	constexpr auto max = std::numeric_limits<long>::max();
+	const auto max_str = std::to_string(max);
+	EXPECT_EQ(max, upnp::sv_to_long(max_str));
+	constexpr auto min = std::numeric_limits<long>::min();
+	const auto min_str = std::to_string(min);
+	EXPECT_EQ(min, upnp::sv_to_long(min_str));
+}
+
+TEST(PortsUPnP, SVToLongLong) {
+	constexpr auto max = std::numeric_limits<long long>::max();
+	const auto max_str = std::to_string(max);
+	EXPECT_EQ(max, upnp::sv_to_ll(max_str));
+	constexpr auto min = std::numeric_limits<long long>::min();
+	const auto min_str = std::to_string(min);
+	EXPECT_EQ(min, upnp::sv_to_ll(min_str));
 }

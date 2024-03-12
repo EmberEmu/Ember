@@ -16,18 +16,22 @@ long long span_to_ll(std::span<const char> span) {
 	long long value = 0;
 	auto length = span.size_bytes();
 	auto data = span.begin();
+	bool negative = false;
 
 	while(length) {
-		if(std::isdigit(*data) == 0) {
+		if(length == span.size_bytes() && *data == '-') {
+			negative = true;
+		} else if(std::isdigit(*data) == 0) {
 			throw std::invalid_argument("span_to_int: cannot convert");
+		} else {
+			value = (value * 10) + (*data - '0');
 		}
 
-		value = (value * 10) + (*data - '0');
 		++data;
 		--length;
 	}
 
-	return value;
+	return negative? -value : value;
 }
 
 /*

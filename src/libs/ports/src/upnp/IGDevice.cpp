@@ -210,7 +210,7 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 }
 
 std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<char> buffer) {
-	if(header.code != HTTPResponseCode::HTTP_OK 
+	if(header.code != HTTPStatus::OK 
 	   || header.fields.find("Content-Length") == header.fields.end()) {
 		throw std::invalid_argument("Bad HTTP response");
 	}
@@ -302,7 +302,7 @@ ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping mapping, HTTPT
 	co_await transport.send(std::move(request));
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 
-	if(header.code != HTTPResponseCode::HTTP_OK) {
+	if(header.code != HTTPStatus::OK) {
 		co_return ErrorCode::HTTP_NOT_OK;
 	}
 
@@ -368,7 +368,7 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTran
 	co_await transport.send(std::move(request));
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 	
-	if(header.code != HTTPResponseCode::HTTP_OK) {
+	if(header.code != HTTPStatus::OK) {
 		co_return ErrorCode::HTTP_NOT_OK;
 	}
 
