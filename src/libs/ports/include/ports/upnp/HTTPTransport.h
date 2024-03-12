@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 
 class HTTPTransport final {
 public:
-	using Response = std::pair<HTTPHeader, std::span<char>>;
+	using Response = std::pair<HTTPHeader, std::span<const char>>;
 
 private:
 	static constexpr std::size_t INITIAL_BUFFER_SIZE = 65536u;

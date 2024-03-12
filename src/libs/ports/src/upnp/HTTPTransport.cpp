@@ -76,7 +76,7 @@ auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
 	}
 
 	timeout_.cancel();
-	co_return std::make_pair(header, std::span(buffer_.data(), total_read));
+	co_return std::make_pair(header, std::span(buffer_.cbegin(), total_read));
 }
 
 std::size_t HTTPTransport::http_body_completion(const HTTPHeader& header,

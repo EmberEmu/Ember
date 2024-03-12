@@ -209,7 +209,7 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 	scpd_xml_ = std::move(std::make_unique<SCPDXMLParser>(body));
 }
 
-std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<char> buffer) {
+std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<const char> buffer) {
 	if(header.code != HTTPStatus::OK 
 	   || header.fields.find("Content-Length") == header.fields.end()) {
 		throw std::invalid_argument("Bad HTTP response");
