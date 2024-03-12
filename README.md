@@ -68,9 +68,9 @@ Ember currently targets C++23 but allows for the use of upcoming language additi
 
 |  | master  | development |
 | :------------ |:---------------:|:---------------:|
+| GitHub   | [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml)| [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=development)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml) |
 | AppVeyor | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/development?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/development)  |
 | Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
-
 ### Why WoW 1.12.1?
 
 Our primary goal isn't to produce a feature-complete, up-to-date emulator to use with newer clients. The 1.12.1 protocol was chosen as a fixed target to leverage the extensive research of prior projects, allowing for greater focus on writing code over reverse engineering.
