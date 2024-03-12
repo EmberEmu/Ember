@@ -47,7 +47,7 @@ ssdp.locate_gateways([&](const ports::upnp::LocateResult& result) {
         return true;
     }
 
-	// Build our port mapping request to send to the device
+    // Build our port mapping request to send to the device
     ports::upnp::Mapping map {
         .external = 3724, // the port to open to the world
         .internal = 3724, // the port that all traffic to the external port should be forwarded to
@@ -55,7 +55,7 @@ ssdp.locate_gateways([&](const ports::upnp::LocateResult& result) {
         .protocol = ports::Protocol::TCP // can be TCP or UDP
     };
 
-	// use the device found during SSDP to request it to add a port mapping
+    // use the device found during SSDP to request it to add a port mapping
     result->device->add_port_mapping(map, [&, map](ports::upnp::ErrorCode result) {
         if(result == ports::upnp::ErrorCode::SUCCESS) {
             std::print("Port {} mapped successfully", mapping.external);
@@ -88,21 +88,21 @@ int main() {
         .protocol = ports::Protocol::TCP
     };
 
-	boost::asio::io_context ctx;
-	
-	// Run io_context on another thread
-	auto worker = std::jthread(
-		static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
-	);
+    boost::asio::io_context ctx;
+    
+    // Run io_context on another thread
+    auto worker = std::jthread(
+        static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
+    );
 
-	ba::co_spawn(ctx_, add_port_mapping(ctx, mapping), ba::detached);
+    ba::co_spawn(ctx_, add_port_mapping(ctx, mapping), ba::detached);
 }
 
 boost::asio::awaitable<void> add_port_mapping(boost::asio::io_context& ctx,
                                               ports::upnp::Mapping map) {
-	using awaitable = ports::upnp::use_awaitable;
+    using awaitable = ports::upnp::use_awaitable;
 
-	ports::upnp::SSDP ssdp(interface, ctx, awaitable);
+    ports::upnp::SSDP ssdp(interface, ctx, awaitable);
     auto locate_res = co_await ssdp.locate_gateways(awaitable);
 
     if(!locate_res) {
@@ -117,21 +117,21 @@ Here's the same again but with `std::future`.
 
 ```cpp
 void add_port_mapping(boost::asio::io_context& ctx, ports::upnp::Mapping map) {
-	using future = ports::upnp::use_future;
+    using future = ports::upnp::use_future;
 
-	ports::upnp::SSDP ssdp(interface, ctx);
+    ports::upnp::SSDP ssdp(interface, ctx);
     auto lg_future = ssdp.locate_gateways(future);
-	auto result = lg_future.get();
+    auto result = lg_future.get();
 
     if(!result) {
         return;
     }
 
     auto apm_future = result->device->add_port_mapping(map, future);
-	auto ec = apm_future.get();
+    auto ec = apm_future.get();
 
     if(!ec) {
-	    std::cout << "Great success!";
+        std::cout << "Great success!";
     }
 }
 ```
@@ -153,10 +153,10 @@ Here's an example of mapping a port with NAT-PMP/PCP.
 
 ```cpp
 const ports::MapRequest request {
-	.protocol      = ports::Protocol::TCP,
-	.internal_port = 8085,
-	.external_port = 8085,
-	.lifetime      = 7200u
+    .protocol      = ports::Protocol::TCP,
+    .internal_port = 8085,
+    .external_port = 8085,
+    .lifetime      = 7200u
 };
 
 boost::asio::io_context ctx;
@@ -164,19 +164,19 @@ ports::Client client(interface, gateway, ctx);
 
 // Run io_context on another thread
 auto worker = std::jthread(
-	static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
+    static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
 );
 
 std::future<ports::Result> future = client.add_mapping(request);
 auto result = future.get();
 
 if(result) {
-	std::print("Success! Mapped {} -> {} for {} seconds\n",
-	           result->external_port,
-	           result->internal_port,
-	           result->lifetime);
+    std::print("Success! Mapped {} -> {} for {} seconds\n",
+               result->external_port,
+               result->internal_port,
+               result->lifetime);
 } else {
-	std::cout << "Error: could not map port";
+    std::cout << "Error: could not map port";
 }
 ```
 
@@ -185,14 +185,14 @@ Here's the same but with the `std::future` is replaced by a callback.
 bool strict = false; // more on this below
 
 client.add_mapping(request, strict, [&](const ports::Result& result) {
-	if(result) {
-		std::print("Success! Mapped {} -> {} for {} seconds\n",
-			       result->external_port,
-				   result->internal_port,
-		           result->lifetime);
-	} else {
-		std::cout << "Error: could not map port";
-	}
+    if(result) {
+        std::print("Success! Mapped {} -> {} for {} seconds\n",
+                   result->external_port,
+                   result->internal_port,
+                   result->lifetime);
+    } else {
+        std::cout << "Error: could not map port";
+    }
 });
 ```
 ### Strict Mode
@@ -216,7 +216,7 @@ Deleting a mapping with `delete_mapping` only requires the internal port and pro
 auto result = client.delete_mapping(3724, ports::Protocol::TCP);
 
 if(result) {
-	std::cout << "Wahoo!";
+    std::cout << "Wahoo!";
 }
 ```
 
@@ -227,10 +227,10 @@ auto future = client.external_address();
 const auto result = future.get();
 
 if(result) {
-	const auto v6 = boost::asio::ip::address_v6(result->external_ip);
-	std::print("External address: {}", v6.to_string());
+    const auto v6 = boost::asio::ip::address_v6(result->external_ip);
+    std::print("External address: {}", v6.to_string());
 } else {
-	std::cout << "Error: could not retrieve external address";
+    std::cout << "Error: could not retrieve external address";
 }
 ```
 Addresses are returned in IPv6 format. If your address is IPv4, it will be converted to an IPv4 mapped IPv6 address. Such an address is represented as `::FFFF:a.b.c.d`, where the last four bytes are the same as they would be an IPv4 address stored as an integer, with the two prior bytes indicating that this is a mapped address.
@@ -249,10 +249,10 @@ As manually managing mappings, particularly short-lived ones, can be ardous, a h
 Here's an example of using the service to create a mapping that will live for at least the lifetime of the process. The arguments and return values are identical to those of `Client`.
 ```cpp
 const ports::MapRequest request {
-	.protocol      = ports::Protocol::TCP,
-	.internal_port = 8085,
-	.external_port = 8085,
-	.lifetime      = 7200u
+    .protocol      = ports::Protocol::TCP,
+    .internal_port = 8085,
+    .external_port = 8085,
+    .lifetime      = 7200u
 };
 
 boost::io_context ctx;
@@ -260,14 +260,14 @@ ports::Client client(interface, gateway, ctx);
 ports::Daemon daemon(client, ctx);
 
 daemon.add_mapping(MapRequest request, bool strict, [&](const ports::Result& result) {
-	if(result) {
-		std::print("Success! Mapped {} -> {} for {} seconds\n",
-			       result->external_port,
-				   result->internal_port,
-		           result->lifetime);
-	} else {
-		std::cout << "Error: could not map port";
-	}
+    if(result) {
+        std::print("Success! Mapped {} -> {} for {} seconds\n",
+                   result->external_port,
+                   result->internal_port,
+                   result->lifetime);
+    } else {
+        std::cout << "Error: could not map port";
+    }
 });
 ```
 
@@ -278,7 +278,7 @@ Because it's possible for mapping refreshes to fail, you may wish to register a 
 
 ```cpp
 daemon.event_handler([](ports::Daemon::Event event, const MapRequest& request) {
-	// handle the event here
+    // handle the event here
 });
 ```
 
