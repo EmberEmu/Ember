@@ -16,11 +16,11 @@ These are three main technical standards that allow for automatically opening/fo
 UPnP (Universal Plug and Play) is the most complex of the three, largely because it offers functionality that goes well beyond simply managing ports. The general jist is this:
 1) A service uses multicast UDP to broadcast a request to the entire local network, requesting devices or services that it is interested in using. In this case, we're interested in Internet gateway devices (a.k.a routers that implement NAT).
 2) A UPnP-capable device receives the request and checks to see whether it matches. If it does, it sends a response containing its details directly to the server that sent the broadcast.
-3) The service receives the response, parses it, then opens a HTTP connection to request further information about the device and the services it offers. It'll request/receive multiple XML files containing available servers and the functions exposed by those services.
-4) Once the service has all of the information it needs, it can effectively call a function on the device and receive a response, using an XML-based protocol known as SOAP.
+3) The service receives the response, parses it, then opens a HTTP connection to request further information about the device and the services it offers. It'll request/receive multiple XML files containing available services and the functions exposed by those services.
+4) Once the client service has all of the information it needs, it can call a function on the device and receive a response, using an XML-based protocol known as SOAP.
 
 ## NAT-PMP
-NAT-PMP (NAT Port Mapping Protocol), defined by RFC6886, is the simplest of the three. It is a binary protocol whose solution problem space is how to open ports on residential gateways. Aside from allowing users to request their external IP address, it does nothing more.
+NAT-PMP (NAT Port Mapping Protocol), defined by RFC6886, is the simplest of the three protocols. It is a binary protocol whose entire problem space is how to open ports on residential gateways. Aside from allowing users to request their external IP address, it does nothing more.
 
 ## PCP
 PCP (Port Control Protocol), defined by RFC6887, is the successor to NAT-PMP. It offers some additional functionality and flexibility; IPv6 support, the ability to open ports on machines other than the one sending the request, and other options suited to a more complex operating environment (e.g. an enterprise network).
@@ -71,7 +71,7 @@ ctx.run();
 ```
 Here's a breakdown of what's going on in this example.
 1) We create an ASIO `io_context`, which is used to run the networking functionality in the library. The user must provide it as it offers greater configuration flexibility than if the library were to simply create its own. For example, you could have the service run on your own thread pool or within the context of your main thread rather than requiring the service to create its own threads.
-2) We create `SSDP` instance, passing it the context and a string representing the machine's LAN IP.
+2) We create an `SSDP` instance, passing it the context and a string representing the machine's LAN IP.
 3) We request the SSDP service to send a multicast on the LAN to search for Internet gateway devices (in short, your router). The callback is invoked each time it receives a response from a device claiming to be compatible.
 4) Whenever we get a result, we need to ensure that it was successful. This shouldn't fail frequently but the error code is provided for diagnostic purposes.
 5) We initialise a structure, filling it with the details of the port mapping to be created.
@@ -145,7 +145,7 @@ Deletion (`delete_port_mapping`) is virtually the same as adding a port mapping.
 The UPnP facilities are fully thread-safe. You may issue parallel requests to a single returned device on multiple threads, as may be the case if your `io_context` is running on a thread pool.
 
 ## NAT-PMP & Port Control Protocol
-Because NAT-PMP and PCP are so closely related, the library implements them as a single service. As recommended by their specifications, clients should default to using PCP and only downgrading to NAT-PMP if a device indicates that it does not support PCP. This means that the library will first attempt to use PCP and will automatically downgrade and resend the request in NAT-PMP format if required. If the remote device does not understand either protocol, the library will return a `SERVER_INCOMPATIBLE` error.
+Because NAT-PMP and PCP are so closely related, the library implements them as a single service. As recommended by their specifications, clients should default to using PCP and only downgrade to NAT-PMP if a device indicates that it does not support PCP. This means that the library will first attempt to use PCP and will automatically downgrade and resend the request in NAT-PMP format if required. If the remote device does not understand either protocol, the library will return a `SERVER_INCOMPATIBLE` error.
 
 While implementing both protocols in a single service makes life easier for the user through automatically downgrading and retrying failed requests, it means that functionality is largely restricted to the subset supported by NAT-PMP. Some PCP-only functionality is supported but `disable_natpmp(true)` should be called beforehand.
 
@@ -180,7 +180,7 @@ if(result) {
 }
 ```
 
-Here's the same but with the `std::future` is replaced by a callback.
+Here's the same example but using a callback.
 ```cpp
 bool strict = false; // more on this below
 
@@ -206,18 +206,20 @@ If you don't care about the port you're given, you can simply assign `0` to the 
 ### Refreshing Mappings
 The remote device may place limits on how long a port mapping is valid before it will clear it, so always check the result to discover how long the device has promised to keep the mapping valid for. It may not be the same value as you requested. To refresh mapping duration, simply repeat the request but ensure that the `external_port` field is set to the value that was returned by the remote device, in case it differs from your request.
 
-Additionally, for PCP, the `nonce` field in the mapping request should match that of the original request. So, if you wish to refresh a PCP mapping, ensure you set it to the same value as was originally used for the initial request. If did not set a value initially, the client handles it internally and will return the actual used value with the mapping request result.
+Additionally, for PCP, the `nonce` field in the mapping request should match that of the original request. If you did not set a value initially, the client handles it internally and will return the actual used value with the mapping request result.
 
-If a mapping is not refreshed before it expires, the remote device will *may* close all connections that are using the port.
+If a mapping is not refreshed before it expires, the remote device *may* close all connections that are using the port.
 
+### TCP? UDP? Why not both?
+PCP supports opening a mapping for both TCP and UDP in a single request. To do this, set the protocol to `Protocol::ALL`. If the request is downgraded to NAT-PMP with this value set, the request will fail with `INVALID_PROTOCOL`.
 ### Deletion
 Deleting a mapping with `delete_mapping` only requires the internal port and protocol. For example:
 ```cpp
-auto result = client.delete_mapping(3724, ports::Protocol::TCP);
-
-if(result) {
-    std::cout << "Wahoo!";
-}
+client.delete_mapping(3724, ports::Protocol::TCP, [](const ports::Result& result) {
+	if(result) {
+		std::cout << "Wahoo!";
+	}
+});
 ```
 
 ### External Address
@@ -233,12 +235,12 @@ if(result) {
     std::cout << "Error: could not retrieve external address";
 }
 ```
-Addresses are returned in IPv6 format. If your address is IPv4, it will be converted to an IPv4 mapped IPv6 address. Such an address is represented as `::FFFF:a.b.c.d`, where the last four bytes are the same as they would be an IPv4 address stored as an integer, with the two prior bytes indicating that this is a mapped address.
+Addresses are returned in IPv6 format. If your address is IPv4, it will be converted to an IPv4 mapped IPv6 address. Such an address is represented as `::FFFF:a.b.c.d`, where the last four bytes are the same as they would for an IPv4 address stored as an integer, with the two prior bytes indicating that this is a mapped address.
 
 As NAT-PMP does not fully support IPv6, the results of requesting an external IPv6 address through NAT-PMP are not clear. To be certain that you won't run foul of any odd behaviour, call `disable_natpmp(true)`.
 
 ### Usage Notes
-It's important that you do not make simultaneous mapping requests. This is because NAT-PMP does include any form of transaction ID to allow for uniquely identifying in-flight requests. As the protocol runs over UDP, this could lead to multiple requests being handled incorrectly. Although PCP does include identifiers and the library validates that the response matches the request, it does not allow for more than one identifier to be tracked at a time, given the additional complexity induced by supporting both protocols. If you *really* need to issue simultaneous requests, do so on different `Client` instances, although this is not recommended. Additionally, the RFCs advise against issuing multiple requests to avoid potentially overloading the remote service given that it's likely a low-power home device, although this is not likely to be an issue in reality.
+It's important that you do not make simultaneous mapping requests. This is because NAT-PMP does include any form of transaction ID to allow for uniquely identifying in-flight requests. As the protocol runs over UDP, this could lead to multiple requests being handled incorrectly. Although PCP does include identifiers and the library validates that the response matches the request, it does not allow for more than one identifier to be tracked at a time, given the additional complexity induced by supporting both protocols. If you *really* need to issue simultaneous requests, do so on different `Client` instances, although this is not recommended. Additionally, the RFCs advise against issuing multiple requests to avoid potentially overloading the remote device given that it's likely a low-power home device, although this is not likely to be an issue in reality.
 
 ### Thread Safety
 `Client` is internally thread-safe, which means it's safe to provide it with an `io_context` running in a thread pool.
@@ -271,7 +273,7 @@ daemon.add_mapping(MapRequest request, bool strict, [&](const ports::Result& res
 });
 ```
 
-Once you've successfully mapped a port via the daemon, it will attempt to keep it alive for the entire duration of the process. It can also detect if the remote device has potentially lost its mapping (power loss, reboot, etc) and will attempt to re-request all lost mappings.
+Once you've successfully mapped a port via the daemon, it will attempt to keep it alive for the entire duration of the process. It can also detect if the remote device has potentially lost its mappings (power loss, reboot, etc) and will attempt to recreate all lost mappings.
 
 ### Event Callback
 Because it's possible for mapping refreshes to fail, you may wish to register a callback to receive key events from the daemon. Alternatively, you could use it for logging purposes.
@@ -285,4 +287,4 @@ daemon.event_handler([](ports::Daemon::Event event, const MapRequest& request) {
 The `event`  argument is one of several possible events (add, delete, renew failure, mapping expired) and the `request` argument is the mapping that the event is applicable to. This is same structure as used for adding/deleting a mapping.
 
 ## Conclusion
-The library provides easy interfaces for managing ports with the three major protocols. However, it does not support the full suite of protocol features, particularly with UPnP, since they aren't required in Ember's usecase. However, expanding the supported features would be fairly straightforward if necessary.
+The library provides easy interfaces for managing ports with the three major protocols. However, it does not support the full suite of protocol features, particularly with UPnP, since they aren't required for Ember's usecase. However, expanding the supported features would be fairly straightforward if necessary.
