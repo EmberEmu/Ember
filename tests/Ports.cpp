@@ -314,6 +314,7 @@ TEST(PortsUPnP, HTTPHeader_Parse) {
 	
 	upnp::HTTPHeader parsed{};
 	ASSERT_TRUE(upnp::parse_http_header(header, parsed));
+	ASSERT_EQ(parsed.text, "OK");
 	ASSERT_EQ(parsed.code, upnp::HTTPStatus::OK);
 	ASSERT_EQ(parsed.fields["Cache-Control"], "max-age=120");
 	ASSERT_EQ(parsed.fields["Connection"], "Keep-Alive");
@@ -349,6 +350,7 @@ TEST(PortsUPnP, HTTPHeader_Parse) {
 	
 	parsed = {};
 	ASSERT_TRUE(upnp::parse_http_header(header, parsed));
+	ASSERT_EQ(parsed.text, "Not Found");
 	ASSERT_EQ(parsed.code, upnp::HTTPStatus::NOT_FOUND);
 
 	// make sure the lookup is case-insensitive

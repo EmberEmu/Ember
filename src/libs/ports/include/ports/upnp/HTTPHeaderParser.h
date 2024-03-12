@@ -26,6 +26,7 @@ enum class ParseState {
 // If there are any exploits in this project, it'll likely be in this code ":D"
 static bool parse_http_header(const std::string_view text, HTTPHeader& header) {
 	auto state = ParseState::RESPONSE_CODE;
+	header.fields.clear();
 	auto beg = text.begin();
 
 	while(beg != text.end()) {
