@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015  - 2021 Ember
+ * Copyright (c) 2015  - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,15 @@ namespace ember::log {
 
 class Sink;
 
+template<std::size_t n>
+struct FormatLiteral {
+	constexpr FormatLiteral(const char (&fmt)[n]) {
+		std::copy_n(fmt, n, value);
+	}
+
+	char value[n];
+};
+
 class Logger final {
 	class impl;
 	std::unique_ptr<impl> pimpl_;
@@ -34,9 +43,10 @@ public:
 		finalise();
 	}
 
-	template<typename ... Args>
-	void fmt_write(const Severity severity, const std::string_view fmt, Args ... args) {
+	template<FormatLiteral fmtl, typename ... Args>
+	constexpr void fmt_write(const Severity severity, Args ... args) {
 		*this << severity;
+		constexpr auto fmt = fmtl.value;
 		auto buffer = get_buffer();
 		std::format_to(std::back_inserter(*buffer), fmt, args...);
 		finalise();
