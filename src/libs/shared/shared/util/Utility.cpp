@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,8 @@
 
 #ifdef _WIN32
     #include <Windows.h>
+#elif defined __linux__ || defined __unix__ || defined __APPLE__
+	#include <sys/resource.h>
 #endif
 
 namespace ember::util {
@@ -47,6 +49,35 @@ void set_window_title(std::string_view title) {
 #elif defined __linux__ || defined __unix__ // todo, test
   	std::cout << "\033]0;" << title << "}\007";
 #endif
+}
+
+int max_sockets() {
+#if defined __linux__ || defined __unix__ || defined __APPLE__
+	rlimit limit{};
+	const int res = getrlimit(RLIMIT_NOFILE, &limit);
+	
+	if(res == 0) {
+		return -1;
+	}
+
+	return limit.rlim_cur;
+#endif
+	return 0;
+}
+
+std::string max_sockets_desc() {
+	int max = max_sockets();
+	std::string value;
+
+	if(max == -1) {
+		value = "unable to retrieve value";
+	} else if(max == 0) {
+		value = "no known limits";
+	} else {
+		value = std::to_string(max);
+	}
+
+	return value;
 }
 
 } // util, ember

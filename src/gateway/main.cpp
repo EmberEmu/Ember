@@ -210,6 +210,10 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	Locator::set(&char_svc);
 	Locator::set(&config);
 	
+	// Misc. information
+	const auto max_socks = util::max_sockets_desc();
+	LOG_INFO_FMT(logger, "Max allowed sockets: {}", max_socks);
+
 	// Start network listener
 	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();

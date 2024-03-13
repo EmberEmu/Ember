@@ -56,19 +56,18 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace es = ember::spark;
-namespace el = ember::log;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
 using namespace std::chrono_literals;
+using namespace ember;
 
-void print_lib_versions(el::Logger* logger);
+void print_lib_versions(log::Logger* logger);
 std::vector<ember::GameVersion> client_versions();
-unsigned int check_concurrency(el::Logger* logger);
-int launch(const po::variables_map& args, el::Logger* logger);
+unsigned int check_concurrency(log::Logger* logger);
+int launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
+void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 
 const char* APP_NAME = "Login Daemon";
 
@@ -81,13 +80,13 @@ const char* APP_NAME = "Login Daemon";
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner(APP_NAME);
-	ember::util::set_window_title(APP_NAME);
+	print_banner(APP_NAME);
+	util::set_window_title(APP_NAME);
 
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = ember::util::init_logging(args);
-	el::set_global_logger(logger.get());
+	auto logger = util::init_logging(args);
+	log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	print_lib_versions(logger.get());
@@ -99,14 +98,14 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, el::Logger* logger) try {
+int launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
-	auto seed_bytes = std::as_writable_bytes(std::span(ember::rng::xorshift::seed));
+	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
@@ -115,7 +114,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(ember::drivers::init_db_driver(db_config_path));
+	auto driver(drivers::init_db_driver(db_config_path));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
@@ -133,30 +132,30 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	});
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
-	auto user_dao = ember::dal::user_dao(pool);
-	auto realm_dao = ember::dal::realm_dao(pool);
-	auto patch_dao = ember::dal::patch_dao(pool);
-	auto ip_ban_dao = ember::dal::ip_ban_dao(pool); 
-	auto ip_ban_cache = ember::IPBanCache(ip_ban_dao->all_bans());
+	auto user_dao = dal::user_dao(pool);
+	auto realm_dao = dal::realm_dao(pool);
+	auto patch_dao = dal::patch_dao(pool);
+	auto ip_ban_dao = dal::ip_ban_dao(pool); 
+	auto ip_ban_cache = IPBanCache(ip_ban_dao->all_bans());
 
 	// Load integrity, patch and survey data
 	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
-	std::unique_ptr<ember::IntegrityData> exe_data;
+	std::unique_ptr<IntegrityData> exe_data;
 
 	const auto allowed_clients = client_versions(); // move
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
-		exe_data = std::make_unique<ember::IntegrityData>(allowed_clients, bin_path);
+		exe_data = std::make_unique<IntegrityData>(allowed_clients, bin_path);
 	}
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
 
-	auto patches = ember::Patcher::load_patches(
+	auto patches = Patcher::load_patches(
 		args["patches.bin_path"].as<std::string>(), *patch_dao, logger
 	);
 
-	ember::Patcher patcher(allowed_clients, patches);
+	Patcher patcher(allowed_clients, patches);
 
 	if(args["survey.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
@@ -167,7 +166,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	}
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
-	ember::RealmList realm_list(realm_dao->get_realms());
+	RealmList realm_list(realm_dao->get_realms());
 
 	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
 
@@ -178,7 +177,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	// Start ASIO service
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 
-	ember::ThreadPool thread_pool(concurrency);
+	ThreadPool thread_pool(concurrency);
 	boost::asio::io_context service(concurrency);
 
 	// Start Spark services
@@ -188,30 +187,30 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
 	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
-	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
-	es::Service spark("login", service, s_address, s_port, logger);
-	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
+	spark::Service spark("login", service, s_address, s_port, logger);
+	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger);
 
-	ember::AccountService acct_svc(spark, discovery, logger);
-	ember::RealmService realm_svc(realm_list, spark, discovery, logger);
+	AccountService acct_svc(spark, discovery, logger);
+	RealmService realm_svc(realm_list, spark, discovery, logger);
 
 	// Start metrics service
-	auto metrics = std::make_unique<ember::Metrics>();
+	auto metrics = std::make_unique<Metrics>();
 
 	if(args["metrics.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Starting metrics service..." << LOG_SYNC;
-		metrics = std::make_unique<ember::MetricsImpl>(
+		metrics = std::make_unique<MetricsImpl>(
 			service, args["metrics.statsd_host"].as<std::string>(),
 			args["metrics.statsd_port"].as<std::uint16_t>()
 		);
 	}
 
 	// Start login server
-	ember::LoginHandlerBuilder builder(logger, patcher, exe_data.get(), *user_dao, acct_svc,
-	                                   realm_list, *metrics, args["locale.enforce"].as<bool>());
-	ember::LoginSessionBuilder s_builder(builder, thread_pool);
+	LoginHandlerBuilder builder(logger, patcher, exe_data.get(), *user_dao, acct_svc,
+	                            realm_list, *metrics, args["locale.enforce"].as<bool>());
+	LoginSessionBuilder s_builder(builder, thread_pool);
 
 	const auto& interface = args["network.interface"].as<std::string>();
 	auto port = args["network.port"].as<std::uint16_t>();
@@ -219,35 +218,46 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
-	ember::NetworkListener server(service, interface, port, tcp_no_delay, s_builder, ip_ban_cache,
+	NetworkListener server(service, interface, port, tcp_no_delay, s_builder, ip_ban_cache,
 	                              logger, *metrics);
 
 	// Start monitoring service
-	std::unique_ptr<ember::Monitor> monitor;
+	std::unique_ptr<Monitor> monitor;
 
 	if(args["monitor.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
 
-		monitor = std::make_unique<ember::Monitor>(	
+		monitor = std::make_unique<Monitor>(	
 			service, args["monitor.interface"].as<std::string>(),
 			args["monitor.port"].as<std::uint16_t>()
 		);
 
-		ember::install_net_monitor(*monitor, server, logger);
-		ember::install_pool_monitor(*monitor, pool, logger);
+		install_net_monitor(*monitor, server, logger);
+		install_pool_monitor(*monitor, pool, logger);
 	}
 
 	// Start metrics polling
-	ember::MetricsPoll poller(service, *metrics);
+	MetricsPoll poller(service, *metrics);
 
-	poller.add_source([&pool](ember::Metrics& metrics) {
+	poller.add_source([&pool](Metrics& metrics) {
 		metrics.gauge("db_connections", pool.size());
 	}, 5s);
 
-	poller.add_source([&server](ember::Metrics& metrics) {
+	poller.add_source([&server](Metrics& metrics) {
 		metrics.gauge("sessions", server.connection_count());
 	}, 5s);
 
+	// Misc. information
+	LOG_INFO_FMT(logger, "Max allowed sockets: {}", util::max_sockets_desc());
+	std::string builds;
+
+	for(const auto& client : allowed_clients) {
+		builds += std::to_string(client.build) + " ";
+	}
+
+	LOG_INFO_FMT(logger, "Allowed client builds: {}", builds);
+
+	// All done setting up
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
@@ -279,7 +289,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
  * This vector defines the client builds that are allowed to connect to the
  * server. All builds in this list should be using the same protocol version.
  */
-std::vector<ember::GameVersion> client_versions() {
+std::vector<GameVersion> client_versions() {
 	return {{1, 12, 1, 5875}, {1, 12, 2, 6005}};
 }
 
@@ -369,7 +379,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
  * in the machine but the standard doesn't guarantee that it won't be zero.
  * In that case, we just set the minimum concurrency level to two.
  */
-unsigned int check_concurrency(el::Logger* logger) {
+unsigned int check_concurrency(log::Logger* logger) {
 #ifdef DEBUG_NO_THREADS
 	return 0;
 #endif
@@ -384,19 +394,19 @@ unsigned int check_concurrency(el::Logger* logger) {
 	return concurrency;
 }
 
-void print_lib_versions(el::Logger* logger) {
+void print_lib_versions(log::Logger* logger) {
 	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
 	LOG_DEBUG(logger) << "- Boost " << BOOST_VERSION / 100000 << "."
 	                  << BOOST_VERSION / 100 % 1000 << "."
 	                  << BOOST_VERSION % 100 << LOG_SYNC;
 	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
-	LOG_DEBUG(logger) << "- " << ember::drivers::DriverType::name()
-	                  << " (" << ember::drivers::DriverType::version() << ")" << LOG_SYNC;
+	LOG_DEBUG(logger) << "- " << drivers::DriverType::name()
+	                  << " (" << drivers::DriverType::version() << ")" << LOG_SYNC;
 	LOG_DEBUG(logger) << "- PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << LOG_SYNC;
 	LOG_DEBUG(logger) << "- Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
-void pool_log_callback(ep::Severity severity, std::string_view message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger* logger) {
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {
