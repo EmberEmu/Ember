@@ -7,6 +7,7 @@
  */
 
 #include <ports/upnp/Utility.h>
+#include <gsl/gsl_util>
 #include <stdexcept>
 #include <cctype>
 
@@ -24,7 +25,7 @@ long long span_to_ll(std::span<const char> span) {
 		} else if(std::isdigit(*data) == 0) {
 			throw std::invalid_argument("span_to_int: cannot convert");
 		} else {
-			value = (value * 10) + (*data - '0');
+			value = (value * 10) + (static_cast<long long>(*data) - '0');
 		}
 
 		++data;
@@ -39,11 +40,11 @@ long long span_to_ll(std::span<const char> span) {
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
 int sv_to_int(const std::string_view string) {
-	return static_cast<int>(span_to_ll(string));
+	return gsl::narrow<int>(span_to_ll(string));
 }
 
 long sv_to_long(const std::string_view string) {
-	return static_cast<long>(span_to_ll(string));
+	return gsl::narrow<long>(span_to_ll(string));
 }
 
 long long sv_to_ll(const std::string_view string) {

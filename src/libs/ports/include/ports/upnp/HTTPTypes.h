@@ -96,7 +96,7 @@ struct HTTPRequest {
 */
 struct HTTPHeader {
 	using Field = std::pair<std::string_view, std::string_view>;
-	HTTPStatus code;
+	HTTPStatus code{};
 	std::string_view text;
 	std::unordered_map<std::string_view, std::string_view,
 		CaseInsensitive::Hash, CaseInsensitive::Comparator> fields;
