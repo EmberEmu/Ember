@@ -15,21 +15,19 @@ namespace ember::ports::upnp {
 
 long long span_to_ll(std::span<const char> span) {
 	long long value = 0;
-	auto length = span.size_bytes();
-	auto data = span.begin();
 	bool negative = false;
+	bool first = true;
 
-	while(length) {
-		if(length == span.size_bytes() && *data == '-') {
+	for(auto byte : span) {
+		if(first && byte == '-') {
 			negative = true;
-		} else if(std::isdigit(*data) == 0) {
+		} else if(std::isdigit(byte) == 0) {
 			throw std::invalid_argument("span_to_int: cannot convert");
 		} else {
-			value = (value * 10) + (static_cast<long long>(*data) - '0');
+			value = (value * 10) + (static_cast<long long>(byte) - '0');
 		}
 
-		++data;
-		--length;
+		first = false;
 	}
 
 	return negative? -value : value;
