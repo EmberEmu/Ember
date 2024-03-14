@@ -1,0 +1,91 @@
+/*
+ * Copyright (c) 2024 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#include <mpq/MPQ.h>
+#include <mpq/Structures.h>
+#include <mpq/Archive.h>
+#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/endian/conversion.hpp>
+#include <boost/endian/buffers.hpp>
+#include <bit>
+#include <cstddef>
+
+using namespace boost::interprocess;
+
+namespace ember::mpq {
+
+std::uintptr_t archive_offset(std::span<const std::byte> buffer) {
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor, buffer.size());
+	std::uint32_t magic{};
+
+	for(std::uintptr_t i = 0; i < buffer.size(); i += HEADER_ALIGNMENT) {
+		stream >> magic;
+		boost::endian::big_to_native_inplace(magic);
+
+		if(magic == MPQA_FOURCC) {
+			return i;
+		}
+	}
+
+	return npos;
+}
+
+LocateResult locate_archive(const std::filesystem::path& path) try {
+	if(!std::filesystem::exists(path)) {
+		return std::unexpected(ErrorCode::FILE_NOT_FOUND);
+	}
+
+	file_mapping file(path.c_str(), read_only);
+	mapped_region region(file, read_only);
+	const auto data = region.get_address();
+	const auto size = region.get_size();
+	region.advise(mapped_region::advice_sequential);
+	return locate_archive({ static_cast<std::byte*>(data), size });
+}  catch(std::exception&) {
+	return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
+}
+
+LocateResult locate_archive(std::span<const std::byte> buffer) {
+	const auto address = std::bit_cast<std::uintptr_t, const std::byte*>(buffer.data());
+
+	if(address % alignof(v0::Header)) {
+		return std::unexpected(ErrorCode::BAD_ALIGNMENT);
+	}
+
+	const auto offset = archive_offset(buffer);
+
+	if(offset == npos) {
+		return std::unexpected(ErrorCode::NO_ARCHIVE_FOUND);
+	}
+
+	return offset;
+}
+
+std::unique_ptr<Archive> open_archive(const std::filesystem::path& path, std::uintptr_t offset) {
+	return nullptr;
+}
+
+std::unique_ptr<Archive> open_archive(std::span<const std::byte> data, std::uintptr_t offset) {
+	const auto header = std::bit_cast<const v0::Header*, const std::byte*>(data.data());
+
+	if(header->format_version == 0) {
+		return std::make_unique<v0::FileArchive>();
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<mpq::FileArchive> create_archive(const std::uint32_t version) {
+	return nullptr;
+}
+
+} // mpq, ember
