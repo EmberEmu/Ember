@@ -23,6 +23,19 @@ constexpr std::uint32_t HEADER_SIZE_V3 = 0xD0;
 constexpr std::uint32_t KEY_HASH_TABLE = 0xC3AF3770;
 constexpr std::uint32_t KEY_BLOCK_TABLE = 0xEC83B3A3;
 
+enum Flags : std::uint32_t {
+	MPQ_FILE_IMPLODE       = 0x00000100, // PKWARE compression
+	MPQ_FILE_COMPRESS      = 0x00000200,
+	MPQ_FILE_COMPRESSED    = 0x0000FF00,
+	MPQ_FILE_ENCRYPTED     = 0x00010000,
+	MPQ_FILE_FIX_KEY       = 0x00020000,
+	MPQ_FILE_PATCH_FILE    = 0x00100000,
+	MPQ_FILE_SINGLE_UNIT   = 0x01000000,
+	MPQ_FILE_DELETE_MARKER = 0x02000000,
+	MPQ_FILE_SECTOR_CRC    = 0x04000000,
+	MPQ_FILE_EXISTS        = 0x80000000,
+};
+
 enum class Locale : std::uint16_t {
 	NEUTRAL         = 0x00,
 	TAIWAN_MANDARIN = 0x404,
@@ -38,7 +51,6 @@ enum class Locale : std::uint16_t {
 	POLISH          = 0x415,
 	RUSSIAN         = 0x419,
 	ENGLISH_UK      = 0x809
-
 };
 
 namespace v0 {
@@ -55,7 +67,7 @@ struct Header {
 	std::uint32_t block_table_size;
 };
 
-}
+} // v0
 
 namespace v1 {
 
@@ -75,7 +87,7 @@ struct Header {
 	std::uint32_t __pad;
 };
 
-}
+} // v1
 
 struct UserDataHeader {
 	std::uint32_t magic;
@@ -99,7 +111,7 @@ struct BlockTableEntry {
 	std::uint32_t file_position;
 	std::uint32_t compressed_size;
 	std::uint32_t uncompressed_size;
-	std::uint32_t flags;
+	Flags flags;
 };
 
 static_assert(sizeof(BlockTableEntry) == 0x10);
