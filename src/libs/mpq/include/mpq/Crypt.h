@@ -11,6 +11,7 @@
 #include <array>
 #include <bit>
 #include <span>
+#include <cctype>
 #include <cstdint>
 
 // Thanks to https://www.zezula.net/en/mpq/techinfo.html for these time-savers
@@ -50,6 +51,20 @@ static void decrypt_block(std::span<std::byte> buffer, std::uint32_t key) {
 		seed = ch + seed + (seed << 5) + 3;
 		block = ch;
 	} 
+}
+
+static std::uint32_t hash_string(std::string_view key, std::uint32_t type) {
+	constexpr auto table = crypt_table();
+	std::uint32_t seed1 = 0x7FED7FED;
+	std::uint32_t seed2 = 0xEEEEEEEE;
+
+	for(auto byte : key) {
+		auto ch = std::toupper(byte);
+		seed1 = table[(type << 8) + ch] ^ (seed1 + seed2);
+		seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
+	}
+
+	return seed1;
 }
 
 } // v0, mpq, ember

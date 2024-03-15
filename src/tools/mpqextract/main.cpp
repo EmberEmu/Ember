@@ -9,6 +9,7 @@
 #pragma once
 
 #include <mpq/MPQ.h>
+#include <mpq/Crypt.h>
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
@@ -50,8 +51,33 @@ int main() try {
 	auto ht = archive_v0->hash_table();
 
 	for(auto& entry : bt) {
-		std::cout << std::hex << entry.compressed_size << '\n';
+		std::cout << std::hex << entry.file_position << '\n';
 	}
+
+	int i = 0, j = 0;
+
+	for(auto& entry : ht) {
+		if(entry.block_index != -1) {
+			j++;
+		}
+
+		if(entry.block_index == 0x91) {
+			std::cout << entry.name_1 << '\n';
+			++i;
+		}
+	}
+
+	std::cout << i << " entries\n";
+	std::cout << "HT entries: " << j << '\n';
+	auto file = archive_v0->file_lookup("(listfile)", 0, 0);
+
+	if(file == mpq::Archive::npos) {
+		std::cout << "Not found\n";
+		return -1;
+	}
+
+	auto block_index = ht[file].block_index;
+	std::cout << "Comp: " << bt[block_index].compressed_size;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }

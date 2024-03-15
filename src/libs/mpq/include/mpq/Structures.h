@@ -13,6 +13,7 @@
 
 namespace ember::mpq {
 
+// todo, move
 constexpr std::uint16_t HEADER_ALIGNMENT = 0x200;
 constexpr std::uint32_t MPQA_FOURCC = util::make_mcc("MPQ\x1a");
 constexpr std::uint32_t MPQB_FOURCC = util::make_mcc("MPQ\x1b");
@@ -20,8 +21,14 @@ constexpr std::uint32_t HEADER_SIZE_V0 = 0x20;
 constexpr std::uint32_t HEADER_SIZE_V1 = 0x2C;
 constexpr std::uint32_t HEADER_SIZE_V2 = 0x2C; // minimum
 constexpr std::uint32_t HEADER_SIZE_V3 = 0xD0;
-constexpr std::uint32_t KEY_HASH_TABLE = 0xC3AF3770;
-constexpr std::uint32_t KEY_BLOCK_TABLE = 0xEC83B3A3;
+constexpr std::uint32_t MPQ_KEY_HASH_TABLE = 0xC3AF3770;
+constexpr std::uint32_t MPQ_KEY_BLOCK_TABLE = 0xEC83B3A3;
+constexpr std::uint32_t MPQ_HASH_ENTRY_EMPTY = 0xFFFFFFFF;
+constexpr std::uint32_t MPQ_HASH_ENTRY_DELETED = 0xFFFFFFFE;
+constexpr std::uint32_t MPQ_HASH_TABLE_INDEX = 0;
+constexpr std::uint32_t MPQ_HASH_NAME_A = 1;
+constexpr std::uint32_t MPQ_HASH_NAME_B = 2;
+constexpr std::uint32_t MPQ_HASH_FILE_KEY = 3;
 
 enum Flags : std::uint32_t {
 	MPQ_FILE_IMPLODE       = 0x00000100, // PKWARE compression
@@ -33,7 +40,7 @@ enum Flags : std::uint32_t {
 	MPQ_FILE_SINGLE_UNIT   = 0x01000000,
 	MPQ_FILE_DELETE_MARKER = 0x02000000,
 	MPQ_FILE_SECTOR_CRC    = 0x04000000,
-	MPQ_FILE_EXISTS        = 0x80000000,
+	MPQ_FILE_EXISTS        = 0x80000000
 };
 
 enum class Locale : std::uint16_t {

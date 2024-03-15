@@ -28,6 +28,8 @@ public:
 	Backing backing() const override { return Backing::MEMORY; }
 	std::span<const BlockTableEntry> block_table() const override;
 	std::span<const HashTableEntry> hash_table() const override;
+	std::size_t file_lookup(std::string_view name, const std::uint16_t locale,
+	                        const std::uint16_t platform) const override;
 };
 
 

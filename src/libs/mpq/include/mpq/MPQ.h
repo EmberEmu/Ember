@@ -21,7 +21,6 @@ namespace ember::mpq {
 
 static constexpr std::uintptr_t npos = -1;
 
-
 enum class ErrorCode {
 	SUCCESS,
 	NO_ARCHIVE_FOUND,

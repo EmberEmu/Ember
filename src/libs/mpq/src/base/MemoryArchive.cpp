@@ -21,8 +21,11 @@ namespace ember::mpq {
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : buffer_(buffer) {
 	auto btable = fetch_block_table();
 	auto htable = fetch_hash_table();
-	decrypt_block(std::as_writable_bytes(btable), KEY_BLOCK_TABLE);
-	decrypt_block(std::as_writable_bytes(htable), KEY_HASH_TABLE);
+	decrypt_block(std::as_writable_bytes(btable), MPQ_KEY_BLOCK_TABLE);
+	decrypt_block(std::as_writable_bytes(htable), MPQ_KEY_HASH_TABLE);
+
+	//auto listfile = buffer_.data() + 0x9A73A;
+	//decrypt_block(listfile, KEY);
 }
 
 int MemoryArchive::version() const { 
@@ -51,6 +54,34 @@ std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
 	);
 
 	return { entry, header->block_table_size };
+}
+
+std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_t locale,
+                                       const std::uint16_t platform) const {
+	const auto table = hash_table();
+	auto index = hash_string(name, MPQ_HASH_TABLE_INDEX);
+	index = index % (table.empty()? 0 : table.size());
+	
+	if(table[index].block_index == MPQ_HASH_ENTRY_EMPTY) {
+		return npos;
+	}
+
+	const auto name_key_a = hash_string(name, MPQ_HASH_NAME_A);
+	const auto name_key_b = hash_string(name, MPQ_HASH_NAME_B);
+	const auto end = (index - 1) > table.size()? table.size() : index - 1;
+
+	for(auto i = index; i != end; (++i) %= table.size()) {
+		if(table[i].block_index == MPQ_HASH_ENTRY_EMPTY) {
+			return npos;
+		}
+
+		if(table[i].name_1 == name_key_a  || table[i].name_2 == name_key_b
+		   || table[i].locale == locale || table[i].platform == platform) {
+			return i;
+		}
+	}
+
+	return npos;
 }
 
 std::span<const BlockTableEntry> MemoryArchive::block_table() const {
