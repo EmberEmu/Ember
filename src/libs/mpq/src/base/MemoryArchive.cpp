@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <mpq/base/MemoryArchive.h>
 #include <mpq/Crypt.h>
 #include <mpq/Structures.h>
@@ -18,6 +16,7 @@
 #include <zlib.h> // todo
 #include <iostream> // todo
 #include <fstream> // todo
+#include <cmath>
 
 namespace ember::mpq {
 
