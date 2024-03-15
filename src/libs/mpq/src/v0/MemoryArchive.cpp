@@ -8,12 +8,10 @@
 
 #pragma once
 
-#include <mpq/Archive.h>
+#include <mpq/v0/MemoryArchive.h>
 
-namespace ember::mpq {
+namespace ember::mpq::v0 {
 
-class Archive : public Archive {
-public:
-};
 
-} // mpq, ember
+
+} // v0, mpq, ember

@@ -13,9 +13,7 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <utility>
 
-namespace ember::mpq {
-
-namespace v0 {
+namespace ember::mpq::v0 {
 
 class MappedArchive final : public v0::MemoryArchive {
 	boost::interprocess::file_mapping file_;
@@ -30,6 +28,4 @@ public:
 	Backing backing() const override { return Backing::MAPPED; }
 };
 
-}
-
-} // mpq, ember
+} // v0, mpq, ember

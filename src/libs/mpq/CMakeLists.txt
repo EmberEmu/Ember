@@ -6,21 +6,33 @@
 
 set(LIBRARY_NAME mpq)
 
+set(ARCHIVE
+	include/mpq/base/Archive.h
+	include/mpq/base/FileArchive.h
+	include/mpq/base/MemoryArchive.h
+	include/mpq/base/MappedArchive.h
+	src/base/MemoryArchive.cpp
+)
+
+set(ARCHIVE_V0
+	include/mpq/v0/FileArchive.h
+	include/mpq/v0/MemoryArchive.h
+	include/mpq/v0/MappedArchive.h
+	src/v0/FileArchive.cpp
+	src/v0/MemoryArchive.cpp
+)
+
+source_group("Archive" FILES ${ARCHIVE})
+source_group("Archive\\v0" FILES ${ARCHIVE_V0})
+
 add_library(${LIBRARY_NAME}
-           include/mpq/MPQ.h
-		   include/mpq/Archive.h
-		   include/mpq/base/Archive.h
-		   include/mpq/base/FileArchive.h
-		   include/mpq/base/MemoryArchive.h
-		   include/mpq/base/MappedArchive.h
-		   include/mpq/v0/FileArchive.h
-		   include/mpq/v0/MemoryArchive.h
-		   include/mpq/v0/MappedArchive.h
-		   include/mpq/Structures.h
-		   src/base/MemoryArchive.cpp
-		   src/Archive.cpp
-		   src/MPQ.cpp
-           )
+	${ARCHIVE}
+	${ARCHIVE_V0}
+	include/mpq/MPQ.h
+	include/mpq/Archive.h
+	include/mpq/Structures.h
+	src/MPQ.cpp
+)
 
 target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

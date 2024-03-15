@@ -10,9 +10,7 @@
 
 #include <mpq/base/FileArchive.h>
 
-namespace ember::mpq {
-
-namespace v0 {
+namespace ember::mpq::v0 {
 
 class FileArchive : public mpq::FileArchive {
 public:
@@ -20,6 +18,4 @@ public:
 		: mpq::FileArchive(path, offset) {}
 };
 
-}
-
-} // mpq, ember
+} // v0, mpq, ember

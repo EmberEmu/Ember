@@ -10,15 +10,11 @@
 
 #include <mpq/base/MemoryArchive.h>
 
-namespace ember::mpq {
-
-namespace v0 {
+namespace ember::mpq::v0 {
 
 class MemoryArchive : public mpq::MemoryArchive {
 public:
 	MemoryArchive(std::span<const std::byte> buffer) : mpq::MemoryArchive(buffer) {}
 };
-
-}
 
 } // mpq, ember

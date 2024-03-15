@@ -8,16 +8,10 @@
 
 #pragma once
 
-#include <mpq/v0/Archive.h>
+#include <mpq/v0/FileArchive.h>
 
-namespace ember::mpq {
+namespace ember::mpq::v0 {
 
-inline namespace v0 {
 
-class FileArchive : public Archive {
-public:
-};
 
-}
-
-} // mpq, ember
+} // v0, mpq, ember
