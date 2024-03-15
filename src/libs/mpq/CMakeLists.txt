@@ -31,6 +31,7 @@ add_library(${LIBRARY_NAME}
 	include/mpq/MPQ.h
 	include/mpq/Archive.h
 	include/mpq/Structures.h
+	include/mpq/Crypt.h
 	src/MPQ.cpp
 )
 

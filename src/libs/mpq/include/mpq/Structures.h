@@ -20,6 +20,8 @@ constexpr std::uint32_t HEADER_SIZE_V0 = 0x20;
 constexpr std::uint32_t HEADER_SIZE_V1 = 0x2C;
 constexpr std::uint32_t HEADER_SIZE_V2 = 0x2C; // minimum
 constexpr std::uint32_t HEADER_SIZE_V3 = 0xD0;
+constexpr std::uint32_t KEY_HASH_TABLE = 0xC3AF3770;
+constexpr std::uint32_t KEY_BLOCK_TABLE = 0xEC83B3A3;
 
 enum class Locale : std::uint16_t {
 	NEUTRAL         = 0x00,
@@ -81,7 +83,9 @@ struct UserDataHeader {
 	std::uint32_t header_offset;
 };
 
-struct HashTable {
+static_assert(sizeof(UserDataHeader) == 0x0C);
+
+struct HashTableEntry {
 	std::uint32_t name_1;
 	std::uint32_t name_2;
 	std::uint16_t locale;
@@ -89,11 +93,15 @@ struct HashTable {
 	std::uint32_t block_index;
 };
 
-struct BlockTable {
+static_assert(sizeof(HashTableEntry) == 0x10);
+
+struct BlockTableEntry {
 	std::uint32_t file_position;
 	std::uint32_t compressed_size;
 	std::uint32_t uncompressed_size;
 	std::uint32_t flags;
 };
+
+static_assert(sizeof(BlockTableEntry) == 0x10);
 
 } // mpq, ember

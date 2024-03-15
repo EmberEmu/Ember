@@ -22,7 +22,7 @@ class MappedArchive final : public v0::MemoryArchive {
 public:
 	MappedArchive(boost::interprocess::file_mapping file,
 	              boost::interprocess::mapped_region region)
-		: v0::MemoryArchive({static_cast<const std::byte*>(region.get_address()), region.get_size()}),
+		: v0::MemoryArchive({static_cast<std::byte*>(region.get_address()), region.get_size()}),
 	      file_(std::move(file)), region_(std::move(region)) {}
 
 	Backing backing() const override { return Backing::MAPPED; }

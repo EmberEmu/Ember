@@ -31,14 +31,27 @@ int main() try {
 		return -1;
 	}
 
-	std::cout << "MPQ version: " << archive->version() << '\n';
-	std::cout << "MPQ size: " << archive->size() << '\n';
-
 	std::unique_ptr<mpq::v0::MappedArchive> archive_v0 {
 		dynamic_cast<mpq::v0::MappedArchive*>(archive.release()) 
 	};
 
-	std::cout << "Type is: " << std::to_underlying(archive_v0->backing());
+	std::cout << "Type is: " << std::to_underlying(archive_v0->backing()) << '\n';
+
+	auto header = archive_v0->header();
+	std::cout << "Ver: " << std::hex << header->format_version << '\n';
+	std::cout << "Size: " << header->archive_size << '\n';
+	std::cout << "Block size: " << header->block_size << '\n';
+	std::cout << "BT offset: " << header->block_table_offset << '\n';
+	std::cout << "BT size: " << header->block_table_size << '\n';
+	std::cout << "HT offset: " << header->hash_table_offset << '\n';
+	std::cout << "HT size: " << header->hash_table_size << '\n';
+
+	auto bt = archive_v0->block_table();
+	auto ht = archive_v0->hash_table();
+
+	for(auto& entry : bt) {
+		std::cout << std::hex << entry.compressed_size << '\n';
+	}
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }

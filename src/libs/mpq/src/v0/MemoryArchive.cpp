@@ -12,6 +12,8 @@
 
 namespace ember::mpq::v0 {
 
-
+const Header* MemoryArchive::header() const {
+	return std::bit_cast<const Header*, const std::byte*>(buffer_.data());
+}
 
 } // v0, mpq, ember

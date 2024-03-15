@@ -9,12 +9,14 @@
 #pragma once
 
 #include <mpq/base/MemoryArchive.h>
+#include <mpq/Structures.h>
 
 namespace ember::mpq::v0 {
 
 class MemoryArchive : public mpq::MemoryArchive {
 public:
-	MemoryArchive(std::span<const std::byte> buffer) : mpq::MemoryArchive(buffer) {}
+	MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(buffer) {}
+	const Header* header() const;
 };
 
 } // mpq, ember

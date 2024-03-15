@@ -15,14 +15,19 @@
 namespace ember::mpq {
 
 class MemoryArchive : public Archive {
-	std::span<const std::byte> buffer_;
+protected:
+	std::span<std::byte> buffer_;
+	std::span<BlockTableEntry> fetch_block_table() const;
+	std::span<HashTableEntry> fetch_hash_table() const;
 
 public:
-	MemoryArchive(std::span<const std::byte> buffer) : buffer_(buffer) {}
+	MemoryArchive(std::span<std::byte> buffer);
 
 	int version() const override;
 	std::size_t size() const override;
-	virtual Backing backing() const override { return Backing::MEMORY; }
+	Backing backing() const override { return Backing::MEMORY; }
+	std::span<const BlockTableEntry> block_table() const override;
+	std::span<const HashTableEntry> hash_table() const override;
 };
 
 

@@ -21,7 +21,7 @@ class MappedArchive : public MemoryArchive {
 public:
 	MappedArchive(boost::interprocess::file_mapping file,
 	              boost::interprocess::mapped_region region)
-		: MemoryArchive({ static_cast<const std::byte*>(region.get_address()), region.get_size() }),
+		: MemoryArchive({ static_cast<std::byte*>(region.get_address()), region.get_size() }),
 		  file_(std::move(file)), region_(std::move(region)) {}
 };
 

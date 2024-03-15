@@ -61,7 +61,7 @@ LocateResult locate_archive(const std::filesystem::path& path) try {
 }
 
 LocateResult locate_archive(std::span<const std::byte> buffer) {
-	const auto address = std::bit_cast<std::uintptr_t, const std::byte*>(buffer.data());
+	const auto address = std::bit_cast<std::uintptr_t>(buffer.data());
 
 	if(address % alignof(v0::Header)) {
 		return std::unexpected(ErrorCode::BAD_ALIGNMENT);
@@ -102,7 +102,7 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 
 	stream.close();
 
-	const auto header_v0 = std::bit_cast<const v0::Header*, const char*>(h_buf.data());
+	const auto header_v0 = std::bit_cast<const v0::Header*>(h_buf.data());
 
 	if(!validate_header(*header_v0)) {
 		throw std::runtime_error("todo");
@@ -110,8 +110,8 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 
 	if(header_v0->format_version == 0) {
 		if(map) {
-			file_mapping file(path.c_str(), read_only);
-			mapped_region region(file, read_only);
+			file_mapping file(path.c_str(), read_write);
+			mapped_region region(file, copy_on_write);
 			region.advise(mapped_region::advice_sequential);
 			return std::make_unique<v0::MappedArchive>(std::move(file), std::move(region));
 		} else {
@@ -122,9 +122,9 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 	return nullptr;
 }
 
-std::unique_ptr<MemoryArchive> open_archive(std::span<const std::byte> data,
+std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data,
                                             const std::uintptr_t offset) {
-	const auto header_v0 = std::bit_cast<const v0::Header*, const std::byte*>(data.data() + offset);
+	const auto header_v0 = std::bit_cast<const v0::Header*>(data.data() + offset);
 	auto adjusted = std::span(data.data() + offset, data.size_bytes() - offset);
 
 	if(header_v0->format_version == 0) {
