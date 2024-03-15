@@ -16,6 +16,10 @@ namespace ember::mpq {
 constexpr std::uint16_t HEADER_ALIGNMENT = 0x200;
 constexpr std::uint32_t MPQA_FOURCC = util::make_mcc("MPQ\x1a");
 constexpr std::uint32_t MPQB_FOURCC = util::make_mcc("MPQ\x1b");
+constexpr std::uint32_t HEADER_SIZE_V0 = 0x20;
+constexpr std::uint32_t HEADER_SIZE_V1 = 0x2C;
+constexpr std::uint32_t HEADER_SIZE_V2 = 0x2C; // minimum
+constexpr std::uint32_t HEADER_SIZE_V3 = 0xD0;
 
 enum class Locale : std::uint16_t {
 	NEUTRAL         = 0x00,

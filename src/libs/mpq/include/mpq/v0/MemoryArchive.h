@@ -16,6 +16,7 @@ namespace v0 {
 
 class MemoryArchive : public mpq::MemoryArchive {
 public:
+	MemoryArchive(std::span<const std::byte> buffer) : mpq::MemoryArchive(buffer) {}
 };
 
 }

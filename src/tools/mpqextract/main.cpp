@@ -15,13 +15,30 @@
 
 using namespace ember;
 
-int main() {
+int main() try {
 	std::filesystem::path path("test.MPQ");
 	mpq::LocateResult result = mpq::locate_archive(path);
 
-	if(result) {
-		std::cout << "Found at " << *result;
-	} else {
+	if(!result) {
 		std::cout << "Not found, error " << std::to_underlying(result.error());
+		return -1;
 	}
+
+	std::unique_ptr<mpq::Archive> archive { mpq::open_archive(path, *result, true)};
+
+	if(!archive) {
+		std::cout << "No archive\n";
+		return -1;
+	}
+
+	std::cout << "MPQ version: " << archive->version() << '\n';
+	std::cout << "MPQ size: " << archive->size() << '\n';
+
+	std::unique_ptr<mpq::v0::MappedArchive> archive_v0 {
+		dynamic_cast<mpq::v0::MappedArchive*>(archive.release()) 
+	};
+
+	std::cout << "Type is: " << std::to_underlying(archive_v0->backing());
+} catch(std::exception& e) {
+	std::cerr << e.what();
 }

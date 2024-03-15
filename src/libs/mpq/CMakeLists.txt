@@ -7,7 +7,7 @@
 set(LIBRARY_NAME mpq)
 
 add_library(${LIBRARY_NAME}
-           include/mpq/mpq.h
+           include/mpq/MPQ.h
 		   include/mpq/Archive.h
 		   include/mpq/base/Archive.h
 		   include/mpq/base/FileArchive.h
@@ -17,6 +17,7 @@ add_library(${LIBRARY_NAME}
 		   include/mpq/v0/MemoryArchive.h
 		   include/mpq/v0/MappedArchive.h
 		   include/mpq/Structures.h
+		   src/base/MemoryArchive.cpp
 		   src/Archive.cpp
 		   src/MPQ.cpp
            )

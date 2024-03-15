@@ -8,11 +8,21 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace ember::mpq {
 
 class Archive {
 public:
-	~Archive() = default;
+	enum class Backing {
+		FILE, MAPPED, MEMORY
+	};
+
+	virtual int version() const = 0;
+	virtual std::size_t size() const = 0;
+	virtual Backing backing() const = 0;
+
+	virtual ~Archive() = default;
 };
 
 } // mpq, ember

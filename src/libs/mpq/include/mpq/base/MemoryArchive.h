@@ -9,12 +9,20 @@
 #pragma once
 
 #include <mpq/base/Archive.h>
+#include <span>
+#include <cstddef>
 
 namespace ember::mpq {
 
-class MemoryArchive : virtual public Archive {
+class MemoryArchive : public Archive {
+	std::span<const std::byte> buffer_;
+
 public:
-	
+	MemoryArchive(std::span<const std::byte> buffer) : buffer_(buffer) {}
+
+	int version() const override;
+	std::size_t size() const override;
+	virtual Backing backing() const override { return Backing::MEMORY; }
 };
 
 

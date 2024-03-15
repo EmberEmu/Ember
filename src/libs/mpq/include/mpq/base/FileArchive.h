@@ -9,12 +9,17 @@
 #pragma once
 
 #include <mpq/base/Archive.h>
+#include <filesystem>
 
 namespace ember::mpq {
 
-class FileArchive : virtual public Archive {
+class FileArchive : public Archive {
 public:
-	
+	FileArchive(std::filesystem::path path, std::uintptr_t offset) {}
+
+	int version() const override { return 0; }
+	std::size_t size() const override { return 0; }
+	Backing backing() const override { return Backing::FILE; }
 };
 
 

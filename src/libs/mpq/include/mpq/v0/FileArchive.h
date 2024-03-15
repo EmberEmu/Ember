@@ -14,8 +14,10 @@ namespace ember::mpq {
 
 namespace v0 {
 
-class FileArchive : public ember::mpq::FileArchive {
+class FileArchive : public mpq::FileArchive {
 public:
+	FileArchive(std::filesystem::path path, std::uintptr_t offset)
+		: mpq::FileArchive(path, offset) {}
 };
 
 }

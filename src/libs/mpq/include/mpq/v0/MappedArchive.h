@@ -8,14 +8,26 @@
 
 #pragma once
 
-#include <mpq/base/MappedArchive.h>
+#include <mpq/v0/MemoryArchive.h>
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <utility>
 
 namespace ember::mpq {
 
 namespace v0 {
 
-class MappedArchive : public mpq::MappedArchive {
+class MappedArchive final : public v0::MemoryArchive {
+	boost::interprocess::file_mapping file_;
+	boost::interprocess::mapped_region region_;
+
 public:
+	MappedArchive(boost::interprocess::file_mapping file,
+	              boost::interprocess::mapped_region region)
+		: v0::MemoryArchive({static_cast<const std::byte*>(region.get_address()), region.get_size()}),
+	      file_(std::move(file)), region_(std::move(region)) {}
+
+	Backing backing() const override { return Backing::MAPPED; }
 };
 
 }
