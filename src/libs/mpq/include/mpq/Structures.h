@@ -29,8 +29,9 @@ constexpr std::uint32_t MPQ_HASH_TABLE_INDEX = 0;
 constexpr std::uint32_t MPQ_HASH_NAME_A = 1;
 constexpr std::uint32_t MPQ_HASH_NAME_B = 2;
 constexpr std::uint32_t MPQ_HASH_FILE_KEY = 3;
+constexpr std::uint32_t BLOCK_SIZE = 0x200;
 
-enum Flags : std::uint32_t {
+enum Flag : std::uint32_t {
 	MPQ_FILE_IMPLODE       = 0x00000100, // PKWARE compression
 	MPQ_FILE_COMPRESS      = 0x00000200,
 	MPQ_FILE_COMPRESSED    = 0x0000FF00,
@@ -67,7 +68,7 @@ struct Header {
 	std::uint32_t header_size;
 	std::uint32_t archive_size;
 	std::uint16_t format_version;
-	std::uint16_t block_size;
+	std::uint16_t block_size_shift;
 	std::uint32_t hash_table_offset;
 	std::uint32_t block_table_offset;
 	std::uint32_t hash_table_size;
@@ -118,7 +119,7 @@ struct BlockTableEntry {
 	std::uint32_t file_position;
 	std::uint32_t compressed_size;
 	std::uint32_t uncompressed_size;
-	Flags flags;
+	Flag flags;
 };
 
 static_assert(sizeof(BlockTableEntry) == 0x10);

@@ -30,6 +30,9 @@ public:
 	std::span<const HashTableEntry> hash_table() const override;
 	std::size_t file_lookup(std::string_view name, const std::uint16_t locale,
 	                        const std::uint16_t platform) const override;
+	std::span<const std::byte> retrieve_file(BlockTableEntry& entry);
+	std::span<std::uint32_t> file_sectors(BlockTableEntry& entry);
+	void extract_file(std::string_view name);
 };
 
 

@@ -41,7 +41,7 @@ int main() try {
 	auto header = archive_v0->header();
 	std::cout << "Ver: " << std::hex << header->format_version << '\n';
 	std::cout << "Size: " << header->archive_size << '\n';
-	std::cout << "Block size: " << header->block_size << '\n';
+	std::cout << "Block size: " << header->block_size_shift << '\n';
 	std::cout << "BT offset: " << header->block_table_offset << '\n';
 	std::cout << "BT size: " << header->block_table_size << '\n';
 	std::cout << "HT offset: " << header->hash_table_offset << '\n';
@@ -50,26 +50,7 @@ int main() try {
 	auto bt = archive_v0->block_table();
 	auto ht = archive_v0->hash_table();
 
-	for(auto& entry : bt) {
-		std::cout << std::hex << entry.file_position << '\n';
-	}
-
-	int i = 0, j = 0;
-
-	for(auto& entry : ht) {
-		if(entry.block_index != -1) {
-			j++;
-		}
-
-		if(entry.block_index == 0x91) {
-			std::cout << entry.name_1 << '\n';
-			++i;
-		}
-	}
-
-	std::cout << i << " entries\n";
-	std::cout << "HT entries: " << j << '\n';
-	auto file = archive_v0->file_lookup("(listfile)", 0, 0);
+	auto file = archive_v0->file_lookup("srpgen.exe", 0, 0);
 
 	if(file == mpq::Archive::npos) {
 		std::cout << "Not found\n";
@@ -77,7 +58,9 @@ int main() try {
 	}
 
 	auto block_index = ht[file].block_index;
-	std::cout << "Comp: " << bt[block_index].compressed_size;
+	auto entry = bt[block_index];
+	archive_v0->extract_file("srpgen.exe");
+	//archive_v0->retrieve_file(entry);
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }

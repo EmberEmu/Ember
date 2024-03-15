@@ -12,9 +12,12 @@
 #include <mpq/Crypt.h>
 #include <mpq/Structures.h>
 #include <boost/endian/conversion.hpp>
+#include <boost/container/small_vector.hpp>
 #include <bit>
-
+#include <vector>
+#include <zlib.h> // todo
 #include <iostream> // todo
+#include <fstream> // todo
 
 namespace ember::mpq {
 
@@ -82,6 +85,94 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 	}
 
 	return npos;
+}
+
+std::span<std::uint32_t> MemoryArchive::file_sectors(BlockTableEntry& entry) {
+	const auto header = std::bit_cast<const v0::Header*>(buffer_.data());
+	const auto sector_size = BLOCK_SIZE << header->block_size_shift;
+	auto count = (uint32_t)std::floor(entry.uncompressed_size / sector_size + 1); // todo
+
+	if(entry.flags & Flag::MPQ_FILE_SECTOR_CRC) {
+		++count;
+	}
+
+	auto sector_begin = std::bit_cast<std::uint32_t*>(buffer_.data() + entry.file_position);
+	std::span<std::uint32_t> sectors { sector_begin, count + 1 };
+
+	if(entry.flags & Flag::MPQ_FILE_ENCRYPTED) {
+		// todo
+	}
+
+	return sectors;
+}
+
+void MemoryArchive::extract_file(std::string_view name) {
+	auto index = file_lookup(name, 0, 0);
+
+	if(index == npos) {
+		throw std::runtime_error("todo");
+	}
+
+	const auto btable = fetch_block_table();
+	const auto htable = fetch_hash_table();
+	auto block_index = htable[index].block_index;
+	auto& entry = btable[block_index];
+
+	if(entry.flags & MPQ_FILE_ENCRYPTED) {
+		throw std::runtime_error("todo");
+	}
+
+	auto sectors = file_sectors(entry);
+	auto header = std::bit_cast<const v0::Header*>(buffer_.data());
+	const auto max_sector_size = BLOCK_SIZE << header->block_size_shift;
+
+	boost::container::small_vector<unsigned char, 4096> buffer;
+	buffer.resize(max_sector_size);
+
+	auto remaining = entry.uncompressed_size;
+	auto file = std::fopen(name.data(), "wb"); // todo, check null term
+	const auto file_data_offset = buffer_.data() + entry.file_position;
+
+	for(auto i = 0; i < sectors.size() - 1; ++i) {
+		std::uint32_t sector_size_actual = max_sector_size;
+		std::uint32_t sector_size = max_sector_size;
+
+		// if we're at the end of the file and need to read less
+		if(max_sector_size > remaining) {
+			sector_size = remaining;
+			sector_size_actual = remaining;
+		}
+		
+		// sector is compressed, get the actual data size
+		if(entry.flags & MPQ_FILE_COMPRESSED) {
+			sector_size_actual = sectors[i + 1] - sectors[i];
+		}
+
+		// get the location of the data for this sector
+		const auto data = std::bit_cast<unsigned char*>(file_data_offset + sectors[i]);
+
+		if(sector_size_actual < sector_size) {
+			if(entry.flags & MPQ_FILE_COMPRESSED) {
+				uLongf dest_len = max_sector_size;
+				auto ret = uncompress(buffer.data(), &dest_len, data + 1, sector_size_actual);
+
+				if(ret != Z_OK) {
+					throw std::runtime_error("todo");
+				}
+
+				fwrite(buffer.data(), dest_len, 1, file);
+			}
+		} else {
+			fwrite(data, sector_size_actual, 1, file);
+		}
+
+		remaining -= sector_size;
+	}
+}
+
+std::span<const std::byte> MemoryArchive::retrieve_file(BlockTableEntry& entry) {
+	//
+	return {};
 }
 
 std::span<const BlockTableEntry> MemoryArchive::block_table() const {
