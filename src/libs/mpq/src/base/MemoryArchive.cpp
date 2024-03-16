@@ -104,7 +104,7 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 		throw std::runtime_error("todo");
 	}
 
-	if(std::filesystem::is_directory(path.parent_path())) {
+	if(path.has_parent_path()) {
 		std::filesystem::create_directories(path.parent_path());
 	}
 
