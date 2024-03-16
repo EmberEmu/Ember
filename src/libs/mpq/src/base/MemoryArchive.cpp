@@ -12,6 +12,7 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <bit>
+#include <filesystem>
 #include <vector>
 #include <zlib.h> // todo
 #include <iostream> // todo
@@ -96,12 +97,18 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(BlockTableEntry& entry) {
 	return { sector_begin, count + 1 };
 }
 
-void MemoryArchive::extract_file(std::string_view name) {
-	auto index = file_lookup(name, 0, 0);
+void MemoryArchive::extract_file(std::filesystem::path path) {
+	auto index = file_lookup(path.string(), 0, 0);
 
 	if(index == npos) {
 		throw std::runtime_error("todo");
 	}
+
+	if(std::filesystem::is_directory(path.parent_path())) {
+		std::filesystem::create_directories(path.parent_path());
+	}
+
+	const auto filename = path.filename().string();
 
 	const auto btable = fetch_block_table();
 	const auto htable = fetch_hash_table();
@@ -113,16 +120,16 @@ void MemoryArchive::extract_file(std::string_view name) {
 	boost::container::small_vector<unsigned char, 4096> buffer;
 	buffer.resize(max_sector_size);
 
-	auto file = std::fopen(name.data(), "wb"); // todo, check null term
 	const auto file_data_offset = buffer_.data() + entry.file_position;
 	auto sectors = file_sectors(entry);
-	const auto key = hash_string(name, MPQ_HASH_FILE_KEY);
+	const auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
 
 	// decrypt the sector block if required
 	if(entry.flags & MPQ_FILE_ENCRYPTED) {
 		decrypt_block(std::as_writable_bytes(sectors), key - 1);
 	}
 
+	auto file = std::fopen(path.string().c_str(), "wb");
 	auto remaining = entry.uncompressed_size;
 
 	for(std::size_t i = 0u; i < sectors.size() - 1; ++i) {
@@ -136,23 +143,24 @@ void MemoryArchive::extract_file(std::string_view name) {
 		}
 		
 		// sector is compressed, get the actual data size
-		if(entry.flags & MPQ_FILE_COMPRESSED) {
+		if(entry.flags & MPQ_FILE_COMPRESS_MASK) {
 			sector_size_actual = sectors[i + 1] - sectors[i];
 		}
 
 		// get the location of the data for this sector
-		const auto data = std::bit_cast<unsigned char*>(file_data_offset + sectors[i]);
+		std::span sector_data(
+			std::bit_cast<unsigned char*>(file_data_offset + sectors[i]), sector_size_actual
+		);
 
+		// decrypt the data within the sector
 		if(entry.flags & MPQ_FILE_ENCRYPTED) {
-			std::span span(data, sector_size_actual);
-			decrypt_block(std::as_writable_bytes(span), key + i);
+			decrypt_block(std::as_writable_bytes(sector_data), key + i);
 		}
-
 
 		if(sector_size_actual < sector_size) {
 			if(entry.flags & MPQ_FILE_COMPRESS) {
 				uLongf dest_len = max_sector_size;
-				auto ret = uncompress(buffer.data(), &dest_len, data + 1, sector_size_actual);
+				auto ret = uncompress(buffer.data(), &dest_len, sector_data.data() + 1, sector_data.size());
 
 				if(ret != Z_OK) {
 					throw std::runtime_error("todo");
@@ -160,14 +168,17 @@ void MemoryArchive::extract_file(std::string_view name) {
 
 				fwrite(buffer.data(), dest_len, 1, file);
 			} else if(entry.flags & MPQ_FILE_IMPLODE) {
+				fwrite(sector_data.data(), sector_size_actual, 1, file);
 				std::cout << "todo, implode\n";
 			}
 		} else {
-			fwrite(data, sector_size_actual, 1, file);
+			fwrite(sector_data.data(), sector_data.size(), 1, file);
 		}
 
 		remaining -= sector_size;
 	}
+
+	// todo, need to flag as uncompressed now that we've written to COW backing
 }
 
 std::span<const std::byte> MemoryArchive::retrieve_file(BlockTableEntry& entry) {

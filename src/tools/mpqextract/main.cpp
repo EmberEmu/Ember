@@ -47,19 +47,7 @@ int main() try {
 	std::cout << "HT offset: " << header->hash_table_offset << '\n';
 	std::cout << "HT size: " << header->hash_table_size << '\n';
 
-	auto bt = archive_v0->block_table();
-	auto ht = archive_v0->hash_table();
-
-	auto file = archive_v0->file_lookup("srpgen.exe", 0, 0);
-
-	if(file == mpq::Archive::npos) {
-		std::cout << "Not found\n";
-		return -1;
-	}
-
-	auto block_index = ht[file].block_index;
-	auto entry = bt[block_index];
-	archive_v0->extract_file("srpgen.exe");
+	archive_v0->extract_file("(listfile)");
 	//archive_v0->retrieve_file(entry);
 } catch(std::exception& e) {
 	std::cerr << e.what();

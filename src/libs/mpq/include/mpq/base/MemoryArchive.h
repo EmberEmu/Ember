@@ -9,6 +9,7 @@
 #pragma once
 
 #include <mpq/base/Archive.h>
+#include <filesystem>
 #include <span>
 #include <cstddef>
 
@@ -32,7 +33,7 @@ public:
 	                        const std::uint16_t platform) const override;
 	std::span<const std::byte> retrieve_file(BlockTableEntry& entry);
 	std::span<std::uint32_t> file_sectors(BlockTableEntry& entry);
-	void extract_file(std::string_view name);
+	void extract_file(std::filesystem::path path);
 };
 
 
