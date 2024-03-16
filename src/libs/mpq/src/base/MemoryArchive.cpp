@@ -21,13 +21,10 @@
 namespace ember::mpq {
 
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : buffer_(buffer) {
-	auto btable = fetch_block_table();
-	auto htable = fetch_hash_table();
-	decrypt_block(std::as_writable_bytes(btable), MPQ_KEY_BLOCK_TABLE);
-	decrypt_block(std::as_writable_bytes(htable), MPQ_KEY_HASH_TABLE);
-
-	//auto listfile = buffer_.data() + 0x9A73A;
-	//decrypt_block(listfile, KEY);
+	auto block_table = fetch_block_table();
+	auto hash_table = fetch_hash_table();
+	decrypt_block(std::as_writable_bytes(block_table), MPQ_KEY_BLOCK_TABLE);
+	decrypt_block(std::as_writable_bytes(hash_table), MPQ_KEY_HASH_TABLE);
 }
 
 int MemoryArchive::version() const { 
@@ -96,13 +93,7 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(BlockTableEntry& entry) {
 	}
 
 	auto sector_begin = std::bit_cast<std::uint32_t*>(buffer_.data() + entry.file_position);
-	std::span<std::uint32_t> sectors { sector_begin, count + 1 };
-
-	if(entry.flags & Flag::MPQ_FILE_ENCRYPTED) {
-		// todo
-	}
-
-	return sectors;
+	return { sector_begin, count + 1 };
 }
 
 void MemoryArchive::extract_file(std::string_view name) {
@@ -116,23 +107,25 @@ void MemoryArchive::extract_file(std::string_view name) {
 	const auto htable = fetch_hash_table();
 	auto block_index = htable[index].block_index;
 	auto& entry = btable[block_index];
-
-	if(entry.flags & MPQ_FILE_ENCRYPTED) {
-		throw std::runtime_error("todo");
-	}
-
-	auto sectors = file_sectors(entry);
 	auto header = std::bit_cast<const v0::Header*>(buffer_.data());
 	const auto max_sector_size = BLOCK_SIZE << header->block_size_shift;
 
 	boost::container::small_vector<unsigned char, 4096> buffer;
 	buffer.resize(max_sector_size);
 
-	auto remaining = entry.uncompressed_size;
 	auto file = std::fopen(name.data(), "wb"); // todo, check null term
 	const auto file_data_offset = buffer_.data() + entry.file_position;
+	auto sectors = file_sectors(entry);
+	const auto key = hash_string(name, MPQ_HASH_FILE_KEY);
 
-	for(auto i = 0; i < sectors.size() - 1; ++i) {
+	// decrypt the sector block if required
+	if(entry.flags & MPQ_FILE_ENCRYPTED) {
+		decrypt_block(std::as_writable_bytes(sectors), key - 1);
+	}
+
+	auto remaining = entry.uncompressed_size;
+
+	for(std::size_t i = 0u; i < sectors.size() - 1; ++i) {
 		std::uint32_t sector_size_actual = max_sector_size;
 		std::uint32_t sector_size = max_sector_size;
 
@@ -150,8 +143,14 @@ void MemoryArchive::extract_file(std::string_view name) {
 		// get the location of the data for this sector
 		const auto data = std::bit_cast<unsigned char*>(file_data_offset + sectors[i]);
 
+		if(entry.flags & MPQ_FILE_ENCRYPTED) {
+			std::span span(data, sector_size_actual);
+			decrypt_block(std::as_writable_bytes(span), key + i);
+		}
+
+
 		if(sector_size_actual < sector_size) {
-			if(entry.flags & MPQ_FILE_COMPRESSED) {
+			if(entry.flags & MPQ_FILE_COMPRESS) {
 				uLongf dest_len = max_sector_size;
 				auto ret = uncompress(buffer.data(), &dest_len, data + 1, sector_size_actual);
 
@@ -160,6 +159,8 @@ void MemoryArchive::extract_file(std::string_view name) {
 				}
 
 				fwrite(buffer.data(), dest_len, 1, file);
+			} else if(entry.flags & MPQ_FILE_IMPLODE) {
+				std::cout << "todo, implode\n";
 			}
 		} else {
 			fwrite(data, sector_size_actual, 1, file);
