@@ -7,6 +7,7 @@
  */
 
 #include <mpq/MPQ.h>
+#include <mpq/Exception.h>
 #include <mpq/Structures.h>
 #include <mpq/Archive.h>
 #include <spark/v2/buffers/BinaryStream.h>
@@ -82,14 +83,14 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 	std::error_code ec{};
 
 	if(!std::filesystem::exists(path, ec) || ec) {
-		throw std::runtime_error("todo");
+		throw exception("cannot open archive: file not found");
 	}
 
 	std::ifstream stream;
 	stream.open(path, std::ios::binary | std::ios::in);
 
 	if(!stream.is_open()) {
-		throw std::runtime_error("todo");
+		throw exception("cannot open archive: stream is_open failed");
 	}
 
 	std::array<char, sizeof(v0::Header)> h_buf{};
@@ -97,7 +98,7 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 	stream.read(h_buf.data(), h_buf.size());
 
 	if(!stream.good()) {
-		throw std::runtime_error("todo");
+		throw exception("cannot read archive: bad seek offset");
 	}
 
 	stream.close();
@@ -105,7 +106,7 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 	const auto header_v0 = std::bit_cast<const v0::Header*>(h_buf.data());
 
 	if(!validate_header(*header_v0)) {
-		throw std::runtime_error("todo");
+		throw exception("cannot open archive: bad header encountered");
 	}
 
 	if(header_v0->format_version == 0) {

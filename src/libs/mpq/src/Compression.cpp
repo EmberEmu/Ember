@@ -26,7 +26,7 @@
 // from the 90s. Most open source implementations weren't able to correctly decompress
 // the data and I'm not spending the time to reverse engineer an obsolete format 
 // (other than MPQ, seemingly)
-// ttcomp'is a small library that *does* work correctly but it's LGPLd, so no good here, 
+// ttcomp is a small library that *does* work correctly but it's LGPLd, so no good here, 
 // (not going to dynamic link it) which is a shame because it's much smaller and
 // leaner than PKLib
 // ttcomp for reference:
@@ -36,6 +36,7 @@
 // https://github.com/ladislav-zezula/StormLib/blob/master/src/SCompression.cpp
 
 #include <mpq/Compression.h>
+#include <mpq/Exception.h>
 #include <pklib/pklib.h>
 #include <memory>
 #include <stdexcept>
@@ -57,6 +58,9 @@ struct CallbackInfo {
 //   char* buf          - Pointer to a buffer where to store loaded data
 //   unsigned int* size - Max. number of bytes to read
 //   void* param        - User data, parameter of implode/explode
+//
+// implode/explode should terminate when it returns zero 
+// (based on original SDK sample code I managed to dig up, which this is based on)
 static unsigned int read_input_data(char* buf, unsigned int* size, void* param) {
 	CallbackInfo* info = std::bit_cast<CallbackInfo*>(param);
 	auto max_read_size = info->input_buffer.size() - info->in_offset;
@@ -85,7 +89,7 @@ static void write_output_data(char* buf, unsigned int* size, void* param) {
 	auto write_size = *size;
 
 	if(!max_write_size && write_size) {
-		throw std::runtime_error("Buffer full, cannot fully decompress"); // todo
+		throw exception("cannot decompress: output buffer full");
 	}
 
 	// Check the case when not enough space in the output buffer

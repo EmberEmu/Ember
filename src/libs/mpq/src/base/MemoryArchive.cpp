@@ -7,6 +7,7 @@
  */
 
 #include <mpq/base/MemoryArchive.h>
+#include <mpq/Exception.h>
 #include <mpq/Crypt.h>
 #include <mpq/Structures.h>
 #include <boost/endian/conversion.hpp>
@@ -102,7 +103,7 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 	auto index = file_lookup(path.string(), 0, 0);
 
 	if(index == npos) {
-		throw std::runtime_error("todo");
+		throw exception("Cannot extract file: file not found");
 	}
 
 	if(path.has_parent_path()) {
@@ -163,7 +164,7 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 				auto ret = uncompress(buffer.data(), &dest_len, sector_data.data() + 1, sector_data.size());
 
 				if(ret != Z_OK) {
-					throw std::runtime_error("zlib: todo");
+					throw exception("cannot extract file: decompression failed");
 				}
 
 				fwrite(buffer.data(), dest_len, 1, file);
@@ -173,7 +174,7 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 				);
 
 				if(!ret) {
-					throw std::runtime_error("pklib: todo");
+					throw exception("cannot extract file: decompression (explode) failed");
 				}
 
 				fwrite(buffer.data(), *ret, 1, file);

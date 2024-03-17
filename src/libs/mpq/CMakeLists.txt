@@ -33,6 +33,7 @@ add_library(${LIBRARY_NAME}
 	include/mpq/Structures.h
 	include/mpq/Crypt.h
 	include/mpq/Compression.h
+	include/mpq/Exception.h
 	src/MPQ.cpp
 	src/Compression.cpp
 )
