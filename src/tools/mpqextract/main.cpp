@@ -47,7 +47,7 @@ int main() try {
 	std::cout << "HT offset: " << header->hash_table_offset << '\n';
 	std::cout << "HT size: " << header->hash_table_size << '\n';
 
-	archive_v0->extract_file("(listfile)");
+	archive_v0->extract_file(R"((listfile))");
 	//archive_v0->retrieve_file(entry);
 } catch(std::exception& e) {
 	std::cerr << e.what();

@@ -50,7 +50,7 @@ static void decrypt_block(std::span<std::byte> buffer, std::uint32_t key) {
 		key = ((~key << 0x15) + 0x11111111) | (key >> 0x0B);
 		seed = ch + seed + (seed << 5) + 3;
 		block = ch;
-	} 
+	}
 }
 
 static std::uint32_t hash_string(std::string_view key, std::uint32_t type) {

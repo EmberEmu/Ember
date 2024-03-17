@@ -32,9 +32,11 @@ add_library(${LIBRARY_NAME}
 	include/mpq/Archive.h
 	include/mpq/Structures.h
 	include/mpq/Crypt.h
+	include/mpq/Compression.h
 	src/MPQ.cpp
+	src/Compression.cpp
 )
 
-target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES} ${ZLIB_LIBRARY})
+target_link_libraries(${LIBRARY_NAME} shared spark pklib ${Boost_LIBRARIES} ${ZLIB_LIBRARY})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(mpq PROPERTIES FOLDER "Libraries")

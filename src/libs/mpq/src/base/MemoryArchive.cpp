@@ -18,6 +18,7 @@
 #include <iostream> // todo
 #include <fstream> // todo
 #include <cmath>
+#include <mpq/Compression.h>
 
 namespace ember::mpq {
 
@@ -116,10 +117,6 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 	auto& entry = btable[block_index];
 	auto header = std::bit_cast<const v0::Header*>(buffer_.data());
 	const auto max_sector_size = BLOCK_SIZE << header->block_size_shift;
-
-	boost::container::small_vector<unsigned char, 4096> buffer;
-	buffer.resize(max_sector_size);
-
 	const auto file_data_offset = buffer_.data() + entry.file_position;
 	auto sectors = file_sectors(entry);
 	const auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
@@ -131,6 +128,17 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 
 	auto file = std::fopen(path.string().c_str(), "wb");
 	auto remaining = entry.uncompressed_size;
+
+	boost::container::small_vector<unsigned char, 4096> buffer;
+
+	// The PKWare implode function is old and messy, so just
+	// assume a worst case scenario and make sure we can hold
+	// the entire file in a single buffer
+	if(entry.flags & MPQ_FILE_IMPLODE) {
+		buffer.resize(entry.uncompressed_size);
+	} else {
+		buffer.resize(max_sector_size);
+	}
 
 	for(std::size_t i = 0u; i < sectors.size() - 1; ++i) {
 		std::uint32_t sector_size_actual = max_sector_size;
@@ -163,13 +171,20 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 				auto ret = uncompress(buffer.data(), &dest_len, sector_data.data() + 1, sector_data.size());
 
 				if(ret != Z_OK) {
-					throw std::runtime_error("todo");
+					throw std::runtime_error("zlib: todo");
 				}
 
 				fwrite(buffer.data(), dest_len, 1, file);
 			} else if(entry.flags & MPQ_FILE_IMPLODE) {
-				fwrite(sector_data.data(), sector_size_actual, 1, file);
-				std::cout << "todo, implode\n";
+				auto ret = decompress_pklib(
+					std::as_bytes(sector_data), std::as_writable_bytes(std::span(buffer))
+				);
+
+				if(!ret) {
+					throw std::runtime_error("pklib: todo");
+				}
+
+				fwrite(buffer.data(), *ret, 1, file);
 			}
 		} else {
 			fwrite(sector_data.data(), sector_data.size(), 1, file);

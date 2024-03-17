@@ -149,6 +149,7 @@ enable_testing()
 add_subdirectory(tests)
 add_subdirectory(src)
 add_subdirectory(configs)
+add_subdirectory(deps)
 
 # Enables folder view in Visual Studio solutions
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
