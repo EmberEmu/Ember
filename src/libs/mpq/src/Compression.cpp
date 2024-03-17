@@ -23,9 +23,14 @@
 
 // Most of this file is extracted (and somewhat modernised) from StormLib and is
 // seemingly based on a reverse engineered version of PKWare's Data Compression Library
-// from the 90s. Other open source implementations weren't able to correctly decompress
+// from the 90s. Most open source implementations weren't able to correctly decompress
 // the data and I'm not spending the time to reverse engineer an obsolete format 
 // (other than MPQ, seemingly)
+// ttcomp'is a small library that *does* work correctly but it's LGPLd, so no good here, 
+// (not going to dynamic link it) which is a shame because it's much smaller and
+// leaner than PKLib
+// ttcomp for reference:
+// http://fileformats.archiveteam.org/wiki/TTCOMP
 
 // Original for reference:
 // https://github.com/ladislav-zezula/StormLib/blob/master/src/SCompression.cpp

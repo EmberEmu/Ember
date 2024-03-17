@@ -130,15 +130,7 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 	auto remaining = entry.uncompressed_size;
 
 	boost::container::small_vector<unsigned char, 4096> buffer;
-
-	// The PKWare implode function is old and messy, so just
-	// assume a worst case scenario and make sure we can hold
-	// the entire file in a single buffer
-	if(entry.flags & MPQ_FILE_IMPLODE) {
-		buffer.resize(entry.uncompressed_size);
-	} else {
-		buffer.resize(max_sector_size);
-	}
+	buffer.resize(max_sector_size);
 
 	for(std::size_t i = 0u; i < sectors.size() - 1; ++i) {
 		std::uint32_t sector_size_actual = max_sector_size;
