@@ -16,11 +16,14 @@
 namespace ember::mpq {
 
 class MemoryArchive : public Archive {
-protected:
-	std::span<std::byte> buffer_;
 	std::span<BlockTableEntry> fetch_block_table() const;
 	std::span<HashTableEntry> fetch_hash_table() const;
 
+protected:
+	std::span<std::byte> buffer_;
+	std::span<BlockTableEntry> block_table_;
+	std::span<HashTableEntry> hash_table_;
+	
 public:
 	MemoryArchive(std::span<std::byte> buffer);
 

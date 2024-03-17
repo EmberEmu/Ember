@@ -24,10 +24,10 @@
 namespace ember::mpq {
 
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : buffer_(buffer) {
-	auto block_table = fetch_block_table();
-	auto hash_table = fetch_hash_table();
-	decrypt_block(std::as_writable_bytes(block_table), MPQ_KEY_BLOCK_TABLE);
-	decrypt_block(std::as_writable_bytes(hash_table), MPQ_KEY_HASH_TABLE);
+	block_table_ = fetch_block_table();
+	hash_table_ = fetch_hash_table();
+	decrypt_block(std::as_writable_bytes(block_table_), MPQ_KEY_BLOCK_TABLE);
+	decrypt_block(std::as_writable_bytes(hash_table_), MPQ_KEY_HASH_TABLE);
 }
 
 int MemoryArchive::version() const { 
@@ -111,13 +111,10 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 	}
 
 	const auto filename = path.filename().string();
-
-	const auto btable = fetch_block_table();
-	const auto htable = fetch_hash_table();
-	auto block_index = htable[index].block_index;
-	auto& entry = btable[block_index];
+	auto block_index = hash_table_[index].block_index;
+	auto& entry = block_table_[block_index];
 	auto header = std::bit_cast<const v0::Header*>(buffer_.data());
-	const auto max_sector_size = BLOCK_SIZE << header->block_size_shift;
+	auto max_sector_size = BLOCK_SIZE << header->block_size_shift;
 	const auto file_data_offset = buffer_.data() + entry.file_position;
 	auto sectors = file_sectors(entry);
 	const auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
@@ -127,13 +124,21 @@ void MemoryArchive::extract_file(std::filesystem::path path) {
 		decrypt_block(std::as_writable_bytes(sectors), key - 1);
 	}
 
+	std::size_t ignore_count = 1;
+
+	if(entry.flags & MPQ_FILE_SECTOR_CRC) {
+		++ignore_count;
+	}
+
+	sectors = std::span(sectors.begin(), sectors.end() - ignore_count);
+
 	auto file = std::fopen(path.string().c_str(), "wb");
 	auto remaining = entry.uncompressed_size;
 
 	boost::container::small_vector<unsigned char, 4096> buffer;
 	buffer.resize(max_sector_size);
 
-	for(std::size_t i = 0u; i < sectors.size() - 1; ++i) {
+	for(std::size_t i = 0u; i < sectors.size(); ++i) {
 		std::uint32_t sector_size_actual = max_sector_size;
 		std::uint32_t sector_size = max_sector_size;
 
@@ -195,11 +200,11 @@ std::span<const std::byte> MemoryArchive::retrieve_file(BlockTableEntry& entry) 
 }
 
 std::span<const BlockTableEntry> MemoryArchive::block_table() const {
-	return fetch_block_table();
+	return block_table_;
 }
 
 std::span<const HashTableEntry> MemoryArchive::hash_table() const {
-	return fetch_hash_table();
+	return hash_table_;
 }
 
 } // mpq, ember
