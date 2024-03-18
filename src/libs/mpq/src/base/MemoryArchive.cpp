@@ -15,9 +15,7 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <bit>
-#include <vector>
 #include <zlib.h> // todo
-#include <iostream> // todo
 #include <fstream>
 #include <cmath>
 

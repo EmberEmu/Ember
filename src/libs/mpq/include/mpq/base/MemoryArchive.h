@@ -11,6 +11,8 @@
 #include <mpq/base/Archive.h>
 #include <filesystem>
 #include <span>
+#include <string>
+#include <vector>
 #include <cstddef>
 
 namespace ember::mpq {
