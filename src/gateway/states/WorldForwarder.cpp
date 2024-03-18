@@ -24,7 +24,7 @@ void enter(ClientContext& ctx) {
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	if(auto it = cmsg_routes.find(opcode); it != cmsg_routes.end()) {
-		auto& [op, route] = *it;
+		auto& [_, route] = *it;
 		route_packet(ctx, opcode, route);
 	} else {
 		CLIENT_DEBUG_FILTER_GLOB(LF_NETWORK, ctx) << "Unroutable message, "

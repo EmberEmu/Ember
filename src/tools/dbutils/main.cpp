@@ -202,7 +202,7 @@ bool validate_db_names(const std::vector<std::string>& input_names) {
 	std::vector<std::string_view> bad_names;
 	std::vector<std::string_view> input(input_names.begin(), input_names.end());
 
-	for(const auto& [key, value] : db_args) {
+	for(const auto& [key, _] : db_args) {
 		valid_names.emplace_back(key);
 	}
 

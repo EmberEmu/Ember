@@ -99,15 +99,15 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_INFO_GLOB << "Compiling DBC regular expressions..." << LOG_ASYNC;
 	std::vector<ember::util::pcre::Result> profanity, reserved, spam;
 
-	for(auto& [k, record] : dbc_store.names_profanity) {
+	for(auto& [_, record] : dbc_store.names_profanity) {
 		profanity.emplace_back(ember::util::pcre::utf8_jit_compile(record.name));
 	}
 
-	for(auto& [k, record] : dbc_store.names_reserved) {
+	for(auto& [_, record] : dbc_store.names_reserved) {
 		reserved.emplace_back(ember::util::pcre::utf8_jit_compile(record.name));
 	}
 
-	for(auto& [k, record] : dbc_store.spam_messages) {
+	for(auto& [_, record] : dbc_store.spam_messages) {
 		spam.emplace_back(ember::util::pcre::utf8_jit_compile(record.text));
 	}
 

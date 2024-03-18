@@ -537,13 +537,13 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 		return;
 	}
 
-	auto& [key, region] = *it;
+	auto& [_, region] = *it;
 
 	const std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 	const auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
 
-	for(const auto& [key, realm] : *realms) {
+	for(const auto& [_, realm] : *realms) {
 		if(!locale_enforce_ || realm.region == region) {
 			if(auto count = char_count.find(realm.id); count != char_count.end()) {
 				response.realms.emplace_back(realm, count->second);

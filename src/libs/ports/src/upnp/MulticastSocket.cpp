@@ -74,7 +74,7 @@ ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8
 
 	const auto ba_buf = boost::asio::buffer(*buffer);
 
-	const auto& [ec, size] = co_await socket_.async_send_to(ba_buf, ep, as_tuple(ba::use_awaitable));
+	const auto& [ec, _] = co_await socket_.async_send_to(ba_buf, ep, as_tuple(ba::use_awaitable));
 
 	if(ec) {
 		socket_.close();

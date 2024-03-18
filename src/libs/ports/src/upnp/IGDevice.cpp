@@ -324,7 +324,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 		bool found = false;
 
 		// didn't originally have a use for a map
-		for(const auto& [k, v]: args.arguments) {
+		for(const auto& [k, _]: args.arguments) {
 			if(k == arg) {
 				found = true;
 				break;
@@ -366,7 +366,7 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTran
 	);
 
 	co_await transport.send(std::move(request));
-	const auto& [header, buffer] = co_await transport.receive_http_response();
+	const auto& [header, _] = co_await transport.receive_http_response();
 	
 	if(header.code != HTTPStatus::OK) {
 		co_return ErrorCode::HTTP_NOT_OK;
