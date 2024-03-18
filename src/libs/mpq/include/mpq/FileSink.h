@@ -27,10 +27,6 @@ class FileSink final : public ExtractionSink {
 		}
 	}
 
-	~FileSink() {
-		std::fclose(file_);
-	}
-
 public:
 	FileSink(std::filesystem::path path) {
 		if(path.has_parent_path()) {
@@ -46,6 +42,10 @@ public:
 
 	void operator()(std::span<const std::byte> data) override {
 		store(data);
+	}
+
+	~FileSink() {
+		std::fclose(file_);
 	}
 };
 

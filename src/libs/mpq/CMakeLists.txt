@@ -41,9 +41,10 @@ add_library(${LIBRARY_NAME}
 	include/mpq/Utility.h
 	src/MPQ.cpp
 	src/Compression.cpp
+	src/PKCompression.cpp
 	src/Utility.cpp
 )
 
-target_link_libraries(${LIBRARY_NAME} shared spark pklib ${Boost_LIBRARIES} ${ZLIB_LIBRARY})
+target_link_libraries(${LIBRARY_NAME} shared spark pklib bzip2 ${Boost_LIBRARIES} ${ZLIB_LIBRARY})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(mpq PROPERTIES FOLDER "Libraries")

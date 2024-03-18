@@ -15,4 +15,7 @@ namespace ember::mpq {
 std::expected<std::size_t, int> decompress_pklib(std::span<const std::byte> input,
                                                  std::span<std::byte> output);
 
+std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
+										   std::span<std::byte> output);
+
 } // mpq, ember

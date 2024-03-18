@@ -147,7 +147,7 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 	sectors = std::span(sectors.begin(), sectors.end() - ignore_count);
 	auto remaining = entry.uncompressed_size;
 
-	boost::container::small_vector<unsigned char, 4096> buffer;
+	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
 	buffer.resize(max_sector_size);
 
 	for(auto sector = sectors.begin(); sector != sectors.end(); ++sector) {
@@ -176,14 +176,15 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 
 		if(sector_size_actual < sector_size) {
 			if(entry.flags & Flags::MPQ_FILE_COMPRESS) {
-				uLongf dest_len = max_sector_size;
-				auto ret = uncompress(buffer.data(), &dest_len, sector_data.data() + 1, sector_data.size());
+				auto ret = decompress(
+					std::as_bytes(sector_data), std::as_writable_bytes(std::span(buffer))
+				);
 
-				if(ret != Z_OK) {
+				if(!ret) {
 					throw exception("cannot extract file: decompression failed");
 				}
 
-				store(std::as_bytes(std::span(buffer.data(), dest_len)));
+				store(std::as_bytes(std::span(buffer.data(), *ret)));
 			} else if(entry.flags & Flags::MPQ_FILE_IMPLODE) {
 				auto ret = decompress_pklib(
 					std::as_bytes(sector_data), std::as_writable_bytes(std::span(buffer))

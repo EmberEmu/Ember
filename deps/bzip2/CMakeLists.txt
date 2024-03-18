@@ -4,11 +4,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(LIBRARY_NAME pklib)
+set(LIBRARY_NAME bzip2)
 
 add_library(${LIBRARY_NAME} STATIC
-	crc32.c
-	explode.c
-	implode.c
-	pklib.h
+	blocksort.c
+	bzlib.c
+	compress.c
+	crctable.c
+	decompress.c
+	huffman.c
+	randtable.c
+	bzlib.h
 )
