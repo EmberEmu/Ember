@@ -126,9 +126,9 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data,
                                             const std::uintptr_t offset) {
 	const auto header_v0 = std::bit_cast<const v0::Header*>(data.data() + offset);
-	auto adjusted = std::span(data.data() + offset, data.size_bytes() - offset);
 
 	if(header_v0->format_version == 0) {
+		const auto adjusted = std::span(data.data() + offset, data.size_bytes() - offset);
 		return std::make_unique<v0::MemoryArchive>(adjusted);
 	}
 

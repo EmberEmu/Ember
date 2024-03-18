@@ -15,6 +15,7 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <bit>
+#include <iterator>
 #include <zlib.h> // todo
 #include <fstream>
 #include <cmath>
@@ -32,7 +33,7 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 }
 
 void MemoryArchive::load_listfile() {
-	auto index = file_lookup("(listfile)", 0, 0);
+	auto index = Archive::file_lookup("(listfile)", 0, 0);
 
 	if(index == npos) {
 		return;
@@ -47,8 +48,7 @@ void MemoryArchive::load_listfile() {
 
 	std::stringstream stream;
 	stream << buffer;
-	std::string filename;
-	buffer = std::string(); // force memory release
+	std::string().swap(buffer); // force memory release
 
 	while(std::getline(stream, buffer, '\n')) {
 		files_.emplace_back(std::move(buffer));
@@ -94,7 +94,7 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 	const auto name_key_b = hash_string(name, MPQ_HASH_NAME_B);
 	const auto end = (index - 1) > table.size()? table.size() : index - 1;
 
-	for(auto i = index; i != end; (++i) %= table.size()) {
+	for(auto i = index; i != end; ++i, i %= table.size()) {
 		if(table[i].block_index == MPQ_HASH_ENTRY_EMPTY) {
 			return npos;
 		}
@@ -120,7 +120,7 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entr
 	return { sector_begin, count + 1 };
 }
 
-void MemoryArchive::extract_file(std::filesystem::path path, ExtractionSink& sink) {
+void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& sink) {
 	auto index = file_lookup(path.string(), 0, 0);
 
 	if(index == npos) {
@@ -132,11 +132,11 @@ void MemoryArchive::extract_file(std::filesystem::path path, ExtractionSink& sin
 	auto max_sector_size = BLOCK_SIZE << header_->block_size_shift;
 	const auto file_offset = buffer_.data() + entry.file_position;
 	auto sectors = file_sectors(entry);
-	const auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
+	auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
 
 	// decrypt the sector block if required
 	if(entry.flags & Flags::MPQ_FILE_ENCRYPTED) {
-		decrypt_block(std::as_writable_bytes(sectors), key - 1);
+		decrypt_block(std::as_writable_bytes(sectors), --key);
 	}
 
 	std::size_t ignore_count = 1;
@@ -151,7 +151,7 @@ void MemoryArchive::extract_file(std::filesystem::path path, ExtractionSink& sin
 	boost::container::small_vector<unsigned char, 4096> buffer;
 	buffer.resize(max_sector_size);
 
-	for(std::size_t i = 0u; i < sectors.size(); ++i) {
+	for(auto sector = sectors.begin(); sector != sectors.end(); ++sector) {
 		std::uint32_t sector_size_actual = max_sector_size;
 		std::uint32_t sector_size = max_sector_size;
 
@@ -163,16 +163,16 @@ void MemoryArchive::extract_file(std::filesystem::path path, ExtractionSink& sin
 		
 		// sector is compressed, get the actual data size
 		if(entry.flags & Flags::MPQ_FILE_COMPRESS_MASK) {
-			sector_size_actual = sectors[i + 1] - sectors[i];
+			sector_size_actual =  *std::next(sector) - *sector;
 		}
 
 		// get the location of the data for this sector
 		std::span sector_data(
-			std::bit_cast<unsigned char*>(file_offset + sectors[i]), sector_size_actual
+			std::bit_cast<unsigned char*>(file_offset + *sector), sector_size_actual
 		);
 
 		if(entry.flags & Flags::MPQ_FILE_ENCRYPTED) {
-			decrypt_block(std::as_writable_bytes(sector_data), key + i);
+			decrypt_block(std::as_writable_bytes(sector_data), ++key);
 		}
 
 		if(sector_size_actual < sector_size) {
