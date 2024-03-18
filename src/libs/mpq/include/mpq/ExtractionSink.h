@@ -17,6 +17,7 @@ class ExtractionSink {
 public:
 	virtual void store(std::span<const std::byte> data) = 0;
 	virtual ~ExtractionSink() = default;
+	virtual void operator()(std::span<const std::byte> data) = 0;
 };
 
 } // mpq, ember

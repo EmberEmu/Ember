@@ -47,7 +47,7 @@ public:
 
 	std::span<const std::byte> retrieve_file(BlockTableEntry& entry);
 	std::span<std::uint32_t> file_sectors(const BlockTableEntry& entry);
-	void extract_file(const std::filesystem::path& path, ExtractionSink& sink);
+	void extract_file(const std::filesystem::path& path, ExtractionSink& store);
 	std::span<const std::string> files() const;
 };
 

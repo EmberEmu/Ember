@@ -119,7 +119,7 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entr
 	return { sector_begin, count + 1 };
 }
 
-void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& sink) {
+void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& store) {
 	auto index = file_lookup(path.string(), 0, 0);
 
 	if(index == npos) {
@@ -183,7 +183,7 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 					throw exception("cannot extract file: decompression failed");
 				}
 
-				sink.store(std::as_bytes(std::span(buffer.data(), dest_len)));
+				store(std::as_bytes(std::span(buffer.data(), dest_len)));
 			} else if(entry.flags & Flags::MPQ_FILE_IMPLODE) {
 				auto ret = decompress_pklib(
 					std::as_bytes(sector_data), std::as_writable_bytes(std::span(buffer))
@@ -193,10 +193,10 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 					throw exception("cannot extract file: decompression (explode) failed");
 				}
 
-				sink.store(std::as_bytes(std::span(buffer.data(), *ret)));
+				store(std::as_bytes(std::span(buffer.data(), *ret)));
 			}
 		} else {
-			sink.store(std::as_bytes(sector_data));
+			store(std::as_bytes(sector_data));
 		}
 
 		remaining -= sector_size;

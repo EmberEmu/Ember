@@ -20,9 +20,6 @@ class MemorySink final : public ExtractionSink {
 	std::span<std::byte> buffer_;
 	std::size_t offset_ = 0;
 
-public:
-	MemorySink(std::span<std::byte> buffer) : buffer_(buffer) {}
-
 	void store(std::span<const std::byte> data) override {
 		const auto free_space = buffer_.size_bytes() - offset_;
 
@@ -32,6 +29,13 @@ public:
 
 		std::memcpy(buffer_.data() + offset_, data.data(), data.size_bytes());
 		offset_ += data.size_bytes();
+	}
+
+public:
+	MemorySink(std::span<std::byte> buffer) : buffer_(buffer) {}
+
+	void operator()(std::span<const std::byte> data) override {
+		store(data);
 	}
 };
 
