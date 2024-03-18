@@ -38,8 +38,10 @@ add_library(${LIBRARY_NAME}
 	include/mpq/ExtractionSink.h
 	include/mpq/FileSink.h
 	include/mpq/MemorySink.h
+	include/mpq/Utility.h
 	src/MPQ.cpp
 	src/Compression.cpp
+	src/Utility.cpp
 )
 
 target_link_libraries(${LIBRARY_NAME} shared spark pklib ${Boost_LIBRARIES} ${ZLIB_LIBRARY})

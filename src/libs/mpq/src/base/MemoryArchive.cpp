@@ -17,7 +17,6 @@
 #include <bit>
 #include <iterator>
 #include <zlib.h> // todo
-#include <fstream>
 #include <cmath>
 
 namespace ember::mpq {
@@ -33,7 +32,7 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 }
 
 void MemoryArchive::load_listfile() {
-	auto index = Archive::file_lookup("(listfile)", 0, 0);
+	auto index = file_lookup("(listfile)", 0, 0);
 
 	if(index == npos) {
 		return;
