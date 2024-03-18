@@ -15,14 +15,20 @@
 
 namespace ember::mpq {
 
+class ExtractionSink;
+
 class MemoryArchive : public Archive {
 	std::span<BlockTableEntry> fetch_block_table() const;
 	std::span<HashTableEntry> fetch_hash_table() const;
+
+	BlockTableEntry& file_entry(std::size_t index);
+	void load_listfile();
 
 protected:
 	std::span<std::byte> buffer_;
 	std::span<BlockTableEntry> block_table_;
 	std::span<HashTableEntry> hash_table_;
+	const v0::Header* header_;
 	
 public:
 	MemoryArchive(std::span<std::byte> buffer);
@@ -32,11 +38,13 @@ public:
 	Backing backing() const override { return Backing::MEMORY; }
 	std::span<const BlockTableEntry> block_table() const override;
 	std::span<const HashTableEntry> hash_table() const override;
+
 	std::size_t file_lookup(std::string_view name, const std::uint16_t locale,
 	                        const std::uint16_t platform) const override;
+
 	std::span<const std::byte> retrieve_file(BlockTableEntry& entry);
-	std::span<std::uint32_t> file_sectors(BlockTableEntry& entry);
-	void extract_file(std::filesystem::path path);
+	std::span<std::uint32_t> file_sectors(const BlockTableEntry& entry);
+	void extract_file(std::filesystem::path path, ExtractionSink& sink);
 };
 
 

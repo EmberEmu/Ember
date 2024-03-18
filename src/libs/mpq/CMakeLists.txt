@@ -34,6 +34,10 @@ add_library(${LIBRARY_NAME}
 	include/mpq/Crypt.h
 	include/mpq/Compression.h
 	include/mpq/Exception.h
+	include/mpq/SharedDefs.h
+	include/mpq/ExtractionSink.h
+	include/mpq/FileSink.h
+	include/mpq/MemorySink.h
 	src/MPQ.cpp
 	src/Compression.cpp
 )

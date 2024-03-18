@@ -8,30 +8,13 @@
 
 #pragma once
 
-#include <shared/util/MulticharConstant.h>
+#include <mpq/SharedDefs.h>
+#include <shared/util/enum_bitmask.h>
 #include <cstdint>
 
 namespace ember::mpq {
 
-// todo, move
-constexpr std::uint16_t HEADER_ALIGNMENT = 0x200;
-constexpr std::uint32_t MPQA_FOURCC = util::make_mcc("MPQ\x1a");
-constexpr std::uint32_t MPQB_FOURCC = util::make_mcc("MPQ\x1b");
-constexpr std::uint32_t HEADER_SIZE_V0 = 0x20;
-constexpr std::uint32_t HEADER_SIZE_V1 = 0x2C;
-constexpr std::uint32_t HEADER_SIZE_V2 = 0x2C; // minimum
-constexpr std::uint32_t HEADER_SIZE_V3 = 0xD0;
-constexpr std::uint32_t MPQ_KEY_HASH_TABLE = 0xC3AF3770;
-constexpr std::uint32_t MPQ_KEY_BLOCK_TABLE = 0xEC83B3A3;
-constexpr std::uint32_t MPQ_HASH_ENTRY_EMPTY = 0xFFFFFFFF;
-constexpr std::uint32_t MPQ_HASH_ENTRY_DELETED = 0xFFFFFFFE;
-constexpr std::uint32_t MPQ_HASH_TABLE_INDEX = 0;
-constexpr std::uint32_t MPQ_HASH_NAME_A = 1;
-constexpr std::uint32_t MPQ_HASH_NAME_B = 2;
-constexpr std::uint32_t MPQ_HASH_FILE_KEY = 3;
-constexpr std::uint32_t BLOCK_SIZE = 0x200;
-
-enum Flag : std::uint32_t {
+enum Flags : std::uint32_t {
 	MPQ_FILE_IMPLODE       = 0x00000100, // PKWARE compression
 	MPQ_FILE_COMPRESS      = 0x00000200,
 	MPQ_FILE_ENCRYPTED     = 0x00010000,
@@ -79,16 +62,7 @@ struct Header {
 
 namespace v1 {
 
-struct Header {
-	std::uint32_t magic;
-	std::uint32_t header_size;
-	std::uint32_t archive_size;
-	std::uint16_t format_version;
-	std::uint16_t block_size;
-	std::uint32_t hash_table_offset;
-	std::uint32_t block_table_offset;
-	std::uint32_t hash_table_size;
-	std::uint32_t block_table_size;
+struct Header : public v0::Header {
 	std::uint64_t extended_block_table_offset;
 	std::uint16_t hash_table_offset_high;
 	std::uint16_t block_table_offset_hi;
@@ -119,7 +93,7 @@ struct BlockTableEntry {
 	std::uint32_t file_position;
 	std::uint32_t compressed_size;
 	std::uint32_t uncompressed_size;
-	Flag flags;
+	Flags flags;
 };
 
 static_assert(sizeof(BlockTableEntry) == 0x10);

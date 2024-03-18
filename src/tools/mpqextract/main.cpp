@@ -10,6 +10,7 @@
 
 #include <mpq/MPQ.h>
 #include <mpq/Crypt.h>
+#include <mpq/FileSink.h>
 #include <cstdint>
 #include <filesystem>
 #include <iostream>
@@ -47,8 +48,8 @@ int main() try {
 	std::cout << "HT offset: " << header->hash_table_offset << '\n';
 	std::cout << "HT size: " << header->hash_table_size << '\n';
 
-	archive_v0->extract_file(R"((listfile))");
-	//archive_v0->retrieve_file(entry);
+	mpq::FileSink file("(listfile)");
+	archive_v0->extract_file(R"((listfile))", file);
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }
