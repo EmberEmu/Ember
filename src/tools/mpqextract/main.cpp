@@ -47,9 +47,13 @@ int main() try {
 	std::cout << "BT size: " << header->block_table_size << '\n';
 	std::cout << "HT offset: " << header->hash_table_offset << '\n';
 	std::cout << "HT size: " << header->hash_table_size << '\n';
+	const auto listed_files = archive_v0->files();
 
-	mpq::FileSink file("(listfile)");
-	archive_v0->extract_file(R"((listfile))", file);
+	for(auto& file : listed_files) {
+		std::cout << file << '\n';
+	}
+
+	std::cout << "Files: " << listed_files.size();
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }

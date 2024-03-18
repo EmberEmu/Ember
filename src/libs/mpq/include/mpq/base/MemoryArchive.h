@@ -29,6 +29,7 @@ protected:
 	std::span<BlockTableEntry> block_table_;
 	std::span<HashTableEntry> hash_table_;
 	const v0::Header* header_;
+	std::vector<std::string> files_;
 	
 public:
 	MemoryArchive(std::span<std::byte> buffer);
@@ -45,6 +46,7 @@ public:
 	std::span<const std::byte> retrieve_file(BlockTableEntry& entry);
 	std::span<std::uint32_t> file_sectors(const BlockTableEntry& entry);
 	void extract_file(std::filesystem::path path, ExtractionSink& sink);
+	std::span<const std::string> files() const;
 };
 
 

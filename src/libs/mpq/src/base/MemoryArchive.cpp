@@ -39,12 +39,23 @@ void MemoryArchive::load_listfile() {
 	if(index == npos) {
 		return;
 	}
-
+	
 	const auto& entry = file_entry(index);
-	std::vector<std::byte> buffer;
+
+	std::string buffer;
 	buffer.resize(entry.uncompressed_size);
-	MemorySink sink(buffer);
+	MemorySink sink(std::as_writable_bytes(std::span(buffer)));
 	extract_file("(listfile)", sink);
+
+	std::stringstream stream;
+	stream << buffer;
+	std::string filename;
+	buffer = std::string(); // force memory release
+
+	while(std::getline(stream, buffer, '\n')) {
+		files_.emplace_back(std::move(buffer));
+		buffer.clear(); // reset to known state
+	}
 }
 
 int MemoryArchive::version() const { 
@@ -213,6 +224,10 @@ std::span<const BlockTableEntry> MemoryArchive::block_table() const {
 
 std::span<const HashTableEntry> MemoryArchive::hash_table() const {
 	return hash_table_;
+}
+
+std::span<const std::string> MemoryArchive::files() const {
+	return files_;
 }
 
 } // mpq, ember
