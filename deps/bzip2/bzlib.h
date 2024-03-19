@@ -47,7 +47,7 @@ extern "C" {
 
 typedef 
    struct {
-      char *next_in;
+      const char *next_in;
       unsigned int avail_in;
       unsigned int total_in_lo32;
       unsigned int total_in_hi32;

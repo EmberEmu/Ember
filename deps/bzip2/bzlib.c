@@ -1221,7 +1221,7 @@ int BZ_API(BZ2_bzRead)
 void BZ_API(BZ2_bzReadGetUnused) 
                      ( int*    bzerror, 
                        BZFILE* b, 
-                       void**  unused, 
+                       const void**  unused, 
                        int*    nUnused )
 {
    bzFile* bzf = (bzFile*)b;
@@ -1299,7 +1299,7 @@ int BZ_API(BZ2_bzBuffToBuffCompress)
 int BZ_API(BZ2_bzBuffToBuffDecompress) 
                            ( char*         dest, 
                              unsigned int* destLen,
-                             char*         source, 
+                             const char*   source, 
                              unsigned int  sourceLen,
                              int           small,
                              int           verbosity )
