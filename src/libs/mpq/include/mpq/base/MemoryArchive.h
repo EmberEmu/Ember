@@ -25,6 +25,8 @@ class MemoryArchive : public Archive {
 
 	BlockTableEntry& file_entry(std::size_t index);
 	void load_listfile();
+	void extract_compressed(BlockTableEntry& entry, std::uint32_t key, ExtractionSink& store);
+	void extract_uncompressed(BlockTableEntry& entry, std::uint32_t key, ExtractionSink& store);
 
 protected:
 	std::span<std::byte> buffer_;
