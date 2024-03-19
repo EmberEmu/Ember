@@ -16,3 +16,5 @@ add_library(${LIBRARY_NAME} STATIC
 	randtable.c
 	bzlib.h
 )
+
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

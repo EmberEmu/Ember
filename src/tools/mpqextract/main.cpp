@@ -37,6 +37,9 @@ int main() try {
 	std::unique_ptr<mpq::v0::MappedArchive> archive_v0 {
 		dynamic_cast<mpq::v0::MappedArchive*>(archive.release()) 
 	};
+
+	mpq::FileSink sink("out");
+	archive_v0->extract_file("(listfile)", sink);
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }

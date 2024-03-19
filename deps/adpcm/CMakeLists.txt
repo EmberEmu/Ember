@@ -4,13 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(LIBRARY_NAME storm_pklib)
+set(LIBRARY_NAME storm_adpcm)
 
 add_library(${LIBRARY_NAME} STATIC
-	crc32.c
-	explode.c
-	implode.c
-	pklib.h
+	adpcm.h
+	adpcm.cpp
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

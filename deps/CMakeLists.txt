@@ -6,3 +6,7 @@
 
 add_subdirectory(pklib)
 add_subdirectory(bzip2)
+add_subdirectory(lzma)
+add_subdirectory(adpcm)
+add_subdirectory(sparse)
+add_subdirectory(huffman)

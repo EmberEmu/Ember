@@ -16,7 +16,6 @@
 #include <boost/container/small_vector.hpp>
 #include <bit>
 #include <iterator>
-#include <zlib.h> // todo
 #include <cmath>
 
 namespace ember::mpq {
