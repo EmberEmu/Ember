@@ -101,7 +101,7 @@ std::expected<std::size_t, int> decompress_zlib(std::span<const std::byte> input
 	Bytef* dest = std::bit_cast<Bytef*>(output.data());
 	const Bytef* src = std::bit_cast<const Bytef*>(input.data());
 
-	auto ret = uncompress(dest, &dest_len, src + 1, input.size_bytes() - 1);
+	auto ret = uncompress(dest, &dest_len, src + 1, input.size_bytes());
 
 	if(ret != Z_OK) {
 		return std::unexpected(ret);
@@ -114,6 +114,11 @@ std::expected<std::size_t, int> decompress_zlib(std::span<const std::byte> input
 int next_compression(std::uint8_t& mask) {
 	if(!mask) {
 		return 0;
+	}
+
+	if(mask == MPQ_COMPRESSION_LZMA) {
+		mask = 0;
+		return MPQ_COMPRESSION_LZMA;
 	}
 
 	if(mask & MPQ_COMPRESSION_ADPCM_MONO) {
@@ -139,11 +144,6 @@ int next_compression(std::uint8_t& mask) {
 	if(mask & MPQ_COMPRESSION_SPARSE) {
 		mask ^= MPQ_COMPRESSION_SPARSE;
 		return MPQ_COMPRESSION_SPARSE;
-	}
-
-	if(mask & MPQ_COMPRESSION_LZMA) {
-		mask ^= MPQ_COMPRESSION_LZMA;
-		return MPQ_COMPRESSION_LZMA;
 	}
 
 	if(mask & MPQ_COMPRESSION_BZIP2) {

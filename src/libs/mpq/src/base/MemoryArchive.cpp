@@ -49,6 +49,7 @@ void MemoryArchive::load_listfile() {
 	std::string().swap(buffer); // force memory release
 
 	while(std::getline(stream, buffer, '\n')) {
+		std::erase(buffer, '\r');
 		files_.emplace_back(std::move(buffer));
 		buffer.clear(); // reset to known state
 	}
@@ -97,8 +98,8 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 			return npos;
 		}
 
-		if(table[i].name_1 == name_key_a  || table[i].name_2 == name_key_b
-		   || table[i].locale == locale || table[i].platform == platform) {
+		if(table[i].name_1 == name_key_a && table[i].name_2 == name_key_b
+		   && table[i].locale == locale && table[i].platform == platform) {
 			return i;
 		}
 	}
@@ -148,6 +149,10 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 
 	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
 	buffer.resize(max_sector_size);
+
+	if(entry.flags & MPQ_FILE_FIX_KEY) {
+		throw exception("todo");
+	}
 
 	for(auto sector = sectors.begin(); sector != sectors.end(); ++sector) {
 		std::uint32_t sector_size_actual = max_sector_size;
