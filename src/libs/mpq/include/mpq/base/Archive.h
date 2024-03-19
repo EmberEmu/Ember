@@ -31,8 +31,7 @@ public:
 	virtual Backing backing() const = 0;
 	virtual std::span<const BlockTableEntry> block_table() const = 0;
 	virtual std::span<const HashTableEntry> hash_table() const = 0;
-	virtual std::size_t file_lookup(std::string_view name, const std::uint16_t locale,
-	                                const std::uint16_t platform) const = 0;
+	virtual std::size_t file_lookup(std::string_view name, const std::uint16_t locale) const = 0;
 
 	virtual std::span<const std::string> files() const = 0;
 	virtual void files(std::span<std::string_view> files) = 0;

@@ -27,8 +27,7 @@ public:
 		return {};
 	}
 
-	std::size_t file_lookup(std::string_view name, const std::uint16_t locale,
-	                        const std::uint16_t platform) const {
+	std::size_t file_lookup(std::string_view name, const std::uint16_t locale) const {
 		return npos;
 	}
 

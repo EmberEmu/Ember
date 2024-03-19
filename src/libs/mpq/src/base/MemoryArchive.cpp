@@ -31,7 +31,7 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 }
 
 void MemoryArchive::load_listfile() {
-	auto index = file_lookup("(listfile)", 0, 0);
+	auto index = file_lookup("(listfile)", 0);
 
 	if(index == npos) {
 		return;
@@ -79,8 +79,7 @@ std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
 	return { entry, header_->block_table_size };
 }
 
-std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_t locale,
-                                       const std::uint16_t platform) const {
+std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_t locale) const {
 	const auto table = hash_table();
 	auto index = hash_string(name, MPQ_HASH_TABLE_INDEX);
 
@@ -102,7 +101,7 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 		}
 
 		if(table[i].name_1 == name_key_a && table[i].name_2 == name_key_b
-		   && table[i].locale == locale && table[i].platform == platform) {
+		   && table[i].locale == locale) {
 			return i;
 		}
 	}
@@ -123,7 +122,7 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entr
 }
 
 void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& store) {
-	auto index = file_lookup(path.string(), 0, 0);
+	auto index = file_lookup(path.string(), 0);
 
 	if(index == npos) {
 		throw exception("cannot extract file: file not found");
