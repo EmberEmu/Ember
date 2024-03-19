@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2014, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <boost/endian/arithmetic.hpp>
+#include <shared/util/MulticharConstant.h>
 
 namespace ember::dbc {
 
@@ -17,7 +18,7 @@ namespace be = boost::endian;
 
 #pragma pack(push, 1)
 
-#define DBC_MAGIC 'WDBC'
+constexpr std::uint32_t DBC_MAGIC = util::make_mcc("WDBC");
 
 struct DBCHeader {
 	be::big_uint32_t magic;

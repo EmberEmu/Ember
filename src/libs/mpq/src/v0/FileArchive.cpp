@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <mpq/v0/FileArchive.h>
 
 namespace ember::mpq::v0 {
