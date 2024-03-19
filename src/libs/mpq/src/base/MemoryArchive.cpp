@@ -130,6 +130,13 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 	auto& entry = file_entry(index);
 	auto max_sector_size = BLOCK_SIZE << header_->block_size_shift;
 	const auto file_offset = buffer_.data() + entry.file_position;
+
+	// quick fix, need to split this up and handle keys still
+	if((entry.flags & MPQ_FILE_COMPRESS_MASK) == 0) {
+		store({file_offset, entry.uncompressed_size});
+		return;
+	}
+
 	auto sectors = file_sectors(entry);
 	auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
 

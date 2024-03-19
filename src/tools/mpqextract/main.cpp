@@ -38,8 +38,16 @@ int main() try {
 		dynamic_cast<mpq::v0::MappedArchive*>(archive.release()) 
 	};
 
-	mpq::FileSink sink("out");
-	archive_v0->extract_file("(listfile)", sink);
+	for(auto& f : archive_v0->files()) {
+		try {
+			mpq::FileSink sink(f);
+			archive_v0->extract_file(f, sink);
+		} catch(mpq::exception& e) {
+			std::cout << f << " - " << e.what();
+		}
+	}
+
+	std::cout << "Zug zug, work complete!";
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }
