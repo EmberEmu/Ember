@@ -31,6 +31,14 @@ public:
 	                        const std::uint16_t platform) const {
 		return npos;
 	}
+
+	std::span<const std::string> files() const {
+		return {};
+	}
+
+	void files(std::span<std::string_view> files) {
+		
+	}
 };
 
 

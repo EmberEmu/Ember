@@ -11,6 +11,7 @@
 #include <mpq/Structures.h>
 #include <span>
 #include <string_view>
+#include <string>
 #include <cstdint>
 #include <cstddef>
 
@@ -33,6 +34,8 @@ public:
 	virtual std::size_t file_lookup(std::string_view name, const std::uint16_t locale,
 	                                const std::uint16_t platform) const = 0;
 
+	virtual std::span<const std::string> files() const = 0;
+	virtual void files(std::span<std::string_view> files) = 0;
 	virtual ~Archive() = default;
 };
 

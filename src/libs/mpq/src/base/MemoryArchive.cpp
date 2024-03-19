@@ -239,4 +239,10 @@ std::span<const std::string> MemoryArchive::files() const {
 	return files_;
 }
 
+void MemoryArchive::files(std::span<std::string_view> files) {
+	for(auto file : files) {
+		files_.emplace_back(file);
+	}
+}
+
 } // mpq, ember

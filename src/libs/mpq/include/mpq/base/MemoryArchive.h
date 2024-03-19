@@ -48,7 +48,8 @@ public:
 	std::span<const std::byte> retrieve_file(BlockTableEntry& entry);
 	std::span<std::uint32_t> file_sectors(const BlockTableEntry& entry);
 	void extract_file(const std::filesystem::path& path, ExtractionSink& store);
-	std::span<const std::string> files() const;
+	std::span<const std::string> files() const override;
+	void files(std::span<std::string_view> files) override;
 };
 
 
