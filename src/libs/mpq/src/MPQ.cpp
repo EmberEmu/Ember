@@ -17,20 +17,60 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/buffers.hpp>
+#include <array>
 #include <bit>
 #include <fstream>
 #include <cstddef>
+#include <cstdio>
 
 using namespace boost::interprocess;
 
 namespace ember::mpq {
+
+LocateResult archive_offset(FILE* file) {
+	std::array<std::uint32_t, 1> magic{};
+	auto buffer = std::as_writable_bytes(std::span(magic));
+	auto ret = std::fseek(file, 0, SEEK_END);
+
+	if(ret != 0) {
+		return std::unexpected(ErrorCode::FILE_READ_FAILED);
+	}
+
+	const auto size = std::ftell(file);
+
+	if(size == -1) {
+		return std::unexpected(ErrorCode::FILE_READ_FAILED);
+	}
+
+	for(std::uintptr_t i = 0; i < (size - buffer.size_bytes()); i += HEADER_ALIGNMENT) {
+		ret = std::fseek(file, i, SEEK_SET);
+
+		if(ret != 0) {
+			return std::unexpected(ErrorCode::FILE_READ_FAILED);
+		}
+
+		ret = std::fread(buffer.data(), buffer.size_bytes(), 1, file);
+
+		if(!ret) {
+			return std::unexpected(ErrorCode::FILE_READ_FAILED);
+		}
+
+		boost::endian::big_to_native_inplace(magic[0]);
+
+		if(magic[0] == MPQA_FOURCC) {
+			return i;
+		}
+	}
+
+	return npos;
+}
 
 std::uintptr_t archive_offset(std::span<const std::byte> buffer) {
 	spark::v2::BufferAdaptor adaptor(buffer);
 	spark::v2::BinaryStream stream(adaptor);
 	std::uint32_t magic{};
 
-	for(std::uintptr_t i = 0; i < buffer.size(); i += HEADER_ALIGNMENT) {
+	for(std::uintptr_t i = 0; i < buffer.size() - sizeof(magic); i += HEADER_ALIGNMENT) {
 		stream >> magic;
 		boost::endian::big_to_native_inplace(magic);
 
@@ -51,12 +91,19 @@ LocateResult locate_archive(const std::filesystem::path& path) try {
 		return std::unexpected(ErrorCode::FILE_NOT_FOUND);
 	}
 
-	file_mapping file(path.c_str(), read_only);
-	mapped_region region(file, read_only);
-	const auto data = region.get_address();
-	const auto size = region.get_size();
-	region.advise(mapped_region::advice_sequential);
-	return locate_archive({ static_cast<std::byte*>(data), size });
+	FILE* file = std::fopen(path.string().c_str(), "rb");
+
+	if(!file) {
+		return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
+	}
+
+	const auto offset = archive_offset(file);
+
+	if(offset == npos) {
+		return std::unexpected(ErrorCode::NO_ARCHIVE_FOUND);
+	}
+
+	return offset;
 } catch(std::exception&) {
 	return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
 }

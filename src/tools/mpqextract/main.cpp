@@ -12,6 +12,7 @@
 #include <mpq/Utility.h>
 #include <cstdint>
 #include <filesystem>
+#include <format>
 #include <iostream>
 
 using namespace ember;
@@ -41,7 +42,7 @@ int main() try {
 			mpq::FileSink sink(f);
 			archive_v0->extract_file(f, sink);
 		} catch(mpq::exception& e) {
-			std::cout << f << " - " << e.what();
+			std::cerr << std::format("{} ({})", e.what(), f);
 		}
 	}
 

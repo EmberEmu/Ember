@@ -26,7 +26,8 @@ enum class ErrorCode {
 	NO_ARCHIVE_FOUND,
 	BAD_ALIGNMENT,
 	FILE_NOT_FOUND,
-	UNABLE_TO_OPEN
+	UNABLE_TO_OPEN,
+	FILE_READ_FAILED
 };
 
 using LocateResult = std::expected<std::uintptr_t, ErrorCode>;

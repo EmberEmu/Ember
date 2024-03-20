@@ -237,11 +237,6 @@ void MemoryArchive::extract_uncompressed(BlockTableEntry& entry, const std::uint
 	store(data);
 }
 
-std::span<const std::byte> MemoryArchive::retrieve_file(BlockTableEntry& entry) {
-	//
-	return {};
-}
-
 BlockTableEntry& MemoryArchive::file_entry(const std::size_t index) {
 	auto block_index = hash_table_[index].block_index;
 	return block_table_[block_index];
