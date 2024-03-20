@@ -33,6 +33,10 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(b
 	}
 }
 
+std::uint64_t MemoryArchive::extend(std::uint16_t hi, std::uint32_t lo) const {
+	return (static_cast<std::uint64_t>(hi) << 32) | lo;
+}
+
 std::uint64_t MemoryArchive::high_mask(std::uint16_t value) const {
 	return static_cast<std::uint64_t>(value) << 32;
 }
@@ -57,20 +61,16 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 }
 
 std::span<HashTableEntry> MemoryArchive::fetch_hash_table() const {
-	const auto high_part = high_mask(header_->hash_table_offset_hi);
-
 	auto entry = std::bit_cast<HashTableEntry*>(
-		buffer_.data() + (high_part | header_->hash_table_offset)
+		buffer_.data() + extend(header_->hash_table_offset_hi, header_->hash_table_offset)
 	);
 
 	return { entry, header_->hash_table_size };
 }
 
 std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
-	const auto high_part = high_mask(header_->block_table_offset_hi);
-
 	auto entry = std::bit_cast<BlockTableEntry*>(
-		buffer_.data() + (high_part | header_->block_table_offset)
+		buffer_.data() + extend(header_->block_table_offset_hi, header_->block_table_offset)
 	);
 
 	return { entry, header_->block_table_size };
@@ -83,11 +83,11 @@ const Header* MemoryArchive::header() const {
 
 std::size_t MemoryArchive::size() const {
 	const uintptr_t bt_end = 
-		(high_mask(header_->block_table_offset_hi) | header_->block_table_offset)
+		extend(header_->block_table_offset_hi, header_->block_table_offset)
 		+ (static_cast<unsigned long long>(header_->block_table_size) * sizeof(BlockTableEntry));
 
 	const std::uintptr_t ht_end = 
-		(high_mask(header_->hash_table_offset_hi) | header_->hash_table_offset)
+		extend(header_->hash_table_offset_hi, header_->hash_table_offset)
 		+ (static_cast<unsigned long long>(header_->hash_table_size) * sizeof(HashTableEntry));
 
 	const uintptr_t ebt_end = header_->extended_block_table_offset
