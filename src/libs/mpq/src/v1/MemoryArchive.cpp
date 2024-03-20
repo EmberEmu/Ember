@@ -94,7 +94,7 @@ std::size_t MemoryArchive::size() const {
 		+ (static_cast<unsigned long long>(header_->block_table_size) * sizeof(BlockTableEntry));
 
 	const auto size = ht_end > bt_end? ht_end : bt_end;
-	return size;
+	return ebt_end > size? ebt_end : size;
 }
 
 } // v1, mpq, ember
