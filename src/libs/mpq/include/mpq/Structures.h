@@ -64,7 +64,7 @@ namespace v1 {
 
 struct Header : public v0::Header {
 	std::uint64_t extended_block_table_offset;
-	std::uint16_t hash_table_offset_high;
+	std::uint16_t hash_table_offset_hi;
 	std::uint16_t block_table_offset_hi;
 	std::uint32_t __pad;
 };

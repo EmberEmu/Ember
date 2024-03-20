@@ -156,15 +156,23 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 		throw exception("cannot open archive: bad header encountered");
 	}
 
-	if(header_v0->format_version == 0) {
-		if(map) {
-			file_mapping file(path.c_str(), read_write);
-			mapped_region region(file, copy_on_write);
-			region.advise(mapped_region::advice_sequential);
-			return std::make_unique<v0::MappedArchive>(std::move(file), std::move(region));
-		} else {
+	if(!map) {
+		if(header_v0->format_version == 0) {
 			return std::make_unique<v0::FileArchive>(path, offset);
+		} else {
+			return nullptr;
 		}
+	}
+
+	file_mapping file(path.c_str(), read_write);
+	mapped_region region(file, copy_on_write);
+	region.advise(mapped_region::advice_sequential);
+
+	switch(header_v0->format_version) {
+		case 0:
+			return std::make_unique<v0::MappedArchive>(std::move(file), std::move(region));
+		case 1:
+			return std::make_unique<v1::MappedArchive>(std::move(file), std::move(region));
 	}
 
 	return nullptr;

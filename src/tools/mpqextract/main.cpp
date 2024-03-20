@@ -33,14 +33,14 @@ int main() try {
 		return -1;
 	}
 
-	std::unique_ptr<mpq::v0::MappedArchive> archive_v0 {
-		dynamic_cast<mpq::v0::MappedArchive*>(archive.release()) 
-	};
+	std::cout << archive->size() << '\n';
 
-	for(auto& f : archive_v0->files()) {
+	for(auto& f : archive->files()) {
+		std::cout << f << '\n';
+
 		try {
 			mpq::FileSink sink(f);
-			archive_v0->extract_file(f, sink);
+			archive->extract_file(f, sink);
 		} catch(mpq::exception& e) {
 			std::cerr << std::format("{} ({})", e.what(), f);
 		}

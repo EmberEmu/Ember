@@ -38,6 +38,10 @@ public:
 	void files(std::span<std::string_view> files) {
 		
 	}
+
+	void extract_file(const std::filesystem::path& path, ExtractionSink& store) override {
+
+	}
 };
 
 

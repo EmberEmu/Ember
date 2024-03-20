@@ -11,11 +11,16 @@
 #include <mpq/base/MemoryArchive.h>
 #include <mpq/Structures.h>
 
-namespace ember::mpq::v0 {
+namespace ember::mpq::v1 {
 
 class MemoryArchive : public mpq::MemoryArchive {
 	std::span<BlockTableEntry> fetch_block_table() const;
 	std::span<HashTableEntry> fetch_hash_table() const;
+	v1::Header* header_;
+	std::span<std::uint16_t> bt_hi_pos_;
+
+	std::span<std::uint16_t> fetch_btable_hi_pos() const;
+	std::uint64_t high_mask(std::uint16_t value) const;
 
 public:
 	MemoryArchive(std::span<std::byte> buffer);
@@ -24,4 +29,4 @@ public:
 	void extract_file(const std::filesystem::path& path, ExtractionSink& store) override;
 };
 
-} // v0, mpq, ember
+} // v1, mpq, ember

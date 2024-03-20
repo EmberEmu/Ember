@@ -11,3 +11,5 @@
 #include <mpq/v0/MappedArchive.h>
 #include <mpq/v0/FileArchive.h>
 #include <mpq/v0/MemoryArchive.h>
+#include <mpq/v1/MappedArchive.h>
+#include <mpq/v1/MemoryArchive.h>

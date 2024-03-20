@@ -22,12 +22,20 @@ set(ARCHIVE_V0
 	src/v0/MemoryArchive.cpp
 )
 
+set(ARCHIVE_V1
+	include/mpq/v1/MemoryArchive.h
+	include/mpq/v1/MappedArchive.h
+	src/v1/MemoryArchive.cpp
+)
+
 source_group("Archive" FILES ${ARCHIVE})
 source_group("Archive\\v0" FILES ${ARCHIVE_V0})
+source_group("Archive\\v1" FILES ${ARCHIVE_V1})
 
 add_library(${LIBRARY_NAME}
 	${ARCHIVE}
 	${ARCHIVE_V0}
+	${ARCHIVE_V1}
 	include/mpq/MPQ.h
 	include/mpq/Archive.h
 	include/mpq/Structures.h

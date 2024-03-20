@@ -23,14 +23,9 @@ namespace ember::mpq {
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 	: buffer_(buffer),
 	  header_(std::bit_cast<const v0::Header*>(buffer_.data())) {
-	block_table_ = fetch_block_table();
-	hash_table_ = fetch_hash_table();
-	decrypt_block(std::as_writable_bytes(block_table_), MPQ_KEY_BLOCK_TABLE);
-	decrypt_block(std::as_writable_bytes(hash_table_), MPQ_KEY_HASH_TABLE);
-	load_listfile();
 }
 
-void MemoryArchive::load_listfile() {
+void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 	auto index = file_lookup("(listfile)", 0);
 
 	if(index == npos) {
@@ -42,7 +37,7 @@ void MemoryArchive::load_listfile() {
 	std::string buffer;
 	buffer.resize(entry.uncompressed_size);
 	MemorySink sink(std::as_writable_bytes(std::span(buffer)));
-	extract_file("(listfile)", sink);
+	extract_file_ext("(listfile)", sink, fpos_hi);
 
 	std::stringstream stream;
 	stream << buffer;
@@ -57,26 +52,6 @@ void MemoryArchive::load_listfile() {
 
 int MemoryArchive::version() const { 
 	return boost::endian::little_to_native(header_->format_version);
-}
-
-std::size_t MemoryArchive::size() const {
-	return boost::endian::little_to_native(header_->archive_size);
-}
-
-std::span<HashTableEntry> MemoryArchive::fetch_hash_table() const {
-	auto entry = std::bit_cast<HashTableEntry*>(
-		buffer_.data() + header_->hash_table_offset
-	);
-
-	return { entry, header_->hash_table_size };
-}
-
-std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
-	auto entry = std::bit_cast<BlockTableEntry*>(
-		buffer_.data() + header_->block_table_offset
-	);
-
-	return { entry, header_->block_table_size };
 }
 
 std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_t locale) const {
@@ -123,7 +98,9 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entr
 	return { sector_begin, count };
 }
 
-void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& store) {
+void MemoryArchive::extract_file_ext(const std::filesystem::path& path,
+                                     ExtractionSink& store,
+                                     const std::uint64_t fpos_hi) {
 	auto index = file_lookup(path.string(), 0);
 
 	if(index == npos) {
@@ -140,18 +117,20 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 	}
 
 	if(entry.flags & MPQ_FILE_COMPRESS_MASK) {
-		extract_compressed(entry, key, store);
+		extract_compressed(entry, key, fpos_hi, store);
 	} else {
-		extract_uncompressed(entry, key, store);
+		extract_uncompressed(entry, key, fpos_hi, store);
 	}
 
 	entry.flags = static_cast<Flags>(entry.flags ^ Flags::MPQ_FILE_ENCRYPTED);
 }
 
-void MemoryArchive::extract_compressed(BlockTableEntry& entry, std::uint32_t key,
+void MemoryArchive::extract_compressed(BlockTableEntry& entry,
+                                       std::uint32_t key,
+                                       const std::uint64_t fpos_hi,
                                        ExtractionSink& store) {
 	auto max_sector_size = BLOCK_SIZE << header_->block_size_shift;
-	const auto file_offset = buffer_.data() + entry.file_position;
+	const auto file_offset = buffer_.data() + (entry.file_position | fpos_hi);
 
 	auto sectors = file_sectors(entry);
 
@@ -226,7 +205,9 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry, std::uint32_t key
 	}
 }
 
-void MemoryArchive::extract_uncompressed(BlockTableEntry& entry, const std::uint32_t key,
+void MemoryArchive::extract_uncompressed(BlockTableEntry& entry,
+                                         const std::uint32_t key,
+										 const std::uint64_t fpos_hi,
                                          ExtractionSink& store) {
 	const std::span data(buffer_.data() + entry.file_position, entry.uncompressed_size);
 
