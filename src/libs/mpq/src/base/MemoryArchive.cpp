@@ -111,14 +111,16 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 
 std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entry) {
 	const auto sector_size = BLOCK_SIZE << header_->block_size_shift;
-	auto count = (uint32_t)std::floor(entry.uncompressed_size / sector_size + 1); // todo
+	auto count = static_cast<std::uint32_t>(
+		std::ceil(entry.uncompressed_size / static_cast<double>(sector_size)) + 1
+	);
 
 	if(entry.flags & Flags::MPQ_FILE_SECTOR_CRC) {
 		++count;
 	}
 
 	auto sector_begin = std::bit_cast<std::uint32_t*>(buffer_.data() + entry.file_position);
-	return { sector_begin, count + 1 };
+	return { sector_begin, count };
 }
 
 void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& store) {

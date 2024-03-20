@@ -19,7 +19,6 @@ class FileSink final : public ExtractionSink {
 	std::FILE* file_ = nullptr;
 
 	void store(std::span<const std::byte> data) override {
-
 		const auto res = std::fwrite(data.data(), data.size_bytes(), 1, file_);
 
 		if(res != 1) {
