@@ -50,7 +50,7 @@ add_library(${LIBRARY_NAME}
 	src/Utility.cpp
 )
 
-target_link_libraries(${LIBRARY_NAME} shared spark storm_pklib
+target_link_libraries(${LIBRARY_NAME} shared storm_pklib
                       bzip2 lzma storm_adpcm storm_sparse storm_huffman
                       ${Boost_LIBRARIES} ${ZLIB_LIBRARY})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

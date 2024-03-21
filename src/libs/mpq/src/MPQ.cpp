@@ -10,18 +10,15 @@
 #include <mpq/Exception.h>
 #include <mpq/Structures.h>
 #include <mpq/Archive.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/endian/conversion.hpp>
-#include <boost/endian/arithmetic.hpp>
-#include <boost/endian/buffers.hpp>
 #include <array>
 #include <bit>
 #include <fstream>
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
 
 using namespace boost::interprocess;
 
@@ -66,20 +63,14 @@ LocateResult archive_offset(FILE* file) {
 }
 
 std::uintptr_t archive_offset(std::span<const std::byte> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
 	std::uint32_t magic{};
 
 	for(std::uintptr_t i = 0; i < buffer.size() - sizeof(magic); i += HEADER_ALIGNMENT) {
-		stream >> magic;
+		std::memcpy(&magic, &buffer[i], sizeof(magic));
 		boost::endian::big_to_native_inplace(magic);
 
 		if(magic == MPQA_FOURCC) {
 			return i;
-		}
-
-		if(stream.size() > HEADER_ALIGNMENT) {
-			stream.skip(HEADER_ALIGNMENT - sizeof(magic));
 		}
 	}
 
