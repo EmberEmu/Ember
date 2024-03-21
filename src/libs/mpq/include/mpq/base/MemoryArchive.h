@@ -35,6 +35,8 @@ protected:
 	                          std::uint64_t fpos_hi, ExtractionSink& store);
 	void extract_file_ext(const std::filesystem::path& path, ExtractionSink& store,
 	                      std::uint64_t fpos_hi);
+	void extract_single_unit(BlockTableEntry& entry, const std::uint32_t key,
+							 const std::uint64_t fpos_hi, ExtractionSink& store);
 
 public:
 	MemoryArchive(std::span<std::byte> buffer);

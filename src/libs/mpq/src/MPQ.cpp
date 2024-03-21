@@ -156,7 +156,7 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 	}
 
 	file_mapping file(path.c_str(), read_write);
-	mapped_region region(file, copy_on_write);
+	mapped_region region(file, copy_on_write, offset);
 	region.advise(mapped_region::advice_sequential);
 
 	switch(header_v0->format_version) {

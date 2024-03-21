@@ -18,7 +18,7 @@
 using namespace ember;
 
 int main() try {
-	std::filesystem::path path("wow-1.1.1-enus-patch.exe");
+	std::filesystem::path path("test.MPQ");
 	mpq::LocateResult result = mpq::locate_archive(path);
 
 	if(!result) {
@@ -33,11 +33,7 @@ int main() try {
 		return -1;
 	}
 
-	std::cout << archive->size() << '\n';
-
 	for(auto& f : archive->files()) {
-		std::cout << f << '\n';
-
 		try {
 			mpq::FileSink sink(f);
 			archive->extract_file(f, sink);
