@@ -28,7 +28,6 @@ protected:
 	std::vector<std::string> files_;
 	
 	void validate();
-	BlockTableEntry& file_entry(std::size_t index);
 	void load_listfile(std::uint64_t fpos_hi);
 	void parse_listfile(std::string& buffer);
 
@@ -58,6 +57,8 @@ public:
 	std::span<std::uint32_t> file_sectors(const BlockTableEntry& entry);
 	std::span<const std::string> files() const override;
 	void files(std::span<std::string_view> files) override;
+	const BlockTableEntry& file_entry(std::size_t index) const override;
+	BlockTableEntry& file_entry(std::size_t index) override;
 };
 
 

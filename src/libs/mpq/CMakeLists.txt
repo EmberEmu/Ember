@@ -43,6 +43,7 @@ add_library(${LIBRARY_NAME}
 	include/mpq/SharedDefs.h
 	include/mpq/ExtractionSink.h
 	include/mpq/FileSink.h
+	include/mpq/BufferedFileSink.h
 	include/mpq/MemorySink.h
 	include/mpq/Utility.h
 	src/MPQ.cpp

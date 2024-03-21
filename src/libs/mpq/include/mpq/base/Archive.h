@@ -37,6 +37,8 @@ public:
 	virtual void extract_file(const std::filesystem::path& path, ExtractionSink& store) = 0;
 	virtual std::span<const std::string> files() const = 0;
 	virtual void files(std::span<std::string_view> files) = 0;
+	virtual const BlockTableEntry& file_entry(std::size_t index) const = 0;
+	virtual BlockTableEntry& file_entry(std::size_t index) = 0;
 
 	virtual ~Archive() = default;
 };

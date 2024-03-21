@@ -27,51 +27,6 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 	validate();
 }
 
-void MemoryArchive::validate() {
-	if(!validate_header(*header_)) {
-		throw exception("open error: unexpected header size");
-	}
-
-	if(buffer_.size_bytes() < header_->header_size) {
-		throw exception("open error: unexpected end of header");
-	}
-
-	if(header_->archive_size) {
-		if(buffer_.size_bytes() < header_->archive_size) {
-			throw exception("open error: unexpected end of archive");
-		}
-	}
-
-	if(header_->block_table_offset + header_->block_table_size
-	   < header_->block_table_offset) {
-		throw exception("open error: block table too big");
-	}
-
-	if(header_->hash_table_offset + header_->hash_table_size
-	   < header_->hash_table_offset) {
-		throw exception("open error: hash table too big");
-	}
-
-	auto bt_end = header_->block_table_offset + (header_->block_table_size * sizeof(BlockTableEntry));
-	auto ht_end = header_->hash_table_offset + (header_->hash_table_size * sizeof(HashTableEntry));
-
-	if(bt_end < header_->block_table_offset) {
-		throw exception("open error: block table too big");
-	}
-
-	if(ht_end < header_->hash_table_offset) {
-		throw exception("open error: hash table too big");
-	}
-
-	if(buffer_.size_bytes() < bt_end) {
-		throw exception("open error: block table out of bounds");
-	}
-
-	if(buffer_.size_bytes() < ht_end) {
-		throw exception("open error: hash table out of bounds");
-	}
-}
-
 void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 	auto index = file_lookup("(listfile)", 0);
 
@@ -307,7 +262,12 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 }
 
 BlockTableEntry& MemoryArchive::file_entry(const std::size_t index) {
-	auto block_index = hash_table_[index].block_index;
+	const auto block_index = hash_table_[index].block_index;
+	return block_table_[block_index];
+}
+
+const BlockTableEntry& MemoryArchive::file_entry(const std::size_t index) const {
+	const auto block_index = hash_table_[index].block_index;
 	return block_table_[block_index];
 }
 
@@ -326,6 +286,51 @@ std::span<const std::string> MemoryArchive::files() const {
 void MemoryArchive::files(std::span<std::string_view> files) {
 	for(auto& file : files) {
 		files_.emplace_back(file);
+	}
+}
+
+void MemoryArchive::validate() {
+	if(!validate_header(*header_)) {
+		throw exception("open error: unexpected header size");
+	}
+
+	if(buffer_.size_bytes() < header_->header_size) {
+		throw exception("open error: unexpected end of header");
+	}
+
+	if(header_->archive_size) {
+		if(buffer_.size_bytes() < header_->archive_size) {
+			throw exception("open error: unexpected end of archive");
+		}
+	}
+
+	if(header_->block_table_offset + header_->block_table_size
+	   < header_->block_table_offset) {
+		throw exception("open error: block table too big");
+	}
+
+	if(header_->hash_table_offset + header_->hash_table_size
+	   < header_->hash_table_offset) {
+		throw exception("open error: hash table too big");
+	}
+
+	auto bt_end = header_->block_table_offset + (header_->block_table_size * sizeof(BlockTableEntry));
+	auto ht_end = header_->hash_table_offset + (header_->hash_table_size * sizeof(HashTableEntry));
+
+	if(bt_end < header_->block_table_offset) {
+		throw exception("open error: block table too big");
+	}
+
+	if(ht_end < header_->hash_table_offset) {
+		throw exception("open error: hash table too big");
+	}
+
+	if(buffer_.size_bytes() < bt_end) {
+		throw exception("open error: block table out of bounds");
+	}
+
+	if(buffer_.size_bytes() < ht_end) {
+		throw exception("open error: hash table out of bounds");
 	}
 }
 

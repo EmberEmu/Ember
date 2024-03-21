@@ -8,6 +8,7 @@
 
 #include <mpq/MPQ.h>
 #include <mpq/FileSink.h>
+#include <mpq/BufferedFileSink.h>
 #include <iostream>
 
 using namespace ember;
@@ -28,13 +29,19 @@ int main() try {
 		return EXIT_FAILURE;
 	}
 
-	for(auto& f : archive->files()) {
-		try {
-			mpq::FileSink sink(f);
-			archive->extract_file(f, sink);
-		} catch(mpq::exception& e) {
-			std::cerr << std::format("{} ({})", e.what(), f);
+	for(auto& f : archive->files()) try {
+		auto index = archive->file_lookup(f, 0);
+
+		if(index == mpq::npos) {
+			continue;
 		}
+
+		const auto& entry = archive->file_entry(index);
+		mpq::BufferedFileSink sink(f, entry.uncompressed_size);
+		archive->extract_file(f, sink);
+		sink.flush();
+	} catch(mpq::exception& e) {
+		std::cerr << std::format("{} ({})\n", e.what(), f);
 	}
 
 	std::cout << "Zug zug, work complete!";
