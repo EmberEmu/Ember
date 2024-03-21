@@ -18,7 +18,7 @@
 using namespace ember;
 
 int main() try {
-	std::filesystem::path path("test.MPQ");
+	std::filesystem::path path("wow-1.1.1-enus-patch.exe");
 	mpq::LocateResult result = mpq::locate_archive(path);
 
 	if(!result) {
