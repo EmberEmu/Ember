@@ -7,12 +7,7 @@
  */
 
 #include <mpq/MPQ.h>
-#include <mpq/Crypt.h>
 #include <mpq/FileSink.h>
-#include <mpq/Utility.h>
-#include <cstdint>
-#include <filesystem>
-#include <format>
 #include <iostream>
 
 using namespace ember;
@@ -22,15 +17,15 @@ int main() try {
 	mpq::LocateResult result = mpq::locate_archive(path);
 
 	if(!result) {
-		std::cout << "Not found, error " << std::to_underlying(result.error());
-		return -1;
+		std::cerr << "Not found, error " << result.error();
+		return EXIT_FAILURE;
 	}
 
 	std::unique_ptr<mpq::Archive> archive { mpq::open_archive(path, *result)};
 
 	if(!archive) {
-		std::cout << "No archive\n";
-		return -1;
+		std::cerr << "No archive";
+		return EXIT_FAILURE;
 	}
 
 	for(auto& f : archive->files()) {
@@ -43,6 +38,7 @@ int main() try {
 	}
 
 	std::cout << "Zug zug, work complete!";
+	return EXIT_SUCCESS;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 }

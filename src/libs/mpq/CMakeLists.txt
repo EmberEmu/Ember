@@ -35,6 +35,7 @@ add_library(${LIBRARY_NAME}
 	${ARCHIVE_V1}
 	include/mpq/MPQ.h
 	include/mpq/Archive.h
+	include/mpq/ErrorCode.h
 	include/mpq/Structures.h
 	include/mpq/Crypt.h
 	include/mpq/Compression.h

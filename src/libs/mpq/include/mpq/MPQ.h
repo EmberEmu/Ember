@@ -9,6 +9,7 @@
 #pragma once
 
 #include <mpq/Archive.h>
+#include <mpq/ErrorCode.h>
 #include <mpq/Structures.h>
 #include <expected>
 #include <cstdint>
@@ -20,15 +21,6 @@
 namespace ember::mpq {
 
 static constexpr std::uintptr_t npos = -1;
-
-enum class ErrorCode {
-	SUCCESS,
-	NO_ARCHIVE_FOUND,
-	BAD_ALIGNMENT,
-	FILE_NOT_FOUND,
-	UNABLE_TO_OPEN,
-	FILE_READ_FAILED
-};
 
 using LocateResult = std::expected<std::uintptr_t, ErrorCode>;
 
