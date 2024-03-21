@@ -178,32 +178,41 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 		}
 
 		if(sector_size_actual < sector_size) {
-			if(entry.flags & Flags::MPQ_FILE_COMPRESS) {
-				auto ret = decompress(
-					std::as_bytes(sector_data), std::as_writable_bytes(std::span(buffer))
-				);
-
-				if(!ret) {
-					throw exception("cannot extract file: decompression failed");
-				}
-
-				store(std::as_bytes(std::span(buffer.data(), *ret)));
-			} else if(entry.flags & Flags::MPQ_FILE_IMPLODE) {
-				auto ret = decompress_pklib(
-					std::as_bytes(sector_data), std::as_writable_bytes(std::span(buffer))
-				);
-
-				if(!ret) {
-					throw exception("cannot extract file: decompression (explode) failed");
-				}
-
-				store(std::as_bytes(std::span(buffer.data(), *ret)));
-			}
+			extract_compressed_sector(std::as_bytes(sector_data), buffer, entry.flags, store);
 		} else {
 			store(std::as_bytes(sector_data));
 		}
 
 		remaining -= sector_size;
+	}
+}
+
+void MemoryArchive::extract_compressed_sector(std::span<const std::byte> input,
+                                              std::span<std::byte> output,
+											  const Flags flags,
+                                              ExtractionSink& store) {
+	if(flags & Flags::MPQ_FILE_COMPRESS) {
+		auto ret = decompress(
+			std::as_bytes(input), std::as_writable_bytes(std::span(output))
+		);
+
+		if(!ret) {
+			throw exception("cannot extract file: decompression failed");
+		}
+
+		store(std::as_bytes(std::span(output.data(), *ret)));
+	} else if(flags & Flags::MPQ_FILE_IMPLODE) {
+		auto ret = decompress_pklib(
+			std::as_bytes(input), std::as_writable_bytes(std::span(output))
+		);
+
+		if(!ret) {
+			throw exception("cannot extract file: decompression (explode) failed");
+		}
+
+		store(std::as_bytes(std::span(output.data(), *ret)));
+	} else {
+		throw exception("cannot extract file: unknown compression flag");
 	}
 }
 
@@ -239,30 +248,7 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 
 	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
 	buffer.resize(entry.uncompressed_size);
-
-	if(entry.flags & Flags::MPQ_FILE_COMPRESS) {
-		auto ret = decompress(
-			std::as_bytes(data), std::as_writable_bytes(std::span(buffer))
-		);
-
-		if(!ret) {
-			throw exception("cannot extract file: decompression failed");
-		}
-
-		store(std::as_bytes(std::span(buffer.data(), *ret)));
-	} else if(entry.flags & Flags::MPQ_FILE_IMPLODE) {
-		auto ret = decompress_pklib(
-			std::as_bytes(data), std::as_writable_bytes(std::span(buffer))
-		);
-
-		if(!ret) {
-			throw exception("cannot extract file: decompression (explode) failed");
-		}
-
-		store(std::as_bytes(std::span(buffer.data(), *ret)));
-	} else {
-		throw exception("cannot extract file: unknown compression flag");
-	}
+	extract_compressed_sector(data, buffer, entry.flags, store);
 }
 
 BlockTableEntry& MemoryArchive::file_entry(const std::size_t index) {

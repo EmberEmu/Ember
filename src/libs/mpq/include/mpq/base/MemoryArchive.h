@@ -29,14 +29,21 @@ protected:
 	
 	BlockTableEntry& file_entry(std::size_t index);
 	void load_listfile(std::uint64_t fpos_hi);
+
 	void extract_compressed(BlockTableEntry& entry, std::uint32_t key,
 	                        std::uint64_t fpos_hi, ExtractionSink& store);
+
 	void extract_uncompressed(BlockTableEntry& entry, std::uint32_t key,
 	                          std::uint64_t fpos_hi, ExtractionSink& store);
+
 	void extract_file_ext(const std::filesystem::path& path, ExtractionSink& store,
 	                      std::uint64_t fpos_hi);
+
 	void extract_single_unit(BlockTableEntry& entry, const std::uint32_t key,
 							 const std::uint64_t fpos_hi, ExtractionSink& store);
+
+	void extract_compressed_sector(std::span<const std::byte> input, std::span<std::byte> output,
+	                               Flags flags, ExtractionSink& store);
 
 public:
 	MemoryArchive(std::span<std::byte> buffer);
