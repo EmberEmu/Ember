@@ -25,10 +25,11 @@ set(EXECUTABLE_SRC
 	GameIntegrity.cpp
 	IntegrityData.cpp
 	PatchGraph.cpp
+    MPQ.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 libmdns stun ports ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 libmdns stun ports mpq ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../src)
 gtest_discover_tests(${EXECUTABLE_NAME})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

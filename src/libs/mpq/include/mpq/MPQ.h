@@ -10,6 +10,7 @@
 
 #include <mpq/Archive.h>
 #include <mpq/ErrorCode.h>
+#include <mpq/Exception.h>
 #include <mpq/Structures.h>
 #include <expected>
 #include <cstdint>

@@ -10,8 +10,9 @@
 #include <mpq/Compression.h>
 #include <mpq/Crypt.h>
 #include <mpq/Exception.h>
-#include <mpq/Structures.h>
 #include <mpq/MemorySink.h>
+#include <mpq/MPQ.h>
+#include <mpq/Structures.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <bit>
@@ -23,6 +24,52 @@ namespace ember::mpq {
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 	: buffer_(buffer),
 	  header_(std::bit_cast<const v0::Header*>(buffer_.data())) {
+	validate();
+}
+
+void MemoryArchive::validate() {
+	if(!validate_header(*header_)) {
+		throw exception("open error: unexpected header size");
+	}
+
+	if(buffer_.size_bytes() < header_->header_size) {
+		throw exception("open error: unexpected end of header");
+	}
+
+	if(header_->archive_size) {
+		if(buffer_.size_bytes() < header_->archive_size) {
+			throw exception("open error: unexpected end of archive");
+		}
+	}
+
+	if(header_->block_table_offset + header_->block_table_size
+	   < header_->block_table_offset) {
+		throw exception("open error: block table too big");
+	}
+
+	if(header_->hash_table_offset + header_->hash_table_size
+	   < header_->hash_table_offset) {
+		throw exception("open error: hash table too big");
+	}
+
+	auto bt_end = header_->block_table_offset + (header_->block_table_size * sizeof(BlockTableEntry));
+	auto ht_end = header_->hash_table_offset + (header_->hash_table_size * sizeof(HashTableEntry));
+
+	if(bt_end < header_->block_table_offset) {
+		throw exception("open error: block table too big");
+	}
+
+	if(ht_end < header_->hash_table_offset) {
+		throw exception("open error: hash table too big");
+	}
+
+	if(buffer_.size_bytes() < bt_end) {
+		throw exception("open error: block table out of bounds");
+	}
+
+	if(buffer_.size_bytes() < ht_end) {
+		throw exception("open error: hash table out of bounds");
+	}
 }
 
 void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
@@ -36,9 +83,13 @@ void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 
 	std::string buffer;
 	buffer.resize(entry.uncompressed_size);
+
 	MemorySink sink(std::as_writable_bytes(std::span(buffer)));
 	extract_file_ext("(listfile)", sink, fpos_hi);
+	parse_listfile(buffer);
+}
 
+void MemoryArchive::parse_listfile(std::string& buffer) {
 	std::stringstream stream;
 	stream << buffer;
 	std::string().swap(buffer); // force memory release
@@ -114,6 +165,10 @@ void MemoryArchive::extract_file_ext(const std::filesystem::path& path,
 	if(entry.flags & MPQ_FILE_FIX_KEY) {
 		key += (key + entry.file_position) ^ entry.uncompressed_size;
 		entry.flags = static_cast<Flags>(entry.flags ^ Flags::MPQ_FILE_FIX_KEY);
+	}
+
+	if(buffer_.size_bytes() < (entry.file_position + fpos_hi) + entry.compressed_size) {
+		throw exception("cannot extract file: file out of bounds");
 	}
 
 	if(entry.flags & MPQ_FILE_SINGLE_UNIT) {

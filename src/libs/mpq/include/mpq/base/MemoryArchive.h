@@ -27,8 +27,10 @@ protected:
 	const v0::Header* header_;
 	std::vector<std::string> files_;
 	
+	void validate();
 	BlockTableEntry& file_entry(std::size_t index);
 	void load_listfile(std::uint64_t fpos_hi);
+	void parse_listfile(std::string& buffer);
 
 	void extract_compressed(BlockTableEntry& entry, std::uint32_t key,
 	                        std::uint64_t fpos_hi, ExtractionSink& store);

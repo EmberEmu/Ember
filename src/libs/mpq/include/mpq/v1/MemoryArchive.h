@@ -19,6 +19,7 @@ class MemoryArchive : public mpq::MemoryArchive {
 	v1::Header* header_;
 	std::span<std::uint16_t> bt_hi_pos_;
 
+	void validate();
 	std::span<std::uint16_t> fetch_btable_hi_pos() const;
 	std::uint64_t high_mask(std::uint16_t value) const;
 	std::uint64_t extend(std::uint16_t hi, std::uint32_t lo) const;

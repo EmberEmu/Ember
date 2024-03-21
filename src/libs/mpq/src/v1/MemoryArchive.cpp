@@ -18,6 +18,8 @@ namespace ember::mpq::v1 {
 
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(buffer) {
 	header_ = std::bit_cast<v1::Header*>(buffer.data());
+	validate();
+
 	block_table_ = fetch_block_table();
 	hash_table_ = fetch_hash_table();
 	bt_hi_pos_ = fetch_btable_hi_pos();
@@ -30,6 +32,42 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(b
 	if(index) {
 		auto& entry = file_entry(index);
 		load_listfile(high_mask(bt_hi_pos_[index]));
+	}
+}
+
+void MemoryArchive::validate() {
+	if(header_->extended_block_table_offset > buffer_.size_bytes()) {
+		throw exception("open error: bad ext block table offset");
+	}
+
+	auto btable_pos = extend(header_->block_table_offset, header_->block_table_offset_hi);
+	auto htable_pos = extend(header_->block_table_offset, header_->block_table_offset_hi);
+
+	if(btable_pos > buffer_.size_bytes()) {
+		throw exception("open error: block table out of bounds");
+	}
+
+	if(htable_pos > buffer_.size_bytes()) {
+		throw exception("open error: hash table out of bounds");
+	}
+
+	auto btable_end = btable_pos + (header_->block_table_size * sizeof(BlockTableEntry));
+	auto htable_end = htable_pos + (header_->hash_table_size * sizeof(HashTableEntry));
+
+	if(btable_end < btable_pos) {
+		throw exception("open error: block table too large");
+	}
+
+	if(htable_end < htable_pos) {
+		throw exception("open error: hash table too large");
+	}
+
+	if(btable_end > buffer_.size_bytes()) {
+		throw exception("open error: block table entries out of bounds");
+	}
+
+	if(htable_end > buffer_.size_bytes()) {
+		throw exception("open error: hash table entries out of bounds");
 	}
 }
 

@@ -7,7 +7,6 @@
  */
 
 #include <mpq/MPQ.h>
-#include <mpq/Exception.h>
 #include <mpq/Structures.h>
 #include <mpq/Archive.h>
 #include <boost/interprocess/file_mapping.hpp>
@@ -131,11 +130,16 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 	}
 
 	std::array<char, sizeof(v0::Header)> h_buf{};
-	stream.seekg(offset, std::ios::beg);
-	stream.read(h_buf.data(), h_buf.size());
+	stream.seekg(offset);
 
 	if(!stream.good()) {
 		throw exception("cannot read archive: bad seek offset");
+	}
+
+	stream.read(h_buf.data(), h_buf.size());
+
+	if(!stream.good()) {
+		throw exception("cannot read archive: header read failed");
 	}
 
 	stream.close();
@@ -163,10 +167,12 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data,
                                             const std::uintptr_t offset) {
 	const auto header_v0 = std::bit_cast<const v0::Header*>(data.data() + offset);
+	const auto adjusted = std::span(data.data() + offset, data.size_bytes() - offset);
 
 	if(header_v0->format_version == 0) {
-		const auto adjusted = std::span(data.data() + offset, data.size_bytes() - offset);
 		return std::make_unique<v0::MemoryArchive>(adjusted);
+	} else if(header_v0->format_version == 1) {
+		return std::make_unique<v1::MemoryArchive>(adjusted);
 	}
 
 	return nullptr;
