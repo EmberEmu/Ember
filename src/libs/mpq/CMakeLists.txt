@@ -8,17 +8,14 @@ set(LIBRARY_NAME mpq)
 
 set(ARCHIVE
 	include/mpq/base/Archive.h
-	include/mpq/base/FileArchive.h
 	include/mpq/base/MemoryArchive.h
 	include/mpq/base/MappedArchive.h
 	src/base/MemoryArchive.cpp
 )
 
 set(ARCHIVE_V0
-	include/mpq/v0/FileArchive.h
 	include/mpq/v0/MemoryArchive.h
 	include/mpq/v0/MappedArchive.h
-	src/v0/FileArchive.cpp
 	src/v0/MemoryArchive.cpp
 )
 

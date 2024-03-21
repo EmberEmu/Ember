@@ -26,7 +26,7 @@ int main() try {
 		return -1;
 	}
 
-	std::unique_ptr<mpq::Archive> archive { mpq::open_archive(path, *result, true)};
+	std::unique_ptr<mpq::Archive> archive { mpq::open_archive(path, *result)};
 
 	if(!archive) {
 		std::cout << "No archive\n";

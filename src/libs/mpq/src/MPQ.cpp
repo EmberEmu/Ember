@@ -125,8 +125,7 @@ LocateResult locate_archive(std::span<const std::byte> buffer) {
 }
 
 std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
-									  const std::uintptr_t offset,
-									  const bool map) {
+									  const std::uintptr_t offset) {
 	std::error_code ec{};
 
 	if(!std::filesystem::exists(path, ec) || ec) {
@@ -156,14 +155,6 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 		throw exception("cannot open archive: bad header encountered");
 	}
 
-	if(!map) {
-		if(header_v0->format_version == 0) {
-			return std::make_unique<v0::FileArchive>(path, offset);
-		} else {
-			return nullptr;
-		}
-	}
-
 	file_mapping file(path.c_str(), read_write);
 	mapped_region region(file, copy_on_write);
 	region.advise(mapped_region::advice_sequential);
@@ -190,11 +181,6 @@ std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data,
 	return nullptr;
 }
 
-std::unique_ptr<mpq::FileArchive> create_archive(const std::uint32_t version) {
-	return nullptr;
-}
-
-// todo
 bool validate_header(const v0::Header& header) {
 	if(boost::endian::native_to_big(header.magic) != MPQA_FOURCC) {
 		return false;
