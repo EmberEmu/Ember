@@ -186,7 +186,7 @@ std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
                                            std::span<std::byte> output) {
 	std::uint8_t comp_mask = std::bit_cast<std::uint8_t>(input[0]);
 	std::expected<std::size_t, int> result;
-	std::uint8_t prev = 0;
+	int prev = 0;
 	std::size_t prev_size = 0;
 
 	while(auto comp = next_compression(comp_mask)) {
