@@ -88,7 +88,7 @@ void ClientConnection::process_buffered_data(BufferInType& buffer,
 	// them to the beginning so we get them next time
 	unread_bytes_ = adaptor.size();
 	const auto read_ptr = adaptor.read_ptr();
-	std::memcpy(inbound_buffer_.data(), read_ptr, unread_bytes_);
+	std::memmove(inbound_buffer_.data(), read_ptr, unread_bytes_);
 }
 
 void ClientConnection::write() {
