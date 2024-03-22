@@ -114,7 +114,7 @@ TEST(MPQ, Open_BadExtendedBlockTableOffset) {
 
 // ADPCM compression, encrypted
 TEST(MPQ, Extract_WAV) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("owl.wav", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -128,7 +128,7 @@ TEST(MPQ, Extract_WAV) {
 
 // No compression
 TEST(MPQ, Extract_MP3) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("owl.mp3", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -143,7 +143,7 @@ TEST(MPQ, Extract_MP3) {
 
 // PKWare compression
 TEST(MPQ, Extract_Binary) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("elevated_1920_1080.ex_", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -157,7 +157,7 @@ TEST(MPQ, Extract_Binary) {
 
 // Imploded
 TEST(MPQ, Extract_JPG) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("ember.jpg", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -171,7 +171,7 @@ TEST(MPQ, Extract_JPG) {
 
 // Zlib compression, encrypted, single unit, fix key
 TEST(MPQ, Extract_PNG) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("ember.png", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -184,7 +184,7 @@ TEST(MPQ, Extract_PNG) {
 }
 
 TEST(MPQ, Extract_Listfile) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("(listfile)", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -197,7 +197,7 @@ TEST(MPQ, Extract_Listfile) {
 }
 
 TEST(MPQ, Extract_Attributes) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("(attributes)", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
@@ -210,7 +210,7 @@ TEST(MPQ, Extract_Attributes) {
 }
 
 TEST(MPQ, Extract_Text) {
-	auto archive = mpq::open_archive("test_data/mpqs/v0_16.mpq", 0);
+	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
 	ASSERT_TRUE(archive);
 	const auto index = archive->file_lookup("compressed.txt", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
