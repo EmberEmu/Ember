@@ -37,9 +37,6 @@ void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 	
 	const auto& entry = file_entry(index);
 
-	DynamicMemorySink s2;
-	extract_file_ext("(listfile)", s2, fpos_hi);
-
 	std::string buffer;
 	buffer.resize(entry.uncompressed_size);
 
