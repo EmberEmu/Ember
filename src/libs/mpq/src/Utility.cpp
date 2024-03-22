@@ -28,11 +28,10 @@ std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
 
 	for(std::uint32_t i = expected + retries; expected < i; ++expected) {
 		std::uint32_t max_value = sector_size + expected;
-		std::uint32_t combined_keys = combined_keys = (sectors[0] ^ expected) - 0xEEEEEEEE;
+		std::uint32_t combined_keys = (sectors[0] ^ expected) - 0xEEEEEEEE;
 		std::uint32_t data[2]{};
 
 		for(std::uint32_t i = 0; i < 0x100; ++i) {
-			std::uint32_t saved_key = 0;
 			std::uint32_t key1 = combined_keys - table[0x400 + i];
 			std::uint32_t key2 = 0xEEEEEEEE;
 
@@ -40,7 +39,7 @@ std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
 			data[0] = sectors[0] ^ (key1 + key2);
 
 			if(data[0] == expected) {
-				saved_key = key1;
+				const auto saved_key = key1;
 
 				key1 = ((~key1 << 0x15) + 0x11111111) | (key1 >> 0x0B);
 				key2 = data[0] + key2 + (key2 << 5) + 3;
