@@ -45,6 +45,7 @@ add_library(${LIBRARY_NAME}
 	include/mpq/FileSink.h
 	include/mpq/BufferedFileSink.h
 	include/mpq/MemorySink.h
+	include/mpq/DynamicMemorySink.h
 	include/mpq/Utility.h
 	src/MPQ.cpp
 	src/Compression.cpp

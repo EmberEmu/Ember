@@ -22,17 +22,28 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(b
 
 	block_table_ = fetch_block_table();
 	hash_table_ = fetch_hash_table();
-	bt_hi_pos_ = fetch_btable_hi_pos();
+
+	if(header_->extended_block_table_offset) {
+		bt_hi_pos_ = fetch_btable_hi_pos();
+	}
 
 	decrypt_block(std::as_writable_bytes(block_table_), MPQ_KEY_BLOCK_TABLE);
 	decrypt_block(std::as_writable_bytes(hash_table_), MPQ_KEY_HASH_TABLE);
 	
 	auto index = file_lookup("(listfile)", 0);
 
-	if(index) {
-		auto& entry = file_entry(index);
-		load_listfile(high_mask(bt_hi_pos_[index]));
+	if(!index) {
+		return;
 	}
+
+	auto& entry = file_entry(index);
+	auto hi_mask= 0;
+
+	if(bt_hi_pos_) {
+		hi_mask = high_mask((*bt_hi_pos_)[index]);
+	}
+
+	load_listfile(hi_mask);
 }
 
 void MemoryArchive::validate() {
@@ -40,8 +51,8 @@ void MemoryArchive::validate() {
 		throw exception("open error: bad ext block table offset");
 	}
 
-	auto btable_pos = extend(header_->block_table_offset, header_->block_table_offset_hi);
-	auto htable_pos = extend(header_->block_table_offset, header_->block_table_offset_hi);
+	auto btable_pos = extend(header_->block_table_offset_hi, header_->block_table_offset);
+	auto htable_pos = extend(header_->hash_table_offset_hi, header_->hash_table_offset);
 
 	if(btable_pos > buffer_.size_bytes()) {
 		throw exception("open error: block table out of bounds");
@@ -94,7 +105,12 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 		throw exception("cannot extract file: file not found");
 	}
 
-	const auto fpos_hi = high_mask(bt_hi_pos_[index]);
+	auto fpos_hi = 0;
+
+	if(bt_hi_pos_) {
+		fpos_hi = high_mask((*bt_hi_pos_)[index]);;
+	}
+
 	extract_file_ext(path, store, fpos_hi);
 }
 

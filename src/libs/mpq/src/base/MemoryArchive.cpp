@@ -18,6 +18,7 @@
 #include <bit>
 #include <iterator>
 #include <cmath>
+#include <mpq/DynamicMemorySink.h>
 
 namespace ember::mpq {
 
@@ -35,6 +36,9 @@ void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 	}
 	
 	const auto& entry = file_entry(index);
+
+	DynamicMemorySink s2;
+	extract_file_ext("(listfile)", s2, fpos_hi);
 
 	std::string buffer;
 	buffer.resize(entry.uncompressed_size);
@@ -118,8 +122,8 @@ void MemoryArchive::extract_file_ext(const std::filesystem::path& path,
 	auto key = hash_string(filename, MPQ_HASH_FILE_KEY);
 
 	if(entry.flags & MPQ_FILE_FIX_KEY) {
-		key += (key + entry.file_position) ^ entry.uncompressed_size;
-		entry.flags = static_cast<Flags>(entry.flags ^ Flags::MPQ_FILE_FIX_KEY);
+		key = (key + entry.file_position) ^ entry.uncompressed_size;
+		entry.flags = static_cast<Flags>(entry.flags & ~Flags::MPQ_FILE_FIX_KEY);
 	}
 
 	if(buffer_.size_bytes() < (entry.file_position + fpos_hi) + entry.compressed_size) {
@@ -134,7 +138,7 @@ void MemoryArchive::extract_file_ext(const std::filesystem::path& path,
 		extract_uncompressed(entry, key, fpos_hi, store);
 	}
 
-	entry.flags = static_cast<Flags>(entry.flags ^ Flags::MPQ_FILE_ENCRYPTED);
+	entry.flags = static_cast<Flags>(entry.flags & ~Flags::MPQ_FILE_ENCRYPTED);
 }
 
 void MemoryArchive::extract_compressed(BlockTableEntry& entry,
@@ -258,7 +262,12 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 
 	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
 	buffer.resize(entry.uncompressed_size);
-	extract_compressed_sector(data, buffer, entry.flags, store);
+
+	if(entry.uncompressed_size != entry.compressed_size) {
+		extract_compressed_sector(data, buffer, entry.flags, store);
+	} else {
+		store(data);
+	}
 }
 
 BlockTableEntry& MemoryArchive::file_entry(const std::size_t index) {

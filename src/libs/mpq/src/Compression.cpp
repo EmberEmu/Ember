@@ -16,6 +16,7 @@
 #include <adpcm/adpcm.h>
 #include <sparse/sparse.h>
 #include <huffman/huff.h>
+#include <boost/container/small_vector.hpp>
 
 namespace ember::mpq {
 
@@ -58,7 +59,7 @@ std::expected<std::size_t, int> decompress_adpcm(std::span<const std::byte> inpu
 	auto src = std::bit_cast<unsigned char*>(input.data());
 	auto dest = std::bit_cast<unsigned char*>(output.data());
 
-	return DecompressADPCM(dest, output.size_bytes(), src + 1, input.size_bytes() - 1, channels);
+	return DecompressADPCM(dest, output.size_bytes(), src, input.size_bytes(), channels);
 }
 
 std::expected<std::size_t, int> decompress_lzma(std::span<const std::byte> input,
@@ -108,7 +109,6 @@ std::expected<std::size_t, int> decompress_zlib(std::span<const std::byte> input
 	}
 }
 
-// this is very rough and does not work as it should yet, will fix as required
 int next_compression(std::uint8_t& mask) {
 	if(!mask) {
 		return 0;
@@ -119,6 +119,11 @@ int next_compression(std::uint8_t& mask) {
 		return MPQ_COMPRESSION_LZMA;
 	}
 
+	if(mask & MPQ_COMPRESSION_HUFFMANN) {
+		mask ^= MPQ_COMPRESSION_HUFFMANN;
+		return MPQ_COMPRESSION_HUFFMANN;
+	}
+
 	if(mask & MPQ_COMPRESSION_ADPCM_MONO) {
 		mask ^= MPQ_COMPRESSION_ADPCM_MONO;
 		return MPQ_COMPRESSION_ADPCM_MONO;
@@ -127,16 +132,6 @@ int next_compression(std::uint8_t& mask) {
 	if(mask & MPQ_COMPRESSION_ADPCM_STEREO) {
 		mask ^= MPQ_COMPRESSION_ADPCM_STEREO;
 		return MPQ_COMPRESSION_ADPCM_STEREO;
-	}
-
-	if(mask & MPQ_COMPRESSION_ADPCM_STEREO) {
-		mask ^= MPQ_COMPRESSION_ADPCM_STEREO;
-		return MPQ_COMPRESSION_ADPCM_STEREO;
-	}
-
-	if(mask & MPQ_COMPRESSION_HUFFMANN) {
-		mask ^= MPQ_COMPRESSION_HUFFMANN;
-		return MPQ_COMPRESSION_HUFFMANN;
 	}
 
 	if(mask & MPQ_COMPRESSION_SPARSE) {
@@ -162,48 +157,56 @@ int next_compression(std::uint8_t& mask) {
 	return -1;
 }
 
+std::expected<std::size_t, int> do_decompression(std::span<const std::byte> input,
+                                                 std::span<std::byte> output,
+												 const int comp) {
+	switch(comp) {
+		case MPQ_COMPRESSION_HUFFMANN:
+			return decompress_huffman(input, output);
+		case MPQ_COMPRESSION_SPARSE:
+			return decompress_sparse(input, output);
+		case MPQ_COMPRESSION_ADPCM_MONO:
+			return decompress_adpcm(input, output, 1);
+		case MPQ_COMPRESSION_ADPCM_STEREO:
+			return decompress_adpcm(input, output, 2);
+		case MPQ_COMPRESSION_LZMA:
+			return decompress_lzma(input, output);
+		case MPQ_COMPRESSION_BZIP2:
+			return decompress_bzip2(input, output);
+		case MPQ_COMPRESSION_PKWARE:
+			return decompress_pklib({ input.data() + 1, input.size_bytes() }, output);
+		case MPQ_COMPRESSION_ZLIB:
+			return decompress_zlib(input, output);
+		default:
+			throw exception("decompression: unknown type");
+	}
+}
+
 std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
                                            std::span<std::byte> output) {
 	std::uint8_t comp_mask = std::bit_cast<std::uint8_t>(input[0]);
 	std::expected<std::size_t, int> result;
 	std::uint8_t prev = 0;
+	std::size_t prev_size = 0;
 
 	while(auto comp = next_compression(comp_mask)) {
 		if(comp == MPQ_COMPRESSION_NEXT_SAME) {
 			comp = prev;
 		}
 
-		switch(comp) {
-			case MPQ_COMPRESSION_HUFFMANN:
-				result = decompress_huffman(input, output);
-				break;
-			case MPQ_COMPRESSION_SPARSE:
-				result = decompress_sparse(input, output);
-				break;
-			case MPQ_COMPRESSION_ADPCM_MONO:
-				result = decompress_adpcm(input, output, 1);
-				break;
-			case MPQ_COMPRESSION_ADPCM_STEREO:
-				result = decompress_adpcm(input, output, 2);
-				break;
-			case MPQ_COMPRESSION_LZMA:
-				result = decompress_lzma(input, output);
-				break;
-			case MPQ_COMPRESSION_BZIP2:
-				result = decompress_bzip2(input, output);
-				break;
-			case MPQ_COMPRESSION_PKWARE:
-				result = decompress_pklib(input, output);
-				break;
-			case MPQ_COMPRESSION_ZLIB:
-				result = decompress_zlib(input, output);
-				break;
-			default:
-				throw exception("decompression: unknown type");
+		if(!prev) {
+			result = do_decompression(input, output, comp);
+		} else {
+			boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
+			buffer.resize(prev_size);
+			std::memcpy(buffer.data(), output.data(), prev_size);
+			result = do_decompression(buffer, output, comp);
 		}
 
 		if(!result) {
 			return result;
+		} else {
+			prev_size = result.value();
 		}
 
 		prev = comp;

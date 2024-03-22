@@ -50,7 +50,7 @@ public:
 	}
 
 	void flush() {
-		const auto res = std::fwrite(buffer_.data(), buffer_.size(), 1, file_);
+		const auto res = std::fwrite(buffer_.data(), offset_, 1, file_);
 
 		if(res != 1) {
 			throw exception("extraction: file writing failed");
