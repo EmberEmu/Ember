@@ -37,6 +37,14 @@ public:
 	void operator()(std::span<const std::byte> data) override {
 		store(data);
 	}
+
+	auto size() {
+		return offset_;
+	}
+
+	auto data() {
+		return std::span(buffer_.data(), offset_);
+	}
 };
 
 } // mpq, ember

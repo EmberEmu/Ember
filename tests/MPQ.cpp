@@ -7,7 +7,7 @@
  */
 
 #include <mpq/MPQ.h>
-#include <mpq/MemorySink.h>
+#include <mpq/DynamicMemorySink.h>
 #include <shared/util/FileMD5.h>
 #include <botan/bigint.h>
 #include <gtest/gtest.h>
@@ -119,10 +119,9 @@ TEST(MPQ, Extract_WAV) {
 	const auto index = archive->file_lookup("owl.wav", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("owl.wav", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0x3a66b4b718686cb4d5aa143895290d84");
 	ASSERT_EQ(md5, expected);
 }
@@ -135,9 +134,9 @@ TEST(MPQ, Extract_MP3) {
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
 	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("owl.mp3", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0x2f7b030648e1f7ec77109c659bbea3ce");
 	ASSERT_EQ(md5, expected);
 }
@@ -149,10 +148,9 @@ TEST(MPQ, Extract_Binary) {
 	const auto index = archive->file_lookup("elevated_1920_1080.ex_", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("elevated_1920_1080.ex_", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0xf3b82b404a36a9714bb266007cacd489");
 	ASSERT_EQ(md5, expected);
 }
@@ -164,10 +162,9 @@ TEST(MPQ, Extract_JPG) {
 	const auto index = archive->file_lookup("ember.jpg", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("ember.jpg", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0x8a623acdf09f9388719010d76a5c7a52");
 	ASSERT_EQ(md5, expected);
 }
@@ -179,10 +176,9 @@ TEST(MPQ, Extract_PNG) {
 	const auto index = archive->file_lookup("ember.png", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("ember.png", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0xb29a1ad8ebeef28de68fa9bb0325b893");
 	ASSERT_EQ(md5, expected);
 }
@@ -193,10 +189,9 @@ TEST(MPQ, Extract_Listfile) {
 	const auto index = archive->file_lookup("(listfile)", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("(listfile)", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0xc4185e8d87a01ac3057a6498deccab1e");
 	ASSERT_EQ(md5, expected);
 }
@@ -207,10 +202,9 @@ TEST(MPQ, Extract_Attributes) {
 	const auto index = archive->file_lookup("(attributes)", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("(attributes)", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0x44fd6bad334ea24d8901e80ab20c07ba");
 	ASSERT_EQ(md5, expected);
 }
@@ -221,10 +215,9 @@ TEST(MPQ, Extract_Text) {
 	const auto index = archive->file_lookup("compressed.txt", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
-	mpq::MemorySink sink(buffer);
+	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("compressed.txt", sink));
-	const auto md5 = Botan::BigInt::decode(util::generate_md5(buffer));
+	const auto md5 = Botan::BigInt::decode(util::generate_md5(sink.data()));
 	Botan::BigInt expected("0xf13fad545731a0b71b2cc17e1acd48f4");
 	ASSERT_EQ(md5, expected);
 }

@@ -159,7 +159,7 @@ int next_compression(std::uint8_t& mask) {
 
 std::expected<std::size_t, int> do_decompression(std::span<const std::byte> input,
                                                  std::span<std::byte> output,
-												 const int comp) {
+                                                 const int comp) {
 	switch(comp) {
 		case MPQ_COMPRESSION_HUFFMANN:
 			return decompress_huffman(input, output);

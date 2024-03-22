@@ -91,11 +91,11 @@ std::uint64_t MemoryArchive::high_mask(std::uint16_t value) const {
 }
 
 std::span<std::uint16_t> MemoryArchive::fetch_btable_hi_pos() const {
-	const auto bt_hi_pos_ = std::bit_cast<std::uint16_t*>(
+	const auto bt_hi_pos = std::bit_cast<std::uint16_t*>(
 		buffer_.data() + header_->extended_block_table_offset
 	);
 
-	return { bt_hi_pos_, header_->block_table_size };
+	return { bt_hi_pos, header_->block_table_size };
 }
 
 void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSink& store) {

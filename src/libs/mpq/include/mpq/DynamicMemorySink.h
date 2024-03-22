@@ -11,14 +11,14 @@
 #include <mpq/ExtractionSink.h>
 #include <mpq/Exception.h>
 #include <mpq/SharedDefs.h>
-#include <vector>
+#include <boost/container/small_vector.hpp>
 #include <cstddef>
 #include <cstring>
 
 namespace ember::mpq {
 
 class DynamicMemorySink final : public ExtractionSink {
-	std::vector<std::byte> buffer_;
+	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer_;
 	std::size_t offset_ = 0;
 
 	void store(std::span<const std::byte> data) override {
@@ -33,7 +33,7 @@ class DynamicMemorySink final : public ExtractionSink {
 	}
 
 public:
-	DynamicMemorySink() : buffer_(LIKELY_SECTOR_SIZE) {}
+	DynamicMemorySink() {}
 
 	void operator()(std::span<const std::byte> data) override {
 		store(data);

@@ -323,8 +323,10 @@ void MemoryArchive::validate() {
 		throw exception("open error: hash table too big");
 	}
 
-	auto bt_end = header_->block_table_offset + (header_->block_table_size * sizeof(BlockTableEntry));
-	auto ht_end = header_->hash_table_offset + (header_->hash_table_size * sizeof(HashTableEntry));
+	const auto bt_end = header_->block_table_offset
+		+ (header_->block_table_size * sizeof(BlockTableEntry));
+	const auto ht_end = header_->hash_table_offset
+		+ (header_->hash_table_size * sizeof(HashTableEntry));
 
 	if(bt_end < header_->block_table_offset) {
 		throw exception("open error: block table too big");
