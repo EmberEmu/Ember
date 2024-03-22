@@ -12,9 +12,16 @@
 #define __ADPCM_H__
 
 //-----------------------------------------------------------------------------
-// Functions
+// Defines
 
-int  CompressADPCM  (unsigned char * pbOutBuffer, int dwOutLength, short * pwInBuffer, int dwInLength, int nCmpType, int nChannels);
-int  DecompressADPCM(unsigned char * pbOutBuffer, int dwOutLength, unsigned char * pbInBuffer, int dwInLength, int nChannels);
+#define MAX_ADPCM_CHANNEL_COUNT   2
+#define INITIAL_ADPCM_STEP_INDEX  0x2C
+
+//-----------------------------------------------------------------------------
+// Public functions
+
+int CompressADPCM       (void * pvOutBuffer, int dwOutLength, void * pvInBuffer, int dwInLength, int nCmpType, int ChannelCount);
+int DecompressADPCM     (void * pvOutBuffer, int dwOutLength, void * pvInBuffer, int dwInLength, int ChannelCount);
+int DecompressADPCM_SC1B(void * pvOutBuffer, int cbOutBuffer, void * pvInBuffer, int cbInBuffer, int ChannelCount);
 
 #endif // __ADPCM_H__

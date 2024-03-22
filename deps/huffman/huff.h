@@ -33,10 +33,10 @@ class TInputStream
     bool Peek7Bits(unsigned int & Value);
     void SkipBits(unsigned int BitCount);
 
-    const unsigned char * pbInBufferEnd;      // End position in the the input buffer
-    const unsigned char * pbInBuffer;         // Current position in the the input buffer
-    unsigned int BitBuffer;             // Input bit buffer
-    unsigned int BitCount;              // Number of bits remaining in 'dwBitBuff'
+    const unsigned char * pbInBufferEnd; // End position in the the input buffer
+    const unsigned char * pbInBuffer;    // Current position in the the input buffer
+    unsigned int BitBuffer;              // Input bit buffer
+    unsigned int BitCount;               // Number of bits remaining in 'dwBitBuff'
 };
 
 
