@@ -20,7 +20,8 @@
 /* 12.11.03  1.02  Dan  Macintosh compatibility                              */
 /* 24.07.04  1.03  Sam  Mac OS X compatibility                               */
 /* 22.11.06  1.04  Sam  Mac OS X compatibility (for StormLib 6.0)            */
-/* 31.12.06  1.05  XPinguin  Full GNU/Linux compatibility		             */
+/* 31.12.06  1.05  XPinguin  Full GNU/Linux compatibility                    */
+/* 22.03.24  1.06  Chaosvex Fix 64-bit msvc build                            */
 /*****************************************************************************/
 
 #ifndef __STORMPORT_H__
@@ -33,7 +34,7 @@
 #endif
 
 // Defines for Windows
-#if !defined(PLATFORM_DEFINED) && (defined(WIN32) || defined(WIN64))
+#if !defined(PLATFORM_DEFINED) && (defined(_WIN32) || defined(_WIN64))
 
   // In MSVC 8.0, there are some functions declared as deprecated.
   #if _MSC_VER >= 1400
@@ -49,7 +50,7 @@
   #include <wininet.h>
   #define PLATFORM_LITTLE_ENDIAN
 
-  #ifdef WIN64
+  #ifdef _WIN64
     #define PLATFORM_64BIT
   #else
     #define PLATFORM_32BIT
