@@ -114,8 +114,8 @@ LocateResult locate_archive(std::span<const std::byte> buffer) {
 	return offset;
 }
 
-std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
-									  const std::uintptr_t offset) {
+std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
+									        const std::uintptr_t offset) {
 	std::error_code ec{};
 
 	if(!std::filesystem::exists(path, ec) || ec) {
@@ -150,7 +150,7 @@ std::unique_ptr<Archive> open_archive(const std::filesystem::path& path,
 		throw exception("cannot open archive: bad header encountered");
 	}
 
-	file_mapping file(path.c_str(), read_write);
+	file_mapping file(path.c_str(), read_only);
 	mapped_region region(file, copy_on_write, offset);
 	region.advise(mapped_region::advice_sequential);
 

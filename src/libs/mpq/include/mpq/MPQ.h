@@ -27,7 +27,7 @@ using LocateResult = std::expected<std::uintptr_t, ErrorCode>;
 
 LocateResult locate_archive(const std::filesystem::path& path);
 LocateResult locate_archive(std::span<const std::byte> data);
-std::unique_ptr<Archive> open_archive(const std::filesystem::path& path, std::uintptr_t offset);
+std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path, std::uintptr_t offset);
 std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data, std::uintptr_t offset = 0);
 
 bool validate_header(const v0::Header& header);
