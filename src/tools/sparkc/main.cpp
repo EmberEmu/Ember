@@ -12,8 +12,9 @@
 #include <logger/FileSink.h>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <string>
+#include <filesystem>
 #include <fstream>
+#include <string>
 #include <vector>
 
 namespace po = boost::program_options;
@@ -50,17 +51,16 @@ int launch(const po::variables_map& args) try {
 
 void process_schema(const std::string& schema) {
 	std::vector<std::uint8_t> buffer;
-	std::ifstream file(schema, std::ios::in | std::ios::binary | std::ios::ate);
+	std::ifstream file(schema, std::ios::in | std::ios::binary);
 
-	if (!file.is_open()) {
+	if(!file.is_open()) {
 		throw std::runtime_error("Unable to open binary schema (bfbs)");
 	}
 
-	std::streamsize size = file.tellg();
-	file.seekg(0, std::ios::beg);
+	const auto size = std::filesystem::file_size(schema);
 	buffer.resize(static_cast<std::size_t>(size));
 
-	if (!file.read(reinterpret_cast<char*>(buffer.data()), buffer.size())) {
+	if(!file.read(reinterpret_cast<char*>(buffer.data()), buffer.size())) {
 		throw std::runtime_error("Unable to read binary schema (bfbs)");
 	}
 

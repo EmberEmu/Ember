@@ -39,7 +39,7 @@ class StreamReader final {
 	template<typename T> std::optional<T> try_read(std::ifstream& file);
 
 public:
-	StreamReader(std::ifstream& in, bool stream, bool skip = false,
+	StreamReader(std::ifstream& in, std::uintmax_t size, bool stream, bool skip = false,
 	             std::chrono::seconds interval = std::chrono::seconds(2));
 
 	void process();

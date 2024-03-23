@@ -10,8 +10,9 @@
 #include <botan/bigint.h>
 #include <botan/hash.h>
 #include <boost/assert.hpp>
-#include <vector>
+#include <filesystem>
 #include <fstream>
+#include <vector>
 
 namespace ember::util {
 
@@ -22,15 +23,13 @@ std::vector<std::uint8_t> generate_md5(std::span<const std::byte> buffer) {
 }
 
 std::vector<std::uint8_t> generate_md5(const std::string& file) {
-	std::ifstream stream(file, std::ios::in | std::ios::binary | std::ios::ate);
+	std::ifstream stream(file, std::ios::in | std::ios::binary);
 
 	if(!stream) {
 		throw std::runtime_error("Could not open file for MD5, " + file);
 	}
 
-	auto remaining = static_cast<std::size_t>(stream.tellg());
-	stream.seekg(0, std::ios::beg);
-
+	auto remaining = std::filesystem::file_size(file);
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	std::size_t block_size = hasher->hash_block_size();
 	std::vector<char> buffer(block_size);

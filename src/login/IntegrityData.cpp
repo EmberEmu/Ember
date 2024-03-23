@@ -80,14 +80,13 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 		fs::path fpath = dir;
 		fpath /= f.data();
 
-		std::ifstream file(fpath.string(), std::ios::binary | std::ios::ate);
+		std::ifstream file(fpath, std::ios::binary);
 
 		if(!file) {
 			throw std::runtime_error("Unable to open " + fpath.string());
 		}
 
-		std::streamsize size = file.tellg();
-		file.seekg(0, std::ios::beg);
+		const auto size = std::filesystem::file_size(fpath);
 		buffer.resize(static_cast<std::size_t>(size) + buffer.size());
 
 		if(!file.read(reinterpret_cast<char*>(buffer.data()) + write_offset, size)) {

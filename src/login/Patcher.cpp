@@ -12,6 +12,7 @@
 #include <shared/util/FNVHash.h>
 #include <boost/endian/conversion.hpp>
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 
 namespace ember {
@@ -150,14 +151,13 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 	survey_.name = "Survey";
 	survey_id_ = id;
 	
-	std::ifstream file(path + "Survey.mpq", std::ios::binary | std::ios::ate);
+	std::ifstream file(path + "Survey.mpq", std::ios::binary);
 
 	if(!file) {
 		throw std::runtime_error("Error opening " + path + "Survey.mpq");
 	}
 
-	survey_.size = file.tellg();
-	file.seekg(0, std::ios::beg);
+	survey_.size = std::filesystem::file_size(path);
 
 	std::vector<std::byte> buffer(static_cast<std::size_t>(survey_.size));
 	file.read(reinterpret_cast<char*>(buffer.data()), survey_.size);
@@ -203,19 +203,21 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 		patch.file_meta.path = path;
 
 		// we open each patch to make sure that it at least exists
-		std::ifstream file(path + patch.file_meta.name, std::ios::binary | std::ios::ate);
+		std::ifstream file(path + patch.file_meta.name, std::ios::binary);
 
 		if(!file) {
 			throw std::runtime_error("Error opening patch " + path + patch.file_meta.name);
 		}
 
 		if(patch.file_meta.size == 0) {
-			patch.file_meta.size = static_cast<std::uint64_t>(file.tellg());
+			std::error_code ec{};
+			const auto size = std::filesystem::file_size(path + patch.file_meta.name);
 
-			if(!file.good()) {
+			if(ec) {
 				throw std::runtime_error("Unable determine patch size for " + path + patch.file_meta.name);
 			}
 
+			patch.file_meta.size = static_cast<std::uint64_t>(size);
 			dirty = true;
 		}
 

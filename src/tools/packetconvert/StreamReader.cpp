@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,13 +13,10 @@
 
 namespace ember {
 
-StreamReader::StreamReader(std::ifstream& in, bool stream, bool skip, std::chrono::seconds interval)
+StreamReader::StreamReader(std::ifstream& in, std::uintmax_t size, bool stream, bool skip,
+                           std::chrono::seconds interval)
                            : in_(in), skip_(skip), stream_(stream), interval_(interval),
-                             stream_size_(0) {
-	in.seekg(0, std::ifstream::end);
-	stream_size_ = in.tellg();
-	in.seekg(0);
-
+                             stream_size_(size) {
 	if(!in) {
 		throw std::runtime_error("Packet dump stream error");
 	}

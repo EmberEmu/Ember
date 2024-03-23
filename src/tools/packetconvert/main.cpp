@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2019 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include "OutputOption.h"
 #include <boost/program_options.hpp>
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -26,7 +27,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
 	using namespace ember;
-
 	const po::variables_map args = parse_arguments(argc, argv);
 	launch(args);
 } catch(const std::exception& e) {
@@ -37,8 +37,8 @@ int main(int argc, const char* argv[]) try {
 namespace ember {
 
 void launch(const po::variables_map& args) {
-	std::ifstream file(args.at("file").as<std::string>(),
-		std::ifstream::in | std::ifstream::binary);
+	const auto filename = args.at("file").as<std::string>();
+	std::ifstream file(filename, std::ifstream::in | std::ifstream::binary);
 
 	if(!file) {
 		throw std::runtime_error("Unable to open packet dump file");
@@ -47,8 +47,9 @@ void launch(const po::variables_map& args) {
 	const auto interval = std::chrono::seconds(args.at("interval").as<unsigned int>());
 	const auto stream = args.at("stream").as<bool>();
 	auto skip = stream? args.at("skip").as<bool>() : false;
-	
-	StreamReader reader(file, stream, skip, interval);
+	const auto size = std::filesystem::file_size(filename);
+
+	StreamReader reader(file, stream, size, skip, interval);
 	auto output_opt = args.at("output").as<std::vector<OutputOption>>();
 
 	// remove any duplicate entries
