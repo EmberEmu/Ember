@@ -10,11 +10,20 @@
 #include <mpq/FileSink.h>
 #include <mpq/BufferedFileSink.h>
 #include <iostream>
+#include <regex>
 
 using namespace ember;
 
-int main() try {
-	std::filesystem::path path("test.MPQ");
+int main(int argc, char** argv) try {
+	if(argc < 2) {
+		std::cout << "Usage: mpqextract <input.mpq> [ecma regex]\n"
+			<< "Only files matching the optional regex will be extracted\n\n"
+			<< R"a(Example: mpqextract.exe test.mpq "([a-zA-Z0-9\s_\\.\-\(\):])+(.jpg|.gif)")a";
+
+		return EXIT_FAILURE;
+	}
+
+	std::filesystem::path path(argv[1]);
 	mpq::LocateResult result = mpq::locate_archive(path);
 
 	if(!result) {
@@ -22,14 +31,23 @@ int main() try {
 		return EXIT_FAILURE;
 	}
 
-	std::unique_ptr<mpq::Archive> archive { mpq::open_archive(path, *result)};
+	std::unique_ptr<mpq::Archive> archive = mpq::open_archive(path, *result);
 
 	if(!archive) {
 		std::cerr << "No archive";
 		return EXIT_FAILURE;
 	}
 
+	const std::string pattern = argc >= 3? argv[2] : "";
+	const std::regex regex(pattern, std::regex::ECMAScript);
+
 	for(auto& f : archive->files()) try {
+		if(!pattern.empty()) {
+			if(!std::regex_match(f, regex)) {
+				continue;
+			}
+		}
+		
 		auto index = archive->file_lookup(f, 0);
 
 		if(index == mpq::npos) {
