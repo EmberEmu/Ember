@@ -221,3 +221,10 @@ TEST(MPQ, Extract_Text) {
 	Botan::BigInt expected("0xf13fad545731a0b71b2cc17e1acd48f4");
 	ASSERT_EQ(md5, expected);
 }
+
+TEST(MPQ, Locate_BadAlignment) {
+	alignas(mpq::v0::Header) std::byte data[mpq::HEADER_SIZE_V0]{};
+	std::span span(data + 1, sizeof(data) - 1); // force misaligned buffer
+	auto result = mpq::locate_archive(span);
+	ASSERT_EQ(result.error(), mpq::ErrorCode::BAD_ALIGNMENT);
+}
