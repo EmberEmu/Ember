@@ -13,7 +13,6 @@
 #include <mpq/Exception.h>
 #include <mpq/Structures.h>
 #include <expected>
-#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <span>

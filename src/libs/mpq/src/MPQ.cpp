@@ -7,8 +7,6 @@
  */
 
 #include <mpq/MPQ.h>
-#include <mpq/Structures.h>
-#include <mpq/Archive.h>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/endian/conversion.hpp>
@@ -17,7 +15,7 @@
 #include <fstream>
 #include <cstddef>
 #include <cstring>
-#include <iostream>
+
 using namespace boost::interprocess;
 
 namespace ember::mpq {

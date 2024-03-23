@@ -8,7 +8,6 @@
 
 #include "StreamReader.h"
 #include <boost/endian/conversion.hpp>
-#include <optional>
 #include <thread>
 
 namespace ember {
