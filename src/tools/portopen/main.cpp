@@ -11,10 +11,10 @@
 #include <ports/upnp/IGDevice.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
-#include <stdexcept>
-#include <format>
 #include <iostream>
+#include <format>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <utility>
@@ -63,7 +63,7 @@ void use_natpmp(const po::variables_map& args) {
 	const auto& interface = args["interface"].as<std::string>();
 	const auto& gateway = args["gateway"].as<std::string>();
 	const auto& protocol = args["protocol"].as<std::string>();
-	const auto deletion = args["delete"].as<bool>();
+	const auto deletion = args.contains("delete");
 	
 	auto proto = ports::Protocol::TCP;
 
@@ -127,7 +127,7 @@ void use_upnp(const po::variables_map& args) {
 	const auto& protocol = args["protocol"].as<std::string>();
 	const auto internal = args["internal"].as<std::uint16_t>();
 	const auto external = args["external"].as<std::uint16_t>();
-	const auto deletion = args["delete"].as<bool>();
+	const auto deletion = args.contains("delete");
 
 	boost::asio::io_context ctx;
 	ports::upnp::SSDP ssdp(interface, ctx);
@@ -185,7 +185,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("external,x", po::value<std::uint16_t>()->default_value(8085), "External port")
 		("interface,f", po::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
 		("gateway,g", po::value<std::string>()->default_value(""), "Gateway address")
-		("delete,d", po::value<bool>()->default_value(false), "Delete mapping")
+		("delete,d", "Delete mapping")
 		("protocol,p", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)");
 
 	po::variables_map options;
