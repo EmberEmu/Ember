@@ -16,38 +16,26 @@
 #include <bit>
 #include <fstream>
 #include <cstddef>
-#include <cstdio>
 #include <cstring>
-
+#include <iostream>
 using namespace boost::interprocess;
 
 namespace ember::mpq {
 
-LocateResult archive_offset(FILE* file) {
+LocateResult archive_offset(std::ifstream& stream, const std::uintmax_t size) {
 	std::array<std::uint32_t, 1> magic{};
 	auto buffer = std::as_writable_bytes(std::span(magic));
-	auto ret = std::fseek(file, 0, SEEK_END);
-
-	if(ret != 0) {
-		return std::unexpected(ErrorCode::FILE_READ_FAILED);
-	}
-
-	const auto size = std::ftell(file);
-
-	if(size == -1) {
-		return std::unexpected(ErrorCode::FILE_READ_FAILED);
-	}
 
 	for(std::uintptr_t i = 0; i < (size - buffer.size_bytes()); i += HEADER_ALIGNMENT) {
-		ret = std::fseek(file, i, SEEK_SET);
+		stream.seekg(i);
 
-		if(ret != 0) {
+		if(!stream.good()) {
 			return std::unexpected(ErrorCode::FILE_READ_FAILED);
 		}
 
-		ret = std::fread(buffer.data(), buffer.size_bytes(), 1, file);
+		stream.read(reinterpret_cast<char*>(buffer.data()), buffer.size_bytes());
 
-		if(!ret) {
+		if(!stream.good()) {
 			return std::unexpected(ErrorCode::FILE_READ_FAILED);
 		}
 
@@ -81,13 +69,20 @@ LocateResult locate_archive(const std::filesystem::path& path) try {
 		return std::unexpected(ErrorCode::FILE_NOT_FOUND);
 	}
 
-	FILE* file = std::fopen(path.string().c_str(), "rb");
+	std::error_code ec{};
+	const auto size = std::filesystem::file_size(path, ec);
 
-	if(!file) {
+	if(ec) {
 		return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
 	}
 
-	const auto offset = archive_offset(file);
+	std::ifstream stream(path, std::ios::binary | std::ios::in);
+	
+	if(!stream.is_open()) {
+		return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
+	}
+
+	const auto offset = archive_offset(stream, size);
 
 	if(offset == npos) {
 		return std::unexpected(ErrorCode::NO_ARCHIVE_FOUND);
@@ -122,8 +117,7 @@ std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
 		throw exception("cannot open archive: file not found");
 	}
 
-	std::ifstream stream;
-	stream.open(path, std::ios::binary | std::ios::in);
+	std::ifstream stream(path, std::ios::binary | std::ios::in);
 
 	if(!stream.is_open()) {
 		throw exception("cannot open archive: stream is_open failed");
