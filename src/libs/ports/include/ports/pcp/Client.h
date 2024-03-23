@@ -64,7 +64,7 @@ private:
 	AnnounceHandler announce_handler_ = {};
 	std::mutex handler_lock_;
 
-	void start_retry_timer(std::chrono::milliseconds timeout = INITIAL_TIMEOUT, int retries = 0);
+	void start_retry_timer(const std::chrono::milliseconds& timeout = INITIAL_TIMEOUT, int retries = 0);
 	void timeout_handler();
 
 	void finagle_state();

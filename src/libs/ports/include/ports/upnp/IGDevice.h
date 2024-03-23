@@ -78,7 +78,7 @@ private:
 	ba::awaitable<void> request_scpd(HTTPTransport& transport);
 	ba::awaitable<void> request_igdd(HTTPTransport& transport);
 	ba::awaitable<ErrorCode> do_add_port_mapping(Mapping mapping, HTTPTransport& transport);
-	ba::awaitable<ErrorCode> do_delete_port_mapping(Mapping mapping, HTTPTransport& transport);
+	ba::awaitable<ErrorCode> do_delete_port_mapping(const Mapping& mapping, HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 	std::string protocol_to_string(const Protocol protocol);
 
@@ -107,8 +107,8 @@ public:
 	IGDevice& operator=(IGDevice&&) = default;
 
 	void add_port_mapping(Mapping mapping, Result cb);
-	std::future<ErrorCode> add_port_mapping(Mapping mapping, use_future_t);
-	ba::awaitable<ErrorCode> add_port_mapping(Mapping mapping, use_awaitable_t);
+	std::future<ErrorCode> add_port_mapping(const Mapping& mapping, use_future_t);
+	ba::awaitable<ErrorCode> add_port_mapping(const Mapping& mapping, use_awaitable_t);
 
 	void delete_port_mapping(Mapping mapping, Result cb);
 	std::future<ErrorCode> delete_port_mapping(Mapping mapping, use_future_t);

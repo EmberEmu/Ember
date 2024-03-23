@@ -277,7 +277,8 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 }
 
 
-ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(Mapping mapping, HTTPTransport& transport) {
+ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mapping,
+                                                          HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
@@ -414,7 +415,7 @@ void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	launch_request(std::move(handler));
 }
 
-ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping mapping, use_awaitable_t) {
+ba::awaitable<ErrorCode> IGDevice::add_port_mapping(const Mapping& mapping, use_awaitable_t) {
 	HTTPTransport transport(ctx_, bind_);
 
 	auto res = co_await process_request(transport, use_awaitable);
@@ -426,7 +427,7 @@ ba::awaitable<ErrorCode> IGDevice::add_port_mapping(Mapping mapping, use_awaitab
 	co_return co_await do_add_port_mapping(mapping, transport);
 }
 
-std::future<ErrorCode> IGDevice::add_port_mapping(Mapping mapping, use_future_t) {
+std::future<ErrorCode> IGDevice::add_port_mapping(const Mapping& mapping, use_future_t) {
 	auto promise = std::make_shared<std::promise<ErrorCode>>();
 	auto future = promise->get_future();
 	

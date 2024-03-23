@@ -107,11 +107,11 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& resul
 		return { ErrorCode::PCP_CODE, header.result };
 	}
 
-	std::span<const std::uint8_t> body_buff = {
-		buffer.begin() + pcp::HEADER_SIZE, buffer.end()
-	};
-
 	try {
+		std::span<const std::uint8_t> body_buff = {
+			buffer.begin() + pcp::HEADER_SIZE, buffer.end()
+		};
+
 		const auto body = deserialise<pcp::MapResponse>(body_buff);
 		
 		if(body.nonce != stored_request_.nonce) {
@@ -397,7 +397,7 @@ void Client::timeout_handler() {
 	state_ = State::IDLE;
 }
 
-void Client::start_retry_timer(const std::chrono::milliseconds timeout, const int retries) {
+void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const int retries) {
 	timer_.expires_from_now(timeout);
 	timer_.async_wait(strand_.wrap([&, timeout, retries](const boost::system::error_code& ec) {
 		if(ec) {
@@ -512,12 +512,12 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 	}
 
 	if(strict) {
-		pcp::OptionHeader header {
+		pcp::OptionHeader option {
 			.code = pcp::OptionCode::PREFER_FAILURE
 		};
 
 		try {
-			serialise(header, stream);
+			serialise(option, stream);
 		} catch(const spark::exception&) {
 			return ErrorCode::INTERNAL_ERROR;
 		}
