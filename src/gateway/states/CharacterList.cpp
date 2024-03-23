@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -77,7 +77,7 @@ void character_rename(ClientContext& ctx) {
 		return;
 	}
 
-	const auto uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler->uuid();
 
 	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
@@ -106,7 +106,7 @@ void character_rename_completion(ClientContext& ctx, const CharRenameResponse* e
 void character_enumerate(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	const auto uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler->uuid();
 
 	Locator::character()->retrieve_characters(ctx.client_id->id,
 	                                          [uuid](auto status, auto characters) {
@@ -150,7 +150,7 @@ void character_create(ClientContext& ctx) {
 		return;
 	}
 
-	const auto uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler->uuid();
 
 	Locator::character()->create_character(ctx.client_id->id, packet->character,
 	                                       [uuid](auto status, auto result) {
@@ -177,7 +177,7 @@ void character_delete(ClientContext& ctx) {
 		return;
 	}
 
-	const auto uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler->uuid();
 
 	Locator::character()->delete_character(ctx.client_id->id, packet->id,
 	                                       [uuid](auto status, auto result) {

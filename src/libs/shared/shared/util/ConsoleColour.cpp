@@ -30,11 +30,13 @@ WORD colour_attribute(Colour colour) {
 			break;
 		case Colour::LIGHT_BLUE:
 			attribute = FOREGROUND_INTENSITY;
+			[[fallthrough]];
 		case Colour::BLUE:
 			attribute |= FOREGROUND_BLUE;
 			break;
 		case Colour::LIGHT_RED:
 			attribute = FOREGROUND_INTENSITY;
+			[[fallthrough]];
 		case Colour::RED:
 			attribute |= FOREGROUND_RED;
 			break;
@@ -43,16 +45,19 @@ WORD colour_attribute(Colour colour) {
 			break;
 		case Colour::LIGHT_CYAN:
 			attribute = FOREGROUND_INTENSITY;
+			[[fallthrough]];
 		case Colour::CYAN:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_GREEN;
 			break;
 		case Colour::LIGHT_GREEN:
 			attribute = FOREGROUND_INTENSITY;
+			[[fallthrough]];
 		case Colour::GREEN:
 			attribute |= FOREGROUND_GREEN;
 			break;
 		case Colour::LIGHT_MAGENTA:
 			attribute = FOREGROUND_INTENSITY;
+			[[fallthrough]];
 		case Colour::MAGENTA:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_RED;
 			break;
@@ -61,6 +66,7 @@ WORD colour_attribute(Colour colour) {
 			break;
 		case Colour::WHITE:
 			attribute = FOREGROUND_INTENSITY;
+			[[fallthrough]];
 		case Colour::GREY:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 			break;

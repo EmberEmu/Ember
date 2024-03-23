@@ -43,9 +43,9 @@ public:
 	MySQL(std::string user, std::string password, const std::string& host, std::uint16_t port,
 	      std::string db = "");
 
-	MySQL(MySQL&& rhs) : dsn(std::move(rhs.dsn)), username(std::move(rhs.username)),
-	                     password(std::move(rhs.password)), database(std::move(rhs.database)),
-	                     cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
+	MySQL(MySQL&& rhs) noexcept : dsn(std::move(rhs.dsn)), username(std::move(rhs.username)),
+	                              password(std::move(rhs.password)), database(std::move(rhs.database)),
+	                              cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
 
 	static std::string name();
 	static std::string version();
