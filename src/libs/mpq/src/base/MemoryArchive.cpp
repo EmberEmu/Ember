@@ -18,7 +18,6 @@
 #include <bit>
 #include <iterator>
 #include <cmath>
-#include <mpq/DynamicMemorySink.h>
 
 namespace ember::mpq {
 
