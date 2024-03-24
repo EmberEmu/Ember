@@ -25,10 +25,14 @@ std::expected<Query, Result> deserialise(std::span<const std::uint8_t> buffer) t
 	spark::BinaryStreamReader stream(adaptor);
 
 	Query query;
-	detail::Labels labels;
+
+	detail::ParseContext ctx {
+		.buffer = buffer,
+		.stream = stream,
+	};
 
 	detail::parse_header(query, stream);
-	detail::parse_records(query, labels, stream);
+	detail::parse_records(query, ctx);
 
 	if(stream.state() != spark::StreamState::OK) {
 		return std::unexpected(Result::STREAM_ERROR);
@@ -79,7 +83,10 @@ std::uint16_t encode_flags(const Flags flags) {
 	return encoded;
 }
 
-std::string parse_label_notation(spark::BinaryStreamReader& stream) try {
+std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
+	spark::BufferReadAdaptor adaptor(buffer);
+	spark::BinaryStreamReader stream(adaptor);
+
 	std::stringstream name;
 	std::uint8_t length;
 	stream >> length;
@@ -115,13 +122,13 @@ void parse_header(Query& query, spark::BinaryStreamReader& stream) try {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
-Question parse_question(detail::Labels& labels, spark::BinaryStreamReader& stream) try {
+Question parse_question(ParseContext& ctx) try {
 	Question question;
-	question.meta.labels = parse_labels(labels, stream);
+	question.meta.labels = parse_labels(ctx);
 	question.name = labels_to_name(question.meta.labels);
 	std::uint16_t type = 0, cc = 0;
-	stream >> type;
-	stream >> cc;
+	ctx.stream >> type;
+	ctx.stream >> cc;
 	be::big_to_native_inplace(type);
 	be::big_to_native_inplace(cc);
 
@@ -138,7 +145,7 @@ Question parse_question(detail::Labels& labels, spark::BinaryStreamReader& strea
 	throw Result::QUESTION_PARSE_ERROR;
 }
 
-std::string labels_to_name(std::span<const std::string> labels) {
+std::string labels_to_name(std::span<std::string_view> labels) {
 	std::stringstream ss;
 
 	for(auto it = labels.begin(); it != labels.end();) {
@@ -152,20 +159,60 @@ std::string labels_to_name(std::span<const std::string> labels) {
 	return ss.str();
 }
 
-/*
- * See the comment in write_resource_record() if you want to know what's
- * going on here
- */
-std::vector<std::string> parse_labels(detail::Labels& labels, spark::BinaryStreamReader& stream) try {
-	std::vector<std::string> rrlabels;
+std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffer, std::size_t offset) {
+	std::span chars(reinterpret_cast<const char*>(buffer.data()), buffer.size_bytes());
+	std::vector<std::string_view> labels;
 
+	while(true) {
+		if(offset >= buffer.size_bytes()) {
+			throw Result::BAD_NAME_OFFSET;
+		}
+
+		std::uint8_t notation = buffer[offset];
+
+		if(!notation) {
+			break;
+		}
+
+		notation >>= NOTATION_OFFSET;
+
+		if(notation == NOTATION_STR) {
+			std::uint8_t len = buffer[offset];
+			labels.emplace_back(chars.data() + offset + 1, len);
+			offset += len + 1;
+		} else if(notation == NOTATION_PTR) {
+			if(offset + 1 >= buffer.size_bytes()) {
+				throw Result::BAD_NAME_OFFSET;
+			}
+
+			auto ptr = buffer[offset + 1];
+
+			if(ptr >= buffer.size_bytes()) {
+				throw Result::BAD_NAME_OFFSET;
+			}
+
+			const auto len = buffer[ptr++];
+
+			if(ptr + len >= buffer.size_bytes() ) {
+				throw Result::BAD_NAME_OFFSET;
+			}
+
+			labels.emplace_back(chars.data() + ptr, len);
+			offset = ptr + len;
+		} else {
+			throw Result::BAD_NAME_NOTATION;
+		}
+	}
+
+	return labels;
+}
+
+void skip_stream_labels(spark::BinaryStreamReader& stream) {
 	while(true) {
 		std::uint8_t notation = 0;
 		stream.buffer()->copy(&notation, 1);
 
 		if(notation == 0) {
-			const auto offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
-			labels[offset] = "";
 			stream.skip(1);
 			break;
 		}
@@ -173,42 +220,39 @@ std::vector<std::string> parse_labels(detail::Labels& labels, spark::BinaryStrea
 		notation >>= NOTATION_OFFSET;
 
 		if(notation == NOTATION_STR) {
-			const auto name_offset = gsl::narrow_cast<std::uint16_t>(stream.total_read());
-			auto name = parse_label_notation(stream);
-			labels[name_offset] = name;
-			rrlabels.emplace_back(std::move(name));
+			std::uint8_t len = 0;
+			stream >> len;
+			stream.skip(len);
 		} else if(notation == NOTATION_PTR) {
-			be::big_uint16_t name_offset;
-			stream >> name_offset;
-
-			if(auto it = labels.find(name_offset ^ (3 << 14)); it != labels.end()) {
-				for(auto i = it; it != labels.end() && !it->second.empty(); ++it) {
-					rrlabels.emplace_back(it->second);
-				}
-			} else {
-				throw Result::BAD_NAME_OFFSET;
-			}
-
+			stream.skip(2);
 			break;
 		} else {
 			throw Result::BAD_NAME_NOTATION;
 		}
 	}
+}
 
-	return rrlabels;
+/*
+ * See the comment in write_resource_record() if you want to know what's
+ * going on here
+ */
+std::vector<std::string_view> parse_labels(ParseContext& ctx) try {
+	auto labels = extract_labels(ctx.buffer, ctx.stream.total_read());
+	skip_stream_labels(ctx.stream);
+	return labels;
 } catch(spark::buffer_underrun&) {
 	throw Result::NAME_PARSE_ERROR;
 }
 
-ResourceRecord parse_resource_record(detail::Labels& labels, spark::BinaryStreamReader& stream) try {
+ResourceRecord parse_resource_record(ParseContext& ctx) try {
 	ResourceRecord record;
-	const auto parsed = parse_labels(labels, stream);
+	auto parsed = parse_labels(ctx);
 	record.name = labels_to_name(parsed);
 	std::uint16_t type = 0, rc = 0;
-	stream >> type;
-	stream >> rc;
-	stream >> record.ttl;
-	stream >> record.rdata_len;
+	ctx.stream >> type;
+	ctx.stream >> rc;
+	ctx.stream >> record.ttl;
+	ctx.stream >> record.rdata_len;
 
 	be::big_to_native_inplace(type);
 	be::big_to_native_inplace(rc);
@@ -222,46 +266,46 @@ ResourceRecord parse_resource_record(detail::Labels& labels, spark::BinaryStream
 
 	record.type = static_cast<RecordType>(type);
 	record.resource_class = static_cast<Class>(rc);
-	parse_rdata(record, labels, stream);
+	parse_rdata(record, ctx);
 	return record;
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) try {
+void parse_rdata(ResourceRecord& rr, ParseContext& ctx) try {
 	switch(rr.type) {
 		case RecordType::PTR:
-			parse_rdata_ptr(rr, labels, stream);
+			parse_rdata_ptr(rr, ctx);
 			break;
 		case RecordType::A:
-			parse_rdata_a(rr, stream);
+			parse_rdata_a(rr, ctx);
 			break;
 		case RecordType::AAAA:
-			parse_rdata_aaaa(rr, stream);
+			parse_rdata_aaaa(rr, ctx);
 			break;
 		case RecordType::SOA:
-			parse_rdata_soa(rr, labels, stream);
+			parse_rdata_soa(rr, ctx);
 			break;
 		case RecordType::MX:
-			parse_rdata_mx(rr, labels, stream);
+			parse_rdata_mx(rr, ctx);
 			break;
 		case RecordType::TXT:
-			parse_rdata_txt(rr, stream);
+			parse_rdata_txt(rr, ctx);
 			break;
 		case RecordType::URI:
-			parse_rdata_uri(rr, labels, stream);
+			parse_rdata_uri(rr, ctx);
 			break;
 		case RecordType::SRV:
-			parse_rdata_srv(rr, labels, stream);
+			parse_rdata_srv(rr, ctx);
 			break;
 		case RecordType::CNAME:
-			parse_rdata_cname(rr, labels, stream);
+			parse_rdata_cname(rr, ctx);
 			break;
 		case RecordType::HINFO:
-			parse_rdata_hinfo(rr, stream);
+			parse_rdata_hinfo(rr, ctx);
 			break;
 		case RecordType::NSEC:
-			parse_rdata_nsec(rr, labels, stream);
+			parse_rdata_nsec(rr, ctx);
 			break;
 		default:
 			throw Result::UNHANDLED_RDATA;
@@ -270,88 +314,93 @@ void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStream
 	throw Result::RR_PARSE_ERROR;
 }
 
-void parse_rdata_nsec(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx) {
 	Record_NSEC rdata;
-	rdata.next_domain = labels_to_name(parse_labels(labels, stream));
+	auto labels = parse_labels(ctx);
+	rdata.next_domain = labels_to_name(labels);
 	std::uint16_t bitmap_len = 0;
-	stream >> bitmap_len;
+	ctx.stream >> bitmap_len;
 	be::big_to_native_inplace(bitmap_len);
-	stream.skip(bitmap_len); // don't care about this for now
+	ctx.stream.skip(bitmap_len); // don't care about this for now
 }
 
-void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
+void parse_rdata_hinfo(ResourceRecord& rr, ParseContext& ctx) {
 	Record_HINFO rdata;
 	
 	// cpu
 	std::uint8_t strlen = 0;
-	stream >> strlen;
+	ctx.stream >> strlen;
 	rdata.cpu.resize(strlen);
-	stream.get(rdata.cpu.data(), rdata.cpu.size());
+	ctx.stream.get(rdata.cpu.data(), rdata.cpu.size());
 
 	// os
-	stream >> strlen;
+	ctx.stream >> strlen;
 	rdata.os.resize(strlen);
-	stream.get(rdata.os.data(), rdata.os.size());
+	ctx.stream.get(rdata.os.data(), rdata.os.size());
 
 	rr.rdata = rdata;
 }
 
-void parse_rdata_a(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
+void parse_rdata_a(ResourceRecord& rr, ParseContext& ctx) {
 	Record_A rdata;
-	stream >> rdata;
+	ctx.stream >> rdata;
 	rr.rdata = rdata;
 }
 
-void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
+void parse_rdata_aaaa(ResourceRecord& rr, ParseContext& ctx) {
 	Record_AAAA rdata;
-	stream >> rdata.ip;
+	ctx.stream >> rdata.ip;
 	rr.rdata = rdata;
 }
 
-void parse_rdata_cname(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_cname(ResourceRecord& rr, ParseContext& ctx) {
 	Record_CNAME rdata;
-	rdata.cname = labels_to_name(parse_labels(labels, stream));
+	auto labels = parse_labels(ctx);
+	rdata.cname = labels_to_name(labels);
 	rr.rdata = rdata;
 }
 
-void parse_rdata_srv(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_srv(ResourceRecord& rr, ParseContext& ctx) {
 	Record_SRV rdata;
-	stream >> rdata.priority;
-	stream >> rdata.weight;
-	stream >> rdata.port;
-	rdata.target = labels_to_name(parse_labels(labels, stream));
+	ctx.stream >> rdata.priority;
+	ctx.stream >> rdata.weight;
+	ctx.stream >> rdata.port;
+	auto labels = parse_labels(ctx);
+	rdata.target = labels_to_name(labels);
 	be::big_to_native_inplace(rdata.priority);
 	be::big_to_native_inplace(rdata.weight);
 	be::big_to_native_inplace(rdata.port);
 	rr.rdata = rdata;
 }
 
-void parse_rdata_uri(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_uri(ResourceRecord& rr, ParseContext& ctx) {
 	Record_URI rdata;
-	stream >> rdata.priority;
-	stream >> rdata.weight;
-	rdata.target = labels_to_name(parse_labels(labels, stream));
+	ctx.stream >> rdata.priority;
+	ctx.stream >> rdata.weight;
+	auto labels = parse_labels(ctx);
+	rdata.target = labels_to_name(labels);
 	be::big_to_native_inplace(rdata.priority);
 	be::big_to_native_inplace(rdata.weight);
 	rr.rdata = rdata;
 }
 
-void parse_rdata_ptr(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_ptr(ResourceRecord& rr, ParseContext& ctx) {
 	Record_PTR rdata;
-	rdata.ptrdname = labels_to_name(parse_labels(labels, stream));
+	auto labels = parse_labels(ctx);
+	rdata.ptrdname = labels_to_name(labels);
 	rr.rdata = rdata;
 }
 
-void parse_rdata_txt(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
+void parse_rdata_txt(ResourceRecord& rr, ParseContext& ctx) {
 	Record_TXT rdata;
 	std::uint16_t remaining = rr.rdata_len;
 	
 	while(remaining) {
 		std::uint8_t length;
-		stream >> length;
+		ctx.stream >> length;
 		std::string data;
 		data.resize(length);
-		stream.get(data, length);
+		ctx.stream.get(data, length);
 		rdata.txt.emplace_back(data);
 		remaining -= length + 1;
 	}
@@ -359,23 +408,26 @@ void parse_rdata_txt(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
 	rr.rdata = rdata;
 }
 
-void parse_rdata_mx(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_mx(ResourceRecord& rr, ParseContext& ctx) {
 	Record_MX rdata;
-	stream >> rdata.preference;
+	ctx.stream >> rdata.preference;
 	be::big_to_native_inplace(rdata.preference);
-	rdata.exchange = labels_to_name(parse_labels(labels, stream));
+	auto labels = parse_labels(ctx);
+	rdata.exchange = labels_to_name(labels);
 	rr.rdata = rdata;
 }
 
-void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_rdata_soa(ResourceRecord& rr, ParseContext& ctx) {
 	Record_SOA rdata;
-	rdata.mname = labels_to_name(parse_labels(labels, stream));
-	rdata.rname = labels_to_name(parse_labels(labels, stream));
-	stream >> rdata.serial;
-	stream >> rdata.refresh;
-	stream >> rdata.retry;
-	stream >> rdata.expire;
-	stream >> rdata.minimum;
+	auto labels = parse_labels(ctx);
+	rdata.mname = labels_to_name(labels);
+	labels = parse_labels(ctx);
+	rdata.rname = labels_to_name(labels);
+	ctx.stream >> rdata.serial;
+	ctx.stream >> rdata.refresh;
+	ctx.stream >> rdata.retry;
+	ctx.stream >> rdata.expire;
+	ctx.stream >> rdata.minimum;
 
 	be::big_to_native_inplace(rdata.serial);
 	be::big_to_native_inplace(rdata.refresh);
@@ -386,21 +438,21 @@ void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinarySt
 	rr.rdata = std::move(rdata);
 }
 
-void parse_records(Query& query, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+void parse_records(Query& query, ParseContext& ctx) {
 	for(auto i = 0u; i < query.header.questions; ++i) {
-		query.questions.emplace_back(std::move(parse_question(labels, stream)));
+		query.questions.emplace_back(std::move(parse_question(ctx)));
 	}
 
 	for(auto i = 0u; i < query.header.answers; ++i) {
-		query.answers.emplace_back(std::move(parse_resource_record(labels, stream)));
+		query.answers.emplace_back(std::move(parse_resource_record(ctx)));
 	}
 
 	for(auto i = 0u; i < query.header.authority_rrs; ++i) {
-		query.authorities.emplace_back(std::move(parse_resource_record(labels, stream)));
+		query.authorities.emplace_back(std::move(parse_resource_record(ctx)));
 	}
 
 	for(auto i = 0u; i < query.header.additional_rrs; ++i) {
-		query.additional.emplace_back(std::move(parse_resource_record(labels, stream)));
+		query.additional.emplace_back(std::move(parse_resource_record(ctx)));
 	}
 }
 

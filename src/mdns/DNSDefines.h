@@ -242,7 +242,7 @@ struct Answer {
 
 struct QMeta {
 	bool accepts_unicast_response;
-	std::vector<std::string> labels;
+	std::vector<std::string_view> labels;
 };
 
 struct Question {

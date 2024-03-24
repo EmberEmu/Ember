@@ -16,6 +16,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <map>
 #include <unordered_map>
 #include <utility>
 #include <cstddef>
@@ -31,31 +32,35 @@ smart_enum_class(Result, std::uint8_t,
 
 namespace detail {
 
-using Labels = std::unordered_map<std::uint16_t, std::string>;
 using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
-// deserialisation
-std::string parse_label_notation(spark::BinaryStreamReader& stream);
-void parse_header(Query& query, spark::BinaryStreamReader& stream);
-Question parse_question(Labels& labels, spark::BinaryStreamReader& stream);
-std::vector<std::string> parse_labels(Labels& labels, spark::BinaryStreamReader& stream);
-ResourceRecord parse_resource_record(Labels& labels, spark::BinaryStreamReader& stream);
-void parse_records(Query& query, Labels& labels, spark::BinaryStreamReader& stream);
-Flags decode_flags(std::uint16_t flags);
-std::string labels_to_name(std::span<const std::string> labels);
+struct ParseContext {
+	std::span<const std::uint8_t> buffer;
+	spark::BinaryStreamReader& stream;
+};
 
-void parse_rdata_a(ResourceRecord& rr, spark::BinaryStreamReader& stream);
-void parse_rdata_txt(ResourceRecord& rr, spark::BinaryStreamReader& stream);
-void parse_rdata_aaaa(ResourceRecord& rr, spark::BinaryStreamReader& stream);
-void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryStreamReader& stream);
-void parse_rdata_ptr(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata_mx(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata_uri(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata_srv(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata_cname(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
-void parse_rdata_nsec(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
+// deserialisation
+std::string parse_label_notation(std::span<const std::uint8_t> buffer);
+void parse_header(Query& query, spark::BinaryStreamReader& stream);
+Question parse_question(ParseContext& ctx);
+std::vector<std::string_view> parse_labels(ParseContext& ctx);
+ResourceRecord parse_resource_record(ParseContext& ctx);
+void parse_records(Query& query, ParseContext& ctx);
+Flags decode_flags(std::uint16_t flags);
+std::string labels_to_name(std::span<std::string_view> labels);
+
+void parse_rdata_a(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_txt(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_aaaa(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_hinfo(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_ptr(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_soa(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_mx(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_uri(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_srv(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_cname(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx);
 
 // serialisation
 void write_header(const Query& query, spark::BinaryStream& stream);
@@ -71,4 +76,4 @@ std::uint16_t encode_flags(Flags flags);
 std::expected<Query, Result> deserialise(std::span<const std::uint8_t> buffer);
 void serialise(const Query& query, spark::BinaryStream& stream);
 
-} // parsing, dns, ember
+} // parser, dns, ember
