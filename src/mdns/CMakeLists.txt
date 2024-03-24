@@ -16,6 +16,7 @@ set(LIBRARY_HDR
     DNSDefines.h
     Handler.h
     RequestHandler.h
+	Utility.h
     )
 
 set(LIBRARY_SRC
@@ -24,6 +25,7 @@ set(LIBRARY_SRC
     Parser.cpp
     Server.cpp
     RequestHandler.cpp
+	Utility.cpp
     )
 
 

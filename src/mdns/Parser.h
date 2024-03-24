@@ -55,6 +55,7 @@ void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStream
 void parse_rdata_uri(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
 void parse_rdata_srv(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
 void parse_rdata_cname(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
+void parse_rdata_nsec(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream);
 
 // serialisation
 void write_header(const Query& query, spark::BinaryStream& stream);

@@ -72,7 +72,7 @@ std::uint16_t encode_flags(const Flags flags) {
 	encoded |= flags.tc << TC_OFFSET;
 	encoded |= flags.rd << RD_OFFSET;
 	encoded |= flags.ra << RA_OFFSET;
-	encoded |= flags.z << Z_OFFSET;
+	encoded |= flags.z  << Z_OFFSET;
 	encoded |= flags.ad << AD_OFFSET;
 	encoded |= flags.cd << CD_OFFSET;
 	encoded |= static_cast<std::uint8_t>(flags.rcode) << RCODE_OFFSET;
@@ -260,11 +260,23 @@ void parse_rdata(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStream
 		case RecordType::HINFO:
 			parse_rdata_hinfo(rr, stream);
 			break;
+		case RecordType::NSEC:
+			parse_rdata_nsec(rr, labels, stream);
+			break;
 		default:
 			throw Result::UNHANDLED_RDATA;
 	}
 } catch(spark::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
+}
+
+void parse_rdata_nsec(ResourceRecord& rr, detail::Labels& labels, spark::BinaryStreamReader& stream) {
+	Record_NSEC rdata;
+	rdata.next_domain = labels_to_name(parse_labels(labels, stream));
+	std::uint16_t bitmap_len = 0;
+	stream >> bitmap_len;
+	be::big_to_native_inplace(bitmap_len);
+	stream.skip(bitmap_len); // don't care about this for now
 }
 
 void parse_rdata_hinfo(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
@@ -375,7 +387,7 @@ void parse_rdata_soa(ResourceRecord& rr, detail::Labels& labels, spark::BinarySt
 	be::big_to_native_inplace(rdata.expire);
 	be::big_to_native_inplace(rdata.minimum);
 
-	rr.rdata = rdata;
+	rr.rdata = std::move(rdata);
 }
 
 void parse_records(Query& query, detail::Labels& labels, spark::BinaryStreamReader& stream) {

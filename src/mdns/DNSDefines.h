@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ namespace ember::dns {
  * so fragmentation may occur before hitting these
  * limits.
  */
-constexpr auto UDP_HDR_SIZE = 8u;
+constexpr auto UDP_HDR_SIZE  = 8u;
 constexpr auto IPV4_HDR_SIZE = 20u;
 constexpr auto IPV6_HDR_SIZE = 40u;
 
@@ -35,7 +35,6 @@ constexpr auto IPV6_HDR_SIZE = 40u;
 constexpr auto MAX_DGRAM_LEN = 9000;
 constexpr auto MAX_DGRAM_PAYLOAD_IPV4 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV4_HDR_SIZE);
 constexpr auto MAX_DGRAM_PAYLOAD_IPV6 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV6_HDR_SIZE);
-
 
 struct Srv;
 struct Txt;
@@ -323,6 +322,11 @@ struct Record_SOA {
 	std::uint32_t minimum;
 };
 
+struct Record_NSEC {
+	std::string next_domain;
+	std::vector<RecordType> bitmap;
+};
+
 struct ResourceRecord {
 	std::string name;
 	RecordType type;
@@ -335,7 +339,7 @@ struct ResourceRecord {
 		Record_TXT, Record_MX,
 		Record_SOA, Record_URI,
 		Record_SRV, Record_CNAME,
-		Record_HINFO
+		Record_HINFO, Record_NSEC
 	> rdata;
 };
 

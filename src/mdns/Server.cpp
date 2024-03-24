@@ -9,6 +9,7 @@
 #include "Server.h"
 #include "Socket.h"
 #include "Parser.h"
+#include "Utility.h"
 #include <shared/util/FormatPacket.h>
 #include <iostream>
 
@@ -31,16 +32,17 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
 
 	const auto result = parser::deserialise(datagram);
-
 	if(!result) {
 		LOG_WARN(logger_) << "DNS query deserialising failed: " << to_string(result.error()) << LOG_ASYNC;
 		return;
 	}
 
+	LOG_TRACE(logger_) << to_string(result.value()) << LOG_ASYNC;
+
 	if(result->header.flags.qr == 0) {
-		handle_question(*result);
+		handle_question(result.value());
 	} else {
-		handle_response(*result);
+		handle_response(result.value());
 	}
 }
 
@@ -113,47 +115,5 @@ void Server::shutdown() {
 	// todo, broadcast withdrawal of services?
 	socket_->close();
 }
-
-//void print_record(log::Logger& logger, const ResourceRecord& record) {
-//	logger << record.name;
-//	logger << record.rdata_len;
-//	logger << to_string(record.resource_class);
-//	logger << record.ttl;
-//	logger << to_string(record.type) << "\n";
-//}
-//
-//log::Logger& operator<<(log::Logger& logger, const Query& query) {
-//	logger << "Query information: \n";
-//	logger << "Sequence: " << query.header.id << "\n";
-//	logger << "Flags: " << to_string(query.header.flags.opcode) << "\n";
-//
-//	logger << "[questions]\n";
-//
-//	for (auto& question : query.questions) {
-//		logger << question.name << ", " << to_string(question.type)
-//			<< ", " << to_string(question.rclass) << "\n";
-//	}
-//
-//	logger << "[answers]\n";
-//
-//	for (auto& answer : query.answers) {
-//		print_record(logger, answer);
-//	}
-//
-//	logger << "[authorities]\n";
-//
-//	for (auto& answer : query.authorities) {
-//		print_record(logger, answer);
-//	}
-//
-//	logger << "[additional]\n";
-//
-//	for (auto& answer : query.additional) {
-//		print_record(logger, answer);
-//	}
-//
-//	return logger;
-//}
-
 
 } // dns, ember
