@@ -29,28 +29,28 @@ std::string to_string(const Query& query) {
 	stream << "Sequence: " << query.header.id << '\n';
 	stream << "Flags: " << to_string(query.header.flags.opcode) << '\n';
 
-	stream << std::format("[questions:{}]\n", query.questions.size());
+	stream << std::format("[questions][{}]\n", query.questions.size());
 
 	for(auto& question : query.questions) {
 		stream << question.name << ", " << to_string(question.type)
 			<< ", " << to_string(question.cc) << '\n';
 	}
 
-	stream << std::format("[answers:{}]\n", query.answers.size());
+	stream << std::format("[answers][{}]\n", query.answers.size());
 
 	for(auto& answer : query.answers) {
 		stream << "[record]" << '\n';
 		stream << to_string(answer) << '\n';
 	}
 
-	stream << std::format("[authorities:{}]\n", query.authorities.size());
+	stream << std::format("[authorities][{}]\n", query.authorities.size());
 
 	for(auto& answer : query.authorities) {
 		stream << "[record]" << '\n';
 		stream << to_string(answer) << '\n';
 	}
 
-	stream << std::format("[additional:{}]\n", query.additional.size());
+	stream << std::format("[additional][{}]\n", query.additional.size());
 
 	for(auto& answer : query.additional) {
 		stream << "[record]" << '\n';

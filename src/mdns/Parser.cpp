@@ -343,21 +343,17 @@ void parse_rdata_ptr(ResourceRecord& rr, detail::Labels& labels, spark::BinarySt
 }
 
 void parse_rdata_txt(ResourceRecord& rr, spark::BinaryStreamReader& stream) {
-	// read the entire rdata into a single buffer rather than piecemeal
-	// from the main stream - makes the logic slightly cleaner
-	std::vector<std::uint8_t> rdbytes(rr.rdata_len);
-	stream.get(rdbytes.data(), rdbytes.size());
-	spark::BufferReadAdaptor buffadap(rdbytes);
-	spark::BinaryStreamReader rdstream(buffadap);
 	Record_TXT rdata;
+	std::uint16_t remaining = rr.rdata_len;
 	
-	while(!rdstream.empty()) {
+	while(remaining) {
 		std::uint8_t length;
-		rdstream >> length;
+		stream >> length;
 		std::string data;
 		data.resize(length);
-		rdstream.get(data, length);
+		stream.get(data, length);
 		rdata.txt.emplace_back(data);
+		remaining -= length + 1;
 	}
 
 	rr.rdata = rdata;
