@@ -11,13 +11,13 @@
 #include "DNSDefines.h"
 #include <spark/buffers/BinaryStream.h>
 #include <shared/smartenum.hpp>
+#include <expected>
 #include <vector>
 #include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
-#include <optional>
 #include <cstddef>
 
 namespace ember::dns::parser {
@@ -67,7 +67,7 @@ std::uint16_t encode_flags(Flags flags);
 
 } // detail
 
-std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t> buffer);
+std::expected<Query, Result> deserialise(std::span<const std::uint8_t> buffer);
 void serialise(const Query& query, spark::BinaryStream& stream);
 
 } // parsing, dns, ember

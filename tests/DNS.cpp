@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,11 +17,11 @@ constexpr auto DNS_HEADER_SIZE = 12u;
 constexpr auto DNS_MAX_PAYLOAD_SIZE = 9000u; // should include UDP & IPvx headers
 
 // random real-world multicast query
-constexpr std::array<std::uint8_t, 40> valid_query
-{
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0B, 0x5F, 0x67, 0x6F,
-	0x6F, 0x67, 0x6C, 0x65, 0x63, 0x61, 0x73, 0x74, 0x04, 0x5F, 0x74, 0x63, 0x70, 0x05, 0x6C, 0x6F,
-	0x63, 0x61, 0x6C, 0x00, 0x00, 0x0C, 0x00, 0x01
+constexpr std::array<std::uint8_t, 40> valid_query {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x0B, 0x5F, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x04, 0x5F, 0x74, 0x63, 0x70, 0x05,
+	0x6C, 0x6F, 0x63, 0x61, 0x6C, 0x00, 0x00, 0x0C, 0x00, 0x01
 };
 
 // flags  layout
@@ -86,32 +86,31 @@ TEST(DNSParser, FlagsRoundtrip) {
 
 // deserialise a random real-world mdns query
 TEST(DNSParser, DeserialiseQuery) {
-	const auto [res, query] = dns::parser::deserialise(valid_query);
-	EXPECT_EQ(res, dns::parser::Result::OK);
-	EXPECT_TRUE(query);
+	const auto result = dns::parser::deserialise(valid_query);
+	EXPECT_TRUE(result);
 
 	// todo, check header
-	EXPECT_EQ(query->questions.size(), 1);
-	EXPECT_EQ(query->additional.size(), 0);
-	EXPECT_EQ(query->answers.size(), 0);
-	EXPECT_EQ(query->authorities.size(), 0);
+	EXPECT_EQ(result->questions.size(), 1);
+	EXPECT_EQ(result->additional.size(), 0);
+	EXPECT_EQ(result->answers.size(), 0);
+	EXPECT_EQ(result->authorities.size(), 0);
 
 	// check question
-	EXPECT_EQ(query->questions[0].name, "_googlecast._tcp.local");
-	EXPECT_EQ(query->questions[0].cc, dns::Class::CLASS_IN);
-	EXPECT_EQ(query->questions[0].type, dns::RecordType::PTR);
+	EXPECT_EQ(result->questions[0].name, "_googlecast._tcp.local");
+	EXPECT_EQ(result->questions[0].cc, dns::Class::CLASS_IN);
+	EXPECT_EQ(result->questions[0].type, dns::RecordType::PTR);
 }
 
 // intentionally don't pass enough data for a valid header
 TEST(DNSParser, Parser_HeaderBounds) {
 	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
-	const auto [res, query] = dns::parser::deserialise({ header.data(), header.size() - 1 });
-	EXPECT_EQ(res, dns::parser::Result::HEADER_PARSE_ERROR);
+	const auto result = dns::parser::deserialise({ header.data(), header.size() - 1 });
+	EXPECT_EQ(result.error(), dns::parser::Result::HEADER_PARSE_ERROR);
 }
 
 // intentionally pass too much data for a valid payload
 TEST(DNSParser, Parser_PayloadBounds) {
 	constexpr std::array<std::uint8_t, DNS_MAX_PAYLOAD_SIZE + 1> payload { 0 };
-	const auto [res, query] = dns::parser::deserialise(payload);
-	EXPECT_EQ(res, dns::parser::Result::PAYLOAD_TOO_LARGE);
+	const auto result = dns::parser::deserialise(payload);
+	EXPECT_EQ(result.error(), dns::parser::Result::PAYLOAD_TOO_LARGE);
 }

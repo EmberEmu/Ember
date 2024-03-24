@@ -1,5 +1,5 @@
  /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,21 +30,17 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 	// todo: temp
 	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
 
-	const auto [result, query] = parser::deserialise(datagram);
+	const auto result = parser::deserialise(datagram);
 
-	if(result != parser::Result::OK) {
-		LOG_WARN(logger_) << "DNS query deserialising failed: " << to_string(result) << LOG_ASYNC;
-		return;
-	} else if(!query) {
-		LOG_ERROR(logger_) << "Deserialising succeeded but nullopt encountered" << LOG_ASYNC;
+	if(!result) {
+		LOG_WARN(logger_) << "DNS query deserialising failed: " << to_string(result.error()) << LOG_ASYNC;
 		return;
 	}
 
-	if(query->header.flags.qr == 0) {
-		handle_question(*query);
-	}
-	else {
-		handle_response(*query);
+	if(result->header.flags.qr == 0) {
+		handle_question(*result);
+	} else {
+		handle_response(*result);
 	}
 }
 
@@ -53,7 +49,7 @@ void Server::handle_question(const Query& query) {
 
 	LOG_WARN_GLOB << query.questions.size() << LOG_SYNC;
 
-	for(auto query : query.questions) {
+	for(const auto& query : query.questions) {
 		LOG_WARN_GLOB << query.name << LOG_SYNC;
 		LOG_WARN_GLOB << to_string(query.cc) << LOG_SYNC;
 		LOG_WARN_GLOB << to_string(query.type) << LOG_SYNC;

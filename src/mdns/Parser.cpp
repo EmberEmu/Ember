@@ -16,9 +16,9 @@ namespace be = boost::endian;
 
 namespace ember::dns::parser {
 
-std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t> buffer) try {
+std::expected<Query, Result> deserialise(std::span<const std::uint8_t> buffer) try {
 	if(buffer.size() > MAX_DGRAM_LEN) {
-		return { Result::PAYLOAD_TOO_LARGE, std::nullopt };
+		return std::unexpected(Result::PAYLOAD_TOO_LARGE);
 	}
 
 	spark::BufferReadAdaptor adaptor(buffer);
@@ -31,12 +31,12 @@ std::pair<Result, std::optional<Query>> deserialise(std::span<const std::uint8_t
 	detail::parse_records(query, labels, stream);
 
 	if(stream.state() != spark::StreamState::OK) {
-		return { Result::STREAM_ERROR, std::nullopt };
+		return std::unexpected(Result::STREAM_ERROR);
 	}
 
-	return { Result::OK, query };
+	return query;
 } catch(Result& r) {
-	return { r, std::nullopt };
+	return std::unexpected(r);
 }
 
 void serialise(const Query& query, spark::BinaryStream& stream) {
