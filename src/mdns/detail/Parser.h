@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "DNSDefines.h"
+#include "../DNSDefines.h"
 #include <spark/buffers/BinaryStream.h>
 #include <shared/smartenum.hpp>
 #include <expected>
@@ -29,8 +29,6 @@ smart_enum_class(Result, std::uint8_t,
 	RR_PARSE_ERROR, QUESTION_PARSE_ERROR, HEADER_PARSE_ERROR, LABEL_PARSE_ERROR,
 	UNHANDLED_RDATA
 );
-
-namespace detail {
 
 using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
@@ -69,11 +67,6 @@ std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream);
 void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs, spark::BinaryStream& stream);
 void write_resource_records(const Query& query, const Pointers& ptrs, spark::BinaryStream& stream);
 void write_label_notation(std::string_view name, spark::BinaryStream& stream);
-std::uint16_t encode_flags(Flags flags);
-
-} // detail
-
-std::expected<Query, Result> deserialise(std::span<const std::uint8_t> buffer);
-void serialise(const Query& query, spark::BinaryStream& stream);
+std::uint16_t encode_flags(const Flags& flags);
 
 } // parser, dns, ember

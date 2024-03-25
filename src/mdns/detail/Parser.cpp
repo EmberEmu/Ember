@@ -16,43 +16,8 @@ namespace be = boost::endian;
 
 namespace ember::dns::parser {
 
-std::expected<Query, Result> deserialise(std::span<const std::uint8_t> buffer) try {
-	if(buffer.size() > MAX_DGRAM_LEN) {
-		return std::unexpected(Result::PAYLOAD_TOO_LARGE);
-	}
-
-	spark::BufferReadAdaptor adaptor(buffer);
-	spark::BinaryStreamReader stream(adaptor);
-
-	Query query;
-
-	detail::ParseContext ctx {
-		.buffer = buffer,
-		.stream = stream,
-	};
-
-	detail::parse_header(query, stream);
-	detail::parse_records(query, ctx);
-
-	if(stream.state() != spark::StreamState::OK) {
-		return std::unexpected(Result::STREAM_ERROR);
-	}
-
-	return query;
-} catch(Result& r) {
-	return std::unexpected(r);
-}
-
-void serialise(const Query& query, spark::BinaryStream& stream) {
-	detail::write_header(query, stream);
-	const auto ptrs = detail::write_questions(query, stream);
-	detail::write_resource_records(query, ptrs, stream);
-}
-
-namespace detail {
-
 Flags decode_flags(const std::uint16_t flags) {
-	const Flags parsed {
+	const Flags parsed{
 		.qr = (flags & QR_MASK) >> QR_OFFSET,
 		.opcode = static_cast<Opcode>((flags & OPCODE_MASK) >> OPCODE_OFFSET),
 		.aa = (flags & AA_MASK) >> AA_OFFSET,
@@ -65,10 +30,10 @@ Flags decode_flags(const std::uint16_t flags) {
 		.rcode = static_cast<ReplyCode>((flags & RCODE_MASK) >> RCODE_OFFSET)
 	};
 
-    return parsed;
+	return parsed;
 }
 
-std::uint16_t encode_flags(const Flags flags) {
+std::uint16_t encode_flags(const Flags& flags) {
 	std::uint16_t encoded = 0;
 	encoded |= flags.qr << QR_OFFSET;
 	encoded |= static_cast<std::uint8_t>(flags.opcode) << OPCODE_OFFSET;
@@ -76,7 +41,7 @@ std::uint16_t encode_flags(const Flags flags) {
 	encoded |= flags.tc << TC_OFFSET;
 	encoded |= flags.rd << RD_OFFSET;
 	encoded |= flags.ra << RA_OFFSET;
-	encoded |= flags.z  << Z_OFFSET;
+	encoded |= flags.z << Z_OFFSET;
 	encoded |= flags.ad << AD_OFFSET;
 	encoded |= flags.cd << CD_OFFSET;
 	encoded |= static_cast<std::uint8_t>(flags.rcode) << RCODE_OFFSET;
@@ -193,7 +158,7 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 
 			const auto len = buffer[ptr++];
 
-			if(ptr + len >= buffer.size_bytes() ) {
+			if(ptr + len >= buffer.size_bytes()) {
 				throw Result::BAD_NAME_OFFSET;
 			}
 
@@ -260,7 +225,7 @@ ResourceRecord parse_resource_record(ParseContext& ctx) try {
 	be::big_to_native_inplace(record.rdata_len);
 
 	// handle unicast response flag
-	if (rc & UNICAST_RESP_MASK) {
+	if(rc & UNICAST_RESP_MASK) {
 		rc ^= UNICAST_RESP_MASK; // todo, add metadata for this?
 	}
 
@@ -326,7 +291,7 @@ void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx) {
 
 void parse_rdata_hinfo(ResourceRecord& rr, ParseContext& ctx) {
 	Record_HINFO rdata;
-	
+
 	// cpu
 	std::uint8_t strlen = 0;
 	ctx.stream >> strlen;
@@ -394,7 +359,7 @@ void parse_rdata_ptr(ResourceRecord& rr, ParseContext& ctx) {
 void parse_rdata_txt(ResourceRecord& rr, ParseContext& ctx) {
 	Record_TXT rdata;
 	std::uint16_t remaining = rr.rdata_len;
-	
+
 	while(remaining) {
 		std::uint8_t length;
 		ctx.stream >> length;
@@ -494,8 +459,8 @@ std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream) {
 	return stream.total_write() - write;
 }
 
-void write_resource_record(const ResourceRecord& rr, const detail::Pointers& ptrs,
-                           spark::BinaryStream& stream) {
+void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
+						   spark::BinaryStream& stream) {
 	auto it = ptrs.find(rr.name);
 
 	/*
@@ -531,7 +496,7 @@ void write_resource_record(const ResourceRecord& rr, const detail::Pointers& ptr
 	if(!stream.can_write_seek()) {
 		// todo
 	}
-	
+
 	const auto seek = stream.total_write();
 	stream << std::uint16_t(0);
 	const auto rdata_len = write_rdata(rr, stream);
@@ -541,8 +506,8 @@ void write_resource_record(const ResourceRecord& rr, const detail::Pointers& ptr
 	stream.write_seek(spark::SeekDir::SD_START, new_seek);
 }
 
-void write_resource_records(const Query& query, const detail::Pointers& ptrs,
-                            spark::BinaryStream& stream) {
+void write_resource_records(const Query& query, const Pointers& ptrs,
+							spark::BinaryStream& stream) {
 	for(auto& rr : query.answers) {
 		write_resource_record(rr, ptrs, stream);
 	}
@@ -583,7 +548,5 @@ void write_label_notation(std::string_view name, spark::BinaryStream& stream) {
 
 	stream << '\0';
 }
-
-} // detail
 
 } // parser, dns, ember

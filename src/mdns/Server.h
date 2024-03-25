@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,13 +9,13 @@
 #pragma once
 
 #include "Handler.h"
-#include "Parser.h"
 #include <logger/Logging.h>
 #include <memory>
 
 namespace ember::dns {
 
 class Socket;
+struct Query;
 
 class Server final : public Handler {
     std::unique_ptr<Socket> socket_;

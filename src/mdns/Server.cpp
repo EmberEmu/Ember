@@ -8,10 +8,10 @@
 
 #include "Server.h"
 #include "Socket.h"
-#include "Parser.h"
+#include "Serialisation.h"
 #include "Utility.h"
+#include <spark/buffers/BufferAdaptor.h>
 #include <shared/util/FormatPacket.h>
-#include <iostream>
 
 namespace ember::dns {
 
@@ -28,10 +28,8 @@ Server::~Server() {
 void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// todo: temp
-	std::cout << util::format_packet(datagram.data(), datagram.size()) << "\n";
+	const auto result = deserialise(datagram);
 
-	const auto result = parser::deserialise(datagram);
 	if(!result) {
 		LOG_WARN(logger_)
 			<< "DNS query deserialising failed: "
@@ -52,30 +50,27 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 void Server::handle_question(const Query& query) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	LOG_WARN_GLOB << query.questions.size() << LOG_SYNC;
+	Query out{};
+	out.questions = query.questions;
+	out.header.questions = query.header.questions;
+	out.header.id = query.header.id;
+	out.header.flags.opcode = Opcode::STANDARD_QUERY;
+	out.header.flags.rcode = ReplyCode::REPLY_NO_ERROR;
+	out.header.flags.qr = 1;
 
-	for(const auto& query : query.questions) {
-		LOG_WARN_GLOB << query.name << LOG_SYNC;
-		LOG_WARN_GLOB << to_string(query.cc) << LOG_SYNC;
-		LOG_WARN_GLOB << to_string(query.type) << LOG_SYNC;
+	if(query.header.answers || query.header.additional_rrs || query.header.authority_rrs) {
+		out.header.flags.rcode = ReplyCode::FORMAT_ERROR;
 	}
 
-	//Query out{};
-	//out.questions = query.questions;
-	//out.header.questions = query.header.questions;
-	//out.header.id = query.header.id;
-	//out.header.flags.opcode = Opcode::STANDARD_QUERY;
-	//out.header.flags.reply_code = ReplyCode::REPLY_NO_ERROR;
-	//out.header.flags.response = 1;
+	if(!query.header.questions) {
+		// ?
+	}
 
-	//if (query.header.answers || query.header.additional || query.header.authorities) {
-	//	out.header.flags.reply_code = ReplyCode::FORMAT_ERROR;
-	//	return out;
-	//}
-
-	//if (!query.header.questions) {
-	//	return out;
-	//}
+	//auto buffer = std::make_unique<std::vector<std::uint8_t>>();
+	//spark::BufferAdaptor adaptor(*buffer);
+	//spark::BinaryStream stream(adaptor);
+	//parser::serialise(query, stream);
+	//socket_->send(std::move(buffer));
 
 	//for (auto& question : query.questions) {
 	//	auto it = records_.find({ question.type, question.name });

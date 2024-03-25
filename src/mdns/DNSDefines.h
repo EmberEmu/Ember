@@ -36,12 +36,6 @@ constexpr auto MAX_DGRAM_LEN = 9000;
 constexpr auto MAX_DGRAM_PAYLOAD_IPV4 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV4_HDR_SIZE);
 constexpr auto MAX_DGRAM_PAYLOAD_IPV6 = MAX_DGRAM_LEN - (UDP_HDR_SIZE + IPV6_HDR_SIZE);
 
-struct Srv;
-struct Txt;
-struct Ptr;
-
-using RecordData = std::variant<Ptr, Srv, Txt>;
-
 constexpr auto DNS_HDR_SIZE = 12;
 
 constexpr auto QR_OFFSET     = 0;
@@ -174,27 +168,6 @@ smart_enum_class(Class, std::uint16_t,
 	CLASS_ANY = 255
 )
 
-struct Ptr {
-
-};
-
-struct Txt { 
-    std::string key;
-    std::string value;
-};
-
-struct Srv {
-    std::string service;
-    std::string protocol;
-    std::string name;
-    std::uint32_t ttl;
-	Class ccode;
-    std::uint16_t priority;
-    std::uint16_t weight;
-    std::uint16_t port;
-    std::string host;
-};
-
 smart_enum_class(Opcode, std::uint16_t,
 	STANDARD_QUERY, IQUERY, STATUS
 )
@@ -211,12 +184,12 @@ smart_enum_class(ReplyCode, std::uint16_t,
 */
 struct Flags {
 	std::int32_t qr; // response
-	Opcode opcode; // opcode
+	Opcode opcode;   // opcode
 	std::int32_t aa; // authoritative
 	std::int32_t tc; // truncated
 	std::int32_t rd; // recursion_desired
 	std::int32_t ra; // recursion_available
-	std::int32_t z; // reserved
+	std::int32_t z;  // reserved
 	std::int32_t ad; // answer_authenticated
 	std::int32_t cd; // non_auth_unacceptable
 	ReplyCode rcode; // reply_code
@@ -229,15 +202,6 @@ struct Header {
 	std::uint16_t answers;
 	std::uint16_t authority_rrs;
 	std::uint16_t additional_rrs;
-};
-
-struct Answer {
-    std::string name;
-	RecordType type;
-	Class ccode;
-    std::uint32_t ttl;
-    std::uint16_t rdlen;
-    RecordData record;
 };
 
 struct QMeta {
@@ -327,20 +291,31 @@ struct Record_NSEC {
 	std::vector<RecordType> bitmap;
 };
 
+using RecordData = std::variant<
+	Record_A, Record_AAAA,
+	Record_Authority, Record_PTR,
+	Record_TXT, Record_MX,
+	Record_SOA, Record_URI,
+	Record_SRV, Record_CNAME,
+	Record_HINFO, Record_NSEC
+>;
+
 struct ResourceRecord {
 	std::string name;
 	RecordType type;
 	Class resource_class;
 	std::uint32_t ttl;
 	std::uint16_t rdata_len;
-	std::variant<
-		Record_A, Record_AAAA,
-		Record_Authority, Record_PTR,
-		Record_TXT, Record_MX,
-		Record_SOA, Record_URI,
-		Record_SRV, Record_CNAME,
-		Record_HINFO, Record_NSEC
-	> rdata;
+	RecordData rdata;
+};
+
+struct Answer {
+	std::string name;
+	RecordType type;
+	Class ccode;
+	std::uint32_t ttl;
+	std::uint16_t rdlen;
+	RecordData rdata;
 };
 
 struct Query {

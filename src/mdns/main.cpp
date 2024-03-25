@@ -7,7 +7,6 @@
  */
 
 #include "Server.h"
-#include "Parser.h"
 #include "MulticastSocket.h"
 #include "RequestHandler.h"
 #include <logger/Logging.h>

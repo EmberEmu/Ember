@@ -10,22 +10,24 @@ set(LIBRARY_NAME    libmdns)
 set(LIBRARY_HDR
     ServiceRegistry.h
     MulticastSocket.h
-    Parser.h
     Server.h
     Socket.h
     DNSDefines.h
     Handler.h
     RequestHandler.h
 	Utility.h
+	Serialisation.h
+	detail/Parser.h
     )
 
 set(LIBRARY_SRC
     ServiceRegistry.cpp
     MulticastSocket.cpp
-    Parser.cpp
     Server.cpp
     RequestHandler.cpp
 	Utility.cpp
+	Serialisation.cpp
+	detail/Parser.cpp
     )
 
 

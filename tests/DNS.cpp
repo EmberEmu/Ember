@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <mdns/Parser.h>
+#include <mdns/Serialisation.h>
 #include <gtest/gtest.h>
 #include <array>
 #include <cstdint>
@@ -54,7 +54,7 @@ TEST(DNSParser, FlagsEncode) {
 		.rcode = dns::ReplyCode::REFUSED
 	};
 	
-	const auto encoded = dns::parser::detail::encode_flags(flags);
+	const auto encoded = dns::parser::encode_flags(flags);
 	EXPECT_EQ(encoded, expected);
 }
 
@@ -62,7 +62,7 @@ TEST(DNSParser, FlagsEncode) {
 // structure output matches the input value
 TEST(DNSParser, FlagsDecode) {
 	const std::uint16_t flags = 0b0101'1'0'1'0'1'0'1'0001'1;
-	const auto decoded = dns::parser::detail::decode_flags(flags);
+	const auto decoded = dns::parser::decode_flags(flags);
 	EXPECT_EQ(decoded.qr, 1);
 	EXPECT_EQ(decoded.opcode, dns::Opcode::IQUERY);
 	EXPECT_EQ(decoded.aa, 1);
@@ -79,14 +79,14 @@ TEST(DNSParser, FlagsDecode) {
 // and encoded, producing the same set of flags at the end
 TEST(DNSParser, FlagsRoundtrip) {
 	const std::uint16_t flags = rand() % std::numeric_limits<std::uint16_t>::max();
-	const auto decoded = dns::parser::detail::decode_flags(flags);
-	const auto output = dns::parser::detail::encode_flags(decoded);
+	const auto decoded = dns::parser::decode_flags(flags);
+	const auto output = dns::parser::encode_flags(decoded);
 	EXPECT_EQ(flags, output) << "Header flags mismatch after decode -> encode round-trip";
 }
 
 // deserialise a random real-world mdns query
 TEST(DNSParser, DeserialiseQuery) {
-	const auto result = dns::parser::deserialise(valid_query);
+	const auto result = dns::deserialise(valid_query);
 	EXPECT_TRUE(result);
 
 	// todo, check header
@@ -104,13 +104,13 @@ TEST(DNSParser, DeserialiseQuery) {
 // intentionally don't pass enough data for a valid header
 TEST(DNSParser, Parser_HeaderBounds) {
 	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
-	const auto result = dns::parser::deserialise({ header.data(), header.size() - 1 });
+	const auto result = dns::deserialise({ header.data(), header.size() - 1 });
 	EXPECT_EQ(result.error(), dns::parser::Result::HEADER_PARSE_ERROR);
 }
 
 // intentionally pass too much data for a valid payload
 TEST(DNSParser, Parser_PayloadBounds) {
 	constexpr std::array<std::uint8_t, DNS_MAX_PAYLOAD_SIZE + 1> payload { 0 };
-	const auto result = dns::parser::deserialise(payload);
+	const auto result = dns::deserialise(payload);
 	EXPECT_EQ(result.error(), dns::parser::Result::PAYLOAD_TOO_LARGE);
 }
