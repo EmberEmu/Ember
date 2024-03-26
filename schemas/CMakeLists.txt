@@ -24,7 +24,7 @@ set(FLATC_ARGS "--gen-mutable" "--scoped-enums" "--schema" "-b" "--bfbs-comments
 build_flatbuffers("${FB_HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")
 
 set(SPARKC_BFBS_DIRS     ${CMAKE_BINARY_DIR})
-set(SPARKC_TARGET_NAME   SPARKC_SERVICE_COMPILE)
+set(SPARKC_TARGET_NAME   SPARK_RPC_GEN)
 set(CODE_OUTPUT_DIR      ${CMAKE_BINARY_DIR})
 set(FILE_LOG_VERBOSITY   info)
 

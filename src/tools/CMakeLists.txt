@@ -6,7 +6,7 @@
 
 add_subdirectory(dbcparser)
 add_subdirectory(dbutils)
-add_subdirectory(sparkc)
+add_subdirectory(rpcgen)
 
 if(BUILD_OPT_TOOLS)
     add_subdirectory(packetconvert)

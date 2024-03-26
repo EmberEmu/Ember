@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,19 +9,21 @@
 #pragma once
 
 #include "Printer.h"
+#include <filesystem>
+#include <span>
 #include <vector>
+#include <cstddef>
 #include <cstdint>
 
 namespace ember {
 
 class SchemaParser {
+	void verify(std::span<const std::uint8_t> buffer);
+	std::vector<std::uint8_t> load_file(const std::filesystem::path& path);
+
 public:
-	explicit SchemaParser(std::vector<std::uint8_t> buffer);
-
-private:
-	std::vector<std::uint8_t> buffer_;
-
-	void verify();
+	void generate(const std::filesystem::path& path);
+	void generate(std::span<const std::uint8_t> buffer);
 };
 
 } // ember
