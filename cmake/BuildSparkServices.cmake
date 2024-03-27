@@ -5,23 +5,32 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 function(build_spark_services
-         definition_dirs
+         service_schemas
+         template_dir
+         bfbs_dir
          output_dir
-         target_name
          fverbosity)
 
-    # concat the paths into a format usable by the tool
-    foreach(dir ${definition_dirs})
-        set(definition_dir_str \"${dir}\" ${definition_dir_str})
+    foreach(schema_path ${service_schemas})
+        cmake_path(GET schema_path FILENAME out)
+        cmake_path(REMOVE_EXTENSION out)
+        set(input_files ${input_files} ${bfbs_dir}/${out}.bfbs)
+        set(output_files ${output_files} ${output_dir}/${out}Service_generated.h)
+    endforeach()
+  
+	# concat the filenames into a format usable by the tool
+    foreach(filename ${input_files})
+        set(input_name_str \"${filename}\" ${input_name_str})
     endforeach()
 
+    set_source_files_properties(${${output_files}} PROPERTIES GENERATED TRUE)
+
     add_custom_command(
-        OUTPUT  "test.h"
-        COMMAND rpcgen -s "Test.bfbs" -o ${output_dir} --fverbosity ${fverbosity}
+		TARGET FB_SCHEMA_COMPILE
+        COMMAND rpcgen -t ${template_dir} -s ${input_name_str} -o ${output_dir} --fverbosity ${fverbosity}
         DEPENDS rpcgen
-        COMMENT "Generating Spark service stubs..."
+        COMMENT "Generating Spark RPC service stubs..."
     )
 
-    add_custom_target(${target_name} DEPENDS rpcgen ${additional_dependencies})
-
+    set(${output_files} ${${output_files}} PARENT_SCOPE)
 endfunction()

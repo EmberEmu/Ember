@@ -6,7 +6,12 @@
 
 set(FB_SCHEMA_TARGET_NAME FB_SCHEMA_COMPILE)
 
+set(SERVICE_SCHEMAS
+	${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Test.fbs
+)
+
 set(FB_SCHEMAS
+	${SERVICE_SCHEMAS}
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Services.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Account.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Character.fbs
@@ -15,7 +20,6 @@ set(FB_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Multicast.fbs
 
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/Spark.fbs
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/Test.fbs
 
     ${CMAKE_CURRENT_SOURCE_DIR}/packetlog/PacketLog.fbs
 )
@@ -23,9 +27,5 @@ set(FB_SCHEMAS
 set(FLATC_ARGS "--gen-mutable" "--scoped-enums" "--schema" "-b" "--bfbs-comments")
 build_flatbuffers("${FB_SCHEMAS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")
 
-set(SPARKC_BFBS_DIRS     ${CMAKE_BINARY_DIR})
-set(SPARKC_TARGET_NAME   SPARK_RPC_GEN)
-set(CODE_OUTPUT_DIR      ${CMAKE_BINARY_DIR})
-set(FILE_LOG_VERBOSITY   info)
-
-build_spark_services(${SPARKC_BFBS_DIRS} ${CODE_OUTPUT_DIR} ${SPARKC_TARGET_NAME} ${FILE_LOG_VERBOSITY})
+set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/src/tools/rpcgen/templates/)
+build_spark_services(${SERVICE_SCHEMAS} ${TEMPLATE_DIR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR} info)
