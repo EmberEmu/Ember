@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2021 Ember
+# Copyright (c) 2016 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,7 +6,7 @@
 
 set(FB_SCHEMA_TARGET_NAME FB_SCHEMA_COMPILE)
 
-set(FB_HEADERS
+set(FB_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Services.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Account.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/Character.fbs
@@ -21,7 +21,7 @@ set(FB_HEADERS
 )
 
 set(FLATC_ARGS "--gen-mutable" "--scoped-enums" "--schema" "-b" "--bfbs-comments")
-build_flatbuffers("${FB_HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")
+build_flatbuffers("${FB_SCHEMAS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")
 
 set(SPARKC_BFBS_DIRS     ${CMAKE_BINARY_DIR})
 set(SPARKC_TARGET_NAME   SPARK_RPC_GEN)

@@ -14,6 +14,7 @@ set(EXECUTABLE_SRC
     SchemaParser.cpp
     )
 
+include_directories(${CMAKE_SOURCE_DIR}/deps/nlohmann)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_link_libraries(${EXECUTABLE_NAME} logging shared ${Boost_LIBRARIES} ${flatbuffers})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)

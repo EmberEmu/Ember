@@ -34,8 +34,10 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const po::variables_map& args) try {
-	const auto& output = args["out"].as<std::string>();
-	ember::SchemaParser parser;
+	const auto& out_path = args["out"].as<std::string>();
+	const auto& tpl_path = args["tpl"].as<std::string>();
+
+	ember::SchemaParser parser(tpl_path, out_path);
 
 	for(const auto& schema : args["schemas"].as<std::vector<std::string>>()) {
 		LOG_INFO_GLOB << "Processing " << schema << LOG_SYNC;
@@ -68,6 +70,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	cmdline_opts.add_options()
 		("schemas,s", po::value<std::vector<std::string>>()->multitoken()->required(), ".fbsb schemas")
 		("out,o",     po::value<std::string>()->required(), "Output directory for generated code")
+		("tpl,t",     po::value<std::string>()->default_value("templates/"),
+			"Path to the templates")
 		("verbosity,v", po::value<std::string>()->default_value("info"),
 			"Logging verbosity")
 		("fverbosity", po::value<std::string>()->default_value("disabled"),

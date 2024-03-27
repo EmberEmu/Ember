@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Ember
+# Copyright (c) 2021 - 2024 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,11 +17,11 @@ function(build_spark_services
 
     add_custom_command(
         OUTPUT  "test.h"
-        COMMAND sparkc -s "Test.bfbs" -o ${output_dir} --fverbosity ${fverbosity}
-        DEPENDS sparkc
+        COMMAND rpcgen -s "Test.bfbs" -o ${output_dir} --fverbosity ${fverbosity}
+        DEPENDS rpcgen
         COMMENT "Generating Spark service stubs..."
     )
 
-    add_custom_target(${target_name} DEPENDS sparkc ${additional_dependencies})
+    add_custom_target(${target_name} DEPENDS rpcgen ${additional_dependencies})
 
 endfunction()

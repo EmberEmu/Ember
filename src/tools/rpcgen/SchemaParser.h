@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Printer.h"
+#include <flatbuffers/reflection_generated.h>
 #include <filesystem>
 #include <span>
 #include <vector>
@@ -18,10 +19,16 @@
 namespace ember {
 
 class SchemaParser {
+	std::filesystem::path tpl_path_;
+	std::filesystem::path out_path_;
+
 	void verify(std::span<const std::uint8_t> buffer);
 	std::vector<std::uint8_t> load_file(const std::filesystem::path& path);
+	void process(const reflection::Service* service);
 
 public:
+	SchemaParser(std::filesystem::path templates_dir, std::filesystem::path output_dir);
+
 	void generate(const std::filesystem::path& path);
 	void generate(std::span<const std::uint8_t> buffer);
 };

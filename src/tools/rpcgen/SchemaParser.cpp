@@ -7,13 +7,22 @@
  */
 
 #include "SchemaParser.h"
+#include "inja/inja.hpp"
 #include <flatbuffers/reflection.h>
-#include <flatbuffers/reflection_generated.h>
+#include <chrono>
+#include <format>
 #include <fstream>
 #include <stdexcept>
 #include <iostream>
 
+using namespace nlohmann;
+
 namespace ember {
+
+SchemaParser::SchemaParser(std::filesystem::path templates_dir, std::filesystem::path output_dir)
+	: tpl_path_(std::move(templates_dir)),
+      out_path_(std::move(output_dir)) {
+}
 
 void SchemaParser::verify(std::span<const std::uint8_t> buffer) {
 	flatbuffers::Verifier verifier(buffer.data(), buffer.size());
@@ -28,14 +37,14 @@ std::vector<std::uint8_t> SchemaParser::load_file(const std::filesystem::path& p
 	std::ifstream file(path, std::ios::in | std::ios::binary);
 
 	if(!file.is_open()) {
-		throw std::runtime_error("Unable to open binary schema (bfbs)");
+		throw std::runtime_error(std::format("Unable to open, {}", path.string()));
 	}
 
 	const auto size = std::filesystem::file_size(path);
 	buffer.resize(static_cast<std::size_t>(size));
 
 	if(!file.read(reinterpret_cast<char*>(buffer.data()), buffer.size())) {
-		throw std::runtime_error("Unable to read binary schema (bfbs)");
+		throw std::runtime_error(std::format("Unable to read, {}", path.string()));
 	}
 
 	return buffer;
@@ -43,15 +52,36 @@ std::vector<std::uint8_t> SchemaParser::load_file(const std::filesystem::path& p
 
 void SchemaParser::generate(const std::filesystem::path& path) {
 	const auto buffer = load_file(path);
-	verify(buffer);
+	generate(buffer);
 }
 
 void SchemaParser::generate(std::span<const std::uint8_t> buffer) {
 	verify(buffer);
 
-	auto& s = *reflection::GetSchema(buffer.data());
-	auto root_table = s.root_table();
-	std::cout << root_table->name()->c_str();
+	const auto& schema = *reflection::GetSchema(buffer.data());
+	const auto services = schema.services();
+
+	for(const auto& service : *services) {
+		process(service);
+	}
+}
+
+void SchemaParser::process(const reflection::Service* service) {
+	const auto time = std::chrono::system_clock::now();
+	const std::chrono::year_month_day date = std::chrono::floor<std::chrono::days>(time);
+
+	json data;
+	data["year"] = static_cast<int>(date.year());
+	data["name"] = service->calls()->begin()->name()->str();
+
+	inja::Environment env;
+	auto tpl = env.parse_template(tpl_path_.string() + "Service.h_");
+
+	const auto path = std::format(
+		"{}/{}Service.h", out_path_.string(), data["name"].get<std::string>()
+	);
+
+	env.write(tpl, data, path);
 }
 
 } // ember

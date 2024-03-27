@@ -140,8 +140,8 @@ include(GoogleTest)
 add_definitions(-DDB_MYSQL) #temporary!
 
 include_directories(${CMAKE_SOURCE_DIR}/deps)
-include(BuildDBCLoaders) # temp, maybe
-include(BuildSparkServices) # temp, maybe
+include(BuildDBCLoaders)
+include(BuildSparkServices)
 
 add_subdirectory(schemas)
 set(cmake_ctest_arguments "CTEST_OUTPUT_ON_FAILURE")
