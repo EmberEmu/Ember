@@ -116,10 +116,11 @@ std::string SchemaParser::to_cpp_ns(const std::string& val) {
 	for(auto it = result.begin(); it != result.end();) {
 		if(*it == '.') {
 			*it = ':';
-			result.insert(it, ':');
+			it = result.insert(it, ':');
+		} else {
+			++it;
 		}
 
-		++it;
 	}
 
 	return result;
