@@ -1,0 +1,60 @@
+/*
+ * Copyright (c) 2015 - 2024 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+namespace ember.messagingv2.account;
+
+enum DisconnectReason : ubyte {
+	ACCOUNT_SUSPENDED, ACCOUNT_BANNED, PLAYER_KICKED,
+	INTERNAL_LINK_LOST
+}
+
+enum Status : ubyte {
+	UNKNOWN_ERROR, OK, ILLFORMED_MESSAGE, ALREADY_LOGGED_IN, SESSION_NOT_FOUND
+}
+
+table Response {
+	status:Status;
+}
+
+table LookupID {
+	account_name:string;
+}
+
+table LookupIDResponse {
+	status:Status;
+	account_id:uint;
+}
+
+table RegisterSession {
+	account_id:uint;
+	key:[ubyte];
+}
+
+table SessionLookup {
+	account_id:uint;
+}
+
+table SessionResponse {
+	status:Status;
+	account_id:uint;
+	key:[ubyte];	
+}
+
+table DisconnectID {
+	account_id:uint;
+	reason:DisconnectReason;
+}
+
+table DisconnectSession {
+	session_key:[ubyte];
+	reason:DisconnectReason;
+}
+
+rpc_service Accountv2 {
+	SessionFetch(SessionLookup):SessionResponse;
+}

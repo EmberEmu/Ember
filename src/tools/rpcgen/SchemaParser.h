@@ -25,6 +25,9 @@ class SchemaParser {
 	void verify(std::span<const std::uint8_t> buffer);
 	std::vector<std::uint8_t> load_file(const std::filesystem::path& path);
 	void process(const reflection::Service* service);
+	std::string remove_namespace(const std::string& name);
+	std::string snake_case(const std::string& val);
+	std::string to_cpp_ns(const std::string& val);
 
 public:
 	SchemaParser(std::filesystem::path templates_dir, std::filesystem::path output_dir);

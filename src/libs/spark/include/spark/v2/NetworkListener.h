@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -41,10 +41,10 @@ class NetworkListener {
 
 				if(ec) {
 					LOG_DEBUG(logger_)
-						<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
+						<< "[spark] Aborted connection, remote peer disconnected" << LOG_ASYNC;
 				} else {
 					LOG_DEBUG(logger_)
-						<< "Accepted connection " << ep.address().to_string()
+						<< "[spark] Accepted connection " << ep.address().to_string()
 						<< ":" << ep.port() << LOG_ASYNC;
 
 					sock_acc_.accept(std::move(socket_));

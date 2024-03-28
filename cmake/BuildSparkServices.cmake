@@ -8,10 +8,10 @@ function(build_spark_services
          service_schemas
          template_dir
          bfbs_dir
-         output_dir
-         fverbosity)
+         output_dir)
 
     foreach(schema_path ${service_schemas})
+		message(${schema_path})
         cmake_path(GET schema_path FILENAME out)
         cmake_path(REMOVE_EXTENSION out)
         set(input_files ${input_files} ${bfbs_dir}/${out}.bfbs)
@@ -20,14 +20,14 @@ function(build_spark_services
   
 	# concat the filenames into a format usable by the tool
     foreach(filename ${input_files})
-        set(input_name_str \"${filename}\" ${input_name_str})
+        set(input_name_str "${filename}" ${input_name_str})
     endforeach()
 
     set_source_files_properties(${${output_files}} PROPERTIES GENERATED TRUE)
 
     add_custom_command(
 		TARGET FB_SCHEMA_COMPILE
-        COMMAND rpcgen -t ${template_dir} -s ${input_name_str} -o ${output_dir} --fverbosity ${fverbosity}
+        COMMAND rpcgen -t ${template_dir} -s ${input_name_str} -o ${output_dir}
         DEPENDS rpcgen
         COMMENT "Generating Spark RPC service stubs..."
     )

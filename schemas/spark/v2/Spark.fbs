@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,23 +20,19 @@ union Message {
 	Bye
 }
 
-table Service {
-	desc: string;
-	channel: int;
-}
-
 table Enumerate {
-	services: [Service];
+	services: [string];
 }
 
 table Hello {
-	protocol_ver: int;
+	magic: int = 0x454D4252; // 'EMBR'
+	protocol_ver: int = 0;
 	description: string;
 }
 
 table HelloAck {
-	protocol_ver: int;
-	result: Result;
+	magic: int = 0x454D4252; // 'EMBR'
+	protocol_ver: int = 0;
 	description: string;
 }
 

@@ -12,7 +12,7 @@
 #include <logger/FileSink.h>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <filesystem>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -36,12 +36,14 @@ int main(int argc, const char* argv[]) try {
 int launch(const po::variables_map& args) try {
 	const auto& out_path = args["out"].as<std::string>();
 	const auto& tpl_path = args["tpl"].as<std::string>();
+	const auto& schemas = args["schemas"].as<std::vector<std::string>>();
 
 	ember::SchemaParser parser(tpl_path, out_path);
 
-	for(const auto& schema : args["schemas"].as<std::vector<std::string>>()) {
+	for(auto& schema : schemas) {
 		LOG_INFO_GLOB << "Processing " << schema << LOG_SYNC;
 		parser.generate(schema);
+		LOG_INFO_GLOB << "Generated service for " << schema << LOG_SYNC;
 	}
 
 	return EXIT_SUCCESS;
@@ -55,7 +57,7 @@ void init_logger(ember::log::Logger* logger, const po::variables_map& args) {
 	const auto& file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
 	
 	auto fsink = std::make_unique<el::FileSink>(
-		file_verbosity, el::Filter(0), "sparkc.log", el::FileSink::Mode::APPEND
+		file_verbosity, el::Filter(0), "rpcgen.log", el::FileSink::Mode::APPEND
 	);
 
 	auto consink = std::make_unique<el::ConsoleSink>(con_verbosity, el::Filter(0));

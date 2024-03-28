@@ -12,15 +12,46 @@
  * generator's templates and rerunning.
  */
 
- namespace ember {
+#include "{{fbs_name}}_generated.h"
 
- class {{name}}Service : spark::v2::Service {
- public:
-	{{name}}Service() = default;
+#include <spark/v2/Server.h>
+#include <spark/v2/Service.h>
+#include <spark/v2/Link.h>
+#include <spark/v2/Message.h>
+#include <functional>
 
-	void on_message(const spark::Link& link, const spark::Message& message) override;
-	void on_link_up(const spark::Link& link) override;
-	void on_link_down(const spark::Link& link) override;
- };
+namespace ember::services {
 
- }
+class {{name}}Service : public spark::v2::Service {
+	spark::v2::Server& spark_;
+
+public:
+## for handler in handlers
+	using {{handler.call}}Response = std::function<void({{handler.response_ns}})>();
+## endfor
+
+	{{name}}Service(spark::v2::Server& spark) : spark_(spark) {
+		spark_.register_service(this);
+	}
+
+	~{{name}}Service() {
+		spark_.deregister_service(this);
+	}
+
+	std::string service_type() {
+		return "{{name}}";
+	}
+
+	void on_message(const spark::v2::Link& link, const spark::v2::Message& message) override {
+
+	}
+
+## for handler in handlers
+	/*virtual void process_{{handler.name}}(
+		{{handler.request_ns}} msg,
+		{{handler.call}}Response reply) = 0;*/
+
+## endfor
+};
+
+} // services, ember

@@ -47,6 +47,8 @@ set(COREv2
     include/spark/v2/Dispatcher.h
     include/spark/v2/NetworkListener.h
     include/spark/v2/SocketAcceptor.h
+	include/spark/v2/Link.h
+	include/spark/v2/Message.h
     src/v2/Server.cpp
     src/v2/PeerHandler.cpp
 )
