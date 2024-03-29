@@ -23,7 +23,7 @@
 namespace ember::spark::v2 {
 
 using Socket = boost::asio::ip::tcp::socket;	
-using RemotePeerHandler = RemotePeer<PeerHandler, PeerConnection<Socket>, Socket>;
+using RemotePeerHandler = RemotePeer<PeerHandler, PeerConnection, Socket>;
 
 class Server final : public SocketAcceptor {
 	boost::asio::io_context& ctx_;

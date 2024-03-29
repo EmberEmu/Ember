@@ -51,6 +51,7 @@ set(COREv2
 	include/spark/v2/Message.h
     src/v2/Server.cpp
     src/v2/PeerHandler.cpp
+	src/v2/PeerConnection.cpp
 )
 
 set(IO_SRC
