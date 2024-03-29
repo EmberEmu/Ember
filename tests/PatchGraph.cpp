@@ -17,8 +17,8 @@ const std::array<PatchMeta, 10> patches {
 	 { 1, 2, 3, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "2_to_3.patch", {}, 1   },
 	 { 2, 1, 4, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "1_to_4.patch", {}, 100 },
 	 { 3, 3, 4, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "3_to_4.patch", {}, 1   },
-	 { 4, 5, 6, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "5_to_6.patch", {}, 1   },
 	// path break
+	 { 4, 5, 6, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "5_to_6.patch", {}, 1   },
 	 { 5, 6, 7, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "6_to_7.patch",   {}, 1 },
 	 { 6, 7, 8, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "7_to_8.patch",   {}, 1 },
 	 { 7, 8, 9, 0, 0, 0, "x86", "enGB", "Win", false, false, "", "8_to_9.patch",   {}, 1 },
