@@ -111,12 +111,6 @@ bool HTTPTransport::http_headers_completion(const std::size_t total_read) {
 		return false;
 	}
 
-	std::string_view headers_view(buffer_.data(), headers_end);
-
-	if(!parse_http_header(headers_view, header)) {
-		throw std::invalid_argument("Bad HTTP data");
-	}
-
 	return true;
 }
 
