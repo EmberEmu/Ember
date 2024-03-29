@@ -30,7 +30,6 @@ class PeerConnection final {
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_;
 	std::queue<std::unique_ptr<std::vector<std::uint8_t>>> queue_;
-	bool sending_ = false;
 
 	boost::asio::awaitable<void> process_queue();
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
