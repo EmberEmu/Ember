@@ -13,6 +13,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/strand.hpp>
 #include <array>
+#include <queue>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -28,7 +29,10 @@ class PeerConnection final {
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_;
-	
+	std::queue<std::unique_ptr<std::vector<std::uint8_t>>> queue_;
+	bool sending_ = false;
+
+	boost::asio::awaitable<void> process_queue();
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 	boost::asio::awaitable<void> receive();
 	boost::asio::awaitable<std::size_t> do_receive(std::size_t offset);

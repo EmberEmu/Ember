@@ -24,23 +24,30 @@ PeerConnection::PeerConnection(Dispatcher& dispatcher, boost::asio::ip::tcp::soc
 	ba::co_spawn(strand_, receive(), ba::detached);
 }
 
-// todo, queue through strand
-void PeerConnection::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
-	if(!socket_.is_open()) {
-		return;
+ba::awaitable<void> PeerConnection::process_queue() try {
+	while(!queue_.empty()) {
+		auto buffer = std::move(queue_.front());
+		queue_.pop();
+		auto buff = ba::buffer(buffer->data(), buffer->size());
+		co_await socket_.async_send(buff, ba::use_awaitable);
 	}
+} catch(std::exception& e) {
+	close();
+}
 
-	auto buff = ba::buffer(buffer->data(), buffer->size());
-
-	socket_.async_send(buff,
-		[this, buffer = std::move(buffer)](boost::system::error_code ec, std::size_t size) {
-			if(!ec) {
-
-			} else if(ec != ba::error::operation_aborted) {
-				close();
-			}
+void PeerConnection::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
+	ba::post(strand_, [&, buffer = std::move(buffer)]() mutable {
+		if(!socket_.is_open()) {
+			return;
 		}
-	);
+
+		bool inactive = queue_.empty();
+		queue_.emplace(std::move(buffer));
+
+		if(inactive) {
+			ba::co_spawn(strand_, process_queue(), ba::detached);
+		}
+	});
 }
 
 /*
@@ -94,15 +101,17 @@ ba::awaitable<std::size_t> PeerConnection::do_receive(const std::size_t offset) 
 	co_return rcv_size - msg_size; // offset to start the next read
 }
 
-ba::awaitable<void> PeerConnection::receive() {
+ba::awaitable<void> PeerConnection::receive() try {
 	std::size_t offset = 0;
 
-	// todo, error handling
 	while(socket_.is_open()) {
 		offset = co_await do_receive(offset);
 	}
+} catch(std::exception& e) {
+	close();
 }
 
+// todo, need to inform the handler when an error occurs
 void PeerConnection::close() {
 	socket_.close();
 }
