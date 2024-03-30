@@ -12,6 +12,8 @@ set(EXECUTABLE_SRC
     Printer.cpp
     SchemaParser.h
     SchemaParser.cpp
+	Utility.h
+	Utility.cpp
     )
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/nlohmann)

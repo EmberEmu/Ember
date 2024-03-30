@@ -7,6 +7,7 @@
  */
 
 #include "SchemaParser.h"
+#include "Utility.h"
 #include "inja/inja.hpp"
 #include <flatbuffers/reflection.h>
 #include <chrono>
@@ -66,32 +67,11 @@ void SchemaParser::generate(std::span<const std::uint8_t> buffer) {
 	}
 }
 
-std::string SchemaParser::remove_namespace(const std::string& name) {
-	auto loc = name.find_last_of('.');
-
-	if(loc == std::string::npos) {
-		return name;
-	}
-
-	return name.substr(loc + 1);
-}
-
-std::string SchemaParser::fbs_to_filename(const std::string& name) {
-	std::string fixed = name;
-
-	while(fixed.starts_with('/')) {
-		fixed = fixed.substr(1, name.size());
-	}
-
-	std::filesystem::path p(fixed);
-	return p.replace_extension().string();
-}
-
 void SchemaParser::process(const reflection::Service* service) {
 	const auto time = std::chrono::system_clock::now();
 	const std::chrono::year_month_day date = std::chrono::floor<std::chrono::days>(time);
-	const auto bare_name = remove_namespace(service->name()->str());
-	const auto gen_file = fbs_to_filename(service->declaration_file()->str());
+	const auto bare_name = remove_fbs_ns(service->name()->str());
+	const auto gen_file = fbs_to_name(service->declaration_file()->str());
 
 	json data;
 	data["fbs_name"] = gen_file;
@@ -105,9 +85,9 @@ void SchemaParser::process(const reflection::Service* service) {
 				{"call", call->name()->str() },
 				{"name", snake_case(call->name()->str()) },
 				{"request_ns", to_cpp_ns(call->request()->name()->str())},
-				{"request", remove_namespace(call->request()->name()->str())},
+				{"request", remove_fbs_ns(call->request()->name()->str())},
 				{"response_ns", to_cpp_ns(call->response()->name()->str())},
-				{"response", remove_namespace(call->response()->name()->str())},
+				{"response", remove_fbs_ns(call->response()->name()->str())},
 			}
 		);
 	}
@@ -120,43 +100,6 @@ void SchemaParser::process(const reflection::Service* service) {
 	);
 
 	env.write(tpl, data, path);
-}
-
-std::string SchemaParser::to_cpp_ns(const std::string& val) {
-	std::string result = val;
-
-	for(auto it = result.begin(); it != result.end();) {
-		if(*it == '.') {
-			*it = ':';
-			it = result.insert(it, ':');
-		} else {
-			++it;
-		}
-
-	}
-
-	return result;
-}
-
-std::string SchemaParser::snake_case(const std::string& val) {
-	std::string result;
-	bool first = true;
-
-	for(auto ch : val) {
-		if(std::isupper(ch)) { 
-			if(!first) {
-				result = result + '_';
-			}
-
-			result += std::tolower(ch);
-		} else { 
-			result = result + ch; 
-		}
-
-		first = false;
-	} 
-
-	return result; 
 }
 
 } // ember
