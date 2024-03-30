@@ -76,13 +76,25 @@ std::string SchemaParser::remove_namespace(const std::string& name) {
 	return name.substr(loc + 1);
 }
 
+std::string SchemaParser::fbs_to_filename(const std::string& name) {
+	std::string fixed = name;
+
+	while(fixed.starts_with('/')) {
+		fixed = fixed.substr(1, name.size());
+	}
+
+	std::filesystem::path p(fixed);
+	return p.replace_extension().string();
+}
+
 void SchemaParser::process(const reflection::Service* service) {
 	const auto time = std::chrono::system_clock::now();
 	const std::chrono::year_month_day date = std::chrono::floor<std::chrono::days>(time);
 	const auto bare_name = remove_namespace(service->name()->str());
+	const auto gen_file = fbs_to_filename(service->declaration_file()->str());
 
 	json data;
-	data["fbs_name"] = bare_name;
+	data["fbs_name"] = gen_file;
 	data["year"] = static_cast<int>(date.year());
 	data["name"] = bare_name;
 	data["handlers"] = {};
