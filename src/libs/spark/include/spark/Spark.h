@@ -13,4 +13,4 @@
 #include <spark/buffers/BinaryStream.h>
 
 #include <spark/v2/Server.h>
-#include <spark/v2/Service.h>
+#include <spark/v2/Handler.h>
