@@ -121,7 +121,7 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link,
 		character.position.x = i->x();
 		character.position.y = i->y();
 		character.position.z = i->z();
-		character.orientation = i->o();
+		character.orientation = i->orientation();
 		character.flags = static_cast<Character::Flags>(i->flags());
 		character.first_login = i->first_login();
 		character.pet_display = i->pet_display_id();
