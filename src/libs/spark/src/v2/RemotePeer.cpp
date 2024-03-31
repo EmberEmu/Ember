@@ -10,6 +10,7 @@
 #include <spark/v2/Message.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/HandlerRegistry.h>
 #include <shared/FilterTypes.h>
 #include "Spark_generated.h"
 #include <iostream>
@@ -18,8 +19,12 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-RemotePeer::RemotePeer(ba::ip::tcp::socket socket, bool initiate, log::Logger* log)
-	: handler_(*this), conn_(*this, std::move(socket)), log_(log) {
+RemotePeer::RemotePeer(ba::ip::tcp::socket socket, HandlerRegistry& registry,
+                       bool initiate, log::Logger* log)
+	: handler_(*this),
+	  registry_(registry),
+	  conn_(*this, std::move(socket)),
+	  log_(log) {
 	if(initiate) {
 		initiate_hello();
 		state_ = State::NEGOTIATING;
@@ -91,7 +96,11 @@ void RemotePeer::negotiate_protocols() {
 
 	core::EnumerateT enumerate;
 	auto msg = std::make_unique<Message>();
-	enumerate.services.emplace_back("Hello"); // temp
+	
+	for(const auto& service : registry_.services()) {
+		enumerate.services.emplace_back(service);
+	}
+
 	finish(enumerate, *msg);
 	send(std::move(msg));
 }
@@ -117,8 +126,10 @@ void RemotePeer::handle_negotiation(std::span<const std::uint8_t> data) {
 		return; // todo, end session
 	}
 
-	for(const auto service : *enumerate->services()) {
-		LOG_DEBUG(log_) << service->c_str() << LOG_ASYNC;
+	if(enumerate->services()) {
+		for(const auto service : *enumerate->services()) {
+			LOG_DEBUG(log_) << service->c_str() << LOG_ASYNC;
+		}
 	}
 }
 
@@ -133,7 +144,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 	if(header.read_from_stream(stream) != MessageHeader::State::OK
 	   || header.size <= stream.total_read()) {
 		LOG_WARN_FILTER(log_, LF_SPARK)
-			<< "[spark] Bad message header from "
+			<< "[spark] Bad message from "
 			<< conn_.address()
 			<< LOG_ASYNC;
 		return;

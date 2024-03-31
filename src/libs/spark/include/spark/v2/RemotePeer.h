@@ -21,6 +21,8 @@
 
 namespace ember::spark::v2 {
 
+class HandlerRegistry;
+
 class RemotePeer final : public Dispatcher {
 	enum class State {
 		HELLO, NEGOTIATING, DISPATCHING
@@ -28,6 +30,7 @@ class RemotePeer final : public Dispatcher {
 
 	PeerHandler handler_;
 	PeerConnection conn_;
+	HandlerRegistry& registry_;
 	log::Logger* log_;
 	boost::container::flat_map<std::uint8_t, Channel> channels_;
 
@@ -41,7 +44,8 @@ class RemotePeer final : public Dispatcher {
 	void send(std::unique_ptr<Message> msg);
 
 public:
-	RemotePeer(boost::asio::ip::tcp::socket socket, bool initiate, log::Logger* log);
+	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry,
+	           bool initiate, log::Logger* log);
 
 	void send();
 	void receive(std::span<const std::uint8_t> data) override;

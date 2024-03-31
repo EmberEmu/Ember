@@ -15,14 +15,14 @@
 #include "{{fbs_name}}_generated.h"
 
 #include <spark/v2/Server.h>
-#include <spark/v2/Service.h>
+#include <spark/v2/Handler.h>
 #include <spark/v2/Link.h>
 #include <spark/v2/Message.h>
 #include <functional>
 
 namespace ember::services {
 
-class {{name}}Service : public spark::v2::Service {
+class {{name}}Service : public spark::v2::Handler {
 	spark::v2::Server& spark_;
 
 public:
@@ -31,14 +31,14 @@ public:
 ## endfor
 
 	{{name}}Service(spark::v2::Server& spark) : spark_(spark) {
-		spark_.register_service(this);
+		spark_.register_handler(this);
 	}
 
 	~{{name}}Service() {
-		spark_.deregister_service(this);
+		spark_.deregister_handler(this);
 	}
 
-	std::string service_type() {
+	std::string type() {
 		return "{{name}}";
 	}
 

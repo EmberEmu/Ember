@@ -14,14 +14,14 @@
 
 namespace ember::spark::v2 {
 
-class Service {
+class Handler {
 public:
-	virtual std::string service_type() = 0;
+	virtual std::string type() = 0;
 	virtual void on_message(const spark::v2::Link& link, const spark::v2::Message& message) = 0;
 	virtual void on_link_up(const spark::v2::Link& link) = 0;
 	virtual void on_link_down(const spark::v2::Link& link) = 0;
 
-	virtual ~Service() = default;
+	virtual ~Handler() = default;
 };
 
 } // spark, ember

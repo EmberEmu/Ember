@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <spark/v2/Service.h>
 #include <spark/v2/NetworkListener.h>
 #include <spark/v2/SocketAcceptor.h>
 #include <spark/v2/PeerHandler.h>
 #include <spark/v2/RemotePeer.h>
+#include <spark/v2/HandlerRegistry.h>
 #include <logger/Logging.h>
 #include <boost/asio/io_context.hpp>
 #include <memory>
@@ -26,7 +26,8 @@ class Server final : public SocketAcceptor {
 	boost::asio::io_context& ctx_;
 	boost::asio::ip::tcp::resolver resolver_;
 	NetworkListener listener_;
-	std::vector<std::unique_ptr<RemotePeer>> handlers_;
+	std::vector<std::unique_ptr<RemotePeer>> peers_;
+	HandlerRegistry handlers_;
 	log::Logger* logger_;
 	
 	void accept(boost::asio::ip::tcp::socket socket);
@@ -36,8 +37,8 @@ public:
 	Server(boost::asio::io_context& context, const std::string& iface,
 	        std::uint16_t port, log::Logger* logger);
 
-	void register_service(spark::v2::Service* service);
-	void deregister_service(spark::v2::Service* service);
+	void register_handler(spark::v2::Handler* handler);
+	void deregister_handler(spark::v2::Handler* handler);
 
 	void connect(const std::string& host, const std::uint16_t port);
 	void shutdown();
