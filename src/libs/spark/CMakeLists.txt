@@ -48,10 +48,17 @@ set(COREv2
     include/spark/v2/NetworkListener.h
     include/spark/v2/SocketAcceptor.h
 	include/spark/v2/Link.h
+	include/spark/v2/MessageHeader.h
+	include/spark/v2/Channel.h
+	include/spark/v2/Tracker.h
+	include/spark/v2/SharedDefs.h
 	include/spark/v2/Message.h
     src/v2/Server.cpp
     src/v2/PeerHandler.cpp
+	src/v2/RemotePeer.cpp
 	src/v2/PeerConnection.cpp
+	src/v2/Channel.cpp
+	src/v2/Tracker.cpp
 )
 
 set(IO_SRC

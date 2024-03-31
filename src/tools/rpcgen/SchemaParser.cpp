@@ -93,7 +93,7 @@ void SchemaParser::process(const reflection::Service* service) {
 	}
 	
 	inja::Environment env;
-	auto tpl = env.parse_template(tpl_path_.string() + "Service.h_");
+	const auto tpl = env.parse_template(tpl_path_.string() + "Service.h_");
 
 	const auto path = std::format(
 		"{}/{}ServiceStub.h", out_path_.string(), data["name"].get<std::string>()

@@ -10,40 +10,41 @@
 
 #include <spark/v2/PeerHandler.h>
 #include <spark/v2/PeerConnection.h>
+#include <spark/v2/Channel.h>
 #include <spark/v2/Dispatcher.h>
 #include <spark/v2/SharedDefs.h>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/container/flat_map.hpp>
 #include <logger/Logging.h>
 #include <concepts>
 #include <utility>
 
 namespace ember::spark::v2 {
 
-template<typename Handler, typename Connection, typename Socket>
 class RemotePeer final : public Dispatcher {
-	Handler handler_;
-	Connection conn_;
-	Mode mode_;
+	enum class State {
+		HELLO, NEGOTIATING, DISPATCHING
+	} state_ = State::HELLO;
+
+	PeerHandler handler_;
+	PeerConnection conn_;
 	log::Logger* log_;
+	boost::container::flat_map<std::uint8_t, Channel> channels_;
+
+	template<typename T>
+	void finish(T& payload, Message& msg);
+
+	void initiate_hello();
+	void negotiate_protocols();
+	void handle_hello(std::span<const std::uint8_t> data);
+	void handle_negotiation(std::span<const std::uint8_t> data);
+	void send(std::unique_ptr<Message> msg);
 
 public:
-	explicit RemotePeer(Socket socket, Mode mode, log::Logger* log)
-		: handler_(*this), mode_(mode), conn_(*this, std::move(socket)), log_(log) {
-		if(mode_ == Mode::SERVER) {
-			initiate_hello();
-		}
-	}
+	RemotePeer(boost::asio::ip::tcp::socket socket, bool initiate, log::Logger* log);
 
-	void initiate_hello() {
-
-	}
-
-	void send() {
-		LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-	}
-
-	void receive(std::span<const std::uint8_t> data) override {
-		LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-	}
+	void send();
+	void receive(std::span<const std::uint8_t> data) override;
 };
 
 } // spark, ember

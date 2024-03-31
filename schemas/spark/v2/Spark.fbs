@@ -8,15 +8,11 @@
 
 namespace ember.spark.core;
 
-enum Result : int {
-	OK, BAD_HELLO, PROTOCOL_INCOMPATIBLE
-}
-
 union Message {
 	Hello,
+	Enumerate,
 	OpenChannel,
 	CloseChannel,
-	Enumerate,
 	Bye
 }
 
@@ -27,13 +23,7 @@ table Enumerate {
 table Hello {
 	magic: int = 0x454D4252; // 'EMBR'
 	protocol_ver: int = 0;
-	description: string;
-}
-
-table HelloAck {
-	magic: int = 0x454D4252; // 'EMBR'
-	protocol_ver: int = 0;
-	description: string;
+	description: string (required);
 }
 
 table OpenChannel {

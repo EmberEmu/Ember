@@ -7,8 +7,11 @@
  */
 
 #include <spark/v2/PeerConnection.h>
+#include <spark/v2/Message.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/asio.hpp>
+#include <array>
+#include <format>
 #include <span>
 #include <cassert>
 #include <cstring>
@@ -17,7 +20,7 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-PeerConnection::PeerConnection(Dispatcher& dispatcher, boost::asio::ip::tcp::socket socket)
+PeerConnection::PeerConnection(Dispatcher& dispatcher, ba::ip::tcp::socket socket)
 	: dispatcher_(dispatcher),
 	  socket_(std::move(socket)),
       strand_(socket_.get_executor()) {
@@ -26,16 +29,21 @@ PeerConnection::PeerConnection(Dispatcher& dispatcher, boost::asio::ip::tcp::soc
 
 ba::awaitable<void> PeerConnection::process_queue() try {
 	while(!queue_.empty()) {
-		auto buffer = std::move(queue_.front());
+		auto msg = std::move(queue_.front());
 		queue_.pop();
-		auto buff = ba::buffer(buffer->data(), buffer->size());
-		co_await socket_.async_send(buff, ba::use_awaitable);
+
+		std::array<boost::asio::const_buffer, 2> buffers {
+			boost::asio::const_buffer { msg->header.data(), msg->header.size() },
+			boost::asio::const_buffer { msg->fbb.GetBufferPointer(), msg->fbb.GetSize() }
+		};
+
+		co_await socket_.async_send(buffers, ba::use_awaitable);
 	}
 } catch(std::exception& e) {
 	close();
 }
 
-void PeerConnection::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
+void PeerConnection::send(std::unique_ptr<Message> buffer) {
 	ba::post(strand_, [&, buffer = std::move(buffer)]() mutable {
 		if(!socket_.is_open()) {
 			return;
@@ -59,10 +67,10 @@ ba::awaitable<std::size_t> PeerConnection::read_until(const std::size_t offset,
                                                       const std::size_t read_size) {
 	std::size_t received = offset;
 
-	do {
+	while(received < read_size) {
 		auto buffer = ba::buffer(buffer_.data() + received, buffer_.size() - received);
 		received += co_await socket_.async_receive(buffer, ba::use_awaitable);
-	} while(received < read_size);
+	}
 
 	co_return received;
 }
@@ -75,7 +83,6 @@ ba::awaitable<std::size_t> PeerConnection::do_receive(const std::size_t offset) 
 	if(rcv_size < sizeof(msg_size)) {
 		rcv_size += co_await read_until(offset, sizeof(msg_size));
 	}
-
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 	boost::endian::little_to_native_inplace(msg_size);
 
@@ -98,7 +105,7 @@ ba::awaitable<std::size_t> PeerConnection::do_receive(const std::size_t offset) 
 	}
 
 	assert(msg_size <= rcv_size);
-	co_return rcv_size - msg_size; // offset to start the next read
+	co_return rcv_size - msg_size; // offset to start the next read at
 }
 
 ba::awaitable<void> PeerConnection::receive() try {
@@ -109,6 +116,15 @@ ba::awaitable<void> PeerConnection::receive() try {
 	}
 } catch(std::exception& e) {
 	close();
+}
+
+std::string PeerConnection::address() {
+	if(!socket_.is_open()) {
+		return "";
+	}
+
+	const auto& ep = socket_.remote_endpoint();
+	return std::format("{}:{}", ep.address().to_string(), ep.port());
 }
 
 // todo, need to inform the handler when an error occurs

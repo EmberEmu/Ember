@@ -1,3 +1,9 @@
+
+union MessageType {
+	HelloReply,
+	HelloRequest,
+}
+
 table HelloReply {
   message:string;
 }
@@ -5,6 +11,12 @@ table HelloReply {
 table HelloRequest {
   name:string;
 }
+
+table Message {
+	body: MessageType;
+}
+
+root_type Message;
 
 rpc_service Hello {
 	SayHello(HelloRequest):HelloReply;

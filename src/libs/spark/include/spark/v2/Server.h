@@ -22,15 +22,12 @@
 
 namespace ember::spark::v2 {
 
-using Socket = boost::asio::ip::tcp::socket;	
-using RemotePeerHandler = RemotePeer<PeerHandler, PeerConnection, Socket>;
-
 class Server final : public SocketAcceptor {
 	boost::asio::io_context& ctx_;
 	boost::asio::ip::tcp::resolver resolver_;
-	log::Logger* logger_;
 	NetworkListener listener_;
-	std::vector<std::unique_ptr<RemotePeerHandler>> handlers_;
+	std::vector<std::unique_ptr<RemotePeer>> handlers_;
+	log::Logger* logger_;
 	
 	void accept(boost::asio::ip::tcp::socket socket);
 	boost::asio::awaitable<void> do_connect(const std::string& host, const std::uint16_t port);

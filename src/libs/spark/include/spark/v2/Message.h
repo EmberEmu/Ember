@@ -8,9 +8,16 @@
 
 #pragma once
 
+#include <spark/v2/MessageHeader.h>
+#include <flatbuffers/flatbuffer_builder.h>
+#include <boost/container/small_vector.hpp>
+#include <cstdint>
+
 namespace ember::spark::v2 {
 
 struct Message {
+	boost::container::small_vector<std::uint8_t, 1000> header; // temp
+	flatbuffers::FlatBufferBuilder fbb;
 };
 
 } // v2, spark, ember

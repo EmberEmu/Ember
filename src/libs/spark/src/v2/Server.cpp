@@ -26,13 +26,13 @@ Server::Server(boost::asio::io_context& context, const std::string& iface,
 
 void Server::accept(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	//auto peer = std::make_unique<RemotePeerHandler>(std::move(socket), Mode::SERVER, logger_);
-	//handlers_.emplace_back(std::move(peer));
+	auto peer = std::make_unique<RemotePeer>(std::move(socket), false, logger_);
+	handlers_.emplace_back(std::move(peer));
 }
 
 void Server::register_service(spark::v2::Service* service) {
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
-		<< "Registered service: "
+		<< "[spark] Registered service, "
 		<< service->service_type()
 		<< LOG_ASYNC;
 }
@@ -47,18 +47,21 @@ ba::awaitable<void> Server::do_connect(const std::string& host, const std::uint1
 		host, std::to_string(port), ba::use_awaitable
 	);
 
-	auto socket = std::make_shared<boost::asio::ip::tcp::socket>(ctx_);
+	ba::ip::tcp::socket socket(ctx_);
 
 	auto [ec, ep] = co_await ba::async_connect(
-		*socket, results.begin(), results.end(), as_tuple(ba::use_awaitable)
+		socket, results.begin(), results.end(), as_tuple(ba::use_awaitable)
 	);
 
 	if(!ec) {
 		LOG_DEBUG_FILTER(logger_, LF_SPARK)
-			<< std::format("connected to {}{}", host, port)
+			<< std::format("[spark] Connected to {}:{}", host, port)
 			<< LOG_ASYNC;
+
+		auto peer = std::make_unique<RemotePeer>(std::move(socket), true, logger_);
+		peer.release(); // temp
 	} else {
-		const auto msg = std::format("could not connect to {}:{}", host, port);
+		const auto msg = std::format("[spark] Could not connect to {}:{}", host, port);
 		LOG_DEBUG_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
 	}
 }

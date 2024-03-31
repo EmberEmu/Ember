@@ -8,6 +8,12 @@
 
 #pragma once
 
+#include <spark/v2/Tracker.h>
+
 namespace ember::spark::v2 {
+
+class Channel {
+
+};
 
 } // v2, spark, ember

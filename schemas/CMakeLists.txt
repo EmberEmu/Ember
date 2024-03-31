@@ -27,7 +27,7 @@ set(FB_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/packetlog/PacketLog.fbs
 )
 
-set(FLATC_ARGS "-b" "-c" "--gen-mutable" "--scoped-enums" "--schema" "--bfbs-comments")
+set(FLATC_ARGS "-b" "-c" "--gen-mutable" "--scoped-enums" "--schema" "--bfbs-comments" "--gen-object-api")
 build_flatbuffers("${FB_SCHEMAS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET_NAME} "" ${CMAKE_BINARY_DIR} "" "")
 
 set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/src/tools/rpcgen/templates/)

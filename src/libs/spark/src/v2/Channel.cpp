@@ -6,8 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
+#include <spark/v2/Channel.h>
 
 namespace ember::spark::v2 {
+
 
 } // v2, spark, ember

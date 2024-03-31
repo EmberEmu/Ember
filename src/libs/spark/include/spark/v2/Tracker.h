@@ -10,4 +10,9 @@
 
 namespace ember::spark::v2 {
 
+class Tracker {
+public:
+
+};
+
 } // v2, spark, ember
