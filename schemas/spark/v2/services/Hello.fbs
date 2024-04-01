@@ -1,8 +1,5 @@
 
-union MessageType {
-	HelloReply,
-	HelloRequest,
-}
+namespace ember.messaging.Hello;
 
 table HelloReply {
   message:string;
@@ -12,11 +9,16 @@ table HelloRequest {
   name:string;
 }
 
-table Message {
-	body: MessageType;
+union Message {
+	HelloReply,
+	HelloRequest,
 }
 
-root_type Message;
+table Envelope {
+	message: Message;
+}
+
+root_type Envelope;
 
 rpc_service Hello {
 	SayHello(HelloRequest):HelloReply;

@@ -63,21 +63,30 @@ void SchemaParser::generate(std::span<const std::uint8_t> buffer) {
 	const auto services = schema->services();
 
 	for(const auto& service : *services) {
-		process(service);
+		process(schema, service);
 	}
 }
 
-void SchemaParser::process(const reflection::Service* service) {
+void SchemaParser::process(const reflection::Schema* schema, const reflection::Service* service) {
 	const auto time = std::chrono::system_clock::now();
 	const std::chrono::year_month_day date = std::chrono::floor<std::chrono::days>(time);
 	const auto bare_name = remove_fbs_ns(service->name()->str());
 	const auto gen_file = fbs_to_name(service->declaration_file()->str());
+
+	if(!schema->root_table()) {
+		throw std::runtime_error("Missing root table");
+	}
 
 	json data;
 	data["fbs_name"] = gen_file;
 	data["year"] = static_cast<int>(date.year());
 	data["name"] = bare_name;
 	data["handlers"] = {};
+	data["root"] = remove_fbs_ns(schema->root_table()->name()->str());
+
+	for(auto field : *schema->root_table()->fields()) {
+		std::cout << field->name()->str() << '\n';
+	}
 
 	for(auto call : *service->calls()) {
 		data["handlers"].push_back(
@@ -85,18 +94,30 @@ void SchemaParser::process(const reflection::Service* service) {
 				{"call", call->name()->str() },
 				{"name", snake_case(call->name()->str()) },
 				{"request_ns", to_cpp_ns(call->request()->name()->str())},
+				{"request_sn", snake_case(remove_fbs_ns(call->request()->name()->str()))},
 				{"request", remove_fbs_ns(call->request()->name()->str())},
 				{"response_ns", to_cpp_ns(call->response()->name()->str())},
+				{"response_sn", snake_case(remove_fbs_ns(call->response()->name()->str()))},
 				{"response", remove_fbs_ns(call->response()->name()->str())},
 			}
 		);
 	}
 	
+	// Service
 	inja::Environment env;
-	const auto tpl = env.parse_template(tpl_path_.string() + "Service.h_");
+	auto tpl = env.parse_template(tpl_path_.string() + "Service.h_");
 
-	const auto path = std::format(
+	auto path = std::format(
 		"{}/{}ServiceStub.h", out_path_.string(), data["name"].get<std::string>()
+	);
+
+	env.write(tpl, data, path);
+
+	// Client
+	tpl = env.parse_template(tpl_path_.string() + "Client.h_");
+
+	path = std::format(
+		"{}/{}ClientStub.h", out_path_.string(), data["name"].get<std::string>()
 	);
 
 	env.write(tpl, data, path);

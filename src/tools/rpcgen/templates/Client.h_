@@ -22,7 +22,7 @@
 
 namespace ember::services {
 
-class {{name}}Service : public spark::v2::Handler {
+class {{name}}Client : public spark::v2::Handler {
 	spark::v2::Server& spark_;
 
 public:
@@ -30,45 +30,43 @@ public:
 	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
 ## endfor
 
-	{{name}}Service(spark::v2::Server& spark) : spark_(spark) {
-		spark_.register_handler(this);
-	}
+## for handler in handlers
+	void dispatch_{{handler.response_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.response}}* msg);
+## endfor
 
-	~{{name}}Service() {
-		spark_.deregister_handler(this);
-	}
+	{{name}}Client(spark::v2::Server& spark) : spark_(spark) {}
+
 
 	std::string type() {
 		return "{{name}}";
 	}
 
-	void on_message(const spark::v2::Link& link, const spark::v2::MessageTemp& msg) override {
-		auto fb = messaging::{{name}}::Get{{root}}(msg.data.data());
+	void on_message(const spark::v2::Link& link, const spark::v2::MessageTemp& message) override {
+		auto fb = messaging::{{name}}::Get{{root}}(message.fb);
 		flatbuffers::Verifier verifier(msg.data.data(), msg.data.size());
 
 		switch(fb->message_type()) {
 ## for handler in handlers
-			case messaging::{{name}}::Message::{{handler.request}}:
-				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}());
+			case messaging::{{name}}::Message::{{handler.response}}:
+				dispatch_{{handler.response_sn}}(verifier, fb->message_as_{{handler.response}}());
 				break;
 ## endfor
 		}
 	}
 
 ## for handler in handlers
-	void dispatch_{{handler.request_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.request}}* msg) {
+	void dispatch_{{handler.response_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.response}}* msg) {
 		if(!msg->Verify(verifier)) {
 			return;
 		}
 
-		//handle_{{handler.name}}(msg);
+		handle_{{handler.name}}_response(msg);
 	}
 ## endfor
 
 ## for handler in handlers
-	/*virtual void handle_{{handler.name}}(
-		{{handler.request_ns}}* msg,
-		{{handler.response_ns}} reply) = 0;*/
+	/*virtual void handle_{{handler.name}}_response(
+		{{handler.response_ns}}* msg) = 0;*/
 
 ## endfor
 };

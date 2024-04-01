@@ -24,7 +24,7 @@ class SchemaParser {
 
 	void verify(std::span<const std::uint8_t> buffer);
 	std::vector<std::uint8_t> load_file(const std::filesystem::path& path);
-	void process(const reflection::Service* service);
+	void process(const reflection::Schema* schema, const reflection::Service* service);
 
 public:
 	SchemaParser(std::filesystem::path templates_dir, std::filesystem::path output_dir);

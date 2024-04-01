@@ -11,6 +11,7 @@
 #include <spark/v2/MessageHeader.h>
 #include <flatbuffers/flatbuffer_builder.h>
 #include <boost/container/small_vector.hpp>
+#include <span>
 #include <cstdint>
 
 namespace ember::spark::v2 {
@@ -18,6 +19,10 @@ namespace ember::spark::v2 {
 struct Message {
 	boost::container::small_vector<std::uint8_t, 1000> header; // temp
 	flatbuffers::FlatBufferBuilder fbb;
+};
+
+struct MessageTemp {
+	std::span<std::uint8_t> data;
 };
 
 } // v2, spark, ember

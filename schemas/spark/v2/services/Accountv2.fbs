@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-namespace ember.messagingv2.account;
+namespace ember.messaging.Accountv2;
 
 enum DisconnectReason : ubyte {
 	ACCOUNT_SUSPENDED, ACCOUNT_BANNED, PLAYER_KICKED,
@@ -54,6 +54,17 @@ table DisconnectSession {
 	session_key:[ubyte];
 	reason:DisconnectReason;
 }
+
+union Message {
+	SessionLookup,
+	SessionResponse,
+}
+
+table Envelope {
+	message: Message;
+}
+
+root_type Envelope;
 
 rpc_service Accountv2 {
 	SessionFetch(SessionLookup):SessionResponse;
