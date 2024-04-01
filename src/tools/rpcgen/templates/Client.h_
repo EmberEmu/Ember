@@ -23,8 +23,6 @@
 namespace ember::services {
 
 class {{name}}Client : public spark::v2::Handler {
-	spark::v2::Server& spark_;
-
 public:
 ## for handler in handlers
 	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
@@ -33,9 +31,6 @@ public:
 ## for handler in handlers
 	void dispatch_{{handler.response_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.response}}* msg);
 ## endfor
-
-	{{name}}Client(spark::v2::Server& spark) : spark_(spark) {}
-
 
 	std::string type() {
 		return "{{name}}";
