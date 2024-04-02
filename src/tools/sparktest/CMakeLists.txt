@@ -8,7 +8,9 @@ set(EXECUTABLE_NAME sparktest)
 
 set(EXECUTABLE_SRC
     HelloService.h
-	HelloService.cpp
+    HelloService.cpp
+    HelloClient.h
+    HelloClient.cpp
     main.cpp
     )
 

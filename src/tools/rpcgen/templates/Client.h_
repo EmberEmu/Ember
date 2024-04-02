@@ -28,16 +28,12 @@ public:
 	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
 ## endfor
 
-## for handler in handlers
-	void dispatch_{{handler.response_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.response}}* msg);
-## endfor
-
 	std::string type() {
 		return "{{name}}";
 	}
 
-	void on_message(const spark::v2::Link& link, const spark::v2::MessageTemp& message) override {
-		auto fb = messaging::{{name}}::Get{{root}}(message.fb);
+	void on_message(const spark::v2::Link& link, const spark::v2::MessageTemp& msg) override {
+		auto fb = messaging::{{name}}::Get{{root}}(msg.data.data());
 		flatbuffers::Verifier verifier(msg.data.data(), msg.data.size());
 
 		switch(fb->message_type()) {
@@ -55,7 +51,7 @@ public:
 			return;
 		}
 
-		handle_{{handler.name}}_response(msg);
+		//handle_{{handler.name}}_response(msg);
 	}
 ## endfor
 

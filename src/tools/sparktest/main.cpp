@@ -7,6 +7,7 @@
  */
 
 #include "HelloService.h"
+#include "HelloClient.h"
 #include <logger/Logging.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
@@ -27,8 +28,10 @@ int main() {
 	spark::v2::Server spark_cli(ctx, "0.0.0.0", 8001, logger.get());
 
 	HelloService hello_service(spark);
+	HelloClient hello_client(spark);
 
-	spark_cli.connect("127.0.0.1", 8000);
+
+
 	ctx.run();
 }
 
