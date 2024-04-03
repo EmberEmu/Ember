@@ -44,8 +44,7 @@ class RemotePeer final : public Dispatcher {
 	void send(std::unique_ptr<Message> msg);
 
 public:
-	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry,
-	           bool initiate, log::Logger* log);
+	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);
 
 	void send();
 	void receive(std::span<const std::uint8_t> data) override;

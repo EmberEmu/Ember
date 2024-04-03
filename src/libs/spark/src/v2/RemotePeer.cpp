@@ -19,16 +19,11 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-RemotePeer::RemotePeer(ba::ip::tcp::socket socket, HandlerRegistry& registry,
-                       bool initiate, log::Logger* log)
+RemotePeer::RemotePeer(ba::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log)
 	: handler_(*this),
 	  registry_(registry),
 	  conn_(*this, std::move(socket)),
 	  log_(log) {
-	if(initiate) {
-		initiate_hello();
-		state_ = State::NEGOTIATING;
-	}
 }
 
 template<typename T>

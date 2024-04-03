@@ -34,7 +34,7 @@ class Server final {
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<SocketReturn> accept_connection();
 	void accept(boost::asio::ip::tcp::socket socket);
-	boost::asio::awaitable<void> do_connect(const std::string& host, const std::uint16_t port);
+	boost::asio::awaitable<void> do_connect(const std::string host, const std::uint16_t port);
 
 public:
 	Server(boost::asio::io_context& context, const std::string& iface,

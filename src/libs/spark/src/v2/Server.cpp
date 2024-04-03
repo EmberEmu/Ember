@@ -26,8 +26,6 @@ Server::Server(boost::asio::io_context& context, const std::string& iface,
 	  logger_(logger) {
 	acceptor_.set_option(ba::ip::tcp::no_delay(true));
 	acceptor_.set_option(ba::ip::tcp::acceptor::reuse_address(true));
-
-	// start accepting connections
 	ba::co_spawn(ctx_, listen(), ba::detached);
 }
 
@@ -62,21 +60,23 @@ ba::awaitable<Server::SocketReturn> Server::accept_connection() {
 	}
 
 	LOG_DEBUG(logger_)
-		<< "[spark] Accepted connection " << ep.address().to_string()
-		<< ":" << ep.port() << LOG_ASYNC;
+		<< "[spark] Accepted connection "
+		<< ep.address().to_string()
+		<< ":" << ep.port()
+		<< LOG_ASYNC;
 
-	co_return std::move(socket);
+	co_return socket;
 }
 
 void Server::accept(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, false, logger_);
+	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
 	peers_.emplace_back(std::move(peer));
 }
 
 void Server::register_handler(spark::v2::Handler* handler) {
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
-		<< "[spark] Registered handle for "
+		<< "[spark] Registered handler for "
 		<< handler->type()
 		<< LOG_ASYNC;
 	handlers_.register_service(handler);
@@ -87,7 +87,7 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 
 }
 
-ba::awaitable<void> Server::do_connect(const std::string& host, const std::uint16_t port) {
+ba::awaitable<void> Server::do_connect(const std::string host, const std::uint16_t port) {
 	auto results = co_await resolver_.async_resolve(
 		host, std::to_string(port), ba::use_awaitable
 	);
@@ -103,7 +103,7 @@ ba::awaitable<void> Server::do_connect(const std::string& host, const std::uint1
 			<< std::format("[spark] Connected to {}:{}", host, port)
 			<< LOG_ASYNC;
 
-		auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, true, logger_);
+		auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
 		peers_.emplace_back(std::move(peer));
 	} else {
 		const auto msg = std::format("[spark] Could not connect to {}:{}", host, port);
