@@ -10,7 +10,7 @@
 #include <spark/v2/Handler.h>
 #include <spark/v2/PeerConnection.h>
 #include <shared/FilterTypes.h>
-#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio.hpp>
 #include <format>
 #include <memory>
 
@@ -21,9 +21,52 @@ namespace ba = boost::asio;
 Server::Server(boost::asio::io_context& context, const std::string& iface,
                const std::uint16_t port, log::Logger* logger)
 	: ctx_(context),
+	  acceptor_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),
 	  resolver_(ctx_),
-	  logger_(logger),
-	  listener_(*this, context, iface, port, true, logger) {}
+	  logger_(logger) {
+	acceptor_.set_option(ba::ip::tcp::no_delay(true));
+	acceptor_.set_option(ba::ip::tcp::acceptor::reuse_address(true));
+
+	// start accepting connections
+	ba::co_spawn(ctx_, listen(), ba::detached);
+}
+
+ba::awaitable<void> Server::listen() {
+	while(acceptor_.is_open()) {
+		auto result = co_await accept_connection();
+
+		if(result) {
+			accept(std::move(*result));
+		}
+	}
+}
+
+ba::awaitable<Server::SocketReturn> Server::accept_connection() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	ba::ip::tcp::socket socket(ctx_);
+
+	auto [ec] = co_await acceptor_.async_accept(socket, as_tuple(ba::use_awaitable));
+
+	if(ec) {
+		co_return std::unexpected(ec);
+	}
+
+	const auto ep = socket.remote_endpoint(ec);
+
+	if(ec) {
+		LOG_DEBUG(logger_)
+			<< "[spark] Aborted connection, remote peer disconnected"
+			<< LOG_ASYNC;
+		co_return std::unexpected(ec);
+	}
+
+	LOG_DEBUG(logger_)
+		<< "[spark] Accepted connection " << ep.address().to_string()
+		<< ":" << ep.port() << LOG_ASYNC;
+
+	co_return std::move(socket);
+}
 
 void Server::accept(boost::asio::ip::tcp::socket socket) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
@@ -75,7 +118,7 @@ void Server::connect(const std::string& host, const std::uint16_t port) {
 
 void Server::shutdown() {
 	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Service shutting down..." << LOG_ASYNC;
-	listener_.shutdown();
+	acceptor_.close();
 }
 
 } // spark, ember

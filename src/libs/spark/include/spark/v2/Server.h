@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <spark/v2/NetworkListener.h>
-#include <spark/v2/SocketAcceptor.h>
 #include <spark/v2/PeerHandler.h>
 #include <spark/v2/RemotePeer.h>
 #include <spark/v2/HandlerRegistry.h>
 #include <logger/Logging.h>
 #include <boost/asio/io_context.hpp>
+#include <expected>
 #include <memory>
 #include <string>
 #include <vector>
@@ -22,20 +21,24 @@
 
 namespace ember::spark::v2 {
 
-class Server final : public SocketAcceptor {
+class Server final {
+	using SocketReturn = std::expected<boost::asio::ip::tcp::socket, boost::system::error_code>;
+
 	boost::asio::io_context& ctx_;
+	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::resolver resolver_;
-	NetworkListener listener_;
 	std::vector<std::unique_ptr<RemotePeer>> peers_;
 	HandlerRegistry handlers_;
 	log::Logger* logger_;
 	
+	boost::asio::awaitable<void> listen();
+	boost::asio::awaitable<SocketReturn> accept_connection();
 	void accept(boost::asio::ip::tcp::socket socket);
 	boost::asio::awaitable<void> do_connect(const std::string& host, const std::uint16_t port);
 
 public:
 	Server(boost::asio::io_context& context, const std::string& iface,
-	        std::uint16_t port, log::Logger* logger);
+	       std::uint16_t port, log::Logger* logger);
 
 	void register_handler(spark::v2::Handler* handler);
 	void deregister_handler(spark::v2::Handler* handler);

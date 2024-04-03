@@ -14,7 +14,6 @@
 #include <format>
 #include <fstream>
 #include <stdexcept>
-#include <iostream>
 
 using namespace nlohmann;
 
@@ -83,10 +82,6 @@ void SchemaParser::process(const reflection::Schema* schema, const reflection::S
 	data["name"] = bare_name;
 	data["handlers"] = {};
 	data["root"] = remove_fbs_ns(schema->root_table()->name()->str());
-
-	for(auto field : *schema->root_table()->fields()) {
-		std::cout << field->name()->str() << '\n';
-	}
 
 	for(auto call : *service->calls()) {
 		data["handlers"].push_back(
