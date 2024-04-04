@@ -26,6 +26,20 @@ RemotePeer::RemotePeer(ba::ip::tcp::socket socket, HandlerRegistry& registry, lo
 	  log_(log) {
 }
 
+ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
+	core::HelloT hello;
+	hello.description = banner;
+
+	auto msg = std::make_unique<Message>();
+	finish(hello, *msg);
+	send(std::move(msg));
+	co_return;
+}
+
+ba::awaitable<void> RemotePeer::receive_banner() {
+	co_return;
+}
+
 template<typename T>
 void RemotePeer::finish(T& payload, Message& msg) {
 	core::HeaderT header_t;
@@ -72,10 +86,10 @@ void RemotePeer::handle_hello(std::span<const std::uint8_t> data) {
 		return; // todo, end session
 	}
 
-	if(hello->magic() != 0x454D4252 || hello->protocol_ver() != 0) {
+	if(hello->protocol_ver() != 0) {
 		const auto msg = std::format(
-			"[spark] Incompatible remote peer, {} (magic: {}, version: {})",
-			conn_.address(), hello->magic(), hello->protocol_ver()
+			"[spark] Incompatible remote peer, {} (version: {})",
+			conn_.address(), hello->protocol_ver()
 		);
 
 		LOG_WARN_FILTER(log_, LF_SPARK) << msg << LOG_ASYNC;

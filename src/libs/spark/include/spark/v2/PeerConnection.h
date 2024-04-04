@@ -14,6 +14,7 @@
 #include <boost/asio/strand.hpp>
 #include <array>
 #include <memory>
+#include <span>
 #include <queue>
 #include <string>
 #include <utility>
@@ -31,12 +32,13 @@ class PeerConnection final {
 	Dispatcher& dispatcher_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
-	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_;
+	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
 	std::queue<std::unique_ptr<Message>> queue_;
+	std::size_t offset_{};
 
 	boost::asio::awaitable<void> process_queue();
-	boost::asio::awaitable<void> receive();
-	boost::asio::awaitable<std::size_t> do_receive(std::size_t offset);
+	boost::asio::awaitable<void> begin_receive();
+	boost::asio::awaitable<std::pair<std::size_t, std::uint32_t>> do_receive(std::size_t offset);
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 
 public:
@@ -45,6 +47,8 @@ public:
 
 	std::string address();
 	void send(std::unique_ptr<Message> buffer);
+	boost::asio::awaitable<void> send(Message& msg);
+	boost::asio::awaitable<std::span<std::uint8_t>> receive_msg();
 	void close();
 };
 

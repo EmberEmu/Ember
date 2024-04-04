@@ -14,6 +14,7 @@
 #include <spark/v2/Dispatcher.h>
 #include <spark/v2/SharedDefs.h>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/awaitable.hpp>
 #include <boost/container/flat_map.hpp>
 #include <logger/Logging.h>
 #include <concepts>
@@ -45,6 +46,9 @@ class RemotePeer final : public Dispatcher {
 
 public:
 	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);
+
+	boost::asio::awaitable<void> send_banner(const std::string& banner);
+	boost::asio::awaitable<void> receive_banner();
 
 	void send();
 	void receive(std::span<const std::uint8_t> data) override;

@@ -21,7 +21,6 @@ table Enumerate {
 }
 
 table Hello {
-	magic: int = 0x454D4252; // 'EMBR'
 	protocol_ver: int = 0;
 	description: string (required);
 }

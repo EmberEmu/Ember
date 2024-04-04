@@ -30,6 +30,8 @@ Server::Server(boost::asio::io_context& context, const std::string& iface,
 }
 
 ba::awaitable<void> Server::listen() {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	while(acceptor_.is_open()) {
 		auto result = co_await accept_connection();
 

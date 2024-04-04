@@ -10,9 +10,7 @@
 #include <spark/v2/Message.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/asio.hpp>
-#include <array>
 #include <format>
-#include <span>
 #include <cassert>
 #include <cstring>
 
@@ -24,7 +22,7 @@ PeerConnection::PeerConnection(Dispatcher& dispatcher, ba::ip::tcp::socket socke
 	: dispatcher_(dispatcher),
 	  socket_(std::move(socket)),
       strand_(socket_.get_executor()) {
-	ba::co_spawn(strand_, receive(), ba::detached);
+	//ba::co_spawn(strand_, begin_receive(), ba::detached);
 }
 
 ba::awaitable<void> PeerConnection::process_queue() try {
@@ -32,9 +30,9 @@ ba::awaitable<void> PeerConnection::process_queue() try {
 		auto msg = std::move(queue_.front());
 		queue_.pop();
 
-		std::array<boost::asio::const_buffer, 2> buffers {
-			boost::asio::const_buffer { msg->header.data(), msg->header.size() },
-			boost::asio::const_buffer { msg->fbb.GetBufferPointer(), msg->fbb.GetSize() }
+		std::array<ba::const_buffer, 2> buffers {
+			ba::const_buffer { msg->header.data(), msg->header.size() },
+			ba::const_buffer { msg->fbb.GetBufferPointer(), msg->fbb.GetSize() }
 		};
 
 		co_await socket_.async_send(buffers, ba::use_awaitable);
@@ -75,7 +73,8 @@ ba::awaitable<std::size_t> PeerConnection::read_until(const std::size_t offset,
 	co_return received;
 }
 
-ba::awaitable<std::size_t> PeerConnection::do_receive(const std::size_t offset) {
+ba::awaitable<std::pair<std::size_t, std::uint32_t>> 
+PeerConnection::do_receive(const std::size_t offset) {
 	std::size_t rcv_size = offset;
 	std::uint32_t msg_size = 0;
 
@@ -95,27 +94,54 @@ ba::awaitable<std::size_t> PeerConnection::do_receive(const std::size_t offset) 
 		rcv_size += co_await read_until(rcv_size, msg_size);
 	}
 
-	// message complete, get it handled
-	std::span view(buffer_.data(), msg_size);
-	dispatcher_.receive(view);
-
-	// move any data belonging to the next message to the start
-	if(rcv_size > msg_size) {
-		std::memmove(buffer_.data(), buffer_.data() + msg_size, buffer_.size() - msg_size);
-	}
-
-	assert(msg_size <= rcv_size);
-	co_return rcv_size - msg_size; // offset to start the next read at
+	co_return std::make_pair(rcv_size, msg_size);
 }
 
-ba::awaitable<void> PeerConnection::receive() try {
-	std::size_t offset = 0;
 
+ba::awaitable<void> PeerConnection::begin_receive() try {
 	while(socket_.is_open()) {
-		offset = co_await do_receive(offset);
+		auto [rcv_size, msg_size] = co_await do_receive(offset_);
+
+		// message complete, get it handled
+		std::span view(buffer_.data(), msg_size);
+		dispatcher_.receive(view);
+
+		// move any data belonging to the next message to the start
+		if(rcv_size > msg_size) {
+			std::memmove(buffer_.data(), buffer_.data() + msg_size, buffer_.size() - msg_size);
+		}
+
+		assert(msg_size <= rcv_size);
+		offset_ = rcv_size - msg_size; // offset to start the next read at
 	}
 } catch(std::exception& e) {
 	close();
+}
+
+ba::awaitable<std::span<std::uint8_t>> PeerConnection::receive_msg() {
+	// read message size uint32
+	std::uint32_t msg_size = 0;
+	auto buffer = ba::buffer(buffer_.data(), sizeof(msg_size));
+	co_await ba::async_read(socket_, buffer, ba::use_awaitable);
+	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
+
+	if(msg_size > buffer_.max_size()) {
+		throw std::runtime_error("todo");
+	}
+
+	// read the rest of the message
+	buffer = ba::buffer(buffer_.data() + sizeof(msg_size), msg_size - sizeof(msg_size));
+	co_await ba::async_read(socket_, buffer, ba::use_awaitable);
+	co_return std::span{buffer_.data(), msg_size};
+}
+
+ba::awaitable<void> PeerConnection::send(Message& msg) {
+	std::array<ba::const_buffer, 2> buffers {
+		ba::const_buffer { msg.header.data(), msg.header.size() },
+		ba::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
+	};
+
+	co_await socket_.async_send(buffers, ba::use_awaitable);
 }
 
 std::string PeerConnection::address() {
