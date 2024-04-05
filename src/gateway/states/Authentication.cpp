@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -159,7 +159,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(key.bytes());
 	key.binary_encode(k_bytes.data(), k_bytes.size());
 
-	const std::uint32_t unknown = 0; // this is hardcoded to zero in the client
+	const std::uint32_t protocol_id = 0; // best guess, this is hardcoded to zero in the client
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	const auto& packet = auth_ctx.packet;
 
@@ -167,7 +167,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	std::array<std::uint8_t, 20> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(packet->username);
-	hasher->update_be(unknown);
+	hasher->update_be(protocol_id);
 	hasher->update(packet->seed.data(), sizeof(packet->seed));
 	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
 	hasher->update(k_bytes.data(), k_bytes.size());
