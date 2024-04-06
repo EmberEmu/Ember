@@ -29,16 +29,17 @@ class Server final {
 	boost::asio::ip::tcp::resolver resolver_;
 	std::vector<std::unique_ptr<RemotePeer>> peers_;
 	HandlerRegistry handlers_;
+	std::string name_;
 	log::Logger* logger_;
 	
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<SocketReturn> accept_connection();
-	void accept(boost::asio::ip::tcp::socket socket);
+	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
 	boost::asio::awaitable<void> do_connect(const std::string host, const std::uint16_t port);
 
 public:
-	Server(boost::asio::io_context& context, const std::string& iface,
-	       std::uint16_t port, log::Logger* logger);
+	Server(boost::asio::io_context& context, std::string name,
+	       const std::string& iface, std::uint16_t port, log::Logger* logger);
 
 	void register_handler(spark::v2::Handler* handler);
 	void deregister_handler(spark::v2::Handler* handler);

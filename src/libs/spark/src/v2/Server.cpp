@@ -18,9 +18,10 @@ namespace ember::spark::v2 {
 
 namespace ba = boost::asio;
 
-Server::Server(boost::asio::io_context& context, const std::string& iface,
-               const std::uint16_t port, log::Logger* logger)
+Server::Server(boost::asio::io_context& context, std::string name,
+               const std::string& iface, const std::uint16_t port, log::Logger* logger)
 	: ctx_(context),
+	  name_(std::move(name)),
 	  acceptor_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),
 	  resolver_(ctx_),
 	  logger_(logger) {
@@ -36,7 +37,7 @@ ba::awaitable<void> Server::listen() {
 		auto result = co_await accept_connection();
 
 		if(result) {
-			accept(std::move(*result));
+			co_await accept(std::move(*result));
 		}
 	}
 }
@@ -70,10 +71,19 @@ ba::awaitable<Server::SocketReturn> Server::accept_connection() {
 	co_return socket;
 }
 
-void Server::accept(boost::asio::ip::tcp::socket socket) {
+ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
+	auto banner = co_await peer->receive_banner();
+	co_await peer->send_banner(name_);
+
+	LOG_INFO_FILTER(logger_, LF_SPARK)
+		<< std::format("[spark] Connected to {}", banner)
+		<< LOG_ASYNC;
+
 	peers_.emplace_back(std::move(peer));
+} catch(const std::exception& e) {
+	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
 }
 
 void Server::register_handler(spark::v2::Handler* handler) {
@@ -89,28 +99,26 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 
 }
 
-ba::awaitable<void> Server::do_connect(const std::string host, const std::uint16_t port) {
-	auto results = co_await resolver_.async_resolve(
-		host, std::to_string(port), ba::use_awaitable
-	);
-
+ba::awaitable<void> Server::do_connect(const std::string host, const std::uint16_t port) try {
+	auto results = co_await resolver_.async_resolve(host, std::to_string(port), ba::use_awaitable);
 	ba::ip::tcp::socket socket(ctx_);
 
-	auto [ec, ep] = co_await ba::async_connect(
-		socket, results.begin(), results.end(), as_tuple(ba::use_awaitable)
+	co_await ba::async_connect(socket, results.begin(), results.end(), ba::use_awaitable);
+	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
+	co_await peer->send_banner(name_);
+	auto banner = co_await peer->receive_banner();
+
+	LOG_INFO_FILTER(logger_, LF_SPARK)
+		<< std::format("[spark] Connected to {}", banner)
+		<< LOG_ASYNC;
+
+	peers_.emplace_back(std::move(peer));
+} catch(const std::exception& e) {
+	const auto msg = std::format(
+		"[spark] Could not connect to {}:{} ()", host, port, e.what()
 	);
 
-	if(!ec) {
-		LOG_DEBUG_FILTER(logger_, LF_SPARK)
-			<< std::format("[spark] Connected to {}:{}", host, port)
-			<< LOG_ASYNC;
-
-		auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
-		peers_.emplace_back(std::move(peer));
-	} else {
-		const auto msg = std::format("[spark] Could not connect to {}:{}", host, port);
-		LOG_DEBUG_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
-	}
+	LOG_WARN_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
 }
 
 void Server::connect(const std::string& host, const std::uint16_t port) {

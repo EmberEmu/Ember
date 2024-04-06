@@ -86,7 +86,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start Spark services
-	spark::v2::Server spark(service, spark_iface, spark_port, logger);
+	spark::v2::Server spark(service, APP_NAME, spark_iface, spark_port, logger);
 	dns::RequestHandler handler(logger);
 	//context.register_service(&handler);
 	

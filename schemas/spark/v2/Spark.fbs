@@ -10,7 +10,6 @@ namespace ember.spark.core;
 
 union Message {
 	Hello,
-	Enumerate,
 	OpenChannel,
 	CloseChannel,
 	Bye

@@ -18,6 +18,7 @@
 #include <boost/container/flat_map.hpp>
 #include <logger/Logging.h>
 #include <concepts>
+#include <string>
 #include <utility>
 
 namespace ember::spark::v2 {
@@ -37,18 +38,13 @@ class RemotePeer final : public Dispatcher {
 
 	template<typename T>
 	void finish(T& payload, Message& msg);
-
-	void initiate_hello();
-	void negotiate_protocols();
-	void handle_hello(std::span<const std::uint8_t> data);
-	void handle_negotiation(std::span<const std::uint8_t> data);
 	void send(std::unique_ptr<Message> msg);
 
 public:
 	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);
 
 	boost::asio::awaitable<void> send_banner(const std::string& banner);
-	boost::asio::awaitable<void> receive_banner();
+	boost::asio::awaitable<std::string> receive_banner();
 
 	void send();
 	void receive(std::span<const std::uint8_t> data) override;

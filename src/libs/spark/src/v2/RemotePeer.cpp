@@ -30,14 +30,45 @@ ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
 	core::HelloT hello;
 	hello.description = banner;
 
-	auto msg = std::make_unique<Message>();
-	finish(hello, *msg);
-	send(std::move(msg));
-	co_return;
+	// todo, remove duplication
+	Message msg;
+	finish(hello, msg);
+	MessageHeader header;
+	header.size = msg.fbb.GetSize();
+	header.set_alignment(msg.fbb.GetBufferMinAlignment());
+
+	BufferAdaptor adaptor(msg.header);
+	BinaryStream stream(adaptor);
+	header.write_to_stream(stream);
+	co_await conn_.send(msg);
 }
 
-ba::awaitable<void> RemotePeer::receive_banner() {
-	co_return;
+ba::awaitable<std::string> RemotePeer::receive_banner() {
+	auto msg = co_await conn_.receive_msg();
+
+	// todo, remove duplication
+	spark::v2::BufferAdaptor adaptor(msg);
+	spark::v2::BinaryStream stream(adaptor);
+
+	MessageHeader header;
+
+	if(header.read_from_stream(stream) != MessageHeader::State::OK
+	   || header.size <= stream.total_read()) {
+		throw std::runtime_error("todo #1");
+	}
+
+	const auto header_size = stream.total_read();
+	std::span flatbuffer(msg.data() + header_size, msg.size_bytes() - header_size);
+
+	flatbuffers::Verifier verifier(flatbuffer.data(), flatbuffer.size());
+	auto fb = core::GetHeader(flatbuffer.data());
+	auto hello = fb->message_as_Hello();
+
+	if(!hello->Verify(verifier)) {
+		throw std::runtime_error("todo #2");
+	}
+
+	co_return hello->description()->str();
 }
 
 template<typename T>
@@ -60,86 +91,8 @@ void RemotePeer::send(std::unique_ptr<Message> msg) {
 	conn_.send(std::move(msg));
 }
 
-void RemotePeer::initiate_hello() {
-	core::HelloT hello;
-	hello.description = "Hello, world"; // temp
-
-	auto msg = std::make_unique<Message>();
-	finish(hello, *msg);
-	send(std::move(msg));
-	state_ = State::NEGOTIATING;
-}
-
-void RemotePeer::handle_hello(std::span<const std::uint8_t> data) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-
-	auto fb = core::GetHeader(data.data());
-	flatbuffers::Verifier verifier(data.data(), data.size());
-
-	auto hello = fb->message_as_Hello();
-
-	if(!hello->Verify(verifier)) {
-		LOG_WARN_FILTER(log_, LF_SPARK)
-			<< "[spark] Bad HELLO from "
-			<< conn_.address()
-			<< LOG_ASYNC;
-		return; // todo, end session
-	}
-
-	if(hello->protocol_ver() != 0) {
-		const auto msg = std::format(
-			"[spark] Incompatible remote peer, {} (version: {})",
-			conn_.address(), hello->protocol_ver()
-		);
-
-		LOG_WARN_FILTER(log_, LF_SPARK) << msg << LOG_ASYNC;
-		return; // todo, end session
-	}
-
-	negotiate_protocols();
-	state_ = State::NEGOTIATING;
-}
-
-void RemotePeer::negotiate_protocols() {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-
-	core::EnumerateT enumerate;
-	auto msg = std::make_unique<Message>();
-	
-	for(const auto& service : registry_.services()) {
-		enumerate.services.emplace_back(service);
-	}
-
-	finish(enumerate, *msg);
-	send(std::move(msg));
-}
-
-
 void RemotePeer::send() {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-}
-
-void RemotePeer::handle_negotiation(std::span<const std::uint8_t> data) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-
-	auto fb = core::GetHeader(data.data());
-	flatbuffers::Verifier verifier(data.data(), data.size());
-
-	auto enumerate = fb->message_as_Enumerate();
-
-	if(!enumerate->Verify(verifier)) {
-		LOG_WARN_FILTER(log_, LF_SPARK)
-			<< "[spark] Bad ENUMERATE from "
-			<< conn_.address()
-			<< LOG_ASYNC;
-		return; // todo, end session
-	}
-
-	if(enumerate->services()) {
-		for(const auto service : *enumerate->services()) {
-			LOG_DEBUG(log_) << service->c_str() << LOG_ASYNC;
-		}
-	}
 }
 
 void RemotePeer::receive(std::span<const std::uint8_t> data) {
@@ -161,17 +114,6 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 
 	const auto header_size = stream.total_read();
 	std::span flatbuffer(data.data() + header_size, data.size_bytes() - header_size);
-
-	switch(state_) {
-		case State::HELLO:
-			handle_hello(flatbuffer);
-			break;
-		case State::NEGOTIATING:
-			handle_negotiation(flatbuffer);
-			break;
-		case State::DISPATCHING:
-			break;
-	}
 }
 
 } // v2, spark, ember
