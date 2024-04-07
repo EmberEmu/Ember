@@ -8,6 +8,7 @@
 
 #include <spark/v2/PeerConnection.h>
 #include <spark/v2/Message.h>
+#include <spark/Exception.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/asio.hpp>
 #include <format>
@@ -126,7 +127,7 @@ ba::awaitable<std::span<std::uint8_t>> PeerConnection::receive_msg() {
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 
 	if(msg_size > buffer_.max_size()) {
-		throw std::runtime_error("todo");
+		throw exception("bad message size");
 	}
 
 	// read the rest of the message

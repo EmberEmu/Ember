@@ -11,9 +11,9 @@
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/HandlerRegistry.h>
+#include <spark/Exception.h>
 #include <shared/FilterTypes.h>
 #include "Spark_generated.h"
-#include <iostream>
 
 namespace ba = boost::asio;
 
@@ -26,13 +26,7 @@ RemotePeer::RemotePeer(ba::ip::tcp::socket socket, HandlerRegistry& registry, lo
 	  log_(log) {
 }
 
-ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
-	core::HelloT hello;
-	hello.description = banner;
-
-	// todo, remove duplication
-	Message msg;
-	finish(hello, msg);
+void RemotePeer::write_header(Message& msg) {
 	MessageHeader header;
 	header.size = msg.fbb.GetSize();
 	header.set_alignment(msg.fbb.GetBufferMinAlignment());
@@ -40,13 +34,21 @@ ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
 	BufferAdaptor adaptor(msg.header);
 	BinaryStream stream(adaptor);
 	header.write_to_stream(stream);
+}
+
+ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
+	core::HelloT hello;
+	hello.description = banner;
+
+	Message msg;
+	finish(hello, msg);
+	write_header(msg);
 	co_await conn_.send(msg);
 }
 
 ba::awaitable<std::string> RemotePeer::receive_banner() {
 	auto msg = co_await conn_.receive_msg();
 
-	// todo, remove duplication
 	spark::v2::BufferAdaptor adaptor(msg);
 	spark::v2::BinaryStream stream(adaptor);
 
@@ -54,7 +56,7 @@ ba::awaitable<std::string> RemotePeer::receive_banner() {
 
 	if(header.read_from_stream(stream) != MessageHeader::State::OK
 	   || header.size <= stream.total_read()) {
-		throw std::runtime_error("todo #1");
+		throw exception("bad message header");
 	}
 
 	const auto header_size = stream.total_read();
@@ -65,7 +67,7 @@ ba::awaitable<std::string> RemotePeer::receive_banner() {
 	auto hello = fb->message_as_Hello();
 
 	if(!hello->Verify(verifier)) {
-		throw std::runtime_error("todo #2");
+		throw exception("bad flatbuffer message");
 	}
 
 	co_return hello->description()->str();
@@ -81,13 +83,7 @@ void RemotePeer::finish(T& payload, Message& msg) {
 }
 
 void RemotePeer::send(std::unique_ptr<Message> msg) {
-	MessageHeader header;
-	header.size = msg->fbb.GetSize();
-	header.set_alignment(msg->fbb.GetBufferMinAlignment());
-
-	BufferAdaptor adaptor(msg->header);
-	BinaryStream stream(adaptor);
-	header.write_to_stream(stream);
+	write_header(*msg);
 	conn_.send(std::move(msg));
 }
 

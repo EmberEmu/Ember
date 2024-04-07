@@ -22,8 +22,6 @@
 namespace ember::spark::v2 {
 
 class Server final {
-	using SocketReturn = std::expected<boost::asio::ip::tcp::socket, boost::system::error_code>;
-
 	boost::asio::io_context& ctx_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::asio::ip::tcp::resolver resolver_;
@@ -33,7 +31,7 @@ class Server final {
 	log::Logger* logger_;
 	
 	boost::asio::awaitable<void> listen();
-	boost::asio::awaitable<SocketReturn> accept_connection();
+	boost::asio::awaitable<void> accept_connection();
 	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
 	boost::asio::awaitable<void> do_connect(const std::string host, const std::uint16_t port);
 

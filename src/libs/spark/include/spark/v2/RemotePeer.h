@@ -39,6 +39,7 @@ class RemotePeer final : public Dispatcher {
 	template<typename T>
 	void finish(T& payload, Message& msg);
 	void send(std::unique_ptr<Message> msg);
+	void write_header(Message& msg);
 
 public:
 	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);

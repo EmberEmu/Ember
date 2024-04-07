@@ -34,45 +34,44 @@ ba::awaitable<void> Server::listen() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	while(acceptor_.is_open()) {
-		auto result = co_await accept_connection();
-
-		if(result) {
-			co_await accept(std::move(*result));
-		}
+		co_await accept_connection();
 	}
 }
 
-ba::awaitable<Server::SocketReturn> Server::accept_connection() {
+ba::awaitable<void> Server::accept_connection() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	ba::ip::tcp::socket socket(ctx_);
-
 	auto [ec] = co_await acceptor_.async_accept(socket, as_tuple(ba::use_awaitable));
 
 	if(ec) {
-		co_return std::unexpected(ec);
+		LOG_DEBUG(logger_)
+			<< "[spark] Unable to accept connection"
+			<< LOG_ASYNC;
+		co_return;
 	}
 
-	const auto ep = socket.remote_endpoint(ec);
+	const auto ep = socket.remote_endpoint();
 
 	if(ec) {
 		LOG_DEBUG(logger_)
-			<< "[spark] Aborted connection, remote peer disconnected"
+			<< "[spark] Unable to obtain endpoint, remote peer disconnected"
 			<< LOG_ASYNC;
-		co_return std::unexpected(ec);
+		co_return;
 	}
 
-	LOG_DEBUG(logger_)
+	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Accepted connection "
 		<< ep.address().to_string()
 		<< ":" << ep.port()
 		<< LOG_ASYNC;
 
-	co_return socket;
+	co_await accept(std::move(socket));
 }
 
 ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
 	auto banner = co_await peer->receive_banner();
 	co_await peer->send_banner(name_);
