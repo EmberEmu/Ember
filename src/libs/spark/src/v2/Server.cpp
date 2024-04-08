@@ -11,6 +11,8 @@
 #include <spark/v2/PeerConnection.h>
 #include <shared/FilterTypes.h>
 #include <boost/asio.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <format>
 #include <memory>
 
@@ -18,15 +20,16 @@ namespace ember::spark::v2 {
 
 namespace ba = boost::asio;
 
-Server::Server(boost::asio::io_context& context, std::string name,
+Server::Server(boost::asio::io_context& context, const std::string& name,
                const std::string& iface, const std::uint16_t port, log::Logger* logger)
 	: ctx_(context),
-	  name_(std::move(name)),
 	  acceptor_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),
 	  resolver_(ctx_),
 	  logger_(logger) {
 	acceptor_.set_option(ba::ip::tcp::no_delay(true));
 	acceptor_.set_option(ba::ip::tcp::acceptor::reuse_address(true));
+	const auto uuid = boost::uuids::random_generator()();
+	name_ = std::format("{}:{}", name, boost::uuids::to_string(uuid));
 	ba::co_spawn(ctx_, listen(), ba::detached);
 }
 

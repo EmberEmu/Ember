@@ -13,6 +13,7 @@
 #include <spark/v2/HandlerRegistry.h>
 #include <logger/Logging.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <expected>
 #include <memory>
 #include <string>
@@ -36,7 +37,7 @@ class Server final {
 	boost::asio::awaitable<void> do_connect(const std::string host, const std::uint16_t port);
 
 public:
-	Server(boost::asio::io_context& context, std::string name,
+	Server(boost::asio::io_context& context, const std::string& name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);
 
 	void register_handler(spark::v2::Handler* handler);
