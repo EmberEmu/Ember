@@ -11,12 +11,13 @@ namespace ember.spark.core;
 union Message {
 	Hello,
 	OpenChannel,
+	OpenChannelResponse,
 	CloseChannel,
 	Bye
 }
 
-table Enumerate {
-	services: [string];
+enum Result : int {
+	OK, ERROR
 }
 
 table Hello {
@@ -25,10 +26,17 @@ table Hello {
 }
 
 table OpenChannel {
-	channel: int;
+	id: int;
+	service: string;
 }
 
-table CloseChannel { 
+table OpenChannelResponse {
+	result: Result;
+	requested_id: int;
+	actual_id: int;
+}
+
+table CloseChannel {
 	channel: int;
 }
 

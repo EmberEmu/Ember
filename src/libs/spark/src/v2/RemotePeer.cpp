@@ -112,4 +112,15 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 	std::span flatbuffer(data.data() + header_size, data.size_bytes() - header_size);
 }
 
+void RemotePeer::open_channel(const std::string& name, Handler* handler) {
+	core::OpenChannelT open_channel;
+	open_channel.id = next_channel_id_++;
+	open_channel.service = name;
+
+	auto msg = std::make_unique<Message>();
+	finish(open_channel, *msg);
+	write_header(*msg);
+	conn_.send(std::move(msg));
+}
+
 } // v2, spark, ember

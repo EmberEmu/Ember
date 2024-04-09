@@ -12,6 +12,7 @@
 #include <spark/v2/PeerConnection.h>
 #include <spark/v2/Channel.h>
 #include <spark/v2/Dispatcher.h>
+#include <spark/v2/Handler.h>
 #include <spark/v2/SharedDefs.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -35,6 +36,7 @@ class RemotePeer final : public Dispatcher {
 	HandlerRegistry& registry_;
 	log::Logger* log_;
 	boost::container::flat_map<std::uint8_t, Channel> channels_;
+	std::uint8_t next_channel_id_ = 1;
 
 	template<typename T>
 	void finish(T& payload, Message& msg);
@@ -49,6 +51,7 @@ public:
 
 	void send();
 	void receive(std::span<const std::uint8_t> data) override;
+	void open_channel(const std::string& name, Handler* handler);
 };
 
 } // spark, ember
