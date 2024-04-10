@@ -34,16 +34,18 @@ class Server final {
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<void> accept_connection();
 	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
-	boost::asio::awaitable<void> do_connect(const std::string host, const std::uint16_t port);
+	boost::asio::awaitable<bool> connect(const std::string& host, std::uint16_t port);
+	boost::asio::awaitable<void> open_channel(std::string host, const std::uint16_t port,
+	                                          std::string service, Handler* handler);
 
 public:
 	Server(boost::asio::io_context& context, const std::string& name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);
 
-	void register_handler(spark::v2::Handler* handler);
-	void deregister_handler(spark::v2::Handler* handler);
+	void register_handler(Handler* handler);
+	void deregister_handler(Handler* handler);
 
-	void connect(const std::string& host, const std::uint16_t port);
+	void connect(std::string host, std::uint16_t port, std::string service, Handler* handler);
 	void shutdown();
 };
 

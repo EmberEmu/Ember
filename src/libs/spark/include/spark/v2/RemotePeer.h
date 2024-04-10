@@ -49,9 +49,9 @@ public:
 	boost::asio::awaitable<void> send_banner(const std::string& banner);
 	boost::asio::awaitable<std::string> receive_banner();
 
-	void send();
 	void receive(std::span<const std::uint8_t> data) override;
 	void open_channel(const std::string& name, Handler* handler);
+	void start();
 };
 
 } // spark, ember

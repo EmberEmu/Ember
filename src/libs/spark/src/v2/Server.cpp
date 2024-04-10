@@ -83,6 +83,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
+	peer->start();
 	peers_.emplace_back(std::move(peer));
 } catch(const std::exception& e) {
 	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
@@ -101,7 +102,9 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 
 }
 
-ba::awaitable<void> Server::do_connect(const std::string host, const std::uint16_t port) try {
+ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port), ba::use_awaitable);
 	ba::ip::tcp::socket socket(ctx_);
 
@@ -114,18 +117,38 @@ ba::awaitable<void> Server::do_connect(const std::string host, const std::uint16
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
+	peer->start();
 	peers_.emplace_back(std::move(peer));
+	co_return true;
 } catch(const std::exception& e) {
 	const auto msg = std::format(
 		"[spark] Could not connect to {}:{} ()", host, port, e.what()
 	);
 
 	LOG_WARN_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
+	co_return false;
 }
 
-void Server::connect(const std::string& host, const std::uint16_t port) {
+ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t port,
+                                         std::string service, Handler* handler) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	ba::co_spawn(ctx_, do_connect(host, port), ba::detached);
+
+	// todo, use existing connection if already connected
+	const bool result = co_await connect(host, port);
+
+	if(!result) {
+		co_return;
+	}
+
+	peers_[0]->open_channel(service, handler); // temp, obviously
+}
+
+void Server::connect(std::string host, const std::uint16_t port, std::string service, Handler* handler) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	ba::co_spawn(ctx_, open_channel(
+		std::move(host), port, std::move(service), handler), ba::detached
+	);
 }
 
 void Server::shutdown() {

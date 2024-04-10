@@ -49,6 +49,7 @@ public:
 	void send(std::unique_ptr<Message> buffer);
 	boost::asio::awaitable<void> send(Message& msg);
 	boost::asio::awaitable<std::span<std::uint8_t>> receive_msg();
+	void start();
 	void close();
 };
 

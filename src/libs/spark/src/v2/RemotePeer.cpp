@@ -37,6 +37,8 @@ void RemotePeer::write_header(Message& msg) {
 }
 
 ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
+	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+
 	core::HelloT hello;
 	hello.description = banner;
 
@@ -47,6 +49,8 @@ ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
 }
 
 ba::awaitable<std::string> RemotePeer::receive_banner() {
+	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+
 	auto msg = co_await conn_.receive_msg();
 
 	spark::v2::BufferAdaptor adaptor(msg);
@@ -87,10 +91,6 @@ void RemotePeer::send(std::unique_ptr<Message> msg) {
 	conn_.send(std::move(msg));
 }
 
-void RemotePeer::send() {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-}
-
 void RemotePeer::receive(std::span<const std::uint8_t> data) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
@@ -113,14 +113,21 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 }
 
 void RemotePeer::open_channel(const std::string& name, Handler* handler) {
-	core::OpenChannelT open_channel;
-	open_channel.id = next_channel_id_++;
-	open_channel.service = name;
+	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+
+	core::OpenChannelT body;
+	body.id = next_channel_id_;
+	body.service = name;
+	++next_channel_id_;
 
 	auto msg = std::make_unique<Message>();
-	finish(open_channel, *msg);
+	finish(body, *msg);
 	write_header(*msg);
 	conn_.send(std::move(msg));
+}
+
+void RemotePeer::start() {
+	conn_.start();
 }
 
 } // v2, spark, ember

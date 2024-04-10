@@ -23,10 +23,19 @@
 namespace ember::services {
 
 class {{name}}Client : public spark::v2::Handler {
+	spark::v2::Server& spark_;
+
+protected:
+	void connect(std::string host, std::uint16_t port) {
+		spark_.connect(host, port, type(), this);
+	}
+
 public:
 ## for handler in handlers
 	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
 ## endfor
+
+	{{name}}Client(spark::v2::Server& spark) : spark_(spark) {}
 
 	std::string type() {
 		return "{{name}}";

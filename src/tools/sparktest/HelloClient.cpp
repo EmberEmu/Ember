@@ -10,8 +10,10 @@
 
 namespace ember {
 
-HelloClient::HelloClient(spark::v2::Server& spark) : spark_(spark) {
-	spark_.connect("127.0.0.1", 8000);
+HelloClient::HelloClient(spark::v2::Server& spark)
+	: services::HelloClient(spark),
+	  spark_(spark) {
+	connect("127.0.0.1", 8000);
 }
 
 void HelloClient::on_link_up(const spark::v2::Link& link) {

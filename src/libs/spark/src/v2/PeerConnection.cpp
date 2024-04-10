@@ -22,9 +22,7 @@ namespace ember::spark::v2 {
 PeerConnection::PeerConnection(Dispatcher& dispatcher, ba::ip::tcp::socket socket)
 	: dispatcher_(dispatcher),
 	  socket_(std::move(socket)),
-      strand_(socket_.get_executor()) {
-	//ba::co_spawn(strand_, begin_receive(), ba::detached);
-}
+      strand_(socket_.get_executor()) {}
 
 ba::awaitable<void> PeerConnection::process_queue() try {
 	while(!queue_.empty()) {
@@ -36,7 +34,7 @@ ba::awaitable<void> PeerConnection::process_queue() try {
 			ba::const_buffer { msg->fbb.GetBufferPointer(), msg->fbb.GetSize() }
 		};
 
-		co_await socket_.async_send(buffers, ba::use_awaitable);
+		co_await ba::async_write(socket_, buffers, ba::use_awaitable);
 	}
 } catch(std::exception& e) {
 	close();
@@ -83,6 +81,7 @@ PeerConnection::do_receive(const std::size_t offset) {
 	if(rcv_size < sizeof(msg_size)) {
 		rcv_size += co_await read_until(offset, sizeof(msg_size));
 	}
+	
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 	boost::endian::little_to_native_inplace(msg_size);
 
@@ -142,7 +141,7 @@ ba::awaitable<void> PeerConnection::send(Message& msg) {
 		ba::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
 	};
 
-	co_await socket_.async_send(buffers, ba::use_awaitable);
+	co_await ba::async_write(socket_, buffers, ba::use_awaitable);
 }
 
 std::string PeerConnection::address() {
@@ -152,6 +151,11 @@ std::string PeerConnection::address() {
 
 	const auto& ep = socket_.remote_endpoint();
 	return std::format("{}:{}", ep.address().to_string(), ep.port());
+}
+
+// start full-duplex send/receive
+void PeerConnection::start() {
+	ba::co_spawn(strand_, begin_receive(), ba::detached);
 }
 
 // todo, need to inform the handler when an error occurs
