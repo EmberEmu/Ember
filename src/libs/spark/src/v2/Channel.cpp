@@ -10,5 +10,25 @@
 
 namespace ember::spark::v2 {
 
+auto Channel::state() -> State {
+	return state_;
+}
+
+void Channel::handler(Handler* handler) {
+	handler_ = handler;
+}
+
+Handler* Channel::handler() {
+	return handler_;
+}
+
+void Channel::state(State state) {
+	state_ = state;
+}
+
+void Channel::reset() {
+	handler_ = nullptr;
+	state_ = State::EMPTY;
+}
 
 } // v2, spark, ember

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Spark_generated.h"
 #include <spark/v2/PeerHandler.h>
 #include <spark/v2/PeerConnection.h>
 #include <spark/v2/Channel.h>
@@ -16,8 +17,8 @@
 #include <spark/v2/SharedDefs.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
-#include <boost/container/flat_map.hpp>
 #include <logger/Logging.h>
+#include <array>
 #include <concepts>
 #include <string>
 #include <utility>
@@ -35,13 +36,21 @@ class RemotePeer final : public Dispatcher {
 	PeerConnection conn_;
 	HandlerRegistry& registry_;
 	log::Logger* log_;
-	boost::container::flat_map<std::uint8_t, Channel> channels_;
+	std::array<Channel, 256> channels_{};
 	std::uint8_t next_channel_id_ = 1;
 
 	template<typename T>
 	void finish(T& payload, Message& msg);
 	void send(std::unique_ptr<Message> msg);
 	void write_header(Message& msg);
+	void handle_control_message(std::span<const std::uint8_t> data);
+	void handle_channel_message(std::uint8_t id, std::span<const std::uint8_t> data);
+	void handle_open_channel(const core::OpenChannel* msg);
+	void handle_open_channel_response(const core::OpenChannelResponse* msg);
+	void handle_close_channel(const core::CloseChannel* msg);
+	void open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested);
+	std::uint8_t next_empty_channel(std::uint8_t id);
+	void close_channel(std::uint8_t id);
 
 public:
 	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);

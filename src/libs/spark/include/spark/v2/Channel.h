@@ -9,11 +9,26 @@
 #pragma once
 
 #include <spark/v2/Tracker.h>
+#include <spark/v2/Handler.h>
 
 namespace ember::spark::v2 {
 
 class Channel {
+public:
+	enum class State {
+		EMPTY, HALF_OPEN, OPEN
+	};
 
+private:
+	State state_ = State::EMPTY;
+	Handler* handler_ = nullptr;
+
+public:
+	void handler(Handler* handler);
+	Handler* handler();
+	State state();
+	void state(State state);
+	void reset();
 };
 
 } // v2, spark, ember
