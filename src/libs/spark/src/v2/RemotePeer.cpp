@@ -279,14 +279,7 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 	channel.message(header, data);
 }
 
-void RemotePeer::open_channel(const std::string& name, Handler* handler) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-	LOG_DEBUG_FMT(log_, "[spark] Requesting channel for {}", name);
-
-	Channel& channel = channels_[next_channel_id_];
-	channel.state(Channel::State::HALF_OPEN);
-	channel.handler(handler);
-
+void RemotePeer::send_open_channel(const std::string& name) {
 	core::OpenChannelT body;
 	body.id = next_channel_id_;
 	body.service = name;
@@ -296,6 +289,17 @@ void RemotePeer::open_channel(const std::string& name, Handler* handler) {
 	finish(body, *msg);
 	write_header(*msg);
 	conn_.send(std::move(msg));
+}
+
+void RemotePeer::open_channel(const std::string& name, Handler* handler) {
+	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_DEBUG_FMT(log_, "[spark] Requesting channel for {}", name);
+
+	Channel& channel = channels_[next_channel_id_]; // todo, proper ID handling
+	channel.state(Channel::State::HALF_OPEN);
+	channel.handler(handler);
+
+	send_open_channel(name);
 }
 
 void RemotePeer::start() {

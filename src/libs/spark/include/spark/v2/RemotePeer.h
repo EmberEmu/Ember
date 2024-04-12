@@ -51,6 +51,7 @@ class RemotePeer final : public Dispatcher {
 	void open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested);
 	std::uint8_t next_empty_channel(std::uint8_t id);
 	void send_close_channel(std::uint8_t id);
+	void send_open_channel(const std::string& name);
 
 public:
 	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);
