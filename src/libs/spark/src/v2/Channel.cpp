@@ -10,6 +10,10 @@
 
 namespace ember::spark::v2 {
 
+void Channel::message(const MessageHeader& header, std::span<const std::uint8_t> data) {
+	// draw the rest of the owl
+}
+
 auto Channel::state() -> State {
 	return state_;
 }

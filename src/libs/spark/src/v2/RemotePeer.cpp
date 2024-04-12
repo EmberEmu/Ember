@@ -114,19 +114,27 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 	if(header.channel == 0) {
 		handle_control_message(flatbuffer);
 	} else {
-		handle_channel_message(header.channel, flatbuffer);
+		handle_channel_message(header, flatbuffer);
 	}
 }
 
 void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* msg) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
+	if(msg->result() != core::Result::OK) {
+		channels_[msg->requested_id()].reset();
+		send_close_channel(msg->actual_id());
+		return;
+	}
+
 	// todo, index bounds checks
-	Channel& channel = channels_[msg->actual_id()];
+	auto id = msg->actual_id();
+	Channel& channel = channels_[id];
 
 	if(msg->actual_id() != msg->requested_id()) {
 		if(channel.state() != Channel::State::EMPTY) {
-			close_channel(msg->actual_id());
+			send_close_channel(msg->actual_id());
+			channels_[msg->requested_id()].reset();
 			return;
 		}
 
@@ -135,7 +143,8 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 	}
 
 	if(channel.state() != Channel::State::HALF_OPEN) {
-		close_channel(msg->actual_id());
+		send_close_channel(msg->actual_id());
+		channels_[msg->actual_id()].reset();
 		return;
 	}
 
@@ -144,11 +153,8 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 		channel.handler()->type(), msg->actual_id());
 }
 
-void RemotePeer::close_channel(const std::uint8_t id) {
+void RemotePeer::send_close_channel(const std::uint8_t id) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-
-	Channel& channel = channels_[id];
-	channel.reset();
 
 	core::CloseChannelT body;
 	body.channel = id;
@@ -259,8 +265,18 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 	LOG_INFO_FMT(log_, "[spark] Closed channel {}, requested by remote peer", id);
 }
 
-void RemotePeer::handle_channel_message(const std::uint8_t id, std::span<const std::uint8_t> data) {
+void RemotePeer::handle_channel_message(const MessageHeader& header,
+                                        std::span<const std::uint8_t> data) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+
+	Channel& channel = channels_[header.channel];
+
+	if(channel.state() != Channel::State::OPEN) {
+		LOG_WARN_FMT(log_, "[spark] Received message for closed channel, {}", header.channel);
+		return;
+	}
+
+	channel.message(header, data);
 }
 
 void RemotePeer::open_channel(const std::string& name, Handler* handler) {

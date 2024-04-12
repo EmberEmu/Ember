@@ -10,6 +10,7 @@
 
 #include <spark/v2/Tracker.h>
 #include <spark/v2/Handler.h>
+#include <spark/v2/MessageHeader.h>
 
 namespace ember::spark::v2 {
 
@@ -29,6 +30,7 @@ public:
 	State state();
 	void state(State state);
 	void reset();
+	void message(const MessageHeader& header, std::span<const std::uint8_t> data);
 };
 
 } // v2, spark, ember
