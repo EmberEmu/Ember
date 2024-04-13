@@ -62,6 +62,7 @@ public:
 
 	void receive(std::span<const std::uint8_t> data);
 	void open_channel(const std::string& type, Handler* handler);
+	void remove_handler(Handler* handler);
 	void start();
 };
 

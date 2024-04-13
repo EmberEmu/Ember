@@ -187,7 +187,7 @@ Handler* RemotePeer::find_handler(const core::OpenChannel* msg) {
 	if(stype) {
 		auto services = registry_.services(stype->str());
 
-		// just use the first available matching service
+		// just use the first matching handler
 		if(!services.empty()) {
 			return services.front();
 		}
@@ -351,6 +351,22 @@ void RemotePeer::start() {
 	conn_.start([this](std::span<const std::uint8_t> data) {
 		receive(data);
 	});
+}
+
+// very temporary, not thread-safe etc
+void RemotePeer::remove_handler(Handler* handler) {
+	for(std::size_t i = 0u; i < channels_.size(); ++i) {
+		Channel& channel = channels_[i];
+
+		if(channel.state() == Channel::State::EMPTY) {
+			continue;
+		}
+
+		if(channel.handler() == handler) {
+			send_close_channel(i);
+			channel.reset();
+		}
+	}
 }
 
 } // v2, spark, ember

@@ -33,4 +33,12 @@ std::shared_ptr<RemotePeer> Peers::find(const std::string& key) {
 	return nullptr;
 }
 
+void Peers::notify_remove_handler(Handler* handler) {
+	std::lock_guard<std::mutex> guard(lock_);
+
+	for(auto& [_, peer] : peers_) {
+		peer->remove_handler(handler);
+	}
+}
+
 } // spark, ember

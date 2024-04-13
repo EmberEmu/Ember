@@ -102,7 +102,8 @@ void Server::register_handler(spark::v2::Handler* handler) {
 
 void Server::deregister_handler(spark::v2::Handler* handler) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
+	handlers_.deregister_service(handler);
+	peers_.notify_remove_handler(handler);
 }
 
 ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {
@@ -160,7 +161,8 @@ ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t p
 	peer->open_channel(service, handler);
 }
 
-void Server::connect(std::string host, const std::uint16_t port, std::string service, Handler* handler) {
+void Server::connect(std::string host, const std::uint16_t port,
+                     std::string service, Handler* handler) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	ba::co_spawn(ctx_, open_channel(

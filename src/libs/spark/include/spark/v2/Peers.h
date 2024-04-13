@@ -16,6 +16,7 @@
 namespace ember::spark::v2 {
 
 class RemotePeer;
+class Handler;
 
 class Peers final {
 	std::unordered_map<std::string, std::shared_ptr<RemotePeer>> peers_;
@@ -25,6 +26,7 @@ public:
 	void add(std::string key, std::shared_ptr<RemotePeer> peer);
 	void remove(const std::string& key);
 	std::shared_ptr<RemotePeer> find(const std::string& key);
+	void notify_remove_handler(Handler* handler);
 };
 
 } // spark, ember
