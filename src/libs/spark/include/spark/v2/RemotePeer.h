@@ -12,7 +12,6 @@
 #include <spark/v2/PeerHandler.h>
 #include <spark/v2/PeerConnection.h>
 #include <spark/v2/Channel.h>
-#include <spark/v2/Dispatcher.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/SharedDefs.h>
 #include <boost/asio/ip/tcp.hpp>
@@ -27,12 +26,11 @@ namespace ember::spark::v2 {
 
 class HandlerRegistry;
 
-class RemotePeer final : public Dispatcher {
+class RemotePeer final {
 	enum class State {
 		HELLO, NEGOTIATING, DISPATCHING
 	} state_ = State::HELLO;
 
-	PeerHandler handler_;
 	PeerConnection conn_;
 	HandlerRegistry& registry_;
 	log::Logger* log_;
@@ -61,7 +59,7 @@ public:
 	boost::asio::awaitable<void> send_banner(const std::string& banner);
 	boost::asio::awaitable<std::string> receive_banner();
 
-	void receive(std::span<const std::uint8_t> data) override;
+	void receive(std::span<const std::uint8_t> data);
 	void open_channel(const std::string& name, Handler* handler);
 	void start();
 };

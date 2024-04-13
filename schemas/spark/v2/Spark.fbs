@@ -16,8 +16,9 @@ union Message {
 	Bye
 }
 
+// can't use ERROR due to clashes
 enum Result : int {
-	OK, ERROR
+	OK, ERROR_UNK
 }
 
 table Hello {

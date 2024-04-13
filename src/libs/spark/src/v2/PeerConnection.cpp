@@ -19,9 +19,8 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-PeerConnection::PeerConnection(Dispatcher& dispatcher, ba::ip::tcp::socket socket)
-	: dispatcher_(dispatcher),
-	  socket_(std::move(socket)),
+PeerConnection::PeerConnection(ba::ip::tcp::socket socket)
+	: socket_(std::move(socket)),
       strand_(socket_.get_executor()) {}
 
 ba::awaitable<void> PeerConnection::process_queue() try {
@@ -98,13 +97,13 @@ PeerConnection::do_receive(const std::size_t offset) {
 }
 
 
-ba::awaitable<void> PeerConnection::begin_receive() try {
+ba::awaitable<void> PeerConnection::begin_receive(ReceiveHandler handler) try {
 	while(socket_.is_open()) {
 		auto [rcv_size, msg_size] = co_await do_receive(offset_);
 
 		// message complete, get it handled
 		std::span view(buffer_.data(), msg_size);
-		dispatcher_.receive(view);
+		handler(view);
 
 		// move any data belonging to the next message to the start
 		if(rcv_size > msg_size) {
@@ -154,8 +153,8 @@ std::string PeerConnection::address() {
 }
 
 // start full-duplex send/receive
-void PeerConnection::start() {
-	ba::co_spawn(strand_, begin_receive(), ba::detached);
+void PeerConnection::start(ReceiveHandler handler) {
+	ba::co_spawn(strand_, begin_receive(handler), ba::detached);
 }
 
 // todo, need to inform the handler when an error occurs

@@ -44,7 +44,6 @@ set(COREv2
     include/spark/v2/PeerConnection.h
     include/spark/v2/PeerHandler.h
     include/spark/v2/RemotePeer.h
-    include/spark/v2/Dispatcher.h
 	include/spark/v2/Link.h
 	include/spark/v2/MessageHeader.h
 	include/spark/v2/Channel.h

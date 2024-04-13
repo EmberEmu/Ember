@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <spark/v2/Dispatcher.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/strand.hpp>
 #include <array>
+#include <functional>
 #include <memory>
-#include <span>
 #include <queue>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,9 +27,12 @@ namespace ember::spark::v2 {
 class Message;
 
 class PeerConnection final {
+public:
+	using ReceiveHandler = std::function<void(std::span<const std::uint8_t>)>;
+
+private:
 	static constexpr auto MAX_MESSAGE_SIZE = 1024u ^ 2;
 
-	Dispatcher& dispatcher_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
@@ -37,19 +40,19 @@ class PeerConnection final {
 	std::size_t offset_{};
 
 	boost::asio::awaitable<void> process_queue();
-	boost::asio::awaitable<void> begin_receive();
+	boost::asio::awaitable<void> begin_receive(ReceiveHandler handler);
 	boost::asio::awaitable<std::pair<std::size_t, std::uint32_t>> do_receive(std::size_t offset);
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 
 public:
-	PeerConnection(Dispatcher& dispatcher, boost::asio::ip::tcp::socket socket);
+	PeerConnection(boost::asio::ip::tcp::socket socket);
 	PeerConnection(PeerConnection&&) = default;
 
 	std::string address();
 	void send(std::unique_ptr<Message> buffer);
 	boost::asio::awaitable<void> send(Message& msg);
 	boost::asio::awaitable<std::span<std::uint8_t>> receive_msg();
-	void start();
+	void start(ReceiveHandler handler);
 	void close();
 };
 

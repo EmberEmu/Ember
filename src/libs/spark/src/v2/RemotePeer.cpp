@@ -20,9 +20,8 @@ namespace ba = boost::asio;
 namespace ember::spark::v2 {
 
 RemotePeer::RemotePeer(ba::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log)
-	: handler_(*this),
-	  registry_(registry),
-	  conn_(*this, std::move(socket)),
+	: registry_(registry),
+	  conn_(std::move(socket)),
 	  log_(log) {
 }
 
@@ -36,6 +35,7 @@ void RemotePeer::write_header(Message& msg) {
 	header.write_to_stream(stream);
 }
 
+// todo, should move receive/send banner out of here
 ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
@@ -49,6 +49,7 @@ ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
 	co_await conn_.send(msg);
 }
 
+// todo, should move receive/send banner out of here
 ba::awaitable<std::string> RemotePeer::receive_banner() {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
@@ -176,13 +177,13 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	// todo, change how the registry works
 	if(handlers.empty()) {
 		LOG_DEBUG_FMT(log_, "[spark] Requested service ({}) does not exist", service);
-		open_channel_response(core::Result::ERROR, 0, msg->id());
+		open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 		return;
 	}
 
 	if(msg->id() == 0 || msg->id() >= channels_.size()) {
 		LOG_DEBUG_FMT(log_, "[spark] Bad channel ID ({}) specified", msg->id());
-		open_channel_response(core::Result::ERROR, 0, msg->id());
+		open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 		return;
 	}
 
@@ -194,7 +195,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 			channel = channels_[id];
 		} else {
 			LOG_ERROR_FMT(log_, "[spark] Exhausted channel IDs");
-			open_channel_response(core::Result::ERROR, 0, msg->id());
+			open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 			return;
 		}
 	}
@@ -308,14 +309,16 @@ void RemotePeer::open_channel(const std::string& name, Handler* handler) {
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel for {}", name);
 
 	const auto id = next_empty_channel();
-	Channel& channel = channels_[id]; // todo, proper ID handling
+	Channel& channel = channels_[id];
 	channel.state(Channel::State::HALF_OPEN);
 	channel.handler(handler);
 	send_open_channel(name, id);
 }
 
 void RemotePeer::start() {
-	conn_.start();
+	conn_.start([this](std::span<const std::uint8_t> data) {
+		receive(data);
+	});
 }
 
 } // v2, spark, ember
