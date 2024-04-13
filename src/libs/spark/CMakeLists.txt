@@ -41,8 +41,7 @@ set(CORE
 set(COREv2
     include/spark/v2/Server.h
     include/spark/v2/Handler.h
-    include/spark/v2/PeerConnection.h
-    include/spark/v2/PeerHandler.h
+    include/spark/v2/Connection.h
     include/spark/v2/RemotePeer.h
 	include/spark/v2/Link.h
 	include/spark/v2/MessageHeader.h
@@ -52,11 +51,11 @@ set(COREv2
 	include/spark/v2/Message.h
 	include/spark/v2/HandlerRegistry.h
 	include/spark/v2/Peers.h
+	include/spark/Utility.h
 	src/v2/Peers.cpp
     src/v2/Server.cpp
-    src/v2/PeerHandler.cpp
 	src/v2/RemotePeer.cpp
-	src/v2/PeerConnection.cpp
+	src/v2/Connection.cpp
 	src/v2/Channel.cpp
 	src/v2/Tracker.cpp
 	src/v2/HandlerRegistry.cpp

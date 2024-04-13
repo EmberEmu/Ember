@@ -9,7 +9,10 @@
 #include <spark/v2/Server.h>
 #include <spark/v2/RemotePeer.h>
 #include <spark/v2/Handler.h>
-#include <spark/v2/PeerConnection.h>
+#include <spark/v2/Connection.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/Utility.h>
 #include <shared/FilterTypes.h>
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -77,14 +80,15 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto ep = socket.remote_endpoint();
-	auto peer = std::make_shared<RemotePeer>(std::move(socket), handlers_, logger_);
-	auto banner = co_await peer->receive_banner();
-	co_await peer->send_banner(name_);
+	Connection connection(std::move(socket));
+	auto banner = co_await receive_banner(connection);
+	co_await send_banner(connection, name_);
 
 	LOG_INFO_FILTER(logger_, LF_SPARK)
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
+	auto peer = std::make_shared<RemotePeer>(std::move(connection), handlers_, logger_);
 	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
 	peers_.add(key, peer);
 	peer->start();
@@ -116,16 +120,17 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port), ba::use_awaitable);
 	ba::ip::tcp::socket socket(ctx_);
-
 	co_await ba::async_connect(socket, results.begin(), results.end(), ba::use_awaitable);
-	auto peer = std::make_shared<RemotePeer>(std::move(socket), handlers_, logger_);
-	co_await peer->send_banner(name_);
-	auto banner = co_await peer->receive_banner();
+
+	Connection connection(std::move(socket));
+	co_await send_banner(connection, name_);
+	auto banner = co_await receive_banner(connection);
 
 	LOG_INFO_FILTER(logger_, LF_SPARK)
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
+	auto peer = std::make_shared<RemotePeer>(std::move(connection), handlers_, logger_);
 	peers_.add(std::format("{}:{}", host, port), peer);
 	peer->start();
 	co_return true;
@@ -173,6 +178,49 @@ void Server::connect(std::string host, const std::uint16_t port,
 	ba::co_spawn(ctx_, open_channel(
 		std::move(host), port, std::move(service), handler), ba::detached
 	);
+}
+
+ba::awaitable<void> Server::send_banner(Connection& conn, const std::string& banner) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	core::HelloT hello {
+		.description = banner
+	};
+
+	Message msg;
+	finish(hello, msg);
+	write_header(msg);
+	co_await conn.send(msg);
+}
+
+
+ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+
+	auto msg = co_await conn.receive_msg();
+
+	spark::v2::BufferAdaptor adaptor(msg);
+	spark::v2::BinaryStream stream(adaptor);
+
+	MessageHeader header;
+
+	if(header.read_from_stream(stream) != MessageHeader::State::OK
+	   || header.size <= stream.total_read()) {
+		throw exception("bad message header");
+	}
+
+	const auto header_size = stream.total_read();
+	std::span flatbuffer(msg.data() + header_size, msg.size_bytes() - header_size);
+
+	flatbuffers::Verifier verifier(flatbuffer.data(), flatbuffer.size());
+	auto fb = core::GetHeader(flatbuffer.data());
+	auto hello = fb->message_as_Hello();
+
+	if(!hello->Verify(verifier)) {
+		throw exception("bad flatbuffer message");
+	}
+
+	co_return hello->description()->str();
 }
 
 void Server::shutdown() {

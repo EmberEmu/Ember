@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/v2/PeerConnection.h>
+#include <spark/v2/Connection.h>
 #include <spark/v2/Message.h>
 #include <spark/Exception.h>
 #include <boost/endian/conversion.hpp>
@@ -19,11 +19,11 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-PeerConnection::PeerConnection(ba::ip::tcp::socket socket)
+Connection::Connection(ba::ip::tcp::socket socket)
 	: socket_(std::move(socket)),
       strand_(socket_.get_executor()) {}
 
-ba::awaitable<void> PeerConnection::process_queue() try {
+ba::awaitable<void> Connection::process_queue() try {
 	while(!queue_.empty()) {
 		auto msg = std::move(queue_.front());
 		queue_.pop();
@@ -39,7 +39,7 @@ ba::awaitable<void> PeerConnection::process_queue() try {
 	close();
 }
 
-void PeerConnection::send(std::unique_ptr<Message> buffer) {
+void Connection::send(std::unique_ptr<Message> buffer) {
 	ba::post(strand_, [&, buffer = std::move(buffer)]() mutable {
 		if(!socket_.is_open()) {
 			return;
@@ -59,7 +59,7 @@ void PeerConnection::send(std::unique_ptr<Message> buffer) {
  * will read as much as possible into the buffer, with the hope that the
  * entire message will be received with one receive call
  */
-ba::awaitable<std::size_t> PeerConnection::read_until(const std::size_t offset,
+ba::awaitable<std::size_t> Connection::read_until(const std::size_t offset,
                                                       const std::size_t read_size) {
 	std::size_t received = offset;
 
@@ -72,7 +72,7 @@ ba::awaitable<std::size_t> PeerConnection::read_until(const std::size_t offset,
 }
 
 ba::awaitable<std::pair<std::size_t, std::uint32_t>> 
-PeerConnection::do_receive(const std::size_t offset) {
+Connection::do_receive(const std::size_t offset) {
 	std::size_t rcv_size = offset;
 	std::uint32_t msg_size = 0;
 
@@ -97,7 +97,7 @@ PeerConnection::do_receive(const std::size_t offset) {
 }
 
 
-ba::awaitable<void> PeerConnection::begin_receive(ReceiveHandler handler) try {
+ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 	while(socket_.is_open()) {
 		auto [rcv_size, msg_size] = co_await do_receive(offset_);
 
@@ -117,7 +117,7 @@ ba::awaitable<void> PeerConnection::begin_receive(ReceiveHandler handler) try {
 	close();
 }
 
-ba::awaitable<std::span<std::uint8_t>> PeerConnection::receive_msg() {
+ba::awaitable<std::span<std::uint8_t>> Connection::receive_msg() {
 	// read message size uint32
 	std::uint32_t msg_size = 0;
 	auto buffer = ba::buffer(buffer_.data(), sizeof(msg_size));
@@ -134,7 +134,7 @@ ba::awaitable<std::span<std::uint8_t>> PeerConnection::receive_msg() {
 	co_return std::span{buffer_.data(), msg_size};
 }
 
-ba::awaitable<void> PeerConnection::send(Message& msg) {
+ba::awaitable<void> Connection::send(Message& msg) {
 	std::array<ba::const_buffer, 2> buffers {
 		ba::const_buffer { msg.header.data(), msg.header.size() },
 		ba::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
@@ -143,7 +143,7 @@ ba::awaitable<void> PeerConnection::send(Message& msg) {
 	co_await ba::async_write(socket_, buffers, ba::use_awaitable);
 }
 
-std::string PeerConnection::address() {
+std::string Connection::address() {
 	if(!socket_.is_open()) {
 		return "";
 	}
@@ -153,12 +153,12 @@ std::string PeerConnection::address() {
 }
 
 // start full-duplex send/receive
-void PeerConnection::start(ReceiveHandler handler) {
+void Connection::start(ReceiveHandler handler) {
 	ba::co_spawn(strand_, begin_receive(handler), ba::detached);
 }
 
 // todo, need to inform the handler when an error occurs
-void PeerConnection::close() {
+void Connection::close() {
 	socket_.close();
 }
 

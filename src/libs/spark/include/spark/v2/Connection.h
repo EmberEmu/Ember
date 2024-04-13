@@ -26,7 +26,7 @@ namespace ember::spark::v2 {
 
 class Message;
 
-class PeerConnection final {
+class Connection final {
 public:
 	using ReceiveHandler = std::function<void(std::span<const std::uint8_t>)>;
 
@@ -45,8 +45,8 @@ private:
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 
 public:
-	PeerConnection(boost::asio::ip::tcp::socket socket);
-	PeerConnection(PeerConnection&&) = default;
+	Connection(boost::asio::ip::tcp::socket socket);
+	Connection(Connection&&) = default;
 
 	std::string address();
 	void send(std::unique_ptr<Message> buffer);

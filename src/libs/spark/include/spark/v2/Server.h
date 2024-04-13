@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <spark/v2/PeerHandler.h>
 #include <spark/v2/Peers.h>
 #include <spark/v2/HandlerRegistry.h>
 #include <logger/Logging.h>
@@ -23,6 +22,7 @@
 namespace ember::spark::v2 {
 
 class RemotePeer;
+class Connection;
 
 class Server final {
 	boost::asio::io_context& ctx_;
@@ -37,6 +37,8 @@ class Server final {
 	boost::asio::awaitable<void> accept_connection();
 	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
 	boost::asio::awaitable<bool> connect(const std::string& host, std::uint16_t port);
+	boost::asio::awaitable<void> send_banner(Connection& conn, const std::string& banner);
+	boost::asio::awaitable<std::string> receive_banner(Connection& conn);
 
 	boost::asio::awaitable<std::shared_ptr<RemotePeer>>
 	find_or_connect(const std::string& host, std::uint16_t port);
