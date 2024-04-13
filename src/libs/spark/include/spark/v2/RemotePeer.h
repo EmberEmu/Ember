@@ -43,15 +43,18 @@ class RemotePeer final : public Dispatcher {
 	void finish(T& payload, Message& msg);
 	void send(std::unique_ptr<Message> msg);
 	void write_header(Message& msg);
+
 	void handle_control_message(std::span<const std::uint8_t> data);
 	void handle_channel_message(const MessageHeader& header, std::span<const std::uint8_t> data);
 	void handle_open_channel(const core::OpenChannel* msg);
 	void handle_open_channel_response(const core::OpenChannelResponse* msg);
 	void handle_close_channel(const core::CloseChannel* msg);
+	void handle_bye(const core::Bye* msg);
+
 	void open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested);
 	std::uint8_t next_empty_channel(std::uint8_t id);
 	void send_close_channel(std::uint8_t id);
-	void send_open_channel(const std::string& name);
+	void send_open_channel(const std::string& name, std::uint8_t id);
 
 public:
 	RemotePeer(boost::asio::ip::tcp::socket socket, HandlerRegistry& registry, log::Logger* log);

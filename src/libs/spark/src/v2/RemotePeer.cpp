@@ -39,8 +39,9 @@ void RemotePeer::write_header(Message& msg) {
 ba::awaitable<void> RemotePeer::send_banner(const std::string& banner) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
-	core::HelloT hello;
-	hello.description = banner;
+	core::HelloT hello {
+		.description = banner
+	};
 
 	Message msg;
 	finish(hello, msg);
@@ -156,8 +157,9 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 void RemotePeer::send_close_channel(const std::uint8_t id) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
-	core::CloseChannelT body;
-	body.channel = id;
+	core::CloseChannelT body {
+		.channel = id
+	};
 
 	auto msg = std::make_unique<Message>();
 	finish(body, *msg);
@@ -198,7 +200,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	channel.state(Channel::State::OPEN);
 	channel.handler(handlers[0]); // todo
 	open_channel_response(core::Result::OK, id, msg->id());
-	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", service, msg->id());
+	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", service, id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel(const std::uint8_t id) {
@@ -211,11 +213,14 @@ std::uint8_t RemotePeer::next_empty_channel(const std::uint8_t id) {
 	return 0;
 }
 
-void RemotePeer::open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested) {
-	core::OpenChannelResponseT response;
-	response.actual_id = id;
-	response.requested_id = requested;
-	response.result = result;
+void RemotePeer::open_channel_response(const core::Result result,
+                                       const std::uint8_t id,
+                                       const std::uint8_t requested) {
+	core::OpenChannelResponseT response {
+		.result = result,
+		.requested_id = requested,
+		.actual_id = id
+	};
 
 	auto msg = std::make_unique<Message>();
 	finish(response, *msg);
@@ -243,11 +248,15 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 			handle_open_channel_response(fb->message_as_OpenChannelResponse());
 			break;
 		case core::Message::Bye:
-			//
+			handle_bye(fb->message_as_Bye());
 			break;
 		default:
 			LOG_WARN(log_) << "[spark] Unknown control message type" << LOG_ASYNC;
 	}
+}
+
+void RemotePeer::handle_bye(const core::Bye* msg) {
+
 }
 
 void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
@@ -279,11 +288,11 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 	channel.message(header, data);
 }
 
-void RemotePeer::send_open_channel(const std::string& name) {
-	core::OpenChannelT body;
-	body.id = next_channel_id_;
-	body.service = name;
-	++next_channel_id_ %= 256; // todo, need to properly handle IDs
+void RemotePeer::send_open_channel(const std::string& name, const std::uint8_t id) {
+	core::OpenChannelT body {
+		.id = id,
+		.service = name
+	};
 
 	auto msg = std::make_unique<Message>();
 	finish(body, *msg);
@@ -299,7 +308,8 @@ void RemotePeer::open_channel(const std::string& name, Handler* handler) {
 	channel.state(Channel::State::HALF_OPEN);
 	channel.handler(handler);
 
-	send_open_channel(name);
+	send_open_channel(name, next_channel_id_);
+	++next_channel_id_ %= 256; // todo, need to properly handle IDs
 }
 
 void RemotePeer::start() {
