@@ -93,17 +93,22 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 }
 
 void Server::register_handler(spark::v2::Handler* handler) {
+	handlers_.register_service(handler);
+
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Registered handler for "
 		<< handler->type()
 		<< LOG_ASYNC;
-	handlers_.register_service(handler);
 }
 
 void Server::deregister_handler(spark::v2::Handler* handler) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 	handlers_.deregister_service(handler);
 	peers_.notify_remove_handler(handler);
+
+	LOG_DEBUG_FILTER(logger_, LF_SPARK)
+		<< "[spark] Removed handler for "
+		<< handler->type()
+		<< LOG_ASYNC;
 }
 
 ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {

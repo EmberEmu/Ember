@@ -279,16 +279,9 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 		case core::Message::OpenChannelResponse:
 			handle_open_channel_response(fb->message_as_OpenChannelResponse());
 			break;
-		case core::Message::Bye:
-			handle_bye(fb->message_as_Bye());
-			break;
 		default:
 			LOG_WARN(log_) << "[spark] Unknown control message type" << LOG_ASYNC;
 	}
-}
-
-void RemotePeer::handle_bye(const core::Bye* msg) {
-
 }
 
 void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {

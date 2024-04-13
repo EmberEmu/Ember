@@ -12,8 +12,7 @@ union Message {
 	Hello,
 	OpenChannel,
 	OpenChannelResponse,
-	CloseChannel,
-	Bye
+	CloseChannel
 }
 
 // can't use ERROR due to clashes
@@ -41,8 +40,6 @@ table OpenChannelResponse {
 table CloseChannel {
 	channel: int;
 }
-
-table Bye {}
 
 table Header {
 	message: Message;
