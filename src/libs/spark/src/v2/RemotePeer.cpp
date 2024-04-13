@@ -190,7 +190,9 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	auto& channel = channels_[id];
 
 	if(channel.state() != Channel::State::EMPTY) {
-		if(id = next_empty_channel(id); id == 0) {
+		if(id = next_empty_channel(); id != 0) {
+			channel = channels_[id];
+		} else {
 			LOG_ERROR_FMT(log_, "[spark] Exhausted channel IDs");
 			open_channel_response(core::Result::ERROR, 0, msg->id());
 			return;
@@ -203,8 +205,9 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", service, id);
 }
 
-std::uint8_t RemotePeer::next_empty_channel(const std::uint8_t id) {
-	for(auto i = id; i < channels_.size(); ++i) {
+std::uint8_t RemotePeer::next_empty_channel() {
+	// zero is reserved
+	for(auto i = 1; i < channels_.size(); ++i) {
 		if(channels_[i].state() == Channel::State::EMPTY) {
 			return i;
 		}
@@ -304,12 +307,11 @@ void RemotePeer::open_channel(const std::string& name, Handler* handler) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel for {}", name);
 
-	Channel& channel = channels_[next_channel_id_]; // todo, proper ID handling
+	const auto id = next_empty_channel();
+	Channel& channel = channels_[id]; // todo, proper ID handling
 	channel.state(Channel::State::HALF_OPEN);
 	channel.handler(handler);
-
-	send_open_channel(name, next_channel_id_);
-	++next_channel_id_ %= 256; // todo, need to properly handle IDs
+	send_open_channel(name, id);
 }
 
 void RemotePeer::start() {

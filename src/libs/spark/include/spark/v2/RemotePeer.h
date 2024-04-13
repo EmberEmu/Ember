@@ -37,7 +37,6 @@ class RemotePeer final : public Dispatcher {
 	HandlerRegistry& registry_;
 	log::Logger* log_;
 	std::array<Channel, 256> channels_{};
-	std::uint8_t next_channel_id_ = 1;
 
 	template<typename T>
 	void finish(T& payload, Message& msg);
@@ -52,7 +51,7 @@ class RemotePeer final : public Dispatcher {
 	void handle_bye(const core::Bye* msg);
 
 	void open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested);
-	std::uint8_t next_empty_channel(std::uint8_t id);
+	std::uint8_t next_empty_channel();
 	void send_close_channel(std::uint8_t id);
 	void send_open_channel(const std::string& name, std::uint8_t id);
 
