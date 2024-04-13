@@ -124,8 +124,10 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
 	if(msg->result() != core::Result::OK) {
-		channels_[msg->requested_id()].reset();
-		send_close_channel(msg->actual_id());
+		Channel& channel = channels_[msg->requested_id()];
+		LOG_ERROR_FMT(log_, "[spark] Remote peer could not open channel ({}:{})",
+			channel.handler()->type(), msg->requested_id());
+		channel.reset();
 		return;
 	}
 
@@ -135,6 +137,8 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 	if(msg->actual_id() != msg->requested_id()) {
 		if(channel.state() != Channel::State::EMPTY) {
+			LOG_ERROR_FMT(log_, "[spark] Channel open ({}) failed due to ID collision",
+				msg->actual_id());
 			send_close_channel(msg->actual_id());
 			channels_[msg->requested_id()].reset();
 			return;
@@ -152,7 +156,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 	channel.state(Channel::State::OPEN);
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}",
-		channel.handler()->type(), msg->actual_id());
+		channel.handler()->name(), msg->actual_id());
 }
 
 void RemotePeer::send_close_channel(const std::uint8_t id) {
@@ -168,15 +172,39 @@ void RemotePeer::send_close_channel(const std::uint8_t id) {
 	conn_.send(std::move(msg));
 }
 
+Handler* RemotePeer::find_handler(const core::OpenChannel* msg) {
+	const auto sname = msg->service_name();
+	const auto stype = msg->service_type();
+
+	if(sname && stype) {
+		return registry_.service(sname->str(), stype->str());
+	}
+
+	if(sname) {
+		return registry_.service(sname->str());
+	}
+
+	if(stype) {
+		auto services = registry_.services(stype->str());
+
+		// just use the first available matching service
+		if(!services.empty()) {
+			return services.front();
+		}
+;	}
+
+	return nullptr;
+}
+
 void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
-	const auto service = msg->service()->str();
-	auto handlers = registry_.services(service);
+	auto handler = find_handler(msg);
 
 	// todo, change how the registry works
-	if(handlers.empty()) {
-		LOG_DEBUG_FMT(log_, "[spark] Requested service ({}) does not exist", service);
+	if(!handler) {
+		LOG_DEBUG_FMT(log_, "[spark] Requested service handler ({}) does not exist",
+			msg->service_type()->str());
 		open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 		return;
 	}
@@ -201,9 +229,9 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	}
 
 	channel.state(Channel::State::OPEN);
-	channel.handler(handlers[0]); // todo
+	channel.handler(handler);
 	open_channel_response(core::Result::OK, id, msg->id());
-	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", service, id);
+	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel() {
@@ -292,10 +320,13 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 	channel.message(header, data);
 }
 
-void RemotePeer::send_open_channel(const std::string& name, const std::uint8_t id) {
+void RemotePeer::send_open_channel(const std::string& name,
+                                   const std::string& type,
+                                   const std::uint8_t id) {
 	core::OpenChannelT body {
 		.id = id,
-		.service = name
+		.service_type = type,
+		.service_name = name
 	};
 
 	auto msg = std::make_unique<Message>();
@@ -304,15 +335,16 @@ void RemotePeer::send_open_channel(const std::string& name, const std::uint8_t i
 	conn_.send(std::move(msg));
 }
 
-void RemotePeer::open_channel(const std::string& name, Handler* handler) {
+void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
-	LOG_DEBUG_FMT(log_, "[spark] Requesting channel for {}", name);
 
 	const auto id = next_empty_channel();
+	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
+
 	Channel& channel = channels_[id];
 	channel.state(Channel::State::HALF_OPEN);
 	channel.handler(handler);
-	send_open_channel(name, id);
+	send_open_channel("", type, id);
 }
 
 void RemotePeer::start() {

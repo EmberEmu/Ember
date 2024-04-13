@@ -18,19 +18,25 @@
 #include <spark/v2/Handler.h>
 #include <spark/v2/Link.h>
 #include <spark/v2/Message.h>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
 #include <functional>
 
 namespace ember::services {
 
 class {{name}}Service : public spark::v2::Handler {
 	spark::v2::Server& spark_;
+	boost::uuids::uuid uuid_;
 
 public:
 ## for handler in handlers
 	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
 ## endfor
 
-	{{name}}Service(spark::v2::Server& spark) : spark_(spark) {
+	{{name}}Service(spark::v2::Server& spark)
+		: spark_(spark),
+		  uuid_(boost::uuids::random_generator()()) {
 		spark_.register_handler(this);
 	}
 
@@ -38,7 +44,11 @@ public:
 		spark_.deregister_handler(this);
 	}
 
-	std::string type() {
+	std::string name() override {
+		return std::format("{{name}}:{}", boost::uuids::to_string(uuid_));
+	}
+
+	std::string type() override {
 		return "{{name}}";
 	}
 

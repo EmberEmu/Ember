@@ -25,7 +25,9 @@ public:
 	void register_service(Handler* service);
 	void deregister_service(Handler* service);
 
-	std::vector<Handler*> services(const std::string& name) const;
+	Handler* service(const std::string& name) const;
+	Handler* service(const std::string& name, const std::string& type) const;
+	std::vector<Handler*> services(const std::string& type) const;
 	std::vector<std::string> services() const;
 };
 

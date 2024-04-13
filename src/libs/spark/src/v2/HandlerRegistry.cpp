@@ -38,9 +38,42 @@ void HandlerRegistry::register_service(Handler* service) {
 	services_[type].emplace_back(service);
 }
 
-std::vector<Handler*> HandlerRegistry::services(const std::string& name) const {
+Handler* HandlerRegistry::service(const std::string& name) const {
 	std::lock_guard<std::mutex> guard(mutex_);
-	return services_.at(name);
+
+	for(auto& [_, v] : services_) {
+		for(auto& service : v) {
+			if(service->name() == name) {
+				return service;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+
+Handler* HandlerRegistry::service(const std::string& name, const std::string& type) const {
+	std::lock_guard<std::mutex> guard(mutex_);
+
+	if(!services_.contains(type)) {
+		return nullptr;
+	}
+
+	auto& services = services_.at(type);
+
+	for(auto& service : services) {
+		if(service->name() == name) {
+			return service;
+		}
+	}
+
+	return nullptr;
+}
+
+std::vector<Handler*> HandlerRegistry::services(const std::string& type) const {
+	std::lock_guard<std::mutex> guard(mutex_);
+	return services_.at(type);
 }
 
 std::vector<std::string> HandlerRegistry::services() const {

@@ -28,7 +28,8 @@ table Hello {
 
 table OpenChannel {
 	id: int;
-	service: string;
+	service_type: string (required);
+	service_name: string;
 }
 
 table OpenChannelResponse {
