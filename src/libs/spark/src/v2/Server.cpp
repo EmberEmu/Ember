@@ -7,6 +7,7 @@
  */
 
 #include <spark/v2/Server.h>
+#include <spark/v2/RemotePeer.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/PeerConnection.h>
 #include <shared/FilterTypes.h>
@@ -75,7 +76,8 @@ ba::awaitable<void> Server::accept_connection() {
 ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
+	auto ep = socket.remote_endpoint();
+	auto peer = std::make_shared<RemotePeer>(std::move(socket), handlers_, logger_);
 	auto banner = co_await peer->receive_banner();
 	co_await peer->send_banner(name_);
 
@@ -83,8 +85,9 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
+	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
+	peers_.add(key, peer);
 	peer->start();
-	peers_.emplace_back(std::move(peer));
 } catch(const std::exception& e) {
 	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
 }
@@ -109,7 +112,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 	ba::ip::tcp::socket socket(ctx_);
 
 	co_await ba::async_connect(socket, results.begin(), results.end(), ba::use_awaitable);
-	auto peer = std::make_unique<RemotePeer>(std::move(socket), handlers_, logger_);
+	auto peer = std::make_shared<RemotePeer>(std::move(socket), handlers_, logger_);
 	co_await peer->send_banner(name_);
 	auto banner = co_await peer->receive_banner();
 
@@ -117,8 +120,8 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
+	peers_.add(std::format("{}:{}", host, port), peer);
 	peer->start();
-	peers_.emplace_back(std::move(peer));
 	co_return true;
 } catch(const std::exception& e) {
 	const auto msg = std::format(
@@ -129,18 +132,32 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 	co_return false;
 }
 
+ba::awaitable<std::shared_ptr<RemotePeer>>
+Server::find_or_connect(const std::string& host, const std::uint16_t port) {
+	const auto key = std::format("{}:{}", host, port);
+	auto peer = peers_.find(key);
+
+	if(!peer) {
+		const bool result = co_await connect(host, port);
+
+		if(result) {
+			co_return peers_.find(key);
+		}
+	}
+
+	co_return nullptr;
+}
+
 ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t port,
                                          std::string service, Handler* handler) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-
-	// todo, use existing connection if already connected
-	const bool result = co_await connect(host, port);
-
-	if(!result) {
+	auto peer = co_await find_or_connect(host, port);
+	
+	if(!peer) {
 		co_return;
 	}
 
-	peers_[0]->open_channel(service, handler); // temp, obviously
+	peer->open_channel(service, handler);
 }
 
 void Server::connect(std::string host, const std::uint16_t port, std::string service, Handler* handler) {

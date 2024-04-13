@@ -51,6 +51,8 @@ set(COREv2
 	include/spark/v2/SharedDefs.h
 	include/spark/v2/Message.h
 	include/spark/v2/HandlerRegistry.h
+	include/spark/v2/Peers.h
+	src/v2/Peers.cpp
     src/v2/Server.cpp
     src/v2/PeerHandler.cpp
 	src/v2/RemotePeer.cpp
