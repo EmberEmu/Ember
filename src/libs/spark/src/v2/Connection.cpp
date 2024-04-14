@@ -19,9 +19,10 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-Connection::Connection(ba::ip::tcp::socket socket)
+Connection::Connection(ba::ip::tcp::socket socket, CloseHandler handler)
 	: socket_(std::move(socket)),
-      strand_(socket_.get_executor()) {}
+      strand_(socket_.get_executor()),
+	  on_close_(handler) {}
 
 ba::awaitable<void> Connection::process_queue() try {
 	while(!queue_.empty()) {
@@ -160,6 +161,10 @@ void Connection::start(ReceiveHandler handler) {
 // todo, need to inform the handler when an error occurs
 void Connection::close() {
 	socket_.close();
+
+	if(on_close_) {
+		on_close_();
+	}
 }
 
 } // spark, ember

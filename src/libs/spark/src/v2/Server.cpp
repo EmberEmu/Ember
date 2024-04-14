@@ -76,11 +76,21 @@ ba::awaitable<void> Server::accept_connection() {
 	co_await accept(std::move(socket));
 }
 
+void Server::close_peer(const std::string& key) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	peers_.remove(key);
+}
+
 ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto ep = socket.remote_endpoint();
-	Connection connection(std::move(socket));
+	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
+
+	Connection connection(std::move(socket), [this, key]() {
+		close_peer(key);
+	});
+
 	auto banner = co_await receive_banner(connection);
 	co_await send_banner(connection, name_);
 
@@ -89,7 +99,6 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 		<< LOG_ASYNC;
 
 	auto peer = std::make_shared<RemotePeer>(std::move(connection), handlers_, logger_);
-	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
 	peers_.add(key, peer);
 	peer->start();
 } catch(const std::exception& e) {
@@ -118,11 +127,20 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto results = co_await resolver_.async_resolve(host, std::to_string(port), ba::use_awaitable);
+
+	auto results = co_await resolver_.async_resolve(
+		host, std::to_string(port), ba::use_awaitable
+	);
+
 	ba::ip::tcp::socket socket(ctx_);
 	co_await ba::async_connect(socket, results.begin(), results.end(), ba::use_awaitable);
 
-	Connection connection(std::move(socket));
+	const auto key = std::format("{}:{}", host, port);
+
+	Connection connection(std::move(socket), [this, key]() {
+		close_peer(key);
+	});
+
 	co_await send_banner(connection, name_);
 	auto banner = co_await receive_banner(connection);
 
@@ -131,7 +149,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 		<< LOG_ASYNC;
 
 	auto peer = std::make_shared<RemotePeer>(std::move(connection), handlers_, logger_);
-	peers_.add(std::format("{}:{}", host, port), peer);
+	peers_.add(key, peer);
 	peer->start();
 	co_return true;
 } catch(const std::exception& e) {

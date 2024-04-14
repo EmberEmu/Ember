@@ -29,6 +29,7 @@ class Message;
 class Connection final {
 public:
 	using ReceiveHandler = std::function<void(std::span<const std::uint8_t>)>;
+	using CloseHandler = std::function<void()>;
 
 private:
 	static constexpr auto MAX_MESSAGE_SIZE = 1024u ^ 2;
@@ -38,6 +39,7 @@ private:
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
 	std::queue<std::unique_ptr<Message>> queue_;
 	std::size_t offset_{};
+	CloseHandler on_close_;
 
 	boost::asio::awaitable<void> process_queue();
 	boost::asio::awaitable<void> begin_receive(ReceiveHandler handler);
@@ -45,7 +47,7 @@ private:
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 
 public:
-	Connection(boost::asio::ip::tcp::socket socket);
+	Connection(boost::asio::ip::tcp::socket socket, CloseHandler handler);
 	Connection(Connection&&) = default;
 
 	std::string address();
