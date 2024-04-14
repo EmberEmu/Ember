@@ -27,7 +27,6 @@ RemotePeer::RemotePeer(Connection connection, HandlerRegistry& registry, log::Lo
 	  log_(log) {
 }
 
-
 void RemotePeer::send(std::unique_ptr<Message> msg) {
 	write_header(*msg);
 	conn_.send(std::move(msg));
@@ -141,7 +140,6 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 
 	auto handler = find_handler(msg);
 
-	// todo, change how the registry works
 	if(!handler) {
 		LOG_DEBUG_FMT(log_, "[spark] Requested service handler ({}) does not exist",
 			msg->service_type()->str());
@@ -298,6 +296,14 @@ void RemotePeer::remove_handler(Handler* handler) {
 		if(channel.handler() == handler) {
 			send_close_channel(i);
 			channel.reset();
+		}
+	}
+}
+
+RemotePeer::~RemotePeer() {
+	for(auto& channel : channels_) {
+		if(channel.state() == Channel::State::OPEN) {
+			// todo, link down all channels
 		}
 	}
 }

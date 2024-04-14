@@ -76,11 +76,6 @@ ba::awaitable<void> Server::accept_connection() {
 	co_await accept(std::move(socket));
 }
 
-void Server::close_peer(const std::string& key) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
-	peers_.remove(key);
-}
-
 ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
@@ -239,6 +234,15 @@ ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
 	}
 
 	co_return hello->description()->str();
+}
+
+// todo, need to link down to all channels, error code
+void Server::close_peer(const std::string& key) {
+	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	peers_.remove(key);
+
+	LOG_DEBUG_FILTER(logger_, LF_SPARK)
+		<< "[spark] Close connection " << key << LOG_ASYNC;
 }
 
 void Server::shutdown() {

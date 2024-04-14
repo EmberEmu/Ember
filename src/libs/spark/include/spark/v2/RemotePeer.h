@@ -51,6 +51,7 @@ class RemotePeer final {
 
 public:
 	RemotePeer(Connection connection, HandlerRegistry& registry, log::Logger* log);
+	~RemotePeer();
 
 	void open_channel(const std::string& type, Handler* handler);
 	void remove_handler(Handler* handler);

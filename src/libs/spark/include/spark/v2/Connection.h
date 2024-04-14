@@ -38,7 +38,6 @@ private:
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
 	std::queue<std::unique_ptr<Message>> queue_;
-	std::size_t offset_{};
 	CloseHandler on_close_;
 
 	boost::asio::awaitable<void> process_queue();

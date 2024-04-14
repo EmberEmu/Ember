@@ -61,7 +61,7 @@ void Connection::send(std::unique_ptr<Message> buffer) {
  * entire message will be received with one receive call
  */
 ba::awaitable<std::size_t> Connection::read_until(const std::size_t offset,
-                                                      const std::size_t read_size) {
+                                                  const std::size_t read_size) {
 	std::size_t received = offset;
 
 	while(received < read_size) {
@@ -99,10 +99,12 @@ Connection::do_receive(const std::size_t offset) {
 
 
 ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
-	while(socket_.is_open()) {
-		auto [rcv_size, msg_size] = co_await do_receive(offset_);
+	std::size_t offset = 0;
 
-		// message complete, get it handled
+	while(socket_.is_open()) {
+		auto [rcv_size, msg_size] = co_await do_receive(offset);
+
+		// message complete, handle it
 		std::span view(buffer_.data(), msg_size);
 		handler(view);
 
@@ -112,7 +114,7 @@ ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 		}
 
 		assert(msg_size <= rcv_size);
-		offset_ = rcv_size - msg_size; // offset to start the next read at
+		offset = rcv_size - msg_size; // buffer offset to start the next read at
 	}
 } catch(std::exception& e) {
 	close();
@@ -158,7 +160,6 @@ void Connection::start(ReceiveHandler handler) {
 	ba::co_spawn(strand_, begin_receive(handler), ba::detached);
 }
 
-// todo, need to inform the handler when an error occurs
 void Connection::close() {
 	socket_.close();
 
