@@ -11,8 +11,13 @@
 #include <spark/v2/Tracker.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/MessageHeader.h>
+#include <spark/v2/Link.h>
+#include <memory>
+#include <cstdint>
 
 namespace ember::spark::v2 {
+
+class RemotePeer;
 
 class Channel {
 public:
@@ -24,12 +29,19 @@ private:
 	State state_ = State::EMPTY;
 	Handler* handler_ = nullptr;
 
+	Link link_{};
+	std::uint8_t id_ = 0;
+
+	void link_up();
+
 public:
-	void handler(Handler* handler);
+	Channel(std::uint8_t id, State state, Handler* handler, std::weak_ptr<RemotePeer> net);
+	Channel() = default;
+	~Channel();
+
 	Handler* handler();
 	State state();
 	void state(State state);
-	void reset();
 	void message(const MessageHeader& header, std::span<const std::uint8_t> data);
 };
 

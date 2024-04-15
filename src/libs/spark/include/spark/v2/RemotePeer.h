@@ -17,6 +17,7 @@
 #include <logger/Logging.h>
 #include <array>
 #include <concepts>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -24,15 +25,15 @@ namespace ember::spark::v2 {
 
 class HandlerRegistry;
 
-class RemotePeer final {
+class RemotePeer final : std::enable_shared_from_this<RemotePeer> {
 	enum class State {
 		HELLO, NEGOTIATING, DISPATCHING
 	} state_ = State::HELLO;
 
 	Connection conn_;
 	HandlerRegistry& registry_;
-	log::Logger* log_;
 	std::array<Channel, 256> channels_{};
+	log::Logger* log_;
 
 	void send(std::unique_ptr<Message> msg);
 	Handler* find_handler(const core::OpenChannel* msg);

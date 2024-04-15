@@ -246,7 +246,10 @@ void Server::close_peer(const std::string& key) {
 }
 
 void Server::shutdown() {
-	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Service shutting down..." << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_SPARK)
+		<< "[spark] Service shutting down..."
+		<< LOG_ASYNC;
+
 	acceptor_.close();
 }
 

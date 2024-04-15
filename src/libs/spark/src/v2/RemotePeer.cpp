@@ -66,7 +66,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 		Channel& channel = channels_[msg->requested_id()];
 		LOG_ERROR_FMT(log_, "[spark] Remote peer could not open channel ({}:{})",
 			channel.handler()->type(), msg->requested_id());
-		channel.reset();
+		channels_[msg->requested_id()] = {};
 		return;
 	}
 
@@ -79,17 +79,17 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 			LOG_ERROR_FMT(log_, "[spark] Channel open ({}) failed due to ID collision",
 				msg->actual_id());
 			send_close_channel(msg->actual_id());
-			channels_[msg->requested_id()].reset();
+			channels_[msg->requested_id()] = {};
 			return;
 		}
 
 		channels_[msg->actual_id()] = channels_[msg->requested_id()];
-		channels_[msg->requested_id()].reset();
+		channels_[msg->requested_id()] = {};
 	}
 
 	if(channel.state() != Channel::State::HALF_OPEN) {
 		send_close_channel(msg->actual_id());
-		channels_[msg->actual_id()].reset();
+		channels_[msg->actual_id()] = {};
 		return;
 	}
 
@@ -142,7 +142,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 
 	if(!handler) {
 		LOG_DEBUG_FMT(log_, "[spark] Requested service handler ({}) does not exist",
-			msg->service_type()->str());
+					  msg->service_type()->str());
 		open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 		return;
 	}
@@ -166,8 +166,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 		}
 	}
 
-	channel.state(Channel::State::OPEN);
-	channel.handler(handler);
+	channels_[id] = {id, Channel::State::OPEN, handler, weak_from_this()};
 	open_channel_response(core::Result::OK, id, msg->id());
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
@@ -233,7 +232,7 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 		return;
 	}
 
-	channel.reset();
+	channels_[id] = {};
 	LOG_INFO_FMT(log_, "[spark] Closed channel {}, requested by remote peer", id);
 }
 
@@ -272,9 +271,7 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	const auto id = next_empty_channel();
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
 
-	Channel& channel = channels_[id];
-	channel.state(Channel::State::HALF_OPEN);
-	channel.handler(handler);
+	channels_[id] = { id, Channel::State::HALF_OPEN, handler, weak_from_this() };
 	send_open_channel("", type, id);
 }
 
@@ -295,7 +292,7 @@ void RemotePeer::remove_handler(Handler* handler) {
 
 		if(channel.handler() == handler) {
 			send_close_channel(i);
-			channel.reset();
+			channels_[i] = {};
 		}
 	}
 }

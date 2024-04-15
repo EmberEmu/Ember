@@ -7,6 +7,7 @@
  */
 
 #include "HelloClient.h"
+#include <iostream>
 
 namespace ember {
 
@@ -17,7 +18,7 @@ HelloClient::HelloClient(spark::v2::Server& spark)
 }
 
 void HelloClient::on_link_up(const spark::v2::Link& link) {
-
+	std::cout << "Link up\n";
 }
 
 void HelloClient::on_link_down(const spark::v2::Link& link) {

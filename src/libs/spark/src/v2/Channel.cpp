@@ -7,8 +7,18 @@
  */
 
 #include <spark/v2/Channel.h>
+#include <cassert>
 
 namespace ember::spark::v2 {
+
+Channel::Channel(std::uint8_t id, State state, Handler* handler, std::weak_ptr<RemotePeer> net)
+	: link_{.banner = "", .net = net, .channel_id = id}, // temp, I think
+	  state_(state),
+	  handler_(handler) {
+	if(state == State::OPEN) {
+		link_up();
+	}
+}
 
 void Channel::message(const MessageHeader& header, std::span<const std::uint8_t> data) {
 	// draw the rest of the owl
@@ -18,21 +28,29 @@ auto Channel::state() -> State {
 	return state_;
 }
 
-void Channel::handler(Handler* handler) {
-	handler_ = handler;
-}
-
 Handler* Channel::handler() {
 	return handler_;
 }
 
 void Channel::state(State state) {
 	state_ = state;
+
+	if(state == State::OPEN) {
+		link_up();
+	}
 }
 
-void Channel::reset() {
-	handler_ = nullptr;
-	state_ = State::EMPTY;
+void Channel::link_up() {
+	assert(handler_);
+	handler_->on_link_up(link_);
+}
+
+Channel::~Channel() {
+	if(!handler_) {
+		return;
+	}
+
+	handler_->on_link_down(link_);
 }
 
 } // v2, spark, ember

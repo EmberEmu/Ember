@@ -7,6 +7,7 @@
  */
 
 #include "HelloService.h"
+#include <iostream>
 
 namespace ember {
 
@@ -14,7 +15,7 @@ HelloService::HelloService(spark::v2::Server& server)
 	: services::HelloService(server) {}
 
 void HelloService::on_link_up(const spark::v2::Link& link) {
-
+	std::cout << "Link up\n";
 }
 
 void HelloService::on_link_down(const spark::v2::Link& link) {

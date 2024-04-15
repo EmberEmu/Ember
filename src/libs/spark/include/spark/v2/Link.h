@@ -8,22 +8,23 @@
 
 #pragma once
 
-#include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <string>
+#include <cstdint>
 
 namespace ember::spark::v2 {
 
-class NetworkSession;
+class RemotePeer;
 
 struct Link {
-	boost::uuids::uuid uuid;
-	std::string description;
-	std::weak_ptr<NetworkSession> net;
+	std::string banner;
+	std::weak_ptr<RemotePeer> net;
+	std::uint8_t channel_id;
 };
 
 inline bool operator==(const Link& lhs, const Link& rhs) {
-	return rhs.uuid == lhs.uuid;
+	return rhs.channel_id == lhs.channel_id
+		&& rhs.net.owner_before(lhs.net) == lhs.net.owner_before(rhs.net);
 }
 
 inline bool operator!=(const Link& lhs, const Link& rhs) {
