@@ -18,6 +18,7 @@ class RemotePeer;
 
 struct Link {
 	std::string banner;
+	std::string service;
 	std::weak_ptr<RemotePeer> net;
 	std::uint8_t channel_id;
 };

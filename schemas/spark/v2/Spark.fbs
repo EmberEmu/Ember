@@ -12,7 +12,9 @@ union Message {
 	Hello,
 	OpenChannel,
 	OpenChannelResponse,
-	CloseChannel
+	CloseChannel,
+	Ping,
+	Pong
 }
 
 // can't use ERROR due to clashes
@@ -35,11 +37,16 @@ table OpenChannelResponse {
 	result: Result;
 	requested_id: int;
 	actual_id: int;
+	service_name: string (required);
+	banner: string (required);
 }
 
 table CloseChannel {
 	channel: int;
 }
+
+table Ping {}
+table Pong {}
 
 table Header {
 	message: Message;

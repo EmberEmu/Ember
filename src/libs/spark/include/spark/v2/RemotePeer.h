@@ -31,8 +31,9 @@ class RemotePeer final : std::enable_shared_from_this<RemotePeer> {
 	} state_ = State::HELLO;
 
 	Connection conn_;
+	std::string banner_;
 	HandlerRegistry& registry_;
-	std::array<Channel, 256> channels_{};
+	std::array<std::shared_ptr<Channel>, 256> channels_{};
 	log::Logger* log_;
 
 	void send(std::unique_ptr<Message> msg);
@@ -51,7 +52,7 @@ class RemotePeer final : std::enable_shared_from_this<RemotePeer> {
 	void receive(std::span<const std::uint8_t> data);
 
 public:
-	RemotePeer(Connection connection, HandlerRegistry& registry, log::Logger* log);
+	RemotePeer(Connection connection, std::string banner, HandlerRegistry& registry, log::Logger* log);
 	~RemotePeer();
 
 	void open_channel(const std::string& type, Handler* handler);

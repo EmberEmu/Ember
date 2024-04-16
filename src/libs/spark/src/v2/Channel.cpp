@@ -11,17 +11,36 @@
 
 namespace ember::spark::v2 {
 
-Channel::Channel(std::uint8_t id, State state, Handler* handler, std::weak_ptr<RemotePeer> net)
+Channel::Channel(std::uint8_t id, std::string banner, std::string service,
+                 Handler* handler, std::weak_ptr<RemotePeer> net)
 	: link_{.banner = "", .net = net, .channel_id = id}, // temp, I think
-	  state_(state),
+	  banner_(banner),
+	  service_(service),
 	  handler_(handler) {
-	if(state == State::OPEN) {
+	/*if(state == State::OPEN) {
 		link_up();
-	}
+	}*/
 }
 
-void Channel::message(const MessageHeader& header, std::span<const std::uint8_t> data) {
+void Channel::open() {
+	// multiple open calls should have no effect
+	if(state_ != State::OPEN) {
+		link_up();
+	}
+
+	state_ = State::OPEN;
+}
+
+bool Channel::is_open() {
+	return state_ == State::OPEN;
+}
+
+void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t> data) {
 	// draw the rest of the owl
+}
+
+void Channel::send() {
+	// todo
 }
 
 auto Channel::state() -> State {
@@ -30,14 +49,6 @@ auto Channel::state() -> State {
 
 Handler* Channel::handler() {
 	return handler_;
-}
-
-void Channel::state(State state) {
-	state_ = state;
-
-	if(state == State::OPEN) {
-		link_up();
-	}
 }
 
 void Channel::link_up() {

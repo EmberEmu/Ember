@@ -13,21 +13,24 @@
 #include <spark/v2/MessageHeader.h>
 #include <spark/v2/Link.h>
 #include <memory>
+#include <span>
 #include <cstdint>
 
 namespace ember::spark::v2 {
 
 class RemotePeer;
 
-class Channel {
+class Channel final : std::enable_shared_from_this<Channel> {
 public:
 	enum class State {
-		EMPTY, HALF_OPEN, OPEN
+		AWAITING, OPEN
 	};
 
 private:
-	State state_ = State::EMPTY;
+	State state_ = State::AWAITING;
 	Handler* handler_ = nullptr;
+	std::string service_;
+	std::string banner_;
 
 	Link link_{};
 	std::uint8_t id_ = 0;
@@ -35,14 +38,17 @@ private:
 	void link_up();
 
 public:
-	Channel(std::uint8_t id, State state, Handler* handler, std::weak_ptr<RemotePeer> net);
+	Channel(std::uint8_t id, std::string banner, std::string service, 
+	        Handler* handler, std::weak_ptr<RemotePeer> net);
 	Channel() = default;
 	~Channel();
 
 	Handler* handler();
 	State state();
-	void state(State state);
-	void message(const MessageHeader& header, std::span<const std::uint8_t> data);
+	void open();
+	bool is_open();
+	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
+	void send();
 };
 
 } // v2, spark, ember

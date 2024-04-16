@@ -21,8 +21,9 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-RemotePeer::RemotePeer(Connection connection, HandlerRegistry& registry, log::Logger* log)
-	: registry_(registry),
+RemotePeer::RemotePeer(Connection connection, std::string banner, HandlerRegistry& registry, log::Logger* log)
+	: banner_(std::move(banner)),
+	  registry_(registry),
 	  conn_(std::move(connection)),
 	  log_(log) {
 }
@@ -63,19 +64,19 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
 	if(msg->result() != core::Result::OK) {
-		Channel& channel = channels_[msg->requested_id()];
+		auto channel = channels_[msg->requested_id()];
 		LOG_ERROR_FMT(log_, "[spark] Remote peer could not open channel ({}:{})",
-			channel.handler()->type(), msg->requested_id());
+			channel->handler()->type(), msg->requested_id());
 		channels_[msg->requested_id()] = {};
 		return;
 	}
 
 	// todo, index bounds checks
 	auto id = msg->actual_id();
-	Channel& channel = channels_[id];
+	auto channel = channels_[id];
 
 	if(msg->actual_id() != msg->requested_id()) {
-		if(channel.state() != Channel::State::EMPTY) {
+		if(channel) {
 			LOG_ERROR_FMT(log_, "[spark] Channel open ({}) failed due to ID collision",
 				msg->actual_id());
 			send_close_channel(msg->actual_id());
@@ -87,15 +88,15 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 		channels_[msg->requested_id()] = {};
 	}
 
-	if(channel.state() != Channel::State::HALF_OPEN) {
+	if(channel->is_open()) {
 		send_close_channel(msg->actual_id());
 		channels_[msg->actual_id()] = {};
 		return;
 	}
 
-	channel.state(Channel::State::OPEN);
+	channel->open();
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}",
-		channel.handler()->name(), msg->actual_id());
+		channel->handler()->name(), msg->actual_id());
 }
 
 void RemotePeer::send_close_channel(const std::uint8_t id) {
@@ -154,9 +155,9 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	}
 
 	auto id = gsl::narrow<std::uint8_t>(msg->id());
-	auto& channel = channels_[id];
+	auto channel = channels_[id];
 
-	if(channel.state() != Channel::State::EMPTY) {
+	if(channel) {
 		if(id = next_empty_channel(); id != 0) {
 			channel = channels_[id];
 		} else {
@@ -166,7 +167,8 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 		}
 	}
 
-	channels_[id] = {id, Channel::State::OPEN, handler, weak_from_this()};
+	channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, weak_from_this());
+	channels_[id] = channel;
 	open_channel_response(core::Result::OK, id, msg->id());
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
@@ -174,7 +176,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 std::uint8_t RemotePeer::next_empty_channel() {
 	// zero is reserved
 	for(auto i = 1; i < channels_.size(); ++i) {
-		if(channels_[i].state() == Channel::State::EMPTY) {
+		if(!channels_[i]) {
 			return i;
 		}
 	}
@@ -185,10 +187,14 @@ std::uint8_t RemotePeer::next_empty_channel() {
 void RemotePeer::open_channel_response(const core::Result result,
                                        const std::uint8_t id,
                                        const std::uint8_t requested) {
+	const std::string& sname = channels_[id]->handler()->name();
+
 	core::OpenChannelResponseT response {
 		.result = result,
 		.requested_id = requested,
-		.actual_id = id
+		.actual_id = id,
+		.service_name = sname,
+		.banner = banner_,
 	};
 
 	auto msg = std::make_unique<Message>();
@@ -225,14 +231,14 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
 	auto id = gsl::narrow<std::uint8_t>(msg->channel());
-	Channel& channel = channels_[id];
+	auto channel = channels_[id];
 
-	if(channel.state() == Channel::State::EMPTY) {
+	if(!channel) {
 		LOG_WARN(log_) << "[spark] Request to close empty channel" << LOG_ASYNC;
 		return;
 	}
 
-	channels_[id] = {};
+	channels_[id].reset();
 	LOG_INFO_FMT(log_, "[spark] Closed channel {}, requested by remote peer", id);
 }
 
@@ -240,14 +246,14 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
                                         std::span<const std::uint8_t> data) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
-	Channel& channel = channels_[header.channel];
+	auto channel = channels_[header.channel];
 
-	if(channel.state() != Channel::State::OPEN) {
+	if(!channel) {
 		LOG_WARN_FMT(log_, "[spark] Received message for closed channel, {}", header.channel);
 		return;
 	}
 
-	channel.message(header, data);
+	channel->dispatch(header, data);
 }
 
 void RemotePeer::send_open_channel(const std::string& name,
@@ -271,7 +277,8 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	const auto id = next_empty_channel();
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
 
-	channels_[id] = { id, Channel::State::HALF_OPEN, handler, weak_from_this() };
+	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, weak_from_this());
+	channels_[id] = channel;
 	send_open_channel("", type, id);
 }
 
@@ -284,13 +291,13 @@ void RemotePeer::start() {
 // very temporary, not thread-safe etc
 void RemotePeer::remove_handler(Handler* handler) {
 	for(std::size_t i = 0u; i < channels_.size(); ++i) {
-		Channel& channel = channels_[i];
+		auto channel = channels_[i];
 
-		if(channel.state() == Channel::State::EMPTY) {
+		if(!channel) {
 			continue;
 		}
 
-		if(channel.handler() == handler) {
+		if(channel->handler() == handler) {
 			send_close_channel(i);
 			channels_[i] = {};
 		}
@@ -299,9 +306,7 @@ void RemotePeer::remove_handler(Handler* handler) {
 
 RemotePeer::~RemotePeer() {
 	for(auto& channel : channels_) {
-		if(channel.state() == Channel::State::OPEN) {
-			// todo, link down all channels
-		}
+		// todo, link down all channels
 	}
 }
 
