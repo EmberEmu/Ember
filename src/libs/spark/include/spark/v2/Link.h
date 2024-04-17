@@ -14,18 +14,16 @@
 
 namespace ember::spark::v2 {
 
-class RemotePeer;
+class Channel;
 
 struct Link {
-	std::string banner;
-	std::string service;
-	std::weak_ptr<RemotePeer> net;
-	std::uint8_t channel_id;
+	std::string peer_banner;
+	std::string service_name;
+	std::weak_ptr<Channel> net;
 };
 
 inline bool operator==(const Link& lhs, const Link& rhs) {
-	return rhs.channel_id == lhs.channel_id
-		&& rhs.net.owner_before(lhs.net) == lhs.net.owner_before(rhs.net);
+	return lhs.service_name == rhs.service_name;
 }
 
 inline bool operator!=(const Link& lhs, const Link& rhs) {

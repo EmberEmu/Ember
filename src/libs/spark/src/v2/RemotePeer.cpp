@@ -21,16 +21,17 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-RemotePeer::RemotePeer(Connection connection, std::string banner, HandlerRegistry& registry, log::Logger* log)
+RemotePeer::RemotePeer(Connection connection, std::string banner,
+                       HandlerRegistry& registry, log::Logger* log)
 	: banner_(std::move(banner)),
 	  registry_(registry),
-	  conn_(std::move(connection)),
+	  conn_(std::make_shared<Connection>(std::move(connection))),
 	  log_(log) {
 }
 
 void RemotePeer::send(std::unique_ptr<Message> msg) {
 	write_header(*msg);
-	conn_.send(std::move(msg));
+	conn_->send(std::move(msg));
 }
 
 void RemotePeer::receive(std::span<const std::uint8_t> data) {
@@ -45,7 +46,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 	   || header.size <= stream.total_read()) {
 		LOG_WARN_FILTER(log_, LF_SPARK)
 			<< "[spark] Bad message from "
-			<< conn_.address()
+			<< conn_->address()
 			<< LOG_ASYNC;
 		return;
 	}
@@ -109,7 +110,7 @@ void RemotePeer::send_close_channel(const std::uint8_t id) {
 	auto msg = std::make_unique<Message>();
 	finish(body, *msg);
 	write_header(*msg);
-	conn_.send(std::move(msg));
+	conn_->send(std::move(msg));
 }
 
 Handler* RemotePeer::find_handler(const core::OpenChannel* msg) {
@@ -167,7 +168,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 		}
 	}
 
-	channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, weak_from_this());
+	channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
 	channels_[id] = channel;
 	open_channel_response(core::Result::OK, id, msg->id());
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
@@ -200,7 +201,7 @@ void RemotePeer::open_channel_response(const core::Result result,
 	auto msg = std::make_unique<Message>();
 	finish(response, *msg);
 	write_header(*msg);
-	conn_.send(std::move(msg));
+	conn_->send(std::move(msg));
 }
 
 void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
@@ -268,7 +269,7 @@ void RemotePeer::send_open_channel(const std::string& name,
 	auto msg = std::make_unique<Message>();
 	finish(body, *msg);
 	write_header(*msg);
-	conn_.send(std::move(msg));
+	conn_->send(std::move(msg));
 }
 
 void RemotePeer::open_channel(const std::string& type, Handler* handler) {
@@ -277,13 +278,13 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	const auto id = next_empty_channel();
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
 
-	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, weak_from_this());
+	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
 	channels_[id] = channel;
 	send_open_channel("", type, id);
 }
 
 void RemotePeer::start() {
-	conn_.start([this](std::span<const std::uint8_t> data) {
+	conn_->start([this](std::span<const std::uint8_t> data) {
 		receive(data);
 	});
 }

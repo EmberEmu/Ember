@@ -18,7 +18,7 @@
 
 namespace ember::spark::v2 {
 
-class RemotePeer;
+class Connection;
 
 class Channel final : std::enable_shared_from_this<Channel> {
 public:
@@ -28,18 +28,16 @@ public:
 
 private:
 	State state_ = State::AWAITING;
-	Handler* handler_ = nullptr;
-	std::string service_;
-	std::string banner_;
-
-	Link link_{};
-	std::uint8_t id_ = 0;
+	std::uint8_t channel_id_;
+	Handler* handler_;
+	std::shared_ptr<Connection> connection_;
+	Link link_;
 
 	void link_up();
 
 public:
 	Channel(std::uint8_t id, std::string banner, std::string service, 
-	        Handler* handler, std::weak_ptr<RemotePeer> net);
+	        Handler* handler, std::shared_ptr<Connection> net);
 	Channel() = default;
 	~Channel();
 

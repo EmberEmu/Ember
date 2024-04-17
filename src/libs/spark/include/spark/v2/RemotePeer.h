@@ -25,12 +25,12 @@ namespace ember::spark::v2 {
 
 class HandlerRegistry;
 
-class RemotePeer final : std::enable_shared_from_this<RemotePeer> {
+class RemotePeer final {
 	enum class State {
 		HELLO, NEGOTIATING, DISPATCHING
 	} state_ = State::HELLO;
 
-	Connection conn_;
+	std::shared_ptr<Connection> conn_;
 	std::string banner_;
 	HandlerRegistry& registry_;
 	std::array<std::shared_ptr<Channel>, 256> channels_{};

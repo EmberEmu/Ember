@@ -12,23 +12,16 @@
 namespace ember::spark::v2 {
 
 Channel::Channel(std::uint8_t id, std::string banner, std::string service,
-                 Handler* handler, std::weak_ptr<RemotePeer> net)
-	: link_{.banner = "", .net = net, .channel_id = id}, // temp, I think
-	  banner_(banner),
-	  service_(service),
-	  handler_(handler) {
-	/*if(state == State::OPEN) {
-		link_up();
-	}*/
-}
+                 Handler* handler, std::shared_ptr<Connection> net)
+	: link_{.peer_banner = banner, .service_name = service, .net = weak_from_this()},
+	  handler_(handler),
+	  channel_id_(id) {}
 
 void Channel::open() {
-	// multiple open calls should have no effect
 	if(state_ != State::OPEN) {
+		state_ = State::OPEN;
 		link_up();
 	}
-
-	state_ = State::OPEN;
 }
 
 bool Channel::is_open() {
