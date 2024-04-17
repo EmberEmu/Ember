@@ -41,10 +41,11 @@ public:
 	Channel() = default;
 	~Channel();
 
-	Handler* handler();
-	State state();
+	Handler* handler() const;
+	State state() const;
+	bool is_open() const;
+
 	void open();
-	bool is_open();
 	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
 	void send();
 };

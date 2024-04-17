@@ -24,7 +24,7 @@ void Channel::open() {
 	}
 }
 
-bool Channel::is_open() {
+bool Channel::is_open() const {
 	return state_ == State::OPEN;
 }
 
@@ -36,11 +36,11 @@ void Channel::send() {
 	// todo
 }
 
-auto Channel::state() -> State {
+auto Channel::state() const -> State {
 	return state_;
 }
 
-Handler* Channel::handler() {
+Handler* Channel::handler() const {
 	return handler_;
 }
 
