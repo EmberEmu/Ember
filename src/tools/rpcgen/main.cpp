@@ -40,7 +40,7 @@ int launch(const po::variables_map& args) try {
 
 	ember::SchemaParser parser(tpl_path, out_path);
 
-	for(auto& schema : schemas) {
+	for(const auto& schema : schemas) {
 		LOG_INFO_GLOB << "Generating service for " << schema << LOG_SYNC;
 		parser.generate(schema);
 	}

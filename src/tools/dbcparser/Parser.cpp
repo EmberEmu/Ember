@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2014 - 2019 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -282,7 +282,7 @@ types::Definitions Parser::parse(const std::vector<std::string>& paths) {
 
 	types::Definitions defs;
 
-	for(auto& path : paths) {
+	for(const auto& path : paths) {
 		try {
 			auto parsed = parse_file(path);
 			

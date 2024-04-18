@@ -36,5 +36,4 @@ std::size_t SessionManager::count() const {
 	return sessions_.size();
 }
 
-
 } // ember

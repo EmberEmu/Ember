@@ -49,7 +49,7 @@ public:
 std::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& f : base.children) {
+	for(const auto& f : base.children) {
 		if(f->name == type_name) {
 			return base.name;
 		}
@@ -65,7 +65,7 @@ std::optional<std::string> locate_type(const types::Struct& base, const std::str
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->name == parent) {
 			if(!def->alias.empty()) {
 				return def->alias;
@@ -120,7 +120,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 	std::stringstream buffer(read_template(path, "Linker.cpp_"));
 	std::stringstream functions, calls;
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
@@ -144,7 +144,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 		func << "void link_" << store_name << "(Storage& storage) {" << std::endl;
 		func << "\t" << "for(auto& [k, i] : storage." << store_name << ") {" << std::endl;
 
-		for(auto& f : dbc->fields) {
+		for(const auto& f : dbc->fields) {
 			std::stringstream curr_field;
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.has_value();
@@ -174,7 +174,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 
 			double_spaced = array;
 
-			for(auto& k : f.keys) {
+			for(const auto& k : f.keys) {
 				if(k.type == "foreign") {
 					curr_field << (array? "\t" : "") << "\t\t" << "i." << f.name
 						<< (array? "[j]" : "") << " = " << "storage."
@@ -219,7 +219,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 	std::stringstream buffer(read_template(path, "DiskLoader.cpp_"));
 	std::stringstream functions, insertions, calls;
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
@@ -289,7 +289,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			bool foreign = false;
 			bool primary = false;
 
-			for(auto& k : f.keys) {
+			for(const auto& k : f.keys) {
 				if(k.type == "foreign") {
 					id_suffix = true;
 					foreign = true;
@@ -338,7 +338,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			if(components.first == "string_ref_loc") {
 				functions << "\n" << (array ? "\t" : "") << "\t\t // string_ref_loc block\n";
 
-				for(auto& locale : string_ref_loc_regions) {
+				for(const auto& locale : string_ref_loc_regions) {
 					functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id." : ".") << locale
 						<< (array ? "[j]" : "") << " = " << "dbc.strings + dbc.records[i]." << f.name << "." << locale << ";" << std::endl;
 				}
@@ -351,7 +351,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 					functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id" : "")
 						<< (array ? "[j]" : "") << " = " << cast.str();
 				} else {
-					for(auto& name : names) {
+					for(const auto& name : names) {
 						field << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id" : "")
 							<< (array ? "[j]" : "") << "." << name << " = " << cast.str();
 						field_left.push_back(field.str());
@@ -406,7 +406,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& child : def.children) {
+	for(const auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
 			case types::Type::STRUCT:
 				generate_disk_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
@@ -429,7 +429,7 @@ void generate_disk_struct(const types::Struct& def, std::stringstream& definitio
 
 	generate_disk_struct_recursive(def, definitions, indent);
 
-	for(auto& f : def.fields) {
+	for(const auto& f : def.fields) {
 		auto components = extract_components(f.underlying_type);
 		std::string field = components.first + " " + f.name;
 
@@ -456,11 +456,11 @@ void generate_disk_defs(const types::Definitions& defs, const std::string& outpu
 	std::stringstream buffer(read_template(path, "DiskDefs.h_"));
 	std::stringstream definitions;
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->type == types::Type::STRUCT) {
 			generate_disk_struct(static_cast<types::Struct&>(*def), definitions, 0);
 		} else if(def->type == types::Type::ENUM) {
-			auto& enum_def = static_cast<types::Enum&>(*def);
+			const auto& enum_def = static_cast<types::Enum&>(*def);
 			generate_disk_enum(enum_def, definitions, 0);
 		}
 	}
@@ -502,7 +502,7 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& child : def.children) {
+	for(const auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
 			case types::Type::STRUCT:
 				generate_memory_struct(static_cast<types::Struct&>(*child), definitions, indent + 1);
@@ -531,12 +531,12 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 
 	generate_memory_struct_recursive(def, definitions, indent);
 
-	for(auto& f : def.fields) {
+	for(const auto& f : def.fields) {
 		auto components = extract_components(f.underlying_type);
 		bool array = components.second.has_value();
 		bool key = false;
 
-		for(auto& k : f.keys) {
+		for(const auto& k : f.keys) {
 			if(k.type == "foreign") {
 				if(array) {
 					definitions << tab << "\t" << "std::array<const " << k.parent << "*, "
@@ -585,12 +585,12 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 	std::stringstream buffer(read_template(path, "MemoryDefs.h_"));
 	std::stringstream forward_decls, definitions;
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->type == types::Type::STRUCT) {
 			forward_decls << "struct " << def->name << ";" << std::endl;
 			generate_memory_struct(static_cast<types::Struct&>(*def), definitions, 0);
 		} else if(def->type == types::Type::ENUM) {
-			auto& enum_def = static_cast<types::Enum&>(*def);
+			const auto& enum_def = static_cast<types::Enum&>(*def);
 			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
 			generate_memory_enum(enum_def, definitions, 0);
 		}
@@ -608,12 +608,12 @@ void generate_storage(const types::Definitions& defs, const std::string& output,
 	std::stringstream buffer(read_template(path, "Storage.h_"));
 	std::stringstream declarations;
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->type != types::Type::STRUCT) {
 			continue;
 		}
 
-		auto dbc = static_cast<types::Struct*>(def.get());
+		const auto dbc = static_cast<types::Struct*>(def.get());
 
 		// ensure this is actually a DBC definition rather than a user-defined struct
 		if(!dbc->dbc) {

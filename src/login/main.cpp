@@ -170,7 +170,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
 
-	for(auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
+	for(const auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
 	}
 

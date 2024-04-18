@@ -56,7 +56,7 @@ void launch(const po::variables_map& args) {
 	std::sort(output_opt.begin(), output_opt.end());
 	output_opt.erase(std::unique(output_opt.begin(), output_opt.end()), output_opt.end());
 
-	for(auto& output : output_opt) {
+	for(const auto& output : output_opt) {
 		if(output == "console") {
 			reader.add_sink(std::make_unique<ConsoleSink>());
 		}

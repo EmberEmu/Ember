@@ -31,8 +31,8 @@ std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
 		std::uint32_t combined_keys = (sectors[0] ^ expected) - 0xEEEEEEEE;
 		std::uint32_t data[2]{};
 
-		for(std::uint32_t i = 0; i < 0x100; ++i) {
-			std::uint32_t key1 = combined_keys - table[0x400 + i];
+		for(std::uint32_t j = 0; j < 0x100; ++j) {
+			std::uint32_t key1 = combined_keys - table[0x400 + j];
 			std::uint32_t key2 = 0xEEEEEEEE;
 
 			key2 += table[0x400 + (key1 & 0xFF)];

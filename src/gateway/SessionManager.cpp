@@ -52,7 +52,7 @@ ConnectionStats SessionManager::aggregate_stats() const {
 
 	ConnectionStats ag_stats {};
 
-	for(auto& session : sessions_) {
+	for(const auto& session : sessions_) {
 		const auto& stats = session->stats();
 		ag_stats.bytes_in += stats.bytes_in;
 		ag_stats.bytes_out += stats.bytes_out;

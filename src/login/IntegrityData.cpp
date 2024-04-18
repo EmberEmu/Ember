@@ -76,7 +76,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 	std::size_t write_offset = 0;
 
 	// write all of the binary data into a single buffer
-	for(auto& f : files) {
+	for(const auto& f : files) {
 		fs::path fpath = dir;
 		fpath /= f.data();
 

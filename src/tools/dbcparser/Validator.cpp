@@ -36,8 +36,8 @@ std::optional<const types::Field*> Validator::locate_fk_parent(const std::string
 			
 		auto def_s = static_cast<types::Struct*>(def.get());
 
-		for(auto& field : def_s->fields) {
-			for(auto& key : field.keys) {
+		for(const auto& field : def_s->fields) {
+			for(const auto& key : field.keys) {
 				if(key.type == "primary") {
 					return std::optional<const types::Field*>(&field);
 				}
@@ -51,7 +51,7 @@ std::optional<const types::Field*> Validator::locate_fk_parent(const std::string
 void Validator::check_foreign_keys(const types::Field& field) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& key : field.keys) {
+	for(const auto& key : field.keys) {
 		if(key.type == "foreign") {
 			std::optional<const types::Field*> pk = locate_fk_parent(key.parent);
 			auto components(extract_components(field.underlying_type));
@@ -121,7 +121,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 void Validator::check_key_types(const types::Field& field) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& key : field.keys) {
+	for(const auto& key : field.keys) {
 		if(key.type != "primary" && key.type != "foreign") {
 			if(key.type.empty()) {
 				throw exception(field.name + " did not specify a key type");
@@ -141,10 +141,10 @@ void Validator::check_dup_key_types(const types::Struct* def) {
 
 	bool has_primary = false;
 
-	for(auto& field : def->fields) {
+	for(const auto& field : def->fields) {
 		bool has_foreign = false;
 
-		for(auto& key : field.keys) {
+		for(const auto& key : field.keys) {
 			if(key.type == "primary") {
 				if(has_primary) {
 					throw exception(field.name + " - cannot have multiple primary keys");
@@ -261,7 +261,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
 void Validator::check_field_types(const types::Struct* def, const TreeNode<std::string>* curr_def) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	for(auto& field : def->fields) {
+	for(const auto& field : def->fields) {
 		auto components = extract_components(field.underlying_type);
 
 		// check to see whether type is an in-built type
@@ -310,7 +310,7 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 	check_dup_key_types(def);
 	check_field_types(def, node);
 
-	for(auto& field : def->fields) {
+	for(const auto& field : def->fields) {
 		if(!field.keys.empty() && !def->dbc) {
 			throw exception("Only DBC nodes may contain keys");
 		}

@@ -134,9 +134,9 @@ void print_dbc_table(const edbc::types::Definitions& defs) {
 	printer.AddColumn("Comment", comment_len);
 	printer.PrintHeader();
 
-	for(auto& def : defs) {
+	for(const auto& def : defs) {
 		if(def->type == edbc::types::Type::STRUCT) {
-			auto dbc = static_cast<const edbc::types::Struct*>(def.get());
+			const auto dbc = static_cast<const edbc::types::Struct*>(def.get());
 			printer << std::string_view(dbc->name).substr(0, name_len) << dbc->fields.size()
 				<< dbc->comment;
 		}

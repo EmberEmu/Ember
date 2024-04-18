@@ -53,7 +53,7 @@ void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* pa
 		if(type_map.contains(components.first)) {
 			visitor.visit(&f, parent);
 		} else {
-			auto found = locate_type_base(*dbc, components.first);
+			const auto found = locate_type_base(*dbc, components.first);
 
 			if(!found) {
 				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);

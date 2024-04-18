@@ -121,7 +121,7 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 			build_to = paths.front().from;
 		}
 
-		for(auto& patch : p_it->second) {
+		for(const auto& patch : p_it->second) {
 			if(patch.build_from == build_from && patch.build_to == build_to) {
 				return patch;
 			}
@@ -138,7 +138,7 @@ auto Patcher::check_version(const GameVersion& client_version) const -> PatchLev
 
 	// Figure out whether any of the allowed client versions are newer than the client.
 	// If so, there's a chance that it can be patched.
-	for(auto& v : versions_) {
+	for(const auto& v : versions_) {
 		if(v > client_version) {
 			return PatchLevel::TOO_OLD;
 		}

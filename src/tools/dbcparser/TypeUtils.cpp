@@ -135,7 +135,7 @@ std::string pascal_to_underscore(std::string name) {
 }
 
 types::Base* locate_type_base(const types::Struct& base, const std::string& type_name) {
-	for(auto& f : base.children) {
+	for(const auto& f : base.children) {
 		if(f->name == type_name) {
 			return f.get();
 		}
