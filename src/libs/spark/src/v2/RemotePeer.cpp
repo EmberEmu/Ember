@@ -159,17 +159,15 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	auto channel = channels_[id];
 
 	if(channel) {
-		if(id = next_empty_channel(); id != 0) {
-			channel = channels_[id];
-		} else {
+		if(id = next_empty_channel(); id == 0) {
 			LOG_ERROR_FMT(log_, "[spark] Exhausted channel IDs");
 			open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 			return;
 		}
 	}
-
+	
 	channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
-	channels_[id] = channel;
+	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::OK, id, msg->id());
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
@@ -279,7 +277,7 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
 
 	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
-	channels_[id] = channel;
+	channels_[id] = std::move(channel);
 	send_open_channel("", type, id);
 }
 
