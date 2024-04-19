@@ -169,6 +169,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	}
 	
 	channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
+	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::OK, id, msg->id());
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
