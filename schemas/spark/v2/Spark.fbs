@@ -45,8 +45,13 @@ table CloseChannel {
 	channel: int;
 }
 
-table Ping {}
-table Pong {}
+table Ping {
+	sequence: uint;
+}
+
+table Pong {
+	sequence: uint;
+}
 
 table Header {
 	message: Message;

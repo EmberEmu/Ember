@@ -16,6 +16,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <logger/Logging.h>
 #include <array>
+#include <chrono>
 #include <concepts>
 #include <memory>
 #include <string>
@@ -24,6 +25,9 @@
 namespace ember::spark::v2 {
 
 class HandlerRegistry;
+using namespace std::chrono_literals;
+
+static auto LATENCY_WARN_THRESHOLD = 100ms; // todo, move?
 
 class RemotePeer final {
 	enum class State {
@@ -32,9 +36,13 @@ class RemotePeer final {
 
 	std::shared_ptr<Connection> conn_;
 	std::string banner_;
+	std::string remote_banner_;
 	HandlerRegistry& registry_;
 	std::array<std::shared_ptr<Channel>, 256> channels_{};
 	log::Logger* log_;
+
+	std::uint32_t ping_sequence_ = 0;
+	std::chrono::steady_clock::time_point ping_time_;
 
 	void send(std::unique_ptr<Message> msg);
 	Handler* find_handler(const core::OpenChannel* msg);
@@ -45,6 +53,8 @@ class RemotePeer final {
 	void handle_open_channel(const core::OpenChannel* msg);
 	void handle_open_channel_response(const core::OpenChannelResponse* msg);
 	void handle_close_channel(const core::CloseChannel* msg);
+	void handle_ping(const core::Ping* msg);
+	void handle_pong(const core::Pong* msg);
 
 	void open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested);
 	void send_close_channel(std::uint8_t id);
@@ -52,7 +62,8 @@ class RemotePeer final {
 	void receive(std::span<const std::uint8_t> data);
 
 public:
-	RemotePeer(Connection connection, std::string banner, HandlerRegistry& registry, log::Logger* log);
+	RemotePeer(Connection connection, std::string banner, std::string remote_banner,
+	           HandlerRegistry& registry, log::Logger* log);
 	~RemotePeer();
 
 	void open_channel(const std::string& type, Handler* handler);

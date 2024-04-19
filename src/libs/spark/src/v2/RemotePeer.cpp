@@ -22,8 +22,10 @@ namespace ba = boost::asio;
 namespace ember::spark::v2 {
 
 RemotePeer::RemotePeer(Connection connection, std::string banner,
-                       HandlerRegistry& registry, log::Logger* log)
+                       std::string remote_banner, HandlerRegistry& registry,
+                       log::Logger* log)
 	: banner_(std::move(banner)),
+	  remote_banner_(std::move(remote_banner)),
 	  registry_(registry),
 	  conn_(std::make_shared<Connection>(std::move(connection))),
 	  log_(log) {
@@ -221,8 +223,38 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 		case core::Message::OpenChannelResponse:
 			handle_open_channel_response(fb->message_as_OpenChannelResponse());
 			break;
+		case core::Message::Ping:
+			handle_ping(fb->message_as_Ping());
+			break;
+		case core::Message::Pong:
+			handle_pong(fb->message_as_Pong());
+			break;
 		default:
 			LOG_WARN(log_) << "[spark] Unknown control message type" << LOG_ASYNC;
+	}
+}
+
+void RemotePeer::handle_ping(const core::Ping* ping) {
+	core::PongT pong;
+	pong.sequence = ping->sequence();
+
+	auto msg = std::make_unique<Message>();
+	finish(pong, *msg);
+	write_header(*msg);
+	conn_->send(std::move(msg));
+}
+
+void RemotePeer::handle_pong(const core::Pong* pong) {
+	if(pong->sequence() != ping_sequence_) {
+		LOG_DEBUG(log_) << "[spark] Bad pong sequence" << LOG_ASYNC;
+		return;
+	}
+
+	const auto delta = std::chrono::steady_clock::now() - ping_time_;
+	
+	if(delta > LATENCY_WARN_THRESHOLD) {
+		const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+		LOG_WARN_FMT(log_, "[spark] High latency to remote peer, {}: {}ms", remote_banner_, ms);
 	}
 }
 
