@@ -54,7 +54,9 @@ Channel::~Channel() {
 		return;
 	}
 
-	handler_->on_link_down(link_);
+	if(is_open()) {
+		handler_->on_link_down(link_);
+	}
 }
 
 } // v2, spark, ember

@@ -336,7 +336,7 @@ void RemotePeer::remove_handler(Handler* handler) {
 
 		if(channel->handler() == handler) {
 			send_close_channel(i);
-			channels_[i] = {};
+			channels_[i].reset();
 		}
 	}
 }
