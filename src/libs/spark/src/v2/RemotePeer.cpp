@@ -134,7 +134,7 @@ Handler* RemotePeer::find_handler(const core::OpenChannel* msg) {
 		if(!services.empty()) {
 			return services.front();
 		}
-;	}
+	}
 
 	return nullptr;
 }
@@ -158,17 +158,16 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	}
 
 	auto id = gsl::narrow<std::uint8_t>(msg->id());
-	auto channel = channels_[id];
 
-	if(channel) {
+	if(channels_[id]) {
 		if(id = next_empty_channel(); id == 0) {
 			LOG_ERROR_FMT(log_, "[spark] Exhausted channel IDs");
 			open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 			return;
 		}
 	}
-	
-	channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
+
+	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::OK, id, msg->id());
@@ -263,9 +262,8 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
 	auto id = gsl::narrow<std::uint8_t>(msg->channel());
-	auto channel = channels_[id];
 
-	if(!channel) {
+	if(!channels_[id]) {
 		LOG_WARN(log_) << "[spark] Request to close empty channel" << LOG_ASYNC;
 		return;
 	}
@@ -280,7 +278,7 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 
 	auto channel = channels_[header.channel];
 
-	if(!channel) {
+	if(!channel || !channel->is_open()) {
 		LOG_WARN_FMT(log_, "[spark] Received message for closed channel, {}", header.channel);
 		return;
 	}
