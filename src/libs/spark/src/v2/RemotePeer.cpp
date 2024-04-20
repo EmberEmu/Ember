@@ -70,7 +70,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 		auto channel = channels_[msg->requested_id()];
 		LOG_ERROR_FMT(log_, "[spark] Remote peer could not open channel ({}:{})",
 			channel->handler()->type(), msg->requested_id());
-		channels_[msg->requested_id()] = {};
+		channels_[msg->requested_id()].reset();
 		return;
 	}
 
@@ -78,26 +78,33 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 	auto id = msg->actual_id();
 	auto channel = channels_[id];
 
+	if(id == 0) {
+		LOG_ERROR_FMT(log_, "[spark] Reserved channel ID returned by {}", remote_banner_);
+		channels_[msg->requested_id()].reset();
+		return;
+	}
+
 	if(msg->actual_id() != msg->requested_id()) {
 		if(channel) {
 			LOG_ERROR_FMT(log_, "[spark] Channel open ({}) failed due to ID collision",
 				msg->actual_id());
 			send_close_channel(msg->actual_id());
-			channels_[msg->requested_id()] = {};
+			channels_[msg->requested_id()].reset();
 			return;
 		}
 
 		channels_[msg->actual_id()] = channels_[msg->requested_id()];
-		channels_[msg->requested_id()] = {};
+		channels_[msg->requested_id()].reset();
 	}
 
 	if(channel->is_open()) {
 		send_close_channel(msg->actual_id());
-		channels_[msg->actual_id()] = {};
+		channels_[msg->actual_id()].reset();
 		return;
 	}
 
 	channel->open();
+
 	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}",
 		channel->handler()->name(), msg->actual_id());
 }
