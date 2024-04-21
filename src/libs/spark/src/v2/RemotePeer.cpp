@@ -105,7 +105,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 	channel->open();
 
-	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}",
+	LOG_DEBUG_FMT(log_, "[spark] Remote channel open, {}:{}",
 		channel->handler()->name(), msg->actual_id());
 }
 
@@ -178,7 +178,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::OK, id, msg->id());
-	LOG_INFO_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
+	LOG_DEBUG_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel() {
@@ -276,7 +276,7 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 	}
 
 	channels_[id].reset();
-	LOG_INFO_FMT(log_, "[spark] Closed channel {}, requested by remote peer", id);
+	LOG_DEBUG_FMT(log_, "[spark] Closed channel {}, requested by remote peer", id);
 }
 
 void RemotePeer::handle_channel_message(const MessageHeader& header,
