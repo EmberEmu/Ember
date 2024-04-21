@@ -68,7 +68,7 @@ public:
 
 		stream << be::native_to_little(size) + write_size + pad;
 		stream << be::native_to_little(channel);
-		stream << static_cast<std::uint8_t>(!uuid.is_nil()));
+		stream << static_cast<std::uint8_t>(!uuid.is_nil());
 		
 		if(!uuid.is_nil()) {
 			stream << uuid;
