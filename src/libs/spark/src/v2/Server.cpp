@@ -149,7 +149,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 	co_return true;
 } catch(const std::exception& e) {
 	const auto msg = std::format(
-		"[spark] Could not connect to {}:{} ()", host, port, e.what()
+		"[spark] Could not connect to {}:{} ({})", host, port, e.what()
 	);
 
 	LOG_WARN_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
