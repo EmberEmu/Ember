@@ -9,6 +9,7 @@
 #pragma once
 
 #include <boost/endian/conversion.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 
 namespace ember::spark::v2 {
@@ -16,7 +17,7 @@ namespace ember::spark::v2 {
 namespace be = boost::endian;
 
 class MessageHeader final {
-	constexpr static auto HEADER_SIZE = 6u;
+	constexpr static auto MIN_HEADER_SIZE = 7u;
 
 	std::uint8_t alignment_ = 0;
 
@@ -28,11 +29,20 @@ public:
 	std::uint32_t size = 0;
 	std::uint8_t channel = 0;
 	std::uint8_t padding = 0;
+	boost::uuids::uuid uuid = {};
 
 	template<typename reader>
 	State read_from_stream(reader& stream) try {
 		stream >> size;
 		stream >> channel;
+
+		std::uint8_t has_uuid = 0;
+		stream >> has_uuid;
+
+		if(has_uuid) {
+			stream >> uuid;
+		}
+
 		stream >> padding;
 
 		be::little_to_native_inplace(size);
@@ -48,11 +58,22 @@ public:
 
 	template<typename writer>
 	void write_to_stream(writer& stream) const {
-		auto write_size = HEADER_SIZE;
+		auto write_size = MIN_HEADER_SIZE;
+
+		if(!uuid.is_nil()) {
+			write_size += uuid.size();
+		}
+
 		auto pad = alignment_ - (write_size % alignment_);
 
 		stream << be::native_to_little(size) + write_size + pad;
 		stream << be::native_to_little(channel);
+		stream << static_cast<std::uint8_t>(!uuid.is_nil()));
+		
+		if(!uuid.is_nil()) {
+			stream << uuid;
+		}
+
 		stream << static_cast<std::uint8_t>(be::native_to_little(pad));
 
 		// pad the header so the body starts at the correct alignment
