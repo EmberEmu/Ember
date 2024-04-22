@@ -122,7 +122,6 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-
 	auto results = co_await resolver_.async_resolve(
 		host, std::to_string(port), ba::use_awaitable
 	);
@@ -143,7 +142,10 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	auto peer = std::make_shared<RemotePeer>(std::move(connection), name_, banner, handlers_, logger_);
+	auto peer = std::make_shared<RemotePeer>(
+		std::move(connection), name_, banner, handlers_, logger_
+	);
+
 	peers_.add(key, peer);
 	peer->start();
 	co_return true;

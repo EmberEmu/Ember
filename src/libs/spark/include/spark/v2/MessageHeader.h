@@ -10,6 +10,7 @@
 
 #include <boost/endian/conversion.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <stdexcept>
 #include <cstdint>
 
 namespace ember::spark::v2 {

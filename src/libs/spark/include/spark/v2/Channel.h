@@ -8,10 +8,14 @@
 
 #pragma once
 
-#include <spark/v2/Tracker.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/MessageHeader.h>
 #include <spark/v2/Link.h>
+#include <boost/uuid/uuid.hpp>
+#include <boost/functional/hash.hpp>
+#include <flatbuffers/flatbuffer_builder.h>
+#include <functional>
+#include <unordered_map>
 #include <memory>
 #include <span>
 #include <cstdint>
@@ -19,6 +23,9 @@
 namespace ember::spark::v2 {
 
 class Connection;
+
+using Token = boost::uuids::uuid;
+using MessageCB = std::function<void()>;
 
 class Channel final : std::enable_shared_from_this<Channel> {
 public:
@@ -31,6 +38,8 @@ private:
 	std::uint8_t channel_id_;
 	Handler* handler_;
 	std::shared_ptr<Connection> connection_;
+	std::unordered_map<boost::uuids::uuid, MessageCB,
+		               boost::hash<boost::uuids::uuid>> callbacks_;
 	Link link_;
 
 	void link_up();
@@ -47,7 +56,8 @@ public:
 
 	void open();
 	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
-	void send();
+	void send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb, Token token);
+	void send(flatbuffers::FlatBufferBuilder&& fbb);
 };
 
 } // v2, spark, ember

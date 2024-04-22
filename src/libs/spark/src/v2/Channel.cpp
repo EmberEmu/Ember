@@ -7,6 +7,10 @@
  */
 
 #include <spark/v2/Channel.h>
+#include <spark/v2/Connection.h>
+#include <spark/v2/Message.h>
+#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
 #include <cassert>
 
 namespace ember::spark::v2 {
@@ -29,11 +33,29 @@ bool Channel::is_open() const {
 }
 
 void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t> data) {
-	// draw the rest of the owl
+	if(!header.uuid.is_nil()) {
+
+	}
 }
 
-void Channel::send() {
-	// todo
+void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb, Token token) {
+	callbacks_.emplace(token, std::move(cb));
+	send(std::move(fbb));
+}
+
+void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
+	auto msg = std::make_unique<Message>();
+	msg->fbb = std::move(fbb);
+	
+	MessageHeader header;
+	header.size = msg->fbb.GetSize();
+	header.set_alignment(msg->fbb.GetBufferMinAlignment());
+
+	BufferAdaptor adaptor(msg->header);
+	BinaryStream stream(adaptor);
+	header.write_to_stream(stream);
+
+	//connection_->send(std::move(msg));
 }
 
 auto Channel::state() const -> State {
