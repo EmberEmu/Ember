@@ -108,7 +108,7 @@ LocateResult locate_archive(std::span<const std::byte> buffer) {
 }
 
 std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
-									        const std::uintptr_t offset) {
+                                            const std::uintptr_t offset) {
 	std::error_code ec{};
 
 	if(!std::filesystem::exists(path, ec) || ec) {

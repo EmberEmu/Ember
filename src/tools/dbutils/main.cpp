@@ -84,7 +84,7 @@ int main(int argc, const char* argv[]) try {
 }
 
 std::unique_ptr<QueryExecutor> db_executor(const std::string& type,
-										   const DatabaseDetails& details) {
+                                           const DatabaseDetails& details) {
 	auto lower_type = type;
 	std::transform(lower_type.begin(), lower_type.end(), lower_type.begin(), ::tolower);
 
