@@ -14,6 +14,7 @@
 #include <spark/v2/Handler.h>
 #include <spark/v2/SharedDefs.h>
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
 #include <logger/Logging.h>
 #include <array>
 #include <chrono>
@@ -34,6 +35,7 @@ class RemotePeer final {
 		HELLO, NEGOTIATING, DISPATCHING
 	} state_ = State::HELLO;
 
+	boost::asio::io_context& ctx_;
 	std::shared_ptr<Connection> conn_;
 	std::string banner_;
 	std::string remote_banner_;
@@ -62,7 +64,8 @@ class RemotePeer final {
 	void receive(std::span<const std::uint8_t> data);
 
 public:
-	RemotePeer(Connection connection, std::string banner, std::string remote_banner,
+	RemotePeer(boost::asio::io_context& ctx, Connection connection,
+	           std::string banner, std::string remote_banner,
 	           HandlerRegistry& registry, log::Logger* log);
 	~RemotePeer();
 

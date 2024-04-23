@@ -19,13 +19,13 @@ class RemotePeer;
 class Handler;
 
 class Peers final {
-	std::unordered_map<std::string, std::shared_ptr<RemotePeer>> peers_;
+	std::unordered_map<std::string, std::unique_ptr<RemotePeer>> peers_;
 	std::mutex lock_;
 
 public:
-	void add(std::string key, std::shared_ptr<RemotePeer> peer);
+	void add(std::string key, std::unique_ptr<RemotePeer> peer);
 	void remove(const std::string& key);
-	std::shared_ptr<RemotePeer> find(const std::string& key);
+	RemotePeer* find(const std::string& key);
 	void notify_remove_handler(Handler* handler);
 };
 

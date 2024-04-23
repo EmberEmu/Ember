@@ -21,10 +21,12 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-RemotePeer::RemotePeer(Connection connection, std::string banner,
+RemotePeer::RemotePeer(boost::asio::io_context& ctx,
+                       Connection connection, std::string banner,
                        std::string remote_banner, HandlerRegistry& registry,
                        log::Logger* log)
-	: banner_(std::move(banner)),
+	: ctx_(ctx),
+	  banner_(std::move(banner)),
 	  remote_banner_(std::move(remote_banner)),
 	  registry_(registry),
 	  conn_(std::make_shared<Connection>(std::move(connection))),
@@ -174,7 +176,10 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 		}
 	}
 
-	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
+	auto channel = std::make_shared<Channel>(
+		ctx_, log_, id, banner_, handler->name(), handler, conn_
+	);
+
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::OK, id, msg->id());
@@ -314,7 +319,10 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	const auto id = next_empty_channel();
 	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
 
-	auto channel = std::make_shared<Channel>(id, banner_, handler->name(), handler, conn_);
+	auto channel = std::make_shared<Channel>(
+		ctx_, log_, id, banner_, handler->name(), handler, conn_
+	);
+
 	channels_[id] = std::move(channel);
 	send_open_channel("", type, id);
 }

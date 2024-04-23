@@ -15,9 +15,11 @@
 
 namespace ember::spark::v2 {
 
-Channel::Channel(std::uint8_t id, std::string banner, std::string service,
+Channel::Channel(boost::asio::io_context& ctx, log::Logger* logger,
+				 std::uint8_t id, std::string banner, std::string service,
                  Handler* handler, std::shared_ptr<Connection> net)
-	: link_{.peer_banner = banner, .service_name = service, .net = weak_from_this()},
+	: tracking_(ctx, logger),
+	  link_{.peer_banner = banner, .service_name = service, .net = weak_from_this()},
 	  handler_(handler),
 	  channel_id_(id) {}
 
@@ -39,7 +41,6 @@ void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb, Token token) {
-	callbacks_.emplace(token, std::move(cb));
 	send(std::move(fbb));
 }
 

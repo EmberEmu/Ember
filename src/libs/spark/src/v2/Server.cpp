@@ -7,7 +7,6 @@
  */
 
 #include <spark/v2/Server.h>
-#include <spark/v2/RemotePeer.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/Connection.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
@@ -32,8 +31,11 @@ Server::Server(boost::asio::io_context& context, const std::string& name,
 	  logger_(logger) {
 	acceptor_.set_option(ba::ip::tcp::no_delay(true));
 	acceptor_.set_option(ba::ip::tcp::acceptor::reuse_address(true));
+
+	// generate random unique name for this service
 	const auto uuid = boost::uuids::random_generator()();
 	name_ = std::format("{}:{}", name, boost::uuids::to_string(uuid));
+
 	ba::co_spawn(ctx_, listen(), ba::detached);
 }
 
@@ -93,9 +95,12 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	auto peer = std::make_shared<RemotePeer>(std::move(connection), name_, banner, handlers_, logger_);
-	peers_.add(key, peer);
+	auto peer = std::make_unique<RemotePeer>(
+		ctx_, std::move(connection), name_, banner, handlers_, logger_
+	);
+
 	peer->start();
+	peers_.add(key, std::move(peer));
 } catch(const std::exception& e) {
 	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
 }
@@ -142,12 +147,12 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	auto peer = std::make_shared<RemotePeer>(
-		std::move(connection), name_, banner, handlers_, logger_
+	auto peer = std::make_unique<RemotePeer>(
+		ctx_, std::move(connection), name_, banner, handlers_, logger_
 	);
 
-	peers_.add(key, peer);
 	peer->start();
+	peers_.add(key, std::move(peer));
 	co_return true;
 } catch(const std::exception& e) {
 	const auto msg = std::format(
@@ -158,7 +163,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 	co_return false;
 }
 
-ba::awaitable<std::shared_ptr<RemotePeer>>
+ba::awaitable<RemotePeer*>
 Server::find_or_connect(const std::string& host, const std::uint16_t port) {
 	const auto key = std::format("{}:{}", host, port);
 	auto peer = peers_.find(key);

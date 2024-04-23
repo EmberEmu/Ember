@@ -10,6 +10,7 @@
 
 #include <spark/v2/Peers.h>
 #include <spark/v2/HandlerRegistry.h>
+#include <spark/v2/RemotePeer.h>
 #include <logger/Logging.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -21,7 +22,6 @@
 
 namespace ember::spark::v2 {
 
-class RemotePeer;
 class Connection;
 
 class Server final {
@@ -41,7 +41,7 @@ class Server final {
 	boost::asio::awaitable<std::string> receive_banner(Connection& conn);
 	void close_peer(const std::string& key);
 
-	boost::asio::awaitable<std::shared_ptr<RemotePeer>>
+	boost::asio::awaitable<RemotePeer*>
 	find_or_connect(const std::string& host, std::uint16_t port);
 
 	boost::asio::awaitable<void> open_channel(std::string host, std::uint16_t port,

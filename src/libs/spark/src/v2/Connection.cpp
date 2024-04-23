@@ -146,15 +146,6 @@ ba::awaitable<void> Connection::send(Message& msg) {
 	co_await ba::async_write(socket_, buffers, ba::use_awaitable);
 }
 
-std::string Connection::address() {
-	if(!socket_.is_open()) {
-		return "";
-	}
-
-	const auto& ep = socket_.remote_endpoint();
-	return std::format("{}:{}", ep.address().to_string(), ep.port());
-}
-
 // start full-duplex send/receive
 void Connection::start(ReceiveHandler handler) {
 	ba::co_spawn(strand_, begin_receive(handler), ba::detached);
@@ -166,6 +157,15 @@ void Connection::close() {
 	if(on_close_) {
 		on_close_();
 	}
+}
+
+std::string Connection::address() const {
+	if(!socket_.is_open()) {
+		return "";
+	}
+
+	const auto& ep = socket_.remote_endpoint();
+	return std::format("{}:{}", ep.address().to_string(), ep.port());
 }
 
 } // spark, ember

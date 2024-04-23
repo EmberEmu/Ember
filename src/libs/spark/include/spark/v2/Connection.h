@@ -49,7 +49,7 @@ public:
 	Connection(boost::asio::ip::tcp::socket socket, CloseHandler handler);
 	Connection(Connection&&) = default;
 
-	std::string address();
+	std::string address() const;
 	void send(std::unique_ptr<Message> buffer);
 	boost::asio::awaitable<void> send(Message& msg);
 	boost::asio::awaitable<std::span<std::uint8_t>> receive_msg();

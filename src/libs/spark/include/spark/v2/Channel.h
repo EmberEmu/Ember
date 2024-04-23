@@ -11,6 +11,9 @@
 #include <spark/v2/Handler.h>
 #include <spark/v2/MessageHeader.h>
 #include <spark/v2/Link.h>
+#include <spark/v2/Tracking.h>
+#include <logger/Logger.h>
+#include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/functional/hash.hpp>
 #include <flatbuffers/flatbuffer_builder.h>
@@ -34,18 +37,18 @@ public:
 	};
 
 private:
+	Tracking tracking_;
 	State state_ = State::AWAITING;
 	std::uint8_t channel_id_;
 	Handler* handler_;
 	std::shared_ptr<Connection> connection_;
-	std::unordered_map<boost::uuids::uuid, MessageCB,
-		               boost::hash<boost::uuids::uuid>> callbacks_;
 	Link link_;
 
 	void link_up();
 
 public:
-	Channel(std::uint8_t id, std::string banner, std::string service, 
+	Channel(boost::asio::io_context& ctx, log::Logger* logger,
+	        std::uint8_t id, std::string banner, std::string service, 
 	        Handler* handler, std::shared_ptr<Connection> net);
 	Channel() = default;
 	~Channel();
