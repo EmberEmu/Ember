@@ -191,7 +191,7 @@ std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
 
 	while(auto comp = next_compression(comp_mask)) {
 		if(comp == MPQ_COMPRESSION_NEXT_SAME) {
-			comp = prev;
+			throw exception("Unhandled MPQ_COMPRESSION_NEXT_SAME"); // todo
 		}
 
 		if(!prev) {
