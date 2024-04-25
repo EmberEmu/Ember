@@ -47,11 +47,11 @@ set(COREv2
 	include/spark/v2/MessageHeader.h
 	include/spark/v2/Channel.h
 	include/spark/v2/SharedDefs.h
-	include/spark/v2/Message.h
 	include/spark/v2/HandlerRegistry.h
 	include/spark/v2/Peers.h
 	include/spark/v2/Utility.h
 	include/spark/v2/Tracking.h
+	include/spark/v2/Common.h
 	src/v2/Peers.cpp
     src/v2/Server.cpp
 	src/v2/RemotePeer.cpp

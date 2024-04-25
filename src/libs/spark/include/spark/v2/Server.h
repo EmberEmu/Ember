@@ -41,7 +41,7 @@ class Server final {
 	boost::asio::awaitable<std::string> receive_banner(Connection& conn);
 	void close_peer(const std::string& key);
 
-	boost::asio::awaitable<RemotePeer*>
+	boost::asio::awaitable<std::shared_ptr<RemotePeer>>
 	find_or_connect(const std::string& host, std::uint16_t port);
 
 	boost::asio::awaitable<void> open_channel(std::string host, std::uint16_t port,

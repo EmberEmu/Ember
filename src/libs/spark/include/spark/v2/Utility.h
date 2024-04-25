@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/v2/Message.h>
+#include <spark/v2/Common.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <spark/v2/buffers/BinaryStream.h>
 

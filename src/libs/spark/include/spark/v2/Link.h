@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <spark/v2/Message.h> // todo, move
 #include <expected>
 #include <functional>
 #include <memory>
@@ -32,7 +31,5 @@ inline bool operator==(const Link& lhs, const Link& rhs) {
 inline bool operator!=(const Link& lhs, const Link& rhs) {
 	return !(lhs == rhs);
 }
-
-typedef std::function<void(const Link&, std::expected<bool, Message>)> TrackedHandler; // todo move
 
 } // spark, ember

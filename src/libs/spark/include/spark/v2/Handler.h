@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/v2/Link.h>
-#include <spark/v2/Message.h>
+#include <spark/v2/Common.h>
 #include <string>
 
 namespace ember::spark::v2 {

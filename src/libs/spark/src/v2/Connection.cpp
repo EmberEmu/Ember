@@ -7,7 +7,7 @@
  */
 
 #include <spark/v2/Connection.h>
-#include <spark/v2/Message.h>
+#include <spark/v2/Common.h>
 #include <spark/Exception.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/asio.hpp>

@@ -95,7 +95,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	auto peer = std::make_unique<RemotePeer>(
+	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
 	);
 
@@ -147,7 +147,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	auto peer = std::make_unique<RemotePeer>(
+	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
 	);
 
@@ -163,7 +163,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 	co_return false;
 }
 
-ba::awaitable<RemotePeer*>
+ba::awaitable<std::shared_ptr<RemotePeer>>
 Server::find_or_connect(const std::string& host, const std::uint16_t port) {
 	const auto key = std::format("{}:{}", host, port);
 	auto peer = peers_.find(key);

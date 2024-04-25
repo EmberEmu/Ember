@@ -13,7 +13,7 @@
 
 namespace ember::spark::v2 {
 
-void Peers::add(std::string key, std::unique_ptr<RemotePeer> peer) {
+void Peers::add(std::string key, std::shared_ptr<RemotePeer> peer) {
 	std::lock_guard<std::mutex> guard(lock_);
 	peers_.emplace(std::move(key), std::move(peer));
 }
@@ -23,11 +23,11 @@ void Peers::remove(const std::string& key) {
 	peers_.erase(key);
 }
 
-RemotePeer* Peers::find(const std::string& key) {
+std::shared_ptr<RemotePeer> Peers::find(const std::string& key) {
 	std::lock_guard<std::mutex> guard(lock_);
 
 	if(auto it = peers_.find(key); it != peers_.end()) {
-		return it->second.get();
+		return it->second;
 	}
 
 	return nullptr;
