@@ -11,6 +11,8 @@
 #include <spark/v2/Link.h>
 #include <spark/v2/Common.h>
 #include <string>
+#include <span>
+#include <cstdint>
 
 namespace ember::spark::v2 {
 
@@ -18,7 +20,7 @@ class Handler {
 public:
 	virtual std::string type() = 0;
 	virtual std::string name() = 0;
-	virtual void on_message(const spark::v2::Link& link, const spark::v2::MessageTemp& message) = 0;
+	virtual void on_message(const spark::v2::Link& link, const std::span<const std::uint8_t> msg) = 0;
 	virtual void on_link_up(const spark::v2::Link& link) = 0;
 	virtual void on_link_down(const spark::v2::Link& link) = 0;
 

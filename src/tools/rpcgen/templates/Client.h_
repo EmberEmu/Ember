@@ -48,9 +48,9 @@ public:
 		return "{{name}}";
 	}
 
-	void on_message(const spark::v2::Link& link, const spark::v2::MessageTemp& msg) override {
-		auto fb = messaging::{{name}}::Get{{root}}(msg.data.data());
-		flatbuffers::Verifier verifier(msg.data.data(), msg.data.size());
+	void on_message(const spark::v2::Link& link, const std::span<const std::uint8_t> msg) override {
+		auto fb = messaging::{{name}}::Get{{root}}(msg.data());
+		flatbuffers::Verifier verifier(msg.data(), msg.size());
 
 		switch(fb->message_type()) {
 ## for handler in handlers

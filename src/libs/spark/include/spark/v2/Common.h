@@ -24,10 +24,6 @@ struct Message {
 	flatbuffers::FlatBufferBuilder fbb;
 };
 
-typedef std::function<void(const Link&, std::expected<bool, Message>)> TrackedHandler;
-
-struct MessageTemp {
-	std::span<std::uint8_t> data;
-};
+using TrackedHandler = std::function<void(const Link&, std::expected<bool, Message>)>;
 
 } // v2, spark, ember
