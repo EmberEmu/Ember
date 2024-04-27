@@ -43,8 +43,8 @@ public:
 	MySQL(std::string user, std::string password, const std::string& host, std::uint16_t port,
 	      std::string db = "");
 
-	MySQL(MySQL&& rhs) noexcept : dsn(std::move(rhs.dsn)), username(std::move(rhs.username)),
-	                              password(std::move(rhs.password)), database(std::move(rhs.database)),
+	MySQL(MySQL&& rhs) noexcept : dsn(rhs.dsn), username(rhs.username),
+	                              password(rhs.password), database(rhs.database),
 	                              cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
 
 	static std::string name();
