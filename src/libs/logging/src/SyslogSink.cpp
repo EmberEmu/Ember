@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,7 +46,7 @@ SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host
                          tag_(std::move(tag)) {
 	facility_ = facility;
 
-	if(tag.size() > 32) {
+	if(tag_.size() > 32) {
 		throw exception("Syslog tag size must be 32 characters or less");
 	}
 
