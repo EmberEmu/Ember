@@ -234,7 +234,7 @@ void validate_db_args(const po::variables_map& po_args, const std::string& mode)
 
 	// ensure that all arguments required for managing this DB are present
 	for(const auto& db_name : dbs) {
-		const auto args = db_args.at(db_name);
+		const auto& args = db_args.at(db_name);
 		const auto missing_arg = std::find_if(args.begin(), args.end(), [&](const auto& arg) {
 			return po_args[arg.data()].empty();
 		});
