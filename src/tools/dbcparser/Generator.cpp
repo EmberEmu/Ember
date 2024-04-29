@@ -224,7 +224,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			continue;
 		}
 		
-		auto& dbc = static_cast<types::Struct&>(*def);
+		const auto& dbc = static_cast<types::Struct&>(*def);
 
 		if(!dbc.dbc) {
 			continue;
@@ -259,7 +259,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		
 		bool is_primary_foreign = false;
 
-		for(auto& f : dbc.fields) {
+		for(const auto& f : dbc.fields) {
 			auto components = extract_components(f.underlying_type);
 			bool array = components.second.has_value();
 			bool str_offset = (components.first == "string_ref");
@@ -368,7 +368,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				if(names.empty()) {
 					functions << "dbc.records[i]." << f.name << (array ? "[j]" : "") << (cast.str().empty() ? "" : ")") << ";" << std::endl;
 				} else {
-					for(auto& name : names) {
+					for(const auto& name : names) {
 						field << "dbc.records[i]." << f.name << (array ? "[j]" : "") << "." << name << (cast.str().empty() ? "" : ")") << ";" << std::endl;
 						field_right.push_back(field.str());
 						field.str("");

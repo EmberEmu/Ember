@@ -8,8 +8,6 @@ set(EXECUTABLE_NAME rpcgen)
 
 set(EXECUTABLE_SRC
     main.cpp
-    Printer.h
-    Printer.cpp
     SchemaParser.h
     SchemaParser.cpp
 	Utility.h
