@@ -31,7 +31,7 @@ public:
 	std::uint8_t padding = 0;
 
 private:
-	std::uint8_t alignment = 0;
+	std::uint8_t alignment_ = 0;
 
 public:
 	template<typename reader>
