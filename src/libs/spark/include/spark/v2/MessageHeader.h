@@ -20,18 +20,20 @@ namespace be = boost::endian;
 class MessageHeader final {
 	constexpr static auto MIN_HEADER_SIZE = 7u;
 
-	std::uint8_t alignment_ = 0;
-
 public:
 	enum class State {
 		INITIAL, ERRORED, OK
 	} state = State::INITIAL;
 
+	boost::uuids::uuid uuid = {};
 	std::uint32_t size = 0;
 	std::uint8_t channel = 0;
 	std::uint8_t padding = 0;
-	boost::uuids::uuid uuid = {};
 
+private:
+	std::uint8_t alignment = 0;
+
+public:
 	template<typename reader>
 	State read_from_stream(reader& stream) try {
 		stream >> size;

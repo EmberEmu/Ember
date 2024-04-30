@@ -97,9 +97,10 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 		channels_[msg->actual_id()] = channels_[msg->requested_id()];
 		channels_[msg->requested_id()].reset();
+		channel = channels_[id];
 	}
 
-	if(channel->is_open()) {
+	if(!channel || channel->is_open()) {
 		send_close_channel(msg->actual_id());
 		channels_[msg->actual_id()].reset();
 		return;
