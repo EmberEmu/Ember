@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -44,7 +44,7 @@ public:
 		bool triggered;
 	};
 
-	typedef std::function<void(const Source, Severity, std::intmax_t)> LogCallback;
+	using LogCallback = std::function<void(const Source, Severity, std::intmax_t)>;
 
 private:
 	const std::chrono::seconds TIMER_FREQUENCY;

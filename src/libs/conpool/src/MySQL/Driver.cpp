@@ -115,7 +115,7 @@ sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, std
 void MySQL::cache_statement(const sql::Connection* conn, std::string_view key,
                             sql::PreparedStatement* value) {
 	std::lock_guard<std::mutex> lock(cache_lock_);
-	auto ptr = stmt_ptr(value, [](auto stmt) { stmt->close(); });
+	StmtPtr ptr(value, [](auto stmt) { stmt->close(); });
 	cache_[conn].emplace(key, std::move(ptr));
 }
 

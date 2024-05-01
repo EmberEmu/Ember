@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2018 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,7 +42,7 @@ struct ConnDetail {
 
 template<typename ConType>
 class Connection {
-	typedef std::function<void(Connection<ConType>&)> ReleaseHandler;
+	using ReleaseHandler = std::function<void(Connection<ConType>&)>;
 
 	ReleaseHandler rh_;
 	bool released_ = false;

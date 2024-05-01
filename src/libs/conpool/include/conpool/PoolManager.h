@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2022 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,7 +34,7 @@ template<typename Driver, typename ReusePolicy, typename GrowthPolicy> class Poo
 
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
 class PoolManager {
-	typedef Pool<Driver, ReusePolicy, GrowthPolicy>* ConnectionPool;
+	using ConnectionPool = Pool<Driver, ReusePolicy, GrowthPolicy>*;
 	ConnectionPool pool_;
 	Spinlock exception_lock_;
 	sc::seconds interval_, max_idle_;

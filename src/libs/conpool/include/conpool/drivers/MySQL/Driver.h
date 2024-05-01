@@ -30,12 +30,12 @@ class PreparedStatement;
 namespace ember::drivers {
 
 class MySQL final {
-	using stmt_ptr = std::unique_ptr<
+	using StmtPtr = std::unique_ptr<
 		sql::PreparedStatement, std::function<void(sql::PreparedStatement*)>
 	>;
 
-	typedef std::unordered_map<std::string, stmt_ptr,
-		StringHash, std::equal_to<>> QueryCache;
+	using QueryCache = std::unordered_map<std::string, StmtPtr,
+		StringHash, std::equal_to<>>;
 
 	const std::string dsn, username, password, database;
 	sql::Driver* driver;

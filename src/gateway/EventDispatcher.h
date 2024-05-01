@@ -20,7 +20,7 @@
 namespace ember {
 
 class EventDispatcher {
-	typedef std::unordered_map<ClientUUID, ClientHandler*> HandlerMap;
+	using HandlerMap = std::unordered_map<ClientUUID, ClientHandler*>;
 
 	const ServicePool& pool_;
 	thread_local static HandlerMap handlers_;

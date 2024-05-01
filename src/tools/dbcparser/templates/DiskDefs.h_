@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014, 2016 Ember
+/*
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,14 +18,14 @@
 
 namespace ember::dbc::disk {
 
-typedef std::uint32_t string_ref;
-typedef std::uint32_t uint32;
-typedef std::int32_t  int32;
-typedef std::uint16_t uint16;
-typedef std::int16_t  int16;
-typedef std::uint8_t  uint8;
-typedef std::int8_t   int8;
-typedef std::uint32_t bool32;
+using string_ref = std::uint32_t;
+using uint32     = std::uint32_t;
+using int32      = std::int32_t;
+using uint16     = std::uint16_t;
+using int16      = std::int16_t;
+using uint8      = std::uint8_t;
+using int8       = std::int8_t;
+using bool32     = std::uint32_t;
 
 #pragma pack(push, 1)
 

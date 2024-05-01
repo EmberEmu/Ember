@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,9 +23,9 @@ namespace ember {
 
 class AccountService final : public spark::EventHandler {
 public:
-	typedef std::function<void(messaging::account::Status)> RegisterCB;
-	typedef std::function<void(messaging::account::Status, Botan::BigInt)> SessionLocateCB;
-	typedef std::function<void(messaging::account::Status, std::uint32_t)> IDLocateCB;
+	using RegisterCB = std::function<void(messaging::account::Status)>;
+	using SessionLocateCB = std::function<void(messaging::account::Status, Botan::BigInt)>;
+	using IDLocateCB = std::function<void(messaging::account::Status, std::uint32_t)>;
 
 private:
 	spark::Service& spark_;

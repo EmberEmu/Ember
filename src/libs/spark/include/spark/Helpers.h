@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,8 +15,8 @@ namespace ember::spark::inline v1 {
 struct Link;
 struct Message;
 
-typedef std::function<bool(const Message&)> Verifier;
-typedef std::function<void(const Link&, const Message&)> Handler;
+using Verifier = std::function<bool(const Message&)>;
+using Handler = std::function<void(const Link&, const Message&)>;
 
 struct LocalDispatcher {
 	Verifier verify;

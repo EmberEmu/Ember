@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@ namespace ember {
 using namespace std::chrono_literals;
 
 class MetricsPoll {
-	typedef std::function<void(Metrics& metrics)> MetricsCB;
+	using MetricsCB = std::function<void(Metrics& metrics)>;
 	const std::chrono::seconds FREQUENCY = 1s;
 
 	struct MetricMeta {

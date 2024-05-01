@@ -21,8 +21,8 @@
 namespace ember::dbc {
 
 class DiskLoader final : public Loader {
-	typedef std::function<void(Storage&, const std::string&)> DBCLoadFunc;
-	typedef std::function<void(const std::string&)> LogCB;
+	using DBCLoadFunc = std::function<void(Storage&, const std::string&)>;
+	using LogCB = std::function<void(const std::string&)>;
 
 	const LogCB log_cb_;
 	const std::string dir_path_;

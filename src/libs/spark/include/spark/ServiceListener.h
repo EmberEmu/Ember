@@ -14,7 +14,7 @@
 
 namespace ember::spark::inline v1 {
 
-typedef std::function<void(const messaging::multicast::LocateResponse*)> LocateCallback;
+using LocateCallback = std::function<void(const messaging::multicast::LocateResponse*)>;
 
 class ServiceDiscovery;
 

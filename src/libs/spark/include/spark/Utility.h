@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@
 
 namespace ember::spark::inline v1::detail {
 
-typedef std::underlying_type<messaging::Service>::type ServicesType;
+using ServicesType = std::underlying_type<messaging::Service>::type;
 
 // utility functions to workaround FlatBuffers' lack of proper C++11 support
 std::vector<ServicesType> services_to_underlying(const std::vector<messaging::Service>& services);

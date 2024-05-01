@@ -46,13 +46,13 @@ struct TransferState {
 };
 
 class LoginHandler {
-	typedef std::unordered_map<std::uint32_t, std::uint32_t> CharacterCount;
+	using CharacterCount = std::unordered_map<std::uint32_t, std::uint32_t>;
 
-	typedef std::variant<
+	using StateContainer = std::variant<
 		std::unique_ptr<LoginAuthenticator>,
 		std::unique_ptr<ReconnectAuthenticator>,
 		CharacterCount
-	> StateContainer;
+	>;
 
 	enum class State {
 		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,9 +29,9 @@ namespace ember {
 class ThreadPool;
 
 class CharacterHandler {
-	typedef std::function<void(protocol::Result)> ResultCB;
-	typedef std::function<void(protocol::Result, std::optional<Character>)> RenameCB;
-	typedef std::function<void(std::optional<std::vector<Character>>)> EnumResultCB;
+	using ResultCB = std::function<void(protocol::Result)>;
+	using RenameCB = std::function<void(protocol::Result, std::optional<Character>)>;
+	using EnumResultCB = std::function<void(std::optional<std::vector<Character>>)>;
 
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;

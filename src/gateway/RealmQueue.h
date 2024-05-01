@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,9 +24,8 @@ class ClientConnection;
 using namespace std::chrono_literals;
 
 class RealmQueue final {
-
-	typedef std::function<void()> LeaveQueueCB;
-	typedef std::function<void(std::size_t)> UpdateQueueCB;
+	using LeaveQueueCB = std::function<void()>;
+	using UpdateQueueCB = std::function<void(std::size_t)>;
 
 	struct QueueEntry {
 		int priority;
