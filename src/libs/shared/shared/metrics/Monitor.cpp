@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,8 +35,7 @@ void Monitor::shutdown() {
 void Monitor::receive() {
 	socket_.async_receive_from(boost::asio::buffer(buffer_), endpoint_, 
 		strand_.wrap([this](const boost::system::error_code& ec, std::size_t) {
-			if(!ec || ec == boost::asio::error::message_size
-				|| ec.value() == 0xEA) { // todo, ASIO bug workaround, patch at: https://github.com/boostorg/asio/pull/27
+			if(!ec || ec == boost::asio::error::message_size) {
 				send_health_status();
 				receive();
 			}
