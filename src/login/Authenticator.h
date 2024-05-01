@@ -41,11 +41,6 @@ class LoginAuthenticator {
 		srp6::Generator gen;
 	};
 
-	struct ProofResult {
-		bool match;
-		Botan::BigInt server_proof;
-	};
-
 	User user_;
 	srp6::Server srp_;
 	srp6::Generator gen_ { srp6::Generator::Group::_256_BIT };
