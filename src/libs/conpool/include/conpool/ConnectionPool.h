@@ -136,14 +136,14 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 		std::unique_lock<Spinlock> guard(lock_);
 
 		auto res = std::find_if(pool_.begin(), pool_.end(), [&](auto& arg) {
-			return this->find_free_connection(arg); // this-> is a GCC bug workaround
+			return find_free_connection(arg);
 		});
 
 		if(res == pool_.end()) {
 			open_connections(grow(size(), max_));
 
 			res = std::find_if(pool_.begin(), pool_.end(), [&](auto& arg) {
-				return this->find_free_connection(arg);
+				return find_free_connection(arg);
 			});
 			
 			if(res == pool_.end()) {

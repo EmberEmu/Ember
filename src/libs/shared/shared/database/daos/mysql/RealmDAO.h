@@ -39,15 +39,15 @@ public:
 		std::vector<Realm> realms;
 
 		while(res->next()) {
-			// todo - temp fix to workaround msvc crash
-			Realm temp{res->getUInt("id"), res->getString("name"), res->getString("ip"),
-			           static_cast<float>(res->getDouble("population")),
-		               static_cast<Realm::Type>(res->getUInt("type")),
-					   static_cast<Realm::Flags>(res->getUInt("flags")),
-			           static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
-		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
-			           static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))};
-			realms.emplace_back(std::move(temp));
+			realms.emplace_back(
+				res->getUInt("id"), res->getString("name"), res->getString("ip"),
+				static_cast<float>(res->getDouble("population")),
+				static_cast<Realm::Type>(res->getUInt("type")),
+				static_cast<Realm::Flags>(res->getUInt("flags")),
+				static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
+				static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
+				static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
+			);
 		}
 
 		return realms;
@@ -67,15 +67,15 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			// todo - temp fix to workaround msvc crash
-			Realm temp{res->getUInt("id"), res->getString("name"), res->getString("ip"),
-			           static_cast<float>(res->getDouble("population")),
-		               static_cast<Realm::Type>(res->getUInt("type")),
-					   static_cast<Realm::Flags>(res->getUInt("flags")),
-			           static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
-		               static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
-			           static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))};
-			return temp;
+			return Realm {
+				res->getUInt("id"), res->getString("name"), res->getString("ip"),
+			    static_cast<float>(res->getDouble("population")),
+		        static_cast<Realm::Type>(res->getUInt("type")),
+				static_cast<Realm::Flags>(res->getUInt("flags")),
+			    static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
+		        static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
+			    static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
+			};
 		}
 
 		return std::nullopt;
