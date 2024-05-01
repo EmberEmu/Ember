@@ -50,16 +50,16 @@ srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) {
 
 ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,
                                                const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt)
-                                               : rcon_user_(std::move(username)), salt_(salt) {
+                                               : username_(std::move(username)), salt_(salt) {
 	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
-	std::transform(rcon_user_.begin(), rcon_user_.end(), rcon_user_.begin(), ::toupper);
+	std::transform(username_.begin(), username_.end(), username_.begin(), ::toupper);
 	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
 }
 
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
                                          std::span<const std::uint8_t> proof) const {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	hasher->update(rcon_user_);
+	hasher->update(username_);
 	hasher->update(salt.data(), salt.size());
 	hasher->update(salt_.data(), salt_.size());
 	hasher->update(sess_key_.t.data(), sess_key_.t.size());

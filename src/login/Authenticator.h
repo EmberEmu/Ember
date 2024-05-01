@@ -20,7 +20,7 @@ namespace ember {
 constexpr auto CHECKSUM_SALT_LEN = 16;
 
 class ReconnectAuthenticator final {
-	utf8_string rcon_user_;
+	utf8_string username_;
 	std::array<std::uint8_t, CHECKSUM_SALT_LEN> salt_;
 	srp6::SessionKey sess_key_;
 
@@ -31,7 +31,7 @@ public:
 	bool proof_check(std::span<const std::uint8_t> salt,
 	                 std::span<const std::uint8_t> proof) const;
 
-	const utf8_string& username() const { return rcon_user_; }
+	const utf8_string& username() const { return username_; }
 };
 
 class LoginAuthenticator final {
