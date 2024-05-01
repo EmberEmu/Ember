@@ -104,7 +104,7 @@ class DynamicBuffer final : public Buffer {
 public:
 	using value_type = IntrusiveStorage::value_type;
 
-	DynamicBuffer() { // todo - change in VS2015
+	DynamicBuffer() {
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
