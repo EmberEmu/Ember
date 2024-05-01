@@ -52,8 +52,9 @@ class LoginAuthenticator {
 public:
 	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply();
-	ProofResult proof_check(const grunt::client::LoginProof& proof);
-	srp6::SessionKey session_key();
+	Botan::BigInt server_proof(const srp6::SessionKey& key, const Botan::BigInt& M1);
+	Botan::BigInt expected_proof(const srp6::SessionKey& key, const Botan::BigInt& A);
+	srp6::SessionKey session_key(const Botan::BigInt& A);
 };
 
 } //ember

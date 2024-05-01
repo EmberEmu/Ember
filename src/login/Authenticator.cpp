@@ -28,24 +28,24 @@ auto LoginAuthenticator::challenge_reply() -> ChallengeResponse {
 	return {srp_.public_ephemeral(), Botan::BigInt(user_.salt()), gen_};
 }
 
-auto LoginAuthenticator::proof_check(const grunt::client::LoginProof& proof) -> ProofResult  try {
+Botan::BigInt LoginAuthenticator::server_proof(const srp6::SessionKey& key,
+                                               const Botan::BigInt& M1) {
+	return srp_.generate_proof(key, M1);
+}
+
+Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
+                                                 const Botan::BigInt& A) {
 	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
 	utf8_string user_upper(user_.username());
 	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
 
-	srp6::SessionKey key(srp_.session_key(proof.A));
-
 	Botan::BigInt B = srp_.public_ephemeral();
-	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
-	                                                 proof.A, B, user_.salt());
-	sess_key_ = key;
-	return { proof.M1 == M1_S, srp_.generate_proof(key, proof.M1) };
-} catch(srp6::exception&) {
-	return { false, 0 };
+	return srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
+	                                   A, B, user_.salt());
 }
 
-srp6::SessionKey LoginAuthenticator::session_key() {
-	return sess_key_;
+srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) {
+	return srp_.session_key(A);
 }
 
 ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,

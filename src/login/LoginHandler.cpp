@@ -394,10 +394,11 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 	}
 
 	const auto& authenticator = std::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
-	const auto proof = authenticator->proof_check(proof_packet);
+	const auto key = authenticator->session_key(proof_packet.A);
+	auto proof = authenticator->expected_proof(key, proof_packet.A);
 	auto result = grunt::Result::FAIL_INCORRECT_PASSWORD;
 	
-	if(proof.match) {
+	if(proof_packet.M1 == proof) {
 		if(user_->banned()) {
 			result = grunt::Result::FAIL_BANNED;
 		} else if(user_->suspended()) {
@@ -413,11 +414,11 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 
 	if(result == grunt::Result::SUCCESS) {
 		state_ = State::WRITING_SESSION;
-		server_proof_ = proof.server_proof;
+		server_proof_ = authenticator->server_proof(key, proof_packet.M1);
 
 		auto action = std::make_shared<RegisterSessionAction>(
 			acct_svc_, user_->id(),
-			authenticator->session_key()
+			authenticator->session_key(proof_packet.A)
 		);
 
 		execute_async(action);
