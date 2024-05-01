@@ -10,6 +10,8 @@
 
 #include <shared/util/StringHash.h>
 #include <algorithm>
+#include <functional>
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <string>
@@ -27,8 +29,12 @@ class PreparedStatement;
 
 namespace ember::drivers {
 
-class MySQL {
-	typedef std::unordered_map<std::string, sql::PreparedStatement*,
+class MySQL final {
+	using stmt_ptr = std::unique_ptr<
+		sql::PreparedStatement, std::function<void(sql::PreparedStatement*)>
+	>;
+
+	typedef std::unordered_map<std::string, stmt_ptr,
 		StringHash, std::equal_to<>> QueryCache;
 
 	const std::string dsn, username, password, database;

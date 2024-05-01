@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,6 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
-#include <memory>
 #include <sstream>
 
 namespace ember::drivers {
@@ -47,11 +46,6 @@ void MySQL::close(sql::Connection* conn) const {
 	auto conn_cache = locate_cache(conn);
 
 	if(conn_cache) {
-		for(auto [_, stmt] : *conn_cache) {
-			stmt->close();
-			delete stmt;
-		}
-
 		close_cache(conn);
 	}
 
@@ -117,13 +111,14 @@ sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, std
 		return nullptr;
 	}
 
-	return conn_cache_it->second;
+	return conn_cache_it->second.get();
 }
 
 void MySQL::cache_statement(const sql::Connection* conn, std::string_view key,
                             sql::PreparedStatement* value) {
 	std::lock_guard<std::mutex> lock(cache_lock_);
-	cache_[conn].emplace(key, value);
+	auto ptr = stmt_ptr(value, [](auto stmt) { stmt->close(); });
+	cache_[conn].emplace(key, std::move(ptr));
 }
 
 MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
