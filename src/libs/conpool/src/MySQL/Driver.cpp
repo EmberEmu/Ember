@@ -14,7 +14,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
-#include <sstream>
+#include <format>
 
 namespace ember::drivers {
 
@@ -81,10 +81,8 @@ std::string MySQL::name() {
 
 std::string MySQL::version() {
 	auto driver = get_driver_instance();
-	std::stringstream ver;
-	ver << driver->getMajorVersion() << "." << driver->getMinorVersion() << "."
-	    << driver->getPatchVersion();
-	return ver.str();
+	return std::format("{}.{}.{}", driver->getMajorVersion(),
+		 driver->getMinorVersion(), driver->getPatchVersion());
 }
 
 sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, std::string_view key) {
