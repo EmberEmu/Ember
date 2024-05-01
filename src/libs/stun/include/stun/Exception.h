@@ -25,7 +25,7 @@ public:
 		: value(value), std::runtime_error(msg) { };
 };
 
-class parse_error : public exception {
+class parse_error final : public exception {
 public:
 	parse_error(Error value)
 		: exception(value, "An unknown STUN parser exception occured!") { }

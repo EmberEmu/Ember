@@ -28,7 +28,7 @@ namespace ember {
 
 class ThreadPool;
 
-class CharacterHandler {
+class CharacterHandler final {
 	using ResultCB = std::function<void(protocol::Result)>;
 	using RenameCB = std::function<void(protocol::Result, std::optional<Character>)>;
 	using EnumResultCB = std::function<void(std::optional<std::vector<Character>>)>;
@@ -58,19 +58,27 @@ class CharacterHandler {
 
 	/** I/O heavy functions run async in a thread pool **/
 
-	void do_create(std::uint32_t account_id, std::uint32_t realm_id,
-	               Character character, const ResultCB& callback) const;
+	void do_create(std::uint32_t account_id,
+	               std::uint32_t realm_id,
+	               Character character,
+	               const ResultCB& callback) const;
 
-	void do_erase(std::uint32_t account_id, std::uint32_t realm_id,
-	              std::uint64_t character_id, const ResultCB& callback) const;
+	void do_erase(std::uint32_t account_id,
+	              std::uint32_t realm_id,
+	              std::uint64_t character_id,
+	              const ResultCB& callback) const;
 
-	void do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
+	void do_enumerate(std::uint32_t account_id,
+	                  std::uint32_t realm_id,
 	                  const EnumResultCB& callback) const;
 
-	void do_rename(std::uint32_t account_id, std::uint64_t character_id,
-	               const utf8_string& name, const RenameCB& callback) const;
+	void do_rename(std::uint32_t account_id,
+	               std::uint64_t character_id,
+	               const utf8_string& name,
+	               const RenameCB& callback) const;
 
-	void do_restore(std::uint64_t id, const ResultCB& callback) const;
+	void do_restore(std::uint64_t id,
+	                const ResultCB& callback) const;
 
 
 public:
@@ -85,18 +93,27 @@ public:
 	                   dbc_(dbc), dao_(dao), pool_(pool), locale_(locale),
 	                   logger_(logger) {}
 
-	void create(std::uint32_t account_id, std::uint32_t realm_id,
-	            const messaging::character::CharacterTemplate& options, ResultCB callback) const;
+	void create(std::uint32_t account_id,
+	            std::uint32_t realm_id,
+	            const messaging::character::CharacterTemplate& options,
+	            ResultCB callback) const;
 
-	void erase(std::uint32_t account_id, std::uint32_t realm_id, std::uint64_t character_id,
-	              ResultCB callback) const;
+	void erase(std::uint32_t account_id,
+	           std::uint32_t realm_id,
+	           std::uint64_t character_id,
+	           ResultCB callback) const;
 
-	void enumerate(std::uint32_t account_id, std::uint32_t realm_id, EnumResultCB callback) const;
+	void enumerate(std::uint32_t account_id,
+	               std::uint32_t realm_id,
+	               EnumResultCB callback) const;
 
-	void rename(std::uint32_t account_id, std::uint64_t character_id, const utf8_string& name,
+	void rename(std::uint32_t account_id,
+	            std::uint64_t character_id,
+	            const utf8_string& name,
 	            RenameCB callback) const;
 
-	void restore(std::uint64_t id, ResultCB callback) const;
+	void restore(std::uint64_t id,
+	             ResultCB callback) const;
 };
 
 } // ember

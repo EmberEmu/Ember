@@ -16,7 +16,7 @@
 
 namespace ember {
 
-class Sessions {
+class Sessions final {
 	bool allow_overwrite_;
 	std::unordered_map<std::uint32_t, Botan::BigInt> sessions_;
 	std::mutex lock_;

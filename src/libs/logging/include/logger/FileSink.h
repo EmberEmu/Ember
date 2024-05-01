@@ -20,7 +20,7 @@
 
 namespace ember::log {
 
-class FileSink : public Sink {
+class FileSink final : public Sink {
 public:
 	enum class Mode { TRUNCATE, APPEND };
 

@@ -23,7 +23,7 @@ namespace ember {
 template<typename T>
 concept is_scoped_enum = std::is_scoped_enum<T>::value;
 
-class FNVHash {
+class FNVHash final {
 	static constexpr std::uint32_t INITIAL = 0x811C9DC5;
 	std::uint32_t hash_ = INITIAL;
 
@@ -114,4 +114,4 @@ public:
 	}
 };
 
-}
+} // ember

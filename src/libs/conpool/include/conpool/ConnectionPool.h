@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2022 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -38,7 +38,7 @@ using namespace std::string_literals;
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy> class PoolManager;
 
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy>
-class Pool : private ReusePolicy, private GrowthPolicy {
+class Pool final : private ReusePolicy, private GrowthPolicy {
 	template<typename, typename, typename, typename>
 	friend class PoolManager;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ class Metrics;
 class AccountService;
 class IntegrityData;
 
-class LoginHandlerBuilder {
+class LoginHandlerBuilder final {
 	log::Logger* logger_;
 	const Patcher& patcher_;
 	const RealmList& realm_list_;

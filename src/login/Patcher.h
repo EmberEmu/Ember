@@ -22,7 +22,7 @@
 
 namespace ember {
 
-class Patcher {
+class Patcher final {
 	const std::vector<PatchMeta> patches_;
 	const std::vector<GameVersion> versions_;
 	std::unordered_map<std::size_t, PatchGraph> graphs_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -64,7 +64,7 @@ void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* pa
 	}
 }
 
-class TypeMetrics : public types::TypeVisitor {
+class TypeMetrics final : public types::TypeVisitor {
 public:
 	unsigned int fields = 0;
 	unsigned int record_size = 0;

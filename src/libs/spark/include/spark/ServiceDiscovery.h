@@ -28,7 +28,7 @@ namespace ember::spark::inline v1 {
 
 using LocateCallback = std::function<void(const messaging::multicast::LocateResponse*)>;
 
-class ServiceDiscovery {
+class ServiceDiscovery final {
 	static const std::size_t BUFFER_SIZE = 1024;
 
 	std::string address_;

@@ -21,7 +21,7 @@
 
 namespace ember {
 
-class ThreadPool {
+class ThreadPool final {
 public:
 	enum class Severity { DEBUG, INFO, ERROR, FATAL };
 	using LogCallback = std::function<void(Severity, std::string)>;

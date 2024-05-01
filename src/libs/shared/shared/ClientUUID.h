@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,7 @@
 
 namespace ember {
 
-class ClientUUID {
+class ClientUUID final {
 	mutable std::size_t hash_ = 0;
 	mutable bool hashed_ = false;
 

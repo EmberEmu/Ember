@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@
 
 namespace ember::spark::inline v1 {
 
-class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
+class NetworkSession final : public std::enable_shared_from_this<NetworkSession> {
 	const std::size_t MAX_MESSAGE_LENGTH = 1024 * 1024;  // 1MB
 	const std::size_t DEFAULT_BUFFER_LENGTH = 1024 * 4;  // 4KB
 	enum class ReadState { SIZE_PREFIX, PAYLOAD };

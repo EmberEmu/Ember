@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent);
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent);
 
-class StructFieldEnum : public types::TypeVisitor {
+class StructFieldEnum final : public types::TypeVisitor {
 	std::vector<std::string> names_;
 
 public:

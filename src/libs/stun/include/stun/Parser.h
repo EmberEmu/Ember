@@ -28,7 +28,7 @@ namespace ember::stun {
 
 namespace be = boost::endian;
 
-class Parser {
+class Parser final {
 	RFCMode mode_;
 	LogCB logger_ = [](Verbosity, Error) {};
 	const std::span<const std::uint8_t> buffer_;

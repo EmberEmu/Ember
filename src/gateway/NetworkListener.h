@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2023 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@ namespace ember {
 
 namespace bai = boost::asio::ip;
 
-class NetworkListener {
+class NetworkListener final {
 	using tcp_acceptor = boost::asio::basic_socket_acceptor<
 		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
 

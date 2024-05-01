@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@
 
 namespace ember::spark::inline v1 {
 
-class ServicesMap {
+class ServicesMap final {
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_servers_;
 	std::unordered_map<messaging::Service, std::forward_list<Link>> peer_clients_;
 	mutable std::mutex lock_;

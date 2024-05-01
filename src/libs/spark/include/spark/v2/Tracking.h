@@ -22,7 +22,7 @@
 
 namespace ember::spark::v2 {
 
-class Tracking {
+class Tracking final {
 	struct Request {
 		Request(boost::asio::io_context& service,
 		        boost::uuids::uuid id,

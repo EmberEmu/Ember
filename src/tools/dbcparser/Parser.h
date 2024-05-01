@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014 - 2019 Ember
+/*
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,7 @@
 
 namespace ember::dbc {
 
-class Parser {
+class Parser final {
 	static const int MAX_PARSE_DEPTH = 3;
 
 	struct UniqueCheck {
@@ -45,4 +45,4 @@ public:
 	types::Definitions parse(const std::vector<std::string>& paths);
 };
 
-} //dbc, ember
+} // dbc, ember

@@ -19,7 +19,7 @@ namespace bai = boost::asio::ip;
 
 namespace ember::log {
 
-class SyslogSink::impl : public Sink {
+class SyslogSink::impl final : public Sink {
 	enum class SyslogSeverity {
 		EMERGENCY, ALERT, CRITICAL, ERROR_, WARNING, NOTICE, INFORMATIONAL, DEBUG
 	};

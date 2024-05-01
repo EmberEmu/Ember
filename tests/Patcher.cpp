@@ -16,7 +16,7 @@
 
 using namespace ember;
 
-class MockPatchDAO : public dal::PatchDAO {
+class MockPatchDAO final : public dal::PatchDAO {
 public:
 	mutable int update_count = 0;
 	mutable bool rollup;

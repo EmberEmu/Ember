@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,7 @@ namespace ember::spark::inline v1 {
 
 class NetworkSession;
 
-class SessionManager {
+class SessionManager final {
 	std::set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
 

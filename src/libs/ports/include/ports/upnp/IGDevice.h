@@ -53,7 +53,7 @@ struct UPnPRequest {
 	std::shared_ptr<IGDevice> device;
 };
 
-class IGDevice : public std::enable_shared_from_this<IGDevice> {
+class IGDevice final : public std::enable_shared_from_this<IGDevice> {
 private:
 	boost::asio::io_context& ctx_;
 	std::string bind_;

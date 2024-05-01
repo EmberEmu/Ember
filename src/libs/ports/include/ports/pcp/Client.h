@@ -36,7 +36,7 @@ using Result = std::expected<MapRequest, Error>;
 using RequestHandler = std::function<void(const Result& result)>;
 using AnnounceHandler = std::function<void(std::uint32_t)>;
 
-class Client {
+class Client final {
 private:
 	enum class State {
 		IDLE,

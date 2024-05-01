@@ -18,7 +18,7 @@
 
 namespace ember::ports::upnp {
 
-class SCPDXMLParser {
+class SCPDXMLParser final {
 	std::string xml_;
 	std::unique_ptr<rapidxml::xml_document<>> parser_;
 

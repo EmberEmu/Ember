@@ -17,7 +17,7 @@
 
 namespace ember {
 
-class SchemaParser {
+class SchemaParser final {
 	std::filesystem::path tpl_path_;
 	std::filesystem::path out_path_;
 

@@ -39,7 +39,7 @@ enum class Protocol {
 	TCP, UDP
 };
 
-class Client {
+class Client final {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
 	const int MAX_REDIRECTS = 5;
 

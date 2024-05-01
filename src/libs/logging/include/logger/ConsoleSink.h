@@ -12,7 +12,7 @@
 
 namespace ember::log {
 
-class ConsoleSink : public Sink {
+class ConsoleSink final : public Sink {
 	static constexpr auto SV_RESERVE = 256u;
 
 	bool colour_;

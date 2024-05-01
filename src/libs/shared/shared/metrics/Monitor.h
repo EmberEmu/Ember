@@ -28,7 +28,7 @@ using namespace std::chrono_literals;
 // todo - workaround for GCC defect, awaiting fix (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970)
 struct GCCHashFix { template <typename T> std::size_t operator()(T t) const { return static_cast<std::size_t>(t); }};
 
-class Monitor {
+class Monitor final {
 public:
 	enum class Severity {
 		DEBUG, INFO, WARN, ERROR, FATAL

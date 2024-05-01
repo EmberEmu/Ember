@@ -22,7 +22,7 @@
 
 namespace ember {
 
-class IntegrityData {
+class IntegrityData final {
 	std::unordered_map<std::size_t, std::vector<std::byte>> data_;
 
 	std::size_t hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@ public:
 	exception(std::string msg) : std::runtime_error(msg) { };
 };
 
-class buffer_underrun : public exception {
+class buffer_underrun final : public exception {
 public:
 	const std::size_t buff_size, read_size, total_read;
 
@@ -30,7 +30,7 @@ public:
 		              buff_size(buff_size), read_size(read_size), total_read(total_read) { }
 };
 
-class stream_read_limit : public exception {
+class stream_read_limit final : public exception {
 public:
 	const std::size_t read_limit, read_size, total_read;
 
@@ -40,4 +40,4 @@ public:
 		              read_limit(read_limit), read_size(read_size), total_read(total_read) { }
 };
 
-} //spark, ember
+} // spark, ember

@@ -33,7 +33,7 @@ using namespace std::string_literals;
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy> class Pool;
 
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
-class PoolManager {
+class PoolManager final {
 	using ConnectionPool = Pool<Driver, ReusePolicy, GrowthPolicy>*;
 	ConnectionPool pool_;
 	Spinlock exception_lock_;

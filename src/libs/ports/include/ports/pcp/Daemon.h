@@ -21,7 +21,7 @@ namespace ember::ports {
 
 using namespace std::literals;
 
-class Daemon {
+class Daemon final {
 public:
 	enum class Event {
 		ADDED_MAPPING,

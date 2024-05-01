@@ -41,7 +41,7 @@ struct ConnDetail {
 };
 
 template<typename ConType>
-class Connection {
+class Connection final {
 	using ReleaseHandler = std::function<void(Connection<ConType>&)>;
 
 	ReleaseHandler rh_;

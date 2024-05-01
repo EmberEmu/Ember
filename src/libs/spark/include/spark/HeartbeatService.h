@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@ namespace ember::spark::inline v1 {
 
 class Service;
 
-class HeartbeatService : public EventHandler {
+class HeartbeatService final : public EventHandler {
 	const std::chrono::seconds PING_FREQUENCY { 20 };
 	const std::chrono::milliseconds LATENCY_WARN_THRESHOLD { 1000 };
 

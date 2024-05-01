@@ -38,7 +38,7 @@ struct DeviceResult {
 using LocateResult = std::expected<DeviceResult, ErrorCode>;
 using LocateHandler = std::function<bool(LocateResult)>;
 
-class SSDP {
+class SSDP final {
 	boost::asio::io_context& ctx_;
 	boost::asio::io_context::strand strand_;
 	MulticastSocket transport_;

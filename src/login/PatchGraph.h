@@ -23,7 +23,7 @@ struct Edge {
 	std::uint64_t filesize;
 };
 
-class PatchGraph {
+class PatchGraph final {
 	std::unordered_map<std::uint16_t, std::vector<Edge>> adjacency_;
 
 	void build_graph(std::span<const PatchMeta> patches);

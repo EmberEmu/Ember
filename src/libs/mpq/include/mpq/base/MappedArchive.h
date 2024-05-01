@@ -14,7 +14,7 @@
 
 namespace ember::mpq {
 
-class MappedArchive : public MemoryArchive {
+class MappedArchive final : public MemoryArchive {
 	boost::interprocess::file_mapping file_;
 	boost::interprocess::mapped_region region_;
 
