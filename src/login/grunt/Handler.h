@@ -12,8 +12,10 @@
 #include "Exceptions.h"
 #include <spark/buffers/Buffer.h>
 #include <logger/Logging.h>
+#include <functional>
 #include <memory>
 #include <optional>
+#include <variant>
 #include <cstddef>
 
 namespace ember::grunt {
@@ -23,7 +25,18 @@ class Handler {
 		NEW_PACKET, READ
 	};
 
-	std::unique_ptr<Packet> curr_packet_;
+	std::variant<
+		client::LoginChallenge,
+		client::LoginProof,
+		client::ReconnectProof,
+		client::SurveyResult,
+		client::RequestRealmList,
+		client::TransferAccept,
+		client::TransferResume,
+		client::TransferCancel
+	> packet_;
+
+	Packet* curr_packet_ = nullptr;
 	State state_ = State::NEW_PACKET;
 
 	log::Logger* logger_;
@@ -35,7 +48,7 @@ class Handler {
 public:
 	explicit Handler(log::Logger* logger) : logger_(logger) { }
 
-	std::unique_ptr<Packet> try_deserialise(spark::Buffer& buffer);
+	Packet* try_deserialise(spark::Buffer& buffer);
 };
 
 } // grunt, ember

@@ -44,28 +44,36 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 		case Opcode::CMD_AUTH_LOGON_CHALLENGE:
 			[[fallthrough]];
 		case Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
-			curr_packet_ = std::make_unique<client::LoginChallenge>();
+			packet_ = client::LoginChallenge();
+			curr_packet_ = &std::get<client::LoginChallenge>(packet_);
 			break;
 		case Opcode::CMD_AUTH_LOGON_PROOF:
-			curr_packet_ = std::make_unique<client::LoginProof>();
+			packet_ = client::LoginProof();
+			curr_packet_ = &std::get<client::LoginProof>(packet_);
 			break;
 		case Opcode::CMD_AUTH_RECONNECT_PROOF:
-			curr_packet_ = std::make_unique<client::ReconnectProof>();
+			packet_ = client::ReconnectProof();
+			curr_packet_ = &std::get<client::ReconnectProof>(packet_);
 			break;
 		case Opcode::CMD_SURVEY_RESULT:
-			curr_packet_ = std::make_unique<client::SurveyResult>();
+			packet_ = client::SurveyResult();
+			curr_packet_ = &std::get<client::SurveyResult>(packet_);
 			break;
 		case Opcode::CMD_REALM_LIST:
-			curr_packet_ = std::make_unique<client::RequestRealmList>();
+			packet_ = client::RequestRealmList();
+			curr_packet_ = &std::get<client::RequestRealmList>(packet_);
 			break;
 		case Opcode::CMD_XFER_ACCEPT:
-			curr_packet_ = std::make_unique<client::TransferAccept>();
+			packet_ = client::TransferAccept();
+			curr_packet_ = &std::get<client::TransferAccept>(packet_);
 			break;
 		case Opcode::CMD_XFER_RESUME:
-			curr_packet_ = std::make_unique<client::TransferResume>();
+			packet_ = client::TransferResume();
+			curr_packet_ = &std::get<client::TransferResume>(packet_);
 			break;
 		case Opcode::CMD_XFER_CANCEL:
-			curr_packet_ = std::make_unique<client::TransferCancel>();
+			packet_ = client::TransferCancel();
+			curr_packet_ = &std::get<client::TransferCancel>(packet_);
 			break;
 		default:
 			throw bad_packet("Unknown opcode encountered!");
@@ -93,7 +101,7 @@ void Handler::handle_read(spark::Buffer& buffer, std::size_t offset) try {
 	throw bad_packet(e.what());
 }
 
-std::unique_ptr<Packet> Handler::try_deserialise(spark::Buffer& buffer) {
+Packet* Handler::try_deserialise(spark::Buffer& buffer) {
 	switch(state_) {
 		case State::NEW_PACKET:
 			handle_new_packet(buffer);
@@ -104,7 +112,7 @@ std::unique_ptr<Packet> Handler::try_deserialise(spark::Buffer& buffer) {
 	}
 
 	if(state_ == State::NEW_PACKET) {
-		return std::move(curr_packet_);
+		return curr_packet_;
 	} else {
 		return nullptr;
 	}
