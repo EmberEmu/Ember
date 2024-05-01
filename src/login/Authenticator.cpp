@@ -56,14 +56,15 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan
 	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
 }
 
-bool ReconnectAuthenticator::proof_check(const grunt::client::ReconnectProof& packet) {
+bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
+                                         std::span<const std::uint8_t> proof) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	hasher->update(rcon_user_);
-	hasher->update(packet.salt.data(), packet.salt.size());
+	hasher->update(salt.data(), salt.size());
 	hasher->update(salt_.data(), salt_.size());
 	hasher->update(sess_key_.t.data(), sess_key_.t.size());
 	auto res = hasher->final();
-	return std::equal(res.begin(), res.end(), std::begin(packet.proof), std::end(packet.proof));
+	return std::equal(res.begin(), res.end(), proof.begin(), proof.end());
 }
 
 } // ember

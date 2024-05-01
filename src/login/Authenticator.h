@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "grunt/Packets.h"
 #include <srp6/Server.h>
 #include <shared/database/objects/User.h>
 #include <array>
 #include <memory>
+#include <span>
 #include <string>
 
 namespace ember {
@@ -28,7 +28,9 @@ public:
 	ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,
 	                       const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt);
 
-	bool proof_check(const grunt::client::ReconnectProof& proof);
+	bool proof_check(std::span<const std::uint8_t> salt,
+	                 std::span<const std::uint8_t> proof);
+
 	const utf8_string& username() { return rcon_user_; }
 };
 
@@ -47,7 +49,6 @@ class LoginAuthenticator {
 	User user_;
 	srp6::Server srp_;
 	srp6::Generator gen_ { srp6::Generator::Group::_256_BIT };
-	srp6::SessionKey sess_key_;
 
 public:
 	explicit LoginAuthenticator(User user);

@@ -506,16 +506,16 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
+	auto reconn_proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
 
-	if(!validate_client_integrity(proof.client_checksum, proof.salt, true)) {
+	if(!validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::FAIL_VERSION_INVALID);
 		return;
 	}
 
 	const auto& authenticator = std::get<std::unique_ptr<ReconnectAuthenticator>>(state_data_);
 
-	if(authenticator->proof_check(proof)) {
+	if(authenticator->proof_check(reconn_proof.salt, reconn_proof.proof)) {
 		state_ = State::FETCHING_CHARACTER_DATA;
 		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
