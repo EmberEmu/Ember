@@ -39,7 +39,7 @@ Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
 	utf8_string user_upper(user_.username());
 	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
 
-	Botan::BigInt B = srp_.public_ephemeral();
+	const Botan::BigInt& B = srp_.public_ephemeral();
 	return srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
 	                                   A, B, user_.salt());
 }
