@@ -25,6 +25,7 @@ namespace ember {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
+	inline thread_local static ASIOAllocator allocator_;
 
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint remote_ep_;
@@ -32,7 +33,6 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 
 	spark::DynamicBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
-	ASIOAllocator allocator_; // temp - should be passed in
 	const std::string remote_address_;
 	log::Logger* logger_;
 	bool stopped_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@
 
 namespace ember {
 
-class NetworkListener {
+class NetworkListener final {
 	boost::asio::io_context& io_context;
 	boost::asio::signal_set signals_;
 	boost::asio::ip::tcp::acceptor acceptor_;
@@ -35,7 +35,6 @@ class NetworkListener {
 	log::Logger* logger_;
 	Metrics& metrics_;
 	IPBanCache& ban_list_;
-	ASIOAllocator allocator_; // todo - thread_local, VS2015
 
 	void accept_connection() {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;

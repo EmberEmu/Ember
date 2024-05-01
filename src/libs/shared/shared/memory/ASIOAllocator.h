@@ -8,22 +8,17 @@
 
 #pragma once
 
-#include <shared/threading/Spinlock.h>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
-#include <mutex>
 #include <cstddef>
-
-// todo - create an allocator per-thread and remove the locks
 
 namespace ember {
 
 class ASIOAllocator final {
-	ember::Spinlock lock_;
-	const static std::size_t SMALL_SIZE_  = 64;
-	const static std::size_t MEDIUM_SIZE_ = 128;
-	const static std::size_t LARGE_SIZE_  = 256;
-	const static std::size_t HUGE_SIZE_   = 1024;
+	constexpr static std::size_t SMALL_SIZE_  = 64;
+	constexpr static std::size_t MEDIUM_SIZE_ = 128;
+	constexpr static std::size_t LARGE_SIZE_  = 256;
+	constexpr static std::size_t HUGE_SIZE_   = 1024;
 
 	inline boost::pool<>* pool_select(std::size_t size) {
 		if(size <= SMALL_SIZE_) {
@@ -50,7 +45,6 @@ public:
 		boost::pool<>* pool = pool_select(size);
 
 		if(pool) {
-			std::lock_guard<Spinlock> guard(lock_);
 			return pool->malloc();
 		} else {
 			return ::operator new(size);
@@ -61,7 +55,6 @@ public:
 		boost::pool<>* pool = pool_select(size);
 
 		if(pool) {
-			std::lock_guard<Spinlock> guard(lock_);
 			pool->free(chunk);
 		} else {
 			::operator delete(chunk);
@@ -71,7 +64,7 @@ public:
 	boost::pool<> small_, medium_, large_, huge_;
 };
 
-//From the ASIO examples
+// from the ASIO examples
 template <typename Handler>
 class alloc_handler {
 public:
@@ -103,4 +96,4 @@ inline alloc_handler<Handler> create_alloc_handler(ASIOAllocator& a, Handler h) 
 	return alloc_handler<Handler>(a, h);
 }
 
-} //ember
+} // ember
