@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,12 +20,12 @@
 
 namespace ember {
 
-LoginAuthenticator::LoginAuthenticator(User user) : user_(std::move(user)) {
-	srp_ = std::make_unique<srp6::Server>(gen_, Botan::BigInt(user_.verifier()));
-}
+LoginAuthenticator::LoginAuthenticator(User user)
+	: user_(std::move(user)),
+	  srp_(gen_, Botan::BigInt(user_.verifier())) {}
 
 auto LoginAuthenticator::challenge_reply() -> ChallengeResponse {
-	return {srp_->public_ephemeral(), Botan::BigInt(user_.salt()), gen_};
+	return {srp_.public_ephemeral(), Botan::BigInt(user_.salt()), gen_};
 }
 
 auto LoginAuthenticator::proof_check(const grunt::client::LoginProof& proof) -> ProofResult  try {
@@ -33,13 +33,13 @@ auto LoginAuthenticator::proof_check(const grunt::client::LoginProof& proof) -> 
 	utf8_string user_upper(user_.username());
 	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
 
-	srp6::SessionKey key(srp_->session_key(proof.A));
+	srp6::SessionKey key(srp_.session_key(proof.A));
 
-	Botan::BigInt B = srp_->public_ephemeral();
+	Botan::BigInt B = srp_.public_ephemeral();
 	Botan::BigInt M1_S = srp6::generate_client_proof(user_upper, key, gen_.prime(), gen_.generator(),
 	                                                 proof.A, B, user_.salt());
 	sess_key_ = key;
-	return { proof.M1 == M1_S, srp_->generate_proof(key, proof.M1) };
+	return { proof.M1 == M1_S, srp_.generate_proof(key, proof.M1) };
 } catch(srp6::exception&) {
 	return { false, 0 };
 }

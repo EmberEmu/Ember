@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -44,10 +44,10 @@ class LoginAuthenticator {
 		Botan::BigInt server_proof;
 	};
 
-	std::unique_ptr<srp6::Server> srp_;
+	User user_;
+	srp6::Server srp_;
 	srp6::Generator gen_ { srp6::Generator::Group::_256_BIT };
 	srp6::SessionKey sess_key_;
-	User user_;
 
 public:
 	explicit LoginAuthenticator(User user);
