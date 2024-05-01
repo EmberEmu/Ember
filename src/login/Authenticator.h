@@ -19,7 +19,7 @@ namespace ember {
 
 constexpr auto CHECKSUM_SALT_LEN = 16;
 
-class ReconnectAuthenticator {
+class ReconnectAuthenticator final {
 	utf8_string rcon_user_;
 	std::array<std::uint8_t, CHECKSUM_SALT_LEN> salt_;
 	srp6::SessionKey sess_key_;
@@ -29,12 +29,12 @@ public:
 	                       const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt);
 
 	bool proof_check(std::span<const std::uint8_t> salt,
-	                 std::span<const std::uint8_t> proof);
+	                 std::span<const std::uint8_t> proof) const;
 
-	const utf8_string& username() { return rcon_user_; }
+	const utf8_string& username() const { return rcon_user_; }
 };
 
-class LoginAuthenticator {
+class LoginAuthenticator final {
 	struct ChallengeResponse {
 		Botan::BigInt B;
 		Botan::BigInt salt;
@@ -47,10 +47,10 @@ class LoginAuthenticator {
 
 public:
 	explicit LoginAuthenticator(User user);
-	ChallengeResponse challenge_reply();
-	Botan::BigInt server_proof(const srp6::SessionKey& key, const Botan::BigInt& M1);
-	Botan::BigInt expected_proof(const srp6::SessionKey& key, const Botan::BigInt& A);
+	ChallengeResponse challenge_reply() const;
+	Botan::BigInt server_proof(const srp6::SessionKey& key, const Botan::BigInt& M1) const;
+	Botan::BigInt expected_proof(const srp6::SessionKey& key, const Botan::BigInt& A) const;
 	srp6::SessionKey session_key(const Botan::BigInt& A);
 };
 
-} //ember
+} // ember

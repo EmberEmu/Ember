@@ -24,17 +24,17 @@ LoginAuthenticator::LoginAuthenticator(User user)
 	: user_(std::move(user)),
 	  srp_(gen_, Botan::BigInt(user_.verifier())) {}
 
-auto LoginAuthenticator::challenge_reply() -> ChallengeResponse {
+auto LoginAuthenticator::challenge_reply() const -> ChallengeResponse {
 	return {srp_.public_ephemeral(), Botan::BigInt(user_.salt()), gen_};
 }
 
 Botan::BigInt LoginAuthenticator::server_proof(const srp6::SessionKey& key,
-                                               const Botan::BigInt& M1) {
+                                               const Botan::BigInt& M1) const {
 	return srp_.generate_proof(key, M1);
 }
 
 Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
-                                                 const Botan::BigInt& A) {
+                                                 const Botan::BigInt& A) const {
 	// Usernames aren't required to be uppercase in the DB but the client requires it for calculations
 	utf8_string user_upper(user_.username());
 	std::transform(user_upper.begin(), user_upper.end(), user_upper.begin(), ::toupper);
@@ -57,7 +57,7 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan
 }
 
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
-                                         std::span<const std::uint8_t> proof) {
+                                         std::span<const std::uint8_t> proof) const {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	hasher->update(rcon_user_);
 	hasher->update(salt.data(), salt.size());
