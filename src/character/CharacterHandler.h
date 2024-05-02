@@ -13,6 +13,7 @@
 #include <protocol/ResultCodes.h>
 #include <shared/database/daos/CharacterDAO.h>
 #include <shared/util/PCREHelper.h>
+#include <shared/util/UTF8.h>
 #include <logger/Logging.h>
 //#include <boost/locale.hpp>
 #include <pcre.h>
@@ -49,7 +50,7 @@ class CharacterHandler final {
 	ThreadPool& pool_;
 	log::Logger* logger_;
 
-	protocol::Result validate_name(const std::string& name) const;
+	protocol::Result validate_name(const utf8_string& name) const;
 	bool validate_options(const Character& character, std::uint32_t account_id) const;
 	void populate_items(Character& character, const dbc::CharStartOutfit& outfit) const;
 	void populate_spells(Character& character, const dbc::CharStartSpells& spells) const;

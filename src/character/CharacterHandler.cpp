@@ -9,7 +9,6 @@
 #include "CharacterHandler.h"
 #include "FilterTypes.h"
 #include <shared/util/Utility.h>
-#include <shared/util/UTF8.h>
 #include <shared/threading/ThreadPool.h>
 #include <boost/assert.hpp>
 
