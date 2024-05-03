@@ -192,7 +192,7 @@ public:
 		);
 	}
 
-	virtual ~NetworkSession() = default;
+	~NetworkSession() = default;
 
 	friend class SessionManager;
 };
