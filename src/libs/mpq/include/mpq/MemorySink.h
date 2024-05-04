@@ -20,7 +20,7 @@ class MemorySink final : public ExtractionSink {
 	std::span<std::byte> buffer_;
 	std::size_t offset_ = 0;
 
-	void store(std::span<const std::byte> data) override {
+	void store(std::span<const std::byte> data) {
 		const auto free_space = buffer_.size_bytes() - offset_;
 
 		if(data.size_bytes() > free_space) {
@@ -38,7 +38,7 @@ public:
 		store(data);
 	}
 
-	auto size() {
+	std::size_t size() const override {
 		return offset_;
 	}
 

@@ -15,9 +15,9 @@ namespace ember::mpq {
 
 class ExtractionSink {
 public:
-	virtual void store(std::span<const std::byte> data) = 0;
 	virtual ~ExtractionSink() = default;
 	virtual void operator()(std::span<const std::byte> data) = 0;
+	virtual std::size_t size() const = 0;
 };
 
 } // mpq, ember

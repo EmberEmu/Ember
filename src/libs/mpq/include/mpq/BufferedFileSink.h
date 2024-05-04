@@ -21,7 +21,7 @@ class BufferedFileSink final : public ExtractionSink {
 	std::vector<std::byte> buffer_;
 	std::size_t offset_ = 0;
 
-	void store(std::span<const std::byte> data) override {
+	void store(std::span<const std::byte> data) {
 		const auto free = buffer_.size() - offset_;
 
 		if(data.size_bytes() > free) {
@@ -47,6 +47,10 @@ public:
 
 	void operator()(std::span<const std::byte> data) override {
 		store(data);
+	}
+
+	std::size_t size() const override {
+		return offset_;
 	}
 
 	void flush() {

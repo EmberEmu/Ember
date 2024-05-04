@@ -21,7 +21,7 @@ class DynamicMemorySink final : public ExtractionSink {
 	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer_;
 	std::size_t offset_ = 0;
 
-	void store(std::span<const std::byte> data) override {
+	void store(std::span<const std::byte> data) {
 		const auto free_space = buffer_.size() - offset_;
 
 		if(data.size_bytes() > free_space) {
@@ -37,7 +37,7 @@ public:
 		store(data);
 	}
 
-	auto size() {
+	std::size_t size() const override {
 		return offset_;
 	}
 

@@ -17,13 +17,16 @@ namespace ember::mpq {
 
 class FileSink final : public ExtractionSink {
 	std::FILE* file_ = nullptr;
+	std::size_t size_ = 0;
 
-	void store(std::span<const std::byte> data) override {
+	void store(std::span<const std::byte> data) {
 		const auto res = std::fwrite(data.data(), data.size_bytes(), 1, file_);
 
 		if(res != 1) {
 			throw exception("extraction: file writing failed");
 		}
+
+		size_ += data.size_bytes();
 	}
 
 public:
@@ -41,6 +44,10 @@ public:
 
 	void operator()(std::span<const std::byte> data) override {
 		store(data);
+	}
+
+	std::size_t size() const override {
+		return size_;
 	}
 
 	~FileSink() {
