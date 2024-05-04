@@ -53,6 +53,11 @@ public:
 	~FileSink() {
 		std::fclose(file_);
 	}
+
+	FileSink(const FileSink&) = delete;
+	FileSink(FileSink&&) = delete;
+	FileSink& operator=(FileSink&&) = delete;
+	FileSink& operator=(FileSink&) = delete;
 };
 
 } // mpq, ember
