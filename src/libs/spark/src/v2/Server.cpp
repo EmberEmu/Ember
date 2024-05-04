@@ -51,7 +51,7 @@ ba::awaitable<void> Server::accept_connection() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	ba::ip::tcp::socket socket(ctx_);
-	auto [ec] = co_await acceptor_.async_accept(socket, as_tuple(ba::use_awaitable));
+	auto [ec] = co_await acceptor_.async_accept(socket, as_tuple(ba::deferred));
 
 	if(ec) {
 		LOG_DEBUG(logger_)
@@ -128,11 +128,11 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	auto results = co_await resolver_.async_resolve(
-		host, std::to_string(port), ba::use_awaitable
+		host, std::to_string(port), ba::deferred
 	);
 
 	ba::ip::tcp::socket socket(ctx_);
-	co_await ba::async_connect(socket, results.begin(), results.end(), ba::use_awaitable);
+	co_await ba::async_connect(socket, results.begin(), results.end(), ba::deferred);
 
 	const auto key = std::format("{}:{}", host, port);
 

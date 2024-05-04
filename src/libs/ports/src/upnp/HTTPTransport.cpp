@@ -28,19 +28,19 @@ HTTPTransport::~HTTPTransport() {
 ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uint16_t port) {
 	auto results = co_await resolver_.async_resolve(std::string(host),
 													std::to_string(port),
-													ba::use_awaitable);
-	co_await boost::asio::async_connect(socket_, results.begin(), results.end(), ba::use_awaitable);
+													ba::deferred);
+	co_await boost::asio::async_connect(socket_, results.begin(), results.end(), ba::deferred);
 }
 
 ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
 	auto buffer = boost::asio::buffer(message->data(), message->size());
-	co_await ba::async_write(socket_, buffer, as_tuple(ba::use_awaitable));
+	co_await ba::async_write(socket_, buffer, as_tuple(ba::deferred));
 }
 
 ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
 	auto buffer = boost::asio::buffer(data->data(), data->size());
-	co_await ba::async_write(socket_, buffer, as_tuple(ba::use_awaitable));
+	co_await ba::async_write(socket_, buffer, as_tuple(ba::deferred));
 }
 
 auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
@@ -145,7 +145,7 @@ ba::awaitable<std::size_t> HTTPTransport::read(const std::size_t offset) {
 	}
 
 	const auto buffer = ba::buffer(buffer_.data() + offset, buffer_.size() - offset);
-	auto size = co_await socket_.async_receive(buffer, ba::use_awaitable);
+	auto size = co_await socket_.async_receive(buffer, ba::deferred);
 	co_return size;
 }
 
