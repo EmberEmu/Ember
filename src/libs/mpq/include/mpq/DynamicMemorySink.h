@@ -33,8 +33,6 @@ class DynamicMemorySink final : public ExtractionSink {
 	}
 
 public:
-	DynamicMemorySink() {}
-
 	void operator()(std::span<const std::byte> data) override {
 		store(data);
 	}
