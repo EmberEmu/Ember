@@ -79,6 +79,7 @@ std::expected<std::size_t, int> decompress_lzma(std::span<const std::byte> input
 		return dest_len;
 	}
 }
+
 std::expected<std::size_t, int> decompress_bzip2(std::span<const std::byte> input,
                                                  std::span<std::byte> output) {
 	unsigned int dest_len = output.size_bytes();
