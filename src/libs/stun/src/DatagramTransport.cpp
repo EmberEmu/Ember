@@ -116,7 +116,8 @@ unsigned int DatagramTransport::retries() {
 }
 
 std::string DatagramTransport::local_ip() {
-	auto local_ip = socket_.local_endpoint().address().to_string();
+	const auto& address = socket_.local_endpoint().address();
+	auto local_ip = address.to_string();
 
 	/*
      * Hack to try to work around ASIO always reporting the local IP as
@@ -134,9 +135,9 @@ std::string DatagramTransport::local_ip() {
 
 		for(const auto& entry : results) {
 			if((entry.endpoint().address().is_v4()
-				&& socket_.local_endpoint().address().is_v4())
+				&& address.is_v4())
 				|| (entry.endpoint().address().is_v6()
-				&& socket_.local_endpoint().address().is_v6())) {
+				&& address.is_v6())) {
 				local_ip = entry.endpoint().address().to_string();
 			}
 		}
