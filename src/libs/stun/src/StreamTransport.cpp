@@ -141,19 +141,19 @@ void StreamTransport::close() {
 	socket_.close();
 }
 
-std::chrono::milliseconds StreamTransport::timeout() {
+std::chrono::milliseconds StreamTransport::timeout() const {
 	return timeout_;
 }
 
-unsigned int StreamTransport::retries() {
+unsigned int StreamTransport::retries() const {
 	return 0;
 }
 
-std::string StreamTransport::local_ip() {
+std::string StreamTransport::local_ip() const {
 	return socket_.local_endpoint().address().to_string();
 }
 
-std::uint16_t StreamTransport::local_port() {
+std::uint16_t StreamTransport::local_port() const {
 	return socket_.local_endpoint().port();
 }
 

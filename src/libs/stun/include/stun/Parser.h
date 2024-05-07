@@ -57,15 +57,15 @@ public:
 	Parser(std::span<const std::uint8_t> buffer, RFCMode mode) : buffer_(buffer), mode_(mode) {}
 	void set_logger(LogCB logger);
 
-	Error validate_header(const Header& header);
+	Error validate_header(const Header& header) const;
 	Header header();
 	std::vector<attributes::Attribute> attributes();
-	std::uint32_t fingerprint();
-	std::vector<std::uint8_t> msg_integrity(std::string_view password);
+	std::uint32_t fingerprint() const;
+	std::vector<std::uint8_t> msg_integrity(std::string_view password) const;
 
 	std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> username,
 	                                        std::string_view realm,
-	                                        std::string_view password);
+	                                        std::string_view password) const;
 };
 
 #include <stun/Parser.inl>

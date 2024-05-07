@@ -20,7 +20,7 @@ namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
 class DatagramTransport final : public Transport {
-	ba::io_context ctx_;
+	mutable ba::io_context ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
 	ba::ip::udp::endpoint remote_ep_;
@@ -45,10 +45,10 @@ public:
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message) override;
 	void send(std::vector<std::uint8_t> message) override;
 	void close() override;
-	std::chrono::milliseconds timeout() override;
-	unsigned int retries() override;
-	std::string local_ip() override;
-	std::uint16_t local_port() override;
+	std::chrono::milliseconds timeout() const override;
+	unsigned int retries() const override;
+	std::string local_ip() const override;
+	std::uint16_t local_port() const override;
 };
 
 } // stun, ember

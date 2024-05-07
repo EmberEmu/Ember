@@ -26,8 +26,9 @@ public:
 	SCPDXMLParser(std::string_view xml);
 	SCPDXMLParser(std::string xml);
 
-	rapidxml::xml_node<char>* action(std::string_view action);
-	std::vector<std::string_view> arguments(std::string_view action, std::string_view direction);
+	rapidxml::xml_node<char>* action(std::string_view action) const;
+	std::vector<std::string_view> arguments(std::string_view action,
+	                                        std::string_view direction) const;
 };
 
 } // upnp, ports, ember

@@ -21,7 +21,7 @@ SCPDXMLParser::SCPDXMLParser(std::string xml) : xml_(std::move(xml)) {
 	parser_->parse<0>(xml_.data());
 }
 
-rapidxml::xml_node<char>* SCPDXMLParser::action(std::string_view action) {
+rapidxml::xml_node<char>* SCPDXMLParser::action(std::string_view action) const {
 	const auto scpd = parser_->first_node("scpd", 0, false);
 
 	if(!scpd) {
@@ -54,7 +54,7 @@ rapidxml::xml_node<char>* SCPDXMLParser::action(std::string_view action) {
 }
 
 std::vector<std::string_view> SCPDXMLParser::arguments(std::string_view action_name,
-                                                       std::string_view direction) {
+                                                       std::string_view direction) const {
 	const auto action_node = action(action_name);
 
 	if(!action_node) {

@@ -107,15 +107,15 @@ void DatagramTransport::close() {
 	socket_.close();
 }
 
-std::chrono::milliseconds DatagramTransport::timeout() {
+std::chrono::milliseconds DatagramTransport::timeout() const {
 	return timeout_;
 }
 
-unsigned int DatagramTransport::retries() {
+unsigned int DatagramTransport::retries() const {
 	return retries_;
 }
 
-std::string DatagramTransport::local_ip() {
+std::string DatagramTransport::local_ip() const {
 	const auto& address = socket_.local_endpoint().address();
 	auto local_ip = address.to_string();
 
@@ -146,7 +146,7 @@ std::string DatagramTransport::local_ip() {
 	return local_ip;
 }
 
-std::uint16_t DatagramTransport::local_port() {
+std::uint16_t DatagramTransport::local_port() const {
 	return socket_.local_endpoint().port();
 }
 

@@ -22,17 +22,17 @@ class XMLParser final {
 	std::unique_ptr<rapidxml::xml_document<>> parser_;
 
 	rapidxml::xml_node<char>* service_search(std::span<rapidxml::xml_node<char>*> devices,
-	                                         const std::string& type);
+	                                         const std::string& type) const;
 
 public:
 	XMLParser(std::string_view xml);
 	XMLParser(std::string xml);
 
-	rapidxml::xml_node<char>* locate_device(const std::string& type);
-	rapidxml::xml_node<char>* locate_service(const std::string& type);
+	rapidxml::xml_node<char>* locate_device(const std::string& type) const;
+	rapidxml::xml_node<char>* locate_service(const std::string& type) const;
 
 	std::optional<std::string> get_node_value(const std::string& service,
-	                                          const std::string& node_name);
+	                                          const std::string& node_name) const;
 };
 
 } // upnp, ports, ember

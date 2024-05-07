@@ -33,10 +33,10 @@ public:
 	virtual void close() = 0;
 	virtual void send(std::vector<std::uint8_t> message) = 0;
 	virtual void send(std::shared_ptr<std::vector<std::uint8_t>> message) = 0;
-	virtual std::chrono::milliseconds timeout() = 0;
-	virtual unsigned int retries() = 0;
-	virtual std::string local_ip() = 0;
-	virtual std::uint16_t local_port() = 0;
+	virtual std::chrono::milliseconds timeout() const = 0;
+	virtual unsigned int retries() const = 0;
+	virtual std::string local_ip() const = 0;
+	virtual std::uint16_t local_port() const = 0;
 
 	virtual ~Transport() = default;
 

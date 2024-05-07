@@ -23,7 +23,7 @@ void Parser::set_logger(LogCB logger) {
 	logger_ = logger;
 }
 
-Error Parser::validate_header(const Header& header) {
+Error Parser::validate_header(const Header& header) const {
 	if(mode_ != RFCMode::RFC3489 && header.cookie != MAGIC_COOKIE) {
 		return Error::RESP_COOKIE_MISSING;
 	}
@@ -369,17 +369,17 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	return true;
 }
 
-std::uint32_t Parser::fingerprint() {
+std::uint32_t Parser::fingerprint() const {
 	return detail::fingerprint(buffer_, true);
 }
 
 std::vector<std::uint8_t> Parser::msg_integrity(std::span<const std::uint8_t> username,
                                                 std::string_view realm,
-                                                std::string_view password) {
+                                                std::string_view password) const {
 	return detail::msg_integrity(buffer_, username, realm, password, true);
 }
 
-std::vector<std::uint8_t> Parser::msg_integrity(std::string_view password) {
+std::vector<std::uint8_t> Parser::msg_integrity(std::string_view password) const {
 	return detail::msg_integrity(buffer_, password, true);
 }
 

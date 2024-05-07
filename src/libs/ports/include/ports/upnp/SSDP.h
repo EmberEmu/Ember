@@ -61,7 +61,7 @@ public:
 	std::future<LocateResult> locate_gateways(use_future_t);
 
 	void search(std::string_view type, std::string_view subtype,
-				int version, LocateHandler&& handler);
+	            int version, LocateHandler&& handler);
 };
 
 } // upnp, ports, ember
