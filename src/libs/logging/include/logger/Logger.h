@@ -73,8 +73,10 @@ public:
 	void finalise();
 	void finalise_sync();
 
-	Logger(const impl&) = delete;
+	Logger(Logger&) = delete;
 	Logger& operator=(const Logger&) = delete;
+	Logger(Logger&&) = delete;
+	Logger& operator=(Logger&&) = delete;
 
 	friend Logger& flush(Logger& out);
 	friend Logger& flush_sync(Logger& out);

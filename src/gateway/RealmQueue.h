@@ -54,7 +54,8 @@ class RealmQueue final {
 	void set_timer();
 
 public:
-	explicit RealmQueue(boost::asio::io_context& service, std::chrono::milliseconds frequency = DEFAULT_FREQUENCY)
+	explicit RealmQueue(boost::asio::io_context& service,
+	                    std::chrono::milliseconds frequency = DEFAULT_FREQUENCY)
 	                    : timer_(service), frequency_(frequency), dirty_(false) { }
 
 	void enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
