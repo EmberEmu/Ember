@@ -11,7 +11,8 @@
 #include "PacketSink.h"
 #include <protocol/Packets.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <spark/buffers/BinaryStream.h>
+#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/v2/buffers/BinaryStream.h>
 #include <boost/container/small_vector.hpp>
 #include <chrono>
 #include <memory>
@@ -34,9 +35,9 @@ public:
 	template<protocol::is_packet PacketType>
 	void log(const PacketType& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-		boost::container::small_vector<std::uint8_t, RESERVE_LEN> buffer(64);
-		spark::BufferAdaptor adaptor(buffer);
-		spark::BinaryStream stream(adaptor);
+		boost::container::small_vector<std::uint8_t, RESERVE_LEN> buffer;
+		spark::v2::BufferAdaptor adaptor(buffer);
+		spark::v2::BinaryStream stream(adaptor);
 		stream << packet;
 
 		for(auto& sink : sinks_) {
