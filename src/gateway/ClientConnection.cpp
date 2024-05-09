@@ -71,7 +71,7 @@ void ClientConnection::process_buffered_data(BufferInType& buffer,
 		if(read_state_ == ReadState::DONE) {
 			++stats_.messages_in;
 
-			if(packet_logger_) {
+			if(packet_logger_) [[unlikely]] {
 				std::span packet(adaptor.read_ptr(), msg_size_);
 				packet_logger_->log(packet, PacketDirection::INBOUND);
 			}
@@ -259,7 +259,7 @@ void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) 
 }
 
 void ClientConnection::log_packets(bool enable) {
-	// temp
+	// temp - make logger non-ptr and add enable flag?
 	if(enable) {
 		packet_logger_ = std::make_unique<PacketLogger>();
 		packet_logger_->add_sink(std::make_unique<FBSink>("temp", "gateway", remote_address()));

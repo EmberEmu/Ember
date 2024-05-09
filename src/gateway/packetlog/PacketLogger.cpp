@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ void PacketLogger::reset() {
 
 void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir) {
 	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
-	std::vector<std::uint8_t> contig_buffer(length);
+	boost::container::small_vector<std::uint8_t, RESERVE_LEN> contig_buffer(length);
 	buffer.copy(contig_buffer.data(), length);
 
 	for(auto& sink : sinks_) {

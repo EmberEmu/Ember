@@ -24,7 +24,7 @@ void ClientConnection::send(const PacketType& packet) {
 	auto size = gsl::narrow<typename PacketType::SizeType>(written - sizeof(typename PacketType::SizeType));
 	auto opcode = packet.opcode;
 
-	if(crypt_) {
+	if(crypt_) [[likely]] {
 		crypt_->encrypt(size);
 		crypt_->encrypt(opcode);
 	}
@@ -39,7 +39,7 @@ void ClientConnection::send(const PacketType& packet) {
 		write();
 	}
 
-	if(packet_logger_) {
+	if(packet_logger_) [[unlikely]] {
 		packet_logger_->log(packet, PacketDirection::OUTBOUND);
 	}
 
