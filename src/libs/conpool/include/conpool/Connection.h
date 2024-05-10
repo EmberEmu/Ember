@@ -59,12 +59,12 @@ public:
 		}
 	}
 
-	Connection(Connection<ConType>&& src)
+	Connection(Connection<ConType>&& src) noexcept
 	           : detail_(std::move(src.detail_)), rh_(std::move(src.rh_)) {
 		src.released_ = true;
 	}
 
-	Connection<ConType>& operator=(Connection<ConType>&& src) {
+	Connection<ConType>& operator=(Connection<ConType>&& src) noexcept {
 		if(!released_) {
 			rh_(*this);
 		}

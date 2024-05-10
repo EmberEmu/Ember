@@ -115,8 +115,8 @@ public:
 		clear();
 	}
 
-	DynamicBuffer& operator=(DynamicBuffer&& rhs) { move(rhs); return *this;  }
-	DynamicBuffer(DynamicBuffer&& rhs) {  move(rhs); }
+	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept { move(rhs); return *this;  }
+	DynamicBuffer(DynamicBuffer&& rhs) noexcept {  move(rhs); }
 	DynamicBuffer(const DynamicBuffer& rhs) { copy(rhs); }
 	DynamicBuffer& operator=(const DynamicBuffer& rhs) { clear(); copy(rhs); return *this;  }
 

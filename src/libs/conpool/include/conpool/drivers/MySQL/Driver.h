@@ -53,6 +53,10 @@ public:
 	                              password(rhs.password), database(rhs.database),
 	                              cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
 
+	MySQL& operator=(MySQL&&) = delete;
+	MySQL& operator=(MySQL&) = delete;
+	MySQL(MySQL&) = delete;
+
 	static std::string name();
 	static std::string version();
 
