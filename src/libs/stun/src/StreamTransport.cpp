@@ -17,6 +17,7 @@ StreamTransport::StreamTransport(const std::string& bind, std::chrono::milliseco
 	: timeout_(timeout), 
 	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(bind), 0)),
 	  resolver_(ctx_) {
+	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
 	work_ = std::make_unique<boost::asio::io_context::work>(ctx_);
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);
