@@ -169,11 +169,11 @@ public:
 		return *this;
 	}
 
-	Severity severity() {
+	Severity severity() const {
 		return severity_;
 	}
 
-	Filter filter() {
+	Filter filter() const {
 		return filter_;
 	}
 

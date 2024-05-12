@@ -89,7 +89,7 @@ public:
 				write_ += offset;
 				break;
 			case SeekDir::SD_START:
-				write_ = 0 + offset;
+				write_ = offset;
 		}
 	}
 

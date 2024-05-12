@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,8 +22,8 @@ protected:
 	Sink(Severity severity, Filter filter) : severity_(severity), filter_(filter) {}
 
 public:
-	Severity severity() { return severity_; }
-	Filter filter() { return filter_; }
+	Severity severity() const { return severity_; }
+	Filter filter() const { return filter_; }
 	void severity(Severity severity) { severity_ = severity; }
 	void filter(const Filter& filter) { filter_ = filter; }
 	virtual void write(Severity severity, Filter type, const std::vector<char>& record, bool flush) = 0;
