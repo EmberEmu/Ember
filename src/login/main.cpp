@@ -160,7 +160,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	if(args["survey.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
 		patcher.set_survey(
-			args["survey.bin_path"].as<std::string>(),
+			args["survey.path"].as<std::string>(),
 			args["survey.id"].as<std::uint32_t>()
 		);
 	}
@@ -312,7 +312,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("locale.enforce", po::value<bool>()->required())
 		("patches.bin_path", po::value<std::string>()->required())
 		("survey.enabled", po::value<bool>()->default_value(false))
-		("survey.bin_path", po::value<std::string>()->required())
+		("survey.path", po::value<std::string>()->required())
 		("survey.id", po::value<std::uint32_t>()->required())
 		("integrity.enabled", po::value<bool>()->default_value(false))
 		("integrity.bin_path", po::value<std::string>()->required())

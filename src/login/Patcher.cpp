@@ -151,10 +151,10 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 	survey_.name = "Survey";
 	survey_id_ = id;
 	
-	std::ifstream file(path + "Survey.mpq", std::ios::binary);
+	std::ifstream file(path, std::ios::binary);
 
 	if(!file) {
-		throw std::runtime_error("Error opening " + path + "Survey.mpq");
+		throw std::runtime_error("Error opening " + path);
 	}
 
 	survey_.size = std::filesystem::file_size(path);
@@ -163,7 +163,7 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 	file.read(reinterpret_cast<char*>(buffer.data()), survey_.size);
 
 	if(!file.good()) {
-		throw std::runtime_error("An error occured while reading " + path + "Survey.mpq");
+		throw std::runtime_error("An error occured while reading " + path);
 	}
 
 	const auto md5 = util::generate_md5(buffer);

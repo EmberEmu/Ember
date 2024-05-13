@@ -9,7 +9,7 @@ bin_path = ""  # path to patch files
 [survey]
 enabled = 0
 id = 0         # should be bumped for each new survey
-bin_path = ""  # path to survey.mpq
+path = Survey.mpq  # path to survey MPQ file
 
 [integrity]
 enabled = 0    # validate the client's integrity
