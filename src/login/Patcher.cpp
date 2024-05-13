@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <cassert>
 
 namespace ember {
 
@@ -147,7 +148,7 @@ auto Patcher::check_version(const GameVersion& client_version) const -> PatchLev
 	return PatchLevel::TOO_NEW;
 }
 
-void Patcher::set_survey(const std::string& path, std::uint32_t id) {
+void Patcher::set_survey(const std::string& path, const std::uint32_t id) {
 	survey_.name = "Survey";
 	survey_id_ = id;
 	
@@ -168,6 +169,7 @@ void Patcher::set_survey(const std::string& path, std::uint32_t id) {
 
 	const auto md5 = util::generate_md5(buffer);
 	const auto md5_bytes = std::as_bytes(std::span(md5));
+	assert(md5_bytes.size() == survey_.md5.size());
 	std::copy(md5_bytes.begin(), md5_bytes.end(), survey_.md5.data());
 	survey_data_ = std::move(buffer);
 }
@@ -233,6 +235,7 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 
 			const auto md5 = util::generate_md5(path + patch.file_meta.name);
 			const auto md5_bytes = std::as_bytes(std::span(md5));
+			assert(md5_bytes.size() == patch.file_meta.md5.size());
 			std::copy(md5_bytes.begin(), md5_bytes.end(), patch.file_meta.md5.data());
 			dirty = true;
 		}
