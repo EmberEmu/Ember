@@ -12,7 +12,7 @@
 
 namespace ember::client_integrity {
 
-std::vector<std::uint8_t> checksum(const std::span<const std::uint8_t> seed,
+std::vector<std::uint8_t> checksum(std::span<const std::uint8_t> seed,
                                    std::span<const std::byte> buffer) {
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	hmac->set_key(seed.data(), seed.size());

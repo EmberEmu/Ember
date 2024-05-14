@@ -55,18 +55,16 @@ using namespace std::placeholders;
 
 namespace ember {
 
-using StunPair = std::pair<std::unique_ptr<stun::Client>, std::future<stun::MappedResult>>;
-
 int launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
-StunPair start_stun_query(const po::variables_map& args, log::Logger* logger);
+std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args, log::Logger* logger);
 void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
                        log::Logger* logger);
-void handle_stun_results(stun::Client* client, Realm* realm,
-                         std::future<stun::MappedResult> result,
+void handle_stun_results(stun::Client& client, Realm& realm,
+                         const stun::MappedResult& result,
                          std::uint16_t port,
                          log::Logger* logger);
 
@@ -107,7 +105,12 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
-	auto [stun, stun_res ] = start_stun_query(args, logger);
+	auto stun = create_stun_client(args, logger);
+	std::future<stun::MappedResult> stun_res;
+
+	if(stun) {
+		stun_res = stun->external_address();
+	}
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
@@ -190,7 +193,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto port = args["network.port"].as<std::uint16_t>();
 
 	if(stun) {
-		handle_stun_results(&*stun, &*realm, std::move(stun_res), port, logger);
+		handle_stun_results(*stun, *realm, stun_res.get(), port, logger);
 		stun.reset();
 	}
 
@@ -254,16 +257,14 @@ const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_
 	throw std::invalid_argument("Unknown category/region combination in database");
 }
 
-void handle_stun_results(stun::Client* client, Realm* realm,
-                         std::future<stun::MappedResult> future,
+void handle_stun_results(stun::Client& client, Realm& realm,
+                         const stun::MappedResult& result,
                          const std::uint16_t port,
 						 log::Logger* logger) {
-	const auto result = future.get();
-
 	if(!result) {
 		const auto& msg = std::format(
 			"STUN: Query failed ({}), falling back to realm config {}",
-			stun::to_string(result.error().reason), realm->ip
+			stun::to_string(result.error().reason), realm.ip
 		);
 
 		LOG_ERROR(logger) << msg << LOG_SYNC;
@@ -271,13 +272,13 @@ void handle_stun_results(stun::Client* client, Realm* realm,
 	}
 
 	const auto& ip = stun::extract_ip_to_string(*result);
-	realm->ip = std::format("{}:{}", ip, port);
+	realm.ip = std::format("{}:{}", ip, port);
 
 	LOG_INFO(logger)
 		<< std::format("STUN: Binding request succeeded ({})", ip)
 		<< LOG_SYNC;
 
-	const auto nat = client->nat_present().get();
+	const auto nat = client.nat_present().get();
 
 	if(!nat) {
 		const auto& msg = std::format(
@@ -304,9 +305,10 @@ void handle_stun_results(stun::Client* client, Realm* realm,
 	}
 }
 
-StunPair start_stun_query(const po::variables_map& args, log::Logger* logger) {
+std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args,
+                                                 log::Logger* logger) {
 	if(!args["stun.enabled"].as<bool>()) {
-		return {};
+		return nullptr;
 	}
 
 	LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
@@ -327,9 +329,7 @@ StunPair start_stun_query(const po::variables_map& args, log::Logger* logger) {
 		stun_log_callback(verbosity, reason, logger);
 	});
 
-	auto stun_res = stun->external_address();
-
-	return { std::move(stun), std::move(stun_res) };
+	return stun;
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
