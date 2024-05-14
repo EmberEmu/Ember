@@ -101,7 +101,9 @@ LOG_DEBUG_FMT(logger, "The quick brown {1} jumps over the lazy {0}", "dog", "fox
 LOG_DEBUG_FMT(logger, "This won't be parsed for arguments {0}{1}"); // This won't be parsed for arguments {0}{1}
 ```
 
-Note that formatted logging is async only.
+All `LOG_*_FMT` macros are non-blocking. For blocking logs, use `LOG_*_FMT_SYNC`.
+
+Performance note: formatting is done by the calling thread, not during output. Be cautious about using formatted logging on hot paths. Formatting will not be performed if the configured log level is above the message level.
 
 # Global Logging
 Although it is not recommended for normal development, it may be useful to perform logging in a section of the code that doesn't have access to a logger object. For those situations, you should set a logger object as the global logger:
