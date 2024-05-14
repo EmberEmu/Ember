@@ -248,14 +248,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}, 5s);
 
 	// Misc. information
-	LOG_INFO_FMT(logger, "Max allowed sockets: {}", util::max_sockets_desc());
+	LOG_INFO_FMT_SYNC(logger, "Max allowed sockets: {}", util::max_sockets_desc());
 	std::string builds;
 
 	for(const auto& client : allowed_clients) {
 		builds += std::to_string(client.build) + " ";
 	}
 
-	LOG_INFO_FMT(logger, "Allowed client builds: {}", builds);
+	LOG_INFO_FMT_SYNC(logger, "Allowed client builds: {}", builds);
 
 	// All done setting up
 	service.dispatch([logger]() {

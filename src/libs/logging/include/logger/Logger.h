@@ -43,13 +43,18 @@ public:
 		finalise();
 	}
 
-	template<FormatLiteral fmtl, typename ... Args>
+	template<FormatLiteral fmtl, bool async, typename ... Args>
 	constexpr void fmt_write(const Severity severity, Args ... args) {
 		*this << severity;
 		constexpr auto fmt = fmtl.value;
 		auto buffer = get_buffer();
 		std::format_to(std::back_inserter(*buffer), fmt, args...);
-		finalise();
+		
+		if constexpr (async) {
+			finalise();
+		} else {
+			finalise_sync();
+		}
 	}
 
 	Logger& operator <<(Logger& (*m)(Logger&));

@@ -197,8 +197,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		stun.reset();
 	}
 
-	const auto& msg = std::format("Realm will be advertised on {}", realm->ip);
-	LOG_INFO(logger) << msg << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "Realm will be advertised on {}", realm->ip);
 
 	RealmQueue queue_service(service_pool.get_service());
 	RealmService realm_svc(*realm, spark, discovery, logger);
@@ -215,7 +214,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	
 	// Misc. information
 	const auto max_socks = util::max_sockets_desc();
-	LOG_INFO_FMT(logger, "Max allowed sockets: {}", max_socks);
+	LOG_INFO_FMT_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
 	const auto& interface = args["network.interface"].as<std::string>();
@@ -262,41 +261,27 @@ void handle_stun_results(stun::Client& client, Realm& realm,
                          const std::uint16_t port,
 						 log::Logger* logger) {
 	if(!result) {
-		const auto& msg = std::format(
-			"STUN: Query failed ({}), falling back to realm config {}",
-			stun::to_string(result.error().reason), realm.ip
-		);
-
-		LOG_ERROR(logger) << msg << LOG_SYNC;
+		LOG_ERROR_FMT_SYNC(logger, "STUN: Query failed ({}), falling back to realm config {}",
+		                   stun::to_string(result.error().reason), realm.ip);
 		return;
 	}
 
 	const auto& ip = stun::extract_ip_to_string(*result);
 	realm.ip = std::format("{}:{}", ip, port);
 
-	LOG_INFO(logger)
-		<< std::format("STUN: Binding request succeeded ({})", ip)
-		<< LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "STUN: Binding request succeeded ({})", ip);
 
 	const auto nat = client.nat_present().get();
 
 	if(!nat) {
-		const auto& msg = std::format(
-			"STUN: Unable to determine if gateway is behind NAT ({})",
-			stun::to_string(nat.error().reason)
-		);
-
-		LOG_WARN(logger) << msg << LOG_SYNC;
+		LOG_WARN_FMT_SYNC(logger, "STUN: Unable to determine if gateway is behind NAT ({})",
+		                  stun::to_string(nat.error().reason));
 		return;
 	}
 
 	if(*nat) {
-		const auto& msg = std::format(
-			"STUN: Gateway appears to be behind NAT, "
-			"forward port {} for external access", port
-		);
-
-		LOG_INFO(logger) << msg << LOG_SYNC;
+		LOG_INFO_FMT_SYNC(logger, "STUN: Gateway appears to be behind NAT,"
+		                  "forward port {} for external access", port);
 	} else {
 		LOG_INFO(logger)
 			<< "STUN: Gateway does not appear to be behind NAT - "

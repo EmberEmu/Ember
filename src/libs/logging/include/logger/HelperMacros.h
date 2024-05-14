@@ -174,7 +174,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 #if !NO_LOGGING && !NO_TRACE_LOGGING
 #define LOG_TRACE_FMT(logger, fmt_str, ...) \
 	if(logger->severity() <= ember::log::Severity::TRACE) \
-		logger->fmt_write<fmt_str>(ember::log::Severity::TRACE __VA_OPT__(,) __VA_ARGS__);
+		logger->fmt_write<fmt_str, true>(ember::log::Severity::TRACE __VA_OPT__(,) __VA_ARGS__);
 #else
 #define LOG_TRACE_FMT(logger, fmt_str, ...) \
 	if(false);
@@ -183,7 +183,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 #if !NO_LOGGING && !NO_DEBUG_LOGGING
 #define LOG_DEBUG_FMT(logger, fmt_str, ...) \
 	if(logger->severity() <= ember::log::Severity::DEBUG) \
-		logger->fmt_write<fmt_str>(ember::log::Severity::DEBUG __VA_OPT__(,) __VA_ARGS__);
+		logger->fmt_write<fmt_str, true>(ember::log::Severity::DEBUG __VA_OPT__(,) __VA_ARGS__);
 #else
 #define LOG_DEBUG_FMT(logger, fmt_str, ...) \
 	if(false);
@@ -192,7 +192,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 #if !NO_LOGGING && !NO_INFO_LOGGING
 #define LOG_INFO_FMT(logger, fmt_str, ...) \
 	if(logger->severity() <= ember::log::Severity::INFO) \
-		logger->fmt_write<fmt_str>(ember::log::Severity::INFO __VA_OPT__(,) __VA_ARGS__);
+		logger->fmt_write<fmt_str, true>(ember::log::Severity::INFO __VA_OPT__(,) __VA_ARGS__);
 #else
 #define LOG_INFO_FMT(logger, fmt_str, ...) \
 	if(false);
@@ -201,7 +201,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 #if !NO_LOGGING && !NO_WARN_LOGGING
 #define LOG_WARN_FMT(logger, fmt_str, ...) \
 	if(logger->severity() <= ember::log::Severity::WARN) \
-		logger->fmt_write<fmt_str>(ember::log::Severity::WARN __VA_OPT__(,) __VA_ARGS__);
+		logger->fmt_write<fmt_str, true>(ember::log::Severity::WARN __VA_OPT__(,) __VA_ARGS__);
 #else
 #define LOG_WARN_FMT(logger, fmt_str, ...) \
 	if(false);
@@ -210,7 +210,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 #if !NO_LOGGING && !NO_ERROR_LOGGING
 #define LOG_ERROR_FMT(logger, fmt_str, ...) \
 	if(logger->severity() <= ember::log::Severity::ERROR_) \
-		logger->fmt_write<fmt_str>(ember::log::Severity::ERROR_ __VA_OPT__(,) __VA_ARGS__);
+		logger->fmt_write<fmt_str, true>(ember::log::Severity::ERROR_ __VA_OPT__(,) __VA_ARGS__);
 #else
 #define LOG_ERROR_FMT(logger, fmt_str, ...) \
 	if(false);
@@ -219,7 +219,61 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 #if !NO_LOGGING && !NO_FATAL_LOGGING
 #define LOG_FATAL_FMT(logger, fmt_str, ...) \
 	if(logger->severity() <= ember::log::Severity::FATAL) \
-		logger->fmt_write<fmt_str>(ember::log::Severity::FATAL __VA_OPT__(,) __VA_ARGS__);
+		logger->fmt_write<fmt_str, true>(ember::log::Severity::FATAL __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_FATAL_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_TRACE_LOGGING
+#define LOG_TRACE_FMT_SYNC(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::TRACE) \
+		logger->fmt_write<fmt_str, false>(ember::log::Severity::TRACE __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_TRACE_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_DEBUG_LOGGING
+#define LOG_DEBUG_FMT_SYNC(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::DEBUG) \
+		logger->fmt_write<fmt_str, false>(ember::log::Severity::DEBUG __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_DEBUG_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_INFO_LOGGING
+#define LOG_INFO_FMT_SYNC(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::INFO) \
+		logger->fmt_write<fmt_str, false>(ember::log::Severity::INFO __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_INFO_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_WARN_LOGGING
+#define LOG_WARN_FMT_SYNC(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::WARN) \
+		logger->fmt_write<fmt_str, false>(ember::log::Severity::WARN __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_WARN_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_ERROR_LOGGING
+#define LOG_ERROR_FMT_SYNC(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::ERROR_) \
+		logger->fmt_write<fmt_str, false>(ember::log::Severity::ERROR_ __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_ERROR_FMT(logger, fmt_str, ...) \
+	if(false);
+#endif
+
+#if !NO_LOGGING && !NO_FATAL_LOGGING
+#define LOG_FATAL_FMT_SYNC(logger, fmt_str, ...) \
+	if(logger->severity() <= ember::log::Severity::FATAL) \
+		logger->fmt_write<fmt_str, false>(ember::log::Severity::FATAL __VA_OPT__(,) __VA_ARGS__);
 #else
 #define LOG_FATAL_FMT(logger, fmt_str, ...) \
 	if(false);
