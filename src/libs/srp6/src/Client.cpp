@@ -48,7 +48,6 @@ SessionKey Client::session_key(BigInt B, std::span<const std::uint8_t> salt,
 		throw exception("Server's ephemeral key is invalid!");
 	}
 
-
 	BigInt u = detail::scrambler(A_, B, N.bytes(), mode);
 
 	if(u <= 0) {

@@ -15,6 +15,7 @@
 #include "ClientLogHelper.h"
 #include <protocol/Packets.h>
 #include <spark/buffers/BinaryStream.h>
+#include <format>
 #include <utility>
 
 namespace ember {
@@ -119,14 +120,16 @@ void ClientHandler::stop_timer() {
  */
 const std::string& ClientHandler::client_identify() const {	
 	if(client_id_basic_.empty()) {
-		client_id_basic_ = connection_.remote_address() + " ";
+		client_id_basic_ = connection_.remote_address();
 	}
 
 	if(context_.client_id) {
 		if(client_id_full_.empty()) {
-			client_id_full_ = client_id_basic_ + "( " +
-			context_.client_id->username + ", " + 
-			std::to_string(context_.client_id->id) + ") ";
+			client_id_full_ = std::format("{} ({}, {})",
+			                              client_id_basic_, 
+			                              context_.client_id->username,
+			                              context_.client_id->id
+			);
 		}
 
 		return client_id_full_;
