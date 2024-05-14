@@ -37,6 +37,8 @@ SOFTWARE.
 
 namespace smart_enum
 {
+	static const std::string unknown_enum_str { "UNKNOWN_ENUM_VALUE" };
+
     inline int determine_base(std::string& rightHandSide)
     {
         std::transform(rightHandSide.begin(), rightHandSide.end(), rightHandSide.begin(), ::tolower);
@@ -141,11 +143,11 @@ namespace smart_enum
     static std::vector<Type> Type##_list;\
     static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
     \
-    inline std::string Type##_to_string(Type value) try \
+    inline const std::string& Type##_to_string(Type value) try \
     { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \
-		return "UNKNOWN_ENUM_VALUE"; \
+		return smart_enum::unknown_enum_str; \
 	} \
     \
 
@@ -153,11 +155,11 @@ namespace smart_enum
     static std::vector<Type> Type##_list;\
     static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
     \
-    inline std::string to_string(Type value) try \
+    inline const std::string& to_string(Type value) try \
     { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \
-		return "UNKNOWN_ENUM_VALUE"; \
+		return smart_enum::unknown_enum_str; \
 	} \
     \
     inline std::ostream& operator<<(std::ostream& outStream, Type value)\
