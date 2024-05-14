@@ -31,7 +31,7 @@ public:
 	Client(std::string identifier, std::string password, Generator gen, Botan::BigInt a,
 	       bool srp6a = false);
 
-	SessionKey session_key(const Botan::BigInt& B,
+	SessionKey session_key(Botan::BigInt B,
 	                       std::span<const std::uint8_t> salt,
 	                       Compliance mode = Compliance::GAME,
 	                       bool interleave_override = false);

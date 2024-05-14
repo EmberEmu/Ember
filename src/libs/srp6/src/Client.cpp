@@ -34,7 +34,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 	}
 }
 
-SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> salt, 
+SessionKey Client::session_key(BigInt B, std::span<const std::uint8_t> salt, 
                                Compliance mode, bool interleave_override) {
 	bool interleave = (mode == Compliance::GAME);
 	
@@ -48,7 +48,6 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 		throw exception("Server's ephemeral key is invalid!");
 	}
 
-	B_ = B;
 
 	BigInt u = detail::scrambler(A_, B, N.bytes(), mode);
 
@@ -58,6 +57,7 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 
 	BigInt x = detail::compute_x(identifier_, password_, salt, mode);
 	BigInt S = power_mod((B - k_ * gen_(x)) % N, a_ + u * x, N);
+	B_ = std::move(B);
 	
 	if(interleave) {
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N.bytes())));
