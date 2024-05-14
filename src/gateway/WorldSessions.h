@@ -28,7 +28,7 @@ public:
 	void add_world(WorldID id, const std::shared_ptr<WorldConnection>& connection);
 	void remove_world(WorldID id);
 	void remove_world(const std::shared_ptr<WorldConnection>& connection);
-	std::shared_ptr<WorldConnection> locate_world(WorldID id);
+	std::shared_ptr<WorldConnection> locate_world(WorldID id) const;
 };
 
 } // ember

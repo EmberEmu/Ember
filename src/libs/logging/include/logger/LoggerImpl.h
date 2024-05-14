@@ -188,6 +188,8 @@ public:
 
 	impl(const impl&) = delete;
 	impl& operator=(const impl&) = delete;
+	impl(const impl&&) = delete;
+	impl& operator=(const impl&&) = delete;
 };
 
 thread_local std::pair<RecordDetail, std::vector<char>> Logger::impl::buffer_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,12 +19,12 @@ namespace ember {
 class Sessions final {
 	bool allow_overwrite_;
 	std::unordered_map<std::uint32_t, Botan::BigInt> sessions_;
-	std::mutex lock_;
+	mutable std::mutex lock_;
 
 public:
 	explicit Sessions(bool allow_overwrite) : allow_overwrite_(allow_overwrite) { }
 	bool register_session(std::uint32_t account_id, const Botan::BigInt& key);
-	std::optional<Botan::BigInt> lookup_session(std::uint32_t account_id);
+	std::optional<Botan::BigInt> lookup_session(std::uint32_t account_id) const;
 };
 
 } // ember

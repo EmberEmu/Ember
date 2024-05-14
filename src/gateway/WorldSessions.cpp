@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ void WorldSessions::remove_world(const std::shared_ptr<WorldConnection>& connect
 
 }
 
-std::shared_ptr<WorldConnection> WorldSessions::locate_world(WorldID id) {
+std::shared_ptr<WorldConnection> WorldSessions::locate_world(WorldID id) const {
 	return nullptr;
 }
 

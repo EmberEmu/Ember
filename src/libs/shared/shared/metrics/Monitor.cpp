@@ -7,6 +7,7 @@
  */
 
 #include <shared/metrics/Monitor.h>
+#include <array>
 #include <memory>
 #include <sstream>
 
@@ -33,7 +34,9 @@ void Monitor::shutdown() {
 }
 
 void Monitor::receive() {
-	socket_.async_receive_from(boost::asio::buffer(buffer_), endpoint_, 
+	std::array<char, 1> buffer;
+
+	socket_.async_receive_from(boost::asio::buffer(buffer), endpoint_, 
 		strand_.wrap([this](const boost::system::error_code& ec, std::size_t) {
 			if(!ec || ec == boost::asio::error::message_size) {
 				send_health_status();
@@ -94,15 +97,16 @@ void Monitor::execute_source(Source& source, Severity severity, const LogCallbac
 	}
 }
 
-std::string Monitor::generate_message() {
+std::string Monitor::generate_message() const {
 	std::lock_guard<std::mutex> guard(source_lock_);
 	std::stringstream message;
 
 	message << "Status: ";
 
-	if(counters_[Severity::FATAL] || counters_[Severity::ERROR]) {
+	if((counters_.contains(Severity::FATAL) && counters_.at(Severity::FATAL))
+	   || (counters_.contains(Severity::ERROR) && counters_.at(Severity::ERROR))) {
 		message << "ERROR; ";
-	} else if(counters_[Severity::WARN]) {
+	} else if(counters_.at(Severity::WARN) && counters_.at(Severity::WARN)) {
 		message << "WARNING; ";
 	} else {
 		message << "OK; ";

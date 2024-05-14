@@ -28,7 +28,7 @@ public:
 	void add(boost::uuids::uuid uuid, const std::shared_ptr<ClientConnection>& client);
 	void remove(boost::uuids::uuid uuid);
 	void remove(const std::shared_ptr<ClientConnection>& client);
-	std::shared_ptr<ClientConnection> locate(boost::uuids::uuid uuid);
+	std::shared_ptr<ClientConnection> locate(boost::uuids::uuid uuid) const;
 
 };
 

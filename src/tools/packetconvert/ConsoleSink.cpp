@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -80,7 +80,7 @@ void ConsoleSink::handle(const fblog::Message& message) {
 	std::cout << "\n</message>\n" << std::endl; // explicit flush to avoid stalls for ongoing streams
 }
 
-void ConsoleSink::print_opcode(const fblog::Message& message) {
+void ConsoleSink::print_opcode(const fblog::Message& message) const {
 	protocol::ClientOpcode c_op;
 	protocol::ServerOpcode s_op;
 	std::string op_desc;

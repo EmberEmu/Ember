@@ -9,7 +9,6 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <array>
 #include <chrono>
 #include <functional>
 #include <string>
@@ -52,9 +51,8 @@ private:
 	boost::asio::io_context::strand strand_;
 
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
-	std::mutex source_lock_;
+	mutable std::mutex source_lock_;
 	std::unordered_map<Severity, unsigned int> counters_;
-	std::array<char, 1> buffer_;
 
 	void receive();
 	void set_timer();
@@ -62,7 +60,7 @@ private:
 	void timer_tick(const boost::system::error_code& ec);
 	void execute_source(Source& source, Severity severity, const LogCallback& log,
 	                    std::chrono::seconds& last_tick);
-	std::string generate_message();
+	std::string generate_message() const;
 	void shutdown();
 
 public:

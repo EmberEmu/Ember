@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ void WorldClients::remove(const std::shared_ptr<ClientConnection>& client) {
 
 }
 
-std::shared_ptr<ClientConnection> locate(boost::uuids::uuid uuid) {
+std::shared_ptr<ClientConnection> WorldClients::locate(boost::uuids::uuid uuid) const {
 	return nullptr;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ bool Sessions::register_session(std::uint32_t account_id, const Botan::BigInt& k
 	return true;
 }
 
-std::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) {
+std::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) const {
 	std::lock_guard<std::mutex> guard(lock_);
 	auto it = sessions_.find(account_id);
 
