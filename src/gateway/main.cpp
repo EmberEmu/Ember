@@ -60,7 +60,7 @@ unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
-std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args, log::Logger* logger);
+std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args);
 void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
                        log::Logger* logger);
 void handle_stun_results(stun::Client& client, Realm& realm,
@@ -105,10 +105,15 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
-	auto stun = create_stun_client(args, logger);
+	auto stun = create_stun_client(args);
 	std::future<stun::MappedResult> stun_res;
 
 	if(stun) {
+		stun->log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
+			stun_log_callback(verbosity, reason, logger);
+		});
+
+		LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
 		stun_res = stun->external_address();
 	}
 
@@ -290,13 +295,11 @@ void handle_stun_results(stun::Client& client, Realm& realm,
 	}
 }
 
-std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args,
-                                                 log::Logger* logger) {
+std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args) {
 	if(!args["stun.enabled"].as<bool>()) {
 		return nullptr;
 	}
 
-	LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
 	const auto& proto_arg = args["stun.protocol"].as<std::string>();
 
 	if(proto_arg != "tcp" && proto_arg != "udp") {
@@ -309,10 +312,6 @@ std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args,
 		args["stun.port"].as<std::uint16_t>(),
 		proto_arg == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP
 	);
-
-	stun->log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
-		stun_log_callback(verbosity, reason, logger);
-	});
 
 	return stun;
 }
