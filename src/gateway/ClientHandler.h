@@ -34,8 +34,8 @@ class ClientHandler final {
 	log::Logger* logger_;
 	boost::asio::steady_timer timer_;
 	protocol::ClientOpcode opcode_;
-	mutable std::string client_id_basic_;
-	mutable std::string client_id_full_;
+	const std::string client_id_;
+	mutable std::string client_id_ext_;
 
 	void handle_ping(ClientStream& stream);
 

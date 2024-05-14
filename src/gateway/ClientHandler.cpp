@@ -119,28 +119,28 @@ void ClientHandler::stop_timer() {
  * has completed
  */
 const std::string& ClientHandler::client_identify() const {	
-	if(client_id_basic_.empty()) {
-		client_id_basic_ = connection_.remote_address();
-	}
-
 	if(context_.client_id) {
-		if(client_id_full_.empty()) {
-			client_id_full_ = std::format("{} ({}, {})",
-			                              client_id_basic_, 
+		if(client_id_ext_.empty()) {
+			client_id_ext_ = std::format("{} ({}, {})",
+										  client_id_, 
 			                              context_.client_id->username,
 			                              context_.client_id->id
 			);
 		}
 
-		return client_id_full_;
+		return client_id_ext_;
 	}
 
-	return client_id_basic_;
+	return client_id_;
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
                              boost::asio::any_io_executor executor)
-                             : context_{}, connection_(connection), logger_(logger), uuid_(uuid),
+                             : context_{}, connection_(connection),
+                               client_id_(connection_.remote_address()),
+                               opcode_{},
+                               logger_(logger),
+                               uuid_(uuid),
                                timer_(executor) { 
 	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
 	context_.connection = &connection_;
