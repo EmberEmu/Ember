@@ -9,6 +9,7 @@
 #include "RealmService.h"
 #include "RealmList.h"
 #include <utility>
+#include <cassert>
 
 namespace em = ember::messaging;
 
