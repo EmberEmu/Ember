@@ -12,6 +12,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <span>
 #include <unordered_map>
 #include <cstdint>
@@ -29,7 +30,7 @@ public:
 	RealmList() : realms_(std::make_shared<RealmMap>()){}
 	void add_realm(std::span<const Realm> realms);
 	void add_realm(Realm realm);
-	Realm get_realm(std::uint32_t id) const;
+	std::optional<Realm> get_realm(std::uint32_t id) const;
 	std::shared_ptr<const RealmMap> realms() const;
 };
 

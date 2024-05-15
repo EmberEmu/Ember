@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -106,11 +106,12 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 		return;
 	}
 
-	Realm realm = realms_.get_realm(it->second);
-	realm.flags = realm.flags | Realm::Flags::OFFLINE;
-	realms_.add_realm(realm);
+	std::optional<Realm> realm = realms_.get_realm(it->second);
+	assert(realm);
+	realm->flags = realm->flags | Realm::Flags::OFFLINE;
+	realms_.add_realm(*realm);
 
-	LOG_INFO(logger_) << "Set gateway for " << realm.name <<  " to offline" << LOG_ASYNC;
+	LOG_INFO(logger_) << "Set gateway for " << realm->name <<  " to offline" << LOG_ASYNC;
 }
 
 void RealmService::request_realm_status(const spark::Link& link) {

@@ -40,9 +40,14 @@ void RealmList::add_realm(Realm realm) {
 	realms_ = copy;
 }
 
-Realm RealmList::get_realm(const std::uint32_t id) const {
+std::optional<Realm> RealmList::get_realm(const std::uint32_t id) const {
 	auto realms = realms_.load();
-	return realms->at(id);
+
+	if(realms->contains(id)) {
+		return realms->at(id);
+	} else {
+		return std::nullopt;
+	}
 }
 
 auto RealmList::realms() const -> std::shared_ptr<const RealmMap> {
