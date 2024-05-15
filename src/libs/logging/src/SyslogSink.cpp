@@ -12,6 +12,7 @@
 #include <logger/Exception.h>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
+#include <array>
 
 namespace bai = boost::asio::ip;
 
@@ -100,26 +101,27 @@ void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<c
 	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
-	
-	int priority_val = (static_cast<int>(facility_) * 8)
-	                    + static_cast<std::uint8_t>(severity_map(severity));
+
+	const int priority_val = (static_cast<int>(facility_) * 8)
+		+ static_cast<std::uint8_t>(severity_map(severity));
 	std::string priority = "<" + std::to_string(priority_val) + ">";
 
 	std::tm time = detail::current_time();
 	std::stringstream stream;
-	stream << month_map(time.tm_mon) << ((time.tm_mday < 10)? "  " : " " ) << time.tm_mday
-	       << " " << time.tm_hour << ":" << time.tm_min << ":" << ((time.tm_sec < 10) ? "0" : "")
-	       << time.tm_sec << " " << host_ << " ";
+	stream << month_map(time.tm_mon) << ((time.tm_mday < 10)? "  " : " ") << time.tm_mday
+		<< " " << time.tm_hour << ":" << time.tm_min << ":" << ((time.tm_sec < 10) ? "0" : "")
+		<< time.tm_sec << " " << host_ << " ";
 
 	const std::string& header = stream.str();
-	std::vector<boost::asio::const_buffer> segments;
-	segments.emplace_back(priority.data(), priority.size());
-	segments.emplace_back(header.data(), header.size());
-	segments.emplace_back(tag_.data(), tag_.size());
-	segments.emplace_back(": ", 2);
-	segments.emplace_back(record.data(), record.size());
+	const std::array<boost::asio::const_buffer, 5> segments {{
+		{ priority.data(), priority.size() },
+		{ header.data(), header.size() },
+		{ tag_.data(), tag_.size() },
+		{": ", 2},
+		{ record.data(), record.size() }
+	}};
 
-	boost::system::error_code err; //ignoring any send errors
+	boost::system::error_code err; // ignoring any send errors
 	socket_.send(segments, 0, err);
 }
 
