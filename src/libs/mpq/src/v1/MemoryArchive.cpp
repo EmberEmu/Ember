@@ -131,7 +131,7 @@ std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
 }
 
 const Header* MemoryArchive::header() const {
-	return std::bit_cast<const Header*, const std::byte*>(buffer_.data());
+	return std::bit_cast<const Header*>(buffer_.data());
 }
 
 std::size_t MemoryArchive::size() const {
