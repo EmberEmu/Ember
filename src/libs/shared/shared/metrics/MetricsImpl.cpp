@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -67,9 +67,10 @@ void MetricsImpl::set(const char* key, std::intmax_t value) {
 }
 
 void MetricsImpl::send(std::string message) {
-	auto datagram = std::make_shared<std::string>(std::move(message));
-	socket_.async_send(boost::asio::buffer(*datagram),
-		[datagram](const boost::system::error_code&, std::size_t) { });
+	auto datagram = std::make_unique<std::string>(std::move(message));
+	auto buffer = boost::asio::buffer(*datagram);
+	socket_.async_send(buffer,
+		[dg = std::move(datagram)](const boost::system::error_code&, std::size_t) { });
 }
 
 } // ember
