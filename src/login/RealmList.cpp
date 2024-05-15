@@ -11,11 +11,11 @@
 
 namespace ember {
 
-RealmList::RealmList(std::vector<Realm>&& realms) : realms_(std::make_shared<RealmMap>()) {
-	add_realm(std::move(realms));
+RealmList::RealmList(std::span<const Realm> realms) : realms_(std::make_shared<RealmMap>()) {
+	add_realm(realms);
 }
 
-void RealmList::add_realm(std::vector<Realm> realms) {
+void RealmList::add_realm(std::span<const Realm> realms) {
 	// ensure consistency if we add from multiple workers (not a thread safety issue)
 	std::lock_guard<std::mutex> guard(lock_);
 
@@ -23,7 +23,7 @@ void RealmList::add_realm(std::vector<Realm> realms) {
 	auto copy = std::make_shared<RealmMap>(*realm_map);
 	
 	for(auto& realm : realms) {
-		(*copy)[realm.id] = std::move(realm);
+		(*copy)[realm.id] = realm;
 	}
 
 	realms_ = copy;
