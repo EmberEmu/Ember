@@ -43,8 +43,8 @@ void RealmList::add_realm(Realm realm) {
 std::optional<Realm> RealmList::get_realm(const std::uint32_t id) const {
 	auto realms = realms_.load();
 
-	if(realms->contains(id)) {
-		return realms->at(id);
+	if(auto it = realms->find(id); it != realms->end()) {
+		return it->second;
 	} else {
 		return std::nullopt;
 	}

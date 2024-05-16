@@ -109,7 +109,7 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 
 	std::optional<Realm> realm = realms_.get_realm(it->second);
 	assert(realm);
-	realm->flags = realm->flags | Realm::Flags::OFFLINE;
+	realm->flags |= Realm::Flags::OFFLINE;
 	realms_.add_realm(*realm);
 
 	LOG_INFO(logger_) << "Set gateway for " << realm->name <<  " to offline" << LOG_ASYNC;
