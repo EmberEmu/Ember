@@ -9,6 +9,8 @@
 #pragma once
 
 #include <shared/util/UTF8String.h>
+#include <algorithm>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,9 +41,10 @@ public:
 	     bool survey_request, bool subscriber)
          : id_(id), user_(std::move(username)), s_(std::move(salt)), v_(std::move(verifier)),
 	       pin_(pin), pin_method_(pin_method), totp_token_(std::move(totp_token)),
-	       survey_request_(survey_request), subscriber_(subscriber) {
-		banned_ = banned;
-		suspended_ = suspended;
+	       survey_request_(survey_request), subscriber_(subscriber), banned_(banned),
+	       suspended_(suspended) {
+		// Usernames aren't required to be uppercase in the DB but the client requires it for SRP6 calculations
+		std::transform(user_.begin(), user_.end(), user_.begin(), ::toupper);
 	}
 
 	std::uint32_t id() const {
@@ -64,7 +67,7 @@ public:
 		return v_;
 	}
 
-	const std::vector<std::uint8_t>& salt() const {
+	const std::span<const std::uint8_t> salt() const {
 		return s_;
 	}
 
