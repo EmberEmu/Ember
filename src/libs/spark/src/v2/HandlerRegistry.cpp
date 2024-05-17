@@ -14,11 +14,13 @@ namespace ember::spark::v2 {
 void HandlerRegistry::deregister_service(Handler* service) {
 	std::lock_guard<std::mutex> guard(mutex_);
 	
-	if(!services_.contains(service->type())) {
+	auto it = services_.find(service->type());
+
+	if(it == services_.end()) {
 		return;
 	}
 
-	auto& handlers = services_.at(service->type());
+	auto& [_, handlers] = *it;
 
 	for(auto i = handlers.begin(); i != handlers.end(); ++i) {
 		if(*i == service) {
@@ -56,11 +58,13 @@ Handler* HandlerRegistry::service(const std::string& name) const {
 Handler* HandlerRegistry::service(const std::string& name, const std::string& type) const {
 	std::lock_guard<std::mutex> guard(mutex_);
 
-	if(!services_.contains(type)) {
+	auto it = services_.find(type);
+
+	if(it == services_.end()) {
 		return nullptr;
 	}
 
-	auto& services = services_.at(type);
+	auto& [_, services] = *it;
 
 	for(auto& service : services) {
 		if(service->name() == name) {

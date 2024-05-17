@@ -79,11 +79,15 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 			break; // terminate search, found the path we care about
 		}
 
-		if(!adjacency_.contains(next.from)) {
+		auto it = adjacency_.find(next.from);
+
+		if(it == adjacency_.end()) {
 			continue; // no adjacent nodes
 		}
 
-		for(auto& e : adjacency_.at(next.from)) {
+		auto& [_, edges] = *it;
+
+		for(auto& e : edges) {
 			if(distance.at(next.from) + e.filesize < distance.at(e.build_to)) {
 				distance[e.build_to] = distance.at(next.from) + e.filesize;
 				prev[e.build_to] = next;

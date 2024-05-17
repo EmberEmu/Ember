@@ -61,6 +61,7 @@ private:
 	void execute_source(Source& source, Severity severity, const LogCallback& log,
 	                    std::chrono::seconds& last_tick);
 	std::string generate_message() const;
+	bool has_severity(Severity sev) const;
 	void shutdown();
 
 public:

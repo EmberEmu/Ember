@@ -151,7 +151,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 			bool write_field = false;
 			std::string type;
 
-			if(!type_map.contains(components.first)) {
+			if(auto it = type_map.find(components.first); it == type_map.end()) {
 				auto t = locate_type(*dbc, components.first);
 
 				if(!t) {
@@ -160,7 +160,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 				
 				type = *t + ":: " + components.first;
 			} else {
-				type = type_map.at(components.first).first;
+				type = it->first;
 			}
 
 			if(array) {

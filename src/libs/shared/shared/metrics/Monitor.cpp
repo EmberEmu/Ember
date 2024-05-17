@@ -97,16 +97,20 @@ void Monitor::execute_source(Source& source, Severity severity, const LogCallbac
 	}
 }
 
+bool Monitor::has_severity(const Severity sev) const {
+	auto it = counters_.find(sev);
+	return it != counters_.end() && it->second;
+}
+
 std::string Monitor::generate_message() const {
 	std::lock_guard<std::mutex> guard(source_lock_);
 	std::stringstream message;
 
 	message << "Status: ";
 
-	if((counters_.contains(Severity::FATAL) && counters_.at(Severity::FATAL))
-	   || (counters_.contains(Severity::ERROR) && counters_.at(Severity::ERROR))) {
+	if(has_severity(Severity::FATAL) || has_severity(Severity::ERROR)) {
 		message << "ERROR; ";
-	} else if(counters_.at(Severity::WARN) && counters_.at(Severity::WARN)) {
+	} else if(has_severity(Severity::WARN)) {
 		message << "WARNING; ";
 	} else {
 		message << "OK; ";
