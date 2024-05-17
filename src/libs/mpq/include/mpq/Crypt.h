@@ -19,8 +19,7 @@
 
 namespace ember::mpq {
 
-// generated at compile-time
-static constexpr auto crypt_table() { 
+[[nodiscard]] static consteval auto crypt_table() {
     std::array<std::uint32_t, 1280> table{};
     std::uint32_t seed = 0x00100001;
 
