@@ -38,7 +38,7 @@ Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
 	                                   A, B, user_.salt());
 }
 
-srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) {
+srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) const {
 	return srp_.session_key(A);
 }
 

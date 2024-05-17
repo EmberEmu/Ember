@@ -41,7 +41,7 @@ class LoginAuthenticator final {
 	};
 
 	User user_;
-	srp6::Server srp_;
+	mutable srp6::Server srp_;
 	srp6::Generator gen_ { srp6::Generator::Group::_256_BIT };
 
 public:
@@ -49,7 +49,7 @@ public:
 	ChallengeResponse challenge_reply() const;
 	Botan::BigInt server_proof(const srp6::SessionKey& key, const Botan::BigInt& M1) const;
 	Botan::BigInt expected_proof(const srp6::SessionKey& key, const Botan::BigInt& A) const;
-	srp6::SessionKey session_key(const Botan::BigInt& A);
+	srp6::SessionKey session_key(const Botan::BigInt& A) const;
 };
 
 } // ember
