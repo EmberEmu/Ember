@@ -41,7 +41,7 @@ class LoginAuthenticator final {
 	};
 
 	User user_;
-	mutable srp6::Server srp_;
+	srp6::Server srp_;
 	srp6::Generator gen_ { srp6::Generator::Group::_256_BIT };
 
 public:

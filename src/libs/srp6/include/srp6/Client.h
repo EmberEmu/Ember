@@ -21,9 +21,9 @@ namespace ember::srp6 {
 
 class Client final {
 	const Generator gen_;
-	const Botan::BigInt v_, a_;
-	Botan::BigInt A_, k_{ 3 };
-	std::string identifier_, password_;
+	const Botan::BigInt v_, a_, A_;
+	Botan::BigInt k_{ 3 };
+	const std::string identifier_, password_;
 
 public:
 	Client(std::string identifier, std::string password, Generator gen, std::size_t key_size = 32,
@@ -34,10 +34,12 @@ public:
 	SessionKey session_key(const Botan::BigInt& B,
 	                       std::span<const std::uint8_t> salt,
 	                       Compliance mode = Compliance::GAME,
-	                       bool interleave_override = false);
+	                       bool interleave_override = false) const;
 
-	Botan::BigInt generate_proof(const SessionKey& key, const Botan::BigInt& B,
+	Botan::BigInt generate_proof(const SessionKey& key,
+	                             const Botan::BigInt& B,
 	                             std::span<std::uint8_t> salt) const;
+
 	inline const Botan::BigInt& public_ephemeral() const { return A_; }
 };
 

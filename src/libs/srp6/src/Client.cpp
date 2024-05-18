@@ -25,17 +25,18 @@ Client::Client(std::string identifier, std::string password, Generator gen, std:
                  BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(), srp6a) { }
 
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
-               : identifier_(std::move(identifier)), password_(std::move(password)),
-                 gen_(std::move(gen)), a_(a) {
-	A_ = gen_(a_) /* % N */;
-
+               : identifier_(std::move(identifier)),
+                 password_(std::move(password)),
+                 gen_(std::move(gen)),
+                 a_(a),
+                 A_(gen_(a_)) /* % N */ {
 	if(srp6a) {
 		k_ = std::move(detail::compute_k(gen_.generator(), gen_.prime()));
 	}
 }
 
 SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> salt, 
-                               Compliance mode, bool interleave_override) {
+                               Compliance mode, bool interleave_override) const {
 	bool interleave = (mode == Compliance::GAME);
 	
 	if(interleave_override) {
