@@ -88,10 +88,13 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	//k = H(N, PAD(g)) in SRP6a
+	std::array<std::uint8_t, SHA1_LEN> hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	hasher->update(Botan::BigInt::encode(N));
 	hasher->update(Botan::BigInt::encode_1363(g, N.bytes()));
-	return Botan::BigInt::decode(hasher->final());
+	hasher->final(hash.data());
+	return Botan::BigInt::decode(hash.data(), hash.size());
 }
 
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
