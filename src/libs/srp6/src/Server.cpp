@@ -53,7 +53,8 @@ SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave
 	}
 }
 
-BigInt Server::generate_proof(const SessionKey& key, const Botan::BigInt& A, const BigInt& client_proof) const {
+BigInt Server::generate_proof(const SessionKey& key, const Botan::BigInt& A,
+                              const BigInt& client_proof) const {
 	return generate_server_proof(A, client_proof, key, N_.bytes());
 }
 

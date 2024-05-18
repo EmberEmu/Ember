@@ -7,11 +7,8 @@
  */
 
 #include "Authenticator.h"
-#include "grunt/client/ReconnectProof.h"
 #include <logger/Logging.h>
-#include <srp6/Server.h>
-#include <srp6/Client.h>
-#include <shared/database/daos/UserDAO.h>
+#include <srp6/Util.h>
 #include <botan/hash.h>
 #include <utility>
 
@@ -43,9 +40,11 @@ srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) const {
 	return srp_.session_key(A);
 }
 
-ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username, const Botan::BigInt& session_key,
+ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
+                                               const Botan::BigInt& session_key,
                                                const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt)
-                                               : username_(std::move(username)), salt_(salt) {
+                                               : username_(std::move(username)),
+                                                 salt_(salt) {
 	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
 }
 
@@ -56,7 +55,7 @@ bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
 	hasher->update(salt.data(), salt.size());
 	hasher->update(salt_.data(), salt_.size());
 	hasher->update(sess_key_.t.data(), sess_key_.t.size());
-	auto res = hasher->final();
+	const auto res = hasher->final();
 	return std::equal(res.begin(), res.end(), proof.begin(), proof.end());
 }
 
