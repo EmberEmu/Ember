@@ -15,8 +15,8 @@ namespace ember::mpq {
 
 // This is ported from StormLib, credits to Ladislav Zezula
 // Original source: SBaseCommon.cpp (MIT licensed)
-std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
-                                         const std::uint32_t sector_size) {
+constexpr std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
+                                                   const std::uint32_t sector_size) {
 	constexpr auto table = crypt_table();
 	std::uint32_t expected = sectors.size_bytes();
 

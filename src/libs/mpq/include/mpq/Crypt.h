@@ -36,7 +36,7 @@ namespace ember::mpq {
     return table;
 }
 
-static void decrypt_block(std::span<std::byte> buffer, std::uint32_t key) {
+static constexpr void decrypt_block(std::span<std::byte> buffer, std::uint32_t key) {
 	constexpr auto table = crypt_table();
 	std::uint32_t seed = 0xEEEEEEEE;
 	std::span<std::uint32_t> cast_block { 
@@ -52,7 +52,7 @@ static void decrypt_block(std::span<std::byte> buffer, std::uint32_t key) {
 	}
 }
 
-static std::uint32_t hash_string(std::string_view key, std::uint32_t type) {
+static constexpr std::uint32_t hash_string(std::string_view key, std::uint32_t type) {
 	constexpr auto table = crypt_table();
 	std::uint32_t seed1 = 0x7FED7FED;
 	std::uint32_t seed2 = 0xEEEEEEEE;

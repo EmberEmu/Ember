@@ -15,7 +15,7 @@
 
 namespace ember::mpq {
 
-std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
-                                         std::uint32_t block_size);
+constexpr std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t> sectors,
+                                                   std::uint32_t block_size);
 
 } // mpq, ember

@@ -21,7 +21,7 @@ class Sink;
 
 template<std::size_t n>
 struct FormatLiteral {
-	constexpr FormatLiteral(const char (&fmt)[n]) {
+	consteval FormatLiteral(const char (&fmt)[n]) {
 		std::copy_n(fmt, n, value);
 	}
 
