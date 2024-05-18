@@ -29,7 +29,7 @@ Server::Server(const Generator& gen, BigInt v, std::size_t key_size, bool srp6a)
                : Server(gen, std::move(v), BigInt(rng, key_size * 8) % gen.prime(),
                  srp6a) { }
 
-SessionKey Server::session_key(BigInt A, Compliance mode, bool interleave_override) {
+SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave_override) {
 	bool interleave = (mode == Compliance::GAME);
 	
 	if(interleave_override) {
@@ -42,7 +42,6 @@ SessionKey Server::session_key(BigInt A, Compliance mode, bool interleave_overri
 
 	BigInt u = detail::scrambler(A, B_, N_.bytes(), mode);
 	BigInt S = power_mod(A * power_mod(v_, u, N_), b_, N_);
-	A_ = std::move(A);
 
 	if(interleave) {
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N_.bytes())));
@@ -54,8 +53,8 @@ SessionKey Server::session_key(BigInt A, Compliance mode, bool interleave_overri
 	}
 }
 
-BigInt Server::generate_proof(const SessionKey& key, const BigInt& client_proof) const {
-	return generate_server_proof(A_, client_proof, key, N_.bytes());
+BigInt Server::generate_proof(const SessionKey& key, const Botan::BigInt& A, const BigInt& client_proof) const {
+	return generate_server_proof(A, client_proof, key, N_.bytes());
 }
 
 } //srp6, ember

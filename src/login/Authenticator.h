@@ -47,7 +47,8 @@ class LoginAuthenticator final {
 public:
 	explicit LoginAuthenticator(User user);
 	ChallengeResponse challenge_reply() const;
-	Botan::BigInt server_proof(const srp6::SessionKey& key, const Botan::BigInt& M1) const;
+	Botan::BigInt server_proof(const srp6::SessionKey& key, const Botan::BigInt& A,
+	                           const Botan::BigInt& M1) const;
 	Botan::BigInt expected_proof(const srp6::SessionKey& key, const Botan::BigInt& A) const;
 	srp6::SessionKey session_key(const Botan::BigInt& A) const;
 };

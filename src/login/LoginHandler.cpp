@@ -414,7 +414,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 
 	if(result == grunt::Result::SUCCESS) {
 		state_ = State::WRITING_SESSION;
-		server_proof_ = authenticator->server_proof(key, proof_packet.M1);
+		server_proof_ = authenticator->server_proof(key, proof_packet.A, proof_packet.M1);
 
 		auto action = std::make_shared<RegisterSessionAction>(
 			acct_svc_, user_->id(),

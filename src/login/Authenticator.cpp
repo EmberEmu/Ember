@@ -27,8 +27,9 @@ auto LoginAuthenticator::challenge_reply() const -> ChallengeResponse {
 }
 
 Botan::BigInt LoginAuthenticator::server_proof(const srp6::SessionKey& key,
+                                               const Botan::BigInt& A,
                                                const Botan::BigInt& M1) const {
-	return srp_.generate_proof(key, M1);
+	return srp_.generate_proof(key, A, M1);
 }
 
 Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
