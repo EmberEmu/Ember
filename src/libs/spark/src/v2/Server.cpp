@@ -60,14 +60,14 @@ ba::awaitable<void> Server::accept_connection() {
 		co_return;
 	}
 
+	const auto ep = socket.remote_endpoint(ec);
+
 	if(ec) {
 		LOG_DEBUG(logger_)
 			<< "[spark] Unable to obtain endpoint, remote peer disconnected"
 			<< LOG_ASYNC;
 		co_return;
 	}
-
-	const auto ep = socket.remote_endpoint();
 
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Accepted connection "
