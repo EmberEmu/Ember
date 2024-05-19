@@ -21,6 +21,7 @@
 #include <shared/database/daos/UserDAO.h>
 #include <botan/bigint.h>
 #include <botan/secmem.h>
+#include <array>
 #include <fstream>
 #include <functional>
 #include <memory>
@@ -30,7 +31,6 @@
 #include <unordered_map>
 #include <utility>
 #include <variant>
-#include <vector>
 
 namespace ember {
 
