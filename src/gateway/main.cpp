@@ -15,23 +15,23 @@
 #include "CharacterService.h"
 #include "RealmService.h"
 #include "NetworkListener.h"
-#include <spark/Spark.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
+#include <dbcreader/DBCReader.h>
 #include <logger/Logging.h>
+#include <spark/Spark.h>
 #include <shared/Banner.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/Version.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
-#include <stun/Client.h>
-#include <stun/Utility.h>
-#include <dbcreader/DBCReader.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>
 #include <shared/util/xoroshiro128plus.h>
+#include <stun/Client.h>
+#include <stun/Utility.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <botan/auto_rng.h>
@@ -44,7 +44,7 @@
 #include <string_view>
 #include <stdexcept>
 
-const char* APP_NAME = "Realm Gateway";
+const std::string_view APP_NAME = "Realm Gateway";
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -155,10 +155,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	
 	// Validate category & region
 	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
-
-	LOG_INFO(logger) << "Serving as gateway for " << realm->name
-	                 << " (" << cat_name << ")" << LOG_SYNC;
-
+	LOG_INFO_FMT_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
 	util::set_window_title(std::string(APP_NAME) + " - " + realm->name);
 
 	// Set config
@@ -175,7 +172,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	// Start ASIO service pool
-	LOG_INFO(logger) << "Starting service pool with " << concurrency << " threads..." << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "Starting service pool with {} threads", concurrency);
 	ServicePool service_pool(concurrency);
 
 	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
@@ -192,8 +189,9 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	auto& service = service_pool.get_service();
 
 	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger);
-	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                                  mcast_port, logger);
+	spark::ServiceDiscovery discovery(
+		service, s_address, s_port, mcast_iface, mcast_group, mcast_port, logger
+	);
 
 	const auto port = args["network.port"].as<std::uint16_t>();
 
@@ -225,7 +223,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "Starting network service on {}:{}", interface, port);
 
 	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
@@ -233,18 +231,18 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(wait_svc, SIGINT, SIGTERM);
 
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_DEBUG(logger) << "Received signal " << signal << LOG_SYNC;
+		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
 	});
 
 	service.dispatch([&, logger]() {
 		realm_svc.set_online();
-		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+		LOG_INFO_FMT_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
 	service_pool.run();
 	wait_svc.run();
 
-	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "{} shutting down...", APP_NAME);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;

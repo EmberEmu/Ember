@@ -11,7 +11,6 @@
 #include <spark/buffers/Buffer.h>
 #include <gsl/gsl_util>
 #include <botan/bigint.h>
-#include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <array>
 #include <span>
@@ -31,7 +30,7 @@ class PacketCrypto final {
 	std::uint8_t recv_j_ = 0;
 
 public:
-	explicit PacketCrypto(const std::span<std::uint8_t>& key) {
+	explicit PacketCrypto(std::span<const std::uint8_t> key) {
 		key_.assign(key.begin(), key.end());
 	}
 
@@ -42,8 +41,6 @@ public:
 
 	template<typename T>
 	void encrypt(T& data) {
-		BOOST_ASSERT_MSG(!key_.empty(), "Session key empty when encrypting");
-
 		auto d_bytes = reinterpret_cast<std::uint8_t*>(&data);
 		const auto key_size = gsl::narrow_cast<std::uint8_t>(key_.size());
 	
@@ -57,8 +54,6 @@ public:
 
 	template<typename BufferType>
 	void decrypt(BufferType& data, const std::size_t length) {
-		BOOST_ASSERT_MSG(!key_.empty(), "Session key empty when decrypting");
-
 		const auto key_size = gsl::narrow_cast<std::uint8_t>(key_.size());
 
 		for(std::size_t t = 0; t < length; ++t) {

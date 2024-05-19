@@ -90,7 +90,7 @@ public:
 
 	void start();
 
-	void set_key(const std::span<std::uint8_t>& key);
+	void set_key(std::span<const std::uint8_t> key);
 	void compression_level(unsigned int level);
 	void latency(std::size_t latency);
 
