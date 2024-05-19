@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <spark/buffers/Buffer.h>
 #include <gsl/gsl_util>
 #include <botan/bigint.h>
+#include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <array>
 #include <span>
@@ -32,9 +33,19 @@ class PacketCrypto final {
 public:
 	explicit PacketCrypto(std::span<const std::uint8_t> key) {
 		key_.assign(key.begin(), key.end());
+
+		BOOST_ASSERT_MSG(
+			key.size() <= std::numeric_limits<std::uint8_t>::max(),
+			"Session key too big"
+		);
 	}
 
 	explicit PacketCrypto(const Botan::BigInt& key) {
+		BOOST_ASSERT_MSG(
+			key.bytes() <= std::numeric_limits<std::uint8_t>::max(),
+			"Session key too big"
+		);
+
 		key_.resize(key.bytes());
 		key.binary_encode(key_.data(), key_.size());
 	}
