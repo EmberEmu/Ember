@@ -22,7 +22,7 @@
 namespace ember {
 
 class PacketCrypto final {
-	static constexpr auto KEY_SIZE_HINT = 32;
+	static constexpr auto KEY_SIZE_HINT = 32u;
 
 	boost::container::small_vector<std::uint8_t, KEY_SIZE_HINT> key_;
 	std::uint8_t send_i_ = 0;

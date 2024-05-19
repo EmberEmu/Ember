@@ -155,7 +155,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	// Encode the key without requiring an allocation
-	static constexpr auto key_size_hint = 32;
+	static constexpr auto key_size_hint = 32u;
 	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(key.bytes());
 	key.binary_encode(k_bytes.data(), k_bytes.size());
 
@@ -180,7 +180,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 		return;
 	}
 
-	ctx.connection->set_key({ k_bytes.data(), k_bytes.size() });
+	ctx.connection->set_key(k_bytes);
 	ctx.client_id = { auth_ctx.account_id, packet->username };
 
 	 // todo, allowing for multiple gateways to connect to a single world server
