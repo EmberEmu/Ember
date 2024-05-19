@@ -34,7 +34,7 @@ std::array<std::uint8_t, 16> generate_md5(const std::string& file) {
 	auto remaining = std::filesystem::file_size(file);
 	std::array<std::uint8_t, 16> res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	BOOST_ASSERT_MSG(hasher->output_length() == result.size(), "Bad hash size");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	std::size_t block_size = hasher->hash_block_size();
 	std::vector<char> buffer(block_size);
 

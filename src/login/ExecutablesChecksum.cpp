@@ -17,7 +17,7 @@ std::array<std::uint8_t, 20> checksum(std::span<const std::uint8_t> seed,
                                    std::span<const std::byte> buffer) {
 	std::array<std::uint8_t, 20> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
-	BOOST_ASSERT_MSG(hasher->output_length() == result.size(), "Bad hash size");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hmac->set_key(seed.data(), seed.size());
 	hmac->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
 	hmac->final(res.data());
@@ -28,7 +28,7 @@ std::array<std::uint8_t, 20> finalise(std::span<const std::uint8_t> checksum,
                                       std::span<const std::uint8_t> client_seed) {
 	std::array<std::uint8_t, 20> res;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	BOOST_ASSERT_MSG(hasher->output_length() == result.size(), "Bad hash size");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(client_seed.data(), client_seed.size_bytes());
 	hasher->update(checksum.data(), checksum.size_bytes());
 	hasher->final(res.data());
