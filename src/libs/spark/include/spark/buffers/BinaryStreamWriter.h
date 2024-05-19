@@ -87,6 +87,7 @@ public:
 	void fill(const std::uint8_t value) {
 		const auto filled = generate_filled<size>(value);
 		buffer_.write(filled.data(), filled.size());
+		total_write_ += size;
 	}
 
 	/**  Misc functions **/ 

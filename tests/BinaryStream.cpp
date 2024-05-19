@@ -7,6 +7,7 @@
  */
 
 #include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
@@ -208,4 +209,18 @@ TEST(BinaryStream, GetPut) {
 	ASSERT_EQ(stream.total_read(), out.size());
 	ASSERT_EQ(stream.total_write(), in.size());
 	ASSERT_EQ(in, out);
+}
+
+TEST(BinaryStream, Fill) {
+	std::vector<std::uint8_t> buffer;
+	spark::BufferAdaptor adaptor(buffer);
+	spark::BinaryStream stream(adaptor);
+	stream.fill<30>(128);
+	ASSERT_EQ(buffer.size(), 30);
+	ASSERT_EQ(stream.total_write(), 30);
+	stream.fill<2>(128);
+	ASSERT_EQ(buffer.size(), 32);
+	ASSERT_EQ(stream.total_write(), 32);
+	auto it = std::find_if(buffer.begin(), buffer.end(),  [](auto i) { return i != 128; });
+	ASSERT_EQ(it, buffer.end());
 }
