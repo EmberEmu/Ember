@@ -25,11 +25,11 @@ Header read_header(std::span<const std::uint8_t> buffer);
 std::size_t attribute_offset(std::span<const std::uint8_t> buffer, Attributes attr);
 std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete);
 
-std::array<std::uint8_t, 16> msg_integrity(std::span<const std::uint8_t> buffer,
+std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
                                            std::string_view password,
                                            bool complete);
 
-std::array<std::uint8_t, 16> msg_integrity(std::span<const std::uint8_t> buffer,
+std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
                                            std::span<const std::uint8_t> username,
                                            std::string_view realm,
                                            std::string_view password,
