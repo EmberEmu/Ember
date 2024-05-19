@@ -16,8 +16,8 @@
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <boost/endian/conversion.hpp>
+#include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
-#include <vector>
 #include <cstdint>
 #include <cstddef>
 
@@ -27,6 +27,7 @@ namespace be = boost::endian;
 
 class RealmList final : public Packet {
 	static const std::size_t WIRE_LENGTH = 3; // header size 
+	static const std::size_t DEFAULT_REALMS = 10u;
 
 	State state_ = State::INITIAL;
 	be::little_uint16_t size = 0;
@@ -84,7 +85,7 @@ public:
 	RealmList() : Packet(Opcode::CMD_REALM_LIST) {}
 
 	be::little_uint32_t unknown = 0; // appears to be ignored in public clients
-	std::vector<RealmListEntry> realms;
+	boost::container::small_vector<RealmListEntry, DEFAULT_REALMS> realms;
 	be::little_uint16_t unknown2 = 5; // appears to be ignored in public clients
 
 	State read_from_stream(spark::BinaryStream& stream) override {

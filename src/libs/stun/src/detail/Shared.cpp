@@ -116,7 +116,7 @@ std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
 
 	std::array<std::uint8_t, 20> sha1_res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
-	BOOST_ASSERT_MSG(hasher->output_length() == sha1_res.size(), "Bad hash size");
+	BOOST_ASSERT_MSG(hmac->output_length() == sha1_res.size(), "Bad hash size");
 	hmac->set_key(md5_res.data(), md5_res.size());
 
 	if(fp_offset) {

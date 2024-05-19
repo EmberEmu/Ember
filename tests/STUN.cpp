@@ -262,7 +262,7 @@ TEST(STUNVectors, Builder_MessageIntegrity) {
 
 TEST(STUNVectors, Builder_MessageIntegrityFull) {
 	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
-	std::vector<std::uint8_t> username { 0x63, 0x68, 0x61, 0x6F, 0x73, 0x76, 0x65, 0x78 };
+	std::array<std::uint8_t, 8> username { 0x63, 0x68, 0x61, 0x6F, 0x73, 0x76, 0x65, 0x78 };
 	const auto buffer = builder.final(username, "lightshope.org", "bAhzJk!/kM");
 
 	stun::Parser parser(buffer, stun::RFC5780);

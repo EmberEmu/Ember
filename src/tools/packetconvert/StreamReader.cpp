@@ -8,6 +8,7 @@
 
 #include "StreamReader.h"
 #include <boost/endian/conversion.hpp>
+#include <boost/container/small_vector.hpp>
 #include <thread>
 
 namespace ember {
@@ -28,7 +29,7 @@ void StreamReader::add_sink(std::unique_ptr<Sink> sink) {
 void StreamReader::process() {
 	ReadState state { ReadState::SIZE };
 	std::optional<fblog::Type> type;
-	std::vector<std::uint8_t> buffer;
+	boost::container::small_vector<std::uint8_t, 256> buffer;
 
 	while(stream_ || stream_size_ != in_.tellg()) {
 		if(state == ReadState::SIZE) {
@@ -94,7 +95,7 @@ std::optional<T> StreamReader::try_read(std::ifstream& file) {
 	}
 }
 
-bool StreamReader::try_read(std::ifstream& file, std::vector<std::uint8_t>& buffer) {
+bool StreamReader::try_read(std::ifstream& file, std::span<std::uint8_t> buffer) {
 	const auto pos = file.tellg();
 
 	file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
