@@ -11,6 +11,7 @@
 #include <stun/detail/Shared.h>
 #include <shared/util/FNVHash.h>
 #include <gsl/gsl>
+#include <algorithm>
 #include <random>
 
 namespace ember::stun {
@@ -57,13 +58,9 @@ void MessageBuilder::generate_tx_id(Header& header) {
 	std::mt19937 mt(rd());
 
 	if(header.cookie == MAGIC_COOKIE) {
-		for(auto& ele : header.tx_id.id_5389) {
-			ele = mt();
-		}
+		std::generate(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end(), mt);
 	} else {
-		for(auto& ele : header.tx_id.id_3489) {
-			ele = mt();
-		}
+		std::generate(header.tx_id.id_3489.begin(), header.tx_id.id_3489.end(), mt);
 	}
 }
 
