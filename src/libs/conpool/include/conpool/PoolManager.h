@@ -49,7 +49,7 @@ class PoolManager final {
 			pool_->driver_.close(conn.conn);
 		} catch(const std::exception& e) { 
 			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::WARN, "Connection close, driver threw: "s + e.what());
+				pool_->log_cb_(Severity::ERROR, "Connection close, driver threw: "s + e.what());
 			}
 		}
 			
@@ -67,7 +67,7 @@ class PoolManager final {
 			conn.error = true;
 
 			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::WARN, "Connection keep-alive, driver threw: "s + e.what());
+				pool_->log_cb_(Severity::ERROR, "Connection keep-alive, driver threw: "s + e.what());
 			}
 		}
 
@@ -92,7 +92,7 @@ class PoolManager final {
 				guard.unlock();
 
 				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::WARN, "Failed to refill connection pool: "s + e.what());
+					pool_->log_cb_(Severity::ERROR, "Failed to refill connection pool: "s + e.what());
 				}
 			}
 		}

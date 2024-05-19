@@ -196,7 +196,7 @@ public:
 				driver_.close(c.conn);
 			} catch(const std::exception& e) { 
 				if(log_cb_) {
-					log_cb_(Severity::WARN, "Closing pool, driver threw: "s + e.what());
+					log_cb_(Severity::ERROR, "Closing pool, driver threw: "s + e.what());
 				}
 			}
 		}
