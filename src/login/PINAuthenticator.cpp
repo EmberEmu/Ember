@@ -9,6 +9,7 @@
 #include "PINAuthenticator.h"
 #include <shared/util/xoroshiro128plus.h>
 #include <shared/util/base32.h>
+#include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <botan/hash.h>
 #include <botan/mac.h>
@@ -160,7 +161,9 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 	const auto now = std::chrono::time_point_cast<std::chrono::seconds>(time).time_since_epoch().count();
 	auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
+	HashBytes hmac_result;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
+	BOOST_ASSERT_MSG(hmac->output_length() == hmac_result.size(), "Bad hash size");
 	hmac->set_key(decoded_key.data(), key_size);
 
 	if constexpr(std::endian::native == std::endian::little) {
@@ -169,7 +172,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret, int
 		hmac->update_le(step);
 	}
 
-	const auto& hmac_result = hmac->final();
+	hmac->final(hmac_result.data());
 
 	unsigned int offset = hmac_result[19] & 0xF;
 	std::uint32_t pin = (hmac_result[offset] & 0x7f) << 24 | (hmac_result[offset + 1] & 0xff) << 16

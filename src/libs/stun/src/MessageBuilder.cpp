@@ -12,6 +12,7 @@
 #include <shared/util/FNVHash.h>
 #include <gsl/gsl>
 #include <random>
+
 namespace ember::stun {
 
 using namespace detail;
@@ -134,7 +135,7 @@ void MessageBuilder::add_fingerprint() {
 	stream_ << be::big_uint32_t(fp);
 }
 
-void MessageBuilder::add_message_integrity(const std::vector<std::uint8_t>& hash) {
+void MessageBuilder::add_message_integrity(std::span<const std::uint8_t> hash) {
 	stream_ << attr_be(Attributes::MESSAGE_INTEGRITY);
 	stream_ << len_be(hash.size());
 	stream_.put(hash.begin(), hash.end());

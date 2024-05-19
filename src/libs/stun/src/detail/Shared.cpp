@@ -12,6 +12,7 @@
 #include <spark/buffers/BufferAdaptor.h>
 #include <spark/buffers/BinaryStream.h>
 #include <shared/util/FNVHash.h>
+#include <boost/assert.hpp>
 #include <boost/endian.hpp>
 #include <botan/hash.h>
 #include <botan/mac.h>
@@ -77,19 +78,21 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 		offset = attribute_offset(buffer, Attributes::FINGERPRINT);
 	}
 
+	std::array<std::uint8_t, 4> res;
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad checksum size");
 	crc_func->update(buffer.data(), offset);
-	const auto vec = crc_func->final();
-	const std::uint32_t crc32 = Botan::BigInt::decode(vec.data(), vec.size()).to_u32bit();
+	crc_func->final(res.data());
+	const std::uint32_t crc32 = Botan::BigInt::decode(res.data(), res.size()).to_u32bit();
 	return crc32 ^ 0x5354554e;
 }
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
-std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
-                                        std::span<const std::uint8_t> username,
-                                        std::string_view realm,
-                                        std::string_view password,
-                                        bool complete) {
+std::array<std::uint8_t, 16> msg_integrity(std::span<const std::uint8_t> buffer,
+                                           std::span<const std::uint8_t> username,
+                                           std::string_view realm,
+                                           std::string_view password,
+                                           bool complete) {
 	auto msgi_offset = buffer.size_bytes();
 	std::size_t fp_offset = 0;
 
@@ -104,7 +107,9 @@ std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
 	}
 
 	const std::string concat = std::format(":{}:{}", realm, password);
+	std::array<std::uint8_t, 16> res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(username.data(), username.size_bytes());
 	hasher->update(reinterpret_cast<const std::uint8_t*>(concat.data()), concat.size());
 	const auto md5 = hasher->final_stdvec();
@@ -117,13 +122,14 @@ std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
 		hmac->update(buffer.data(), msgi_offset);
 	}
 
-	return hmac->final_stdvec();
+	hmac->final(res.data());
+	return res;
 }
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
-std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
-                                        std::string_view password,
-                                        bool complete) {
+std::array<std::uint8_t, 16> msg_integrity(std::span<const std::uint8_t> buffer,
+                                           std::string_view password,
+                                           bool complete) {
 	auto msgi_offset = buffer.size_bytes();
 	std::size_t fp_offset = 0;
 
@@ -137,8 +143,9 @@ std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
 		}
 	}
 
-
+	std::array<std::uint8_t, 16> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hmac->set_key(reinterpret_cast<const std::uint8_t*>(password.data()), password.size());
 
 	if(fp_offset) {
@@ -147,7 +154,8 @@ std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> buffer,
 		hmac->update(buffer.data(), msgi_offset);
 	}
 
-	return hmac->final_stdvec();
+	hmac->final(res.data());
+	return res;
 }
 
 bool magic_cookie_present(std::span<const std::uint8_t> buffer) {

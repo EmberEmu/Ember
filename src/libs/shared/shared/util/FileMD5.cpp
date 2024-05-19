@@ -12,17 +12,19 @@
 #include <boost/assert.hpp>
 #include <filesystem>
 #include <fstream>
-#include <vector>
 
 namespace ember::util {
 
-std::vector<std::uint8_t> generate_md5(std::span<const std::byte> buffer) {
+std::array<std::uint8_t, 16> generate_md5(std::span<const std::byte> buffer) {
+	std::array<std::uint8_t, 16> res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
+	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
-	return hasher->final_stdvec();
+	hasher->final(res.data());
+	return res;
 }
 
-std::vector<std::uint8_t> generate_md5(const std::string& file) {
+std::array<std::uint8_t, 16> generate_md5(const std::string& file) {
 	std::ifstream stream(file, std::ios::in | std::ios::binary);
 
 	if(!stream) {
@@ -30,7 +32,9 @@ std::vector<std::uint8_t> generate_md5(const std::string& file) {
 	}
 
 	auto remaining = std::filesystem::file_size(file);
+	std::array<std::uint8_t, 16> res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
+	BOOST_ASSERT_MSG(hasher->output_length() == result.size(), "Bad hash size");
 	std::size_t block_size = hasher->hash_block_size();
 	std::vector<char> buffer(block_size);
 
@@ -45,7 +49,8 @@ std::vector<std::uint8_t> generate_md5(const std::string& file) {
 		}
 	}
 
-	return hasher->final_stdvec();
+	hasher->final(res.data());
+	return res;
 }
 
 } // util, ember

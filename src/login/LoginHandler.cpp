@@ -363,11 +363,11 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 		return false;
 	}
 
-	std::vector<std::uint8_t> hash;
+	constexpr static int SHA1_LENGTH{ 20 }; // it's finally somewhere else
+	std::array<std::uint8_t, SHA1_LENGTH> hash{};
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		constexpr static int SHA1_LENGTH{ 20 }; // it's finally somewhere else
 		std::array<std::uint8_t, SHA1_LENGTH> checksum{}; // all-zero hash
 		hash = client_integrity::finalise(checksum, salt);
 	} else {

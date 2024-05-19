@@ -9,6 +9,7 @@
 #include "Authenticator.h"
 #include <logger/Logging.h>
 #include <srp6/Util.h>
+#include <boost/assert.hpp>
 #include <botan/hash.h>
 #include <utility>
 
@@ -50,12 +51,14 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
 
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
                                          std::span<const std::uint8_t> proof) const {
+	std::array<std::uint8_t, 20> res;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	BOOST_ASSERT_MSG(hasher->output_length() == result.size(), "Bad hash size");
 	hasher->update(username_);
 	hasher->update(salt.data(), salt.size());
 	hasher->update(salt_.data(), salt_.size());
 	hasher->update(sess_key_.t.data(), sess_key_.t.size());
-	const auto res = hasher->final();
+	hasher->final(res.data());
 	return std::equal(res.begin(), res.end(), proof.begin(), proof.end());
 }
 

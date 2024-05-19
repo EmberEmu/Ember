@@ -6,15 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <array>
 #include <span>
 #include <string>
-#include <vector>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::util {
 
-std::vector<std::uint8_t> generate_md5(std::span<const std::byte> data);
-std::vector<std::uint8_t> generate_md5(const std::string& file);
+std::array<std::uint8_t, 16> generate_md5(std::span<const std::byte> data);
+std::array<std::uint8_t, 16> generate_md5(const std::string& file);
 
 } // util, ember

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <botan/secmem.h>
+#include <array>
 #include <span>
 #include <vector>
 #include <cstdint>
@@ -16,9 +17,9 @@
 
 namespace ember::client_integrity {
 
-std::vector<std::uint8_t> checksum(std::span<const std::uint8_t> seed,
-                                   std::span<const std::byte> buffer);
-std::vector<std::uint8_t> finalise(std::span<const std::uint8_t> checksum,
-                                   std::span<const std::uint8_t> seed);
+std::array<std::uint8_t, 20> checksum(std::span<const std::uint8_t> seed,
+                                      std::span<const std::byte> buffer);
+std::array<std::uint8_t, 20> finalise(std::span<const std::uint8_t> checksum,
+                                      std::span<const std::uint8_t> seed);
 
 } // client_integrity, ember

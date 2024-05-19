@@ -15,10 +15,11 @@
 #include <stun/Exception.h>
 #include <spark/buffers/BinaryStreamReader.h>
 #include <boost/endian.hpp>
-#include <cstddef>
 #include <optional>
+#include <array>
 #include <span>
 #include <vector>
+#include <cstddef>
 
 namespace Botan {
 	class MessageAuthenticationCode;
@@ -61,11 +62,11 @@ public:
 	Header header();
 	std::vector<attributes::Attribute> attributes();
 	std::uint32_t fingerprint() const;
-	std::vector<std::uint8_t> msg_integrity(std::string_view password) const;
+	std::array<std::uint8_t, 16> msg_integrity(std::string_view password) const;
 
-	std::vector<std::uint8_t> msg_integrity(std::span<const std::uint8_t> username,
-	                                        std::string_view realm,
-	                                        std::string_view password) const;
+	std::array<std::uint8_t, 16> msg_integrity(std::span<const std::uint8_t> username,
+	                                           std::string_view realm,
+	                                           std::string_view password) const;
 };
 
 #include <stun/Parser.inl>

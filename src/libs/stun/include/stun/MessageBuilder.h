@@ -36,7 +36,7 @@ class MessageBuilder final {
 	void set_header_length(std::uint16_t length);
 
 	void add_fingerprint();
-	void add_message_integrity(const std::vector<std::uint8_t>& hash);
+	void add_message_integrity(std::span<const std::uint8_t> hash);
 
 	template<typename T>
 	void add_textual(Attributes attr, std::span<const T> value);
