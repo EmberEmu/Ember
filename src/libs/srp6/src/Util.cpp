@@ -25,8 +25,7 @@ Botan::BigInt decode_flip(std::span<std::uint8_t> val) {
 }
 
 SmallVec encode_flip(const Botan::BigInt& val) {
-	SmallVec res;
-	res.resize(val.bytes());
+	SmallVec res(val.bytes());
 	val.binary_encode(res.data(), res.size());
 	std::reverse(res.begin(), res.end());
 	return res;
