@@ -80,7 +80,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 
 	std::array<std::uint8_t, 4> res;
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
-	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad checksum size");
+	BOOST_ASSERT_MSG(crc_func->output_length() == res.size(), "Bad checksum size");
 	crc_func->update(buffer.data(), offset);
 	crc_func->final(res.data());
 	const std::uint32_t crc32 = Botan::BigInt::decode(res.data(), res.size()).to_u32bit();
