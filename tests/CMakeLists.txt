@@ -26,6 +26,7 @@ set(EXECUTABLE_SRC
 	IntegrityData.cpp
 	PatchGraph.cpp
     MPQ.cpp
+	BinaryStreamV2.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
