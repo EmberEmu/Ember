@@ -24,7 +24,7 @@ void ClientConnection::parse_header(AdaptorInType& buffer) {
 		return;
 	}
 
-	if(crypt_) {
+	if(crypt_) [[likely]] {
 		crypt_->decrypt(buffer, protocol::ClientHeader::WIRE_SIZE);
 	}
 
