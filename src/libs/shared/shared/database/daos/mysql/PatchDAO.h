@@ -67,9 +67,8 @@ public:
 			auto md5 = res->getString("MD5");
 			Botan::BigInt md5_int(reinterpret_cast<const std::uint8_t*>(md5.c_str()), md5.length(),
 			                      Botan::BigInt::Base::Hexadecimal);
-			auto md5_enc = Botan::BigInt::encode_1363(md5_int, meta.file_meta.md5.size());
-			std::copy(md5_enc.begin(), md5_enc.end(), reinterpret_cast<std::uint8_t*>(meta.file_meta.md5.data()));
-
+			Botan::BigInt::encode_1363(reinterpret_cast<std::uint8_t*>(meta.file_meta.md5.data()),
+			                           meta.file_meta.md5.size(), md5_int);
 			patches.emplace_back(std::move(meta));
 		}
 

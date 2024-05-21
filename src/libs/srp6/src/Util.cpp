@@ -69,10 +69,13 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	std::array<std::uint8_t, SHA1_LEN> hash_out;
+	SmallVec vec(padding);
 
 	if(mode == Compliance::RFC5054) {
-		hasher->update(Botan::BigInt::encode_1363(A, padding));
-		hasher->update(Botan::BigInt::encode_1363(B, padding));
+		Botan::BigInt::encode_1363(vec.data(), vec.size(), A);
+		hasher->update(vec.data(), vec.size());
+		Botan::BigInt::encode_1363(vec.data(), vec.size(), B);
+		hasher->update(vec.data(), vec.size());
 		hasher->final(hash_out.data());
 		return Botan::BigInt::decode(hash_out.data(), hash_out.size());
 	} else {

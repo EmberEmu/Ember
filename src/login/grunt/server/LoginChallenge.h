@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -132,21 +132,21 @@ public:
 			return; // don't send the rest of the fields
 		}
 		
-		Botan::secure_vector<std::uint8_t> bytes = Botan::BigInt::encode_1363(B, PUB_KEY_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.data(), bytes.size());
+		std::array<std::uint8_t, PUB_KEY_LENGTH> bytes{};
+		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), B);
+		stream.put(bytes.rbegin(), bytes.rend());
 
 		stream << g_len;
 		stream << g;
 		stream << n_len;
 
-		bytes = Botan::BigInt::encode_1363(N, PRIME_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.data(), bytes.size());
+		static_assert(bytes.size() == PRIME_LENGTH);
+		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), N);
+		stream.put(bytes.rbegin(), bytes.rend());
 
-		bytes = Botan::BigInt::encode_1363(s, SALT_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.data(), bytes.size());
+		static_assert(bytes.size() == SALT_LENGTH);
+		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), s);
+		stream.put(bytes.rbegin(), bytes.rend());
 
 		stream.put(checksum_salt.data(), checksum_salt.size());
 		stream << two_factor_auth;

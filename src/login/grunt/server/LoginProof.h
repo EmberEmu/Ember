@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
+#include <array>
 #include <cstdint>
 #include <cstddef>
 
@@ -92,9 +93,9 @@ public:
 			return;
 		}
 
-		Botan::secure_vector<std::uint8_t> bytes = Botan::BigInt::encode_1363(M2, PROOF_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.data(), bytes.size());
+		std::array<std::uint8_t, PROOF_LENGTH> bytes{};
+		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), M2);
+		stream.put(bytes.rbegin(), bytes.rend());
 		stream << survey_id;
 	
 	}

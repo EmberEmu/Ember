@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -166,13 +166,13 @@ public:
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
 
-		auto bytes = Botan::BigInt::encode_1363(A, A_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.data(), bytes.size());
+		std::array<std::uint8_t, A_LENGTH> a_bytes;
+		Botan::BigInt::encode_1363(a_bytes.data(), a_bytes.size(), A);
+		stream.put(a_bytes.rbegin(), a_bytes.rend());
 
-		bytes = Botan::BigInt::encode_1363(M1, M1_LENGTH);
-		std::reverse(std::begin(bytes), std::end(bytes));
-		stream.put(bytes.data(), bytes.size());
+		std::array<std::uint8_t, M1_LENGTH> m1_bytes;
+		Botan::BigInt::encode_1363(m1_bytes.data(), m1_bytes.size(), M1);
+		stream.put(m1_bytes.rbegin(), m1_bytes.rend());
 
 		stream.put(client_checksum.data(), client_checksum.size());
 
