@@ -184,8 +184,9 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 }
 
 std::vector<std::uint8_t> generate_salt(const std::size_t len) {
-	const auto rng = Botan::AutoSeeded_RNG().random_vec(len);
-	return { rng.begin(), rng.end() };
+	std::vector<std::uint8_t> entropy(len);
+	Botan::AutoSeeded_RNG().randomize(entropy.data(), entropy.size());
+	return entropy;
 }
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,

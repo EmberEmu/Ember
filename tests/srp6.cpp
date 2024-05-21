@@ -24,7 +24,7 @@ public:
 		identifier_ = "CHAOSVEX";
 		password_ = "ABC";
 		gen_ = std::make_unique<srp::Generator>(srp::Generator::Group::_256_BIT);
-		salt_ = srp::generate_salt(32);
+		salt_ = srp::generate_salt<32>();
 		verifier_ = srp::generate_verifier(identifier_, password_, *gen_, salt_, srp::Compliance::GAME);
 		server_ = std::make_unique<srp::Server>(*gen_, verifier_);
 		client_ = std::make_unique<srp::Client>(identifier_, password_, *gen_);
@@ -34,7 +34,7 @@ public:
 
 	std::string identifier_, password_;
 	Botan::BigInt verifier_;
-	std::vector<std::uint8_t> salt_;
+	std::array<std::uint8_t, 32> salt_;
 	std::unique_ptr<srp::Generator> gen_;
 	std::unique_ptr<srp::Server> server_;
 	std::unique_ptr<srp::Client> client_;

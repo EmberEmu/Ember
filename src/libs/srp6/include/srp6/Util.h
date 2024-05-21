@@ -47,13 +47,20 @@ inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& 
 }
 
 inline Botan::BigInt generate(const std::string& identifier, const std::string& password,
-                              const Generator& gen, std::span<const std::uint8_t>& salt,
+                              const Generator& gen, std::span<const std::uint8_t> salt,
                               Compliance mode) {
 	Botan::BigInt x = compute_x(identifier, password, salt, mode);
 	return compute_v(gen, x);
 }
 
 } //detail
+
+template<std::size_t buf_size>
+auto generate_salt() {
+	std::array<std::uint8_t, buf_size> entropy{};
+	Botan::AutoSeeded_RNG().randomize(entropy.data(), entropy.size());
+	return entropy;
+}
 
 std::vector<std::uint8_t> generate_salt(std::size_t len);
 

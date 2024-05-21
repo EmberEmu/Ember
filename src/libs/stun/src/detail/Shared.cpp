@@ -14,8 +14,8 @@
 #include <shared/util/FNVHash.h>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
-#include <botan/loadstor.h>
 #include <botan/hash.h>
+#include <botan/loadstor.h>
 #include <botan/mac.h>
 #include <botan/bigint.h>
 #include <format>

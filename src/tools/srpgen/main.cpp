@@ -40,7 +40,7 @@ void launch(const po::variables_map& args) {
 	std::transform(password.begin(), password.end(), password.begin(), ::toupper);
 
 	auto gen = srp6::Generator(srp6::Generator::Group::_256_BIT);
-	auto salt = srp6::generate_salt(32);
+	auto salt = srp6::generate_salt<32>();
 	auto verifier = srp6::generate_verifier(username, password, gen, salt, srp6::Compliance::GAME);
 
 	std::cout << "Username: " << username << "\n";
