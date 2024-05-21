@@ -12,6 +12,7 @@
 #include "grunt/Packets.h"
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
+#include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
 #include <stdexcept>
 #include <utility>
@@ -340,14 +341,17 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) {
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
-                                             const Botan::BigInt& salt, bool reconnect) {
-	auto encoded = Botan::BigInt::encode(salt);
-	std::reverse(encoded.begin(), encoded.end());
-	return validate_client_integrity(hash, encoded, reconnect);
+                                             const Botan::BigInt& salt,
+                                             bool reconnect) {
+	constexpr auto expected_len = 32u;
+	boost::container::small_vector<std::uint8_t, expected_len> bytes(salt.bytes());
+	Botan::BigInt::encode(bytes.data(), salt);
+	std::reverse(bytes.begin(), bytes.end());
+	return validate_client_integrity(hash, bytes, reconnect);
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
-                                             const std::span<uint8_t> salt,
+                                             std::span<const uint8_t> salt,
                                              bool reconnect) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 

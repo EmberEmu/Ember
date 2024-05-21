@@ -112,7 +112,7 @@ class LoginHandler final {
 								   const Botan::BigInt& client_salt, bool reconnect);
 
 	bool validate_client_integrity(std::span<const std::uint8_t> client_hash,
-	                               std::span<std::uint8_t> client_salt, bool reconnect);
+	                               std::span<const std::uint8_t> client_salt, bool reconnect);
 
 	void fetch_user(grunt::Opcode opcode, const utf8_string& username);
 	void fetch_session_key(const FetchUserAction& action);
