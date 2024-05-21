@@ -125,12 +125,6 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	}
 }
 
-SessionKey to_key(const Botan::BigInt value) {
-	KeyType key(40);
-	value.binary_encode(key.data(), key.size());
-	return SessionKey(key);
-}
-
 } //detail
 
 Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,

@@ -40,7 +40,6 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);
 Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
                         std::span<const std::uint8_t> salt, Compliance mode);
-SessionKey to_key(const Botan::BigInt value);
 
 inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& x) {
 	return generator(x);
