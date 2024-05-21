@@ -14,6 +14,7 @@
 #include <shared/util/FNVHash.h>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
+#include <botan/loadstor.h>
 #include <botan/hash.h>
 #include <botan/mac.h>
 #include <botan/bigint.h>
@@ -83,7 +84,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 	BOOST_ASSERT_MSG(crc_func->output_length() == res.size(), "Bad checksum size");
 	crc_func->update(buffer.data(), offset);
 	crc_func->final(res.data());
-	const std::uint32_t crc32 = Botan::BigInt::decode(res.data(), res.size()).to_u32bit();
+	const auto crc32 = Botan::make_uint32(res[0], res[1], res[2], res[3]);
 	return crc32 ^ 0x5354554e;
 }
 
