@@ -42,7 +42,7 @@ class RealmQueue final {
 		}
 	};
 
-	static constexpr std::chrono::milliseconds DEFAULT_FREQUENCY { 250 };
+	static constexpr auto DEFAULT_FREQUENCY { 250ms };
 	const std::chrono::milliseconds frequency_;
 
 	boost::asio::steady_timer timer_;
