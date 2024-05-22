@@ -14,7 +14,6 @@
 #include <utility>
 
 using Botan::BigInt;
-using Botan::secure_vector;
 using Botan::power_mod;
 using Botan::AutoSeeded_RNG;
 

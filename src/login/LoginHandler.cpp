@@ -372,7 +372,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		std::array<std::uint8_t, SHA1_LENGTH> checksum{}; // all-zero hash
+		constexpr std::array<std::uint8_t, SHA1_LENGTH> checksum{}; // all-zero hash
 		hash = client_integrity::finalise(checksum, salt);
 	} else {
 		const auto& checksum = client_integrity::checksum(checksum_salt_, *data);
@@ -555,7 +555,6 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 			} else {
 				response.realms.emplace_back(realm, 0);
 			}
-
 		}
 	}
 

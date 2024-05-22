@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2014 Ember
+/*
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,8 +24,8 @@ struct Generator {
 	Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g_(g), N_(N) {}
 	explicit Generator(Group group);
 
-	inline Botan::BigInt prime() const { return N_; }
-	inline Botan::BigInt generator() const { return g_; }
+	inline const Botan::BigInt& prime() const { return N_; }
+	inline const Botan::BigInt& generator() const { return g_; }
 	inline Botan::BigInt operator()(const Botan::BigInt& x) const {
 		return Botan::power_mod(g_, x, N_);
 	}
