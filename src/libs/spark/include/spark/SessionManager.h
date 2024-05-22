@@ -10,7 +10,7 @@
 
 #include <memory>
 #include <mutex>
-#include <set>
+#include <unordered_set>
 #include <cstddef>
 
 namespace ember::spark::inline v1 {
@@ -18,7 +18,7 @@ namespace ember::spark::inline v1 {
 class NetworkSession;
 
 class SessionManager final {
-	std::set<std::shared_ptr<NetworkSession>> sessions_;
+	std::unordered_set<std::shared_ptr<NetworkSession>> sessions_;
 	std::mutex sessions_lock_;
 
 public:

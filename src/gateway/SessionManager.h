@@ -10,7 +10,7 @@
 
 #include <memory>
 #include <mutex>
-#include <set>
+#include <unordered_set>
 #include <cstddef>
 
 namespace ember {
@@ -19,7 +19,7 @@ class ClientConnection;
 struct ConnectionStats;
 
 class SessionManager final {
-	std::set<std::unique_ptr<ClientConnection>> sessions_;
+	std::unordered_set<std::unique_ptr<ClientConnection>> sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:

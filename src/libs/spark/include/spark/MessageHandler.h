@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,7 @@
 #include <spark/Link.h>
 #include <spark/ServicesMap.h>
 #include <logger/Logging.h>
-#include <set>
+#include <unordered_set>
 #include <cstdint>
 
 namespace ember::spark::inline v1 {
@@ -31,7 +31,7 @@ class MessageHandler {
 	const EventDispatcher& dispatcher_;
 	ServicesMap& services_;
 	log::Logger* logger_;
-	std::set<std::int32_t> matches_;
+	std::unordered_set<std::int32_t> matches_;
 	bool initiator_;
 
 	void dispatch_message(const Message& message);
