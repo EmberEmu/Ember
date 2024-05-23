@@ -49,9 +49,9 @@ class LoginHandler final {
 	using CharacterCount = std::unordered_map<std::uint32_t, std::uint32_t>;
 
 	using StateContainer = std::variant<
-		std::unique_ptr<LoginAuthenticator>,
-		std::unique_ptr<ReconnectAuthenticator>,
-		CharacterCount
+		CharacterCount,
+		LoginAuthenticator,
+		ReconnectAuthenticator
 	>;
 
 	enum class State {

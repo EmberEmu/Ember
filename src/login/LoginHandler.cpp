@@ -204,8 +204,8 @@ void LoginHandler::reject_client(const GameVersion& version) {
 void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto& authenticator = std::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
-	const auto& values = authenticator->challenge_reply();
+	const auto& authenticator = std::get<LoginAuthenticator>(state_data_);
+	const auto& values = authenticator.challenge_reply();
 	packet.B = values.B;
 	packet.g_len = gsl::narrow<std::uint8_t>(values.gen.generator().bytes());
 	packet.g = gsl::narrow<std::uint8_t>(values.gen.generator().to_u32bit());
@@ -232,7 +232,7 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 
 	try {
 		if((user_ = action.get_result())) {
-			state_data_ = std::make_unique<LoginAuthenticator>(*user_);
+			state_data_.emplace<LoginAuthenticator>(*user_);
 			build_login_challenge(response);
 			state_ = State::LOGIN_PROOF;
 		} else {
@@ -286,7 +286,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 
 	if(status == messaging::account::Status::OK) {
 		state_ = State::RECONNECT_PROOF;
-		state_data_ = std::make_unique<ReconnectAuthenticator>(user_->username(), key, checksum_salt_);
+		state_data_.emplace<ReconnectAuthenticator>(user_->username(), key, checksum_salt_);
 	} else if(status == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response.result = grunt::Result::FAIL_NOACCESS;
@@ -397,9 +397,9 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 		return;
 	}
 
-	const auto& authenticator = std::get<std::unique_ptr<LoginAuthenticator>>(state_data_);
-	const auto key = authenticator->session_key(proof_packet.A);
-	auto proof = authenticator->expected_proof(key, proof_packet.A);
+	const auto& authenticator = std::get<LoginAuthenticator>(state_data_);
+	const auto key = authenticator.session_key(proof_packet.A);
+	auto proof = authenticator.expected_proof(key, proof_packet.A);
 	auto result = grunt::Result::FAIL_INCORRECT_PASSWORD;
 	
 	if(proof_packet.M1 == proof) {
@@ -418,11 +418,11 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 
 	if(result == grunt::Result::SUCCESS) {
 		state_ = State::WRITING_SESSION;
-		server_proof_ = authenticator->server_proof(key, proof_packet.A, proof_packet.M1);
+		server_proof_ = authenticator.server_proof(key, proof_packet.A, proof_packet.M1);
 
 		auto action = std::make_shared<RegisterSessionAction>(
 			acct_svc_, user_->id(),
-			authenticator->session_key(proof_packet.A)
+			authenticator.session_key(proof_packet.A)
 		);
 
 		execute_async(action);
@@ -517,9 +517,9 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 		return;
 	}
 
-	const auto& authenticator = std::get<std::unique_ptr<ReconnectAuthenticator>>(state_data_);
+	const auto& authenticator = std::get<ReconnectAuthenticator>(state_data_);
 
-	if(authenticator->proof_check(reconn_proof.salt, reconn_proof.proof)) {
+	if(authenticator.proof_check(reconn_proof.salt, reconn_proof.proof)) {
 		state_ = State::FETCHING_CHARACTER_DATA;
 		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
