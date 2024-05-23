@@ -13,8 +13,9 @@
 #include "Authenticator.h"
 #include "IntegrityData.h"
 #include "GameVersion.h"
-#include "RealmList.h"
+#include "LoginState.h"
 #include "PINAuthenticator.h"
+#include "RealmList.h"
 #include "grunt/Packets.h"
 #include "grunt/Handler.h"
 #include <logger/Logging.h>
@@ -54,16 +55,7 @@ class LoginHandler final {
 		ReconnectAuthenticator
 	>;
 
-	enum class State {
-		INITIAL_CHALLENGE, LOGIN_PROOF, RECONNECT_PROOF, REQUEST_REALMS,
-		SURVEY_INITIATE, SURVEY_TRANSFER, SURVEY_RESULT, 
-		PATCH_INITIATE, PATCH_TRANSFER, 
-		FETCHING_USER_LOGIN, FETCHING_USER_RECONNECT, FETCHING_SESSION,
-		FETCHING_CHARACTER_DATA,
-		WRITING_SESSION, WRITING_SURVEY,
-		CLOSED
-	} state_ = State::INITIAL_CHALLENGE;
-
+	LoginState state_ { LoginState::INITIAL_CHALLENGE };
 	Metrics& metrics_;
 	log::Logger* logger_;
 	const Patcher& patcher_;
@@ -71,7 +63,7 @@ class LoginHandler final {
 	const dal::UserDAO& user_src_;
 	std::optional<User> user_;
 	Botan::BigInt server_proof_;
-	const std::string source_;
+	const std::string source_ip_;
 	const AccountService& acct_svc_;
 	const IntegrityData* exe_data_;
 	StateContainer state_data_;
@@ -105,14 +97,16 @@ class LoginHandler final {
 	void transfer_chunk();
 	void set_transfer_offset(const grunt::Packet& packet);
 
-	bool validate_pin(const grunt::client::LoginProof& packet);
-	bool validate_protocol_version(const grunt::client::LoginChallenge& challenge);
+	bool validate_pin(const grunt::client::LoginProof& packet) const;
+	bool validate_protocol_version(const grunt::client::LoginChallenge& challenge) const;
 
 	bool validate_client_integrity(std::span<const std::uint8_t> client_hash,
-								   const Botan::BigInt& client_salt, bool reconnect);
+								   const Botan::BigInt& client_salt,
+	                               bool reconnect) const;
 
 	bool validate_client_integrity(std::span<const std::uint8_t> client_hash,
-	                               std::span<const std::uint8_t> client_salt, bool reconnect);
+	                               std::span<const std::uint8_t> client_salt,
+	                               bool reconnect) const;
 
 	void fetch_user(grunt::Opcode opcode, const utf8_string& username);
 	void fetch_session_key(const FetchUserAction& action);
@@ -133,7 +127,7 @@ public:
 	             const IntegrityData* exe_data, log::Logger* logger, const RealmList& realm_list,
 	             std::string source, Metrics& metrics, bool locale_enforce)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
-	               realm_list_(realm_list), source_(std::move(source)), metrics_(metrics),
+	               realm_list_(realm_list), source_ip_(std::move(source)), metrics_(metrics),
 	               exe_data_(exe_data), transfer_state_{}, locale_enforce_(locale_enforce) { }
 };
 

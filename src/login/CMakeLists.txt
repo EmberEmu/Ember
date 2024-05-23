@@ -56,6 +56,7 @@ set(LIBRARY_HDR
     PatchGraph.h
     IntegrityData.h
     LocaleMap.h
+	LoginState.h
     )
 
 set(LIBRARY_SRC
