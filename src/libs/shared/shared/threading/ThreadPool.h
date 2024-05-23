@@ -14,6 +14,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 #include <cstddef>
 
@@ -39,11 +40,11 @@ public:
 	~ThreadPool();
 
 	template<typename T>
-	void run(T work) {
+	void run(T&& work) {
 #ifdef DEBUG_NO_THREADS
 		work();
 #else
-		service_.post(work);
+		service_.post(std::move(work));
 #endif
 	}
 
