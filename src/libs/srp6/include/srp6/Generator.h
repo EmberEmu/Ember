@@ -10,6 +10,7 @@
 
 #include <botan/bigint.h>
 #include <botan/numthry.h>
+#include <utility>
 
 namespace ember::srp6 {
 
@@ -21,7 +22,8 @@ struct Generator {
 		_6144_BIT, _8192_BIT
 	};
 
-	Generator(const Botan::BigInt& g, const Botan::BigInt& N) : g_(g), N_(N) {}
+	Generator(Botan::BigInt g, Botan::BigInt N)
+		: g_(std::move(g)), N_(std::move(N)) {}
 	explicit Generator(Group group);
 
 	inline const Botan::BigInt& prime() const { return N_; }
