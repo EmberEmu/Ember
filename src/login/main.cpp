@@ -17,6 +17,7 @@
 #include "NetworkListener.h"
 #include "Patcher.h"
 #include "RealmList.h"
+#include "Survey.h"
 #include <logger/Logging.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -156,13 +157,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	);
 
 	Patcher patcher(allowed_clients, patches);
+	Survey survey;
 
-	if(args["survey.enabled"].as<bool>()) {
+	if(auto id = args["survey.id"].as<std::uint32_t>(); id) {
 		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
-		patcher.set_survey(
-			args["survey.path"].as<std::string>(),
-			args["survey.id"].as<std::uint32_t>()
-		);
+		
+		survey = Survey(id);
+		survey.add_data(grunt::Platform::x86, grunt::System::Win,
+		                args["survey.path"].as<std::string>());
 	}
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
@@ -208,8 +210,8 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	// Start login server
-	LoginHandlerBuilder builder(logger, patcher, exe_data.get(), *user_dao, acct_svc,
-	                            realm_list, *metrics, args["locale.enforce"].as<bool>());
+	LoginHandlerBuilder builder(logger, patcher, survey, exe_data.get(), *user_dao,
+	                            acct_svc, realm_list, *metrics, args["locale.enforce"].as<bool>());
 	LoginSessionBuilder s_builder(builder, thread_pool);
 
 	const auto& interface = args["network.interface"].as<std::string>();
@@ -311,7 +313,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	config_opts.add_options()
 		("locale.enforce", po::value<bool>()->required())
 		("patches.bin_path", po::value<std::string>()->required())
-		("survey.enabled", po::value<bool>()->default_value(false))
 		("survey.path", po::value<std::string>()->required())
 		("survey.id", po::value<std::uint32_t>()->required())
 		("integrity.enabled", po::value<bool>()->default_value(false))

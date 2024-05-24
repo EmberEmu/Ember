@@ -7,9 +7,8 @@ enforce = false
 bin_path = ""  # path to patch files
 
 [survey]
-enabled = 0
-id = 0         # should be bumped for each new survey
-path = Survey.mpq  # path to survey MPQ file
+id = 0            # 0 = disabled, should be bumped for each new survey
+path = Survey.mpq # path to survey MPQ file
 
 [integrity]
 enabled = 0    # validate the client's integrity

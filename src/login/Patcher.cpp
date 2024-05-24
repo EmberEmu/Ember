@@ -19,8 +19,7 @@
 namespace ember {
 
 Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches)
-                 : versions_(std::move(versions)), patches_(std::move(patches)),
-                   survey_id_(0) {
+                 : versions_(std::move(versions)), patches_(std::move(patches)) {
 	FNVHash hasher;
 
 	for(auto& patch : patches_) {
@@ -146,53 +145,6 @@ auto Patcher::check_version(const GameVersion& client_version) const -> PatchLev
 	}
 
 	return PatchLevel::TOO_NEW;
-}
-
-void Patcher::set_survey(const std::string& path, const std::uint32_t id) {
-	survey_.name = "Survey";
-	survey_id_ = id;
-	
-	std::ifstream file(path, std::ios::binary);
-
-	if(!file) {
-		throw std::runtime_error("Error opening " + path);
-	}
-
-	survey_.size = std::filesystem::file_size(path);
-
-	std::vector<std::byte> buffer(static_cast<std::size_t>(survey_.size));
-	file.read(reinterpret_cast<char*>(buffer.data()), survey_.size);
-
-	if(!file.good()) {
-		throw std::runtime_error("An error occured while reading " + path);
-	}
-
-	const auto md5 = util::generate_md5(buffer);
-	const auto md5_bytes = std::as_bytes(std::span(md5));
-	assert(md5_bytes.size() == survey_.md5.size());
-	std::copy(md5_bytes.begin(), md5_bytes.end(), survey_.md5.data());
-	survey_data_ = std::move(buffer);
-}
-
-FileMeta Patcher::survey_meta() const {
-	return survey_;
-}
-
-// todo, only supports x86 Windows for the time being
-bool Patcher::survey_platform(grunt::Platform platform, grunt::System os) const {
-	if(platform != grunt::Platform::x86 || os != grunt::System::Win) {
-		return false;
-	}
-
-	return !survey_data(platform, os).empty();
-}
-
-std::span<const std::byte> Patcher::survey_data(grunt::Platform platform, grunt::System os) const {
-	return survey_data_;
-}
-
-std::uint32_t Patcher::survey_id() const {
-	return survey_id_;
 }
 
 std::vector<PatchMeta> Patcher::load_patches(const std::string& path,

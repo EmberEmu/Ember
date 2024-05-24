@@ -21,6 +21,7 @@ class RealmList;
 class Metrics;
 class AccountService;
 class IntegrityData;
+class Survey;
 
 class LoginHandlerBuilder final {
 	log::Logger* logger_;
@@ -28,21 +29,23 @@ class LoginHandlerBuilder final {
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_dao_;
 	const AccountService& acct_svc_;
+	const Survey& survey_;
 	const IntegrityData* exe_data_;
 	Metrics& metrics_;
 	bool locale_enforce_;
 
 public:
-	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const IntegrityData* exe_data,
-	                    const dal::UserDAO& user_dao, const AccountService& acct_svc,
-	                    const RealmList& realm_list, Metrics& metrics, bool locale_enforce)
-	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao), acct_svc_(acct_svc),
-	                      realm_list_(realm_list), metrics_(metrics), exe_data_(exe_data),
-	                      locale_enforce_(locale_enforce) {}
+	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const Survey& survey,
+	                    const IntegrityData* exe_data, const dal::UserDAO& user_dao,
+	                    const AccountService& acct_svc, const RealmList& realm_list,
+	                    Metrics& metrics, bool locale_enforce)
+	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao),
+	                      acct_svc_(acct_svc), realm_list_(realm_list), metrics_(metrics),
+	                      survey_(survey), exe_data_(exe_data), locale_enforce_(locale_enforce) {}
 
 	LoginHandler create(std::string source) const {
-		return { user_dao_, acct_svc_, patcher_, exe_data_, logger_, realm_list_, std::move(source),
-		         metrics_, locale_enforce_ };
+		return { user_dao_, acct_svc_, patcher_, exe_data_, survey_, logger_, realm_list_,
+		         std::move(source), metrics_, locale_enforce_ };
 	}
 };
 

@@ -57,6 +57,7 @@ set(LIBRARY_HDR
     IntegrityData.h
     LocaleMap.h
 	LoginState.h
+	Survey.h
     )
 
 set(LIBRARY_SRC
@@ -74,6 +75,7 @@ set(LIBRARY_SRC
     PatchGraph.cpp
     IntegrityData.cpp
     LocaleMap.cpp
+	Survey.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

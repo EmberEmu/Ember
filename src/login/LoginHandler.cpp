@@ -7,8 +7,9 @@
  */
 
 #include "LoginHandler.h"
-#include "Patcher.h"
 #include "LocaleMap.h"
+#include "Patcher.h"
+#include "Survey.h"
 #include "grunt/Packets.h"
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
@@ -440,7 +441,7 @@ void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
 	if(result == grunt::Result::SUCCESS) {
 		metrics_.increment("login_success");
 		response.M2 = server_proof_;
-		response.survey_id = survey? patcher_.survey_id() : 0;
+		response.survey_id = survey? survey_.id() : 0;
 	} else {
 		metrics_.increment("login_failure");
 	}
@@ -470,7 +471,8 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 		return;
 	}
 	
-	if(user_->survey_request() && patcher_.survey_platform(challenge_.platform, challenge_.os)) {
+	if(user_->survey_request() && survey_.id()
+	   && survey_.data(challenge_.platform, challenge_.os)) {
 		state_ = LoginState::SURVEY_INITIATE;
 	}
 
@@ -478,7 +480,7 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 
 	if(state_ == LoginState::SURVEY_INITIATE) {
 		LOG_DEBUG(logger_) << "Initiating survey transfer..." << LOG_ASYNC;
-		initiate_file_transfer(patcher_.survey_meta());
+		initiate_file_transfer(survey_.meta(challenge_.platform, challenge_.os));
 	}
 }
 
@@ -618,7 +620,7 @@ void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 	// allow the client to request the realmlist without waiting on the survey write callback
 	state_ = LoginState::REQUEST_REALMS;
 
-	if(survey.survey_id != patcher_.survey_id()) {
+	if(survey.survey_id != survey_.id()) {
 		LOG_DEBUG(logger_) << "Received an invalid survey ID from "
 		                   << user_->username() << LOG_ASYNC;
 		return;
@@ -697,7 +699,7 @@ void LoginHandler::transfer_chunk() {
 	response.size = read_size;
 
 	if(state_ == LoginState::SURVEY_TRANSFER) {
-		auto survey_mpq = patcher_.survey_data(challenge_.platform, challenge_.os).begin();
+		auto survey_mpq = survey_.data(challenge_.platform, challenge_.os)->begin();
 		survey_mpq += gsl::narrow<int>(transfer_state_.offset);
 		std::copy(survey_mpq, survey_mpq + read_size, response.chunk.data());
 	} else {

@@ -38,6 +38,7 @@ namespace ember {
 struct FileMeta;
 class Patcher;
 class Metrics;
+class Survey;
 
 struct TransferState {
 	std::ifstream file;
@@ -66,6 +67,7 @@ class LoginHandler final {
 	const std::string source_ip_;
 	const AccountService& acct_svc_;
 	const IntegrityData* exe_data_;
+	const Survey& survey_;
 	StateContainer state_data_;
 	std::array<std::uint8_t, CHECKSUM_SALT_LEN> checksum_salt_;
 	PINAuthenticator::SaltBytes pin_salt_;
@@ -124,11 +126,12 @@ public:
 	void on_chunk_complete();
 
 	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
-	             const IntegrityData* exe_data, log::Logger* logger, const RealmList& realm_list,
-	             std::string source, Metrics& metrics, bool locale_enforce)
+	             const IntegrityData* exe_data, const Survey& survey, log::Logger* logger,
+	             const RealmList& realm_list, std::string source, Metrics& metrics, bool locale_enforce)
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_ip_(std::move(source)), metrics_(metrics),
-	               exe_data_(exe_data), transfer_state_{}, locale_enforce_(locale_enforce) { }
+	               exe_data_(exe_data), survey_(survey), transfer_state_{},
+	               locale_enforce_(locale_enforce) { }
 };
 
 } // ember

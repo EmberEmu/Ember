@@ -28,10 +28,6 @@ class Patcher final {
 	std::unordered_map<std::size_t, PatchGraph> graphs_;
 	std::unordered_map<std::size_t, std::vector<PatchMeta>> patch_bins;
 
-	FileMeta survey_;
-	std::vector<std::byte> survey_data_;
-	std::uint32_t survey_id_;
-
 	const PatchMeta* locate_rollup(std::span<const PatchMeta> patches,
 	                               std::uint16_t from, std::uint16_t to) const;
 
@@ -40,14 +36,6 @@ public:
 
 	Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches);
 	
-	// Survey
-	void set_survey(const std::string& path, std::uint32_t id);
-	FileMeta survey_meta() const;
-	std::uint32_t survey_id() const;
-	bool survey_platform(grunt::Platform platform, grunt::System os) const;
-	std::span<const std::byte> survey_data(grunt::Platform platform, grunt::System os) const;
-
-	// Patching
 	std::optional<PatchMeta> find_patch(const GameVersion& client_version,
 	                                    grunt::Locale locale,
 	                                    grunt::Platform platform,
