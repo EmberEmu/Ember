@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 #include <conpool/drivers/DummyConnection.h>
 #include <iostream>
 
-namespace ember { namespace drivers {
+namespace ember::drivers {
 	
 DummyDriver::DummyDriver() {
 	std::cout << "DummyDriver opened\n";
@@ -56,4 +56,4 @@ std::string DummyDriver::version() const {
 	return "1.0";
 }
 
-}} // drivers, ember
+} // drivers, ember

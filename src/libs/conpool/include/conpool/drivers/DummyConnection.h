@@ -10,8 +10,6 @@
 
 namespace ember {
 
-class DummyConnection {
+struct DummyConnection {};
 
-};
-
-}
+} // ember
