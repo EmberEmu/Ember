@@ -68,8 +68,8 @@ public:
 template <typename Handler>
 class alloc_handler {
 public:
-	alloc_handler(ASIOAllocator& a, Handler h)
-		: allocator_(a), handler_(h) { }
+	alloc_handler(ASIOAllocator& a, Handler&& h)
+		: allocator_(a), handler_(std::move(h)) { }
 
 	template <typename ...Args>
 	void operator()(Args&&... args) {
@@ -92,8 +92,8 @@ private:
 };
 
 template <typename Handler>
-inline alloc_handler<Handler> create_alloc_handler(ASIOAllocator& a, Handler h) {
-	return alloc_handler<Handler>(a, h);
+inline alloc_handler<Handler> create_alloc_handler(ASIOAllocator& a, Handler&& h) {
+	return alloc_handler<Handler>(a, std::move(h));
 }
 
 } // ember
