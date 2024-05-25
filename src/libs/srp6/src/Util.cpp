@@ -113,9 +113,10 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 	if(mode == Compliance::RFC5054) {
 		hasher->update(salt.data(), salt.size_bytes());
 	} else {
-		SmallVec salt_enc(salt.begin(), salt.end());
-		std::reverse(salt_enc.begin(), salt_enc.end());
-		hasher->update(salt_enc.data(), salt_enc.size());
+		// change if Botan adds iterator overloads
+		for(auto i = salt.rbegin(); i != salt.rend(); ++i) {
+			hasher->update(*i);
+		}
 	}
 
 	hasher->update(hash.data(), hash.size());
@@ -155,9 +156,12 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 	hasher->update(i_hash.data(), i_hash.size());
 	const auto& a_enc = detail::encode_flip_1363(A, N.bytes());
 	const auto& b_enc = detail::encode_flip_1363(B, N.bytes());
-	SmallVec salt_enc(salt.begin(), salt.end());
-	std::reverse(salt_enc.begin(), salt_enc.end());
-	hasher->update(salt_enc.data(), salt_enc.size());
+
+	// change if Botan adds iterator overloads
+	for(auto i = salt.rbegin(); i != salt.rend(); ++i) {
+		hasher->update(*i);
+	}
+
 	hasher->update(a_enc.data(), a_enc.size());
 	hasher->update(b_enc.data(), b_enc.size());
 	hasher->update(key.t.data(), key.t.size());

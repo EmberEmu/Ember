@@ -60,7 +60,7 @@ void MulticastSocket::receive() {
     );
 }
 
-void MulticastSocket::handle_datagram(const std::span<std::uint8_t> datagram,
+void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagram,
                                       const boost::asio::ip::udp::endpoint& ep) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 

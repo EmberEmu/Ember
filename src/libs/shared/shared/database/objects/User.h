@@ -67,7 +67,7 @@ public:
 		return v_;
 	}
 
-	const std::span<const std::uint8_t> salt() const {
+	std::span<const std::uint8_t> salt() const {
 		return s_;
 	}
 
