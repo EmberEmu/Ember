@@ -14,7 +14,7 @@
 namespace ember::client_integrity {
 
 std::array<std::uint8_t, 20> checksum(std::span<const std::uint8_t> seed,
-                                   std::span<const std::byte> buffer) {
+                                      std::span<const std::byte> buffer) {
 	std::array<std::uint8_t, 20> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == res.size(), "Bad hash size");

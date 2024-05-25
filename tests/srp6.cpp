@@ -24,7 +24,7 @@ public:
 		identifier_ = "CHAOSVEX";
 		password_ = "ABC";
 		gen_ = std::make_unique<srp::Generator>(srp::Generator::Group::_256_BIT);
-		salt_ = srp::generate_salt<32>();
+		srp::generate_salt(salt_);
 		verifier_ = srp::generate_verifier(identifier_, password_, *gen_, salt_, srp::Compliance::GAME);
 		server_ = std::make_unique<srp::Server>(*gen_, verifier_);
 		client_ = std::make_unique<srp::Client>(identifier_, password_, *gen_);

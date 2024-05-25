@@ -24,8 +24,8 @@ IntegrityData::IntegrityData(std::span<const GameVersion> versions, std::string_
 	                                         "dbghelp.dll", "unicows.dll" };
 
 	std::array<std::string_view, 5> macx86 { "MacOS/World of Warcraft", "Info.plist",
-	                                          "Resources/Main.nib/objects.xib",
-	                                          "Resources/wow.icns", "PkgInfo" };
+	                                         "Resources/Main.nib/objects.xib",
+	                                         "Resources/wow.icns", "PkgInfo" };
 
 	std::array<std::string_view, 5> macppc { "MacOS/World of Warcraft", "Info.plist",
 	                                         "Resources/Main.nib/objects.xib",

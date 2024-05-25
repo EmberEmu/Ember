@@ -54,7 +54,8 @@ public:
 
 	static SaltBytes generate_salt();
 	static std::uint32_t generate_seed();
-	static std::uint32_t generate_totp_pin(const std::string& secret, int interval,
+	static std::uint32_t generate_totp_pin(const std::string& secret,
+	                                       int interval,
 	                                       const util::ClockBase& clock = util::Clock());
 };
 

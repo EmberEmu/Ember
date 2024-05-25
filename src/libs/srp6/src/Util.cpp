@@ -180,10 +180,8 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	return detail::decode_flip(hash_out);
 }
 
-std::vector<std::uint8_t> generate_salt(const std::size_t len) {
-	std::vector<std::uint8_t> entropy(len);
-	Botan::AutoSeeded_RNG().randomize(entropy.data(), entropy.size());
-	return entropy;
+void generate_salt(std::span<std::uint8_t> buffer) {
+	Botan::AutoSeeded_RNG().randomize(buffer.data(), buffer.size());
 }
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,

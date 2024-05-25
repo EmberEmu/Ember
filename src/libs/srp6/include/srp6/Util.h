@@ -54,14 +54,7 @@ inline Botan::BigInt generate(const std::string& identifier, const std::string& 
 
 } //detail
 
-template<std::size_t buf_size>
-auto generate_salt() {
-	std::array<std::uint8_t, buf_size> entropy{};
-	Botan::AutoSeeded_RNG().randomize(entropy.data(), entropy.size());
-	return entropy;
-}
-
-std::vector<std::uint8_t> generate_salt(std::size_t len);
+void generate_salt(std::span<std::uint8_t> buffer);
 
 Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
                                 const Generator& generator, std::span<const std::uint8_t> salt,
