@@ -38,24 +38,24 @@ class LoginChallenge final : public Packet {
 			return; // rest of the fields won't be sent
 		}
 
-		std::uint8_t b_buff[PUB_KEY_LENGTH];
-		stream.get(b_buff, PUB_KEY_LENGTH);
+		std::array<std::uint8_t, PUB_KEY_LENGTH> b_buff;
+		stream.get(b_buff.data(), b_buff.size());
 		std::reverse(std::begin(b_buff), std::end(b_buff));
-		B = Botan::BigInt(b_buff, PUB_KEY_LENGTH);
+		B = Botan::BigInt(b_buff.data(), b_buff.size());
 
 		stream >> g_len;
 		stream >> g;
 		stream >> n_len;
 
-		std::uint8_t n_buff[PRIME_LENGTH];
-		stream.get(n_buff, PRIME_LENGTH);
+		std::array<std::uint8_t, PRIME_LENGTH> n_buff;
+		stream.get(n_buff.data(), n_buff.size());
 		std::reverse(std::begin(n_buff), std::end(n_buff));
-		N = Botan::BigInt(n_buff, PRIME_LENGTH);
+		N = Botan::BigInt(n_buff.data(), n_buff.size());
 
-		std::uint8_t s_buff[SALT_LENGTH];
-		stream.get(s_buff, SALT_LENGTH);
+		std::array<std::uint8_t, SALT_LENGTH> s_buff;
+		stream.get(s_buff.data(), s_buff.size());
 		std::reverse(std::begin(s_buff), std::end(s_buff));
-		s = Botan::BigInt(s_buff, SALT_LENGTH);
+		s = Botan::BigInt(s_buff.data(), s_buff.size());
 
 		stream.get(checksum_salt.data(), checksum_salt.size());
 		stream >> two_factor_auth;

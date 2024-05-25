@@ -48,10 +48,10 @@ class LoginProof final : public Packet {
 			return;
 		}
 		
-		std::uint8_t m2_buff[PROOF_LENGTH];
-		stream.get(m2_buff, PROOF_LENGTH);
+		std::array<std::uint8_t, PROOF_LENGTH> m2_buff;
+		stream.get(m2_buff.data(), m2_buff.size());
 		std::reverse(std::begin(m2_buff), std::end(m2_buff));
-		M2 = Botan::BigInt(m2_buff, PROOF_LENGTH);
+		M2 = Botan::BigInt(m2_buff.data(), m2_buff.size());
 
 		stream >> survey_id;
 	}
