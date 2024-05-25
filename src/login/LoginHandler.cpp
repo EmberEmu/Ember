@@ -316,16 +316,16 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 		return false;
 	}
 
-	PINAuthenticator pin_auth(pin_salt_, packet.pin_salt, pin_grid_seed_, logger_);
+	PINAuthenticator pin_auth(pin_grid_seed_, logger_);
 	bool result = false;
 
 	if(user_->pin_method() == PINMethod::FIXED) {
-		result = pin_auth.validate_pin(user_->pin(), packet.pin_hash);
+		result = pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, user_->pin());
 	} else if(user_->pin_method() == PINMethod::TOTP) {
 		for(int interval = -1; interval < 2; ++interval) { // try time intervals -1 to +1
 			const auto& pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
 
-			if(pin_auth.validate_pin(pin, packet.pin_hash)) {
+			if(pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, pin)) {
 				result = true;
 				break;
 			}

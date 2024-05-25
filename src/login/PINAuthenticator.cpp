@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,11 +26,8 @@ namespace ember {
 
 namespace be = boost::endian;
 
-PINAuthenticator::PINAuthenticator(const SaltBytes& server_salt, const SaltBytes& client_salt,
-                                   const std::uint32_t seed, log::Logger* logger)
-                                   : logger_(logger), grid_seed_(seed), server_salt_(server_salt),
-                                     client_salt_(client_salt) {
-	remap_pin_grid();
+PINAuthenticator::PINAuthenticator(std::uint32_t seed, log::Logger* logger) : logger_(logger) {
+	remap_pin_grid(seed);
 }
 
 /*
@@ -65,13 +62,12 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
  * client. For example, if the user's PIN is '123' and the pad layout is
  * '0, 4, 1, 6, 2, 3' then the expected input sequence becomes '245'.
  */
-void PINAuthenticator::remap_pin_grid() {
+void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	std::array<std::uint8_t, GRID_SIZE> grid { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 	std::uint8_t* remapped_index = remapped_grid.data();
-	std::uint32_t grid_seed = grid_seed_;
 
 	for(std::size_t i = grid.size(); i > 0; --i) {
 		const auto remainder = grid_seed % i;
@@ -116,7 +112,9 @@ void PINAuthenticator::pin_to_ascii() {
 		[](auto pin_byte) { return pin_byte += 0x30; });
 }
 
-auto PINAuthenticator::calculate_hash(const std::uint32_t pin) -> HashBytes {
+auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
+									  const SaltBytes& client_salt,
+									  const std::uint32_t pin) -> HashBytes {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	pin_to_bytes(pin); // convert to byte array
@@ -127,21 +125,23 @@ auto PINAuthenticator::calculate_hash(const std::uint32_t pin) -> HashBytes {
 	HashBytes hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == hash.size(), "Bad hash size");
-	hasher->update(server_salt_.data(), server_salt_.size());
+	hasher->update(server_salt.data(), server_salt.size());
 	hasher->update(pin_bytes_.data(), pin_bytes_.size());
 	hasher->final(hash.data());
 
-	hasher->update(client_salt_.data(), client_salt_.size());
+	hasher->update(client_salt.data(), client_salt.size());
 	hasher->update(hash.data(), hash.size());
 	hasher->final(hash.data());
 	return hash;
 }
 
-bool PINAuthenticator::validate_pin(const std::uint32_t pin,
-                                    const std::span<const std::uint8_t> client_hash) {
+bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
+                                    const SaltBytes& client_salt,
+                                    std::span<const std::uint8_t> client_hash,
+                                    const std::uint32_t pin) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	const auto& hash = calculate_hash(pin);
+	const auto& hash = calculate_hash(server_salt, client_salt, pin);
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,24 +31,26 @@ public:
 	using HashBytes = std::array<std::uint8_t, HASH_LENGTH>;
 
 private:
-	log::Logger* logger_;
-	const std::uint32_t grid_seed_;
-	SaltBytes server_salt_;
-	SaltBytes client_salt_;
 	std::array<std::uint8_t, GRID_SIZE> remapped_grid;
 	boost::container::static_vector<std::uint8_t, MAX_PIN_LENGTH> pin_bytes_;
+	log::Logger* logger_;
 
 	void pin_to_ascii();
-	void remap_pin_grid();
+	void remap_pin_grid(std::uint32_t seed);
 	void pin_to_bytes(std::uint32_t pin);
 	void remap_pin();
 
 public:
-	PINAuthenticator(const SaltBytes& server_salt, const SaltBytes& client_salt,
-	                 std::uint32_t seed, log::Logger* logger);
+	PINAuthenticator(std::uint32_t seed, log::Logger* logger);
 
-	HashBytes calculate_hash(const std::uint32_t pin);
-	bool validate_pin(std::uint32_t pin, std::span<const std::uint8_t> hash);
+	HashBytes calculate_hash(const SaltBytes& server_salt,
+	                         const SaltBytes& client_salt,
+	                         std::uint32_t pin);
+
+	bool validate_pin(const SaltBytes& server_salt,
+	                  const SaltBytes& client_salt,
+	                  std::span<const std::uint8_t> hash,
+	                  std::uint32_t pin);
 
 	static SaltBytes generate_salt();
 	static std::uint32_t generate_seed();

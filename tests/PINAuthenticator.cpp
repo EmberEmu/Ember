@@ -67,8 +67,8 @@ TEST_F(PINAuthenticator, StaticPIN) {
 	};
 
 	const std::uint32_t grid_seed = 0x3a0442e3u;
-	ember::PINAuthenticator pin_auth(server_salt, client_salt, grid_seed, logger.get());
-	EXPECT_TRUE(pin_auth.validate_pin(pin, client_hash));
+	ember::PINAuthenticator pin_auth(grid_seed, logger.get());
+	EXPECT_TRUE(pin_auth.validate_pin(server_salt, client_salt, client_hash, pin));
 }
 
 /*
@@ -93,8 +93,8 @@ TEST_F(PINAuthenticator, TOTPPin) {
 	};
 
 	const std::uint32_t grid_seed = 0xddcfd808;
-	ember::PINAuthenticator auth(server_salt, client_salt, grid_seed, logger.get());
+	ember::PINAuthenticator auth(grid_seed, logger.get());
 	const auto pin = ember::PINAuthenticator::generate_totp_pin(secret, 0, clock);
 	ASSERT_EQ(pin, 598290) << "PINs did not match";
-	EXPECT_TRUE(auth.validate_pin(pin, client_hash));
+	EXPECT_TRUE(auth.validate_pin(server_salt, client_salt, client_hash, pin));
 }
