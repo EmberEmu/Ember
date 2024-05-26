@@ -131,7 +131,7 @@ public:
 	             : user_src_(users), patcher_(patcher), logger_(logger), acct_svc_(acct_svc),
 	               realm_list_(realm_list), source_ip_(std::move(source)), metrics_(metrics),
 	               exe_data_(exe_data), survey_(survey), transfer_state_{},
-	               locale_enforce_(locale_enforce) { }
+	               locale_enforce_(locale_enforce), pin_grid_seed_(0) { }
 };
 
 } // ember

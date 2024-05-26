@@ -322,7 +322,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 	if(user_->pin_method() == PINMethod::FIXED) {
 		result = pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, user_->pin());
 	} else if(user_->pin_method() == PINMethod::TOTP) {
-		for(int interval = -1; interval < 2; ++interval) { // try time intervals -1 to +1
+		for(auto interval : {0, -1, 1}) { // try time intervals -1 to +1
 			const auto pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
 
 			if(pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, pin)) {
