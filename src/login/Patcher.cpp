@@ -186,7 +186,7 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 			}
 
 			const auto md5 = util::generate_md5(path + patch.file_meta.name);
-			assert(md5_bytes.size() == patch.file_meta.md5.size());
+			assert(md5.size() == patch.file_meta.md5.size());
 			std::copy(md5.begin(), md5.end(), patch.file_meta.md5.data());
 			dirty = true;
 		}

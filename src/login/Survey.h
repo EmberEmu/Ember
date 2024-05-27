@@ -52,6 +52,7 @@ public:
 	std::uint32_t id() const;
 	void add_data(grunt::Platform platform, grunt::System os, const std::string& path);
 	
+	[[nodiscard]]
 	std::optional<std::reference_wrapper<const FileMeta>>
 	meta(grunt::Platform platform, grunt::System os) const;
 
@@ -60,4 +61,4 @@ public:
 	data(grunt::Platform platform, grunt::System os) const;
 };
 
-};
+} // ember
