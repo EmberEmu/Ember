@@ -66,7 +66,7 @@ void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagr
 
     if(!handler_) {
 		LOG_ERROR_GLOB << "No packet handler installed?" << LOG_ASYNC; // todo, rework
-        return;
+		return;
     }
 
 	auto max_size = 0u;

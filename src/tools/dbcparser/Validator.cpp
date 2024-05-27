@@ -433,8 +433,6 @@ void Validator::validate_definition(const types::Base* def) {
 void Validator::build_type_tree() {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
-	// todo - remove this bit with VS2015 move
-	root_.parent = nullptr;
 	root_.t = "_ROOT_";
 
 	for(auto& def : *definitions_) {
@@ -457,7 +455,7 @@ void Validator::validate(const types::Definitions& definitions, Options options)
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	// reset the validation state
-	root_ = TreeNode<std::string>();
+	root_ = TreeNode<std::string>{};
 	names_.clear();
 	options_ = options;
 	definitions_ = &definitions;
