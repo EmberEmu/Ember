@@ -480,7 +480,9 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 
 	if(state_ == LoginState::SURVEY_INITIATE) {
 		LOG_DEBUG(logger_) << "Initiating survey transfer..." << LOG_ASYNC;
-		initiate_file_transfer(survey_.meta(challenge_.platform, challenge_.os));
+		auto meta = survey_.meta(challenge_.platform, challenge_.os);
+		assert(meta);
+		initiate_file_transfer(*meta);
 	}
 }
 

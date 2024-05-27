@@ -11,14 +11,12 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <utility>
 #include <cassert>
 #include <stdexcept>
 
 namespace ember {
 
-// todo, only supports x86 Windows for the time being
-void Survey::add_data(grunt::Platform, grunt::System, const std::string& path) {
+void Survey::add_data(const grunt::Platform platform, const grunt::System os, const std::string& path) {
 	std::ifstream file(path, std::ios::binary);
 
 	if(!file) {
@@ -38,31 +36,34 @@ void Survey::add_data(grunt::Platform, grunt::System, const std::string& path) {
 	}
 
 	const auto md5 = util::generate_md5(buffer);
-	const auto md5_bytes = std::as_bytes(std::span(md5));
 	static_assert(md5.size() == fmeta.md5.size());
-	std::copy(md5_bytes.begin(), md5_bytes.end(), file_.md5.data());
+	std::copy(md5.begin(), md5.end(), fmeta.md5.data());
 
-	file_ = std::move(fmeta);
-	data_ = std::move(buffer);
+	const Key key {
+		.platform = platform,
+		.os = os,
+	};
+
+	meta_[key] = std::move(fmeta);
+	data_[key] = std::move(buffer);
 }
 
-// todo, only supports x86 Windows for the time being
-FileMeta Survey::meta(const grunt::Platform platform, const grunt::System os) const {
-	return file_;
+std::optional<std::reference_wrapper<const FileMeta>>
+Survey::meta(const grunt::Platform platform, const grunt::System os) const {
+	if(auto it = meta_.find({ platform, os }); it != meta_.end()) {
+		return std::ref(it->second);
+	}
+
+	return std::nullopt;
 }
 
-// todo, only supports x86 Windows for the time being
 std::optional<std::span<const std::byte>> Survey::data(const grunt::Platform platform,
                                                        const grunt::System os) const {
-	if(platform != grunt::Platform::x86 || os != grunt::System::Win) {
-		return std::nullopt;
+	if(auto it = data_.find({ platform, os }); it != data_.end()) {
+		return it->second;
 	}
 
-	if(data_.empty()) {
-		return std::nullopt;
-	}
-
-	return data_;
+	return std::nullopt;
 }
 
 std::uint32_t Survey::id() const {

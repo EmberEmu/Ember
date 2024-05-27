@@ -157,12 +157,11 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	);
 
 	Patcher patcher(allowed_clients, patches);
-	Survey survey;
+	Survey survey(args["survey.id"].as<std::uint32_t>());
 
-	if(auto id = args["survey.id"].as<std::uint32_t>(); id) {
+	if(survey.id()) {
 		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
-		
-		survey = Survey(id);
+
 		survey.add_data(grunt::Platform::x86, grunt::System::Win,
 		                args["survey.path"].as<std::string>());
 	}

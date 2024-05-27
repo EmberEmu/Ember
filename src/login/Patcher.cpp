@@ -177,7 +177,7 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 
 		// check whether the hash is all zeroes and calculate it if so
 		const auto calc_md5 = std::all_of(patch.file_meta.md5.begin(), patch.file_meta.md5.end(),
-			[](const auto& byte) { return byte == std::byte{ 0 }; }
+			[](const auto& byte) { return byte == 0 ; }
 		);
 
 		if(calc_md5) {
@@ -186,9 +186,8 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 			}
 
 			const auto md5 = util::generate_md5(path + patch.file_meta.name);
-			const auto md5_bytes = std::as_bytes(std::span(md5));
 			assert(md5_bytes.size() == patch.file_meta.md5.size());
-			std::copy(md5_bytes.begin(), md5_bytes.end(), patch.file_meta.md5.data());
+			std::copy(md5.begin(), md5.end(), patch.file_meta.md5.data());
 			dirty = true;
 		}
 

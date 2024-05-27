@@ -96,23 +96,19 @@ TEST(PatcherTest, LoadMD5) {
 	// std::byte was a mistake
 	for(const auto& m : meta) {
 		if(m.file_meta.name == "1_to_2.patch") {
-			const auto bytes = std::as_bytes(std::span(md5_1_to_2));
-			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), md5_1_to_2.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[0] = true;
 		} else if(m.file_meta.name == "2_to_3.patch") {
-			const auto bytes = std::as_bytes(std::span(md5_2_to_3));
-			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), md5_2_to_3.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[1] = true;
 		} else if(m.file_meta.name == "3_to_4.patch") {
-			const auto bytes = std::as_bytes(std::span(md5_3_to_4));
-			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), md5_3_to_4.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[2] = true;
 		} else if(m.file_meta.name == "1_to_4.patch") {
-			const auto bytes = std::as_bytes(std::span(md5_1_to_4));
-			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), bytes.begin()));
+			ASSERT_TRUE(std::equal(m.file_meta.md5.begin(), m.file_meta.md5.end(), md5_1_to_4.begin()));
 			ASSERT_EQ(m.file_meta.size, 1);
 			matches[3] = true;
 		} else {

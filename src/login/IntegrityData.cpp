@@ -73,7 +73,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 
 	auto fnv = hash(build, platform, system);
 	std::vector<std::byte> buffer;
-	std::size_t write_offset = 0;
+	std::uintmax_t write_offset = 0;
 
 	// write all of the binary data into a single buffer
 	for(const auto& f : files) {
@@ -93,7 +93,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 			throw std::runtime_error("Unable to read " + fpath.string());
 		}
 
-		write_offset += static_cast<std::size_t>(size);
+		write_offset += size;
 	}
 
 	data_.emplace(fnv, std::move(buffer));
