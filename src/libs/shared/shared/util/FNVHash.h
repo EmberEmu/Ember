@@ -12,6 +12,7 @@
 #include <concepts>
 #include <span>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <climits>
@@ -95,7 +96,23 @@ public:
 		return update(span.begin(), span.end());
 	}
 
+	std::uint32_t update(const char* t) {
+		for(auto i = 0u;; ++i) {
+			if(t[i] != '\0') {
+				update(t[i]);
+			} else {
+				break;
+			}
+		}
+
+		return hash_;
+	}
+
 	std::uint32_t update(const std::string& t) {
+		return update(t.begin(), t.end());
+	}
+
+	std::uint32_t update(std::string_view t) {
 		return update(t.begin(), t.end());
 	}
 

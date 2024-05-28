@@ -9,7 +9,6 @@
 #include "Patcher.h"
 #include "PatchGraph.h"
 #include <shared/util/FileMD5.h>
-#include <shared/util/FNVHash.h>
 #include <boost/endian/conversion.hpp>
 #include <algorithm>
 #include <filesystem>
@@ -23,11 +22,13 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 	FNVHash hasher;
 
 	for(auto& patch : patches_) {
-		hasher.update(patch.locale);
-		hasher.update(patch.arch);
-		hasher.update(patch.os);
-		auto hash = hasher.finalise();
-		patch_bins[hash].emplace_back(patch);
+		const Key key {
+			.locale = patch.locale,
+			.platform = patch.arch,
+			.os = patch.os
+		};
+
+		patch_bins[key].emplace_back(patch);
 	}
 
 	for(auto& [size, meta] : patch_bins) {
@@ -61,13 +62,14 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
                                              const grunt::Locale locale,
                                              const grunt::Platform platform,
                                              const grunt::System os) const {
-	FNVHash hasher;
-	hasher.update(grunt::to_string(locale));
-	hasher.update(grunt::to_string(platform));
-	auto hash = hasher.update(grunt::to_string(os));
-
-	auto g_it = graphs_.find(hash);
-	auto p_it = patch_bins.find(hash);
+	const Key key {
+		.locale = grunt::to_string(locale),
+		.platform = grunt::to_string(platform),
+		.os = grunt::to_string(os)
+	};
+	
+	auto g_it = graphs_.find(key);
+	auto p_it = patch_bins.find(key);
 	
 	if(g_it == graphs_.end() || p_it == patch_bins.end()) {
 		return std::nullopt;
