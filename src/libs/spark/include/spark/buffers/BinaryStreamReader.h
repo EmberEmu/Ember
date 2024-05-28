@@ -27,14 +27,14 @@ class BinaryStreamReader : virtual public StreamBase {
 	StreamState state_;
 
 	void check_read_bounds(std::size_t read_size) {
-		if(read_size > buffer_.size()) {
+		if(read_size > buffer_.size()) [[unlikely]] {
 			state_ = StreamState::BUFF_LIMIT_ERR;
 			throw buffer_underrun(read_size, total_read_, buffer_.size());
 		}
 
 		const auto req_total_read = total_read_ + read_size;
 
-		if(read_limit_ && req_total_read > read_limit_) {
+		if(read_limit_ && req_total_read > read_limit_) [[unlikely]] {
 			state_ = StreamState::READ_LIMIT_ERR;
 			throw stream_read_limit(read_size, total_read_, read_limit_);
 		}
@@ -103,19 +103,19 @@ public:
 		buffer_.skip(count);
 	}
 
-	StreamState state() {
+	StreamState state() const {
 		return state_;
 	}
 
-	std::size_t total_read() {
+	std::size_t total_read() const {
 		return total_read_;
 	}
 
-	std::size_t read_limit() {
+	std::size_t read_limit() const {
 		return read_limit_;
 	}
 
-	BufferRead* buffer() {
+	BufferRead* buffer() const {
 		return &buffer_;
 	}
 };

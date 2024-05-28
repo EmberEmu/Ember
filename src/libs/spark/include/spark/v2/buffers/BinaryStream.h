@@ -190,15 +190,15 @@ public:
 		return buffer_.size();
 	}
 
-	bool empty() {
+	bool empty() const {
 		return buffer_.empty();
 	}
 
-	std::size_t total_write() requires(writeable<buf_type>) {
+	std::size_t total_write() const requires(writeable<buf_type>) {
 	return total_write_;
 	}
 
-	buf_type* buffer() {
+	buf_type* buffer() const {
 		return &buffer_;
 	}
 
@@ -207,15 +207,15 @@ public:
 		buffer_.skip(count);
 	}
 
-	StreamState state() {
+	StreamState state() const {
 		return state_;
 	}
 
-	std::size_t total_read() {
+	std::size_t total_read() const {
 		return total_read_;
 	}
 
-	std::size_t read_limit() {
+	std::size_t read_limit() const {
 		return read_limit_;
 	}
 };

@@ -104,15 +104,15 @@ public:
 		return buffer_.size();
 	}
 
-	bool empty() {
+	bool empty() const {
 		return buffer_.empty();
 	}
 
-	std::size_t total_write() {
+	std::size_t total_write() const {
 		return total_write_;
 	}
 
-	BufferWrite* buffer() {
+	BufferWrite* buffer() const {
 		return &buffer_;
 	}
 };

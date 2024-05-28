@@ -31,7 +31,7 @@ public:
 		return buffer_.size();
 	}
 
-	bool empty() {
+	bool empty() const {
 		return buffer_.empty();
 	}
 
