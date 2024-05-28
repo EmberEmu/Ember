@@ -18,10 +18,10 @@
 
 namespace ember::drivers {
 
-MySQL::MySQL(std::string user, std::string pass, const std::string& host, unsigned short port,
+MySQL::MySQL(std::string user, std::string pass, std::string_view host, std::uint16_t port,
              std::string db) : database(std::move(db)), username(std::move(user)),
              password(std::move(pass)),
-             dsn(std::string("tcp://" + host + ":" + std::to_string(port))) {
+             dsn(std::format("tcp://{}:{}", host, port)) {
 	driver = get_driver_instance();
 }
 
@@ -33,7 +33,7 @@ sql::Connection* MySQL::open() const {
 	}
 
 	conn->setAutoCommit(true);
-	bool opt = true;
+	constexpr bool opt = true;
 	conn->setClientOption("MYSQL_OPT_RECONNECT", &opt);
 	return conn;
 }

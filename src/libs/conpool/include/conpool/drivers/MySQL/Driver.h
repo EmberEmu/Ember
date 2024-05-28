@@ -46,7 +46,7 @@ class MySQL final {
 	void close_cache(const sql::Connection* conn) const;
 
 public:
-	MySQL(std::string user, std::string password, const std::string& host, std::uint16_t port,
+	MySQL(std::string user, std::string password, std::string_view host, std::uint16_t port,
 	      std::string db = "");
 
 	MySQL(MySQL&& rhs) noexcept : dsn(rhs.dsn), username(rhs.username),
