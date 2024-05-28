@@ -13,8 +13,6 @@
 
 namespace ember {
 
-thread_local EventDispatcher::HandlerMap EventDispatcher::handlers_;
-
 void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event> event) const {
 	auto service = pool_.get_service(client.service());
 

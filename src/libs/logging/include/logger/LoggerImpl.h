@@ -41,8 +41,8 @@ class Logger::impl final {
 	std::vector<std::unique_ptr<Sink>> sinks_;
 	Worker worker_;
 
-	static thread_local std::pair<RecordDetail, std::vector<char>> buffer_;
-	static thread_local std::binary_semaphore sem_;
+	static inline thread_local std::pair<RecordDetail, std::vector<char>> buffer_;
+	static inline thread_local std::binary_semaphore sem_{0};
 
 	void finalise() {
 		buffer_.second.push_back('\n');
@@ -192,7 +192,4 @@ public:
 	impl& operator=(const impl&&) = delete;
 };
 
-thread_local std::pair<RecordDetail, std::vector<char>> Logger::impl::buffer_;
-thread_local std::binary_semaphore Logger::impl::sem_(0);
-
-} //log, ember
+} // log, ember

@@ -23,7 +23,7 @@ class EventDispatcher final {
 	using HandlerMap = std::unordered_map<ClientUUID, ClientHandler*>;
 
 	const ServicePool& pool_;
-	thread_local static HandlerMap handlers_;
+	static inline thread_local HandlerMap handlers_;
 
 public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
