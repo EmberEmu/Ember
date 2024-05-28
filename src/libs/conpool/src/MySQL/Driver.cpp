@@ -39,6 +39,8 @@ sql::Connection* MySQL::open() const {
 }
 
 void MySQL::close(sql::Connection* conn) const {
+	std::unique_ptr<sql::Connection> conn_ptr(conn);
+
 	if(!conn->isClosed()) {
 		conn->close();
 	}
@@ -48,8 +50,6 @@ void MySQL::close(sql::Connection* conn) const {
 	if(conn_cache) {
 		close_cache(conn);
 	}
-
-	delete conn;
 }
 
 bool MySQL::keep_alive(sql::Connection* conn) const try {
