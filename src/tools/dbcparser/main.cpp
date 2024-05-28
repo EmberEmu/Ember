@@ -17,7 +17,6 @@
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <boost/program_options.hpp>
-#include <boost/bind.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
