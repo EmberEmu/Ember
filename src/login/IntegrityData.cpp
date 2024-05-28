@@ -7,7 +7,6 @@
  */
 
 #include "IntegrityData.h"
-#include <shared/util/FNVHash.h>
 #include <algorithm>
 #include <array>
 #include <filesystem>
@@ -46,7 +45,7 @@ IntegrityData::IntegrityData(std::span<const GameVersion> versions, std::string_
 std::optional<std::span<const std::byte>>
 IntegrityData::lookup(const GameVersion version, const grunt::Platform platform,
                       const grunt::System os) const {
-	auto it = data_.find(hash(version.build, platform, os));
+	auto it = data_.find({ version.build, platform, os });
 
 	if(it == data_.end()) {
 		return std::nullopt;
@@ -71,7 +70,6 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 		return;
 	}
 
-	auto fnv = hash(build, platform, system);
 	std::vector<std::byte> buffer;
 	std::uintmax_t write_offset = 0;
 
@@ -96,15 +94,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 		write_offset += size;
 	}
 
-	data_.emplace(fnv, std::move(buffer));
-}
-
-std::size_t IntegrityData::hash(std::uint16_t build, grunt::Platform platform,
-                                grunt::System os) const {
-	FNVHash hasher;
-	hasher.update(build);
-	hasher.update(platform);
-	return hasher.update(os);
+	data_.emplace(Key{ build, platform, system }, std::move(buffer));
 }
 
 } // ember

@@ -10,7 +10,7 @@
 
 #include "GameVersion.h"
 #include "grunt/Magic.h"
-#include "ExecutablesChecksum.h"
+#include "shared/util/FNVHash.h"
 #include <optional>
 #include <string>
 #include <span>
@@ -23,9 +23,28 @@
 namespace ember {
 
 class IntegrityData final {
-	std::unordered_map<std::size_t, std::vector<std::byte>> data_;
+	struct Key {
+		std::uint16_t build;
+		grunt::Platform platform;
+		grunt::System os;
 
-	std::size_t hash(std::uint16_t build, grunt::Platform platform, grunt::System os) const;
+		bool operator==(const Key& key) const {
+			return key.build == build
+				&& key.platform == platform
+				&& key.os == os;
+		}
+	};
+
+	struct KeyHash {
+		std::size_t operator()(const Key& key) const {
+			FNVHash hasher;
+			hasher.update(key.build);
+			hasher.update(key.platform);
+			return hasher.update(key.os);
+		}
+	};
+
+	std::unordered_map<Key, std::vector<std::byte>, KeyHash> data_;
 
 	void load_binaries(std::string_view path, std::uint16_t build,
 	                   std::span<std::string_view> files,
