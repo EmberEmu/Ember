@@ -11,7 +11,6 @@
 #include <srp6/Generator.h>
 #include <botan/bigint.h>
 #include <botan/auto_rng.h>
-#include <botan/secmem.h>
 #include <boost/serialization/strong_typedef.hpp>
 #include <boost/container/small_vector.hpp>
 #include <span>

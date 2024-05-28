@@ -21,7 +21,6 @@
 #include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
 #include <botan/bigint.h>
-#include <botan/secmem.h>
 #include <array>
 #include <fstream>
 #include <functional>

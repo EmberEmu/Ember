@@ -23,8 +23,8 @@
 #include <shared/util/UTF8String.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
+#include <botan/bigint.h>
 #include <botan/hash.h>
-#include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>

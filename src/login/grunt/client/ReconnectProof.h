@@ -14,7 +14,6 @@
 #include "../KeyData.h"
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
-#include <botan/secmem.h>
 #include <array>
 #include <cstdint>
 #include <cstddef>

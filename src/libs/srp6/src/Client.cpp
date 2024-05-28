@@ -7,9 +7,9 @@
  */
 
 #include <srp6/Client.h>
-#include <botan/numthry.h>
-#include <botan/secmem.h>
 #include <botan/auto_rng.h>
+#include <botan/bigint.h>
+#include <botan/numthry.h>
 #include <botan/rng.h>
 #include <utility>
 

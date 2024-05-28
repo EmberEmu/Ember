@@ -13,7 +13,6 @@
 #include <protocol/Packet.h>
 #include <logger/Logging.h>
 #include <shared/util/UTF8String.h>
-#include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <boost/container/small_vector.hpp>

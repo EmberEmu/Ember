@@ -8,10 +8,8 @@
 
 #pragma once
 
-#include <botan/secmem.h>
 #include <array>
 #include <span>
-#include <vector>
 #include <cstdint>
 #include <cstddef>
 

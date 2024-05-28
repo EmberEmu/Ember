@@ -15,7 +15,6 @@
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <botan/bigint.h>
-#include <botan/secmem.h>
 #include <gsl/gsl_util>
 #include <array>
 #include <cstdint>

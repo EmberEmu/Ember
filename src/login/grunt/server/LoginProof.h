@@ -12,7 +12,6 @@
 #include "../Packet.h"
 #include "../ResultCodes.h"
 #include <botan/bigint.h>
-#include <botan/secmem.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <array>

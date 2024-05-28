@@ -11,7 +11,6 @@
 #include <srp6/Client.h>
 #include <srp6/Generator.h>
 #include <botan/bigint.h>
-#include <botan/secmem.h>
 #include <array>
 #include <memory>
 #include <string>
