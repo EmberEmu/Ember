@@ -180,17 +180,17 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 
 		// get the location of the data for this sector
 		std::span sector_data(
-			std::bit_cast<unsigned char*>(file_offset + *sector), sector_size_actual
+			std::bit_cast<std::byte*>(file_offset + *sector), sector_size_actual
 		);
 
 		if(entry.flags & Flags::MPQ_FILE_ENCRYPTED) {
-			decrypt_block(std::as_writable_bytes(sector_data), ++key);
+			decrypt_block(sector_data, ++key);
 		}
 
 		if(sector_size_actual < sector_size) {
-			extract_compressed_sector(std::as_bytes(sector_data), buffer, entry.flags, store);
+			extract_compressed_sector(sector_data, buffer, entry.flags, store);
 		} else {
-			store(std::as_bytes(sector_data));
+			store(sector_data);
 		}
 
 		remaining -= sector_size;
@@ -202,25 +202,21 @@ void MemoryArchive::extract_compressed_sector(std::span<const std::byte> input,
 											  const Flags flags,
                                               ExtractionSink& store) {
 	if(flags & Flags::MPQ_FILE_COMPRESS) {
-		auto ret = decompress(
-			std::as_bytes(input), std::as_writable_bytes(std::span(output))
-		);
+		auto ret = decompress(input, output);
 
 		if(!ret) {
 			throw exception("cannot extract file: decompression failed");
 		}
 
-		store(std::as_bytes(std::span(output.data(), *ret)));
+		store({ output.data(), *ret });
 	} else if(flags & Flags::MPQ_FILE_IMPLODE) {
-		auto ret = decompress_pklib(
-			std::as_bytes(input), std::as_writable_bytes(std::span(output))
-		);
+		auto ret = decompress_pklib(input, output);
 
 		if(!ret) {
 			throw exception("cannot extract file: decompression (explode) failed");
 		}
 
-		store(std::as_bytes(std::span(output.data(), *ret)));
+		store({ output.data(), *ret });
 	} else {
 		throw exception("cannot extract file: unknown compression flag");
 	}
@@ -235,7 +231,7 @@ void MemoryArchive::extract_uncompressed(BlockTableEntry& entry,
 	);
 
 	if(entry.flags & Flags::MPQ_FILE_ENCRYPTED) {
-		decrypt_block(std::as_writable_bytes(data), key);
+		decrypt_block(data, key);
 	}
 
 	store(data);
@@ -248,7 +244,7 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 	);
 
 	if(entry.flags & Flags::MPQ_FILE_ENCRYPTED) {
-		decrypt_block(std::as_writable_bytes(data), key);
+		decrypt_block(data, key);
 	}
 
 	if(!(entry.flags & Flags::MPQ_FILE_COMPRESS_MASK)) {
