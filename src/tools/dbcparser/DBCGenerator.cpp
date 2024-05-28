@@ -13,7 +13,9 @@
 #include <logger/Logging.h>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
+#include <format>
 #include <fstream>
+#include <string_view>
 #include <vector>
 #include <cstddef>
 #include <cstdint>
@@ -28,7 +30,7 @@ class RecordPrinter final : public types::TypeVisitor {
 	const std::string default_string = "Hello, world!";
 	const std::string default_string_loc = "Hello, localised string!";
 
-	void generate_field(const std::string& type) {
+	void generate_field(std::string_view type) {
 		if(type == "int8" || type == "uint8" || type == "bool") {
 			record_ << std::uint8_t{1};
 		} else if(type == "int16" || type == "uint16") {
@@ -50,7 +52,7 @@ class RecordPrinter final : public types::TypeVisitor {
 
 			record_ << std::uint32_t{1};
 		} else {
-			throw std::runtime_error("Encountered an unhandled type, " + type);
+			throw std::runtime_error(std::format("Encountered an unhandled type, {}", type));
 		}
 	}
 
@@ -70,16 +72,10 @@ public:
 	}
 
 	void visit(const types::Field* field, const types::Base* parent) override {
-		auto components = extract_components(field->underlying_type);
-		std::size_t elements = 1;
+		auto [type, elements] = extract_components(field->underlying_type);
 
-		// if this is an array, we need to write multiple records
-		if(components.second) {
-			elements = *components.second;
-		}
-
-		if(!type_map.contains(components.first)) {
-			const auto found = locate_type_base(static_cast<types::Struct&>(*field->parent), components.first);
+		if(!type_map.contains(type)) {
+			const auto found = locate_type_base(static_cast<types::Struct&>(*field->parent), type);
 
 			if(!found) {
 				throw std::runtime_error("Unable to locate type base");
@@ -89,15 +85,20 @@ public:
 				visit(static_cast<const types::Struct*>(found), field);
 				return;
 			} else if(found->type == types::Type::ENUM) {
-				const auto type = static_cast<const types::Enum*>(found);
-				components.first = type->underlying_type;
+				const auto enum_type = static_cast<const types::Enum*>(found);
+				type = enum_type->underlying_type;
 			} else {
 				throw std::runtime_error("Unhandled type");
 			}
-		} 
+		}
+
+		// if this is an array, we need to write multiple records
+		if(!elements) {
+			elements = 1; // scalar
+		}
 
 		for(std::size_t i = 0; i < elements; ++i) {
-			generate_field(components.first);
+			generate_field(type);
 		}
 	}
 

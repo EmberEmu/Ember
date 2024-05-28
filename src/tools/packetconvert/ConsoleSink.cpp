@@ -61,7 +61,7 @@ void ConsoleSink::handle(const fblog::Message& message) {
 	if(message.time()) {
 		std::tm time;
 		std::istringstream ss(message.time()->c_str());
-		ss >> std::get_time(&time, time_fmt_.c_str());
+		ss >> std::get_time(&time, time_fmt_);
 		std::cout << std::put_time(&time, "%a, %B %d, %Y @ %H:%M:%S UTC\n");
 	} else {
 		std::cout << "<missing time>\n";

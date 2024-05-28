@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 namespace ember {
 
@@ -18,7 +19,7 @@ namespace ember {
 struct OutputOption {
 	std::string option;
 
-	explicit OutputOption(const std::string& option) : option(option) {}
+	explicit OutputOption(std::string option) : option(std::move(option)) {}
 	explicit OutputOption(const char* option) : option(option) {}
 
 	friend bool operator==(const OutputOption& lhs, const std::string& rhs) {

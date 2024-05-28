@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2019 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include "Parser.h"
 #include <logger/Logging.h>
 #include <rapidxml_utils.hpp>
+#include <format>
 #include <cstddef>
 #include <cstring>
 
@@ -26,8 +27,11 @@ types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 		if(strcmp(attr->value(), "true") == 0 || strcmp(attr->value(), "1") == 0) {
 			key.ignore_type_mismatch = true;
 		} else {
-			throw exception(std::string(attr->value() + std::string(" is not a valid attribute"
-			                " value for ignore-type-mismatch")));
+			auto msg = std::format(
+				"{} is not a valid attribute value for ignore-type-mismatch", attr->value()
+			);
+
+			throw exception(std::move(msg));
 		}
 	}
 
@@ -37,7 +41,7 @@ types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 		} else if(strcmp(node->name(), "parent") == 0) {
 			key.parent = node->value();
 		} else {
-			throw exception(std::string("Unexpected element in <key>: ") + node->name());
+			throw exception(std::format("Unexpected element in <key>: {}", node->name()));
 		}
 	}
 
@@ -52,7 +56,7 @@ void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>
 		std::pair<std::string, std::string> kv;
 
 		if(strcmp(node->name(), "option") != 0) {
-			throw exception(std::string("Unexpected node in <options>: ") + node->name());
+			throw exception(std::format("Unexpected node in <options>: {}", node->name()));
 		}
 
 		for(rxml::xml_attribute<>* attr = node->first_attribute(); attr; attr = attr->next_attribute()) {
@@ -61,7 +65,7 @@ void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>
 			} else if(strcmp(attr->name(), "value") == 0) {
 				kv.second = attr->value();
 			} else {
-				throw exception(std::string("Unexpected attribute in <enum>: ") + attr->name());
+				throw exception(std::format("Unexpected attribute in <enum>: {}", attr->name()));
 			}
 		}
 
@@ -91,7 +95,7 @@ void Parser::parse_enum_node(types::Enum& type, UniqueCheck& check, rxml::xml_no
 		return;
 	}
 
-	throw exception(std::string("Unexpected node in <enum>: ") + node->name());
+	throw exception(std::format("Unexpected node in <enum>: {}", node->name()));
 }
 
 void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xml_node<>* node) {
@@ -109,15 +113,15 @@ void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xm
 		return;
 	}
 
-	std::string type_desc = type.dbc? "<dbc>" : "<struct>";
-	throw exception(std::string("Unexpected node in ") + type_desc + ": " + node->name());
+	auto msg = std::format("Unexpected node in {}: {}", (type.dbc? "<dbc>" : "<struct>"), node->name());
+	throw exception(std::move(msg));
 }
 
 void Parser::assign_unique(std::string& type, bool& exists, rxml::xml_node<>* node) {
 	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
 
 	if(exists) {
-		throw exception(std::string("Multiple definitions of: ") + node->name());
+		throw exception(std::format("Multiple definitions of: {}", node->name()));
 	}
 
 	type = node->value();
@@ -139,7 +143,7 @@ void Parser::parse_field_node(types::Field& field, UniqueCheck& check,
 		return;
 	}
 
-	throw exception(std::string("Unknown node found in <field>: ") + node->name());
+	throw exception(std::format("Unknown node found in <field>: {}", node->name()));
 }
 
 types::Field Parser::parse_field(rxml::xml_node<>* root, types::Base* parent) {
@@ -223,8 +227,7 @@ std::unique_ptr<types::Struct> Parser::parse_struct(rxml::xml_node<>* root, bool
 	}
 
 	if(!check.name) {
-		std::string type_desc = dbc? "<dbc>" : "<struct>";
-		throw exception("A " + type_desc + " must have at least a <name> node");
+		throw exception(std::format("A {} must have at least a <name> node", dbc? "<dbc>" : "<struct>"));
 	}
 
 	return parsed;
@@ -245,7 +248,7 @@ types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
 				std::make_unique<types::Enum>(parse_enum(node->first_node()))
 			);
 		} else {
-			throw exception("Unknown node type, " + std::string(node->name()));
+			throw exception(std::format("Unknown node type, {}", std::string(node->name())));
 		}
 	}
 

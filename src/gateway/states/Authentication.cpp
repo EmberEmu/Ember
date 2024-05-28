@@ -20,6 +20,7 @@
 #include <protocol/Packets.h>
 #include <spark/buffers/Buffer.h>
 #include <shared/util/EnumHelper.h>
+#include <shared/util/UTF8String.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
 #include <botan/hash.h>
@@ -46,7 +47,7 @@ void auth_success(ClientContext& ctx);
 void auth_queue(ClientContext& ctx);
 void prove_session(ClientContext& ctx, const Botan::BigInt& key);
 void fetch_session_key(ClientContext& ctx, std::uint32_t account_id);
-void fetch_account_id(ClientContext& ctx, const std::string& username);
+void fetch_account_id(ClientContext& ctx, const utf8_string& username);
 void handle_timeout(ClientContext& ctx);
 void send_addon_data(ClientContext& ctx);
 
@@ -85,7 +86,7 @@ void handle_authentication(ClientContext& ctx) {
 	fetch_account_id(ctx, auth_ctx.packet->username);
 }
 
-void fetch_account_id(ClientContext& ctx, const std::string& username) {
+void fetch_account_id(ClientContext& ctx, const utf8_string& username) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler->uuid();

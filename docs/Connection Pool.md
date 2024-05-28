@@ -1,4 +1,4 @@
-﻿# 🔥 **Ember Database Connection Pool**
+# 🔥 **Ember Database Connection Pool**
 ---
 
 # Basic overview
@@ -162,7 +162,7 @@ For example, as taken from Ember's codebase:
 pool.logging_callback(std::bind(pool_log_callback, std::placeholders::_1, std::placeholders::_2, logger));
 
 //The actual function
-void pool_log_callback(ep::Severity severity, const std::string& message, el::Logger* logger) {
+void pool_log_callback(ep::Severity severity, std::string_view message, el::Logger* logger) {
     //handle message
 }
 ```

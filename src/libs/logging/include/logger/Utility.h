@@ -15,12 +15,13 @@
 
 namespace ember::log { 
 
-Severity severity_string(const std::string& severity);
+Severity severity_string(std::string_view severity);
 
 namespace detail {
 
 std::string_view severity_string(Severity severity);
 std::tm current_time();
+std::string put_time(const std::tm& time, const char* format);
 std::string put_time(const std::tm& time, const std::string& format);
 
 }} //detail, log, ember

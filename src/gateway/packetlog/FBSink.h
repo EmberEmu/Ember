@@ -17,7 +17,7 @@ class FBSink final : public PacketSink {
 	constexpr static std::uint32_t VERSION = 1;
 
 	std::ofstream file_;
-	const std::string time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601
+	inline static const char* time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601
 
 	void start_log(const std::string& filename, const std::string& host,
 	               const std::string& remote_host);

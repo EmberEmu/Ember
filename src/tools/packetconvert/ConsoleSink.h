@@ -9,12 +9,11 @@
 #pragma once
 
 #include "Sink.h"
-#include <string>
 
 namespace ember {
 
 class ConsoleSink final : public Sink {
-	std::string time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601, can be overriden by header
+	inline static const char* time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601, can be overriden by header
 
 	void print_opcode(const fblog::Message& message) const;
 
