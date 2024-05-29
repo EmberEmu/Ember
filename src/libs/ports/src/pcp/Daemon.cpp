@@ -77,7 +77,7 @@ void Daemon::process_queue() {
 		return;
 	}
 
-	auto& mapping = queue_.front();
+	auto mapping = std::move(queue_.front());
 	queue_.pop_front();
 	renew_mapping(mapping);
 	mapping.handler = nullptr;
