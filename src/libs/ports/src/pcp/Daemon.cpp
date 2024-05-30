@@ -249,13 +249,9 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
  * Iteration speed for refreshes is more important here, so this'll do
  */
 void Daemon::erase_mapping(const Result& result) {
-	for(auto it = mappings_.begin(); it != mappings_.end();) {
-		if(it->request.internal_port == result->internal_port) {
-			it = mappings_.erase(it);
-		} else {
-			++it;
-		}
-	}
+	std::erase_if(mappings_, [&](auto& ele) {
+		return ele.request.internal_port == result->internal_port;
+	});
 }
 
 void Daemon::event_handler(EventHandler&& handler) {
