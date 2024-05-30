@@ -18,6 +18,8 @@
 #include <vector>
 #include <cstdint>
 
+using namespace std::chrono_literals;
+
 namespace ember {
 
 class StreamReader final {
@@ -40,7 +42,7 @@ class StreamReader final {
 
 public:
 	StreamReader(std::ifstream& in, std::uintmax_t size, bool stream, bool skip = false,
-	             std::chrono::seconds interval = std::chrono::seconds(2));
+	             std::chrono::seconds interval = 2s);
 
 	void process();
 	void add_sink(std::unique_ptr<Sink> sink);

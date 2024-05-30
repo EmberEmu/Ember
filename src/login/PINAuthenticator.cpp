@@ -103,7 +103,7 @@ void PINAuthenticator::remap_pin() {
 /*
  * Converts the PIN bytes into ASCII values by simply adding 0x30.
  * Mutates the original bytes rather than creating a copy for efficiency.
- * Why bother doing this? Security, or something. I didn't invent this algorithm.
+ * The client processes the digits as ASCII, so we must do the same.
  */
 void PINAuthenticator::pin_to_ascii() {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;

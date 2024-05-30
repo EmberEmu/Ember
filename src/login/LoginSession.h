@@ -23,7 +23,7 @@ class LoginHandlerBuilder;
 class ThreadPool;
 
 class LoginSession final : public NetworkSession {
-	void async_completion(const std::shared_ptr<Action>& action);
+	void async_completion(Action& action);
 	void write_chain(const grunt::Packet& packet, bool notify);
 	void execute_async(const std::shared_ptr<Action>& action);
 

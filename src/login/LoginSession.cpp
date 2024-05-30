@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -64,15 +64,15 @@ void LoginSession::execute_async(const std::shared_ptr<Action>& action) {
 		action->execute();
 
 		boost::asio::post(get_executor(), [action, this, self] {
-			async_completion(action);
+			async_completion(*action.get());
 		});
 	});
 }
 
-void LoginSession::async_completion(const std::shared_ptr<Action>& action) try {
+void LoginSession::async_completion(Action& action) try {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
-	if(!handler_.update_state(*action.get())) {
+	if(!handler_.update_state(action)) {
 		close_session(); // todo change
 	}
 } catch(const std::exception& e) {

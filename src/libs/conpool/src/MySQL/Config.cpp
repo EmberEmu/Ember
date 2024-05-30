@@ -44,7 +44,7 @@ po::variables_map parse_arguments(const std::string& config_path) {
 
 } // unnamed
 
-ember::drivers::MySQL init_db_driver(const std::string& config_path) {
+MySQL init_db_driver(const std::string& config_path) {
 	auto args = std::move(parse_arguments(config_path));
 	const auto& user = args["mysql.username"].as<std::string>();
 	const auto& pass = args["mysql.password"].as<std::string>();

@@ -127,7 +127,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 		return false;
 	}
 	
-	std::optional<Connection<ConType>> get_connection_attempt() {
+	std::optional<Connection<ConType>> get_connection() {
 #ifdef DEBUG_NO_THREADS
 		manager_.run();
 #endif
@@ -231,7 +231,7 @@ public:
 	}
 
 	std::optional<Connection<ConType>> try_acquire() {
-		std::optional<Connection<ConType>> conn(get_connection_attempt());
+		std::optional<Connection<ConType>> conn(get_connection());
 
 		if(!conn) {
 			return std::nullopt;
@@ -249,7 +249,7 @@ public:
 	Connection<ConType> acquire() {
 		std::optional<Connection<ConType>> conn;
 		
-		while(!(conn = get_connection_attempt())) {
+		while(!(conn = get_connection())) {
 			semaphore_.acquire();
 		}
 
@@ -268,7 +268,7 @@ public:
 		auto start = sc::high_resolution_clock::now();
 		std::optional<Connection<ConType>> conn;
 
-		while(!(conn = get_connection_attempt())) {
+		while(!(conn = get_connection())) {
 			sc::milliseconds elapsed = sc::duration_cast<sc::milliseconds>
 				(sc::high_resolution_clock::now() - start);
 			
