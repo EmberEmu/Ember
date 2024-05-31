@@ -27,6 +27,7 @@ set(EXECUTABLE_SRC
 	PatchGraph.cpp
     MPQ.cpp
 	BinaryStreamV2.cpp
+	RealmList.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})

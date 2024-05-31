@@ -27,6 +27,7 @@
 #include <vector>
 #include <stdexcept>
 #include <unordered_map>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -57,7 +58,7 @@ int main(int argc, const char* argv[]) try {
 	return launch(args);
 } catch(const std::exception& e) {
 	std::cerr << e.what();
-	return 1;
+	return EXIT_FAILURE;
 }
 
 int launch(const po::variables_map& args) try {
@@ -68,10 +69,10 @@ int launch(const po::variables_map& args) try {
 	edbc::Parser parser;
 	auto definitions = parser.parse(paths);
 	handle_options(args, definitions);
-	return 0;
+	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
-	return 1;
+	return EXIT_FAILURE;
 }
 
 void handle_options(const po::variables_map& args, const edbc::types::Definitions& defs) {
