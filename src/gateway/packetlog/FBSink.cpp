@@ -18,13 +18,12 @@ namespace be = boost::endian;
 
 namespace ember {
 
-FBSink::FBSink(const std::string& filename, const std::string& host,
-               const std::string& remote_host) {
+FBSink::FBSink(const std::string& filename, std::string_view host, std::string_view remote_host) {
 	start_log(filename, host, remote_host);
 }
 
-void FBSink::start_log(const std::string& filename, const std::string& host,
-                       const std::string& remote_host) {
+void FBSink::start_log(const std::string& filename, std::string_view host,
+                       std::string_view remote_host) {
 	file_ = std::ofstream(filename, std::fstream::binary | std::fstream::app | std::fstream::out);
 
 	if(!file_) {

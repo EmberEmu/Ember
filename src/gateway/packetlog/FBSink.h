@@ -9,6 +9,8 @@
 #pragma once
 
 #include "PacketSink.h"
+#include <string>
+#include <string_view>
 #include <fstream>
 
 namespace ember {
@@ -19,11 +21,10 @@ class FBSink final : public PacketSink {
 	std::ofstream file_;
 	inline static const char* time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601
 
-	void start_log(const std::string& filename, const std::string& host,
-	               const std::string& remote_host);
+	void start_log(const std::string& filename, std::string_view host, std::string_view remote_host);
 
 public:
-	FBSink(const std::string& filename, const std::string& host, const std::string& remote_host);
+	FBSink(const std::string& filename, std::string_view host, std::string_view remote_host);
 
 	void log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	         PacketDirection dir) override;
