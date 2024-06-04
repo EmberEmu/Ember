@@ -18,12 +18,12 @@ class ConsoleSink final : public Sink {
 	bool colour_;
 
 	void set_colour(Severity severity);
-	void do_batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records);
+	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 
 public:
 	ConsoleSink(Severity severity, Filter filter) : Sink(severity, filter), colour_(false) {}
-	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush) override;
-	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) override;
+	void write(Severity severity, Filter type, std::span<const char> record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
 	void colourise(bool colourise) { colour_ = colourise; }
 };
 

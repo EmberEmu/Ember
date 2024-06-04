@@ -54,8 +54,8 @@ public:
 	void midnight_rotate(bool enable) { midnight_rotate_ = enable; }
 	void size_limit(std::uintmax_t megabytes);
 	void time_format(const std::string& format);
-	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush) override;
-	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) override;
+	void write(Severity severity, Filter type, std::span<const char> record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };
 
 

@@ -37,8 +37,8 @@ class SyslogSink::impl final : public Sink {
 public:
 	impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
 	     Facility facility, std::string tag);
-	void write(Severity severity, Filter type, const std::vector<char>& record, bool flush);
-	void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& record);
+	void write(Severity severity, Filter type, const std::span<const char> record, bool flush);
+	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 };
 
 SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
@@ -97,7 +97,7 @@ std::string SyslogSink::impl::month_map(int month) {
 	}
 }
 
-void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
+void SyslogSink::impl::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
 	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
@@ -125,7 +125,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, const std::vector<c
 	socket_.send(segments, 0, err);
 }
 
-void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+void SyslogSink::impl::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
 	for(auto& [detail, data] : records) {
 		write(detail.severity, detail.type, data, false);
 	}
@@ -134,15 +134,17 @@ void SyslogSink::impl::batch_write(const std::vector<std::pair<RecordDetail, std
 SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag)
                        : Sink(severity, filter),
-                         pimpl_(std::make_unique<impl>(severity, filter, std::move(host), port, facility, std::move(tag))) {}
+                         pimpl_(std::make_unique<impl>(severity, filter,
+                                std::move(host), port, facility,
+                                std::move(tag))) {}
 
 SyslogSink::~SyslogSink() = default;
 
-void SyslogSink::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
+void SyslogSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
 	pimpl_->write(severity, type, record, flush);
 }
 
-void SyslogSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+void SyslogSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
 	pimpl_->batch_write(records);
 }
 

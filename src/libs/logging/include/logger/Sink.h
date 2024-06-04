@@ -10,6 +10,7 @@
 
 #include <logger/Severity.h>
 #include <utility>
+#include <span>
 #include <vector>
 
 namespace ember::log {
@@ -26,8 +27,8 @@ public:
 	Filter filter() const { return filter_; }
 	void severity(Severity severity) { severity_ = severity; }
 	void filter(const Filter& filter) { filter_ = filter; }
-	virtual void write(Severity severity, Filter type, const std::vector<char>& record, bool flush) = 0;
-	virtual void batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) = 0;
+	virtual void write(Severity severity, Filter type, std::span<const char> record, bool flush) = 0;
+	virtual void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) = 0;
 	virtual ~Sink() = default;
 };
 

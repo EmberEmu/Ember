@@ -139,7 +139,7 @@ void FileSink::rotate_check(std::size_t buffer_size, const std::tm& curr_time) {
 	}
 }
 
-void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
 	std::tm curr_time = detail::current_time();
 	std::size_t size = 0;
 	Severity severity = this->severity();
@@ -179,7 +179,7 @@ void FileSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector
 }
 
 
-void FileSink::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
+void FileSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}

@@ -18,7 +18,7 @@
 
 namespace ember::log {
 
-void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+void ConsoleSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
@@ -28,7 +28,7 @@ void ConsoleSink::batch_write(const std::vector<std::pair<RecordDetail, std::vec
 	}
 }
 
-void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::vector<char>>>& records) {
+void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
@@ -59,7 +59,7 @@ void ConsoleSink::do_batch_write(const std::vector<std::pair<RecordDetail, std::
 	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
 }
 
-void ConsoleSink::write(Severity severity, Filter type, const std::vector<char>& record, bool flush) {
+void ConsoleSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
