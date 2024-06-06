@@ -10,6 +10,7 @@
 
 #include <shared/database/daos/shared_base/IPBanBase.h>
 #include <boost/asio/ip/address.hpp>
+#include <boost/asio/ip/address_v6_range.hpp>
 #include <stdexcept>
 #include <span>
 #include <vector>
@@ -23,16 +24,46 @@ class IPBanCache {
 		std::uint32_t mask;
 	};
 
-	std::vector<IPv4Entry> entries_;
+	std::vector<IPv4Entry> ipv4_entries_;
+	std::vector<boost::asio::ip::address_v6_range> ipv6_entries_;
+
+	// https://stackoverflow.com/a/57288759 because lazy
+	boost::asio::ip::address_v6_range build_range(const boost::asio::ip::address_v6& address,
+	                                              const std::uint32_t prefix) {
+		auto bytes = address.to_bytes();
+		auto offset = prefix >> 3;
+		uint8_t shift = 1 << (8 - (prefix & 0x07));
+
+		while(shift) {
+			const auto value = bytes[offset] + shift;
+			bytes[offset] = value & 0xFF;
+			shift = value >> 8;
+
+			if(offset == 0) {
+				break;
+			}
+
+			--offset;
+		}
+
+		const auto end = boost::asio::ip::address_v6(bytes);
+		return boost::asio::ip::address_v6_range(address, end);
+	}
 
 	bool check_ban(const boost::asio::ip::address_v6&& ip) const {
-		throw std::runtime_error("IPv6 bans are not supported");
+		for(auto& range : ipv6_entries_) {
+			if(auto it = range.find(ip); it != range.end()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	bool check_ban(const boost::asio::ip::address_v4&& ip) const {
 		unsigned long ip_long = ip.to_ulong();
 		
-		for(auto& e : entries_) {
+		for(auto& e : ipv4_entries_) {
 			if((ip_long & e.mask) == (e.range & e.mask)) {
 				return true;
 			}
@@ -46,11 +77,12 @@ class IPBanCache {
 			auto address = boost::asio::ip::address::from_string(ip);
 
 			if(address.is_v6()) {
-				throw std::runtime_error("IPv6 bans are not supported but the ban cache encountered one!");
+				build_range(address.to_v6(), cidr);
+			} else {
+				std::uint32_t mask = (~0U) << (32 - cidr);
+				ipv4_entries_.emplace_back(static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask);
 			}
 
-			std::uint32_t mask = (~0U) << (32 - cidr);
-			entries_.emplace_back(static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask);
 		}
 	}
 
@@ -60,7 +92,7 @@ public:
 	}
 
 	bool is_banned(const std::string& ip) const {
-		if(entries_.empty()) {
+		if(ipv4_entries_.empty() && ipv6_entries_.empty()) {
 			return false;
 		}
 
@@ -68,10 +100,6 @@ public:
 	}
 
 	bool is_banned(const boost::asio::ip::address& ip) const {
-		if(entries_.empty()) {
-			return false;
-		}
-
 		if(ip.is_v6()) {
 			return check_ban(ip.to_v6());
 		} else {
