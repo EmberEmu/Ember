@@ -26,8 +26,7 @@ class IPBanCache {
 	std::vector<IPv4Entry> entries_;
 
 	bool check_ban(const boost::asio::ip::address_v6&& ip) const {
-		//implement
-		return false;
+		throw std::runtime_error("IPv6 bans are not supported");
 	}
 
 	bool check_ban(const boost::asio::ip::address_v4&& ip) const {
