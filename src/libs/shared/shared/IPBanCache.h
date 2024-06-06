@@ -29,7 +29,7 @@ class IPBanCache {
 
 	// https://stackoverflow.com/a/57288759 because lazy
 	boost::asio::ip::address_v6_range build_range(const boost::asio::ip::address_v6& address,
-	                                              const std::uint32_t prefix) {
+	                                              const std::uint32_t prefix) const {
 		auto bytes = address.to_bytes();
 		auto offset = prefix >> 3;
 		uint8_t shift = 1 << (8 - (prefix & 0x07));
@@ -74,21 +74,31 @@ class IPBanCache {
 
 	void load_bans(std::span<const IPEntry> bans) {
 		for(auto& [ip, cidr] : bans) {
-			auto address = boost::asio::ip::address::from_string(ip);
+			load_ban(ip, cidr);
+		}
+	}
 
-			if(address.is_v6()) {
-				build_range(address.to_v6(), cidr);
-			} else {
-				std::uint32_t mask = (~0U) << (32 - cidr);
-				ipv4_entries_.emplace_back(static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask);
-			}
+	void load_ban(const std::string& ip, const std::uint32_t cidr) {
+		auto address = boost::asio::ip::address::from_string(ip);
 
+		if(address.is_v6()) {
+			auto range = build_range(address.to_v6(), cidr);
+			ipv6_entries_.emplace_back(std::move(range));
+		} else {
+			std::uint32_t mask = (~0U) << (32 - cidr);
+			ipv4_entries_.emplace_back(static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask);
 		}
 	}
 
 public:
 	IPBanCache(std::span<const IPEntry> bans) {
 		load_bans(bans);
+	}
+
+	IPBanCache() = default;
+
+	void ban(const std::string& ip, const std::uint32_t mask) {
+		load_ban(ip, mask);
 	}
 
 	bool is_banned(const std::string& ip) const {
