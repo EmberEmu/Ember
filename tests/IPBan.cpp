@@ -15,11 +15,12 @@ class IPBanTest : public ::testing::Test {
 public:
 	virtual void SetUp() {
 		std::vector<ember::IPEntry> entries {
+			{ "2001:db8::",     64 },
 			{ "198.51.106.51",   8 },
 			{ "172.16.125.134", 16 },
 			{ "169.254.26.21",  24 },
 			{ "203.62.113.82",  31 },
-			{ "192.88.99.62",   32 }
+			{ "192.88.99.62",   32 },
 		};
 
 		bans = std::make_unique<ember::IPBanCache>(entries);
@@ -83,4 +84,24 @@ TEST_F(IPBanTest, Mask8) {
 	EXPECT_TRUE(bans->is_banned("198.255.255.255"));
 	EXPECT_FALSE(bans->is_banned("199.0.0.0"))
 		<< "Banned above range";
+}
+
+TEST_F(IPBanTest, IPv6NotBannedLocal) {
+	EXPECT_FALSE(bans->is_banned("::1"));
+}
+
+TEST_F(IPBanTest, IPv6BannedBegin) {
+	EXPECT_TRUE(bans->is_banned("2001:db8::"));
+}
+
+TEST_F(IPBanTest, IPv6BannedEnd) {
+	EXPECT_TRUE(bans->is_banned("2001:0db8:0000:0000:ffff:ffff:ffff:ffff"));
+}
+
+TEST_F(IPBanTest, IPv6BannedInRange) {
+	EXPECT_TRUE(bans->is_banned("2001:0db8:0000:0000:ffff:ffff:ffff:fffe"));
+}
+
+TEST_F(IPBanTest, IPv6NotBanned) {
+	EXPECT_FALSE(bans->is_banned("2001:0db9::"));
 }
