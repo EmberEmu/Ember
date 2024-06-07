@@ -32,7 +32,7 @@ class IPBanCache {
 	                                              const std::uint32_t prefix) const {
 		auto bytes = address.to_bytes();
 		auto offset = prefix >> 3;
-		uint8_t shift = 1 << (8 - (prefix & 0x07));
+		auto shift = 1 << (8 - (prefix & 0x07));
 
 		while(shift) {
 			const auto value = bytes[offset] + shift;
