@@ -20,7 +20,7 @@ namespace ember {
 
 class IPBanCache {
 	struct IPv4Entry {
-		std::uint32_t range;
+		boost::asio::ip::address_v4::uint_type range;
 		std::uint32_t mask;
 	};
 
@@ -86,7 +86,7 @@ class IPBanCache {
 			ipv6_entries_.emplace_back(std::move(range));
 		} else {
 			std::uint32_t mask = (~0U) << (32 - cidr);
-			ipv4_entries_.emplace_back(static_cast<std::uint32_t>(address.to_v4().to_ulong()), mask);
+			ipv4_entries_.emplace_back(address.to_v4().to_uint(), mask);
 		}
 	}
 

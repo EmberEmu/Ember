@@ -44,7 +44,11 @@ protected:
 							 const std::uint64_t fpos_hi, ExtractionSink& store);
 
 	void extract_compressed_sector(std::span<const std::byte> input, std::span<std::byte> output,
-	                               Flags flags, ExtractionSink& store);
+	                               Flags flags, ExtractionSink& store, int def_comp = -1);
+
+	int default_compression(std::span<const std::uint32_t> sectors,
+	                        const std::byte* const offset,
+	                        std::uint32_t size);
 
 public:
 	MemoryArchive(std::span<std::byte> buffer);

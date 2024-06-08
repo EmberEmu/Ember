@@ -184,7 +184,8 @@ std::expected<std::size_t, int> do_decompression(std::span<const std::byte> inpu
 }
 
 std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
-                                           std::span<std::byte> output) {
+                                           std::span<std::byte> output,
+                                           int def_comp) {
 	std::uint8_t comp_mask = std::bit_cast<std::uint8_t>(input[0]);
 	std::expected<std::size_t, int> result;
 	int prev = 0;
@@ -192,7 +193,7 @@ std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
 
 	while(auto comp = next_compression(comp_mask)) {
 		if(comp == MPQ_COMPRESSION_NEXT_SAME) {
-			throw exception("Unhandled MPQ_COMPRESSION_NEXT_SAME"); // todo
+			comp = def_comp;
 		}
 
 		if(!prev) {

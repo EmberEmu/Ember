@@ -162,6 +162,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 
 	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
 	buffer.resize(max_sector_size);
+	const int def_comp = default_compression(sectors, file_offset, entry.uncompressed_size);
 
 	for(auto sector = sectors.begin(); sector != sectors.end(); ++sector) {
 		std::uint32_t sector_size_actual = max_sector_size;
@@ -188,7 +189,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 		}
 
 		if(sector_size_actual < sector_size) {
-			extract_compressed_sector(sector_data, buffer, entry.flags, store);
+			extract_compressed_sector(sector_data, buffer, entry.flags, store, def_comp);
 		} else {
 			store(sector_data);
 		}
@@ -200,9 +201,10 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 void MemoryArchive::extract_compressed_sector(std::span<const std::byte> input,
                                               std::span<std::byte> output,
 											  const Flags flags,
-                                              ExtractionSink& store) {
+                                              ExtractionSink& store,
+                                              const int def_comp) {
 	if(flags & Flags::MPQ_FILE_COMPRESS) {
-		auto ret = decompress(input, output);
+		auto ret = decompress(input, output, def_comp);
 
 		if(!ret) {
 			throw exception("cannot extract file: decompression failed");
@@ -260,6 +262,24 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 	} else {
 		store(data);
 	}
+}
+
+int MemoryArchive::default_compression(std::span<const std::uint32_t> sectors,
+                                       const std::byte* const offset,
+                                       const std::uint32_t size) {
+	if(sectors.empty() || !size) {
+		return -1;
+	}
+
+	auto data = reinterpret_cast<const std::uint8_t*>(offset + sectors.front());
+	std::uint8_t comp_mask = data[0];
+	auto initial = next_compression(comp_mask);
+
+	if(!initial) {
+		return -1;
+	}
+
+	return initial;
 }
 
 BlockTableEntry& MemoryArchive::file_entry(const std::size_t index) {

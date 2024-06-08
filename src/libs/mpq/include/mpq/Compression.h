@@ -9,13 +9,17 @@
 #include <expected>
 #include <span>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember::mpq {
+
+int next_compression(std::uint8_t& mask);
 
 std::expected<std::size_t, int> decompress_pklib(std::span<const std::byte> input,
                                                  std::span<std::byte> output);
 
 std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
-										   std::span<std::byte> output);
+										   std::span<std::byte> output,
+                                           int def_comp = -1);
 
 } // mpq, ember
