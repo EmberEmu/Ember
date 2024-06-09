@@ -48,7 +48,7 @@ protected:
 
 	int default_compression(std::span<const std::uint32_t> sectors,
 	                        const std::byte* const offset,
-	                        std::uint32_t size);
+	                        std::uint32_t size) const;
 
 public:
 	MemoryArchive(std::span<std::byte> buffer);

@@ -266,14 +266,14 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 
 int MemoryArchive::default_compression(std::span<const std::uint32_t> sectors,
                                        const std::byte* const offset,
-                                       const std::uint32_t size) {
+                                       const std::uint32_t size) const {
 	if(sectors.empty() || !size) {
 		return -1;
 	}
 
 	auto data = reinterpret_cast<const std::uint8_t*>(offset + sectors.front());
 	std::uint8_t comp_mask = data[0];
-	auto initial = next_compression(comp_mask);
+	const auto initial = next_compression(comp_mask);
 
 	if(!initial) {
 		return -1;
