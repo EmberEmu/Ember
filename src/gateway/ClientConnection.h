@@ -41,8 +41,8 @@ class ClientConnection final {
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint ep_;
 
-	BufferInType inbound_buffer_;
-	std::array<BufferOutType, 2> outbound_buffers_;
+	BufferInType inbound_buffer_{};
+	std::array<BufferOutType, 2> outbound_buffers_{};
 	BufferOutType* outbound_front_;
 	BufferOutType* outbound_back_;
 	std::size_t unread_bytes_ = 0;
