@@ -18,7 +18,6 @@
 #include <boost/functional/hash.hpp>
 #include <flatbuffers/flatbuffer_builder.h>
 #include <functional>
-#include <unordered_map>
 #include <memory>
 #include <span>
 #include <cstdint>

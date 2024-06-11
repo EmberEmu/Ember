@@ -70,6 +70,10 @@ inline bool operator==(const ClientUUID& rhs, const ClientUUID& lhs) {
 	return rhs.hash() == lhs.hash();
 }
 
+inline std::size_t hash_value(const ClientUUID& uuid) {
+	return uuid.hash();
+}
+
 } // ember
 
 template <>

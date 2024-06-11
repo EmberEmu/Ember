@@ -9,11 +9,11 @@
 #pragma once
 
 #include <shared/util/StringHash.h>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <algorithm>
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <unordered_map>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -34,12 +34,12 @@ class MySQL final {
 		sql::PreparedStatement, std::function<void(sql::PreparedStatement*)>
 	>;
 
-	using QueryCache = std::unordered_map<std::string, StmtPtr,
+	using QueryCache = boost::unordered_flat_map<std::string, StmtPtr,
 		StringHash, std::equal_to<>>;
 
 	const std::string dsn, username, password, database;
 	sql::Driver* driver;
-	mutable std::unordered_map<const sql::Connection*, QueryCache> cache_;
+	mutable boost::unordered_flat_map<const sql::Connection*, QueryCache> cache_;
 	mutable std::mutex cache_lock_;
 
 	QueryCache* locate_cache(const sql::Connection* conn) const;

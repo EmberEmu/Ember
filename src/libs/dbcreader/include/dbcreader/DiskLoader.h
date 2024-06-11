@@ -11,12 +11,11 @@
 #include <shared/util/StringHash.h>
 #include <dbcreader/Loader.h>
 #include <dbcreader/Storage.h>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <initializer_list>
 #include <functional>
 #include <memory>
-#include <unordered_map>
 #include <string_view>
-#include <unordered_map>
 
 namespace ember::dbc {
 
@@ -26,7 +25,7 @@ class DiskLoader final : public Loader {
 
 	const LogCB log_cb_;
 	const std::string dir_path_;
-	std::unordered_map<std::string, DBCLoadFunc, StringHash, std::equal_to<>> dbc_map;
+	boost::unordered_flat_map<std::string, DBCLoadFunc, StringHash, std::equal_to<>> dbc_map;
 
 public:
 	DiskLoader(std::string dir_path, LogCB log_cb = [](const std::string&){});

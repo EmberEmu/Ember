@@ -47,7 +47,6 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 	std::sort(clients.begin(), clients.end(), [](auto& lhs, auto& rhs) {
 		return lhs.service() < rhs.service();
 	});
-
 	const auto clients_ptr = std::make_shared<decltype(clients)>();
 	clients_ptr->swap(clients);
 

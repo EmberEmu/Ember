@@ -14,9 +14,9 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <unordered_map>
 #include <mutex>
 #include <cstdint>
 
@@ -36,8 +36,8 @@ class Tracking final {
 		const Link link;
 	};
 
-	std::unordered_map<boost::uuids::uuid, std::unique_ptr<Request>,
-	                   boost::hash<boost::uuids::uuid>> handlers_;
+	boost::unordered_flat_map<boost::uuids::uuid, std::unique_ptr<Request>,
+	                          boost::hash<boost::uuids::uuid>> handlers_;
 
 	boost::asio::io_context& io_context_;
 	log::Logger* logger_;

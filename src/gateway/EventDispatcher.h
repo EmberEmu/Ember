@@ -12,15 +12,16 @@
 #include "ClientHandler.h"
 #include <shared/threading/ServicePool.h>
 #include <shared/ClientUUID.h>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <concepts>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 namespace ember {
 
 class EventDispatcher final {
-	using HandlerMap = std::unordered_map<ClientUUID, ClientHandler*>;
+	using HandlerMap = boost::unordered_flat_map<ClientUUID, ClientHandler*,
+	                                             boost::hash<ClientUUID>>;
 
 	const ServicePool& pool_;
 	static inline thread_local HandlerMap handlers_;

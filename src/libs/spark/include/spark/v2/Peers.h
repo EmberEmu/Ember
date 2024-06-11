@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <unordered_map>
 
 namespace ember::spark::v2 {
 
@@ -19,7 +19,7 @@ class RemotePeer;
 class Handler;
 
 class Peers final {
-	std::unordered_map<std::string, std::shared_ptr<RemotePeer>> peers_;
+	boost::unordered_flat_map<std::string, std::shared_ptr<RemotePeer>> peers_;
 	std::mutex lock_;
 
 public:

@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <mutex>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace ember::spark::v2 {
@@ -18,7 +18,7 @@ namespace ember::spark::v2 {
 class Handler;
 
 class HandlerRegistry final {
-	std::unordered_map<std::string, std::vector<Handler*>> services_;
+	boost::unordered_flat_map<std::string, std::vector<Handler*>> services_;
 	mutable std::mutex mutex_;
 
 public:
