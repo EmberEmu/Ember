@@ -26,7 +26,7 @@ public:
 	BufferWriteAdaptor(buf_type& buffer) : buffer_(buffer), write_(0) {}
 
 	void write(const void* source, std::size_t length) override {
-		assert(destination != &buffer_);
+		assert(source != &buffer_);
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks
