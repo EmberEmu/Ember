@@ -14,9 +14,8 @@
 #include <span>
 #include <stdexcept>
 #include <utility>
+#include <cassert>
 #include <cstddef>
-
-#include <iostream>
 
 namespace ember::spark {
 
@@ -29,11 +28,13 @@ public:
 	BufferReadAdaptor(buf_type& buffer) : buffer_(buffer), read_(0) {}
 
 	void read(void* destination, std::size_t length) override {
+		assert(destination != &buffer_);
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
 	}
 
 	void copy(void* destination, std::size_t length) const override {
+		assert(destination != &buffer_);
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 

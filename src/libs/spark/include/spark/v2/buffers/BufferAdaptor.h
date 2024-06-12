@@ -13,6 +13,7 @@
 #include <spark/buffers/Utility.h>
 #include <vector>
 #include <utility>
+#include <cassert>
 #include <cstddef>
 
 namespace ember::spark::v2 {
@@ -36,11 +37,13 @@ public:
 		: buffer_(buffer), read_(0), write_(0) {}
 
 	void read(void* destination, std::size_t length) {
+		assert(destination != &buffer_);
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
 	}
 
 	void copy(void* destination, std::size_t length) const {
+		assert(destination != &buffer_);
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 
@@ -49,6 +52,7 @@ public:
 	}
 
 	void write(const void* source, std::size_t length) requires(can_resize<buf_type>) {
+		assert(source != &buffer_);
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks
