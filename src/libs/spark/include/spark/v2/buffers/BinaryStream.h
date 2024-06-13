@@ -56,11 +56,7 @@ class BinaryStream final {
 	template<std::size_t size>
 	constexpr auto generate_filled(const std::uint8_t value) {
 		std::array<std::uint8_t, size> target{};
-
-		for(std::size_t i = 0; i < size; ++i) {
-			target[i] = value;
-		}
-
+		std::fill(target.begin(), target.end(), value);
 		return target;
 	}
 
