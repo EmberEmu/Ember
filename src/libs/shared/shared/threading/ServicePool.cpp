@@ -7,7 +7,7 @@
  */
 
 #include "ServicePool.h"
-#include <shared/threading/Affinity.h>
+#include <shared/threading/Utility.h>
 #include <utility>
 #include <stdexcept>
 
@@ -50,7 +50,7 @@ void ServicePool::run() {
 	for(std::size_t i = 0; i < pool_size_; ++i) {
 		threads_.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
 			(&boost::asio::io_context::run), services_[i].get());
-		set_affinity(threads_[i], i % core_count);
+		thread::set_affinity(threads_[i], i % core_count);
 	}
 }
 
