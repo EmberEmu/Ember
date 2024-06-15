@@ -8,11 +8,14 @@
 
 #include "Utility.h"
 #include <shared/CompilerWarn.h>
+#include <array>
 #include <stdexcept>
 #include <string>
+#include <cstring>
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <cwchar>
 #elif defined TARGET_OS_MAC
 #include <pthread.h>
 #elif defined __linux__ || defined __unix__
@@ -91,18 +94,18 @@ void set_name(const char* name) {
 template<typename T>
 std::wstring get_name(T& thread) {
 #ifdef _WIN32
-	wchar_t buffer[128]{};
-	wchar_t* pbuffer = &buffer[0];
+	std::array<wchar_t, 128> buffer{};
+	wchar_t* pbuffer = buffer.data();
 	auto res = GetThreadDescription(thread, &pbuffer);
 
 	if(FAILED(res)) {
 		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
 	}
 
-	return std::wstring(buffer, buffer + wcslen(buffer));
+	return std::wstring(buffer.data(), buffer.data() + wcslen(buffer.data()));
 #elif defined TARGET_OS_MAC
-	char buffer[128]{};
-	auto res = pthread_getname_np(buffer); // todo, taking a guess here, can't test
+	std::array<char, 128> buffer{};
+	auto res = pthread_getname_np(buffer.data(), buffer.size()); // todo, taking a guess here, can't test
 
 	if(res) {
 		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
@@ -110,14 +113,14 @@ std::wstring get_name(T& thread) {
 
 	return std::wstring(buffer, buffer + strlen(buffer));
 #elif defined __linux__ || defined __unix__
-	char buffer[128]{};
-	auto res = pthread_getname_np(thread, buffer);
+	std::array<char, 128> buffer{};
+	auto res = pthread_getname_np(thread, buffer.data(), buffer.size());
 	
 	if(res) {
 		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
 	}
 
-	return std::wstring(buffer, buffer + strlen(buffer));
+	return std::wstring(buffer.data(), buffer.data() + strlen(buffer.data()));
 #else
 	return {}; // default, not implemented
 #endif
