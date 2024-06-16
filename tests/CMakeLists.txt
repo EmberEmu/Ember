@@ -27,7 +27,8 @@ set(EXECUTABLE_SRC
 	PatchGraph.cpp
     MPQ.cpp
 	BinaryStreamV2.cpp
-	RealmList.cpp
+	#BufferAdaptorV2.cpp
+	ThreadUtility.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
