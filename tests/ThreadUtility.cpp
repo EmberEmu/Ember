@@ -20,7 +20,7 @@ using namespace ember;
 #if defined __linux__ || defined __unix__
 
 TEST(ThreadUtility, Self_GetSetName) {
-	const char* set_name = "Test Thread Name";
+	const char* set_name = "Test Name";
 	thread::set_name(set_name);
 	const std::wstring wname(set_name, set_name + strlen(set_name));
 	const auto name = thread::get_name();
@@ -29,7 +29,7 @@ TEST(ThreadUtility, Self_GetSetName) {
 
 TEST(ThreadUtility, GetSetName) {
 	std::binary_semaphore sem(0);
-	const char* set_name = "Test Thread Name";
+	const char* set_name = "Test Name";
 	const std::wstring wname(set_name, set_name + strlen(set_name));
 
 	std::thread thread([&]() {

@@ -23,6 +23,9 @@
 #include <pthread.h>
 #endif
 
+constexpr auto BUFFER_LEN   = 32u;
+constexpr auto MAX_NAME_LEN = 16u;
+
 namespace ember::thread {
 
 void set_affinity(std::thread& thread, unsigned int core) {	
@@ -48,6 +51,10 @@ void set_affinity(std::thread& thread, unsigned int core) {
 
 template<typename T>
 void set_name([[maybe_unused]] T& handle, const char* name) {
+	if(strlen(name) >= MAX_NAME_LEN) {
+		throw std::runtime_error("set_name: thread name too long");
+	}
+
 #ifdef _WIN32
 	const std::wstring wstr(name, name + strlen(name));
 	auto ret = SetThreadDescription(handle, wstr.c_str());
@@ -94,7 +101,7 @@ void set_name(const char* name) {
 template<typename T>
 std::wstring get_name(T& thread) {
 #ifdef _WIN32
-	std::array<wchar_t, 128> buffer{};
+	std::array<wchar_t, BUFFER_LEN> buffer{};
 	wchar_t* pbuffer = buffer.data();
 	auto res = GetThreadDescription(thread, &pbuffer);
 
@@ -104,7 +111,7 @@ std::wstring get_name(T& thread) {
 
 	return std::wstring(buffer.data(), buffer.data() + wcslen(buffer.data()));
 #elif defined TARGET_OS_MAC
-	std::array<char, 128> buffer{};
+	std::array<char, BUFFER_LEN> buffer{};
 	auto res = pthread_getname_np(buffer.data(), buffer.size()); // todo, taking a guess here, can't test
 
 	if(res) {
@@ -113,7 +120,7 @@ std::wstring get_name(T& thread) {
 
 	return std::wstring(buffer, buffer + strlen(buffer));
 #elif defined __linux__ || defined __unix__
-	std::array<char, 128> buffer{};
+	std::array<char, BUFFER_LEN> buffer{};
 	auto res = pthread_getname_np(thread, buffer.data(), buffer.size());
 	
 	if(res) {
