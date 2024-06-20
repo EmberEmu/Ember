@@ -279,8 +279,8 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 
 			if(array) {
 				functions << (double_spaced? "" : "\n") << "\t\t"
-					<< "for(std::size_t j = 0; j < sizeof(dbc.records[i]."
-					<< f.name << ") / sizeof(" << (type_found? "" : dbc.name + "::") << type << "); ++j) {" << std::endl;
+					<< "for(std::size_t j = 0; j < std::size(dbc.records[i]."
+					<< f.name << "); ++j) {" << std::endl;
 			}
 
 			double_spaced = array;
