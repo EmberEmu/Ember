@@ -179,19 +179,19 @@ std::expected<std::size_t, int> do_decompression(std::span<const std::byte> inpu
 		case MPQ_COMPRESSION_ZLIB:
 			return decompress_zlib(input, output);
 		default:
-			throw exception("decompression: unknown type");
+			throw unknown_format();
 	}
 }
 
-std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
-                                           std::span<std::byte> output,
-                                           int def_comp) {
+std::expected<std::size_t, DecompressionError> decompress(std::span<const std::byte> input,
+                                                          std::span<std::byte> output,
+                                                          int def_comp) {
 	std::uint8_t comp_mask = std::bit_cast<std::uint8_t>(input[0]);
 	std::expected<std::size_t, int> result;
 	int prev = 0;
 	std::size_t prev_size = 0;
 
-	while(auto comp = next_compression(comp_mask)) {
+	while(auto comp = next_compression(comp_mask)) try {
 		if(comp == MPQ_COMPRESSION_NEXT_SAME) {
 			comp = def_comp;
 		}
@@ -206,15 +206,28 @@ std::expected<std::size_t, int> decompress(std::span<const std::byte> input,
 		}
 
 		if(!result) {
-			return result;
+			const DecompressionError error {
+				.unknown = false,
+				.compression = static_cast<Compression>(comp),
+				.error = result.error()
+
+			};
+
+			return std::unexpected(error);
 		} else {
 			prev_size = result.value();
 		}
 
 		prev = comp;
+	} catch(const unknown_format&) {
+		const DecompressionError error {
+			.unknown = true
+		};
+
+		return std::unexpected(error);
 	}
 
-	return result;
+	return result.value();
 }
 
 } // mpq, ember

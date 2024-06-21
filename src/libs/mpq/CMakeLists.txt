@@ -47,6 +47,7 @@ add_library(${LIBRARY_NAME}
 	include/mpq/MemorySink.h
 	include/mpq/DynamicMemorySink.h
 	include/mpq/Utility.h
+	include/mpq/DecompressionError.h
 	src/MPQ.cpp
 	src/Compression.cpp
 	src/PKCompression.cpp
