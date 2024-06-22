@@ -15,7 +15,6 @@
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
 #include <botan/hash.h>
-#include <botan/loadstor.h>
 #include <botan/mac.h>
 #include <botan/bigint.h>
 #include <format>
@@ -23,6 +22,14 @@
 namespace ember::stun::detail {
 
 namespace be = boost::endian;
+
+constexpr std::uint32_t make_uint32(std::uint8_t i0, std::uint8_t i1,
+                                    std::uint8_t i2, std::uint8_t i3) {
+	return ((static_cast<std::uint32_t>(i0) << 24) |
+		(static_cast<std::uint32_t>(i1) << 16) |
+		(static_cast<std::uint32_t>(i2) <<  8) |
+		(static_cast<std::uint32_t>(i3)));
+}
 
 /* 
 * If the FINGERPRINT attribute is present, we need to adjust the
@@ -84,7 +91,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 	BOOST_ASSERT_MSG(crc_func->output_length() == res.size(), "Bad checksum size");
 	crc_func->update(buffer.data(), offset);
 	crc_func->final(res.data());
-	const auto crc32 = Botan::make_uint32(res[0], res[1], res[2], res[3]);
+	const auto crc32 = make_uint32(res[0], res[1], res[2], res[3]);
 	return crc32 ^ 0x5354554e;
 }
 
