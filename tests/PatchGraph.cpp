@@ -52,7 +52,7 @@ TEST(PatchGraph, OptimalPathLonger) {
 	
 	auto cost = decltype(PatchGraph::Node::weight){};
 
-	for(auto& node : path) {
+	for(const auto& node : path) {
 		cost += node.weight;
 	}
 
@@ -71,7 +71,7 @@ TEST(PatchGraph, OptimalPathShorter) {
 
 	auto cost = decltype(PatchGraph::Node::weight){};
 
-	for(auto& node : path) {
+	for(const auto& node : path) {
 		cost += node.weight;
 	}
 	

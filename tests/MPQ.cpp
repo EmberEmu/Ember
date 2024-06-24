@@ -134,7 +134,6 @@ TEST(MPQ, Extract_MP3) {
 	const auto index = archive->file_lookup("owl.mp3", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
 	const auto& entry = archive->file_entry(index);
-	std::vector<std::byte> buffer(entry.uncompressed_size);
 	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("owl.mp3", sink));
 	const auto md5_buf = util::generate_md5(sink.data());

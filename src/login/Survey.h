@@ -47,7 +47,7 @@ class Survey {
 	std::unordered_map<Key, std::vector<std::byte>, KeyHash> data_;
 
 public:
-	Survey(std::uint32_t id = 0) : id_(id) {}
+	explicit Survey(std::uint32_t id = 0) : id_(id) {}
 
 	std::uint32_t id() const;
 	void add_data(grunt::Platform platform, grunt::System os, const std::string& path);

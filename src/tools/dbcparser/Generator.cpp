@@ -41,7 +41,7 @@ public:
 		names_.emplace_back(type->name);
 	}
 
-	std::vector<std::string> names() {
+	const std::vector<std::string>& names() {
 		return names_;
 	}
 };

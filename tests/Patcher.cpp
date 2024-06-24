@@ -21,7 +21,7 @@ public:
 	mutable int update_count = 0;
 	mutable bool rollup;
 
-	MockPatchDAO(bool include_rollup) : rollup(include_rollup) {}
+	explicit MockPatchDAO(bool include_rollup) : rollup(include_rollup) {}
 
 	std::vector<PatchMeta> fetch_patches() const override {
 		std::vector<PatchMeta> patches {

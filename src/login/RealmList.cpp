@@ -22,7 +22,7 @@ void RealmList::add_realm(std::span<const Realm> realms) {
 	auto realm_map = realms_.load();
 	auto copy = std::make_shared<RealmMap>(*realm_map);
 	
-	for(auto& realm : realms) {
+	for(const auto& realm : realms) {
 		(*copy)[realm.id] = realm;
 	}
 

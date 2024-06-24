@@ -26,7 +26,7 @@ public:
 	void log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	         PacketDirection dir) override;
 
-	~LogSink();
+	~LogSink() override;
 };
 
 } // ember

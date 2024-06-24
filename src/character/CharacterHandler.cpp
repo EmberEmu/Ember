@@ -114,7 +114,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		return;
 	}
 
-	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](auto& c) {
+	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](const auto& c) {
 		return c.realm_id == realm_id;
 	});
 
@@ -328,7 +328,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		return;
 	}
 
-	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](auto& c) {
+	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](const auto& c) {
 		return c.realm_id == character->realm_id;
 	});
 
