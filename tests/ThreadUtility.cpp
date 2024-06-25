@@ -43,4 +43,16 @@ TEST(ThreadUtility, GetSetName) {
 	thread.join();
 }
 
+TEST(ThreadUtility, MaxNameLen) {
+	ASSERT_NO_THROW(thread::set_name("Max name length"));
+}
+
+TEST(ThreadUtility, NameTooLongBoundary) {
+	ASSERT_ANY_THROW(thread::set_name("Name is too long"));
+}
+
+TEST(ThreadUtility, NameTooLong) {
+	ASSERT_ANY_THROW(thread::set_name("This thread name is far too long to be valid"));
+}
+
 #endif

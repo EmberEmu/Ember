@@ -24,7 +24,7 @@
 #endif
 
 constexpr auto BUFFER_LEN   = 32u;
-constexpr auto MAX_NAME_LEN = 16u;
+constexpr auto MAX_NAME_LEN = 16u; // includes null term
 
 namespace ember::thread {
 
