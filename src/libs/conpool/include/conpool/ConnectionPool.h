@@ -162,7 +162,8 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
 	     sc::seconds max_idle, sc::seconds interval = 15s)
-	     : driver_(driver), min_(min_size), max_(max_size), manager_(this), pool_(max_size),
+	     : driver_(driver), min_(min_size), max_(max_size),
+		   manager_(this, interval, max_idle), pool_(max_size),
 		   pool_guards_(max_size), size_(0), closed_(false) {
 
 		if(!max_size) {
@@ -175,7 +176,7 @@ public:
 
 		set_connection_ids();
 		open_connections(min_);
-		manager_.start(interval, max_idle);
+		manager_.start();
 	}
 
 	~Pool() {

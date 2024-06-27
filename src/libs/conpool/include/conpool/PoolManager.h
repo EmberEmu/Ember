@@ -147,9 +147,10 @@ class PoolManager final {
 	}
 
 public:
-	PoolManager(ConnectionPool pool) {
-		pool_ = pool;
-	}
+	PoolManager(ConnectionPool pool, sc::seconds interval, sc::seconds max_idle)
+		: pool_(pool),
+		  interval_(interval),
+		  max_idle_(max_idle) {}
 
 	void check_exceptions() {
 		std::lock_guard<Spinlock> lock(exception_lock_);
@@ -194,9 +195,7 @@ public:
 		}
 	}
 
-	void start(sc::seconds interval, sc::seconds max_idle) {
-		interval_ = interval;
-		max_idle_ = max_idle;
+	void start() {
 #ifndef DEBUG_NO_THREADS
 		manager_ = std::thread(&PoolManager::run, this);
 #endif
