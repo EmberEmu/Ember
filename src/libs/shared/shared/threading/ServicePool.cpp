@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,6 +51,7 @@ void ServicePool::run() {
 		threads_.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
 			(&boost::asio::io_context::run), services_[i].get());
 		thread::set_affinity(threads_[i], i % core_count);
+		thread::set_name(threads_[i], "Service Pool");
 	}
 }
 

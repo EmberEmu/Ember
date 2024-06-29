@@ -13,6 +13,7 @@
 #include "ConnectionPool.h"
 #include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
+#include <shared/threading/Utility.h>
 #include <atomic>
 #include <chrono>
 #include <string>
@@ -198,6 +199,7 @@ public:
 	void start() {
 #ifndef DEBUG_NO_THREADS
 		manager_ = std::thread(&PoolManager::run, this);
+		thread::set_name(manager_, "Pool Manager");
 #endif
 	}
 };

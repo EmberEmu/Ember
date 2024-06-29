@@ -10,6 +10,7 @@
 #include <stun/Protocol.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
+#include <shared/threading/Utility.h>
 
 namespace ember::stun {
 
@@ -21,6 +22,7 @@ StreamTransport::StreamTransport(const std::string& bind, std::chrono::milliseco
 	work_ = std::make_unique<boost::asio::io_context::work>(ctx_);
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);
+	thread::set_name(worker_, "STUN TCP Worker");
 }
 
 StreamTransport::~StreamTransport() {

@@ -54,8 +54,7 @@ void set_name([[maybe_unused]] T& handle, const char* name) {
 	if(strlen(name) >= MAX_NAME_LEN) {
 		throw std::runtime_error("set_name: thread name too long");
 	}
-
-#ifdef _WIN32
+#if defined _WIN32 && defined THREAD_DESC // todo, temporarily disabled on Windows
 	const std::wstring wstr(name, name + strlen(name));
 	auto ret = SetThreadDescription(handle, wstr.c_str());
 
@@ -74,6 +73,15 @@ void set_name([[maybe_unused]] T& handle, const char* name) {
 	if(ret) {
 		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
 	}
+#endif
+}
+
+void set_name(std::jthread& thread, const char* name) {
+#ifndef TARGET_OS_MAC
+	const auto handle = thread.native_handle();
+	set_name(handle, name);
+#else
+#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!");
 #endif
 }
 
@@ -100,7 +108,7 @@ void set_name(const char* name) {
 
 template<typename T>
 std::wstring get_name(T& thread) {
-#ifdef _WIN32
+#if defined _WIN32 && defined THREAD_DESC // todo, temporarily disabled on Windows
 	std::array<wchar_t, BUFFER_LEN> buffer{};
 	wchar_t* pbuffer = buffer.data();
 	auto res = GetThreadDescription(thread, &pbuffer);
@@ -130,6 +138,16 @@ std::wstring get_name(T& thread) {
 	return std::wstring(buffer.data(), buffer.data() + strlen(buffer.data()));
 #else
 	return {}; // default, not implemented
+#endif
+}
+
+std::wstring get_name(std::jthread& thread) {
+#ifndef TARGET_OS_MAC
+	const auto handle = thread.native_handle();
+	return get_name(handle);
+#else
+	// not implemented, MacOS POSIX functions don't take a thread arg (might for getter, not sure)
+	return {};
 #endif
 }
 

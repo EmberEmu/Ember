@@ -17,8 +17,10 @@ void set_affinity(std::thread& thread, unsigned int core);
 
 void set_name(const char* ascii_name);
 void set_name(std::thread& thread, const char* ascii_name);
+void set_name(std::jthread& thread, const char* ascii_name);
 
 std::wstring get_name(std::thread& thread);
+std::wstring get_name(std::jthread& thread);
 std::wstring get_name();
 
 } // thread, ember

@@ -31,6 +31,7 @@
 #include <shared/metrics/Monitor.h>
 #include <shared/metrics/MetricsPoll.h>
 #include <shared/threading/ThreadPool.h>
+#include <shared/threading/Utility.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -269,7 +270,8 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	// start from one to take the main thread into account
 	for(unsigned int i = 1; i < concurrency; ++i) {
 		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
-			(&boost::asio::io_context::run), &service); 
+			(&boost::asio::io_context::run), &service);
+		thread::set_name(workers[i], "ASIO Worker");
 	}
 
 	service.run();

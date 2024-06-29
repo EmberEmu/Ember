@@ -7,6 +7,7 @@
  */
 
 #include <stun/DatagramTransport.h>
+#include <shared/threading/Utility.h>
 
 namespace ember::stun {
 
@@ -17,6 +18,7 @@ DatagramTransport::DatagramTransport(const std::string& bind,
 	timeout_(timeout), retries_(retries), resolver_(ctx_) {
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);
+	thread::set_name(worker_, "STUN UDP Worker");
 
 	ctx_.post([&]() {
 		receive();

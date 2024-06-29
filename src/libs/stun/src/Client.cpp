@@ -14,6 +14,7 @@
 #include <stun/MessageBuilder.h>
 #include <stun/Utility.h>
 #include <stun/detail/Shared.h>
+#include <shared/threading/Utility.h>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
@@ -38,6 +39,7 @@ Client::Client(const std::string& bind, std::string host, const std::uint16_t po
 	work_ = std::make_unique<boost::asio::io_context::work>(ctx_);
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 						   (&boost::asio::io_context::run), &ctx_);
+	thread::set_name(worker_, "STUN Worker");
 
 	switch(proto) {
 		case Protocol::TCP:
