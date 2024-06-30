@@ -101,6 +101,22 @@ class DynamicBuffer final : public Buffer {
 		}), buffers.end());
 	}
 
+	std::byte& byte_at_index(const size_t index) const {
+		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
+
+		auto head = root_.next;
+		auto buffer = buffer_from_node(head);
+		const auto offset_index = index + buffer->read_offset;
+		const auto node_index = offset_index / BlockSize;
+
+		for(std::size_t i = 0; i < node_index; ++i) {
+			head = head->next;
+		}
+
+		buffer = buffer_from_node(head);
+		return (*buffer)[offset_index % BlockSize];
+	}
+
 public:
 	using value_type = IntrusiveStorage::value_type;
 
@@ -332,21 +348,6 @@ public:
 		return BlockSize;
 	}
 
-	std::byte& byte_at_index(const size_t index) const {
-		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
-
-		auto head = root_.next;
-		auto buffer = buffer_from_node(head);
-		const auto offset_index = index + buffer->read_offset;
-		const auto node_index = offset_index / BlockSize;
-
-		for(std::size_t i = 0; i < node_index; ++i) {
-			head = head->next;
-		}
-
-		buffer = buffer_from_node(head);
-		return (*buffer)[offset_index % BlockSize];
-	}
 	std::byte& operator[](const std::size_t index) override {
 		return byte_at_index(index);
 	}
