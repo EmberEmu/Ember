@@ -15,6 +15,7 @@
 #include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
 #include <boost/assert.hpp>
+#include <boost/container/static_vector.hpp>
 #include <optional>
 #include <utility>
 #include <functional>
@@ -35,24 +36,24 @@ namespace sc = std::chrono;
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
-template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy> class PoolManager;
+template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int> class PoolManager;
 
-template<typename Driver, typename ReusePolicy, typename GrowthPolicy>
+template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int size_hint = 32>
 class Pool final : private ReusePolicy, private GrowthPolicy {
-	template<typename, typename, typename, typename>
+	template<typename, typename, typename, typename, unsigned int>
 	friend class PoolManager;
 
 	using ConType = decltype(std::declval<Driver>().open());
 	using ReusePolicy::return_clean;
 	using GrowthPolicy::grow;
 
-	PoolManager<ConType, Driver, ReusePolicy, GrowthPolicy> manager_;
+	PoolManager<ConType, Driver, ReusePolicy, GrowthPolicy, size_hint> manager_;
 	Driver& driver_;
 	const std::size_t min_, max_;
 	std::atomic<std::size_t> size_;
 	Spinlock lock_;
-	std::vector<ConnDetail<ConType>> pool_;
-	std::vector<std::atomic<bool>> pool_guards_;
+	boost::container::static_vector<ConnDetail<ConType>, size_hint> pool_;
+	boost::container::static_vector<std::atomic<bool>, size_hint> pool_guards_;
 
 	std::counting_semaphore<1024> semaphore_ {0};
 	std::function<void(Severity, std::string)> log_cb_;
@@ -68,7 +69,8 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	}
 
 	void open_connections(std::size_t num)  {
-		std::vector<std::future<ConType>> futures;
+		boost::container::static_vector<std::future<ConType>, size_hint> futures;
+		futures.reserve(num);
 
 		for(std::size_t i = 0; i < num; ++i) {
 			auto f = std::async(std::launch::async, [](Driver* driver) {

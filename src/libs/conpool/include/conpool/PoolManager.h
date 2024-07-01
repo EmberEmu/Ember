@@ -31,11 +31,11 @@ namespace sc = std::chrono;
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
-template<typename Driver, typename ReusePolicy, typename GrowthPolicy> class Pool;
+template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int> class Pool;
 
-template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy>
+template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int size_hint>
 class PoolManager final {
-	using ConnectionPool = Pool<Driver, ReusePolicy, GrowthPolicy>*;
+	using ConnectionPool = Pool<Driver, ReusePolicy, GrowthPolicy, size_hint>*;
 	ConnectionPool pool_;
 	Spinlock exception_lock_;
 	sc::seconds interval_, max_idle_;
