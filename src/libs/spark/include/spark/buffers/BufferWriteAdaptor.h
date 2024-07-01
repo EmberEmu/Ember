@@ -23,7 +23,7 @@ class BufferWriteAdaptor : public BufferWrite {
 	std::size_t write_;
 
 public:
-	BufferWriteAdaptor(buf_type& buffer) : buffer_(buffer), write_(0) {}
+	BufferWriteAdaptor(buf_type& buffer) : buffer_(buffer), write_(buffer.size()) {}
 
 	void write(const void* source, std::size_t length) override {
 		assert(source != &buffer_);

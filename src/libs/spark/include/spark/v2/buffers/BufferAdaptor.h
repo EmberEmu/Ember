@@ -34,7 +34,7 @@ public:
 	using value_type = buf_type::value_type;
 
 	BufferAdaptor(buf_type& buffer)
-		: buffer_(buffer), read_(0), write_(0) {}
+		: buffer_(buffer), read_(0), write_(buffer.size()) {}
 
 	void read(void* destination, std::size_t length) {
 		assert(destination != &buffer_);

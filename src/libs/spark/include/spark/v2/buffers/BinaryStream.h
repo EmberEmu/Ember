@@ -191,7 +191,7 @@ public:
 	}
 
 	std::size_t total_write() const requires(writeable<buf_type>) {
-	return total_write_;
+		return total_write_;
 	}
 
 	buf_type* buffer() const {
