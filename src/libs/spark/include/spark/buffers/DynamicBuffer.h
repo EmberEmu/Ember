@@ -32,6 +32,7 @@ class DynamicBuffer final : public Buffer {
 	using UnsignedBlockSize = typename std::make_unsigned<decltype(BlockSize)>::type;
 	using IntrusiveStorage = typename detail::IntrusiveStorage<UnsignedBlockSize(BlockSize)>;
 	using IntrusiveNode = detail::IntrusiveNode;
+	using value_type = IntrusiveStorage::value_type;
 
 	IntrusiveNode root_;
 	std::size_t size_;
@@ -101,7 +102,7 @@ class DynamicBuffer final : public Buffer {
 		}), buffers.end());
 	}
 
-	std::byte& byte_at_index(const size_t index) const {
+	value_type& byte_at_index(const size_t index) const {
 		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
 
 		auto head = root_.next;
@@ -118,8 +119,6 @@ class DynamicBuffer final : public Buffer {
 	}
 
 public:
-	using value_type = IntrusiveStorage::value_type;
-
 	DynamicBuffer() {
 		root_.next = &root_;
 		root_.prev = &root_;
@@ -142,7 +141,7 @@ public:
 
 		do {
 			auto buffer = buffer_from_node(root_.next);
-			remaining -= buffer->read(static_cast<std::byte*>(destination) + length - remaining, remaining,
+			remaining -= buffer->read(static_cast<value_type*>(destination) + length - remaining, remaining,
 			                          root_.next == root_.prev);
 
 			if(remaining) [[unlikely]] {
@@ -161,7 +160,7 @@ public:
 
 		do {
 			const auto buffer = buffer_from_node(head);
-			remaining -= buffer->copy(static_cast<std::byte*>(destination) + length - remaining, remaining);
+			remaining -= buffer->copy(static_cast<value_type*>(destination) + length - remaining, remaining);
 
 			if(remaining) {
 				head = head->next;
@@ -229,7 +228,7 @@ public:
 				tail = root_.prev;
 			}
 
-			remaining -= buffer->write(static_cast<const std::byte*>(source) + length - remaining, remaining);
+			remaining -= buffer->write(static_cast<const value_type*>(source) + length - remaining, remaining);
 			tail = tail->next;
 		} while(remaining);
 
@@ -348,11 +347,11 @@ public:
 		return BlockSize;
 	}
 
-	std::byte& operator[](const std::size_t index) override {
+	value_type& operator[](const std::size_t index) override {
 		return byte_at_index(index);
 	}
 
-	const std::byte& operator[](const std::size_t index) const override {
+	const value_type& operator[](const std::size_t index) const override {
 		return byte_at_index(index);
 	}
 

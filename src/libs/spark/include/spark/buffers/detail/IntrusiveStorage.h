@@ -136,19 +136,19 @@ struct IntrusiveStorage {
 		return size;
 	}
 
-	const std::byte* read_data() const {
+	const value_type* read_data() const {
 		return storage.data() + read_offset;
 	}
 
-	std::byte* write_data() {
+	value_type* write_data() {
 		return storage.data() + write_offset;
 	}
 
-	std::byte& operator[](const std::size_t index) {
+	value_type& operator[](const std::size_t index) {
 		return *(storage.data() + index);
 	}
 
-	std::byte& operator[](const std::size_t index) const {
+	value_type& operator[](const std::size_t index) const {
 		return *(storage.data() + index);
 	}
 };
