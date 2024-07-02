@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/buffers/BufferBase.h>
-#include <spark/buffers/Utility.h>
+#include <spark/buffers/SharedDefs.h>
 #include <cstddef>
 
 namespace ember::spark {

@@ -23,7 +23,12 @@ enum class BufferSeek {
 };
 
 enum class StreamSeek {
-	SK_BUFFER_ABSOLUTE, SK_BACKWARD, SK_FORWARD, SK_STREAM_ABSOLUTE
+	// Seeks within the entire underlying buffer
+	SK_BUFFER_ABSOLUTE,
+	SK_BACKWARD,
+	SK_FORWARD,
+	// Seeks only within the range written by the current stream
+	SK_STREAM_ABSOLUTE
 };
 
 enum class StreamState {

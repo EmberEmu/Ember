@@ -77,6 +77,7 @@ set(IO_SRC
     include/spark/buffers/BufferAdaptor.h
     include/spark/buffers/BufferReadAdaptor.h
     include/spark/buffers/BufferWriteAdaptor.h
+	include/spark/buffers/SharedDefs.h
 )
 
 set(IO_SRCv2

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/buffers/Utility.h>
+#include <spark/buffers/SharedDefs.h>
 #include <spark/Exception.h>
 #include <algorithm>
 #include <array>

@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <spark/buffers/Utility.h>
-#include <vector>
+#include <spark/buffers/SharedDefs.h>
 #include <utility>
+#include <vector>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
