@@ -14,6 +14,7 @@
 #include <utility>
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 
 namespace ember::spark {
 
