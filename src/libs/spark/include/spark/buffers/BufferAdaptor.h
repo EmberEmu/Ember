@@ -46,7 +46,7 @@ public:
 		BufferWriteAdaptor<buf_type>::reserve(length);
 	};
 
-	 bool can_write_seek() const override { 
+	bool can_write_seek() const override { 
 		return BufferWriteAdaptor<buf_type>::can_write_seek();
 	};
 

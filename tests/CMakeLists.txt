@@ -27,7 +27,7 @@ set(EXECUTABLE_SRC
 	PatchGraph.cpp
     MPQ.cpp
 	BinaryStreamV2.cpp
-	#BufferAdaptorV2.cpp
+	BufferAdaptorV2.cpp
 	ThreadUtility.cpp
     )
 
