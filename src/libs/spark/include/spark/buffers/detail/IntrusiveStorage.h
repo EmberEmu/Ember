@@ -10,6 +10,7 @@
 #pragma warning(disable : 4996)
 
 #include <spark/buffers/Buffer.h>
+#include <spark/buffers/SharedDefs.h>
 #include <array>
 #include <concepts>
 #include <type_traits>
@@ -23,11 +24,11 @@ struct IntrusiveNode {
 	IntrusiveNode* prev;
 };
 
-template<decltype(auto) BlockSize>
+template<decltype(auto) BlockSize, byte_type StorageType = std::byte>
 requires std::unsigned_integral<decltype(BlockSize)>
 struct IntrusiveStorage {
 	using OffsetType = std::remove_const_t<decltype(BlockSize)>;
-	using value_type = std::byte;
+	using value_type = StorageType;
 
 	OffsetType read_offset = 0;
 	OffsetType write_offset = 0;

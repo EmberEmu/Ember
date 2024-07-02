@@ -15,6 +15,9 @@ namespace ember::spark {
 template<typename buf_t>
 concept byte_oriented = sizeof(typename buf_t::value_type) == 1;
 
+template<typename type>
+concept byte_type = sizeof(type) == 1;
+
 template<typename T>
 concept is_pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
 

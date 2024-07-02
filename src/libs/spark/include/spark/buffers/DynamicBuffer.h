@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include <spark/buffers/detail/IntrusiveStorage.h>
 #include <spark/buffers/Buffer.h>
+#include <spark/buffers/SharedDefs.h>
+#include <spark/buffers/detail/IntrusiveStorage.h>
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <concepts>
-#include <vector>
 #include <utility>
+#include <vector>
 #include <cstddef>
 #include <cstdint>
 
@@ -26,13 +27,16 @@ class BufferSequence;
 template<decltype(auto) BlockSize>
 concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
 
-template<decltype(auto) BlockSize>
+template<decltype(auto) BlockSize, byte_type StorageType = std::byte>
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public Buffer {
+public:
+	using value_type = StorageType;
+
+private:
 	using UnsignedBlockSize = typename std::make_unsigned<decltype(BlockSize)>::type;
-	using IntrusiveStorage = typename detail::IntrusiveStorage<UnsignedBlockSize(BlockSize)>;
+	using IntrusiveStorage = typename detail::IntrusiveStorage<UnsignedBlockSize(BlockSize), value_type>;
 	using IntrusiveNode = detail::IntrusiveNode;
-	using value_type = IntrusiveStorage::value_type;
 
 	IntrusiveNode root_;
 	std::size_t size_;
