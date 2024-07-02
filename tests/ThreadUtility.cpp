@@ -6,7 +6,6 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-
 #include <shared/threading/Utility.h>
 #include <gtest/gtest.h>
 #include <semaphore>
@@ -16,10 +15,11 @@
 
 using namespace ember;
 
-// only building these tests for Linux/Unix distros for now
-#if defined __linux__ || defined __unix__
-
+// only running on Linux/Unix distros for now
 TEST(ThreadUtility, Self_GetSetName) {
+#if !defined __linux__ && !defined __unix__
+	GTEST_SKIP();
+#endif
 	const char* set_name = "Test Name";
 	thread::set_name(set_name);
 	const std::wstring wname(set_name, set_name + strlen(set_name));
@@ -27,7 +27,11 @@ TEST(ThreadUtility, Self_GetSetName) {
 	ASSERT_EQ(name, wname);
 }
 
+// only running on Linux/Unix distros for now
 TEST(ThreadUtility, GetSetName) {
+#if !defined __linux__ && !defined __unix__
+	GTEST_SKIP();
+#endif
 	std::binary_semaphore sem(0);
 	const char* set_name = "Test Name";
 	const std::wstring wname(set_name, set_name + strlen(set_name));
@@ -54,5 +58,3 @@ TEST(ThreadUtility, NameTooLongBoundary) {
 TEST(ThreadUtility, NameTooLong) {
 	ASSERT_ANY_THROW(thread::set_name("This thread name is far too long to be valid"));
 }
-
-#endif
