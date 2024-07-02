@@ -134,13 +134,11 @@ public:
 
 	void write_to_stream(spark::BinaryStream& stream) const override {
 		stream << opcode;
-
-		// calculate the size by using a null buffer, then write the message for real
-		spark::NullBuffer null_buff;
-		spark::BinaryStreamWriter null_stream(null_buff);
-
-		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_body(null_stream)));
-		write_body(stream);
+		stream << std::uint16_t(0); // write placeholder size
+		const auto write_len = write_body(stream);
+		stream.write_seek(spark::StreamSeek::SK_BACKWARD, write_len + 2);
+		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_len)); // overwrite size
+		stream.write_seek(spark::StreamSeek::SK_FORWARD, write_len);
 	}
 };
 
