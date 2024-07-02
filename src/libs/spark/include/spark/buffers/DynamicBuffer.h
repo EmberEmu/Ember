@@ -118,6 +118,16 @@ class DynamicBuffer final : public Buffer {
 		return (*buffer)[offset_index % BlockSize];
 	}
 
+	std::size_t abs_seek_offset(std::size_t offset) {
+		if(offset < size_) {
+			return size_ - offset;
+		} else if(offset > size_) {
+			return offset - size_;
+		} else {
+			return 0;
+		}
+	}
+
 public:
 	DynamicBuffer() {
 		root_.next = &root_;
@@ -301,25 +311,39 @@ public:
 		return true;
 	}
 
-	void write_seek(const BufferSeek direction, std::size_t offset) override {
-		const bool rewind = direction == BufferSeek::SK_BACKWARD;
+	void write_seek(const BufferSeek mode, std::size_t offset) override {
+		// nothing to do in this case
+		if(mode == BufferSeek::SK_ABSOLUTE && offset == size_) {
+			return;
+		}
+
 		auto tail = root_.prev;
 
-		if(direction == BufferSeek::SK_BACKWARD) {
-			size_ -= offset;
-		} else {
-			size_ += offset;
+		switch(mode) {
+			case BufferSeek::SK_BACKWARD:
+				size_ -= offset;
+				break;
+			case BufferSeek::SK_FORWARD:
+				size_ += offset;
+				break;
+			case BufferSeek::SK_ABSOLUTE:
+				size_ = offset;
+				offset = abs_seek_offset(offset);
+				break;
 		}
+
+		const bool rewind = (mode == BufferSeek::SK_BACKWARD
+							 || (mode == BufferSeek::SK_ABSOLUTE && offset < size_));
 
 		while(offset) {
 			auto buffer = buffer_from_node(tail);
 			const auto max_seek = rewind? buffer->size() : buffer->free();
 
 			if(max_seek >= offset) {
-				buffer->write_seek(direction, offset);
+				buffer->write_seek(mode, offset);
 				offset = 0;
 			} else {
-				buffer->write_seek(direction, max_seek);
+				buffer->write_seek(mode, max_seek);
 				offset -= max_seek;
 				tail = rewind? tail->prev : tail->next;
 			}
