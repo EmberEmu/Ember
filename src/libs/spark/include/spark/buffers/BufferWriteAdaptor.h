@@ -51,15 +51,15 @@ public:
 		return true;
 	}
 
-	void write_seek(const SeekDir direction, const std::size_t offset) override {
+	void write_seek(const BufferSeek direction, const std::size_t offset) override {
 		switch(direction) {
-			case SeekDir::SD_BACK:
+			case BufferSeek::SK_BACKWARD:
 				write_ -= offset;
 				break;
-			case SeekDir::SD_FORWARD:
+			case BufferSeek::SK_FORWARD:
 				write_ += offset;
 				break;
-			case SeekDir::SD_START:
+			case BufferSeek::SK_ABSOLUTE:
 				write_ = offset;
 		}
 	}

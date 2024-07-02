@@ -29,9 +29,9 @@ void ClientConnection::send(const PacketType& packet) {
 		crypt_->encrypt(opcode);
 	}
 
-	stream.write_seek(spark::SeekDir::SD_START, 0);
+	stream.write_seek(spark::StreamSeek::SK_STREAM_ABSOLUTE, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::SeekDir::SD_FORWARD, written - PacketType::HEADER_WIRE_SIZE);
+	stream.write_seek(spark::StreamSeek::SK_FORWARD, written - PacketType::HEADER_WIRE_SIZE);
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;

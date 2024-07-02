@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <spark/buffers/BufferWrite.h>
-#include <spark/buffers/StreamBase.h>
 #include <spark/buffers/Utility.h>
 #include <spark/Exception.h>
 #include <algorithm>
@@ -174,11 +172,11 @@ public:
 		return buffer_.can_write_seek();
 	}
 
-	void write_seek(const SeekDir direction, const std::size_t offset) requires(writeable<buf_type>) {
-		if(direction == SeekDir::SD_START) {
-			buffer_.write_seek(SeekDir::SD_BACK, total_write_ - offset);
+	void write_seek(const StreamSeek direction, const std::size_t offset) requires(writeable<buf_type>) {
+		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
+			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
 		} else {
-			buffer_.write_seek(direction, offset);
+			buffer_.write_seek(static_cast<BufferSeek>(direction), offset);
 		}
 	}
 

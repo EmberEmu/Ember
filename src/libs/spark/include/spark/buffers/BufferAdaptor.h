@@ -50,7 +50,7 @@ public:
 		return BufferWriteAdaptor<buf_type>::can_write_seek();
 	};
 
-	void write_seek(SeekDir direction, std::size_t offset) override {
+	void write_seek(BufferSeek direction, std::size_t offset) override {
 		BufferWriteAdaptor<buf_type>::write_seek(direction, offset);
 	};
 

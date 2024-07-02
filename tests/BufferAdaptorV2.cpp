@@ -104,7 +104,7 @@ TEST(BufferAdaptorV2, WriteSeekBack) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
 	spark::v2::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
-	adaptor.write_seek(spark::SeekDir::SD_BACK, 2);
+	adaptor.write_seek(spark::BufferSeek::SK_BACKWARD, 2);
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), 4);
 	ASSERT_EQ(adaptor.size(), buffer.size());
@@ -116,7 +116,7 @@ TEST(BufferAdaptorV2, WriteSeekStart) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
 	spark::v2::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
-	adaptor.write_seek(spark::SeekDir::SD_START, 0);
+	adaptor.write_seek(spark::BufferSeek::SK_ABSOLUTE, 0);
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_EQ(adaptor.size(), buffer.size());

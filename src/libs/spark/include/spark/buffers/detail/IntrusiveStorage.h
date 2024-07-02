@@ -111,13 +111,17 @@ struct IntrusiveStorage {
 		return BlockSize - write_offset;
 	}
 
-	void write_seek(const SeekDir direction, const std::size_t offset) {
-		if(direction == SeekDir::SD_START) {
-			write_offset = 0;
-		} else if(direction == SeekDir::SD_BACK) {
-			write_offset -= static_cast<OffsetType>(offset);
-		} else {
-			write_offset += static_cast<OffsetType>(offset);
+	void write_seek(const BufferSeek direction, const std::size_t offset) {
+		switch(direction) {
+			case BufferSeek::SK_ABSOLUTE:
+				write_offset = offset;
+				break;
+			case BufferSeek::SK_BACKWARD:
+				write_offset -= static_cast<OffsetType>(offset);
+				break;
+			case BufferSeek::SK_FORWARD:
+				write_offset += static_cast<OffsetType>(offset);
+				break;
 		}
 	}
 

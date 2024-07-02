@@ -501,9 +501,9 @@ void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
 	stream << std::uint16_t(0);
 	const auto rdata_len = write_rdata(rr, stream);
 	const auto new_seek = stream.total_write();
-	stream.write_seek(spark::SeekDir::SD_START, seek);
+	stream.write_seek(spark::StreamSeek::SK_BUFFER_ABSOLUTE, seek);
 	stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
-	stream.write_seek(spark::SeekDir::SD_START, new_seek);
+	stream.write_seek(spark::StreamSeek::SK_BUFFER_ABSOLUTE, new_seek);
 }
 
 void write_resource_records(const Query& query, const Pointers& ptrs,

@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <spark/buffers/StreamBase.h>
-#include <spark/buffers/BufferWrite.h>
 #include <spark/buffers/Utility.h>
 #include <vector>
 #include <utility>
@@ -85,15 +83,15 @@ public:
 		return true;
 	}
 
-	void write_seek(const SeekDir direction, const std::size_t offset) requires(can_resize<buf_type>) {
+	void write_seek(const BufferSeek direction, const std::size_t offset) requires(can_resize<buf_type>) {
 		switch(direction) {
-			case SeekDir::SD_BACK:
+			case BufferSeek::SK_BACKWARD:
 				write_ -= offset;
 				break;
-			case SeekDir::SD_FORWARD:
+			case BufferSeek::SK_FORWARD:
 				write_ += offset;
 				break;
-			case SeekDir::SD_START:
+			case BufferSeek::SK_ABSOLUTE:
 				write_ = offset;
 		}
 	}

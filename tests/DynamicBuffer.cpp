@@ -226,7 +226,7 @@ TEST(DynamicBufferTest, WriteSeek) {
 	const std::array<std::uint8_t, 4> expected_data {0x00, 0x01, 0x02, 0x03};
 
 	chain.write(data.data(), data.size());
-	chain.write_seek(spark::SeekDir::SD_BACK, 4);
+	chain.write_seek(spark::BufferSeek::SK_BACKWARD, 4);
 	chain.write(seek_data.data(), seek_data.size());
 
 	// make sure the chain is four bytes (6 written, (-)4 rewound, (+)2 rewritten = 4)
@@ -239,7 +239,7 @@ TEST(DynamicBufferTest, WriteSeek) {
 		<< "Buffer contains incorrect data pattern";
 
 	// put the write cursor back to its original position and write more data
-	chain.write_seek(spark::SeekDir::SD_FORWARD, 2);
+	chain.write_seek(spark::BufferSeek::SK_FORWARD, 2);
 
 	// should be six bytes in there
 	ASSERT_EQ(chain.size(), data.size()) << "Chain size is incorrect";

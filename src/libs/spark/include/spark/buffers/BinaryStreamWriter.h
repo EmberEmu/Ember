@@ -92,8 +92,12 @@ public:
 		return buffer_.can_write_seek();
 	}
 
-	void write_seek(const SeekDir direction, const std::size_t offset) {
-		buffer_.write_seek(direction, offset);
+	void write_seek(const StreamSeek direction, const std::size_t offset) {
+		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
+			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
+		} else {
+			buffer_.write_seek(static_cast<BufferSeek>(direction), offset);
+		}
 	}
 
 	std::size_t size() const {

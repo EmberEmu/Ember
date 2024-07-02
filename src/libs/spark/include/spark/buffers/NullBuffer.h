@@ -23,7 +23,7 @@ public:
 	bool empty() const override { return true; };
 	bool can_write_seek() const override { return false; }
 
-	void write_seek(const SeekDir direction, const std::size_t offset) override {
+	void write_seek(const BufferSeek direction, const std::size_t offset) override {
 		throw std::logic_error("Don't do this on a NullBuffer"); 
 	};
 

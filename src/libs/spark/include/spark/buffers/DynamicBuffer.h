@@ -302,11 +302,11 @@ public:
 		return true;
 	}
 
-	void write_seek(const SeekDir direction, std::size_t offset) override {
-		const bool rewind = direction == SeekDir::SD_BACK;
+	void write_seek(const BufferSeek direction, std::size_t offset) override {
+		const bool rewind = direction == BufferSeek::SK_BACKWARD;
 		auto tail = root_.prev;
 
-		if(direction == SeekDir::SD_BACK) {
+		if(direction == BufferSeek::SK_BACKWARD) {
 			size_ -= offset;
 		} else {
 			size_ += offset;
