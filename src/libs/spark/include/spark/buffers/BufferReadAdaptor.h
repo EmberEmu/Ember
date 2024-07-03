@@ -54,6 +54,10 @@ public:
 	const std::byte& operator[](const std::size_t index) const override {
 		return reinterpret_cast<const std::byte&>(buffer_[index]);
 	}
+
+	const auto read_ptr() const {
+		return buffer_.data() + read_;
+	}
 };
 
 } // spark, ember

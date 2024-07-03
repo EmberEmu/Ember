@@ -29,6 +29,7 @@ set(EXECUTABLE_SRC
 	BinaryStreamV2.cpp
 	BufferAdaptorV2.cpp
 	ThreadUtility.cpp
+	BufferAdaptor.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
