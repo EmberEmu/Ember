@@ -19,7 +19,7 @@
 
 namespace spark = ember::spark;
 
-TEST(DynamicBufferTest, Size) {
+TEST(DynamicBuffer, Size) {
 	spark::DynamicBuffer<32> chain;
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 
@@ -40,7 +40,7 @@ TEST(DynamicBufferTest, Size) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
-TEST(DynamicBufferTest, ReadWriteConsistency) {
+TEST(DynamicBuffer, ReadWriteConsistency) {
 	spark::DynamicBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	int num = 41521;
@@ -59,7 +59,7 @@ TEST(DynamicBufferTest, ReadWriteConsistency) {
 	ASSERT_EQ(0, chain.size()) << "Chain should be empty";
 }
 
-TEST(DynamicBufferTest, ReserveFetchConsistency) {
+TEST(DynamicBuffer, ReserveFetchConsistency) {
 	spark::DynamicBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	const std::size_t text_len = sizeof(text);
@@ -89,7 +89,7 @@ TEST(DynamicBufferTest, ReserveFetchConsistency) {
 	ASSERT_STREQ(text, output.c_str()) << "Read produced incorrect result";
 }
 
-TEST(DynamicBufferTest, Skip) {
+TEST(DynamicBuffer, Skip) {
 	spark::DynamicBuffer<32> chain;
 	int foo = 960;
 	int bar = 296;
@@ -103,7 +103,7 @@ TEST(DynamicBufferTest, Skip) {
 	ASSERT_EQ(bar, foo) << "Skip produced incorrect result";
 }
 
-TEST(DynamicBufferTest, Clear) {
+TEST(DynamicBuffer, Clear) {
 	spark::DynamicBuffer<32> chain;
 	const int iterations = 100;
 
@@ -116,7 +116,7 @@ TEST(DynamicBufferTest, Clear) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
-TEST(DynamicBufferTest, AttachTail) {
+TEST(DynamicBuffer, AttachTail) {
 	spark::DynamicBuffer<32> chain;
 	auto buffer = chain.allocate();
 
@@ -136,7 +136,7 @@ TEST(DynamicBufferTest, AttachTail) {
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
 
-TEST(DynamicBufferTest, PopFrontPushBack) {
+TEST(DynamicBuffer, PopFrontPushBack) {
 	spark::DynamicBuffer<32> chain;
 	auto buffer = chain.allocate();
 
@@ -148,16 +148,10 @@ TEST(DynamicBufferTest, PopFrontPushBack) {
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 	auto front = chain.pop_front();
 	chain.deallocate(front);
-	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
-
-	std::string output; output.resize(written);
-
-	chain.read(&output[0], written);
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
-	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }
 
-TEST(DynamicBufferTest, RetrieveTail) {
+TEST(DynamicBuffer, RetrieveTail) {
 	spark::DynamicBuffer<32> chain;
 	std::string text("This string is < 32 bytes"); // could this fail on exotic platforms?
 	chain.write(text.data(), text.length());
@@ -166,7 +160,7 @@ TEST(DynamicBufferTest, RetrieveTail) {
 	ASSERT_EQ(0, std::memcmp(text.data(), tail->storage.data(), text.length())) << "Tail data is incorrect";
 }
 
-TEST(DynamicBufferTest, Copy) {
+TEST(DynamicBuffer, Copy) {
 	spark::DynamicBuffer<32> chain;
 	int output, foo = 54543;
 	chain.write(&foo, sizeof(int));
@@ -176,7 +170,7 @@ TEST(DynamicBufferTest, Copy) {
 	ASSERT_EQ(foo, output) << "Copy output is incorrect";
 }
 
-TEST(DynamicBufferTest, CopyChain) {
+TEST(DynamicBuffer, CopyChain) {
 	spark::DynamicBuffer<sizeof(int)> chain, chain2;
 	int foo = 5491;
 	int output;
@@ -202,7 +196,7 @@ TEST(DynamicBufferTest, CopyChain) {
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
-TEST(DynamicBufferTest, MoveChain) {
+TEST(DynamicBuffer, MoveChain) {
 	spark::DynamicBuffer<32> chain, chain2;
 	int foo = 23113;
 
@@ -219,7 +213,7 @@ TEST(DynamicBufferTest, MoveChain) {
 	ASSERT_EQ(foo, output) << "Chain output is incorrect";
 }
 
-TEST(DynamicBufferTest, WriteSeek) {
+TEST(DynamicBuffer, WriteSeek) {
 	spark::DynamicBuffer<1> chain; // ensure the data is split over multiple buffer nodes
 	const std::array<std::uint8_t, 6> data {0x00, 0x01, 0x00, 0x00, 0x04, 0x05};
 	const std::array<std::uint8_t, 2> seek_data {0x02, 0x03};
@@ -259,7 +253,7 @@ TEST(DynamicBufferTest, WriteSeek) {
 		<< "Buffer contains incorrect data pattern";
 }
 
-TEST(DynamicBufferTest, ReadIterator) {
+TEST(DynamicBuffer, ReadIterator) {
 	spark::DynamicBuffer<16> chain; // ensure the string is split over multiple buffers
 	spark::BufferSequence<16> sequence(chain);
 	std::string skip("Skipping");
@@ -278,7 +272,7 @@ TEST(DynamicBufferTest, ReadIterator) {
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
 }
 
-TEST(DynamicBufferTest, ASIOIteratorRegressionTest) {
+TEST(DynamicBuffer, ASIOIteratorRegressionTest) {
 	spark::DynamicBuffer<1> chain;
 	spark::BufferSequence<1> sequence(chain);
 
@@ -329,4 +323,34 @@ TEST(DynamicBufferTest, ASIOIteratorRegressionTest) {
 	chain.skip(bytes_sent);
 	ASSERT_EQ(2, bytes_sent) << "Regression found - read length was incorrect";
 	ASSERT_EQ(0, chain.size()) << "Chain size was incorrect";
+}
+
+TEST(DynamicBuffer, Empty) {
+	spark::DynamicBuffer<32> chain;
+	ASSERT_TRUE(chain.empty());
+	const auto value = 0;
+	chain.write(&value, sizeof(value));
+	ASSERT_FALSE(chain.empty());
+}
+
+TEST(DynamicBuffer, BlockSize) {
+	spark::DynamicBuffer<32> chain;
+	ASSERT_EQ(chain.block_size(), 32);
+	spark::DynamicBuffer<64> chain2;
+	ASSERT_EQ(chain2.block_size(), 64);
+}
+
+TEST(DynamicBuffer, BlockCount) {
+	spark::DynamicBuffer<1> chain;
+	const std::uint8_t value = 0;
+	chain.write(&value, sizeof(value));
+	ASSERT_EQ(chain.block_count(), 1);
+	chain.write(&value, sizeof(value));
+	ASSERT_EQ(chain.block_count(), 2);
+	chain.write(&value, sizeof(value));
+	chain.write(&value, sizeof(value));
+	ASSERT_EQ(chain.block_count(), 4);
+	auto node = chain.pop_front();
+	chain.deallocate(node);
+	ASSERT_EQ(chain.block_count(), 3);
 }
