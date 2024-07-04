@@ -22,6 +22,14 @@ TEST(BufferAdaptor, SizeEmptyInitial) {
 	ASSERT_EQ(adaptor.size(), 0);
 }
 
+TEST(BufferAdaptor, Empty) {
+	std::vector<std::uint8_t> buffer;
+	spark::BufferAdaptor adaptor(buffer);
+	ASSERT_TRUE(adaptor.empty());
+	buffer.emplace_back(1);
+	ASSERT_FALSE(adaptor.empty());
+}
+
 TEST(BufferAdaptor, SizePopulatedInitial) {
 	std::vector<std::uint8_t> buffer { 1 };
 	spark::BufferAdaptor adaptor(buffer);
