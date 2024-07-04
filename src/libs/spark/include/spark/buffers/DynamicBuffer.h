@@ -133,12 +133,9 @@ private:
 	}
 
 public:
-	DynamicBuffer() {
-		root_.next = &root_;
-		root_.prev = &root_;
-		size_ = 0;
-		push_back(allocate());
-	}
+	DynamicBuffer()
+		: root_{ .next = &root_, .prev = &root_ },
+		  size_(0) {}
 
 	~DynamicBuffer() {
 		clear();
@@ -381,6 +378,20 @@ public:
 
 	const value_type& operator[](const std::size_t index) const override {
 		return byte_at_index(index);
+	}
+
+	std::size_t block_count() {
+		auto node = &root_;
+		std::size_t count = 0;
+
+		// not calculating based on block size & size as it
+		// wouldn't play nice with seeking or manual push/pop
+		while(node->next != root_.prev->next) {
+			++count;
+			node = node->next;
+		}
+
+		return count;
 	}
 
 	template<decltype(auto)>
