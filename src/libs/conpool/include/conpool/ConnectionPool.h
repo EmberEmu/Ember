@@ -15,7 +15,7 @@
 #include "LogSeverity.h"
 #include <shared/threading/Spinlock.h>
 #include <boost/assert.hpp>
-#include <boost/container/static_vector.hpp>
+#include <boost/container/small_vector.hpp>
 #include <optional>
 #include <utility>
 #include <functional>
@@ -52,8 +52,8 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	const std::size_t min_, max_;
 	std::atomic<std::size_t> size_;
 	Spinlock lock_;
-	boost::container::static_vector<ConnDetail<ConType>, size_hint> pool_;
-	boost::container::static_vector<std::atomic<bool>, size_hint> pool_guards_;
+	boost::container::small_vector<ConnDetail<ConType>, size_hint> pool_;
+	boost::container::small_vector<std::atomic<bool>, size_hint> pool_guards_;
 
 	std::counting_semaphore<1024> semaphore_ {0};
 	std::function<void(Severity, std::string)> log_cb_;
