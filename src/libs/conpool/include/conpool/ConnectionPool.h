@@ -69,7 +69,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	}
 
 	void open_connections(std::size_t num)  {
-		boost::container::static_vector<std::future<ConType>, size_hint> futures;
+		boost::container::small_vector<std::future<ConType>, size_hint> futures;
 		futures.reserve(num);
 
 		for(std::size_t i = 0; i < num; ++i) {
