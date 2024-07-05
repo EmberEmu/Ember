@@ -280,7 +280,7 @@ public:
 		return buffer_from_node(root_.next);
 	}
 
-	auto pop_front() {
+	[[nodiscard]] auto pop_front() {
 		auto buffer = buffer_from_node(root_.next);
 		size_ -= buffer->size();
 		unlink_node(root_.next);
@@ -292,7 +292,7 @@ public:
 		size_ += buffer->write_offset;
 	}
 
-	IntrusiveStorage* allocate() const {
+	[[nodiscard]] IntrusiveStorage* allocate() const {
 		return new IntrusiveStorage(); // todo, actual allocator
 	}
 
