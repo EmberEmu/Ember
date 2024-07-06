@@ -51,7 +51,7 @@ public:
 	}
 
 	void write(const void* source, std::size_t length) requires(can_resize<buf_type>) {
-		assert(!region_overlap(buffer_, buffer_ + buffer_.size(), destination));
+		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), source));
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks

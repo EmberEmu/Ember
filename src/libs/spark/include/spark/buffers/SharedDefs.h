@@ -43,7 +43,7 @@ static inline bool region_overlap(const void* first1, const void* last1, const v
 	const auto f1 = reinterpret_cast<std::uintptr_t>(first1);
 	const auto l1 = reinterpret_cast<std::uintptr_t>(last1);
 	const auto f2 = reinterpret_cast<std::uintptr_t>(first2);
-	return f2 >= f1 && f2 <= l1;
+	return f2 >= f1 && f2 < l1;
 }
 
 } // spark, ember
