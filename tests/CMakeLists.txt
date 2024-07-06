@@ -30,6 +30,7 @@ set(EXECUTABLE_SRC
 	BufferAdaptorV2.cpp
 	ThreadUtility.cpp
 	BufferAdaptor.cpp
+	BufferUtility.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})

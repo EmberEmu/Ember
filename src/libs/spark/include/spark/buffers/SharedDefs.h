@@ -9,6 +9,7 @@
 #pragma once
 
 #include <type_traits>
+#include <cstdint>
 
 namespace ember::spark {
 
@@ -37,5 +38,12 @@ enum class StreamSeek {
 enum class StreamState {
 	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
 };
+
+static inline bool region_overlap(const void* first1, const void* last1, const void* first2) {
+	const auto f1 = reinterpret_cast<std::uintptr_t>(first1);
+	const auto l1 = reinterpret_cast<std::uintptr_t>(last1);
+	const auto f2 = reinterpret_cast<std::uintptr_t>(first2);
+	return f2 >= f1 && f2 <= l1;
+}
 
 } // spark, ember

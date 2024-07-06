@@ -29,13 +29,13 @@ public:
 	BufferReadAdaptor(buf_type& buffer) : buffer_(buffer), read_(0) {}
 
 	void read(void* destination, std::size_t length) override {
-		assert(destination != &buffer_);
+		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), destination));
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
 	}
 
 	void copy(void* destination, std::size_t length) const override {
-		assert(destination != &buffer_);
+		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), destination));
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 

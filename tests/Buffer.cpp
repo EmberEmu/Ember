@@ -12,7 +12,7 @@
 
 namespace spark = ember::spark;
 
-TEST(IntrusiveStorageTest, Size) {
+TEST(IntrusiveStorage, Size) {
 	const int iterations = 5;
 	spark::detail::IntrusiveStorage<sizeof(int) * iterations> buffer;
 	int foo = 24221;
@@ -31,7 +31,7 @@ TEST(IntrusiveStorageTest, Size) {
 	ASSERT_EQ(sizeof(int) * iterations, buffer.size()) << "Buffer size is incorrect";
 }
 
-TEST(IntrusiveStorageTest, ReadWriteConsistency) {
+TEST(IntrusiveStorage, ReadWriteConsistency) {
 	const char text[] = "The quick brown fox jumps over the lazy dog";
 	spark::detail::IntrusiveStorage<sizeof(text)> buffer;
 
@@ -47,8 +47,7 @@ TEST(IntrusiveStorageTest, ReadWriteConsistency) {
 	ASSERT_EQ(0, buffer.size()) << "Buffer should be empty";
 }
 
-
-TEST(IntrusiveStorageTest, Skip) {
+TEST(IntrusiveStorage, Skip) {
 	const char text[] = "The quick brown fox jumps over the lazy dog";
 	spark::detail::IntrusiveStorage<sizeof(text)> buffer;
 
