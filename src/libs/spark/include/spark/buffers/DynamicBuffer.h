@@ -299,11 +299,11 @@ public:
 		size_ += buffer->write_offset;
 	}
 
-	[[nodiscard]] IntrusiveStorage* allocate() const {
+	[[nodiscard]] IntrusiveStorage* allocate() {
 		return alloc_.allocate();
 	}
 
-	void deallocate(IntrusiveStorage* buffer) const {
+	void deallocate(IntrusiveStorage* buffer) {
 		alloc_.deallocate(buffer);
 	}
 

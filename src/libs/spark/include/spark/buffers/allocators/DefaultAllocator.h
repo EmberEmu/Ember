@@ -12,7 +12,7 @@ namespace ember::spark {
 
 template<typename T>
 struct DefaultAllocator final {
-	inline T* allocate() const {
+	[[nodiscard]] inline T* allocate() const {
 		return new T;
 	}
 

@@ -78,7 +78,12 @@ set(IO_SRC
     include/spark/buffers/BufferReadAdaptor.h
     include/spark/buffers/BufferWriteAdaptor.h
 	include/spark/buffers/SharedDefs.h
+	include/spark/buffers/DynamicTLSBuffer.h
+)
+
+set(IO_ALLOC_SRC
 	include/spark/buffers/allocators/DefaultAllocator.h
+	include/spark/buffers/allocators/TLSBlockAllocator.h
 )
 
 set(IO_SRCv2
@@ -92,10 +97,12 @@ add_library(
     ${COREv2}
     ${IO_SRC}
     ${IO_SRCv2}
+	${IO_ALLOC_SRC}
 )
 
 source_group("Core" FILES ${CORE})
 source_group("IO" FILES ${IO_SRC})
+source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
 source_group("v2\\Core" FILES ${COREv2})
 source_group("v2\\IO" FILES ${IO_SRCv2})
 
