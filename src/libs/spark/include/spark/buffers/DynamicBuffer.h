@@ -52,11 +52,6 @@ private:
 		node->prev->next = node->next;
 	}
 
-	IntrusiveStorage* buffer_from_node(IntrusiveNode* node) const {
-		return reinterpret_cast<IntrusiveStorage*>(std::uintptr_t(node)
-			- offsetof(IntrusiveStorage, node));
-	}
-
 	IntrusiveStorage* buffer_from_node(const IntrusiveNode* node) const {
 		return reinterpret_cast<IntrusiveStorage*>(std::uintptr_t(node)
 			- offsetof(IntrusiveStorage, node));
