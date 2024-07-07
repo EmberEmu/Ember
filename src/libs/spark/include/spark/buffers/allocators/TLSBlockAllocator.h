@@ -32,7 +32,7 @@ struct Allocator {
 	std::size_t total_deallocs = 0;
 #endif
 
-	Allocator() : storage(static_cast<T*>(new T[_elements])) {}
+	Allocator() : storage(new T[_elements]) {}
 
 	[[nodiscard]] inline T* allocate() {
 		for(std::size_t i = 0; i < _elements; ++i) {
