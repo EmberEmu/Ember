@@ -234,7 +234,10 @@ public:
 				tail = root_.prev;
 			}
 
-			remaining -= buffer->write(static_cast<const value_type*>(source) + length - remaining, remaining);
+			remaining -= buffer->write(
+				static_cast<const value_type*>(source) + length - remaining, remaining
+			);
+
 			tail = tail->next;
 		} while(remaining);
 
@@ -349,13 +352,16 @@ public:
 	}
 
 	void clear() {
-		IntrusiveNode* head;
+		IntrusiveNode* head = root_.next;
 
-		while((head = root_.next) != &root_) {
-			unlink_node(head);
+		while(head != &root_) {
+			auto next = head->next;
 			deallocate(buffer_from_node(head));
+			head = next;
 		}
 
+		root_.next = &root_;
+		root_.prev = &root_;
 		size_ = 0;
 	}
 

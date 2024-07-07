@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -114,6 +114,8 @@ TEST(DynamicBuffer, Clear) {
 	ASSERT_EQ(sizeof(int) * iterations, chain.size()) << "Chain size is incorrect";
 	chain.clear();
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
+	ASSERT_TRUE(chain.empty());
+	ASSERT_EQ(0, chain.block_count());
 }
 
 TEST(DynamicBuffer, AttachTail) {
