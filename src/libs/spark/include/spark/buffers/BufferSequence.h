@@ -7,24 +7,23 @@
  */
 
 #include <boost/asio/buffer.hpp>
-#include <spark/buffers/DynamicBuffer.h>
-#include <concepts>
 #include <utility>
 #include <cstddef>
-#include <iostream>
 
 namespace ember::spark {
 
-template<decltype(auto) BlockSize>
+template<typename BufferType>
 class BufferSequence {
-	const DynamicBuffer<BlockSize>* buffer_;
+	const BufferType* buffer_;
 
 public:
-	BufferSequence(const DynamicBuffer<BlockSize>& buffer) : buffer_(&buffer) { }
+	BufferSequence(const BufferType& buffer) : buffer_(&buffer) { }
 
 class const_iterator {
+	using Node = typename BufferType::node_type;
+
 public:
-	const_iterator(const DynamicBuffer<BlockSize>* buffer, const detail::IntrusiveNode* curr_node)
+	const_iterator(const BufferType* buffer, const Node* curr_node)
 		: buffer_(buffer), curr_node_(curr_node) {}
 
 	const_iterator& operator++() {
@@ -63,8 +62,8 @@ public:
 #endif
 
 private:
-	const DynamicBuffer<BlockSize>* buffer_;
-	const detail::IntrusiveNode* curr_node_;
+	const BufferType* buffer_;
+	const Node* curr_node_;
 };
 
 const_iterator begin() const {

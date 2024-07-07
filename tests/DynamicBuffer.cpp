@@ -257,7 +257,7 @@ TEST(DynamicBuffer, WriteSeek) {
 
 TEST(DynamicBuffer, ReadIterator) {
 	spark::DynamicBuffer<16> chain; // ensure the string is split over multiple buffers
-	spark::BufferSequence<16> sequence(chain);
+	spark::BufferSequence sequence(chain);
 	std::string skip("Skipping");
 	std::string input("The quick brown fox jumps over the lazy dog");
 	std::string output;
@@ -276,7 +276,7 @@ TEST(DynamicBuffer, ReadIterator) {
 
 TEST(DynamicBuffer, ASIOIteratorRegressionTest) {
 	spark::DynamicBuffer<1> chain;
-	spark::BufferSequence<1> sequence(chain);
+	spark::BufferSequence sequence(chain);
 
 	// 119 bytes (size of 1.12.1 LoginChallenge packet)
 	std::string input("Lorem ipsum dolor sit amet, consectetur adipiscing elit."

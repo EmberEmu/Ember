@@ -22,7 +22,7 @@
 
 namespace ember::spark {
 
-template<decltype(auto) BlockSize>
+template<typename BufferType>
 class BufferSequence;
 
 template<decltype(auto) BlockSize>
@@ -37,6 +37,7 @@ requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public Buffer {
 public:
 	using value_type = StorageType;
+	using node_type = detail::IntrusiveNode;
 
 private:
 	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, value_type>;
@@ -404,7 +405,7 @@ public:
 		return count;
 	}
 
-	template<decltype(auto)>
+	template<typename BufferType>
 	friend class BufferSequence;
 };
 

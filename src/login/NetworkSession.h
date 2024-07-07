@@ -140,7 +140,7 @@ public:
 
 		set_timer();
 
-		spark::BufferSequence<BlockSize> sequence(*chain);
+		spark::BufferSequence sequence(*chain);
 
 		socket_.async_send(sequence, create_alloc_handler(allocator_,
 			[this, notify, chain = std::move(chain)](boost::system::error_code ec,
