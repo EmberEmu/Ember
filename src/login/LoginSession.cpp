@@ -87,10 +87,11 @@ void LoginSession::write_chain(const grunt::Packet& packet, bool notify) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< grunt::to_string(packet.opcode) << LOG_ASYNC;
 
-	auto chain = std::make_unique<spark::DynamicBuffer<1024>>();
+	const auto block_size = 1024u;
+	auto chain = std::make_unique<spark::DynamicBuffer<block_size>>();
 	spark::BinaryStream stream(*chain);
 	packet.write_to_stream(stream);
-	NetworkSession::write_chain(std::move(chain), notify);
+	NetworkSession::write_chain<block_size>(std::move(chain), notify);
 }
 
 void LoginSession::on_write_complete() {

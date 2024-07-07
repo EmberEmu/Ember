@@ -150,7 +150,7 @@ public:
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				} else if(!ec && chain->size()) {
-					write_chain(std::move(chain), notify); 
+					write_chain<BlockSize>(std::move(chain), notify); 
 				} else if(notify) {
 					on_write_complete();
 				}
