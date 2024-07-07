@@ -90,7 +90,7 @@ private:
 	}
 	
 	void offset_buffers(std::vector<IntrusiveStorage*>& buffers, std::size_t offset) {
-		buffers.erase(std::remove_if(buffers.begin(), buffers.end(), [&](IntrusiveStorage* block) {
+		std::erase_if(buffers, [&](auto block) {
 			if(block->size() > offset) {
 				block->read_offset += offset;
 				block->write_offset -= offset;
@@ -98,7 +98,7 @@ private:
 			} else {
 				return true;
 			}
-		}), buffers.end());
+		});
 	}
 
 	value_type& byte_at_index(const size_t index) const {
@@ -147,8 +147,10 @@ public:
 
 		do {
 			auto buffer = buffer_from_node(root_.next);
-			remaining -= buffer->read(static_cast<value_type*>(destination) + length - remaining, remaining,
-			                          root_.next == root_.prev);
+			remaining -= buffer->read(
+				static_cast<value_type*>(destination) + length - remaining, remaining,
+				                         root_.next == root_.prev
+			);
 
 			if(remaining) [[unlikely]] {
 				unlink_node(root_.next);
@@ -166,7 +168,9 @@ public:
 
 		do {
 			const auto buffer = buffer_from_node(head);
-			remaining -= buffer->copy(static_cast<value_type*>(destination) + length - remaining, remaining);
+			remaining -= buffer->copy(
+				static_cast<value_type*>(destination) + length - remaining, remaining
+			);
 
 			if(remaining) {
 				head = head->next;
