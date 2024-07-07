@@ -25,11 +25,10 @@ struct IntrusiveNode {
 	IntrusiveNode* prev;
 };
 
-template<decltype(auto) BlockSize, byte_type StorageType = std::byte>
-requires std::unsigned_integral<decltype(BlockSize)>
+template<std::size_t BlockSize, byte_type StorageType = std::byte>
 struct IntrusiveStorage {
-	using OffsetType = std::remove_const_t<decltype(BlockSize)>;
 	using value_type = StorageType;
+	using OffsetType = std::remove_const_t<decltype(BlockSize)>;
 
 	OffsetType read_offset = 0;
 	OffsetType write_offset = 0;

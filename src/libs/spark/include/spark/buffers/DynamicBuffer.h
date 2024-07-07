@@ -10,6 +10,7 @@
 
 #include <spark/buffers/Buffer.h>
 #include <spark/buffers/SharedDefs.h>
+#include <spark/buffers/allocators/DefaultAllocator.h>
 #include <spark/buffers/detail/IntrusiveStorage.h>
 #include <boost/assert.hpp>
 #include <algorithm>
@@ -27,19 +28,23 @@ class BufferSequence;
 template<decltype(auto) BlockSize>
 concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
 
-template<decltype(auto) BlockSize, byte_type StorageType = std::byte>
+template<
+	decltype(auto) BlockSize,
+	byte_type StorageType = std::byte,
+	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageType>
+>>
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public Buffer {
 public:
 	using value_type = StorageType;
 
 private:
-	using UnsignedBlockSize = typename std::make_unsigned<decltype(BlockSize)>::type;
-	using IntrusiveStorage = typename detail::IntrusiveStorage<UnsignedBlockSize(BlockSize), value_type>;
+	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, value_type>;
 	using IntrusiveNode = detail::IntrusiveNode;
 
 	IntrusiveNode root_;
 	std::size_t size_;
+	Allocator alloc_;
 
 	void link_tail_node(IntrusiveNode* node) {
 		node->next = &root_;
@@ -295,11 +300,11 @@ public:
 	}
 
 	[[nodiscard]] IntrusiveStorage* allocate() const {
-		return new IntrusiveStorage(); // todo, actual allocator
+		return alloc_.allocate();
 	}
 
 	void deallocate(IntrusiveStorage* buffer) const {
-		delete buffer; // todo, actual allocator
+		alloc_.deallocate(buffer);
 	}
 
 	void advance_write_cursor(const std::size_t size) {

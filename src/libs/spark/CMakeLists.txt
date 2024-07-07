@@ -78,13 +78,13 @@ set(IO_SRC
     include/spark/buffers/BufferReadAdaptor.h
     include/spark/buffers/BufferWriteAdaptor.h
 	include/spark/buffers/SharedDefs.h
+	include/spark/buffers/allocators/DefaultAllocator.h
 )
 
 set(IO_SRCv2
     include/spark/v2/buffers/BufferAdaptor.h
     include/spark/v2/buffers/BinaryStream.h
 )
-
 
 add_library(
     ${LIBRARY_NAME}
