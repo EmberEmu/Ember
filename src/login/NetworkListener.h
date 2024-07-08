@@ -25,10 +25,16 @@
 namespace ember {
 
 class NetworkListener final {
+	using tcp_acceptor = boost::asio::basic_socket_acceptor<
+		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
+
+	using tcp_socket = boost::asio::basic_stream_socket<
+		boost::asio::ip::tcp, boost::asio::strand<boost::asio::io_context::executor_type>>;
+
 	boost::asio::io_context& io_context;
 	boost::asio::signal_set signals_;
-	boost::asio::ip::tcp::acceptor acceptor_;
-	boost::asio::ip::tcp::socket socket_;
+	tcp_acceptor acceptor_;
+	tcp_socket socket_;
 
 	const NetworkSessionBuilder& session_create_;
 	SessionManager sessions_;
@@ -65,7 +71,7 @@ class NetworkListener final {
 				}
 			}
 
-			socket_ = boost::asio::ip::tcp::socket(boost::asio::make_strand(io_context));
+			socket_ = tcp_socket(boost::asio::make_strand(io_context));
 			accept_connection();
 		});
 	}
