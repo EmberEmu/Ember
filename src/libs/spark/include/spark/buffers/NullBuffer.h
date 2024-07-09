@@ -10,7 +10,6 @@
 
 #include <spark/buffers/BufferWrite.h>
 #include <stdexcept>
-#include <utility>
 #include <cstddef>
 
 namespace ember::spark {
