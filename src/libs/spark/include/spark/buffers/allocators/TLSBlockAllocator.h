@@ -8,12 +8,9 @@
 
 #pragma once
 
-#include <array>
 #include <bitset>
 #include <cassert>
 #include <cstddef>
-#include <cstdint>
-#include <cstdlib>
 
 namespace ember::spark {
 
@@ -21,9 +18,9 @@ namespace {
 
 template<typename T, std::size_t _elements>
 struct Allocator {
+	T* storage = nullptr;
 	std::size_t index = 0;
 	std::bitset<_elements> used_set;
-	T* storage;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	std::size_t storage_active_count = 0;
@@ -32,9 +29,12 @@ struct Allocator {
 	std::size_t total_deallocs = 0;
 #endif
 
-	Allocator() : storage(new T[_elements]) {}
-
 	[[nodiscard]] inline T* allocate() {
+		// lazy allocation to prevent every created thread allocating
+		if(!storage) {
+			storage = new T[_elements];
+		}
+
 		for(std::size_t i = 0; i < _elements; ++i) {
 			if(!used_set[index]) {
 				used_set[index] = true;
@@ -44,7 +44,15 @@ struct Allocator {
 				++total_allocs;
 #endif
 
-				return &storage[index];
+				auto res = &storage[index];
+
+				++index;
+
+				if(index >= _elements) {
+					index = 0;
+				}
+
+				return res;
 			}
 
 			++index;
@@ -63,7 +71,11 @@ struct Allocator {
 	}
 
 	inline void deallocate(T* t) {
-		if(t < storage || t > (storage + sizeof(T) * _elements)) [[unlikely]] {
+		const auto lower_bound = reinterpret_cast<std::uintptr_t>(storage);
+		const auto upper_bound = lower_bound + (sizeof(T) * _elements);
+		const auto t_ptr = reinterpret_cast<std::uintptr_t>(t);
+
+		if(t_ptr < lower_bound || t_ptr >= upper_bound) [[unlikely]] {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			--new_active_count;
 			++total_deallocs;
@@ -72,8 +84,8 @@ struct Allocator {
 			return;
 		}
 
-		const auto base = t - storage;
-		const auto index = base % sizeof(T);
+		const auto offset = t_ptr - lower_bound;
+		const auto index = static_cast<std::size_t>(offset / sizeof(T));
 		used_set[index] = false;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
