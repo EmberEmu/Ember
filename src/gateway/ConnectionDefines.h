@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/buffers/DynamicBuffer.h>
+#include <spark/buffers/DynamicTLSBuffer.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
 #include <array>
@@ -19,10 +20,11 @@ namespace ember {
 
 static constexpr std::uint16_t INBOUND_SIZE  { 1024 };
 static constexpr std::uint16_t OUTBOUND_SIZE { 2048 };
+static constexpr std::uint16_t PREALLOC_SIZE {  128 };
 
 using AdaptorInType = spark::v2::BufferAdaptor<std::span<std::uint8_t>>;
 using BufferInType = std::array<std::uint8_t, INBOUND_SIZE>;
-using BufferOutType = spark::DynamicBuffer<OUTBOUND_SIZE>;
+using BufferOutType = spark::DynamicTLSBuffer<OUTBOUND_SIZE, PREALLOC_SIZE>;
 
 using ClientStream = spark::v2::BinaryStream<AdaptorInType>;
 

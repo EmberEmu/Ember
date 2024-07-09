@@ -121,7 +121,7 @@ void ClientHandler::stop_timer() {
 const std::string& ClientHandler::client_identify() const {	
 	if(context_.client_id) {
 		if(client_id_ext_.empty()) {
-			client_id_ext_ = std::format("{} ({}, {})",
+			client_id_ext_ = std::format("{} ({}, {}): ",
 										  client_id_, 
 			                              context_.client_id->username,
 			                              context_.client_id->id
@@ -137,7 +137,7 @@ const std::string& ClientHandler::client_identify() const {
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
                              boost::asio::any_io_executor executor)
                              : context_{}, connection_(connection),
-                               client_id_(connection_.remote_address()),
+                               client_id_(connection_.remote_address() + ": "),
                                opcode_{},
                                logger_(logger),
                                uuid_(uuid),
