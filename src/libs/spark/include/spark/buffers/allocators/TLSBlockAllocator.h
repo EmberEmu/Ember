@@ -31,7 +31,7 @@ struct Allocator {
 
 	[[nodiscard]] inline T* allocate() {
 		// lazy allocation to prevent every created thread allocating
-		if(!storage) {
+		if(!storage) [[unlikely]] {
 			storage = new T[_elements];
 		}
 
@@ -86,6 +86,7 @@ struct Allocator {
 
 		const auto offset = t_ptr - lower_bound;
 		const auto index = static_cast<std::size_t>(offset / sizeof(T));
+		assert(used_set[index]);
 		used_set[index] = false;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -107,8 +108,6 @@ struct Allocator {
 
 template<typename T, std::size_t _elements>
 struct TLSBlockAllocator final {
-	static inline thread_local Allocator<T, _elements> allocator;
-
 	inline T* allocate() {
 		return allocator.allocate();
 	}
@@ -116,6 +115,12 @@ struct TLSBlockAllocator final {
 	inline void deallocate(T* t) {
 		allocator.deallocate(t);
 	}
+
+#ifndef _DEBUG_TLS_BLOCK_ALLOCATOR
+private:
+#endif
+	static inline thread_local Allocator<T, _elements> allocator;
+
 };
 
 } // spark, ember
