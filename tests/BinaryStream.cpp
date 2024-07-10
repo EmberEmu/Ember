@@ -17,7 +17,6 @@
 #include <numeric>
 #include <random>
 #include <cstdint>
-#include <ctime>
 #include <cstdlib>
 
 namespace spark = ember::spark;

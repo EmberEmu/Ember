@@ -99,6 +99,7 @@ struct Allocator {
 		delete[] storage;
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		assert(!storage_active_count && !storage_use_count);
+		assert(total_allocs == total_dealloc);
 #endif
 	}
 };
@@ -108,19 +109,39 @@ struct Allocator {
 
 template<typename T, std::size_t _elements>
 struct TLSBlockAllocator final {
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	std::size_t total_allocs = 0;
+	std::size_t total_deallocs = 0;
+	std::size_t active_allocs = 0;
+#endif
+
 	inline T* allocate() {
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		++total_allocs;
+		++active_allocs;
+#endif
 		return allocator.allocate();
 	}
 
 	inline void deallocate(T* t) {
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		++total_deallocs;
+		--active_allocs;
+#endif
 		allocator.deallocate(t);
 	}
+
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	~TLSBlockAllocator() {
+		assert(total_allocs == total_deallocs);
+		assert(active_allocs == 0);
+	}
+#endif
 
 #ifndef _DEBUG_TLS_BLOCK_ALLOCATOR
 private:
 #endif
 	static inline thread_local Allocator<T, _elements> allocator;
-
 };
 
 } // spark, ember

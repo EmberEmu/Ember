@@ -7,7 +7,7 @@
 set(EXECUTABLE_NAME unit_tests)
 
 set(EXECUTABLE_SRC
-    srp6.cpp
+    SRP6.cpp
     DynamicBuffer.cpp
     Buffer.cpp
     BinaryStream.cpp
@@ -31,6 +31,7 @@ set(EXECUTABLE_SRC
 	ThreadUtility.cpp
 	BufferAdaptor.cpp
 	BufferUtility.cpp
+	TLSBlockAllocator.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
