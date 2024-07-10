@@ -11,6 +11,7 @@
 #include <bitset>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember::spark {
 
