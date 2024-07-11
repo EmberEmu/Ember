@@ -35,14 +35,14 @@ template<
 >>
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public Buffer {
-public:
-	using value_type = StorageType;
-	using node_type = detail::IntrusiveNode;
-
-private:
-	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, value_type>;
+	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, StorageType>;
 	using IntrusiveNode = detail::IntrusiveNode;
 
+public:
+	using value_type = StorageType;
+	using node_type = IntrusiveNode;
+
+private:
 	IntrusiveNode root_;
 	std::size_t size_;
 	Allocator alloc_;
@@ -58,7 +58,7 @@ private:
 		node->prev->next = node->next;
 	}
 
-	IntrusiveStorage* buffer_from_node(const IntrusiveNode* node) const {
+	inline IntrusiveStorage* buffer_from_node(const IntrusiveNode* node) const {
 		return reinterpret_cast<IntrusiveStorage*>(std::uintptr_t(node)
 			- offsetof(IntrusiveStorage, node));
 	}
@@ -280,11 +280,11 @@ public:
 		return size_;
 	}
 
-	IntrusiveStorage* back() {
+	IntrusiveStorage* back() const {
 		return buffer_from_node(root_.prev);
 	}
 
-	IntrusiveStorage* front() {
+	IntrusiveStorage* front() const {
 		return buffer_from_node(root_.next);
 	}
 
@@ -379,7 +379,7 @@ public:
 		return !size_;
 	}
 	
-	std::size_t block_size() const {
+	consteval std::size_t block_size() const {
 		return BlockSize;
 	}
 
