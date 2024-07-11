@@ -50,6 +50,7 @@ class LoginHandler final {
 	using CharacterCount = std::unordered_map<std::uint32_t, std::uint32_t>;
 
 	using StateContainer = std::variant<
+		std::monostate,
 		CharacterCount,
 		LoginAuthenticator,
 		ReconnectAuthenticator
