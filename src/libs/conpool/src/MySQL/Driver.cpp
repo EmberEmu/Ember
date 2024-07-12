@@ -19,9 +19,11 @@
 namespace ember::drivers {
 
 MySQL::MySQL(std::string user, std::string pass, std::string_view host, std::uint16_t port,
-             std::string db) : database(std::move(db)), username(std::move(user)),
-             password(std::move(pass)),
-             dsn(std::format("tcp://{}:{}", host, port)) {
+             std::string db)
+	: dsn(std::format("tcp://{}:{}", host, port)),
+	  database(std::move(db)),
+	  username(std::move(user)),
+      password(std::move(pass)) {
 	driver = get_driver_instance();
 }
 

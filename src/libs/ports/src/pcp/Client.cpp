@@ -19,10 +19,13 @@ namespace ember::ports {
 namespace bai = boost::asio::ip;
 
 Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
-	: ctx_(ctx), strand_(ctx), gateway_(std::move(gateway)),
+	: ctx_(ctx),
+	  timer_(ctx),
+	  strand_(ctx),
 	  transport_(interface, PORT_IN, ctx),
-	  timer_(ctx), interface_(interface),
-	  resolve_res_(false), has_resolved_(false) {
+	  gateway_(std::move(gateway)),
+	  interface_(interface),
+	  has_resolved_(false), resolve_res_(false) {
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
@@ -333,6 +336,9 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 			case State::AWAIT_EXTERNAL_ADDRESS_PCP:
 				handle_external_address_pcp(buffer);
 				break;
+			default:
+				break;
+				// do nothing
 		}
 
 		// a handler has pushed a new state, let it do the work

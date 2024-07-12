@@ -47,6 +47,7 @@ class Logger::impl final {
 		buffer_.second.push_back('\n');
 		worker_.queue_.enqueue(std::move(buffer_));
 		worker_.signal();
+		buffer_ = {};
 		buffer_.second.reserve(BUFFER_RESERVE);
 	}
 
@@ -56,6 +57,7 @@ class Logger::impl final {
 					(std::move(buffer_.first), std::move(buffer_.second), &sem_);
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
+		buffer_ = {};
 		buffer_.second.reserve(BUFFER_RESERVE);
 		sem_.acquire();
 	}

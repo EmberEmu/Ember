@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,8 +19,8 @@ namespace sc = std::chrono;
 using namespace std::placeholders;
 
 HeartbeatService::HeartbeatService(boost::asio::io_context& io_context, const Service* service,
-                                   log::Logger* logger) : timer_(io_context),
-                                   service_(service), logger_(logger) {
+                                   log::Logger* logger)
+	: service_(service), timer_(io_context), logger_(logger) {
 	REGISTER(em::core::Opcode::MSG_PING, em::core::Ping, HeartbeatService::handle_ping);
 	REGISTER(em::core::Opcode::MSG_PONG, em::core::Pong, HeartbeatService::handle_pong);
 	set_timer();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,11 +25,12 @@ namespace bai = boost::asio::ip;
 
 Service::Service(std::string description, boost::asio::io_context& service, const std::string& interface,
                  std::uint16_t port, log::Logger* logger)
-                 : service_(service), logger_(logger),
-                   listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger),
+                 : service_(service),
+                   link_ { boost::uuids::random_generator()(), std::move(description) },
                    hb_service_(service_, this, logger), 
                    track_service_(service_, logger),
-                   link_ { boost::uuids::random_generator()(), std::move(description) } {
+                   listener_(service, interface, port, sessions_, dispatcher_, services_, link_, logger),
+                   logger_(logger) {
 	dispatcher_.register_handler(&hb_service_, messaging::Service::CORE_HEARTBEAT, EventDispatcher::Mode::BOTH);
 	dispatcher_.register_handler(&track_service_, messaging::Service::CORE_HEARTBEAT, EventDispatcher::Mode::CLIENT);
 }

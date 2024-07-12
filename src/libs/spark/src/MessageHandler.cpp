@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,8 +24,8 @@ namespace ember::spark::inline v1 {
 
 MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& services, const Link& link,
                                bool initiator, log::Logger* logger)
-                               : dispatcher_(dispatcher), self_(link), initiator_(initiator),
-                                 logger_(logger), services_(services), peer_{} { }
+                               : peer_{}, self_(link), dispatcher_(dispatcher),
+                                 services_(services), logger_(logger), initiator_(initiator) { }
 
 
 void MessageHandler::send_negotiation(NetworkSession& net) {

@@ -22,7 +22,6 @@ namespace ember::mpq {
 
 std::expected<std::size_t, int> decompress_huffman(std::span<const std::byte> input,
                                                    std::span<std::byte> output) {
-	auto src = std::bit_cast<const unsigned char*>(input.data());
 	auto dest = std::bit_cast<unsigned char*>(output.data());
 	int dest_len = static_cast<int>(output.size_bytes());
 

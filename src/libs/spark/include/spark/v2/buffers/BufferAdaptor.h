@@ -30,7 +30,7 @@ class BufferAdaptor final {
 	std::size_t write_;
 
 public:
-	using value_type = buf_type::value_type;
+	using value_type = typename buf_type::value_type;
 
 	BufferAdaptor(buf_type& buffer)
 		: buffer_(buffer), read_(0), write_(buffer.size()) {}

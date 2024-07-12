@@ -37,7 +37,7 @@ class MySQL final {
 	using QueryCache = boost::unordered_flat_map<std::string, StmtPtr,
 		StringHash, std::equal_to<>>;
 
-	const std::string dsn, username, password, database;
+	const std::string dsn, database, username, password;
 	sql::Driver* driver;
 	mutable boost::unordered_flat_map<const sql::Connection*, QueryCache> cache_;
 	mutable std::mutex cache_lock_;
@@ -49,8 +49,8 @@ public:
 	MySQL(std::string user, std::string password, std::string_view host, std::uint16_t port,
 	      std::string db = "");
 
-	MySQL(MySQL&& rhs) noexcept : dsn(rhs.dsn), username(rhs.username),
-	                              password(rhs.password), database(rhs.database),
+	MySQL(MySQL&& rhs) noexcept : dsn(rhs.dsn), database(rhs.database),
+	                              username(rhs.username), password(rhs.password),
 	                              cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
 
 	MySQL& operator=(MySQL&&) = delete;

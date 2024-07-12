@@ -32,7 +32,6 @@ Error Parser::validate_header(const Header& header) const {
 		return Error::RESP_BAD_HEADER_LENGTH;
 	}
 
-	MessageType type{ static_cast<std::uint16_t>(header.type) };
 	return Error::OK;
 }
 

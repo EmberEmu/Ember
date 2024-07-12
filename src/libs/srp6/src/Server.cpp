@@ -19,7 +19,7 @@ namespace ember::srp6 {
 Server::Server(const Generator& gen, BigInt v, BigInt b, bool srp6a)
               : v_(std::move(v)), N_(gen.prime()), b_(std::move(b)) {
 	if(srp6a) {
-		k_ = std::move(detail::compute_k(gen.generator(), N_));
+		k_ = detail::compute_k(gen.generator(), N_);
 	}
 
 	B_ = (k_ * v_ + gen(b_)) % N_;

@@ -37,8 +37,8 @@ class SyslogSink::impl final : public Sink {
 public:
 	impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
 	     Facility facility, std::string tag);
-	void write(Severity severity, Filter type, const std::span<const char> record, bool flush);
-	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
+	void write(Severity severity, Filter type, const std::span<const char> record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };
 
 SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host, unsigned int port,

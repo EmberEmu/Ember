@@ -33,7 +33,7 @@ using namespace detail;
 
 Client::Client(const std::string& bind, std::string host, const std::uint16_t port,
                Protocol proto, RFCMode mode)
-	: host_(std::move(host)), port_(port), proto_(proto), mode_(mode) {
+	: proto_(proto), mode_(mode), host_(std::move(host)), port_(port) {
 
 	// worker used by timers
 	work_ = std::make_unique<boost::asio::io_context::work>(ctx_);

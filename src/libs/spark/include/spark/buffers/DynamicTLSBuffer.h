@@ -21,7 +21,7 @@ namespace ember::spark {
 // ... unless you're positive it won't result in the allocator being called.
 // 
 // Minimum memory usage is IntrusiveStorage<BlockSize> * PreallocElements.
-// Additional blocks are not added if the original is exhausted ('colony'/'hive),
+// Additional blocks are not added if the original is exhausted ('colony' structure),
 // so the allocator will fall back to the system allocator instead.
 //
 // Pros: extremely fast allocation/deallocation for many instances per thread

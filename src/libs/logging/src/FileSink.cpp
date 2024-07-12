@@ -74,7 +74,7 @@ void FileSink::time_format(const std::string& format) {
 
 void FileSink::format_file_name() {
 	std::tm time = detail::current_time();
-	file_name_ = std::move(detail::put_time(time, file_name_format_));
+	file_name_ = detail::put_time(time, file_name_format_);
 }
 
 void FileSink::open(Mode mode) {
@@ -115,7 +115,7 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 	std::string prepend;
 
 	if(log_date_) {
-		prepend = std::move(detail::put_time(curr_time, time_format_));
+		prepend = detail::put_time(curr_time, time_format_);
 	}
 
 	if(log_severity_) {
@@ -162,7 +162,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 
 	for(auto&& [detail, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {
-			std::string prepend = std::move(generate_record_detail(detail.severity, curr_time));
+			std::string prepend = generate_record_detail(detail.severity, curr_time);
 			std::copy(prepend.begin(), prepend.end(), std::back_inserter(buffer));
 			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
 		}
@@ -185,7 +185,7 @@ void FileSink::write(Severity severity, Filter type, std::span<const char> recor
 	}
 
 	std::tm curr_time = detail::current_time();
-	std::string prepend = std::move(generate_record_detail(severity, curr_time));
+	std::string prepend = generate_record_detail(severity, curr_time);
 	std::size_t prep_size = prepend.size();
 	std::size_t rec_size = record.size();
 

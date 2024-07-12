@@ -36,7 +36,6 @@ MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(b
 		return;
 	}
 
-	auto& entry = file_entry(index);
 	auto hi_mask= 0;
 
 	if(bt_hi_pos_) {
@@ -62,8 +61,8 @@ void MemoryArchive::validate() {
 		throw exception("open error: hash table out of bounds");
 	}
 
-	auto btable_end = btable_pos + (header_->block_table_size * sizeof(BlockTableEntry));
-	auto htable_end = htable_pos + (header_->hash_table_size * sizeof(HashTableEntry));
+	auto btable_end = btable_pos + (static_cast<unsigned long long>(header_->block_table_size) * sizeof(BlockTableEntry));
+	auto htable_end = htable_pos + (static_cast<unsigned long long>(header_->hash_table_size) * sizeof(HashTableEntry));
 
 	if(btable_end < btable_pos) {
 		throw exception("open error: block table too large");

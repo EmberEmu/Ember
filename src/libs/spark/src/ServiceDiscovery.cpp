@@ -23,9 +23,9 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_context& service, std::string
                                    const std::string& mcast_group, std::uint16_t mcast_port,
                                    log::Logger* logger)
                                    : address_(std::move(address)), port_(port),
-                                     socket_(service), logger_(logger), service_(service),
-                                     endpoint_(bai::address::from_string(mcast_group),
-                                     mcast_port) {
+                                     service_(service), socket_(service),
+                                     endpoint_(bai::address::from_string(mcast_group), mcast_port),
+                                     logger_(logger){
 	// boost::asio::ip::udp::endpoint listen_endpoint(bai::address::from_string(mcast_iface), mcast_port);
 
 	// socket_.open(listen_endpoint.protocol());

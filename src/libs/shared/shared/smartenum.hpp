@@ -176,12 +176,12 @@ namespace smart_enum
 #define CREATE_FORMATTER(name)\
 	template<>\
 	struct std::formatter<name, char> {\
-		template<class ParseContext>\
+		template<typename ParseContext>\
 		constexpr ParseContext::iterator parse(ParseContext& ctx) {\
 			return ctx.begin();\
 		}\
 	\
-		template<class FmtContext>\
+		template<typename FmtContext>\
 		FmtContext::iterator format(name value, FmtContext& ctx) const {\
 			std::ostringstream out;\
 			out << value;\

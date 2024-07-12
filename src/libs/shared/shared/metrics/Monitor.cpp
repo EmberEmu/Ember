@@ -18,7 +18,7 @@ namespace bai = boost::asio::ip;
 
 Monitor::Monitor(boost::asio::io_context& service, const std::string& interface,
                  std::uint16_t port, std::chrono::seconds frequency)
-                 : timer_(service), strand_(service), TIMER_FREQUENCY(frequency),
+                 : strand_(service), timer_(service), TIMER_FREQUENCY(frequency),
                    socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)),
                    signals_(service, SIGINT, SIGTERM) {
 	signals_.async_wait(std::bind(&Monitor::shutdown, this));

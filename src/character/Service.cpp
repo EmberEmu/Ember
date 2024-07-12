@@ -18,7 +18,7 @@ namespace ember {
 
 Service::Service(dal::CharacterDAO& character_dao, const CharacterHandler& handler, spark::Service& spark,
                  spark::ServiceDiscovery& discovery, log::Logger* logger)
-                 : character_dao_(character_dao), handler_(handler), spark_(spark),
+                 : handler_(handler), character_dao_(character_dao), spark_(spark),
                    discovery_(discovery), logger_(logger) {
 	REGISTER(em::character::Opcode::CMSG_CHAR_CREATE, em::character::Create, Service::create_character);
 	REGISTER(em::character::Opcode::CMSG_CHAR_DELETE, em::character::Delete, Service::delete_character);
@@ -185,10 +185,9 @@ void Service::send_response(const spark::Link& link, const spark::Beacon& token,
 void Service::delete_character(const spark::Link& link, const spark::Message& message) {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	auto token = message.token;
 	auto msg = flatbuffers::GetRoot<em::character::Delete>(message.data);
 
-	handler_.erase(msg->account_id(), msg->realm_id(), msg->character_id(), [&, link, token](auto res) {
+	handler_.erase(msg->account_id(), msg->realm_id(), msg->character_id(), [&, link](auto res) {
 		LOG_DEBUG(logger_) << "Deletion response code: " << protocol::to_string(res) << LOG_ASYNC;
 		send_response(link, message.token, messaging::character::Status::OK, res);
 	});

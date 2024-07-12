@@ -167,7 +167,7 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 	}
 
 	RequestHandler wrapped =
-		[&, strict, request, handler = std::move(handler)](const Result& result) {
+		[&, strict, handler = std::move(handler)](const Result& result) {
 		if(result) {
 			const auto expiry = std::chrono::steady_clock::now()
 				+ std::chrono::seconds(result->lifetime);
@@ -226,7 +226,7 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 		.handler = std::move(wrapped)
 	};
 
-	strand_.post([&, mapping = std::move(mapping), request]() mutable {
+	strand_.post([&, mapping = std::move(mapping)]() mutable {
 		queue_.emplace_front(std::move(mapping));
 
 		if(state_ == State::TIMER_WAIT) {

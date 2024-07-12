@@ -25,8 +25,11 @@ RealmService::RealmService(RealmList& realms, spark::Service& spark,
 		spark::EventDispatcher::Mode::CLIENT
 	);
 
-	listener_ = std::move(s_disc_.listener(em::Service::GATEWAY,
-	                      std::bind(&RealmService::service_located, this, std::placeholders::_1)));
+	listener_ = s_disc_.listener(
+		em::Service::GATEWAY,
+	    std::bind(&RealmService::service_located, this, std::placeholders::_1)
+	);
+
 	listener_->search();
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,9 +18,9 @@ Listener::Listener(boost::asio::io_context& service, std::string interface, std:
                    SessionManager& sessions, const EventDispatcher& handlers, ServicesMap& services,
                    const Link& link, log::Logger* logger)
                    : service_(service), acceptor_(service, boost::asio::ip::tcp::endpoint(
-                     boost::asio::ip::address::from_string(interface), port)), link_(link),
-                     socket_(boost::asio::make_strand(service_)), sessions_(sessions), logger_(logger),
-                     handlers_(handlers), services_(services) {
+                     boost::asio::ip::address::from_string(interface), port)),
+                     socket_(boost::asio::make_strand(service_)), sessions_(sessions),
+                     logger_(logger), link_(link), handlers_(handlers), services_(services) {
 	acceptor_.set_option(boost::asio::ip::tcp::no_delay(true));
 	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 	accept_connection();

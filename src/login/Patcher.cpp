@@ -18,9 +18,7 @@
 namespace ember {
 
 Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches)
-                 : versions_(std::move(versions)), patches_(std::move(patches)) {
-	FNVHash hasher;
-
+                 : patches_(std::move(patches)), versions_(std::move(versions)) {
 	for(auto& patch : patches_) {
 		const Key key {
 			.locale = patch.locale,

@@ -19,9 +19,9 @@ Channel::Channel(boost::asio::io_context& ctx, log::Logger* logger,
 				 std::uint8_t id, std::string banner, std::string service,
                  Handler* handler, std::shared_ptr<Connection> net)
 	: tracking_(ctx, logger),
-	  link_{.peer_banner = banner, .service_name = service, .net = weak_from_this()},
+	  channel_id_(id),
 	  handler_(handler),
-	  channel_id_(id) {}
+	  link_{.peer_banner = banner, .service_name = service, .net = weak_from_this()} {}
 
 void Channel::open() {
 	if(state_ != State::OPEN) {
