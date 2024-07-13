@@ -109,7 +109,7 @@ private:
 	}
 
 	value_type& byte_at_index(const size_t index) const {
-		BOOST_ASSERT_MSG(index <= size_, "Buffer subscript index out of range");
+		BOOST_ASSERT_MSG(index < size_, "Buffer subscript index out of range");
 
 		auto head = root_.next;
 		auto buffer = buffer_from_node(head);
