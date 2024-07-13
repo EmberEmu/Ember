@@ -81,7 +81,7 @@ class BinaryStream final {
 	}
 
 public:
-	using State = StreamState;
+	using StreamState = StreamState;
 
 	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
 		: buffer_(source), read_limit_(read_limit) {};
