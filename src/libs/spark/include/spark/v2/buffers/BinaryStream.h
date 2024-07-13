@@ -240,6 +240,14 @@ public:
 	std::size_t read_limit() const {
 		return read_limit_;
 	}
+
+	bool good() const {
+		return state_ == StreamState::OK;
+	}
+
+	void clear_state() {
+		state_ = StreamState::OK;
+	}
 };
 
 } // v2, spark, ember

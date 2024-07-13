@@ -18,9 +18,9 @@
 
 namespace ember {
 
-static constexpr std::uint16_t INBOUND_SIZE  { 1024 };
-static constexpr std::uint16_t OUTBOUND_SIZE { 2048 };
-static constexpr std::uint16_t PREALLOC_SIZE {  128 };
+static constexpr auto INBOUND_SIZE  { 1024 };
+static constexpr auto OUTBOUND_SIZE { 2048 };
+static constexpr auto PREALLOC_SIZE {  128 };
 
 using AdaptorInType = spark::v2::BufferAdaptor<std::span<std::uint8_t>>;
 using BufferInType = std::array<std::uint8_t, INBOUND_SIZE>;

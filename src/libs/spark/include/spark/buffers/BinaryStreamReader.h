@@ -128,6 +128,14 @@ public:
 	BufferRead* buffer() const {
 		return &buffer_;
 	}
+
+	bool good() const {
+		return state_ == StreamState::OK;
+	}
+
+	void clear_state() {
+		state_ = StreamState::OK;
+	}
 };
 
 } // spark, ember
