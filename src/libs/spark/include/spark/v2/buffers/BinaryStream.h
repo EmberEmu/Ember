@@ -73,9 +73,7 @@ public:
 	}
 
 	BinaryStream& operator <<(const std::string& data) requires(writeable<buf_type>) {
-		buffer_.write(data.data(), data.size());
-		const char term = '\0';
-		buffer_.write(&term, 1);
+		buffer_.write(data.data(), data.size() + 1); // +1 also writes terminator
 		total_write_ += (data.size() + 1);
 		return *this;
 	}
