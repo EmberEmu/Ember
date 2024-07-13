@@ -22,13 +22,22 @@
 
 namespace ember::spark::v2 {
 
+#define STREAM_READ_BOUNDS_CHECK(read_size, ret_var) \
+	check_read_bounds(read_size);                    \
+	                                                 \
+	if constexpr(!enable_exceptions) {               \
+		if(state_ != StreamState::OK) [[unlikely]] { \
+			return ret_var;                          \
+		}                                            \
+	}
+
 template <typename buf_type>
 concept writeable =
 	requires(buf_type t, void* v, std::size_t s) {
 		{ t.write(v, s) } -> std::same_as<void>;
 };
 
-template<byte_oriented buf_type>
+template<byte_oriented buf_type, bool enable_exceptions = true>
 class BinaryStream final {
 	constexpr static typename buf_type::size_type string_copy_block = 32;
 
@@ -41,14 +50,24 @@ class BinaryStream final {
 	inline void check_read_bounds(const std::size_t read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
 			state_ = StreamState::BUFF_LIMIT_ERR;
-			throw buffer_underrun(read_size, total_read_, buffer_.size());
+
+			if constexpr(enable_exceptions) {
+				throw buffer_underrun(read_size, total_read_, buffer_.size());
+			}
+
+			return;
 		}
 
 		const auto req_total_read = total_read_ + read_size;
 
 		if(read_limit_ && req_total_read > read_limit_) [[unlikely]] {
 			state_ = StreamState::READ_LIMIT_ERR;
-			throw stream_read_limit(read_size, total_read_, read_limit_);
+
+			if constexpr(enable_exceptions) {
+				throw stream_read_limit(read_size, total_read_, read_limit_);
+			}
+
+			return;
 		}
 
 		total_read_ = req_total_read;
@@ -120,7 +139,7 @@ public:
 
 	// terminates when it hits a null-byte or consumes all data in the buffer
 	BinaryStream& operator >>(std::string& dest) {
-		check_read_bounds(1); // just to prevent trying to read from an empty buffer
+		STREAM_READ_BOUNDS_CHECK(1, *this);  // just to prevent trying to read from an empty buffer
 		dest.clear();
 
 		do {
@@ -143,13 +162,13 @@ public:
 	}
 
 	BinaryStream& operator >>(is_pod auto& data) {
-		check_read_bounds(sizeof(data));
+		STREAM_READ_BOUNDS_CHECK(sizeof(data), *this);
 		buffer_.read(&data, sizeof(data));
 		return *this;
 	}
 
 	void get(std::string& dest, std::size_t size) {
-		check_read_bounds(size);
+		STREAM_READ_BOUNDS_CHECK(size, void());
 		dest.resize(size);
 		buffer_.read(dest.data(), size);
 	}
@@ -157,7 +176,7 @@ public:
 	template<typename T>
 	void get(T* dest, std::size_t count) {
 		const auto read_size = count * sizeof(T);
-		check_read_bounds(read_size);
+		STREAM_READ_BOUNDS_CHECK(read_size, void());
 		buffer_.read(dest, read_size);
 	}
 
@@ -171,7 +190,7 @@ public:
 	template<std::ranges::contiguous_range range>
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(range::value_type);
-		check_read_bounds(read_size);
+		STREAM_READ_BOUNDS_CHECK(read_size, void());
 		buffer_.read(dest, read_size);
 	}
 
@@ -206,7 +225,7 @@ public:
 	}
 
 	void skip(const std::size_t count) {
-		check_read_bounds(count);
+		STREAM_READ_BOUNDS_CHECK(count, void());
 		buffer_.skip(count);
 	}
 
