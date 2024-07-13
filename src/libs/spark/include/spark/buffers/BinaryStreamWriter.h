@@ -15,6 +15,7 @@
 #include <array>
 #include <concepts>
 #include <string>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>

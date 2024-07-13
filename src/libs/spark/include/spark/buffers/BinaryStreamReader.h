@@ -21,6 +21,8 @@
 namespace ember::spark {
 
 class BinaryStreamReader : virtual public StreamBase {
+	constexpr static std::size_t string_copy_block = 32;
+
 	BufferRead& buffer_;
 	std::size_t total_read_;
 	const std::size_t read_limit_;
@@ -49,16 +51,24 @@ public:
 
 	// terminates when it hits a null-byte or consumes all data in the buffer
 	BinaryStreamReader& operator >>(std::string& dest) {
-		char byte;
+		check_read_bounds(1); // just to prevent trying to read from an empty buffer
+		dest.clear();
 
-		do { // not overly efficient
-			check_read_bounds(1);
-			buffer_.read(&byte, 1);
+		do {
+			const auto copy_len = std::min(string_copy_block, buffer_.size());
+			const auto dest_size = dest.size();
+			dest.resize(dest_size + copy_len);
+			buffer_.copy(dest.data() + dest_size, copy_len);
 
-			if(byte) {
-				dest.push_back(byte);
+			if(auto pos = dest.find_first_of('\0'); pos != std::string::npos) {
+				const auto skip_len = copy_len - (dest.size() - (pos + 1));
+				buffer_.skip(skip_len); // skip only the string data, not any trailing
+				dest.resize(pos);       // shrink down so as to ignore trailing data
+				break;
+			} else {
+				buffer_.skip(copy_len); // skip all copied data
 			}
-		} while(byte && buffer_.size() > 0);
+		} while(!buffer_.empty());
 
 		return *this;
 	}

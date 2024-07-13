@@ -40,7 +40,8 @@ class DynamicBuffer final : public Buffer {
 
 public:
 	using value_type = StorageType;
-	using node_type = IntrusiveNode;
+	using node_type  = IntrusiveNode;
+	using size_type  = std::size_t;
 
 private:
 	IntrusiveNode root_;
