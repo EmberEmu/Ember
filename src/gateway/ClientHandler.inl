@@ -28,14 +28,14 @@ bool ClientHandler::packet_deserialise(PacketT& packet, ClientStream& stream) {
 		* happen and message framing has likely been lost if this ever
 		* occurs. Don't try to recover.
 		*/
-		if(state == ClientStream::StreamState::READ_LIMIT_ERR) {
+		if(state == ClientStream::State::READ_LIMIT_ERR) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Deserialisation of "
 				<< protocol::to_string(packet.opcode)
 				<< " failed, skipping any remaining data" << LOG_ASYNC;
 
 			stream.skip(stream.read_limit() - stream.total_read());
-		} else if(state == ClientStream::StreamState::BUFF_LIMIT_ERR) {
+		} else if(state == ClientStream::State::BUFF_LIMIT_ERR) {
 			LOG_ERROR_FILTER(logger_, LF_NETWORK)
 				<< "Message framing lost at "
 				<< protocol::to_string(packet.opcode)
