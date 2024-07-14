@@ -48,8 +48,8 @@ static inline bool region_overlap(const Src* src, std::size_t src_len, const Dst
 	const auto dst_beg = reinterpret_cast<std::uintptr_t>(dst);
 	const auto dst_end = dst_beg + dst_len;
 
-	return (src_beg >= dst_beg && src_beg < dst_end
-			|| src_end >= dst_beg && src_end < dst_end);
+	return (dst_beg >= src_beg && dst_beg < src_end
+			|| dst_end >= src_beg && dst_end < src_end);
 }
 
 } // spark, ember
