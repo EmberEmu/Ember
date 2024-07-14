@@ -27,7 +27,7 @@ public:
 	BufferWriteAdaptor(buf_type& buffer) : buffer_(buffer), write_(buffer.size()) {}
 
 	void write(const void* source, std::size_t length) override {
-		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), source));
+		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks

@@ -39,11 +39,16 @@ enum class StreamState {
 	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
 };
 
-static inline bool region_overlap(const void* first1, const void* last1, const void* first2) {
-	const auto f1 = reinterpret_cast<std::uintptr_t>(first1);
-	const auto l1 = reinterpret_cast<std::uintptr_t>(last1);
-	const auto f2 = reinterpret_cast<std::uintptr_t>(first2);
-	return f2 >= f1 && f2 < l1;
+// Returns true if there's an overlap between source and destination buffers
+template<typename Src, typename Dst>
+static inline bool region_overlap(const Src* src, std::size_t src_len, const Dst* dst, std::size_t dst_len) {
+	const auto src_beg = reinterpret_cast<std::uintptr_t>(src);
+	const auto src_end = src_beg + src_len;
+	const auto dst_beg = reinterpret_cast<std::uintptr_t>(dst);
+	const auto dst_end = dst_beg + dst_len;
+
+	return (src_beg >= dst_beg && src_beg < dst_end
+			|| src_end >= dst_beg && src_end < dst_end);
 }
 
 } // spark, ember

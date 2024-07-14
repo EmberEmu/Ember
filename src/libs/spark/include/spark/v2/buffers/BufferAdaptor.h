@@ -37,13 +37,13 @@ public:
 		: buffer_(buffer), read_(0), write_(buffer.size()) {}
 
 	void read(void* destination, std::size_t length) {
-		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), destination));
+		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
 	}
 
 	void copy(void* destination, std::size_t length) const {
-		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), destination));
+		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 
@@ -52,7 +52,7 @@ public:
 	}
 
 	void write(const void* source, std::size_t length) requires(can_resize<buf_type>) {
-		assert(!region_overlap(buffer_.data(), buffer_.data() + buffer_.size(), source));
+		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks

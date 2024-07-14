@@ -200,7 +200,7 @@ public:
 			if(read_size > total) {
 				read_size = total;
 			}
-		
+
 			buffers.emplace_back(buffer);
 			total -= read_size;
 			head = head->next;
