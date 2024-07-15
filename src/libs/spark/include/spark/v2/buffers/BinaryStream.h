@@ -17,6 +17,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -86,9 +87,10 @@ class BinaryStream final {
 	}
 
 public:
+	using value_type         = typename buf_type::value_type;
+	using contiguous_type    = typename buf_type::contiguous;
+	using seeking            = typename buf_type::seeking;
 	using State = StreamState;
-	using value_type = typename buf_type::value_type;
-	using contiguous_type = typename buf_type::contiguous;
 
 	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
 		: buffer_(source), read_limit_(read_limit) {};
@@ -240,8 +242,8 @@ public:
 
 	/**  Misc functions **/
 
-	bool can_write_seek() const requires(writeable<buf_type>) {
-		return buffer_.can_write_seek();
+	consteval bool can_write_seek() const requires(writeable<buf_type>) {
+		return std::is_same<seeking, supported>::value;
 	}
 
 	void write_seek(const StreamSeek direction, const std::size_t offset) requires(writeable<buf_type>) {

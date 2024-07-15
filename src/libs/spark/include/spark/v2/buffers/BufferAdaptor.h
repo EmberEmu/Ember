@@ -31,6 +31,7 @@ public:
 	using value_type = typename buf_type::value_type;
 	using size_type  = typename buf_type::size_type;
 	using contiguous = is_contiguous;
+	using seeking    = supported;
 
 	static constexpr size_type npos = -1;
 
@@ -111,7 +112,7 @@ public:
 		return buffer_[index];
 	}
 
-	bool can_write_seek() const requires(can_resize<buf_type>) {
+	consteval bool can_write_seek() const requires(can_resize<buf_type>) {
 		return true;
 	}
 

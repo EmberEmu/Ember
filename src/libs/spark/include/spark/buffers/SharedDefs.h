@@ -42,6 +42,8 @@ enum class StreamState {
 
 struct is_contiguous {};
 struct is_non_contiguous {};
+struct supported {};
+struct unsupported {};
 
 // Returns true if there's an overlap between source and destination buffers
 template<typename Src, typename Dst>

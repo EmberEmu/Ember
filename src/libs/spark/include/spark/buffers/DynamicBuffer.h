@@ -45,6 +45,7 @@ public:
 	using node_type  = IntrusiveNode;
 	using size_type  = std::size_t;
 	using contiguous = is_non_contiguous;
+	using seeking    = supported;
 
 	static constexpr size_type npos = -1;
 
