@@ -49,8 +49,8 @@ class BinaryStream final {
 	buf_type& buffer_;
 	std::size_t total_write_ = 0;
 	std::size_t total_read_ = 0;
-	const std::size_t read_limit_;
 	StreamState state_ = StreamState::OK;
+	const std::size_t read_limit_;
 
 	inline void check_read_bounds(const std::size_t read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
@@ -148,7 +148,7 @@ public:
 	BinaryStream& operator >>(std::string& dest) {
 		STREAM_READ_BOUNDS_CHECK(1, *this);
 		dest.clear();
-		auto pos = buffer_.find_first_of(value_type(0x00));
+		auto pos = buffer_.find_first_of(value_type(0));
 		auto read_len = pos == buf_type::npos? buffer_.size() : pos;
 		dest.resize(read_len);
 		buffer_.read(dest.data(), read_len);
@@ -163,8 +163,7 @@ public:
 	// terminates when it hits a null-byte or consumes all data in the buffer
 	// goes without saying that the buffer must outlive the string_view
 	BinaryStream& operator >>(std::string_view& dest) requires(contiguous<buf_type>) {
-		STREAM_READ_BOUNDS_CHECK(1, *this);
-		dest = view();
+		dest = view(); // performs bounds check
 
 		if(dest.empty()) {
 			dest = std::string_view { span<char, true>(buffer_.size()) };
@@ -213,7 +212,7 @@ public:
 
 	// Reads a string_view from the buffer, up to the terminator value
 	// Returns an empty string_view if a terminator is not found
-	std::string_view view(value_type terminator = 0x00) requires(contiguous<buf_type>) {
+	std::string_view view(value_type terminator = 0) requires(contiguous<buf_type>) {
 		STREAM_READ_BOUNDS_CHECK(1, {});
 		const auto pos = buffer_.find_first_of(terminator);
 

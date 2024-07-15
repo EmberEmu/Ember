@@ -51,7 +51,7 @@ public:
 	BinaryStreamReader& operator >>(std::string& dest) {
 		check_read_bounds(1); // just to prevent trying to read from an empty buffer
 		dest.clear();
-		auto pos = buffer_.find_first_of(std::byte(0x00));
+		auto pos = buffer_.find_first_of(std::byte(0));
 		auto read_len = pos == BufferRead::npos? buffer_.size() : pos;
 		dest.resize(read_len);
 		buffer_.read(dest.data(), read_len);
