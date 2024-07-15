@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <spark/buffers/DynamicBuffer.h>
 #include <spark/v2/buffers/BinaryStream.h>
 #include <spark/v2/buffers/BufferAdaptor.h>
-#include <spark/buffers/DynamicBuffer.h>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
 #include <algorithm>
@@ -285,3 +285,27 @@ TEST(BinaryStreamV2, PartialStringViewRead) {
 	ASSERT_EQ("jumped over the lazy dog", view);
 	ASSERT_TRUE(stream.empty());
 }
+
+TEST(BinaryStreamV2, StringViewStream) {
+	std::vector<char> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	const std::uint32_t trailing { 0xDEFECA7E };
+	stream << input << trailing;
+
+	std::string_view output;
+	stream >> output;
+	ASSERT_EQ(input, output);
+
+	// ensure we can still read subsequent data as normal
+	std::uint32_t trailing_output = 0;
+	stream >> trailing_output;
+	ASSERT_EQ(trailing, trailing_output);
+	
+	// make a sly modification to the buffer and check the string_view matches
+	buffer[0] = 'A';
+	ASSERT_EQ(buffer[0], output[0]);
+	ASSERT_NE(input, output);
+}
+

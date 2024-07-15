@@ -10,6 +10,7 @@
 
 #include <spark/buffers/SharedDefs.h>
 #include <algorithm>
+#include <ranges>
 #include <utility>
 #include <vector>
 #include <cassert>
@@ -25,6 +26,7 @@ concept can_resize =
 };
 
 template<byte_oriented buf_type>
+requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final {
 	buf_type& buffer_;
 	std::size_t read_;

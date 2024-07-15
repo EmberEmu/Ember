@@ -148,13 +148,26 @@ public:
 	BinaryStream& operator >>(std::string& dest) {
 		STREAM_READ_BOUNDS_CHECK(1, *this);
 		dest.clear();
-		auto pos = buffer_.find_first_of(typename buf_type::value_type(0x00));
+		auto pos = buffer_.find_first_of(value_type(0x00));
 		auto read_len = pos == buf_type::npos? buffer_.size() : pos;
 		dest.resize(read_len);
 		buffer_.read(dest.data(), read_len);
 
 		if(pos != buf_type::npos) {
 			buffer_.skip(1); // skip null term
+		}
+
+		return *this;
+	}
+
+	// terminates when it hits a null-byte or consumes all data in the buffer
+	// goes without saying that the buffer must outlive the string_view
+	BinaryStream& operator >>(std::string_view& dest) requires(contiguous<buf_type>) {
+		STREAM_READ_BOUNDS_CHECK(1, *this);
+		dest = view();
+
+		if(dest.empty()) {
+			dest = std::string_view { span<char, true>(buffer_.size()) };
 		}
 
 		return *this;
