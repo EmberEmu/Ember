@@ -21,8 +21,6 @@
 namespace ember::spark {
 
 class BinaryStreamReader : virtual public StreamBase {
-	constexpr static std::size_t string_copy_block = 32;
-
 	BufferRead& buffer_;
 	std::size_t total_read_;
 	const std::size_t read_limit_;

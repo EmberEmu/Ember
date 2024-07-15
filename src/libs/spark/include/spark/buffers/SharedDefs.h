@@ -40,6 +40,9 @@ enum class StreamState {
 	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
 };
 
+struct is_contiguous {};
+struct is_non_contiguous {};
+
 // Returns true if there's an overlap between source and destination buffers
 template<typename Src, typename Dst>
 static inline bool region_overlap(const Src* src, std::size_t src_len, const Dst* dst, std::size_t dst_len) {

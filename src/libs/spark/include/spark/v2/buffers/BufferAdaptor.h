@@ -33,6 +33,7 @@ class BufferAdaptor final {
 public:
 	using value_type = typename buf_type::value_type;
 	using size_type  = typename buf_type::size_type;
+	using contiguous = is_contiguous;
 
 	static constexpr size_type npos = -1;
 

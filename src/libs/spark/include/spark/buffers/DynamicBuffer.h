@@ -42,6 +42,7 @@ public:
 	using value_type = StorageType;
 	using node_type  = IntrusiveNode;
 	using size_type  = std::size_t;
+	using contiguous = is_non_contiguous;
 
 	static constexpr size_type npos = -1;
 

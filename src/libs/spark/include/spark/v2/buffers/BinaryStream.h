@@ -39,8 +39,6 @@ concept writeable =
 
 template<byte_oriented buf_type, bool enable_exceptions = true>
 class BinaryStream final {
-	constexpr static typename buf_type::size_type string_copy_block = 32;
-
 	buf_type& buffer_;
 	std::size_t total_write_ = 0;
 	std::size_t total_read_ = 0;
@@ -82,6 +80,7 @@ class BinaryStream final {
 
 public:
 	using State = StreamState;
+	using contiguous = typename buf_type::contiguous;
 
 	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
 		: buffer_(source), read_limit_(read_limit) {};

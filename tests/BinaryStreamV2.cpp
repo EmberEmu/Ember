@@ -223,3 +223,31 @@ TEST(BinaryStreamV2, Fill) {
 	auto it = std::find_if(buffer.begin(), buffer.end(),  [](auto i) { return i != 128; });
 	ASSERT_EQ(it, buffer.end());
 }
+
+TEST(BinaryStreamV2, NoCopyStringRead) {
+	std::vector<char> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	const std::uint32_t trailing { 0x0DDBA11 };
+	stream << input << trailing;
+
+	// check this stream uses a contiguous buffer
+	const auto contig = std::is_same<decltype(stream)::contiguous, spark::is_contiguous>::value;
+	ASSERT_TRUE(contig);
+
+	// find the end of the string within the buffer
+	const auto stream_buf = stream.buffer();
+	const auto pos = stream_buf->find_first_of('\0');
+	ASSERT_NE(pos, adaptor.npos);
+
+	// create a view into the buffer & skip ahead so the next read continues as normal
+	std::string_view output(stream_buf->read_ptr(), pos);
+	ASSERT_EQ(input, output);
+
+	// ensure we can still read subsequent data as normal
+	stream.skip(pos + 1); // +1 to skip terminator
+	std::uint32_t trailing_output = 0;
+	stream >> trailing_output ;
+	ASSERT_EQ(trailing, trailing_output);
+}
