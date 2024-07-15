@@ -53,22 +53,14 @@ public:
 	BinaryStreamReader& operator >>(std::string& dest) {
 		check_read_bounds(1); // just to prevent trying to read from an empty buffer
 		dest.clear();
+		auto pos = buffer_.find_first_of(std::byte(0x00));
+		auto read_len = pos == BufferRead::npos? buffer_.size() : pos;
+		dest.resize(read_len);
+		buffer_.read(dest.data(), read_len);
 
-		do {
-			const auto copy_len = std::min(string_copy_block, buffer_.size());
-			const auto dest_size = dest.size();
-			dest.resize(dest_size + copy_len);
-			buffer_.copy(dest.data() + dest_size, copy_len);
-
-			if(auto pos = dest.find_first_of('\0'); pos != std::string::npos) {
-				const auto skip_len = copy_len - (dest.size() - (pos + 1));
-				buffer_.skip(skip_len); // skip only the string data, not any trailing
-				dest.resize(pos);       // shrink down so as to ignore trailing data
-				break;
-			} else {
-				buffer_.skip(copy_len); // skip all copied data
-			}
-		} while(!buffer_.empty());
+		if(pos != BufferRead::npos) {
+			buffer_.skip(1); // skip null term
+		}
 
 		return *this;
 	}

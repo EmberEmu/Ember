@@ -63,7 +63,11 @@ public:
 	};
 
 	bool empty() const override { 
-		return BufferReadAdaptor<buf_type>::empty(); 
+		return BufferReadAdaptor<buf_type>::empty();
+	}
+
+	std::size_t find_first_of(std::byte val) const override { 
+		return BufferReadAdaptor<buf_type>::find_first_of(val);
 	}
 };
 

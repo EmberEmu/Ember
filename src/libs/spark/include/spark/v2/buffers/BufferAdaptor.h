@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/buffers/SharedDefs.h>
+#include <algorithm>
 #include <utility>
 #include <vector>
 #include <cassert>
@@ -32,6 +33,8 @@ class BufferAdaptor final {
 public:
 	using value_type = typename buf_type::value_type;
 	using size_type  = typename buf_type::size_type;
+
+	static constexpr size_type npos = -1;
 
 	BufferAdaptor(buf_type& buffer)
 		: buffer_(buffer), read_(0), write_(buffer.size()) {}
@@ -62,6 +65,16 @@ public:
 
 		std::memcpy(buffer_.data() + write_, source, length);
 		write_ += length;
+	}
+
+	size_type find_first_of(value_type val) const {
+		for(auto i = read_; i < size(); ++i) {
+			if(buffer_[i] == val) {
+				return i - read_;
+			}
+		}
+
+		return npos;
 	}
 	
 	size_type size() const {

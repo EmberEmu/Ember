@@ -15,11 +15,14 @@ namespace ember::spark {
 
 class BufferRead : virtual public BufferBase {
 public:
+	constexpr static std::size_t npos = -1;
+
 	virtual ~BufferRead() = default;
 	virtual void read(void* destination, std::size_t length) = 0;
 	virtual void copy(void* destination, std::size_t length) const = 0;
 	virtual	void skip(std::size_t length) = 0;
 	virtual const std::byte& operator[](const std::size_t index) const = 0;
+	virtual std::size_t find_first_of(std::byte val) const = 0;
 };
 
 } // spark, ember

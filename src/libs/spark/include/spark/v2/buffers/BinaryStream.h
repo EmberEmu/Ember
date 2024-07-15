@@ -139,24 +139,16 @@ public:
 
 	// terminates when it hits a null-byte or consumes all data in the buffer
 	BinaryStream& operator >>(std::string& dest) {
-		STREAM_READ_BOUNDS_CHECK(1, *this);  // just to prevent trying to read from an empty buffer
+		STREAM_READ_BOUNDS_CHECK(1, *this);
 		dest.clear();
+		auto pos = buffer_.find_first_of(typename buf_type::value_type(0x00));
+		auto read_len = pos == buf_type::npos? buffer_.size() : pos;
+		dest.resize(read_len);
+		buffer_.read(dest.data(), read_len);
 
-		do {
-			const auto copy_len = std::min(string_copy_block, buffer_.size());
-			const auto dest_size = dest.size();
-			dest.resize(dest_size + copy_len);
-			buffer_.copy(dest.data() + dest_size, copy_len);
-
-			if(auto pos = dest.find_first_of('\0'); pos != std::string::npos) {
-				const auto skip_len = copy_len - (dest.size() - (pos + 1));
-				buffer_.skip(skip_len); // skip only the string data, not any trailing
-				dest.resize(pos);       // shrink down so as to ignore trailing data
-				break;
-			} else {
-				buffer_.skip(copy_len); // skip all copied data
-			}
-		} while(!buffer_.empty());
+		if(pos != buf_type::npos) {
+			buffer_.skip(1); // skip null term
+		}
 
 		return *this;
 	}

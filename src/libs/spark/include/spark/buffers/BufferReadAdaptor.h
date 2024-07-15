@@ -58,6 +58,16 @@ public:
 	const auto read_ptr() const {
 		return buffer_.data() + read_;
 	}
+
+	std::size_t find_first_of(std::byte val) const override {
+		for(auto i = read_; i < size(); ++i) {
+			if(static_cast<std::byte>(buffer_[i]) == val) {
+				return i - read_;
+			}
+		}
+
+		return npos;
+	}
 };
 
 } // spark, ember

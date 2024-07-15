@@ -43,9 +43,11 @@ public:
 	using node_type  = IntrusiveNode;
 	using size_type  = std::size_t;
 
+	static constexpr size_type npos = -1;
+
 private:
 	IntrusiveNode root_;
-	std::size_t size_;
+	size_type size_;
 	Allocator alloc_;
 
 	void link_tail_node(IntrusiveNode* node) {
@@ -404,6 +406,26 @@ public:
 		}
 
 		return count;
+	}
+
+	size_type find_first_of(value_type val) const {
+		size_type index = 0;
+		auto head = root_.next;
+
+		while(head != &root_) {
+			const auto buffer = buffer_from_node(head);
+			const auto data = buffer->read_data();
+			
+			for(size_type i = 0, j = buffer->size(); i < j; ++i, ++index) {
+				if(data[i] == val) {
+					return index;
+				}
+			}
+
+			head = head->next;
+		}
+
+		return npos;
 	}
 
 	template<typename BufferType>
