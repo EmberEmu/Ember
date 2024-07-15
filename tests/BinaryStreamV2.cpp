@@ -233,7 +233,7 @@ TEST(BinaryStreamV2, NoCopyStringRead) {
 	stream << input << trailing;
 
 	// check this stream uses a contiguous buffer
-	const auto contig = std::is_same<decltype(stream)::contiguous, spark::is_contiguous>::value;
+	const auto contig = std::is_same<decltype(stream)::contiguous_type, spark::is_contiguous>::value;
 	ASSERT_TRUE(contig);
 
 	// find the end of the string within the buffer
@@ -250,4 +250,38 @@ TEST(BinaryStreamV2, NoCopyStringRead) {
 	std::uint32_t trailing_output = 0;
 	stream >> trailing_output ;
 	ASSERT_EQ(trailing, trailing_output);
+}
+
+TEST(BinaryStreamV2, StringViewRead) {
+	std::vector<char> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	const std::uint32_t trailing { 0x0DDBA11 };
+	stream << input << trailing;
+
+	auto view = stream.view();
+	ASSERT_EQ(input, view);
+
+	// ensure we can still read subsequent data as normal
+	std::uint32_t trailing_output = 0;
+	stream >> trailing_output;
+	ASSERT_EQ(trailing, trailing_output);
+}
+
+TEST(BinaryStreamV2, PartialStringViewRead) {
+	std::vector<char> buffer;
+	spark::v2::BufferAdaptor adaptor(buffer);
+	spark::v2::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << input;
+
+	auto span = stream.span(20);
+	std::string_view view(span);
+	ASSERT_EQ("The quick brown fox ", view);
+
+	// read the rest of the string
+	view = stream.view();
+	ASSERT_EQ("jumped over the lazy dog", view);
+	ASSERT_TRUE(stream.empty());
 }

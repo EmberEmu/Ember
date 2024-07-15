@@ -14,7 +14,9 @@
 #include <array>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <string>
+#include <string_view>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -35,6 +37,11 @@ template <typename buf_type>
 concept writeable =
 	requires(buf_type t, void* v, std::size_t s) {
 		{ t.write(v, s) } -> std::same_as<void>;
+};
+
+template<typename buf_type>
+concept contiguous = requires(buf_type t) {
+	std::is_same<typename buf_type::contiguous, is_contiguous>::value;
 };
 
 template<byte_oriented buf_type, bool enable_exceptions = true>
@@ -80,7 +87,8 @@ class BinaryStream final {
 
 public:
 	using State = StreamState;
-	using contiguous = typename buf_type::contiguous;
+	using value_type = typename buf_type::value_type;
+	using contiguous_type = typename buf_type::contiguous;
 
 	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
 		: buffer_(source), read_limit_(read_limit) {};
@@ -185,6 +193,36 @@ public:
 		buffer_.read(dest, read_size);
 	}
 
+	void skip(const std::size_t count) {
+		STREAM_READ_BOUNDS_CHECK(count, void());
+		buffer_.skip(count);
+	}
+
+	// Reads a string_view from the buffer, up to the terminator value
+	// Returns an empty string_view if a terminator is not found
+	std::string_view view(value_type terminator = 0x00) requires(contiguous<buf_type>) {
+		STREAM_READ_BOUNDS_CHECK(1, {});
+		const auto pos = buffer_.find_first_of(terminator);
+
+		if(pos == buf_type::npos) {
+			return {};
+		}
+	
+		auto ret = std::string_view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
+		buffer_.skip(pos + 1);
+		return ret;
+	}
+
+	// Reads a span from the buffer, up to the length value
+	// Returns an empty span if buffer length < length
+	template<typename OutType = value_type>
+	std::span<OutType> span(std::size_t count) requires(contiguous<buf_type>) {
+		STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
+		auto ret = std::span { reinterpret_cast<OutType*>(buffer_.read_ptr()), count };
+		buffer_.skip(sizeof(OutType) * count);
+		return ret;
+	}
+
 	/**  Misc functions **/
 
 	bool can_write_seek() const requires(writeable<buf_type>) {
@@ -213,11 +251,6 @@ public:
 
 	buf_type* buffer() const {
 		return &buffer_;
-	}
-
-	void skip(const std::size_t count) {
-		STREAM_READ_BOUNDS_CHECK(count, void());
-		buffer_.skip(count);
 	}
 
 	StreamState state() const {

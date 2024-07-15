@@ -69,9 +69,11 @@ public:
 	}
 
 	size_type find_first_of(value_type val) const {
-		for(auto i = read_; i < size(); ++i) {
-			if(buffer_[i] == val) {
-				return i - read_;
+		const auto data = buffer_.data() + read_;
+
+		for(auto i = 0u; i < size(); ++i) {
+			if(data[i] == val) {
+				return i;
 			}
 		}
 
