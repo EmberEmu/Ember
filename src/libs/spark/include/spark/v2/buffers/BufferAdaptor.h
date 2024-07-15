@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <ranges>
 #include <utility>
-#include <vector>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
@@ -25,13 +24,9 @@ concept can_resize =
 		{ t.resize( std::size_t() ) } -> std::same_as<void>;
 };
 
-template<byte_oriented buf_type>
+template<byte_oriented buf_type, bool space_optimise = false>
 requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final {
-	buf_type& buffer_;
-	std::size_t read_;
-	std::size_t write_;
-
 public:
 	using value_type = typename buf_type::value_type;
 	using size_type  = typename buf_type::size_type;
@@ -39,25 +34,43 @@ public:
 
 	static constexpr size_type npos = -1;
 
+private:
+	buf_type& buffer_;
+	size_type read_;
+	size_type write_;
+
+public:
 	BufferAdaptor(buf_type& buffer)
 		: buffer_(buffer), read_(0), write_(buffer.size()) {}
 
-	void read(void* destination, std::size_t length) {
+	void read(void* destination, size_type length) {
 		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
+
+		if constexpr(space_optimise) {
+			if(read_ == write_) {
+				read_ = write_ = 0;
+			}
+		}
 	}
 
-	void copy(void* destination, std::size_t length) const {
+	void copy(void* destination, size_type length) const {
 		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 
-	void skip(std::size_t length) {
+	void skip(size_type length) {
 		read_ += length;
+
+		if constexpr(space_optimise) {
+			if(read_ == write_) {
+				read_ = write_ = 0;
+			}
+		}
 	}
 
-	void write(const void* source, std::size_t length) requires(can_resize<buf_type>) {
+	void write(const void* source, size_type length) requires(can_resize<buf_type>) {
 		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
@@ -90,11 +103,11 @@ public:
 		return !(buffer_.size() - read_);
 	}
 
-	value_type& operator[](const std::size_t index) {
+	value_type& operator[](const size_type index) {
 		return buffer_[index];
 	}
 
-	const value_type& operator[](const std::size_t index) const {
+	const value_type& operator[](const size_type index) const {
 		return buffer_[index];
 	}
 
@@ -102,7 +115,7 @@ public:
 		return true;
 	}
 
-	void write_seek(const BufferSeek direction, const std::size_t offset) requires(can_resize<buf_type>) {
+	void write_seek(const BufferSeek direction, const size_type offset) requires(can_resize<buf_type>) {
 		switch(direction) {
 			case BufferSeek::SK_BACKWARD:
 				write_ -= offset;
