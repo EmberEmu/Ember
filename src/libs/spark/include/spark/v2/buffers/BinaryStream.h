@@ -207,20 +207,23 @@ public:
 		if(pos == buf_type::npos) {
 			return {};
 		}
-	
-		auto ret = std::string_view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
-		buffer_.skip(pos + 1);
-		return ret;
+
+		std::string_view view { span<char, true>(pos) };
+		buffer_.skip(1);
+		return view;
 	}
 
 	// Reads a span from the buffer, up to the length value
 	// Returns an empty span if buffer length < length
-	template<typename OutType = value_type>
+	template<typename OutType = value_type, bool skip_bounds = false>
 	std::span<OutType> span(std::size_t count) requires(contiguous<buf_type>) {
-		STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
-		auto ret = std::span { reinterpret_cast<OutType*>(buffer_.read_ptr()), count };
+		if constexpr(!skip_bounds) {
+			STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
+		}
+
+		std::span span { reinterpret_cast<OutType*>(buffer_.read_ptr()), count };
 		buffer_.skip(sizeof(OutType) * count);
-		return ret;
+		return span;
 	}
 
 	/**  Misc functions **/
