@@ -16,7 +16,9 @@
 #include <algorithm>
 #include <concepts>
 #include <utility>
+#ifdef BUFFER_DEBUG
 #include <vector>
+#endif
 #include <cstddef>
 #include <cstdint>
 
@@ -99,6 +101,7 @@ private:
 		}
 	}
 	
+#ifdef BUFFER_DEBUG
 	void offset_buffers(std::vector<IntrusiveStorage*>& buffers, std::size_t offset) {
 		std::erase_if(buffers, [&](auto block) {
 			if(block->size() > offset) {
@@ -110,6 +113,7 @@ private:
 			}
 		});
 	}
+#endif
 
 	value_type& byte_at_index(const size_t index) const {
 		BOOST_ASSERT_MSG(index < size_, "Buffer subscript index out of range");
@@ -188,6 +192,7 @@ public:
 		} while(remaining);
 	}
 
+#ifdef BUFFER_DEBUG
 	std::vector<IntrusiveStorage*> fetch_buffers(const std::size_t length,
 	                                             const std::size_t offset = 0) {
 		std::size_t total = length + offset;
@@ -215,6 +220,7 @@ public:
 
 		return buffers;
 	}
+#endif
 
 	void skip(const std::size_t length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");

@@ -7,8 +7,10 @@
  */
 
 #include <boost/asio/buffer.hpp>
+
+#ifdef BUFFER_DEBUG
 #include <utility>
-#include <cstddef>
+#endif
 
 namespace ember::spark {
 
@@ -52,7 +54,7 @@ public:
 
 	const_iterator& operator=(const_iterator&) = delete;
 
-#ifdef BUFFER_SEQUENCE_DEBUG
+#ifdef BUFFER_DEBUG
 	std::pair<const char*, std::size_t> get_buffer() {
 		auto buffer = buffer_->buffer_from_node(curr_node_);
 		return std::make_pair<char*, std::size_t>(
