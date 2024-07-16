@@ -307,3 +307,17 @@ TEST(BinaryStreamV2, StringViewStream) {
 	ASSERT_NE(input, output);
 }
 
+TEST(BinaryStreamV2, Array) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const int arr[] = { 1, 2, 3 };
+	stream << arr;
+	int val = 0;
+	stream >> val;
+	ASSERT_EQ(val, 1);
+	stream >> val;
+	ASSERT_EQ(val, 2);
+	stream >> val;
+	ASSERT_EQ(val, 3);
+}
