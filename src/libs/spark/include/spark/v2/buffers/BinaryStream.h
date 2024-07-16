@@ -87,10 +87,10 @@ class BinaryStream final {
 	}
 
 public:
+	using State = StreamState;
+	using seeking            = typename buf_type::seeking;
 	using value_type         = typename buf_type::value_type;
 	using contiguous_type    = typename buf_type::contiguous;
-	using seeking            = typename buf_type::seeking;
-	using State = StreamState;
 
 	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
 		: buffer_(source), read_limit_(read_limit) {};
@@ -214,7 +214,7 @@ public:
 
 	// Reads a string_view from the buffer, up to the terminator value
 	// Returns an empty string_view if a terminator is not found
-	std::string_view view(value_type terminator = 0) requires(contiguous<buf_type>) {
+	std::string_view view(value_type terminator = value_type(0)) requires(contiguous<buf_type>) {
 		STREAM_READ_BOUNDS_CHECK(1, {});
 		const auto pos = buffer_.find_first_of(terminator);
 
