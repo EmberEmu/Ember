@@ -116,6 +116,14 @@ public:
 		return *this;
 	}
 
+	BinaryStream& operator <<(const std::string_view& data) requires(writeable<buf_type>) {
+		buffer_.write(data.data(), data.size());
+		const char term = '\0';
+		buffer_.write(&term, sizeof(term));
+		total_write_ += (data.size() + 1);
+		return *this;
+	}
+
 	template<std::ranges::contiguous_range range>
 	void put(range& data) requires(writeable<buf_type>) {
 		const auto write_size = data.size() * sizeof(typename range::value_type);
