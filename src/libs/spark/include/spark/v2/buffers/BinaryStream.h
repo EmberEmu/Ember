@@ -111,8 +111,8 @@ public:
 
 	BinaryStream& operator <<(const char* data) requires(writeable<buf_type>) {
 		const auto len = std::strlen(data);
-		buffer_.write(data, len);
-		total_write_ += len;
+		buffer_.write(data, len + 1); // include terminator
+		total_write_ += len + 1;
 		return *this;
 	}
 
@@ -154,31 +154,25 @@ public:
 
 	/*** Read ***/
 
-	// terminates when it hits a null-byte or consumes all data in the buffer
+	// terminates when it hits a null byte, empty string if none found
 	BinaryStream& operator >>(std::string& dest) {
-		STREAM_READ_BOUNDS_CHECK(1, *this);
 		dest.clear();
 		auto pos = buffer_.find_first_of(value_type(0));
-		auto read_len = pos == buf_type::npos? buffer_.size() : pos;
-		dest.resize(read_len);
-		buffer_.read(dest.data(), read_len);
 
-		if(pos != buf_type::npos) {
-			buffer_.skip(1); // skip null term
+		if(pos == buf_type::npos) {
+			return *this;
 		}
 
+		dest.resize(pos);
+		buffer_.read(dest.data(), pos);
+		buffer_.skip(1); // skip null term
 		return *this;
 	}
 
-	// terminates when it hits a null-byte or consumes all data in the buffer
+	// terminates when it hits a null byte, empty string_view if none found
 	// goes without saying that the buffer must outlive the string_view
 	BinaryStream& operator >>(std::string_view& dest) requires(contiguous<buf_type>) {
-		dest = view(); // performs bounds check
-
-		if(dest.empty()) {
-			dest = std::string_view { span<char, true>(buffer_.size()) };
-		}
-
+		dest = view();
 		return *this;
 	}
 
@@ -223,26 +217,22 @@ public:
 	// Reads a string_view from the buffer, up to the terminator value
 	// Returns an empty string_view if a terminator is not found
 	std::string_view view(value_type terminator = value_type(0)) requires(contiguous<buf_type>) {
-		STREAM_READ_BOUNDS_CHECK(1, {});
 		const auto pos = buffer_.find_first_of(terminator);
 
 		if(pos == buf_type::npos) {
 			return {};
 		}
 
-		std::string_view view { span<char, true>(pos) };
-		buffer_.skip(1);
+		std::string_view view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
+		buffer_.skip(pos + 1);
 		return view;
 	}
 
-	// Reads a span from the buffer, up to the length value
-	// Returns an empty span if buffer length < length
-	template<typename OutType = value_type, bool skip_bounds = false>
+	// Reads a span<T> from the buffer
+	// Fails if buffer length < requested bytes
+	template<typename OutType = value_type>
 	std::span<OutType> span(std::size_t count) requires(contiguous<buf_type>) {
-		if constexpr(!skip_bounds) {
-			STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
-		}
-
+		STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
 		std::span span { reinterpret_cast<OutType*>(buffer_.read_ptr()), count };
 		buffer_.skip(sizeof(OutType) * count);
 		return span;

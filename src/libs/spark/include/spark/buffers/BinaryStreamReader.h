@@ -47,19 +47,19 @@ public:
                             : StreamBase(source), buffer_(source), total_read_(0),
                               read_limit_(read_limit), state_(StreamState::OK) {}
 
-	// terminates when it hits a null-byte or consumes all data in the buffer
+	// terminates when it hits a null byte, empty string if none found
 	BinaryStreamReader& operator >>(std::string& dest) {
 		check_read_bounds(1); // just to prevent trying to read from an empty buffer
 		dest.clear();
 		auto pos = buffer_.find_first_of(std::byte(0));
-		auto read_len = pos == BufferRead::npos? buffer_.size() : pos;
-		dest.resize(read_len);
-		buffer_.read(dest.data(), read_len);
 
-		if(pos != BufferRead::npos) {
-			buffer_.skip(1); // skip null term
+		if(pos == BufferRead::npos) {
+			return *this;
 		}
 
+		dest.resize(pos);
+		buffer_.read(dest.data(), pos);
+		buffer_.skip(1); // skip null term
 		return *this;
 	}
 

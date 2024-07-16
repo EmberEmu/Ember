@@ -111,9 +111,7 @@ TEST(BinaryStream, ReadWriteCString) {
 	const char* in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
-	// no terminator is written for a C string
-	// bit inconsistent with std::string handling?
-	ASSERT_EQ(stream.size(), strlen(in));
+	ASSERT_EQ(stream.size(), strlen(in) + 1);
 
 	std::string out;
 	stream >> out;

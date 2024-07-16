@@ -52,8 +52,8 @@ public:
 
 	BinaryStreamWriter& operator <<(const char* data) {
 		const auto len = std::strlen(data);
-		buffer_.write(data, len);
-		total_write_ += len;
+		buffer_.write(data, len + 1); // include terminator
+		total_write_ += len + 1;
 		return *this;
 	}
 
