@@ -12,9 +12,9 @@
 #include "LoginHandler.h"
 #include "grunt/Packet.h"
 #include "grunt/Handler.h"
-#include <spark/buffers/Buffer.h>
 #include <logger/Logging.h>
 #include <shared/threading/ThreadPool.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <memory>
 
 namespace ember {
@@ -37,7 +37,7 @@ public:
 	             boost::asio::ip::tcp::endpoint ep, log::Logger* logger,
 	             ThreadPool& pool, const LoginHandlerBuilder& builder);
 
-	bool handle_packet(spark::Buffer& buffer) override;
+	bool handle_packet(spark::io::pmr::Buffer& buffer) override;
 	void on_write_complete() override;
 };
 

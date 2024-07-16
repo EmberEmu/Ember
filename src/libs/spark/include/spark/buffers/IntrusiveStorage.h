@@ -9,7 +9,6 @@
 #pragma once
 #pragma warning(disable : 4996)
 
-#include <spark/buffers/Buffer.h>
 #include <spark/buffers/SharedDefs.h>
 #include <array>
 #include <concepts>
@@ -18,7 +17,7 @@
 #include <cstring>
 #include <cstddef>
 
-namespace ember::spark::detail {
+namespace ember::spark::io::detail {
 
 struct IntrusiveNode {
 	IntrusiveNode* next;
@@ -156,4 +155,4 @@ struct IntrusiveStorage {
 	}
 };
 
-} // detail, spark, ember
+} // detail, io, spark, ember

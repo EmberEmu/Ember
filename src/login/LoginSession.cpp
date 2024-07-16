@@ -38,7 +38,7 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 	};
 }
 
-bool LoginSession::handle_packet(spark::Buffer& buffer) try {
+bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	auto packet = grunt_handler_.try_deserialise(buffer);
@@ -88,8 +88,8 @@ void LoginSession::write_chain(const grunt::Packet& packet, bool notify) {
 		<< grunt::to_string(packet.opcode) << LOG_ASYNC;
 
 	const auto block_size = 1024u;
-	auto chain = std::make_unique<spark::DynamicBuffer<block_size>>();
-	spark::BinaryStream stream(*chain);
+	auto chain = std::make_unique<spark::io::DynamicBuffer<block_size>>();
+	spark::io::pmr::BinaryStream stream(*chain);
 	packet.write_to_stream(stream);
 	NetworkSession::write_chain<block_size>(std::move(chain), notify);
 }

@@ -10,7 +10,7 @@
 
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class BufferBase {
 public:
@@ -19,4 +19,4 @@ public:
 	virtual ~BufferBase() = default;
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

@@ -9,8 +9,8 @@
 #include <stun/detail/Shared.h>
 #include <stun/Attributes.h>
 #include <stun/Exception.h>
-#include <spark/buffers/BufferAdaptor.h>
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <shared/util/FNVHash.h>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
@@ -47,8 +47,8 @@ void hmac_helper(std::span<const std::uint8_t> buffer,
 }
 
 std::size_t attribute_offset(std::span<const std::uint8_t> buffer, Attributes attr) {
-	spark::BufferReadAdaptor sba(buffer);
-	spark::BinaryStreamReader stream(sba);
+	spark::io::pmr::BufferReadAdaptor sba(buffer);
+	spark::io::pmr::BinaryStreamReader stream(sba);
 	stream.skip(HEADER_LENGTH);
 
 	const Header hdr = read_header(buffer);
@@ -170,8 +170,8 @@ std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
 }
 
 bool magic_cookie_present(std::span<const std::uint8_t> buffer) {
-	spark::BufferReadAdaptor sba(buffer);
-;	spark::BinaryStreamReader stream(sba);
+	spark::io::pmr::BufferReadAdaptor sba(buffer);
+;	spark::io::pmr::BinaryStreamReader stream(sba);
 
 	Header header{};
 	stream >> header.type;
@@ -182,8 +182,8 @@ bool magic_cookie_present(std::span<const std::uint8_t> buffer) {
 }
 
 Header read_header(std::span<const std::uint8_t> buffer) try {
-	spark::BufferReadAdaptor sba(buffer);
-;	spark::BinaryStreamReader stream(sba);
+	spark::io::pmr::BufferReadAdaptor sba(buffer);
+;	spark::io::pmr::BinaryStreamReader stream(sba);
 
 	Header header{};
 	stream >> header.type;

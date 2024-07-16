@@ -18,7 +18,7 @@
 #include <protocol/Opcodes.h>
 #include <protocol/PacketHeaders.h>
 #include <protocol/Packets.h>
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/util/UTF8String.h>
 #include <shared/util/xoroshiro128plus.h>

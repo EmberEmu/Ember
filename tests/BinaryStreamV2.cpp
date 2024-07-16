@@ -7,8 +7,8 @@
  */
 
 #include <spark/buffers/DynamicBuffer.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
 #include <algorithm>
@@ -28,20 +28,20 @@ TEST(BinaryStreamV2, MessageReadLimit) {
 	};
 
 	// write the ping packet data twice to the buffer
-	spark::DynamicBuffer<32> buffer;
+	spark::io::DynamicBuffer<32> buffer;
 	buffer.write(ping.data(), ping.size());
 	buffer.write(ping.data(), ping.size());
 
 	// read one packet back out (reuse the ping array)
-	spark::v2::BinaryStream stream(buffer, ping.size());
+	spark::io::BinaryStream stream(buffer, ping.size());
 	ASSERT_EQ(stream.read_limit(), ping.size());
 	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
 		<< "Failed to read packet back from stream";
 
 	// attempt to read past the stream message bound
-	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::stream_read_limit)
+	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::stream_read_limit)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::StreamState::READ_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::READ_LIMIT_ERR)
 		<< "Unexpected stream state";
 }
 
@@ -52,24 +52,24 @@ TEST(BinaryStreamV2, BufferLimit) {
 	};
 
 	// write the ping packet data to the buffer
-	spark::DynamicBuffer<32> buffer;
+	spark::io::DynamicBuffer<32> buffer;
 	buffer.write(ping.data(), ping.size());
 
 	// read all data back out
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
 		<< "Failed to read packet back from stream";
 
 	// attempt to read past the buffer bound
-	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::buffer_underrun)
+	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::buffer_underrun)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::StreamState::BUFF_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::BUFF_LIMIT_ERR)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStreamV2, ReadWriteInts) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 
 	const std::uint16_t in { 100 };
 	stream << in;
@@ -83,13 +83,13 @@ TEST(BinaryStreamV2, ReadWriteInts) {
 	ASSERT_EQ(in, out);
 	ASSERT_TRUE(stream.empty());
 	ASSERT_TRUE(buffer.empty());
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStreamV2, ReadWriteStdString) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
@@ -101,13 +101,13 @@ TEST(BinaryStreamV2, ReadWriteStdString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStreamV2, ReadWriteCString) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 	const char* in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
@@ -118,13 +118,13 @@ TEST(BinaryStreamV2, ReadWriteCString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(0, strcmp(in, out.c_str()));
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStreamV2, ReadWriteVector) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
@@ -152,13 +152,13 @@ TEST(BinaryStreamV2, ReadWriteVector) {
 	// read the integers to an output buffer and compare both
 	stream.get(out.begin(), out.end());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStreamV2, Clear) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 	stream << 0xBADF00D;
 
 	ASSERT_TRUE(!stream.empty());
@@ -171,8 +171,8 @@ TEST(BinaryStreamV2, Clear) {
 }
 
 TEST(BinaryStreamV2, Skip) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 
 	const std::uint64_t in {0xBADF00D};
 	stream << in << in;
@@ -189,14 +189,14 @@ TEST(BinaryStreamV2, Skip) {
 }
 
 TEST(BinaryStreamV2, CanWriteSeek) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 	ASSERT_EQ(buffer.can_write_seek(), stream.can_write_seek());
 }
 
 TEST(BinaryStreamV2, GetPut) {
-	spark::DynamicBuffer<32> buffer;
-	spark::v2::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::BinaryStream stream(buffer);
 	std::vector<std::uint8_t> in { 1, 2, 3, 4, 5 };
 	std::vector<std::uint8_t> out(in.size());
 
@@ -210,8 +210,8 @@ TEST(BinaryStreamV2, GetPut) {
 
 TEST(BinaryStreamV2, Fill) {
 	std::vector<std::uint8_t> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	stream.fill<30>(128);
 	ASSERT_EQ(buffer.size(), 30);
 	ASSERT_EQ(stream.total_write(), 30);
@@ -224,14 +224,14 @@ TEST(BinaryStreamV2, Fill) {
 
 TEST(BinaryStreamV2, NoCopyStringRead) {
 	std::vector<char> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	const std::uint32_t trailing { 0x0DDBA11 };
 	stream << input << trailing;
 
 	// check this stream uses a contiguous buffer
-	const auto contig = std::is_same<decltype(stream)::contiguous_type, spark::is_contiguous>::value;
+	const auto contig = std::is_same<decltype(stream)::contiguous_type, spark::io::is_contiguous>::value;
 	ASSERT_TRUE(contig);
 
 	// find the end of the string within the buffer
@@ -252,8 +252,8 @@ TEST(BinaryStreamV2, NoCopyStringRead) {
 
 TEST(BinaryStreamV2, StringViewRead) {
 	std::vector<char> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	const std::uint32_t trailing { 0x0DDBA11 };
 	stream << input << trailing;
@@ -269,8 +269,8 @@ TEST(BinaryStreamV2, StringViewRead) {
 
 TEST(BinaryStreamV2, PartialStringViewRead) {
 	std::vector<char> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	stream << input;
 
@@ -286,8 +286,8 @@ TEST(BinaryStreamV2, PartialStringViewRead) {
 
 TEST(BinaryStreamV2, StringViewStream) {
 	std::vector<char> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	const std::uint32_t trailing { 0xDEFECA7E };
 	stream << input << trailing;

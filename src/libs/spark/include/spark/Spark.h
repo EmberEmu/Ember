@@ -10,7 +10,7 @@
 
 #include <spark/Service.h>
 #include <spark/buffers/DynamicBuffer.h>
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 
 #include <spark/v2/Server.h>
 #include <spark/v2/Handler.h>

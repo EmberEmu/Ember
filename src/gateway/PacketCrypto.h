@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <gsl/gsl_util>
 #include <botan/bigint.h>
 #include <boost/assert.hpp>

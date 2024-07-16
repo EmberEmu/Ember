@@ -10,9 +10,9 @@
 #include "TypeUtils.h"
 #include "DBCHeader.h"
 #include <logger/Logging.h>
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <gsl/gsl_util>
 #include <fstream>
 #include <vector>
@@ -24,14 +24,14 @@
 namespace ember::dbc {
 
 class DMLPrinter final : public types::TypeVisitor {
-	spark::BinaryStream& stream_;
+	spark::io::pmr::BinaryStream& stream_;
 	const std::vector<std::byte>& data_;
 	const std::size_t string_block_index_;
 	ComponentCache ccache_;
 	std::vector<std::string> values_;
 
 public:
-	DMLPrinter(spark::BinaryStream& stream, std::vector<std::byte> data,
+	DMLPrinter(spark::io::pmr::BinaryStream& stream, std::vector<std::byte> data,
 	           std::size_t string_block_index, ComponentCache& ccache) : stream_(stream), data_(std::move(data)),
 			   string_block_index_(string_block_index), ccache_(ccache) { }
 
@@ -195,8 +195,8 @@ void write_dbc_dml(const types::Struct& dbc, std::ofstream& out, std::vector<std
 		return;
 	}
 
-	spark::BufferAdaptor buffer(data);
-	spark::BinaryStream stream(buffer);
+	spark::io::pmr::BufferAdaptor buffer(data);
+	spark::io::pmr::BinaryStream stream(buffer);
 
 	DBCHeader header;
 	stream >> header.magic;

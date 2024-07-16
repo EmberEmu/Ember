@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace ember::spark {
+namespace ember::spark::io {
 
 template<typename T>
 struct DefaultAllocator final {
@@ -21,4 +21,4 @@ struct DefaultAllocator final {
 	}
 };
 
-} // spark, ember
+} // io, spark, ember

@@ -10,8 +10,8 @@
 
 #include <stun/Attributes.h>
 #include <stun/Protocol.h>
-#include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BinaryStream.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -22,8 +22,8 @@ namespace ember::stun {
 
 class MessageBuilder final {
 	std::vector<std::uint8_t> buffer_;
-	spark::BufferAdaptor<std::vector<std::uint8_t>> vba_;
-	spark::BinaryStream stream_;
+	spark::io::pmr::BufferAdaptor<std::vector<std::uint8_t>> vba_;
+	spark::io::pmr::BinaryStream stream_;
 	bool finalised_ = false;
 	std::size_t key_ = 0;
 

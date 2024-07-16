@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/buffers/detail/IntrusiveStorage.h>
+#include <spark/buffers/IntrusiveStorage.h>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -14,7 +14,7 @@ namespace spark = ember::spark;
 
 TEST(IntrusiveStorage, Size) {
 	const int iterations = 5;
-	spark::detail::IntrusiveStorage<sizeof(int) * iterations> buffer;
+	spark::io::detail::IntrusiveStorage<sizeof(int) * iterations> buffer;
 	int foo = 24221;
 	std::size_t written = 0;
 
@@ -33,7 +33,7 @@ TEST(IntrusiveStorage, Size) {
 
 TEST(IntrusiveStorage, ReadWriteConsistency) {
 	const char text[] = "The quick brown fox jumps over the lazy dog";
-	spark::detail::IntrusiveStorage<sizeof(text)> buffer;
+	spark::io::detail::IntrusiveStorage<sizeof(text)> buffer;
 
 	std::size_t written = buffer.write(text, sizeof(text));
 	ASSERT_EQ(sizeof(text), written) << "Incorrect write size";
@@ -49,7 +49,7 @@ TEST(IntrusiveStorage, ReadWriteConsistency) {
 
 TEST(IntrusiveStorage, Skip) {
 	const char text[] = "The quick brown fox jumps over the lazy dog";
-	spark::detail::IntrusiveStorage<sizeof(text)> buffer;
+	spark::io::detail::IntrusiveStorage<sizeof(text)> buffer;
 
 	buffer.write(text, sizeof(text));
 	auto text_out = std::make_unique<char[]>(sizeof(text));

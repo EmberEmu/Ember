@@ -10,8 +10,8 @@
 
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <array>
 #include <span>
 #include <cstdint>
@@ -22,10 +22,10 @@ static constexpr auto INBOUND_SIZE  { 1024 };
 static constexpr auto OUTBOUND_SIZE { 2048 };
 static constexpr auto PREALLOC_SIZE {  128 };
 
-using AdaptorInType = spark::v2::BufferAdaptor<std::span<std::uint8_t>>;
+using AdaptorInType = spark::io::BufferAdaptor<std::span<std::uint8_t>>;
 using BufferInType = std::array<std::uint8_t, INBOUND_SIZE>;
-using BufferOutType = spark::DynamicTLSBuffer<OUTBOUND_SIZE, PREALLOC_SIZE>;
+using BufferOutType = spark::io::DynamicTLSBuffer<OUTBOUND_SIZE, PREALLOC_SIZE>;
 
-using ClientStream = spark::v2::BinaryStream<AdaptorInType>;
+using ClientStream = spark::io::BinaryStream<AdaptorInType>;
 
 } // ember

@@ -9,8 +9,8 @@
 #pragma once
 
 #include <spark/v2/Common.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
 
 namespace ember::spark::v2 {
 
@@ -19,8 +19,8 @@ static void write_header(Message& msg) {
 	header.size = msg.fbb.GetSize();
 	header.set_alignment(msg.fbb.GetBufferMinAlignment());
 
-	BufferAdaptor adaptor(msg.header);
-	BinaryStream stream(adaptor);
+	io::BufferAdaptor adaptor(msg.header);
+	io::BinaryStream stream(adaptor);
 	header.write_to_stream(stream);
 }
 

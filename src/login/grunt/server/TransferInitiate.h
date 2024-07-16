@@ -32,7 +32,7 @@ public:
 	be::little_uint64_t filesize = 0;
 	std::array<std::uint8_t, 16> md5;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(stream.size() < WIRE_LENGTH) {
@@ -43,7 +43,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << gsl::narrow<std::uint8_t>(filename.size());
 		stream << filename.c_str();

@@ -8,12 +8,11 @@
 
 #include <spark/v2/RemotePeer.h>
 #include <spark/v2/Common.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/v2/HandlerRegistry.h>
 #include <spark/v2/Peers.h>
 #include <spark/v2/Utility.h>
-#include <spark/Exception.h>
 #include <shared/FilterTypes.h>
 #include <gsl/gsl_util>
 
@@ -41,8 +40,8 @@ void RemotePeer::send(std::unique_ptr<Message> msg) {
 void RemotePeer::receive(std::span<const std::uint8_t> data) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
-	spark::v2::BufferAdaptor adaptor(data);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(data);
+	spark::io::BinaryStream stream(adaptor);
 
 	MessageHeader header;
 

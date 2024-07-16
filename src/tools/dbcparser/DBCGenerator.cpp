@@ -8,7 +8,7 @@
 
 #include "DBCGenerator.h"
 #include "TypeUtils.h"
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <logger/Logging.h>
 #include <boost/endian/arithmetic.hpp>
@@ -25,8 +25,8 @@ namespace be = boost::endian;
 namespace ember::dbc {
 
 class RecordPrinter final : public types::TypeVisitor {
-	ember::spark::DynamicBuffer<4096> buffer_, sb_buffer_;
-	ember::spark::BinaryStream record_, string_block_;
+	ember::spark::io::DynamicBuffer<4096> buffer_, sb_buffer_;
+	ember::spark::io::pmr::BinaryStream record_, string_block_;
 	const std::string default_string = "Hello, world!";
 	const std::string default_string_loc = "Hello, localised string!";
 

@@ -8,8 +8,8 @@
 
 #include <stun/Parser.h>
 #include <stun/detail/Shared.h>
-#include <spark/buffers/BufferAdaptor.h>
-#include <spark/buffers/BinaryStreamReader.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
+#include <spark/buffers/pmr/BinaryStreamReader.h>
 #include <boost/assert.hpp>
 #include <botan/hash.h>
 #include <botan/mac.h>
@@ -36,7 +36,7 @@ Error Parser::validate_header(const Header& header) const {
 }
 
 attributes::XorMappedAddress
-Parser::xor_mapped_address(spark::BinaryStreamReader& stream, const TxID& id) {
+Parser::xor_mapped_address(spark::io::pmr::BinaryStreamReader& stream, const TxID& id) {
 	stream.skip(1); // skip reserved byte
 	attributes::XorMappedAddress attr{};
 	stream >> attr.family;
@@ -72,7 +72,7 @@ Parser::xor_mapped_address(spark::BinaryStreamReader& stream, const TxID& id) {
 	return attr;
 }
 
-attributes::Fingerprint Parser::fingerprint(spark::BinaryStreamReader& stream) {
+attributes::Fingerprint Parser::fingerprint(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::Fingerprint attr{};
 	stream >> attr.crc32;
 	be::big_to_native_inplace(attr.crc32);
@@ -80,8 +80,8 @@ attributes::Fingerprint Parser::fingerprint(spark::BinaryStreamReader& stream) {
 }
 
 Header Parser::header() try {
-	spark::BufferReadAdaptor sba(buffer_);
-;	spark::BinaryStreamReader stream(sba);
+	spark::io::pmr::BufferReadAdaptor sba(buffer_);
+;	spark::io::pmr::BinaryStreamReader stream(sba);
 
 	Header header{};
 	stream >> header.type;
@@ -100,14 +100,14 @@ Header Parser::header() try {
 }
 
 attributes::MessageIntegrity
-Parser::message_integrity(spark::BinaryStreamReader& stream) {
+Parser::message_integrity(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::MessageIntegrity attr{};
 	stream.get(attr.hmac_sha1.begin(), attr.hmac_sha1.end());
 	return attr;
 }
 
 attributes::MessageIntegrity256
-Parser::message_integrity_sha256(spark::BinaryStreamReader& stream, const std::size_t length) {
+Parser::message_integrity_sha256(spark::io::pmr::BinaryStreamReader& stream, const std::size_t length) {
 	attributes::MessageIntegrity256 attr{};
 
 	if (length < 16 || length > attr.hmac_sha256.size()) {
@@ -120,7 +120,7 @@ Parser::message_integrity_sha256(spark::BinaryStreamReader& stream, const std::s
 }
 
 attributes::Username
-Parser::username(spark::BinaryStreamReader& stream, const std::size_t size) {
+Parser::username(spark::io::pmr::BinaryStreamReader& stream, const std::size_t size) {
 	attributes::Username attr{};
 	attr.value.resize(size);
 	stream.get(attr.value.begin(), attr.value.end());
@@ -134,7 +134,7 @@ Parser::username(spark::BinaryStreamReader& stream, const std::size_t size) {
 }
 
 attributes::ErrorCode
-Parser::error_code(spark::BinaryStreamReader& stream, std::size_t length) {
+Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t length) {
 	attributes::ErrorCode attr{};
 	stream >> attr.code;
 
@@ -173,7 +173,7 @@ Parser::error_code(spark::BinaryStreamReader& stream, std::size_t length) {
 }
 
 attributes::UnknownAttributes
-Parser::unknown_attributes(spark::BinaryStreamReader& stream, std::size_t length) {
+Parser::unknown_attributes(spark::io::pmr::BinaryStreamReader& stream, std::size_t length) {
 	if(length % 2) {
 		throw parse_error(Error::RESP_UNK_ATTR_BAD_PAD,
 			"Bad UNKNOWN-ATTRIBUTES length");
@@ -197,8 +197,8 @@ Parser::unknown_attributes(spark::BinaryStreamReader& stream, std::size_t length
 }
 
 std::vector<attributes::Attribute> Parser::attributes() try {
-	spark::BufferReadAdaptor sba(buffer_);
-	spark::BinaryStreamReader stream(sba);
+	spark::io::pmr::BufferReadAdaptor sba(buffer_);
+	spark::io::pmr::BinaryStreamReader stream(sba);
 	stream.skip(HEADER_LENGTH);
 
 	const Header hdr = header();
@@ -233,7 +233,7 @@ std::vector<attributes::Attribute> Parser::attributes() try {
 }
 
 std::optional<attributes::Attribute>
-Parser::extract_attribute(spark::BinaryStreamReader& stream,
+Parser::extract_attribute(spark::io::pmr::BinaryStreamReader& stream,
                           const TxID& id, const MessageType type) {
 	Attributes attr_type;
 	be::big_uint16_t length;
@@ -304,21 +304,21 @@ Parser::extract_attribute(spark::BinaryStreamReader& stream,
 	return std::nullopt;
 }
 
-attributes::IceControlled Parser::ice_controlled(spark::BinaryStreamReader& stream) {
+attributes::IceControlled Parser::ice_controlled(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::IceControlled attr{};
 	stream >> attr.value;
 	be::big_to_native_inplace(attr.value);
 	return attr;
 }
 
-attributes::IceControlling Parser::ice_controlling(spark::BinaryStreamReader& stream) {
+attributes::IceControlling Parser::ice_controlling(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::IceControlling attr{};
 	stream >> attr.value;
 	be::big_to_native_inplace(attr.value);
 	return attr;
 }
 
-attributes::Priority Parser::priority(spark::BinaryStreamReader& stream) {
+attributes::Priority Parser::priority(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::Priority attr{};
 	stream >> attr.value;
 	be::big_to_native_inplace(attr.value);

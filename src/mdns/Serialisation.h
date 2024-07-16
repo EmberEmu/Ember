@@ -10,7 +10,7 @@
 
 #include "DNSDefines.h"
 #include "detail/Parser.h"
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <shared/smartenum.hpp>
 #include <expected>
 #include <vector>
@@ -25,6 +25,6 @@
 namespace ember::dns {
 
 std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> buffer);
-void serialise(const Query& query, spark::BinaryStream& stream);
+void serialise(const Query& query, spark::io::pmr::BinaryStream& stream);
 
 } // dns, ember

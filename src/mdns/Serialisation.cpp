@@ -7,7 +7,7 @@
  */
 
 #include "Serialisation.h"
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
@@ -21,8 +21,8 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 		return std::unexpected(parser::Result::PAYLOAD_TOO_LARGE);
 	}
 
-	spark::BufferReadAdaptor adaptor(buffer);
-	spark::BinaryStreamReader stream(adaptor);
+	spark::io::pmr::BufferReadAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStreamReader stream(adaptor);
 
 	Query query;
 
@@ -34,7 +34,7 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 	parser::parse_header(query, stream);
 	parser::parse_records(query, ctx);
 
-	if(stream.state() != spark::StreamState::OK) {
+	if(stream.state() != spark::io::StreamState::OK) {
 		return std::unexpected(parser::Result::STREAM_ERROR);
 	}
 
@@ -43,7 +43,7 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 	return std::unexpected(r);
 }
 
-void serialise(const Query& query, spark::BinaryStream& stream) {
+void serialise(const Query& query, spark::io::pmr::BinaryStream& stream) {
 	parser::write_header(query, stream);
 	const auto ptrs = parser::write_questions(query, stream);
 	parser::write_resource_records(query, ptrs, stream);

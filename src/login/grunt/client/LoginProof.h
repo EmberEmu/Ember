@@ -39,7 +39,7 @@ class LoginProof final : public Packet {
 
 	std::uint8_t key_count_ = 0;
 
-	void read_body(spark::BinaryStream& stream) {
+	void read_body(spark::io::pmr::BinaryStream& stream) {
 		stream >> opcode;
 
 		std::array<std::uint8_t, A_LENGTH> a_buff;
@@ -56,7 +56,7 @@ class LoginProof final : public Packet {
 		stream >> key_count_;
 	}
 
-	bool read_security_type(spark::BinaryStream& stream) {
+	bool read_security_type(spark::io::pmr::BinaryStream& stream) {
 		if(stream.size() < sizeof(two_factor_auth)) {
 			return false;
 		}
@@ -72,7 +72,7 @@ class LoginProof final : public Packet {
 		return true;
 	}
 
-	bool read_pin_data(spark::BinaryStream& stream) {
+	bool read_pin_data(spark::io::pmr::BinaryStream& stream) {
 		if(stream.size() < (pin_salt.size() + pin_hash.size())) {
 			return false;
 		}
@@ -84,7 +84,7 @@ class LoginProof final : public Packet {
 		return true;
 	}
 
-	bool read_key_data(spark::BinaryStream& stream) {
+	bool read_key_data(spark::io::pmr::BinaryStream& stream) {
 		// could use a macro to take care of this - not using sizeof(KeyData) to avoid having to #pragma pack
 		auto key_data_size = sizeof(KeyData::product) + sizeof(KeyData::pub_value) 
 		                     + sizeof(KeyData::len) + sizeof(KeyData::hash);
@@ -118,7 +118,7 @@ public:
 	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;
 	std::vector<KeyData> keys;
 
-	void read_optional_data(spark::BinaryStream& stream) {
+	void read_optional_data(spark::io::pmr::BinaryStream& stream) {
 		bool continue_read = true;
 
 		while(continue_read) {
@@ -141,7 +141,7 @@ public:
 		state_ = (read_state_ == ReadState::DONE)? State::DONE : State::CALL_AGAIN;
 	}
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -162,7 +162,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
 
 		std::array<std::uint8_t, A_LENGTH> a_bytes;

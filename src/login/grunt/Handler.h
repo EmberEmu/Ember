@@ -10,7 +10,7 @@
 
 #include "Packets.h"
 #include "Exceptions.h"
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <logger/Logging.h>
 #include <functional>
 #include <optional>
@@ -40,16 +40,16 @@ class Handler final {
 
 	log::Logger* logger_;
 
-	void handle_new_packet(spark::Buffer& buffer);
-	void handle_read(spark::Buffer& buffer, std::size_t offset);
-	void dump_bad_packet(const spark::buffer_underrun& e,
-	                     spark::Buffer& buffer,
+	void handle_new_packet(spark::io::pmr::Buffer& buffer);
+	void handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset);
+	void dump_bad_packet(const spark::io::buffer_underrun& e,
+	                     spark::io::pmr::Buffer& buffer,
 	                     std::size_t offset);
 
 public:
 	explicit Handler(log::Logger* logger) : logger_(logger) { }
 
-	const Packet* const try_deserialise(spark::Buffer& buffer);
+	const Packet* const try_deserialise(spark::io::pmr::Buffer& buffer);
 };
 
 } // grunt, ember

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ConnectionDefines.h"
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 
 template<typename PacketT>
 bool ClientHandler::packet_deserialise(PacketT& packet, ClientStream& stream) {

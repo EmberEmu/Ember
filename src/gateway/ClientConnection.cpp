@@ -12,7 +12,7 @@
 #include "packetlog/LogSink.h"
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <algorithm>
 
 namespace ember {
@@ -57,7 +57,7 @@ void ClientConnection::dispatch_message(AdaptorInType& buffer) {
 void ClientConnection::process_buffered_data(BufferInType& buffer,
                                              const std::size_t size) {
 	std::span span(buffer.data(), size);
-	spark::v2::BufferAdaptor adaptor(span);
+	spark::io::BufferAdaptor adaptor(span);
 
 	while(!adaptor.empty()) {
 		if(read_state_ == ReadState::HEADER) {
@@ -96,7 +96,7 @@ void ClientConnection::write() {
 		return;
 	}
 
-	const spark::BufferSequence sequence(*outbound_front_);
+	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	socket_.async_send(sequence, create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {

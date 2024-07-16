@@ -18,7 +18,7 @@
 namespace spark = ember::spark;
 
 TEST(TLSBlockAllocator, SingleAlloc) {
-	spark::TLSBlockAllocator<int, 1> tlsalloc;
+	spark::io::TLSBlockAllocator<int, 1> tlsalloc;
 	auto mem = tlsalloc.allocate();
 	ASSERT_EQ(tlsalloc.allocator.storage_active_count, 1);
 	ASSERT_EQ(tlsalloc.allocator.new_active_count, 0);
@@ -33,7 +33,7 @@ TEST(TLSBlockAllocator, SingleAlloc) {
 
 TEST(TLSBlockAllocator, RandomAllocs) {
 	const auto MAX_ALLOCS = 100u;
-	spark::TLSBlockAllocator<int, MAX_ALLOCS> tlsalloc;
+	spark::io::TLSBlockAllocator<int, MAX_ALLOCS> tlsalloc;
 	std::array<int*, MAX_ALLOCS> chunks{};
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
@@ -65,7 +65,7 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 }
 
 TEST(TLSBlockAllocator, OverCapacity) {
-	spark::TLSBlockAllocator<int, 1> tlsalloc;
+	spark::io::TLSBlockAllocator<int, 1> tlsalloc;
 	std::array<int*, 2> mem{};
 	mem[0] = tlsalloc.allocate();
 	mem[1] = tlsalloc.allocate();
@@ -86,7 +86,7 @@ TEST(TLSBlockAllocator, OverCapacity) {
 }
 
 TEST(TLSBlockAllocator, NoSharing) {
-	spark::TLSBlockAllocator<int, 2> tlsalloc;
+	spark::io::TLSBlockAllocator<int, 2> tlsalloc;
 	const auto tls_total_alloc = tlsalloc.allocator.total_allocs;
 	const auto tls_total_dealloc = tlsalloc.allocator.total_deallocs;
 	auto chunk = tlsalloc.allocate();
@@ -94,7 +94,7 @@ TEST(TLSBlockAllocator, NoSharing) {
 	ASSERT_EQ(tlsalloc.allocator.total_allocs, tls_total_alloc + 1);
 
 	std::thread thread([&] {
-		spark::TLSBlockAllocator<int, 2> tlsalloc;
+		spark::io::TLSBlockAllocator<int, 2> tlsalloc;
 		ASSERT_EQ(tlsalloc.allocator.total_allocs, 0);
 		ASSERT_EQ(tlsalloc.allocator.storage_active_count, 0);
 		auto chunk = tlsalloc.allocate();

@@ -43,52 +43,51 @@ set(COREv2
     include/spark/v2/Handler.h
     include/spark/v2/Connection.h
     include/spark/v2/RemotePeer.h
-	include/spark/v2/Link.h
-	include/spark/v2/MessageHeader.h
-	include/spark/v2/Channel.h
-	include/spark/v2/SharedDefs.h
-	include/spark/v2/HandlerRegistry.h
-	include/spark/v2/Peers.h
-	include/spark/v2/Utility.h
-	include/spark/v2/Tracking.h
-	include/spark/v2/Common.h
-	src/v2/Peers.cpp
+    include/spark/v2/Link.h
+    include/spark/v2/MessageHeader.h
+    include/spark/v2/Channel.h
+    include/spark/v2/SharedDefs.h
+    include/spark/v2/HandlerRegistry.h
+    include/spark/v2/Peers.h
+    include/spark/v2/Utility.h
+    include/spark/v2/Tracking.h
+    include/spark/v2/Common.h
+    src/v2/Peers.cpp
     src/v2/Server.cpp
-	src/v2/RemotePeer.cpp
-	src/v2/Connection.cpp
-	src/v2/Channel.cpp
-	src/v2/HandlerRegistry.cpp
-	src/v2/Tracking.cpp
+    src/v2/RemotePeer.cpp
+    src/v2/Connection.cpp
+    src/v2/Channel.cpp
+    src/v2/HandlerRegistry.cpp
+    src/v2/Tracking.cpp
 )
 
 set(IO_SRC
-    include/spark/buffers/BufferBase.h
-    include/spark/buffers/BufferRead.h
-    include/spark/buffers/BufferWrite.h
-    include/spark/buffers/Buffer.h
+    include/spark/buffers/Exception.h
     include/spark/buffers/DynamicBuffer.h
-    include/spark/buffers/detail/IntrusiveStorage.h
-    include/spark/buffers/BufferSequence.h
-    include/spark/buffers/NullBuffer.h
-    include/spark/buffers/BinaryStream.h
-    include/spark/buffers/BinaryStreamReader.h
-    include/spark/buffers/BinaryStreamWriter.h
-    include/spark/buffers/StreamBase.h
+    include/spark/buffers/DynamicTLSBuffer.h
+    include/spark/buffers/IntrusiveStorage.h
+    include/spark/buffers/SharedDefs.h
     include/spark/buffers/BufferAdaptor.h
-    include/spark/buffers/BufferReadAdaptor.h
-    include/spark/buffers/BufferWriteAdaptor.h
-	include/spark/buffers/SharedDefs.h
-	include/spark/buffers/DynamicTLSBuffer.h
+    include/spark/buffers/BufferSequence.h
+    include/spark/buffers/BinaryStream.h
+
+    include/spark/buffers/pmr/BufferBase.h
+    include/spark/buffers/pmr/BufferRead.h
+    include/spark/buffers/pmr/BufferWrite.h
+    include/spark/buffers/pmr/Buffer.h
+    include/spark/buffers/pmr/NullBuffer.h
+    include/spark/buffers/pmr/BinaryStream.h
+    include/spark/buffers/pmr/BinaryStreamReader.h
+    include/spark/buffers/pmr/BinaryStreamWriter.h
+    include/spark/buffers/pmr/StreamBase.h
+    include/spark/buffers/pmr/BufferAdaptor.h
+    include/spark/buffers/pmr/BufferReadAdaptor.h
+    include/spark/buffers/pmr/BufferWriteAdaptor.h
 )
 
 set(IO_ALLOC_SRC
-	include/spark/buffers/allocators/DefaultAllocator.h
-	include/spark/buffers/allocators/TLSBlockAllocator.h
-)
-
-set(IO_SRCv2
-    include/spark/v2/buffers/BufferAdaptor.h
-    include/spark/v2/buffers/BinaryStream.h
+    include/spark/buffers/allocators/DefaultAllocator.h
+    include/spark/buffers/allocators/TLSBlockAllocator.h
 )
 
 add_library(
@@ -96,7 +95,6 @@ add_library(
     ${CORE}
     ${COREv2}
     ${IO_SRC}
-    ${IO_SRCv2}
 	${IO_ALLOC_SRC}
 )
 
@@ -104,7 +102,6 @@ source_group("Core" FILES ${CORE})
 source_group("IO" FILES ${IO_SRC})
 source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
 source_group("v2\\Core" FILES ${COREv2})
-source_group("v2\\IO" FILES ${IO_SRCv2})
 
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})

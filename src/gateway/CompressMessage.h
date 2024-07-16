@@ -9,12 +9,12 @@
 #pragma once
 
 #include <protocol/Packets.h>
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 
 namespace ember {
 
 template<typename Packet_t>
-int compress_message(const Packet_t& packet, spark::Buffer& out, int compression_level);
-int compress_message(const spark::Buffer& in, spark::Buffer& out, int compression_level);
+int compress_message(const Packet_t& packet, spark::io::pmr::Buffer& out, int compression_level);
+int compress_message(const spark::io::pmr::Buffer& in, spark::io::pmr::Buffer& out, int compression_level);
 
 } // ember

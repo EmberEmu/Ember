@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace ember::spark {
+namespace ember::spark::io {
 
 namespace {
 
@@ -145,4 +145,4 @@ private:
 	static inline thread_local Allocator<T, _elements> allocator;
 };
 
-} // spark, ember
+} // io, spark, ember

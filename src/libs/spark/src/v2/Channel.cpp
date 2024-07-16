@@ -9,8 +9,8 @@
 #include <spark/v2/Channel.h>
 #include <spark/v2/Connection.h>
 #include <spark/v2/Common.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <cassert>
 
 namespace ember::spark::v2 {
@@ -52,8 +52,8 @@ void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
 	header.size = msg->fbb.GetSize();
 	header.set_alignment(msg->fbb.GetBufferMinAlignment());
 
-	BufferAdaptor adaptor(msg->header);
-	BinaryStream stream(adaptor);
+	io::BufferAdaptor adaptor(msg->header);
+	io::BinaryStream stream(adaptor);
 	header.write_to_stream(stream);
 
 	//connection_->send(std::move(msg));

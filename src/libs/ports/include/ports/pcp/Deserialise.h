@@ -9,8 +9,8 @@
 #pragma once
 
 #include <ports/pcp/Protocol.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <boost/endian.hpp>
 #include <span>
 #include <cstdint>
@@ -23,8 +23,8 @@ template<typename T> T deserialise(std::span<const std::uint8_t> buffer){};
 
 template<>
 pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	pcp::OptionHeader message{};
 	stream >> message.code;
@@ -36,8 +36,8 @@ pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	pcp::MapRequest message{};
 	stream >> message.nonce;
@@ -53,8 +53,8 @@ pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	pcp::RequestHeader message{};
 	stream >> message.version;
@@ -71,8 +71,8 @@ pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	pcp::ResponseHeader message{};
 	stream >> message.version;
@@ -92,8 +92,8 @@ pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	pcp::MapResponse message{};
 	stream >> message.nonce;
@@ -109,8 +109,8 @@ pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::MapRequest message{};
 	stream >> message.version;
@@ -127,8 +127,8 @@ natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::MapResponse message{};
 	stream >> message.version;
@@ -147,8 +147,8 @@ natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::ExtAddressRequest message{};
 	stream >> message.version;
@@ -158,8 +158,8 @@ natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::ExtAddressResponse message{};
 	stream >> message.version;
@@ -174,8 +174,8 @@ natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 
 template<>
 natpmp::UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::UnsupportedErrorResponse message{};
 	stream >> message.version;

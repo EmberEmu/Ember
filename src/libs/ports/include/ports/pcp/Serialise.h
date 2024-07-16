@@ -9,8 +9,8 @@
 #pragma once
 
 #include <ports/pcp/Protocol.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <boost/endian.hpp>
 #include <span>
 #include <cstdint>
@@ -20,7 +20,7 @@ namespace ember::ports {
 namespace be = boost::endian;
 
 template<typename T>
-void serialise(const pcp::RequestHeader& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const pcp::RequestHeader& message, spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	auto opcode = std::to_underlying(message.opcode);
 	opcode |= (message.response << 7);
@@ -31,7 +31,7 @@ void serialise(const pcp::RequestHeader& message, spark::v2::BinaryStream<T> str
 }
 
 template<typename T>
-void serialise(const pcp::MapRequest& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const pcp::MapRequest& message, spark::io::BinaryStream<T> stream) {
 	stream.put(message.nonce);
 	stream << message.protocol;
 	stream << message.reserved_0;
@@ -41,7 +41,7 @@ void serialise(const pcp::MapRequest& message, spark::v2::BinaryStream<T> stream
 }
 
 template<typename T>
-void serialise(const pcp::MapResponse& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const pcp::MapResponse& message, spark::io::BinaryStream<T> stream) {
 	stream << message.nonce;
 	stream << message.protocol;
 	stream << message.reserved;
@@ -51,7 +51,7 @@ void serialise(const pcp::MapResponse& message, spark::v2::BinaryStream<T> strea
 }
 
 template<typename T>
-void serialise(const pcp::ResponseHeader& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const pcp::ResponseHeader& message, spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	auto opcode = std::to_underlying(message.opcode);
 	opcode |= (message.response << 7);
@@ -64,7 +64,7 @@ void serialise(const pcp::ResponseHeader& message, spark::v2::BinaryStream<T> st
 }
 
 template<typename T>
-void serialise(const natpmp::MapRequest& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::MapRequest& message, spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << message.reserved;
@@ -74,7 +74,7 @@ void serialise(const natpmp::MapRequest& message, spark::v2::BinaryStream<T> str
 }
 
 template<typename T>
-void serialise(const natpmp::MapResponse& message, spark::v2::BinaryStream<T> stream) {
+void serialise(const natpmp::MapResponse& message, spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << message.result_code;
@@ -86,14 +86,14 @@ void serialise(const natpmp::MapResponse& message, spark::v2::BinaryStream<T> st
 
 template<typename T>
 void serialise(const natpmp::ExtAddressRequest& message,
-               spark::v2::BinaryStream<T> stream) {
+               spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 }
 
 template<typename T>
 void serialise(const natpmp::ExtAddressResponse& message,
-               spark::v2::BinaryStream<T> stream) {
+               spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << be::native_to_big(message.result_code);
@@ -103,7 +103,7 @@ void serialise(const natpmp::ExtAddressResponse& message,
 
 template<typename T>
 void serialise(const natpmp::UnsupportedErrorResponse& message,
-               spark::v2::BinaryStream<T> stream) {
+               spark::io::BinaryStream<T> stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << be::native_to_big(message.result_code);
@@ -111,7 +111,7 @@ void serialise(const natpmp::UnsupportedErrorResponse& message,
 }
 
 template<typename T>
-void serialise(const pcp::OptionHeader& header, spark::v2::BinaryStream<T> stream) {
+void serialise(const pcp::OptionHeader& header, spark::io::BinaryStream<T> stream) {
 	stream << header.code;
 	stream << header.reserved;
 	stream << be::native_to_big(header.length);

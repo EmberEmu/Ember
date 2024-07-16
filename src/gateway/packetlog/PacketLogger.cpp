@@ -20,7 +20,7 @@ void PacketLogger::reset() {
 	sinks_.clear();
 }
 
-void PacketLogger::log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir) {
+void PacketLogger::log(const spark::io::pmr::Buffer& buffer, std::size_t length, PacketDirection dir) {
 	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
 	boost::container::small_vector<std::uint8_t, RESERVE_LEN> contig_buffer(length);
 	buffer.copy(contig_buffer.data(), length);
