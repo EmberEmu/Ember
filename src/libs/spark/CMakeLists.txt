@@ -70,7 +70,9 @@ set(IO_SRC
     include/spark/buffers/BufferAdaptor.h
     include/spark/buffers/BufferSequence.h
     include/spark/buffers/BinaryStream.h
+)
 
+set(IO_PMR_SRC
     include/spark/buffers/pmr/BufferBase.h
     include/spark/buffers/pmr/BufferRead.h
     include/spark/buffers/pmr/BufferWrite.h
@@ -95,11 +97,13 @@ add_library(
     ${CORE}
     ${COREv2}
     ${IO_SRC}
+    ${IO_PMR_SRC}
 	${IO_ALLOC_SRC}
 )
 
 source_group("Core" FILES ${CORE})
 source_group("IO" FILES ${IO_SRC})
+source_group("IO\\Polymorphic" FILES ${IO_PMR_SRC})
 source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
 source_group("v2\\Core" FILES ${COREv2})
 
