@@ -222,7 +222,7 @@ TEST(BinaryStream, Fill) {
 	ASSERT_EQ(it, buffer.end());
 }
 
-TEST(BinaryStreamV2, Array) {
+TEST(BinaryStream, Array) {
 	std::vector<char> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
