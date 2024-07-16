@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <spark/buffers/StreamBase.h>
-#include <spark/buffers/BufferRead.h>
-#include <spark/Exception.h>
+#include <spark/buffers/pmr/StreamBase.h>
+#include <spark/buffers/pmr/BufferRead.h>
+#include <spark/buffers/Exception.h>
 #include <algorithm>
 #include <concepts>
 #include <ranges>
@@ -18,7 +18,7 @@
 #include <cstddef>
 #include <cstring>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class BinaryStreamReader : virtual public StreamBase {
 	BufferRead& buffer_;
@@ -128,4 +128,4 @@ public:
 	}
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

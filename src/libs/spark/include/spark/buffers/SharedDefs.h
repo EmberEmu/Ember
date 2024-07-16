@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::io {
 
 template<typename buf_t>
 concept byte_oriented = sizeof(typename buf_t::value_type) == 1;
@@ -57,4 +57,4 @@ static inline bool region_overlap(const Src* src, std::size_t src_len, const Dst
 			|| dst_end >= src_beg && dst_end < src_end);
 }
 
-} // spark, ember
+} // io, spark, ember

@@ -33,7 +33,7 @@ public:
 	std::uint8_t key_count = 0;
 	std::vector<KeyData> keys;
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -50,7 +50,7 @@ public:
 		return (state_ = State::DONE);
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
 		stream.put(salt.data(), salt.size());
 		stream.put(proof.data(), proof.size());

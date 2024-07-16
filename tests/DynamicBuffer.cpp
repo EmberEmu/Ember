@@ -20,7 +20,7 @@
 namespace spark = ember::spark;
 
 TEST(DynamicBuffer, Size) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 
 	chain.reserve(50);
@@ -41,7 +41,7 @@ TEST(DynamicBuffer, Size) {
 }
 
 TEST(DynamicBuffer, ReadWriteConsistency) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	int num = 41521;
 
@@ -60,7 +60,7 @@ TEST(DynamicBuffer, ReadWriteConsistency) {
 }
 
 TEST(DynamicBuffer, ReserveFetchConsistency) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	char text[] = "The quick brown fox jumps over the lazy dog";
 	const std::size_t text_len = sizeof(text);
 
@@ -90,7 +90,7 @@ TEST(DynamicBuffer, ReserveFetchConsistency) {
 }
 
 TEST(DynamicBuffer, Skip) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	int foo = 960;
 	int bar = 296;
 
@@ -104,7 +104,7 @@ TEST(DynamicBuffer, Skip) {
 }
 
 TEST(DynamicBuffer, Clear) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	const int iterations = 100;
 
 	for(int i = 0; i < iterations; ++i) {
@@ -119,7 +119,7 @@ TEST(DynamicBuffer, Clear) {
 }
 
 TEST(DynamicBuffer, AttachTail) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	auto buffer = chain.allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
@@ -139,7 +139,7 @@ TEST(DynamicBuffer, AttachTail) {
 }
 
 TEST(DynamicBuffer, PopFrontPushBack) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	auto buffer = chain.allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
@@ -154,7 +154,7 @@ TEST(DynamicBuffer, PopFrontPushBack) {
 }
 
 TEST(DynamicBuffer, RetrieveTail) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	std::string text("This string is < 32 bytes"); // could this fail on exotic platforms?
 	chain.write(text.data(), text.length());
 
@@ -163,7 +163,7 @@ TEST(DynamicBuffer, RetrieveTail) {
 }
 
 TEST(DynamicBuffer, Copy) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	int output, foo = 54543;
 	chain.write(&foo, sizeof(int));
 	ASSERT_EQ(sizeof(int), chain.size());
@@ -173,7 +173,7 @@ TEST(DynamicBuffer, Copy) {
 }
 
 TEST(DynamicBuffer, CopyChain) {
-	spark::DynamicBuffer<sizeof(int)> chain, chain2;
+	spark::io::DynamicBuffer<sizeof(int)> chain, chain2;
 	int foo = 5491;
 	int output;
 
@@ -199,7 +199,7 @@ TEST(DynamicBuffer, CopyChain) {
 }
 
 TEST(DynamicBuffer, MoveChain) {
-	spark::DynamicBuffer<32> chain, chain2;
+	spark::io::DynamicBuffer<32> chain, chain2;
 	int foo = 23113;
 
 	chain.write(&foo, sizeof(int));
@@ -216,13 +216,13 @@ TEST(DynamicBuffer, MoveChain) {
 }
 
 TEST(DynamicBuffer, WriteSeek) {
-	spark::DynamicBuffer<1> chain; // ensure the data is split over multiple buffer nodes
+	spark::io::DynamicBuffer<1> chain; // ensure the data is split over multiple buffer nodes
 	const std::array<std::uint8_t, 6> data {0x00, 0x01, 0x00, 0x00, 0x04, 0x05};
 	const std::array<std::uint8_t, 2> seek_data {0x02, 0x03};
 	const std::array<std::uint8_t, 4> expected_data {0x00, 0x01, 0x02, 0x03};
 
 	chain.write(data.data(), data.size());
-	chain.write_seek(spark::BufferSeek::SK_BACKWARD, 4);
+	chain.write_seek(spark::io::BufferSeek::SK_BACKWARD, 4);
 	chain.write(seek_data.data(), seek_data.size());
 
 	// make sure the chain is four bytes (6 written, (-)4 rewound, (+)2 rewritten = 4)
@@ -235,7 +235,7 @@ TEST(DynamicBuffer, WriteSeek) {
 		<< "Buffer contains incorrect data pattern";
 
 	// put the write cursor back to its original position and write more data
-	chain.write_seek(spark::BufferSeek::SK_FORWARD, 2);
+	chain.write_seek(spark::io::BufferSeek::SK_FORWARD, 2);
 
 	// should be six bytes in there
 	ASSERT_EQ(chain.size(), data.size()) << "Chain size is incorrect";
@@ -256,8 +256,8 @@ TEST(DynamicBuffer, WriteSeek) {
 }
 
 TEST(DynamicBuffer, ReadIterator) {
-	spark::DynamicBuffer<16> chain; // ensure the string is split over multiple buffers
-	spark::BufferSequence sequence(chain);
+	spark::io::DynamicBuffer<16> chain; // ensure the string is split over multiple buffers
+	spark::io::BufferSequence sequence(chain);
 	std::string skip("Skipping");
 	std::string input("The quick brown fox jumps over the lazy dog");
 	std::string output;
@@ -275,8 +275,8 @@ TEST(DynamicBuffer, ReadIterator) {
 }
 
 TEST(DynamicBuffer, ASIOIteratorRegressionTest) {
-	spark::DynamicBuffer<1> chain;
-	spark::BufferSequence sequence(chain);
+	spark::io::DynamicBuffer<1> chain;
+	spark::io::BufferSequence sequence(chain);
 
 	// 119 bytes (size of 1.12.1 LoginChallenge packet)
 	std::string input("Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -328,7 +328,7 @@ TEST(DynamicBuffer, ASIOIteratorRegressionTest) {
 }
 
 TEST(DynamicBuffer, Empty) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	ASSERT_TRUE(chain.empty());
 	const auto value = 0;
 	chain.write(&value, sizeof(value));
@@ -336,14 +336,14 @@ TEST(DynamicBuffer, Empty) {
 }
 
 TEST(DynamicBuffer, BlockSize) {
-	spark::DynamicBuffer<32> chain;
+	spark::io::DynamicBuffer<32> chain;
 	ASSERT_EQ(chain.block_size(), 32);
-	spark::DynamicBuffer<64> chain2;
+	spark::io::DynamicBuffer<64> chain2;
 	ASSERT_EQ(chain2.block_size(), 64);
 }
 
 TEST(DynamicBuffer, BlockCount) {
-	spark::DynamicBuffer<1> chain;
+	spark::io::DynamicBuffer<1> chain;
 	const std::uint8_t value = 0;
 	chain.write(&value, sizeof(value));
 	ASSERT_EQ(chain.block_count(), 1);

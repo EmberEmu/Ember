@@ -9,8 +9,8 @@
 #include <spark/v2/Server.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/Connection.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/v2/Utility.h>
 #include <shared/FilterTypes.h>
 #include <boost/asio.hpp>
@@ -219,8 +219,8 @@ ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
 
 	auto msg = co_await conn.receive_msg();
 
-	spark::v2::BufferAdaptor adaptor(msg);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(msg);
+	spark::io::BinaryStream stream(adaptor);
 
 	MessageHeader header;
 

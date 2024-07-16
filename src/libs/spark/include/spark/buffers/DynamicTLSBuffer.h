@@ -12,7 +12,7 @@
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::io {
 
 // DynamicBuffer backed by thread-local storage, meaning every
 // instance on the same thread shares the same underlying memory.
@@ -33,4 +33,4 @@ using DynamicTLSBuffer = DynamicBuffer<BlockSize, StorageType,
 	TLSBlockAllocator<detail::IntrusiveStorage<BlockSize>, PreallocElements>
 >;
 
-} // spark, ember
+} // io, spark, ember

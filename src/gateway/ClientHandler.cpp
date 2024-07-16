@@ -14,7 +14,7 @@
 #include "FilterTypes.h"
 #include "ClientLogHelper.h"
 #include <protocol/Packets.h>
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <format>
 #include <utility>
 

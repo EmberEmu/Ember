@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/StreamBase.h>
-#include <spark/buffers/BufferWrite.h>
-#include <spark/Exception.h>
+#include <spark/buffers/pmr/StreamBase.h>
+#include <spark/buffers/pmr/BufferWrite.h>
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -20,7 +19,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class BinaryStreamWriter : virtual public StreamBase {
 private:
@@ -116,4 +115,4 @@ public:
 	}
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

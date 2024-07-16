@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <spark/buffers/BufferBase.h>
+#include <spark/buffers/pmr/BufferBase.h>
 #include <spark/buffers/SharedDefs.h>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class StreamBase {
 	BufferBase& buffer_;
@@ -31,4 +31,4 @@ public:
 	virtual ~StreamBase() = default;
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

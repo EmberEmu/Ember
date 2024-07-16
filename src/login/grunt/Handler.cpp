@@ -8,7 +8,7 @@
 
 #include "Handler.h"
 #include "Packets.h"
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <boost/assert.hpp>
 #include <shared/util/FormatPacket.h>
 #include <vector>
@@ -16,12 +16,12 @@
 
 namespace ember::grunt {
 
-void Handler::dump_bad_packet(const spark::buffer_underrun& e,
-                              spark::Buffer& buffer,
+void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
+                              spark::io::pmr::Buffer& buffer,
                               std::size_t offset) {
 	std::size_t valid_bytes = offset - buffer.size();
 
-	spark::BinaryStream stream(buffer);
+	spark::io::pmr::BinaryStream stream(buffer);
 	stream.skip(stream.size()); // discard any remaining data, we don't care about it anymore
 
 	// recombobulate the data by serialising the packet
@@ -37,7 +37,7 @@ void Handler::dump_bad_packet(const spark::buffer_underrun& e,
 	                   << valid_bytes << " bytes \n" << output << LOG_ASYNC;
 }
 
-void Handler::handle_new_packet(spark::Buffer& buffer) {
+void Handler::handle_new_packet(spark::io::pmr::Buffer& buffer) {
 	Opcode opcode;
 	buffer.copy(&opcode, sizeof(opcode));
 
@@ -83,8 +83,8 @@ void Handler::handle_new_packet(spark::Buffer& buffer) {
 	state_ = State::READ;
 }
 
-void Handler::handle_read(spark::Buffer& buffer, std::size_t offset) try {
-	spark::BinaryStream stream(buffer);
+void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) try {
+	spark::io::pmr::BinaryStream stream(buffer);
 	Packet::State state = curr_packet_->read_from_stream(stream);
 
 	switch(state) {
@@ -97,12 +97,12 @@ void Handler::handle_read(spark::Buffer& buffer, std::size_t offset) try {
 		default:
 			BOOST_ASSERT_MSG(false, "Unreachable condition hit!");
 	}
-} catch(const spark::buffer_underrun& e) {
+} catch(const spark::io::buffer_underrun& e) {
 	dump_bad_packet(e, buffer, offset);
 	throw bad_packet(e.what());
 }
 
-const Packet* const Handler::try_deserialise(spark::Buffer& buffer) {
+const Packet* const Handler::try_deserialise(spark::io::pmr::Buffer& buffer) {
 	switch(state_) {
 		case State::NEW_PACKET:
 			handle_new_packet(buffer);

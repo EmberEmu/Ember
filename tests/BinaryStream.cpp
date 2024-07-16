@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BinaryStream.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
@@ -28,20 +28,20 @@ TEST(BinaryStream, MessageReadLimit) {
 	};
 
 	// write the ping packet data twice to the buffer
-	spark::DynamicBuffer<32> buffer;
+	spark::io::DynamicBuffer<32> buffer;
 	buffer.write(ping.data(), ping.size());
 	buffer.write(ping.data(), ping.size());
 
 	// read one packet back out (reuse the ping array)
-	spark::BinaryStream stream(buffer, ping.size());
+	spark::io::pmr::BinaryStream stream(buffer, ping.size());
 	ASSERT_EQ(stream.read_limit(), ping.size());
 	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
 		<< "Failed to read packet back from stream";
 
 	// attempt to read past the stream message bound
-	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::stream_read_limit)
+	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::stream_read_limit)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::StreamState::READ_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::READ_LIMIT_ERR)
 		<< "Unexpected stream state";
 }
 
@@ -52,24 +52,24 @@ TEST(BinaryStream, BufferLimit) {
 	};
 
 	// write the ping packet data to the buffer
-	spark::DynamicBuffer<32> buffer;
+	spark::io::DynamicBuffer<32> buffer;
 	buffer.write(ping.data(), ping.size());
 
 	// read all data back out
-	spark::BinaryStream stream(buffer);
+	spark::io::pmr::BinaryStream stream(buffer);
 	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
 		<< "Failed to read packet back from stream";
 
 	// attempt to read past the buffer bound
-	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::buffer_underrun)
+	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::buffer_underrun)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::StreamState::BUFF_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::BUFF_LIMIT_ERR)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStream, ReadWriteInts) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 
 	const std::uint16_t in { 100 };
 	stream << in;
@@ -83,13 +83,13 @@ TEST(BinaryStream, ReadWriteInts) {
 	ASSERT_EQ(in, out);
 	ASSERT_TRUE(stream.empty());
 	ASSERT_TRUE(buffer.empty());
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStream, ReadWriteStdString) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
@@ -101,13 +101,13 @@ TEST(BinaryStream, ReadWriteStdString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStream, ReadWriteCString) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 	const char* in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
@@ -118,13 +118,13 @@ TEST(BinaryStream, ReadWriteCString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(0, strcmp(in, out.c_str()));
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStream, ReadWriteVector) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
@@ -152,13 +152,13 @@ TEST(BinaryStream, ReadWriteVector) {
 	// read the integers to an output buffer and compare both
 	stream.get(out.begin(), out.end());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
 		<< "Unexpected stream state";
 }
 
 TEST(BinaryStream, Clear) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 	stream << 0xBADF00D;
 
 	ASSERT_TRUE(!stream.empty());
@@ -171,8 +171,8 @@ TEST(BinaryStream, Clear) {
 }
 
 TEST(BinaryStream, Skip) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 
 	const std::uint64_t in {0xBADF00D};
 	stream << in << in;
@@ -189,14 +189,14 @@ TEST(BinaryStream, Skip) {
 }
 
 TEST(BinaryStream, CanWriteSeek) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 	ASSERT_EQ(buffer.can_write_seek(), stream.can_write_seek());
 }
 
 TEST(BinaryStream, GetPut) {
-	spark::DynamicBuffer<32> buffer;
-	spark::BinaryStream stream(buffer);
+	spark::io::DynamicBuffer<32> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
 	std::vector<std::uint8_t> in { 1, 2, 3, 4, 5 };
 	std::vector<std::uint8_t> out(in.size());
 
@@ -210,8 +210,8 @@ TEST(BinaryStream, GetPut) {
 
 TEST(BinaryStream, Fill) {
 	std::vector<std::uint8_t> buffer;
-	spark::BufferAdaptor adaptor(buffer);
-	spark::BinaryStream stream(adaptor);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
 	stream.fill<30>(128);
 	ASSERT_EQ(buffer.size(), 30);
 	ASSERT_EQ(stream.total_write(), 30);

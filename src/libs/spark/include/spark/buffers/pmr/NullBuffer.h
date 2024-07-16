@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <spark/buffers/BufferWrite.h>
+#include <spark/buffers/pmr/BufferWrite.h>
 #include <stdexcept>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class NullBuffer final : public BufferWrite {
 public:
@@ -31,4 +31,4 @@ public:
 	}
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

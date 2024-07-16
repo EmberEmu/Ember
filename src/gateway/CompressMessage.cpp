@@ -7,7 +7,7 @@
  */
 
 #include "CompressMessage.h"
-#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <zlib.h>
 #include <cstdint>
@@ -19,17 +19,17 @@ namespace ember {
  * To think about: state of the buffers if compression fails.
  * Use temporary buffers to avoid a bad state?
  */
-int compress_message(const spark::Buffer& in, spark::Buffer& out, int compression_level) {
+int compress_message(const spark::io::pmr::Buffer& in, spark::io::pmr::Buffer& out, int compression_level) {
 	return Z_ERRNO;
 }
 
 // temp testing function, do not use yet
 template<typename Packet_t>
-int compress_message(const Packet_t& packet, spark::Buffer& out, int compression_level) {
+int compress_message(const Packet_t& packet, spark::io::pmr::Buffer& out, int compression_level) {
 	constexpr std::size_t BLOCK_SIZE = 64;
-	spark::DynamicBuffer<4096> temp_buffer;
-	spark::BinaryStream stream(temp_buffer);
-	spark::BinaryStream out_stream(out);
+	spark::io::DynamicBuffer<4096> temp_buffer;
+	spark::io::pmr::BinaryStream stream(temp_buffer);
+	spark::io::pmr::BinaryStream out_stream(out);
 
 	std::uint8_t in_buff[BLOCK_SIZE];
 	std::uint8_t out_buff[BLOCK_SIZE];

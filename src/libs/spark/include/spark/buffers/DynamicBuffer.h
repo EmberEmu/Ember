@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <spark/buffers/Buffer.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <spark/buffers/SharedDefs.h>
 #include <spark/buffers/allocators/DefaultAllocator.h>
-#include <spark/buffers/detail/IntrusiveStorage.h>
+#include <spark/buffers/IntrusiveStorage.h>
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <concepts>
@@ -22,7 +22,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace ember::spark {
+namespace ember::spark::io {
 
 template<typename BufferType>
 class BufferSequence;
@@ -36,7 +36,7 @@ template<
 	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageType>
 >>
 requires int_gt_zero<BlockSize>
-class DynamicBuffer final : public Buffer {
+class DynamicBuffer final : public pmr::Buffer {
 	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, StorageType>;
 	using IntrusiveNode = detail::IntrusiveNode;
 
@@ -440,4 +440,4 @@ public:
 	friend class BufferSequence;
 };
 
-} // spark, ember
+} // io, spark, ember

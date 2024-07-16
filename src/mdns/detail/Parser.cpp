@@ -7,7 +7,7 @@
  */
 
 #include "Parser.h"
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
@@ -49,8 +49,8 @@ std::uint16_t encode_flags(const Flags& flags) {
 }
 
 std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
-	spark::BufferReadAdaptor adaptor(buffer);
-	spark::BinaryStreamReader stream(adaptor);
+	spark::io::pmr::BufferReadAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStreamReader stream(adaptor);
 
 	std::stringstream name;
 	std::uint8_t length;
@@ -63,11 +63,11 @@ std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
 	}
 
 	return name.str();
-} catch(spark::buffer_underrun&) {
+} catch(spark::io::buffer_underrun&) {
 	throw Result::LABEL_PARSE_ERROR;
 }
 
-void parse_header(Query& query, spark::BinaryStreamReader& stream) try {
+void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream) try {
 	stream >> query.header.id;
 	std::uint16_t flags;
 	stream >> flags;
@@ -83,7 +83,7 @@ void parse_header(Query& query, spark::BinaryStreamReader& stream) try {
 	be::big_to_native_inplace(query.header.answers);
 	be::big_to_native_inplace(query.header.authority_rrs);
 	be::big_to_native_inplace(query.header.additional_rrs);
-} catch(spark::buffer_underrun&) {
+} catch(spark::io::buffer_underrun&) {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
@@ -106,7 +106,7 @@ Question parse_question(ParseContext& ctx) try {
 	question.type = static_cast<RecordType>(type);
 	question.cc = static_cast<Class>(cc);
 	return question;
-} catch(spark::buffer_underrun&) {
+} catch(spark::io::buffer_underrun&) {
 	throw Result::QUESTION_PARSE_ERROR;
 }
 
@@ -172,7 +172,7 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 	return labels;
 }
 
-void skip_stream_labels(spark::BinaryStreamReader& stream) {
+void skip_stream_labels(spark::io::pmr::BinaryStreamReader& stream) {
 	while(true) {
 		std::uint8_t notation = 0;
 		stream.buffer()->copy(&notation, 1);
@@ -205,7 +205,7 @@ std::vector<std::string_view> parse_labels(ParseContext& ctx) try {
 	auto labels = extract_labels(ctx.buffer, ctx.stream.total_read());
 	skip_stream_labels(ctx.stream);
 	return labels;
-} catch(spark::buffer_underrun&) {
+} catch(spark::io::buffer_underrun&) {
 	throw Result::NAME_PARSE_ERROR;
 }
 
@@ -233,7 +233,7 @@ ResourceRecord parse_resource_record(ParseContext& ctx) try {
 	record.resource_class = static_cast<Class>(rc);
 	parse_rdata(record, ctx);
 	return record;
-} catch(spark::buffer_underrun&) {
+} catch(spark::io::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
@@ -275,7 +275,7 @@ void parse_rdata(ResourceRecord& rr, ParseContext& ctx) try {
 		default:
 			throw Result::UNHANDLED_RDATA;
 	}
-} catch(spark::buffer_underrun&) {
+} catch(spark::io::buffer_underrun&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
@@ -421,7 +421,7 @@ void parse_records(Query& query, ParseContext& ctx) {
 	}
 }
 
-void write_header(const Query& query, spark::BinaryStream& stream) {
+void write_header(const Query& query, spark::io::pmr::BinaryStream& stream) {
 	stream << be::native_to_big(query.header.id);
 	stream << be::native_to_big(encode_flags(query.header.flags));
 	stream << be::native_to_big(query.header.questions);
@@ -430,7 +430,7 @@ void write_header(const Query& query, spark::BinaryStream& stream) {
 	stream << be::native_to_big(query.header.additional_rrs);
 }
 
-Pointers write_questions(const Query& query, spark::BinaryStream& stream) {
+Pointers write_questions(const Query& query, spark::io::pmr::BinaryStream& stream) {
 	Pointers pointers;
 
 	for(auto& question : query.questions) {
@@ -443,7 +443,7 @@ Pointers write_questions(const Query& query, spark::BinaryStream& stream) {
 	return pointers;
 }
 
-std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream) {
+std::size_t write_rdata(const ResourceRecord& rr, spark::io::pmr::BinaryStream& stream) {
 	const auto write = stream.total_write();
 
 	if(std::holds_alternative<Record_A>(rr.rdata)) {
@@ -460,7 +460,7 @@ std::size_t write_rdata(const ResourceRecord& rr, spark::BinaryStream& stream) {
 }
 
 void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
-						   spark::BinaryStream& stream) {
+						   spark::io::pmr::BinaryStream& stream) {
 	auto it = ptrs.find(rr.name);
 
 	/*
@@ -501,13 +501,13 @@ void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
 	stream << std::uint16_t(0);
 	const auto rdata_len = write_rdata(rr, stream);
 	const auto new_seek = stream.total_write();
-	stream.write_seek(spark::StreamSeek::SK_BUFFER_ABSOLUTE, seek);
+	stream.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, seek);
 	stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
-	stream.write_seek(spark::StreamSeek::SK_BUFFER_ABSOLUTE, new_seek);
+	stream.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, new_seek);
 }
 
 void write_resource_records(const Query& query, const Pointers& ptrs,
-							spark::BinaryStream& stream) {
+							spark::io::pmr::BinaryStream& stream) {
 	for(auto& rr : query.answers) {
 		write_resource_record(rr, ptrs, stream);
 	}
@@ -522,7 +522,7 @@ void write_resource_records(const Query& query, const Pointers& ptrs,
 }
 
 // todo: replace this monstrosity with a regex
-void write_label_notation(std::string_view name, spark::BinaryStream& stream) {
+void write_label_notation(std::string_view name, spark::io::pmr::BinaryStream& stream) {
 	std::string_view segment(name);
 	auto last = 0;
 

@@ -31,7 +31,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const boost::asio::ip::tcp::endpoint remote_ep_;
 	boost::asio::steady_timer timer_;
 
-	spark::DynamicBuffer<1024> inbound_buffer_;
+	spark::io::DynamicBuffer<1024> inbound_buffer_;
 	SessionManager& sessions_;
 	const std::string remote_address_;
 	log::Logger* logger_;
@@ -131,7 +131,7 @@ public:
 	}
 
 	template<decltype(auto) BlockSize>
-	void write_chain(std::unique_ptr<spark::DynamicBuffer<BlockSize>> chain, bool notify) {
+	void write_chain(std::unique_ptr<spark::io::DynamicBuffer<BlockSize>> chain, bool notify) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
@@ -140,7 +140,7 @@ public:
 
 		set_timer();
 
-		spark::BufferSequence sequence(*chain);
+		spark::io::BufferSequence sequence(*chain);
 
 		socket_.async_send(sequence, create_alloc_handler(allocator_,
 			[this, notify, chain = std::move(chain)](boost::system::error_code ec,
@@ -162,7 +162,7 @@ public:
 		return socket_.get_executor();
 	}
 
-	virtual bool handle_packet(spark::Buffer& buffer) = 0;
+	virtual bool handle_packet(spark::io::pmr::Buffer& buffer) = 0;
 	virtual void on_write_complete() = 0;
 	virtual ~NetworkSession() = default;
 

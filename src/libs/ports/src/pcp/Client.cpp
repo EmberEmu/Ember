@@ -9,8 +9,8 @@
 #include <ports/pcp/Client.h>
 #include <ports/pcp/Deserialise.h>
 #include <ports/pcp/Serialise.h>
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <algorithm>
 #include <random>
 
@@ -84,8 +84,8 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 }
 
 auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& result) -> Error {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
@@ -157,8 +157,8 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 }
 
 void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
@@ -202,8 +202,8 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 }
 
 void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
@@ -269,8 +269,8 @@ void Client::finagle_state() {
 }
 
 bool Client::handle_announce(std::span<std::uint8_t> buffer) try {
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	std::uint8_t version = 0;
 	stream >> version;
@@ -354,8 +354,8 @@ void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endp
 
 ErrorCode Client::add_mapping_natpmp(const MapRequest& request) {
 	std::vector<std::uint8_t> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::Opcode opcode{};
 	
@@ -421,8 +421,8 @@ void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const i
 
 ErrorCode Client::announce_pcp() {
 	std::vector<std::uint8_t> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	
 	pcp::RequestHeader header {
 		.version = PCP_VERSION,
@@ -454,8 +454,8 @@ ErrorCode Client::announce_pcp() {
 
 ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 	std::vector<std::uint8_t> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	
 	pcp::RequestHeader header {
 		.version = PCP_VERSION,
@@ -555,8 +555,8 @@ ErrorCode Client::get_external_address_pcp() {
 
 ErrorCode Client::get_external_address_pmp() {
 	std::vector<std::uint8_t> buffer;
-	spark::v2::BufferAdaptor adaptor(buffer);
-	spark::v2::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	natpmp::ExtAddressRequest request{};
 

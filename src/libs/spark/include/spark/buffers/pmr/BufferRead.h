@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <spark/buffers/BufferBase.h>
+#include <spark/buffers/pmr/BufferBase.h>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class BufferRead : virtual public BufferBase {
 public:
@@ -25,4 +25,4 @@ public:
 	virtual std::size_t find_first_of(std::byte val) const = 0;
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

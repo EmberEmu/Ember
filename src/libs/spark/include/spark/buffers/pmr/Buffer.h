@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <spark/buffers/BufferRead.h>
-#include <spark/buffers/BufferWrite.h>
+#include <spark/buffers/pmr/BufferRead.h>
+#include <spark/buffers/pmr/BufferWrite.h>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class Buffer : public BufferRead, public BufferWrite {
 public:
@@ -21,4 +21,4 @@ public:
 	virtual ~Buffer() = default;
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

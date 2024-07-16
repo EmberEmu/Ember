@@ -32,14 +32,14 @@ class RealmList final : public Packet {
 	be::little_uint16_t size = 0;
 	be::little_uint8_t realm_count = 0;
 
-	void read_size(spark::BinaryStream& stream) {
+	void read_size(spark::io::pmr::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> size;
 
 		state_ = State::CALL_AGAIN;
 	}
 
-	void parse_body(spark::BinaryStream& stream) {
+	void parse_body(spark::io::pmr::BinaryStream& stream) {
 		if(stream.size() < size) {
 			return;
 		}
@@ -87,7 +87,7 @@ public:
 	boost::container::small_vector<RealmListEntry, DEFAULT_REALMS> realms;
 	be::little_uint16_t unknown2 = 5; // appears to be ignored in public clients
 
-	State read_from_stream(spark::BinaryStream& stream) override {
+	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
@@ -108,7 +108,7 @@ public:
 		return state_;
 	}
 
-	std::size_t write_body(spark::BinaryStreamWriter& stream) const {
+	std::size_t write_body(spark::io::pmr::BinaryStreamWriter& stream) const {
 		const auto initial_write = stream.total_write();
 
 		stream << unknown;
@@ -131,13 +131,13 @@ public:
 		return stream.total_write() - initial_write;
 	}
 
-	void write_to_stream(spark::BinaryStream& stream) const override {
+	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << std::uint16_t(0); // write placeholder size
 		const auto write_len = write_body(stream);
-		stream.write_seek(spark::StreamSeek::SK_BACKWARD, write_len + 2);
+		stream.write_seek(spark::io::StreamSeek::SK_BACKWARD, write_len + 2);
 		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_len)); // overwrite size
-		stream.write_seek(spark::StreamSeek::SK_FORWARD, write_len);
+		stream.write_seek(spark::io::StreamSeek::SK_FORWARD, write_len);
 	}
 };
 

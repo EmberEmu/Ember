@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <spark/v2/buffers/BinaryStream.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <protocol/Packet.h>
 #include <logger/Logging.h>
 #include <shared/util/UTF8String.h>
@@ -94,8 +94,8 @@ public:
 			return (state_ = State::ERRORED);
 		}
 
-		spark::v2::BufferAdaptor buffer(dest);
-		spark::v2::BinaryStream addon_stream(buffer);
+		spark::io::BufferAdaptor buffer(dest);
+		spark::io::BinaryStream addon_stream(buffer);
 
 		while(!addon_stream.empty()) {
 			AddonData data;

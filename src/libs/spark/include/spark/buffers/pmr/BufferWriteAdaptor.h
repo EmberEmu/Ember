@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/buffers/BufferWrite.h>
+#include <spark/buffers/pmr/BufferWrite.h>
 #include <spark/buffers/SharedDefs.h>
 #include <vector>
 #include <utility>
@@ -16,7 +16,7 @@
 #include <cstddef>
 #include <cstring>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 template<byte_oriented buf_type>
 class BufferWriteAdaptor : public BufferWrite {
@@ -65,4 +65,4 @@ public:
 	}
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

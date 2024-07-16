@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <spark/buffers/BufferBase.h>
+#include <spark/buffers/pmr/BufferBase.h>
 #include <spark/buffers/SharedDefs.h>
 #include <cstddef>
 
-namespace ember::spark {
+namespace ember::spark::io::pmr {
 
 class BufferWrite : virtual public BufferBase {
 public:
@@ -24,4 +24,4 @@ public:
 	virtual std::byte& operator[](std::size_t index) = 0;
 };
 
-} // spark, ember
+} // pmr, io, spark, ember

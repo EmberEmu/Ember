@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <gsl/gsl_util>
 #include <algorithm>
 
@@ -17,7 +17,7 @@ void ClientConnection::send(const PacketType& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
-	spark::v2::BinaryStream stream(*outbound_back_);
+	spark::io::BinaryStream stream(*outbound_back_);
 	stream << packet;
 
 	const auto written = stream.total_write();
@@ -29,9 +29,9 @@ void ClientConnection::send(const PacketType& packet) {
 		crypt_->encrypt(opcode);
 	}
 
-	stream.write_seek(spark::StreamSeek::SK_STREAM_ABSOLUTE, 0);
+	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::StreamSeek::SK_FORWARD, written - PacketType::HEADER_WIRE_SIZE);
+	stream.write_seek(spark::io::StreamSeek::SK_FORWARD, written - PacketType::HEADER_WIRE_SIZE);
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;

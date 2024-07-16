@@ -10,9 +10,9 @@
 
 #include "PacketSink.h"
 #include <protocol/Packets.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <spark/v2/buffers/BufferAdaptor.h>
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/BinaryStream.h>
 #include <boost/container/small_vector.hpp>
 #include <chrono>
 #include <memory>
@@ -30,14 +30,14 @@ public:
 	void reset();
 
 	void log(std::span<const std::uint8_t> buffer, PacketDirection dir);
-	void log(const spark::Buffer& buffer, std::size_t length, PacketDirection dir);
+	void log(const spark::io::pmr::Buffer& buffer, std::size_t length, PacketDirection dir);
 
 	template<protocol::is_packet PacketType>
 	void log(const PacketType& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		boost::container::small_vector<std::uint8_t, RESERVE_LEN> buffer;
-		spark::v2::BufferAdaptor adaptor(buffer);
-		spark::v2::BinaryStream stream(adaptor);
+		spark::io::BufferAdaptor adaptor(buffer);
+		spark::io::BinaryStream stream(adaptor);
 		stream << packet;
 
 		for(auto& sink : sinks_) {

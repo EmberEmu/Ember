@@ -12,7 +12,7 @@
 #include <utility>
 #endif
 
-namespace ember::spark {
+namespace ember::spark::io {
 
 template<typename BufferType>
 class BufferSequence {
@@ -79,4 +79,4 @@ const_iterator end() const {
 friend class const_iterator;
 };
 
-} // spark, ember
+} // io, spark, ember

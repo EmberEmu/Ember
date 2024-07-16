@@ -10,7 +10,7 @@
 #include "Socket.h"
 #include "Serialisation.h"
 #include "Utility.h"
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <shared/util/FormatPacket.h>
 
 namespace ember::dns {
@@ -67,8 +67,8 @@ void Server::handle_question(const Query& query) {
 	}
 
 	//auto buffer = std::make_unique<std::vector<std::uint8_t>>();
-	//spark::BufferAdaptor adaptor(*buffer);
-	//spark::BinaryStream stream(adaptor);
+	//spark::io::pmr::BufferAdaptor adaptor(*buffer);
+	//spark::io::pmr::BinaryStream stream(adaptor);
 	//parser::serialise(query, stream);
 	//socket_->send(std::move(buffer));
 

@@ -13,8 +13,8 @@
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
 #include <protocol/Packet.h>
-#include <spark/buffers/Buffer.h>
-#include <spark/v2/buffers/BinaryStream.h>
+#include <spark/buffers/pmr/Buffer.h>
+#include <spark/buffers/BinaryStream.h>
 #include <logger/Logging.h>
 #include <shared/ClientUUID.h>
 #include <boost/asio/steady_timer.hpp>

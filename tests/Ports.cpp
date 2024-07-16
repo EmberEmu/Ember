@@ -37,8 +37,8 @@ public:
 	};
 
 	std::vector<std::uint8_t> buffer;
-	spark::v2::BufferAdaptor<std::vector<std::uint8_t>> adaptor = buffer;
-	spark::v2::BinaryStream<spark::v2::BufferAdaptor<std::vector<std::uint8_t>>> stream;
+	spark::io::BufferAdaptor<std::vector<std::uint8_t>> adaptor = buffer;
+	spark::io::BinaryStream<spark::io::BufferAdaptor<std::vector<std::uint8_t>>> stream;
 };
 
 TEST_F(Ports, PCP_RequestHeaderRoundtrip) {
