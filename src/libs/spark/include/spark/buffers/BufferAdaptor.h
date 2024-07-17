@@ -105,11 +105,11 @@ public:
 	}
 
 	value_type& operator[](const size_type index) {
-		return buffer_[index];
+		return (buffer_.data() + read_)[index];
 	}
 
 	const value_type& operator[](const size_type index) const {
-		return buffer_[index];
+		return (buffer_.data() + read_)[index];
 	}
 
 	consteval bool can_write_seek() const requires(can_resize<buf_type>) {

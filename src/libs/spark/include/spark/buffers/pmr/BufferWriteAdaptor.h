@@ -43,10 +43,6 @@ public:
 		buffer_.reserve(length);
 	}
 
-	std::byte& operator[](const std::size_t index) override {
-		return reinterpret_cast<std::byte&>(buffer_[index]);
-	}
-
 	bool can_write_seek() const override {
 		return true;
 	}
@@ -62,6 +58,10 @@ public:
 			case BufferSeek::SK_ABSOLUTE:
 				write_ = offset;
 		}
+	}
+
+	auto underlying_data() const {
+		return buffer_.data();
 	}
 };
 

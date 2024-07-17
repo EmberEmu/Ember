@@ -52,11 +52,15 @@ public:
 	}
 
 	const std::byte& operator[](const std::size_t index) const override {
-		return reinterpret_cast<const std::byte&>(buffer_[index]);
+		return reinterpret_cast<const std::byte*>(buffer_.data() + read_)[index];
 	}
 
 	const auto read_ptr() const {
 		return buffer_.data() + read_;
+	}
+
+	const auto read_offset() const {
+		return read_;
 	}
 
 	std::size_t find_first_of(std::byte val) const override {

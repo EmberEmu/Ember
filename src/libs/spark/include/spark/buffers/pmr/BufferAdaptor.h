@@ -38,6 +38,12 @@ public:
 		return BufferReadAdaptor<buf_type>::operator[](index); 
 	};
 
+	std::byte& operator[](const std::size_t index) override {
+		const auto offset = BufferReadAdaptor<buf_type>::read_offset();
+		auto buffer = BufferWriteAdaptor<buf_type>::underlying_data();
+		return reinterpret_cast<std::byte*>(buffer + offset)[index];
+	}
+
 	void write(const void* source, std::size_t length) override {
 		BufferWriteAdaptor<buf_type>::write(source, length);
 	};
@@ -52,10 +58,6 @@ public:
 
 	void write_seek(BufferSeek direction, std::size_t offset) override {
 		BufferWriteAdaptor<buf_type>::write_seek(direction, offset);
-	};
-
-	std::byte& operator[](const std::size_t index) override { 
-		return BufferWriteAdaptor<buf_type>::operator[](index); 
 	};
 
 	std::size_t size() const override { 

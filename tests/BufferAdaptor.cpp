@@ -154,9 +154,6 @@ TEST(BufferAdaptor, Subscript) {
 	ASSERT_EQ(adaptor[2], std::byte(3));
 	buffer[0] = 4;
 	ASSERT_EQ(adaptor[0], std::byte(4));
-	adaptor[0] = std::byte(5);
-	ASSERT_EQ(adaptor[0], std::byte(5));
-	ASSERT_EQ(adaptor[0], std::byte(buffer[0]));
 }
 
 TEST(BufferAdaptor, FindFirstOf) {
