@@ -70,6 +70,7 @@ set(IO_SRC
     include/spark/buffers/BufferAdaptor.h
     include/spark/buffers/BufferSequence.h
     include/spark/buffers/BinaryStream.h
+	include/spark/buffers/StaticBuffer.h
 )
 
 set(IO_PMR_SRC

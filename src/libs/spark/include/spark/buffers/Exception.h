@@ -25,6 +25,16 @@ public:
 		buff_size(buff_size), read_size(read_size), total_read(total_read) {}
 };
 
+class buffer_overflow final : public exception {
+public:
+	const std::size_t free, write_size, total_write;
+
+	buffer_overflow(std::size_t write_size, std::size_t total_write, std::size_t free)
+		: exception("Buffer overflow: " + std::to_string(write_size) + " byte write requested, free space is "
+					+ std::to_string(free) + " bytes and total bytes written was " + std::to_string(total_write)),
+		free(free), write_size(write_size), total_write(total_write) {}
+};
+
 class stream_read_limit final : public exception {
 public:
 	const std::size_t read_limit, read_size, total_read;
