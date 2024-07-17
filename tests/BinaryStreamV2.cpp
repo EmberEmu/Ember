@@ -18,6 +18,7 @@
 #include <random>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 namespace spark = ember::spark;
 
@@ -347,5 +348,7 @@ TEST(BinaryStreamV2, CStringView) {
 	ember::util::cstring_view cview;
 	stream >> cview;
 	ASSERT_EQ(view, cview);
-	ASSERT_EQ(cview[cview.size()], '\0');
+	const auto len = std::strlen(cview.c_str());
+	ASSERT_EQ(view.size(), len);
+	ASSERT_EQ(*(cview.data() + len), '\0');
 }
