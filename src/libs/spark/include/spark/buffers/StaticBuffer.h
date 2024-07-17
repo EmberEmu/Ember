@@ -9,6 +9,7 @@
 #pragma once
 
 #include <spark/buffers/Exception.h>
+#include <spark/buffers/SharedDefs.h>
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -16,16 +17,15 @@
 
 namespace ember::spark::io {
 
-template<typename StorageType, std::size_t buf_size>
+template<byte_type StorageType, std::size_t buf_size>
 class StaticBuffer {
-	std::array<StorageType, buf_size> buffer_;
+	std::array<StorageType, buf_size> buffer_ = {};
 	size_t read_ = 0;
 	size_t write_ = 0;
 
 public:
-	using store_type      = typename decltype(buffer_);
-	using size_type       = typename store_type::size_type;
-	using value_type      = typename store_type::value_type;
+	using size_type       = std::size_t;
+	using value_type      = StorageType;
 	using pointer         = value_type*;
 	using const_pointer   = const value_type*;
 	using reference       = value_type&;
@@ -35,12 +35,19 @@ public:
 
 	static constexpr size_type npos = -1;
 	
+	StaticBuffer() = default;
+
+	template <typename... StorageType> 
+	StaticBuffer(StorageType... vals) : buffer_{ vals... } {
+		write_ = sizeof... (vals);
+	}
+
 	size_type capacity() const {
 		return buf_size;
 	}
 
 	size_type size() const {
-		return buffer_.size() - read_;
+		return write_ - read_;
 	}
 
 	size_type free() const {
@@ -153,6 +160,22 @@ public:
 			case BufferSeek::SK_ABSOLUTE:
 				write_ = offset;
 		}
+	}
+
+	auto begin() {
+		return buffer_.begin();
+	}
+
+	const auto begin() const {
+		return buffer_.begin();
+	}
+
+	auto end() {
+		return buffer_.end();
+	}
+
+	const auto end() const {
+		return buffer_.end();
 	}
 };
 

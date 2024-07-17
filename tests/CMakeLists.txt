@@ -20,18 +20,19 @@ set(EXECUTABLE_SRC
     PINAuthenticator.cpp
     UTF8Utilities.cpp
     STUN.cpp
-	FNV1.cpp
-	Ports.cpp
-	GameIntegrity.cpp
-	IntegrityData.cpp
-	PatchGraph.cpp
+    FNV1.cpp
+    Ports.cpp
+    GameIntegrity.cpp
+    IntegrityData.cpp
+    PatchGraph.cpp
     MPQ.cpp
-	BinaryStreamV2.cpp
-	BufferAdaptorV2.cpp
-	ThreadUtility.cpp
-	BufferAdaptor.cpp
-	BufferUtility.cpp
-	TLSBlockAllocator.cpp
+    BinaryStreamV2.cpp
+    BufferAdaptorV2.cpp
+    ThreadUtility.cpp
+    BufferAdaptor.cpp
+    BufferUtility.cpp
+    TLSBlockAllocator.cpp
+    StaticBuffer.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
