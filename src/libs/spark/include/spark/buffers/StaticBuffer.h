@@ -164,19 +164,19 @@ public:
 	}
 
 	auto begin() {
-		return buffer_.begin();
+		return buffer_.begin() + read_;
 	}
 
 	const auto begin() const {
-		return buffer_.begin();
+		return buffer_.begin() + read_;
 	}
 
 	auto end() {
-		return buffer_.end();
+		return buffer_.begin() + write_;
 	}
 
 	const auto end() const {
-		return buffer_.end();
+		return buffer_.begin() + write_;
 	}
 };
 

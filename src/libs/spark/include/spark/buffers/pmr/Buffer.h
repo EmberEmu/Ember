@@ -17,6 +17,7 @@ class Buffer : public BufferRead, public BufferWrite {
 public:
 	using BufferRead::operator[];
 
+	virtual std::byte& operator[](const std::size_t index) = 0;
 	virtual ~Buffer() = default;
 };
 

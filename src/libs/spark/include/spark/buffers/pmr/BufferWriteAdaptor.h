@@ -59,6 +59,10 @@ public:
 				write_ = offset;
 		}
 	}
+
+	auto underlying_data() const {
+		return buffer_.data();
+	}
 };
 
 } // pmr, io, spark, ember
