@@ -11,10 +11,12 @@
 #include <algorithm>
 #include <array>
 #include <span>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
 using namespace ember;
+using namespace std::literals;
 
 TEST(BufferAdaptor, SizeEmptyInitial) {
 	std::vector<std::uint8_t> buffer;
@@ -155,4 +157,19 @@ TEST(BufferAdaptor, Subscript) {
 	adaptor[0] = std::byte(5);
 	ASSERT_EQ(adaptor[0], std::byte(5));
 	ASSERT_EQ(adaptor[0], std::byte(buffer[0]));
+}
+
+TEST(BufferAdaptor, FindFirstOf) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	const auto str = "The quick brown fox jumped over the lazy dog"sv;
+	adaptor.write(str.data(), str.size());
+	auto pos = adaptor.find_first_of(std::byte('\0'));
+	ASSERT_EQ(pos, adaptor.npos); // direct string write is not terminated
+	pos = adaptor.find_first_of(std::byte('g'));
+	ASSERT_EQ(pos, 43);
+	pos = adaptor.find_first_of(std::byte('T'));
+	ASSERT_EQ(pos, 0);
+	pos = adaptor.find_first_of(std::byte('t'));
+	ASSERT_EQ(pos, 32);
 }

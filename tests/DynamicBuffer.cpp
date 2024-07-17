@@ -13,11 +13,13 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 #include <cstring>
 
 namespace spark = ember::spark;
+using namespace std::literals;
 
 TEST(DynamicBuffer, Size) {
 	spark::io::DynamicBuffer<32> chain;
@@ -355,4 +357,19 @@ TEST(DynamicBuffer, BlockCount) {
 	auto node = chain.pop_front();
 	chain.deallocate(node);
 	ASSERT_EQ(chain.block_count(), 3);
+}
+
+TEST(DynamicBuffer, FindFirstOf) {
+	std::vector<char> buffer;
+	spark::io::DynamicBuffer<64> dynbuf;
+	const auto str = "The quick brown fox jumped over the lazy dog"sv;
+	dynbuf.write(str.data(), str.size());
+	auto pos = dynbuf.find_first_of(std::byte('\0'));
+	ASSERT_EQ(pos, dynbuf.npos); // direct string write is not terminated
+	pos = dynbuf.find_first_of(std::byte('g'));
+	ASSERT_EQ(pos, 43);
+	pos = dynbuf.find_first_of(std::byte('T'));
+	ASSERT_EQ(pos, 0);
+	pos = dynbuf.find_first_of(std::byte('t'));
+	ASSERT_EQ(pos, 32);
 }

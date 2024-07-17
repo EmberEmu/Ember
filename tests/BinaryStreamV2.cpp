@@ -311,7 +311,7 @@ TEST(BinaryStreamV2, Array) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
-	const int arr[] = { 1, 2, 3 };
+	const int arr[] = { 1, 2, 3 }; 
 	stream << arr;
 	int val = 0;
 	stream >> val;
@@ -320,4 +320,20 @@ TEST(BinaryStreamV2, Array) {
 	ASSERT_EQ(val, 2);
 	stream >> val;
 	ASSERT_EQ(val, 3);
+}
+
+TEST(BinaryStreamV2, Span) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const int arr[] = { 4, 9, 2, 1 }; // chosen by fair dice roll
+	stream << arr;
+	auto span = stream.span<int>(4);
+	ASSERT_TRUE(stream.empty());
+	// not checking directly against the array in case it somehow gets clobbered,
+	// which would mean the span would get clobbered and succeed where it shouldn't
+	ASSERT_EQ(span[0], 4);
+	ASSERT_EQ(span[1], 9);
+	ASSERT_EQ(span[2], 2);
+	ASSERT_EQ(span[3], 1);
 }
