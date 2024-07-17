@@ -71,18 +71,14 @@ public:
 		}
 	}
 
-	void write(const void* source, size_type length) {
+	void write(const void* source, size_type length) requires(can_resize<buf_type>) {
 		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks
 		if(buffer_.size() < min_req_size) {
-			if constexpr(can_resize<buf_type>) {
-				buffer_.resize(min_req_size);
-			} else {
-				throw buffer_overflow(length, write_, buffer_.size() - write_);
-			}
-		} 
+			buffer_.resize(min_req_size);
+		}
 
 		std::memcpy(buffer_.data() + write_, source, length);
 		write_ += length;

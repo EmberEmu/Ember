@@ -7,6 +7,7 @@
  */
 
 #include <spark/buffers/DynamicBuffer.h>
+#include <spark/buffers/StaticBuffer.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
 #include <gtest/gtest.h>
@@ -351,4 +352,67 @@ TEST(BinaryStreamV2, CStringView) {
 	const auto len = std::strlen(cview.c_str());
 	ASSERT_EQ(view.size(), len);
 	ASSERT_EQ(*(cview.data() + len), '\0');
+}
+
+TEST(BinaryStreamV2, StaticBufferWrite) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	stream << 'a' << 'b' << 'c' << 'd';
+	ASSERT_EQ(buffer[0], 'a');
+	ASSERT_EQ(buffer[1], 'b');
+	ASSERT_EQ(buffer[2], 'c');
+	ASSERT_EQ(buffer[3], 'd');
+	ASSERT_TRUE(stream.good());
+}
+
+TEST(BinaryStreamV2, StaticBufferDirectWrite) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	std::uint32_t input = 0xBEE5BEE5;
+	std::uint32_t output = 0;
+	buffer.write(&input, sizeof(input));
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.good());
+}
+
+TEST(BinaryStreamV2, StaticBufferOverflow) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	ASSERT_THROW(stream << std::uint64_t(1), spark::io::buffer_overflow);
+	ASSERT_TRUE(stream.good());
+}
+
+TEST(BinaryStreamV2, StaticBufferRead) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	const std::uint32_t input = 0x11223344;
+	buffer.write(&input, sizeof(input));
+	spark::io::BinaryStream stream(buffer);
+	std::uint32_t output = 0;
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.good());
+}
+
+TEST(BinaryStreamV2, StaticBufferUnderrun) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	std::uint32_t input = 0xBEEFBEEF;
+	std::uint32_t output = 0;
+	stream << input;
+	stream >> output;
+	ASSERT_THROW(stream >> output, spark::io::buffer_underrun);
+	ASSERT_FALSE(stream.good());
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStreamV2, StaticBufferUnderrunNoExcept) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream<decltype(buffer), false> stream(buffer);
+	std::uint32_t output = 0;
+	stream << output;
+	stream >> output;
+	ASSERT_NO_THROW(stream >> output);
+	ASSERT_FALSE(stream.good());
+	ASSERT_EQ(output, 0);
 }

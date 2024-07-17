@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/buffers/Exception.h>
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -132,9 +133,8 @@ public:
 
 	void write(const void* source, size_type length) {
 		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
-		const auto min_req_size = write_ + length;
 
-		if(buffer_.size() < min_req_size) {
+		if(free() < length) {
 			throw buffer_overflow(length, write_, free());
 		}
 
