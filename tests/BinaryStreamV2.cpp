@@ -311,7 +311,7 @@ TEST(BinaryStreamV2, Array) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
-	const int arr[] = { 1, 2, 3 }; 
+	const int arr[] = { 1, 2, 3 };
 	stream << arr;
 	int val = 0;
 	stream >> val;
@@ -336,4 +336,16 @@ TEST(BinaryStreamV2, Span) {
 	ASSERT_EQ(span[1], 9);
 	ASSERT_EQ(span[2], 2);
 	ASSERT_EQ(span[3], 1);
+}
+
+TEST(BinaryStreamV2, CStringView) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	std::string_view view { "There's coffee in that nebula" };
+	stream << view;
+	ember::util::cstring_view cview;
+	stream >> cview;
+	ASSERT_EQ(view, cview);
+	ASSERT_EQ(cview[cview.size()], '\0');
 }

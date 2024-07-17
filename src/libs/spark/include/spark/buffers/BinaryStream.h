@@ -10,6 +10,7 @@
 
 #include <spark/buffers/SharedDefs.h>
 #include <spark/buffers/Exception.h>
+#include <shared/util/cstring_view.hpp>
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -124,6 +125,12 @@ public:
 		return *this;
 	}
 
+	BinaryStream& operator <<(const util::cstring_view& data) requires(writeable<buf_type>) {
+		buffer_.write(data.data(), data.size() + 1);
+		total_write_ += (data.size() + 1);
+		return *this;
+	}
+
 	template<std::ranges::contiguous_range range>
 	void put(range& data) requires(writeable<buf_type>) {
 		const auto write_size = data.size() * sizeof(typename range::value_type);
@@ -173,6 +180,13 @@ public:
 	// goes without saying that the buffer must outlive the string_view
 	BinaryStream& operator >>(std::string_view& dest) requires(contiguous<buf_type>) {
 		dest = view();
+		return *this;
+	}
+
+	// terminates when it hits a null byte, empty cstring_view if none found
+	// goes without saying that the buffer must outlive the cstring_view
+	BinaryStream& operator >>(util::cstring_view& dest) requires(contiguous<buf_type>) {
+		dest = util::cstring_view(util::cstring_view::null_terminated, view());
 		return *this;
 	}
 
