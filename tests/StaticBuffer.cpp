@@ -50,9 +50,9 @@ TEST(StaticBuffer, ReadOne) {
 
 TEST(StaticBuffer, ReadAll) {
 	spark::io::StaticBuffer<char, 3> buffer { '1', '2', '3' };
-	std::array<std::uint8_t, 3> expected{ '1', '2', '3' };
-	std::array<std::uint8_t, 3> values{};
-	buffer.read(&values, values.size());
+	std::array<char, 3> expected{ '1', '2', '3' };
+	std::array<char, 3> values{};
+	buffer.read(values.data(), values.size());
 	ASSERT_TRUE(std::equal(values.begin(), values.end(), expected.begin()));
 }
 
