@@ -14,7 +14,7 @@
 #include <utility>
 #include <cassert>
 #include <cstddef>
-#include <cstdlib>
+#include <cstring>
 
 namespace ember::spark::io {
 
