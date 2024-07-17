@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "DBCHeader.h"
 #include "DBCGenerator.h"
 #include "TypeUtils.h"
 #include <spark/buffers/pmr/BinaryStream.h>
@@ -133,7 +134,7 @@ void generate_dbc_template(const types::Struct* dbc, const std::string& out_path
 	const std::vector<char> record_data = printer.record();
 	const std::vector<char> string_data = printer.string_block();
 
-	const be::big_uint32_t magic('WDBC');
+	const be::big_uint32_t magic(DBC_MAGIC);
 	const be::little_uint32_t records = 1;
 	const be::little_uint32_t fields = metrics.fields;
 	const be::little_uint32_t record_size = metrics.record_size;
