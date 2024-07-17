@@ -54,10 +54,6 @@ public:
 		BufferWriteAdaptor<buf_type>::write_seek(direction, offset);
 	};
 
-	std::byte& operator[](const std::size_t index) override { 
-		return BufferWriteAdaptor<buf_type>::operator[](index); 
-	};
-
 	std::size_t size() const override { 
 		return BufferReadAdaptor<buf_type>::size(); 
 	};

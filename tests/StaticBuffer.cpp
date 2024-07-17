@@ -61,7 +61,7 @@ TEST(StaticBuffer, SingleSkipRead) {
 	buffer.skip(1);
 	buffer.read(&value, 1);
 	ASSERT_EQ(buffer.size(), 1);
-	ASSERT_EQ(value, buffer[1]);
+	ASSERT_EQ(buffer[0], '3');
 }
 
 TEST(StaticBuffer, MultiskipRead) {
@@ -70,7 +70,7 @@ TEST(StaticBuffer, MultiskipRead) {
 	buffer.skip(5);
 	buffer.read(&value, 1);
 	ASSERT_TRUE(buffer.empty());
-	ASSERT_EQ(value, buffer[5]);
+	ASSERT_EQ(value, '6');
 }
 
 TEST(StaticBuffer, Write) {
@@ -111,10 +111,10 @@ TEST(StaticBuffer, ReadPtr) {
 	ASSERT_EQ(*ptr, buffer[0]);
 	buffer.skip(1);
 	ptr = buffer.read_ptr();
-	ASSERT_EQ(*ptr, buffer[1]);
+	ASSERT_EQ(*ptr, buffer[0]);
 	buffer.skip(1);
 	ptr = buffer.read_ptr();
-	ASSERT_EQ(*ptr, buffer[2]);
+	ASSERT_EQ(*ptr, buffer[0]);
 }
 
 TEST(StaticBuffer, Subscript) {
@@ -141,4 +141,13 @@ TEST(StaticBuffer, FindFirstOf) {
 	ASSERT_EQ(pos, 0);
 	pos = buffer.find_first_of('t');
 	ASSERT_EQ(pos, 32);
+}
+
+TEST(StaticBuffer, AdvanceWrite) {
+	spark::io::StaticBuffer<char, 3> buffer { 'a', 'b', 'c' };
+	buffer.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0);
+	const char val = 'd';
+	buffer.advance_write(1);
+	buffer.write(&val, 1);
+	ASSERT_EQ(buffer[1], val);
 }

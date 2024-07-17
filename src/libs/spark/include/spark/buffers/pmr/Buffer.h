@@ -16,7 +16,6 @@ namespace ember::spark::io::pmr {
 class Buffer : public BufferRead, public BufferWrite {
 public:
 	using BufferRead::operator[];
-	using BufferWrite::operator[];
 
 	virtual ~Buffer() = default;
 };

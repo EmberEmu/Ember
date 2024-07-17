@@ -107,7 +107,7 @@ public:
 	}
 
 	void advance_write(size_type bytes) {
-		assert(write_ + bytes > write_ && write_ + bytes < size);
+		assert(free() >= bytes);
 		write_ += bytes;
 	}
 
@@ -124,11 +124,11 @@ public:
 	}
 
 	value_type& operator[](const size_type index) {
-		return buffer_[index];
+		return (buffer_.data() + read_)[index];
 	}
 
 	const value_type& operator[](const size_type index) const {
-		return buffer_[index];
+		return (buffer_.data() + read_)[index];
 	}
 
 	bool empty() const {
