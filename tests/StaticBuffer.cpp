@@ -83,7 +83,7 @@ TEST(StaticBuffer, Write) {
 }
 
 TEST(StaticBuffer, CanWriteSeek) {
-	spark::io::StaticBuffer<char, 0> buffer;
+	spark::io::StaticBuffer<char, 1> buffer;
 	ASSERT_TRUE(buffer.can_write_seek());
 }
 

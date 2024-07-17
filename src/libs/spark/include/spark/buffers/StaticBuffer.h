@@ -11,6 +11,7 @@
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/SharedDefs.h>
 #include <array>
+#include <utility>
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -37,8 +38,8 @@ public:
 	
 	StaticBuffer() = default;
 
-	template <typename... StorageType> 
-	StaticBuffer(StorageType... vals) : buffer_{ vals... } {
+	template <typename... T> 
+	StaticBuffer(T&&... vals) : buffer_{ std::forward<T>(vals)... } {
 		write_ = sizeof... (vals);
 	}
 
