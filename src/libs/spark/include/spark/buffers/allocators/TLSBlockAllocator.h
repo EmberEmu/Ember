@@ -9,6 +9,7 @@
 #pragma once
 
 #include <bitset>
+#include <memory>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -19,7 +20,7 @@ namespace {
 
 template<typename T, std::size_t _elements>
 struct Allocator {
-	T* storage = nullptr;
+	std::unique_ptr<T[]> storage;
 	std::size_t index = 0;
 	std::bitset<_elements> used_set;
 
@@ -33,7 +34,7 @@ struct Allocator {
 	[[nodiscard]] inline T* allocate() {
 		// lazy allocation to prevent every created thread allocating
 		if(!storage) [[unlikely]] {
-			storage = new T[_elements];
+			storage = std::make_unique<T[]>(_elements);
 		}
 
 		for(std::size_t i = 0; i < _elements; ++i) {
@@ -72,7 +73,7 @@ struct Allocator {
 	}
 
 	inline void deallocate(T* t) {
-		const auto lower_bound = reinterpret_cast<std::uintptr_t>(storage);
+		const auto lower_bound = reinterpret_cast<std::uintptr_t>(storage.get());
 		const auto upper_bound = lower_bound + (sizeof(T) * _elements);
 		const auto t_ptr = reinterpret_cast<std::uintptr_t>(t);
 
@@ -96,13 +97,12 @@ struct Allocator {
 #endif
 	}
 
-	~Allocator() {
-		delete[] storage;
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	~Allocator() {
 		assert(!storage_active_count && !new_active_count);
 		assert(total_allocs == total_deallocs);
-#endif
 	}
+#endif
 };
 
 } // unnamed
