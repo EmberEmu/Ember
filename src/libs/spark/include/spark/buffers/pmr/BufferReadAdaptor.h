@@ -72,6 +72,11 @@ public:
 
 		return npos;
 	}
+
+	void reset() {
+		read_ = 0;
+		buffer_.clear();
+	}
 };
 
 } // pmr, io, spark, ember

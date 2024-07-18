@@ -76,6 +76,10 @@ public:
 
 	void skip(const size_type length) {
 		read_ += length;
+
+		if(read_ == write_) {
+			read_ = write_ = 0;
+		}
 	}
 
 	void advance_write(size_type bytes) {

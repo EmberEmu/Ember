@@ -14,16 +14,26 @@
 
 namespace ember::spark::io::pmr {
 
-template<byte_oriented buf_type>
+template<byte_oriented buf_type, bool allow_optimise  = true>
 class BufferAdaptor final : public BufferReadAdaptor<buf_type>,
                             public BufferWriteAdaptor<buf_type>,
                             public Buffer {
+	void reset() {
+		if(BufferReadAdaptor<buf_type>::read_ptr() == BufferWriteAdaptor<buf_type>::write_ptr()) {
+			BufferReadAdaptor<buf_type>::reset();
+			BufferWriteAdaptor<buf_type>::reset();
+		}
+	}
 public:
 	explicit BufferAdaptor(buf_type& buffer)
 		: BufferReadAdaptor<buf_type>(buffer), BufferWriteAdaptor<buf_type>(buffer) {}
 
 	void read(void* destination, std::size_t length) override {
 		BufferReadAdaptor<buf_type>::read(destination, length);
+
+		if constexpr(allow_optimise) {
+			reset();
+		}
 	};
 
 	void copy(void* destination, std::size_t length) const override {
@@ -32,6 +42,10 @@ public:
 
 	void skip(std::size_t length) override {
 		BufferReadAdaptor<buf_type>::skip(length);
+
+		if constexpr(allow_optimise) {
+			reset();
+		}
 	};
 
 	const std::byte& operator[](const std::size_t index) const override { 

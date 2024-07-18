@@ -63,6 +63,19 @@ public:
 	auto underlying_data() const {
 		return buffer_.data();
 	}
+
+	auto write_ptr() {
+		return buffer_.data() + write_;
+	}
+
+	const auto write_ptr() const {
+		return buffer_.data() + write_;
+	}
+	
+	void reset() {
+		write_ = 0;
+		buffer_.clear();
+	}
 };
 
 } // pmr, io, spark, ember
