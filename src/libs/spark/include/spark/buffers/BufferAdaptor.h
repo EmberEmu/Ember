@@ -132,6 +132,34 @@ public:
 	const auto read_ptr() const {
 		return buffer_.data() + read_;
 	}
+
+	auto read_ptr() {
+		return buffer_.data() + read_;
+	}
+
+	const auto write_ptr() const {
+		return buffer_.data() + write_;
+	}
+
+	auto write_ptr() {
+		return buffer_.data() + write_;
+	}
+
+	const auto data() const {
+		return buffer_.data() + read_;
+	}
+
+	auto data() {
+		return buffer_.data() + read_;
+	}
+
+	const auto storage() const {
+		return buffer_.data();
+	}
+
+	auto storage() {
+		return buffer_.data();
+	}
 };
 
 } // io, spark, ember

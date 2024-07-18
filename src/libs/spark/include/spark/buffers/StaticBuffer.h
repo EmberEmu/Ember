@@ -21,8 +21,8 @@ namespace ember::spark::io {
 template<byte_type StorageType, std::size_t buf_size>
 class StaticBuffer {
 	std::array<StorageType, buf_size> buffer_ = {};
-	size_t read_ = 0;
-	size_t write_ = 0;
+	std::size_t read_ = 0;
+	std::size_t write_ = 0;
 
 public:
 	using size_type       = std::size_t;
@@ -56,11 +56,11 @@ public:
 	}
 
 	const value_type* data() const {
-		return buffer_.data();
+		return buffer_.data() + read_;
 	}
 
 	value_type* data() {
-		return buffer_.data();
+		return buffer_.data() + read_;
 	}
 
 	const value_type* read_ptr() const {
@@ -77,6 +77,14 @@ public:
 
 	value_type* write_ptr() {
 		return buffer_.data() + write_;
+	}
+
+	value_type* storage() {
+		return buffer_.data();
+	}
+
+	const value_type* storage() const {
+		return buffer_.data();
 	}
 
 	void read(void* destination, size_type length) {

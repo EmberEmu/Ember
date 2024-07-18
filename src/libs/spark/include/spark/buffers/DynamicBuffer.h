@@ -103,7 +103,7 @@ private:
 	}
 	
 #ifdef BUFFER_DEBUG
-	void offset_buffers(std::vector<IntrusiveStorage*>& buffers, std::size_t offset) {
+	void offset_buffers(std::vector<IntrusiveStorage*>& buffers, size_type offset) {
 		std::erase_if(buffers, [&](auto block) {
 			if(block->size() > offset) {
 				block->read_offset += offset;
@@ -116,7 +116,7 @@ private:
 	}
 #endif
 
-	value_type& byte_at_index(const size_t index) const {
+	value_type& byte_at_index(const size_type index) const {
 		BOOST_ASSERT_MSG(index < size_, "Buffer subscript index out of range");
 
 		auto head = root_.next;
@@ -124,7 +124,7 @@ private:
 		const auto offset_index = index + buffer->read_offset;
 		const auto node_index = offset_index / BlockSize;
 
-		for(std::size_t i = 0; i < node_index; ++i) {
+		for(size_type i = 0; i < node_index; ++i) {
 			head = head->next;
 		}
 
@@ -132,7 +132,7 @@ private:
 		return (*buffer)[offset_index % BlockSize];
 	}
 
-	std::size_t abs_seek_offset(std::size_t offset) {
+	size_type abs_seek_offset(size_type offset) {
 		if(offset < size_) {
 			return size_ - offset;
 		} else if(offset > size_) {
@@ -156,9 +156,9 @@ public:
 	DynamicBuffer(const DynamicBuffer& rhs) { copy(rhs); }
 	DynamicBuffer& operator=(const DynamicBuffer& rhs) { clear(); copy(rhs); return *this;  }
 
-	void read(void* destination, std::size_t length) override {
+	void read(void* destination, size_type length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
-		std::size_t remaining = length;
+		size_type remaining = length;
 
 		do {
 			auto buffer = buffer_from_node(root_.next);
@@ -176,9 +176,9 @@ public:
 		size_ -= length;
 	}
 
-	void copy(void* destination, const std::size_t length) const override {
+	void copy(void* destination, const size_type length) const override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer copy too large!");
-		std::size_t remaining = length;
+		size_type remaining = length;
 		auto head = root_.next;
 
 		do {
@@ -194,16 +194,16 @@ public:
 	}
 
 #ifdef BUFFER_DEBUG
-	std::vector<IntrusiveStorage*> fetch_buffers(const std::size_t length,
-	                                             const std::size_t offset = 0) {
-		std::size_t total = length + offset;
+	std::vector<IntrusiveStorage*> fetch_buffers(const size_type length,
+	                                             const size_type offset = 0) {
+		size_type total = length + offset;
 		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
 		std::vector<IntrusiveStorage*> buffers;
 		auto head = root_.next;
 
 		while(total) {
 			auto buffer = buffer_from_node(head);
-			std::size_t read_size = BlockSize - buffer->read_offset;
+			size_type read_size = BlockSize - buffer->read_offset;
 			
 			// guard against overflow - buffer may have more content than requested
 			if(read_size > total) {
@@ -223,9 +223,9 @@ public:
 	}
 #endif
 
-	void skip(const std::size_t length) override {
+	void skip(const size_type length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
-		std::size_t remaining = length;
+		size_type remaining = length;
 
 		do {
 			auto buffer = buffer_from_node(root_.next);
@@ -240,8 +240,8 @@ public:
 		size_ -= length;
 	}
 
-	void write(const void* source, const std::size_t length) override {
-		std::size_t remaining = length;
+	void write(const void* source, const size_type length) override {
+		size_type remaining = length;
 		IntrusiveNode* tail = root_.prev;
 
 		do {
@@ -265,8 +265,8 @@ public:
 		size_ += length;
 	}
 
-	void reserve(const std::size_t length) override {
-		std::size_t remaining = length;
+	void reserve(const size_type length) override {
+		size_type remaining = length;
 		IntrusiveNode* tail = root_.prev;
 
 		do {
@@ -287,7 +287,7 @@ public:
 		size_ += length;
 	}
 
-	std::size_t size() const override {
+	size_type size() const override {
 		return size_;
 	}
 
@@ -319,7 +319,7 @@ public:
 		alloc_.deallocate(buffer);
 	}
 
-	void advance_write_cursor(const std::size_t size) {
+	void advance_write_cursor(const size_type size) {
 		auto buffer = buffer_from_node(root_.prev);
 		const auto actual = buffer->advance_write_cursor(size);
 		BOOST_ASSERT_MSG(size <= BlockSize && actual <= size,
@@ -331,7 +331,7 @@ public:
 		return true;
 	}
 
-	void write_seek(const BufferSeek mode, std::size_t offset) override {
+	void write_seek(const BufferSeek mode, size_type offset) override {
 		// nothing to do in this case
 		if(mode == BufferSeek::SK_ABSOLUTE && offset == size_) {
 			return;
@@ -390,21 +390,21 @@ public:
 		return !size_;
 	}
 	
-	consteval std::size_t block_size() const {
+	consteval size_type block_size() const {
 		return BlockSize;
 	}
 
-	value_type& operator[](const std::size_t index) {
+	value_type& operator[](const size_type index) {
 		return byte_at_index(index);
 	}
 
-	const value_type& operator[](const std::size_t index) const override {
+	const value_type& operator[](const size_type index) const override {
 		return byte_at_index(index);
 	}
 
-	std::size_t block_count() {
+	size_type block_count() {
 		auto node = &root_;
-		std::size_t count = 0;
+		size_type count = 0;
 
 		// not calculating based on block size & size as it
 		// wouldn't play nice with seeking or manual push/pop
