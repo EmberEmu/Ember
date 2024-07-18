@@ -59,7 +59,7 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 				timer_.cancel();
 
 				if(!ec) {
-					inbound_buffer_.advance_write_cursor(size);
+					inbound_buffer_.advance_write(size);
 
 					if(handle_packet(inbound_buffer_)) {
 						read();

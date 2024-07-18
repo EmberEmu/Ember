@@ -319,9 +319,9 @@ public:
 		alloc_.deallocate(buffer);
 	}
 
-	void advance_write_cursor(const size_type size) {
+	void advance_write(const size_type size) {
 		auto buffer = buffer_from_node(root_.prev);
-		const auto actual = buffer->advance_write_cursor(size);
+		const auto actual = buffer->advance_write(size);
 		BOOST_ASSERT_MSG(size <= BlockSize && actual <= size,
 		                 "Attempted to advance write cursor out of bounds!");
 		size_ += size;

@@ -161,7 +161,7 @@ public:
 	}
 
 	void advance_write(size_type bytes) {
-		assert(buffer_.size()() >= write_ + bytes);
+		assert(buffer_.size() >= (write_ + bytes));
 		write_ += bytes;
 	}
 };

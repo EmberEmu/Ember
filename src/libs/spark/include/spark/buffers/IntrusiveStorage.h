@@ -127,7 +127,7 @@ struct IntrusiveStorage {
 		}
 	}
 
-	std::size_t advance_write_cursor(std::size_t size) {
+	std::size_t advance_write(std::size_t size) {
 		const std::size_t remaining = free();
 
 		if(remaining < size) {
