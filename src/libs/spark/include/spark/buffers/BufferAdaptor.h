@@ -24,7 +24,7 @@ concept can_resize =
 		{ t.resize( std::size_t() ) } -> std::same_as<void>;
 };
 
-template<byte_oriented buf_type, bool space_optimise = false>
+template<byte_oriented buf_type, bool space_optimise = true>
 requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final {
 public:
@@ -45,8 +45,7 @@ public:
 		: buffer_(buffer), read_(0), write_(buffer.size()) {}
 
 	void read(void* destination, size_type length) {
-		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
-		std::memcpy(destination, buffer_.data() + read_, length);
+		copy(destination, length);
 		read_ += length;
 
 		if constexpr(space_optimise) {
@@ -58,7 +57,7 @@ public:
 
 	void copy(void* destination, size_type length) const {
 		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
-		std::memcpy(destination, buffer_.data() + read_, length);
+		std::memcpy(destination, read_ptr(), length);
 	}
 
 	void skip(size_type length) {
@@ -80,12 +79,12 @@ public:
 			buffer_.resize(min_req_size);
 		}
 
-		std::memcpy(buffer_.data() + write_, source, length);
+		std::memcpy(write_ptr(), source, length);
 		write_ += length;
 	}
 
 	size_type find_first_of(value_type val) const {
-		const auto data = buffer_.data() + read_;
+		const auto data = read_ptr();
 
 		for(auto i = 0u; i < size(); ++i) {
 			if(data[i] == val) {
@@ -101,15 +100,15 @@ public:
 	}
 
 	bool empty() const {
-		return !(buffer_.size() - read_);
+		return read_ == write_;
 	}
 
 	value_type& operator[](const size_type index) {
-		return (buffer_.data() + read_)[index];
+		return read_ptr()[index];
 	}
 
 	const value_type& operator[](const size_type index) const {
-		return (buffer_.data() + read_)[index];
+		return read_ptr()[index];
 	}
 
 	consteval bool can_write_seek() const requires(can_resize<buf_type>) {
@@ -159,6 +158,11 @@ public:
 
 	auto storage() {
 		return buffer_.data();
+	}
+
+	void advance_write(size_type bytes) {
+		assert(buffer_.size()() >= write_ + bytes);
+		write_ += bytes;
 	}
 };
 
