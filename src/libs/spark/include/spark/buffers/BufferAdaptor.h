@@ -44,6 +44,11 @@ public:
 	BufferAdaptor(buf_type& buffer)
 		: buffer_(buffer), read_(0), write_(buffer.size()) {}
 
+	template<typename T>
+	void read(T* destination) {
+		read(destination, sizeof(T));
+	}
+
 	void read(void* destination, size_type length) {
 		copy(destination, length);
 		read_ += length;
@@ -53,6 +58,11 @@ public:
 				read_ = write_ = 0;
 			}
 		}
+	}
+
+	template<typename T>
+	void copy(T* destination) const {
+		copy(destination, sizeof(T));
 	}
 
 	void copy(void* destination, size_type length) const {
@@ -68,6 +78,11 @@ public:
 				read_ = write_ = 0;
 			}
 		}
+	}
+
+	template<typename T>
+	void write(const T& source) requires(can_resize<buf_type>) {
+		write(source, sizeof(T));
 	}
 
 	void write(const void* source, size_type length) requires(can_resize<buf_type>) {

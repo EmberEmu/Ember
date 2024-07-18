@@ -26,6 +26,11 @@ class BufferWriteAdaptor : public BufferWrite {
 public:
 	BufferWriteAdaptor(buf_type& buffer) : buffer_(buffer), write_(buffer.size()) {}
 
+	template<typename T>
+	void write(const T& source) {
+		write(&source, sizeof(T));
+	}
+
 	void write(const void* source, std::size_t length) override {
 		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;

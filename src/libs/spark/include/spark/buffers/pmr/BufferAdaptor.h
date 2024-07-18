@@ -28,12 +28,35 @@ public:
 	explicit BufferAdaptor(buf_type& buffer)
 		: BufferReadAdaptor<buf_type>(buffer), BufferWriteAdaptor<buf_type>(buffer) {}
 
+	template<typename T>
+	void read(T* destination) {
+		BufferReadAdaptor<buf_type>::read(destination);
+
+		if constexpr(allow_optimise) {
+			reset();
+		}
+	}
+
 	void read(void* destination, std::size_t length) override {
 		BufferReadAdaptor<buf_type>::read(destination, length);
 
 		if constexpr(allow_optimise) {
 			reset();
 		}
+	};
+
+	template<typename T>
+	void write(const T& source) {
+		BufferWriteAdaptor<buf_type>::write(source);
+	};
+
+	void write(const void* source, std::size_t length) {
+		BufferWriteAdaptor<buf_type>::write(source, length);
+	};
+
+	template<typename T>
+	void copy(T* destination) const {
+		BufferReadAdaptor<buf_type>::copy(destination);
 	};
 
 	void copy(void* destination, std::size_t length) const override {
@@ -57,10 +80,6 @@ public:
 		auto buffer = BufferWriteAdaptor<buf_type>::underlying_data();
 		return reinterpret_cast<std::byte*>(buffer + offset)[index];
 	}
-
-	void write(const void* source, std::size_t length) override {
-		BufferWriteAdaptor<buf_type>::write(source, length);
-	};
 
 	void reserve(std::size_t length) override {
 		BufferWriteAdaptor<buf_type>::reserve(length);
@@ -86,6 +105,5 @@ public:
 		return BufferReadAdaptor<buf_type>::find_first_of(val);
 	}
 };
-
 
 } // pmr, io, spark, ember

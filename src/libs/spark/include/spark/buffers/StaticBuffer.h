@@ -38,9 +38,14 @@ public:
 	
 	StaticBuffer() = default;
 
-	template <typename... T> 
+	template<typename... T> 
 	StaticBuffer(T&&... vals) : buffer_{ std::forward<T>(vals)... } {
 		write_ = sizeof... (vals);
+	}
+
+	template<typename T>
+	void read(T* destination) {
+		read(destination, sizeof(T));
 	}
 
 	void read(void* destination, size_type length) {
@@ -50,6 +55,11 @@ public:
 		if(read_ == write_) {
 			read_ = write_ = 0;
 		}
+	}
+
+	template<typename T>
+	void copy(T* destination) const {
+		copy(destination, sizeof(T));
 	}
 
 	void copy(void* destination, size_type length) const {
@@ -116,6 +126,11 @@ public:
 
 	consteval bool can_write_seek() const {
 		return true;
+	}
+
+	template<typename T>
+	void write(const T& source) {
+		write(&source, sizeof(T));
 	}
 
 	void write(const void* source, size_type length) {

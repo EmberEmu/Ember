@@ -156,6 +156,11 @@ public:
 	DynamicBuffer(const DynamicBuffer& rhs) { copy(rhs); }
 	DynamicBuffer& operator=(const DynamicBuffer& rhs) { clear(); copy(rhs); return *this;  }
 
+	template<typename T>
+	void read(T* destination) {
+		read(destination, sizeof(T));
+	}
+
 	void read(void* destination, size_type length) override {
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
 		size_type remaining = length;
@@ -174,6 +179,11 @@ public:
 		} while(remaining);
 
 		size_ -= length;
+	}
+
+	template<typename T>
+	void copy(T* destination) const {
+		copy(destination, sizeof(T));
 	}
 
 	void copy(void* destination, const size_type length) const override {
@@ -238,6 +248,11 @@ public:
 		} while(remaining);
 
 		size_ -= length;
+	}
+
+	template<typename T>
+	void write(const T& source) {
+		write(&source, sizeof(T));
 	}
 
 	void write(const void* source, const size_type length) override {
