@@ -152,3 +152,36 @@ TEST(StaticBuffer, AdvanceWrite) {
 	buffer.write(&val, 1);
 	ASSERT_EQ(buffer[1], val);
 }
+
+TEST(StaticBuffer, Shift) {
+	spark::io::StaticBuffer<char, 3> buffer { 'a', 'b', 'c' };
+	ASSERT_EQ(buffer.free(), 0);
+	char value = 0;
+	buffer.read(&value, sizeof(value));
+	ASSERT_EQ(value, 'a');
+	ASSERT_EQ(buffer.free(), 0);
+	buffer.shift();
+	ASSERT_EQ(buffer.free(), 1);
+	buffer.copy(&value, sizeof(value));
+	ASSERT_EQ(value, 'b');
+	ASSERT_EQ(buffer[0], 'b');
+	ASSERT_EQ(*buffer.read_ptr(), 'b');
+	buffer.read(&value, sizeof(value));
+	ASSERT_EQ(value, 'b');
+	buffer.read(&value, sizeof(value));
+	ASSERT_EQ(value, 'c');
+	ASSERT_THROW(buffer.read(&value, sizeof(value)), spark::io::buffer_underrun);
+}
+
+TEST(StaticBuffer, Free) {
+	spark::io::StaticBuffer<char, 3> buffer;
+	ASSERT_EQ(buffer.free(), 3);
+	char value = 0;
+	buffer.write(&value, sizeof(value));
+	ASSERT_EQ(buffer.free(), 2);
+	buffer.write(&value, sizeof(value));
+	ASSERT_EQ(buffer.free(), 1);
+	buffer.write(&value, sizeof(value));
+	ASSERT_EQ(buffer.free(), 0);
+	ASSERT_THROW(buffer.write(&value, sizeof(value)), spark::io::buffer_overflow);
+}

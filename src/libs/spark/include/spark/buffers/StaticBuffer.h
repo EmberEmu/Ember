@@ -54,6 +54,11 @@ public:
 
 	void copy(void* destination, size_type length) const {
 		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
+
+		if(length > size()) {
+			throw buffer_underrun(length, read_, size());
+		}
+
 		std::memcpy(destination, read_ptr(), length);
 	}
 
@@ -87,7 +92,10 @@ public:
 			return;
 		}
 
-		std::memmove(buffer_.data(), read_ptr(), size());
+		const auto prev_size = size();
+		std::memmove(buffer_.data(), read_ptr(), prev_size);
+		read_ = 0;
+		write_ = prev_size;
 	}
 
 	value_type& operator[](const size_type index) {
