@@ -32,7 +32,7 @@ public:
 	}
 
 	void write(const void* source, std::size_t length) override {
-		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
+		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
 		// we don't use std::back_inserter so we can support seeks

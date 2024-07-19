@@ -111,6 +111,7 @@ public:
 	}
 
 	BinaryStream& operator <<(const char* data) requires(writeable<buf_type>) {
+		assert(data);
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
 		total_write_ += len + 1;
@@ -204,6 +205,7 @@ public:
 
 	template<typename T>
 	void get(T* dest, std::size_t count) {
+		assert(dest);
 		const auto read_size = count * sizeof(T);
 		STREAM_READ_BOUNDS_CHECK(read_size, void());
 		buffer_.read(dest, read_size);

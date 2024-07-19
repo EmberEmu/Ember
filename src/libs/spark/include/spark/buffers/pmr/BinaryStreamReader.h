@@ -15,6 +15,7 @@
 #include <concepts>
 #include <ranges>
 #include <string>
+#include <cassert>
 #include <cstddef>
 #include <cstring>
 
@@ -77,6 +78,7 @@ public:
 
 	template<typename T>
 	void get(T* dest, std::size_t count) {
+		assert(dest);
 		const auto read_size = count * sizeof(T);
 		check_read_bounds(read_size);
 		buffer_.read(dest, read_size);

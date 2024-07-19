@@ -50,6 +50,7 @@ public:
 	}
 
 	BinaryStreamWriter& operator <<(const char* data) {
+		assert(data);
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
 		total_write_ += len + 1;
@@ -65,6 +66,7 @@ public:
 
 	template<typename T>
 	void put(const T* data, std::size_t count) {
+		assert(data);
 		const auto write_size = count * sizeof(T);
 		buffer_.write(data, write_size);
 		total_write_ += write_size;
