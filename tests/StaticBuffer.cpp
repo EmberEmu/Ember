@@ -160,7 +160,7 @@ TEST(StaticBuffer, Shift) {
 	buffer.read(&value, sizeof(value));
 	ASSERT_EQ(value, 'a');
 	ASSERT_EQ(buffer.free(), 0);
-	buffer.shift();
+	buffer.shift_unread_front();
 	ASSERT_EQ(buffer.free(), 1);
 	buffer.copy(&value, sizeof(value));
 	ASSERT_EQ(value, 'b');

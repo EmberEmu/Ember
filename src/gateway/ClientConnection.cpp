@@ -82,7 +82,7 @@ void ClientConnection::process_buffered_data(BufferInType& buffer) {
 
 	// if there are any unread bytes left in the buffer, shift
 	// them to the beginning so we get them next time
-	inbound_buffer_.shift();
+	inbound_buffer_.shift_unread_front();
 }
 
 void ClientConnection::write() {

@@ -101,7 +101,7 @@ public:
 		read_ = write_ = 0;
 	}
 
-	void shift() {
+	void shift_unread_front() {
 		if(write_ == read_) {
 			return;
 		}
