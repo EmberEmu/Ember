@@ -19,7 +19,7 @@
 namespace ember::spark::io {
 
 template<byte_type StorageType, std::size_t buf_size>
-class StaticBuffer {
+class StaticBuffer final {
 	std::array<StorageType, buf_size> buffer_ = {};
 	std::size_t read_ = 0;
 	std::size_t write_ = 0;
