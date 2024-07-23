@@ -148,7 +148,8 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
-		exe_data = std::make_unique<IntegrityData>(allowed_clients, bin_path);
+		exe_data = std::make_unique<IntegrityData>();
+		exe_data->add_versions(allowed_clients, bin_path);
 	}
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;

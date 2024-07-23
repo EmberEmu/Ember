@@ -18,7 +18,7 @@ namespace fs = std::filesystem;
 
 namespace ember {
 
-IntegrityData::IntegrityData(std::span<const GameVersion> versions, std::string_view path) {
+void IntegrityData::add_version(const GameVersion& version, std::string_view path) {
 	std::array<std::string_view, 5> winx86 { "WoW.exe", "fmod.dll", "ijl15.dll",
 	                                         "dbghelp.dll", "unicows.dll" };
 
@@ -30,15 +30,19 @@ IntegrityData::IntegrityData(std::span<const GameVersion> versions, std::string_
 	                                         "Resources/Main.nib/objects.xib",
 	                                         "Resources/wow.icns", "PkgInfo" };
 	
-	for(auto& version : versions) {
-		load_binaries(path, version.build, winx86, grunt::System::Win, grunt::Platform::x86);
-		load_binaries(path, version.build, macx86, grunt::System::OSX, grunt::Platform::x86);
-		load_binaries(path, version.build, macppc, grunt::System::OSX, grunt::Platform::PPC);
-	}
+	load_binaries(path, version.build, winx86, grunt::System::Win, grunt::Platform::x86);
+	load_binaries(path, version.build, macx86, grunt::System::OSX, grunt::Platform::x86);
+	load_binaries(path, version.build, macppc, grunt::System::OSX, grunt::Platform::PPC);
 
-	// ensure we have at least one supported client
+	// ensure we have at least one supported client for the given version
 	if(data_.empty()) {
 		throw std::runtime_error("Client integrity checking is enabled but no binaries were found");
+	}
+}
+
+void IntegrityData::add_versions(std::span<const GameVersion> versions, std::string_view path) {
+	for(auto& version : versions) {
+		add_version(version, path);
 	}
 }
 
@@ -94,7 +98,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 		write_offset += size;
 	}
 
-	data_.emplace(Key{ build, platform, system }, std::move(buffer));
+	data_.emplace(detail::Key{ build, platform, system }, std::move(buffer));
 }
 
 } // ember

@@ -10,23 +10,20 @@
 #include <shared/util/FileMD5.h>
 #include <gtest/gtest.h>
 #include <array>
-#include <span>
 #include <cstdint>
 
 using namespace ember;
 
 TEST(IntegrityData, LoadData_MD5) {
-	std::array<const GameVersion, 1> versions {
-		GameVersion {
-			.major = 1,
-			.minor = 12,
-			.build = 5875,
-		}	
+	const GameVersion version {
+		.major = 1,
+		.minor = 12,
+		.build = 5875,
 	};
 	
-	IntegrityData integrity(versions, "test_data/");
-	const auto res = integrity.lookup(versions[0], grunt::Platform::x86,
-	                                  grunt::System::Win);
+	IntegrityData data;
+	data.add_version(version, "test_data/");
+	const auto res = data.lookup(version, grunt::Platform::x86, grunt::System::Win);
 	ASSERT_TRUE(res);
 	ASSERT_EQ(res->size_bytes(), 320);
 
@@ -40,25 +37,23 @@ TEST(IntegrityData, LoadData_MD5) {
 }
 
 TEST(IntegrityData, LoadData_NotFound_BadDir) {
-	std::array<const GameVersion, 1> versions {
-		GameVersion {
-			.major = 1,
-			.minor = 12,
-			.build = 5875,
-		}	
+	const GameVersion version {
+		.major = 1,
+		.minor = 12,
+		.build = 5875,
 	};
 
-	ASSERT_ANY_THROW(IntegrityData integrity(versions, "fake_dir/"));
+	IntegrityData data;
+	ASSERT_ANY_THROW(data.add_version(version, "fake_dir/"));
 }
 
 TEST(IntegrityData, LoadData_NotFound_BadVers) {
-	std::array<const GameVersion, 1> versions {
-		GameVersion {
-			.major = 2,
-			.minor = 12,
-			.build = 1000,
-		}	
+	const GameVersion version {
+		.major = 2,
+		.minor = 12,
+		.build = 1000,
 	};
 
-	ASSERT_ANY_THROW(IntegrityData integrity(versions, "test_data/"));
+	IntegrityData data;
+	ASSERT_ANY_THROW(data.add_version(version, "test_data/"));
 }
