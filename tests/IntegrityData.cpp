@@ -38,3 +38,27 @@ TEST(IntegrityData, LoadData_MD5) {
 
 	ASSERT_EQ(md5, expected_md5);
 }
+
+TEST(IntegrityData, LoadData_NotFound_BadDir) {
+	std::array<const GameVersion, 1> versions {
+		GameVersion {
+			.major = 1,
+			.minor = 12,
+			.build = 5875,
+		}	
+	};
+
+	ASSERT_ANY_THROW(IntegrityData integrity(versions, "fake_dir/"));
+}
+
+TEST(IntegrityData, LoadData_NotFound_BadVers) {
+	std::array<const GameVersion, 1> versions {
+		GameVersion {
+			.major = 2,
+			.minor = 12,
+			.build = 1000,
+		}	
+	};
+
+	ASSERT_ANY_THROW(IntegrityData integrity(versions, "test_data/"));
+}
