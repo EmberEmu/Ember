@@ -24,8 +24,11 @@ class ThreadPool;
 
 class NetworkSessionBuilder {
 public:
-	virtual std::shared_ptr<NetworkSession> create(SessionManager& sessions, bai::tcp::socket socket,
-	                                               bai::tcp::endpoint ep, log::Logger* logger) const = 0;
+	virtual std::shared_ptr<NetworkSession> create(SessionManager& sessions,
+	                                               bai::tcp::socket socket,
+	                                               bai::tcp::endpoint ep,
+	                                               log::Logger* logger) const = 0;
+
 	virtual ~NetworkSessionBuilder() = default;
 };
 
@@ -37,8 +40,10 @@ public:
 	LoginSessionBuilder(const LoginHandlerBuilder& builder, ThreadPool& pool)
 	                    : builder_(builder), pool_(pool) { }
 
-	std::shared_ptr<NetworkSession> create(SessionManager& sessions, bai::tcp::socket socket,
-	                                       bai::tcp::endpoint ep, log::Logger* logger) const override {
+	std::shared_ptr<NetworkSession> create(SessionManager& sessions,
+	                                       bai::tcp::socket socket,
+	                                       bai::tcp::endpoint ep,
+	                                       log::Logger* logger) const override {
 		return std::make_shared<LoginSession>(sessions, std::move(socket), ep, logger, pool_, builder_);
 	}
 };

@@ -142,14 +142,13 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	// Load integrity, patch and survey data
 	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
-	std::unique_ptr<IntegrityData> exe_data;
+	IntegrityData bin_data;
 
 	const auto allowed_clients = client_versions(); // move
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
-		exe_data = std::make_unique<IntegrityData>();
-		exe_data->add_versions(allowed_clients, bin_path);
+		bin_data.add_versions(allowed_clients, bin_path);
 	}
 
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
@@ -211,8 +210,10 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	// Start login server
-	LoginHandlerBuilder builder(logger, patcher, survey, exe_data.get(), *user_dao,
-	                            acct_svc, realm_list, *metrics, args["locale.enforce"].as<bool>());
+	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, *user_dao,
+	                            acct_svc, realm_list, *metrics,
+	                            args["locale.enforce"].as<bool>(),
+	                            args["integrity.enabled"].as<bool>());
 	LoginSessionBuilder s_builder(builder, thread_pool);
 
 	const auto& interface = args["network.interface"].as<std::string>();

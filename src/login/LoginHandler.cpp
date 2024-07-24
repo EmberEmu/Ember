@@ -357,12 +357,11 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
                                              bool reconnect) const {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
-	// ensure checking is enabled
-	if(!exe_data_) {
+	if(!integrity_enforce_) {
 		return true;
 	}
 
-	const auto data = exe_data_->lookup(challenge_.version, challenge_.platform, challenge_.os);
+	const auto data = bin_data_.lookup(challenge_.version, challenge_.platform, challenge_.os);
 
 	// ensure we have binaries for the platform/version the client is using
 	if(!data) {
