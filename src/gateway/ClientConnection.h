@@ -41,10 +41,10 @@ class ClientConnection final {
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint ep_;
 
-	BufferInType inbound_buffer_{};
-	std::array<BufferOutType, 2> outbound_buffers_{};
-	BufferOutType* outbound_front_;
-	BufferOutType* outbound_back_;
+	StaticBuffer inbound_buffer_{};
+	std::array<DynamicBuffer, 2> outbound_buffers_{};
+	DynamicBuffer* outbound_front_;
+	DynamicBuffer* outbound_back_;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
@@ -72,10 +72,10 @@ class ClientConnection final {
 	void terminate();
 
 	// packet reassembly & dispatching
-	void dispatch_message(BufferInType& buffer);
-	void process_buffered_data(BufferInType& buffer);
-	void parse_header(BufferInType& buffer);
-	void completion_check(const BufferInType& buffer);
+	void dispatch_message(StaticBuffer& buffer);
+	void process_buffered_data(StaticBuffer& buffer);
+	void parse_header(StaticBuffer& buffer);
+	void completion_check(const StaticBuffer& buffer);
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,

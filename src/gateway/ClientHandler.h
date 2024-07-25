@@ -37,7 +37,7 @@ class ClientHandler final {
 	const std::string client_id_;
 	mutable std::string client_id_ext_;
 
-	void handle_ping(ClientStream& stream);
+	void handle_ping(BinaryStream& stream);
 
 public:
 	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
@@ -49,11 +49,11 @@ public:
 	const std::string& client_identify() const;
 
 	template<typename PacketT>
-	bool packet_deserialise(PacketT& packet, ClientStream& stream);
-	void packet_skip(ClientStream& stream);
+	bool packet_deserialise(PacketT& packet, BinaryStream& stream);
+	void packet_skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);
-	void handle_message(ClientStream& stream);
+	void handle_message(BinaryStream& stream);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 

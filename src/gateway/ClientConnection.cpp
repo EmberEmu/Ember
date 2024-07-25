@@ -17,7 +17,7 @@
 
 namespace ember {
 
-void ClientConnection::parse_header(BufferInType& buffer) {
+void ClientConnection::parse_header(StaticBuffer& buffer) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	if(buffer.size() < protocol::ClientHeader::WIRE_SIZE) {
@@ -28,7 +28,7 @@ void ClientConnection::parse_header(BufferInType& buffer) {
 		crypt_->decrypt(buffer, protocol::ClientHeader::WIRE_SIZE);
 	}
 
-	ClientStream stream(buffer);
+	BinaryStream stream(buffer);
 	stream >> msg_size_;
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
@@ -41,7 +41,7 @@ void ClientConnection::parse_header(BufferInType& buffer) {
 	read_state_ = ReadState::BODY;
 }
 
-void ClientConnection::completion_check(const BufferInType& buffer) {
+void ClientConnection::completion_check(const StaticBuffer& buffer) {
 	if(buffer.size() < msg_size_) {
 		return;
 	}
@@ -49,12 +49,12 @@ void ClientConnection::completion_check(const BufferInType& buffer) {
 	read_state_ = ReadState::DONE;
 }
 
-void ClientConnection::dispatch_message(BufferInType& buffer) {
-	ClientStream stream(buffer, msg_size_);
+void ClientConnection::dispatch_message(StaticBuffer& buffer) {
+	BinaryStream stream(buffer, msg_size_);
 	handler_.handle_message(stream);
 }
 
-void ClientConnection::process_buffered_data(BufferInType& buffer) {
+void ClientConnection::process_buffered_data(StaticBuffer& buffer) {
 	while(!buffer.empty()) {
 		if(read_state_ == ReadState::HEADER) {
 			parse_header(buffer);

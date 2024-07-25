@@ -40,7 +40,7 @@ struct ClientID {
 };
 
 struct ClientContext {
-	ClientStream* stream;
+	BinaryStream* stream;
 	ClientState state;
 	ClientState prev_state;
 	ClientHandler* handler;

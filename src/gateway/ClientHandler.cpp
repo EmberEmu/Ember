@@ -34,7 +34,7 @@ void ClientHandler::close() {
 	connection_.close_session();
 }
 
-void ClientHandler::handle_message(ClientStream& stream) {
+void ClientHandler::handle_message(BinaryStream& stream) {
 	context_.stream = &stream;
 	stream >> opcode_;
 
@@ -74,7 +74,7 @@ void ClientHandler::state_update(ClientState new_state) {
 	enter_states[context_.state](context_);
 }
 
-void ClientHandler::packet_skip(ClientStream& stream) {
+void ClientHandler::packet_skip(BinaryStream& stream) {
 	CLIENT_DEBUG_FILTER(logger_, LF_NETWORK, context_)
 		<< ClientState_to_string(context_.state) << " skipping "
 		<< protocol::to_string(opcode_)
@@ -83,7 +83,7 @@ void ClientHandler::packet_skip(ClientStream& stream) {
 	stream.skip(stream.read_limit() - stream.total_read());
 }
 
-void ClientHandler::handle_ping(ClientStream& stream) {
+void ClientHandler::handle_ping(BinaryStream& stream) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	protocol::CMSG_PING packet;
