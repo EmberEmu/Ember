@@ -283,11 +283,11 @@ void handle_stun_results(stun::Client& client, Realm& realm,
 	}
 
 	if(*nat) {
-		LOG_INFO_FMT_SYNC(logger, "STUN: Gateway appears to be behind NAT,"
+		LOG_INFO_FMT_SYNC(logger, "STUN: Service appears to be behind NAT, "
 		                  "forward port {} for external access", port);
 	} else {
 		LOG_INFO(logger)
-			<< "STUN: Gateway does not appear to be behind NAT - "
+			<< "STUN: Service does not appear to be behind NAT - "
 				"server is available online (firewall rules permitting)"
 			<< LOG_SYNC;
 	}

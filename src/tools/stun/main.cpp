@@ -8,9 +8,9 @@
 
 #include <stun/Client.h>
 #include <stun/Utility.h>
+#include <shared/print.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
-#include <stun/Client.h>
 #include <stdexcept>
 #include <format>
 #include <iostream>
@@ -42,8 +42,7 @@ void launch(const po::variables_map& args) {
 	const auto& protocol = args["protocol"].as<std::string>();
 	const auto& bind = args["bind"].as<std::string>();
 	
-	// todo, std::print when supported by all compilers
-	std::cout << std::format("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
+	std::print("Using {}:{} ({}) as our STUN server\n", host, port, protocol);
 
 	const auto proto = protocol == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP;
 
@@ -54,9 +53,7 @@ void launch(const po::variables_map& args) {
 
 	if(address) {
 		const std::string& ip = stun::extract_ip_to_string(*address);
-
-		// todo, std::print when supported by all compilers
-		std::cout << std::format("STUN provider returned our address as {}:{}\n", ip, address->port);
+		std::print("STUN provider returned our address as {}:{}\n", ip, address->port);
 	} else {
 		print_error("STUN", address.error());
 	}
@@ -65,7 +62,7 @@ void launch(const po::variables_map& args) {
 	const auto nat_detected = nat_res.get();
 
 	if(nat_detected) {
-		std::cout << std::format("NAT detected: {}\n", *nat_detected? "Yes" : "No");
+		std::print("NAT detected: {}\n", *nat_detected? "Yes" : "No");
 	} else {
 		print_error("STUN", nat_detected.error());
 	}
@@ -74,7 +71,7 @@ void launch(const po::variables_map& args) {
 	const auto mapping = map_res.get();
 
 	if(mapping) {
-		std::cout << std::format("Mapping type: {}\n", stun::to_string(*mapping));
+		std::print("Mapping type: {}\n", stun::to_string(*mapping));
 	} else {
 		print_error("Mapping", mapping.error());
 	}
@@ -83,7 +80,7 @@ void launch(const po::variables_map& args) {
 	const auto hairpinning = hairpin_res.get();
 
 	if(hairpinning) {
-		std::cout << std::format("Hairpin: {}\n", stun::to_string(*hairpinning));
+		std::print("Hairpin: {}\n", stun::to_string(*hairpinning));
 	} else {
 		print_error("Hairpin", hairpinning.error());
 	}
@@ -92,20 +89,19 @@ void launch(const po::variables_map& args) {
 	const auto filtering = filter_res.get();
 
 	if(filtering) {
-		std::cout << std::format("Filtering: {}\n", stun::to_string(*filtering));
+		std::print("Filtering: {}\n", stun::to_string(*filtering));
 	} else {
 		print_error("Filtering", filtering.error());
 	}
 }
 
 void print_error(std::string_view test, const stun::ErrorRet& error) {
-	std::cout << std::format("{} test failed: {} ({})\n", test,
-		stun::to_string(error.reason),
-		std::to_underlying(error.reason));
+	std::print("{} test failed: {} ({})\n", test,
+	           stun::to_string(error.reason),
+	           std::to_underlying(error.reason));
 
 	if(error.ec.code) {
-		std::cout << std::format("Server error code: {}, ({})\n",
-			error.ec.code, error.ec.reason);
+		std::print("Server error code: {}, ({})\n", error.ec.code, error.ec.reason);
 	}
 }
 
@@ -135,9 +131,7 @@ void log_cb(const stun::Verbosity verbosity, const stun::Error reason) {
 			verbstr = "[unknown]";
 	}
 
-	// todo, std::print when supported by all compilers
-	std::cout << std::format("{} {} ({})\n",
-		verbstr, stun::to_string(reason), std::to_underlying(reason));
+	std::print("{} {} ({})\n", verbstr, stun::to_string(reason), std::to_underlying(reason));
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

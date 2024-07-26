@@ -9,6 +9,7 @@
 #include <ports/pcp/Client.h>
 #include <ports/upnp/SSDP.h>
 #include <ports/upnp/IGDevice.h>
+#include <shared/print.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -47,13 +48,12 @@ void launch(const po::variables_map& args) {
 }
 
 void print_error(const ports::Error& error) {
-	std::cout << std::format("Mapping error: {} ({})\n",
-		error.code, std::to_underlying(error.code));
+	std::print("Mapping error: {} ({})\n", error.code, std::to_underlying(error.code));
 
 	if(error.code == ports::ErrorCode::PCP_CODE) {
-		std::cout << std::format("PCP code: {}\n", error.pcp_code);
+		std::print("PCP code: {}\n", error.pcp_code);
 	} else if(error.code == ports::ErrorCode::NATPMP_CODE) {
-		std::cout << std::format("NAT-PMP code: {}\n", error.natpmp_code);
+		std::print("NAT-PMP code: {}\n", error.natpmp_code);
 	}
 }
 
@@ -98,11 +98,11 @@ void use_natpmp(const po::variables_map& args) {
 	auto result = future.get();
 
 	if(result) {
-		std::cout << std::format("Successful {}: {} -> {} for {} seconds\n",
-		                         deletion? "deletion" : "mapping",
-		                         result->external_port,
-		                         result->internal_port,
-		                         result->lifetime);
+		std::print("Successful {}: {} -> {} for {} seconds\n",
+		            deletion? "deletion" : "mapping",
+		            result->external_port,
+		            result->internal_port,
+		            result->lifetime);
 	} else {
 		std::cout << "Error: could not map port" << std::endl;
 		print_error(result.error());
@@ -113,7 +113,7 @@ void use_natpmp(const po::variables_map& args) {
 
 	if(xresult) {
 		const auto v6 = boost::asio::ip::address_v6(xresult->external_ip);
-		std::cout << std::format("External address: {}", v6.to_string());
+		std::print("External address: {}", v6.to_string());
 	} else {
 		std::cout << "Error: could not retrieve external address" << std::endl;
 		print_error(xresult.error());
@@ -153,14 +153,12 @@ void use_upnp(const po::variables_map& args) {
 
 		auto callback = [&, map](ports::upnp::ErrorCode ec) {
 			if(!ec) {
-				// todo, print
-				std::cout << std::format("Port {} {} mapping successfully using UPnP\n",
-				                         map.external, deletion? "delete" : "add");
+				std::print("Port {} {} mapping successfully using UPnP\n",
+				           map.external, deletion? "delete" : "add");
 			} else {
-				// todo, print
-				std::cout << std::format("Port {} {} failed using UPnP, error {}\n",
-				                         map.external, deletion? "delete" : "add",
-				                         ec.value());
+				std::print("Port {} {} failed using UPnP, error {}\n",
+				           map.external, deletion? "delete" : "add",
+				           ec.value());
 			}
 		};
 		
