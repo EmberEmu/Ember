@@ -40,6 +40,7 @@
 #include <shared/util/xoroshiro128plus.h>
 #include <botan/version.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/container/small_vector.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -61,6 +62,7 @@
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
+
 using namespace std::chrono_literals;
 using namespace ember;
 
@@ -72,6 +74,12 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 
 const char* APP_NAME = "Login Daemon";
+
+#if defined TARGET_WORKER_COUNT
+constexpr std::size_t WORKER_COUNT = TARGET_WORKER_COUNT;
+#else
+constexpr std::size_t WORKER_COUNT = 16;
+#endif
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -267,7 +275,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 	
 	// Spawn worker threads for ASIO
-	std::vector<std::thread> workers;
+	boost::container::small_vector<std::thread, WORKER_COUNT> workers;
 
 	// start from one to take the main thread into account
 	for(unsigned int i = 1; i < concurrency; ++i) {
