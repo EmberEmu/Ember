@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
 // todo: delete this file when min. compiler versions are bumped
 #if !defined __cpp_lib_print
 
@@ -20,6 +19,11 @@ namespace std {
 template<typename... Args>
 void print(std::format_string<Args...> fmt, Args&&... args) {
 	std::cout << std::format(fmt, std::forward<Args>(args)...);
+}
+
+template<typename... Args>
+void println(std::format_string<Args...> fmt, Args&&... args) {
+	std::cout << std::format(fmt, std::forward<Args>(args)...) << '\n';
 }
 
 } // std

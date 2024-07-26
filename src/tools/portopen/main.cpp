@@ -48,12 +48,12 @@ void launch(const po::variables_map& args) {
 }
 
 void print_error(const ports::Error& error) {
-	std::print("Mapping error: {} ({})\n", error.code, std::to_underlying(error.code));
+	std::println("Mapping error: {} ({})", error.code, std::to_underlying(error.code));
 
 	if(error.code == ports::ErrorCode::PCP_CODE) {
-		std::print("PCP code: {}\n", error.pcp_code);
+		std::println("PCP code: {}", error.pcp_code);
 	} else if(error.code == ports::ErrorCode::NATPMP_CODE) {
-		std::print("NAT-PMP code: {}\n", error.natpmp_code);
+		std::println("NAT-PMP code: {}", error.natpmp_code);
 	}
 }
 
@@ -98,7 +98,7 @@ void use_natpmp(const po::variables_map& args) {
 	auto result = future.get();
 
 	if(result) {
-		std::print("Successful {}: {} -> {} for {} seconds\n",
+		std::println("Successful {}: {} -> {} for {} seconds",
 		            deletion? "deletion" : "mapping",
 		            result->external_port,
 		            result->internal_port,
@@ -153,10 +153,10 @@ void use_upnp(const po::variables_map& args) {
 
 		auto callback = [&, map](ports::upnp::ErrorCode ec) {
 			if(!ec) {
-				std::print("Port {} {} mapping successfully using UPnP\n",
+				std::println("Port {} {} mapping successfully using UPnP",
 				           map.external, deletion? "delete" : "add");
 			} else {
-				std::print("Port {} {} failed using UPnP, error {}\n",
+				std::println("Port {} {} failed using UPnP, error {}",
 				           map.external, deletion? "delete" : "add",
 				           ec.value());
 			}
