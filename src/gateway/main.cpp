@@ -34,7 +34,11 @@
 #include <stun/Utility.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
+#include <boost/version.hpp>
 #include <botan/auto_rng.h>
+#include <botan/version.h>
+#include <pcre.h>
+#include <zlib.h>
 #include <chrono>
 #include <iostream>
 #include <format>
@@ -56,6 +60,7 @@ using namespace std::placeholders;
 namespace ember {
 
 int launch(const po::variables_map& args, log::Logger* logger);
+void print_lib_versions(log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
@@ -90,6 +95,7 @@ int main(int argc, const char* argv[]) try {
 	log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
+	print_lib_versions(logger.get());
 	const auto ret = launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
@@ -462,6 +468,18 @@ unsigned int check_concurrency(log::Logger* logger) {
 #else
 	return concurrency;
 #endif
+}
+
+void print_lib_versions(log::Logger* logger) {
+	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
+	LOG_DEBUG(logger) << "- Boost " << BOOST_VERSION / 100000 << "."
+	                  << BOOST_VERSION / 100 % 1000 << "."
+	                  << BOOST_VERSION % 100 << LOG_SYNC;
+	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
+	LOG_DEBUG(logger) << "- " << drivers::DriverType::name()
+	                  << " (" << drivers::DriverType::version() << ")" << LOG_SYNC;
+	LOG_DEBUG(logger) << "- PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << LOG_SYNC;
+	LOG_DEBUG(logger) << "- Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
 } // ember
