@@ -26,6 +26,7 @@
 #include <shared/Version.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
+#include <shared/util/STUN.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>
@@ -65,9 +66,6 @@ unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
-std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args);
-void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
-                       log::Logger* logger);
 void handle_stun_results(stun::Client& client, Realm& realm,
                          const stun::MappedResult& result,
                          std::uint16_t port,
@@ -299,27 +297,6 @@ void handle_stun_results(stun::Client& client, Realm& realm,
 	}
 }
 
-std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args) {
-	if(!args["stun.enabled"].as<bool>()) {
-		return nullptr;
-	}
-
-	const auto& proto_arg = args["stun.protocol"].as<std::string>();
-
-	if(proto_arg != "tcp" && proto_arg != "udp") {
-		throw std::invalid_argument("Invalid STUN protocol argument");
-	}
-
-	auto stun = std::make_unique<stun::Client>(
-		args["network.interface"].as<std::string>(),
-		args["stun.server"].as<std::string>(),
-		args["stun.port"].as<std::uint16_t>(),
-		proto_arg == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP
-	);
-
-	return stun;
-}
-
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Command-line options
 	po::options_description cmdline_opts("Generic options");
@@ -423,30 +400,6 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 		default:
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
-	}
-}
-
-void stun_log_callback(const stun::Verbosity verbosity, const stun::Error reason,
-                       log::Logger* logger) {
-	switch(verbosity) {
-		case stun::Verbosity::STUN_LOG_TRIVIAL:
-			LOG_TRACE(logger) << "[stun] " << reason << LOG_SYNC;
-			break;
-		case stun::Verbosity::STUN_LOG_DEBUG:
-			LOG_DEBUG(logger) << "[stun] " << reason << LOG_SYNC;
-			break;
-		case stun::Verbosity::STUN_LOG_INFO:
-			LOG_INFO(logger) << "[stun] " << reason << LOG_SYNC;
-			break;
-		case stun::Verbosity::STUN_LOG_WARN:
-			LOG_WARN(logger) << "[stun] " << reason << LOG_SYNC;
-			break;
-		case stun::Verbosity::STUN_LOG_ERROR:
-			LOG_ERROR(logger) << "[stun] " << reason << LOG_SYNC;
-			break;
-		case stun::Verbosity::STUN_LOG_FATAL:
-			LOG_FATAL(logger) << "[stun] " << reason << LOG_SYNC;
-			break;
 	}
 }
 

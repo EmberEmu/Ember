@@ -82,6 +82,7 @@ set(UTIL_SRC
     shared/util/MulticharConstant.h
     shared/util/Clock.h
     shared/util/StringHash.h
+    shared/util/STUN.h
 )
 
 set(METRICS_SRC

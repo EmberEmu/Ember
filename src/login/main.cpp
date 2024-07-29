@@ -27,6 +27,7 @@
 #include <shared/Banner.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/Utility.h>
+#include <shared/util/STUN.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/metrics/MetricsPoll.h>
@@ -38,6 +39,8 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
 #include <shared/util/xoroshiro128plus.h>
+#include <stun/Client.h>
+#include <stun/Utility.h>
 #include <botan/version.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/container/small_vector.hpp>
@@ -72,6 +75,8 @@ unsigned int check_concurrency(log::Logger* logger);
 int launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
+void handle_stun_results(stun::Client& client, const stun::MappedResult& result,
+                         std::uint16_t port, log::Logger* logger);
 
 const char* APP_NAME = "Login Daemon";
 
@@ -112,6 +117,18 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
+
+	auto stun = create_stun_client(args);
+	std::future<stun::MappedResult> stun_res;
+
+	if(stun) {
+		stun->log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
+			stun_log_callback(verbosity, reason, logger);
+		});
+
+		LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
+		stun_res = stun->external_address();
+	}
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
@@ -268,6 +285,11 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	LOG_INFO_FMT_SYNC(logger, "Allowed client builds: {}", builds);
+	
+	if(stun) {
+		handle_stun_results(*stun, stun_res.get(), port, logger);
+		stun.reset();
+	}
 
 	// All done setting up
 	service.dispatch([logger]() {
@@ -306,6 +328,38 @@ std::vector<GameVersion> client_versions() {
 	return {{1, 12, 1, 5875}, {1, 12, 2, 6005}};
 }
 
+void handle_stun_results(stun::Client& client,
+                         const stun::MappedResult& result,
+                         const std::uint16_t port,
+						 log::Logger* logger) {
+	if(!result) {
+		LOG_ERROR_FMT_SYNC(logger, "STUN: Query failed ({})", stun::to_string(result.error().reason));
+		return;
+	}
+
+	const auto& ip = stun::extract_ip_to_string(*result);
+
+	LOG_INFO_FMT_SYNC(logger, "STUN: Binding request succeeded ({})", ip);
+
+	const auto nat = client.nat_present().get();
+
+	if(!nat) {
+		LOG_WARN_FMT_SYNC(logger, "STUN: Unable to determine if service is behind NAT ({})",
+		                  stun::to_string(nat.error().reason));
+		return;
+	}
+
+	if(*nat) {
+		LOG_INFO_FMT_SYNC(logger, "STUN: Service appears to be behind NAT, "
+		                  "forward port {} for external access", port);
+	} else {
+		LOG_INFO(logger)
+			<< "STUN: Service does not appear to be behind NAT - "
+				"server is available online (firewall rules permitting)"
+			<< LOG_SYNC;
+	}
+}
+
 po::variables_map parse_arguments(int argc, const char* argv[]) {
 	//Command-line options
 	po::options_description cmdline_opts("Generic options");
@@ -333,6 +387,10 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("spark.multicast_interface", po::value<std::string>()->required())
 		("spark.multicast_group", po::value<std::string>()->required())
 		("spark.multicast_port", po::value<std::uint16_t>()->required())
+		("stun.enabled", po::value<bool>()->required())
+		("stun.server", po::value<std::string>()->required())
+		("stun.port", po::value<std::uint16_t>()->required())
+		("stun.protocol", po::value<std::string>()->required())
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::value<bool>()->default_value(true))

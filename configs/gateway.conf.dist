@@ -34,7 +34,7 @@ multicast_port = 6000
 # If disabled, the IP is read from the database entry for this realm ID
 [stun]
 enabled = true
-server = stunserver.stunprotocol.org
+server = stunserver2024.stunprotocol.org
 port = 3479
 
 [database]

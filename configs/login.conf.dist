@@ -27,6 +27,14 @@ multicast_group = 239.255.0.1 # should be the same for all Spark services - may 
 multicast_port = 6000
 #secret_key = changeme
 
+# Enabling STUN will allow the server to auto-detect its IP address
+# Disable if you want the server to be strictly local-only
+# If disabled, the IP is read from the database entry for this realm ID
+[stun]
+enabled = true
+server = stunserver2024.stunprotocol.org
+port = 3479
+
 [database]
 config_path = mysql_config.conf
 min_connections = 1
