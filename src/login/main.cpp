@@ -287,7 +287,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_INFO_FMT_SYNC(logger, "Allowed client builds: {}", builds);
 	
 	if(stun) {
-		handle_stun_results(*stun, stun_res.get(), port, logger);
+		log_stun_result(*stun, stun_res.get(), port, logger);
 		stun.reset();
 	}
 
@@ -326,38 +326,6 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
  */
 std::vector<GameVersion> client_versions() {
 	return {{1, 12, 1, 5875}, {1, 12, 2, 6005}};
-}
-
-void handle_stun_results(stun::Client& client,
-                         const stun::MappedResult& result,
-                         const std::uint16_t port,
-						 log::Logger* logger) {
-	if(!result) {
-		LOG_ERROR_FMT_SYNC(logger, "STUN: Query failed ({})", stun::to_string(result.error().reason));
-		return;
-	}
-
-	const auto& ip = stun::extract_ip_to_string(*result);
-
-	LOG_INFO_FMT_SYNC(logger, "STUN: Binding request succeeded ({})", ip);
-
-	const auto nat = client.nat_present().get();
-
-	if(!nat) {
-		LOG_WARN_FMT_SYNC(logger, "STUN: Unable to determine if service is behind NAT ({})",
-		                  stun::to_string(nat.error().reason));
-		return;
-	}
-
-	if(*nat) {
-		LOG_INFO_FMT_SYNC(logger, "STUN: Service appears to be behind NAT, "
-		                  "forward port {} for external access", port);
-	} else {
-		LOG_INFO(logger)
-			<< "STUN: Service does not appear to be behind NAT - "
-				"server is available online (firewall rules permitting)"
-			<< LOG_SYNC;
-	}
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

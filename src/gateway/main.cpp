@@ -66,10 +66,6 @@ unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
-void handle_stun_results(stun::Client& client, Realm& realm,
-                         const stun::MappedResult& result,
-                         std::uint16_t port,
-                         log::Logger* logger);
 
 } // ember
 
@@ -200,7 +196,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	const auto port = args["network.port"].as<std::uint16_t>();
 
 	if(stun) {
-		handle_stun_results(*stun, *realm, stun_res.get(), port, logger);
+		auto result = stun_res.get();
+		log_stun_result(*stun, result, port, logger);
+
+		if(result) {
+			const auto& ip = stun::extract_ip_to_string(*result);
+			realm->ip = std::format("{}:{}", ip, port);
+		}
+
 		stun.reset();
 	}
 
@@ -261,40 +264,6 @@ const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_
 	}
 
 	throw std::invalid_argument("Unknown category/region combination in database");
-}
-
-void handle_stun_results(stun::Client& client, Realm& realm,
-                         const stun::MappedResult& result,
-                         const std::uint16_t port,
-						 log::Logger* logger) {
-	if(!result) {
-		LOG_ERROR_FMT_SYNC(logger, "STUN: Query failed ({}), falling back to realm config {}",
-		                   stun::to_string(result.error().reason), realm.ip);
-		return;
-	}
-
-	const auto& ip = stun::extract_ip_to_string(*result);
-	realm.ip = std::format("{}:{}", ip, port);
-
-	LOG_INFO_FMT_SYNC(logger, "STUN: Binding request succeeded ({})", ip);
-
-	const auto nat = client.nat_present().get();
-
-	if(!nat) {
-		LOG_WARN_FMT_SYNC(logger, "STUN: Unable to determine if gateway is behind NAT ({})",
-		                  stun::to_string(nat.error().reason));
-		return;
-	}
-
-	if(*nat) {
-		LOG_INFO_FMT_SYNC(logger, "STUN: Service appears to be behind NAT, "
-		                  "forward port {} for external access", port);
-	} else {
-		LOG_INFO(logger)
-			<< "STUN: Service does not appear to be behind NAT - "
-				"server is available online (firewall rules permitting)"
-			<< LOG_SYNC;
-	}
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

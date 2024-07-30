@@ -11,6 +11,7 @@
 #include <stun/Client.h>
 #include <stun/Utility.h>
 #include <logger/Logging.h>
+#include <logger/HelperMacros.h>
 #include <boost/program_options.hpp>
 #include <memory>
 #include <cstdint>
@@ -40,7 +41,7 @@ static std::unique_ptr<stun::Client> create_stun_client(const po::variables_map&
 	return stun;
 }
 
-void stun_log_callback(stun::Verbosity verbosity, stun::Error reason, log::Logger* logger) {
+static void stun_log_callback(stun::Verbosity verbosity, stun::Error reason, log::Logger* logger) {
 	switch(verbosity) {
 		case stun::Verbosity::STUN_LOG_TRIVIAL:
 			LOG_TRACE(logger) << "[stun] " << reason << LOG_SYNC;
@@ -63,4 +64,33 @@ void stun_log_callback(stun::Verbosity verbosity, stun::Error reason, log::Logge
 	}
 }
 
+void log_stun_result(stun::Client& client, const stun::MappedResult& result,
+                     const std::uint16_t port, log::Logger* logger) {
+	if(!result) {
+		LOG_ERROR_FMT_SYNC(logger, "STUN: Query failed ({})", stun::to_string(result.error().reason));
+		return;
+	}
+
+	const auto& ip = stun::extract_ip_to_string(*result);
+
+	LOG_INFO_FMT_SYNC(logger, "STUN: Binding request succeeded ({})", ip);
+
+	const auto nat = client.nat_present().get();
+
+	if(!nat) {
+		LOG_WARN_FMT_SYNC(logger, "STUN: Unable to determine if gateway is behind NAT ({})",
+		                  stun::to_string(nat.error().reason));
+		return;
+	}
+
+	if(*nat) {
+		LOG_INFO_FMT_SYNC(logger, "STUN: Service appears to be behind NAT, "
+		                  "forward port {} for external access", port);
+	} else {
+		LOG_INFO(logger)
+			<< "STUN: Service does not appear to be behind NAT - "
+				"server is available online (firewall rules permitting)"
+			<< LOG_SYNC;
+	}
+}
 } // ember
