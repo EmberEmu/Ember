@@ -83,6 +83,7 @@ set(UTIL_SRC
     shared/util/Clock.h
     shared/util/StringHash.h
     shared/util/STUN.h
+	shared/util/PortForward.h
 )
 
 set(METRICS_SRC
