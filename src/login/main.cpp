@@ -291,6 +291,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		stun.reset();
 	}
 
+	// Install signal handler
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	signals.async_wait([&](auto error, auto signal) {
+		server.shutdown(); 
+		service.stop();
+	});
+
 	// All done setting up
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;

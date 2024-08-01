@@ -32,7 +32,6 @@ class NetworkListener final {
 		boost::asio::ip::tcp, boost::asio::strand<boost::asio::io_context::executor_type>>;
 
 	boost::asio::io_context& io_context;
-	boost::asio::signal_set signals_;
 	tcp_acceptor acceptor_;
 	tcp_socket socket_;
 
@@ -89,11 +88,10 @@ public:
 	                : acceptor_(io_context, boost::asio::ip::tcp::endpoint(
 	                            boost::asio::ip::address::from_string(interface), port)),
 	                  io_context(io_context), socket_(boost::asio::make_strand(io_context)), logger_(logger),
-	                  ban_list_(bans), signals_(io_context, SIGINT, SIGTERM), session_create_(session_create),
+	                  ban_list_(bans), session_create_(session_create),
 	                  metrics_(metrics) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-		signals_.async_wait([this](auto error, auto signal) { shutdown(); });
 		accept_connection();
 	}
 
