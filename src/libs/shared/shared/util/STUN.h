@@ -20,25 +20,19 @@ namespace po = boost::program_options;
 
 namespace ember {
 
-static std::unique_ptr<stun::Client> create_stun_client(const po::variables_map& args) {
-	if(!args["stun.enabled"].as<bool>()) {
-		return nullptr;
-	}
-
+static stun::Client create_stun_client(const po::variables_map& args) {
 	const auto& proto_arg = args["stun.protocol"].as<std::string>();
 
 	if(proto_arg != "tcp" && proto_arg != "udp") {
 		throw std::invalid_argument("Invalid STUN protocol argument");
 	}
 
-	auto stun = std::make_unique<stun::Client>(
+	return stun::Client(
 		args["network.interface"].as<std::string>(),
 		args["stun.server"].as<std::string>(),
 		args["stun.port"].as<std::uint16_t>(),
 		proto_arg == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP
 	);
-
-	return stun;
 }
 
 static void stun_log_callback(stun::Verbosity verbosity, stun::Error reason, log::Logger* logger) {

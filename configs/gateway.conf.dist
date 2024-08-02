@@ -37,6 +37,13 @@ enabled = true
 server = stunserver2024.stunprotocol.org
 port = 3479
 
+# Auto port forwarding configuration
+# This is only functional if STUN is also enabled and detects a NAT gateway
+[forward]
+enabled = true
+method = upnp       # upnp or natpmp
+gateway = 0.0.0.0   # only used for natpmp/pcp
+
 [database]
 config_path = mysql_config.conf
 

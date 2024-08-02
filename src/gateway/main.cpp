@@ -27,6 +27,7 @@
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/STUN.h>
+#include <shared/util/PortForward.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>
@@ -106,15 +107,17 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 #endif
 
 	auto stun = create_stun_client(args);
+	const auto stun_enabled = args["stun.enabled"].as<bool>();
+
 	std::future<stun::MappedResult> stun_res;
 
-	if(stun) {
-		stun->log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
+	if(stun_enabled) {
+		stun.log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
 			stun_log_callback(verbosity, reason, logger);
 		});
 
 		LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
-		stun_res = stun->external_address();
+		stun_res = stun.external_address();
 	}
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
@@ -194,17 +197,35 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	);
 
 	const auto port = args["network.port"].as<std::uint16_t>();
+	const auto& interface = args["network.interface"].as<std::string>();
 
-	if(stun) {
-		auto result = stun_res.get();
-		log_stun_result(*stun, result, port, logger);
+	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
+	std::unique_ptr<util::PortForward> forward;
+
+	if(stun_enabled) {
+		const auto result = stun_res.get();
+		log_stun_result(stun, result, port, logger);
 
 		if(result) {
 			const auto& ip = stun::extract_ip_to_string(*result);
 			realm->ip = std::format("{}:{}", ip, port);
 		}
 
-		stun.reset();
+		if(result && args["forward.enabled"].as<bool>()) {
+			const auto& mode_str = args["forward.method"].as<std::string>();
+			const auto& gateway = args["forward.gateway"].as<std::string>();
+			auto mode = util::PortForward::Mode::UPNP;
+
+			if(mode_str == "natpmp") {
+				mode = util::PortForward::Mode::PMP_PCP;
+			} else if(mode_str != "upnp") {
+				throw std::invalid_argument("Unknown port forwarding method");
+			}
+
+			forward = std::make_unique<util::PortForward>(
+				logger, service, mode, interface, gateway, port
+			);
+		}
 	}
 
 	LOG_INFO_FMT_SYNC(logger, "Realm will be advertised on {}", realm->ip);
@@ -227,7 +248,6 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_INFO_FMT_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
-	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO_FMT_SYNC(logger, "Starting network service on {}:{}", interface, port);
@@ -295,6 +315,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("stun.server", po::value<std::string>()->required())
 		("stun.port", po::value<std::uint16_t>()->required())
 		("stun.protocol", po::value<std::string>()->required())
+		("forward.enabled", po::value<bool>()->required())
+		("forward.method", po::value<std::string>()->required())
+		("forward.gateway", po::value<std::string>()->required())
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::value<bool>()->required())

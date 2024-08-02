@@ -28,7 +28,6 @@ public:
 	};
 
 private:
-	Mode mode_;
 	log::Logger* logger_;
 	std::unique_ptr<ports::Client> client_;
 	std::unique_ptr<ports::Daemon> daemon_;
@@ -53,9 +52,9 @@ public:
 	void start_upnp(boost::asio::io_context& ctx, const std::string& iface, std::uint16_t port) {
 		ssdp_ = std::make_unique<ports::upnp::SSDP>(iface, ctx);
 
-		ssdp_->locate_gateways([&](ports::upnp::LocateResult result) {
+		ssdp_->locate_gateways([&, port](ports::upnp::LocateResult result) {
 			if(!result) {
-				LOG_ERROR_FMT(logger_, "Port forwarding failed with error code {}",
+				LOG_ERROR_FMT(logger_, "UPnP gateway search failed with error code {}",
 				              result.error().value());
 				return true;
 			}
@@ -67,12 +66,11 @@ public:
 				.protocol = ports::Protocol::TCP
 			};
 
-			auto callback = [&, map](ports::upnp::ErrorCode ec) {
+			auto callback = [&](ports::upnp::ErrorCode ec) {
 				if(!ec) {
-					LOG_INFO_FMT(logger_, "Port {} forwarded using UPnP", map.external);
+					LOG_INFO_FMT(logger_, "Port {} successfully forwarded (UPnP)", port);
 				} else {
-					LOG_ERROR_FMT(logger_, "Port {} forwarding failed using UPnP, error {}",
-						map.external, ec.value());
+					LOG_ERROR_FMT(logger_, "Port forwarding failed (UPnP), error {}", ec.value());
 				}
 			};
 		
@@ -95,12 +93,13 @@ public:
 
 		daemon_->add_mapping(request, false, [&](const ports::Result& result) {
 			if(result) {
-				LOG_INFO_FMT(logger_, "Port {} -> {} forwarded for {} seconds\n",
+				LOG_INFO_FMT(logger_, "Port {} -> {} forwarded for {} seconds (NATPMP/PCP)",
 						     result->external_port,
 						     result->internal_port,
 						     result->lifetime);
 			} else {
-				LOG_ERROR(logger_) << "Port forwarding failed" << LOG_ASYNC;
+				LOG_ERROR_FMT(logger_, "Port forwarding failed (NATPMP/PCP), error {}",
+				              result.error().code);
 			}
 		});
 	}

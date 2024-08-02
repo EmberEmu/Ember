@@ -39,6 +39,7 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
 #include <shared/util/xoroshiro128plus.h>
+#include <shared/util/PortForward.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
 #include <botan/version.h>
@@ -119,15 +120,17 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 #endif
 
 	auto stun = create_stun_client(args);
+	const auto stun_enabled = args["stun.enabled"].as<bool>();
+
 	std::future<stun::MappedResult> stun_res;
 
-	if(stun) {
-		stun->log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
+	if(stun_enabled) {
+		stun.log_callback([logger](const stun::Verbosity verbosity, const stun::Error reason) {
 			stun_log_callback(verbosity, reason, logger);
 		});
 
 		LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
-		stun_res = stun->external_address();
+		stun_res = stun.external_address();
 	}
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
@@ -152,7 +155,9 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		                 << concurrency << " to match logical core count)" << LOG_SYNC;
 	}
 
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
+		driver, min_conns, max_conns, 30s
+	);
 
 	pool.logging_callback([logger](auto severity, auto message) {
 		pool_log_callback(severity, message, logger);
@@ -247,8 +252,9 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
 
-	NetworkListener server(service, interface, port, tcp_no_delay, s_builder, ip_ban_cache,
-	                              logger, *metrics);
+	NetworkListener server(
+		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics
+	);
 
 	// Start monitoring service
 	std::unique_ptr<Monitor> monitor;
@@ -286,9 +292,28 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO_FMT_SYNC(logger, "Allowed client builds: {}", builds);
 	
-	if(stun) {
-		log_stun_result(*stun, stun_res.get(), port, logger);
-		stun.reset();
+	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
+	std::unique_ptr<util::PortForward> forward;
+
+	if(stun_enabled) {
+		const auto result = stun_res.get();
+		log_stun_result(stun, result, port, logger);
+
+		if(result && args["forward.enabled"].as<bool>()) {
+			const auto& mode_str = args["forward.method"].as<std::string>();
+			const auto& gateway = args["forward.gateway"].as<std::string>();
+			auto mode = util::PortForward::Mode::UPNP;
+
+			if(mode_str == "natpmp") {
+				mode = util::PortForward::Mode::PMP_PCP;
+			} else if(mode_str != "upnp") {
+				throw std::invalid_argument("Unknown port forwarding method");
+			}
+
+			forward = std::make_unique<util::PortForward>(
+				logger, service, mode, interface, gateway, port
+			);
+		}
 	}
 
 	// Install signal handler
@@ -367,6 +392,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("stun.server", po::value<std::string>()->required())
 		("stun.port", po::value<std::uint16_t>()->required())
 		("stun.protocol", po::value<std::string>()->required())
+		("forward.enabled", po::value<bool>()->required())
+		("forward.method", po::value<std::string>()->required())
+		("forward.gateway", po::value<std::string>()->required())
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::value<bool>()->default_value(true))
