@@ -259,6 +259,7 @@ std::vector<std::string> load_queries(const std::string& path) {
 
 	while(std::getline(file, query, ';')) {
 		queries.emplace_back(std::move(query));
+		query.clear(); // reset to known state after move
 	}
 
 	return queries;
