@@ -15,9 +15,9 @@ enabled = 0    # validate the client's integrity
 bin_path = ""  # path to binaries needed for integrity validation
 
 [network]
-interface = 0.0.0.0 # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
-port = 3724 # Port for the server to listen to client connections on
-tcp_no_delay = true # Toggle Nagle's algorithm
+interface = 0.0.0.0  # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
+port = 3724          # Port for the server to listen to client connections on
+tcp_no_delay = true  # Toggle Nagle's algorithm
 
 [spark]
 address = 127.0.0.1
@@ -37,8 +37,8 @@ port = 3479
 # This is only functional if STUN is also enabled and detects a NAT gateway
 [forward]
 enabled = true
-method = upnp       # upnp or natpmp
-gateway = 0.0.0.0   # only used for natpmp/pcp
+method = upnp       # auto, upnp, or natpmp
+gateway = 0.0.0.0   # only used for auto or natpmp
 
 [database]
 config_path = mysql_config.conf
@@ -52,18 +52,18 @@ host = localhost
 port = 514
 
 [file_log]
-verbosity = none # trace, debug, info, warning, error, fatal or none to disable
+verbosity = none   # trace, debug, info, warning, error, fatal or none to disable
 path = logs/login_%d_%m_%Y.log
 midnight_rotate = 0
-mode = append # if an existing log is found, you can either 'append' to it or 'truncate' it
-size_rotate = 0 # max log size in megabytes - 0 disables
-log_timestamp = 0 # enable/disable timestamping log records
+mode = append      # if an existing log is found, you can either 'append' to it or 'truncate' it
+size_rotate = 0    # max log size in megabytes - 0 disables
+log_timestamp = 0  # enable/disable timestamping log records
 timestamp_format = [%d/%m/%Y %H:%M:%S] 
-log_severity = 1 # enable/disable writing severity to log records
+log_severity = 1   # enable/disable writing severity to log records
 
 [console_log]
 verbosity = trace # trace, debug, info, warning, error, fatal or none to disable
-colours = true # colourise the output
+colours = true    # colourise the output
 
 [metrics]
 enabled = false

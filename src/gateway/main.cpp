@@ -214,11 +214,13 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		if(result && args["forward.enabled"].as<bool>()) {
 			const auto& mode_str = args["forward.method"].as<std::string>();
 			const auto& gateway = args["forward.gateway"].as<std::string>();
-			auto mode = util::PortForward::Mode::UPNP;
+			auto mode = util::PortForward::Mode::AUTO;
 
 			if(mode_str == "natpmp") {
 				mode = util::PortForward::Mode::PMP_PCP;
-			} else if(mode_str != "upnp") {
+			} else if(mode_str == "upnp") {
+				mode = util::PortForward::Mode::UPNP;
+			} else if(mode_str != "auto") {
 				throw std::invalid_argument("Unknown port forwarding method");
 			}
 
