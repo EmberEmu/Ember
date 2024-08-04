@@ -317,7 +317,7 @@ void db_install(const po::variables_map& args, const std::string& db, const bool
 	const auto& user = args[user_arg].as<std::string>();
 	const auto& pass = args[pass_arg].as<std::string>();
 
-	if (user == executor->details().username) {
+	if(user == executor->details().username) {
 		throw std::runtime_error("Privileged DB user and new user cannot match.");
 	}
 

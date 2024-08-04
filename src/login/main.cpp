@@ -320,6 +320,10 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	signals.async_wait([&](auto error, auto signal) {
+		if(forward) {
+			forward->unmap();
+		}
+
 		server.shutdown(); 
 		service.stop();
 	});
