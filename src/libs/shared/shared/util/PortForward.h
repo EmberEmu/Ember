@@ -38,14 +38,13 @@ class PortForward final {
 	std::atomic_bool mapping_active_;
 	std::unique_ptr<ports::Client> client_;
 	std::unique_ptr<ports::Daemon> daemon_;
-	std::unique_ptr<ports::upnp::SSDP> ssdp_;
 	std::shared_ptr<ports::upnp::IGDevice> upnp_device_;
 	std::binary_semaphore cb_sem_, sem_;
 
 	void start_upnp(const std::string& iface, std::uint16_t port) {
-		ssdp_ = std::make_unique<ports::upnp::SSDP>(iface, ctx_);
+		ports::upnp::SSDP ssdp(iface, ctx_);
 
-		ssdp_->locate_gateways([&, port](ports::upnp::LocateResult result) {
+		ssdp.locate_gateways([&, port](ports::upnp::LocateResult result) {
 			if(!result) {
 				LOG_ERROR_FMT(logger_, "UPnP gateway search failed with error code {}",
 				              result.error().value());
@@ -53,7 +52,7 @@ class PortForward final {
 				return true;
 			}
 
-			ports::upnp::Mapping map {
+			const ports::upnp::Mapping map {
 				.external = port,
 				.internal = port,
 				.ttl = 0,
