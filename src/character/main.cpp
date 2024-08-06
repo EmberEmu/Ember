@@ -22,6 +22,7 @@
 #include <shared/util/LogConfig.h>
 #include <shared/util/PCREHelper.h>
 #include <shared/util/Utility.h>
+#include <shared/threading/Utility.h>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
@@ -57,6 +58,7 @@ void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logg
  * from them.
  */
 int main(int argc, const char* argv[]) try {
+	ember::thread::set_name("Main");
 	ember::print_banner(APP_NAME);
 	ember::util::set_window_title(APP_NAME);
 

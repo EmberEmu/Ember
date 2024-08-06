@@ -96,6 +96,7 @@ constexpr std::size_t WORKER_COUNT = 16;
  * from them.
  */
 int main(int argc, const char* argv[]) try {
+	thread::set_name("Main");
 	print_banner(APP_NAME);
 	util::set_window_title(APP_NAME);
 

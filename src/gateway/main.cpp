@@ -81,6 +81,7 @@ const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_
 int main(int argc, const char* argv[]) try {
 	using namespace ember;
 
+	thread::set_name("Main");
 	print_banner(APP_NAME);
 	util::set_window_title(APP_NAME);
 
