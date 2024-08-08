@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <array>
 #include <expected>
 #include <functional>

@@ -11,7 +11,8 @@
 #include "Handler.h"
 #include "DNSDefines.h"
 #include "Socket.h"
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <span>
 #include <string_view>
 #include <cstddef>

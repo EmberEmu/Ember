@@ -8,7 +8,9 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/udp.hpp>
+#include <boost/asio/strand.hpp>
 #include <functional>
 #include <string>
 #include <memory>

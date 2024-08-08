@@ -9,8 +9,12 @@
 #include <spark/v2/Connection.h>
 #include <spark/v2/Common.h>
 #include <spark/Exception.h>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/deferred.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 #include <boost/endian/conversion.hpp>
-#include <boost/asio.hpp>
 #include <format>
 #include <cassert>
 #include <cstring>

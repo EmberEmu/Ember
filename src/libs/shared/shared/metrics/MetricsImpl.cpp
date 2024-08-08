@@ -7,6 +7,7 @@
  */
 
 #include <shared/metrics/MetricsImpl.h>
+#include <boost/asio/connect.hpp>
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -26,7 +27,7 @@ MetricsImpl::MetricsImpl(boost::asio::io_context& service, const std::string& ho
 
 void MetricsImpl::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 }
 

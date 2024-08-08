@@ -8,6 +8,7 @@
 
 #include "MulticastSocket.h"
 #include <logger/Logging.h>
+#include <boost/asio/ip/multicast.hpp>
 
 namespace ember::dns {
 
@@ -130,7 +131,7 @@ void MulticastSocket::deregister_handler(const Handler* handler) {
 
 void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 }
 

@@ -28,7 +28,7 @@ Monitor::Monitor(boost::asio::io_context& service, const std::string& interface,
 
 void Monitor::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 	timer_.cancel(ec);;
 }

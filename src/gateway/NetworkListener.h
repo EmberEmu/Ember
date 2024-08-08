@@ -15,7 +15,8 @@
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/threading/ServicePool.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <memory>
 #include <string>
 #include <utility>

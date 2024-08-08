@@ -13,6 +13,8 @@
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>
 #include <spark/buffers/BinaryStream.h>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/post.hpp>
 #include <algorithm>
 
 namespace ember {

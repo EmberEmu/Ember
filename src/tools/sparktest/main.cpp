@@ -12,7 +12,7 @@
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <spark/v2/Server.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
 #include <memory>
 
 using namespace ember;

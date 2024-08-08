@@ -9,7 +9,9 @@
 #pragma once
 
 #include <ports/upnp/HTTPTypes.h>
-#include <boost/asio.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <expected>
 #include <memory>
 #include <queue>

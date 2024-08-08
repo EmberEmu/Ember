@@ -15,7 +15,9 @@
 #include <spark/buffers/DynamicBuffer.h>
 #include <shared/FilterTypes.h>
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/read.hpp>
 #include <boost/endian/conversion.hpp>
 #include <flatbuffers/flatbuffers.h>
 #include <gsl/gsl_util>

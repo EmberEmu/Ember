@@ -1,25 +1,28 @@
 /*
- * Copyright (c) 2024 Ember
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
+* Copyright (c) 2024 Ember
+*
+* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at http://mozilla.org/MPL/2.0/.
+*/
 
 #include <ports/upnp/MulticastSocket.h>
+#include <boost/asio/as_tuple.hpp>
+#include <boost/asio/deferred.hpp>
+#include <boost/asio/ip/multicast.hpp>
 #include <utility>
 
 namespace ember::ports {
 
 MulticastSocket::MulticastSocket(boost::asio::io_context& context,
-                                 const std::string& listen_iface,
-                                 const std::string& mcast_group,
-	                             const std::uint16_t port)
+								 const std::string& listen_iface,
+								 const std::string& mcast_group,
+								 const std::uint16_t port)
 	: context_(context), socket_(context),
-	  buffer_{},
-	  ep_(boost::asio::ip::address::from_string(mcast_group), port) {
-    const auto mcast_iface = boost::asio::ip::address::from_string(listen_iface);
-    const auto group_ip = boost::asio::ip::address::from_string(mcast_group);
+	buffer_{},
+	ep_(boost::asio::ip::address::from_string(mcast_group), port) {
+	const auto mcast_iface = boost::asio::ip::address::from_string(listen_iface);
+	const auto group_ip = boost::asio::ip::address::from_string(mcast_group);
 
 	boost::asio::ip::udp::endpoint ep(mcast_iface, 0);
 	socket_.open(ep.protocol());
@@ -67,7 +70,7 @@ ba::awaitable<bool> MulticastSocket::send(std::vector<std::uint8_t> buffer) {
 }
 
 ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
-                                          ba::ip::udp::endpoint ep) {
+										  ba::ip::udp::endpoint ep) {
 	if(!socket_.is_open()) {
 		co_return false;
 	}
@@ -90,7 +93,7 @@ ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8
 
 void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 }
 

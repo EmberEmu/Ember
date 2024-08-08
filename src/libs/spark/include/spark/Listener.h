@@ -9,7 +9,8 @@
 #pragma once
 
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 namespace ember::spark::inline v1 {
 
