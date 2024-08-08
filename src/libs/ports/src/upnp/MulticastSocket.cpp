@@ -90,7 +90,7 @@ ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8
 
 void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 }
 
