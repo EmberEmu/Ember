@@ -40,7 +40,7 @@ ServiceDiscovery::ServiceDiscovery(boost::asio::io_context& service, std::string
 void ServiceDiscovery::shutdown() {
 	LOG_DEBUG_FILTER(logger_, LF_SPARK) << "[spark] Discovery service shutting down..." << LOG_ASYNC;
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 }
 

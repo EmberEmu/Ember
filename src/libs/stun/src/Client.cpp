@@ -15,7 +15,6 @@
 #include <stun/Utility.h>
 #include <stun/detail/Shared.h>
 #include <shared/threading/Utility.h>
-#include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
 #include <chrono>

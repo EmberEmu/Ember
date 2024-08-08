@@ -10,7 +10,7 @@
 
 #include "LoginSession.h"
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <memory>
 #include <utility>
 

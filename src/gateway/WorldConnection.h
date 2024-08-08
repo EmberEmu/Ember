@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <memory>
 
 namespace ember {

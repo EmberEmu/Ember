@@ -9,6 +9,11 @@
 #include <ports/upnp/HTTPTransport.h>
 #include <ports/upnp/HTTPHeaderParser.h>
 #include <ports/upnp/Utility.h>
+#include <boost/asio/as_tuple.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/asio/deferred.hpp>
+#include <boost/asio/ip/basic_resolver.hpp>
 #include <stdexcept>
 
 namespace ember::ports::upnp {

@@ -8,6 +8,9 @@
 
 #include <stun/DatagramTransport.h>
 #include <shared/threading/Utility.h>
+#include <boost/asio/ip/basic_resolver.hpp>
+#include <boost/asio/ip/host_name.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 namespace ember::stun {
 

@@ -19,7 +19,7 @@
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <botan/bigint.h>
-#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>
 #include <condition_variable>

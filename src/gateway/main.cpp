@@ -34,7 +34,8 @@
 #include <shared/util/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <botan/auto_rng.h>

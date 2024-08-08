@@ -23,7 +23,8 @@
 #include <shared/util/PCREHelper.h>
 #include <shared/util/Utility.h>
 #include <shared/threading/Utility.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>

@@ -13,7 +13,6 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/v2/Utility.h>
 #include <shared/FilterTypes.h>
-#include <boost/asio.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>

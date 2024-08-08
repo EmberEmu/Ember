@@ -11,6 +11,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/asio/any_io_executor.hpp>
 #include <array>
 #include <functional>
 #include <memory>

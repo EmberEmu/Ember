@@ -22,7 +22,8 @@
 #include <spark/Listener.h>
 #include <shared/FilterTypes.h>
 #include <logger/Logging.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <flatbuffers/flatbuffers.h>

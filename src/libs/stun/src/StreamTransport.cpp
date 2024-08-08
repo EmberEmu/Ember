@@ -11,6 +11,9 @@
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/pmr/BufferAdaptor.h>
 #include <shared/threading/Utility.h>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 
 namespace ember::stun {
 

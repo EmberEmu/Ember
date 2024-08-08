@@ -9,7 +9,8 @@
 #pragma once
 
 #include <stun/TransportBase.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <memory>
 #include <queue>
 #include <thread>

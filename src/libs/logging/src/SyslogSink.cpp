@@ -10,7 +10,10 @@
 #include <logger/SyslogSink.h>
 #include <logger/Utility.h>
 #include <logger/Exception.h>
-#include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/host_name.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <boost/assert.hpp>
 #include <array>
 

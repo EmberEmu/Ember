@@ -7,6 +7,7 @@
  */
 
 #include <ports/pcp/DatagramTransport.h>
+#include <boost/asio/ip/multicast.hpp>
 
 namespace ember::ports {
 
