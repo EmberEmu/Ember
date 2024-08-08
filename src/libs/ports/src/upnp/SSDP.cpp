@@ -8,6 +8,8 @@
 
 #include <ports/upnp/SSDP.h>
 #include <ports/upnp/HTTPHeaderParser.h>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <format>
 #include <regex>
 

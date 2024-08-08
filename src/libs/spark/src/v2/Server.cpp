@@ -13,6 +13,11 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/v2/Utility.h>
 #include <shared/FilterTypes.h>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/as_tuple.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/deferred.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>

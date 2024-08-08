@@ -8,6 +8,8 @@
 
 #include <ports/upnp/IGDevice.h>
 #include <ports/upnp/Utility.h>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <format>
 #include <utility>
 #include <regex>

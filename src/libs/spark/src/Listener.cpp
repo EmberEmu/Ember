@@ -10,6 +10,7 @@
 #include <spark/NetworkSession.h>
 #include <spark/SessionManager.h>
 #include <shared/FilterTypes.h>
+#include <boost/asio/strand.hpp>
 #include <utility>
 
 namespace ember::spark::inline v1 {

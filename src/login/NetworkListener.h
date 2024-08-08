@@ -17,6 +17,7 @@
 #include <shared/memory/ASIOAllocator.h>
 #include <shared/metrics/Metrics.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <string>
 #include <utility>

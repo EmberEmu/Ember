@@ -16,6 +16,7 @@
 #include <shared/util/Utility.h>
 #include <spark/Spark.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>

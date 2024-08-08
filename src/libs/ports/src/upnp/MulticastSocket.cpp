@@ -8,7 +8,6 @@
 
 #include <ports/upnp/MulticastSocket.h>
 #include <boost/asio/as_tuple.hpp>
-#include <boost/asio/awaitable.hpp>
 #include <boost/asio/deferred.hpp>
 #include <boost/asio/ip/multicast.hpp>
 #include <utility>
