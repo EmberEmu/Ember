@@ -145,7 +145,7 @@ class PortForward final {
 	}
 
 	void start_auto(const std::string& iface, const std::string& gateway, std::uint16_t port) {
-		ctx_.post([=]() mutable {
+		ctx_.post([=, this]() mutable {
 			start_upnp(iface, port);
 			cb_sem_.acquire();
 

@@ -56,12 +56,14 @@ LocateResult SSDP::build_locate_result(std::span<const std::uint8_t> datagram) {
 	HTTPHeader header;
 	parse_http_header(txt, header);
 
-	auto location = std::string(header.fields["Location"]);
-	auto service = std::string(header.fields["ST"]);
+	std::string location(header.fields["Location"]);
+	std::string service(header.fields["ST"]);
 
 	try {
 		auto bind = transport_.local_address();
-		auto device = std::make_shared<IGDevice>(ctx_, std::move(bind), service, location);
+		auto device = std::make_shared<IGDevice>(
+			ctx_, std::move(bind), std::move(service), std::move(location)
+		);
 
 		DeviceResult result {
 			.header = std::move(header),
