@@ -14,6 +14,7 @@
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/Utility.h>
+#include <shared/threading/Utility.h>
 #include <spark/Spark.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
@@ -48,6 +49,7 @@ const char* APP_NAME = "MDNS-SD";
  * from them.
  */
 int main(int argc, const char* argv[]) try {
+	ember::thread::set_name("Main");
 	ember::print_banner(APP_NAME);
 	ember::util::set_window_title(APP_NAME);
 
