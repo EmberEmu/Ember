@@ -87,9 +87,9 @@ std::exception_ptr eptr = nullptr;
 const char* APP_NAME = "Login Daemon";
 
 #if defined TARGET_WORKER_COUNT
-constexpr std::size_t WORKER_COUNT = TARGET_WORKER_COUNT;
+constexpr std::size_t WORKER_NUM_HINT = TARGET_WORKER_COUNT;
 #else
-constexpr std::size_t WORKER_COUNT = 16;
+constexpr std::size_t WORKER_NUM_HINT = 16;
 #endif
 
 /*
@@ -140,7 +140,7 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 
 	// Spawn worker threads for ASIO
-	boost::container::small_vector<std::jthread, WORKER_COUNT> workers;
+	boost::container::small_vector<std::jthread, WORKER_NUM_HINT> workers;
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
 		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
@@ -280,11 +280,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		);
 	}
 
-	// Start ASIO service
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 	ThreadPool thread_pool(concurrency);
 
-	// Start login server
 	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, *user_dao,
 	                            acct_svc, realm_list, *metrics,
 	                            args["locale.enforce"].as<bool>(),
