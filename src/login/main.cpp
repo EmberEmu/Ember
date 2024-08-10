@@ -120,6 +120,14 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
+/*
+ * Starts ASIO worker threads, blocking until the launch thread exits
+ * upon error or signal handling.
+ * 
+ * io_context is only stopped after the thread joins to ensure that all
+ * services can cleanly shut down upon destruction without requiring
+ * explicit shutdown() calls in a signal handler.
+ */
 int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	unsigned int concurrency = check_concurrency(logger);
 	boost::asio::io_context service(concurrency);
@@ -131,7 +139,6 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
 		flag.release();
-		service.stop();
 	});
 
 	std::thread thread([&]() {
@@ -149,9 +156,9 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	thread.join();
+	service.stop();
 
 	if(eptr) {
-		service.stop();
 		std::rethrow_exception(eptr);
 	}
 
