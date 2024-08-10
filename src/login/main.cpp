@@ -50,10 +50,12 @@
 #include <boost/range/adaptor/map.hpp>
 #include <pcre.h>
 #include <zlib.h>
+#include <exception>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <semaphore>
 #include <string>
 #include <span>
 #include <string_view>
@@ -73,11 +75,15 @@ using namespace ember;
 void print_lib_versions(log::Logger* logger);
 std::vector<ember::GameVersion> client_versions();
 unsigned int check_concurrency(log::Logger* logger);
-int launch(const po::variables_map& args, log::Logger* logger);
+void launch(const po::variables_map& args, boost::asio::io_context& service, 
+            std::binary_semaphore& sem, log::Logger* logger);
+int asio_launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 void handle_stun_results(stun::Client& client, const stun::MappedResult& result,
                          std::uint16_t port, log::Logger* logger);
+
+std::exception_ptr eptr = nullptr;
 
 const char* APP_NAME = "Login Daemon";
 
@@ -107,7 +113,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	print_lib_versions(logger.get());
-	const auto ret = launch(args, logger.get());
+	const auto ret = asio_launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
 } catch(const std::exception& e) {
@@ -115,11 +121,52 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, log::Logger* logger) try {
+int asio_launch(const po::variables_map& args, log::Logger* logger) try {
+	unsigned int concurrency = check_concurrency(logger);
+	boost::asio::io_context service(concurrency);
+	std::binary_semaphore flag(0);
+
+	std::thread thread([&]() {
+		thread::set_name("Launcher");
+		launch(args, service, flag, logger);
+	});
+
+	// Install signal handler
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	signals.async_wait([&](auto error, auto signal) {
+		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
+		flag.release();
+		service.stop();
+	});
+
+	// Spawn worker threads for ASIO
+	boost::container::small_vector<std::jthread, WORKER_COUNT> workers;
+
+	for(unsigned int i = 0; i < concurrency; ++i) {
+		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
+							 (&boost::asio::io_context::run), &service);
+		thread::set_name(workers[i], "ASIO Worker");
+	}
+
+	thread.join();
+
+	if(eptr) {
+		service.stop();
+		std::rethrow_exception(eptr);
+	}
+
+	return EXIT_SUCCESS;
+} catch(const std::exception& e) {
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
+}
+
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+            std::binary_semaphore& sem, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
-
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
 
@@ -211,7 +258,6 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
 
 	ThreadPool thread_pool(concurrency);
-	boost::asio::io_context service(concurrency);
 
 	// Start Spark services
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
@@ -319,47 +365,15 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		}
 	}
 
-	// Install signal handler
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
-
-	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
-
-		if(forward) {
-			forward->unmap();
-		}
-
-		server.shutdown(); 
-		service.stop();
-	});
-
 	// All done setting up
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
 	
-	// Spawn worker threads for ASIO
-	boost::container::small_vector<std::thread, WORKER_COUNT> workers;
-
-	// start from one to take the main thread into account
-	for(unsigned int i = 1; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
-			(&boost::asio::io_context::run), &service);
-		thread::set_name(workers[i], "ASIO Worker");
-	}
-
-	service.run();
-
+	sem.acquire();
 	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
-
-	for(auto& worker : workers) {
-		worker.join();
-	}
-
-	return EXIT_SUCCESS;
-} catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+} catch(...) {
+	eptr = std::current_exception();
 }
 
 /*
