@@ -51,7 +51,7 @@
 #include <string_view>
 #include <stdexcept>
 
-const std::string_view APP_NAME = "Realm Gateway";
+constexpr ember::util::cstring_view APP_NAME { "Realm Gateway" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -158,10 +158,12 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
 	}
 	
+	const auto& title = std::format("{} - {}", APP_NAME, realm->name);
+	util::set_window_title(title);
+
 	// Validate category & region
 	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
 	LOG_INFO_FMT_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
-	util::set_window_title(std::string(APP_NAME) + " - " + realm->name);
 
 	// Set config
 	Config config;

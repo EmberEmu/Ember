@@ -64,6 +64,8 @@
 #include <cstddef>
 #include <cstdint>
 
+constexpr ember::util::cstring_view APP_NAME { "Login Daemon" }
+;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
@@ -83,8 +85,6 @@ void handle_stun_results(stun::Client& client, const stun::MappedResult& result,
                          std::uint16_t port, log::Logger* logger);
 
 std::exception_ptr eptr = nullptr;
-
-const char* APP_NAME = "Login Daemon";
 
 #if defined TARGET_WORKER_COUNT
 constexpr std::size_t WORKER_NUM_HINT = TARGET_WORKER_COUNT;

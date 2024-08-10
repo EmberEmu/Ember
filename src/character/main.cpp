@@ -34,7 +34,7 @@
 #include <vector>
 #include <stdexcept>
 
-const char* APP_NAME = "Character Daemon";
+constexpr ember::util::cstring_view APP_NAME { "Character Daemon" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;

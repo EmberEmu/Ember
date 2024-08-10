@@ -8,6 +8,7 @@
 #include <cassert>      // assert
 #include <cstddef>      // std::size_t
 #include <functional>   // std::hash
+#include <format>       // std::formatter
 #include <ostream>      // std::basic_ostream
 #include <string>       // std::basic_string, std::char_traits
 #include <string_view>  // std::basic_string_view
@@ -349,6 +350,21 @@ struct hash<ember::util::wcstring_view> {
   [[nodiscard]] std::size_t operator()(const ember::util::wcstring_view csv) {
     return std::hash<typename ember::util::wcstring_view::string_view_type>{}(csv);
   }
+};
+
+template<>
+struct formatter<ember::util::cstring_view, char> {
+	template<typename ParseContext>
+	constexpr ParseContext::iterator parse(ParseContext& ctx) {
+		return ctx.begin();
+	}
+
+	template<typename FmtContext>
+	FmtContext::iterator format(ember::util::cstring_view value, FmtContext& ctx) const {
+		std::ostringstream out;
+		out << value.c_str();
+		return std::ranges::copy(std::move(out).str(), ctx.out()).out;
+	}
 };
 
 }  // namespace std

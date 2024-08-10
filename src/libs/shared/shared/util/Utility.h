@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "cstring_view.hpp"
 #include <locale>
 #include <string>
 #include <string_view>
@@ -17,7 +18,7 @@ namespace ember::util {
 
 std::size_t max_consecutive(std::string_view name, bool case_insensitive = false,
                             const std::locale& locale = std::locale());
-void set_window_title(std::string_view title);
+void set_window_title(util::cstring_view title);
 int max_sockets();
 std::string max_sockets_desc();
 

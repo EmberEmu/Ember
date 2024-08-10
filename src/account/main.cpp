@@ -30,6 +30,8 @@
 #include <cstddef>
 #include <cstdint>
 
+constexpr ember::util::cstring_view APP_NAME { "Account Daemon" };
+
 namespace el = ember::log;
 namespace es = ember::spark;
 namespace ep = ember::connection_pool;
@@ -39,7 +41,6 @@ int launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
 
-const char* APP_NAME = "Account Daemon";
 
  /*
  * We want to do the minimum amount of work required to get
