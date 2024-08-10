@@ -183,8 +183,7 @@ namespace smart_enum
 	\
 		template<typename FmtContext>\
 		FmtContext::iterator format(name value, FmtContext& ctx) const {\
-			std::ostringstream out;\
-			out << value;\
-			return std::ranges::copy(std::move(out).str(), ctx.out()).out;\
+			const auto& str = to_string(value);\
+			return std::ranges::copy(str.begin(), str.end(), ctx.out()).out;\
 		}\
 	};

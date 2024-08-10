@@ -12,9 +12,7 @@
 #include <ostream>      // std::basic_ostream
 #include <string>       // std::basic_string, std::char_traits
 #include <string_view>  // std::basic_string_view
-#if __cplusplus >= 202002L && __has_include(<ranges>)
-#include <ranges>  // std::enable_borrowed_range, std::enable_view
-#endif
+#include <ranges>       // std::enable_borrowed_range, std::enable_view
 
 namespace ember::util {
 
@@ -361,9 +359,7 @@ struct formatter<ember::util::cstring_view, char> {
 
 	template<typename FmtContext>
 	FmtContext::iterator format(ember::util::cstring_view value, FmtContext& ctx) const {
-		std::ostringstream out;
-		out << value.c_str();
-		return std::ranges::copy(std::move(out).str(), ctx.out()).out;
+		return std::ranges::copy(value.begin(), value.end(), ctx.out()).out;
 	}
 };
 
