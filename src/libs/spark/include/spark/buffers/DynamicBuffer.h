@@ -307,10 +307,18 @@ public:
 	}
 
 	IntrusiveStorage* back() const {
+		if(root_.prev == &root_) {
+			return nullptr;
+		}
+
 		return buffer_from_node(root_.prev);
 	}
 
 	IntrusiveStorage* front() const {
+		if(root_.next == &root_) {
+			return nullptr;
+		}
+
 		return buffer_from_node(root_.next);
 	}
 
