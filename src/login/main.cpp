@@ -47,7 +47,6 @@
 #include <boost/container/small_vector.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <pcre.h>
 #include <zlib.h>
 #include <exception>
@@ -126,11 +125,6 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::io_context service(concurrency);
 	std::binary_semaphore flag(0);
 
-	std::thread thread([&]() {
-		thread::set_name("Launcher");
-		launch(args, service, flag, logger);
-	});
-
 	// Install signal handler
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
@@ -138,6 +132,11 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
 		flag.release();
 		service.stop();
+	});
+
+	std::thread thread([&]() {
+		thread::set_name("Launcher");
+		launch(args, service, flag, logger);
 	});
 
 	// Spawn worker threads for ASIO
@@ -250,14 +249,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
 
-	for(const auto& realm : *realm_list.realms() | boost::adaptors::map_values) {
+	for(const auto& [_, realm] : *realm_list.realms()) {
 		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
 	}
-
-	// Start ASIO service
-	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
-
-	ThreadPool thread_pool(concurrency);
 
 	// Start Spark services
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
@@ -285,6 +279,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 			args["metrics.statsd_port"].as<std::uint16_t>()
 		);
 	}
+
+	// Start ASIO service
+	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
+	ThreadPool thread_pool(concurrency);
 
 	// Start login server
 	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, *user_dao,
