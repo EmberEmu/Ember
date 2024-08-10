@@ -64,8 +64,8 @@
 #include <cstddef>
 #include <cstdint>
 
-constexpr ember::util::cstring_view APP_NAME { "Login Daemon" }
-;
+constexpr ember::util::cstring_view APP_NAME { "Login Daemon" };
+
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
