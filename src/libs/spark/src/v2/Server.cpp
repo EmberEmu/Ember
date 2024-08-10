@@ -27,7 +27,7 @@ namespace ember::spark::v2 {
 
 namespace ba = boost::asio;
 
-Server::Server(boost::asio::io_context& context, const std::string& name,
+Server::Server(boost::asio::io_context& context, std::string_view name,
                const std::string& iface, const std::uint16_t port, log::Logger* logger)
 	: ctx_(context),
 	  acceptor_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),

@@ -17,6 +17,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
@@ -48,7 +49,7 @@ class Server final {
 	                                          std::string service, Handler* handler);
 
 public:
-	Server(boost::asio::io_context& context, const std::string& name,
+	Server(boost::asio::io_context& context, std::string_view name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);
 
 	void register_handler(Handler* handler);

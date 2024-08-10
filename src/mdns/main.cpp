@@ -26,6 +26,8 @@
 #include <utility>
 #include <cstddef>
 
+constexpr ember::util::cstring_view APP_NAME { "MDNS-SD" };
+
 namespace el = ember::log;
 namespace po = boost::program_options;
 using namespace std::chrono_literals;
@@ -37,8 +39,6 @@ unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 } // ember
-
-const char* APP_NAME = "MDNS-SD";
 
 /*
  * We want to do the minimum amount of work required to get 
