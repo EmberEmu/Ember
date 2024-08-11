@@ -69,8 +69,8 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 	if(msg->result() != core::Result::OK) {
 		auto channel = channels_[msg->requested_id()];
-		LOG_ERROR_FMT(log_, "[spark] Remote peer could not open channel ({}:{})",
-			channel->handler()->type(), msg->requested_id());
+		LOG_ERROR_ASYNC(log_, "[spark] Remote peer could not open channel ({}:{})",
+		                channel->handler()->type(), msg->requested_id());
 		channels_[msg->requested_id()].reset();
 		return;
 	}
@@ -80,15 +80,15 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 	auto channel = channels_[id];
 
 	if(id == 0) {
-		LOG_ERROR_FMT(log_, "[spark] Reserved channel ID returned by {}", remote_banner_);
+		LOG_ERROR_ASYNC(log_, "[spark] Reserved channel ID returned by {}", remote_banner_);
 		channels_[msg->requested_id()].reset();
 		return;
 	}
 
 	if(msg->actual_id() != msg->requested_id()) {
 		if(channel) {
-			LOG_ERROR_FMT(log_, "[spark] Channel open ({}) failed due to ID collision",
-				msg->actual_id());
+			LOG_ERROR_ASYNC(log_, "[spark] Channel open ({}) failed due to ID collision",
+			                msg->actual_id());
 			send_close_channel(msg->actual_id());
 			channels_[msg->requested_id()].reset();
 			return;
@@ -107,8 +107,8 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 	channel->open();
 
-	LOG_DEBUG_FMT(log_, "[spark] Remote channel open, {}:{}",
-		channel->handler()->name(), msg->actual_id());
+	LOG_DEBUG_ASYNC(log_, "[spark] Remote channel open, {}:{}",
+	                channel->handler()->name(), msg->actual_id());
 }
 
 void RemotePeer::send_close_channel(const std::uint8_t id) {
@@ -154,14 +154,14 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	auto handler = find_handler(msg);
 
 	if(!handler) {
-		LOG_DEBUG_FMT(log_, "[spark] Requested service handler ({}) does not exist",
-					  msg->service_type()->str());
+		LOG_DEBUG_ASYNC(log_, "[spark] Requested service handler ({}) does not exist",
+		                msg->service_type()->str());
 		open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 		return;
 	}
 
 	if(msg->id() == 0 || msg->id() >= channels_.size()) {
-		LOG_DEBUG_FMT(log_, "[spark] Bad channel ID ({}) specified", msg->id());
+		LOG_DEBUG_ASYNC(log_, "[spark] Bad channel ID ({}) specified", msg->id());
 		open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 		return;
 	}
@@ -170,7 +170,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 
 	if(channels_[id]) {
 		if(id = next_empty_channel(); id == 0) {
-			LOG_ERROR_FMT(log_, "[spark] Exhausted channel IDs");
+			LOG_ERROR_ASYNC(log_, "[spark] Exhausted channel IDs");
 			open_channel_response(core::Result::ERROR_UNK, 0, msg->id());
 			return;
 		}
@@ -183,7 +183,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::OK, id, msg->id());
-	LOG_DEBUG_FMT(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
+	LOG_DEBUG_ASYNC(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel() {
@@ -266,7 +266,7 @@ void RemotePeer::handle_pong(const core::Pong* pong) {
 	
 	if(delta > LATENCY_WARN_THRESHOLD) {
 		const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-		LOG_WARN_FMT(log_, "[spark] High latency to remote peer, {}: {}ms", remote_banner_, ms);
+		LOG_WARN_ASYNC(log_, "[spark] High latency to remote peer, {}: {}ms", remote_banner_, ms);
 	}
 }
 
@@ -281,7 +281,7 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 	}
 
 	channels_[id].reset();
-	LOG_DEBUG_FMT(log_, "[spark] Closed channel {}, requested by remote peer", id);
+	LOG_DEBUG_ASYNC(log_, "[spark] Closed channel {}, requested by remote peer", id);
 }
 
 void RemotePeer::handle_channel_message(const MessageHeader& header,
@@ -291,7 +291,7 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 	auto channel = channels_[header.channel];
 
 	if(!channel || !channel->is_open()) {
-		LOG_WARN_FMT(log_, "[spark] Received message for closed channel, {}", header.channel);
+		LOG_WARN_ASYNC(log_, "[spark] Received message for closed channel, {}", header.channel);
 		return;
 	}
 
@@ -317,7 +317,7 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
 
 	const auto id = next_empty_channel();
-	LOG_DEBUG_FMT(log_, "[spark] Requesting channel {} for {}", id, type);
+	LOG_DEBUG_ASYNC(log_, "[spark] Requesting channel {} for {}", id, type);
 
 	auto channel = std::make_shared<Channel>(
 		ctx_, log_, id, banner_, handler->name(), handler, conn_

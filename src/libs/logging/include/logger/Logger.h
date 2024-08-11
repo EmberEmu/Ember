@@ -19,15 +19,6 @@ namespace ember::log {
 
 class Sink;
 
-template<std::size_t n>
-struct FormatLiteral {
-	consteval FormatLiteral(const char (&fmt)[n]) {
-		std::copy_n(fmt, n, value);
-	}
-
-	char value[n];
-};
-
 class Logger final {
 	class impl;
 	std::unique_ptr<impl> pimpl_;
@@ -43,13 +34,15 @@ public:
 		finalise();
 	}
 
-	template<FormatLiteral fmtl, bool async, typename ... Args>
-	constexpr void fmt_write(const Severity severity, Args ... args) {
+	template<bool async, typename ... Args>
+	constexpr void fmt_write(const Severity severity, std::format_string<Args...> fmt, Args&&... args) {
 		*this << severity;
-		constexpr auto fmt = fmtl.value;
 		auto buffer = get_buffer();
-		std::format_to(std::back_inserter(*buffer), fmt, args...);
-		
+
+		std::format_to(std::back_inserter(*buffer),
+		               std::forward<std::format_string<Args...>>(fmt),
+		               std::forward<Args>(args)...);
+
 		if constexpr (async) {
 			finalise();
 		} else {

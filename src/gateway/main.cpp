@@ -163,7 +163,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	// Validate category & region
 	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
-	LOG_INFO_FMT_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
+	LOG_INFO_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
 
 	// Set config
 	Config config;
@@ -179,7 +179,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	}
 
 	// Start ASIO service pool
-	LOG_INFO_FMT_SYNC(logger, "Starting service pool with {} threads", concurrency);
+	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
 	ServicePool service_pool(concurrency);
 
 	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
@@ -234,7 +234,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 		}
 	}
 
-	LOG_INFO_FMT_SYNC(logger, "Realm will be advertised on {}", realm->ip);
+	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->ip);
 
 	RealmQueue queue_service(service_pool.get_service());
 	RealmService realm_svc(*realm, spark, discovery, logger);
@@ -251,12 +251,12 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	
 	// Misc. information
 	const auto max_socks = util::max_sockets_desc();
-	LOG_INFO_FMT_SYNC(logger, "Max allowed sockets: {}", max_socks);
+	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO_FMT_SYNC(logger, "Starting network service on {}:{}", interface, port);
+	LOG_INFO_SYNC(logger, "Starting network service on {}:{}", interface, port);
 
 	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
@@ -264,7 +264,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(wait_svc, SIGINT, SIGTERM);
 
 	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
 
 		if(forward) {
 			forward->unmap();
@@ -273,13 +273,13 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	service.dispatch([&, logger]() {
 		realm_svc.set_online();
-		LOG_INFO_FMT_SYNC(logger, "{} started successfully", APP_NAME);
+		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
 	service_pool.run();
 	wait_svc.run();
 
-	LOG_INFO_FMT_SYNC(logger, "{} shutting down...", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;

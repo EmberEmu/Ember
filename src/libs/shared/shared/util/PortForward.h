@@ -47,8 +47,8 @@ class PortForward final {
 
 		ssdp_->locate_gateways([&, port](ports::upnp::LocateResult result) {
 			if(!result) {
-				LOG_ERROR_FMT(logger_, "UPnP gateway search failed with error code {}",
-				              result.error().value());
+				LOG_ERROR_ASYNC(logger_, "UPnP gateway search failed with error code {}",
+				                result.error().value());
 				cb_sem_.release();
 				return true;
 			}
@@ -62,10 +62,10 @@ class PortForward final {
 
 			result->device->add_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
 				if(!ec) {
-					LOG_INFO_FMT(logger_, "Port {} successfully forwarded (UPnP)", port);
+					LOG_INFO_ASYNC(logger_, "Port {} successfully forwarded (UPnP)", port);
 					mapping_active_ = true;
 				} else {
-					LOG_ERROR_FMT(logger_, "Port forwarding failed (UPnP), error {}", ec.value());
+					LOG_ERROR_ASYNC(logger_, "Port forwarding failed (UPnP), error {}", ec.value());
 				}
 
 				cb_sem_.release();
@@ -89,14 +89,14 @@ class PortForward final {
 
 		daemon_->add_mapping(request, false, [&](const ports::Result& result) {
 			if(result) {
-				LOG_INFO_FMT(logger_, "Port {} -> {} forwarded for {} seconds (NATPMP/PCP)",
-						     result->external_port,
-						     result->internal_port,
-						     result->lifetime);
+				LOG_INFO_ASYNC(logger_, "Port {} -> {} forwarded for {} seconds (NATPMP/PCP)",
+				               result->external_port,
+				               result->internal_port,
+				               result->lifetime);
 				mapping_active_ = true;
 			} else {
-				LOG_ERROR_FMT(logger_, "Port forwarding failed (NATPMP/PCP), error {}",
-				              result.error().code);
+				LOG_ERROR_ASYNC(logger_, "Port forwarding failed (NATPMP/PCP), error {}",
+				                result.error().code);
 				mapping_active_ = false; // mapping can succeed and later fail when refreshed
 			}
 
@@ -116,10 +116,9 @@ class PortForward final {
 
 		upnp_device_->delete_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
 			if(!ec) {
-				LOG_INFO_FMT(logger_, "Successfully unmapped forwarded port {}", port_);
+				LOG_INFO_ASYNC(logger_, "Successfully unmapped forwarded port {}", port_);
 			} else {
-				LOG_ERROR_FMT(logger_, "Failed to unmap forwarded port {}, error ",
-				              ec.value());
+				LOG_ERROR_ASYNC(logger_, "Failed to unmap forwarded port {}, error ", ec.value());
 			}
 
 			sem_.release();
@@ -133,10 +132,9 @@ class PortForward final {
 
 		daemon_->delete_mapping(port_, ports::Protocol::TCP, [&](const ports::Result& result) {
 			if(result) {
-				LOG_INFO_FMT(logger_, "Successfully unmapped forwarded port", port_);
+				LOG_INFO_ASYNC(logger_, "Successfully unmapped forwarded port", port_);
 			} else {
-				LOG_ERROR_FMT(logger_, "Failed to unmap forwarded port, error {}",
-				              result.error().code);
+				LOG_ERROR_ASYNC(logger_, "Failed to unmap forwarded port, error {}", result.error().code);
 			}
 
 			sem_.release();
@@ -158,8 +156,8 @@ class PortForward final {
 			cb_sem_.acquire();
 
 			if(!mapping_active_) {
-				LOG_WARN_FMT(logger_, "Automatic port forwarding not permitted by NAT gateway"
-				                      "or device does not support any forwarding protocols");
+				LOG_WARN_ASYNC(logger_, "Automatic port forwarding not permitted by NAT gateway "
+				                        "or device does not support any forwarding protocols");
 			}
 		});
 	}

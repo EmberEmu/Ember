@@ -137,7 +137,7 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_FMT_SYNC(logger, "Received signal {}", signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
 		flag.release();
 	});
 
@@ -201,7 +201,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	unsigned int concurrency = check_concurrency(logger);
 
 	if(max_conns != concurrency) {
-		LOG_WARN_FMT_SYNC(logger, "Max. database connection count may be non-optimal "
+		LOG_WARN_SYNC(logger, "Max. database connection count may be non-optimal "
 		                          "(use {} to match logical core count)", concurrency);
 	}
 
@@ -251,10 +251,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	RealmList realm_list(realm_dao->get_realms());
 
-	LOG_INFO_FMT_SYNC(logger, "Added {} realm(s)", realm_list.realms()->size());
+	LOG_INFO_SYNC(logger, "Added {} realm(s)", realm_list.realms()->size());
 
 	for(const auto& [_, realm] : *realm_list.realms()) {
-		LOG_DEBUG_FMT_SYNC(logger, "#{} {}", realm.id, realm.name);
+		LOG_DEBUG_SYNC(logger, "#{} {}", realm.id, realm.name);
 	}
 
 	// Start Spark services
@@ -284,7 +284,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		);
 	}
 
-	LOG_INFO_FMT_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	ThreadPool thread_pool(concurrency);
 
 	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, *user_dao,
@@ -297,7 +297,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO_FMT_SYNC(logger, "Starting network service on {}:{}", interface, port);
+	LOG_INFO_SYNC(logger, "Starting network service on {}:{}", interface, port);
 
 	NetworkListener server(
 		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics
@@ -330,14 +330,14 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	}, 5s);
 
 	// Misc. information
-	LOG_INFO_FMT_SYNC(logger, "Max allowed sockets: {}", util::max_sockets_desc());
+	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", util::max_sockets_desc());
 	std::string builds;
 
 	for(const auto& client : allowed_clients) {
 		builds += std::to_string(client.build) + " ";
 	}
 
-	LOG_INFO_FMT_SYNC(logger, "Allowed client builds: {}", builds);
+	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
 	
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
 	std::unique_ptr<util::PortForward> forward;
@@ -367,11 +367,11 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	// All done setting up
 	service.dispatch([logger]() {
-		LOG_INFO_FMT_SYNC(logger, "{} started successfully", APP_NAME);
+		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 	
 	sem.acquire();
-	LOG_INFO_FMT_SYNC(logger, "{} shutting down...", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
 }
