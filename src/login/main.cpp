@@ -192,23 +192,20 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
-	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
-
-	unsigned int concurrency = check_concurrency(logger);
-
 	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
-	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
+	unsigned int concurrency = check_concurrency(logger);
 
 	if(max_conns != concurrency) {
-		LOG_WARN(logger) << "Max. database connection count may be non-optimal (use "
-		                 << concurrency << " to match logical core count)" << LOG_SYNC;
+		LOG_WARN_FMT_SYNC(logger, "Max. database connection count may be non-optimal "
+		                          "(use {} to match logical core count)", concurrency);
 	}
 
+	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
 		driver, min_conns, max_conns, 30s
 	);
@@ -254,10 +251,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
 	RealmList realm_list(realm_dao->get_realms());
 
-	LOG_INFO(logger) << "Added " << realm_list.realms()->size() << " realm(s)"  << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "Added {} realm(s)", realm_list.realms()->size());
 
 	for(const auto& [_, realm] : *realm_list.realms()) {
-		LOG_DEBUG(logger) << "#" << realm.id << " " << realm.name << LOG_SYNC;
+		LOG_DEBUG_FMT_SYNC(logger, "#{} {}", realm.id, realm.name);
 	}
 
 	// Start Spark services
@@ -287,7 +284,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		);
 	}
 
-	LOG_INFO(logger) << "Starting thread pool with " << concurrency << " threads..." << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	ThreadPool thread_pool(concurrency);
 
 	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, *user_dao,
@@ -297,10 +294,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LoginSessionBuilder s_builder(builder, thread_pool);
 
 	const auto& interface = args["network.interface"].as<std::string>();
-	auto port = args["network.port"].as<std::uint16_t>();
-	auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
+	const auto port = args["network.port"].as<std::uint16_t>();
+	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO(logger) << "Starting network service on " << interface << ":" << port << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "Starting network service on {}:{}", interface, port);
 
 	NetworkListener server(
 		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics
@@ -370,11 +367,11 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	// All done setting up
 	service.dispatch([logger]() {
-		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+		LOG_INFO_FMT_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 	
 	sem.acquire();
-	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	LOG_INFO_FMT_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
 }
