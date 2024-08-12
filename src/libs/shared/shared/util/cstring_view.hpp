@@ -14,7 +14,7 @@
 #include <string_view>  // std::basic_string_view
 #include <ranges>       // std::enable_borrowed_range, std::enable_view
 
-namespace ember::util {
+namespace ember {
 
 template <typename charT, typename traits = std::char_traits<charT>>
 class basic_cstring_view {
@@ -289,22 +289,22 @@ inline namespace string_view_literals {
 /*******************************************************************************************************************/
 /**                                     suffix for basic_cstring_view literals                                    **/
 /*******************************************************************************************************************/
-[[nodiscard]] constexpr util::cstring_view operator"" _csv(const char* str, const std::size_t len) noexcept {
-  return util::cstring_view(util::cstring_view::null_terminated, str, len);
+[[nodiscard]] constexpr cstring_view operator"" _csv(const char* str, const std::size_t len) noexcept {
+  return cstring_view(cstring_view::null_terminated, str, len);
 }
 #if __cplusplus >= 202002L
-[[nodiscard]] constexpr util::u8cstring_view operator"" _csv(const char8_t* str, const std::size_t len) noexcept {
-  return util::u8cstring_view(util::u8cstring_view::null_terminated, str, len);
+[[nodiscard]] constexpr u8cstring_view operator"" _csv(const char8_t* str, const std::size_t len) noexcept {
+  return u8cstring_view(u8cstring_view::null_terminated, str, len);
 }
 #endif
-[[nodiscard]] constexpr util::u16cstring_view operator"" _csv(const char16_t* str, const std::size_t len) noexcept {
-  return util::u16cstring_view(util::u16cstring_view::null_terminated, str, len);
+[[nodiscard]] constexpr u16cstring_view operator"" _csv(const char16_t* str, const std::size_t len) noexcept {
+  return u16cstring_view(u16cstring_view::null_terminated, str, len);
 }
-[[nodiscard]] constexpr util::u32cstring_view operator"" _csv(const char32_t* str, const std::size_t len) noexcept {
-  return util::u32cstring_view(util::u32cstring_view::null_terminated, str, len);
+[[nodiscard]] constexpr u32cstring_view operator"" _csv(const char32_t* str, const std::size_t len) noexcept {
+  return u32cstring_view(u32cstring_view::null_terminated, str, len);
 }
-[[nodiscard]] constexpr util::wcstring_view operator"" _csv(const wchar_t* str, const std::size_t len) noexcept {
-  return util::wcstring_view(util::wcstring_view::null_terminated, str, len);
+[[nodiscard]] constexpr wcstring_view operator"" _csv(const wchar_t* str, const std::size_t len) noexcept {
+  return wcstring_view(wcstring_view::null_terminated, str, len);
 }
 
 }  // namespace string_view_literals
@@ -318,47 +318,47 @@ inline namespace string_view_literals {
 namespace std {
 
 template <>
-struct hash<ember::util::cstring_view> {
-  [[nodiscard]] std::size_t operator()(const ember::util::cstring_view csv) {
-    return std::hash<typename ember::util::cstring_view::string_view_type>{}(csv);
+struct hash<ember::cstring_view> {
+  [[nodiscard]] std::size_t operator()(const ember::cstring_view csv) {
+    return std::hash<typename ember::cstring_view::string_view_type>{}(csv);
   }
 };
 #if __cplusplus >= 202002L
 template <>
-struct hash<ember::util::u8cstring_view> {
-  [[nodiscard]] std::size_t operator()(const ember::util::u8cstring_view csv) {
-    return std::hash<typename ember::util::u8cstring_view::string_view_type>{}(csv);
+struct hash<ember::u8cstring_view> {
+  [[nodiscard]] std::size_t operator()(const ember::u8cstring_view csv) {
+    return std::hash<typename ember::u8cstring_view::string_view_type>{}(csv);
   }
 };
 #endif
 template <>
-struct hash<ember::util::u16cstring_view> {
-  [[nodiscard]] std::size_t operator()(const ember::util::u16cstring_view csv) {
-    return std::hash<typename ember::util::u16cstring_view::string_view_type>{}(csv);
+struct hash<ember::u16cstring_view> {
+  [[nodiscard]] std::size_t operator()(const ember::u16cstring_view csv) {
+    return std::hash<typename ember::u16cstring_view::string_view_type>{}(csv);
   }
 };
 template <>
-struct hash<ember::util::u32cstring_view> {
-  [[nodiscard]] std::size_t operator()(const ember::util::u32cstring_view csv) {
-    return std::hash<typename ember::util::u32cstring_view::string_view_type>{}(csv);
+struct hash<ember::u32cstring_view> {
+  [[nodiscard]] std::size_t operator()(const ember::u32cstring_view csv) {
+    return std::hash<typename ember::u32cstring_view::string_view_type>{}(csv);
   }
 };
 template <>
-struct hash<ember::util::wcstring_view> {
-  [[nodiscard]] std::size_t operator()(const ember::util::wcstring_view csv) {
-    return std::hash<typename ember::util::wcstring_view::string_view_type>{}(csv);
+struct hash<ember::wcstring_view> {
+  [[nodiscard]] std::size_t operator()(const ember::wcstring_view csv) {
+    return std::hash<typename ember::wcstring_view::string_view_type>{}(csv);
   }
 };
 
 template<>
-struct formatter<ember::util::cstring_view, char> {
+struct formatter<ember::cstring_view, char> {
 	template<typename ParseContext>
 	constexpr ParseContext::iterator parse(ParseContext& ctx) {
 		return ctx.begin();
 	}
 
 	template<typename FmtContext>
-	FmtContext::iterator format(ember::util::cstring_view value, FmtContext& ctx) const {
+	FmtContext::iterator format(ember::cstring_view value, FmtContext& ctx) const {
 		return std::ranges::copy(value.begin(), value.end(), ctx.out()).out;
 	}
 };
@@ -370,9 +370,9 @@ struct formatter<ember::util::cstring_view, char> {
 /*******************************************************************************************************************/
 #if __cpluspluc >= 202002L && __has_include(<ranges>)
 template <typename charT, typename traits>
-inline constexpr bool std::ranges::enable_borrowed_range<util::basic_cstring_view<charT, traits>> = true;
+inline constexpr bool std::ranges::enable_borrowed_range<basic_cstring_view<charT, traits>> = true;
 template <typename charT, typename traits>
-inline constexpr bool std::ranges::enable_view<util::basic_cstring_view<charT, traits>> = true;
+inline constexpr bool std::ranges::enable_view<basic_cstring_view<charT, traits>> = true;
 #endif
 
 #endif  // UTIL_CSTRING_VIEW_HPP

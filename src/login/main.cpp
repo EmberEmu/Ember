@@ -64,7 +64,7 @@
 #include <cstddef>
 #include <cstdint>
 
-constexpr ember::util::cstring_view APP_NAME { "Login Daemon" };
+constexpr ember::cstring_view APP_NAME { "Login Daemon" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
@@ -205,7 +205,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		                          "(use {} to match logical core count)", concurrency);
 	}
 
-	LOG_INFO(logger) << "Initialising database connection pool..."<< LOG_SYNC;
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
 		driver, min_conns, max_conns, 30s
 	);

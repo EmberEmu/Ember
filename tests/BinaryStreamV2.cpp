@@ -10,6 +10,7 @@
 #include <spark/buffers/StaticBuffer.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
+#include <shared/util/cstring_view.hpp>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
 #include <algorithm>
@@ -346,7 +347,7 @@ TEST(BinaryStreamV2, CStringView) {
 	spark::io::BinaryStream stream(adaptor);
 	std::string_view view { "There's coffee in that nebula" };
 	stream << view;
-	ember::util::cstring_view cview;
+	ember::cstring_view cview;
 	stream >> cview;
 	ASSERT_EQ(view, cview);
 	const auto len = std::strlen(cview.c_str());

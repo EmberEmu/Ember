@@ -26,7 +26,7 @@
 #include <utility>
 #include <cstddef>
 
-constexpr ember::util::cstring_view APP_NAME { "MDNS-SD" };
+constexpr ember::cstring_view APP_NAME { "MDNS-SD" };
 
 namespace el = ember::log;
 namespace po = boost::program_options;

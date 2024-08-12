@@ -51,7 +51,7 @@
 #include <string_view>
 #include <stdexcept>
 
-constexpr ember::util::cstring_view APP_NAME { "Realm Gateway" };
+constexpr ember::cstring_view APP_NAME { "Realm Gateway" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;

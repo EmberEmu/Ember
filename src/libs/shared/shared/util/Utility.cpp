@@ -43,7 +43,7 @@ std::size_t max_consecutive(std::string_view name, const bool case_insensitive, 
 	return longest_run;
 }
 
-void set_window_title(util::cstring_view title) {
+void set_window_title(cstring_view title) {
 #ifdef _WIN32
     SetConsoleTitle(title.c_str());
 #elif defined __linux__ || defined __unix__ // todo, test

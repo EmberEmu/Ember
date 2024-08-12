@@ -30,7 +30,7 @@
 #include <cstddef>
 #include <cstdint>
 
-constexpr ember::util::cstring_view APP_NAME { "Account Daemon" };
+constexpr ember::cstring_view APP_NAME { "Account Daemon" };
 
 namespace el = ember::log;
 namespace es = ember::spark;

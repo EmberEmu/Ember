@@ -126,7 +126,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator <<(const util::cstring_view& data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(const cstring_view& data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size() + 1);
 		total_write_ += (data.size() + 1);
 		return *this;
@@ -186,8 +186,8 @@ public:
 
 	// terminates when it hits a null byte, empty cstring_view if none found
 	// goes without saying that the buffer must outlive the cstring_view
-	BinaryStream& operator >>(util::cstring_view& dest) requires(contiguous<buf_type>) {
-		dest = util::cstring_view(util::cstring_view::null_terminated, view());
+	BinaryStream& operator >>(cstring_view& dest) requires(contiguous<buf_type>) {
+		dest = cstring_view(cstring_view::null_terminated, view());
 		return *this;
 	}
 
