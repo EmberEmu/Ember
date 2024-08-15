@@ -68,10 +68,9 @@ constexpr ember::cstring_view APP_NAME { "Login Daemon" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
-namespace ba = boost::asio;
 
-using namespace std::chrono_literals;
 using namespace ember;
+using namespace std::chrono_literals;
 
 void print_lib_versions(log::Logger* logger);
 std::vector<ember::GameVersion> client_versions();

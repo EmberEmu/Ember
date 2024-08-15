@@ -27,8 +27,10 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <fstream>
+#include <semaphore>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -38,17 +40,18 @@ constexpr ember::cstring_view APP_NAME { "Character Daemon" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
-namespace ba = boost::asio;
+
+using namespace ember;
 using namespace std::chrono_literals;
 
-namespace ember {
-
-int launch(const po::variables_map& args, log::Logger* logger);
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+            std::binary_semaphore& sem, log::Logger* logger);
+int asio_launch(const po::variables_map& args, log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 
-} // ember
+std::exception_ptr eptr = nullptr;
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -63,13 +66,13 @@ int main(int argc, const char* argv[]) try {
 	ember::print_banner(APP_NAME);
 	ember::util::set_window_title(APP_NAME);
 
-	const po::variables_map args = ember::parse_arguments(argc, argv);
+	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = ember::util::init_logging(args);
+	auto logger = util::init_logging(args);
 	ember::log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = ember::launch(args, logger.get());
+	const auto ret = asio_launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
 } catch(const std::exception& e) {
@@ -77,13 +80,53 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-namespace ember {
+/*
+ * Starts ASIO worker threads, blocking until the launch thread exits
+ * upon error or signal handling.
+ * 
+ * io_context is only stopped after the thread joins to ensure that all
+ * services can cleanly shut down upon destruction without requiring
+ * explicit shutdown() calls in a signal handler.
+ */
+int asio_launch(const po::variables_map& args, log::Logger* logger) try {
+	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
+	std::binary_semaphore flag(0);
 
-int launch(const po::variables_map& args, log::Logger* logger) try {
+	std::thread thread([&]() {
+		thread::set_name("Launcher");
+		launch(args, service, flag, logger);
+	});
+
+	// Install signal handler
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	signals.async_wait([&](auto error, auto signal) {
+		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
+		flag.release();
+	});
+
+	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
+		(&boost::asio::io_context::run), &service);
+	thread::set_name(worker, "ASIO Worker");
+
+	thread.join();
+	service.stop();
+
+	if(eptr) {
+		std::rethrow_exception(eptr);
+	}
+
+	return EXIT_SUCCESS;
+} catch(const std::exception& e) {
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
+}
+
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+            std::binary_semaphore& sem, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
-
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
@@ -148,9 +191,6 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(ember::FilterType::LF_SPARK);
 
-	boost::asio::io_context service;
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
-
 	ThreadPool thread_pool(concurrency);
 	ember::CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
 	                                dbc_store, *character_dao, thread_pool, temp, logger);
@@ -161,23 +201,14 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
 	
-	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
-		discovery.shutdown();
-		spark.shutdown();
-		thread_pool.shutdown();
-		pool.close();
-	});
-
 	service.dispatch([&, logger]() {
-		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
-	service.run();
-	return EXIT_SUCCESS;
-} catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+	sem.acquire();
+	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
+} catch(...) {
+	eptr = std::current_exception();
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
@@ -294,5 +325,3 @@ unsigned int check_concurrency(log::Logger* logger) {
 	return concurrency;
 #endif
 }
-
-} // ember

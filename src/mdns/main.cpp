@@ -30,20 +30,17 @@
 
 constexpr ember::cstring_view APP_NAME { "MDNS-SD" };
 
-namespace el = ember::log;
 namespace po = boost::program_options;
+
+using namespace ember;
 using namespace std::chrono_literals;
 
-namespace ember {
-
 void launch(const po::variables_map& args, boost::asio::io_context& service,
-			std::binary_semaphore& sem, log::Logger* logger);
+            std::binary_semaphore& sem, log::Logger* logger);
 int asio_launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 std::exception_ptr eptr = nullptr;
-
-} // ember
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -58,21 +55,19 @@ int main(int argc, const char* argv[]) try {
 	ember::print_banner(APP_NAME);
 	ember::util::set_window_title(APP_NAME);
 
-	const po::variables_map args = ember::parse_arguments(argc, argv);
+	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = ember::util::init_logging(args);
+	auto logger = util::init_logging(args);
 	ember::log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = ember::asio_launch(args, logger.get());
+	const auto ret = asio_launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
 } catch(std::exception& e) {
 	std::cerr << e.what();
 	return EXIT_FAILURE;
 }
-
-namespace ember {
 
 /*
  * Starts ASIO worker threads, blocking until the launch thread exits
@@ -97,11 +92,14 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
 		flag.release();
-		thread.join();
-		service.stop();
 	});
 
-	service.run();
+	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
+		(&boost::asio::io_context::run), &service);
+	thread::set_name(worker, "ASIO Worker");
+
+	thread.join();
+	service.stop();
 
 	if(eptr) {
 		std::rethrow_exception(eptr);
@@ -137,11 +135,11 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	// All done setting up
 	service.dispatch([logger]() {
-		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
 	sem.acquire();
-	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
 }
@@ -208,5 +206,3 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 
 	return options;
 }
-
-} // ember
