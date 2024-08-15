@@ -33,6 +33,7 @@ class Server final {
 	HandlerRegistry handlers_;
 	std::string name_;
 	log::Logger* logger_;
+	bool stopped_;
 	
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<void> accept_connection();
@@ -51,6 +52,7 @@ class Server final {
 public:
 	Server(boost::asio::io_context& context, std::string_view name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);
+	~Server();
 
 	void register_handler(Handler* handler);
 	void deregister_handler(Handler* handler);

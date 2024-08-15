@@ -19,9 +19,11 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <semaphore>
 #include <string>
 #include <utility>
 #include <cstddef>
@@ -34,9 +36,12 @@ using namespace std::chrono_literals;
 
 namespace ember {
 
-int launch(const po::variables_map& args, log::Logger* logger);
-unsigned int check_concurrency(log::Logger* logger); // todo, move
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+			std::binary_semaphore& sem, log::Logger* logger);
+int asio_launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
+
+std::exception_ptr eptr = nullptr;
 
 } // ember
 
@@ -59,7 +64,7 @@ int main(int argc, const char* argv[]) try {
 	ember::log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = ember::launch(args, logger.get());
+	const auto ret = ember::asio_launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
 } catch(std::exception& e) {
@@ -69,13 +74,50 @@ int main(int argc, const char* argv[]) try {
 
 namespace ember {
 
-int launch(const po::variables_map& args, log::Logger* logger) try {
+/*
+ * Starts ASIO worker threads, blocking until the launch thread exits
+ * upon error or signal handling.
+ * 
+ * io_context is only stopped after the thread joins to ensure that all
+ * services can cleanly shut down upon destruction without requiring
+ * explicit shutdown() calls in a signal handler.
+ */
+int asio_launch(const po::variables_map& args, log::Logger* logger) try {
+	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
+	std::binary_semaphore flag(0);
+
+	std::thread thread([&]() {
+		thread::set_name("Launcher");
+		launch(args, service, flag, logger);
+	});
+
+	// Install signal handler
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	signals.async_wait([&](auto error, auto signal) {
+		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
+		flag.release();
+		thread.join();
+		service.stop();
+	});
+
+	service.run();
+
+	if(eptr) {
+		std::rethrow_exception(eptr);
+	}
+
+	return EXIT_SUCCESS;
+} catch(const std::exception& e) {
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
+}
+
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+            std::binary_semaphore& sem, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
-
-	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	const auto& iface = args["mdns.interface"].as<std::string>();
 	const auto& group = args["mdns.group"].as<std::string>();
@@ -92,24 +134,16 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	spark::v2::Server spark(service, APP_NAME, spark_iface, spark_port, logger);
 	dns::RequestHandler handler(logger);
 	//context.register_service(&handler);
-	
-	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_TRACE(logger) << __func__ << signal << LOG_SYNC;
-		server.shutdown();
-		spark.shutdown();
-	});
 
+	// All done setting up
 	service.dispatch([logger]() {
 		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
 	});
 
-	service.run();
-
+	sem.acquire();
 	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
-	return EXIT_SUCCESS;
-} catch(std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+} catch(...) {
+	eptr = std::current_exception();
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

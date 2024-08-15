@@ -32,7 +32,8 @@ Server::Server(boost::asio::io_context& context, std::string_view name,
 	: ctx_(context),
 	  acceptor_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),
 	  resolver_(ctx_),
-	  logger_(logger) {
+	  logger_(logger),
+	  stopped_(false) {
 	acceptor_.set_option(ba::ip::tcp::no_delay(true));
 	acceptor_.set_option(ba::ip::tcp::acceptor::reuse_address(true));
 
@@ -257,11 +258,20 @@ void Server::close_peer(const std::string& key) {
 }
 
 void Server::shutdown() {
+	if(stopped_) {
+		return;
+	}
+
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)
 		<< "[spark] Service shutting down..."
 		<< LOG_ASYNC;
 
 	acceptor_.close();
+	stopped_ = true;
+}
+
+Server::~Server() {
+	shutdown();
 }
 
 } // spark, ember
