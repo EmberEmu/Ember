@@ -43,10 +43,12 @@
 #include <pcre.h>
 #include <zlib.h>
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <format>
 #include <fstream>
 #include <memory>
+#include <semaphore>
 #include <string>
 #include <string_view>
 #include <stdexcept>
@@ -55,21 +57,21 @@ constexpr ember::cstring_view APP_NAME { "Realm Gateway" };
 
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
-namespace ba = boost::asio;
 
+using namespace ember;
 using namespace std::chrono_literals;
 using namespace std::placeholders;
 
-namespace ember {
-
-int launch(const po::variables_map& args, log::Logger* logger);
+void launch(const po::variables_map& args, ServicePool& service_pool,
+            std::binary_semaphore& sem, log::Logger* logger);
+int asio_launch(const po::variables_map& args, log::Logger* logger);
 void print_lib_versions(log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
 const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
 
-} // ember
+std::exception_ptr eptr = nullptr;
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -80,8 +82,6 @@ const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	using namespace ember;
-
 	thread::set_name("Main");
 	print_banner(APP_NAME);
 	util::set_window_title(APP_NAME);
@@ -93,7 +93,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	print_lib_versions(logger.get());
-	const auto ret = launch(args, logger.get());
+	const auto ret = asio_launch(args, logger.get());
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
 } catch(const std::exception& e) {
@@ -101,9 +101,50 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-namespace ember {
+/*
+ * Starts ASIO worker threads, blocking until the launch thread exits
+ * upon error or signal handling.
+ * 
+ * io_context is only stopped after the thread joins to ensure that all
+ * services can cleanly shut down upon destruction without requiring
+ * explicit shutdown() calls in a signal handler.
+ */
+int asio_launch(const po::variables_map& args, log::Logger* logger) try {
+	unsigned int concurrency = check_concurrency(logger);
 
-int launch(const po::variables_map& args, log::Logger* logger) try {
+	// Start ASIO service pool
+	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
+	ServicePool service_pool(concurrency);
+	service_pool.run();
+
+	// Install signal handler
+	boost::asio::signal_set signals(service_pool.get_service(), SIGINT, SIGTERM);
+	std::binary_semaphore flag(0);
+
+	signals.async_wait([&](auto error, auto signal) {
+		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
+		flag.release();
+	});
+
+	std::thread thread([&]() {
+		thread::set_name("Launcher");
+		launch(args, service_pool, flag, logger);
+	});
+
+	thread.join();
+
+	if(eptr) {
+		std::rethrow_exception(eptr);
+	}
+
+	return EXIT_SUCCESS;
+} catch(const std::exception& e) {
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
+}
+
+void launch(const po::variables_map& args, ServicePool& service_pool,
+            std::binary_semaphore& sem, log::Logger* logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
@@ -124,7 +165,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
 	Botan::AutoSeeded_RNG rng;
-	auto seed_bytes = std::as_writable_bytes(std::span(ember::rng::xorshift::seed));
+	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
@@ -139,7 +180,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(ember::drivers::init_db_driver(db_config_path));
+	auto driver(drivers::init_db_driver(db_config_path));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
@@ -149,7 +190,7 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	});
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
-	auto realm_dao = ember::dal::realm_dao(pool);
+	auto realm_dao = dal::realm_dao(pool);
 
 	LOG_INFO(logger) << "Retrieving realm information..."<< LOG_SYNC;
 	auto realm = realm_dao->get_realm(args["realm.id"].as<unsigned int>());
@@ -177,10 +218,6 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 	if(args.count("misc.concurrency")) {
 		concurrency = args["misc.concurrency"].as<unsigned int>();
 	}
-
-	// Start ASIO service pool
-	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
-	ServicePool service_pool(concurrency);
 
 	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
 	EventDispatcher dispatcher(service_pool);
@@ -260,30 +297,15 @@ int launch(const po::variables_map& args, log::Logger* logger) try {
 
 	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 
-	boost::asio::io_context wait_svc;
-	boost::asio::signal_set signals(wait_svc, SIGINT, SIGTERM);
-
-	signals.async_wait([&](const boost::system::error_code& error, int signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
-
-		if(forward) {
-			forward->unmap();
-		}
-	});
-
-	service.dispatch([&, logger]() {
+	service.dispatch([&]() {
 		realm_svc.set_online();
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
-	service_pool.run();
-	wait_svc.run();
-
+	sem.acquire();
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
-	return EXIT_SUCCESS;
-} catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+} catch(...) {
+	eptr = std::current_exception();
 }
 
 const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
@@ -436,5 +458,3 @@ void print_lib_versions(log::Logger* logger) {
 	LOG_DEBUG(logger) << "- PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << LOG_SYNC;
 	LOG_DEBUG(logger) << "- Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
-
-} // ember
