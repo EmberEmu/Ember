@@ -12,10 +12,9 @@
 #include <dbcreader/Loader.h>
 #include <dbcreader/Storage.h>
 #include <boost/unordered/unordered_flat_map.hpp>
-#include <initializer_list>
+#include <concepts>
 #include <functional>
 #include <memory>
-#include <string_view>
 
 namespace ember::dbc {
 
@@ -31,8 +30,12 @@ public:
 	DiskLoader(std::string dir_path, LogCB log_cb = [](const std::string&){});
 	~DiskLoader() = default;
 
+	Storage load(std::convertible_to<std::string_view> auto&& ...whitelist) const {
+		std::initializer_list<std::string_view> list{ whitelist... });
+		return load({ list.begin(), list.end() });
+	}
+
 	Storage load() const override;
-	Storage load(std::initializer_list<const std::string_view> whitelist) const override;
 	Storage load(std::span<const std::string_view> whitelist) const override;
 };
 

@@ -173,7 +173,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load({"AddonData", "Cfg_Categories"});
+	auto dbc_store = loader.load("AddonData", "Cfg_Categories");
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
 	dbc::link(dbc_store);

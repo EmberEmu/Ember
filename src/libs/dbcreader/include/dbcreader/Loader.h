@@ -8,10 +8,8 @@
 
 #pragma once
 
-#include <initializer_list>
 #include <span>
 #include <string_view>
-#include <vector>
 
 namespace ember::dbc {
 
@@ -20,7 +18,6 @@ struct Storage;
 class Loader {
 public:
 	virtual Storage load() const = 0;
-	virtual Storage load(std::initializer_list<const std::string_view> whitelist) const = 0;
 	virtual Storage load(std::span<const std::string_view> whitelist) const = 0;
 	virtual ~Loader() = default;
 };

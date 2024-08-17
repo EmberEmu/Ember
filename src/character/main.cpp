@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -132,12 +132,12 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load({
+	auto dbc_store = loader.load(
 		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
 		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartSkills",
 		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
 		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
-	});
+	);
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
 	dbc::link(dbc_store);

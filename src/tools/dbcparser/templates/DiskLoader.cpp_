@@ -88,10 +88,6 @@ DiskLoader::DiskLoader(std::string dir_path, LogCB log_cb)
 <%TEMPLATE_DISK_LOAD_MAP_INSERTION%>
 }
 
-Storage DiskLoader::load(std::initializer_list<const std::string_view> whitelist) const {
-	return load({ whitelist.begin(), whitelist.end() });
-}
-
 Storage DiskLoader::load(std::span<const std::string_view> whitelist) const {
 	Storage storage;
 
