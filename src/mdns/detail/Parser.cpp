@@ -494,7 +494,7 @@ void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
 	stream << be::native_to_big(rr.ttl);
 
 	if(!stream.can_write_seek()) {
-		// todo
+		throw Result::STREAM_CANNOT_SEEK;
 	}
 
 	const auto seek = stream.total_write();
