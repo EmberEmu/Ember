@@ -14,6 +14,7 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <boost/container/small_vector.hpp>
 #include <span>
+#include <string_view>
 #include <vector>
 #include <cstddef>
  
@@ -37,14 +38,14 @@ Botan::BigInt decode_flip(std::span<std::uint8_t> val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
                         Compliance mode);
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N);
-Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
+Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
                         std::span<const std::uint8_t> salt, Compliance mode);
 
 inline Botan::BigInt compute_v(const Generator& generator, const Botan::BigInt& x) {
 	return generator(x);
 }
 
-inline Botan::BigInt generate(const std::string& identifier, const std::string& password,
+inline Botan::BigInt generate(std::string_view identifier, std::string_view password,
                               const Generator& gen, std::span<const std::uint8_t> salt,
                               Compliance mode) {
 	Botan::BigInt x = compute_x(identifier, password, salt, mode);
@@ -55,15 +56,15 @@ inline Botan::BigInt generate(const std::string& identifier, const std::string& 
 
 void generate_salt(std::span<std::uint8_t> buffer);
 
-Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
+Botan::BigInt generate_verifier(std::string_view identifier, std::string_view password,
                                 const Generator& generator, std::span<const std::uint8_t> salt,
                                 Compliance mode);
 
-Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
+Botan::BigInt generate_client_proof(std::string_view identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g, const Botan::BigInt& A,
                                     const Botan::BigInt& B, std::span<const std::uint8_t> salt);
 
 Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt& proof,
                                     const SessionKey& key, const std::size_t padding);
 
-} //srp6, ember
+} // srp6, ember

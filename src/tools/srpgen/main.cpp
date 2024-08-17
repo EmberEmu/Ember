@@ -12,10 +12,10 @@
 #include <algorithm>
 #include <exception>
 #include <iomanip>
-#include <fstream>
 #include <iostream>
-#include <cctype>
+#include <fstream>
 #include <string>
+#include <cctype>
 
 namespace po = boost::program_options;
 
@@ -67,7 +67,7 @@ void launch(const po::variables_map& args) {
 		stream << byte;
 	}
 
-	if (!stream) {
+	if(!stream) {
 		throw std::runtime_error("\nAn error occurred while attempting to write salt to file, " + file);
 	}
 }

@@ -14,6 +14,7 @@
 #include <array>
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace srp = ember::srp6;
 
@@ -40,8 +41,8 @@ public:
 };
 
 TEST(srp6a, RFC5054_TestVectors) {
-	std::string identifier = "alice";
-	std::string password = "password123";
+	std::string identifier { "alice" };
+	std::string password { "password123" };
 	const auto salt = Botan::BigInt::encode(Botan::BigInt(("0xBEB25379D1A8581EB5A727673A2441EE")));
 	srp::Generator gen(srp::Generator::Group::_1024_BIT);
 	
@@ -169,8 +170,8 @@ TEST_F(srp6SessionTest, ClientNegativeEphemeral) {
 }
 
 TEST(srp6Regressions, SaltZeroPad_ComputeX) {
-	std::string username = "alice";
-	std::string password = "password123";
+	std::string_view username { "alice" };
+	std::string_view password { "password123" };
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
 	srp::Generator gen(srp::Generator::Group::_1024_BIT);
 
@@ -180,8 +181,8 @@ TEST(srp6Regressions, SaltZeroPad_ComputeX) {
 }
 
 TEST(srp6Regressions, SaltZeroPad_GenerateUser) {
-	std::string username = "alice";
-	std::string password = "password123";
+	std::string_view username { "alice" };
+	std::string_view password { "password123" };
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
 
 	auto gen = srp::Generator(srp::Generator::Group::_256_BIT);

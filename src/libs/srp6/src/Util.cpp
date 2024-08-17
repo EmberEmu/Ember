@@ -99,15 +99,15 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	return Botan::BigInt::decode(hash.data(), hash.size());
 }
 
-Botan::BigInt compute_x(const std::string& identifier, const std::string& password,
+Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
                         std::span<const std::uint8_t> salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, SHA1_LEN> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
-	hasher->update(identifier);
+	hasher->update(reinterpret_cast<const uint8_t*>(identifier.data()), identifier.size());
 	hasher->update(":");
-	hasher->update(password);
+	hasher->update(reinterpret_cast<const uint8_t*>(password.data()), password.size());
 	hasher->final(hash.data());
 
 	if(mode == Compliance::RFC5054) {
@@ -131,7 +131,7 @@ Botan::BigInt compute_x(const std::string& identifier, const std::string& passwo
 
 } //detail
 
-Botan::BigInt generate_client_proof(const std::string& identifier, const SessionKey& key,
+Botan::BigInt generate_client_proof(std::string_view identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g,
                                     const Botan::BigInt& A, const Botan::BigInt& B,
                                     std::span<const std::uint8_t> salt) {
@@ -145,7 +145,7 @@ Botan::BigInt generate_client_proof(const std::string& identifier, const Session
 	const auto& g_enc = detail::encode_flip(g);
 	hasher->update(g_enc.data(), g_enc.size());
 	hasher->final(g_hash.data());
-	hasher->update(identifier);
+	hasher->update(reinterpret_cast<const uint8_t*>(identifier.data()), identifier.size());
 	hasher->final(i_hash.data());
 	
 	for(std::size_t i = 0, j = n_hash.size(); i < j; ++i) {
@@ -188,10 +188,10 @@ void generate_salt(std::span<std::uint8_t> buffer) {
 	Botan::AutoSeeded_RNG().randomize(buffer.data(), buffer.size());
 }
 
-Botan::BigInt generate_verifier(const std::string& identifier, const std::string& password,
+Botan::BigInt generate_verifier(std::string_view identifier, std::string_view password,
                                 const Generator& generator, std::span<const std::uint8_t> salt,
                                 Compliance mode) {
 	return detail::generate(identifier, password, generator, salt, mode);
 }
 
-} //srp6, ember
+} // srp6, ember

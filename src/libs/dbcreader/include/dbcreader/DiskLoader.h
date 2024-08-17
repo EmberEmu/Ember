@@ -34,7 +34,7 @@ public:
 		std::initializer_list<std::string_view> list { whitelist... };
 		return load({ list.begin(), list.end() });
 	}
-
+	
 	Storage load() const override;
 	Storage load(std::span<const std::string_view> whitelist) const override;
 };
