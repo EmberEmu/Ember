@@ -31,7 +31,7 @@ public:
 	~DiskLoader() = default;
 
 	Storage load(std::convertible_to<std::string_view> auto&& ...whitelist) const {
-		std::initializer_list<std::string_view> list{ whitelist... });
+		std::initializer_list<std::string_view> list { whitelist... };
 		return load({ list.begin(), list.end() });
 	}
 

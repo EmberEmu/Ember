@@ -37,10 +37,11 @@ namespace es = ember::spark;
 namespace ep = ember::connection_pool;
 namespace po = boost::program_options;
 
+using namespace ember;
+
 int launch(const po::variables_map& args, el::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
-
 
  /*
  * We want to do the minimum amount of work required to get
@@ -51,17 +52,17 @@ void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logge
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::print_banner(APP_NAME);
-	ember::util::set_window_title(APP_NAME);
+	print_banner(APP_NAME);
+	util::set_window_title(APP_NAME);
 	
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = ember::util::init_logging(args);
+	auto logger = util::init_logging(args);
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	const auto ret = launch(args, logger.get());
-	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
@@ -77,22 +78,22 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
 	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
-	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
+	auto spark_filter = el::Filter(FilterType::LF_SPARK);
 
 	es::Service spark("account", service, s_address, s_port, logger);
 	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger);
 
-	ember::Sessions sessions(true);
-	ember::Service net_service(sessions, spark, discovery, logger);
+	Sessions sessions(true);
+	Service net_service(sessions, spark, discovery, logger);
 
 	service.dispatch([logger]() {
-		LOG_INFO(logger) << APP_NAME << " started successfully" << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
 	service.run();
 
-	LOG_INFO(logger) << APP_NAME << " shutting down..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
