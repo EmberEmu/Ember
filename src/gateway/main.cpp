@@ -406,19 +406,19 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 	using ember::LF_DB_CONN_POOL;
 
 	switch(severity) {
-		case(ep::Severity::DEBUG) :
+		case ep::Severity::DEBUG:
 			LOG_DEBUG_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
-		case(ep::Severity::INFO) :
+		case ep::Severity::INFO:
 			LOG_INFO_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
-		case(ep::Severity::WARN) :
+		case ep::Severity::WARN:
 			LOG_WARN_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
-		case(ep::Severity::ERROR) :
+		case ep::Severity::ERROR:
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
-		case(ep::Severity::FATAL) :
+		case ep::Severity::FATAL:
 			LOG_FATAL_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
 		default:
