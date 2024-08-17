@@ -16,6 +16,7 @@ add_library(${LIBRARY_NAME}
             include/srp6/Client.h
             include/srp6/Generator.h
             include/srp6/Exception.h
+			include/srp6/detail/Primes.h
            )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

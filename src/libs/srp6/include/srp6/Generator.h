@@ -33,6 +33,9 @@ struct Generator {
 	}
 
 private:
+	Botan::BigInt g_from_group(Generator::Group& group);
+	Botan::BigInt n_from_group(Generator::Group& group);
+
 	Botan::BigInt g_, N_;
 };
 
