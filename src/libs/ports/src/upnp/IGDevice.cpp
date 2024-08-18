@@ -392,7 +392,8 @@ void IGDevice::launch_request(UPnPRequest::Handler&& handler) {
 }
 
 void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
-	auto handler = [=, this](HTTPTransport& transport, ErrorCode ec) -> ba::awaitable<void> {
+	auto handler = [&, mapping, cb = std::move(cb)](HTTPTransport& transport,
+	                                                ErrorCode ec) -> ba::awaitable<void> {
 		if(!ec) {
 			auto result = co_await do_add_port_mapping(mapping, transport);
 			cb(result);
@@ -405,7 +406,8 @@ void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 }
 
 void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
-	auto handler = [=, this](HTTPTransport& transport, ErrorCode ec) -> ba::awaitable<void> {
+	auto handler = [&, mapping, cb = std::move(cb)](HTTPTransport& transport,
+	                                                ErrorCode ec) -> ba::awaitable<void> {
 		if(!ec) {
 			auto result = co_await do_delete_port_mapping(mapping, transport);
 			cb(result);

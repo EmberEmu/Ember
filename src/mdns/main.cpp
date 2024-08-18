@@ -51,14 +51,14 @@ std::exception_ptr eptr = nullptr;
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::thread::set_name("Main");
-	ember::print_banner(APP_NAME);
-	ember::util::set_window_title(APP_NAME);
+	thread::set_name("Main");
+	print_banner(APP_NAME);
+	util::set_window_title(APP_NAME);
 
 	const po::variables_map args = parse_arguments(argc, argv);
 
 	auto logger = util::init_logging(args);
-	ember::log::set_global_logger(logger.get());
+	log::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
 	const auto ret = asio_launch(args, logger.get());

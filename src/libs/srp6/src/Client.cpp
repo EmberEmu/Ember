@@ -72,4 +72,4 @@ BigInt Client::generate_proof(const SessionKey& key, const Botan::BigInt& B,
 	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B, salt);
 }
 
-} //srp6, ember
+} // srp6, ember

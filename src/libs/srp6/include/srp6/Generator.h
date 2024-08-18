@@ -39,4 +39,4 @@ private:
 	Botan::BigInt g_, N_;
 };
 
-} //srp6, ember
+} // srp6, ember

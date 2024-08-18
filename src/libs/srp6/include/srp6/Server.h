@@ -38,4 +38,4 @@ public:
 	inline const Botan::BigInt& public_ephemeral() const { return B_; }
 };
 
-} //srp6, ember
+} // srp6, ember

@@ -58,4 +58,4 @@ BigInt Server::generate_proof(const SessionKey& key, const Botan::BigInt& A,
 	return generate_server_proof(A, client_proof, key, N_.bytes());
 }
 
-} //srp6, ember
+} // srp6, ember

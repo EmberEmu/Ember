@@ -65,4 +65,4 @@ Generator::Generator(Group group)
 	: g_(g_from_group(group)),
 	  N_(n_from_group(group)) { }
 
-} //srp6, ember
+} // srp6, ember

@@ -129,7 +129,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 	}
 }
 
-} //detail
+} // detail
 
 Botan::BigInt generate_client_proof(std::string_view identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g,
