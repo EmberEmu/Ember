@@ -39,9 +39,13 @@ namespace po = boost::program_options;
 
 using namespace ember;
 
-int launch(const po::variables_map& args, el::Logger* logger);
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+            std::binary_semaphore& sem, log::Logger* logger);
+int asio_launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, el::Logger* logger);
+
+std::exception_ptr eptr = nullptr;
 
  /*
  * We want to do the minimum amount of work required to get
@@ -61,7 +65,7 @@ int main(int argc, const char* argv[]) try {
 	el::set_global_logger(logger.get());
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = launch(args, logger.get());
+	const auto ret = asio_launch(args, logger.get());
 	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
 } catch(const std::exception& e) {
@@ -69,9 +73,50 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, el::Logger* logger) try {
-	boost::asio::io_context service;
+/*
+ * Starts ASIO worker threads, blocking until the launch thread exits
+ * upon error or signal handling.
+ * 
+ * io_context is only stopped after the thread joins to ensure that all
+ * services can cleanly shut down upon destruction without requiring
+ * explicit shutdown() calls in a signal handler.
+ */
+int asio_launch(const po::variables_map& args, log::Logger* logger) try {
+	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
+	std::binary_semaphore flag(0);
 
+	std::thread thread([&]() {
+		thread::set_name("Launcher");
+		launch(args, service, flag, logger);
+	});
+
+	// Install signal handler
+	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+
+	signals.async_wait([&](auto error, auto signal) {
+		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
+		flag.release();
+	});
+
+	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
+		(&boost::asio::io_context::run), &service);
+	thread::set_name(worker, "ASIO Worker");
+
+	thread.join();
+	service.stop();
+
+	if(eptr) {
+		std::rethrow_exception(eptr);
+	}
+
+	return EXIT_SUCCESS;
+} catch(const std::exception& e) {
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	return EXIT_FAILURE;
+}
+
+void launch(const po::variables_map& args, boost::asio::io_context& service,
+            std::binary_semaphore& sem, log::Logger* logger) try {
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
@@ -91,13 +136,11 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
-	service.run();
+	sem.acquire();
 
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
-	return EXIT_SUCCESS;
-} catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+} catch(...) {
+	eptr = std::current_exception();
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
