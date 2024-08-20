@@ -163,7 +163,7 @@ TEST(MPQ, Extract_JPG) {
 	ASSERT_TRUE(archive);
 	const auto& index = archive->file_lookup("ember.jpg", 0);
 	ASSERT_NE(index, mpq::Archive::npos);
-	const auto entry = archive->file_entry(index);
+	const auto& entry = archive->file_entry(index);
 	mpq::DynamicMemorySink sink;
 	ASSERT_NO_THROW(archive->extract_file("ember.jpg", sink));
 	const auto md5_buf = util::generate_md5(sink.data());

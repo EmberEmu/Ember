@@ -78,7 +78,7 @@ void HeartbeatService::handle_pong(const Link& link, const Message& message) {
 
 void HeartbeatService::send_ping(const Link& link, std::uint64_t time) {
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
-	std::uint16_t opcode = std::to_underlying(messaging::core::Opcode::MSG_PING);
+	constexpr auto opcode = std::to_underlying(messaging::core::Opcode::MSG_PING);
 	auto msg = messaging::core::CreatePing(*fbb, time);
 	fbb->Finish(msg);
 	service_->send(link, opcode, fbb);
