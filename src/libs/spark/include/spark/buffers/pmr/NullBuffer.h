@@ -30,7 +30,7 @@ public:
 	void copy(void* destination, size_type length) const {};
 	void reserve(const size_type length) override {};
 	size_type size() const override{ return 0; };
-	bool empty() const override { return true; };
+	[[nodiscard]] bool empty() const override { return true; };
 	bool can_write_seek() const override { return false; }
 
 	void write_seek(const BufferSeek direction, const std::size_t offset) override {

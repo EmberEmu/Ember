@@ -57,6 +57,7 @@ public:
 		return buffer_.size() - read_;
 	}
 
+	[[nodiscard]]
 	bool empty() const override {
 		return !(buffer_.size() - read_);
 	}

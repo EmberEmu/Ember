@@ -116,6 +116,7 @@ public:
 		return buffer_.size() - read_;
 	}
 
+	[[nodiscard]]
 	bool empty() const {
 		return read_ == write_;
 	}

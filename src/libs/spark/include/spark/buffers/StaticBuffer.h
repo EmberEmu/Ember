@@ -120,6 +120,7 @@ public:
 		return read_ptr()[index];
 	}
 
+	[[nodiscard]]
 	bool empty() const {
 		return write_ == read_;
 	}

@@ -97,6 +97,7 @@ public:
 		return BufferReadAdaptor<buf_type>::size(); 
 	};
 
+	[[nodiscard]]
 	bool empty() const override { 
 		return BufferReadAdaptor<buf_type>::empty();
 	}

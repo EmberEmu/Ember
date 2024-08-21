@@ -272,6 +272,7 @@ public:
 		return buffer_.size();
 	}
 
+	[[nodiscard]]
 	bool empty() const {
 		return buffer_.empty();
 	}

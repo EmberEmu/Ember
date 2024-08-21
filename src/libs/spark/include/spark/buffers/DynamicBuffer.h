@@ -409,6 +409,7 @@ public:
 		size_ = 0;
 	}
 
+	[[nodiscard]]
 	bool empty() const override {
 		return !size_;
 	}
