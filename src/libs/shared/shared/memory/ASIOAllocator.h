@@ -15,19 +15,19 @@
 namespace ember {
 
 class ASIOAllocator final {
-	constexpr static std::size_t SMALL_SIZE_  = 64;
-	constexpr static std::size_t MEDIUM_SIZE_ = 128;
-	constexpr static std::size_t LARGE_SIZE_  = 256;
-	constexpr static std::size_t HUGE_SIZE_   = 1024;
+	constexpr static std::size_t SMALL_SIZE  = 64;
+	constexpr static std::size_t MEDIUM_SIZE = 128;
+	constexpr static std::size_t LARGE_SIZE  = 256;
+	constexpr static std::size_t HUGE_SIZE   = 1024;
 
 	inline boost::pool<>* pool_select(std::size_t size) {
-		if(size <= SMALL_SIZE_) {
+		if(size <= SMALL_SIZE) {
 			return &small_;
-		} else if(size <= MEDIUM_SIZE_) {
+		} else if(size <= MEDIUM_SIZE) {
 			return &medium_;
-		} else if(size <= LARGE_SIZE_) {
+		} else if(size <= LARGE_SIZE) {
 			return &large_;
-		} else if(size <= HUGE_SIZE_) {
+		} else if(size <= HUGE_SIZE) {
 			return &huge_;
 		} else {
 			return nullptr;
@@ -35,16 +35,20 @@ class ASIOAllocator final {
 	}
 
 public:
-	ASIOAllocator() : small_(SMALL_SIZE_), medium_(MEDIUM_SIZE_),
-		large_(LARGE_SIZE_), huge_(HUGE_SIZE_) { }
+	ASIOAllocator()
+		: small_(SMALL_SIZE),
+		  medium_(MEDIUM_SIZE),
+		  large_(LARGE_SIZE),
+		  huge_(HUGE_SIZE) { }
 
 	ASIOAllocator(const ASIOAllocator&) = delete;
 	ASIOAllocator& operator=(const ASIOAllocator&) = delete;
 
+	[[nodiscard]]
 	void* allocate(std::size_t size) {
 		boost::pool<>* pool = pool_select(size);
 
-		if(pool) {
+		if(pool) [[likely]] {
 			return pool->malloc();
 		} else {
 			return ::operator new(size);
@@ -54,7 +58,7 @@ public:
 	void deallocate(void* chunk, std::size_t size) {
 		boost::pool<>* pool = pool_select(size);
 
-		if(pool) {
+		if(pool) [[likely]] {
 			pool->free(chunk);
 		} else {
 			::operator delete(chunk);
@@ -76,6 +80,7 @@ public:
 		handler_(std::forward<Args>(args)...);
 	}
 
+	[[nodiscard]]
 	friend void* asio_handler_allocate(std::size_t size,
 		alloc_handler<Handler>* this_handler) {
 		return this_handler->allocator_.allocate(size);

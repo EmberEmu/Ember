@@ -19,7 +19,6 @@ class StreamBase {
 public:
 	explicit StreamBase(BufferBase& buffer) : buffer_(buffer) { }
 
-
 	std::size_t size() const {
 		return buffer_.size();
 	}
