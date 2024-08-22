@@ -32,24 +32,7 @@ std::tm current_time() {
 	return time;
 }
 
-std::string put_time(const std::tm& time, const char* format) {
-#if defined __GNUC__  || defined __MINGW32__
-	const std::size_t BUFFER_SIZE = 128;
-	char buffer[BUFFER_SIZE];
-
-	if(!std::strftime(buffer, BUFFER_SIZE, format, &time)) {
-		return "[error]";
-	}
-#else
-	auto out = std::put_time(&time, format);
-	std::stringstream stream;
-	stream << out;
-	const std::string& buffer = stream.str();
-#endif
-	return buffer;
-}
-
-std::string put_time(const std::tm& time, const std::string& format) {
+std::string put_time(const std::tm& time, cstring_view format) {
 #if defined __GNUC__  || defined __MINGW32__
 	const std::size_t BUFFER_SIZE = 128;
 	char buffer[BUFFER_SIZE];
