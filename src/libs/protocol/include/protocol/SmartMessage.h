@@ -8,7 +8,6 @@
 
 #include <protocol/Packet.h>
 #include <type_traits>
-#include <cassert>
 
 namespace ember::protocol {
 
@@ -70,7 +69,7 @@ public:
 	}
 
 	operator const MessageType&() const {
-		return *_view; 
+		return *_view;
 	}
 
 	operator MessageType() const {
