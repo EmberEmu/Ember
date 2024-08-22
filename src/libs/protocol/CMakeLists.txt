@@ -41,6 +41,7 @@ set(LIBRARY_SRC
     include/protocol/Packets.h
     include/protocol/ResultCodes.h
     include/protocol/PacketHeaders.h
+	include/protocol/SmartMessage.h
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})

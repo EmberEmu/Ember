@@ -14,8 +14,9 @@
 
 namespace ember::protocol {
 
+// todo, remove INITIAL when codegen is done
 enum class State {
-	INITIAL, CALL_AGAIN, DONE, ERRORED
+	INITIAL, DONE, ERRORED
 };
 
 template <typename HeaderT, typename HeaderT::OpcodeType op_, typename Payload>
