@@ -36,12 +36,6 @@ Program Options is designed for reading configuration files and handling command
 
 Ember's command-line argument and configuration file handling is done with this library.
 
-### Boost Serialisation
-
-Boost Serialisation allows for easy serialisation/deserialisation of data structures for saving/loading to/from disk.
-
-Ember uses serialisation for handling patch data caches.
-
 ### Boost DLL ***(Currently unused!)***
 
 Boost DLL is by Ember's plugin system for cross-platform handling of dynamic libraries.
@@ -50,16 +44,13 @@ Boost DLL is by Ember's plugin system for cross-platform handling of dynamic lib
 
 A number of smaller, often header-only, Boost facilities are used. These include:
 * Strong typedef
-* Flatmap & Small Vector
 * UUID generation
 * Assert
-* Various algorithms
+* Various containers & algorithms
 
 ## Botan
 
 Botan is a cryptography library used primarily by Ember's own SRP6 library for its big integer maths and hashing algorithms.
-
-Botan implements a number of cryptographic algorithms, including the SRP6 variant, SRP6a. However, this implementation is not compatible with the game.
 
 ## PCRE
 
@@ -73,7 +64,7 @@ PCRE is also used by the game itself, albeit a seemingly slightly modified versi
 
 ## RapidXML
 
-RapidXML is a light-weight, header-only, XML parser used only by the DBC code generation tool, 'dbcparser'. The DBC schemas are defined in XML.
+RapidXML is a light-weight, header-only, XML parser used by the DBC code generation tool, 'dbcparser'. It is also used by the port mapping library for parsing SSDP and UPnP responses.
 
 ## Google Test
 
@@ -102,3 +93,7 @@ Breakpad also allows for submission of the generated stack traces to a Mozilla S
 ## ICU ***(Currently unused!)***
 
 ICU is unicode library used in conjunction with Boost Locale for handling localisation issues, such as the collation and correct validation of character names in various languages.
+
+## Inja
+
+Inja is a lightweight templating library. Ember uses it to generate RPC stubs.
