@@ -10,17 +10,24 @@
 
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
+#include <mutex>
 #include <cstddef>
 
 namespace ember {
 
+enum ThreadPolicy {
+	thread_safe,
+	thread_unsafe
+};
+
+template<ThreadPolicy _policy = thread_safe>
 class ASIOAllocator final {
 	constexpr static std::size_t SMALL_SIZE  = 64;
 	constexpr static std::size_t MEDIUM_SIZE = 128;
 	constexpr static std::size_t LARGE_SIZE  = 256;
 	constexpr static std::size_t HUGE_SIZE   = 1024;
 
-	inline boost::pool<>* pool_select(std::size_t size) {
+	inline boost::pool<>* pool_select(const std::size_t size) {
 		if(size <= SMALL_SIZE) {
 			return &small_;
 		} else if(size <= MEDIUM_SIZE) {
@@ -45,34 +52,51 @@ public:
 	ASIOAllocator& operator=(const ASIOAllocator&) = delete;
 
 	[[nodiscard]]
-	void* allocate(std::size_t size) {
+	void* allocate(const std::size_t size) {
 		boost::pool<>* pool = pool_select(size);
 
 		if(pool) [[likely]] {
+			if constexpr(_policy == thread_safe) {
+				m_.lock();
+			}
+
 			return pool->malloc();
+
+			if constexpr(_policy == thread_safe) {
+				m_.unlock();
+			}
 		} else {
 			return ::operator new(size);
 		}
 	}
 
-	void deallocate(void* chunk, std::size_t size) {
+	void deallocate(void* chunk, const std::size_t size) {
 		boost::pool<>* pool = pool_select(size);
 
 		if(pool) [[likely]] {
+			if constexpr(_policy == thread_safe) {
+				m_.lock();
+			}
+
 			pool->free(chunk);
+
+			if constexpr(_policy == thread_safe) {
+				m_.unlock();
+			}
 		} else {
 			::operator delete(chunk);
 		}
 	}
 
 	boost::pool<> small_, medium_, large_, huge_;
+	std::mutex m_;
 };
 
 // from the ASIO examples
-template <typename Handler>
+template <typename Handler, typename Allocator>
 class alloc_handler {
 public:
-	alloc_handler(ASIOAllocator& a, Handler&& h)
+	alloc_handler(Allocator& a, Handler&& h)
 		: allocator_(a), handler_(std::move(h)) { }
 
 	template <typename ...Args>
@@ -82,23 +106,23 @@ public:
 
 	[[nodiscard]]
 	friend void* asio_handler_allocate(std::size_t size,
-		alloc_handler<Handler>* this_handler) {
+		alloc_handler<Handler, Allocator>* this_handler) {
 		return this_handler->allocator_.allocate(size);
 	}
 
 	friend void asio_handler_deallocate(void* pointer, std::size_t size,
-		alloc_handler<Handler>* this_handler) {
+		alloc_handler<Handler, Allocator>* this_handler) {
 		this_handler->allocator_.deallocate(pointer, size);
 	}
 
 private:
-	ASIOAllocator& allocator_;
+	Allocator& allocator_;
 	Handler handler_;
 };
 
-template <typename Handler>
-inline alloc_handler<Handler> create_alloc_handler(ASIOAllocator& a, Handler&& h) {
-	return alloc_handler<Handler>(a, std::move(h));
+template <typename Handler, typename Allocator>
+inline alloc_handler<Handler, Allocator> create_alloc_handler(Allocator& a, Handler&& h) {
+	return alloc_handler(a, std::move(h));
 }
 
 } // ember

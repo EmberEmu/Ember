@@ -51,7 +51,7 @@ class ClientConnection final {
 	std::optional<PacketCrypto> crypt_;
 	protocol::SizeType msg_size_;
 	SessionManager& sessions_;
-	ASIOAllocator allocator_; // todo - should be shared & passed in
+	ASIOAllocator<thread_unsafe> allocator_; // todo - should be shared & passed in
 	log::Logger* logger_;
 	bool write_in_progress_;
 	unsigned int compression_level_;

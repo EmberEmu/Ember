@@ -27,7 +27,7 @@ namespace ember {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
-	ASIOAllocator allocator_;
+	ASIOAllocator<thread_safe> allocator_;
 
 	boost::asio::ip::tcp::socket socket_;
 	const boost::asio::ip::tcp::endpoint remote_ep_;
