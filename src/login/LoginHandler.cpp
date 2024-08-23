@@ -25,7 +25,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	LoginState prev_state = state_;
-	state_ = LoginState::CLOSED;
+	update_state(LoginState::CLOSED);
 
 	switch(prev_state) {
 		case LoginState::INITIAL_CHALLENGE:
@@ -63,7 +63,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 	return true;
 } catch(const std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	state_ = LoginState::CLOSED;
+	update_state(LoginState::CLOSED);
 	return false;
 }
 
@@ -71,7 +71,7 @@ bool LoginHandler::update_state(const Action& action) try {
 	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
 
 	LoginState prev_state = state_;
-	state_ = LoginState::CLOSED;
+	update_state(LoginState::CLOSED);
 
 	switch(prev_state) {
 		case LoginState::FETCHING_USER_LOGIN:
@@ -102,7 +102,7 @@ bool LoginHandler::update_state(const Action& action) try {
 	return true;
 } catch(const std::exception& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
-	state_ = LoginState::CLOSED;
+	update_state(LoginState::CLOSED);
 	return false;
 }
 
@@ -122,7 +122,7 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 
 	if(challenge.game != grunt::Game::WoW) {
 		LOG_DEBUG_ASYNC(logger_, "Bad game magic ({})", source_ip_);
-		state_ = LoginState::CLOSED;
+		update_state(LoginState::CLOSED);
 		return;
 	}
 
@@ -169,13 +169,13 @@ void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username)
 
 	switch(opcode) {
 		case grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE:
-			state_ = LoginState::FETCHING_USER_LOGIN;
+			update_state(LoginState::FETCHING_USER_LOGIN);
 			break;
 		case grunt::Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
-			state_ = LoginState::FETCHING_USER_RECONNECT;
+			update_state(LoginState::FETCHING_USER_RECONNECT);
 			break;
 		default:
-			state_ = LoginState::CLOSED;
+			update_state(LoginState::CLOSED);
 			BOOST_ASSERT_MSG(false, "Impossible fetch_user condition");
 	}
 
@@ -191,7 +191,7 @@ void LoginHandler::fetch_session_key(const FetchUserAction& action_res) {
 		return;
 	}
 
-	state_ = LoginState::FETCHING_SESSION;
+	update_state(LoginState::FETCHING_SESSION);
 	auto action = std::make_shared<FetchSessionKeyAction>(acct_svc_, user_->id());
 	execute_async(action);
 }
@@ -237,7 +237,7 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 		if((user_ = action.get_result())) {
 			state_data_.emplace<LoginAuthenticator>(*user_);
 			build_login_challenge(response);
-			state_ = LoginState::LOGIN_PROOF;
+			update_state(LoginState::LOGIN_PROOF);
 		} else {
 			// leaks information on whether the account exists (could send challenge anyway?)
 			response.result = grunt::Result::FAIL_UNKNOWN_ACCOUNT;
@@ -288,7 +288,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 	const auto&[status, key] = action.get_result();
 
 	if(status == messaging::account::Status::OK) {
-		state_ = LoginState::RECONNECT_PROOF;
+		update_state(LoginState::RECONNECT_PROOF);
 		state_data_.emplace<ReconnectAuthenticator>(user_->username(), key, checksum_salt_);
 	} else if(status == messaging::account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
@@ -419,7 +419,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 	}
 
 	if(result == grunt::Result::SUCCESS) {
-		state_ = LoginState::WRITING_SESSION;
+		update_state(LoginState::WRITING_SESSION);
 		server_proof_ = authenticator.server_proof(key, proof_packet.A, proof_packet.M1);
 
 		auto action = std::make_shared<RegisterSessionAction>(
@@ -465,7 +465,7 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 		                   << ": " << e.what() << LOG_ASYNC;
 	}
 
-	state_ = LoginState::REQUEST_REALMS;
+	update_state(LoginState::REQUEST_REALMS);
 
 	if(action.reconnect()) {
 		send_reconnect_proof(grunt::Result::SUCCESS);
@@ -474,7 +474,7 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 	
 	if(user_->survey_request() && survey_.id()
 	   && survey_.data(challenge_.platform, challenge_.os)) {
-		state_ = LoginState::SURVEY_INITIATE;
+		update_state(LoginState::SURVEY_INITIATE);
 	}
 
 	send_login_proof(grunt::Result::SUCCESS, state_ == LoginState::SURVEY_INITIATE);
@@ -494,7 +494,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 	grunt::Result response = grunt::Result::SUCCESS;
 
 	if(result == messaging::account::Status::OK) {
-		state_ = LoginState::FETCHING_CHARACTER_DATA;
+		update_state(LoginState::FETCHING_CHARACTER_DATA);
 	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
 		response = grunt::Result::FAIL_ALREADY_ONLINE;
 	} else {
@@ -525,7 +525,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	const auto& authenticator = std::get<ReconnectAuthenticator>(state_data_);
 
 	if(authenticator.proof_check(reconn_proof.salt, reconn_proof.proof)) {
-		state_ = LoginState::FETCHING_CHARACTER_DATA;
+		update_state(LoginState::FETCHING_CHARACTER_DATA);
 		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
 		send_reconnect_proof(grunt::Result::FAIL_INCORRECT_PASSWORD);
@@ -563,7 +563,7 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 		}
 	}
 
-	state_ = LoginState::REQUEST_REALMS;
+	update_state(LoginState::REQUEST_REALMS);
 	send(response);
 }
 
@@ -599,7 +599,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) 
 	}
 
 	metrics_.increment("patches_sent");
-	state_ = LoginState::PATCH_INITIATE;
+	update_state(LoginState::PATCH_INITIATE);
 	initiate_file_transfer(fmeta);
 }
 
@@ -621,7 +621,7 @@ void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 	auto survey = dynamic_cast<const grunt::client::SurveyResult&>(packet);
 
 	// allow the client to request the realmlist without waiting on the survey write callback
-	state_ = LoginState::REQUEST_REALMS;
+	update_state(LoginState::REQUEST_REALMS);
 
 	if(survey.survey_id != survey_.id()) {
 		LOG_DEBUG(logger_) << "Received an invalid survey ID from "
@@ -671,14 +671,14 @@ void LoginHandler::handle_transfer_ack(const grunt::Packet& packet, bool survey)
 			set_transfer_offset(packet);
 			[[fallthrough]];
 		case grunt::Opcode::CMD_XFER_ACCEPT:
-			state_ = survey? LoginState::SURVEY_TRANSFER : LoginState::PATCH_TRANSFER;
+			update_state(survey? LoginState::SURVEY_TRANSFER : LoginState::PATCH_TRANSFER);
 			transfer_chunk();
 			break;
 		case grunt::Opcode::CMD_XFER_CANCEL:
-			state_ = survey? LoginState::SURVEY_RESULT : LoginState::CLOSED;
+			update_state(survey? LoginState::SURVEY_RESULT : LoginState::CLOSED);
 			break;
 		default:
-			state_ = LoginState::CLOSED;
+			update_state(LoginState::CLOSED);
 			break;
 	}
 }
@@ -729,10 +729,10 @@ void LoginHandler::on_chunk_complete() {
 	if(transfer_state_.offset == transfer_state_.size) {
 		switch(state_) {
 			case LoginState::SURVEY_TRANSFER:
-				state_ = LoginState::SURVEY_RESULT;
+				update_state(LoginState::SURVEY_RESULT);
 				break;
 			case LoginState::PATCH_TRANSFER:
-				state_ = LoginState::CLOSED;
+				update_state(LoginState::CLOSED);
 				break;
 			default:
 				break;
@@ -740,6 +740,10 @@ void LoginHandler::on_chunk_complete() {
 	} else {
 		transfer_chunk();
 	}
+}
+
+inline void LoginHandler::update_state(const LoginState& state) {
+	state_ = state;
 }
 
 } // ember

@@ -117,6 +117,8 @@ class LoginHandler final {
 	void reject_client(const GameVersion& version);
 	void patch_client(const grunt::client::LoginChallenge& version);
 
+	void update_state(const LoginState& state);
+
 public:
 	std::function<void(const std::shared_ptr<Action>& action)> execute_async;
 	std::function<void(const grunt::Packet&)> send;
