@@ -24,7 +24,7 @@ class ThreadPool;
 
 class LoginSession final : public NetworkSession {
 	void async_completion(Action& action);
-	void write_chain(const grunt::Packet& packet, bool notify);
+	void write_packet(const grunt::Packet& packet, bool notify);
 	void execute_async(std::unique_ptr<Action> action);
 
 public:
