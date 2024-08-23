@@ -127,7 +127,7 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
-	                 challenge.version, source_ip_);
+	                 to_string(challenge.version), source_ip_);
 
 	challenge_ = challenge;
 

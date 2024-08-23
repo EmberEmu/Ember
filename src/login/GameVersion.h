@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/Logger.h>
+#include <format>
 #include <cstdint>
 
 namespace ember {
@@ -23,6 +24,10 @@ struct GameVersion {
 inline log::Logger& operator<<(log::Logger& stream, GameVersion ver) {
 	stream << ver.major << "." << ver.minor << "." << ver.patch << " (" << ver.build << ")";
 	return stream;
+}
+
+inline std::string to_string(const GameVersion& ver) {
+	return std::format("{}.{}.{} ({})", ver.major, ver.minor, ver.patch, ver.build);
 }
 
 inline bool operator==(const GameVersion& lhs, const GameVersion& rhs) {
