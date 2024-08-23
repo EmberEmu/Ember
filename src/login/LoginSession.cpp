@@ -61,7 +61,7 @@ void LoginSession::execute_async(std::unique_ptr<Action> action) {
 	auto self(shared_from_this());
 	std::shared_ptr<Action> shared_act = std::move(action);
 
-	pool_.run([&, action = std::move(shared_act), self] {
+	pool_.run([&, action = std::move(shared_act), self]() mutable {
 		action->execute();
 
 		boost::asio::post(get_executor(), [&, action = std::move(action), self] {
