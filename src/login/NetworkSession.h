@@ -132,8 +132,8 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	template<decltype(auto) BlockSize>
-	void write_chain(std::unique_ptr<spark::io::DynamicBuffer<BlockSize>> chain, bool notify) {
+	template<typename BufferType>
+	void write_chain(std::unique_ptr<BufferType> chain, bool notify) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
@@ -145,14 +145,14 @@ public:
 		spark::io::BufferSequence sequence(*chain);
 
 		socket_.async_send(sequence, create_alloc_handler(allocator_,
-			[this, notify, chain = std::move(chain)](boost::system::error_code ec,
-			                                         std::size_t size) mutable {
+			[this, notify, self, chain = std::move(chain)](boost::system::error_code ec,
+			                                               std::size_t size) mutable {
 				chain->skip(size);
 
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				} else if(!ec && chain->size()) {
-					write_chain<BlockSize>(std::move(chain), notify); 
+					write_chain(std::move(chain), notify); 
 				} else if(notify) {
 					on_write_complete();
 				}

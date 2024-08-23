@@ -34,7 +34,7 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 	};
 
 	handler_.execute_async = [&](auto action) {
-		execute_async(action);
+		execute_async(std::move(action));
 	};
 }
 
@@ -55,15 +55,16 @@ bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 	return false;
 }
 
-void LoginSession::execute_async(const std::shared_ptr<Action>& action) {
+void LoginSession::execute_async(std::unique_ptr<Action> action) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
 
 	auto self(shared_from_this());
+	std::shared_ptr<Action> shared_act = std::move(action);
 
-	pool_.run([action, this, self] {
+	pool_.run([&, action = std::move(shared_act), self] {
 		action->execute();
 
-		boost::asio::post(get_executor(), [action, this, self] {
+		boost::asio::post(get_executor(), [&, action = std::move(action), self] {
 			async_completion(*action.get());
 		});
 	});
@@ -91,7 +92,7 @@ void LoginSession::write_chain(const grunt::Packet& packet, bool notify) {
 	auto chain = std::make_unique<spark::io::DynamicBuffer<block_size>>();
 	spark::io::pmr::BinaryStream stream(*chain);
 	packet.write_to_stream(stream);
-	NetworkSession::write_chain<block_size>(std::move(chain), notify);
+	NetworkSession::write_chain(std::move(chain), notify);
 }
 
 void LoginSession::on_write_complete() {

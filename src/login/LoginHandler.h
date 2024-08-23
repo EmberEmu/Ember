@@ -120,7 +120,7 @@ class LoginHandler final {
 	void update_state(const LoginState& state);
 
 public:
-	std::function<void(const std::shared_ptr<Action>& action)> execute_async;
+	std::function<void(std::unique_ptr<Action> action)> execute_async;
 	std::function<void(const grunt::Packet&)> send;
 	std::function<void(const grunt::Packet&)> send_chunk;
 

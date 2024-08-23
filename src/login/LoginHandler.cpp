@@ -179,8 +179,8 @@ void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username)
 			BOOST_ASSERT_MSG(false, "Impossible fetch_user condition");
 	}
 
-	auto action = std::make_shared<FetchUserAction>(username, user_src_);
-	execute_async(action);
+	auto action = std::make_unique<FetchUserAction>(username, user_src_);
+	execute_async(std::move(action));
 }
 
 void LoginHandler::fetch_session_key(const FetchUserAction& action_res) {
@@ -192,8 +192,8 @@ void LoginHandler::fetch_session_key(const FetchUserAction& action_res) {
 	}
 
 	update_state(LoginState::FETCHING_SESSION);
-	auto action = std::make_shared<FetchSessionKeyAction>(acct_svc_, user_->id());
-	execute_async(action);
+	auto action = std::make_unique<FetchSessionKeyAction>(acct_svc_, user_->id());
+	execute_async(std::move(action));
 }
 
 void LoginHandler::reject_client(const GameVersion& version) {
@@ -422,12 +422,12 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 		update_state(LoginState::WRITING_SESSION);
 		server_proof_ = authenticator.server_proof(key, proof_packet.A, proof_packet.M1);
 
-		auto action = std::make_shared<RegisterSessionAction>(
+		auto action = std::make_unique<RegisterSessionAction>(
 			acct_svc_, user_->id(),
 			authenticator.session_key(proof_packet.A)
 		);
 
-		execute_async(action);
+		execute_async(std::move(action));
 	} else {
 		send_login_proof(result);
 	}
@@ -506,7 +506,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 
 	// defer sending the response until we've fetched the character data
 	if(result == messaging::account::Status::OK) {
-		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_));
+		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_));
 	} else {
 		send_login_proof(response);
 	}
@@ -526,7 +526,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 
 	if(authenticator.proof_check(reconn_proof.salt, reconn_proof.proof)) {
 		update_state(LoginState::FETCHING_CHARACTER_DATA);
-		execute_async(std::make_shared<FetchCharacterCounts>(user_->id(), user_src_, true));
+		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
 		send_reconnect_proof(grunt::Result::FAIL_INCORRECT_PASSWORD);
 	}
@@ -638,13 +638,13 @@ void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 		return;
 	}
 
-	auto action = std::make_shared<SaveSurveyAction>(
+	auto action = std::make_unique<SaveSurveyAction>(
 		user_->id(), user_src_,
 		survey.survey_id, survey.data
 	);
 
 	metrics_.increment("surveys_received");
-	execute_async(action);
+	execute_async(std::move(action));
 }
 
 void LoginHandler::on_survey_write(const SaveSurveyAction& action) {
