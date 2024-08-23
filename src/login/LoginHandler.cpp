@@ -116,17 +116,18 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	 * but they're close enough that patch transfers will still work
 	 */
 	if(!validate_protocol_version(challenge)) {
-		LOG_DEBUG(logger_) << "Unsupported protocol version, "
-		                   << challenge.protocol_ver << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "Unsupported protocol version {} ({})",
+		                challenge.protocol_ver, source_ip_);
 	}
 
 	if(challenge.game != grunt::Game::WoW) {
-		LOG_DEBUG(logger_) << "Bad game magic from client" << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "Bad game magic ({})", source_ip_);
+		state_ = LoginState::CLOSED;
 		return;
 	}
 
-	LOG_DEBUG(logger_) << "Challenge: " << challenge.username << ", "
-	                   << challenge.version << ", " << source_ip_ << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
+	                 challenge.version, source_ip_);
 
 	challenge_ = challenge;
 
