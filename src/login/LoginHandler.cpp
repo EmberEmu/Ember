@@ -715,7 +715,10 @@ void LoginHandler::transfer_chunk() {
 	}
 
 	transfer_state_.offset += read_size;
-	send_chunk(response);
+
+	send_cb(response, [&]() {
+		on_chunk_complete();
+	});
 }
 
 void LoginHandler::on_chunk_complete() {

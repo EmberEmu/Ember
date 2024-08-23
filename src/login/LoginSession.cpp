@@ -26,11 +26,11 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
                              logger_(logger), pool_(pool), grunt_handler_(logger),
                              NetworkSession(sessions, std::move(socket), std::move(ep), logger) {
 	handler_.send = [&](auto& packet) {
-		write_packet(packet, false);
+		write_packet(packet, nullptr);
 	};
 
-	handler_.send_chunk = [&](auto& packet) {
-		write_packet(packet, true);
+	handler_.send_cb = [&](auto& packet, auto cb) mutable {
+		write_packet(packet, std::move(cb));
 	};
 
 	handler_.execute_async = [&](auto action) {
@@ -82,7 +82,7 @@ void LoginSession::async_completion(Action& action) try {
 }
 
 // todo use a single chain here and create a write queue instead
-void LoginSession::write_packet(const grunt::Packet& packet, bool notify) {
+void LoginSession::write_packet(const grunt::Packet& packet, WriteCallback&& cb) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
@@ -91,11 +91,7 @@ void LoginSession::write_packet(const grunt::Packet& packet, bool notify) {
 	auto chain = std::make_unique<spark::io::DynamicBuffer<1024>>();
 	spark::io::pmr::BinaryStream stream(*chain);
 	packet.write_to_stream(stream);
-	write_chain(std::move(chain), notify);
-}
-
-void LoginSession::on_write_complete() {
-	handler_.on_chunk_complete();
+	write_chain(std::move(chain), std::move(cb));
 }
 
 } // ember

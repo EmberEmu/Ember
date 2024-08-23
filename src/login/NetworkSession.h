@@ -18,6 +18,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -111,6 +112,8 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 public:
+	using WriteCallback = std::function<void()>;
+
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	               boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
 	               : sessions_(sessions), socket_(std::move(socket)), remote_ep_(ep),
@@ -133,7 +136,7 @@ public:
 	}
 
 	template<typename BufferType>
-	void write_chain(std::unique_ptr<BufferType> chain, bool notify) {
+	void write_chain(std::unique_ptr<BufferType> chain, WriteCallback cb) {
 		auto self(shared_from_this());
 
 		if(!socket_.is_open()) {
@@ -145,16 +148,16 @@ public:
 		spark::io::BufferSequence sequence(*chain);
 
 		socket_.async_send(sequence, create_alloc_handler(allocator_,
-			[this, notify, self, chain = std::move(chain)](boost::system::error_code ec,
-			                                               std::size_t size) mutable {
+			[&, self, chain = std::move(chain), cb = std::move(cb)](boost::system::error_code ec,
+			                                                        std::size_t size) mutable {
 				chain->skip(size);
 
 				if(ec && ec != boost::asio::error::operation_aborted) {
 					close_session();
 				} else if(!ec && chain->size()) {
-					write_chain(std::move(chain), notify); 
-				} else if(notify) {
-					on_write_complete();
+					write_chain(std::move(chain), std::move(cb)); 
+				} else if(!ec && cb) {
+					cb();
 				}
 			}
 		));
@@ -165,7 +168,6 @@ public:
 	}
 
 	virtual bool handle_packet(spark::io::pmr::Buffer& buffer) = 0;
-	virtual void on_write_complete() = 0;
 	virtual ~NetworkSession() = default;
 
 	friend class SessionManager;
