@@ -23,7 +23,7 @@ namespace ember::dbc {
  * Only child structs of the root node are considered for matches.
  */
 std::optional<const types::Field*> Validator::locate_fk_parent(const std::string& parent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(auto& def : *definitions_) {
 		if(def->name != parent) { //!= for the sake of one less layer of nesting
@@ -49,7 +49,7 @@ std::optional<const types::Field*> Validator::locate_fk_parent(const std::string
 }
 
 void Validator::check_foreign_keys(const types::Field& field) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& key : field.keys) {
 		if(key.type == "foreign") {
@@ -79,7 +79,7 @@ void Validator::check_foreign_keys(const types::Field& field) {
  * thing.
 */
 void Validator::check_multiple_definitions(const types::Base* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(std::find(names_.begin(), names_.end(), def->name) == names_.end()) {
 		names_.emplace_back(def->name);
@@ -119,7 +119,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 }
 
 void Validator::check_key_types(const types::Field& field) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& key : field.keys) {
 		if(key.type != "primary" && key.type != "foreign") {
@@ -137,7 +137,7 @@ void Validator::check_key_types(const types::Field& field) {
 }
 
 void Validator::check_dup_key_types(const types::Struct* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	bool has_primary = false;
 
@@ -165,7 +165,7 @@ void Validator::check_dup_key_types(const types::Struct* def) {
 }
 
 void Validator::add_user_type(TreeNode<std::string>* node, const std::string& type) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(std::find_if(node->children.begin(), node->children.end(),
 		[&type](const std::unique_ptr<TreeNode<std::string>>& i) {
@@ -179,7 +179,7 @@ void Validator::add_user_type(TreeNode<std::string>* node, const std::string& ty
 }
 
 void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Struct* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	name_check_(def->name);
 	add_user_type(parent, def->name);
@@ -204,7 +204,7 @@ void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Str
 }
 
 void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types::Base* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	switch(def->type) {
 		case types::Type::STRUCT:
@@ -226,7 +226,7 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
 bool Validator::recursive_ascent_field_type_check(const std::string& type,
                                                   const TreeNode<std::string>* node,
                                                   const TreeNode<std::string>* prev_node) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	// no parent found, must be trying to ascend from the root node
 	if(!node) {
@@ -259,7 +259,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
  * increasing the complexity to improve it.
  */
 void Validator::check_field_types(const types::Struct* def, const TreeNode<std::string>* curr_def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& field : def->fields) {
 		auto components = extract_components(field.underlying_type);
@@ -281,7 +281,7 @@ void Validator::check_field_types(const types::Struct* def, const TreeNode<std::
 
 const TreeNode<std::string>* Validator::locate_type_node(const std::string& name,
                                                          const TreeNode<std::string>* node) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	auto it = std::find_if(node->children.begin(), node->children.end(),
 		[&name](const std::unique_ptr<TreeNode<std::string>>& i) {
@@ -296,7 +296,7 @@ const TreeNode<std::string>* Validator::locate_type_node(const std::string& name
 }
 
 void Validator::validate_struct(const types::Struct* def, const TreeNode<std::string>* types) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	auto node = locate_type_node(def->name, types);
 
@@ -340,7 +340,7 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 
 template<typename T>
 void Validator::range_check(long long value) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	if(value < std::numeric_limits<T>::lowest() || value > std::numeric_limits<T>::max()) {
 		throw exception("Enum option value is out of bounds: " + std::to_string(value)
 		                 + " is not within the range of " + typeid(T).name());
@@ -348,7 +348,7 @@ void Validator::range_check(long long value) {
 }
 
 void Validator::validate_enum_option_value(const std::string& type, const std::string& value) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	int base = value.find("0x") == std::string::npos? 10 : 16;
 	std::string set = base == 10? "-0123456789" : "0123456789ABCDEFx";
@@ -377,7 +377,7 @@ void Validator::validate_enum_option_value(const std::string& type, const std::s
 }
 
 void Validator::validate_enum_options(const types::Enum* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::unordered_map<std::string_view, std::string_view> options;
 	
@@ -402,12 +402,12 @@ void Validator::validate_enum_options(const types::Enum* def) {
 }
 
 void Validator::validate_enum(const types::Enum* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	validate_enum_options(def);
 }
 
 void Validator::validate_definition(const types::Base* def) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	LOG_DEBUG_GLOB << "Validating " << def->name << LOG_ASYNC;
 
 	switch(def->type) {
@@ -431,7 +431,7 @@ void Validator::validate_definition(const types::Base* def) {
  * user-defined types are valid. The type tree begins with a root node.
 */
 void Validator::build_type_tree() {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	root_.t = "_ROOT_";
 
@@ -452,7 +452,7 @@ void Validator::print_type_tree(const TreeNode<std::string>* types, std::size_t 
 }
 
 void Validator::validate(const types::Definitions& definitions, Options options) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	// reset the validation state
 	root_ = TreeNode<std::string>{};

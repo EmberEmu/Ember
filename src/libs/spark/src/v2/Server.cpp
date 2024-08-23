@@ -45,7 +45,7 @@ Server::Server(boost::asio::io_context& context, std::string_view name,
 }
 
 ba::awaitable<void> Server::listen() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	while(acceptor_.is_open()) {
 		co_await accept_connection();
@@ -53,7 +53,7 @@ ba::awaitable<void> Server::listen() {
 }
 
 ba::awaitable<void> Server::accept_connection() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	ba::ip::tcp::socket socket(ctx_);
 	auto [ec] = co_await acceptor_.async_accept(socket, as_tuple(ba::deferred));
@@ -84,7 +84,7 @@ ba::awaitable<void> Server::accept_connection() {
 }
 
 ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto ep = socket.remote_endpoint();
 	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
@@ -130,7 +130,7 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 }
 
 ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto results = co_await resolver_.async_resolve(
 		host, std::to_string(port), ba::deferred
@@ -186,7 +186,7 @@ Server::find_or_connect(const std::string& host, const std::uint16_t port) {
 
 ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t port,
                                          std::string service, Handler* handler) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	auto peer = co_await find_or_connect(host, port);
 	
 	if(!peer) {
@@ -198,7 +198,7 @@ ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t p
 
 void Server::connect(std::string host, const std::uint16_t port,
                      std::string service, Handler* handler) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	ba::co_spawn(ctx_, open_channel(
 		std::move(host), port, std::move(service), handler), ba::detached
@@ -206,7 +206,7 @@ void Server::connect(std::string host, const std::uint16_t port,
 }
 
 ba::awaitable<void> Server::send_banner(Connection& conn, const std::string& banner) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	core::HelloT hello {
 		.description = banner
@@ -220,7 +220,7 @@ ba::awaitable<void> Server::send_banner(Connection& conn, const std::string& ban
 
 
 ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto msg = co_await conn.receive_msg();
 
@@ -250,7 +250,7 @@ ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
 
 // todo, need to link down to all channels, error code
 void Server::close_peer(const std::string& key) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	peers_.remove(key);
 
 	LOG_DEBUG_FILTER(logger_, LF_SPARK)

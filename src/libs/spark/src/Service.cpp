@@ -45,7 +45,7 @@ void Service::shutdown() {
 }
 
 void Service::start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	MessageHandler m_handler(dispatcher_, services_, link_, true, logger_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), ep, m_handler, logger_);
@@ -53,7 +53,7 @@ void Service::start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip
 }
 
 void Service::do_connect(const std::string& host, std::uint16_t port) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	bai::tcp::resolver resolver(service_);
 	auto port_str = std::to_string(port);
 	auto endpoint_it = resolver.resolve({ host, port_str });
@@ -73,7 +73,7 @@ void Service::do_connect(const std::string& host, std::uint16_t port) {
 }
 
 void Service::connect(const std::string& host, std::uint16_t port) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 	do_connect(host, port);
 }
 
@@ -129,7 +129,7 @@ auto Service::send(const Link& link, std::uint16_t opcode, BufferHandle fbb,
 
 void Service::broadcast(messaging::Service service, ServicesMap::Mode mode,
                         BufferHandle fbb) const {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 	const auto& links = services_.peer_services(service, mode);
 
 	for(const auto& link : links) {

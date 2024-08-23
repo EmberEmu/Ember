@@ -40,7 +40,7 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context,
 }
 
 void MulticastSocket::receive() {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(!socket_.is_open()) {
 		return;
@@ -63,7 +63,7 @@ void MulticastSocket::receive() {
 
 void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagram,
                                       const boost::asio::ip::udp::endpoint& ep) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
     if(!handler_) {
 		LOG_ERROR_GLOB << "No packet handler installed?" << LOG_ASYNC; // todo, rework
@@ -95,7 +95,7 @@ void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagr
 }
 
 void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(!socket_.is_open()) {
 		return;
@@ -115,12 +115,12 @@ void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
 }
 
 void MulticastSocket::register_handler(Handler* handler) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
     handler_ = handler;
 }
 
 void MulticastSocket::deregister_handler(const Handler* handler) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(handler != handler_) {
 		LOG_ERROR_GLOB << "Attempted to deregister handler that wasn't registered" << LOG_ASYNC;

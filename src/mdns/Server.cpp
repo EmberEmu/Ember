@@ -17,7 +17,7 @@ namespace ember::dns {
 
 Server::Server(std::unique_ptr<Socket> socket, log::Logger* logger)
                : socket_(std::move(socket)), logger_(logger) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
     socket_->register_handler(this);
 }
 
@@ -26,7 +26,7 @@ Server::~Server() {
 }
 
 void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto result = deserialise(datagram);
 
@@ -48,7 +48,7 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 }
 
 void Server::handle_question(const Query& query) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	Query out{};
 	out.questions = query.questions;
@@ -106,7 +106,7 @@ void Server::handle_question(const Query& query) {
 }
 
 void Server::handle_response(const Query& query) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 }
 
 void Server::shutdown() {

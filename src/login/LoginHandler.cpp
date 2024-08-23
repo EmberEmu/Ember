@@ -22,7 +22,7 @@
 namespace ember {
 
 bool LoginHandler::update_state(const grunt::Packet& packet) try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	LoginState prev_state = state_;
 	update_state(LoginState::CLOSED);
@@ -68,7 +68,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 }
 
 bool LoginHandler::update_state(const Action& action) try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	LoginState prev_state = state_;
 	update_state(LoginState::CLOSED);
@@ -107,7 +107,7 @@ bool LoginHandler::update_state(const Action& action) try {
 }
 
 void LoginHandler::initiate_login(const grunt::Packet& packet) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto challenge = dynamic_cast<const grunt::client::LoginChallenge&>(packet);
 
@@ -147,7 +147,7 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 }
 
 bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge& challenge) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto version = challenge.protocol_ver;
 
@@ -165,7 +165,7 @@ bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge
 }
 
 void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	switch(opcode) {
 		case grunt::Opcode::CMD_AUTH_LOGON_CHALLENGE:
@@ -184,7 +184,7 @@ void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username)
 }
 
 void LoginHandler::fetch_session_key(const FetchUserAction& action_res) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!(user_ = action_res.get_result())) {
 		LOG_DEBUG(logger_) << "Account not found: " << action_res.username() << LOG_ASYNC;
@@ -205,7 +205,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 }
 
 void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto& authenticator = std::get<LoginAuthenticator>(state_data_);
 	const auto& values = authenticator.challenge_reply();
@@ -228,7 +228,7 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 }
 
 void LoginHandler::send_login_challenge(const FetchUserAction& action) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	grunt::server::LoginChallenge response;
 	response.result = grunt::Result::SUCCESS;
@@ -260,7 +260,7 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 }
 
 void LoginHandler::send_reconnect_proof(grunt::Result result) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	LOG_DEBUG(logger_) << "Reconnect result for " << user_->username() << ": "
 	                   << grunt::to_string(result) << LOG_ASYNC;
@@ -277,7 +277,7 @@ void LoginHandler::send_reconnect_proof(grunt::Result result) {
 }
 
 void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	grunt::server::ReconnectChallenge response;
 	response.result = grunt::Result::SUCCESS;
@@ -306,7 +306,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 }
 
 bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// no PIN was expected, nothing to validate
 	if(user_->pin_method() == PINMethod::NONE) {
@@ -356,7 +356,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
                                              std::span<const uint8_t> salt,
                                              bool reconnect) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!integrity_enforce_) {
 		return true;
@@ -385,7 +385,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 }
 
 void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
 
@@ -434,7 +434,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 }
 
 void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	grunt::server::LoginProof response;
 	response.result = result;
@@ -454,7 +454,7 @@ void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
 }
 
 void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	try {
 		state_data_ = action.get_result();
@@ -488,7 +488,7 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 }
 
 void LoginHandler::on_session_write(const RegisterSessionAction& action) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto result = action.get_result();
 	grunt::Result response = grunt::Result::SUCCESS;
@@ -513,7 +513,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 }
 
 void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto reconn_proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
 
@@ -533,7 +533,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 }
 
 void LoginHandler::send_realm_list(const grunt::Packet& packet) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// todo - move these checks (inc. dynamic_casts) out of the handler functions
 	if(packet.opcode != grunt::Opcode::CMD_REALM_LIST) {
@@ -568,7 +568,7 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 }
 
 void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto meta = patcher_.find_patch(challenge.version, challenge.locale,
 	                                challenge.platform, challenge.os);
@@ -604,7 +604,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) 
 }
 
 void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	
 	transfer_state_.size = meta.size;
 
@@ -616,7 +616,7 @@ void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
 }
 
 void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto survey = dynamic_cast<const grunt::client::SurveyResult&>(packet);
 
@@ -648,7 +648,7 @@ void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 }
 
 void LoginHandler::on_survey_write(const SaveSurveyAction& action) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(action.error()) {
 		LOG_ERROR(logger_) << "DAL failure for " << user_->username() << ", "
@@ -657,14 +657,14 @@ void LoginHandler::on_survey_write(const SaveSurveyAction& action) {
 }
 
 void LoginHandler::set_transfer_offset(const grunt::Packet& packet) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto resume = dynamic_cast<const grunt::client::TransferResume&>(packet);
 	transfer_state_.offset = resume.offset;
 }
 
 void LoginHandler::handle_transfer_ack(const grunt::Packet& packet, bool survey) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	switch(packet.opcode) {
 		case grunt::Opcode::CMD_XFER_RESUME:
@@ -684,12 +684,12 @@ void LoginHandler::handle_transfer_ack(const grunt::Packet& packet, bool survey)
 }
 
 void LoginHandler::handle_transfer_abort() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	transfer_state_.abort = true;
 }
 
 void LoginHandler::transfer_chunk() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto remaining = transfer_state_.size - transfer_state_.offset;
 	std::uint16_t read_size = grunt::server::TransferData::MAX_CHUNK_SIZE;
@@ -719,7 +719,7 @@ void LoginHandler::transfer_chunk() {
 }
 
 void LoginHandler::on_chunk_complete() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(transfer_state_.abort) {
 		return;

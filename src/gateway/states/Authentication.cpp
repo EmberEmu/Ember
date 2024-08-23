@@ -62,7 +62,7 @@ State auth_state(ClientContext& ctx) {
 }
 
 void handle_authentication(ClientContext& ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	// prevent repeated auth attempts
 	if(auth_state(ctx) != State::NOT_AUTHED) {
@@ -87,7 +87,7 @@ void handle_authentication(ClientContext& ctx) {
 }
 
 void fetch_account_id(ClientContext& ctx, const utf8_string& username) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler->uuid();
 
@@ -98,7 +98,7 @@ void fetch_account_id(ClientContext& ctx, const utf8_string& username) {
 }
 
 void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 	
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
@@ -126,7 +126,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 }
 
 void fetch_session_key(ClientContext& ctx, const std::uint32_t account_id) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler->uuid();
 
@@ -153,7 +153,7 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 }
 
 void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	// Encode the key without requiring an allocation
 	static constexpr auto key_size_hint = 32u;
@@ -198,7 +198,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 }
 
 void send_auth_challenge(ClientContext& ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	protocol::SMSG_AUTH_CHALLENGE response;
 	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
@@ -206,7 +206,7 @@ void send_auth_challenge(ClientContext& ctx) {
 }
 
 void send_addon_data(ClientContext& ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	const auto& addons = auth_ctx.packet->addons;
@@ -235,7 +235,7 @@ void send_addon_data(ClientContext& ctx) {
 }
 
 void auth_queue(ClientContext& ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler->uuid();
 
@@ -254,7 +254,7 @@ void auth_queue(ClientContext& ctx) {
 }
 
 void auth_success(ClientContext& ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	send_auth_result(ctx, protocol::Result::AUTH_OK);
 	send_addon_data(ctx);
@@ -264,7 +264,7 @@ void auth_success(ClientContext& ctx) {
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE response;
 	response->result = result;
@@ -272,7 +272,7 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 }
 
 void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE packet;
 	packet->result = protocol::Result::AUTH_WAIT_QUEUE;
@@ -281,7 +281,7 @@ void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
 }
 
 void handle_queue_success(ClientContext& ctx) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 	auth_success(ctx);
 }
 

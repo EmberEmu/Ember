@@ -19,7 +19,7 @@ TrackingService::TrackingService(boost::asio::io_context& io_context, log::Logge
                                  : io_context_(io_context), logger_(logger) { }
 
 void TrackingService::on_message(const Link& link, const Message& message) try {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	std::unique_lock<std::mutex> guard(lock_);
 	auto handler = std::move(handlers_.at(message.token.uuid));
@@ -40,7 +40,7 @@ void TrackingService::on_message(const Link& link, const Message& message) try {
 
 void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id, TrackingHandler handler,
                                        sc::milliseconds timeout) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	auto request = std::make_unique<Request>(io_context_, id, link, handler);
 	request->timer.expires_from_now(timeout);

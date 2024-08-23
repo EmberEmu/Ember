@@ -59,7 +59,7 @@ void RealmService::on_message(const spark::Link& link, const spark::Message& mes
 }
 
 void RealmService::handle_realm_status(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto data = flatbuffers::GetRoot<messaging::realm::RealmStatus>(message.data);
 
@@ -119,7 +119,7 @@ void RealmService::mark_realm_offline(const spark::Link& link) {
 }
 
 void RealmService::request_realm_status(const spark::Link& link) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(messaging::realm::Opcode::CMSG_REALM_STATUS);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();

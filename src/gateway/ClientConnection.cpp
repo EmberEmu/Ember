@@ -20,7 +20,7 @@
 namespace ember {
 
 void ClientConnection::parse_header(StaticBuffer& buffer) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	if(buffer.size() < protocol::ClientHeader::WIRE_SIZE) {
 		return;

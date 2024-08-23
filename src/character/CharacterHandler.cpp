@@ -17,7 +17,7 @@ namespace ember {
 void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
                               const messaging::character::CharacterTemplate& options,
                               ResultCB callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	Character character{};
 	character.race = options.race();
@@ -43,7 +43,7 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 }
 
 void CharacterHandler::restore(std::uint64_t id, ResultCB callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	pool_.run([=, this] {
 		do_restore(id, callback);
@@ -52,7 +52,7 @@ void CharacterHandler::restore(std::uint64_t id, ResultCB callback) const {
 
 void CharacterHandler::erase(std::uint32_t account_id, std::uint32_t realm_id,
                              std::uint64_t character_id, ResultCB callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	pool_.run([=, this] {
 		do_erase(account_id, realm_id, character_id, callback);
@@ -61,7 +61,7 @@ void CharacterHandler::erase(std::uint32_t account_id, std::uint32_t realm_id,
 
 void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_id,
                                  EnumResultCB callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	pool_.run([=, this] {
 		do_enumerate(account_id, realm_id, callback);
@@ -70,7 +70,7 @@ void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_i
 
 void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_id,
                               const utf8_string& name, RenameCB callback) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	pool_.run([=, this] {
 		do_rename(account_id, character_id, name, callback);
@@ -79,7 +79,7 @@ void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_
 
 void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_id,
                                  Character character, const ResultCB& callback) const try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// class, race and visual customisation validation
 	bool success = validate_options(character, account_id);
@@ -222,7 +222,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 
 void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id,
                                 std::uint64_t character_id, const ResultCB& callback) const try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto character = dao_.character(character_id);
 	
@@ -257,7 +257,7 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 
 void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
                                     const EnumResultCB& callback) const try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto characters = dao_.characters(account_id, realm_id);
 	callback(std::move(characters));
@@ -268,7 +268,7 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
 
 void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,
                                  const utf8_string& name, const RenameCB& callback) const try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto character = dao_.character(character_id);
 	
@@ -317,7 +317,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 }
 
 void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) const try {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto character = dao_.character(id);
 	auto characters = dao_.characters(character->account_id);
@@ -358,7 +358,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 }
 
 bool CharacterHandler::validate_options(const Character& character, std::uint32_t account_id) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// validate the race/class combination
 	auto found = std::find_if(dbc_.char_base_info.begin(), dbc_.char_base_info.end(), [&](auto val) {
@@ -438,7 +438,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 }
 
 protocol::Result CharacterHandler::validate_name(const utf8_string& name) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(name.empty()) {
 		return protocol::Result::CHAR_NAME_NO_NAME;

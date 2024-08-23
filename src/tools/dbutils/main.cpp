@@ -182,7 +182,7 @@ int launch(const po::variables_map& args) try {
 }
 
 void validate_options(const po::variables_map& args) {
-	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 
 	if(args["install"].empty() && args["update"].empty()) {
 		throw std::invalid_argument("At least --install or --update must be specified!");
@@ -221,7 +221,7 @@ bool validate_db_names(const std::vector<std::string>& input_names) {
 }
 
 void validate_db_args(const po::variables_map& po_args, const std::string& mode) {
-	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 
 	const auto& dbs = po_args[mode].as<std::vector<std::string>>();
 
@@ -246,7 +246,7 @@ void validate_db_args(const po::variables_map& po_args, const std::string& mode)
 }
 
 std::vector<std::string> load_queries(const std::string& path) {
-	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 
 	std::vector<std::string> queries;
 	std::fstream file(path, std::ios::in);
@@ -284,7 +284,7 @@ DatabaseDetails db_details(const po::variables_map& args, const std::string& db)
 }
 
 void db_install(const po::variables_map& args, const std::string& db, const bool drop) {
-	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 	const auto& sql_dir = args["sql-dir"].as<std::string>();
 	const auto& dbs = args["install"].as<std::vector<std::string>>();
 
@@ -345,7 +345,7 @@ void db_install(const po::variables_map& args, const std::string& db, const bool
 
 bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
                    std::span<std::string> migration_paths, const std::string& db) {
-	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 	const auto transactions = args["transactional-updates"].as<bool>();
 	const auto batched = args["single-transaction"].as<bool>();
 	exec.select_db(db);
@@ -407,7 +407,7 @@ bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
 }
 
 bool db_update(const po::variables_map& args, const std::string& db) {
-	LOG_TRACE_GLOB << __func__ << LOG_SYNC;
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 	LOG_INFO_GLOB << "Applying updates for " << db << "..." << LOG_SYNC;
 
 	const auto& details = db_details(args, db);			

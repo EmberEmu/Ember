@@ -52,7 +52,7 @@ void CharacterService::service_located(const messaging::multicast::LocateRespons
 void CharacterService::handle_reply(const spark::Link& link,
                                     std::optional<spark::Message>& message,
                                     const ResponseCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!message || !spark::Service::verify<em::character::CreateResponse>(*message)) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::RESPONSE_FAILURE);
@@ -66,7 +66,7 @@ void CharacterService::handle_reply(const spark::Link& link,
 void CharacterService::handle_rename_reply(const spark::Link& link,
                                            std::optional<spark::Message>& message,
                                            const RenameCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!message || !spark::Service::verify<em::character::RenameResponse>(*message)) {
 		cb(em::character::Status::SERVER_LINK_ERROR, protocol::Result::CHAR_NAME_FAILURE, 0, "");
@@ -88,7 +88,7 @@ void CharacterService::handle_rename_reply(const spark::Link& link,
 void CharacterService::handle_retrieve_reply(const spark::Link& link,
                                              std::optional<spark::Message>& message,
                                              const RetrieveCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!message || !spark::Service::verify<em::character::RetrieveResponse>(*message)) {
 		cb(em::character::Status::SERVER_LINK_ERROR, {});
@@ -135,7 +135,7 @@ void CharacterService::handle_retrieve_reply(const spark::Link& link,
 
 void CharacterService::create_character(std::uint32_t account_id, const CharacterTemplate& character,
                                         ResponseCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_CREATE);
@@ -167,7 +167,7 @@ void CharacterService::create_character(std::uint32_t account_id, const Characte
 
 void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t character_id,
                                         const utf8_string& name, RenameCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_RENAME);
@@ -188,7 +188,7 @@ void CharacterService::rename_character(std::uint32_t account_id, std::uint64_t 
 	}
 }
 void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_ENUM);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -207,7 +207,7 @@ void CharacterService::retrieve_characters(std::uint32_t account_id, RetrieveCB 
 
 void CharacterService::delete_character(std::uint32_t account_id, std::uint64_t id,
                                         ResponseCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::CMSG_CHAR_DELETE);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();

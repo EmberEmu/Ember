@@ -49,7 +49,7 @@ void AccountService::service_located(const messaging::multicast::LocateResponse*
 void AccountService::handle_register_reply(const spark::Link& link,
                                            std::optional<spark::Message>& root,
                                            const RegisterCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!root) {
 		cb(em::account::Status::SERVER_LINK_ERROR);
@@ -63,7 +63,7 @@ void AccountService::handle_register_reply(const spark::Link& link,
 void AccountService::handle_locate_reply(const spark::Link& link,
                                          std::optional<spark::Message>& root,
                                          const SessionLocateCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!root) {
 		cb(em::account::Status::SERVER_LINK_ERROR, 0);
@@ -84,7 +84,7 @@ void AccountService::handle_locate_reply(const spark::Link& link,
 void AccountService::handle_id_locate_reply(const spark::Link& link,
                                             std::optional<spark::Message>& root,
                                             const IDLocateCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!root) {
 		cb(em::account::Status::SERVER_LINK_ERROR, 0);
@@ -96,7 +96,7 @@ void AccountService::handle_id_locate_reply(const spark::Link& link,
 }
 
 void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::account::Opcode::CMSG_SESSION_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -113,7 +113,7 @@ void AccountService::locate_session(std::uint32_t account_id, SessionLocateCB cb
 }
 
 void AccountService::locate_account_id(const utf8_string& username, IDLocateCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();

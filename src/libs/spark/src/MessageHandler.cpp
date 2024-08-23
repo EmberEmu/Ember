@@ -29,7 +29,7 @@ MessageHandler::MessageHandler(const EventDispatcher& dispatcher, ServicesMap& s
 
 
 void MessageHandler::send_negotiation(NetworkSession& net) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	// Disable for now
 	//auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -41,7 +41,7 @@ void MessageHandler::send_negotiation(NetworkSession& net) {
 }
 
 void MessageHandler::send_banner(NetworkSession& net) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
 	auto desc = fbb->CreateString(self_.description);
@@ -52,7 +52,7 @@ void MessageHandler::send_banner(NetworkSession& net) {
 }
 
 bool MessageHandler::establish_link(NetworkSession& net, const Message& message) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	if(static_cast<messaging::core::Opcode>(message.opcode) != messaging::core::Opcode::MSG_BANNER) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
@@ -92,7 +92,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const Message& message)
 }
 
 bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& message) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	if(static_cast<messaging::core::Opcode>(message.opcode) != messaging::core::Opcode::MSG_NEGOTIATE) {
 		LOG_WARN_FILTER(logger_, LF_SPARK)
@@ -209,7 +209,7 @@ bool MessageHandler::handle_message(NetworkSession& net, const messaging::core::
 }
 
 void MessageHandler::start(NetworkSession& net) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 	
 	if(initiator_) {
 		send_banner(net);

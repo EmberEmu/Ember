@@ -43,7 +43,7 @@ void Service::on_link_down(const spark::Link& link) {
 }
 
 void Service::on_message(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto handler = handlers_.find(static_cast<messaging::character::Opcode>(message.opcode));
 
@@ -65,7 +65,7 @@ void Service::on_message(const spark::Link& link, const spark::Message& message)
 }
 
 void Service::retrieve_characters(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto msg = flatbuffers::GetRoot<em::character::Retrieve>(message.data);
 	auto token = message.token;
@@ -80,7 +80,7 @@ void Service::retrieve_characters(const spark::Link& link, const spark::Message&
 }
 
 void Service::create_character(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto token = message.token;
 	auto msg = flatbuffers::GetRoot<em::character::Create>(message.data);
@@ -102,7 +102,7 @@ void Service::create_character(const spark::Link& link, const spark::Message& me
 void Service::send_character_list(const spark::Link& link, const spark::Beacon& token,
                                   em::character::Status status,
                                   std::span<const Character> characters) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_ENUM);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -148,7 +148,7 @@ void Service::send_character_list(const spark::Link& link, const spark::Beacon& 
 
 void Service::send_rename_response(const spark::Link& link, const spark::Beacon& token,
                                    protocol::Result result, const std::optional<Character>& character) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_RENAME);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -169,7 +169,7 @@ void Service::send_rename_response(const spark::Link& link, const spark::Beacon&
 
 void Service::send_response(const spark::Link& link, const spark::Beacon& token,
                             em::character::Status status, protocol::Result result) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::character::Opcode::SMSG_CHAR_RESPONSE);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -183,7 +183,7 @@ void Service::send_response(const spark::Link& link, const spark::Beacon& token,
 }
 
 void Service::delete_character(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto msg = flatbuffers::GetRoot<em::character::Delete>(message.data);
 
@@ -194,7 +194,7 @@ void Service::delete_character(const spark::Link& link, const spark::Message& me
 }
 
 void Service::rename_character(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto msg = flatbuffers::GetRoot<em::character::Rename>(message.data);
 	auto token = message.token;

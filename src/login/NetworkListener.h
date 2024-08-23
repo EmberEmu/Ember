@@ -37,14 +37,14 @@ class NetworkListener final {
 	tcp_acceptor acceptor_;
 	tcp_socket socket_;
 
-	const NetworkSessionBuilder& session_create_;
+	const NetworkSessionBuilder& session_builder_;
 	SessionManager sessions_;
 	log::Logger* logger_;
 	Metrics& metrics_;
 	IPBanCache& ban_list_;
 
 	void accept_connection() {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 		acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
 			if(!acceptor_.is_open()) {
@@ -78,8 +78,8 @@ class NetworkListener final {
 	}
 
 	void start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
-		auto session = session_create_.create(sessions_, std::move(socket), ep, logger_);
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+		auto session = session_builder_.create(sessions_, std::move(socket), ep, logger_);
 		sessions_.start(session);
 	}
 
@@ -90,7 +90,7 @@ public:
 	                : acceptor_(io_context, boost::asio::ip::tcp::endpoint(
 	                            boost::asio::ip::address::from_string(interface), port)),
 	                  io_context(io_context), socket_(boost::asio::make_strand(io_context)), logger_(logger),
-	                  ban_list_(bans), session_create_(session_create),
+	                  ban_list_(bans), session_builder_(session_create),
 	                  metrics_(metrics) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -98,7 +98,7 @@ public:
 	}
 
 	void shutdown() {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 		acceptor_.close();
 		sessions_.stop_all();
 	}

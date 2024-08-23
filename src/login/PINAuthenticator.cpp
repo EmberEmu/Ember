@@ -35,7 +35,7 @@ PINAuthenticator::PINAuthenticator(std::uint32_t seed, log::Logger* logger) : lo
  * {1, 6, 7, 8, 5} used during the hashing process.
  */
 void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	pin_bytes_.clear();
 
@@ -63,7 +63,7 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
  * '0, 4, 1, 6, 2, 3' then the expected input sequence becomes '245'.
  */
 void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	std::array<std::uint8_t, GRID_SIZE> grid { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
@@ -92,7 +92,7 @@ void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
  * will press on the game's numpad.
  */
 void PINAuthenticator::remap_pin() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	for(auto& pin_byte : pin_bytes_) {
 		const auto index = std::find(remapped_grid.begin(), remapped_grid.end(), pin_byte);
@@ -106,7 +106,7 @@ void PINAuthenticator::remap_pin() {
  * The client processes the digits as ASCII, so we must do the same.
  */
 void PINAuthenticator::pin_to_ascii() {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	std::transform(pin_bytes_.begin(), pin_bytes_.end(), pin_bytes_.begin(),
 		[](auto pin_byte) { return pin_byte += 0x30; });
@@ -115,7 +115,7 @@ void PINAuthenticator::pin_to_ascii() {
 auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
 									  const SaltBytes& client_salt,
 									  const std::uint32_t pin) -> HashBytes {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	pin_to_bytes(pin); // convert to byte array
 	remap_pin();       // calculate the expected input sequence
@@ -139,7 +139,7 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
                                     const SaltBytes& client_salt,
                                     std::span<const std::uint8_t> client_hash,
                                     const std::uint32_t pin) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto& hash = calculate_hash(server_salt, client_salt, pin);
 	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());

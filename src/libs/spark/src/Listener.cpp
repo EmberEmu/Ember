@@ -28,7 +28,7 @@ Listener::Listener(boost::asio::io_context& service, std::string interface, std:
 }
 
 void Listener::accept_connection() {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
 	acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
 		if(!acceptor_.is_open()) {
@@ -55,7 +55,7 @@ void Listener::accept_connection() {
 }
 
 void Listener::start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
-	LOG_TRACE_FILTER(logger_, LF_SPARK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 	MessageHandler m_handler(handlers_, services_, link_, false, logger_);
 	auto session = std::make_shared<NetworkSession>(sessions_, std::move(socket), ep, m_handler, logger_);
 	sessions_.start(session);

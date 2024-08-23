@@ -49,7 +49,7 @@ void AccountService::service_located(const messaging::multicast::LocateResponse*
 void AccountService::handle_register_reply(const spark::Link& link,
                                            std::optional<spark::Message>& message,
                                            const RegisterCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// todo, validate
 	if(!message) {
@@ -64,7 +64,7 @@ void AccountService::handle_register_reply(const spark::Link& link,
 void AccountService::handle_locate_reply(const spark::Link& link,
                                          std::optional<spark::Message>& message,
                                          const LocateCB& cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// todo, validate
 	if(!message) {
@@ -84,7 +84,7 @@ void AccountService::handle_locate_reply(const spark::Link& link,
 }
 
 void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(em::account::Opcode::CMSG_ACCOUNT_LOOKUP);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();
@@ -102,7 +102,7 @@ void AccountService::locate_session(std::uint32_t account_id, LocateCB cb) const
 
 void AccountService::register_session(std::uint32_t account_id, const srp6::SessionKey& key,
                                       RegisterCB cb) const {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	constexpr auto opcode = std::to_underlying(messaging::account::Opcode::CMSG_REGISTER_SESSION);
 	auto fbb = std::make_shared<flatbuffers::FlatBufferBuilder>();

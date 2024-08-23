@@ -39,7 +39,7 @@ LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socke
 }
 
 bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	auto packet = grunt_handler_.try_deserialise(buffer);
 
@@ -56,7 +56,7 @@ bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 }
 
 void LoginSession::execute_async(std::unique_ptr<Action> action) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	auto self(shared_from_this());
 	std::shared_ptr<Action> shared_act = std::move(action);
@@ -71,7 +71,7 @@ void LoginSession::execute_async(std::unique_ptr<Action> action) {
 }
 
 void LoginSession::async_completion(Action& action) try {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	if(!handler_.update_state(action)) {
 		close_session(); // todo change
@@ -83,13 +83,12 @@ void LoginSession::async_completion(Action& action) try {
 
 // todo use a single chain here and create a write queue instead
 void LoginSession::write_chain(const grunt::Packet& packet, bool notify) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< grunt::to_string(packet.opcode) << LOG_ASYNC;
 
-	const auto block_size = 1024u;
-	auto chain = std::make_unique<spark::io::DynamicBuffer<block_size>>();
+	auto chain = std::make_unique<spark::io::DynamicBuffer<1024>>();
 	spark::io::pmr::BinaryStream stream(*chain);
 	packet.write_to_stream(stream);
 	NetworkSession::write_chain(std::move(chain), notify);

@@ -47,7 +47,7 @@ public:
 };
 
 std::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& f : base.children) {
 		if(f->name == type_name) {
@@ -63,7 +63,7 @@ std::optional<std::string> locate_type(const types::Struct& base, const std::str
 }
 
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& def : defs) {
 		if(def->name == parent) {
@@ -79,7 +79,7 @@ std::string parent_alias(const types::Definitions& defs, const std::string& pare
 }
 
 void save_output(const std::string& path, const std::string& name, const std::string& output) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::filesystem::path dir(path);
 
@@ -100,7 +100,7 @@ void save_output(const std::string& path, const std::string& name, const std::st
 }
 
 std::stringstream read_template(const std::string& path, const std::string& file) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::ifstream ifs(path + file);
 	std::stringstream buffer;
@@ -114,7 +114,7 @@ std::stringstream read_template(const std::string& path, const std::string& file
 }
 
 void generate_linker(const types::Definitions& defs, const std::string& output, const std::string& path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_LINKING_FUNCTIONS%>([^]+)<%TEMPLATE_LINKING_FUNCTION_CALLS%>([^]+))");
 	std::stringstream buffer(read_template(path, "Linker.cpp_"));
@@ -212,7 +212,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 }
 
 void generate_disk_loader(const types::Definitions& defs, const std::string& output, const std::string& path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	LOG_INFO_GLOB << "Generating disk loader..." << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DISK_LOAD_FUNCTIONS%>([^]+)<%TEMPLATE_DISK_LOAD_MAP_INSERTION%>([^]+)<%TEMPLATE_DISK_LOAD_FUNCTION_CALLS%>([^]+))");
@@ -404,7 +404,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 }
 
 void generate_disk_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
@@ -421,7 +421,7 @@ void generate_disk_struct_recursive(const types::Struct& def, std::stringstream&
 }
 
 void generate_disk_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::string tab("\t", indent);
 
@@ -444,13 +444,13 @@ void generate_disk_struct(const types::Struct& def, std::stringstream& definitio
 }
 
 void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	std::string tab("\t", indent);
 	definitions << tab << "typedef " << def.underlying_type << " " << def.name << ";" << "\n";
 }
 
 void generate_disk_defs(const types::Definitions& defs, const std::string& output, const std::string& path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_DEFINITIONS%>([^]+))");
 	std::stringstream buffer(read_template(path, "DiskDefs.h_"));
@@ -471,12 +471,12 @@ void generate_disk_defs(const types::Definitions& defs, const std::string& outpu
 }
 
 bool is_enum(const std::string& type) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	return type.find("enum") != std::string::npos;
 }
 
 void generate_memory_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::string tab("\t", indent);
 
@@ -500,7 +500,7 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 }
 
 void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& child : def.children) {
 		switch(child->type) { // no default for compiler warning
@@ -517,7 +517,7 @@ void generate_memory_struct_recursive(const types::Struct& def, std::stringstrea
 }
 
 void generate_memory_struct(const types::Struct& def, std::stringstream& definitions, int indent) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::string tab("\t", indent);
 
@@ -578,7 +578,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 }
 
 void generate_memory_defs(const types::Definitions& defs, const std::string& output, const std::string& path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	std::regex pattern(R"(([^]+)<%TEMPLATE_MEMORY_FORWARD_DECL%>([^]+)<%TEMPLATE_MEMORY_DEFINITIONS%>([^]+))");
 
@@ -602,7 +602,7 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 }
 
 void generate_storage(const types::Definitions& defs, const std::string& output, const std::string& path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	std::regex pattern(R"(([^]+)<%TEMPLATE_DBC_MAPS%>)");
 
 	std::stringstream buffer(read_template(path, "Storage.h_"));
@@ -631,7 +631,7 @@ void generate_storage(const types::Definitions& defs, const std::string& output,
 
 void generate_common(const types::Definitions& defs, const std::string& output,
                      const std::string& template_path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	LOG_INFO_GLOB << "Generating common files..." << LOG_ASYNC;
 	generate_storage(defs, output, template_path);
 	generate_memory_defs(defs, output, template_path);
@@ -641,7 +641,7 @@ void generate_common(const types::Definitions& defs, const std::string& output,
 
 void generate_disk_source(const types::Definitions& defs, const std::string& output,
                           const std::string& template_path) {
-	LOG_TRACE_GLOB << __func__ << LOG_ASYNC;
+	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	generate_disk_loader(defs, output, template_path);
 }
 

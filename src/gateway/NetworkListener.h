@@ -43,7 +43,7 @@ class NetworkListener final {
 	tcp_socket socket_;
 
 	void accept_connection() {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 		acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
 			if(!acceptor_.is_open()) {
@@ -89,7 +89,7 @@ public:
 	}
 
 	void shutdown() {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << __func__ << LOG_ASYNC;
+		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 		acceptor_.close();
 		sessions_.stop_all();
 	}

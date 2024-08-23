@@ -38,7 +38,7 @@ void RemotePeer::send(std::unique_ptr<Message> msg) {
 }
 
 void RemotePeer::receive(std::span<const std::uint8_t> data) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	spark::io::BufferAdaptor adaptor(data);
 	spark::io::BinaryStream stream(adaptor);
@@ -65,7 +65,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 }
 
 void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* msg) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	if(msg->result() != core::Result::OK) {
 		auto channel = channels_[msg->requested_id()];
@@ -112,7 +112,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 }
 
 void RemotePeer::send_close_channel(const std::uint8_t id) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	core::CloseChannelT body {
 		.channel = id
@@ -149,7 +149,7 @@ Handler* RemotePeer::find_handler(const core::OpenChannel* msg) {
 }
 
 void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	auto handler = find_handler(msg);
 
@@ -271,7 +271,7 @@ void RemotePeer::handle_pong(const core::Pong* pong) {
 }
 
 void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	auto id = gsl::narrow<std::uint8_t>(msg->channel());
 
@@ -286,7 +286,7 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 
 void RemotePeer::handle_channel_message(const MessageHeader& header,
                                         std::span<const std::uint8_t> data) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	auto channel = channels_[header.channel];
 
@@ -314,7 +314,7 @@ void RemotePeer::send_open_channel(const std::string& name,
 }
 
 void RemotePeer::open_channel(const std::string& type, Handler* handler) {
-	LOG_TRACE(log_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	const auto id = next_empty_channel();
 	LOG_DEBUG_ASYNC(log_, "[spark] Requesting channel {} for {}", id, type);

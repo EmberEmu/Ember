@@ -281,7 +281,7 @@ if(logger->severity() <= ember::log::Severity::WARN) { \
 
 // used to generate decorated output (e.g. 'namespace::func' vs simply 'func')
 #if _MSC_VER && !__INTEL_COMPILER
-	#define __func__ __FUNCTION__
+	#define log_func __FUNCTION__
 #elif __clang__ || __GNUC__
-	#define __func__ __PRETTY_FUNCTION__
+	#define log_func __PRETTY_FUNCTION__
 #endif

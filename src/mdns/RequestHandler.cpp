@@ -16,15 +16,15 @@ void RequestHandler::shutdown() {
 }
 
 void RequestHandler::on_message(const spark::Link& link, const spark::Message& message) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 }
 
 void RequestHandler::on_link_up(const spark::Link& link) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 }
 
 void RequestHandler::on_link_down(const spark::Link& link) {
-	LOG_TRACE(logger_) << __func__ << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 }
 
 } // dns, ember
