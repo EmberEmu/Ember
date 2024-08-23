@@ -78,8 +78,7 @@ private:
 		clear(); // clear our current blocks rather than swapping them
 
 		size_ = rhs.size_;
-		root_.next = rhs.root_.next;
-		root_.prev = rhs.root_.prev;
+		root_ = rhs.root_;
 		root_.next->prev = &root_;
 		root_.prev->next = &root_;
 		rhs.size_ = 0;
@@ -88,6 +87,10 @@ private:
 	}
 
 	void copy(const DynamicBuffer& rhs) {
+		if(this == &rhs) { // self-assignment
+			return;
+		}
+
 		const IntrusiveNode* head = rhs.root_.next;
 		root_.next = &root_;
 		root_.prev = &root_;
