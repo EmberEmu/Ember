@@ -199,8 +199,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 
 
 void print_lib_versions(el::Logger* logger) {
-	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
-	LOG_DEBUG(logger) << "- Boost " << BOOST_VERSION / 100000 << "."
-	                  << BOOST_VERSION / 100 % 1000 << "."
-	                  << BOOST_VERSION % 100 << LOG_SYNC;
+	LOG_DEBUG(logger)
+		<< "Compiled with library versions: " << "\n"
+		<< " - Boost " << BOOST_VERSION / 100000 << "."
+		<< BOOST_VERSION / 100 % 1000 << "."
+		<< BOOST_VERSION % 100 << LOG_SYNC;
 }

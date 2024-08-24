@@ -491,15 +491,16 @@ unsigned int check_concurrency(log::Logger* logger) {
 }
 
 void print_lib_versions(log::Logger* logger) {
-	LOG_DEBUG(logger) << "Compiled with library versions: " << LOG_SYNC;
-	LOG_DEBUG(logger) << "- Boost " << BOOST_VERSION / 100000 << "."
-	                  << BOOST_VERSION / 100 % 1000 << "."
-	                  << BOOST_VERSION % 100 << LOG_SYNC;
-	LOG_DEBUG(logger) << "- " << Botan::version_string() << LOG_SYNC;
-	LOG_DEBUG(logger) << "- " << drivers::DriverType::name()
-	                  << " (" << drivers::DriverType::version() << ")" << LOG_SYNC;
-	LOG_DEBUG(logger) << "- PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << LOG_SYNC;
-	LOG_DEBUG(logger) << "- Zlib " << ZLIB_VERSION << LOG_SYNC;
+	LOG_DEBUG(logger)
+		<< "Compiled with library versions: " << "\n"
+	    << " - Boost " << BOOST_VERSION / 100000 << "."
+	    << BOOST_VERSION / 100 % 1000 << "."
+	    << BOOST_VERSION % 100 << "\n"
+	    << " - " << Botan::version_string() << "\n"
+		<< " - " << drivers::DriverType::name()
+	    << " ("  << drivers::DriverType::version() << ")" << "\n"
+		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
+		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
 void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger* logger) {
