@@ -14,6 +14,7 @@
 #include <logger/Logging.h>
 #include <functional>
 #include <optional>
+#include <type_traits>
 #include <variant>
 #include <cstddef>
 
@@ -47,9 +48,11 @@ class Handler final {
 	                     std::size_t offset);
 
 public:
+	using PacketRef = std::reference_wrapper<const Packet>;
+
 	explicit Handler(log::Logger* logger) : logger_(logger) { }
 
-	const Packet* const try_deserialise(spark::io::pmr::Buffer& buffer);
+	std::optional<const PacketRef> process_buffer(spark::io::pmr::Buffer& buffer);
 };
 
 } // grunt, ember
