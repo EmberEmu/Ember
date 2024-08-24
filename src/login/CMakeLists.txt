@@ -76,6 +76,7 @@ set(LIBRARY_SRC
     IntegrityData.cpp
     LocaleMap.cpp
 	Survey.cpp
+	NetworkSession.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
