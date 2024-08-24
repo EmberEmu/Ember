@@ -22,7 +22,8 @@ enum class PacketDirection {
 class PacketSink {
 public:
 	virtual void log(std::span<const std::uint8_t> buffer,
-	                 const std::time_t& time, PacketDirection dir) = 0;
+	                 const std::time_t& time,
+	                 PacketDirection dir) = 0;
 
 	virtual ~PacketSink() = default;
 };

@@ -8,13 +8,10 @@
 
 #include "ThreadPool.h"
 #include <shared/threading/Utility.h>
-#include <boost/assert.hpp>
 
 namespace ember {
 
-using namespace std::string_literals;
-
-ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_), stopped_(false) {
+ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_) {
 	for(std::size_t i = 0; i < initial_count; ++i) {
 		workers_.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
 			(&boost::asio::io_context::run), &service_);
@@ -23,32 +20,11 @@ ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_), stopped_(fa
 }
 
 void ThreadPool::shutdown() {
-	stopped_ = true;
 	service_.stop();
-
-	for(auto& worker : workers_) try {
-		worker.join();
-	} catch(const std::exception& e) {
-		BOOST_ASSERT_MSG(false, e.what());
-
-		std::lock_guard<std::mutex> guard(log_cb_lock_);
-
-		if(log_cb_) {
-			log_cb_(Severity::FATAL, "In thread pool shutdown: "s + e.what());
-		}
-	}
-
 }
 
 ThreadPool::~ThreadPool() {
-	if(!stopped_) {
-		shutdown();
-	}
-}
-
-void ThreadPool::log_callback(const LogCallback& callback) {
-	std::lock_guard<std::mutex> guard(log_cb_lock_);
-	log_cb_ = callback;
+	shutdown();
 }
 
 } //ember

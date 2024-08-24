@@ -216,7 +216,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 }
 
 void pool_log_callback(ep::Severity severity, std::string_view message, el::Logger* logger) {
-	/*switch(severity) {
+	switch(severity) {
 		case ep::Severity::DEBUG:
 			LOG_DEBUG_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
 			break;
@@ -235,5 +235,5 @@ void pool_log_callback(ep::Severity severity, std::string_view message, el::Logg
 		default:
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
-	}	*/
+	}	
 }

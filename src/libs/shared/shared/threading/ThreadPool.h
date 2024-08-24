@@ -9,31 +9,17 @@
 #pragma once
 
 #include <boost/asio/io_context.hpp>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 #include <cstddef>
 
-#undef ERROR
-
 namespace ember {
 
 class ThreadPool final {
-public:
-	enum class Severity { DEBUG, INFO, ERROR, FATAL };
-	using LogCallback = std::function<void(Severity, std::string)>;
-
-private:
 	boost::asio::io_context service_;
 	boost::asio::io_context::work work_;
-	std::vector<std::thread> workers_;
-	LogCallback log_cb_;
-	std::mutex log_cb_lock_;
-	bool stopped_;
+	std::vector<std::jthread> workers_;
 
 public:
 	explicit ThreadPool(std::size_t initial_count);
@@ -49,7 +35,6 @@ public:
 	}
 
 	void shutdown();
-	void log_callback(const LogCallback& callback);
 };
 
 } // ember

@@ -285,6 +285,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 }
 
 void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger* logger) {
+	#undef ERROR // Windows moment
+
 	switch(severity) {
 		case ep::Severity::DEBUG:
 			LOG_DEBUG_FILTER(logger, LF_DB_CONN_POOL) << message << LOG_ASYNC;
