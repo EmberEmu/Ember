@@ -63,9 +63,9 @@ std::exception_ptr eptr = nullptr;
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	ember::thread::set_name("Main");
-	ember::print_banner(APP_NAME);
-	ember::util::set_window_title(APP_NAME);
+	thread::set_name("Main");
+	print_banner(APP_NAME);
+	util::set_window_title(APP_NAME);
 
 	const po::variables_map args = parse_arguments(argc, argv);
 
@@ -145,32 +145,34 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	dbc::link(dbc_store);
 
 	LOG_INFO_GLOB << "Compiling DBC regular expressions..." << LOG_ASYNC;
-	std::vector<ember::util::pcre::Result> profanity, reserved, spam;
+	std::vector<util::pcre::Result> profanity, reserved, spam;
 
 	for(auto& [_, record] : dbc_store.names_profanity) {
-		profanity.emplace_back(ember::util::pcre::utf8_jit_compile(record.name));
+		profanity.emplace_back(util::pcre::utf8_jit_compile(record.name));
 	}
 
 	for(auto& [_, record] : dbc_store.names_reserved) {
-		reserved.emplace_back(ember::util::pcre::utf8_jit_compile(record.name));
+		reserved.emplace_back(util::pcre::utf8_jit_compile(record.name));
 	}
 
 	for(auto& [_, record] : dbc_store.spam_messages) {
-		spam.emplace_back(ember::util::pcre::utf8_jit_compile(record.text));
+		spam.emplace_back(util::pcre::utf8_jit_compile(record.text));
 	}
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	const auto&  db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(ember::drivers::init_db_driver(db_config_path));
+	auto driver(drivers::init_db_driver(db_config_path));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 	auto concurrency = check_concurrency(logger);
 
-	if(max_conns != concurrency) {
-		LOG_WARN(logger) << "Max. database connection count may be non-optimal (use "
-			<< concurrency << " to match logical core count)" << LOG_SYNC;
+	if(!max_conns) {
+		max_conns = concurrency;
+	} else if(max_conns != concurrency) {
+		LOG_WARN_SYNC(logger, "Max. database connection count may be non-optimal "
+		                      "(use {} to match logical core count)", concurrency);
 	}
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
@@ -181,7 +183,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	});
 
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
-	auto character_dao = ember::dal::character_dao(pool);
+	auto character_dao = dal::character_dao(pool);
 
 	std::locale temp;
 
@@ -191,17 +193,17 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto&  mcast_group = args["spark.multicast_group"].as<std::string>();
 	const auto&  mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
-	auto spark_filter = log::Filter(ember::FilterType::LF_SPARK);
+	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
 	ThreadPool thread_pool(concurrency);
-	ember::CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
-	                                dbc_store, *character_dao, thread_pool, temp, logger);
+	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
+	                         dbc_store, character_dao, thread_pool, temp, logger);
 
 	spark::Service spark("character", service, s_address, s_port, logger);
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger);
 
-	ember::Service char_service(*character_dao, handler, spark, discovery, logger);
+	Service char_service(character_dao, handler, spark, discovery, logger);
 	
 	service.dispatch([&, logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
@@ -309,19 +311,15 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 /*
  * The concurrency level returned is usually the number of logical cores
  * in the machine but the standard doesn't guarantee that it won't be zero.
- * In that case, we just set the minimum concurrency level to two.
+ * In that case, we just set the minimum concurrency level to one.
  */
 unsigned int check_concurrency(log::Logger* logger) {
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
-		concurrency = 2;
+		concurrency = 1;
 		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 
-#ifdef DEBUG_NO_THREADS // todo, this shouldn't be needed
-	return 0;
-#else
 	return concurrency;
-#endif
 }

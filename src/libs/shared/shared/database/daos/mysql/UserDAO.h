@@ -116,7 +116,8 @@ public:
 		throw exception(e.what());
 	}
 
-	std::unordered_map<std::uint32_t, std::uint32_t> character_counts(std::uint32_t account_id) const override try {
+	std::unordered_map<std::uint32_t, std::uint32_t>
+	character_counts(std::uint32_t account_id) const override try {
 		const std::string_view query = "SELECT COUNT(c.id) AS count, c.realm_id "
 		                               "FROM users u, characters c "
 		                               "WHERE u.id = ? AND c.deletion_date IS NULL "
@@ -140,8 +141,8 @@ public:
 };
 
 template<typename T>
-std::unique_ptr<MySQLUserDAO<T>> user_dao(T& pool) {
-	return std::make_unique<MySQLUserDAO<T>>(pool);
+MySQLUserDAO<T> user_dao(T& pool) {
+	return MySQLUserDAO<T>(pool);
 }
 
 } // dal, ember

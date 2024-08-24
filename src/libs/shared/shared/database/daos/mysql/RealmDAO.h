@@ -85,8 +85,8 @@ public:
 };
 
 template<typename T>
-std::unique_ptr<MySQLRealmDAO<T>> realm_dao(T& pool) {
-	return std::make_unique<MySQLRealmDAO<T>>(pool);
+MySQLRealmDAO<T> realm_dao(T& pool) {
+	return MySQLRealmDAO<T>(pool);
 }
 
-} //dal, ember
+} // dal, ember

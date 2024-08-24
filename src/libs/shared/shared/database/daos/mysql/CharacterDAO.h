@@ -265,8 +265,8 @@ public:
 };
 
 template<typename T>
-std::unique_ptr<MySQLCharacterDAO<T>> character_dao(T& pool) {
-	return std::make_unique<MySQLCharacterDAO<T>>(pool);
+MySQLCharacterDAO<T> character_dao(T& pool) {
+	return MySQLCharacterDAO<T>(pool);
 }
 
-} //dal, ember
+} // dal, ember

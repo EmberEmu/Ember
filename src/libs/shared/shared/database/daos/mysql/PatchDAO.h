@@ -111,8 +111,8 @@ public:
 };
 
 template<typename T>
-std::unique_ptr<MySQLPatchDAO<T>> patch_dao(T& pool) {
-	return std::make_unique<MySQLPatchDAO<T>>(pool);
+MySQLPatchDAO<T> patch_dao(T& pool) {
+	return MySQLPatchDAO<T>(pool);
 }
 
-} //dal, ember
+} // dal, ember

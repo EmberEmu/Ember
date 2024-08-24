@@ -66,11 +66,12 @@ using namespace std::placeholders;
 void launch(const po::variables_map& args, ServicePool& service_pool,
             std::binary_semaphore& sem, log::Logger* logger);
 int asio_launch(const po::variables_map& args, log::Logger* logger);
+std::optional<Realm> load_realm(const po::variables_map& args, log::Logger* logger);
 void print_lib_versions(log::Logger* logger);
 unsigned int check_concurrency(log::Logger* logger); // todo, move
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
-const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
+std::string_view category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc);
 
 std::exception_ptr eptr = nullptr;
 
@@ -180,22 +181,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
 	dbc::link(dbc_store);
 
-	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
-	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path));
-
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
-	
-	pool.logging_callback([logger](auto severity, auto message) {
-		pool_log_callback(severity, message, logger);
-	});
-
-	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
-	auto realm_dao = dal::realm_dao(pool);
-
-	LOG_INFO(logger) << "Retrieving realm information..."<< LOG_SYNC;
-	auto realm = realm_dao->get_realm(args["realm.id"].as<unsigned int>());
+	auto realm = load_realm(args, logger);
 	
 	if(!realm) {
 		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
@@ -310,7 +296,26 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	eptr = std::current_exception();
 }
 
-const std::string& category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
+std::optional<Realm> load_realm(const po::variables_map& args, log::Logger* logger) {
+	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
+	const auto& db_config_path = args["database.config_path"].as<std::string>();
+	auto driver(drivers::init_db_driver(db_config_path));
+
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
+	
+	pool.logging_callback([logger](auto severity, auto message) {
+		pool_log_callback(severity, message, logger);
+	});
+
+	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
+	auto realm_dao = dal::realm_dao(pool);
+
+	LOG_INFO(logger) << "Retrieving realm information..." << LOG_SYNC;
+	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
+}
+
+std::string_view category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
 	for(auto&& [k, record] : dbc) {
 		if(record.category == realm.category && record.region == realm.region) {
 			return record.name.en_gb;
@@ -432,21 +437,17 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 /*
  * The concurrency level returned is usually the number of logical cores
  * in the machine but the standard doesn't guarantee that it won't be zero.
- * In that case, we just set the minimum concurrency level to two.
+ * In that case, we just set the minimum concurrency level to one.
  */
 unsigned int check_concurrency(log::Logger* logger) {
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
-		concurrency = 2;
+		concurrency = 1;
 		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 
-#ifdef DEBUG_NO_THREADS
-	return 0;
-#else
 	return concurrency;
-#endif
 }
 
 void print_lib_versions(log::Logger* logger) {

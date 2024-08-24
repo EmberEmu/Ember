@@ -202,9 +202,11 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	unsigned int concurrency = check_concurrency(logger);
 
-	if(max_conns != concurrency) {
+	if(!max_conns) {
+		max_conns = concurrency;
+	} else if(max_conns != concurrency) {
 		LOG_WARN_SYNC(logger, "Max. database connection count may be non-optimal "
-		                          "(use {} to match logical core count)", concurrency);
+		                      "(use {} to match logical core count)", concurrency);
 	}
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
@@ -221,7 +223,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto realm_dao = dal::realm_dao(pool);
 	auto patch_dao = dal::patch_dao(pool);
 	auto ip_ban_dao = dal::ip_ban_dao(pool); 
-	auto ip_ban_cache = IPBanCache(ip_ban_dao->all_bans());
+	auto ip_ban_cache = IPBanCache(ip_ban_dao.all_bans());
 
 	// Load integrity, patch and survey data
 	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
@@ -237,7 +239,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
 
 	auto patches = Patcher::load_patches(
-		args["patches.bin_path"].as<std::string>(), *patch_dao, logger
+		args["patches.bin_path"].as<std::string>(), patch_dao, logger
 	);
 
 	Patcher patcher(allowed_clients, patches);
@@ -251,7 +253,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	}
 
 	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
-	RealmList realm_list(realm_dao->get_realms());
+	RealmList realm_list(realm_dao.get_realms());
 
 	LOG_INFO_SYNC(logger, "Added {} realm(s)", realm_list.realms()->size());
 
@@ -289,7 +291,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	ThreadPool thread_pool(concurrency);
 
-	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, *user_dao,
+	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, user_dao,
 	                            acct_svc, realm_list, *metrics,
 	                            args["locale.enforce"].as<bool>(),
 	                            args["integrity.enabled"].as<bool>());
@@ -476,17 +478,13 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 /*
  * The concurrency level returned is usually the number of logical cores
  * in the machine but the standard doesn't guarantee that it won't be zero.
- * In that case, we just set the minimum concurrency level to two.
+ * In that case, we just set the minimum concurrency level to one.
  */
 unsigned int check_concurrency(log::Logger* logger) {
-#ifdef DEBUG_NO_THREADS
-	return 0;
-#endif
-
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
-		concurrency = 2;
+		concurrency = 1;
 		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
 	}
 

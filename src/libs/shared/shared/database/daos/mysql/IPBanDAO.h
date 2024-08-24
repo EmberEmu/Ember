@@ -77,8 +77,8 @@ public:
 };
 
 template<typename T>
-std::unique_ptr<MySQLIPBanDAO<T>> ip_ban_dao(T& pool) {
-	return std::make_unique<MySQLIPBanDAO<T>>(pool);
+MySQLIPBanDAO<T> ip_ban_dao(T& pool) {
+	return MySQLIPBanDAO<T>(pool);
 }
 
-} //dal, ember
+} // dal, ember
