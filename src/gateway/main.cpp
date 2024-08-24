@@ -316,7 +316,7 @@ std::optional<Realm> load_realm(const po::variables_map& args, log::Logger* logg
 }
 
 std::string_view category_name(const Realm& realm, const dbc::DBCMap<dbc::Cfg_Categories>& dbc) {
-	for(auto&& [k, record] : dbc) {
+	for(auto&& [_, record] : dbc) {
 		if(record.category == realm.category && record.region == realm.region) {
 			return record.name.en_gb;
 		}
