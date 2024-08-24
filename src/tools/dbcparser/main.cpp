@@ -235,8 +235,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	          .run(), options);
 
 	if(options.count("help") || argc <= 1) {
-		std::cout << opt << "\n";
-		std::exit(0);
+		std::cout << opt;
+		std::exit(EXIT_SUCCESS);
 	}
 
 	po::notify(options);

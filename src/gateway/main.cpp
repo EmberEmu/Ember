@@ -184,7 +184,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	auto realm = load_realm(args, logger);
 	
 	if(!realm) {
-		throw std::invalid_argument("Invalid realm ID supplied in configuration.");
+		throw std::invalid_argument("Configured realm ID does not exist in database.");
 	}
 	
 	const auto& title = std::format("{} - {}", APP_NAME, realm->name);
@@ -198,7 +198,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	Config config;
 	config.max_slots = args["realm.max_slots"].as<unsigned int>();
 	config.list_zone_hide = args["quirks.list_zone_hide"].as<bool>();
-	config.realm = &realm.value();
+	config.realm = &*realm;
 
 	// Determine concurrency level
 	unsigned int concurrency = check_concurrency(logger);
@@ -296,6 +296,11 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	eptr = std::current_exception();
 }
 
+/*
+ * Split from launch() as the DB connection is only needed for
+ * loading the initial realm information. If the gateway requires
+ * connections elsewhere in the future, this should be merged back
+ */
 std::optional<Realm> load_realm(const po::variables_map& args, log::Logger* logger) {
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
@@ -391,16 +396,15 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::notify(options);
 
 	if(options.count("help")) {
-		std::cout << cmdline_opts << "\n";
-		std::exit(0);
+		std::cout << cmdline_opts;
+		std::exit(EXIT_SUCCESS);
 	}
 
 	const auto& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
-		const std::string message("Unable to open configuration file: " + config_path);
-		throw std::invalid_argument(message);
+		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
 	po::store(po::parse_config_file(ifs, config_opts), options);

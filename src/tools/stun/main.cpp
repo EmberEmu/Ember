@@ -149,8 +149,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
 
 	if(options.count("help")) {
-		std::cout << cmdline_opts << "\n";
-		std::exit(0);
+		std::cout << cmdline_opts;
+		std::exit(EXIT_SUCCESS);
 	}
 
 	po::notify(options);

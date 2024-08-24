@@ -25,4 +25,4 @@ namespace ember::drivers {
 	static_assert(false, "Cannot compile Ember without defining a DBMS!")
 #endif
 
-} //drivers, ember
+} // drivers, ember

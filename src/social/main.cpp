@@ -180,17 +180,15 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::notify(options);
 
 	if(options.count("help")) {
-		std::cout << cmdline_opts << "\n";
-		std::exit(0);
+		std::cout << cmdline_opts;
+		std::exit(EXIT_SUCCESS);
 	}
 
 	const auto& config_path = options["config"].as<std::string>();
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
-		throw std::invalid_argument(
-			std::format("Unable to open configuration file: {}", config_path)
-		);
+		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
 	po::store(po::parse_config_file(ifs, config_opts), options);
