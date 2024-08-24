@@ -58,27 +58,22 @@ private:
 	void timeout(const boost::system::error_code& ec);
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	               boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
+	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	               : sessions_(sessions),
 	                 socket_(std::move(socket)),
-	                 remote_ep_(ep),
 	                 timer_(socket_.get_executor()),
 	                 outbound_front_(&outbound_buffers_.front()),
 	                 outbound_back_(&outbound_buffers_.back()),
 	                 write_in_progress_(false),
-	                 logger_(logger), stopped_(false) { }
+	                 logger_(logger),
+	                 stopped_(false) { }
 
 	void start() {
 		read();
 	}
 
-	const boost::asio::ip::tcp::endpoint& remote_endpoint() const {
-		return remote_ep_;
-	}
-
 	std::string remote_address() const {
-		return remote_ep_.address().to_string();
+		return socket_.remote_endpoint().address().to_string();
 	}
 
 	void close_session() {

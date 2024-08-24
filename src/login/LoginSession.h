@@ -34,8 +34,7 @@ public:
 	grunt::Handler grunt_handler_;
 
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	             boost::asio::ip::tcp::endpoint ep, log::Logger* logger,
-	             ThreadPool& pool, const LoginHandlerBuilder& builder);
+	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::io::pmr::Buffer& buffer) override;
 };

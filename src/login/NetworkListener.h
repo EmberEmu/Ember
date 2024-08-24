@@ -52,8 +52,7 @@ class NetworkListener final {
 			}
 
 			if(!ec) {
-				const auto ep = socket_.remote_endpoint(ec);
-				const auto ip = ep.address();
+				const auto ip = socket_.remote_endpoint().address();
 
 				if(ec) {
 					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
@@ -68,7 +67,7 @@ class NetworkListener final {
 					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 						<< "Accepted connection " << ip.to_string() << LOG_ASYNC;
 					metrics_.increment("accepted_connections");
-					start_session(std::move(socket_), ep);
+					start_session(std::move(socket_));
 				}
 			}
 
@@ -77,9 +76,9 @@ class NetworkListener final {
 		});
 	}
 
-	void start_session(boost::asio::ip::tcp::socket socket, boost::asio::ip::tcp::endpoint ep) {
+	void start_session(boost::asio::ip::tcp::socket socket) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
-		auto session = session_builder_.create(sessions_, std::move(socket), ep, logger_);
+		auto session = session_builder_.create(sessions_, std::move(socket), logger_);
 		sessions_.start(session);
 	}
 
