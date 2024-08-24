@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 
@@ -29,9 +30,10 @@ int main(int argc, const char* argv[]) try {
 	using namespace ember;
 	const po::variables_map args = parse_arguments(argc, argv);
 	launch(args);
+	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
-	return 1;
+	return EXIT_FAILURE;
 }
 
 namespace ember {

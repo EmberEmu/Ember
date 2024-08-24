@@ -36,6 +36,7 @@
 #include <filesystem>
 #include <vector>
 #include <utility>
+#include <cstdlib>
 
 using namespace ember;
 
@@ -80,7 +81,7 @@ int main(int argc, const char* argv[]) try {
 	return launch(args);
 } catch(const std::exception& e) {
 	std::cerr << e.what() << "\n";
-	return 1;
+	return EXIT_FAILURE;
 }
 
 std::unique_ptr<QueryExecutor> db_executor(const std::string& type,
@@ -175,10 +176,10 @@ int launch(const po::variables_map& args) try {
 		LOG_WARN_GLOB << "Some operations did not complete successfully!" << LOG_SYNC;
 	}
 
-	return success? 0 : 1;
+	return success? EXIT_SUCCESS : EXIT_FAILURE;
 } catch(const std::exception& e) {
 	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
-	return 1;
+	return EXIT_FAILURE;
 }
 
 void validate_options(const po::variables_map& args) {

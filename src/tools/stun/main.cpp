@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 #include <cstdint>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 
@@ -31,9 +32,10 @@ void print_error(std::string_view test, const stun::ErrorRet& error);
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
 	launch(args);
+	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
-	return 1;
+	return EXIT_FAILURE;
 }
 
 void launch(const po::variables_map& args) {

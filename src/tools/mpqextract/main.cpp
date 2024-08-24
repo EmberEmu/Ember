@@ -11,6 +11,7 @@
 #include <mpq/BufferedFileSink.h>
 #include <iostream>
 #include <regex>
+#include <cstdlib>
 
 using namespace ember;
 
@@ -66,4 +67,5 @@ int main(int argc, char** argv) try {
 	return EXIT_SUCCESS;
 } catch(std::exception& e) {
 	std::cerr << e.what();
+	return EXIT_FAILURE;
 }

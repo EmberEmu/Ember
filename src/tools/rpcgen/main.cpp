@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 namespace po = boost::program_options;
 namespace el = ember::log;

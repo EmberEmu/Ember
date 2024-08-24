@@ -52,6 +52,7 @@
 #include <string>
 #include <string_view>
 #include <stdexcept>
+#include <cstdlib>
 
 constexpr ember::cstring_view APP_NAME { "Realm Gateway" };
 
@@ -95,7 +96,7 @@ int main(int argc, const char* argv[]) try {
 
 	print_lib_versions(&logger);
 	const auto ret = asio_launch(args, &logger);
-	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();

@@ -27,6 +27,7 @@
 #include <string>
 #include <utility>
 #include <cstddef>
+#include <cstdlib>
 
 constexpr ember::cstring_view APP_NAME { "MDNS-SD" };
 

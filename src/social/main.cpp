@@ -32,6 +32,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 
 namespace es = ember::spark;
 namespace el = ember::log;

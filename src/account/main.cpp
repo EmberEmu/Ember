@@ -29,6 +29,7 @@
 #include <utility>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 
 constexpr ember::cstring_view APP_NAME { "Account Daemon" };
 

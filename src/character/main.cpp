@@ -35,6 +35,7 @@
 #include <string_view>
 #include <vector>
 #include <stdexcept>
+#include <cstdlib>
 
 constexpr ember::cstring_view APP_NAME { "Character Daemon" };
 
