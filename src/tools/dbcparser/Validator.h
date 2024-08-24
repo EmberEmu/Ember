@@ -85,4 +85,4 @@ public:
 	void validate(const types::Definitions& definitions_, Options options = VAL_DEFAULT);
 };
 
-} //dbc, ember
+} // dbc, ember

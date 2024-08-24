@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015, 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,4 +26,4 @@ public:
 	virtual ~RealmDAO() = default;
 };
 
-}} //dal, ember
+}} // dal, ember

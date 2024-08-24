@@ -27,4 +27,4 @@ public:
 	void colourise(bool colourise) { colour_ = colourise; }
 };
 
-} //log, ember
+} // log, ember

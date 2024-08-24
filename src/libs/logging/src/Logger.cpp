@@ -122,4 +122,4 @@ Logger& flush_sync(Logger& out) {
 	return out;
 }
 
-} //log, ember
+} // log, ember

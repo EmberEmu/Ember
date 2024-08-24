@@ -24,4 +24,4 @@ std::string_view severity_string(Severity severity);
 std::tm current_time();
 std::string put_time(const std::tm& time, cstring_view format);
 
-}} //detail, log, ember
+}} // detail, log, ember

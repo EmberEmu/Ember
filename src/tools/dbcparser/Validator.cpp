@@ -469,4 +469,4 @@ void Validator::validate(const types::Definitions& definitions, Options options)
 	}
 }
 
-} //dbc, ember
+} // dbc, ember

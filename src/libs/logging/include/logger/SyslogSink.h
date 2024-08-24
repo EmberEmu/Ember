@@ -39,4 +39,4 @@ public:
 	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };
 
-} //log, ember
+} // log, ember

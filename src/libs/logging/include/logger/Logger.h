@@ -88,4 +88,4 @@ public:
 Logger& flush(Logger& out);
 Logger& flush_sync(Logger& out);
 
-} //log, ember
+} // log, ember

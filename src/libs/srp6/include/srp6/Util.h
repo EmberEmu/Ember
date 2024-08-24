@@ -52,7 +52,7 @@ inline Botan::BigInt generate(std::string_view identifier, std::string_view pass
 	return compute_v(gen, x);
 }
 
-} //detail
+} // detail
 
 void generate_salt(std::span<std::uint8_t> buffer);
 

@@ -151,4 +151,4 @@ void SyslogSink::batch_write(const std::span<std::pair<RecordDetail, std::vector
 	pimpl_->batch_write(records);
 }
 
-} //log, ember
+} // log, ember

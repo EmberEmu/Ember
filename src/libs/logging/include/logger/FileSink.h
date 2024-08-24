@@ -59,4 +59,4 @@ public:
 };
 
 
-} //log, ember
+} // log, ember

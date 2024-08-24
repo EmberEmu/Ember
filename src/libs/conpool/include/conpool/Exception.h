@@ -32,4 +32,4 @@ public:
 	active_connections(std::string msg) : exception(msg) { };
 };
 
-} //connection_pool, ember
+} // connection_pool, ember

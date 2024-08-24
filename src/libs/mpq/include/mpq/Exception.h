@@ -19,4 +19,4 @@ public:
 	exception(std::string msg) : std::runtime_error(std::move(msg)) { };
 };
 
-} //mpq, ember
+} // mpq, ember

@@ -45,6 +45,6 @@ public:
 	File& operator=(const File&&) = delete;
 };
 
-} //log, ember
+} // log, ember
 
 #pragma warning(pop)

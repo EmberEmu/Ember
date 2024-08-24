@@ -105,4 +105,4 @@ class AlwaysReuse {
 
 };
 
-} //connection_pool, ember
+} // connection_pool, ember

@@ -20,4 +20,4 @@ struct TreeNode {
 	std::vector<std::unique_ptr<TreeNode<T>>> children;
 };
 
-} //dbc, ember
+} // dbc, ember

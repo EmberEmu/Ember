@@ -32,4 +32,4 @@ public:
 	virtual ~Sink() = default;
 };
 
-} //log, ember
+} // log, ember

@@ -51,4 +51,4 @@ struct Realm {
 
 ENABLE_BITMASK(Realm::Flags);
 
-} //ember
+} // ember

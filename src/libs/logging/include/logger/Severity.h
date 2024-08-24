@@ -23,4 +23,4 @@ struct RecordDetail {
 	Filter type;
 };
 
-} //log, ember
+} // log, ember

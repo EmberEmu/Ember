@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,4 +19,4 @@ public:
 	exception(std::string msg) : std::runtime_error(msg) { };
 };
 
-} //log, ember
+} // log, ember

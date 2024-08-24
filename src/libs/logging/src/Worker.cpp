@@ -82,4 +82,4 @@ void Worker::stop() {
 	}
 }
 
-} //log, ember
+} // log, ember

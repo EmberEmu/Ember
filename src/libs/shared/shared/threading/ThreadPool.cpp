@@ -27,4 +27,4 @@ ThreadPool::~ThreadPool() {
 	shutdown();
 }
 
-} //ember
+} // ember

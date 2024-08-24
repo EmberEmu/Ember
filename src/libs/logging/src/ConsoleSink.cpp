@@ -112,4 +112,4 @@ void ConsoleSink::set_colour(Severity severity) {
 	}
 }
 
-} //log, ember
+} // log, ember

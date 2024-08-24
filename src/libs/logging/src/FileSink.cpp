@@ -213,6 +213,6 @@ void FileSink::write(Severity severity, Filter type, std::span<const char> recor
 	}
 }
 
-} //log, ember
+} // log, ember
 
 #pragma warning(pop)
