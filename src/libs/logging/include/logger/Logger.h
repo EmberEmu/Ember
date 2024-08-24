@@ -72,6 +72,10 @@ public:
 	void finalise();
 	void finalise_sync();
 
+	Logger* operator->() {
+		return this;
+	}
+
 	Logger(Logger&) = delete;
 	Logger& operator=(const Logger&) = delete;
 	Logger(Logger&&) = delete;

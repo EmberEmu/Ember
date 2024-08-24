@@ -61,11 +61,12 @@ int main(int argc, const char* argv[]) try {
 	
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = util::init_logging(args);
-	el::set_global_logger(logger.get());
+	log::Logger logger;
+	util::configure_logger(logger, args);
+	log::global_logger(logger);
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = asio_launch(args, logger.get());
+	const auto ret = asio_launch(args, &logger);
 	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
 } catch(const std::exception& e) {

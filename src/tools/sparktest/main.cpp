@@ -40,5 +40,5 @@ void init_logger(log::Logger* logger) {
 	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
-	log::set_global_logger(logger);
+	log::global_logger(logger);
 }

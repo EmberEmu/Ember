@@ -75,7 +75,7 @@ int main(int argc, const char* argv[]) try {
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
 	logger->add_sink(std::move(fsink));
-	el::set_global_logger(logger.get());
+	log::global_logger(logger.get());
 
 	return launch(args);
 } catch(const std::exception& e) {

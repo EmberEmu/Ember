@@ -68,11 +68,12 @@ int main(int argc, const char* argv[]) try {
 
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = util::init_logging(args);
-	ember::log::set_global_logger(logger.get());
+	log::Logger logger;
+	util::configure_logger(logger, args);
+	log::global_logger(logger);
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = asio_launch(args, logger.get());
+	const auto ret = asio_launch(args, &logger);
 	LOG_INFO(logger) << APP_NAME << " terminated" << LOG_SYNC;
 	return ret;
 } catch(const std::exception& e) {

@@ -21,6 +21,7 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <format>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -54,12 +55,13 @@ int main(int argc, const char* argv[]) try {
 	ember::print_banner("Social Daemon");
 	const po::variables_map args = parse_arguments(argc, argv);
 
-	auto logger = ember::util::init_logging(args);
-	el::set_global_logger(logger.get());
+	el::Logger logger;
+	ember::util::configure_logger(logger, args);
+	el::global_logger(logger);
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	print_lib_versions(logger.get());
-	const auto ret = launch(args, logger.get());
+	print_lib_versions(&logger);
+	const auto ret = launch(args, &logger);
 	LOG_INFO(logger) << "Social daemon terminated" << LOG_SYNC;
 	return ret;
 } catch(const std::exception& e) {
@@ -185,8 +187,9 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
-		std::string message("Unable to open configuration file: " + config_path);
-		throw std::invalid_argument(message);
+		throw std::invalid_argument(
+			std::format("Unable to open configuration file: {}", config_path)
+		);
 	}
 
 	po::store(po::parse_config_file(ifs, config_opts), options);

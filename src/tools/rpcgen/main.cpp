@@ -20,13 +20,13 @@ namespace po = boost::program_options;
 namespace el = ember::log;
 
 int launch(const po::variables_map& args);
-void init_logger(ember::log::Logger* logger, const po::variables_map& args);
+void configure_logger(el::Logger& logger, const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
 	const po::variables_map args = parse_arguments(argc, argv);
-	auto logger = std::make_unique<el::Logger>();
-	init_logger(logger.get(), args);
+	el::Logger logger;
+	configure_logger(logger, args);
 	return launch(args);
 } catch(const std::exception& e) {
 	std::cerr << e.what();
@@ -51,7 +51,7 @@ int launch(const po::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void init_logger(ember::log::Logger* logger, const po::variables_map& args) {
+void configure_logger(el::Logger& logger, const po::variables_map& args) {
 	const auto& con_verbosity = el::severity_string(args["verbosity"].as<std::string>());
 	const auto& file_verbosity = el::severity_string(args["fverbosity"].as<std::string>());
 	
@@ -63,7 +63,7 @@ void init_logger(ember::log::Logger* logger, const po::variables_map& args) {
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
 	logger->add_sink(std::move(fsink));
-	el::set_global_logger(logger);
+	el::global_logger(logger);
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {

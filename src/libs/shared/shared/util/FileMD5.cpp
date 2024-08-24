@@ -36,10 +36,10 @@ std::array<std::uint8_t, 16> generate_md5(const std::string& file) {
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	std::size_t block_size = hasher->hash_block_size();
-	std::vector<char> buffer(block_size);
+	std::array<char, 64> buffer; // Botan's block size is 64B
 
 	while(remaining) {
-		std::size_t read_size = remaining >= block_size? block_size : remaining;
+		std::size_t read_size = remaining >= buffer.size()? buffer.size(): remaining;
 		stream.read(buffer.data(), read_size);
 		hasher->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), read_size);
 		remaining -= read_size;

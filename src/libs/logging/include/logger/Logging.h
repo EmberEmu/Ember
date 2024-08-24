@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2015 Ember
+/*
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,9 +19,10 @@ namespace detail {
 
 extern Logger* logger_;
 
-} //detail
+} // detail
 
-Logger* get_logger();
-void set_global_logger(Logger* logger);
+Logger* global_logger();
+void global_logger(Logger& logger);
+void global_logger(Logger* logger);
 
-} //log, ember
+} // log, ember
