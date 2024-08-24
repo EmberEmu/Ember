@@ -14,7 +14,8 @@
 #include <shared/util/FNVHash.h>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
-#include <botan/hash.h>
+#include <botan/checksum/crc32/crc32.h>
+#include <botan/utils/loadstor.h>
 #include <botan/mac.h>
 #include <botan/bigint.h>
 #include <format>
@@ -22,14 +23,6 @@
 namespace ember::stun::detail {
 
 namespace be = boost::endian;
-
-constexpr std::uint32_t make_uint32(std::uint8_t i0, std::uint8_t i1,
-                                    std::uint8_t i2, std::uint8_t i3) {
-	return ((static_cast<std::uint32_t>(i0) << 24) |
-		(static_cast<std::uint32_t>(i1) << 16) |
-		(static_cast<std::uint32_t>(i2) <<  8) |
-		(static_cast<std::uint32_t>(i3)));
-}
 
 /* 
 * If the FINGERPRINT attribute is present, we need to adjust the
@@ -86,12 +79,11 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 		offset = attribute_offset(buffer, Attributes::FINGERPRINT);
 	}
 
-	std::array<std::uint8_t, 4> res;
-	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
-	BOOST_ASSERT_MSG(crc_func->output_length() == res.size(), "Bad checksum size");
-	crc_func->update(buffer.data(), offset);
-	crc_func->final(res.data());
-	const auto crc32 = make_uint32(res[0], res[1], res[2], res[3]);
+	Botan::CRC32 crc;
+	std::array<std::uint8_t, crc.output_length()> res;
+	crc.update(buffer.data(), offset);
+	crc.final(res.data());
+	const auto crc32 = Botan::make_uint32(res[0], res[1], res[2], res[3]);
 	return crc32 ^ 0x5354554e;
 }
 
@@ -115,12 +107,12 @@ std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
 	}
 
 	const std::string concat = std::format(":{}:{}", realm, password);
-	std::array<std::uint8_t, 16> md5_res;
-	auto hasher = Botan::HashFunction::create_or_throw("MD5");
-	BOOST_ASSERT_MSG(hasher->output_length() == md5_res.size(), "Bad hash size");
-	hasher->update(username.data(), username.size_bytes());
-	hasher->update(reinterpret_cast<const std::uint8_t*>(concat.data()), concat.size());
-	hasher->final(md5_res.data());
+
+	Botan::MD5 hasher;
+	std::array<std::uint8_t, hasher.output_bytes> md5_res;
+	hasher.update(username.data(), username.size_bytes());
+	hasher.update(concat);
+	hasher.final(md5_res.data());
 
 	std::array<std::uint8_t, 20> sha1_res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");

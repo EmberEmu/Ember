@@ -52,13 +52,13 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
                                          std::span<const std::uint8_t> proof) const {
 	std::array<std::uint8_t, 20> res;
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
-	hasher->update(username_);
-	hasher->update(salt.data(), salt.size());
-	hasher->update(salt_.data(), salt_.size());
-	hasher->update(sess_key_.t.data(), sess_key_.t.size());
-	hasher->final(res.data());
+	Botan::SHA_1 hasher;
+	BOOST_ASSERT_MSG(hasher.output_length() == res.size(), "Bad hash size");
+	hasher.update(username_);
+	hasher.update(salt.data(), salt.size());
+	hasher.update(salt_.data(), salt_.size());
+	hasher.update(sess_key_.t.data(), sess_key_.t.size());
+	hasher.final(res.data());
 	return std::equal(res.begin(), res.end(), proof.begin(), proof.end());
 }
 

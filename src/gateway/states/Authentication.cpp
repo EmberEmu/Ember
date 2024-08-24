@@ -24,7 +24,7 @@
 #include <shared/util/xoroshiro128plus.h>
 #include <logger/Logging.h>
 #include <botan/bigint.h>
-#include <botan/hash.h>
+#include <botan/sha1/sha1.h>
 #include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
@@ -164,15 +164,14 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	const auto& packet = auth_ctx.packet;
 
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	std::array<std::uint8_t, 20> hash;
-	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
-	hasher->update(packet->username);
-	hasher->update_be(protocol_id);
-	hasher->update(packet->seed.data(), sizeof(packet->seed));
-	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
-	hasher->update(k_bytes.data(), k_bytes.size());
-	hasher->final(hash.data());
+	Botan::SHA_1 hasher;
+	std::array<std::uint8_t, hasher.output_bytes> hash;
+	hasher.update(packet->username);
+	hasher.update_be(protocol_id);
+	hasher.update(packet->seed.data(), sizeof(packet->seed));
+	hasher.update_be(boost::endian::native_to_big(auth_ctx.seed));
+	hasher.update(k_bytes.data(), k_bytes.size());
+	hasher.final(hash.data());
 
 	if(hash != packet->digest) {
 		CLIENT_DEBUG_GLOB(ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;

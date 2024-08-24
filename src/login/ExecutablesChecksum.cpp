@@ -8,7 +8,7 @@
 
 #include "ExecutablesChecksum.h"
 #include <boost/assert.hpp>
-#include <botan/hash.h>
+#include <botan/sha1/sha1.h>
 #include <botan/mac.h>
 
 namespace ember::client_integrity {
@@ -27,11 +27,11 @@ std::array<std::uint8_t, 20> checksum(std::span<const std::uint8_t> seed,
 std::array<std::uint8_t, 20> finalise(std::span<const std::uint8_t> checksum,
                                       std::span<const std::uint8_t> client_seed) {
 	std::array<std::uint8_t, 20> res;
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
-	hasher->update(client_seed.data(), client_seed.size_bytes());
-	hasher->update(checksum.data(), checksum.size_bytes());
-	hasher->final(res.data());
+	Botan::SHA_1 hasher;
+	BOOST_ASSERT_MSG(hasher.output_length() == res.size(), "Bad hash size");
+	hasher.update(client_seed.data(), client_seed.size_bytes());
+	hasher.update(checksum.data(), checksum.size_bytes());
+	hasher.final(res.data());
 	return res;
 }
 

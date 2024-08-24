@@ -11,7 +11,7 @@
 #include <shared/util/base32.h>
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
-#include <botan/hash.h>
+#include <botan/sha1/sha1.h>
 #include <botan/mac.h>
 #include <gsl/gsl_util>
 #include <algorithm>
@@ -123,15 +123,15 @@ auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
 
 	// x = H(client_salt | H(server_salt | ascii(pin_bytes)))
 	HashBytes hash;
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	BOOST_ASSERT_MSG(hasher->output_length() == hash.size(), "Bad hash size");
-	hasher->update(server_salt.data(), server_salt.size());
-	hasher->update(pin_bytes_.data(), pin_bytes_.size());
-	hasher->final(hash.data());
+	Botan::SHA_1 hasher;
+	BOOST_ASSERT_MSG(hasher.output_length() == hash.size(), "Bad hash size");
+	hasher.update(server_salt.data(), server_salt.size());
+	hasher.update(pin_bytes_.data(), pin_bytes_.size());
+	hasher.final(hash.data());
 
-	hasher->update(client_salt.data(), client_salt.size());
-	hasher->update(hash.data(), hash.size());
-	hasher->final(hash.data());
+	hasher.update(client_salt.data(), client_salt.size());
+	hasher.update(hash.data(), hash.size());
+	hasher.final(hash.data());
 	return hash;
 }
 
