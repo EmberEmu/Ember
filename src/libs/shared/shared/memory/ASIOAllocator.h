@@ -57,13 +57,10 @@ public:
 
 		if(pool) [[likely]] {
 			if constexpr(_policy == thread_safe) {
-				m_.lock();
-			}
-
-			return pool->malloc();
-
-			if constexpr(_policy == thread_safe) {
-				m_.unlock();
+				std::lock_guard guard(m_);
+				return pool->malloc();
+			} else {
+				return pool->malloc();
 			}
 		} else {
 			return ::operator new(size);
