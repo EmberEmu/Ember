@@ -292,12 +292,18 @@ struct Record_NSEC {
 };
 
 using RecordData = std::variant<
-	Record_A, Record_AAAA,
-	Record_Authority, Record_PTR,
-	Record_TXT, Record_MX,
-	Record_SOA, Record_URI,
-	Record_SRV, Record_CNAME,
-	Record_HINFO, Record_NSEC
+	Record_A,
+	Record_AAAA,
+	Record_Authority,
+	Record_PTR,
+	Record_TXT,
+	Record_MX,
+	Record_SOA,
+	Record_URI,
+	Record_SRV,
+	Record_CNAME,
+	Record_HINFO,
+	Record_NSEC
 >;
 
 struct ResourceRecord {

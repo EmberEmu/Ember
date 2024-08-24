@@ -17,6 +17,7 @@
 #include <chrono>
 #include <memory>
 #include <span>
+#include <vector>
 
 namespace ember {
 
