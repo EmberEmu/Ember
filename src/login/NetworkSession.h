@@ -11,12 +11,14 @@
 #include "SessionManager.h"
 #include "FilterTypes.h"
 #include <logger/Logging.h>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/BufferSequence.h>
 #include <shared/memory/ASIOAllocator.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <array>
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -27,6 +29,12 @@
 namespace ember {
 
 class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
+public:
+	using WriteCallback = std::function<void()>;
+
+private:
+	using Buffer = spark::io::DynamicBuffer<1024>;
+
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 	ASIOAllocator<thread_safe> allocator_;
 
@@ -34,7 +42,12 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	const boost::asio::ip::tcp::endpoint remote_ep_;
 	boost::asio::steady_timer timer_;
 
-	spark::io::DynamicBuffer<1024> inbound_buffer_;
+	Buffer inbound_buffer_;
+	Buffer* outbound_front_;
+	Buffer* outbound_back_;
+	std::array<Buffer, 2> outbound_buffers_{};
+	bool write_in_progress_;
+
 	SessionManager& sessions_;
 	const std::string remote_address_;
 	log::Logger* logger_;
@@ -76,6 +89,38 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 		));
 	}
 
+	void write(WriteCallback cb) {
+		auto self(shared_from_this());
+		set_timer();
+
+		const spark::io::BufferSequence sequence(*outbound_front_);
+
+		socket_.async_send(sequence, create_alloc_handler(allocator_,
+			[this, self, cb = std::move(cb)](boost::system::error_code ec, std::size_t size) mutable {
+			outbound_front_->skip(size);
+
+			if(!ec) {
+				if(!outbound_front_->empty()) {
+					write(std::move(cb)); // entire buffer wasn't sent, hit gather-write limits?
+				} else {
+					std::swap(outbound_front_, outbound_back_);
+
+					if(!outbound_front_->empty()) {
+						write(std::move(cb));
+					} else { // all done!
+						write_in_progress_ = false;
+					
+						if(cb) {
+							cb();
+						}
+					}
+				}
+			} else if(ec != boost::asio::error::operation_aborted) {
+				close_session();
+			}
+		}));
+	}
+
 	void set_timer() {
 		auto self(shared_from_this());
 
@@ -112,12 +157,16 @@ class NetworkSession : public std::enable_shared_from_this<NetworkSession> {
 	}
 
 public:
-	using WriteCallback = std::function<void()>;
-
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	               boost::asio::ip::tcp::endpoint ep, log::Logger* logger)
-	               : sessions_(sessions), socket_(std::move(socket)), remote_ep_(ep),
-	                 timer_(socket_.get_executor()), logger_(logger), stopped_(false) { }
+	               : sessions_(sessions),
+	                 socket_(std::move(socket)),
+	                 remote_ep_(ep),
+	                 timer_(socket_.get_executor()),
+	                 outbound_front_(&outbound_buffers_.front()),
+	                 outbound_back_(&outbound_buffers_.back()),
+	                 write_in_progress_(false),
+	                 logger_(logger), stopped_(false) { }
 
 	virtual void start() {
 		read();
@@ -161,6 +210,24 @@ public:
 				}
 			}
 		));
+	}
+
+	template<typename StreamSerialisable>
+	void write(const StreamSerialisable& data, WriteCallback cb) {
+		if(!socket_.is_open()) {
+			return;
+		}
+
+		spark::io::pmr::BinaryStream stream(*outbound_back_);
+		data.write_to_stream(stream); // todo, provide operator<< for packets?
+
+		if(!write_in_progress_) {
+			write_in_progress_ = true;
+			std::swap(outbound_front_, outbound_back_);
+			write(std::move(cb));
+		} else {
+			cb();
+		}
 	}
 
 	boost::asio::any_io_executor get_executor() {

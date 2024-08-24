@@ -82,17 +82,13 @@ void LoginSession::async_completion(Action& action) try {
 	close_session();
 }
 
-// todo use a single chain here and create a write queue instead
 void LoginSession::write_packet(const grunt::Packet& packet, WriteCallback&& cb) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< grunt::to_string(packet.opcode) << LOG_ASYNC;
 
-	auto chain = std::make_unique<spark::io::DynamicBuffer<1024>>();
-	spark::io::pmr::BinaryStream stream(*chain);
-	packet.write_to_stream(stream);
-	write_chain(std::move(chain), std::move(cb));
+	write(packet, std::move(cb));
 }
 
 } // ember
