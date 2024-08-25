@@ -115,7 +115,7 @@ public:
 	size_type find_first_of(value_type val) const {
 		const auto data = read_ptr();
 
-		for(auto i = 0u; i < size(); ++i) {
+		for(std::size_t i = 0u; i < size(); ++i) {
 			if(data[i] == val) {
 				return i;
 			}

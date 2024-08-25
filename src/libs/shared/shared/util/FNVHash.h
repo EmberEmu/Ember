@@ -97,7 +97,7 @@ public:
 	}
 
 	std::uint32_t update(const char* t) {
-		for(auto i = 0u;; ++i) {
+		for(std::size_t i = 0u;; ++i) {
 			if(t[i] != '\0') {
 				update(t[i]);
 			} else {

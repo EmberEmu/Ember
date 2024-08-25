@@ -25,7 +25,7 @@ inline std::string format_packet(const T* packet, std::size_t size,
 	auto data = reinterpret_cast<const unsigned char*>(packet);
 	auto rows = static_cast<std::size_t>(std::ceil(size / static_cast<double>(columns)));
 	std::stringstream buffer;
-	auto offset = 0u;
+	std::size_t offset = 0u;
 
 	for(std::size_t i = 0; i != rows; ++i) {
 		buffer << std::hex << std::setw(4) << std::setfill('0') << i * columns << "   ";

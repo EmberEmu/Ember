@@ -42,7 +42,7 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 	const auto tls_total_alloc = tlsalloc.allocator.total_allocs;
 	const auto tls_total_dealloc = tlsalloc.allocator.total_deallocs;
 
-	for(auto i = 0u; i < allocs; ++i) {
+	for(std::size_t i = 0u; i < allocs; ++i) {
 		auto mem = tlsalloc.allocate();
 		chunks[i] = mem;
 	}
@@ -53,7 +53,7 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 	ASSERT_EQ(tlsalloc.allocator.total_allocs, tls_total_alloc + allocs);
 	ASSERT_EQ(tlsalloc.allocator.total_deallocs, tls_total_dealloc);
 
-	for(auto i = 0u; i < allocs; ++i) {
+	for(std::size_t i = 0u; i < allocs; ++i) {
 		tlsalloc.deallocate(chunks[i]);
 	}
 
