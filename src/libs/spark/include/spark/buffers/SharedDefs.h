@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <type_traits>
 #include <cstdint>
 #include <cstddef>
@@ -22,6 +23,12 @@ concept byte_type = sizeof(type) == 1;
 
 template<typename T>
 concept is_pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
+
+template <typename T>
+concept can_resize_overwrite =
+	requires(T t) {
+		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
+};
 
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD

@@ -10,6 +10,7 @@
 
 #include <spark/buffers/SharedDefs.h>
 #include <algorithm>
+#include <concepts>
 #include <ranges>
 #include <utility>
 #include <cassert>
@@ -17,12 +18,6 @@
 #include <cstring>
 
 namespace ember::spark::io {
-
-template <typename T>
-concept can_resize_overwrite = 
-	requires(T t) {
-		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
-};
 
 template <typename T>
 concept can_resize = 

@@ -18,12 +18,6 @@
 
 namespace ember::spark::io::pmr {
 
-template <typename T>
-concept can_resize_overwrite = 
-	requires(T t) {
-		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
-};
-
 template<byte_oriented buf_type>
 class BufferWriteAdaptor : public BufferWrite {
 	buf_type& buffer_;
