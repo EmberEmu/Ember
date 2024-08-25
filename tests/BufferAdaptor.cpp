@@ -170,3 +170,12 @@ TEST(BufferAdaptor, FindFirstOf) {
 	pos = adaptor.find_first_of(std::byte('t'));
 	ASSERT_EQ(pos, 32);
 }
+
+// test optimised write() for buffers supporting resize_and_overwrite
+TEST(BufferAdaptor, StringBuffer) {
+	std::string buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	const auto str = "The quick brown fox jumped over the lazy dog"sv;
+	adaptor.write(str.data(), str.size());
+	ASSERT_EQ(buffer, str);
+}

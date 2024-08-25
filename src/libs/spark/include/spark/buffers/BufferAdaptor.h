@@ -19,6 +19,12 @@
 namespace ember::spark::io {
 
 template <typename T>
+concept can_resize_overwrite = 
+	requires(T t) {
+		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
+};
+
+template <typename T>
 concept can_resize = 
 	requires(T t) {
 		{ t.resize( std::size_t() ) } -> std::same_as<void>;
@@ -93,7 +99,13 @@ public:
 
 		// we don't use std::back_inserter so we can support seeks
 		if(buffer_.size() < min_req_size) {
-			buffer_.resize(min_req_size);
+			if constexpr(can_resize_overwrite<buf_type>) {
+				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
+					return size;
+				});
+			} else {
+				buffer_.resize(min_req_size);
+			}
 		}
 
 		std::memcpy(write_ptr(), source, length);
