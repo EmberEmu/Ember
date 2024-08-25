@@ -51,10 +51,10 @@ public:
 	// terminates when it hits a null byte, empty string if none found
 	BinaryStreamReader& operator >>(std::string& dest) {
 		check_read_bounds(1); // just to prevent trying to read from an empty buffer
-		dest.clear();
 		auto pos = buffer_.find_first_of(std::byte(0));
 
 		if(pos == BufferRead::npos) {
+			dest.clear();
 			return *this;
 		}
 

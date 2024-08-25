@@ -164,10 +164,10 @@ public:
 
 	// terminates when it hits a null byte, empty string if none found
 	BinaryStream& operator >>(std::string& dest) {
-		dest.clear();
 		auto pos = buffer_.find_first_of(value_type(0));
 
 		if(pos == buf_type::npos) {
+			dest.clear();
 			return *this;
 		}
 
