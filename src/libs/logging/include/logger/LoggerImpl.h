@@ -103,17 +103,17 @@ public:
 		return *this;
 	}
 
+	impl& operator <<(bool data) {
+		copy_to_stream(data);
+		return *this;
+	}
+
 	impl& operator <<(float data) {
 		copy_to_stream(data);
 		return *this;
 	}
 
 	impl& operator <<(double data) {
-		copy_to_stream(data);
-		return *this;
-	}
-
-	impl& operator <<(bool data) {
 		copy_to_stream(data);
 		return *this;
 	}
@@ -148,7 +148,7 @@ public:
 		return *this;
 	}
 
-	impl& operator <<(const std::string_view data) {
+	impl& operator <<(std::string_view data) {
 		const auto size = buffer_.second.size();
 		buffer_.second.resize(size + data.size());
 		std::copy(data.begin(), data.end(), buffer_.second.data() + size);

@@ -81,8 +81,6 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 int asio_launch(const po::variables_map& args, log::Logger* logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger* logger);
-void handle_stun_results(stun::Client& client, const stun::MappedResult& result,
-                         std::uint16_t port, log::Logger* logger);
 
 std::exception_ptr eptr = nullptr;
 

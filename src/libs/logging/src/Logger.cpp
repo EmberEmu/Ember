@@ -52,6 +52,11 @@ Logger& Logger::operator <<(Filter type) {
 	return *this;
 }
 
+Logger& Logger::operator <<(std::string_view data) {
+	*pimpl_ << data;
+	return *this;
+}
+
 Logger& Logger::operator <<(float data) {
 	*pimpl_ << data;
 	return *this;
@@ -93,21 +98,6 @@ Logger& Logger::operator <<(unsigned long long data) {
 }
 
 Logger& Logger::operator <<(unsigned int data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(const std::string& data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(const std::string_view data) {
-	*pimpl_ << data;
-	return *this;
-}
-
-Logger& Logger::operator <<(const char* data) {
 	*pimpl_ << data;
 	return *this;
 }
