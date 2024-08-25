@@ -148,25 +148,10 @@ public:
 		return *this;
 	}
 
-	impl& operator <<(const std::string& data) {
-		const auto size = buffer_.second.size();
-		buffer_.second.resize(size + data.size());
-		std::copy(data.begin(), data.end(), buffer_.second.data() + size);
-		return *this;
-	}
-
 	impl& operator <<(const std::string_view data) {
 		const auto size = buffer_.second.size();
 		buffer_.second.resize(size + data.size());
 		std::copy(data.begin(), data.end(), buffer_.second.data() + size);
-		return *this;
-	}
-
-	impl& operator <<(const char* data) {
-		const auto len = std::strlen(data);
-		const auto size = buffer_.second.size();
-		buffer_.second.resize(size + len);
-		std::copy(data, data + len, buffer_.second.data() + size);
 		return *this;
 	}
 
