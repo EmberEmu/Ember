@@ -58,10 +58,12 @@ public:
 	Logger& operator <<(float data);
 	Logger& operator <<(double data);
 	Logger& operator <<(bool data);
+	Logger& operator <<(const char* data);
+
 
 	template<unsigned int N>
 	Logger& operator <<(const char(&data)[N]) {
-		return *this << std::string_view(data);
+		return *this << std::string_view(data, N-1);
 	}
 
 	Logger& operator <<(int data);

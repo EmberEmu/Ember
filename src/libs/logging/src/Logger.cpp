@@ -72,6 +72,11 @@ Logger& Logger::operator <<(bool data) {
 	return *this;
 }
 
+Logger& Logger::operator <<(const char* data) {
+	*pimpl_ << std::string_view(data);
+	return *this;
+}
+
 Logger& Logger::operator <<(int data) {
 	*pimpl_ << data;
 	return *this;
