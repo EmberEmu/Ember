@@ -171,8 +171,11 @@ public:
 			return *this;
 		}
 
-		dest.resize(pos);
-		buffer_.read(dest.data(), pos);
+		dest.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
+			buffer_.read(strbuf, size);
+			return size;
+		});
+
 		buffer_.skip(1); // skip null term
 		return *this;
 	}
