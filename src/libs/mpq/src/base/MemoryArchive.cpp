@@ -37,22 +37,25 @@ void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 	const auto& entry = file_entry(index);
 
 	std::string buffer;
-	buffer.resize(entry.uncompressed_size);
 
-	MemorySink sink(std::as_writable_bytes(std::span(buffer)));
-	extract_file_ext("(listfile)", sink, fpos_hi);
+	buffer.resize_and_overwrite(entry.uncompressed_size, [&](char* strbuf, std::size_t size) {
+		MemorySink sink(std::as_writable_bytes(std::span(strbuf, size)));
+		extract_file_ext("(listfile)", sink, fpos_hi);
+		return size;
+	});
+
 	parse_listfile(buffer);
 }
 
-void MemoryArchive::parse_listfile(std::string& buffer) {
+void MemoryArchive::parse_listfile(std::string_view buffer) {
 	std::stringstream stream;
 	stream << buffer;
-	std::string().swap(buffer); // force memory release
+	std::string line;
 
-	while(std::getline(stream, buffer, '\n')) {
-		std::erase(buffer, '\r');
-		files_.emplace_back(std::move(buffer));
-		buffer.clear(); // reset to known state
+	while(std::getline(stream, line, '\n')) {
+		std::erase(line, '\r');
+		files_.emplace_back(std::move(line));
+		line.clear(); // reset to known state
 	}
 }
 
@@ -160,8 +163,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 	sectors = std::span(sectors.begin(), sectors.end() - ignore_count);
 	auto remaining = entry.uncompressed_size;
 
-	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
-	buffer.resize(max_sector_size);
+	boost::container::small_vector<std::byte, SECTOR_SIZE_HINT> buffer(max_sector_size);
 	const int def_comp = default_compression(sectors, file_offset, entry.uncompressed_size);
 
 	for(auto sector = sectors.begin(); sector != sectors.end(); ++sector) {
@@ -254,8 +256,7 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 		return;
 	}
 
-	boost::container::small_vector<std::byte, LIKELY_SECTOR_SIZE> buffer;
-	buffer.resize(entry.uncompressed_size);
+	boost::container::small_vector<std::byte, SECTOR_SIZE_HINT> buffer(entry.uncompressed_size);
 
 	if(entry.uncompressed_size != entry.compressed_size) {
 		extract_compressed_sector(data, buffer, entry.flags, store);

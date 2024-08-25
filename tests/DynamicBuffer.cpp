@@ -70,8 +70,7 @@ TEST(DynamicBuffer, ReserveFetchConsistency) {
 	ASSERT_EQ(text_len, chain.size()) << "Chain size is incorrect";
 
 	auto buffers = chain.fetch_buffers(text_len);
-	std::string output; output.resize(text_len);
-
+	
 	// store text in the retrieved buffers
 	std::size_t offset = 0;
 
@@ -85,7 +84,12 @@ TEST(DynamicBuffer, ReserveFetchConsistency) {
 	}
 
 	// read text back out
-	chain.read(&output[0], text_len);
+	std::string output;
+
+	output.resize_and_overwrite(text_len, [&](char* strbuf, std::size_t size) {
+		chain.read(strbuf, size);
+		return size;
+	});
 
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	ASSERT_STREQ(text, output.c_str()) << "Read produced incorrect result";
@@ -133,9 +137,13 @@ TEST(DynamicBuffer, AttachTail) {
 	chain.advance_write(written);
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 
-	std::string output; output.resize(written);
+	std::string output;
 
-	chain.read(&output[0], written);
+	output.resize_and_overwrite(written, [&](char* strbuf, std::size_t size) {
+		chain.read(strbuf, size);
+		return size;
+	});
+
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	ASSERT_EQ(0, std::memcmp(text.data(), output.data(), written)) << "Output is incorrect";
 }

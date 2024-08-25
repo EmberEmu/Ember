@@ -295,13 +295,17 @@ void parse_rdata_hinfo(ResourceRecord& rr, ParseContext& ctx) {
 	// cpu
 	std::uint8_t strlen = 0;
 	ctx.stream >> strlen;
-	rdata.cpu.resize(strlen);
-	ctx.stream.get(rdata.cpu.data(), rdata.cpu.size());
+	rdata.cpu.resize_and_overwrite(strlen, [&](char* strbuf, std::size_t size) {
+		ctx.stream.get(strbuf, size);
+		return size;
+	});
 
 	// os
 	ctx.stream >> strlen;
-	rdata.os.resize(strlen);
-	ctx.stream.get(rdata.os.data(), rdata.os.size());
+	rdata.os.resize_and_overwrite(strlen, [&](char* strbuf, std::size_t size) {
+		ctx.stream.get(strbuf, size);
+		return size;
+	});
 
 	rr.rdata = rdata;
 }
@@ -364,9 +368,13 @@ void parse_rdata_txt(ResourceRecord& rr, ParseContext& ctx) {
 		std::uint8_t length;
 		ctx.stream >> length;
 		std::string data;
-		data.resize(length);
-		ctx.stream.get(data, length);
-		rdata.txt.emplace_back(data);
+
+		data.resize_and_overwrite(length, [&](char* strbuf, std::size_t size) {
+			ctx.stream.get(strbuf, size);
+			return size;
+		});
+
+		rdata.txt.emplace_back(std::move(data));
 		remaining -= length + 1;
 	}
 

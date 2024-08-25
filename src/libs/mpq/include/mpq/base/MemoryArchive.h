@@ -29,7 +29,7 @@ protected:
 	
 	void validate();
 	void load_listfile(std::uint64_t fpos_hi);
-	void parse_listfile(std::string& buffer);
+	void parse_listfile(std::string_view buffer);
 
 	void extract_compressed(BlockTableEntry& entry, std::uint32_t key,
 	                        std::uint64_t fpos_hi, ExtractionSink& store);

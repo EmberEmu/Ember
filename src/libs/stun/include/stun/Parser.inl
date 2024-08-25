@@ -69,8 +69,11 @@ auto Parser::extract_utf8_text(spark::io::pmr::BinaryStreamReader& stream, const
 	}
 
 	T attr{};
-	attr.value.resize(size);
-	stream.get(attr.value.begin(), attr.value.end());
+
+	attr.value.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
+		stream.get(strbuf, len);
+		return len;
+	});
 
 	// must be padded to the nearest four bytes
 	if(auto mod = size % PADDING_ROUND) {

@@ -28,7 +28,7 @@ constexpr std::uint32_t MPQ_HASH_NAME_A = 1;
 constexpr std::uint32_t MPQ_HASH_NAME_B = 2;
 constexpr std::uint32_t MPQ_HASH_FILE_KEY = 3;
 constexpr std::uint32_t BLOCK_SIZE = 0x200;
-constexpr std::uint32_t LIKELY_SECTOR_SIZE = 0x200 << 3;
+constexpr std::uint32_t SECTOR_SIZE_HINT = 0x200 << 3;
 
 enum Compression {
 	MPQ_COMPRESSION_HUFFMANN        = 0x01,

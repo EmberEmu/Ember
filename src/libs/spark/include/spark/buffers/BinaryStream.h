@@ -202,8 +202,10 @@ public:
 
 	void get(std::string& dest, std::size_t size) {
 		STREAM_READ_BOUNDS_CHECK(size, void());
-		dest.resize(size);
-		buffer_.read(dest.data(), size);
+		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
+			buffer_.read(strbuf, len);
+			return len;
+		});
 	}
 
 	template<typename T>

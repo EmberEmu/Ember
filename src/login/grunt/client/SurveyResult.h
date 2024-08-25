@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -55,17 +55,18 @@ class SurveyResult final : public Packet {
 		 */
 		std::vector<std::uint8_t> compressed(compressed_size_);
 		stream.get(&compressed[0], compressed.size());
-		data.resize(MAX_SURVEY_LEN);
+		int ret = Z_OK;
 
-		uLongf dest_len = data.size();
-
-		auto ret = uncompress(reinterpret_cast<Bytef*>(data.data()), &dest_len, compressed.data(), compressed.size());
+		data.resize_and_overwrite(MAX_SURVEY_LEN, [&](char* strbuf, std::size_t size) {
+			uLongf dest_len = size;
+			ret = uncompress(reinterpret_cast<Bytef*>(strbuf), &dest_len, compressed.data(), compressed.size());
+			return dest_len;
+		});
 
 		if(ret != Z_OK) {
 			throw bad_packet("Decompression of survey data failed with code " + std::to_string(ret));
 		}
 		
-		data.resize(dest_len);
 		state_ = State::DONE;
 	}
 

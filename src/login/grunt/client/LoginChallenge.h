@@ -33,6 +33,7 @@ class LoginChallenge final : public Packet {
 	static const std::size_t HEADER_LENGTH = 4; // todo - double check
 
 	State state_ = State::INITIAL;
+	std::uint8_t username_len_ = 0;
 
 	void read_body(spark::io::pmr::BinaryStream& stream) {
 		stream >> opcode;
@@ -48,15 +49,11 @@ class LoginChallenge final : public Packet {
 		stream >> locale;
 		stream >> timezone_bias;
 		stream >> ip;
+		stream >> username_len_;
 
-		std::uint8_t username_len;
-		stream >> username_len;
-
-		if(username_len > MAX_USERNAME_LEN) {
+		if(username_len_ > MAX_USERNAME_LEN) {
 			throw bad_packet("Username length was too long!");
 		}
-
-		username.resize(username_len);
 
 		// handle endianness
 		be::little_to_native_inplace(game);
@@ -68,8 +65,12 @@ class LoginChallenge final : public Packet {
 
 	void read_username(spark::io::pmr::BinaryStream& stream) {
 		// does the stream hold enough bytes to complete the username?
-		if(stream.size() >= username.size()) {
-			stream.get(username, username.size());
+		if(stream.size() >= username_len_) {
+			username.resize_and_overwrite(username_len_, [&](char* strlen, std::size_t size) {
+				stream.get(strlen, size);
+				return size;
+			});
+
 			state_ = State::DONE;
 		} else {
 			state_ = State::CALL_AGAIN;

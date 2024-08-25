@@ -162,8 +162,11 @@ Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t lengt
 
 	attr.code = code + num;
 
-	attr.reason.resize(length - sizeof(attributes::ErrorCode::code));
-	stream.get(attr.reason.begin(), attr.reason.end());
+	attr.reason.resize_and_overwrite(length - sizeof(attributes::ErrorCode::code),
+	                                 [&](char* strbuf, std::size_t size) {
+		stream.get(strbuf, size);
+		return size;
+	});
 
 	if(auto mod = attr.reason.size() % 4) {
 		stream.skip(4 - mod);
