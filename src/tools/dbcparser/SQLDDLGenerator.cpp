@@ -61,7 +61,7 @@ public:
 			column += "mediumtext NOT NULL";
 		} else if(type == "string_ref_loc") {
 			// special case handling :()
-			column.clear();
+			column.resize(0);
 	
 			for(const auto& loc : string_ref_loc_regions) {
 				column += "  `" + name + "_" + std::string(loc) + "` ";

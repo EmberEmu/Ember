@@ -79,16 +79,16 @@ private:
 	ErrorCode add_mapping_natpmp(const MapRequest& mapping);
 	ErrorCode add_mapping_pcp(const MapRequest& mapping, bool strict);
 
-	void handle_message(std::span<std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
-	Error parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& result);
-	void handle_external_address_pcp(std::span<std::uint8_t> buffer);
-	void handle_external_address_pmp(std::span<std::uint8_t> buffer);
+	void handle_message(std::span<const std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
+	Error parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest& result);
+	void handle_external_address_pcp(std::span<const std::uint8_t> buffer);
+	void handle_external_address_pmp(std::span<const std::uint8_t> buffer);
 
-	void handle_mapping_pcp(std::span<std::uint8_t> buffer);
-	void handle_mapping_pmp(std::span<std::uint8_t> buffer);
+	void handle_mapping_pcp(std::span<const std::uint8_t> buffer);
+	void handle_mapping_pmp(std::span<const std::uint8_t> buffer);
 
-	ErrorCode handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer);
-	bool handle_announce(std::span<std::uint8_t> buffer);
+	ErrorCode handle_pmp_to_pcp_error(std::span<const std::uint8_t> buffer);
+	bool handle_announce(std::span<const std::uint8_t> buffer);
 
 public:
 	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);

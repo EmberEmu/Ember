@@ -69,7 +69,7 @@ void Client::handle_connection_error() {
 	state_ = State::IDLE;
 }
 
-ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
+ErrorCode Client::handle_pmp_to_pcp_error(std::span<const std::uint8_t> buffer) try {
 	const auto response = deserialise<natpmp::UnsupportedErrorResponse>(buffer);
 
 	if(response.version != NATPMP_VERSION
@@ -83,7 +83,7 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<std::uint8_t> buffer) try {
 	return ErrorCode::SERVER_INCOMPATIBLE;
 }
 
-auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& result) -> Error {
+auto Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest& result) -> Error {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
@@ -135,7 +135,7 @@ auto Client::parse_mapping_pcp(std::span<std::uint8_t> buffer, MapRequest& resul
 	return ErrorCode::SUCCESS;
 }
 
-void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
+void Client::handle_mapping_pcp(std::span<const std::uint8_t> buffer) {
 	MapRequest result{};
 	const auto res = parse_mapping_pcp(buffer, result);
 	auto& handler = active_handler_;
@@ -156,7 +156,7 @@ void Client::handle_mapping_pcp(std::span<std::uint8_t> buffer) {
 	}
 }
 
-void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
+void Client::handle_mapping_pmp(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
@@ -201,7 +201,7 @@ void Client::handle_mapping_pmp(std::span<std::uint8_t> buffer) {
 	handler(result);
 }
 
-void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
+void Client::handle_external_address_pmp(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
@@ -244,7 +244,7 @@ void Client::handle_external_address_pmp(std::span<std::uint8_t> buffer) {
 	}
 }
 
-void Client::handle_external_address_pcp(std::span<std::uint8_t> buffer) {
+void Client::handle_external_address_pcp(std::span<const std::uint8_t> buffer) {
 	auto handler = std::move(active_handler_);
 	
 	MapRequest result{};
@@ -268,7 +268,7 @@ void Client::finagle_state() {
 	states_.pop();
 }
 
-bool Client::handle_announce(std::span<std::uint8_t> buffer) try {
+bool Client::handle_announce(std::span<const std::uint8_t> buffer) try {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 
@@ -302,7 +302,7 @@ bool Client::handle_announce(std::span<std::uint8_t> buffer) try {
 	return false;
 }
 
-void Client::handle_message(std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
+void Client::handle_message(std::span<const std::uint8_t> buffer, const bai::udp::endpoint& ep) {
 	/*
 	 * Upon receiving a response packet, the client MUST check the source IP
      * address, and silently discard the packet if the address is not the
