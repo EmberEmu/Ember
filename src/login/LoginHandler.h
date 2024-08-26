@@ -9,17 +9,13 @@
 #pragma once
 
 #include "Actions.h"
-#include "AccountService.h"
 #include "Authenticator.h"
-#include "IntegrityData.h"
 #include "GameVersion.h"
 #include "LoginState.h"
 #include "PINAuthenticator.h"
-#include "RealmList.h"
 #include "grunt/Packets.h"
 #include "grunt/Handler.h"
 #include <logger/Logging.h>
-#include <shared/database/daos/UserDAO.h>
 #include <botan/bigint.h>
 #include <array>
 #include <fstream>
@@ -38,6 +34,10 @@ struct FileMeta;
 class Patcher;
 class Metrics;
 class Survey;
+class IntegrityData;
+class AccountService;
+class RealmList;
+namespace dal { class UserDAO; }
 
 struct TransferState {
 	std::ifstream file;

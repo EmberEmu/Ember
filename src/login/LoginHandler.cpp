@@ -7,11 +7,15 @@
  */
 
 #include "LoginHandler.h"
+#include "AccountService.h"
+#include "IntegrityData.h"
 #include "LocaleMap.h"
 #include "Patcher.h"
+#include "RealmList.h"
 #include "Survey.h"
 #include "grunt/Packets.h"
 #include "ExecutablesChecksum.h"
+#include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
 #include <boost/container/small_vector.hpp>
