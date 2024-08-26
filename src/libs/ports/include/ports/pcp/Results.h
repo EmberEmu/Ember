@@ -45,6 +45,10 @@ struct Error {
 		natpmp::Result natpmp_code;
 		pcp::Result pcp_code;
 	};
+
+	friend bool operator==(const Error& lhs, const ErrorCode& rhs) {
+		return lhs.code == rhs;
+	}
 };
 
 } // ports, ember

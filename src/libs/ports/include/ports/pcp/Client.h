@@ -80,7 +80,7 @@ private:
 	ErrorCode add_mapping_pcp(const MapRequest& mapping, bool strict);
 
 	void handle_message(std::span<const std::uint8_t> buffer, const boost::asio::ip::udp::endpoint& ep);
-	Error parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest& result);
+	std::expected<MapRequest, Error> parse_mapping_pcp(std::span<const std::uint8_t> buffer);
 	void handle_external_address_pcp(std::span<const std::uint8_t> buffer);
 	void handle_external_address_pmp(std::span<const std::uint8_t> buffer);
 

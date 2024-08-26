@@ -83,14 +83,14 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<const std::uint8_t> buffer) 
 	return ErrorCode::SERVER_INCOMPATIBLE;
 }
 
-auto Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest& result) -> Error {
+std::expected<MapRequest, Error> Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
 	if(protocol_version != PCP_VERSION) {
-		return handle_pmp_to_pcp_error(buffer);
+		return std::unexpected(handle_pmp_to_pcp_error(buffer));
 	}
 
 	pcp::ResponseHeader header{};
@@ -98,15 +98,15 @@ auto Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest&
 	try {
 		header = deserialise<pcp::ResponseHeader>(buffer);
 	} catch(const spark::exception&) {
-		return ErrorCode::BAD_RESPONSE;
+		return std::unexpected(ErrorCode::BAD_RESPONSE);
 	}
 
 	if(!header.response) {
-		return ErrorCode::BAD_RESPONSE;
+		return std::unexpected(ErrorCode::BAD_RESPONSE);
 	}
 
 	if(header.result != pcp::Result::SUCCESS) {
-		return { ErrorCode::PCP_CODE, header.result };
+		return std::unexpected( Error { ErrorCode::PCP_CODE, header.result });
 	}
 
 	try {
@@ -117,10 +117,10 @@ auto Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest&
 		const auto body = deserialise<pcp::MapResponse>(body_buff);
 		
 		if(body.nonce != stored_request_.nonce) {
-			return ErrorCode::ID_MISMATCH;
+			return std::unexpected(ErrorCode::ID_MISMATCH);
 		}
 
-		result = MapRequest {
+		return MapRequest {
 			.internal_port = body.internal_port,
 			.external_port = body.assigned_external_port,
 			.lifetime = header.lifetime,
@@ -129,20 +129,17 @@ auto Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer, MapRequest&
 			.external_ip = body.assigned_external_ip,
 		};
 	} catch(const spark::exception&) {
-		return ErrorCode::BAD_RESPONSE;
+		return std::unexpected(ErrorCode::BAD_RESPONSE);
 	}
-
-	return ErrorCode::SUCCESS;
 }
 
 void Client::handle_mapping_pcp(std::span<const std::uint8_t> buffer) {
-	MapRequest result{};
-	const auto res = parse_mapping_pcp(buffer, result);
+	const auto res = parse_mapping_pcp(buffer);
 	auto& handler = active_handler_;
 
-	if(res.code == ErrorCode::SUCCESS) {
-		handler(result);
-	} else if(res.code == ErrorCode::RETRY_NATPMP && !disable_natpmp_) {
+	if(res) {
+		handler(*res);
+	} else if(res.error() == ErrorCode::RETRY_NATPMP && !disable_natpmp_) {
 		const auto map_res = add_mapping_natpmp(stored_request_);
 
 		if(map_res == ErrorCode::SUCCESS) {
@@ -152,7 +149,7 @@ void Client::handle_mapping_pcp(std::span<const std::uint8_t> buffer) {
 			handler(std::unexpected(map_res));
 		}
 	} else {
-		handler(std::unexpected(res));
+		handler(std::unexpected(res.error()));
 	}
 }
 
@@ -246,18 +243,16 @@ void Client::handle_external_address_pmp(std::span<const std::uint8_t> buffer) {
 
 void Client::handle_external_address_pcp(std::span<const std::uint8_t> buffer) {
 	auto handler = std::move(active_handler_);
-	
-	MapRequest result{};
-	const auto res = parse_mapping_pcp(buffer, result);
+	const auto result = parse_mapping_pcp(buffer);
 
-	if(res.code == ErrorCode::SUCCESS) {
-		handler(result);
-	} else if(res.code == ErrorCode::RETRY_NATPMP && !disable_natpmp_) {
+	if(result) {
+		handler(*result);
+	} else if(result.error() == ErrorCode::RETRY_NATPMP && !disable_natpmp_) {
 		states_.emplace(State::AWAIT_EXTERNAL_ADDRESS_NATPMP);
 		handlers_.emplace(std::move(handler));
 		get_external_address_pmp();
 	} else {
-		handler(std::unexpected(res));
+		handler(std::unexpected(result.error()));
 	}
 }
 
