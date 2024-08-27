@@ -8,14 +8,13 @@
 
 #pragma once
 
+#include "ClientConnection.h"
 #include <memory>
 #include <mutex>
 #include <unordered_set>
-#include <cstddef>
 
 namespace ember {
 
-class ClientConnection;
 struct ConnectionStats;
 
 class SessionManager final {

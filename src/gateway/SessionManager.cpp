@@ -7,7 +7,6 @@
  */
 
 #include "SessionManager.h"
-#include "ClientConnection.h"
 #include "ConnectionStats.h"
 
 namespace ember {

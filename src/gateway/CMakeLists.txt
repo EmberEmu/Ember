@@ -67,6 +67,7 @@ set(LIBRARY_SRC
     WorldClients.cpp
     CharacterService.cpp
     CompressMessage.cpp
+    NetworkListener.cpp
     states/Authentication.cpp
     states/CharacterList.cpp
     states/WorldForwarder.cpp
