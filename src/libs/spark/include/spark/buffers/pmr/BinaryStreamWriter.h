@@ -65,6 +65,11 @@ public:
 	}
 
 	template<typename T>
+	void put(const T& data) requires(std::integral<T> || std::floating_point<T>) {
+		buffer_.write(&data, sizeof(T));
+	}
+
+	template<typename T>
 	void put(const T* data, std::size_t count) {
 		assert(data);
 		const auto write_size = count * sizeof(T);

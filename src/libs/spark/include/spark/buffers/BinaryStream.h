@@ -133,10 +133,15 @@ public:
 	}
 
 	template<std::ranges::contiguous_range range>
-	void put(range& data) requires(writeable<buf_type>) {
+	void put(const range& data) requires(writeable<buf_type>) {
 		const auto write_size = data.size() * sizeof(typename range::value_type);
 		buffer_.write(data.data(), write_size);
 		total_write_ += write_size;
+	}
+
+	template<typename T>
+	void put(const T& data) requires(std::integral<T> || std::floating_point<T>) {
+		buffer_.write(&data, sizeof(T));
 	}
 
 	template<typename T>
