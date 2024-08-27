@@ -39,7 +39,6 @@ class ClientConnection final {
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
 	boost::asio::ip::tcp::socket socket_;
-	const boost::asio::ip::tcp::endpoint ep_;
 
 	StaticBuffer inbound_buffer_{};
 	std::array<DynamicBuffer, 2> outbound_buffers_{};
@@ -79,11 +78,17 @@ class ClientConnection final {
 
 public:
 	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	                 boost::asio::ip::tcp::endpoint ep, ClientUUID uuid, log::Logger* logger)
-	                 : sessions_(sessions), socket_(std::move(socket)), ep_(ep), stats_{},
-	                   msg_size_{0}, logger_(logger), read_state_(ReadState::HEADER), stopped_(true),
+	                 ClientUUID uuid, log::Logger* logger)
+	                 : sessions_(sessions),
+	                   socket_(std::move(socket)),
+	                   stats_{},
+	                   msg_size_{0},
+	                   logger_(logger),
+	                   read_state_(ReadState::HEADER),
+	                   stopped_(true),
 	                   write_in_progress_(false),
-	                   handler_(*this, uuid, logger, socket_.get_executor()), compression_level_(0),
+	                   handler_(*this, uuid, logger, socket_.get_executor()),
+	                   compression_level_(0),
 	                   outbound_front_(&outbound_buffers_.front()),
 	                   outbound_back_(&outbound_buffers_.back()), stopping_(false) { }
 

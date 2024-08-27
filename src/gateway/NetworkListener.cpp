@@ -34,8 +34,7 @@ void NetworkListener::accept_connection() {
 					<< "Accepted connection " << ep.address().to_string() << LOG_ASYNC;
 
 				auto client = std::make_unique<ClientConnection>(
-					sessions_, std::move(socket_), ep,
-					ClientUUID::generate(index_), logger_
+					sessions_, std::move(socket_), ClientUUID::generate(index_), logger_
 				);
 
 				sessions_.start(std::move(client));

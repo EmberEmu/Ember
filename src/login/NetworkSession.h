@@ -38,8 +38,8 @@ private:
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
 	ASIOAllocator<thread_safe> allocator_;
 
+	SessionManager& sessions_;
 	boost::asio::ip::tcp::socket socket_;
-	const boost::asio::ip::tcp::endpoint remote_ep_;
 	boost::asio::steady_timer timer_;
 
 	Buffer inbound_buffer_;
@@ -48,7 +48,6 @@ private:
 	std::array<Buffer, 2> outbound_buffers_{};
 	bool write_in_progress_;
 
-	SessionManager& sessions_;
 	log::Logger* logger_;
 	bool stopped_;
 

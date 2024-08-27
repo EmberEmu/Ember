@@ -221,7 +221,7 @@ void ClientConnection::close_session_sync() {
 }
 
 std::string ClientConnection::remote_address() const {
-	return ep_.address().to_string();
+	return socket_.remote_endpoint().address().to_string();
 }
 
 const ConnectionStats& ClientConnection::stats() const {

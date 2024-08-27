@@ -28,7 +28,6 @@ class StreamTransport final : public Transport {
 
 	ba::io_context ctx_;
 	ba::ip::tcp::socket socket_;
-	ba::ip::tcp::endpoint ep_;
 	ba::ip::tcp::resolver resolver_;
 	std::jthread worker_;
 	std::unique_ptr<boost::asio::io_context::work> work_;
