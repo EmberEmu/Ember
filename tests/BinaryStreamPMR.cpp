@@ -275,3 +275,25 @@ TEST(BinaryStreamPMR, PutIntegralLiterals) {
 	ASSERT_EQ(result64, std::numeric_limits<std::int64_t>::max());
 	ASSERT_TRUE(stream);
 }
+
+TEST(BinaryStreamPMR, StringViewWrite) {
+	std::string buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	std::string_view view { "There's coffee in that nebula" };
+	stream << view;
+	std::string res;
+	stream >> res;
+	ASSERT_EQ(view, res);
+}
+
+TEST(BinaryStreamPMR, CStringViewWrite) {
+	std::string buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	ember::cstring_view view { "There's coffee in that nebula" };
+	stream << view;
+	std::string res;
+	stream >> res;
+	ASSERT_EQ(view, res);
+}

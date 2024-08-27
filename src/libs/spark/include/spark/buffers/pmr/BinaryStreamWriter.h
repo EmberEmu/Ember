@@ -10,10 +10,12 @@
 
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferWrite.h>
+#include <shared/util/cstring_view.hpp>
 #include <algorithm>
 #include <array>
 #include <concepts>
 #include <string>
+#include <string_view>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -54,6 +56,20 @@ public:
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
 		total_write_ += len + 1;
+		return *this;
+	}
+
+	BinaryStreamWriter& operator <<(const std::string_view& data) {
+		buffer_.write(data.data(), data.size());
+		const char term = '\0';
+		buffer_.write(&term, sizeof(term));
+		total_write_ += (data.size() + 1);
+		return *this;
+	}
+
+	BinaryStreamWriter& operator <<(const cstring_view& data) {
+		buffer_.write(data.data(), data.size() + 1);
+		total_write_ += (data.size() + 1);
 		return *this;
 	}
 
