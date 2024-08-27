@@ -10,7 +10,7 @@ set(EXECUTABLE_SRC
     SRP6.cpp
     DynamicBuffer.cpp
     Buffer.cpp
-    BinaryStream.cpp
+    BinaryStreamPMR.cpp
     GruntHandler.cpp
     GruntProtocol.cpp
     LoginHandler.cpp
@@ -26,10 +26,10 @@ set(EXECUTABLE_SRC
     IntegrityData.cpp
     PatchGraph.cpp
     MPQ.cpp
-    BinaryStreamV2.cpp
-    BufferAdaptorV2.cpp
-    ThreadUtility.cpp
+    BinaryStream.cpp
     BufferAdaptor.cpp
+    ThreadUtility.cpp
+    BufferAdaptorPMR.cpp
     BufferUtility.cpp
     TLSBlockAllocator.cpp
     StaticBuffer.cpp

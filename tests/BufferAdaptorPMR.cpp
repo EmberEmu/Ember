@@ -6,7 +6,7 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
@@ -15,58 +15,57 @@
 #include <vector>
 #include <cstdint>
 
-using namespace std::literals;
 using namespace ember;
+using namespace std::literals;
 
-TEST(BufferAdaptorV2, SizeEmptyInitial) {
-	std::array<std::uint8_t, 0> buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, SizeEmptyInitial) {
+	std::vector<std::uint8_t> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	ASSERT_EQ(adaptor.size(), 0);
 }
 
-TEST(BufferAdaptorV2, Empty) {
+TEST(BufferAdaptorPMR, Empty) {
 	std::vector<std::uint8_t> buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	ASSERT_TRUE(adaptor.empty());
 	buffer.emplace_back(1);
-	adaptor.advance_write(1);
 	ASSERT_FALSE(adaptor.empty());
 }
 
-TEST(BufferAdaptorV2, SizePopulatedInitial) {
-	std::array<std::uint8_t, 1> buffer { 1 };
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, SizePopulatedInitial) {
+	std::vector<std::uint8_t> buffer { 1 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	ASSERT_EQ(adaptor.size(), buffer.size());
 }
 
-TEST(BufferAdaptorV2, ResizeMatch) {
+TEST(BufferAdaptorPMR, ResizeMatch) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3, 4, 5 };
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	ASSERT_EQ(adaptor.size(), buffer.size());
 	buffer.emplace_back(6);
 	ASSERT_EQ(adaptor.size(), buffer.size());
 }
 
-TEST(BufferAdaptorV2, ReadOne) {
-	std::array<std::uint8_t, 3> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, ReadOne) {
+	std::vector<std::uint8_t> buffer { 1, 2, 3 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::uint8_t value = 0;
 	adaptor.read(&value, 1);
 	ASSERT_EQ(adaptor.size(), buffer.size() - 1);
 	ASSERT_EQ(value, 1);
 }
 
-TEST(BufferAdaptorV2, ReadAll) {
-	std::array<std::uint8_t, 3> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, ReadAll) {
+	std::vector<std::uint8_t> buffer { 1, 2, 3 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values{};
 	adaptor.read(&values, values.size());
 	ASSERT_TRUE(std::equal(buffer.begin(), buffer.begin(), values.begin()));
 }
 
-TEST(BufferAdaptorV2, SingleSkipRead) {
-	std::array<std::uint8_t, 3> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, SingleSkipRead) {
+	std::vector<std::uint8_t> buffer { 1, 2, 3 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::uint8_t value = 0;
 	adaptor.skip(1);
 	adaptor.read(&value, 1);
@@ -74,9 +73,9 @@ TEST(BufferAdaptorV2, SingleSkipRead) {
 	ASSERT_EQ(value, buffer[1]);
 }
 
-TEST(BufferAdaptorV2, MultiskipRead) {
-	std::array<std::uint8_t, 6> buffer { 1, 2, 3, 4, 5, 6 };
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, MultiskipRead) {
+	std::vector<std::uint8_t> buffer { 1, 2, 3, 4, 5, 6 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::uint8_t value = 0;
 	adaptor.skip(5);
 	adaptor.read(&value, 1);
@@ -84,9 +83,9 @@ TEST(BufferAdaptorV2, MultiskipRead) {
 	ASSERT_EQ(value, buffer[5]);
 }
 
-TEST(BufferAdaptorV2, Write) {
+TEST(BufferAdaptorPMR, Write) {
 	std::vector<std::uint8_t> buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 6> values { 1, 2, 3, 4, 5, 6 };
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(adaptor.size(), values.size());
@@ -94,9 +93,9 @@ TEST(BufferAdaptorV2, Write) {
 	ASSERT_TRUE(std::equal(values.begin(), values.end(), buffer.begin()));
 }
 
-TEST(BufferAdaptorV2, WriteAppend) {
+TEST(BufferAdaptorPMR, WriteAppend) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), 6);
@@ -105,15 +104,15 @@ TEST(BufferAdaptorV2, WriteAppend) {
 	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), buffer.begin()));
 }
 
-TEST(BufferAdaptorV2, CanWriteSeek) {
+TEST(BufferAdaptorPMR, CanWriteSeek) {
 	std::vector<std::uint8_t> buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	ASSERT_TRUE(adaptor.can_write_seek());
 }
 
-TEST(BufferAdaptorV2, WriteSeekBack) {
+TEST(BufferAdaptorPMR, WriteSeekBack) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
 	adaptor.write_seek(spark::io::BufferSeek::SK_BACKWARD, 2);
 	adaptor.write(values.data(), values.size());
@@ -123,9 +122,9 @@ TEST(BufferAdaptorV2, WriteSeekBack) {
 	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), buffer.begin()));
 }
 
-TEST(BufferAdaptorV2, WriteSeekStart) {
+TEST(BufferAdaptorPMR, WriteSeekStart) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
 	adaptor.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0);
 	adaptor.write(values.data(), values.size());
@@ -134,9 +133,9 @@ TEST(BufferAdaptorV2, WriteSeekStart) {
 	ASSERT_TRUE(std::equal(buffer.begin(), buffer.end(), values.begin()));
 }
 
-TEST(BufferAdaptorV2, ReadPtr) {
-	std::array<std::uint8_t, 3> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
+TEST(BufferAdaptorPMR, ReadPtr) {
+	std::vector<std::uint8_t> buffer { 1, 2, 3 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	auto ptr = adaptor.read_ptr();
 	ASSERT_EQ(*ptr, buffer[0]);
 	adaptor.skip(1);
@@ -147,38 +146,35 @@ TEST(BufferAdaptorV2, ReadPtr) {
 	ASSERT_EQ(*ptr, buffer[2]);
 }
 
-TEST(BufferAdaptorV2, Subscript) {
-	std::array<std::uint8_t, 3> buffer { 1, 2, 3 };
-	spark::io::BufferAdaptor adaptor(buffer);
-	ASSERT_EQ(adaptor[0], 1);
-	ASSERT_EQ(adaptor[1], 2);
-	ASSERT_EQ(adaptor[2], 3);
+TEST(BufferAdaptorPMR, Subscript) {
+	std::vector<std::uint8_t> buffer { 1, 2, 3 };
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	ASSERT_EQ(adaptor[0], std::byte(1));
+	ASSERT_EQ(adaptor[1], std::byte(2));
+	ASSERT_EQ(adaptor[2], std::byte(3));
 	buffer[0] = 4;
-	ASSERT_EQ(adaptor[0], 4);
-	adaptor[0] = 5;
-	ASSERT_EQ(adaptor[0], 5);
-	ASSERT_EQ(adaptor[0], buffer[0]);
+	ASSERT_EQ(adaptor[0], std::byte(4));
 }
 
-TEST(BufferAdaptorV2, FindFirstOf) {
+TEST(BufferAdaptorPMR, FindFirstOf) {
 	std::vector<char> buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	const auto str = "The quick brown fox jumped over the lazy dog"sv;
 	adaptor.write(str.data(), str.size());
-	auto pos = adaptor.find_first_of('\0');
+	auto pos = adaptor.find_first_of(std::byte('\0'));
 	ASSERT_EQ(pos, adaptor.npos); // direct string write is not terminated
-	pos = adaptor.find_first_of('g');
+	pos = adaptor.find_first_of(std::byte('g'));
 	ASSERT_EQ(pos, 43);
-	pos = adaptor.find_first_of('T');
+	pos = adaptor.find_first_of(std::byte('T'));
 	ASSERT_EQ(pos, 0);
-	pos = adaptor.find_first_of('t');
+	pos = adaptor.find_first_of(std::byte('t'));
 	ASSERT_EQ(pos, 32);
 }
 
 // test optimised write() for buffers supporting resize_and_overwrite
-TEST(BufferAdaptorV2, StringBuffer) {
+TEST(BufferAdaptorPMR, StringBuffer) {
 	std::string buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	const auto str = "The quick brown fox jumped over the lazy dog"sv;
 	adaptor.write(str.data(), str.size());
 	ASSERT_EQ(buffer, str);

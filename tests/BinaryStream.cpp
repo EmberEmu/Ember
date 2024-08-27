@@ -6,18 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <spark/buffers/pmr/BinaryStream.h>
-#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <spark/buffers/DynamicBuffer.h>
+#include <spark/buffers/StaticBuffer.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
+#include <shared/util/cstring_view.hpp>
 #include <gtest/gtest.h>
 #include <gsl/gsl_util>
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <limits>
 #include <numeric>
 #include <random>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 namespace spark = ember::spark;
 
@@ -33,7 +37,7 @@ TEST(BinaryStream, MessageReadLimit) {
 	buffer.write(ping.data(), ping.size());
 
 	// read one packet back out (reuse the ping array)
-	spark::io::pmr::BinaryStream stream(buffer, ping.size());
+	spark::io::BinaryStream stream(buffer, ping.size());
 	ASSERT_EQ(stream.read_limit(), ping.size());
 	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
 		<< "Failed to read packet back from stream";
@@ -56,7 +60,7 @@ TEST(BinaryStream, BufferLimit) {
 	buffer.write(ping.data(), ping.size());
 
 	// read all data back out
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
 		<< "Failed to read packet back from stream";
 
@@ -69,7 +73,7 @@ TEST(BinaryStream, BufferLimit) {
 
 TEST(BinaryStream, ReadWriteInts) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 
 	const std::uint16_t in { 100 };
 	stream << in;
@@ -89,7 +93,7 @@ TEST(BinaryStream, ReadWriteInts) {
 
 TEST(BinaryStream, ReadWriteStdString) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
@@ -107,7 +111,7 @@ TEST(BinaryStream, ReadWriteStdString) {
 
 TEST(BinaryStream, ReadWriteCString) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	const char* in { "The quick brown fox jumped over the lazy dog" };
 	stream << in;
 
@@ -124,7 +128,7 @@ TEST(BinaryStream, ReadWriteCString) {
 
 TEST(BinaryStream, ReadWriteVector) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
@@ -158,7 +162,7 @@ TEST(BinaryStream, ReadWriteVector) {
 
 TEST(BinaryStream, Clear) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	stream << 0xBADF00D;
 
 	ASSERT_TRUE(!stream.empty());
@@ -172,7 +176,7 @@ TEST(BinaryStream, Clear) {
 
 TEST(BinaryStream, Skip) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 
 	const std::uint64_t in {0xBADF00D};
 	stream << in << in;
@@ -190,13 +194,13 @@ TEST(BinaryStream, Skip) {
 
 TEST(BinaryStream, CanWriteSeek) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	ASSERT_EQ(buffer.can_write_seek(), stream.can_write_seek());
 }
 
 TEST(BinaryStream, GetPut) {
 	spark::io::DynamicBuffer<32> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::BinaryStream stream(buffer);
 	std::vector<std::uint8_t> in { 1, 2, 3, 4, 5 };
 	std::vector<std::uint8_t> out(in.size());
 
@@ -210,8 +214,8 @@ TEST(BinaryStream, GetPut) {
 
 TEST(BinaryStream, Fill) {
 	std::vector<std::uint8_t> buffer;
-	spark::io::pmr::BufferAdaptor adaptor(buffer);
-	spark::io::pmr::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	stream.fill<30>(128);
 	ASSERT_EQ(buffer.size(), 30);
 	ASSERT_EQ(stream.total_write(), 30);
@@ -222,10 +226,95 @@ TEST(BinaryStream, Fill) {
 	ASSERT_EQ(it, buffer.end());
 }
 
+TEST(BinaryStream, NoCopyStringRead) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	const std::uint32_t trailing { 0x0DDBA11 };
+	stream << input << trailing;
+
+	// check this stream uses a contiguous buffer
+	const auto contig = std::is_same<decltype(stream)::contiguous_type, spark::io::is_contiguous>::value;
+	ASSERT_TRUE(contig);
+
+	// find the end of the string within the buffer
+	const auto stream_buf = stream.buffer();
+	const auto pos = stream_buf->find_first_of('\0');
+	ASSERT_NE(pos, adaptor.npos);
+
+	// create a view into the buffer & skip ahead so the next read continues as normal
+	std::string_view output(stream_buf->read_ptr(), pos);
+	ASSERT_EQ(input, output);
+
+	// ensure we can still read subsequent data as normal
+	stream.skip(pos + 1); // +1 to skip terminator
+	std::uint32_t trailing_output = 0;
+	stream >> trailing_output ;
+	ASSERT_EQ(trailing, trailing_output);
+}
+
+TEST(BinaryStream, StringViewRead) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	const std::uint32_t trailing { 0x0DDBA11 };
+	stream << input << trailing;
+
+	auto view = stream.view();
+	ASSERT_EQ(input, view);
+
+	// ensure we can still read subsequent data as normal
+	std::uint32_t trailing_output = 0;
+	stream >> trailing_output;
+	ASSERT_EQ(trailing, trailing_output);
+}
+
+TEST(BinaryStream, PartialStringViewRead) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << input;
+
+	auto span = stream.span(20);
+	std::string_view view(span);
+	ASSERT_EQ("The quick brown fox ", view);
+
+	// read the rest of the string
+	view = stream.view();
+	ASSERT_EQ("jumped over the lazy dog", view);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringViewStream) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	const std::uint32_t trailing { 0xDEFECA7E };
+	stream << input << trailing;
+
+	std::string_view output;
+	stream >> output;
+	ASSERT_EQ(input, output);
+
+	// ensure we can still read subsequent data as normal
+	std::uint32_t trailing_output = 0;
+	stream >> trailing_output;
+	ASSERT_EQ(trailing, trailing_output);
+	
+	// make a sly modification to the buffer and check the string_view matches
+	buffer[0] = 'A';
+	ASSERT_EQ(buffer[0], output[0]);
+	ASSERT_NE(input, output);
+}
+
 TEST(BinaryStream, Array) {
 	std::vector<char> buffer;
-	spark::io::pmr::BufferAdaptor adaptor(buffer);
-	spark::io::pmr::BinaryStream stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 	const int arr[] = { 1, 2, 3 };
 	stream << arr;
 	int val = 0;
@@ -237,9 +326,102 @@ TEST(BinaryStream, Array) {
 	ASSERT_EQ(val, 3);
 }
 
+TEST(BinaryStream, Span) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	const int arr[] = { 4, 9, 2, 1 }; // chosen by fair dice roll
+	stream << arr;
+	auto span = stream.span<int>(4);
+	ASSERT_TRUE(stream.empty());
+	// not checking directly against the array in case it somehow gets clobbered,
+	// which would mean the span would get clobbered and succeed where it shouldn't
+	ASSERT_EQ(span[0], 4);
+	ASSERT_EQ(span[1], 9);
+	ASSERT_EQ(span[2], 2);
+	ASSERT_EQ(span[3], 1);
+}
+
+TEST(BinaryStream, CStringView) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	std::string_view view { "There's coffee in that nebula" };
+	stream << view;
+	ember::cstring_view cview;
+	stream >> cview;
+	ASSERT_EQ(view, cview);
+	const auto len = std::strlen(cview.c_str());
+	ASSERT_EQ(view.size(), len);
+	ASSERT_EQ(*(cview.data() + len), '\0');
+}
+
+TEST(BinaryStream, StaticBufferWrite) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	stream << 'a' << 'b' << 'c' << 'd';
+	ASSERT_EQ(buffer[0], 'a');
+	ASSERT_EQ(buffer[1], 'b');
+	ASSERT_EQ(buffer[2], 'c');
+	ASSERT_EQ(buffer[3], 'd');
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StaticBufferDirectWrite) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	std::uint32_t input = 0xBEE5BEE5;
+	std::uint32_t output = 0;
+	buffer.write(&input, sizeof(input));
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StaticBufferOverflow) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	ASSERT_THROW(stream << std::uint64_t(1), spark::io::buffer_overflow);
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StaticBufferRead) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	const std::uint32_t input = 0x11223344;
+	buffer.write(&input, sizeof(input));
+	spark::io::BinaryStream stream(buffer);
+	std::uint32_t output = 0;
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StaticBufferUnderrun) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream stream(buffer);
+	std::uint32_t input = 0xBEEFBEEF;
+	std::uint32_t output = 0;
+	stream << input;
+	stream >> output;
+	ASSERT_THROW(stream >> output, spark::io::buffer_underrun);
+	ASSERT_FALSE(stream);
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, StaticBufferUnderrunNoExcept) {
+	spark::io::StaticBuffer<char, 4> buffer;
+	spark::io::BinaryStream<decltype(buffer), false> stream(buffer);
+	std::uint32_t output = 0;
+	stream << output;
+	stream >> output;
+	ASSERT_NO_THROW(stream >> output);
+	ASSERT_FALSE(stream);
+	ASSERT_EQ(output, 0);
+}
+
 TEST(BinaryStream, PutIntegralLiterals) {
-	spark::io::DynamicBuffer<64> buffer;
-	spark::io::pmr::BinaryStream stream(buffer);
+	spark::io::StaticBuffer<char, 64> buffer;
+	spark::io::BinaryStream stream(buffer);
 	stream.put<std::uint64_t>(std::numeric_limits<std::uint64_t>::max());
 	stream.put<std::uint32_t>(std::numeric_limits<std::uint32_t>::max());
 	stream.put<std::uint16_t>(std::numeric_limits<std::uint16_t>::max());
