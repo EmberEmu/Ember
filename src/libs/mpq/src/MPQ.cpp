@@ -27,13 +27,13 @@ LocateResult archive_offset(std::ifstream& stream, const std::uintmax_t size) {
 	for(std::uintptr_t i = 0; i < (size - buffer.size_bytes()); i += HEADER_ALIGNMENT) {
 		stream.seekg(i);
 
-		if(!stream.good()) {
+		if(!stream) {
 			return std::unexpected(ErrorCode::FILE_READ_FAILED);
 		}
 
 		stream.read(reinterpret_cast<char*>(buffer.data()), buffer.size_bytes());
 
-		if(!stream.good()) {
+		if(!stream) {
 			return std::unexpected(ErrorCode::FILE_READ_FAILED);
 		}
 
@@ -130,7 +130,7 @@ std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
 
 	stream.read(h_buf.data(), h_buf.size());
 
-	if(!stream.good()) {
+	if(!stream) {
 		throw exception("cannot read archive: header read failed");
 	}
 

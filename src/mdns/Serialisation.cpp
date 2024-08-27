@@ -34,7 +34,7 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 	parser::parse_header(query, stream);
 	parser::parse_records(query, ctx);
 
-	if(stream.state() != spark::io::StreamState::OK) {
+	if(!stream) {
 		return std::unexpected(parser::Result::STREAM_ERROR);
 	}
 

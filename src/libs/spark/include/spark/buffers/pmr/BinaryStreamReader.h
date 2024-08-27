@@ -133,6 +133,10 @@ public:
 	void clear_state() {
 		state_ = StreamState::OK;
 	}
+
+	operator bool() const {
+		return good();
+	}
 };
 
 } // pmr, io, spark, ember

@@ -58,7 +58,7 @@ public:
 		if constexpr(can_create_view<Reader>() && allow_unaligned) {
 			_view = std::start_lifetime_as<MessageType>(stream.buffer());
 			stream.skip(sizeof(MessageType));
-			return stream.good()? State::DONE : State::ERRORED;
+			return stream? State::DONE : State::ERRORED;
 		} else {
 			return _message.read_from_stream(stream);
 		}

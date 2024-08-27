@@ -363,7 +363,7 @@ TEST(BinaryStreamV2, StaticBufferWrite) {
 	ASSERT_EQ(buffer[1], 'b');
 	ASSERT_EQ(buffer[2], 'c');
 	ASSERT_EQ(buffer[3], 'd');
-	ASSERT_TRUE(stream.good());
+	ASSERT_TRUE(stream);
 }
 
 TEST(BinaryStreamV2, StaticBufferDirectWrite) {
@@ -374,14 +374,14 @@ TEST(BinaryStreamV2, StaticBufferDirectWrite) {
 	buffer.write(&input, sizeof(input));
 	stream >> output;
 	ASSERT_EQ(input, output);
-	ASSERT_TRUE(stream.good());
+	ASSERT_TRUE(stream);
 }
 
 TEST(BinaryStreamV2, StaticBufferOverflow) {
 	spark::io::StaticBuffer<char, 4> buffer;
 	spark::io::BinaryStream stream(buffer);
 	ASSERT_THROW(stream << std::uint64_t(1), spark::io::buffer_overflow);
-	ASSERT_TRUE(stream.good());
+	ASSERT_TRUE(stream);
 }
 
 TEST(BinaryStreamV2, StaticBufferRead) {
@@ -392,7 +392,7 @@ TEST(BinaryStreamV2, StaticBufferRead) {
 	std::uint32_t output = 0;
 	stream >> output;
 	ASSERT_EQ(input, output);
-	ASSERT_TRUE(stream.good());
+	ASSERT_TRUE(stream);
 }
 
 TEST(BinaryStreamV2, StaticBufferUnderrun) {
@@ -403,7 +403,7 @@ TEST(BinaryStreamV2, StaticBufferUnderrun) {
 	stream << input;
 	stream >> output;
 	ASSERT_THROW(stream >> output, spark::io::buffer_underrun);
-	ASSERT_FALSE(stream.good());
+	ASSERT_FALSE(stream);
 	ASSERT_EQ(input, output);
 }
 
@@ -414,6 +414,6 @@ TEST(BinaryStreamV2, StaticBufferUnderrunNoExcept) {
 	stream << output;
 	stream >> output;
 	ASSERT_NO_THROW(stream >> output);
-	ASSERT_FALSE(stream.good());
+	ASSERT_FALSE(stream);
 	ASSERT_EQ(output, 0);
 }

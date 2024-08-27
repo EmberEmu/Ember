@@ -44,7 +44,7 @@ std::array<std::uint8_t, 16> generate_md5(const std::string& file) {
 		hasher->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), read_size);
 		remaining -= read_size;
 
-		if(!stream.good()) {
+		if(!stream) {
 			throw std::runtime_error("Could not read file for MD5, " + file);
 		}
 	}
