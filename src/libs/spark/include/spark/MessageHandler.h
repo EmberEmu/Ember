@@ -10,7 +10,7 @@
 
 #include <spark/Link.h>
 #include <spark/ServicesMap.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <unordered_set>
 #include <cstdint>
 

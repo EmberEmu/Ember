@@ -15,6 +15,8 @@ namespace ember::spark::io::pmr {
 
 class BufferRead : virtual public BufferBase {
 public:
+	using value_type = std::byte;
+
 	constexpr static std::size_t npos = -1;
 
 	virtual ~BufferRead() = default;

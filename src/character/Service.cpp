@@ -8,6 +8,7 @@
 
 #include "Service.h"
 #include "CharacterHandler.h"
+#include <logger/Logging.h>
 #include <string>
 #include <utility>
 #include <cstdint>

@@ -11,11 +11,13 @@
 #include "Actions.h"
 #include "Authenticator.h"
 #include "GameVersion.h"
+#include "LoginHandlerFwd.h"
 #include "LoginState.h"
 #include "PINAuthenticator.h"
-#include "grunt/Packets.h"
-#include "grunt/Handler.h"
-#include <logger/Logging.h>
+#include "grunt/PacketFwd.h"
+#include "grunt/client/LoginChallenge.h"
+#include "grunt/ResultCodes.h"
+#include <logger/LoggerFwd.h>
 #include <botan/bigint.h>
 #include <array>
 #include <fstream>
@@ -29,15 +31,6 @@
 #include <variant>
 
 namespace ember {
-
-struct FileMeta;
-class Patcher;
-class Metrics;
-class Survey;
-class IntegrityData;
-class AccountService;
-class RealmList;
-namespace dal { class UserDAO; }
 
 struct TransferState {
 	std::ifstream file;
@@ -62,13 +55,14 @@ class LoginHandler final {
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_src_;
-	std::optional<User> user_;
-	Botan::BigInt server_proof_;
 	const std::string source_ip_;
 	const AccountService& acct_svc_;
 	const IntegrityData& bin_data_;
 	const Survey& survey_;
+
 	StateContainer state_data_;
+	std::optional<User> user_;
+	Botan::BigInt server_proof_;
 	std::array<std::uint8_t, CHECKSUM_SALT_LEN> checksum_salt_;
 	PINAuthenticator::SaltBytes pin_salt_;
 	std::uint32_t pin_grid_seed_;

@@ -8,6 +8,7 @@
 
 #include <spark/HeartbeatService.h>
 #include <spark/Service.h>
+#include <logger/Logging.h>
 #include <shared/FilterTypes.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <utility>

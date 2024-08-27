@@ -8,20 +8,20 @@
 
 #include "LoginHandler.h"
 #include "AccountService.h"
+#include "ExecutablesChecksum.h"
 #include "IntegrityData.h"
 #include "LocaleMap.h"
 #include "Patcher.h"
 #include "RealmList.h"
 #include "Survey.h"
 #include "grunt/Packets.h"
-#include "ExecutablesChecksum.h"
+#include <logger/Logging.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>
 #include <boost/container/small_vector.hpp>
 #include <gsl/gsl_util>
 #include <stdexcept>
-#include <utility>
  
 namespace ember {
 
@@ -133,8 +133,6 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
 	                 to_string(challenge.version), source_ip_);
 
-	challenge_ = challenge;
-
 	Patcher::PatchLevel patch_level = patcher_.check_version(challenge.version);
 
 	switch(patch_level) {
@@ -148,6 +146,8 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 			patch_client(challenge);
 			break;
 	}
+
+	challenge_ = std::move(challenge);
 }
 
 bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge& challenge) const {

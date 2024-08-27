@@ -6,26 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <logger/Logging.h>
+#pragma once
+
+#include <logger/LoggerFwd.h>
 
 namespace ember::log {
 
 namespace detail {
 
-Logger* logger_;
+extern Logger* logger_;
 
 } // detail
 
-Logger* global_logger() {
-	return detail::logger_;
-}
-
-void global_logger(Logger& logger) {
-	global_logger(&logger);
-}
-
-void global_logger(Logger* logger) {
-	detail::logger_ = logger;
-}
+Logger* global_logger();
+void global_logger(Logger& logger);
+void global_logger(Logger* logger);
 
 } // log, ember

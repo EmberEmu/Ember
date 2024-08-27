@@ -11,7 +11,7 @@
 #include "Account_generated.h"
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <shared/util/UTF8String.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>

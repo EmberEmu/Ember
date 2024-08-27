@@ -15,6 +15,8 @@ namespace ember::spark::io::pmr {
 
 class Buffer : public BufferRead, public BufferWrite {
 public:
+	using value_type = std::byte;
+
 	using BufferRead::operator[];
 
 	virtual std::byte& operator[](const std::size_t index) = 0;

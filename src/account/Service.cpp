@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include <logger/Logging.h>
 #include <flatbuffers/flatbuffers.h>
 #include <utility>
 

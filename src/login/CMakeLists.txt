@@ -15,6 +15,7 @@ set(GRUNT_SRC
     grunt/Handler.cpp
     grunt/Packets.h
     grunt/Packet.h
+    grunt/PacketFwd.h
     grunt/Opcodes.h
     grunt/client/LoginChallenge.h
     grunt/client/LoginProof.h
@@ -58,6 +59,7 @@ set(LIBRARY_HDR
     LocaleMap.h
 	LoginState.h
 	Survey.h
+    LoginHandlerFwd.h
     )
 
 set(LIBRARY_SRC

@@ -9,9 +9,8 @@
 #pragma once
 
 #include "Packets.h"
-#include "Exceptions.h"
 #include <spark/buffers/pmr/Buffer.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <functional>
 #include <optional>
 #include <type_traits>

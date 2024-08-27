@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Handler.h"
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <memory>
 
 namespace ember::dns {

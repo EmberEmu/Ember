@@ -7,6 +7,7 @@
  */
 
 #include "RequestHandler.h"
+#include <logger/Logging.h>
 
 namespace ember::dns {
 

@@ -10,7 +10,7 @@
 
 #include <spark/v2/Link.h>
 #include <spark/v2/Common.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/functional/hash.hpp>

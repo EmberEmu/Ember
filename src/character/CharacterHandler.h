@@ -14,7 +14,7 @@
 #include <shared/database/daos/CharacterDAO.h>
 #include <shared/util/PCREHelper.h>
 #include <shared/util/UTF8.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 //#include <boost/locale.hpp>
 #include <pcre.h>
 #include <locale>

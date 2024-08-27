@@ -14,7 +14,7 @@
 #include <spark/Common.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/Helpers.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <memory>
 
 namespace ember {

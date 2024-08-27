@@ -7,6 +7,7 @@
  */
 
 #include "NetworkSession.h"
+#include <logger/Logging.h>
 
 namespace ember {
 

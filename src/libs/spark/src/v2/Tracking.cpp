@@ -7,8 +7,9 @@
  */
 
 #include <spark/v2/Tracking.h>
-#include <shared/FilterTypes.h>
 #include <spark/v2/Common.h>
+#include <logger/Logging.h>
+#include <shared/FilterTypes.h>
 #include <algorithm>
 #include <memory>
 

@@ -16,6 +16,8 @@ namespace ember::spark::io::pmr {
 
 class BufferWrite : virtual public BufferBase {
 public:
+	using value_type = std::byte;
+
 	virtual ~BufferWrite() = default;
 	virtual void write(const void* source, std::size_t length) = 0;
 	virtual void reserve(std::size_t length) = 0;

@@ -7,6 +7,7 @@
  */
 
 #include "AccountService.h"
+#include <logger/Logging.h>
 #include <boost/uuid/uuid.hpp>
 #include <utility>
 

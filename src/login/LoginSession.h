@@ -12,7 +12,7 @@
 #include "LoginHandler.h"
 #include "grunt/Packet.h"
 #include "grunt/Handler.h"
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <shared/threading/ThreadPool.h>
 #include <spark/buffers/pmr/Buffer.h>
 #include <memory>

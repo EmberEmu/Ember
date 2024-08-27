@@ -7,6 +7,7 @@
  */
 
 #include "RealmService.h"
+#include <logger/Logging.h>
 #include <utility>
 
 namespace em = ember::messaging;

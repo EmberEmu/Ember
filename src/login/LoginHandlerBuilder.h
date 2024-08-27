@@ -9,19 +9,9 @@
 #pragma once
 
 #include "LoginHandler.h"
-#include <logger/Logging.h>
-#include <shared/database/daos/UserDAO.h>
-#include <shared/metrics/Metrics.h>
 #include <utility>
 
 namespace ember {
-
-class Patcher;
-class RealmList;
-class Metrics;
-class AccountService;
-class IntegrityData;
-class Survey;
 
 class LoginHandlerBuilder final {
 	log::Logger* logger_;

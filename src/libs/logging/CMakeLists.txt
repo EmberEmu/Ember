@@ -7,13 +7,13 @@
 set(LIBRARY_NAME logging)
 
 add_library(${LIBRARY_NAME}
-            src/Logging.cpp
             src/FileSink.cpp
             src/SyslogSink.cpp
             src/Logger.cpp
             src/Utility.cpp
             src/Worker.cpp
             src/ConsoleSink.cpp
+            src/GlobalLogger.cpp
             include/logger/concurrentqueue.h
             include/logger/LoggerImpl.h
             include/logger/FileSink.h
@@ -28,6 +28,7 @@ add_library(${LIBRARY_NAME}
             include/logger/FileWrapper.h
             include/logger/Logging.h
             include/logger/Severity.h
+            include/logger/GlobalLogger.h
 )
 
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES} Threads::Threads)

@@ -22,7 +22,8 @@ namespace ember::spark::io::pmr {
 class BinaryStream final : public BinaryStreamReader, public BinaryStreamWriter {
 public:
 	explicit BinaryStream(Buffer& source, std::size_t read_limit = 0)
-                          : BinaryStreamReader(source, read_limit), BinaryStreamWriter(source),
+                          : BinaryStreamReader(source, read_limit),
+	                        BinaryStreamWriter(source),
 	                        StreamBase(source) {}
 	~BinaryStream() override = default;
 };

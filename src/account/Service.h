@@ -12,7 +12,7 @@
 #include "Account_generated.h"
 #include <spark/Service.h>
 #include <spark/Helpers.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <optional>
 #include <cstdint>
 

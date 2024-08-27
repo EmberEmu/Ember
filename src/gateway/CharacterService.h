@@ -14,7 +14,7 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <protocol/ResultCodes.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <shared/database/objects/Character.h>
 #include <shared/util/UTF8String.h>
 #include <botan/bigint.h>

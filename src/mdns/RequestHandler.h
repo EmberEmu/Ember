@@ -10,7 +10,7 @@
 
 //#include "RequestHandler_Generated.h"
 #include <spark/Service.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <memory>
 #include <string>
 #include <cstdint>

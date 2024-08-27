@@ -11,7 +11,7 @@
 #include "Multicast_generated.h"
 #include <spark/Common.h>
 #include <spark/ServiceListener.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <flatbuffers/flatbuffers.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>

@@ -13,9 +13,8 @@
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
 #include <protocol/Packet.h>
-#include <spark/buffers/pmr/Buffer.h>
 #include <spark/buffers/BinaryStream.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <shared/ClientUUID.h>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/uuid/uuid.hpp>

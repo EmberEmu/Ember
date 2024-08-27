@@ -7,7 +7,9 @@
  */
 
 #include "Handler.h"
+#include "Exceptions.h"
 #include "Packets.h"
+#include <logger/Logging.h>
 #include <spark/buffers/pmr/Buffer.h>
 #include <boost/assert.hpp>
 #include <shared/util/FormatPacket.h>

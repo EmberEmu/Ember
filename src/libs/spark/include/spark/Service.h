@@ -21,7 +21,7 @@
 #include <spark/NetworkSession.h>
 #include <spark/Listener.h>
 #include <shared/FilterTypes.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/uuid/uuid.hpp>

@@ -12,7 +12,7 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <srp6/Util.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <botan/bigint.h>
 #include <boost/uuid/uuid_generators.hpp>
 #include <functional>

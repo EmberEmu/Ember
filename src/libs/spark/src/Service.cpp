@@ -10,6 +10,7 @@
 #include <spark/MessageHandler.h>
 #include <spark/NetworkSession.h>
 #include <spark/Listener.h>
+#include <logger/Logging.h>
 #include <shared/FilterTypes.h>
 #include <boost/asio/connect.hpp>
 #include <boost/uuid/uuid_generators.hpp>

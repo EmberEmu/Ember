@@ -12,7 +12,7 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <spark/Helpers.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/functional/hash.hpp>

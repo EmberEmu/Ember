@@ -9,7 +9,7 @@
 #pragma once
 
 #include <shared/util/Clock.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <boost/container/static_vector.hpp>
 #include <array>
 #include <span>

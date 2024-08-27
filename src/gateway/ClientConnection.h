@@ -14,7 +14,7 @@
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>

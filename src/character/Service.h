@@ -12,7 +12,7 @@
 #include <protocol/ResultCodes.h>
 #include <spark/Helpers.h>
 #include <spark/Service.h>
-#include <logger/Logging.h>
+#include <logger/LoggerFwd.h>
 #include <shared/database/objects/Character.h>
 #include <shared/database/daos/CharacterDAO.h>
 #include <span>

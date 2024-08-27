@@ -12,6 +12,7 @@
 #include <spark/EventDispatcher.h>
 #include <spark/NetworkSession.h>
 #include <spark/Utility.h>
+#include <logger/Logging.h>
 #include <shared/FilterTypes.h>
 #include <flatbuffers/flatbuffers.h>
 #include <boost/uuid/uuid.hpp>

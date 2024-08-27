@@ -8,6 +8,7 @@
 
 #include "RealmService.h"
 #include "RealmList.h"
+#include <logger/Logging.h>
 #include <utility>
 #include <cassert>
 
