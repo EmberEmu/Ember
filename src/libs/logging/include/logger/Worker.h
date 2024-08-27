@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2022 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,14 +12,13 @@
 #include <logger/concurrentqueue.h>
 #include <logger/Logger.h>
 #include <atomic>
-#include <vector>
-#include <mutex>
-#include <thread>
 #include <memory>
+#include <mutex>
 #include <semaphore>
 #include <string>
+#include <thread>
 #include <tuple>
-#include <condition_variable>
+#include <vector>
 
 namespace ember::log {
 

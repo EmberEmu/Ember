@@ -16,15 +16,13 @@
 #include <logger/concurrentqueue.h>
 #include <algorithm>
 #include <iterator>
-#include <string>
-#include <vector>
 #include <memory>
-#include <mutex>
-#include <utility>
-#include <tuple>
 #include <semaphore>
-#include <condition_variable>
+#include <string>
 #include <thread>
+#include <tuple>
+#include <utility>
+#include <vector>
 #include <cstddef>
 #include <cstring>
 
