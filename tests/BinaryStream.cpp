@@ -236,3 +236,42 @@ TEST(BinaryStream, Array) {
 	stream >> val;
 	ASSERT_EQ(val, 3);
 }
+
+TEST(BinaryStream, PutIntegralLiterals) {
+	spark::io::DynamicBuffer<64> buffer;
+	spark::io::pmr::BinaryStream stream(buffer);
+	stream.put<std::uint64_t>(std::numeric_limits<std::uint64_t>::max());
+	stream.put<std::uint32_t>(std::numeric_limits<std::uint32_t>::max());
+	stream.put<std::uint16_t>(std::numeric_limits<std::uint16_t>::max());
+	stream.put<std::uint8_t>(std::numeric_limits<std::uint8_t>::max());
+	stream.put<std::int64_t>(std::numeric_limits<std::int64_t>::max());
+	stream.put<std::int32_t>(std::numeric_limits<std::int32_t>::max());
+	stream.put<std::int16_t>(std::numeric_limits<std::int16_t>::max());
+	stream.put<std::int8_t>(std::numeric_limits<std::int8_t>::max());
+	stream.put(1.5f);
+	stream.put(3.0);
+	std::uint64_t resultu64 = 0;
+	std::uint32_t resultu32 = 0;
+	std::uint16_t resultu16 = 0;
+	std::uint8_t resultu8 = 0;
+	std::int64_t result64 = 0;
+	std::int32_t result32 = 0;
+	std::int16_t result16 = 0;
+	std::int8_t result8 = 0;
+	float resultf = 0.0f;
+	double resultd = 0.0;
+	stream >> resultu64 >> resultu32 >> resultu16 >> resultu8;
+	stream >> result64 >> result32 >> result16 >> result8;
+	stream >> resultf >> resultd;
+	ASSERT_FLOAT_EQ(1.5f, resultf);
+	ASSERT_DOUBLE_EQ(3.0, resultd);
+	ASSERT_EQ(resultu8, std::numeric_limits<std::uint8_t>::max());
+	ASSERT_EQ(resultu16, std::numeric_limits<std::uint16_t>::max());
+	ASSERT_EQ(resultu32, std::numeric_limits<std::uint32_t>::max());
+	ASSERT_EQ(resultu64, std::numeric_limits<std::uint64_t>::max());
+	ASSERT_EQ(result8, std::numeric_limits<std::int8_t>::max());
+	ASSERT_EQ(result16, std::numeric_limits<std::int16_t>::max());
+	ASSERT_EQ(result32, std::numeric_limits<std::int32_t>::max());
+	ASSERT_EQ(result64, std::numeric_limits<std::int64_t>::max());
+	ASSERT_TRUE(stream);
+}
