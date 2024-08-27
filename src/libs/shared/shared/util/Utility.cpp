@@ -7,12 +7,12 @@
  */
 
 #include "Utility.h"
-#include <iostream>
 
 #ifdef _WIN32
     #include <Windows.h>
 #elif defined __linux__ || defined __unix__ || defined __APPLE__
 	#include <sys/resource.h>
+	#include <iostream>
 #endif
 
 namespace ember::util {

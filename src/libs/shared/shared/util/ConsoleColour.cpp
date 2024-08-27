@@ -7,12 +7,12 @@
  */
 
 #include <shared/util/ConsoleColour.h>
-#include <iostream>
-#include <string>
-#include <string_view>
 
 #ifdef _WIN32
 	#include <Windows.h>
+#else
+	#include <iostream>
+	#include <string_view>
 #endif
 
 namespace ember::util {

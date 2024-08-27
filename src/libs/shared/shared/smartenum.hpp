@@ -31,7 +31,7 @@ SOFTWARE.
 #include <unordered_map>
 #include <vector>
 #include <cstdint>
-#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <iomanip>
 
