@@ -11,6 +11,7 @@
 #if defined _WIN32 || defined TARGET_OS_MAC
 	#include <signal.h>
 #elif defined __linux__ || defined __unix__
+	#include <format>
 	#include <string.h>
 #endif
 
