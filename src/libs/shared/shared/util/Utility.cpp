@@ -88,92 +88,53 @@ std::string max_sockets_desc() {
 	return value;
 }
 
+#define STRINGIZE_CASE(x) \
+case x: \
+	return #x;
+
 std::string sig_str(const int signal) {
 #if defined _WIN32 || defined TARGET_OS_MAC
 	switch(signal) {
+		STRINGIZE_CASE(SIGINT)
+		STRINGIZE_CASE(SIGILL)
+		STRINGIZE_CASE(SIGFPE)
+		STRINGIZE_CASE(SIGSEGV)
+		STRINGIZE_CASE(SIGTERM)
 #endif
 #ifdef  _WIN32
-		case SIGINT:
-			return "SIGINT";
-		case SIGILL:
-			return "SIGILL";
-		case SIGFPE:
-			return "SIGFPE";
-		case SIGSEGV:
-			return "SIGSEGV";
-		case SIGTERM:
-			return "SIGTERM";
-		case SIGBREAK:
-			return "SIGBREAK";
-		case SIGABRT:
-			return "SIGABORT";
+		STRINGIZE_CASE(SIGBREAK)
+		STRINGIZE_CASE(SIGABRT)
 #elif defined TARGET_OS_MAC
-		case SIGHUP:
-			return "SIGHUP";
-		case SIGINT:
-			return "SIGINT";
-		case SIGQUIT:
-			return "SIGQUIT";
-		case SIGILL:
-			return "SIGILL";
-		case SIGTRAP:
-			return "SIGTRAP";
-		case SIGABRT:
-			return "SIGABRT";
-		case SIGEMT:
-			return "SIGEMT";
-		case SIGFPE:
-			return "SIGFPE";
-		case SIGKILL:
-			return "SIGKILL";
-		case SIGBUS:
-			return "SIGBUS";
-		case SIGSEGV:
-			return "SIGSEGV";
-		case SIGSYS:
-			return "SIGSYS";
-		case SIGPIPE:
-			return "SIGPIPE";
-		case SIGALRM:
-			return "SIGALRM";
-		case SIGTERM:
-			return "SIGTERM";
-		case SIGURG:
-			return "SIGURG";
-		case SIGSTOP:
-			return "SIGSTOP";
-		case SIGTSTP:
-			return "SIGTSTP";
-		case SIGCONT:
-			return "SIGCONT";
-		case SIGCHLD:
-			return "SIGCHLD";
-		case SIGTTIN:
-			return "SIGTTIN";
-		case SIGTTOU:
-			return "SIGTTOU";
-		case SIGIO:
-			return "SIGIO";
-		case SIGXCPU:
-			return "SIGXCPU";
-		case SIGXFSZ:
-			return "SIGXFSZ";
-		case SIGVTALRM:
-			return "SIGVTALRM";
-		case SIGPROF:
-			return "SIGPROF";
-		case SIGWINCH:
-			return "SIGWINCH";
-		case SIGINFO:
-			return "SIGINFO";
-		case SIGUSR1:
-			return "SIGUSR1";
-		case SIGUSR2:
-			return "SIGUSR2";
+		STRINGIZE_CASE(SIGHUP)
+		STRINGIZE_CASE(SIGQUIT)
+		STRINGIZE_CASE(SIGTRAP)
+		STRINGIZE_CASE(SIGABRT)
+		STRINGIZE_CASE(SIGEMT)
+		STRINGIZE_CASE(SIGKILL)
+		STRINGIZE_CASE(SIGBUS)
+		STRINGIZE_CASE(SIGSYS)
+		STRINGIZE_CASE(SIGPIPE)
+		STRINGIZE_CASE(SIGALRM)
+		STRINGIZE_CASE(SIGURG)
+		STRINGIZE_CASE(SIGSTOP)
+		STRINGIZE_CASE(SIGTSTP)
+		STRINGIZE_CASE(SIGCONT)
+		STRINGIZE_CASE(SIGCHLD)
+		STRINGIZE_CASE(SIGTTIN)
+		STRINGIZE_CASE(SIGTTOU)
+		STRINGIZE_CASE(SIGIO)
+		STRINGIZE_CASE(SIGXCPU)
+		STRINGIZE_CASE(SIGXFSZ)
+		STRINGIZE_CASE(SIGVTALRM)
+		STRINGIZE_CASE(SIGPROF)
+		STRINGIZE_CASE(SIGWINCH)
+		STRINGIZE_CASE(SIGINFO)
+		STRINGIZE_CASE(SIGUSR1)
+		STRINGIZE_CASE(SIGUSR2)
 #endif
 #if defined _WIN32 || defined TARGET_OS_MAC
 		default:
-			return "UNKNOWN";
+			return "<UNKNOWN>";
 	}
 #elif defined __linux__ || defined __unix__
 	auto res = sigabbrev_np(signal);
@@ -181,7 +142,7 @@ std::string sig_str(const int signal) {
 	if(res) {
 		return std::format("SIG{}", res);
 	} else {
-		return "unknown";
+		return "<UNKNOWN>";
 	}
 #else
 	static_assert(false, "Implement sig_str for this platform, thanks");
