@@ -113,6 +113,7 @@ set(LIBRARY_SRC
     shared/Banner.h
     shared/Version.h
     shared/smartenum.hpp
+    shared/smartenum.cpp
     ${version_file}
 )
 

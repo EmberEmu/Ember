@@ -39,6 +39,6 @@ add_library(${LIBRARY_NAME}
            )
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
-target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} spark ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(ports PROPERTIES FOLDER "Libraries")

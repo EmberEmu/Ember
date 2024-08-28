@@ -26,124 +26,84 @@ SOFTWARE.
 
 #include <logger/Logger.h>
 #include <algorithm>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <cstdint>
 #include <ostream>
-#include <sstream>
-#include <iomanip>
+#include <source_location>
+#include <stdexcept>
+#include <string_view>
+#include <unordered_map>
 
 namespace smart_enum
 {
-	static const std::string unknown_enum_str { "UNKNOWN_ENUM_VALUE" };
 
-    inline int determine_base(std::string& rightHandSide)
+int char_to_int(char c, int base, bool& err);
+unsigned long long sv_to_ull(std::string_view string, bool& err, int base = 0);
+std::string_view trimWhitespace(std::string_view str);
+std::string_view extractEntry(std::string_view valuesString);
+void print_and_bail(std::source_location location);
+unsigned long long decimal_convert(std::string_view rhs, bool& conv_err);
+
+static std::string_view unknown_enum_str { "UNKNOWN_ENUM_VALUE" };
+
+template<typename SizeType>
+std::unordered_map<SizeType, std::string_view>
+makeEnumNameMap(std::source_location location, std::string_view enumValuesString)
+{
+    std::unordered_map<SizeType, std::string_view> nameMap;
+    SizeType currentEnumValue = 0;
+
+    while(!enumValuesString.empty())
     {
-        std::transform(rightHandSide.begin(), rightHandSide.end(), rightHandSide.begin(), ::tolower);
+        std::string_view currentEnumEntry = extractEntry(enumValuesString);
+		size_t nextCommaPos = enumValuesString.find(',');
 
-        int base = 0;
+		if(nextCommaPos != std::string_view::npos) {
+			enumValuesString = enumValuesString.substr(nextCommaPos + 1);
+		} else {
+			enumValuesString = std::string_view{};
+		}
 
-        if(rightHandSide.compare(0, 2, "0b") == 0)
-        { 
-            rightHandSide = rightHandSide.substr(2, std::string::npos);
-            base = 2;
-        }
+        size_t equalSignPos = currentEnumEntry.find('=');
+		bool conv_err = false;
 
-        return base;
-    }
-
-    inline std::string trimWhitespace(std::string str)
-    {
-        // trim trailing whitespace
-        size_t endPos = str.find_last_not_of(" \t");
-        if(std::string::npos != endPos)
+        if(equalSignPos != std::string_view::npos)
         {
-            str = str.substr( 0, endPos + 1);
-        }
-    
-        // trim leading spaces
-        size_t startPos = str.find_first_not_of(" \t");
-        if(std::string::npos != startPos)
-        {
-            str = str.substr(startPos);
-        }
-    
-        return str;
-    }
-    
-    inline std::string extractEntry(std::string& valuesString)
-    {
-        std::string result;
-        size_t nextCommaPos = valuesString.find(',');
-    
-        if(nextCommaPos != std::string::npos)
-        {
-            std::string segment = valuesString.substr(0, nextCommaPos);
-            valuesString.erase(0, nextCommaPos + 1);
-            result = trimWhitespace(segment);
-        }
-        else
-        {
-            result = trimWhitespace(valuesString);
-            valuesString.clear();
-        };
-        return result;
-    };
-    
-    template<typename SizeType, typename Type>
-    inline std::unordered_map<SizeType, std::string> makeEnumNameMap(std::vector<Type>& list, std::string enumValuesString)
-    {
-        std::unordered_map<SizeType, std::string> nameMap;
-        SizeType currentEnumValue = 0;
-
-        while(!enumValuesString.empty())
-        {
-            std::string currentEnumEntry = extractEntry(enumValuesString);
-            size_t equalSignPos = currentEnumEntry.find('=');
-
-            if(equalSignPos != std::string::npos)
-            {
-                std::string rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
+			std::string_view rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
                 
-                // Handle using util::mcc_char - this makes me sad too
-                if (auto first = rightHandSide.find_first_of('"'), last = rightHandSide.find_last_of('"');
-                    first != std::string::npos && first != last) {
-                    rightHandSide = rightHandSide.substr(first, (last - first) + 1);
-                }
-
-				if((rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'')
-                || (rightHandSide[0] == '"' && rightHandSide[rightHandSide.size() - 1] == '"')) {
-					std::stringstream decimalConvert;
-					decimalConvert << "0x" << std::hex << std::setw(2) << std::setfill('0');
-
-					for(std::size_t i = 1; i < rightHandSide.size() - 1; ++i) {
-						decimalConvert << static_cast<unsigned>(rightHandSide[i]);
-					}
-
-					rightHandSide = decimalConvert.str();
-				}
-                currentEnumValue = static_cast<SizeType>(std::stoull(rightHandSide, 0, determine_base(rightHandSide)));
-                currentEnumEntry.erase(equalSignPos);
+            // Handle using util::mcc_char - this makes me sad too
+            if (auto first = rightHandSide.find_first_of('"'), last = rightHandSide.find_last_of('"');
+                first != std::string_view::npos && first != last) {
+                rightHandSide = rightHandSide.substr(first, (last - first) + 1);
             }
-    
-            currentEnumEntry = trimWhitespace(currentEnumEntry);
-            list.emplace_back(static_cast<Type>(currentEnumValue));
-            nameMap[currentEnumValue] = currentEnumEntry;
-    
-            currentEnumValue++;
+
+			if((rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'')
+            || (rightHandSide[0] == '"' && rightHandSide[rightHandSide.size() - 1] == '"')) {
+				currentEnumValue = static_cast<SizeType>(decimal_convert(rightHandSide, conv_err));
+			} else {
+				currentEnumValue = static_cast<SizeType>(sv_to_ull(rightHandSide, conv_err));
+			}
+
+			if(conv_err) {
+				print_and_bail(location);
+			}
+
+            currentEnumEntry = currentEnumEntry.substr(0, equalSignPos-1);
         }
-        
-        return nameMap;
-	}
+    
+        currentEnumEntry = trimWhitespace(currentEnumEntry);
+        nameMap[currentEnumValue] = currentEnumEntry;
+        ++currentEnumValue;
+    }
+
+    return nameMap;
+}
+
 }
 
 #define smart_enum(Type, Underlying, ...) enum Type : Underlying { __VA_ARGS__}; \
-    static std::vector<Type> Type##_list;\
-    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
+    static std::unordered_map<Underlying, std::string_view> Type##_enum_names\
+		= smart_enum::makeEnumNameMap<Underlying>(std::source_location::current(), #__VA_ARGS__);\
     \
-    inline const std::string& Type##_to_string(Type value) try \
+    inline std::string_view Type##_to_string(Type value) try \
     { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \
@@ -152,10 +112,10 @@ namespace smart_enum
     \
 
 #define smart_enum_class(Type, Underlying, ...) enum class Type : Underlying { __VA_ARGS__}; \
-    static std::vector<Type> Type##_list;\
-    static std::unordered_map<Underlying, std::string> Type##_enum_names = smart_enum::makeEnumNameMap<Underlying, Type>(Type##_list, #__VA_ARGS__);\
+    static std::unordered_map<Underlying, std::string_view> Type##_enum_names\
+		= smart_enum::makeEnumNameMap<Underlying>(std::source_location::current(), #__VA_ARGS__);\
     \
-    inline const std::string& to_string(Type value) try \
+    inline std::string_view to_string(Type value) try \
     { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \

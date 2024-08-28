@@ -11,6 +11,7 @@
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
+#include <sstream>
 
 namespace be = boost::endian;
 
