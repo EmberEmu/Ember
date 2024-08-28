@@ -18,7 +18,6 @@
 #include <shared/Banner.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
-#include <shared/util/SignalString.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <boost/program_options.hpp>

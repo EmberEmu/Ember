@@ -84,8 +84,6 @@ set(UTIL_SRC
     shared/util/StringHash.h
     shared/util/STUN.h
 	shared/util/PortForward.h
-    shared/util/SignalString.h
-    shared/util/SignalString.cpp
 )
 
 set(METRICS_SRC

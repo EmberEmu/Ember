@@ -30,7 +30,6 @@ set(LIBRARY_SRC
 	detail/Parser.cpp
     )
 
-
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} logging shared spark ${Boost_LIBRARIES} Threads::Threads)

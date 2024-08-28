@@ -28,7 +28,6 @@
 #include <shared/util/LogConfig.h>
 #include <shared/util/STUN.h>
 #include <shared/util/PortForward.h>
-#include <shared/util/SignalString.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>

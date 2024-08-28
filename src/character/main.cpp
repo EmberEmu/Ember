@@ -21,7 +21,6 @@
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>
 #include <shared/util/PCREHelper.h>
-#include <shared/util/SignalString.h>
 #include <shared/util/Utility.h>
 #include <shared/threading/Utility.h>
 #include <boost/asio/io_context.hpp>

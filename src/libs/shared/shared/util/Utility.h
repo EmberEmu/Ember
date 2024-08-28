@@ -21,5 +21,6 @@ std::size_t max_consecutive(std::string_view name, bool case_insensitive = false
 void set_window_title(cstring_view title);
 int max_sockets();
 std::string max_sockets_desc();
+std::string sig_str(int signal);
 
 } // util, ember
