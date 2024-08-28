@@ -28,6 +28,7 @@
 #include <shared/util/LogConfig.h>
 #include <shared/util/STUN.h>
 #include <shared/util/PortForward.h>
+#include <shared/util/SignalString.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>
@@ -125,7 +126,7 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	std::binary_semaphore flag(0);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
 		flag.release();
 	});
 

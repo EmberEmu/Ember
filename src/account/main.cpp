@@ -18,6 +18,7 @@
 #include <shared/Banner.h>
 #include <shared/util/Utility.h>
 #include <shared/util/LogConfig.h>
+#include <shared/util/SignalString.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <boost/program_options.hpp>
@@ -96,7 +97,7 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}", signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
 		flag.release();
 	});
 
