@@ -131,9 +131,9 @@ makeEnumNameMap(std::source_location location, std::string_view enumValuesString
     {\
         outStream << to_string(value);\
         return outStream;\
-    }\
+    }
 
-#define CREATE_FORMATTER(name)\
+#define CREATE_FORMATTER(name) \
 	template<>\
 	struct std::formatter<name, char> {\
 		template<typename ParseContext>\
