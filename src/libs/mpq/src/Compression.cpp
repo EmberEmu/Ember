@@ -22,8 +22,8 @@ namespace ember::mpq {
 
 std::expected<std::size_t, int> decompress_huffman(std::span<const std::byte> input,
                                                    std::span<std::byte> output) {
-	auto dest = std::bit_cast<unsigned char*>(output.data());
-	int dest_len = static_cast<int>(output.size_bytes());
+	auto dest = reinterpret_cast<unsigned char*>(output.data());
+	auto dest_len = static_cast<int>(output.size_bytes());
 
 	THuffmannTree ht(false);
 	TInputStream is(input.data() + 1, input.size_bytes() - 1);
@@ -39,8 +39,8 @@ std::expected<std::size_t, int> decompress_huffman(std::span<const std::byte> in
 
 std::expected<std::size_t, int> decompress_sparse(std::span<const std::byte> input,
                                                   std::span<std::byte> output) {
-	auto src = std::bit_cast<unsigned char*>(input.data());
-	auto dest = std::bit_cast<unsigned char*>(output.data());
+	auto src = reinterpret_cast<const unsigned char*>(input.data());
+	auto dest = reinterpret_cast<unsigned char*>(output.data());
 	int dest_len = static_cast<int>(output.size_bytes());
 
 	auto res = DecompressSparse(dest, &dest_len, src + 1, input.size_bytes() - 1);
@@ -55,8 +55,8 @@ std::expected<std::size_t, int> decompress_sparse(std::span<const std::byte> inp
 std::expected<std::size_t, int> decompress_adpcm(std::span<const std::byte> input,
                                                  std::span<std::byte> output,
                                                  const int channels) {
-	auto src = std::bit_cast<unsigned char*>(input.data());
-	auto dest = std::bit_cast<unsigned char*>(output.data());
+	auto src = reinterpret_cast<const unsigned char*>(input.data());
+	auto dest = reinterpret_cast<unsigned char*>(output.data());
 
 	return DecompressADPCM(dest, output.size_bytes(), src, input.size_bytes(), channels);
 }
@@ -66,8 +66,8 @@ std::expected<std::size_t, int> decompress_lzma(std::span<const std::byte> input
 	constexpr auto header_size = LZMA_PROPS_SIZE + LZMA_UNCOMPRESSED_SIZE;
 
 	auto dest_len = output.size_bytes();
-	auto dest = std::bit_cast<unsigned char*>(output.data());
-	auto src = std::bit_cast<const unsigned char*>(input.data());
+	auto dest = reinterpret_cast<unsigned char*>(output.data());
+	auto src = reinterpret_cast<const unsigned char*>(input.data());
 	auto src_len = output.size_bytes() - header_size;
 
 	auto ret = LzmaUncompress(dest, &dest_len, src + header_size, &src_len, src + 1, LZMA_PROPS_SIZE);
@@ -82,8 +82,8 @@ std::expected<std::size_t, int> decompress_lzma(std::span<const std::byte> input
 std::expected<std::size_t, int> decompress_bzip2(std::span<const std::byte> input,
                                                  std::span<std::byte> output) {
 	unsigned int dest_len = output.size_bytes();
-	char* dest = std::bit_cast<char*>(output.data());
-	const char* src = std::bit_cast<const char*>(input.data());
+	auto dest = reinterpret_cast<char*>(output.data());
+	auto src = reinterpret_cast<const char*>(input.data());
 
 	auto ret = BZ2_bzBuffToBuffDecompress(dest, &dest_len, src + 1, input.size_bytes() - 1, 0, 0);
 
@@ -97,8 +97,8 @@ std::expected<std::size_t, int> decompress_bzip2(std::span<const std::byte> inpu
 std::expected<std::size_t, int> decompress_zlib(std::span<const std::byte> input,
                                                 std::span<std::byte> output) {
 	uLongf dest_len = output.size_bytes();
-	Bytef* dest = std::bit_cast<Bytef*>(output.data());
-	const Bytef* src = std::bit_cast<const Bytef*>(input.data());
+	auto dest = reinterpret_cast<Bytef*>(output.data());
+	auto src = reinterpret_cast<const Bytef*>(input.data());
 
 	auto ret = uncompress(dest, &dest_len, src + 1, input.size_bytes());
 

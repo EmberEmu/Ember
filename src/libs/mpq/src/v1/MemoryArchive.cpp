@@ -12,12 +12,12 @@
 #include <mpq/SharedDefs.h>
 #include <mpq/Exception.h>
 #include <mpq/Crypt.h>
-#include <bit>
+#include <shared/util/polyfill/start_lifetime_as>
 
 namespace ember::mpq::v1 {
 
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(buffer) {
-	header_ = std::bit_cast<v1::Header*>(buffer.data());
+	header_ = std::start_lifetime_as<v1::Header>(buffer.data());
 	validate();
 
 	block_table_ = fetch_block_table();
@@ -90,7 +90,7 @@ std::uint64_t MemoryArchive::high_mask(std::uint16_t value) const {
 }
 
 std::span<std::uint16_t> MemoryArchive::fetch_btable_hi_pos() const {
-	const auto bt_hi_pos = std::bit_cast<std::uint16_t*>(
+	const auto bt_hi_pos = std::start_lifetime_as<std::uint16_t>(
 		buffer_.data() + header_->extended_block_table_offset
 	);
 
@@ -114,7 +114,7 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 }
 
 std::span<HashTableEntry> MemoryArchive::fetch_hash_table() const {
-	auto entry = std::bit_cast<HashTableEntry*>(
+	auto entry = std::start_lifetime_as<HashTableEntry>(
 		buffer_.data() + extend(header_->hash_table_offset_hi, header_->hash_table_offset)
 	);
 
@@ -122,7 +122,7 @@ std::span<HashTableEntry> MemoryArchive::fetch_hash_table() const {
 }
 
 std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
-	auto entry = std::bit_cast<BlockTableEntry*>(
+	auto entry = std::start_lifetime_as<BlockTableEntry>(
 		buffer_.data() + extend(header_->block_table_offset_hi, header_->block_table_offset)
 	);
 
@@ -130,7 +130,7 @@ std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
 }
 
 const Header* MemoryArchive::header() const {
-	return std::bit_cast<const Header*>(buffer_.data());
+	return std::start_lifetime_as<const Header>(buffer_.data());
 }
 
 std::size_t MemoryArchive::size() const {

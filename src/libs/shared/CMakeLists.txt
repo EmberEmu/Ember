@@ -84,6 +84,8 @@ set(UTIL_SRC
     shared/util/StringHash.h
     shared/util/STUN.h
 	shared/util/PortForward.h
+    shared/util/polyfill/print
+    shared/util/polyfill/start_lifetime_as
 )
 
 set(METRICS_SRC

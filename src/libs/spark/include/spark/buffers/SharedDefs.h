@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <bit>
 #include <concepts>
 #include <type_traits>
 #include <cstdint>
@@ -55,9 +56,9 @@ struct unsupported {};
 // Returns true if there's any overlap between source and destination ranges
 template<typename Src, typename Dst>
 static inline bool region_overlap(const Src* src, std::size_t src_len, const Dst* dst, std::size_t dst_len) {
-	const auto src_beg = reinterpret_cast<std::uintptr_t>(src);
+	const auto src_beg = std::bit_cast<std::uintptr_t>(src);
 	const auto src_end = src_beg + src_len;
-	const auto dst_beg = reinterpret_cast<std::uintptr_t>(dst);
+	const auto dst_beg = std::bit_cast<std::uintptr_t>(dst);
 	const auto dst_end = dst_beg + dst_len;
 
 	// cannot assume src is before dst or vice versa
