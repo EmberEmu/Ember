@@ -71,13 +71,7 @@ auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
 	}
 
 	// Check body completion (if present)
-	while(true) {
-		auto remaining = http_body_completion(header, total_read);
-
-		if(!remaining) {
-			break;
-		}
-
+	while(http_body_completion(header, total_read)) {
 		total_read += co_await read(total_read);
 	}
 
