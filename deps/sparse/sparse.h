@@ -12,6 +12,6 @@
 #define __SPARSE_H__
 
 void CompressSparse(void * pvOutBuffer, int * pcbOutBuffer, void * pvInBuffer, int cbInBuffer);
-int  DecompressSparse(void * pvOutBuffer, int * pcbOutBuffer, void * pvInBuffer, int cbInBuffer);
+int  DecompressSparse(void * pvOutBuffer, int * pcbOutBuffer, const void * pvInBuffer, int cbInBuffer);
 
 #endif // __SPARSE_H__

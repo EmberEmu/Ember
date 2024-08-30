@@ -222,9 +222,9 @@ void CompressSparse(void * pvOutBuffer, int * pcbOutBuffer, void * pvInBuffer, i
     *pcbOutBuffer = (int)(pbOutBuffer - pbOutBuffer0);
 }
 
-int DecompressSparse(void * pvOutBuffer, int * pcbOutBuffer, void * pvInBuffer, int cbInBuffer)
+int DecompressSparse(void * pvOutBuffer, int * pcbOutBuffer, const void * pvInBuffer, int cbInBuffer)
 {
-    unsigned char * pbInBufferEnd = (unsigned char *)pvInBuffer + cbInBuffer;
+    const unsigned char * pbInBufferEnd = (const unsigned char *)pvInBuffer + cbInBuffer;
     unsigned char * pbOutBuffer = (unsigned char *)pvOutBuffer;
     unsigned char * pbInBuffer = (unsigned char *)pvInBuffer;
     unsigned int cbChunkSize;
