@@ -19,7 +19,6 @@
 #include <bit>
 #include <iterator>
 #include <cmath>
-#include <spanstream>
 
 namespace ember::mpq {
 
