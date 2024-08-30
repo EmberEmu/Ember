@@ -115,7 +115,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 		<< " " << time.tm_hour << ":" << time.tm_min << ":" << ((time.tm_sec < 10) ? "0" : "")
 		<< time.tm_sec << " " << host_ << " ";
 
-	const std::string& header = stream.str();
+	const auto header = stream.view();
 	const std::array<boost::asio::const_buffer, 5> segments {{
 		{ priority.data(), priority.size() },
 		{ header.data(), header.size() },

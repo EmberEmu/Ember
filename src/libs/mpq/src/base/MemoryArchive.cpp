@@ -19,6 +19,7 @@
 #include <bit>
 #include <iterator>
 #include <cmath>
+#include <spanstream>
 
 namespace ember::mpq {
 
@@ -45,13 +46,12 @@ void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 		return size;
 	});
 
-	parse_listfile(buffer);
+	parse_listfile(std::move(buffer));
 }
 
-void MemoryArchive::parse_listfile(std::string_view buffer) {
+void MemoryArchive::parse_listfile(std::string buffer) {
 	std::stringstream stream;
-	std::spanstream str(stream);
-	stream << buffer;
+	stream.str(std::move(buffer));
 	std::string line;
 
 	while(std::getline(stream, line, '\n')) {

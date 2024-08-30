@@ -166,7 +166,7 @@ void write_dbc_ddl(const types::Struct& dbc, std::ofstream& out) {
 
 	walk_dbc_fields(printer, &dbc, dbc.parent);
 	printer.finalise();
-	out << printer.output().str();
+	out << printer.output().view();
 }
 
 void generate_sql_ddl(const types::Definitions& defs, const std::string& out_path) {

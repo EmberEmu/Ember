@@ -8,6 +8,8 @@
 
 #include "Parser.h"
 #include <spark/buffers/pmr/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <logger/Logging.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
@@ -50,8 +52,8 @@ std::uint16_t encode_flags(const Flags& flags) {
 }
 
 std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
-	spark::io::pmr::BufferReadAdaptor adaptor(buffer);
-	spark::io::pmr::BinaryStreamReader stream(adaptor);
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
 
 	std::stringstream name;
 	std::uint8_t length;
@@ -60,7 +62,7 @@ std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
 	if(length) {
 		std::string segment;
 		stream.get(segment, length);
-		name << segment;
+		name.str(std::move(segment));
 	}
 
 	return name.str();

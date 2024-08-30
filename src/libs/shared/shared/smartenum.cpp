@@ -139,7 +139,7 @@ unsigned long long decimal_convert(std::string_view rhs, bool& conv_err) {
 		decimalConvert << static_cast<unsigned>(rhs[i]);
 	}
 
-	const auto str = decimalConvert.str();
+	const auto str = decimalConvert.view();
 	return sv_to_ull(str, conv_err);
 }
     
