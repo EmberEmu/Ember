@@ -46,7 +46,7 @@ public:
 			"Session key too big"
 		);
 
-		key_.resize(key.bytes());
+		key_.resize(key.bytes(), boost::container::default_init);
 		key.binary_encode(key_.data(), key_.size());
 	}
 

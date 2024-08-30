@@ -45,7 +45,7 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
 			throw std::invalid_argument("Provided PIN was too long");	
 		}
 	
-		pin_bytes_.push_back(pin % 10);
+		pin_bytes_.emplace_back(pin % 10);
 		pin /= 10;
 	}
 	

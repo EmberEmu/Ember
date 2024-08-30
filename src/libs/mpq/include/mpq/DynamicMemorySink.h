@@ -25,7 +25,7 @@ class DynamicMemorySink final : public ExtractionSink {
 		const auto free_space = buffer_.size() - offset_;
 
 		if(data.size_bytes() > free_space) {
-			buffer_.resize(buffer_.size() + data.size_bytes());
+			buffer_.resize(buffer_.size() + data.size_bytes(), boost::container::default_init);
 		}
 
 		std::memcpy(buffer_.data() + offset_, data.data(), data.size_bytes());

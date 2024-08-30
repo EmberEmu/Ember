@@ -42,7 +42,7 @@ void StreamReader::process() {
 			}
 
 			boost::endian::little_to_native_inplace(*size);
-			buffer.resize(*size);
+			buffer.resize(*size, boost::container::default_init);
 			state = ReadState::TYPE;
 		}
 
