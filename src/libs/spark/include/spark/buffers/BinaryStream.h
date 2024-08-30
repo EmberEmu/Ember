@@ -11,6 +11,7 @@
 #include <spark/buffers/SharedDefs.h>
 #include <spark/buffers/Exception.h>
 #include <shared/util/cstring_view.hpp>
+#include <shared/util/polyfill/start_lifetime_as>
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -259,7 +260,7 @@ public:
 	template<typename OutType = value_type>
 	std::span<OutType> span(std::size_t count) requires(contiguous<buf_type>) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
-		std::span span { reinterpret_cast<OutType*>(buffer_.read_ptr()), count };
+		std::span span { std::start_lifetime_as<OutType>(buffer_.read_ptr()), count };
 		buffer_.skip(sizeof(OutType) * count);
 		return span;
 	}

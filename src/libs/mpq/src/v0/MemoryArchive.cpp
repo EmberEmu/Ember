@@ -11,6 +11,7 @@
 #include <mpq/Structures.h>
 #include <mpq/SharedDefs.h>
 #include <mpq/Crypt.h>
+#include <shared/util/polyfill/start_lifetime_as>
 #include <bit>
 
 namespace ember::mpq::v0 {
@@ -28,7 +29,7 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 }
 
 std::span<HashTableEntry> MemoryArchive::fetch_hash_table() const {
-	auto entry = std::bit_cast<HashTableEntry*>(
+	auto entry = std::start_lifetime_as<HashTableEntry>(
 		buffer_.data() + header_->hash_table_offset
 	);
 
@@ -36,7 +37,7 @@ std::span<HashTableEntry> MemoryArchive::fetch_hash_table() const {
 }
 
 std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
-	auto entry = std::bit_cast<BlockTableEntry*>(
+	auto entry = std::start_lifetime_as<BlockTableEntry>(
 		buffer_.data() + header_->block_table_offset
 	);
 
@@ -44,7 +45,7 @@ std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
 }
 
 const Header* MemoryArchive::header() const {
-	return std::bit_cast<const Header*>(buffer_.data());
+	return std::start_lifetime_as<Header>(buffer_.data());
 }
 
 std::size_t MemoryArchive::size() const {

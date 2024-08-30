@@ -8,6 +8,7 @@
 
 #include <protocol/Packet.h>
 #include <type_traits>
+#include <shared/util/polyfill/start_lifetime_as>
 
 namespace ember::protocol {
 

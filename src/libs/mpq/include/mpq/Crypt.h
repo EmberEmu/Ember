@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/polyfill/start_lifetime_as>
 #include <array>
 #include <bit>
 #include <span>
@@ -40,7 +41,7 @@ static constexpr void decrypt_block(std::span<std::byte> buffer, std::uint32_t k
 	constexpr auto table = crypt_table();
 	std::uint32_t seed = 0xEEEEEEEE;
 	std::span<std::uint32_t> cast_block { 
-		std::bit_cast<std::uint32_t*>(buffer.data()), buffer.size_bytes() >> 2 
+		std::start_lifetime_as<std::uint32_t>(buffer.data()), buffer.size_bytes() >> 2 
 	};
 
 	for(auto& block : cast_block) {

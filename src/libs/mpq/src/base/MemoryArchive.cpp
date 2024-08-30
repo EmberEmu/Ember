@@ -13,6 +13,7 @@
 #include <mpq/MemorySink.h>
 #include <mpq/MPQ.h>
 #include <mpq/Structures.h>
+#include <shared/util/polyfill/start_lifetime_as>
 #include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <bit>
@@ -23,7 +24,7 @@ namespace ember::mpq {
 
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer)
 	: buffer_(buffer),
-	  header_(std::bit_cast<const v0::Header*>(buffer_.data())) {
+	  header_(std::start_lifetime_as<v0::Header>(buffer_.data())) {
 	validate();
 }
 
@@ -103,7 +104,7 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entr
 		++count;
 	}
 
-	auto sector_begin = std::bit_cast<std::uint32_t*>(buffer_.data() + entry.file_position);
+	auto sector_begin = std::start_lifetime_as<std::uint32_t>(buffer_.data() + entry.file_position);
 	return { sector_begin, count };
 }
 
@@ -183,7 +184,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 
 		// get the location of the data for this sector
 		std::span sector_data(
-			std::bit_cast<std::byte*>(file_offset + *sector), sector_size_actual
+			std::start_lifetime_as<std::byte>(file_offset + *sector), sector_size_actual
 		);
 
 		if(entry.flags & Flags::MPQ_FILE_ENCRYPTED) {
@@ -272,8 +273,8 @@ int MemoryArchive::default_compression(std::span<const std::uint32_t> sectors,
 		return -1;
 	}
 
-	auto data = reinterpret_cast<const std::uint8_t*>(offset + sectors.front());
-	std::uint8_t comp_mask = data[0];
+	auto data = offset + sectors.front();
+	auto comp_mask = std::bit_cast<std::uint8_t>(data[0]);
 	const auto initial = next_compression(comp_mask);
 
 	if(!initial) {

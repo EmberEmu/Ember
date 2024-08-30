@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) 2024 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+// Basic polyfill for std::start_lifetime_as - not currently availble
+// This is not intended to be a proper implementation*, just enough to
+// allow the polyfill to be removed without the call sites being
+// changed in the future
+// *not possible without compiler machinery anyway
+#if !defined __cpp_lib_start_lifetime_as 
+
+#include <new>
+
+namespace std {
+
+template<typename T>
+constexpr const T* start_lifetime_as(const void* e) noexcept {
+	return std::launder(reinterpret_cast<const T*>(e));
+}
+
+template<typename T>
+constexpr T* start_lifetime_as(void* e) noexcept {
+	return std::launder(reinterpret_cast<T*>(e));
+}
+
+} // std
+
+#endif
