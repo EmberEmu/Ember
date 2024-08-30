@@ -52,13 +52,12 @@ ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
 	start_timer();
 
-	bool complete = false;
 	std::size_t total_read = 0;
+
 	// Check header completion
 	do {
 		total_read += co_await read(total_read);
-		complete = http_headers_completion(total_read);
-	} while(!complete);
+	} while(!http_headers_completion(total_read));
 	
 	std::string_view view(buffer_.data(), total_read);
 	constexpr std::string_view header_delim("\r\n\r\n");
