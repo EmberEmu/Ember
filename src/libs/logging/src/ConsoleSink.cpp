@@ -72,7 +72,11 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 	}
 
 	std::string_view sevsv = detail::severity_string(severity);
-	boost::container::small_vector<char, SV_RESERVE> buffer(record.size() + sevsv.size());
+
+	boost::container::small_vector<char, SV_RESERVE> buffer(
+		record.size() + sevsv.size(), boost::container::default_init
+	);
+
 	std::memcpy(buffer.data(), sevsv.data(), sevsv.size());
 	std::memcpy(buffer.data() + sevsv.size(), record.data(), record.size());
 	std::fwrite(buffer.data(), buffer.size(), 1, stdout);

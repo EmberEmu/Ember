@@ -25,6 +25,7 @@ constexpr auto INTERLEAVE_LENGTH = 40;
 
 using SmallVec = boost::container::small_vector<std::uint8_t, SMALL_VEC_LENGTH>;
 using KeyType = boost::container::small_vector<std::uint8_t, INTERLEAVE_LENGTH>;
+
 BOOST_STRONG_TYPEDEF(KeyType, SessionKey);
 
 enum class Compliance { RFC5054, GAME };

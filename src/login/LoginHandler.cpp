@@ -351,7 +351,11 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
                                              const Botan::BigInt& salt,
                                              bool reconnect) const {
 	constexpr auto expected_len = 32u;
-	boost::container::small_vector<std::uint8_t, expected_len> bytes(salt.bytes());
+
+	boost::container::small_vector<std::uint8_t, expected_len> bytes(
+		salt.bytes(), boost::container::default_init
+	);
+
 	salt.binary_encode(bytes.data(), bytes.size());
 	std::reverse(bytes.begin(), bytes.end());
 	return validate_client_integrity(hash, bytes, reconnect);

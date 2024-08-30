@@ -82,8 +82,14 @@ public:
 			return (state_ = State::ERRORED);
 		}
 		
-		boost::container::small_vector<std::uint8_t, 512> source(remaining);
-		boost::container::small_vector<std::uint8_t, 4096> dest(decompressed_size);
+		boost::container::small_vector<std::uint8_t, 512> source(
+			remaining, boost::container::default_init
+		);
+
+		boost::container::small_vector<std::uint8_t, 4096> dest(
+			decompressed_size, boost::container::default_init
+		);
+
 		uLongf dest_len = decompressed_size;
 		stream.get(source.data(), remaining);
 		

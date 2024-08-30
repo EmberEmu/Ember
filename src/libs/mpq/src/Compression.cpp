@@ -198,7 +198,10 @@ std::expected<std::size_t, DecompressionError> decompress(std::span<const std::b
 		if(!prev) {
 			result = do_decompression(input, output, comp);
 		} else {
-			boost::container::small_vector<std::byte, SECTOR_SIZE_HINT> buffer(prev_size);
+			boost::container::small_vector<std::byte, SECTOR_SIZE_HINT> buffer(
+				prev_size, boost::container::default_init
+			);
+
 			std::memcpy(buffer.data(), output.data(), prev_size);
 			result = do_decompression(buffer, output, comp);
 		}

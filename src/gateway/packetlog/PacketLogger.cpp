@@ -22,11 +22,15 @@ void PacketLogger::reset() {
 
 void PacketLogger::log(const spark::io::pmr::Buffer& buffer, std::size_t length, PacketDirection dir) {
 	const auto time = sc::system_clock::to_time_t(sc::system_clock::now());
-	boost::container::small_vector<std::uint8_t, RESERVE_LEN> contig_buffer(length);
-	buffer.copy(contig_buffer.data(), length);
+
+	boost::container::small_vector<std::uint8_t, RESERVE_LEN> out_buf(
+		length, boost::container::default_init
+	);
+
+	buffer.copy(out_buf.data(), length);
 
 	for(auto& sink : sinks_) {
-		sink->log(contig_buffer, time, dir);
+		sink->log(out_buf, time, dir);
 	}
 }
 

@@ -157,7 +157,11 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	// Encode the key without requiring an allocation
 	static constexpr auto key_size_hint = 32u;
-	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(key.bytes());
+
+	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(
+		key.bytes(), boost::container::default_init
+	);
+
 	key.binary_encode(k_bytes.data(), k_bytes.size());
 
 	const std::uint32_t protocol_id = 0; // best guess, this is hardcoded to zero in the client

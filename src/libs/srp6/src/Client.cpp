@@ -60,8 +60,7 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 	if(interleave) {
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N.bytes())));
 	} else {
-		KeyType key;
-		key.resize(S.bytes(), boost::container::default_init);
+		KeyType key(S.bytes(), boost::container::default_init);
 		S.binary_encode(key.data(), key.size());
 		return SessionKey(key);
 	}

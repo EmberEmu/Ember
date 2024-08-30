@@ -25,14 +25,14 @@ Botan::BigInt decode_flip(std::span<std::uint8_t> val) {
 }
 
 SmallVec encode_flip(const Botan::BigInt& val) {
-	SmallVec res(val.bytes());
+	SmallVec res(val.bytes(), boost::container::default_init);
 	val.binary_encode(res.data(), res.size());
 	std::reverse(res.begin(), res.end());
 	return res;
 }
 
 SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
-	SmallVec res(padding);
+	SmallVec res(padding, boost::container::default_init);
 	Botan::BigInt::encode_1363(res.data(), res.size(), val);
 	std::reverse(res.begin(), res.end());
 	return res;
@@ -54,7 +54,7 @@ KeyType interleaved_hash(SmallVec key) {
 	hasher->update(&*bound, std::distance(bound, key.end()));
 	hasher->final(h.data());
 
-	KeyType final(INTERLEAVE_LENGTH);
+	KeyType final(INTERLEAVE_LENGTH, boost::container::default_init);
 
 	for(std::size_t i = 0, k = 0, j = g.size(); i < j; ++i) {
 		final[k++] = g[i];
@@ -69,7 +69,7 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	std::array<std::uint8_t, SHA1_LEN> hash_out;
-	SmallVec vec(padding);
+	SmallVec vec(padding, boost::container::default_init);
 
 	if(mode == Compliance::RFC5054) {
 		Botan::BigInt::encode_1363(vec.data(), vec.size(), A);
