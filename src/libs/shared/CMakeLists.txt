@@ -86,6 +86,7 @@ set(UTIL_SRC
 	shared/util/PortForward.h
     shared/util/polyfill/print
     shared/util/polyfill/start_lifetime_as
+    shared/util/polyfill/inplace_vector
 )
 
 set(METRICS_SRC

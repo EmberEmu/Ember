@@ -12,7 +12,9 @@
 // This is not intended to be a proper implementation*, just enough to
 // allow the polyfill to be removed without the call sites being
 // changed in the future
-// *not possible without compiler machinery anyway
+// *not possible without compiler machinery** anyway
+// **the machinery is agreeing to pretend that the compiler might
+// do something special here but it actually doesn't
 #if !defined __cpp_lib_start_lifetime_as 
 
 #include <new>

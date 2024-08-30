@@ -50,6 +50,7 @@ void MemoryArchive::load_listfile(const std::uint64_t fpos_hi) {
 
 void MemoryArchive::parse_listfile(std::string_view buffer) {
 	std::stringstream stream;
+	std::spanstream str(stream);
 	stream << buffer;
 	std::string line;
 
