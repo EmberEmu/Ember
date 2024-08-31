@@ -11,6 +11,7 @@
 #include <logger/Sink.h>
 #include <logger/FileWrapper.h>
 #include <logger/Utility.h>
+#include <boost/container/small_vector.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -21,6 +22,9 @@
 namespace ember::log {
 
 class FileSink final : public Sink {
+	static constexpr auto SV_RESERVE = 256u;
+	static constexpr auto MAX_BUF_SIZE = 4096u;
+
 public:
 	enum class Mode { TRUNCATE, APPEND };
 
@@ -36,6 +40,7 @@ private:
 	bool midnight_rotate_ = false;
 	int last_mday_ = detail::current_time().tm_mday;
 	std::string time_format_ = "[%d/%m/%Y %H:%M:%S] ";
+	boost::container::small_vector<char, SV_RESERVE> out_buf_;
 
 	void open(Mode mode = Mode::TRUNCATE);
 	void rotate();

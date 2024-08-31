@@ -15,7 +15,7 @@
 
 namespace ember::log {
 
-enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR_, FATAL, DISABLED };
+enum class Severity { TRACE, DEBUG, INFO, WARN, ERROR_, FATAL, DISABLED, Severity_MAX = DISABLED };
 BOOST_STRONG_TYPEDEF(std::uint32_t, Filter);
 
 struct RecordDetail {

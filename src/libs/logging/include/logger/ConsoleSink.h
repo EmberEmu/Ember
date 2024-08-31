@@ -9,13 +9,17 @@
 #pragma once
 
 #include <logger/Sink.h>
+#include <string>
+#include <boost/container/small_vector.hpp>
 
 namespace ember::log {
 
 class ConsoleSink final : public Sink {
 	static constexpr auto SV_RESERVE = 256u;
+	static constexpr auto MAX_BUF_SIZE = 4096u;
 
 	bool colour_;
+	boost::container::small_vector<char, SV_RESERVE> out_buf_;
 
 	void set_colour(Severity severity);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);

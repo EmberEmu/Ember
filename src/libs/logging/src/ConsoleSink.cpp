@@ -10,11 +10,11 @@
 #include <logger/Exception.h>
 #include <logger/Utility.h>
 #include <shared/util/ConsoleColour.h>
-#include <boost/container/small_vector.hpp>
 #include <algorithm>
 #include <iterator>
 #include <string>
 #include <cstdio>
+#include <cstring>
 
 namespace ember::log {
 
@@ -45,18 +45,26 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 		return;
 	}
 
-	std::vector<char> buffer;
-	buffer.reserve(size + (10 * records.size()));
+	out_buf_.reserve(size + (10 * records.size()));
 
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = detail::severity_string(detail.severity);
-			std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
-			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
+			const auto cur_sz = out_buf_.size();
+			const auto new_sz = cur_sz + severity.size() + data.size();
+			out_buf_.resize(new_sz, boost::container::default_init);
+			auto write_ptr = out_buf_.data() + cur_sz;
+			std::memcpy(write_ptr, severity.data(), severity.size());
+			std::memcpy(write_ptr + severity.size(), data.data(), data.size());
 		}
 	}
 
-	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
+	std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
+	out_buf_.clear();
+
+	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+		out_buf_.shrink_to_fit();
+	}
 }
 
 void ConsoleSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
@@ -73,13 +81,12 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 	std::string_view sevsv = detail::severity_string(severity);
 
-	boost::container::small_vector<char, SV_RESERVE> buffer(
-		record.size() + sevsv.size(), boost::container::default_init
-	);
+	out_buf_.clear();
+	out_buf_.resize(record.size() + sevsv.size(), boost::container::default_init);
 
-	std::memcpy(buffer.data(), sevsv.data(), sevsv.size());
-	std::memcpy(buffer.data() + sevsv.size(), record.data(), record.size());
-	std::fwrite(buffer.data(), buffer.size(), 1, stdout);
+	std::memcpy(out_buf_.data(), sevsv.data(), sevsv.size());
+	std::memcpy(out_buf_.data() + sevsv.size(), record.data(), record.size());
+	std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
 
 	if(colour_) [[likely]] {
 		util::set_output_colour(old_colour);
@@ -87,8 +94,15 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 	if(flush) {
 		if(std::fflush(stdout) != 0) {
+			out_buf_.clear();
 			throw exception("Unable to flush log record to console");
 		}
+	}
+
+	out_buf_.clear();
+
+	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+		out_buf_.shrink_to_fit();
 	}
 }
 

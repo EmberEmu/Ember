@@ -9,10 +9,12 @@
 #include <logger/FileSink.h>
 #include <logger/Exception.h>
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <iterator>
 #include <limits>
 #include <utility>
+#include <cstring>
 
 #pragma warning(push)
 #pragma warning(disable: 4996)
@@ -120,7 +122,7 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 	}
 
 	if(log_severity_) {
-		auto sev = std::string(detail::severity_string(severity));
+		std::string sev(detail::severity_string(severity));
 
 		if(!log_date_) {
 			prepend = std::move(sev);
@@ -158,25 +160,41 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 		return;
 	}
 
-	std::vector<char> buffer;
-	buffer.reserve(size + (20 * records.size()));
+	out_buf_.reserve(size + (20 * records.size()));
+	std::array<std::string, std::to_underlying(Severity::Severity_MAX) + 1> cache;
 
 	for(auto&& [detail, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {
-			std::string prepend = generate_record_detail(detail.severity, curr_time);
-			std::copy(prepend.begin(), prepend.end(), std::back_inserter(buffer));
-			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
+			// only generate new record detail strings when necessary
+			auto& prepend = cache[std::to_underlying(detail.severity)];
+
+			if(prepend.empty()) {
+				prepend = generate_record_detail(detail.severity, curr_time);
+			}
+			
+			const auto cur_sz = out_buf_.size();
+			const auto new_sz = cur_sz + prepend.size() + data.size();
+			out_buf_.resize(new_sz, boost::container::default_init);
+			auto write_ptr = out_buf_.data() + cur_sz;
+			std::memcpy(write_ptr, prepend.data(), prepend.size());
+			std::memcpy(write_ptr + prepend.size(), data.data(), data.size());
 		}
 	}
 
-	std::size_t buffer_size = buffer.size();
+	const std::size_t buffer_size = out_buf_.size();
 	rotate_check(buffer_size, curr_time);
 
-	if(!std::fwrite(buffer.data(), buffer_size, 1, *file_)) {
+	if(!std::fwrite(out_buf_.data(), buffer_size, 1, *file_)) {
+		out_buf_.clear();
 		throw exception("Unable to write log record batch to file");
 	}
 
 	current_size_ += buffer_size;
+	out_buf_.clear();
+
+	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+		out_buf_.shrink_to_fit();
+	}
 }
 
 
@@ -200,7 +218,7 @@ void FileSink::write(Severity severity, Filter type, std::span<const char> recor
 
 	count += std::fwrite(record.data(), rec_size, 1, *file_);
 
-	if ((prep_size && count != 2) || (!prep_size && !count)) {
+	if((prep_size && count != 2) || (!prep_size && !count)) {
 		throw exception("Unable to write log record to file");
 	}
 
