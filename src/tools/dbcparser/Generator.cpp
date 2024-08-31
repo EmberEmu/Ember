@@ -11,10 +11,11 @@
 #include "Types.h"
 #include <logger/Logging.h>
 #include <filesystem>
-#include <regex>
-#include <vector>
 #include <fstream>
+#include <regex>
+#include <span>
 #include <sstream>
+#include <vector>
 
 namespace ember::dbc {
 
@@ -41,7 +42,7 @@ public:
 		names_.emplace_back(type->name);
 	}
 
-	const std::vector<std::string>& names() {
+	std::span<const std::string> names() {
 		return names_;
 	}
 };

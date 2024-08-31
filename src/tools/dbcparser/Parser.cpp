@@ -280,7 +280,7 @@ types::Definitions Parser::parse(const std::string& path) try {
 	throw parse_error(path, e.what());
 }
 
-types::Definitions Parser::parse(const std::vector<std::string>& paths) {
+types::Definitions Parser::parse(std::span<const std::string> paths) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	types::Definitions defs;

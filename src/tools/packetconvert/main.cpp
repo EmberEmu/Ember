@@ -12,9 +12,11 @@
 #include <boost/program_options.hpp>
 #include <algorithm>
 #include <filesystem>
+#include <functional>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <ranges>
 #include <cstdlib>
 
 namespace po = boost::program_options;
@@ -52,14 +54,15 @@ void launch(const po::variables_map& args) {
 	const auto size = std::filesystem::file_size(filename);
 
 	StreamReader reader(file, stream, size, skip, interval);
-	auto output_opt = args.at("output").as<std::vector<OutputOption>>();
+	const auto& opts = args.at("output").as<std::vector<OutputOption>>();
+	std::vector<std::reference_wrapper<const OutputOption>> sorted(opts.begin(), opts.end());
 
 	// remove any duplicate entries
-	std::sort(output_opt.begin(), output_opt.end());
-	output_opt.erase(std::unique(output_opt.begin(), output_opt.end()), output_opt.end());
+	std::ranges::sort(sorted);
+	sorted.erase(std::ranges::unique(sorted).begin(), sorted.end());
 
-	for(const auto& output : output_opt) {
-		if(output == "console") {
+	for(const auto& output : sorted) {
+		if(output.get() == "console") {
 			reader.add_sink(std::make_unique<ConsoleSink>());
 		}
 	}

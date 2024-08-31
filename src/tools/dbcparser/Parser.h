@@ -12,6 +12,7 @@
 #include "Types.h"
 #include <rapidxml.hpp>
 #include <memory>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -42,7 +43,7 @@ class Parser final {
 
 public:
 	types::Definitions parse(const std::string& path);
-	types::Definitions parse(const std::vector<std::string>& paths);
+	types::Definitions parse(std::span<const std::string> paths);
 };
 
 } // dbc, ember

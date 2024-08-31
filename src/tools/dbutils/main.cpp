@@ -198,7 +198,7 @@ void validate_options(const po::variables_map& args) {
 	}
 }
 
-bool validate_db_names(const std::vector<std::string>& input_names) {
+bool validate_db_names(std::span<const std::string> input_names) {
 	std::vector<std::string_view> valid_names;
 	std::vector<std::string_view> bad_names;
 	std::vector<std::string_view> input(input_names.begin(), input_names.end());

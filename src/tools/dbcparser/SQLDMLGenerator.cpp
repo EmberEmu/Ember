@@ -25,15 +25,18 @@ namespace ember::dbc {
 
 class DMLPrinter final : public types::TypeVisitor {
 	spark::io::pmr::BinaryStream& stream_;
-	const std::vector<std::byte>& data_;
+	std::span<const std::byte> data_;
 	const std::size_t string_block_index_;
 	ComponentCache ccache_;
 	std::vector<std::string> values_;
 
 public:
-	DMLPrinter(spark::io::pmr::BinaryStream& stream, std::vector<std::byte> data,
-	           std::size_t string_block_index, ComponentCache& ccache) : stream_(stream), data_(std::move(data)),
-			   string_block_index_(string_block_index), ccache_(ccache) { }
+	DMLPrinter(spark::io::pmr::BinaryStream& stream, std::span<std::byte> data,
+	           std::size_t string_block_index, ComponentCache& ccache)
+		: stream_(stream),
+		  data_(data),
+		  string_block_index_(string_block_index),
+		  ccache_(ccache) { }
 
 	void visit(const types::Struct* structure, const types::Field* parent) override {
 		walk_dbc_fields(*this, structure, parent);

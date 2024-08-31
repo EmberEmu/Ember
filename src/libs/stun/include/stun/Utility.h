@@ -34,7 +34,7 @@ std::string extract_ip_to_string(const T& address) {
 }
 
 template<typename T>
-std::optional<T> retrieve_attribute(const std::vector<attributes::Attribute>& attrs) {
+std::optional<T> retrieve_attribute(std::span<const attributes::Attribute> attrs) {
 	for(const auto& attr : attrs) {
 		if(const T* val = std::get_if<T>(&attr)) {
 			return *val;
