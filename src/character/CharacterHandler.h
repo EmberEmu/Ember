@@ -34,11 +34,11 @@ class CharacterHandler final {
 	using RenameCB = std::function<void(protocol::Result, std::optional<Character>)>;
 	using EnumResultCB = std::function<void(std::optional<std::vector<Character>>)>;
 
-	const std::size_t MAX_NAME_LENGTH = 12;
-	const std::size_t MIN_NAME_LENGTH = 2;
-	const std::size_t MAX_CONSECUTIVE_LETTERS = 2;
-	const std::size_t MAX_CHARACTER_SLOTS_SERVER = 10;
-	const std::size_t MAX_CHARACTER_SLOTS_ACCOUNT = 100; // todo, allow config
+	static constexpr std::size_t MAX_NAME_LENGTH = 12;
+	static constexpr std::size_t MIN_NAME_LENGTH = 2;
+	static constexpr std::size_t MAX_CONSECUTIVE_LETTERS = 2;
+	static constexpr std::size_t MAX_CHARACTER_SLOTS_SERVER = 10;
+	static constexpr std::size_t MAX_CHARACTER_SLOTS_ACCOUNT = 100; // todo, allow config
 
 	const std::vector<util::pcre::Result> profane_names_;
 	const std::vector<util::pcre::Result> reserved_names_;

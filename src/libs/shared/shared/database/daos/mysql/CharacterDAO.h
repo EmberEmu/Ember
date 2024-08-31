@@ -110,7 +110,7 @@ public:
 		throw exception(e.what());
 	}
 
-	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
+	std::generator<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
 		std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 		                    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
 		                    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
@@ -133,13 +133,10 @@ public:
 		}
 
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
-		std::vector<Character> characters;
 
 		while(res->next()) {
-			characters.emplace_back(result_to_character(res.get()));
+			co_yield result_to_character(res.get());
 		}
-
-		return characters;
 	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}

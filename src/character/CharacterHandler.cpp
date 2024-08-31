@@ -108,7 +108,12 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	}
 
 	// query database for further validation steps
-	const auto& characters = dao_.characters(account_id);
+	std::vector<Character> characters;
+	characters.reserve(MAX_CHARACTER_SLOTS_SERVER);
+
+	for(auto character : dao_.characters(account_id)) {
+		characters.emplace_back(std::move(character));
+	}
 
 	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
 		callback(protocol::Result::CHAR_CREATE_ACCOUNT_LIMIT);
@@ -260,7 +265,13 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
                                     const EnumResultCB& callback) const try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto characters = dao_.characters(account_id, realm_id);
+	std::vector<Character> characters;
+	characters.reserve(MAX_CHARACTER_SLOTS_ACCOUNT);
+
+	for(auto character : dao_.characters(account_id, realm_id)) {
+		characters.emplace_back(std::move(character));
+	}
+
 	callback(std::move(characters));
 } catch(dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
@@ -321,7 +332,13 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto character = dao_.character(id);
-	auto characters = dao_.characters(character->account_id);
+
+	std::vector<Character> characters;
+	characters.reserve(MAX_CHARACTER_SLOTS_ACCOUNT);
+
+	for(auto character : dao_.characters(character->account_id)) {
+		characters.emplace_back(std::move(character));
+	}
 
 	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
 		LOG_WARN(logger_) << "Cannot restore character - would exceed max account slots" << LOG_ASYNC;
