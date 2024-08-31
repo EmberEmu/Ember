@@ -31,7 +31,7 @@ struct DBCHeader {
 	be::little_uint32_t string_block_size;
 };
 
-inline void validate_dbc(const std::string_view name, const DBCHeader& header, const std::size_t expect_size,
+inline void validate_dbc(std::string_view name, const DBCHeader& header, const std::size_t expect_size,
                          const std::size_t expect_fields, const std::size_t dbc_size) {
 	if(header.magic != DBC_MAGIC) {
 		std::stringstream err;

@@ -217,7 +217,7 @@ std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<co
 	}
 
 	const auto length = sv_to_int(header.fields.at("Content-Length"));
-	const std::string_view body { buffer.end() - length, buffer.end() };
+	std::string_view body { buffer.end() - length, buffer.end() };
 	return body;
 }
 

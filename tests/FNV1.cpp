@@ -55,7 +55,7 @@ TEST(FNV1, STDString) {
 }
 
 TEST(FNV1, Stringview) {
-	const std::string_view str("The quick brown fox jumped over the lazy dog");
+	std::string_view str("The quick brown fox jumped over the lazy dog");
 	FNVHash fnv;
 	fnv.update(str.begin(), str.end());
 	ASSERT_EQ(fnv.finalise(), 0x007e0296);

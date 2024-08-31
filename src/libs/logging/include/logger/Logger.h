@@ -30,7 +30,7 @@ public:
 	Logger();
 	~Logger();
 
-	void fmt_write(const Severity severity, const std::string_view fmt) {
+	void fmt_write(const Severity severity, std::string_view fmt) {
 		*this << severity << fmt;
 		finalise();
 	}

@@ -29,7 +29,7 @@
 
 namespace ember::stun {
 
-const std::string_view SOFTWARE_DESC = "Ember";
+constexpr std::string_view SOFTWARE_DESC = "Ember";
 
 using namespace detail;
 using clientopts = int;

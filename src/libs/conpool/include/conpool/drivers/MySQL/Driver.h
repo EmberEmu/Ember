@@ -66,10 +66,10 @@ public:
 	bool keep_alive(sql::Connection* conn) const;
 	void thread_enter() const;
 	void thread_exit() const;
+	sql::PreparedStatement* prepare_cached(sql::Connection* conn, std::string key);
 	sql::PreparedStatement* prepare_cached(sql::Connection* conn, std::string_view key);
 	sql::PreparedStatement* lookup_statement(const sql::Connection* conn, std::string_view key);
-	void cache_statement(const sql::Connection* conn, std::string_view key,
-	                     sql::PreparedStatement* value);
+	void cache_statement(const sql::Connection* conn, std::string key, sql::PreparedStatement* value);
 };
 
 } // drivers, ember

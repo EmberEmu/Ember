@@ -30,7 +30,7 @@ public:
 	MySQLIPBanDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::optional<std::uint32_t> get_mask(const std::string& ip) const override try {
-		const std::string_view query = "SELECT cidr FROM ip_bans WHERE ip = ?";
+		std::string_view query = "SELECT cidr FROM ip_bans WHERE ip = ?";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -47,7 +47,7 @@ public:
 	}
 
 	std::vector<IPEntry> all_bans() const override try {
-		const std::string_view query = "SELECT ip, cidr FROM ip_bans";
+		std::string_view query = "SELECT ip, cidr FROM ip_bans";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -64,7 +64,7 @@ public:
 	}
 
 	void ban(const IPEntry& ban) const override try {
-		const std::string_view query = "INSERT INTO ip_bans (ip, cidr) VALUES (?, ?)";
+		std::string_view query = "INSERT INTO ip_bans (ip, cidr) VALUES (?, ?)";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

@@ -548,7 +548,7 @@ void write_label_notation(std::string_view name, spark::io::pmr::BinaryStream& s
 		} else if(index == std::string::npos) {
 			break;
 		} else {
-			const std::string_view print_segment = segment.substr(0, index);
+			std::string_view print_segment = segment.substr(0, index);
 			segment = segment.substr(last ? index : index + 1, -1);
 			stream << std::uint8_t(print_segment.size());
 			stream.put(print_segment.data(), print_segment.size());

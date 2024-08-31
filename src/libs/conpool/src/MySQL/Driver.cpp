@@ -87,12 +87,24 @@ std::string MySQL::version() {
 		 driver->getMinorVersion(), driver->getPatchVersion());
 }
 
+sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, std::string key) {
+	auto stmt = lookup_statement(conn, key);
+
+	if(!stmt) {
+		stmt = conn->prepareStatement(key);
+		cache_statement(conn, std::move(key), stmt);
+	}
+
+	return stmt;
+}
+
 sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, std::string_view key) {
 	auto stmt = lookup_statement(conn, key);
 	
 	if(!stmt) {
-		stmt = conn->prepareStatement(std::string(key));
-		cache_statement(conn, key, stmt);
+		std::string strkey(key);
+		stmt = conn->prepareStatement(strkey);
+		cache_statement(conn, std::move(strkey), stmt);
 	}
 
 	return stmt;
@@ -114,11 +126,11 @@ sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, std
 	return conn_cache_it->second.get();
 }
 
-void MySQL::cache_statement(const sql::Connection* conn, std::string_view key,
+void MySQL::cache_statement(const sql::Connection* conn, std::string key,
                             sql::PreparedStatement* value) {
 	std::lock_guard<std::mutex> lock(cache_lock_);
 	StmtPtr ptr(value, [](auto stmt) { stmt->close(); });
-	cache_[conn].emplace(key, std::move(ptr));
+	cache_[conn].emplace(std::move(key), std::move(ptr));
 }
 
 MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {

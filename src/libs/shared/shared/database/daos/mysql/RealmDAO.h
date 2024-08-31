@@ -30,8 +30,8 @@ public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<Realm> get_realms() const override final try {
-		const std::string_view query = "SELECT id, name, ip, type, flags, category, "
-		                               "region, creation_setting, population FROM realms";
+		std::string_view query = "SELECT id, name, ip, type, flags, category, "
+		                         "region, creation_setting, population FROM realms";
 
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -56,9 +56,9 @@ public:
 	}
 
 	std::optional<Realm> get_realm(std::uint32_t id) const override final try {
-		const std::string_view query = "SELECT id, name, ip, type, flags, category, "
-		                               "region, creation_setting, population FROM realms "
-		                               "WHERE id = ?";
+		std::string_view query = "SELECT id, name, ip, type, flags, category, "
+		                         "region, creation_setting, population FROM realms "
+		                         "WHERE id = ?";
 	
 		auto conn = pool_.try_acquire_for(60s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);

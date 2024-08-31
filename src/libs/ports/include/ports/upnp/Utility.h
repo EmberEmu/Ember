@@ -18,7 +18,7 @@ namespace ember::ports::upnp {
 
 struct CaseInsensitive {
 	struct Comparator {
-		bool operator() (const std::string_view& lhs, const std::string_view& rhs) const {
+		bool operator() (std::string_view lhs, std::string_view rhs) const {
 			return std::equal(lhs.begin(), lhs.end(), rhs.begin(),
 				[](char lhs, char rhs) {
 					return std::tolower(lhs) == std::tolower(rhs);
@@ -40,9 +40,9 @@ struct CaseInsensitive {
   This exists because string_view isn't guaranteed to be null-terminated,
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
-int sv_to_int(const std::string_view string);
-long sv_to_long(const std::string_view string);
-long long sv_to_ll(const std::string_view string);
+int sv_to_int(std::string_view string);
+long sv_to_long(std::string_view string);
+long long sv_to_ll(std::string_view string);
 
 long long span_to_ll(std::span<const char> span);
 

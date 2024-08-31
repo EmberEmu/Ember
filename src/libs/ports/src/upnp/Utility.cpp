@@ -37,15 +37,15 @@ long long span_to_ll(std::span<const char> span) {
   This exists because string_view isn't guaranteed to be null-terminated,
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
-int sv_to_int(const std::string_view string) {
+int sv_to_int(std::string_view string) {
 	return gsl::narrow<int>(span_to_ll(string));
 }
 
-long sv_to_long(const std::string_view string) {
+long sv_to_long(std::string_view string) {
 	return gsl::narrow<long>(span_to_ll(string));
 }
 
-long long sv_to_ll(const std::string_view string) {
+long long sv_to_ll(std::string_view string) {
 	return span_to_ll(string);
 }
 

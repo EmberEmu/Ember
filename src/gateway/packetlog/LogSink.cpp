@@ -31,8 +31,8 @@ void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
                   PacketDirection dir) {
 	const auto output = util::format_packet(buffer.data(), buffer.size());
 
-	const cstring_view fmt("%H:%M:%S");
-	const std::string_view direction = dir == PacketDirection::INBOUND? "inbound" : "outbound";
+	cstring_view fmt("%H:%M:%S");
+	std::string_view direction = dir == PacketDirection::INBOUND? "inbound" : "outbound";
 	std::tm tm;
 
 #if _MSC_VER && !__INTEL_COMPILER

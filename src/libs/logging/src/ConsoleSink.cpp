@@ -50,7 +50,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
-			const std::string_view severity = detail::severity_string(detail.severity);
+			std::string_view severity = detail::severity_string(detail.severity);
 			std::copy(severity.begin(), severity.end(), std::back_inserter(buffer));
 			std::copy(data.begin(), data.end(), std::back_inserter(buffer));
 		}

@@ -119,7 +119,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator <<(const std::string_view& data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(std::string_view& data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size());
 		const char term = '\0';
 		buffer_.write(&term, sizeof(term));
@@ -127,7 +127,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator <<(const cstring_view& data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(cstring_view& data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size() + 1);
 		total_write_ += (data.size() + 1);
 		return *this;
