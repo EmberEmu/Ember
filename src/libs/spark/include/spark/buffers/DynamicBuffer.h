@@ -52,7 +52,7 @@ public:
 private:
 	IntrusiveNode root_;
 	size_type size_;
-	Allocator alloc_;
+	[[no_unique_address]] Allocator alloc_;
 
 	void link_tail_node(IntrusiveNode* node) {
 		node->next = &root_;
