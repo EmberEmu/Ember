@@ -9,7 +9,6 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <string>
 #include <boost/container/small_vector.hpp>
 
 namespace ember::log {
