@@ -59,6 +59,7 @@ std::optional<std::string> locate_type(const types::Struct& base, const std::str
 		return std::nullopt;
 	}
 
+	[[clang::musttail]]
 	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
 }
 

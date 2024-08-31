@@ -145,6 +145,7 @@ types::Base* locate_type_base(const types::Struct& base, const std::string& type
 		return nullptr;
 	}
 
+	[[clang::musttail]]
 	return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
 }
 

@@ -191,6 +191,7 @@ void generate_salt(std::span<std::uint8_t> buffer) {
 Botan::BigInt generate_verifier(std::string_view identifier, std::string_view password,
                                 const Generator& generator, std::span<const std::uint8_t> salt,
                                 Compliance mode) {
+	[[clang::musttail]]
 	return detail::generate(identifier, password, generator, salt, mode);
 }
 
