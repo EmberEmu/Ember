@@ -31,9 +31,9 @@ void MySQLQueryExecutor::create_user(const std::string& username, const std::str
 			throw std::runtime_error("Cannot drop 'root' user, unless you want a broken database");
 		}
 
-		const std::string query("DROP USER IF EXISTS " + username + "@'%'");
+		std::string query("DROP USER IF EXISTS " + username + "@'%'");
 		const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
-		stmt->execute(query);
+		stmt->execute(std::move(query));
 	}
 	
 	std::stringstream query;
@@ -80,10 +80,10 @@ DatabaseDetails MySQLQueryExecutor::details() {
 std::vector<Migration> MySQLQueryExecutor::migrations() {
 	std::vector<Migration> migrations;
 
-	const std::string query("SELECT `id`, `core_version`, `commit`, `install_date`, `installed_by`, "
-	                        "`file` FROM `schema_history` ORDER BY `id` ASC");
+	std::string query("SELECT `id`, `core_version`, `commit`, `install_date`, `installed_by`, "
+	                  "`file` FROM `schema_history` ORDER BY `id` ASC");
 	const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
-	auto results = std::unique_ptr<sql::ResultSet>(stmt->executeQuery(query));
+	auto results = std::unique_ptr<sql::ResultSet>(stmt->executeQuery(std::move(query)));
 
 	while(results->next()) {
 		Migration migration {

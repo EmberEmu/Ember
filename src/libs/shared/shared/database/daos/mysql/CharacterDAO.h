@@ -22,6 +22,7 @@
 namespace ember::dal { 
 
 using namespace std::chrono_literals;
+using namespace std::string_view_literals;
 
 template<typename T>
 class MySQLCharacterDAO final : public CharacterDAO {
@@ -64,13 +65,14 @@ public:
 	MySQLCharacterDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::optional<Character> character(const std::string& name, std::uint32_t realm_id) const override try {
-		std::string_view query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
-		                          "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                          "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                          "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
-		                          "FROM characters c "
-		                          "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                          "WHERE internal_name = ? AND realm_id = ? AND c.deletion_date IS NULL";
+		std::string_view query =
+			"SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
+		    "FROM characters c "
+		    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
+		    "WHERE internal_name = ? AND realm_id = ? AND c.deletion_date IS NULL";
 
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -88,13 +90,14 @@ public:
 	}
 	
 	std::optional<Character> character(std::uint64_t id) const override try {
-		std::string_view query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
-		                         "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                         "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                         "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
-		                         "FROM characters c "
-		                         "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                         "WHERE c.id = ? AND c.deletion_date IS NULL";
+		std::string_view query =
+			"SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
+		    "FROM characters c "
+		    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
+		    "WHERE c.id = ? AND c.deletion_date IS NULL";
 
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -111,21 +114,27 @@ public:
 	}
 
 	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
-		std::string query = "SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
-		                    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		                    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		                    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
-		                    "FROM characters c "
-		                    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		                    "LEFT JOIN users u ON u.id = c.account_id "
-		                    "WHERE u.id = ? AND c.deletion_date IS NULL ";
+		constexpr std::string_view full_query =
+			"SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
+		    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+		    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
+		    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
+		    "FROM characters c "
+		    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
+		    "LEFT JOIN users u ON u.id = c.account_id "
+		    "WHERE u.id = ? AND c.deletion_date IS NULL AND c.realm_id = ?";
+		
+		/// done at compile-time, obviates std::string allocation
+		constexpr auto pos = full_query.find(" AND c.realm_id = ?");
+		static_assert(pos != std::string_view::npos);
+		auto query = full_query;
 
-		if(realm_id) {
-			query.append("AND c.realm_id = ? ");
+		if(!realm_id) {
+			query = query.substr(0, pos);
 		}
 
 		auto conn = pool_.try_acquire_for(5s);
-		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, std::move(query));
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
 
 		if(realm_id) {
@@ -255,6 +264,38 @@ public:
 		if(!stmt->executeUpdate()) {
 			throw exception("Unable to update character");
 		}
+	} catch(const std::exception& e) {
+		throw exception(e.what());
+	}
+
+	int count(std::uint32_t account_id, std::uint32_t realm_id) const override try {
+		constexpr std::string_view full_query =
+			"SELECT COUNT(*) FROM characters WHERE account_id = ? AND realm_id = ?";
+		
+		/// done at compile-time, obviates std::string allocation
+		constexpr auto pos = full_query.find(" AND realm_id = ?");
+		static_assert(pos != std::string_view::npos);
+		auto query = full_query;
+
+		if(!realm_id) {
+			query = query.substr(0, pos);
+		}
+
+		auto conn = pool_.try_acquire_for(5s);
+		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
+		stmt->setUInt(1, account_id);
+
+		if(realm_id) {
+			stmt->setUInt(2, realm_id);
+		}
+		
+		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
+
+		while(res->next()) {
+			return res->getUInt("count");
+		}
+
+		throw exception("!rowsCount fetching character count");
 	} catch(const std::exception& e) {
 		throw exception(e.what());
 	}

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2016 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,6 +26,7 @@ public:
 	virtual void restore(std::uint64_t id) const = 0;
 	virtual void create(const Character& character) const = 0;
 	virtual void update(const Character& character) const = 0;
+	virtual int count(std::uint32_t account_id, std::uint32_t realm_id = 0) const = 0;
 	virtual ~CharacterDAO() = default;
 };
 
