@@ -187,8 +187,7 @@ To generate SQL tables *only*:
 
 ```dbc-parser -d dbcs/definitions/server --sql-schema```
 
-Note: Foreign keys are not currently generated
-
+Note: Foreign keys are not currently generated as many DBC files containing missing entries, preventing their use with keys. A definition-specific option may be added in the future to enforce referential integrity for files which do not contain missing references.
 Output example:
 
 ```sql
