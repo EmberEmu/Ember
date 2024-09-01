@@ -7,6 +7,7 @@
  */
 
 #include "Validator.h"
+#include "Defines.h"
 #include "TypeUtils.h"
 #include <logger/Logging.h>
 #include <iostream>
@@ -246,7 +247,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
 	}
 
 	// go up a level, if this node has a parent
-	[[clang::musttail]] return recursive_ascent_field_type_check(type, node->parent, node);
+	MUST_TAIL return recursive_ascent_field_type_check(type, node->parent, node);
 }
 
 /*

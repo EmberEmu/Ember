@@ -7,6 +7,7 @@
  */
 
 #include "TypeUtils.h"
+#include "Defines.h"
 #include "Exception.h"
 #include <gsl/gsl_util>
 #include <exception>
@@ -145,8 +146,7 @@ types::Base* locate_type_base(const types::Struct& base, const std::string& type
 		return nullptr;
 	}
 
-	[[clang::musttail]]
-	return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
+	MUST_TAIL return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
 } // dbc, ember

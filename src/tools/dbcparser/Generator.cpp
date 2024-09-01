@@ -7,6 +7,7 @@
  */
 
 #include "Generator.h"
+#include "Defines.h"
 #include "TypeUtils.h"
 #include "Types.h"
 #include <logger/Logging.h>
@@ -60,8 +61,7 @@ std::optional<std::string> locate_type(const types::Struct& base, const std::str
 		return std::nullopt;
 	}
 
-	[[clang::musttail]]
-	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
+	MUST_TAIL return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
 std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
