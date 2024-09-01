@@ -22,11 +22,16 @@ set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 if(MSVC)
 	set(CMAKE_SYSTEM_VERSION 10.0)
-	add_definitions(-D_HAS_AUTO_PTR_ETC=1) # Until Boost conforms with C++17
-	add_definitions(-D_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING) # Silence erroneous VS2017 warning - check if fixed in VS2019
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") # Multiprocessor compilation
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Oi") # Enable intrinsic functions
+
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # Multiprocessor compilation
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Oi") # Enable intrinsic functions
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")  # Enable the conforming preprocessor
-    
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GL")  # Whole program optimisation
+	set(CMAKE_EXE_LINKER_FLAGS   "${CMAKE_EXE_LINKER_FLAGS} /LTCG:incremental")  # Link-time code generation
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Ot")  # Favour speed over size
+
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.36)
 		message(FATAL_ERROR "You need VS2022 17.6.0 or newer to compile Ember on Windows!")
 	endif()
