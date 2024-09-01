@@ -8,7 +8,7 @@
 
 #pragma once
 
-// todo, this file be deleted in GCC 15
+// todo, this file can be deleted in GCC 15
 #if __clang__
 #define MUST_TAIL [[clang::musttail]]
 #else

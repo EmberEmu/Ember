@@ -128,13 +128,15 @@ endif()
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL ${CMAKE_SOURCE_DIR}/deps/googletest-release-1.11.0.tar.gz
-  URL_HASH SHA512=6fcc7827e4c4d95e3ae643dd65e6c4fc0e3d04e1778b84f6e06e390410fe3d18026c131d828d949d2f20dde6327d30ecee24dcd3ef919e21c91e010d149f3a28 
+  URL https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz
+  URL_HASH SHA512=9046841044a2bf7edfd96854ad9c44ffae4fcb9fb59a075b367507c0762a98eb32cb6968d46663228272e26321e96f4dd287c95baa22c6af9bad902b8b6ede4e 
 )
 
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+set(FETCHCONTENT_FULLY_DISCONNECTED ON)
+
 include(GoogleTest)
 
 add_definitions(-DDB_MYSQL) #temporary!
