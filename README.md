@@ -62,7 +62,7 @@ Any compiler version equal or greater than the supported version should be capab
 
 ### Language support
 
-Ember currently targets C++23 but allows for the use of upcoming language additions (e.g. technical specifications and drafts) as long as all three supported compilers provide a reasonable level of support.
+Ember currently targets C++26. The use of future language additions is permitted (e.g. technical specifications and drafts) as long as all three supported compilers provide a reasonable level of support.
 
 ### Build status
 
