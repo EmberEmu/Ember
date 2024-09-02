@@ -9,7 +9,7 @@ set(EXECUTABLE_NAME unit_tests)
 set(EXECUTABLE_SRC
     SRP6.cpp
     DynamicBuffer.cpp
-    Buffer.cpp
+    IntrusiveStorage.cpp
     BinaryStreamPMR.cpp
     GruntHandler.cpp
     GruntProtocol.cpp
