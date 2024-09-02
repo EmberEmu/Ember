@@ -45,9 +45,9 @@ int char_to_int(char c, int base, bool& err)
 		return val;
 	}
 
-	const char clower = ::tolower(c);
+	c = ::tolower(c);
 
-	if(clower >= 'a' && clower <= 'z') {
+	if(c >= 'a' && c <= 'z') {
 		const int val = c - 'a' + 10;
 
 		if(val >= base) {
@@ -66,12 +66,12 @@ unsigned long long sv_to_ull(std::string_view string, bool& err, int base) {
 		if(string.starts_with("0x") || string.starts_with("0X")) {
 			base = 16;
 			string = string.substr(2);
-		} else if(string.starts_with("0")) {
-			base = 8;
-			string = string.substr(1);
 		} else if(string.starts_with("0b") || string.starts_with("0B")) {
 			base = 2;
 			string = string.substr(2);
+		} else if(string.starts_with("0")) {
+			base = 8;
+			string = string.substr(1);
 		} else {
 			base = 10;
 		}
