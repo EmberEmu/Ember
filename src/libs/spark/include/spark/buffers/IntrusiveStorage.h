@@ -94,17 +94,6 @@ struct IntrusiveStorage {
 		return skip_len;
 	}
 
-	std::size_t reserve(const std::size_t length) {
-		std::size_t reserve_len = BlockSize - write_offset;
-
-		if(reserve_len > length) {
-			reserve_len = length;
-		}
-
-		write_offset += static_cast<OffsetType>(reserve_len);
-		return reserve_len;
-	}
-
 	std::size_t size() const {
 		return write_offset - read_offset;
 	}
@@ -128,7 +117,7 @@ struct IntrusiveStorage {
 	}
 
 	std::size_t advance_write(std::size_t size) {
-		const std::size_t remaining = free();
+		const auto remaining = free();
 
 		if(remaining < size) {
 			size = remaining;

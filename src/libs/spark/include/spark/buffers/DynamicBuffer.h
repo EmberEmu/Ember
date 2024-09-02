@@ -298,7 +298,7 @@ public:
 				buffer = buffer_from_node(tail);
 			}
 
-			remaining -= buffer->reserve(remaining);
+			remaining -= buffer->advance_write(remaining);
 			tail = tail->next;
 		} while(remaining);
 
