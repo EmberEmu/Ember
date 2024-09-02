@@ -221,7 +221,7 @@ void ClientConnection::close_session_sync() {
 }
 
 std::string ClientConnection::remote_address() const {
-	return socket_.remote_endpoint().address().to_string();
+	return remote_ep_.address().to_string();
 }
 
 const ConnectionStats& ClientConnection::stats() const {
@@ -256,7 +256,9 @@ void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) 
 	client->terminate();
 
 	boost::asio::post(client->socket_.get_executor(), [client]() {
-		LOG_TRACE_FILTER_GLOB(LF_NETWORK) << "Handler for " << client->remote_address()
+		LOG_TRACE_FILTER_GLOB(LF_NETWORK)
+			<< "Handler for "
+			<< client->remote_address()
 			<< " destroyed" << LOG_ASYNC;
 	});
 }
