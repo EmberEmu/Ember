@@ -23,6 +23,7 @@
 #include <span>
 #include <stack>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
@@ -32,6 +33,7 @@ using namespace std::literals;
 
 constexpr int MAX_RETRIES = 9;
 constexpr auto INITIAL_TIMEOUT = 250ms;
+constexpr auto MULTICAST_GROUP = "224.0.0.1"sv;
 
 using Result = std::expected<MapRequest, Error>;
 using RequestHandler = std::function<void(const Result& result)>;

@@ -40,7 +40,7 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 		}
 	);
 
-	transport_.join_group("224.0.0.1");
+	transport_.join_group(std::string(MULTICAST_GROUP));
 
 	transport_.resolve(gateway_, PORT_OUT,
 		[&](const boost::system::error_code& ec,
