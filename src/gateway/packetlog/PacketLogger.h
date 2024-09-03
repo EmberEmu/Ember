@@ -33,8 +33,7 @@ public:
 	void log(std::span<const std::uint8_t> buffer, PacketDirection dir);
 	void log(const spark::io::pmr::Buffer& buffer, std::size_t length, PacketDirection dir);
 
-	template<protocol::is_packet PacketType>
-	void log(const PacketType& packet, PacketDirection dir) {
+	void log(const protocol::is_packet auto& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		boost::container::small_vector<std::uint8_t, RESERVE_LEN> buffer;
 		spark::io::BufferAdaptor adaptor(buffer);

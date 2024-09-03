@@ -12,9 +12,9 @@
 #include <gsl/gsl_util>
 #include <algorithm>
 
-template<typename PacketType>
-requires protocol::is_packet<PacketType>
-void ClientConnection::send(const PacketType& packet) {
+void ClientConnection::send(const protocol::is_packet auto& packet) {
+	using Type = std::remove_reference_t<decltype(packet)>;
+
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
 
@@ -22,7 +22,7 @@ void ClientConnection::send(const PacketType& packet) {
 	stream << packet;
 
 	const auto written = stream.total_write();
-	auto size = gsl::narrow<typename PacketType::SizeType>(written - sizeof(typename PacketType::SizeType));
+	auto size = gsl::narrow<typename Type::SizeType>(written - sizeof(typename Type::SizeType));
 	auto opcode = packet.opcode;
 
 	if(crypt_) [[likely]] {
@@ -32,7 +32,7 @@ void ClientConnection::send(const PacketType& packet) {
 
 	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::io::StreamSeek::SK_FORWARD, written - PacketType::HEADER_WIRE_SIZE);
+	stream.write_seek(spark::io::StreamSeek::SK_FORWARD, written - Type::HEADER_WIRE_SIZE);
 
 	if(!write_in_progress_) {
 		write_in_progress_ = true;
