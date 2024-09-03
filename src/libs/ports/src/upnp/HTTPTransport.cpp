@@ -74,7 +74,7 @@ auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
 		total_read += co_await read(total_read);
 	}
 
-	timeout_.cancel();
+	stop_timer();
 	co_return std::make_pair(header, std::span(buffer_.cbegin(), total_read));
 }
 
@@ -159,6 +159,10 @@ void HTTPTransport::start_timer() {
 			throw std::runtime_error("Did not receive HTTP response in a timely manner");
 		}
 	});
+}
+
+void HTTPTransport::stop_timer() {
+	timeout_.cancel();
 }
 
 void HTTPTransport::close() {

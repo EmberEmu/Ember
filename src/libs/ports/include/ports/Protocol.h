@@ -18,7 +18,7 @@ enum class Protocol {
 };
 
 // Nowhere else to put it
-constexpr struct use_future_t{} use_future;
-constexpr struct use_awaitable_t{} use_awaitable;
+constexpr struct use_future_t{} use_future{};
+constexpr struct use_awaitable_t{} use_awaitable{};
 
 } // ports, ember

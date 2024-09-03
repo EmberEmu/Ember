@@ -42,6 +42,7 @@ private:
 
 	bool buffer_resize(const std::size_t offset);
 	void start_timer();
+	void stop_timer();
 	ba::awaitable<std::size_t> read(std::size_t offset);
 	bool http_headers_completion(std::size_t read);
 	std::size_t http_body_completion(const HTTPHeader& header, std::size_t read);
