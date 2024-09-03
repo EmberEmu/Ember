@@ -22,11 +22,11 @@ public:
 	using contiguous      = is_contiguous;
 	using seeking         = unsupported;
 
-	template<typename T> void write(const T& elem) {}
+	void write(const auto& elem) {}
 	void write(const void* source, size_type length) override {};
-	template<typename T> void read(T* elem) {}
+	void read(auto* elem) {}
 	void read(void* destination, size_type length) {};
-	template<typename T> void copy(T* elem) const {}
+	void copy(auto* elem) const {}
 	void copy(void* destination, size_type length) const {};
 	void reserve(const size_type length) override {};
 	size_type size() const override{ return 0; };

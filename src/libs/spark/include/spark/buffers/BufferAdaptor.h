@@ -83,9 +83,8 @@ public:
 		}
 	}
 
-	template<typename T>
-	void write(const T& source) requires(can_resize<buf_type>) {
-		write(source, sizeof(T));
+	void write(const auto& source) requires(can_resize<buf_type>) {
+		write(source, sizeof(source));
 	}
 
 	void write(const void* source, size_type length) requires(can_resize<buf_type>) {

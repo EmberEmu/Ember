@@ -129,9 +129,8 @@ public:
 		return true;
 	}
 
-	template<typename T>
-	void write(const T& source) {
-		write(&source, sizeof(T));
+	void write(const auto& source) {
+		write(&source, sizeof(source));
 	}
 
 	void write(const void* source, size_type length) {

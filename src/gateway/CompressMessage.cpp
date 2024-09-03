@@ -24,8 +24,7 @@ int compress_message(const spark::io::pmr::Buffer& in, spark::io::pmr::Buffer& o
 }
 
 // temp testing function, do not use yet
-template<typename Packet_t>
-int compress_message(const Packet_t& packet, spark::io::pmr::Buffer& out, int compression_level) {
+int compress_message(const auto& packet, spark::io::pmr::Buffer& out, int compression_level) {
 	constexpr std::size_t BLOCK_SIZE = 64;
 	spark::io::DynamicBuffer<4096> temp_buffer;
 	spark::io::pmr::BinaryStream stream(temp_buffer);

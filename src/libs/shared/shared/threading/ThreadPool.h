@@ -25,8 +25,7 @@ public:
 	explicit ThreadPool(std::size_t initial_count);
 	~ThreadPool();
 
-	template<typename T>
-	void run(T&& work) {
+	void run(auto&& work) {
 #ifdef DEBUG_NO_THREADS
 		work();
 #else

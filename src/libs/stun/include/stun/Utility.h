@@ -18,8 +18,7 @@
 
 namespace ember::stun {
 
-template<typename T>
-std::string extract_ip_to_string(const T& address) {
+std::string extract_ip_to_string(const auto& address) {
 	std::string addr_str;
 
 	if(address.family == AddressFamily::IPV4) {

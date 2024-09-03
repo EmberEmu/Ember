@@ -47,8 +47,7 @@ public:
 	void close();
 	const std::string& client_identify() const;
 
-	template<typename PacketT>
-	bool packet_deserialise(PacketT& packet, BinaryStream& stream);
+	bool packet_deserialise(auto& packet, BinaryStream& stream);
 	void packet_skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);

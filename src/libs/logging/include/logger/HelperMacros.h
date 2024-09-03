@@ -10,8 +10,8 @@
 
 #include <logger/Severity.h>
 
-template<typename T> inline T& log_deref(T& x) { return x; }
-template<typename T> inline T& log_deref(T* x) { return *x; }
+inline auto& log_deref(auto& x) { return x; }
+inline auto& log_deref(auto* x) { return *x; }
 
 #if !NO_LOGGING && !NO_TRACE_LOGGING
 #define LOG_TRACE(logger) \

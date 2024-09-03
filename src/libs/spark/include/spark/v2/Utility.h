@@ -24,8 +24,7 @@ static void write_header(Message& msg) {
 	header.write_to_stream(stream);
 }
 
-template<typename T>
-static void finish(T& payload, Message& msg) {
+static void finish(auto& payload, Message& msg) {
 	core::HeaderT header_t;
 	core::MessageUnion mu;
 	mu.Set(payload);

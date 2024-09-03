@@ -77,8 +77,7 @@ public:
 #endif
 	}
 
-	template<typename T>
-	void copy_to_stream(T& data) {
+	void copy_to_stream(auto& data) {
 		const std::string conv { std::to_string(data) };
 		const auto size = buffer_.second.size();
 		buffer_.second.resize(size + conv.size());

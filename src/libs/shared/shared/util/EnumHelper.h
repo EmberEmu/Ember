@@ -22,8 +22,7 @@ namespace ember::util {
 
 // makes sure converting an enum value to a string isn't going to cause a crash
 // in the case of a protocol mismatch
-template<typename T>
-const char* safe_print(T value, const char* const* enums) {
+const char* safe_print(auto value, const char* const* enums) {
 	std::size_t length = 0;
 	const char* current = enums[0];
 
@@ -42,8 +41,7 @@ const char* safe_print(T value, const char* const* enums) {
 	return "<UNKNOWN STATUS STRING>";
 }
 
-template<typename T>
-std::string fb_status(T value, const char* const* enums) {
+std::string fb_status(auto value, const char* const* enums) {
 	auto message = safe_print(value, enums);
 	return std::string(message) + " (" + std::to_string(std::to_underlying(value)) + ")";
 }

@@ -28,8 +28,7 @@ class CharacterEnum final {
 public:
 	std::vector<Character> characters;
 
-	template<typename reader>
-	State read_from_stream(reader& stream) try {
+	State read_from_stream(auto& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		std::uint8_t char_count;
@@ -92,8 +91,7 @@ public:
 		state_ = State::ERRORED;
 	}
 
-	template<typename writer>
-	void write_to_stream(writer& stream) const {
+	void write_to_stream(auto& stream) const {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {

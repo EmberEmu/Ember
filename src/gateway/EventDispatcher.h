@@ -29,7 +29,7 @@ class EventDispatcher final {
 public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
-	template<typename T> void exec(const ClientUUID& client, T work) const {
+	void exec(const ClientUUID& client, auto work) const {
 		auto service = pool_.get_service(client.service());
 
 		// bad service index encoded in the UUID

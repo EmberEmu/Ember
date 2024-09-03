@@ -50,12 +50,11 @@ public:
 		key.binary_encode(key_.data(), key_.size());
 	}
 
-	template<typename T>
-	void encrypt(T& data) {
+	void encrypt(auto& data) {
 		auto d_bytes = reinterpret_cast<std::uint8_t*>(&data);
 		const auto key_size = gsl::narrow_cast<std::uint8_t>(key_.size());
 	
-		for(std::size_t t = 0; t < sizeof(T); ++t) {
+		for(std::size_t t = 0; t < sizeof(data); ++t) {
 			send_i_ %= key_size;
 			std::uint8_t x = (d_bytes[t] ^ key_[send_i_]) + send_j_;
 			++send_i_;
@@ -63,8 +62,7 @@ public:
 		}
 	}
 
-	template<typename BufferType>
-	void decrypt(BufferType& data, const std::size_t length) {
+	void decrypt(auto& data, const std::size_t length) {
 		const auto key_size = gsl::narrow_cast<std::uint8_t>(key_.size());
 
 		for(std::size_t t = 0; t < length; ++t) {

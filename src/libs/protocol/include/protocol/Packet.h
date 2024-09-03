@@ -33,18 +33,15 @@ struct Packet final {
 
 	PayloadType payload;
 
-	template<typename reader>
-	State read_from_stream(reader& stream) {
+	State read_from_stream(auto& stream) {
 		return payload.read_from_stream(stream);
 	}
 
-	template<typename writer>
-	void write_to_stream(writer& stream) const {
+	void write_to_stream(auto& stream) const {
 		payload.write_to_stream(stream);
 	}
 
-	template<typename writer>
-	friend writer& operator<<(writer& stream, const Packet& p) {
+	friend auto& operator<<(auto& stream, const Packet& p) {
 		stream << SizeType{} << OpcodeType{};
 		p.write_to_stream(stream);
 		return stream;
