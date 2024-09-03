@@ -118,7 +118,7 @@ void MessageBuilder::add_response_port(std::uint16_t port) {
 }
 
 void MessageBuilder::set_header_length(const std::uint16_t length) {
-	assert(stream_.can_write_seek());
+	static_assert(stream_.can_write_seek());
 	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, HEADER_LEN_OFFSET);
 	stream_ << len_be(length);
 	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, stream_.size());

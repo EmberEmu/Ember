@@ -279,9 +279,8 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
-	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
-
 	LOG_INFO_SYNC(logger, "Starting network service on {}:{}", interface, port);
+	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
 

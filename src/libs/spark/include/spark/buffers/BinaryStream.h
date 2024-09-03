@@ -267,7 +267,7 @@ public:
 
 	/**  Misc functions **/
 
-	consteval bool can_write_seek() const requires(writeable<buf_type>) {
+	consteval static bool can_write_seek() requires(writeable<buf_type>) {
 		return std::is_same<seeking, supported>::value;
 	}
 

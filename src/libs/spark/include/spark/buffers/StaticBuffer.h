@@ -125,7 +125,7 @@ public:
 		return write_ == read_;
 	}
 
-	consteval bool can_write_seek() const {
+	consteval static bool can_write_seek() {
 		return true;
 	}
 

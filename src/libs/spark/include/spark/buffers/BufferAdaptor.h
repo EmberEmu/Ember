@@ -136,7 +136,7 @@ public:
 		return read_ptr()[index];
 	}
 
-	consteval bool can_write_seek() const requires(can_resize<buf_type>) {
+	consteval static bool can_write_seek() requires(can_resize<buf_type>) {
 		return true;
 	}
 
