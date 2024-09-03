@@ -13,6 +13,7 @@
 #include <algorithm>
 
 template<typename PacketType>
+requires protocol::is_packet<PacketType>
 void ClientConnection::send(const PacketType& packet) {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
 		<< protocol::to_string(packet.opcode) << LOG_ASYNC;

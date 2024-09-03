@@ -39,8 +39,7 @@ struct IntrusiveStorage {
 		write_offset = 0;
 	}
 
-	template<typename InT>
-	std::size_t write(const InT source, std::size_t length) {
+	std::size_t write(const auto source, std::size_t length) {
 		assert(!region_overlap(source, length, storage.data(), storage.size()));
 		std::size_t write_len = BlockSize - write_offset;
 
@@ -53,8 +52,7 @@ struct IntrusiveStorage {
 		return write_len;
 	}
 
-	template<typename OutT>
-	std::size_t copy(OutT destination, const std::size_t length) const {
+	std::size_t copy(auto destination, const std::size_t length) const {
 		assert(!region_overlap(storage.data(), storage.size(), destination, length));
 		std::size_t read_len = BlockSize - read_offset;
 
@@ -66,8 +64,7 @@ struct IntrusiveStorage {
 		return read_len;
 	}
 
-	template<typename InT>
-	std::size_t read(InT destination, const std::size_t length, const bool allow_optimise = false) {
+	std::size_t read(auto destination, const std::size_t length, const bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
 		read_offset += static_cast<OffsetType>(read_len);
 

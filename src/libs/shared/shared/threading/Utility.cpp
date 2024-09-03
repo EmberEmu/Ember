@@ -49,8 +49,7 @@ void set_affinity(std::thread& thread, unsigned int core) {
 #endif
 }
 
-template<typename T>
-void set_name([[maybe_unused]] T& handle, const char* name) {
+void set_name([[maybe_unused]] auto& handle, const char* name) {
 	if(strlen(name) >= MAX_NAME_LEN) {
 		throw std::runtime_error("set_name: thread name too long");
 	}
@@ -106,8 +105,7 @@ void set_name(const char* name) {
 #endif
 }
 
-template<typename T>
-std::wstring get_name(T& thread) {
+std::wstring get_name(auto& thread) {
 #if defined _WIN32 && defined THREAD_DESC // todo, temporarily disabled on Windows
 	std::array<wchar_t, BUFFER_LEN> buffer{};
 	wchar_t* pbuffer = buffer.data();

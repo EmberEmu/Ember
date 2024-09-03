@@ -79,8 +79,7 @@ public:
 		sessions_.stop(shared_from_this());
 	}
 
-	template<typename StreamSerialisable>
-	void write(const StreamSerialisable& data, WriteCallback cb) {
+	void write(const auto& data, WriteCallback cb) {
 		if(!socket_.is_open()) {
 			return;
 		}

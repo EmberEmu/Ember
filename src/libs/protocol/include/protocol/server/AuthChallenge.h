@@ -25,8 +25,7 @@ class AuthChallenge final {
 public:
 	be::little_uint32_t seed;
 
-	template<typename reader>
-	State read_from_stream(reader& stream) try {
+	State read_from_stream(auto& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> seed;
@@ -35,8 +34,7 @@ public:
 		state_ = State::ERRORED;
 	}
 
-	template<typename writer>
-	void write_to_stream(writer& stream) const {
+	void write_to_stream(auto& stream) const {
 		stream << seed;
 	}
 };

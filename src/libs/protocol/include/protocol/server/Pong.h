@@ -25,8 +25,7 @@ class Pong final {
 public:
 	be::little_uint32_t sequence_id;
 
-	template<typename reader>
-	State read_from_stream(reader& stream) try {
+	State read_from_stream(auto& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> sequence_id;
@@ -36,8 +35,7 @@ public:
 		return State::ERRORED;
 	}
 
-	template<typename writer>
-	void write_to_stream(writer& stream) const {
+	void write_to_stream(auto& stream) const {
 		stream << sequence_id;
 	}
 };

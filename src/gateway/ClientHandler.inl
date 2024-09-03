@@ -11,8 +11,7 @@
 #include "ConnectionDefines.h"
 #include <logger/Logging.h>
 
-template<typename PacketT>
-bool ClientHandler::packet_deserialise(PacketT& packet, BinaryStream& stream) {
+bool ClientHandler::packet_deserialise(auto& packet, BinaryStream& stream) {
 	if(packet->read_from_stream(stream) != protocol::State::DONE) {
 		const auto state = stream.state();
 

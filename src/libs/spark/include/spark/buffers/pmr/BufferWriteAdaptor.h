@@ -26,9 +26,8 @@ class BufferWriteAdaptor : public BufferWrite {
 public:
 	BufferWriteAdaptor(buf_type& buffer) : buffer_(buffer), write_(buffer.size()) {}
 
-	template<typename T>
-	void write(const T& source) {
-		write(&source, sizeof(T));
+	void write(auto& source) {
+		write(&source, sizeof(source));
 	}
 
 	void write(const void* source, std::size_t length) override {

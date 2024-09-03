@@ -253,9 +253,8 @@ public:
 		size_ -= length;
 	}
 
-	template<typename T>
-	void write(const T& source) {
-		write(&source, sizeof(T));
+	void write(const auto& source) {
+		write(&source, sizeof(source));
 	}
 
 	void write(const void* source, const size_type length) override {

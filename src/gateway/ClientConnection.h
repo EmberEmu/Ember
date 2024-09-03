@@ -104,7 +104,9 @@ public:
 	std::string remote_address() const;
 	void log_packets(bool enable);
 
-	template<typename PacketT> void send(const PacketT& packet);
+	template<typename PacketType>
+	requires protocol::is_packet<PacketType>
+	void send(const PacketType& packet);
 
 	static void async_shutdown(std::shared_ptr<ClientConnection> client);
 	void close_session(); // should be made private

@@ -34,8 +34,7 @@ private:
 	std::uint8_t alignment_ = 0;
 
 public:
-	template<typename reader>
-	State read_from_stream(reader& stream) try {
+	State read_from_stream(auto& stream) try {
 		stream >> size;
 		stream >> channel;
 
@@ -59,8 +58,7 @@ public:
 		return state;
 	}
 
-	template<typename writer>
-	void write_to_stream(writer& stream) const {
+	void write_to_stream(auto& stream) const {
 		auto write_size = MIN_HEADER_SIZE;
 
 		if(!uuid.is_nil()) {

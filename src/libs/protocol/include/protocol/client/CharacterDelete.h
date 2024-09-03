@@ -24,8 +24,7 @@ class CharacterDelete final {
 public:
 	be::little_uint64_t id;
 
-	template<typename reader>
-	State read_from_stream(reader& stream) try {
+	State read_from_stream(auto& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
 		stream >> id;
@@ -35,8 +34,7 @@ public:
 		return State::ERRORED;
 	}
 
-	template<typename writer>
-	void write_to_stream(writer& stream) const {
+	void write_to_stream(auto& stream) const {
 		stream << id;
 	}
 };

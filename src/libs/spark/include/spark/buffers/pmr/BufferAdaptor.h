@@ -45,8 +45,7 @@ public:
 		}
 	};
 
-	template<typename T>
-	void write(const T& source) {
+	void write(const auto& source) {
 		BufferWriteAdaptor<buf_type>::write(source);
 	};
 
@@ -54,8 +53,7 @@ public:
 		BufferWriteAdaptor<buf_type>::write(source, length);
 	};
 
-	template<typename T>
-	void copy(T* destination) const {
+	void copy(auto* destination) const {
 		BufferReadAdaptor<buf_type>::copy(destination);
 	};
 
