@@ -20,8 +20,7 @@ namespace ember::util {
 
 template<typename T>
 inline std::string format_packet(const T* packet, std::size_t size,
-                                 unsigned int columns = 16)
-{
+                                 unsigned int columns = 16) {
 	auto data = reinterpret_cast<const unsigned char*>(packet);
 	auto rows = static_cast<std::size_t>(std::ceil(size / static_cast<double>(columns)));
 	std::stringstream buffer;

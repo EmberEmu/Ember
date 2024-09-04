@@ -10,13 +10,18 @@
 #include "Exceptions.h"
 #include "Packets.h"
 #include <logger/Logging.h>
-#include <spark/buffers/pmr/Buffer.h>
-#include <boost/assert.hpp>
+#include <spark/buffers/pmr/BinaryStream.h>
 #include <shared/util/FormatPacket.h>
+#include <boost/assert.hpp>
 #include <vector>
 #include <cstdint>
 
 namespace ember::grunt {
+
+template<typename T>
+void Handler::create_packet() {
+	curr_packet_ = &packet_.emplace<T>();
+}
 
 void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
                               spark::io::pmr::Buffer& buffer,
@@ -47,36 +52,28 @@ void Handler::handle_new_packet(spark::io::pmr::Buffer& buffer) {
 		case Opcode::CMD_AUTH_LOGON_CHALLENGE:
 			[[fallthrough]];
 		case Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
-			packet_ = client::LoginChallenge();
-			curr_packet_ = &std::get<client::LoginChallenge>(packet_);
+			create_packet<client::LoginChallenge>();
 			break;
 		case Opcode::CMD_AUTH_LOGON_PROOF:
-			packet_ = client::LoginProof();
-			curr_packet_ = &std::get<client::LoginProof>(packet_);
+			create_packet<client::LoginProof>();
 			break;
 		case Opcode::CMD_AUTH_RECONNECT_PROOF:
-			packet_ = client::ReconnectProof();
-			curr_packet_ = &std::get<client::ReconnectProof>(packet_);
+			create_packet<client::ReconnectProof>();
 			break;
 		case Opcode::CMD_SURVEY_RESULT:
-			packet_ = client::SurveyResult();
-			curr_packet_ = &std::get<client::SurveyResult>(packet_);
+			create_packet<client::SurveyResult>();
 			break;
 		case Opcode::CMD_REALM_LIST:
-			packet_ = client::RequestRealmList();
-			curr_packet_ = &std::get<client::RequestRealmList>(packet_);
+			create_packet<client::RequestRealmList>();
 			break;
 		case Opcode::CMD_XFER_ACCEPT:
-			packet_ = client::TransferAccept();
-			curr_packet_ = &std::get<client::TransferAccept>(packet_);
+			create_packet<client::TransferAccept>();
 			break;
 		case Opcode::CMD_XFER_RESUME:
-			packet_ = client::TransferResume();
-			curr_packet_ = &std::get<client::TransferResume>(packet_);
+			create_packet<client::TransferResume>();
 			break;
 		case Opcode::CMD_XFER_CANCEL:
-			packet_ = client::TransferCancel();
-			curr_packet_ = &std::get<client::TransferCancel>(packet_);
+			create_packet<client::TransferCancel>();
 			break;
 		default:
 			throw bad_packet("Unknown opcode encountered!");

@@ -40,6 +40,7 @@ class Handler final {
 
 	log::Logger* logger_;
 
+	template<typename T> void create_packet();
 	void handle_new_packet(spark::io::pmr::Buffer& buffer);
 	void handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset);
 	void dump_bad_packet(const spark::io::buffer_underrun& e,
