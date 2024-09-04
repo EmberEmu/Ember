@@ -29,16 +29,20 @@ namespace be = boost::endian;
 
 class LoginChallenge final : public Packet {
 	static const std::size_t MAX_USERNAME_LEN = 16;
-	static const std::size_t WIRE_LENGTH = 34;
-	static const std::size_t HEADER_LENGTH = 4; // todo - double check
+	static const std::size_t HEADER_LENGTH = 4;
 
 	State state_ = State::INITIAL;
 	std::uint8_t username_len_ = 0;
 
-	void read_body(spark::io::pmr::BinaryStream& stream) {
+	void read_header(spark::io::pmr::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> protocol_ver;
-		stream.skip(2); // skip the size field - we don't need it
+		stream >> body_size;
+		be::little_to_native_inplace(body_size);
+	}
+
+	void read_body(spark::io::pmr::BinaryStream& stream) {
+		if(stream.size() < body_size);
 		stream >> game;
 		stream >> version.major;
 		stream >> version.minor;
@@ -55,16 +59,6 @@ class LoginChallenge final : public Packet {
 			throw bad_packet("Username length was too long!");
 		}
 
-		// handle endianness
-		be::little_to_native_inplace(game);
-		be::little_to_native_inplace(version.build);
-		be::little_to_native_inplace(platform);
-		be::little_to_native_inplace(os);
-		be::little_to_native_inplace(locale);
-	}
-
-	void read_username(spark::io::pmr::BinaryStream& stream) {
-		// does the stream hold enough bytes to complete the username?
 		if(stream.size() >= username_len_) {
 			username.resize_and_overwrite(username_len_, [&](char* strlen, std::size_t size) {
 				stream.get(strlen, size);
@@ -73,8 +67,15 @@ class LoginChallenge final : public Packet {
 
 			state_ = State::DONE;
 		} else {
-			state_ = State::CALL_AGAIN;
+			throw bad_packet("Invalid username length supplied!");
 		}
+
+		// handle endianness
+		be::little_to_native_inplace(game);
+		be::little_to_native_inplace(version.build);
+		be::little_to_native_inplace(platform);
+		be::little_to_native_inplace(os);
+		be::little_to_native_inplace(locale);
 	}
 
 public:
@@ -84,6 +85,7 @@ public:
 	const static int RECONNECT_CHALLENGE_VER = 2;
 
 	std::uint8_t protocol_ver = 0;
+	std::uint16_t body_size = 0;
 	Game game;
 	GameVersion version = {};
 	Platform platform;
@@ -96,16 +98,12 @@ public:
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
-		}
-
 		switch(state_) {
 			case State::INITIAL:
-				read_body(stream);
+				read_header(stream);
 				[[fallthrough]];
 			case State::CALL_AGAIN:
-				read_username(stream);
+				read_body(stream);
 				break;
 			default:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
@@ -119,11 +117,11 @@ public:
 			throw bad_packet("Provided username was too long!");
 		}
 
-		auto size = gsl::narrow<std::uint16_t>((WIRE_LENGTH + username.length()) - HEADER_LENGTH);
-
+		const auto start_pos = stream.total_write();
 		stream << opcode;
 		stream << protocol_ver;
-		stream << be::native_to_little(size);
+		const auto size_pos = stream.total_write();
+		stream << std::uint16_t(0); // size placeholder
 		stream << be::native_to_little(game);
 		stream << version.major;
 		stream << version.minor;
@@ -136,7 +134,14 @@ public:
 		stream << ip;
 		stream << gsl::narrow<std::uint8_t>(username.length());
 		stream.put(username.data(), username.length());
+		const auto end_pos = stream.total_write();
+		const auto size = (end_pos - start_pos) - HEADER_LENGTH;
+
+		stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, size_pos);
+		stream << be::native_to_little(gsl::narrow<std::uint16_t>(size));
+		stream.write_seek(spark::io::StreamSeek::SK_FORWARD, size);
 	}
+
 };
 
 using ReconnectChallenge = LoginChallenge;
