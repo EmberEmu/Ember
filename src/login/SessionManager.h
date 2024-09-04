@@ -15,15 +15,18 @@
 
 namespace ember {
 
-class NetworkSession;
+class LoginSession;
+template<typename T> class NetworkSession;
+
+using LoginNetSession = NetworkSession<LoginSession>;
 
 class SessionManager final {
-	std::unordered_set<std::shared_ptr<NetworkSession>> sessions_;
+	std::unordered_set<std::shared_ptr<LoginNetSession>> sessions_;
 	std::mutex sessions_lock_;
 
 public:
-	void start(const std::shared_ptr<NetworkSession>& session);
-	void stop(const std::shared_ptr<NetworkSession>& session);
+	void start(const std::shared_ptr<LoginNetSession>& session);
+	void stop(const std::shared_ptr<LoginNetSession>& session);
 	void stop_all();
 	std::size_t count() const;
 };
