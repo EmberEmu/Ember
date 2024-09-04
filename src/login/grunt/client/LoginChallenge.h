@@ -35,6 +35,10 @@ class LoginChallenge final : public Packet {
 	std::uint8_t username_len_ = 0;
 
 	void read_header(spark::io::pmr::BinaryStream& stream) {
+		if(stream.size() < HEADER_LENGTH) {
+			return;
+		}
+
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream >> body_size;
@@ -42,7 +46,11 @@ class LoginChallenge final : public Packet {
 	}
 
 	void read_body(spark::io::pmr::BinaryStream& stream) {
-		if(stream.size() < body_size);
+		if(stream.size() < body_size) {
+			state_ = State::CALL_AGAIN;
+			return;
+		}
+
 		stream >> game;
 		stream >> version.major;
 		stream >> version.minor;
@@ -64,8 +72,6 @@ class LoginChallenge final : public Packet {
 				stream.get(strlen, size);
 				return size;
 			});
-
-			state_ = State::DONE;
 		} else {
 			throw bad_packet("Invalid username length supplied!");
 		}
@@ -76,6 +82,7 @@ class LoginChallenge final : public Packet {
 		be::little_to_native_inplace(platform);
 		be::little_to_native_inplace(os);
 		be::little_to_native_inplace(locale);
+		state_ = State::DONE;
 	}
 
 public:
