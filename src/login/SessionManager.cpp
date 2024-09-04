@@ -7,17 +7,17 @@
  */
 
 #include "SessionManager.h"
-#include "NetworkSession.h"
+#include "LoginSession.h"
 
 namespace ember {
 
-void SessionManager::start(const std::shared_ptr<NetworkSession>& session) {
+void SessionManager::start(const std::shared_ptr<LoginNetSession>& session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
 	sessions_.insert(session);
 	session->start();
 }
 
-void SessionManager::stop(const std::shared_ptr<NetworkSession>& session) {
+void SessionManager::stop(const std::shared_ptr<LoginNetSession>& session) {
 	std::lock_guard<std::mutex> guard(sessions_lock_);
 	sessions_.erase(session);
 	session->stop();
