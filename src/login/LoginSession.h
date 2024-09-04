@@ -28,7 +28,6 @@ class LoginSession final : public NetworkSession<LoginSession> {
 	log::Logger* logger_;
 	grunt::Handler grunt_handler_;
 
-	bool handle_packet(spark::io::pmr::Buffer& buffer);
 	void async_completion(Action& action);
 	void write_packet(const grunt::Packet& packet, WriteCallback&& cb);
 	void execute_async(std::unique_ptr<Action> action);
@@ -36,6 +35,8 @@ class LoginSession final : public NetworkSession<LoginSession> {
 public:
 	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
 	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
+
+	bool handle_packet(spark::io::pmr::Buffer& buffer);
 };
 
 } // ember
