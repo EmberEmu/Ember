@@ -1,5 +1,5 @@
 <p align="center">
-<img src="docs/assets/header_medres.png" width="464" height="437" title="Ember"/><br />
+<img src="docs/assets/header_medres.png" width="464" title="Ember"/><br />
 <h2 align="center">🔥 High-performance, distributed emulator for WoW 1.12</h2>
 <p align="center">
 <a href="https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml"><img src="https://img.shields.io/github/actions/workflow/status/emberemu/ember/docker-image.yml?logo=githubactions&label=GitHub Actions CI&logoColor=white&color=e67a19" /></a>
