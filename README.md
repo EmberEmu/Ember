@@ -7,7 +7,7 @@
 </p>
 </p>
 <p align="center">
-<a href="https://discord.gg/WpPJzQS"><img src="docs/assets/discord_medres.png" width="224" height="57" alt="Discord Join" title="Join the Discord!" /></a>
+<a href="https://discord.gg/WpPJzQS"><img src="docs/assets/discord_medres.png" width="224" alt="Discord Join" title="Join the Discord!" /></a>
 </p>
 Ember is an educational and research emulation project undertaken to investigate MMO server architectures and bleeding-edge language standards and tooling. 
 
@@ -16,6 +16,8 @@ While many emulators aim for feature parity over quality of implementation, Embe
 ## ❓ FAQ
 ### Is Ember a fork of an existing emulator?
 No. Ember has been written from the ground up with zero code reuse from other cores. However, more mature projects still offer invaluable insights into the protocols and formats used.
+### Why WoW 1.12.1?
+Our primary goal isn't to produce a feature-complete, up-to-date emulator to use with newer clients. The 1.12.1 protocol was chosen as a fixed target to leverage the extensive research of prior projects, allowing for greater focus on writing code over reverse engineering.
 ### There are more mature emulators out there. What's the point?
 Ember is a project open to new ideas, without aversion to rethinks about the best way to approach the challenges of server emulation. Being unencumbered by technical debt accrued by existing cores that are based on forks of early 2000s codebases allows Ember to take fresh approaches without worrying too much about how much we're going to break in the process. Some of those approaches have made their way to other projects!
 ### Research emulation project? What's there to research?
@@ -28,9 +30,6 @@ Aside from emulation techniques, WoW is an old game but it still hides many secr
 * Correct character customisation options validation
 
 Advancements in open source emulation flow in both directions, allowing the wider community to benefit, even if they all don't directly use or contribute to the same projects.
-
-### Why WoW 1.12.1?
-Our primary goal isn't to produce a feature-complete, up-to-date emulator to use with newer clients. The 1.12.1 protocol was chosen as a fixed target to leverage the extensive research of prior projects, allowing for greater focus on writing code over reverse engineering.
 
 
 ## ⚡ I'm in! What now?
