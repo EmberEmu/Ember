@@ -1,5 +1,5 @@
 <p align="center">
-<img src="docs/assets/images/header_medres.png" width="454" height="437" title="Ember"/><br />
+<img src="docs/assets/header_medres.png" width="454" height="437" title="Ember"/><br />
 <h2 align="center">🔥 High-performance, distributed emulator for WoW 1.12</h2>
 <p align="center">
 <a href="https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml"><img src="https://img.shields.io/github/actions/workflow/status/emberemu/ember/docker-image.yml?logo=githubactions&label=GitHub Actions CI&logoColor=white&color=e67a19" /></a>
@@ -7,7 +7,7 @@
 </p>
 </p>
 <p align="center">
-<a href="https://discord.gg/WpPJzQS"><img src="docs/assets/images/discord_medres.png" width="224" height="57" alt="Join Discord" title="Join the Discord!" /></a>
+<a href="https://discord.gg/WpPJzQS"><img src="docs/assets/discord_medres.png" width="224" height="57" alt="Discord Join" title="Join the Discord!" /></a>
 </p>
 Ember is an educational and research emulation project undertaken to investigate MMO server architectures and bleeding-edge language standards and tooling. 
 
