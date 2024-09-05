@@ -30,7 +30,8 @@ Aside from emulation techniques, WoW is an old game but it still hides many secr
 * Correct character customisation options validation
 
 Advancements in open source emulation flow in both directions, allowing the wider community to benefit, even if they all don't directly use or contribute to the same projects.
-
+### Anything else I should know?
+We have a retro ASCII-art banner straight from 1995 when the server runs. Priorities.
 
 ## ⚡ I'm in! What now?
 ### Docker Quick Start
