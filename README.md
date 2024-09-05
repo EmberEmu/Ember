@@ -1,13 +1,32 @@
-# 🔥 **Ember**
+<p align="center">
+<img src="/docs/assets/images/header.png" title="Ember"/>
+</p>
+<h2 align="center">High-performance, distributed emulator for WoW 1.12 </h2>
+<p align="center">
+<a href="https://discord.gg/WpPJzQS"><img src="/docs/assets/images/discord.png" alt="Discord Join" title="Join the Discord!" /></a>
+</p>
+Ember is an educational and research emulation project undertaken to investigate MMO server architectures and bleeding-edge C++ language features and tooling. 
 
-## *An experimental modular MMO server emulator.*
+While many emulators strive for feature parity over quality of implementation, Ember aims for quality and performance first, while targeting only up-to-date platforms.
 
----
+## FAQ
+### Is Ember a fork of an existing emulator?
+No. Ember has been written from the ground up with zero code reuse from other cores. However, more mature projects still offer invaluable insights into the protocols and formats used.
+### There are more mature emulators out there. What's the point?
+Ember is a project open to new ideas, without aversion to rethinks about the best way to approach the challenges of server emulation. Being unencumbered by technical debt accrued by existing cores based on forks of early 2000s codebases allows Ember to take fresh approaches without worrying too much about how much we're going to break in the process. Some of those approaches have made their way to other projects!
+### Research emulation project? What's there to research?
+Aside from emulation techniques, WoW is an old game but it still hides many secrets. As stated, Ember focuses more on quality of implementation and that includes trying to figure things out that other projects haven't. As a result of work on Ember, WoW emulation is slightly more complete and accurate than it would have otherwise been. Some examples include...
+* Patches for serious authentication vulnerabilities in most major cores. [Write-up here](https://gist.github.com/Chaosvex/b62d8e7c24e60435b3834b5ec6b610a4).
+* Client integrity validation (implemented by most major cores, based on Ember)
+* Two-factor authentication (same as above)
+* A far more complete understanding of the authentication protocol
+* A multitude of packet structure fixes that have been given directly to other projects, allowing cleaner implementations of game features (e.g. NPC emotes following quest interactions)
+* Correct character customisation options validations
+* Being a source of ideas for improvements for other projects
 
-Ember is an educational and research emulator developed to investigate MMO server architectures and bleeding-edge C++ language features and tooling.
+As is hopefully evident, advancements made projects flow in both directions, allowing the wider community to benefit, even if they don't directly use the project.
 
-While most emulators strive for feature completeness, Ember aims to be a production quality codebase and deployment architecture.
-
+## I'm in! What now?
 ### Docker Quick Start
 
 Ember uses Docker to make it easy to get the project up and running within minutes. Once you have Docker (version 19 and up) installed, simply run...
@@ -52,13 +71,15 @@ Ember aims to support the following platforms as a minimum:
 
 ### Compiler support
 
-Any compiler version equal or greater than the supported version should be capable of compiling Ember. Minimum versions support all language features required but will not receive any fixes to support their use (e.g. compiler-specific workarounds).
-
+Any compiler version equal or greater than the supported version should be capable of compiling Ember.
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
 | MSVC  | 19.30 (VS2022) | 19.30 (VS2022) |
 | Clang |     18     |     18     |
 | GCC   |     14     |     14     |
+
+> [!NOTE]
+> Minimum versions support all language features required to build the project but will not receive any fixes to support their continued use (e.g. compiler-specific workarounds).
 
 ### Language support
 
