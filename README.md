@@ -1,9 +1,9 @@
 <p align="center">
-<img src="/docs/assets/images/header.png" title="Ember"/>
+<img src="/docs/assets/header.png" title="Ember"/>
 </p>
 <h2 align="center">High-performance, distributed emulator for WoW 1.12 </h2>
 <p align="center">
-<a href="https://discord.gg/WpPJzQS"><img src="/docs/assets/images/discord.png" alt="Discord Join" title="Join the Discord!" /></a>
+<a href="https://discord.gg/WpPJzQS"><img src="/docs/assets/discord.png" alt="Discord Join" title="Join the Discord!" /></a>
 </p>
 Ember is an educational and research emulation project undertaken to investigate MMO server architectures and bleeding-edge C++ language features and tooling. 
 
