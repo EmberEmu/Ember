@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include <algorithm>
-#include <functional>
 #include <chrono>
+#include <functional>
 #include <mutex>
 #include <utility>
 
