@@ -25,8 +25,8 @@ Aside from emulation techniques, WoW is an old game but it still hides many secr
 * Patches for serious authentication vulnerabilities in most major cores. [Write-up here](https://gist.github.com/Chaosvex/b62d8e7c24e60435b3834b5ec6b610a4).
 * Client integrity validation (implemented by most major cores, based on Ember)
 * Two-factor authentication (same as above)
-* A far more complete understanding of the authentication protocol
-* A multitude of message structure fixes that have been given directly to other projects, allowing cleaner implementations of game features (e.g. NPC emotes following quest interactions)
+* A more complete understanding of the authentication protocol, including implementation fixes that solved spurious login failures on other cores
+* A multitude of message structure fixes that have been given directly to other projects, allowing cleaner implementations of game features (e.g. NPC emotes following player interactions)
 * Correct character customisation options validation
 
 Advancements in open source emulation flow in both directions, allowing the wider community to benefit, even if they all don't directly use or contribute to the same projects.

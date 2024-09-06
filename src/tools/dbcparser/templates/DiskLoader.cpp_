@@ -17,6 +17,7 @@
 #include <dbcreader/Storage.h>
 #include <dbcreader/DiskDefs.h>
 #include <dbcreader/MemoryDefs.h>
+#include <shared/util/polyfill/start_lifetime_as>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <format>
@@ -46,8 +47,8 @@ struct MappedDBC {
 template<typename T>
 const MappedDBC<T> get_offsets(const void* start) {
 	const char* data = static_cast<const char*>(start);
-	auto dbc = reinterpret_cast<const DBCHeader*>(data);
-	auto records = reinterpret_cast<const T*>(data + sizeof(DBCHeader));
+	auto dbc = std::start_lifetime_as<const DBCHeader>(data);
+	auto records = std::start_lifetime_as<const T>(data + sizeof(DBCHeader));
 	auto string_block = data + sizeof(DBCHeader) + (dbc->record_size * dbc->records);
 	return MappedDBC<T>{dbc, records, string_block};
 }
