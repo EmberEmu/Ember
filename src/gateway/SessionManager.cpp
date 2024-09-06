@@ -12,10 +12,14 @@
 namespace ember {
 
 void SessionManager::start(std::unique_ptr<ClientConnection> session) {
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	auto sess_ptr = session.get();
 
-	session->start();
-	sessions_.insert(std::move(session));
+	{
+		std::lock_guard<std::mutex> guard(sessions_lock_);
+		sessions_.insert(std::move(session));
+	}
+
+	sess_ptr->start();
 }
 
 void SessionManager::stop(ClientConnection* session) {
