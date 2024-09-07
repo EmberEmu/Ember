@@ -31,8 +31,12 @@ Listener::Listener(boost::asio::io_context& service, std::string interface, std:
 void Listener::accept_connection() {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
+	if(!acceptor_.is_open()) {
+		return;
+	}
+
 	acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
-		if(!acceptor_.is_open()) {
+		if(ec == boost::asio::error::operation_aborted) {
 			return;
 		}
 
