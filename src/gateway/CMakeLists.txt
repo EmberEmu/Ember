@@ -73,7 +73,6 @@ set(LIBRARY_SRC
     states/CharacterList.cpp
     states/WorldForwarder.cpp
     states/SessionClose.cpp
-    states/StateJumpTables.cpp
     states/WorldEnter.cpp
     packetlog/PacketLogger.cpp
     packetlog/FBSink.cpp
