@@ -19,7 +19,7 @@ void NetworkListener::accept_connection() {
 	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 
 	acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
-		if(!acceptor_.is_open()) {
+		if(!acceptor_.is_open() || ec == boost::asio::error::operation_aborted) {
 			return;
 		}
 
