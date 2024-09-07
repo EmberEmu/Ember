@@ -57,14 +57,10 @@ struct Packet final {
 };
 
 template<ServerOpcode opcode, typename Payload>
-struct ServerPacket {
-	using Type = Packet<ServerHeader, opcode, Payload>;
-};
+using ServerPacket = Packet<ServerHeader, opcode, Payload>;
 
 template<ClientOpcode opcode, typename Payload>
-struct ClientPacket {
-	using Type = Packet<ClientHeader, opcode, Payload>;
-};
+using ClientPacket = Packet<ClientHeader, opcode, Payload>;
 
 template<typename T>
 concept is_packet = requires { typename T::packet_tag; };
