@@ -21,4 +21,7 @@ smart_enum(ClientState, int,
 	SESSION_CLOSED
 )
 
+constexpr auto STATES_MAX = SESSION_CLOSED;
+constexpr auto STATES_NUM = STATES_MAX + 1;
+
 } // ember

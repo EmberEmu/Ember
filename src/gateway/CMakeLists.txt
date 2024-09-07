@@ -41,8 +41,9 @@ set(LIBRARY_HDR
     states/CharacterList.h
     states/WorldForwarder.h
     states/SessionClose.h
+    states/WorldTransfer.h
     states/ClientContext.h
-    states/StateLUT.h
+    states/StateJumpTables.h
     states/AuthenticationContext.h
     states/WorldEnter.h
     states/WorldEnterContext.h
@@ -72,7 +73,7 @@ set(LIBRARY_SRC
     states/CharacterList.cpp
     states/WorldForwarder.cpp
     states/SessionClose.cpp
-    states/StateLUT.cpp
+    states/StateJumpTables.cpp
     states/WorldEnter.cpp
     packetlog/PacketLogger.cpp
     packetlog/FBSink.cpp

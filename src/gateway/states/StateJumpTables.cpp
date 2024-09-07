@@ -6,48 +6,48 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#include "StateLUT.h"
+#include "StateJumpTables.h"
 #include "Authentication.h"
 #include "CharacterList.h"
+#include "SessionClose.h"
 #include "WorldForwarder.h"
 #include "WorldEnter.h"
-#include "SessionClose.h"
-#include <protocol/Opcodes.h>
+#include "WorldTransfer.h"
 
 namespace ember { 
 
-const event_handler update_event[] = {
+const JumpTable<event_handler> update_event {
 	&authentication::handle_event,
 	&character_list::handle_event,
 	&world_enter::handle_event,
-	nullptr, // world transfer, unhandled
+	&world_transfer::handle_event,
 	&world::handle_event,
 	&session_close::handle_event
 };
 
-const packet_handler update_packet[] = {
+const JumpTable<packet_handler> update_packet {
 	&authentication::handle_packet,
 	&character_list::handle_packet,
 	&world_enter::handle_packet,
-	nullptr, // world transfer, unhandled
+	&world_transfer::handle_packet,
 	&world::handle_packet,
 	&session_close::handle_packet
 };
 
-const state_func exit_states[] = {
+const JumpTable<state_func> exit_states {
 	&authentication::exit,
 	&character_list::exit,
 	&world_enter::exit,
-	nullptr, // world transfer, unhandled
+	&world_transfer::exit,
 	&world::exit,
 	&session_close::exit
 };
 
-const state_func enter_states[] = {
+const JumpTable<state_func> enter_states {
 	&authentication::enter,
 	&character_list::enter,
 	&world_enter::enter,
-	nullptr, // world transfer, unhandled
+	&world_transfer::enter,
 	&world::enter,
 	&session_close::enter
 };
