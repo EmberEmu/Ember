@@ -9,7 +9,7 @@
 #include "Handler.h"
 #include "Exceptions.h"
 #include "Packets.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <shared/util/FormatPacket.h>
 #include <boost/assert.hpp>

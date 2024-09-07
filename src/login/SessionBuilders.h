@@ -9,7 +9,7 @@
 #pragma once
 
 #include "LoginSession.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <memory>
 #include <utility>

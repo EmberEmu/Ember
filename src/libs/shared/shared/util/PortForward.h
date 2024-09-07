@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <ports/pcp/Client.h>
 #include <ports/pcp/Daemon.h>
 #include <ports/upnp/SSDP.h>

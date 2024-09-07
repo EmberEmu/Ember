@@ -11,7 +11,7 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
 #include <protocol/Packet.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/util/UTF8String.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>

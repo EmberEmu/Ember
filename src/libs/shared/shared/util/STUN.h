@@ -10,7 +10,7 @@
 
 #include <stun/Client.h>
 #include <stun/Utility.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <logger/HelperMacros.h>
 #include <boost/program_options.hpp>
 #include <memory>

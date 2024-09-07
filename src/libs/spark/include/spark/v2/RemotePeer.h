@@ -15,7 +15,7 @@
 #include <spark/v2/SharedDefs.h>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <array>
 #include <chrono>
 #include <concepts>

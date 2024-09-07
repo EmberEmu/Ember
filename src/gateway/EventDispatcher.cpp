@@ -7,7 +7,7 @@
  */
 
 #include "EventDispatcher.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <boost/asio/post.hpp>
 #include <type_traits>
 

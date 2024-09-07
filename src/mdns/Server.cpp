@@ -10,7 +10,7 @@
 #include "Socket.h"
 #include "Serialisation.h"
 #include "Utility.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <spark/buffers/pmr/BufferAdaptor.h>
 #include <shared/util/FormatPacket.h>
 

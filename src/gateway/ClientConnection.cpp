@@ -10,7 +10,7 @@
 #include "SessionManager.h"
 #include "packetlog/FBSink.h"
 #include "packetlog/LogSink.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>
 #include <spark/buffers/BinaryStream.h>

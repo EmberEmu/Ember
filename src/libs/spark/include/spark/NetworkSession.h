@@ -14,7 +14,7 @@
 #include <spark/SessionManager.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <shared/FilterTypes.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/read.hpp>

@@ -8,7 +8,7 @@
 
 #include "CharacterHandler.h"
 #include "FilterTypes.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/util/Utility.h>
 #include <shared/threading/ThreadPool.h>
 #include <boost/assert.hpp>

@@ -9,7 +9,7 @@
 #include "SQLDMLGenerator.h"
 #include "TypeUtils.h"
 #include "DBCHeader.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/pmr/BufferAdaptor.h>

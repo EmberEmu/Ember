@@ -7,7 +7,7 @@
  */
 
 #include "SchemaParser.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <boost/program_options.hpp>

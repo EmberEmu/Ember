@@ -18,7 +18,7 @@
 #include "Patcher.h"
 #include "RealmList.h"
 #include "Survey.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>

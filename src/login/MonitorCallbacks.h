@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/metrics/Monitor.h>
 #include <functional>
 #include <cstdint>

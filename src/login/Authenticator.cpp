@@ -7,7 +7,7 @@
  */
 
 #include "Authenticator.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <srp6/Util.h>
 #include <boost/assert.hpp>
 #include <botan/hash.h>

@@ -7,7 +7,7 @@
  */
 
 #include "Parser.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <rapidxml_utils.hpp>
 #include <format>
 #include <cstddef>

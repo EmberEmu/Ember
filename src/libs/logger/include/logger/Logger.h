@@ -9,6 +9,8 @@
 #pragma once 
 
 #include <logger/Severity.h>
+#include <logger/HelperMacros.h>
+#include <logger/GlobalLogger.h>
 #include <format>
 #include <memory>
 #include <string>

@@ -22,7 +22,7 @@
 #include <shared/util/EnumHelper.h>
 #include <shared/util/UTF8String.h>
 #include <shared/util/xoroshiro128plus.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <botan/bigint.h>
 #include <botan/hash.h>
 #include <boost/assert.hpp>

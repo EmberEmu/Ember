@@ -11,7 +11,7 @@
 #include "Multicast_generated.h"
 #include <spark/ServiceDiscovery.h>
 #include <spark/ServiceListener.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/FilterTypes.h>
 
 namespace bai = boost::asio::ip;

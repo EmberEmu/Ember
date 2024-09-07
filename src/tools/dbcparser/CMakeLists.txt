@@ -34,7 +34,7 @@ set(EXECUTABLE_SRC
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} logging spark shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} logger spark shared ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(dbc-parser PROPERTIES FOLDER "Tools")

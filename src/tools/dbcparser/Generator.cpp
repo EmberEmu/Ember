@@ -10,7 +10,7 @@
 #include "Defines.h"
 #include "TypeUtils.h"
 #include "Types.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <filesystem>
 #include <fstream>
 #include <regex>

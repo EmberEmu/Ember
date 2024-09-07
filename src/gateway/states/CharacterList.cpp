@@ -17,7 +17,7 @@
 #include "../EventDispatcher.h"
 #include "../FilterTypes.h"
 #include "../ClientLogHelper.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <protocol/Packets.h>
 #include <protocol/Opcodes.h>
 #include <shared/util/UTF8String.h>

@@ -18,10 +18,10 @@ set(LIBRARY_SRC
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${LIBRARY_NAME} logging shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} logger shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark logger shared ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(social libsocial PROPERTIES FOLDER "Services")

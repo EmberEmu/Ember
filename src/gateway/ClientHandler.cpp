@@ -13,7 +13,7 @@
 #include "states/StateJumpTables.h"
 #include "FilterTypes.h"
 #include "ClientLogHelper.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <protocol/Packets.h>
 #include <format>
 #include <utility>

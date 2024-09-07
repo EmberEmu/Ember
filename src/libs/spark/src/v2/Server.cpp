@@ -12,7 +12,7 @@
 #include <spark/buffers/BufferAdaptor.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/v2/Utility.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/FilterTypes.h>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/as_tuple.hpp>

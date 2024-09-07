@@ -9,7 +9,7 @@
 #include "Server.h"
 #include "MulticastSocket.h"
 #include "RequestHandler.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/util/LogConfig.h>

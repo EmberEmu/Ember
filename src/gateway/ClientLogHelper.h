@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 
 #define CLIENT_TRACE(logger, ctx) \
 	LOG_TRACE(logger) << ctx.handler->client_identify()

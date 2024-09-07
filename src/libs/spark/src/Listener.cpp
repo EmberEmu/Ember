@@ -11,7 +11,7 @@
 #include <spark/SessionManager.h>
 #include <shared/FilterTypes.h>
 #include <boost/asio/strand.hpp>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <utility>
 
 namespace ember::spark::inline v1 {

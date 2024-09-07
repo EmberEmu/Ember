@@ -7,7 +7,7 @@
  */
 
 #include <spark/TrackingService.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/FilterTypes.h>
 #include <algorithm>
 #include <optional>

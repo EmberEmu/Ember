@@ -7,7 +7,7 @@
  */
 
 #include "NetworkListener.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include "FilterTypes.h"
 #include "ClientConnection.h"
 #include <memory>

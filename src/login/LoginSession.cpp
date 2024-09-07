@@ -9,7 +9,7 @@
 #include "LoginSession.h"
 #include "LoginHandlerBuilder.h"
 #include "FilterTypes.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/threading/ThreadPool.h>
 #include <boost/asio/post.hpp>

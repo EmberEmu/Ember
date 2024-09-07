@@ -11,7 +11,7 @@
 #include "TypeUtils.h"
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/gsl_util>
 #include <format>

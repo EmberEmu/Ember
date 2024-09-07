@@ -8,7 +8,7 @@
 
 #include "HelloService.h"
 #include "HelloClient.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <spark/v2/Server.h>

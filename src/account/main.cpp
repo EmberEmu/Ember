@@ -11,7 +11,7 @@
 #include "Service.h"
 #include "Sessions.h"
 #include <spark/Spark.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>

@@ -7,7 +7,7 @@
  */
 
 #include "CharacterService.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <spark/Helpers.h>
 #include <boost/uuid/uuid.hpp>
 #include <utility>

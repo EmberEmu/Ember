@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(shared)
-add_subdirectory(logging)
+add_subdirectory(logger)
 add_subdirectory(srp6)
 add_subdirectory(conpool)
 add_subdirectory(spark)

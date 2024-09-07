@@ -8,7 +8,7 @@
 
 #include <spark/v2/Tracking.h>
 #include <spark/v2/Common.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/FilterTypes.h>
 #include <algorithm>
 #include <memory>

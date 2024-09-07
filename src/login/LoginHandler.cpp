@@ -15,7 +15,7 @@
 #include "RealmList.h"
 #include "Survey.h"
 #include "grunt/Packets.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/util/EnumHelper.h>

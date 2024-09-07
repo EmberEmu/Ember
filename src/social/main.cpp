@@ -9,7 +9,7 @@
 
 #include "FilterTypes.h"
 #include "MonitorCallbacks.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>

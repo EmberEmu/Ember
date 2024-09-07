@@ -8,7 +8,7 @@
 
 #include "Serialisation.h"
 #include <spark/buffers/pmr/BufferAdaptor.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
 

@@ -20,8 +20,8 @@ set(LIBRARY_SRC
 
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} spark logger shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark logging shared ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} spark logger shared ${Boost_LIBRARIES})
 set_target_properties(world libworld PROPERTIES FOLDER "Services")

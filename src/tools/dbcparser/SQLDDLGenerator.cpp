@@ -8,7 +8,7 @@
 
 #include "SQLDDLGenerator.h"
 #include "TypeUtils.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <fstream>
 #include <vector>
 #include <sstream>

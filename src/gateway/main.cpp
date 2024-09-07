@@ -19,7 +19,7 @@
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <dbcreader/DBCReader.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <spark/Spark.h>
 #include <shared/Banner.h>
 #include <shared/util/EnumHelper.h>

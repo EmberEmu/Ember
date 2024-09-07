@@ -9,7 +9,7 @@
 #include "Validator.h"
 #include "Defines.h"
 #include "TypeUtils.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <iostream>
 #include <limits>
 #include <string_view>

@@ -10,7 +10,7 @@
 #include <spark/buffers/pmr/BufferAdaptor.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <gsl/gsl_util>
 #include <boost/endian.hpp>
 #include <sstream>

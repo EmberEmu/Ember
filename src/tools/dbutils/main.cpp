@@ -13,7 +13,7 @@
 #elif DB_POSTGRESQL
  	#include "postgresql/PostgreSQLQueryExecutor.h"
 #endif
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <shared/Version.h>

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <boost/program_options.hpp>
 
 namespace ember::util {

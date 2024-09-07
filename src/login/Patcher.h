@@ -14,7 +14,7 @@
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/objects/PatchMeta.h>
 #include <shared/util/FNVHash.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <span>
 #include <string>
 #include <string_view>

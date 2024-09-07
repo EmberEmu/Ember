@@ -9,7 +9,7 @@
 #pragma once
 
 #include "PacketSink.h"
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 
 namespace ember {
 

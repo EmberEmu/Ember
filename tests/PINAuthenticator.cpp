@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 #include <login/PINAuthenticator.h>
-#include <logger/Logging.h>
+#include <logger/Logger.h>
 #include <shared/util/Clock.h>
 #include <array>
 #include <chrono>
