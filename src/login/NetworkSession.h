@@ -48,6 +48,7 @@ private:
 	Buffer* outbound_back_;
 	std::array<Buffer, 2> outbound_buffers_{};
 	bool write_in_progress_;
+	bool is_active_;
 
 	log::Logger* logger_;
 	bool stopped_;
@@ -62,13 +63,11 @@ private:
 			inbound_buffer_.push_back(tail);
 		}
 
-		start_timer();
+		set_is_active(true);
 
 		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()), 
 			create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
-				stop_timer();
-
 				if(stopped_ || ec == boost::asio::error::operation_aborted) {
 					return;
 				}
@@ -90,9 +89,9 @@ private:
 
 	void write(WriteCallback cb) {
 		auto self(this->shared_from_this());
-		start_timer();
-
 		const spark::io::BufferSequence sequence(*outbound_front_);
+
+		set_is_active(true);
 
 		socket_.async_send(sequence, create_alloc_handler(allocator_,
 			[this, self, cb = std::move(cb)](boost::system::error_code ec, std::size_t size) mutable {
@@ -120,12 +119,38 @@ private:
 		}));
 	}
 
+	/*
+	 * Timeout works by starting a timer that elapses every n seconds
+	 * and checks whether any activity has occured on the socket since
+	 * the last run. If not, the connection is considered inactive and
+	 * will be closed. Any activity marks the socket as active, with
+	 * the timer setting it back to inactive each time it elapses.
+	 * 
+	 * The previous method restarted the timer on any activity but restarting
+	 * the timer on every packet is expensive. The only drawback
+	 * is that the timeout won't be as precise but the upperbound will
+	 * be roughly n*2, except in the case where the socket has never sent
+	 * any data at all (still n). Acceptable!
+	 * 
+	 * Better yet would be a single timer per thread but this is complicated
+	 * by the way the threading model and session lifetime management has
+	 * been designed for the login service.
+	 */
 	void start_timer() {
 		auto self(this->shared_from_this());
+		set_is_active(false);
 
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
 		timer_.async_wait([this, self](const boost::system::error_code& ec) {
-			timeout(ec);
+			if(ec == boost::asio::error::operation_aborted) {
+				return;
+			}
+
+			if(is_active_) {
+				start_timer();
+			} else {
+				timeout(ec);
+			}
 		});
 	}
 
@@ -144,6 +169,10 @@ private:
 		close_session();
 	}
 
+	void set_is_active(const bool state) {
+		is_active_ = state;
+	}
+
 public:
 	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
 	               : sessions_(sessions),
@@ -152,11 +181,13 @@ public:
 	                 outbound_front_(&outbound_buffers_.front()),
 	                 outbound_back_(&outbound_buffers_.back()),
 	                 write_in_progress_(false),
+	                 is_active_(false),
 	                 logger_(logger),
-	                 stopped_(false) { }
+	                 stopped_(false) {}
 
 	void start() {
 		read();
+		start_timer();
 	}
 
 	std::string remote_address() const {
