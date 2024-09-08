@@ -52,6 +52,9 @@ struct is_contiguous {};
 struct is_non_contiguous {};
 struct supported {};
 struct unsupported {};
+struct except_tag{};
+struct allow_throw : except_tag{};
+struct no_throw : except_tag{};
 
 // Returns true if there's any overlap between source and destination ranges
 static inline bool region_overlap(const auto* src, std::size_t src_len, const auto* dst, std::size_t dst_len) {
