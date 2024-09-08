@@ -62,16 +62,16 @@ private:
 			inbound_buffer_.push_back(tail);
 		}
 
-		set_timer();
+		start_timer();
 
 		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()), 
 			create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
-				if(stopped_) {
+				stop_timer();
+
+				if(stopped_ || ec == boost::asio::error::operation_aborted) {
 					return;
 				}
-
-				timer_.cancel();
 
 				if(!ec) {
 					inbound_buffer_.advance_write(size);
@@ -81,7 +81,7 @@ private:
 					} else {
 						close_session();
 					}
-				} else if(ec != boost::asio::error::operation_aborted) {
+				} else {
 					close_session();
 				}
 			}
@@ -90,7 +90,7 @@ private:
 
 	void write(WriteCallback cb) {
 		auto self(this->shared_from_this());
-		set_timer();
+		start_timer();
 
 		const spark::io::BufferSequence sequence(*outbound_front_);
 
@@ -120,13 +120,17 @@ private:
 		}));
 	}
 
-	void set_timer() {
+	void start_timer() {
 		auto self(this->shared_from_this());
 
 		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
 		timer_.async_wait([this, self](const boost::system::error_code& ec) {
 			timeout(ec);
 		});
+	}
+
+	void stop_timer() {
+		timer_.cancel();
 	}
 
 	void timeout(const boost::system::error_code& ec) {
@@ -191,11 +195,11 @@ public:
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Closing connection to " << remote_address() << LOG_ASYNC;
 
-			stopped_ = true;
+			stop_timer();
 			boost::system::error_code ec; // we don't care about any errors
+			stopped_ = true;
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 			socket_.close(ec);
-			timer_.cancel();
 		});
 	}
 
