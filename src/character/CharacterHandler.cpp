@@ -130,7 +130,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	// PvP faction check
 	auto faction_group = dbc_.chr_races[character.race]->faction->faction_group_id;
 
-	auto it = std::find_if_not(characters.begin(), characters.end(), [&](auto& c) {
+	auto it = std::ranges::find_if_not(characters, [&](auto& c) {
 		return faction_group == dbc_.chr_races[c.race]->faction->faction_group_id;
 	});
 
@@ -149,8 +149,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
 	const dbc::ChrClasses* class_ = dbc_.chr_classes[character.class_];
 
-	auto base_info = std::find_if(dbc_.char_start_base.begin(),
-	                              dbc_.char_start_base.end(), [&](auto& record) {
+	auto base_info = std::ranges::find_if(dbc_.char_start_base, [&](auto& record) {
 		return record.second.race_id == character.race
 			&& record.second.class__id == character.class_;
 	});
@@ -173,8 +172,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	character.orientation = zone->orientation;
 
 	// populate starting equipment
-	const auto& items = std::find_if(dbc_.char_start_outfit.begin(),
-	                                 dbc_.char_start_outfit.end(), [&](auto& record) {
+	const auto& items = std::ranges::find_if(dbc_.char_start_outfit, [&](auto& record) {
 		return record.second.race_id == character.race
 			&& record.second.class__id == character.class_;
 	});
@@ -187,8 +185,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	}
 
 	// populate starting spells
-	const auto& spells = std::find_if(dbc_.char_start_spells.begin(),
-	                                  dbc_.char_start_spells.end(), [&](auto& record) {
+	const auto& spells = std::ranges::find_if(dbc_.char_start_spells, [&](auto& record) {
 		return record.second.race_id == character.race && record.second.class__id == character.class_;
 	});
 
@@ -200,8 +197,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	}
 
 	// populate starting skills
-	const auto& skills = std::find_if(dbc_.char_start_skills.begin(),
-	                                  dbc_.char_start_skills.end(), [&](auto& record) {
+	const auto& skills = std::ranges::find_if(dbc_.char_start_skills, [&](auto& record) {
 		return record.second.race_id == character.race
 			&& record.second.class__id == character.class_;
 	});
@@ -373,7 +369,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// validate the race/class combination
-	auto found = std::find_if(dbc_.char_base_info.begin(), dbc_.char_base_info.end(), [&](auto val) {
+	auto found = std::ranges::find_if(dbc_.char_base_info, [&](auto val) {
 		return (character.class_ == val.second.class__id && character.race == val.second.race_id);
 	});
 

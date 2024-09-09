@@ -435,7 +435,7 @@ ErrorCode Client::announce_pcp() {
 	}
 
 	const auto& bytes = v6.to_bytes();
-	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
+	std::ranges::copy(bytes, header.client_ip.begin());
 
 	try {
 		serialise(header, stream);
@@ -468,7 +468,7 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 	}
 
 	const auto& bytes = v6.to_bytes();
-	std::copy(bytes.begin(), bytes.end(), header.client_ip.begin());
+	std::ranges::copy(bytes, header.client_ip.begin());
 
 	pcp::Protocol protocol{};
 
@@ -494,14 +494,14 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 		.suggested_external_ip = request.external_ip
 	};
 
-	const auto it = std::find_if(request.nonce.begin(), request.nonce.end(),
+	const auto it = std::ranges::find_if(request.nonce,
 		[](const std::uint8_t val) {
 			return val != 0;
 		});
 
 	if(it == request.nonce.end()) {
 		std::random_device engine;
-		std::generate(map.nonce.begin(), map.nonce.end(), std::ref(engine));
+		std::ranges::generate(map.nonce, std::ref(engine));
 	}
 
 	try {

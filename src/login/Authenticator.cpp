@@ -59,7 +59,7 @@ bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
 	hasher->update(salt_.data(), salt_.size());
 	hasher->update(sess_key_.t.data(), sess_key_.t.size());
 	hasher->final(res.data());
-	return std::equal(res.begin(), res.end(), proof.begin(), proof.end());
+	return std::ranges::equal(res, proof);
 }
 
 } // ember

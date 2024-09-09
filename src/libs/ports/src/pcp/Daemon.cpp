@@ -156,14 +156,14 @@ void Daemon::check_epoch(std::uint32_t epoch) {
 void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handler) {
 	// If there's no ID set, we'll set our own and make sure we keep hold of it
 	// for refreshes (spec requires it to match OG request to refresh)
-	const auto it = std::find_if(request.nonce.begin(), request.nonce.end(),
+	const auto it = std::ranges::find_if(request.nonce,
 		[](const std::uint8_t val) {
 			return val != 0;
 		});
 
 	if(it == request.nonce.end()) {
 		std::random_device engine;
-		std::generate(request.nonce.begin(), request.nonce.end(), std::ref(engine));
+		std::ranges::generate(request.nonce, std::ref(engine));
 	}
 
 	RequestHandler wrapped =

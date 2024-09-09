@@ -32,8 +32,7 @@ struct name {                          \
 inline bool operator==(const name& lhs, const name& rhs) { \
 	return (lhs.family == rhs.family                       \
 		&& lhs.ipv4 == rhs.ipv4 && lhs.port == rhs.port    \
-		&& std::equal(lhs.ipv6.begin(), lhs.ipv6.end(),    \
-		              rhs.ipv6.begin(), rhs.ipv6.end()));  \
+		&& std::ranges::equal(lhs.ipv6, rhs.ipv6));  \
 }
 
 #define STRUCT_IPV4(name)       \

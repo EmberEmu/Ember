@@ -96,7 +96,7 @@ void PINAuthenticator::remap_pin() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	for(auto& pin_byte : pin_bytes_) {
-		const auto index = std::find(remapped_grid.begin(), remapped_grid.end(), pin_byte);
+		const auto index = std::ranges::find(remapped_grid, pin_byte);
 		pin_byte = std::distance(remapped_grid.begin(), index);
 	}
 }
@@ -143,7 +143,7 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto& hash = calculate_hash(server_salt, client_salt, pin);
-	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
+	return std::ranges::equal(hash, client_hash);
 }
 
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,

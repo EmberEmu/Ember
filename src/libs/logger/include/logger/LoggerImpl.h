@@ -81,7 +81,7 @@ public:
 		const std::string conv { std::to_string(data) };
 		const auto size = buffer_.second.size();
 		buffer_.second.resize(size + conv.size());
-		std::copy(conv.begin(), conv.end(), buffer_.second.data() + size);
+		std::ranges::copy(conv, buffer_.second.data() + size);
 	}
 
 	impl& operator <<(impl& (*m)(impl&)) {
@@ -148,7 +148,7 @@ public:
 	impl& operator <<(std::string_view data) {
 		const auto size = buffer_.second.size();
 		buffer_.second.resize(size + data.size());
-		std::copy(data.begin(), data.end(), buffer_.second.data() + size);
+		std::ranges::copy(data, buffer_.second.data() + size);
 		return *this;
 	}
 

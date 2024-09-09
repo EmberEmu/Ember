@@ -63,7 +63,7 @@ TEST(BufferAdaptorPMR, ReadAll) {
 	std::vector<std::uint8_t> buffer(expected.begin(), expected.end());
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values{};
-	adaptor.read(&values, values.size());
+	adaptor.read(values.data(), values.size());
 	ASSERT_TRUE(std::ranges::equal(expected, values));
 }
 
@@ -94,7 +94,7 @@ TEST(BufferAdaptorPMR, Write) {
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(adaptor.size(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
-	ASSERT_TRUE(std::equal(values.begin(), values.end(), buffer.begin()));
+	ASSERT_TRUE(std::ranges::equal(values, buffer));
 }
 
 TEST(BufferAdaptorPMR, WriteAppend) {
@@ -105,7 +105,7 @@ TEST(BufferAdaptorPMR, WriteAppend) {
 	ASSERT_EQ(buffer.size(), 6);
 	ASSERT_EQ(adaptor.size(), buffer.size());
 	std::array<std::uint8_t, 6> expected { 1, 2, 3, 4, 5, 6 };
-	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), buffer.begin()));
+	ASSERT_TRUE(std::ranges::equal(expected, buffer));
 }
 
 TEST(BufferAdaptorPMR, CanWriteSeek) {
@@ -123,7 +123,7 @@ TEST(BufferAdaptorPMR, WriteSeekBack) {
 	ASSERT_EQ(buffer.size(), 4);
 	ASSERT_EQ(adaptor.size(), buffer.size());
 	std::array<std::uint8_t, 4> expected { 1, 4, 5, 6 };
-	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), buffer.begin()));
+	ASSERT_TRUE(std::ranges::equal(expected, buffer));
 }
 
 TEST(BufferAdaptorPMR, WriteSeekStart) {
@@ -134,7 +134,7 @@ TEST(BufferAdaptorPMR, WriteSeekStart) {
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_EQ(adaptor.size(), buffer.size());
-	ASSERT_TRUE(std::equal(buffer.begin(), buffer.end(), values.begin()));
+	ASSERT_TRUE(std::ranges::equal(buffer, values));
 }
 
 TEST(BufferAdaptorPMR, ReadPtr) {

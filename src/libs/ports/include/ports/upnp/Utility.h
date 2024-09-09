@@ -19,7 +19,7 @@ namespace ember::ports::upnp {
 struct CaseInsensitive {
 	struct Comparator {
 		bool operator() (std::string_view lhs, std::string_view rhs) const {
-			return std::equal(lhs.begin(), lhs.end(), rhs.begin(),
+			return std::ranges::equal(lhs, rhs,
 				[](char lhs, char rhs) {
 					return std::tolower(lhs) == std::tolower(rhs);
 				}

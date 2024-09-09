@@ -20,7 +20,7 @@
 #include <algorithm>
 
 #define VALIDATE_JUMP_ENTRIES(x) \
-	static_assert(std::none_of(x.begin(), x.end(), [](auto p) \
+	static_assert(std::ranges::none_of(x, [](auto p) \
 		{ return p == nullptr;}), "Missing jump table entry");
 
 namespace ember { 

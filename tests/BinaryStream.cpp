@@ -222,7 +222,7 @@ TEST(BinaryStream, Fill) {
 	stream.fill<2>(128);
 	ASSERT_EQ(buffer.size(), 32);
 	ASSERT_EQ(stream.total_write(), 32);
-	auto it = std::find_if(buffer.begin(), buffer.end(),  [](auto i) { return i != 128; });
+	auto it = std::ranges::find_if(buffer,  [](auto i) { return i != 128; });
 	ASSERT_EQ(it, buffer.end());
 }
 

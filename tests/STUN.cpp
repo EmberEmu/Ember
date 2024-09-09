@@ -69,7 +69,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
 	const auto res = parser.msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
-	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
+	ASSERT_TRUE(std::ranges::equal(msgi->hmac_sha1, res));
 }
 
 TEST(STUNVectors, RFC5769_IPv6Response) {
@@ -121,7 +121,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
 	const auto res = parser.msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
-	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
+	ASSERT_TRUE(std::ranges::equal(msgi->hmac_sha1, res));
 }
 
 TEST(STUNVectors, RFC5769_LTARequest) {
@@ -169,7 +169,7 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
 	const auto res = parser.msg_integrity(username->value, realm->value, "TheMatrIX");
-	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
+	ASSERT_TRUE(std::ranges::equal(msgi->hmac_sha1, res));
 }
 
 TEST(STUNVectors, RFC5769_Request) {
@@ -196,8 +196,7 @@ TEST(STUNVectors, RFC5769_Request) {
 	const auto username = stun::retrieve_attribute<stun::attributes::Username>(attrs);
 	ASSERT_TRUE(username);
 	const std::string expected_username = "evtj:h6vY";
-	ASSERT_TRUE(std::equal(expected_username.begin(), expected_username.end(),
-		username->value.begin(), username->value.end()));
+	ASSERT_TRUE(std::ranges::equal(expected_username, username->value));
 
 	// SOFTWARE
 	const auto software = stun::retrieve_attribute<stun::attributes::Software>(attrs);
@@ -226,7 +225,7 @@ TEST(STUNVectors, RFC5769_Request) {
 	ASSERT_EQ(msgi->hmac_sha1, hmac_sha1);
 
 	const auto res = parser.msg_integrity("VOkJxbRl1RmTxUk/WvJxBt");
-	ASSERT_TRUE(std::equal(msgi->hmac_sha1.begin(), msgi->hmac_sha1.end(), res.begin(), res.end()));
+	ASSERT_TRUE(std::ranges::equal(msgi->hmac_sha1, res));
 
 	// FINGERPRINT
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attrs);
@@ -257,7 +256,7 @@ TEST(STUNVectors, Builder_MessageIntegrity) {
 	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
 	ASSERT_TRUE(attr);
 	const auto calc = parser.msg_integrity("Banana");
-	ASSERT_TRUE(std::equal(attr->hmac_sha1.begin(), attr->hmac_sha1.end(), calc.begin(), calc.end()));
+	ASSERT_TRUE(std::ranges::equal(attr->hmac_sha1, calc));
 }
 
 TEST(STUNVectors, Builder_MessageIntegrityFull) {
@@ -271,7 +270,7 @@ TEST(STUNVectors, Builder_MessageIntegrityFull) {
 	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
 	ASSERT_TRUE(attr);
 	const auto calc = parser.msg_integrity(username, "lightshope.org", "bAhzJk!/kM");
-	ASSERT_TRUE(std::equal(attr->hmac_sha1.begin(), attr->hmac_sha1.end(), calc.begin(), calc.end()));
+	ASSERT_TRUE(std::ranges::equal(attr->hmac_sha1, calc));
 }
 
 TEST(STUNVectors, Builder_MessageIntegrityCRC32) {
@@ -290,7 +289,7 @@ TEST(STUNVectors, Builder_MessageIntegrityCRC32) {
 	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
 	ASSERT_TRUE(attr);
 	const auto calc = parser.msg_integrity("Banana");
-	ASSERT_TRUE(std::equal(attr->hmac_sha1.begin(), attr->hmac_sha1.end(), calc.begin(), calc.end()));
+	ASSERT_TRUE(std::ranges::equal(attr->hmac_sha1, calc));
 }
 
 TEST(STUNVectors, Builder_Software) {
