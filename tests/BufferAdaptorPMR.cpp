@@ -64,7 +64,7 @@ TEST(BufferAdaptorPMR, ReadAll) {
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values{};
 	adaptor.read(&values, values.size());
-	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), values.begin()));
+	ASSERT_TRUE(std::ranges::equal(expected, values));
 }
 
 TEST(BufferAdaptorPMR, SingleSkipRead) {
