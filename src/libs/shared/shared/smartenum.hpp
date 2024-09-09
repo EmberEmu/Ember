@@ -27,123 +27,124 @@ SOFTWARE.
 #include <logger/Logger.h>
 #include <algorithm>
 #include <ostream>
+#include <expected>
 #include <source_location>
 #include <stdexcept>
 #include <string_view>
 #include <unordered_map>
 
-namespace smart_enum
-{
+namespace smart_enum {
 
 int char_to_int(char c, int base, bool& err);
-unsigned long long sv_to_ull(std::string_view string, bool& err, int base = 0);
-std::string_view trimWhitespace(std::string_view str);
-std::string_view extractEntry(std::string_view valuesString);
-void print_and_bail(std::source_location location);
+std::expected<unsigned long long, bool> svtoull(std::string_view string, int base = 0);
+std::string_view trim_whitespace(std::string_view str);
+std::string_view extract_entry(std::string_view values);
 unsigned long long decimal_convert(std::string_view rhs, bool& conv_err);
+[[noreturn]] void print_and_bail(std::source_location location);
 
 static std::string_view unknown_enum_str { "UNKNOWN_ENUM_VALUE" };
 
 template<typename SizeType>
-std::unordered_map<SizeType, std::string_view>
-makeEnumNameMap(std::source_location location, std::string_view enumValuesString)
-{
-    std::unordered_map<SizeType, std::string_view> nameMap;
-    SizeType currentEnumValue = 0;
+std::unordered_map<SizeType, std::string_view> make_enum_map(std::source_location location,
+                                                             std::string_view enum_values_string) {
+    std::unordered_map<SizeType, std::string_view> name_map;
+    SizeType current_enum_value = 0;
 
-    while(!enumValuesString.empty())
-    {
-        std::string_view currentEnumEntry = extractEntry(enumValuesString);
-		size_t nextCommaPos = enumValuesString.find(',');
+    while(!enum_values_string.empty()) {
+        std::string_view current_enum_entry = extract_entry(enum_values_string);
+		std::size_t next_comma_pos = enum_values_string.find(',');
 
-		if(nextCommaPos != std::string_view::npos) {
-			enumValuesString = enumValuesString.substr(nextCommaPos + 1);
+		if(next_comma_pos != std::string_view::npos) {
+			enum_values_string = enum_values_string.substr(next_comma_pos + 1);
 		} else {
-			enumValuesString = std::string_view{};
+			enum_values_string = std::string_view{};
 		}
 
-        size_t equalSignPos = currentEnumEntry.find('=');
-		bool conv_err = false;
+        std::size_t equal_sign_pos = current_enum_entry.find('=');
 
-        if(equalSignPos != std::string_view::npos)
-        {
-			std::string_view rightHandSide = trimWhitespace(currentEnumEntry.substr(equalSignPos + 1));
+        if(equal_sign_pos != std::string_view::npos) {
+			std::string_view rhs = trim_whitespace(current_enum_entry.substr(equal_sign_pos + 1));
                 
             // Handle using util::mcc_char - this makes me sad too
-            if (auto first = rightHandSide.find_first_of('"'), last = rightHandSide.find_last_of('"');
+            if(auto first = rhs.find_first_of('"'), last = rhs.find_last_of('"');
                 first != std::string_view::npos && first != last) {
-                rightHandSide = rightHandSide.substr(first, (last - first) + 1);
+				rhs = rhs.substr(first, (last - first) + 1);
             }
 
-			if((rightHandSide[0] == '\'' && rightHandSide[rightHandSide.size() - 1] == '\'')
-            || (rightHandSide[0] == '"' && rightHandSide[rightHandSide.size() - 1] == '"')) {
-				currentEnumValue = static_cast<SizeType>(decimal_convert(rightHandSide, conv_err));
+			const auto opening = rhs[0];
+			const auto closing = rhs[rhs.size() - 1];
+			bool parse_error = false;
+
+			if((opening == '\'' && closing == '\'') || (opening == '"' && closing == '"')) {
+				current_enum_value = static_cast<SizeType>(decimal_convert(rhs, parse_error));
 			} else {
-				currentEnumValue = static_cast<SizeType>(sv_to_ull(rightHandSide, conv_err));
+				const auto result = svtoull(rhs);
+
+				if(result) {
+					current_enum_value = static_cast<SizeType>(*result);
+				} else {
+					parse_error = true;
+				}
 			}
 
-			if(conv_err) {
+			if(parse_error) {
 				print_and_bail(location);
 			}
 
-            currentEnumEntry = currentEnumEntry.substr(0, equalSignPos-1);
+			current_enum_entry = current_enum_entry.substr(0, equal_sign_pos - 1);
         }
     
-        currentEnumEntry = trimWhitespace(currentEnumEntry);
-        nameMap[currentEnumValue] = currentEnumEntry;
-        ++currentEnumValue;
+		current_enum_entry = trim_whitespace(current_enum_entry);
+		name_map[current_enum_value] = current_enum_entry;
+        ++current_enum_value;
     }
 
-    return nameMap;
+    return name_map;
 }
 
-}
+} // smart_enum
 
 #define smart_enum(Type, Underlying, ...) enum Type : Underlying { __VA_ARGS__}; \
-    static std::unordered_map<Underlying, std::string_view> Type##_enum_names\
-		= smart_enum::makeEnumNameMap<Underlying>(std::source_location::current(), #__VA_ARGS__);\
+    static std::unordered_map<Underlying, std::string_view> Type##_enum_names \
+		= smart_enum::make_enum_map<Underlying>(std::source_location::current(), #__VA_ARGS__); \
     \
-    inline std::string_view Type##_to_string(Type value) try \
-    { \
-        return Type##_enum_names.at((Underlying)value);\
+    inline std::string_view Type##_to_string(Type value) try { \
+        return Type##_enum_names.at((Underlying)value); \
     } catch(std::out_of_range&) { \
 		return smart_enum::unknown_enum_str; \
 	} \
     \
 
 #define smart_enum_class(Type, Underlying, ...) enum class Type : Underlying { __VA_ARGS__}; \
-    static std::unordered_map<Underlying, std::string_view> Type##_enum_names\
-		= smart_enum::makeEnumNameMap<Underlying>(std::source_location::current(), #__VA_ARGS__);\
+    static std::unordered_map<Underlying, std::string_view> Type##_enum_names \
+		= smart_enum::make_enum_map<Underlying>(std::source_location::current(), #__VA_ARGS__); \
     \
-    inline std::string_view to_string(Type value) try \
-    { \
+    inline std::string_view to_string(Type value) try { \
         return Type##_enum_names.at((Underlying)value);\
     } catch(std::out_of_range&) { \
 		return smart_enum::unknown_enum_str; \
 	} \
     \
-    inline std::ostream& operator<<(std::ostream& outStream, Type value)\
-    {\
-        outStream << to_string(value);\
-        return outStream;\
+    inline std::ostream& operator<<(std::ostream& outStream, Type value) { \
+        outStream << to_string(value); \
+        return outStream; \
     } \
-    inline log::Logger& operator <<(log::Logger& outStream, Type value) \
-    {\
-        outStream << to_string(value);\
-        return outStream;\
+    inline log::Logger& operator <<(log::Logger& outStream, Type value) { \
+        outStream << to_string(value); \
+        return outStream; \
     }
 
 #define CREATE_FORMATTER(name) \
-	template<>\
-	struct std::formatter<name, char> {\
-		template<typename ParseContext>\
-		constexpr ParseContext::iterator parse(ParseContext& ctx) {\
-			return ctx.begin();\
-		}\
+	template<> \
+	struct std::formatter<name, char> { \
+		template<typename ParseContext> \
+		constexpr ParseContext::iterator parse(ParseContext& ctx) { \
+			return ctx.begin(); \
+		} \
 	\
-		template<typename FmtContext>\
-		FmtContext::iterator format(name value, FmtContext& ctx) const {\
-			const auto& str = to_string(value);\
-			return std::ranges::copy(str.begin(), str.end(), ctx.out()).out;\
-		}\
+		template<typename FmtContext> \
+		FmtContext::iterator format(name value, FmtContext& ctx) const { \
+			const auto& str = to_string(value); \
+			return std::ranges::copy(str.begin(), str.end(), ctx.out()).out; \
+		} \
 	};
