@@ -14,7 +14,10 @@
 
 #include <format>
 #include <iostream>
+#include <sstream>
+#include <system_error>
 #include <utility>
+#include <cstdio>
 
 namespace std {
 
@@ -26,6 +29,24 @@ void print(std::format_string<Args...> fmt, Args&&... args) {
 template<typename... Args>
 void println(std::format_string<Args...> fmt, Args&&... args) {
 	std::cout << std::format(fmt, std::forward<Args>(args)...) << '\n';
+}
+
+template<typename... Args>
+void println(FILE* file, std::format_string<Args...> fmt, Args&&... args) {
+	const auto fmtstr = std::format(fmt, std::forward<Args>(args)...);
+	std::stringstream out;
+	out.str(std::move(fmtstr));
+	out << "\n";
+	const auto view = out.view();
+
+	const auto count = std::fwrite(view.data(), view.size(), 1, file);
+
+	if(count != view.size()) {
+		throw std::system_error(
+			std::make_error_code(std::errc::bad_file_descriptor),
+			"println failed"
+		);
+	}
 }
 
 } // std

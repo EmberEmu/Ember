@@ -24,6 +24,7 @@ SOFTWARE.
 */
 
 #include "smartenum.hpp"
+#include "util/polyfill/print"
 #include <format>
 #include <iomanip>
 #include <iostream>
@@ -31,8 +32,12 @@ SOFTWARE.
 
 namespace smart_enum {
 
-int char_to_int(char c, int base, bool& err)
-{
+/*
+ * Converts a single character to an integer value
+ * If an error occurs, the return value is undefined 
+ * and err is set.
+ */
+int char_to_int(char c, int base, bool& err) {
 	err = false;
 
 	if(c >= '0' && c <= '9') {
@@ -61,7 +66,7 @@ int char_to_int(char c, int base, bool& err)
 	return 0;
 }
 
-unsigned long long sv_to_ull(std::string_view string, bool& err, int base) {
+auto svtoull(std::string_view string, int base) -> std::expected<unsigned long long, bool> {
 	if(base == 0) {
 		if(string.starts_with("0x") || string.starts_with("0X")) {
 			base = 16;
@@ -84,63 +89,68 @@ unsigned long long sv_to_ull(std::string_view string, bool& err, int base) {
 	auto value = 0ull;
 
 	for(const auto& byte : string) {
+		bool err = false;
 		auto digit = char_to_int(byte, base, err);
 		value = (value * base) + (digit);
+
+		if(err) {
+			return std::unexpected(true);
+		}
 	}
 
 	return value;
 }
 
-std::string_view trimWhitespace(std::string_view str)
-{
+std::string_view trim_whitespace(std::string_view str) {
     // trim trailing whitespace
-	const size_t endPos = str.find_last_not_of(" \t");
-    if(std::string_view::npos != endPos)
-    {
-        str = str.substr(0, endPos + 1);
+	const auto end_pos = str.find_last_not_of(" \t");
+
+    if(end_pos != std::string_view::npos) {
+        str = str.substr(0, end_pos + 1);
     }
     
     // trim leading spaces
-    const size_t startPos = str.find_first_not_of(" \t");
-    if(std::string_view::npos != startPos)
-    {
-        str = str.substr(startPos);
+    const auto start_pos = str.find_first_not_of(" \t");
+
+    if(start_pos != std::string_view::npos) {
+        str = str.substr(start_pos);
     }
     
     return str;
 }
     
-std::string_view extractEntry(std::string_view valuesString)
-{
-	const size_t nextCommaPos = valuesString.find(',');
+std::string_view extract_entry(std::string_view values) {
+	const size_t next_comma_pos = values.find(',');
     
-    if(nextCommaPos != std::string_view::npos)
-    {
-        std::string_view segment = valuesString.substr(0, nextCommaPos);
-        return trimWhitespace(segment);
+    if(next_comma_pos != std::string_view::npos) {
+        std::string_view segment = values.substr(0, next_comma_pos);
+        return trim_whitespace(segment);
+    } else {
+		return trim_whitespace(values);
     }
-    else
-    {
-		return trimWhitespace(valuesString);
-    };
 };
 
-void print_and_bail(std::source_location location) {
-	auto msg = std::format("enum parse failed! {}:#L{}", location.file_name(),location.line());
-	std::cerr << msg;
+[[noreturn]] void print_and_bail(std::source_location location) {
+	std::println(stderr, "enum parse failed! {}:#L{}", location.file_name(), location.line());
 	std::exit(EXIT_FAILURE);
 }
 
-unsigned long long decimal_convert(std::string_view rhs, bool& conv_err) {
-	std::stringstream decimalConvert;
-	decimalConvert << "0x" << std::hex << std::setw(2) << std::setfill('0');
+unsigned long long decimal_convert(std::string_view rhs, bool& error) {
+	std::stringstream ss;
+	ss << "0x" << std::hex << std::setw(2) << std::setfill('0');
 
 	for(std::size_t i = 1; i < rhs.size() - 1; ++i) {
-		decimalConvert << static_cast<unsigned>(rhs[i]);
+		ss << static_cast<unsigned>(rhs[i]);
 	}
 
-	const auto str = decimalConvert.view();
-	return sv_to_ull(str, conv_err);
+	const auto str = ss.view();
+	auto result = svtoull(str); 
+
+	if(!result) {
+		error = true;
+	}
+
+	return *result;
 }
     
-} // smartenum
+} // smart_enum
