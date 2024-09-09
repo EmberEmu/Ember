@@ -32,7 +32,7 @@ enum class Type {
 	STRUCT, ENUM, FIELD
 };
 
-using Definitions= std::vector<std::unique_ptr<Base>>;
+using Definitions = std::vector<std::unique_ptr<Base>>;
 
 struct Key {
 	std::string type;

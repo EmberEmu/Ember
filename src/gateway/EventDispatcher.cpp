@@ -74,11 +74,11 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 
 		auto service = pool_.get_service(i);
 
-		service->post([clients_ptr, range, event = std::move(event)] {
-			auto it = range.first;
+		service->post([clients_ptr, range, event] {
+			auto [beg, end] = range;
 
-			while(it != range.second) {
-				const auto handler = handlers_.find(*it++);
+			while(beg != end) {
+				const auto handler = handlers_.find(*beg++);
 
 				if(handler == handlers_.end()) {
 					LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
