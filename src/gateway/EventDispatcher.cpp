@@ -51,20 +51,16 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 	for(std::size_t i = 0, j = pool_.size(); i < j; ++i) {
 		const auto uuid = ClientUUID::generate(i);
 
-		const auto found = std::binary_search(clients_ptr->begin(), clients_ptr->end(), uuid,
-			[](auto& lhs, auto& rhs) {
-				return lhs.service() < rhs.service();
-			}
+		const auto found = std::ranges::binary_search(
+			*clients_ptr, uuid.service(), std::ranges::less{}, &ClientUUID::service
 		);
 
 		if(!found) {
 			continue;
 		}
 
-		const auto range = std::equal_range(clients_ptr->begin(), clients_ptr->end(), uuid,
-			[](auto& lhs, auto& rhs) {
-				return lhs.service() > rhs.service();
-			}
+		const auto range = std::ranges::equal_range(
+			*clients_ptr, uuid.service(), std::ranges::greater{}, &ClientUUID::service
 		);
 
 		auto service = pool_.get_service(i);

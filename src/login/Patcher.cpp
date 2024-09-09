@@ -132,7 +132,7 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 }
 
 auto Patcher::check_version(const GameVersion& client_version) const -> PatchLevel {
-	if(std::find(versions_.begin(), versions_.end(), client_version) != versions_.end()) {
+	if(std::ranges::find(versions_, client_version) != versions_.end()) {
 		return PatchLevel::OK;
 	}
 
@@ -176,9 +176,9 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 		}
 
 		// check whether the hash is all zeroes and calculate it if so
-		const auto calc_md5 = std::all_of(patch.file_meta.md5.begin(), patch.file_meta.md5.end(),
-			[](const auto& byte) { return byte == 0 ; }
-		);
+		const auto calc_md5 = std::ranges::all_of(patch.file_meta.md5, [](const auto& byte) {
+			return byte == 0;
+		});
 
 		if(calc_md5) {
 			if(logger) {
@@ -187,7 +187,7 @@ std::vector<PatchMeta> Patcher::load_patches(const std::string& path,
 
 			const auto md5 = util::generate_md5(path + patch.file_meta.name);
 			assert(md5.size() == patch.file_meta.md5.size());
-			std::copy(md5.begin(), md5.end(), patch.file_meta.md5.data());
+			std::ranges::copy(md5, patch.file_meta.md5.data());
 			dirty = true;
 		}
 

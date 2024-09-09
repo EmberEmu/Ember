@@ -337,7 +337,8 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	 */
 	if(required) {
 		if(const auto rfc = attr_req_lut.find(attr_type); rfc != attr_req_lut.end()) {
-			const auto res = std::find(rfc->second.begin(), rfc->second.end(), mode_);
+			const auto res = std::ranges::find(rfc->second, mode_);
+
 			if(res == rfc->second.end()) { // definitely not our fault... probably
 				logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
 				return false;

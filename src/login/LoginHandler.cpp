@@ -389,7 +389,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 		hash = client_integrity::finalise(checksum, salt);
 	}
 
-	return std::equal(hash.begin(), hash.end(), client_hash.begin(), client_hash.end());
+	return std::ranges::equal(hash, client_hash);
 }
 
 void LoginHandler::handle_login_proof(const grunt::Packet& packet) {

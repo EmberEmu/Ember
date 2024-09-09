@@ -48,7 +48,7 @@ public:
 
 	static ClientUUID from_bytes(const std::array<std::uint8_t, 16>& data) {
 		ClientUUID uuid;
-		std::copy(data.begin(), data.end(), uuid.data_);
+		std::ranges::copy(data, uuid.data_);
 		return uuid;
 	}
 

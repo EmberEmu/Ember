@@ -165,7 +165,7 @@ int launch(const po::variables_map& args) try {
 
 		const auto& dbs = args["update"].as<std::vector<std::string>>();
 
-		success = !std::any_of(dbs.begin(), dbs.end(), [&](const auto& db) {
+		success = !std::ranges::any_of(dbs, [&](const auto& db) {
 			return !db_update(args, db);
 		});
 	}
@@ -236,7 +236,7 @@ void validate_db_args(const po::variables_map& po_args, const std::string& mode)
 	// ensure that all arguments required for managing this DB are present
 	for(const auto& db_name : dbs) {
 		const auto& args = db_args.at(db_name);
-		const auto missing_arg = std::find_if(args.begin(), args.end(), [&](const auto& arg) {
+		const auto missing_arg = std::ranges::find_if(args, [&](const auto& arg) {
 			return po_args[arg.data()].empty();
 		});
 

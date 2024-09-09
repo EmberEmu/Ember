@@ -147,7 +147,7 @@ void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 	// check to see if we a matching service registered
 	std::lock_guard<std::mutex> guard(lock_);
 	
-	auto it = std::find(services_.begin(), services_.end(), message->service());
+	auto it = std::ranges::find(services_, message->service());
 
 	if(it == services_.end()) {
 		return; // no matching services

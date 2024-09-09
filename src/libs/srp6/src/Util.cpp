@@ -40,7 +40,7 @@ SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 
 KeyType interleaved_hash(SmallVec key) {
 	//implemented as described in RFC2945
-	auto begin = std::find_if(key.begin(), key.end(), [](std::uint8_t b) { return b; });
+	auto begin = std::ranges::find_if(key, [](std::uint8_t b) { return b; });
 	begin = std::distance(begin, key.end()) % 2 == 0? begin : begin + 1;
 
 	auto bound = std::stable_partition(begin, key.end(),

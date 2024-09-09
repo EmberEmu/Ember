@@ -82,7 +82,7 @@ void Validator::check_foreign_keys(const types::Field& field) {
 void Validator::check_multiple_definitions(const types::Base* def) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	if(std::find(names_.begin(), names_.end(), def->name) == names_.end()) {
+	if(std::ranges::find(names_, def->name) == names_.end()) {
 		names_.emplace_back(def->name);
 
 		if(!def->alias.empty()) {
@@ -98,7 +98,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 		auto def_s = static_cast<const types::Struct*>(def);
 
 		for(auto& symbol : def_s->children) {
-			if(std::find(sym_names.begin(), sym_names.end(), symbol->name) == sym_names.end()) {
+			if(std::ranges::find(sym_names, symbol->name) == sym_names.end()) {
 				sym_names.emplace_back(symbol->name);
 			} else {
 				throw exception("Multiple definitions of " + symbol->name);
@@ -108,7 +108,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 		auto def_s = static_cast<const types::Enum*>(def);
 
 		for(auto& symbol : def_s->options) {
-			if(std::find(sym_names.begin(), sym_names.end(), symbol.first) == sym_names.end()) {
+			if(std::ranges::find(sym_names, symbol.first) == sym_names.end()) {
 				sym_names.emplace_back(symbol.first);
 			} else {
 				throw exception("Multiple definitions of " + symbol.first);
@@ -168,7 +168,7 @@ void Validator::check_dup_key_types(const types::Struct* def) {
 void Validator::add_user_type(TreeNode<std::string>* node, const std::string& type) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	if(std::find_if(node->children.begin(), node->children.end(),
+	if(std::ranges::find_if(node->children,
 		[&type](const std::unique_ptr<TreeNode<std::string>>& i) {
 			return i->t == type;
 		}) != node->children.end()) {
@@ -284,7 +284,7 @@ const TreeNode<std::string>* Validator::locate_type_node(const std::string& name
                                                          const TreeNode<std::string>* node) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	auto it = std::find_if(node->children.begin(), node->children.end(),
+	auto it = std::ranges::find_if(node->children,
 		[&name](const std::unique_ptr<TreeNode<std::string>>& i) {
 			return i->t == name;
 		});
@@ -390,7 +390,7 @@ void Validator::validate_enum_options(const types::Enum* def) {
 			throw exception("Multiple definitions of " + option.first + " in " + def->name);
 		}
 
-		if(std::find_if(options.begin(), options.end(),
+		if(std::ranges::find_if(options,
 			[option](std::pair<std::string_view, std::string_view> i) {
 				return i.second == option.second;
 		}) != options.end()) {

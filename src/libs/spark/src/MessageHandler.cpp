@@ -74,7 +74,7 @@ bool MessageHandler::establish_link(NetworkSession& net, const Message& message)
 		return false;
 	}
 
-	std::copy(uuid->begin(), uuid->end(), peer_.uuid.data);
+	std::ranges::copy(*uuid, peer_.uuid.data);
 	peer_.description = banner->description()->str();
 	peer_.net = std::weak_ptr<NetworkSession>(net.shared_from_this());
 
@@ -189,12 +189,18 @@ bool MessageHandler::handle_message(NetworkSession& net, const messaging::core::
 
 	if(header->uuid()) {
 		boost::uuids::uuid uuid;
-		std::copy(header->uuid()->begin(), header->uuid()->end(), uuid.data);
+		std::ranges::copy(*header->uuid(), uuid.data);
 		token.uuid = std::move(uuid);
 		token.tracked = true;
 	}
 
-	const Message message { size, header->opcode(), header->service(), data, std::move(token) };
+	const Message message {
+		.size = size,
+		.opcode = header->opcode(),
+		.service = header->service(),
+		.data = data,
+		.token = std::move(token)
+	};
 
 	switch(state_) {
 		case State::HANDSHAKING:

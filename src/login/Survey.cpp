@@ -37,7 +37,7 @@ void Survey::add_data(const grunt::Platform platform, const grunt::System os, co
 
 	const auto md5 = util::generate_md5(buffer);
 	static_assert(md5.size() == fmeta.md5.size());
-	std::copy(md5.begin(), md5.end(), fmeta.md5.data());
+	std::ranges::copy(md5, fmeta.md5.data());
 
 	const Key key {
 		.platform = platform,

@@ -53,7 +53,7 @@ TEST(StaticBuffer, ReadAll) {
 	std::array<char, 3> expected{ '1', '2', '3' };
 	std::array<char, 3> values{};
 	buffer.read(values.data(), values.size());
-	ASSERT_TRUE(std::equal(values.begin(), values.end(), expected.begin()));
+	ASSERT_TRUE(std::ranges::equal(values, expected));
 }
 
 TEST(StaticBuffer, SingleSkipRead) {
@@ -80,7 +80,7 @@ TEST(StaticBuffer, Write) {
 	buffer.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
-	ASSERT_TRUE(std::equal(values.begin(), values.end(), buffer.begin()));
+	ASSERT_TRUE(std::ranges::equal(values, buffer));
 }
 
 TEST(StaticBuffer, CanWriteSeek) {
@@ -94,7 +94,7 @@ TEST(StaticBuffer, WriteSeekBack) {
 	buffer.write_seek(spark::io::BufferSeek::SK_BACKWARD, 2);
 	buffer.write(values.data(), values.size());
 	std::array<char, 3> expected { '1', '5', '6' };
-	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), buffer.begin()));
+	ASSERT_TRUE(std::ranges::equal(expected, buffer));
 }
 
 TEST(StaticBuffer, WriteSeekStart) {
@@ -103,7 +103,7 @@ TEST(StaticBuffer, WriteSeekStart) {
 	buffer.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0);
 	buffer.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
-	ASSERT_TRUE(std::equal(buffer.begin(), buffer.end(), values.begin()));
+	ASSERT_TRUE(std::ranges::equal(buffer, values));
 }
 
 TEST(StaticBuffer, ReadPtr) {
