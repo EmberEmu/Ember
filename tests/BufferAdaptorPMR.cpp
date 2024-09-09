@@ -56,11 +56,15 @@ TEST(BufferAdaptorPMR, ReadOne) {
 }
 
 TEST(BufferAdaptorPMR, ReadAll) {
-	std::vector<std::uint8_t> buffer { 1, 2, 3 };
+	// unless buffer reuse optimisation is disabled, the original buffer
+	// will be emptied when fully read, so we need a copy for testing
+	// the output
+	std::array<std::uint8_t, 3> expected { 1, 2, 3 };
+	std::vector<std::uint8_t> buffer(expected.begin(), expected.end());
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values{};
 	adaptor.read(&values, values.size());
-	ASSERT_TRUE(std::equal(buffer.begin(), buffer.begin(), values.begin()));
+	ASSERT_TRUE(std::equal(expected.begin(), expected.end(), values.begin()));
 }
 
 TEST(BufferAdaptorPMR, SingleSkipRead) {
