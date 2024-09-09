@@ -20,8 +20,9 @@
 namespace ember {
 
 class EventDispatcher final {
-	using HandlerMap = boost::unordered_flat_map<ClientUUID, ClientHandler*,
-	                                             boost::hash<ClientUUID>>;
+	using HandlerMap = boost::unordered_flat_map<
+		ClientUUID, ClientHandler*, boost::hash<ClientUUID>
+	>;
 
 	const ServicePool& pool_;
 	static inline thread_local HandlerMap handlers_;
@@ -38,8 +39,7 @@ public:
 			return;
 		}
 
-		service->post([client, work] {
-			// client disconnected, nothing to do here
+		service->post([client, work = std::move(work)] {
 			if(!handlers_.contains(client)) {
 				LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
 				return;
@@ -58,16 +58,13 @@ public:
 			return;
 		}
 
-		service->post([=, event = std::move(event)] {
-			const auto handler = handlers_.find(client);
-
-			// client disconnected, nothing to do here
-			if(handler == handlers_.end()) {
+		service->post([&, event = std::move(event)] {
+			if(auto it = handlers_.find(client); it != handlers_.end()) {
+				auto& [_, handler] = *it;
+				handler->handle_event(&event);
+			} else {
 				LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
-				return;
 			}
-
-			handler->second->handle_event(&event);
 		});
 	}
 

@@ -23,14 +23,11 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
 	}
 
 	boost::asio::post(*service, [client, event = std::move(event)] {
-		const auto handler = handlers_.find(client);
-
-		if(handler == handlers_.end()) {
+		if(auto handler = handlers_.find(client); handler != handlers_.end()) {
+			handler->second->handle_event(event.get());
+		} else {
 			LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
-			return;
 		}
-
-		handler->second->handle_event(event.get());
 	});
 }
 
@@ -76,14 +73,11 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 			auto [beg, end] = range;
 
 			while(beg != end) {
-				const auto handler = handlers_.find(*beg++);
-
-				if(handler == handlers_.end()) {
+				if(auto handler = handlers_.find(*beg++); handler != handlers_.end()) {
+					handler->second->handle_event(event.get());
+				} else {
 					LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
-					continue;
 				}
-
-				handler->second->handle_event(event.get());
 			}
 		});
 	}
