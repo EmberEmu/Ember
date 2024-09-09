@@ -51,9 +51,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 	const auto clients_ptr = std::make_shared<decltype(clients)>();
 	clients_ptr->swap(clients);
 
-	const auto size = pool_.size();
-
-	for(std::remove_const<decltype(size)>::type i = 0; i < size; ++i) {
+	for(std::size_t i = 0, j = pool_.size(); i < j; ++i) {
 		const auto uuid = ClientUUID::generate(i);
 
 		const auto found = std::binary_search(clients_ptr->begin(), clients_ptr->end(), uuid,
