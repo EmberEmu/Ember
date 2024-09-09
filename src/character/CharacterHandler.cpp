@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -100,7 +100,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 
 	character.name = util::utf8::name_format(character.name, std::locale());
 
-	const std::optional<Character>& res = dao_.character(character.name, realm_id);
+	const auto res = dao_.character(character.name, realm_id);
 
 	if(res) {
 		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE);
@@ -108,21 +108,24 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	}
 
 	// query database for further validation steps
-	const auto& characters = dao_.characters(account_id);
+	const auto total_chars = dao_.count(account_id);
 
-	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
+	if(total_chars >= MAX_CHARACTER_SLOTS_ACCOUNT) {
 		callback(protocol::Result::CHAR_CREATE_ACCOUNT_LIMIT);
 		return;
 	}
 
-	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](const auto& c) {
-		return c.realm_id == realm_id;
-	});
+	// avoid an additional query if there's no need for it
+	if(total_chars >= MAX_CHARACTER_SLOTS_SERVER) {
+		const auto count = dao_.count(account_id, realm_id);
 
-	if(static_cast<std::size_t>(realm_chars) >= MAX_CHARACTER_SLOTS_SERVER) {
-		callback(protocol::Result::CHAR_CREATE_SERVER_LIMIT);
-		return;
+		if(count >= MAX_CHARACTER_SLOTS_SERVER) {
+			callback(protocol::Result::CHAR_CREATE_SERVER_LIMIT);
+			return;
+		}
 	}
+
+	const auto& characters = dao_.characters(account_id, realm_id);
 
 	// PvP faction check
 	auto faction_group = dbc_.chr_races[character.race]->faction->faction_group_id;
@@ -135,9 +138,8 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		auto current = pvp_faction(*dbc_.chr_races[characters.front().race]->faction);
 		auto opposing = pvp_faction(*dbc_.chr_races[character.race]->faction);
 
-		LOG_DEBUG(logger_) << "Cannot create " << opposing->internal_name
-			<< " characters with existing " << current->internal_name
-			<< " characters on a PvP realm" << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "Cannot create {} characters with existing {} characters on a PvP realm",
+		                opposing->internal_name, current->internal_name);
 
 		callback(protocol::Result::CHAR_CREATE_PVP_TEAMS_VIOLATION);
 		return;
@@ -147,13 +149,15 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const dbc::ChrRaces* race = dbc_.chr_races[character.race];
 	const dbc::ChrClasses* class_ = dbc_.chr_classes[character.class_];
 
-	auto base_info = std::find_if(dbc_.char_start_base.begin(), dbc_.char_start_base.end(), [&](auto& record) {
-		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	auto base_info = std::find_if(dbc_.char_start_base.begin(),
+	                              dbc_.char_start_base.end(), [&](auto& record) {
+		return record.second.race_id == character.race
+			&& record.second.class__id == character.class_;
 	});
 
 	if(base_info == dbc_.char_start_base.end()) {
-		LOG_ERROR(logger_) << "Unable to find base data for " << race->name.en_gb << " "
-			<< class_->name.en_gb << LOG_ASYNC;
+		LOG_ERROR_ASYNC(logger_, "Unable to find base data for {} {}",
+		                race->name.en_gb, class_->name.en_gb);
 		callback(protocol::Result::CHAR_CREATE_ERROR);
 		return;
 	}
@@ -169,39 +173,44 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	character.orientation = zone->orientation;
 
 	// populate starting equipment
-	const auto& items = std::find_if(dbc_.char_start_outfit.begin(), dbc_.char_start_outfit.end(), [&](auto& record) {
-		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	const auto& items = std::find_if(dbc_.char_start_outfit.begin(),
+	                                 dbc_.char_start_outfit.end(), [&](auto& record) {
+		return record.second.race_id == character.race
+			&& record.second.class__id == character.class_;
 	});
 
 	if(items != dbc_.char_start_outfit.end()) {
 		populate_items(character, items->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG(logger_) << "No starting item data found for race " <<
-			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "No starting item data found for {}, {}",
+		                race->name.en_gb, class_->name.en_gb);
 	}
 
 	// populate starting spells
-	const auto& spells = std::find_if(dbc_.char_start_spells.begin(), dbc_.char_start_spells.end(), [&](auto& record ) {
+	const auto& spells = std::find_if(dbc_.char_start_spells.begin(),
+	                                  dbc_.char_start_spells.end(), [&](auto& record) {
 		return record.second.race_id == character.race && record.second.class__id == character.class_;
 	});
 
 	if(spells != dbc_.char_start_spells.end()) {
 		populate_spells(character, spells->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG(logger_) << "No starting spell data found for race " <<
-			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "No starting spell data found for {}, {}",
+		                race->name.en_gb, class_->name.en_gb);
 	}
 
 	// populate starting skills
-	const auto& skills = std::find_if(dbc_.char_start_skills.begin(), dbc_.char_start_skills.end(), [&](auto& record ) {
-		return record.second.race_id == character.race && record.second.class__id == character.class_;
+	const auto& skills = std::find_if(dbc_.char_start_skills.begin(),
+	                                  dbc_.char_start_skills.end(), [&](auto& record) {
+		return record.second.race_id == character.race
+			&& record.second.class__id == character.class_;
 	});
 
 	if(skills != dbc_.char_start_skills.end()) {
 		populate_skills(character, skills->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG(logger_) << "No starting skill data found for race " <<
-			race->name.en_gb << ", class " << class_->name.en_gb << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "No starting skill data found for {} {}",
+		                race->name.en_gb, class_->name.en_gb);
 	}
 
 	const char* subzone = nullptr;
@@ -210,9 +219,12 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
 	}
 
-	LOG_DEBUG(logger_) << "Creating " << race->name.en_gb << " " << class_->name.en_gb << " at "
-		<< zone->area->area_name.en_gb << (subzone ? ", " : " ") << (subzone ? subzone : " ")
-		<< LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Creating {} at {} {} {}", 
+	                race->name.en_gb,
+	                class_->name.en_gb,
+	                zone->area->area_name.en_gb,
+	                subzone? ", " : " ",
+	                subzone? subzone : " ");
 
 	dao_.create(character);
 	callback(protocol::Result::CHAR_CREATE_SUCCESS);
@@ -247,7 +259,7 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 		return;
 	}
 
-	LOG_DEBUG(logger_) << "Deleting " << character->name << ", #" << character->id << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Deleting {}, #{}", character->name, character->id);
 
 	dao_.delete_character(character_id, true);
 	callback(protocol::Result::CHAR_DELETE_SUCCESS);
@@ -304,8 +316,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 	
-	LOG_DEBUG(logger_) << "Renaming " << character->name << " => " << name << ", #"
-		<< character->id << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Renaming {} => {}, #{}", character->name, name, character->id);
 
 	character->internal_name = character->name;
 	character->flags ^= Character::Flags::RENAME;
@@ -348,7 +359,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		character->internal_name = character->name;
 	}
 
-	LOG_DEBUG(logger_) << "Restoring " << character->name << ", #" << character->id << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Restoring {}, #{}", character->name, character->id);
 
 	dao_.update(*character);
 	dao_.restore(id);
@@ -477,7 +488,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
 			return protocol::Result::CHAR_NAME_FAILURE;
 		}
 	}
@@ -488,7 +499,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_PROFANE;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
 			return protocol::Result::CHAR_NAME_FAILURE;
 		}
 	}
@@ -499,7 +510,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR(logger_) << "PCRE error encountered: " + std::to_string(ret) << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
 			return protocol::Result::CHAR_NAME_FAILURE;
 		}
 	}
