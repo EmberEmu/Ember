@@ -71,12 +71,14 @@ void handle_authentication(ClientContext& ctx) {
 
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(!ctx.handler->packet_deserialise(auth_ctx.packet, *ctx.stream)) {
+	if(!ctx.handler->deserialise(auth_ctx.packet, *ctx.stream)) {
 		return;
 	}
 
-	CLIENT_DEBUG_GLOB(ctx) << "Received session proof for "
-		<< auth_ctx.packet->username << LOG_ASYNC;
+	CLIENT_DEBUG_GLOB(ctx)
+		<< "Received session proof for "
+		<< auth_ctx.packet->username
+		<< LOG_ASYNC;
 	
 	if(auth_ctx.packet->build == 0) {
 		// todo - check game build & server ID
@@ -306,7 +308,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			handle_authentication(ctx);
 			break;
 		default:
-			ctx.handler->packet_skip(*ctx.stream);
+			ctx.handler->skip(*ctx.stream);
 	}
 }
 

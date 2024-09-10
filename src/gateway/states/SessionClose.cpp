@@ -16,7 +16,7 @@ void enter(ClientContext& ctx) {
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
-	ctx.handler->packet_skip(*ctx.stream);
+	ctx.handler->skip(*ctx.stream);
 }
 
 void handle_event(ClientContext& ctx, const Event* event) {

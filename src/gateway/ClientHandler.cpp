@@ -74,7 +74,7 @@ void ClientHandler::state_update(ClientState new_state) {
 	enter_states[context_.state](context_);
 }
 
-void ClientHandler::packet_skip(BinaryStream& stream) {
+void ClientHandler::skip(BinaryStream& stream) {
 	CLIENT_DEBUG_FILTER(logger_, LF_NETWORK, context_)
 		<< ClientState_to_string(context_.state) << " skipping "
 		<< protocol::to_string(opcode_)
@@ -88,7 +88,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 	protocol::CMSG_PING packet;
 
-	if(!packet_deserialise(packet, stream)) {
+	if(!deserialise(packet, stream)) {
 		return;
 	}
 
@@ -121,10 +121,8 @@ void ClientHandler::stop_timer() {
 const std::string& ClientHandler::client_identify() const {	
 	if(context_.client_id) {
 		if(client_id_ext_.empty()) {
-			client_id_ext_ = std::format("{} ({}, {}): ",
-										  client_id_, 
-			                              context_.client_id->username,
-			                              context_.client_id->id
+			client_id_ext_ = std::format(
+				"{} ({}, {}): ", client_id_,  context_.client_id->username, context_.client_id->id
 			);
 		}
 

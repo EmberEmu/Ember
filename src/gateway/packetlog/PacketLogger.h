@@ -9,7 +9,7 @@
 #pragma once
 
 #include "PacketSink.h"
-#include <protocol/Packets.h>
+#include <protocol/Concepts.h>
 #include <spark/buffers/pmr/BufferAdaptor.h>
 #include <spark/buffers/BufferAdaptor.h>
 #include <spark/buffers/BinaryStream.h>

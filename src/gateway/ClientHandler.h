@@ -21,6 +21,7 @@
 #include <concepts>
 #include <chrono>
 #include <memory>
+#include <optional>
 
 namespace ember {
 
@@ -47,8 +48,11 @@ public:
 	void close();
 	const std::string& client_identify() const;
 
-	bool packet_deserialise(auto& packet, BinaryStream& stream);
-	void packet_skip(BinaryStream& stream);
+	template<protocol::is_packet T>
+	std::optional<T> deserialise(BinaryStream& stream);
+
+	bool deserialise(protocol::is_packet auto& packet, BinaryStream& stream);
+	void skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);
 	void handle_message(BinaryStream& stream);

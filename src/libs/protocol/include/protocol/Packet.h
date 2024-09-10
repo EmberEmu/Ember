@@ -9,6 +9,7 @@
 #pragma once
 
 #include <protocol/PacketHeaders.h>
+#include <protocol/Concepts.h>
 #include <concepts>
 #include <cstddef>
 
@@ -19,19 +20,18 @@ enum class State {
 	INITIAL, DONE, ERRORED
 };
 
-template <typename HeaderT, typename HeaderT::OpcodeType op_, typename Payload>
+template <typename HeaderType, typename HeaderType::OpcodeType op_, typename Payload>
 struct Packet final {
 	struct packet_tag_t{};
 	using packet_tag = packet_tag_t;
 
-	using OpcodeType = typename HeaderT::OpcodeType;
-	using SizeType = typename HeaderT::SizeType;
-	using PayloadType = Payload;
+	using OpcodeType = typename HeaderType::OpcodeType;
+	using SizeType = typename HeaderType::SizeType;
 
 	static constexpr OpcodeType opcode = op_;
-	static constexpr std::size_t HEADER_WIRE_SIZE = HeaderT::WIRE_SIZE;
+	static constexpr std::size_t HEADER_WIRE_SIZE = HeaderType::WIRE_SIZE;
 
-	PayloadType payload;
+	Payload payload;
 
 	State read_from_stream(auto& stream) {
 		return payload.read_from_stream(stream);
@@ -61,8 +61,5 @@ using ServerPacket = Packet<ServerHeader, opcode, Payload>;
 
 template<ClientOpcode opcode, typename Payload>
 using ClientPacket = Packet<ClientHeader, opcode, Payload>;
-
-template<typename T>
-concept is_packet = requires { typename T::packet_tag; };
 
 } // protocol, ember
