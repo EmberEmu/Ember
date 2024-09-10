@@ -16,7 +16,8 @@
 namespace ember::ports::upnp {
 
 SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
-	: ctx_(ctx), strand_(ctx),
+	: ctx_(ctx),
+	  strand_(ctx),
 	  transport_(ctx, bind, MULTICAST_IPV4_ADDR, DEST_PORT) {
 	ba::co_spawn(ctx_, read_broadcasts(), ba::detached);
 }

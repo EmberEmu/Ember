@@ -16,7 +16,7 @@ namespace ember::protocol {
  * SmartMessage allows for fast message access by selectively
  * skipping the usual deserialisation step for POD types
  * where all fields are correctly aligned for the target
- * platform. This relies on the types being generated at
+ * architecture. This relies on the types being generated at
  * the same time as the core.
  * 
  * The provided buffer is presumed to be suitably aligned
