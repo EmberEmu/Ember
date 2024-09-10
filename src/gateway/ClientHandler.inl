@@ -13,6 +13,7 @@
 #include <logger/Logger.h>
 #include <optional>
 
+[[nodiscard]]
 bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& stream) {
 	if(packet->read_from_stream(stream) == protocol::State::DONE) {
 		
