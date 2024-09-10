@@ -448,7 +448,7 @@ void generate_disk_struct(const types::Struct& def, std::stringstream& definitio
 void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	std::string tab("\t", indent);
-	definitions << tab << "typedef " << def.underlying_type << " " << def.name << ";" << "\n";
+	definitions << tab << "using " << def.name << " = " << def.underlying_type << ";" << "\n";
 }
 
 void generate_disk_defs(const types::Definitions& defs, const std::string& output, const std::string& path) {
