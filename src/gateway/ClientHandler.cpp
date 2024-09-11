@@ -118,15 +118,19 @@ void ClientHandler::stop_timer() {
  * and IP address in log outputs, based on whether authentication
  * has completed
  */
-const std::string& ClientHandler::client_identify() const {	
+std::string_view ClientHandler::client_identify() const {	
 	if(context_.client_id) {
 		if(client_id_ext_.empty()) {
 			client_id_ext_ = std::format(
-				"{} ({}, {}): ", client_id_,  context_.client_id->username, context_.client_id->id
+				"{} ({}, {})", client_id_, context_.client_id->username, context_.client_id->id
 			);
 		}
 
 		return client_id_ext_;
+	}
+
+	if(client_id_.empty()) [[unlikely]] {
+		client_id_ = connection_.remote_address();
 	}
 
 	return client_id_;
@@ -135,7 +139,6 @@ const std::string& ClientHandler::client_identify() const {
 ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
                              boost::asio::any_io_executor executor)
                              : context_{}, connection_(connection),
-                               client_id_(connection_.remote_address() + ": "),
                                opcode_{},
                                logger_(logger),
                                uuid_(uuid),

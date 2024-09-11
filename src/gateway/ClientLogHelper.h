@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Ember
+ * Copyright (c) 2020 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,40 +11,40 @@
 #include <logger/Logger.h>
 
 #define CLIENT_TRACE(logger, ctx) \
-	LOG_TRACE(logger) << ctx.handler->client_identify()
+	LOG_TRACE(logger) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_DEBUG(logger, ctx) \
-	LOG_DEBUG(logger) << ctx.handler->client_identify()
+	LOG_DEBUG(logger) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_INFO(logger, ctx) \
-	LOG_INFO(logger) << ctx.handler->client_identify()
+	LOG_INFO(logger) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_WARN(logger, ctx) \
-    LOG_WARN(logger) << ctx.handler->client_identify()
+    LOG_WARN(logger) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_ERROR(logger, ctx) \
-	LOG_ERROR(logger) << ctx.handler->client_identify()
+	LOG_ERROR(logger) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_FATAL(logger, ctx) \
-	LOG_FATAL(logger) << ctx.handler->client_identify()
+	LOG_FATAL(logger) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_TRACE_FILTER(logger, type, ctx) \
-    LOG_TRACE_FILTER(logger, type) << ctx.handler->client_identify()
+    LOG_TRACE_FILTER(logger, type) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_DEBUG_FILTER(logger, type, ctx) \
-	LOG_DEBUG_FILTER(logger, type) << ctx.handler->client_identify()
+	LOG_DEBUG_FILTER(logger, type) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_INFO_FILTER(logger, type, ctx) \
-	LOG_INFO_FILTER(logger, type) << ctx.handler->client_identify()
+	LOG_INFO_FILTER(logger, type) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_WARN_FILTER(logger, type, ctx) \
-	LOG_WARN_FILTER(logger, type) << ctx.handler->client_identify()
+	LOG_WARN_FILTER(logger, type) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_ERROR_FILTER(logger, type, ctx) \
-	LOG_ERROR_FILTER(logger, type) << ctx.handler->client_identify()
+	LOG_ERROR_FILTER(logger, type) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_FATAL_FILTER(logger, type, ctx) \
-	LOG_FATAL_FILTER(logger, type) << ctx.handler->client_identify()
+	LOG_FATAL_FILTER(logger, type) << ctx.handler->client_identify() << ": "
 
 #define CLIENT_TRACE_GLOB(ctx) \
 	CLIENT_TRACE(ember::log::global_logger(), ctx)

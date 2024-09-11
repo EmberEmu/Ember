@@ -22,6 +22,7 @@
 #include <chrono>
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace ember {
 
@@ -34,7 +35,8 @@ class ClientHandler final {
 	log::Logger* logger_;
 	boost::asio::steady_timer timer_;
 	protocol::ClientOpcode opcode_;
-	const std::string client_id_;
+
+	mutable std::string client_id_;
 	mutable std::string client_id_ext_;
 
 	void handle_ping(BinaryStream& stream);
@@ -46,7 +48,7 @@ public:
 	void start();
 	void stop();
 	void close();
-	const std::string& client_identify() const;
+	std::string_view client_identify() const;
 
 	template<protocol::is_packet T>
 	std::optional<T> deserialise(BinaryStream& stream);
