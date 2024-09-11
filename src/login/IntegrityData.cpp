@@ -46,16 +46,14 @@ void IntegrityData::add_versions(std::span<const GameVersion> versions, std::str
 	}
 }
 
-std::optional<std::span<const std::byte>>
-IntegrityData::lookup(const GameVersion version, const grunt::Platform platform,
-                      const grunt::System os) const {
-	auto it = data_.find({ version.build, platform, os });
-
-	if(it == data_.end()) {
+auto IntegrityData::lookup(const GameVersion version,
+                           const grunt::Platform platform,
+                           const grunt::System os) const  -> std::optional<std::span<const std::byte>> {
+	if(auto it = data_.find({ version.build, platform, os }); it != data_.end()) {
+		return it->second;
+	} else {
 		return std::nullopt;
 	}
-	
-	return it->second;
 }
 
 void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
@@ -88,7 +86,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 			throw std::runtime_error("Unable to open " + fpath.string());
 		}
 
-		const auto size = std::filesystem::file_size(fpath);
+		const auto size = fs::file_size(fpath);
 		buffer.resize(static_cast<std::size_t>(size) + buffer.size());
 
 		if(!file.read(reinterpret_cast<char*>(buffer.data()) + write_offset, size)) {

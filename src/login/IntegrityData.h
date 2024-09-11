@@ -61,5 +61,4 @@ public:
 	                                                 grunt::System os) const;
 };
 
-
 } // ember
