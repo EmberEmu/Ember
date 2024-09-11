@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,7 +43,7 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 	chain.write(client_login_challenge, packet_size);
 
 	// deserialise the packet
-	auto packet = grunt::client::LoginChallenge();
+	grunt::client::LoginChallenge packet{};
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
@@ -91,7 +91,7 @@ TEST(GruntProtocol, ClientLoginProof) {
 	chain.write(client_login_proof, packet_size);
 
 	// deserialise the packet
-	auto packet = grunt::client::LoginProof();
+	grunt::client::LoginProof packet{};
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
@@ -120,18 +120,18 @@ TEST(GruntProtocol, ClientReconnectProof) {
 	chain.write(client_reconnect_proof, packet_size);
 
 	// deserialise the packet
-	auto packet = grunt::client::ReconnectProof();
+	grunt::client::ReconnectProof packet{};
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
 	std::array<std::uint8_t, 16> r1_expected = { 0x39, 0xb1, 0xd1, 0xe4, 0x49, 0x13, 0x80, 0x9d,
-	                                            0x92, 0x17, 0x56, 0x8e, 0xa5, 0x7b, 0x24, 0x3d };
+	                                             0x92, 0x17, 0x56, 0x8e, 0xa5, 0x7b, 0x24, 0x3d };
 	std::array<std::uint8_t, 20> r2_expected = { 0xc0, 0x4e, 0x35, 0xe6, 0xfe, 0xb2, 0x1a, 0x84,
-	                                            0x98, 0xc4, 0x8e, 0x6c, 0x2d, 0x7f, 0x42, 0x56,
-	                                            0xb6, 0x4c, 0x98, 0x24 };
+	                                             0x98, 0xc4, 0x8e, 0x6c, 0x2d, 0x7f, 0x42, 0x56,
+	                                             0xb6, 0x4c, 0x98, 0x24 };
 	std::array<std::uint8_t, 20> r3_expected = { 0x0d, 0xbe, 0x94, 0xaf, 0x7f, 0x46, 0x94, 0xa2,
-	                                            0x3f, 0xe7, 0xdf, 0xe5, 0x99, 0xbf, 0xe7, 0x88,
-	                                            0x86, 0x02, 0x5f, 0x92 };
+	                                             0x3f, 0xe7, 0xdf, 0xe5, 0x99, 0xbf, 0xe7, 0x88,
+	                                             0x86, 0x02, 0x5f, 0x92 };
 
 	ASSERT_TRUE(chain.empty()) << "Read length incorrect";
 
@@ -164,7 +164,7 @@ TEST(GruntProtocol, ClientRequestRealmList) {
 	chain.write(request_realm_list, packet_size);
 
 	// deserialise the packet
-	auto packet = grunt::client::RequestRealmList();
+	grunt::client::RequestRealmList packet;
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
@@ -192,7 +192,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	// deserialise the packet
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	auto packet = grunt::server::LoginChallenge();
+	grunt::server::LoginChallenge packet{};
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
@@ -232,7 +232,7 @@ TEST(GruntProtocol, ServerLoginProof) {
 	chain.write(server_login_proof, packet_size);
 
 	// deserialise the packet
-	auto packet = grunt::server::LoginProof();
+	grunt::server::LoginProof packet{};
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
@@ -270,32 +270,33 @@ TEST(GruntProtocol, ServerRealmList) {
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(2, packet.realms.size()) << "Invalid realm count";
 
-	// test first realm entry
-	grunt::server::RealmList::RealmListEntry entry = packet.realms[0];
-	auto realm = entry.realm;
-	auto chars = entry.characters;
+	{ // test first realm entry
+		grunt::server::RealmList::RealmListEntry& entry = packet.realms[0];
+		const auto& realm = entry.realm;
+		const auto& chars = entry.characters;
 
-	ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Invalid realm flags";
-	ASSERT_EQ(Realm::Type::PvP, realm.type) << "Invalid realm type";
-	ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
-	ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Invalid realm IP";
-	ASSERT_EQ("Ember"s, realm.name) << "Invalid realm name";
-	ASSERT_EQ(0.0f, realm.population) << "Invalid realm population";
-	ASSERT_EQ(0, chars) << "Invalid character count";
+		ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Invalid realm flags";
+		ASSERT_EQ(Realm::Type::PvP, realm.type) << "Invalid realm type";
+		ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
+		ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Invalid realm IP";
+		ASSERT_EQ("Ember"s, realm.name) << "Invalid realm name";
+		ASSERT_FLOAT_EQ(0.0f, realm.population) << "Invalid realm population";
+		ASSERT_EQ(0, chars) << "Invalid character count";
+	}
 
-	//test second realm entry
-	entry = packet.realms[1];
-	realm = entry.realm;
-	chars = entry.characters;
+	{ // test second realm entry
+		grunt::server::RealmList::RealmListEntry& entry = packet.realms[1];
+		const auto& realm = entry.realm;
+		const auto& chars = entry.characters;
 
-	ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Invalid realm flags";
-	ASSERT_EQ(Realm::Type::PvE, realm.type) << "Invalid realm type";
-	ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
-	ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Invalid realm IP";
-	ASSERT_EQ("Ember Test"s, realm.name) << "Invalid realm name";
-	ASSERT_EQ(1.4f, realm.population) << "Invalid realm population";
-	ASSERT_EQ(0, chars) << "Invalid character count";
-
+		ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Invalid realm flags";
+		ASSERT_EQ(Realm::Type::PvE, realm.type) << "Invalid realm type";
+		ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
+		ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Invalid realm IP";
+		ASSERT_EQ("Ember Test"s, realm.name) << "Invalid realm name";
+		ASSERT_FLOAT_EQ(1.4f, realm.population) << "Invalid realm population";
+		ASSERT_EQ(0, chars) << "Invalid character count";
+	}
 	// check the other fields
 	ASSERT_EQ(0, packet.unknown) << "field: unknown";
 	ASSERT_EQ(5, packet.unknown2) << "field: unknown";
@@ -325,10 +326,12 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
-	std::array<std::uint8_t, 16> salt { 0xdd, 0x26, 0xe7, 0x5f, 0x44, 0x24, 0xcf, 0xdd, 0x51, 0x89,
-	                                   0x41, 0xd2, 0x02, 0x78, 0xd1, 0x84 };
-	std::array<std::uint8_t, 16> expected_bytes { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	                                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	std::array<std::uint8_t, 16> salt {
+		0xdd, 0x26, 0xe7, 0x5f, 0x44, 0x24, 0xcf, 0xdd,
+		0x51, 0x89, 0x41, 0xd2, 0x02, 0x78, 0xd1, 0x84
+	};
+
+	std::array<std::uint8_t, 16> expected_bytes {}; // all zero
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(salt, packet.salt) << "field: salt";
