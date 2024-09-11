@@ -590,7 +590,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) 
 	response.result = grunt::Result::FAIL_VERSION_UPDATE;
 	send(response);
 
-	auto fmeta = meta->file_meta;
+	auto& fmeta = meta->file_meta;
 
 	LOG_DEBUG(logger_) << "Initiating patch transfer, " << fmeta.name << LOG_ASYNC;
 	std::ifstream patch(fmeta.path + fmeta.name, std::ifstream::binary);
