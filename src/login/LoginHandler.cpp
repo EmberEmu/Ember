@@ -113,7 +113,7 @@ bool LoginHandler::update_state(const Action& action) try {
 void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto challenge = dynamic_cast<const grunt::client::LoginChallenge&>(packet);
+	auto& challenge = dynamic_cast<const grunt::client::LoginChallenge&>(packet);
 
 	/* 
 	 * Older clients are likely to be using an older protocol version
@@ -395,7 +395,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
+	auto& proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
 
 	if(!validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
 		send_login_proof(grunt::Result::FAIL_VERSION_INVALID);
@@ -523,7 +523,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto reconn_proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
+	auto& reconn_proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
 
 	if(!validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::FAIL_VERSION_INVALID);
@@ -626,7 +626,7 @@ void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
 void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto survey = dynamic_cast<const grunt::client::SurveyResult&>(packet);
+	auto& survey = dynamic_cast<const grunt::client::SurveyResult&>(packet);
 
 	// allow the client to request the realmlist without waiting on the survey write callback
 	update_state(LoginState::REQUEST_REALMS);
@@ -667,7 +667,7 @@ void LoginHandler::on_survey_write(const SaveSurveyAction& action) {
 void LoginHandler::set_transfer_offset(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto resume = dynamic_cast<const grunt::client::TransferResume&>(packet);
+	auto& resume = dynamic_cast<const grunt::client::TransferResume&>(packet);
 	transfer_state_.offset = resume.offset;
 }
 
