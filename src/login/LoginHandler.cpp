@@ -147,7 +147,7 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 			break;
 	}
 
-	challenge_ = std::move(challenge);
+	challenge_ = challenge;
 }
 
 bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge& challenge) const {
