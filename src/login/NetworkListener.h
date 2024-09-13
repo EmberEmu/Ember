@@ -56,22 +56,27 @@ class NetworkListener final {
 			}
 
 			if(!ec) {
-				const auto ip = socket_.remote_endpoint().address();
+				const auto& ep = socket_.remote_endpoint(ec);
 
 				if(ec) {
 					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 						<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
 					metrics_.increment("aborted_connections");
-				} else if(ban_list_.is_banned(ip)) {
-					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-						<< "Rejected connection " << ip.to_string()
-						<< " from banned IP range" << LOG_ASYNC;
-					metrics_.increment("rejected_connections");
-				} else {
+					return;
+				}
+
+				const auto& ip = ep.address();
+
+				if(!ban_list_.is_banned(ip)) {
 					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 						<< "Accepted connection " << ip.to_string() << LOG_ASYNC;
 					metrics_.increment("accepted_connections");
 					start_session(std::move(socket_));
+				} else {
+					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+						<< "Rejected connection " << ip.to_string()
+						<< " from banned IP range" << LOG_ASYNC;
+					metrics_.increment("rejected_connections");
 				}
 			}
 

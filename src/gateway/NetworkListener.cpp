@@ -30,10 +30,7 @@ void NetworkListener::accept_connection() {
 		if(!ec) {
 			const auto ep = socket_.remote_endpoint(ec);
 
-			if(ec) {
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
-			} else {
+			if(!ec) {
 				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 					<< "Accepted connection " << ep.address().to_string() << LOG_ASYNC;
 
@@ -42,6 +39,9 @@ void NetworkListener::accept_connection() {
 				);
 
 				sessions_.start(std::move(client));
+			} else {
+				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+					<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
 			}
 		}
 
