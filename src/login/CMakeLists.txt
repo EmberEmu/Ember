@@ -60,6 +60,7 @@ set(LIBRARY_HDR
 	LoginState.h
 	Survey.h
     LoginHandlerFwd.h
+    SocketType.h
     )
 
 set(LIBRARY_SRC

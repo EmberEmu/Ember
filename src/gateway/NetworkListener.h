@@ -9,6 +9,7 @@
 #pragma once
 
 #include "SessionManager.h"
+#include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientUUID.h>
 #include <shared/memory/ASIOAllocator.h>
@@ -24,9 +25,6 @@ namespace bai = boost::asio::ip;
 
 class NetworkListener final {
 	using tcp_acceptor = boost::asio::basic_socket_acceptor<
-		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
-
-	using tcp_socket = boost::asio::basic_stream_socket<
 		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
 
 	SessionManager sessions_;

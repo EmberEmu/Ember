@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include "FilterTypes.h"
 #include "NetworkSession.h"
 #include "SessionBuilders.h"
 #include "SessionManager.h"
-#include "FilterTypes.h"
+#include "SocketType.h"
 #include <logger/Logger.h>
 #include <shared/IPBanCache.h>
 #include <shared/memory/ASIOAllocator.h>
@@ -29,9 +30,6 @@ namespace ember {
 class NetworkListener final {
 	using tcp_acceptor = boost::asio::basic_socket_acceptor<
 		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
-
-	using tcp_socket = boost::asio::basic_stream_socket<
-		boost::asio::ip::tcp, boost::asio::strand<boost::asio::io_context::executor_type>>;
 
 	boost::asio::io_context& io_context;
 	tcp_acceptor acceptor_;
@@ -85,7 +83,7 @@ class NetworkListener final {
 		});
 	}
 
-	void start_session(boost::asio::ip::tcp::socket socket) {
+	void start_session(tcp_socket socket) {
 		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
 		auto session = session_builder_.create(sessions_, std::move(socket), logger_);
 		sessions_.start(session);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,8 @@
 #pragma once
 
 #include "LoginSession.h"
+#include "SocketType.h"
 #include <logger/Logger.h>
-#include <boost/asio/ip/tcp.hpp>
 #include <memory>
 #include <utility>
 
@@ -25,8 +25,8 @@ class ThreadPool;
 class NetworkSessionBuilder {
 public:
 	virtual std::shared_ptr<LoginSession> create(SessionManager& sessions,
-	                                               bai::tcp::socket socket,
-	                                               log::Logger* logger) const = 0;
+	                                             tcp_socket socket,
+	                                             log::Logger* logger) const = 0;
 
 	virtual ~NetworkSessionBuilder() = default;
 };
@@ -40,7 +40,7 @@ public:
 	                    : builder_(builder), pool_(pool) { }
 
 	std::shared_ptr<LoginSession> create(SessionManager& sessions,
-	                                     bai::tcp::socket socket,
+	                                     tcp_socket socket,
 	                                     log::Logger* logger) const override {
 		return std::make_shared<LoginSession>(sessions, std::move(socket), logger, pool_, builder_);
 	}

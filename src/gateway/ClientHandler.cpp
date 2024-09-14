@@ -136,9 +136,10 @@ std::string_view ClientHandler::client_identify() const {
 	return client_id_;
 }
 
-ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
-                             boost::asio::any_io_executor executor)
-                             : context_{}, connection_(connection),
+ClientHandler::ClientHandler(ClientConnection& connection, ClientUUID uuid,
+                             executor executor, log::Logger* logger)
+                             : context_{},
+                               connection_(connection),
                                opcode_{},
                                logger_(logger),
                                uuid_(uuid),

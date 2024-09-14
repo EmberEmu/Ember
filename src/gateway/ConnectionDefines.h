@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "SocketType.h"
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
 #include <spark/buffers/StaticBuffer.h>

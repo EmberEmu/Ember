@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include "SessionManager.h"
 #include "FilterTypes.h"
+#include "SessionManager.h"
+#include "SocketType.h"
 #include <logger/Logger.h>
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
@@ -40,7 +41,7 @@ private:
 	ASIOAllocator<thread_safe> allocator_;
 
 	SessionManager& sessions_;
-	boost::asio::ip::tcp::socket socket_;
+	tcp_socket socket_;
 	boost::asio::steady_timer timer_;
 
 	Buffer inbound_buffer_;
@@ -174,7 +175,7 @@ private:
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket, log::Logger* logger)
+	NetworkSession(SessionManager& sessions, tcp_socket socket, log::Logger* logger)
 	               : sessions_(sessions),
 	                 socket_(std::move(socket)),
 	                 timer_(socket_.get_executor()),

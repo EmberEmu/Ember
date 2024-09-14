@@ -33,9 +33,9 @@ class ClientHandler final {
 	ClientConnection& connection_;
 	ClientContext context_;
 	const ClientUUID uuid_;
-	log::Logger* logger_;
 	boost::asio::steady_timer timer_;
 	protocol::ClientOpcode opcode_;
+	log::Logger* logger_;
 
 	mutable std::string client_id_;
 	mutable std::string client_id_ext_;
@@ -43,8 +43,8 @@ class ClientHandler final {
 	void handle_ping(BinaryStream& stream);
 
 public:
-	ClientHandler(ClientConnection& connection, ClientUUID uuid, log::Logger* logger,
-	              boost::asio::any_io_executor executor);
+	ClientHandler(ClientConnection& connection, ClientUUID uuid,
+	              executor executor, log::Logger* logger);
 
 	void start();
 	void stop();

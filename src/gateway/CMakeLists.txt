@@ -36,6 +36,7 @@ set(LIBRARY_HDR
     Routing.h
     ClientLogHelper.h
 	ConnectionDefines.h
+    SocketType.h
     states/ClientStates.h
     states/Authentication.h
     states/CharacterList.h

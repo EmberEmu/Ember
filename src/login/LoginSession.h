@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include "NetworkSession.h"
 #include "LoginHandler.h"
+#include "NetworkSession.h"
+#include "SocketType.h"
 #include "grunt/Packet.h"
 #include "grunt/Handler.h"
 #include <logger/LoggerFwd.h>
@@ -33,8 +34,8 @@ class LoginSession final : public NetworkSession<LoginSession> {
 	void execute_async(std::unique_ptr<Action> action);
 
 public:
-	LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	             log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder);
+	LoginSession(SessionManager& sessions, tcp_socket socket, log::Logger* logger,
+	             ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::io::pmr::Buffer& buffer);
 };

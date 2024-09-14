@@ -14,6 +14,7 @@
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
 #include "packetlog/PacketLogger.h"
+#include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <shared/ClientUUID.h>
@@ -39,7 +40,7 @@ class SessionManager;
 class ClientConnection final {
 	enum class ReadState { HEADER, BODY, DONE } read_state_;
 
-	boost::asio::ip::tcp::socket socket_;
+	tcp_socket socket_;
 	boost::asio::ip::tcp::endpoint remote_ep_;
 
 	StaticBuffer inbound_buffer_{};
@@ -79,8 +80,7 @@ class ClientConnection final {
 	void completion_check(const StaticBuffer& buffer);
 
 public:
-	ClientConnection(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-	                 ClientUUID uuid, log::Logger* logger)
+	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientUUID uuid, log::Logger* logger)
 	                 : sessions_(sessions),
 	                   socket_(std::move(socket)),
 	                   remote_ep_(socket_.remote_endpoint()),
@@ -90,7 +90,7 @@ public:
 	                   read_state_(ReadState::HEADER),
 	                   stopped_(true),
 	                   write_in_progress_(false),
-	                   handler_(*this, uuid, logger, socket_.get_executor()),
+	                   handler_(*this, uuid, socket_.get_executor(), logger),
 	                   compression_level_(0),
 	                   outbound_front_(&outbound_buffers_.front()),
 	                   outbound_back_(&outbound_buffers_.back()), stopping_(false) { }

@@ -20,8 +20,8 @@
 
 namespace ember {
 
-LoginSession::LoginSession(SessionManager& sessions, boost::asio::ip::tcp::socket socket,
-                           log::Logger* logger, ThreadPool& pool, const LoginHandlerBuilder& builder)
+LoginSession::LoginSession(SessionManager& sessions, tcp_socket socket, log::Logger* logger,
+                           ThreadPool& pool, const LoginHandlerBuilder& builder)
                            : NetworkSession(sessions, std::move(socket), logger),
                              handler_(builder.create(remote_address())),
                              logger_(logger),
