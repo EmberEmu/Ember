@@ -136,7 +136,7 @@ public:
 	}
 
 	consteval static bool can_write_seek() requires(can_resize<buf_type>) {
-		return true;
+		return std::is_same<seeking, supported>::value;
 	}
 
 	void write_seek(const BufferSeek direction, const size_type offset) requires(can_resize<buf_type>) {

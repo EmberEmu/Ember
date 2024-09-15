@@ -353,7 +353,7 @@ public:
 	}
 
 	bool can_write_seek() const override {
-		return true;
+		return std::is_same<seeking, supported>::value;
 	}
 
 	void write_seek(const BufferSeek mode, size_type offset) override {

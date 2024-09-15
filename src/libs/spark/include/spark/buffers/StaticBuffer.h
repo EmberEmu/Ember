@@ -126,7 +126,7 @@ public:
 	}
 
 	consteval static bool can_write_seek() {
-		return true;
+		return std::is_same<seeking, supported>::value;
 	}
 
 	void write(const auto& source) {
