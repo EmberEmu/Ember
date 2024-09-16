@@ -63,12 +63,6 @@ void ServicePool::stop() {
 			service->stop();
 		}
 	}
-
-	for(auto& thread : threads_) {
-		if(thread.joinable()) {
-			thread.join();
-		}
-	}
 }
 
 std::size_t ServicePool::size() const {

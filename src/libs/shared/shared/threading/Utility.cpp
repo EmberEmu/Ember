@@ -28,9 +28,9 @@ constexpr auto MAX_NAME_LEN = 16u; // includes null term
 
 namespace ember::thread {
 
-void set_affinity(std::thread& thread, unsigned int core) {	
+void set_affinity(auto thread, unsigned int core) {
 #ifdef _WIN32
-	if(SetThreadAffinityMask(thread.native_handle(), 1u << core) == 0) {
+	if(SetThreadAffinityMask(thread, 1u << core) == 0) {
 		throw std::runtime_error("Unable to set thread affinity, error code " + std::to_string(GetLastError()));
 	}
 #elif defined TARGET_OS_MAC
@@ -39,7 +39,7 @@ void set_affinity(std::thread& thread, unsigned int core) {
 	cpu_set_t mask;
 	CPU_ZERO(&mask);
 	CPU_SET(core, &mask);
-	auto ret = pthread_setaffinity_np(thread.native_handle(), sizeof(mask), &mask);
+	auto ret = pthread_setaffinity_np(thread, sizeof(mask), &mask);
 
 	if(ret) {
 		throw std::runtime_error("Unable to set thread affinity, error code " + std::to_string(ret));
@@ -47,6 +47,14 @@ void set_affinity(std::thread& thread, unsigned int core) {
 #else
 	#pragma message WARN("Setting thread affinity is not implemented for this platform. Implement it, please!");
 #endif
+}
+
+void set_affinity(std::thread& thread, unsigned int core) {
+	set_affinity(thread.native_handle(), core);
+}
+
+void set_affinity(std::jthread& thread, unsigned int core) {
+	set_affinity(thread.native_handle(), core);
 }
 
 void set_name([[maybe_unused]] auto& handle, const char* name) {
