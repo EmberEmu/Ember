@@ -7,6 +7,7 @@
  */
 
 #include "Utility.h"
+#include <shared/CompilerWarn.h>
 
 #ifdef _WIN32
     #include <Windows.h>
@@ -23,9 +24,17 @@
 	#include <string.h>
 #endif
 
+// page locking stuff
+#if defined _WIN32
+	#include <memoryapi.h>
+#elif defined __linux__ || defined __unix__  || defined TARGET_OS_MAC
+	#include <sys/mman.h>
+#endif
+
 namespace ember::util {
 
-std::size_t max_consecutive(std::string_view name, const bool case_insensitive, const std::locale& locale) {
+std::size_t max_consecutive(std::string_view name, const bool case_insensitive,
+                            const std::locale& locale) {
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;
 	char last = 0;
@@ -134,7 +143,7 @@ std::string sig_str(const int signal) {
 #endif
 #if defined _WIN32 || defined TARGET_OS_MAC
 		default:
-			return "<UNKNOWN>";
+			return "<unknown>";
 	}
 #elif defined __linux__ || defined __unix__
 	auto res = sigabbrev_np(signal);
@@ -142,10 +151,30 @@ std::string sig_str(const int signal) {
 	if(res) {
 		return std::format("SIG{}", res);
 	} else {
-		return "<UNKNOWN>";
+		return "<unknown>";
 	}
 #else
-	static_assert(false, "Implement sig_str for this platform, thanks");
+	#pragma message WARN("Implement sig_str for this platform, thanks");
+#endif
+}
+
+bool page_lock(void* address, std::size_t length) {
+#if defined _WIN32
+	return VirtualLock(address, length) != 0;
+#elif defined __linux__ || defined __unix__|| defined TARGET_OS_MAC
+	return mlock(address, length) == 0;
+#else
+	#pragma message WARN("Implement page_lock for this platform, thanks");
+#endif
+}
+
+bool page_unlock(void* address, std::size_t length) {
+#if defined _WIN32
+	return VirtualUnlock(address, length) != 0;
+#elif defined __linux__ || defined __unix__|| defined TARGET_OS_MAC
+	return munlock(address, length) == 0;
+#else
+	#pragma message WARN("Implement page_unlock for this platform, thanks");
 #endif
 }
 
