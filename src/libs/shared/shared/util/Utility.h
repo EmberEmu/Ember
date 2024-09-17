@@ -25,7 +25,7 @@ std::string max_sockets_desc();
 
 std::string sig_str(int signal);
 
-bool page_lock(const void* address, std::size_t length);
-bool page_unlock(const void* address, std::size_t length);
+bool page_lock(void* address, std::size_t length);
+bool page_unlock(void* address, std::size_t length);
 
 } // util, ember
