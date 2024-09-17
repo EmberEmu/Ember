@@ -14,18 +14,23 @@
 
 #pragma once 
 
+#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 
 namespace ember::dbc::disk {
 
-using string_ref = std::uint32_t;
-using uint32     = std::uint32_t;
-using int32      = std::int32_t;
-using uint16     = std::uint16_t;
-using int16      = std::int16_t;
-using uint8      = std::uint8_t;
-using int8       = std::int8_t;
-using bool32     = std::uint32_t;
+using namespace boost::endian;
+
+using string_ref = little_uint32_t;
+using uint32     = little_uint32_t;
+using int32      = little_int32_t;
+using uint16     = little_uint16_t;
+using int16      = little_int16_t;
+using uint8      = little_uint8_t;
+using int8       = little_int8_t;
+using bool32     = little_uint32_t;
+using float32    = little_float32_t;
+using float64    = little_float64_t;
 
 #pragma pack(push, 1)
 
@@ -38,7 +43,7 @@ struct StringRefLoc {
 	string_ref en_tw;
 	string_ref es_es;
 	string_ref es_mx;
-	std::uint32_t flags;
+	uint32 flags;
 };
 
 typedef StringRefLoc string_ref_loc;

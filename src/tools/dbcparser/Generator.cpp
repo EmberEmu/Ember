@@ -141,10 +141,10 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 		bool first_field = true;
 		bool pack_loop_format = true;
 
-		call << "\t" << "detail::link_" << store_name << "(storage);" << std::endl;
+		call << "\t" << "detail::link_" << store_name << "(storage);" << '\n';
 		
-		func << "void link_" << store_name << "(Storage& storage) {" << std::endl;
-		func << "\t" << "for(auto& [k, i] : storage." << store_name << ") {" << std::endl;
+		func << "void link_" << store_name << "(Storage& storage) {" << '\n';
+		func << "\t" << "for(auto& [k, i] : storage." << store_name << ") {" << '\n';
 
 		for(const auto& f : dbc->fields) {
 			std::stringstream curr_field;
@@ -169,7 +169,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 				curr_field << (pack_loop_format? "" : "\n") << (double_spaced || first_field? "" : "\n")
 					<< "\t\t" << "for(std::size_t j = 0; j < "
 					<< "i." << f.name << ".size();"
-					<< " ++j) { " << std::endl;
+					<< " ++j) { " << '\n';
 			} else {
 				curr_field << (!pack_loop_format? "\n" : "");
 			}
@@ -181,7 +181,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 					curr_field << (array? "\t" : "") << "\t\t" << "i." << f.name
 						<< (array? "[j]" : "") << " = " << "storage."
 						<< parent_alias(defs, k.parent) << "[i." << f.name << "_id"
-						<< (array? "[j]" : "") << "];" << std::endl;
+						<< (array? "[j]" : "") << "];" << '\n';
 					write_func = true;
 					write_field = true;
 					break;
@@ -199,8 +199,8 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 			}
 		}
 
-		func << "\t" << "}" << std::endl;
-		func << "}" << std::endl << std::endl;
+		func << "\t" << "}" << '\n';
+		func << "}" << '\n' << '\n';
 
 		if(write_func) {
 			calls << call.str();
@@ -239,25 +239,25 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		bool double_spaced = false;
 		std::string primary_key;
 
-		insertions << "\t" << "dbc_map.emplace(\"" << dbc.name << "\", " << "detail::load_" << store_name << ");" << std::endl;
+		insertions << "\t" << "dbc_map.emplace(\"" << dbc.name << "\", " << "detail::load_" << store_name << ");" << '\n';
 
-		calls << "\t" << "log_cb_(\"Loading " << dbc.name << " DBC data...\");" << std::endl;
-		calls << "\t" << "detail::load_" << store_name << "(storage, dir_path_);" << std::endl;
+		calls << "\t" << "log_cb_(\"Loading " << dbc.name << " DBC data...\");" << '\n';
+		calls << "\t" << "detail::load_" << store_name << "(storage, dir_path_);" << '\n';
 
 		functions << "void load_" << store_name << "(Storage& storage, const std::string& dir_path) {"
-			<< std::endl;
+			<< '\n';
 		functions << "\t" << "bi::file_mapping file(std::string(dir_path + \"" << dbc.name
-			<< ".dbc\").c_str(), bi::read_only);" << std::endl;
+			<< ".dbc\").c_str(), bi::read_only);" << '\n';
 		functions << "\t" << "bi::mapped_region region(file, bi::read_only);"
-			<< std::endl;
+			<< '\n';
 		functions << "\t" << "auto dbc = get_offsets<disk::" << dbc.name <<
-			">(region.get_address());" << std::endl << std::endl;
+			">(region.get_address());" << '\n' << '\n';
 
 		functions << "\tvalidate_dbc(\"" << dbc.name << "\", dbc.header, " << metrics.record_size
-		          << ", " << metrics.fields << ", region.get_size()" << ");" << std::endl << std::endl;
+		          << ", " << metrics.fields << ", region.get_size()" << ");" << '\n' << '\n';
 							
-		functions << "\t" << "for(std::size_t i = 0; i < dbc.header->records; ++i) {" << std::endl;
-		functions << "\t\t" << dbc.name << " entry{};" << std::endl;
+		functions << "\t" << "for(std::size_t i = 0; i < dbc.header->records; ++i) {" << '\n';
+		functions << "\t\t" << dbc.name << " entry{};" << '\n';
 		
 		bool is_primary_foreign = false;
 
@@ -282,7 +282,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			if(array) {
 				functions << (double_spaced? "" : "\n") << "\t\t"
 					<< "for(std::size_t j = 0; j < std::size(dbc.records[i]."
-					<< f.name << "); ++j) {" << std::endl;
+					<< f.name << "); ++j) {" << '\n';
 			}
 
 			double_spaced = array;
@@ -342,11 +342,11 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 
 				for(const auto& locale : string_ref_loc_regions) {
 					functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id." : ".") << locale
-						<< (array ? "[j]" : "") << " = " << "dbc.strings + dbc.records[i]." << f.name << "." << locale << ";" << std::endl;
+						<< (array ? "[j]" : "") << " = " << "dbc.strings + dbc.records[i]." << f.name << "." << locale << ";" << '\n';
 				}
 
 				functions << (array ? "\t" : "") << "\t\t" << "entry." << f.name << (id_suffix ? "_id." : ".") << "flags"
-						<< (array ? "[j]" : "") << " = " << "dbc.records[i]." << f.name << "." << "flags" << ";" << std::endl;
+						<< (array ? "[j]" : "") << " = " << "dbc.records[i]." << f.name << "." << "flags" << ";" << '\n';
 				functions << "\n";
 			} else {
 				if(names.empty()) {
@@ -368,10 +368,12 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			
 			if(components.first != "string_ref_loc") {
 				if(names.empty()) {
-					functions << "dbc.records[i]." << f.name << (array ? "[j]" : "") << (cast.str().empty() ? "" : ")") << ";" << std::endl;
+					functions << "dbc.records[i]." << f.name << (array ? "[j]" : "")
+						<< (cast.str().empty() ? "" : ".value())") << ";" << '\n';
 				} else {
 					for(const auto& name : names) {
-						field << "dbc.records[i]." << f.name << (array ? "[j]" : "") << "." << name << (cast.str().empty() ? "" : ")") << ";" << std::endl;
+						field << "dbc.records[i]." << f.name << (array ? "[j]" : "")
+							<< "." << name << (cast.str().empty() ? "" : ".value())") << ";" << '\n';
 						field_right.push_back(field.str());
 						field.str("");
 					}
@@ -383,7 +385,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 			}
 
 			if(array) {
-				functions << "\t\t" << "}" << std::endl << std::endl;
+				functions << "\t\t" << "}" << '\n' << '\n';
 			}
 		}
 		std::string prefix;
@@ -395,9 +397,9 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		}
 
 		std::string id = primary_key.empty()? "i" : prefix + primary_key;
-		functions << "\t\t" << "storage." << store_name << ".emplace_back(" << id << ", entry);" << std::endl;
-		functions << "\t" << "}" << std::endl;
-		functions << "}" << std::endl << std::endl;
+		functions << "\t\t" << "storage." << store_name << ".emplace_back(" << id << ", entry);" << '\n';
+		functions << "\t" << "}" << '\n';
+		functions << "}" << '\n' << '\n';
 	}
 
 	std::string replace_pattern("$1" + functions.str() + "$2" + insertions.str() + "$3" + calls.str() + "$4");
@@ -427,22 +429,31 @@ void generate_disk_struct(const types::Struct& def, std::stringstream& definitio
 
 	std::string tab("\t", indent);
 
-	definitions << tab << "struct " << def.name << " {" << std::endl;
+	definitions << tab << "struct " << def.name << " {" << '\n';
 
 	generate_disk_struct_recursive(def, definitions, indent);
 
 	for(const auto& f : def.fields) {
 		auto components = extract_components(f.underlying_type);
+
+		// hack to allow the definitions to keep using float and double
+		// typenames rather than switching them to float32/float64
+		if(components.first == "float") {
+			components.first = "float32";
+		} else if(components.first == "double") {
+			components.first = "float64";
+		}
+
 		std::string field = components.first + " " + f.name;
 
 		if(components.second) {
 			field += "[" + std::to_string(*components.second) + "]";
 		}
 
-		definitions << tab << "\t" << field << ";" << std::endl;
+		definitions << tab << "\t" << field << ";" << '\n';
 	}
 
-	definitions << tab << "};" << std::endl << std::endl;
+	definitions << tab << "};" << '\n' << '\n';
 }
 
 void generate_disk_enum(const types::Enum& def, std::stringstream& definitions, int indent) {
@@ -488,17 +499,17 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 		definitions << " // " << def.comment;
 	}
 
-	definitions << std::endl;
+	definitions << '\n';
 
 	for(auto i = def.options.begin(); i != def.options.end(); ++i) {
 		std::string name = i->first;
 		std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 
 		definitions << tab << "\t" << name << " = " << i->second <<
-			(i != def.options.end() - 1? ", " : "") << std::endl;
+			(i != def.options.end() - 1? ", " : "") << '\n';
 	}
 
-	definitions << tab << "};" << std::endl << std::endl;
+	definitions << tab << "};" << '\n' << '\n';
 }
 
 void generate_memory_struct_recursive(const types::Struct& def, std::stringstream& definitions, int indent) {
@@ -529,7 +540,7 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 		definitions << " // " << def.comment;
 	}
 
-	definitions << std::endl;
+	definitions << '\n';
 
 	generate_memory_struct_recursive(def, definitions, indent);
 
@@ -543,9 +554,9 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 				if(array) {
 					definitions << tab << "\t" << "std::array<const " << k.parent << "*, "
 					            << std::to_string(*components.second) << "> "
-					            << f.name << ";" << std::endl;
+					            << f.name << ";" << '\n';
 				} else {
-					definitions << tab << "\t" << "const " << k.parent << "* " << f.name << ";" << std::endl;
+					definitions << tab << "\t" << "const " << k.parent << "* " << f.name << ";" << '\n';
 				}
 				key = true;
 				break;
@@ -573,10 +584,10 @@ void generate_memory_struct(const types::Struct& def, std::stringstream& definit
 			definitions << " // " << f.comment;
 		}
 
-		definitions << std::endl;
+		definitions << '\n';
 	}
 
-	definitions << tab << "};" << std::endl << std::endl;
+	definitions << tab << "};" << '\n' << '\n';
 }
 
 void generate_memory_defs(const types::Definitions& defs, const std::string& output, const std::string& path) {
@@ -589,11 +600,11 @@ void generate_memory_defs(const types::Definitions& defs, const std::string& out
 
 	for(const auto& def : defs) {
 		if(def->type == types::Type::STRUCT) {
-			forward_decls << "struct " << def->name << ";" << std::endl;
+			forward_decls << "struct " << def->name << ";" << '\n';
 			generate_memory_struct(static_cast<types::Struct&>(*def), definitions, 0);
 		} else if(def->type == types::Type::ENUM) {
 			const auto& enum_def = static_cast<types::Enum&>(*def);
-			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << std::endl;
+			forward_decls << "enum class " << enum_def.name << " : " << enum_def.underlying_type << ";" << '\n';
 			generate_memory_enum(enum_def, definitions, 0);
 		}
 	}
