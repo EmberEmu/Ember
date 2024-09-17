@@ -14,7 +14,7 @@
 namespace ember {
 
 void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event> event) const {
-	auto service = pool_.get_service(client.service());
+	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
 	if(service == nullptr) {
@@ -63,9 +63,9 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 			*clients_ptr, uuid.service(), std::ranges::greater{}, &ClientUUID::service
 		);
 
-		auto service = pool_.get_service(i);
+		auto& service = pool_.get(i);
 
-		service->post([clients_ptr, range, event] {
+		service.post([clients_ptr, range, event] {
 			auto [beg, end] = range;
 
 			while(beg != end) {
@@ -80,17 +80,17 @@ void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
 }
 
 void EventDispatcher::register_handler(ClientHandler* handler) {
-	auto service = pool_.get_service(handler->uuid().service());
+	auto& service = pool_.get(handler->uuid().service());
 
-	service->dispatch([=] {
+	service.dispatch([=] {
 		handlers_[handler->uuid()] = handler;
 	});
 }
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
-	auto service = pool_.get_service(handler->uuid().service());
+	auto& service = pool_.get(handler->uuid().service());
 
-	service->dispatch([=] {
+	service.dispatch([=] {
 		handlers_.erase(handler->uuid());
 	});
 }

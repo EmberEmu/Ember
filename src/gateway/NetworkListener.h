@@ -40,12 +40,12 @@ public:
 	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port,
 	                bool tcp_no_delay, log::Logger* logger)
 	                : acceptor_(
-	                      pool.get_service(), 
+	                      pool.get(), 
 	                      bai::tcp::endpoint(bai::address::from_string(interface), port)
 	                  ),
 	                  pool_(pool),
 	                  index_(0),
-	                  socket_(*pool.get_service(0)),
+	                  socket_(pool.get(0)),
 	                  logger_(logger) {
 		acceptor_.set_option(bai::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(bai::tcp::acceptor::reuse_address(true));

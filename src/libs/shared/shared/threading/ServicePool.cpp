@@ -32,13 +32,22 @@ ServicePool::~ServicePool() {
 	stop();
 }
 
-boost::asio::io_context& ServicePool::get_service() {
+boost::asio::io_context& ServicePool::get() {
 	auto& service = *services_[next_service_++];
 	next_service_ %= pool_size_;
 	return service;
 }
 
-boost::asio::io_context* ServicePool::get_service(const std::size_t index) const {
+
+boost::asio::io_context& ServicePool::get(const std::size_t index) const {
+	if(index >= services_.size()) {
+		throw std::out_of_range("Bad service index specified");
+	}
+
+	return *services_[index].get();
+}
+
+boost::asio::io_context* ServicePool::get_if(const std::size_t index) const {
 	if(index >= services_.size()) {
 		return nullptr;
 	}

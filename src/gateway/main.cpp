@@ -121,7 +121,7 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 	service_pool.run();
 
 	// Install signal handler
-	boost::asio::signal_set signals(service_pool.get_service(), SIGINT, SIGTERM);
+	boost::asio::signal_set signals(service_pool.get(), SIGINT, SIGTERM);
 	std::binary_semaphore flag(0);
 
 	signals.async_wait([&](auto error, auto signal) {
@@ -218,7 +218,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
-	auto& service = service_pool.get_service();
+	auto& service = service_pool.get();
 
 	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger);
 	spark::ServiceDiscovery discovery(
@@ -261,7 +261,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->ip);
 
-	RealmQueue queue_service(service_pool.get_service());
+	RealmQueue queue_service(service_pool.get());
 	RealmService realm_svc(*realm, spark, discovery, logger);
 	AccountService acct_svc(spark, discovery, logger);
 	CharacterService char_svc(spark, discovery, config, logger);

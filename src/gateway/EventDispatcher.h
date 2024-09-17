@@ -31,7 +31,7 @@ public:
 	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
 
 	void exec(const ClientUUID& client, auto work) const {
-		auto service = pool_.get_service(client.service());
+		auto service = pool_.get_if(client.service());
 
 		// bad service index encoded in the UUID
 		if(service == nullptr) {
@@ -50,7 +50,7 @@ public:
 	}
 
 	auto post_event(const ClientUUID& client, std::derived_from<Event> auto event) const {
-		auto service = pool_.get_service(client.service());
+		auto service = pool_.get_if(client.service());
 
 		// bad service index encoded in the UUID
 		if(service == nullptr) {

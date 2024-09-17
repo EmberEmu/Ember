@@ -47,7 +47,7 @@ void NetworkListener::accept_connection() {
 
 		++index_;
 		index_ %= pool_.size();
-		socket_ = tcp_socket(*pool_.get_service(index_));
+		socket_ = tcp_socket(pool_.get(index_));
 		accept_connection();
 	});
 }
