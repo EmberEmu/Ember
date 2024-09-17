@@ -117,7 +117,7 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 
 	// Start ASIO service pool
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
-	ServicePool service_pool(concurrency);
+	ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	service_pool.run();
 
 	// Install signal handler
