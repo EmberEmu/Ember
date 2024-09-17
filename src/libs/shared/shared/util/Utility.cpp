@@ -11,7 +11,7 @@
 
 #ifdef _WIN32
     #include <Windows.h>
-#elif defined __linux__ || defined __unix__ || defined __APPLE__
+#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
 	#include <sys/resource.h>
 	#include <iostream>
 #endif
@@ -69,7 +69,7 @@ void set_window_title(cstring_view title) {
 }
 
 int max_sockets() {
-#if defined __linux__ || defined __unix__ || defined __APPLE__
+#if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
 	rlimit limit{};
 	const int res = getrlimit(RLIMIT_NOFILE, &limit);
 	
