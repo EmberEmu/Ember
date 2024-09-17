@@ -13,14 +13,16 @@
 
 namespace ember {
 
-ServicePool::ServicePool(const std::size_t pool_size) : pool_size_(pool_size), next_service_(0) {
+ServicePool::ServicePool(const std::size_t pool_size, const int hint)
+	: pool_size_(pool_size),
+	  next_service_(0) {
 	if(pool_size == 0) {
 		throw std::runtime_error("Cannot have an empty ASIO IO service pool!");
 	}
 
 	for(std::size_t i = 0; i < pool_size; ++i) {
 		auto& ctx = services_.emplace_back(
-			std::make_unique<boost::asio::io_context>(ASIO_CONCURRENCY_HINT)
+			std::make_unique<boost::asio::io_context>(hint)
 		);
 		work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*ctx));
 	}

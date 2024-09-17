@@ -28,7 +28,7 @@ class ServicePool final {
 	std::vector<std::jthread> threads_;
 
 public:
-	explicit ServicePool(std::size_t pool_size);
+	explicit ServicePool(std::size_t pool_size, int hint = ASIO_CONCURRENCY_HINT);
 	~ServicePool();
 
 	boost::asio::io_context& get_service();
