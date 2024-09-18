@@ -303,7 +303,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 std::optional<Realm> load_realm(const po::variables_map& args, log::Logger* logger) {
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path));
+	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);

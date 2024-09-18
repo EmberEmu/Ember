@@ -161,7 +161,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
 	const auto&  db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path));
+	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
