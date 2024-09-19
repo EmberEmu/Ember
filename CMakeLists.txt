@@ -30,8 +30,9 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")  # Enable the conforming preprocessor
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GL")  # Whole program optimisation
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Ot")  # Favour speed over size
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /INCREMENTAL:NO")  # Incompatible with LTCG
 
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG:incremental")  # Link-time code generation
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")  # Link-time code generation
 
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.36)
 		message(FATAL_ERROR "You need VS2022 17.6.0 or newer to compile Ember on Windows!")
