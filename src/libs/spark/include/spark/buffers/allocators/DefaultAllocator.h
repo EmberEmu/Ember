@@ -12,8 +12,9 @@ namespace ember::spark::io {
 
 template<typename T>
 struct DefaultAllocator final {
-	[[nodiscard]] inline T* allocate() const {
-		return new T;
+	template<typename ...Args>
+	[[nodiscard]] inline T* allocate(Args&&... args) const {
+		return new T(std::forward<Args>(args)...);
 	}
 
 	inline void deallocate(T* t) const {
