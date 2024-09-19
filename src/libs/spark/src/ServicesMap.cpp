@@ -11,7 +11,7 @@
 namespace ember::spark::inline v1 {
 
 std::vector<Link> ServicesMap::peer_services(messaging::Service service, Mode type) const {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	auto& map = type == Mode::CLIENT? peer_clients_ : peer_servers_;
 	auto it = map.find(service);
@@ -24,7 +24,7 @@ std::vector<Link> ServicesMap::peer_services(messaging::Service service, Mode ty
 }
 
 void ServicesMap::register_peer_service(const Link& link, messaging::Service service, Mode type) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	switch(type) {
 		case Mode::CLIENT:
@@ -37,7 +37,7 @@ void ServicesMap::register_peer_service(const Link& link, messaging::Service ser
 }
 
 void ServicesMap::remove_peer(const Link& link) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	for(auto& list : peer_servers_) {
 		list.second.erase_after(std::remove_if(list.second.begin(), list.second.end(), [&](const auto& arg) {

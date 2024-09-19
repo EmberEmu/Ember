@@ -135,7 +135,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 #endif
 		manager_.check_exceptions();
 
-		std::unique_lock<Spinlock> guard(lock_);
+		std::unique_lock guard(lock_);
 
 		auto res = std::ranges::find_if(pool_, [&](auto& arg) {
 			return find_free_connection(arg);

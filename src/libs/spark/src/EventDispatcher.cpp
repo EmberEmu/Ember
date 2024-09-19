@@ -12,14 +12,14 @@
 namespace ember::spark::inline v1 {
 
 void EventDispatcher::register_handler(EventHandler* handler, messaging::Service service, Mode mode) {
-	std::unique_lock<std::shared_mutex> guard(lock_);
+	std::unique_lock guard(lock_);
 	handlers_[service] = { mode, handler };
 }
 
 /* Remove by pointer rather than service to reduce the odds of making the
    mistake of removing a handler that doesn't belong to the caller */
 void EventDispatcher::remove_handler(const EventHandler* handler) {
-	std::unique_lock<std::shared_mutex> guard(lock_);
+	std::unique_lock guard(lock_);
 	
 	for(auto& entry: handlers_) {
 		if(entry.second.handler == handler) {
@@ -30,7 +30,7 @@ void EventDispatcher::remove_handler(const EventHandler* handler) {
 }
 
 void EventDispatcher::notify_link_up(messaging::Service service, const Link& link) const {
-	std::lock_guard<std::shared_mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	auto it = handlers_.find(service);
 
@@ -40,7 +40,7 @@ void EventDispatcher::notify_link_up(messaging::Service service, const Link& lin
 }
 
 void EventDispatcher::notify_link_down(messaging::Service service, const Link& link) const {
-	std::lock_guard<std::shared_mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	auto it = handlers_.find(service);
 
@@ -51,7 +51,7 @@ void EventDispatcher::notify_link_down(messaging::Service service, const Link& l
 
 void EventDispatcher::dispatch_message(messaging::Service service, const Link& link,
                                        const Message& message) const {
-	std::unique_lock<std::shared_mutex> guard(lock_);
+	std::unique_lock guard(lock_);
 	auto it = handlers_.find(service);
 
 	if(it != handlers_.end()) {
@@ -60,7 +60,7 @@ void EventDispatcher::dispatch_message(messaging::Service service, const Link& l
 } 
 
 std::vector<messaging::Service> EventDispatcher::services(Mode mode) const {
-	std::shared_lock<std::shared_mutex> guard(lock_);
+	std::shared_lock guard(lock_);
 	std::vector<messaging::Service> services;
 
 	for(auto& handler : handlers_) {

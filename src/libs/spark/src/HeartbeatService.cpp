@@ -48,12 +48,12 @@ void HeartbeatService::on_message(const Link& link, const Message& message) {
 }
 
 void HeartbeatService::on_link_up(const Link& link) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	peers_.emplace_front(link);
 }
 
 void HeartbeatService::on_link_down(const Link& link) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	peers_.remove(link);
 }
 
@@ -103,7 +103,7 @@ void HeartbeatService::trigger_pings(const boost::system::error_code& ec) {
 	auto time = sc::duration_cast<sc::milliseconds>(
 		sc::steady_clock::now().time_since_epoch()).count();
 
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	for(auto& link : peers_) {
 		send_ping(link, time);

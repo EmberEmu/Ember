@@ -83,7 +83,7 @@ void Client::connect(const std::string& host, const std::uint16_t port,
 	// wrap the callback to save error checking and locking duplication
 	transport_->connect(host, port, 
 		[&, cb = std::move(cb)](const boost::system::error_code& ec) {
-			std::lock_guard<std::mutex> guard(mutex_);
+			std::lock_guard guard(mutex_);
 
 			if(!ec) {
 				cb(ec);
@@ -111,7 +111,7 @@ Client::build_request(const bool change_ip, const bool change_port) {
 }
 
 void Client::handle_message(std::span<const std::uint8_t> buffer) try {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 
 	if(buffer.size() < HEADER_LENGTH) {
 		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BUFFER_LT_HEADER);
@@ -517,7 +517,7 @@ void Client::start_transaction_timer() {
 			return;
 		}
 
-		std::lock_guard<std::mutex> guard(mutex_);
+		std::lock_guard guard(mutex_);
 
 		// RFC algorithm decided by interpretive dance
 		if(tx_->retries_left) {
@@ -540,7 +540,7 @@ void Client::start_transaction_timer() {
 }
 
 void Client::on_connection_error(const boost::system::error_code& ec) {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 
 	if(ec == boost::asio::error::connection_aborted) {
 		abort_transaction(Error::CONNECTION_ABORTED);
@@ -576,7 +576,7 @@ std::future<NATResult> Client::nat_present() {
 		return future;
 	}
 
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	create_transaction(std::move(promise));
 
 	connect(host_, port_, [&](const boost::system::error_code& ec) {
@@ -596,7 +596,7 @@ std::future<T> Client::basic_request() {
 	std::promise<T> promise;
 	auto future = promise.get_future();
 
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	create_transaction(std::move(promise));
 
 	connect(host_, port_, [&](const boost::system::error_code&) {
@@ -617,7 +617,7 @@ std::future<T> Client::behaviour_test(const State state) {
 		return future;
 	}
 
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	create_transaction(std::move(promise));
 	tx_->state = state;
 

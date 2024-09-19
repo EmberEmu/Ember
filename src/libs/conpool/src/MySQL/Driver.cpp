@@ -127,12 +127,12 @@ sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, std
 }
 
 void MySQL::cache_statement(const sql::Connection* conn, std::string key, UniqueStmt value) {
-	std::lock_guard<std::mutex> lock(cache_lock_);
+	std::lock_guard lock(cache_lock_);
 	cache_[conn].emplace(std::move(key), std::move(value));
 }
 
 MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
-	std::lock_guard<std::mutex> lock(cache_lock_);
+	std::lock_guard lock(cache_lock_);
 	auto cache_it = cache_.find(conn);
 
 	if(cache_it == cache_.end()) {
@@ -144,7 +144,7 @@ MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
 
 void MySQL::close_cache(const sql::Connection* conn) const {
 	// todo - iterators (ex. erased element) not invalidated by erase, research
-	std::lock_guard<std::mutex> lock(cache_lock_);
+	std::lock_guard lock(cache_lock_);
 	cache_.erase(conn);
 }
 

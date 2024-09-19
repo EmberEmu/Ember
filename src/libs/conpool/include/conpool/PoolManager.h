@@ -84,7 +84,7 @@ class PoolManager final {
 
 	// If the pool has grown too small, try to refill it
 	void refill() {
-		std::unique_lock<Spinlock> guard(pool_->lock_);
+		std::unique_lock guard(pool_->lock_);
 
 		if(pool_->size_ < pool_->min_) {
 			try {
@@ -114,7 +114,7 @@ class PoolManager final {
 	}
 
 	void set_connection_flags() {
-		std::lock_guard<Spinlock> guard(pool_->lock_);
+		std::lock_guard guard(pool_->lock_);
 		std::size_t excess_connections = 0;
 
 		if(pool_->size_ > pool_->min_) {
@@ -154,7 +154,7 @@ public:
 		  max_idle_(max_idle) {}
 
 	void check_exceptions() {
-		std::lock_guard<Spinlock> lock(exception_lock_);
+		std::lock_guard lock(exception_lock_);
 
 		if(exception_) {
 			std::rethrow_exception(exception_);
@@ -163,7 +163,7 @@ public:
 
 	void run() try {
 		pool_->driver_.thread_enter();
-		std::unique_lock<std::mutex> lock(cond_lock_);
+		std::unique_lock lock(cond_lock_);
 
 #ifndef DEBUG_NO_THREADS
 		while(!stop_) {
@@ -176,7 +176,7 @@ public:
 
 		pool_->driver_.thread_exit();
 	} catch(...) {
-		std::lock_guard<Spinlock> lock(exception_lock_);
+		std::lock_guard lock(exception_lock_);
 		exception_ = std::current_exception();
 
 		if(pool_->log_cb_) {

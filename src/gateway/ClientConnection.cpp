@@ -215,7 +215,7 @@ void ClientConnection::close_session_sync() {
 	boost::asio::dispatch(socket_.get_executor(), [&] {
 		stop();
 
-		std::unique_lock<std::mutex> ul(stop_lock_);
+		std::unique_lock ul(stop_lock_);
 		stop_condvar_.notify_all();
 	});
 }
@@ -241,7 +241,7 @@ void ClientConnection::terminate() {
 		close_session_sync();
 
 		while(!stopped_) {
-			std::unique_lock<std::mutex> guard(stop_lock_);
+			std::unique_lock guard(stop_lock_);
 			stop_condvar_.wait(guard);
 		}
 	}

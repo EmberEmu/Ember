@@ -38,7 +38,7 @@ public:
 	}
 
 	void wait() {
-		std::unique_lock<Lock> guard(lock_);
+		std::unique_lock guard(lock_);
 
 		while(!count_) {
 			condition_.wait(guard);
@@ -48,7 +48,7 @@ public:
 	}
 
 	bool wait_for(std::chrono::milliseconds duration) {
-		std::unique_lock<Lock> guard(lock_);
+		std::unique_lock guard(lock_);
 
 		return condition_.wait_for(guard, duration,
 			[this]() {
@@ -61,13 +61,13 @@ public:
 	}
 
 	void signal(unsigned int increment = 1) {
-		std::lock_guard<Lock> guard(lock_);
+		std::lock_guard guard(lock_);
 		increment_max_check(increment); 
 		condition_.notify_one();
 	}
 
 	void signal_all(unsigned int increment = 1) {
-		std::lock_guard<Lock> guard(lock_);
+		std::lock_guard guard(lock_);
 		increment_max_check(increment);
 		condition_.notify_all();
 	}

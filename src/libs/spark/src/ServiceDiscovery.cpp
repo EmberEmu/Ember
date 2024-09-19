@@ -115,7 +115,7 @@ void ServiceDiscovery::send(const std::shared_ptr<flatbuffers::FlatBufferBuilder
 }
 
 void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	auto& vec = listeners_[listener->service()];
 	vec.erase(std::remove(vec.begin(), vec.end(), listener), vec.end());
 }
@@ -123,7 +123,7 @@ void ServiceDiscovery::remove_listener(const ServiceListener* listener) {
 std::unique_ptr<ServiceListener> ServiceDiscovery::listener(messaging::Service service,
                                                             LocateCallback cb) {
 	auto listener = std::make_unique<ServiceListener>(this, service, cb);
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	listeners_[service].emplace_back(listener.get());
 	return listener;
 }
@@ -145,7 +145,7 @@ void ServiceDiscovery::send_announce(messaging::Service service) {
 
 void ServiceDiscovery::handle_locate(const mcast::Locate* message) {
 	// check to see if we a matching service registered
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	
 	auto it = std::ranges::find(services_, message->service());
 
@@ -164,7 +164,7 @@ void ServiceDiscovery::handle_locate_answer(const mcast::LocateResponse* message
 		return;
 	}
 
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	auto& listeners = listeners_[message->type()];
 
 	for(auto& listener : listeners) {
@@ -173,13 +173,13 @@ void ServiceDiscovery::handle_locate_answer(const mcast::LocateResponse* message
 }
 
 void ServiceDiscovery::register_service(messaging::Service service) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	services_.emplace_back(service);
 	send_announce(service);
 }
 
 void ServiceDiscovery::remove_service(messaging::Service service) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	services_.erase(std::remove(services_.begin(), services_.end(), service), services_.end());
 }
 

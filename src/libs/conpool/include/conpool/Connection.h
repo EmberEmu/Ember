@@ -74,7 +74,7 @@ public:
 	}
 
 	void release() {
-		std::lock_guard<std::mutex> guard(close_protect_);
+		std::lock_guard guard(close_protect_);
 
 		if(!released_) {
 			released_ = true;

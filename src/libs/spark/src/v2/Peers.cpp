@@ -12,17 +12,17 @@
 namespace ember::spark::v2 {
 
 void Peers::add(std::string key, std::shared_ptr<RemotePeer> peer) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	peers_.emplace(std::move(key), std::move(peer));
 }
 
 void Peers::remove(const std::string& key) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	peers_.erase(key);
 }
 
 std::shared_ptr<RemotePeer> Peers::find(const std::string& key) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	if(auto it = peers_.find(key); it != peers_.end()) {
 		return it->second;
@@ -32,7 +32,7 @@ std::shared_ptr<RemotePeer> Peers::find(const std::string& key) {
 }
 
 void Peers::notify_remove_handler(Handler* handler) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	for(auto& [_, peer] : peers_) {
 		peer->remove_handler(handler);

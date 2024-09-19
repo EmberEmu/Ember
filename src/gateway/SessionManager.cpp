@@ -15,7 +15,7 @@ void SessionManager::start(std::unique_ptr<ClientConnection> session) {
 	auto sess_ptr = session.get();
 
 	{
-		std::lock_guard<std::mutex> guard(sessions_lock_);
+		std::lock_guard guard(sessions_lock_);
 		sessions_.insert(std::move(session));
 	}
 
@@ -23,7 +23,7 @@ void SessionManager::start(std::unique_ptr<ClientConnection> session) {
 }
 
 void SessionManager::stop(ClientConnection* session) {
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	std::lock_guard guard(sessions_lock_);
 
 	auto it = std::ranges::find_if(sessions_, [session](auto& value) {
 		return session == value.get();
@@ -38,7 +38,7 @@ void SessionManager::stop(ClientConnection* session) {
 }
 
 void SessionManager::stop_all() {
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	std::lock_guard guard(sessions_lock_);
 
 	while(!sessions_.empty()) {
 		auto client = std::move(sessions_.extract(sessions_.begin()).value());
@@ -51,7 +51,7 @@ std::size_t SessionManager::count() const {
 }
 
 ConnectionStats SessionManager::aggregate_stats() const {
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	std::lock_guard guard(sessions_lock_);
 
 	ConnectionStats ag_stats {};
 

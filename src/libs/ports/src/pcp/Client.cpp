@@ -277,7 +277,7 @@ bool Client::handle_announce(std::span<const std::uint8_t> buffer) try {
 			return false;
 		}
 
-		std::lock_guard<std::mutex> guard(handler_lock_);
+		std::lock_guard guard(handler_lock_);
 		announce_handler_(header.epoch_time);
 		return true;
 	} else if(version == NATPMP_VERSION) {
@@ -287,7 +287,7 @@ bool Client::handle_announce(std::span<const std::uint8_t> buffer) try {
 			return false;
 		}
 
-		std::lock_guard<std::mutex> guard(handler_lock_);
+		std::lock_guard guard(handler_lock_);
 		announce_handler_(message.secs_since_epoch);
 		return true;
 	}
@@ -693,7 +693,7 @@ void Client::announce_handler(AnnounceHandler&& handler) {
 		throw std::invalid_argument("Callback cannot be null");
 	}
 
-	std::lock_guard<std::mutex> guard(handler_lock_);
+	std::lock_guard guard(handler_lock_);
 	announce_handler_ = std::move(handler);
 }
 

@@ -26,7 +26,7 @@ void RealmQueue::set_timer() {
  * are changing rapidly
  */
 void RealmQueue::update_clients() {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	if(!dirty_) {
 		return;
@@ -45,7 +45,7 @@ void RealmQueue::update_clients() {
 
 void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
                          LeaveQueueCB on_leave_cb, int priority) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	if(queue_.empty()) {
 		set_timer();
@@ -64,7 +64,7 @@ void RealmQueue::enqueue(ClientUUID client, UpdateQueueCB on_update_cb,
  * hang around in the queue
  */
 void RealmQueue::dequeue(const ClientUUID& client) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	for(auto i = queue_.begin(); i != queue_.end(); ++i) {
 		if(i->client == client) {
@@ -85,7 +85,7 @@ void RealmQueue::dequeue(const ClientUUID& client) {
  * allowing the player at the front of the queue to connect
  */
 void RealmQueue::free_slot() {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	if(queue_.empty()) {
 		return;
@@ -103,7 +103,7 @@ void RealmQueue::free_slot() {
 }
 
 void RealmQueue::shutdown() {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	timer_.cancel();
 }
 

@@ -12,7 +12,7 @@
 namespace ember::spark::v2 {
 
 void HandlerRegistry::deregister_service(Handler* service) {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	
 	auto it = services_.find(service->type());
 
@@ -35,13 +35,13 @@ void HandlerRegistry::deregister_service(Handler* service) {
 }
 
 void HandlerRegistry::register_service(Handler* service) {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	auto type = service->type();
 	services_[type].emplace_back(service);
 }
 
 Handler* HandlerRegistry::service(const std::string& name) const {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 
 	for(auto& [_, v] : services_) {
 		for(auto& service : v) {
@@ -56,7 +56,7 @@ Handler* HandlerRegistry::service(const std::string& name) const {
 
 
 Handler* HandlerRegistry::service(const std::string& name, const std::string& type) const {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 
 	auto it = services_.find(type);
 
@@ -76,12 +76,12 @@ Handler* HandlerRegistry::service(const std::string& name, const std::string& ty
 }
 
 std::vector<Handler*> HandlerRegistry::services(const std::string& type) const {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	return services_.at(type);
 }
 
 std::vector<std::string> HandlerRegistry::services() const {
-	std::lock_guard<std::mutex> guard(mutex_);
+	std::lock_guard guard(mutex_);
 	std::vector<std::string> types;
 
 	for(auto& [k, _]: services_) {

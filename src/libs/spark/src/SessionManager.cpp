@@ -12,13 +12,13 @@
 namespace ember::spark::inline v1 {
 
 void SessionManager::start(const std::shared_ptr<NetworkSession>& session) {
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	std::lock_guard guard(sessions_lock_);
 	sessions_.insert(session);
 	session->start();
 }
 
 void SessionManager::stop(const std::shared_ptr<NetworkSession>& session) {
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	std::lock_guard guard(sessions_lock_);
 	sessions_.erase(session);
 	session->stop();
 }
@@ -28,7 +28,7 @@ void SessionManager::stop_all() {
 		session->stop();
 	}
 
-	std::lock_guard<std::mutex> guard(sessions_lock_);
+	std::lock_guard guard(sessions_lock_);
 	sessions_.clear();
 }
 

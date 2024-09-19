@@ -17,7 +17,7 @@ RealmList::RealmList(std::span<const Realm> realms) : realms_(std::make_shared<R
 
 void RealmList::add_realm(std::span<const Realm> realms) {
 	// ensure consistency if we add from multiple workers (not a thread safety issue)
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	auto realm_map = realms_.load();
 	auto copy = std::make_shared<RealmMap>(*realm_map);
@@ -31,7 +31,7 @@ void RealmList::add_realm(std::span<const Realm> realms) {
 
 void RealmList::add_realm(Realm realm) {
 	// ensure consistency if we add from multiple workers (not a thread safety issue)
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	auto realm_map = realms_.load();
 	auto copy = std::make_shared<RealmMap>(*realm_map);

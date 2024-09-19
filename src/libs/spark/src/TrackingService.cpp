@@ -22,7 +22,7 @@ TrackingService::TrackingService(boost::asio::io_context& io_context, log::Logge
 void TrackingService::on_message(const Link& link, const Message& message) try {
 	LOG_TRACE_FILTER(logger_, LF_SPARK) << log_func << LOG_ASYNC;
 
-	std::unique_lock<std::mutex> guard(lock_);
+	std::unique_lock guard(lock_);
 	auto handler = std::move(handlers_.at(message.token.uuid));
 	handlers_.erase(message.token.uuid);
 	guard.unlock();
@@ -47,7 +47,7 @@ void TrackingService::register_tracked(const Link& link, boost::uuids::uuid id, 
 	request->timer.expires_from_now(timeout);
 	request->timer.async_wait(std::bind(&TrackingService::timeout, this, id, link, std::placeholders::_1));
 
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	handlers_[id] = std::move(request);
 }
 
@@ -57,7 +57,7 @@ void TrackingService::timeout(const boost::uuids::uuid& id, Link link, const boo
 	}
 
 	// inform the handler that no response was received and erase
-	std::unique_lock<std::mutex> guard(lock_);
+	std::unique_lock guard(lock_);
 	auto handler = std::move(handlers_.at(id));
 	handlers_.erase(id);
 	guard.unlock();
@@ -66,7 +66,7 @@ void TrackingService::timeout(const boost::uuids::uuid& id, Link link, const boo
 }
 
 void TrackingService::shutdown() {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	for(auto& handler : handlers_) {
 		handler.second->timer.cancel();

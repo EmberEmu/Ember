@@ -11,7 +11,7 @@
 namespace ember {
 
 bool Sessions::register_session(std::uint32_t account_id, const Botan::BigInt& key) {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 
 	auto it = sessions_.find(account_id);
 
@@ -24,7 +24,7 @@ bool Sessions::register_session(std::uint32_t account_id, const Botan::BigInt& k
 }
 
 std::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) const {
-	std::lock_guard<std::mutex> guard(lock_);
+	std::lock_guard guard(lock_);
 	auto it = sessions_.find(account_id);
 
 	if(it == sessions_.end()) {

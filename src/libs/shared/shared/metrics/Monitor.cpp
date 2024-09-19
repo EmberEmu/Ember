@@ -54,7 +54,7 @@ void Monitor::send_health_status() {
 
 void Monitor::add_source(Source source, Severity severity, LogCallback log_callback) {
 	source.triggered = false;
-	std::lock_guard<std::mutex> guard(source_lock_);
+	std::lock_guard guard(source_lock_);
 	sources_.emplace_back(source, severity, log_callback, 0s);
 }
 
@@ -63,7 +63,7 @@ void Monitor::timer_tick(const boost::system::error_code& ec) {
 		return;
 	}
 
-	std::lock_guard<std::mutex> guard(source_lock_);
+	std::lock_guard guard(source_lock_);
 
 	for(auto& source : sources_) {
 		execute_source(std::get<0>(source), std::get<1>(source),
@@ -103,7 +103,7 @@ bool Monitor::has_severity(const Severity sev) const {
 }
 
 std::string Monitor::generate_message() const {
-	std::lock_guard<std::mutex> guard(source_lock_);
+	std::lock_guard guard(source_lock_);
 	std::stringstream message;
 
 	message << "Status: ";
