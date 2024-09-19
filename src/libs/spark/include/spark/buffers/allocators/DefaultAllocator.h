@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <utility>
+
 namespace ember::spark::io {
 
 template<typename T>

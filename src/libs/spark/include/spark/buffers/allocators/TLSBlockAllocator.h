@@ -12,6 +12,7 @@
 #include <bitset>
 #include <memory>
 #include <new>
+#include <utility>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
