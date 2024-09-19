@@ -92,7 +92,7 @@ sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, std::string
 
 	if(!stmt) {
 		stmt = conn->prepareStatement(key);
-		cache_statement(conn, std::move(key), stmt);
+		cache_statement(conn, std::move(key), UniqueStmt(stmt));
 	}
 
 	return stmt;
@@ -104,7 +104,7 @@ sql::PreparedStatement* MySQL::prepare_cached(sql::Connection* conn, std::string
 	if(!stmt) {
 		std::string strkey(key);
 		stmt = conn->prepareStatement(strkey);
-		cache_statement(conn, std::move(strkey), stmt);
+		cache_statement(conn, std::move(strkey), UniqueStmt(stmt));
 	}
 
 	return stmt;
@@ -126,11 +126,9 @@ sql::PreparedStatement* MySQL::lookup_statement(const sql::Connection* conn, std
 	return conn_cache_it->second.get();
 }
 
-void MySQL::cache_statement(const sql::Connection* conn, std::string key,
-                            sql::PreparedStatement* value) {
+void MySQL::cache_statement(const sql::Connection* conn, std::string key, UniqueStmt value) {
 	std::lock_guard<std::mutex> lock(cache_lock_);
-	StmtPtr ptr(value, [](auto stmt) { stmt->close(); });
-	cache_[conn].emplace(std::move(key), std::move(ptr));
+	cache_[conn].emplace(std::move(key), std::move(value));
 }
 
 MySQL::QueryCache* MySQL::locate_cache(const sql::Connection* conn) const {
@@ -150,4 +148,8 @@ void MySQL::close_cache(const sql::Connection* conn) const {
 	cache_.erase(conn);
 }
 
+// we do this so we can forward declare sql::PreparedStatement
+void StatementDeleterWrapper::operator()(sql::PreparedStatement* stmt) {
+	delete stmt;
+}
 } // drivers, ember

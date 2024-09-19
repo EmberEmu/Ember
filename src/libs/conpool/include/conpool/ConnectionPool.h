@@ -43,7 +43,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	template<typename, typename, typename, typename, unsigned int>
 	friend class PoolManager;
 
-	using ConType = decltype(std::declval<Driver>().open());
+	using ConType = typename Driver::ConnectionType;
 	using ReusePolicy::return_clean;
 	using GrowthPolicy::grow;
 

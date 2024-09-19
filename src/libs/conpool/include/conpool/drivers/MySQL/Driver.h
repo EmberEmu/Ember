@@ -29,12 +29,14 @@ class PreparedStatement;
 
 namespace ember::drivers {
 
-class MySQL final {
-	using StmtPtr = std::unique_ptr<
-		sql::PreparedStatement, std::function<void(sql::PreparedStatement*)>
-	>;
+struct StatementDeleterWrapper {
+	void operator()(sql::PreparedStatement* stmt);
+};
 
-	using QueryCache = boost::unordered_flat_map<std::string, StmtPtr,
+class MySQL final {
+	using UniqueStmt = std::unique_ptr<sql::PreparedStatement, StatementDeleterWrapper>;
+
+	using QueryCache = boost::unordered_flat_map<std::string, UniqueStmt,
 		StringHash, std::equal_to<>>;
 
 	const std::string dsn, database, username, password;
@@ -46,12 +48,17 @@ class MySQL final {
 	void close_cache(const sql::Connection* conn) const;
 
 public:
+	using ConnectionType = sql::Connection*;
+
 	MySQL(std::string user, std::string password, std::string_view host, std::uint16_t port,
 	      std::string db = "");
 
-	MySQL(MySQL&& rhs) noexcept : dsn(rhs.dsn), database(rhs.database),
-	                              username(rhs.username), password(rhs.password),
-	                              cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
+	MySQL(MySQL&& rhs) noexcept
+		: dsn(rhs.dsn),
+		  database(rhs.database),
+	      username(rhs.username),
+		  password(rhs.password),
+	      cache_(std::move(rhs.cache_)), driver(rhs.driver) { }
 
 	MySQL& operator=(MySQL&&) = delete;
 	MySQL& operator=(MySQL&) = delete;
@@ -69,7 +76,7 @@ public:
 	sql::PreparedStatement* prepare_cached(sql::Connection* conn, std::string key);
 	sql::PreparedStatement* prepare_cached(sql::Connection* conn, std::string_view key);
 	sql::PreparedStatement* lookup_statement(const sql::Connection* conn, std::string_view key);
-	void cache_statement(const sql::Connection* conn, std::string key, sql::PreparedStatement* value);
+	void cache_statement(const sql::Connection* conn, std::string key, UniqueStmt value);
 };
 
 } // drivers, ember
