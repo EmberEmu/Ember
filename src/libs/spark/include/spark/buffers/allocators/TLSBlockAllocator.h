@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/util/Utility.h>
 #include <bitset>
 #include <memory>
 #include <new>
@@ -17,9 +18,13 @@
 
 namespace ember::spark::io {
 
+enum class PagePolicy {
+	no_lock, lock
+};
+
 namespace {
 
-template<typename _ty, std::size_t _elements>
+template<typename _ty, std::size_t _elements, PagePolicy _policy>
 struct Allocator {
 	std::unique_ptr<char[]> storage;
 	std::size_t index = 0;
@@ -37,6 +42,10 @@ struct Allocator {
 		// lazy allocation to prevent every created thread allocating
 		if(!storage) [[unlikely]] {
 			storage = std::make_unique<char[]>(sizeof(_ty) * _elements);
+
+			if constexpr(_policy == PagePolicy::lock) {
+				util::page_lock(storage.get(), sizeof(_ty) * _elements);
+			}
 		}
 
 		for(std::size_t i = 0; i < _elements; ++i) {
@@ -100,18 +109,20 @@ struct Allocator {
 #endif
 	}
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	~Allocator() {
+		if constexpr(_policy == PagePolicy::lock) {
+			util::page_unlock(storage.get(), sizeof(_ty) * _elements);
+		}
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		assert(!storage_active_count && !new_active_count);
 		assert(total_allocs == total_deallocs);
-	}
 #endif
+	}
 };
 
 } // unnamed
 
-
-template<typename _ty, std::size_t _elements>
+template<typename _ty, std::size_t _elements, PagePolicy policy = PagePolicy::lock>
 struct TLSBlockAllocator final {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	std::size_t total_allocs = 0;
@@ -146,7 +157,7 @@ struct TLSBlockAllocator final {
 #ifndef _DEBUG_TLS_BLOCK_ALLOCATOR
 private:
 #endif
-	static inline thread_local Allocator<_ty, _elements> allocator;
+	static inline thread_local Allocator<_ty, _elements, policy> allocator;
 };
 
 } // io, spark, ember
