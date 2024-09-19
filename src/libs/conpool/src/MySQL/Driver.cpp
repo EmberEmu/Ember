@@ -149,7 +149,7 @@ void MySQL::close_cache(const sql::Connection* conn) const {
 }
 
 // we do this so we can forward declare sql::PreparedStatement
-void StatementDeleterWrapper::operator()(sql::PreparedStatement* stmt) {
+void StatementDeleter::operator()(sql::PreparedStatement* stmt) {
 	delete stmt;
 }
 } // drivers, ember
