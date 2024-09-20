@@ -25,6 +25,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <semaphore>
 #include <stdexcept>
 #include <utility>
 #include <cstddef>
