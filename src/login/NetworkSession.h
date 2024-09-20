@@ -53,6 +53,7 @@ private:
 
 	log::Logger* logger_;
 	bool stopped_;
+	boost::asio::ip::address address_;
 
 	void read() {
 		auto self(this->shared_from_this());
@@ -184,7 +185,8 @@ public:
 	                 write_in_progress_(false),
 	                 is_active_(false),
 	                 logger_(logger),
-	                 stopped_(false) {}
+	                 stopped_(false),
+	                 address_(socket_.remote_endpoint().address()) {}
 
 	void start() {
 		read();
@@ -192,7 +194,7 @@ public:
 	}
 
 	std::string remote_address() const {
-		return socket_.remote_endpoint().address().to_string();
+		return address_.to_string();
 	}
 
 	void close_session() {
@@ -233,6 +235,10 @@ public:
 			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 			socket_.close(ec);
 		});
+	}
+
+	bool is_stopped() {
+		return stopped_;
 	}
 
 	virtual ~NetworkSession() = default;
