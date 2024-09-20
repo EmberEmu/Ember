@@ -13,6 +13,7 @@
 #include "Policies.h"
 #include "Exception.h"
 #include "LogSeverity.h"
+#include <shared/threading/Semaphore.h>
 #include <shared/threading/Spinlock.h>
 #include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
@@ -27,7 +28,6 @@
 #include <chrono>
 #include <atomic>
 #include <vector>
-#include <semaphore>
 #include <cstddef>
 
 namespace ember::connection_pool {
@@ -55,7 +55,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	boost::container::small_vector<ConnDetail<ConType>, size_hint> pool_;
 	boost::container::small_vector<std::atomic<bool>, size_hint> pool_guards_;
 
-	std::counting_semaphore<1024> semaphore_ {0};
+	Semaphore<std::mutex> semaphore_;
 	std::function<void(Severity, std::string)> log_cb_;
 	std::atomic_bool closed_;
 
@@ -164,10 +164,14 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 public:
 	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
 	     sc::seconds max_idle, sc::seconds interval = 15s)
-	     : driver_(driver), min_(min_size), max_(max_size),
-		   manager_(this, interval, max_idle), pool_(max_size),
-		   pool_guards_(max_size), size_(0), closed_(false) {
-
+		: driver_(driver),
+		  min_(min_size),
+	      max_(max_size),
+		  manager_(this, interval, max_idle),
+		  pool_(max_size),
+		  pool_guards_(max_size),
+		  size_(0),
+		  closed_(false) {
 		if(!max_size) {
 			throw exception("Max. database connections cannot be zero");
 		}

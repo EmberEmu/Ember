@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ember
+ * Copyright (c) 2014 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,12 @@
 
 namespace ember {
 
+/*
+ * This semaphore predates the additions to std::* and it does
+ * not behave the same. The main difference is that calling
+ * release() when the counter is at its maximum value will
+ * have no effect, which is not allowed with the std semaphores.
+ */
 template<typename Lock>
 class Semaphore final {
 	std::condition_variable condition_;
@@ -37,7 +43,7 @@ public:
 		max_ = max_count;
 	}
 
-	void wait() {
+	void acquire() {
 		std::unique_lock guard(lock_);
 
 		while(!count_) {
@@ -47,7 +53,7 @@ public:
 		--count_;
 	}
 
-	bool wait_for(std::chrono::milliseconds duration) {
+	bool try_acquire_for(std::chrono::milliseconds duration) {
 		std::unique_lock guard(lock_);
 
 		return condition_.wait_for(guard, duration,
@@ -60,16 +66,21 @@ public:
 			});
 	}
 
-	void signal(unsigned int increment = 1) {
-		std::lock_guard guard(lock_);
-		increment_max_check(increment); 
-		condition_.notify_one();
-	}
+	void release(unsigned int increment = 1) {
+		if(!increment) {
+			return;
+		}
 
-	void signal_all(unsigned int increment = 1) {
 		std::lock_guard guard(lock_);
 		increment_max_check(increment);
-		condition_.notify_all();
+
+		for(auto i = 0u; i < increment; ++i) {
+			condition_.notify_one();
+		}
+	}
+
+	unsigned int count() {
+		return count_;
 	}
 };
 
