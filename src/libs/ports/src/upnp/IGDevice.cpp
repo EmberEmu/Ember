@@ -207,7 +207,7 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 		scpd_cc_ = std::chrono::steady_clock::now();
 	}
 
-	scpd_xml_ = std::move(std::make_unique<SCPDXMLParser>(body));
+	scpd_xml_ = std::make_unique<SCPDXMLParser>(body);
 }
 
 std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<const char> buffer) {
@@ -237,7 +237,7 @@ ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 		igdd_cc_ = std::chrono::steady_clock::now();
 	}
 	
-	igdd_xml_ = std::move(std::make_unique<XMLParser>(body));
+	igdd_xml_ = std::make_unique<XMLParser>(body);
 }
 
 ba::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
