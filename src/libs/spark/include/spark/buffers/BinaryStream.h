@@ -89,7 +89,7 @@ class BinaryStream final {
 	}
 
 public:
-	using State = StreamState;
+	using State              = StreamState;
 	using seeking            = typename buf_type::seeking;
 	using value_type         = typename buf_type::value_type;
 	using contiguous_type    = typename buf_type::contiguous;
