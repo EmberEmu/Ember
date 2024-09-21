@@ -1,0 +1,45 @@
+# World daemon configuration
+
+[world]
+id = 0     # realm ID, matching database value
+map_id = 0 # -1 = instances, 0 - EK, 1 - Kalimdor
+
+[network]
+# IPv4 or IPv6 bind interface - this should be an internal address or closed port!
+# Do NOT expose this port to the Internet, only to the private/internal network
+interface = 0.0.0.0 
+port = 8086          # Port for the server to listen to gateway connections on
+tcp_no_delay = true  # Toggle Nagle's algorithm
+
+[spark]
+address = 127.0.0.1
+port = 6005
+multicast_interface = 0.0.0.0
+multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
+multicast_port = 6000
+#secret_key = changeme
+
+[database]
+config_path = mysql_config.conf
+min_connections = 1
+max_connections = 8
+
+[remote_log]
+service_name = login
+verbosity = none # trace, debug, info, warning, error, fatal or none to disable
+host = localhost
+port = 514
+
+[file_log]
+verbosity = none   # trace, debug, info, warning, error, fatal or none to disable
+path = logs/login_%d_%m_%Y.log
+midnight_rotate = 0
+mode = append      # if an existing log is found, you can either 'append' to it or 'truncate' it
+size_rotate = 0    # max log size in megabytes - 0 disables
+log_timestamp = 0  # enable/disable timestamping log records
+timestamp_format = [%d/%m/%Y %H:%M:%S] 
+log_severity = 1   # enable/disable writing severity to log records
+
+[console_log]
+verbosity = trace # trace, debug, info, warning, error, fatal or none to disable
+colours = true    # colourise the output
