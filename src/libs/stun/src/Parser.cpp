@@ -8,8 +8,9 @@
 
 #include <stun/Parser.h>
 #include <stun/detail/Shared.h>
+#include <spark/buffers/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/pmr/BufferAdaptor.h>
-#include <spark/buffers/pmr/BinaryStreamReader.h>
 #include <boost/assert.hpp>
 #include <botan/hash.h>
 #include <botan/mac.h>
@@ -80,8 +81,8 @@ attributes::Fingerprint Parser::fingerprint(spark::io::pmr::BinaryStreamReader& 
 }
 
 Header Parser::header() try {
-	spark::io::pmr::BufferReadAdaptor sba(buffer_);
-;	spark::io::pmr::BinaryStreamReader stream(sba);
+	spark::io::BufferAdaptor sba(buffer_);
+;	spark::io::BinaryStream stream(sba);
 
 	Header header{};
 	stream >> header.type;

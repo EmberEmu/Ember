@@ -8,8 +8,8 @@
 
 #include <stun/StreamTransport.h>
 #include <stun/Protocol.h>
-#include <spark/buffers/pmr/BinaryStream.h>
-#include <spark/buffers/pmr/BufferAdaptor.h>
+#include <spark/buffers/BinaryStream.h>
+#include <spark/buffers/BufferAdaptor.h>
 #include <shared/threading/Utility.h>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/read.hpp>
@@ -115,8 +115,8 @@ void StreamTransport::receive() {
 }
 
 std::size_t StreamTransport::get_length() {
-	spark::io::pmr::BufferAdaptor vba(buffer_);
-	spark::io::pmr::BinaryStream stream(vba);
+	spark::io::BufferAdaptor vba(buffer_);
+	spark::io::BinaryStream stream(vba);
 
 	Header header{};
 	stream >> header.type;
