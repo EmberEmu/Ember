@@ -58,9 +58,9 @@ void MessageBuilder::generate_tx_id(Header& header) {
 	std::mt19937 mt(rd());
 
 	if(header.cookie == MAGIC_COOKIE) {
-		std::generate(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end(), mt);
+		std::ranges::generate(header.tx_id.id_5389, mt);
 	} else {
-		std::generate(header.tx_id.id_3489.begin(), header.tx_id.id_3489.end(), mt);
+		std::ranges::generate(header.tx_id.id_3489, mt);
 	}
 }
 
@@ -70,9 +70,9 @@ void MessageBuilder::write_header(Header& header) {
 
 	if(header.cookie == MAGIC_COOKIE) {
 		stream_ << header.cookie;
-		stream_.put(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end());
+		stream_ << header.tx_id.id_5389;
 	} else {
-		stream_.put(header.tx_id.id_3489.begin(), header.tx_id.id_3489.end());
+		stream_ << header.tx_id.id_3489;
 	}
 }
 

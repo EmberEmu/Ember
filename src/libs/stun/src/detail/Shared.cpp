@@ -191,9 +191,9 @@ Header read_header(std::span<const std::uint8_t> buffer) try {
 
 	if(magic_cookie_present(buffer)) {
 		stream >> header.cookie;
-		stream.get(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end());
+		stream >> header.tx_id.id_5389;
 	} else {
-		stream.get(header.tx_id.id_3489.begin(), header.tx_id.id_3489.end());
+		stream >> header.tx_id.id_3489;
 	}
 
 	return header;

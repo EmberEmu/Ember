@@ -89,9 +89,9 @@ Header Parser::header() try {
 
 	if(mode_ != RFCMode::RFC3489) {
 		stream >> header.cookie;
-		stream.get(header.tx_id.id_5389.begin(), header.tx_id.id_5389.end());
+		stream >> header.tx_id.id_5389;
 	} else {
-		stream.get(header.tx_id.id_3489.begin(), header.tx_id.id_3489.end());
+		stream >> header.tx_id.id_3489;
 	}
 
 	return header;

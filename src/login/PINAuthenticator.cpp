@@ -200,7 +200,7 @@ std::uint32_t PINAuthenticator::generate_seed() {
  */
 auto PINAuthenticator::generate_salt() -> SaltBytes {
 	SaltBytes server_salt;
-	std::generate(server_salt.begin(), server_salt.end(), generate_seed);
+	std::ranges::generate(server_salt, generate_seed);
 	return server_salt;
 }
 
