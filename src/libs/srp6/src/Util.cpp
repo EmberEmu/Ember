@@ -44,14 +44,14 @@ KeyType interleaved_hash(SmallVec key) {
 	begin = std::distance(begin, key.end()) % 2 == 0? begin : begin + 1;
 
 	auto bound = std::stable_partition(begin, key.end(),
-	    [&begin](const auto& x) { return (&x - &*begin) % 2 == 0; });
+	    [&begin](const auto& x) { return (&x - begin.get_ptr()) % 2 == 0; });
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	std::array<std::uint8_t, SHA1_LEN> g, h;
-	hasher->update(&*begin, std::distance(begin, bound));
+	hasher->update(begin.get_ptr(), std::distance(begin, bound));
 	hasher->final(g.data());
-	hasher->update(&*bound, std::distance(bound, key.end()));
+	hasher->update(bound.get_ptr(), std::distance(bound, key.end()));
 	hasher->final(h.data());
 
 	KeyType final(INTERLEAVE_LENGTH, boost::container::default_init);
