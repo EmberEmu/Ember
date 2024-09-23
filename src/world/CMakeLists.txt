@@ -8,16 +8,12 @@ set(EXECUTABLE_NAME world)
 set(LIBRARY_NAME    libworld)
 
 set(LIBRARY_HDR
-    networking/NetworkListener.h
-    networking/GatewayClient.h
-    networking/SessionManager.h
+
     )
 
 set(LIBRARY_SRC
-    networking/GatewayClient.cpp
-    networking/SessionManager.cpp
+    Dummy.cpp
     )
-
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} spark logger shared ${Boost_LIBRARIES})

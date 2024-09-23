@@ -7,7 +7,7 @@
 add_subdirectory(login)
 add_subdirectory(social)
 add_subdirectory(gateway)
-#add_subdirectory(world)
+add_subdirectory(world)
 add_subdirectory(account)
 add_subdirectory(mdns)
 add_subdirectory(character)
