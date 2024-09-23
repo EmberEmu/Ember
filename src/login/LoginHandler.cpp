@@ -28,10 +28,10 @@ namespace ember {
 bool LoginHandler::update_state(const grunt::Packet& packet) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	LoginState prev_state = state_;
+	const LoginState prev_state = state_;
 	update_state(LoginState::CLOSED);
 
-	switch(prev_state) {
+	switch(state_) {
 		case LoginState::INITIAL_CHALLENGE:
 			initiate_login(packet);
 			break;
@@ -74,7 +74,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 bool LoginHandler::update_state(const Action& action) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	LoginState prev_state = state_;
+	const LoginState prev_state = state_;
 	update_state(LoginState::CLOSED);
 
 	switch(prev_state) {
@@ -133,9 +133,9 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
 	                 to_string(challenge.version), source_ip_);
 
-	Patcher::PatchLevel patch_level = patcher_.check_version(challenge.version);
+	const Patcher::PatchLevel level = patcher_.check_version(challenge.version);
 
-	switch(patch_level) {
+	switch(level) {
 		case Patcher::PatchLevel::OK:
 			fetch_user(challenge.opcode, challenge.username);
 			break;
@@ -289,7 +289,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 	Botan::AutoSeeded_RNG().randomize(checksum_salt_.data(), checksum_salt_.size());
 	response.salt = checksum_salt_;
 
-	const auto&[status, key] = action.get_result();
+	const auto& [status, key] = action.get_result();
 
 	if(status == messaging::account::Status::OK) {
 		update_state(LoginState::RECONNECT_PROOF);
@@ -325,9 +325,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 	PINAuthenticator pin_auth(pin_grid_seed_, logger_);
 	bool result = false;
 
-	if(user_->pin_method() == PINMethod::FIXED) {
-		result = pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, user_->pin());
-	} else if(user_->pin_method() == PINMethod::TOTP) {
+	if(user_->pin_method() == PINMethod::TOTP) {
 		for(auto interval : {0, -1, 1}) { // try time intervals -1 to +1
 			const auto pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
 
@@ -336,13 +334,15 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 				break;
 			}
 		}
+	} else if(user_->pin_method() == PINMethod::FIXED) {
+		result = pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, user_->pin());
 	} else {
 		LOG_ERROR(logger_) << "Unknown TOTP method, "
 		                   << std::to_underlying(user_->pin_method()) << LOG_ASYNC;
 	}
 
 	LOG_DEBUG(logger_) << "PIN authentication for " << user_->username()
-	                   << (result ? " OK" : " failed") << LOG_ASYNC;
+	                   << (result? " OK" : " failed") << LOG_ASYNC;
 
 	return result;
 }
