@@ -40,6 +40,7 @@
 #include <shared/IPBanCache.h>
 #include <shared/util/xoroshiro128plus.h>
 #include <shared/util/PortForward.h>
+#include <shared/util/cstring_view.hpp>
 #include <stun/Client.h>
 #include <stun/Utility.h>
 #include <botan/version.h>

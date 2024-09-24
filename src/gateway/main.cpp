@@ -31,6 +31,7 @@
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>
+#include <shared/util/cstring_view.hpp>
 #include <shared/util/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>

@@ -12,6 +12,7 @@
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/util/cstring_view.hpp>
 #include <shared/util/LogConfig.h>
 #include <shared/util/Utility.h>
 #include <shared/threading/Utility.h>
