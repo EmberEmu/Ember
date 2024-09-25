@@ -33,13 +33,13 @@ int launch(const boost::program_options::variables_map& args, log::Logger* logge
 	const auto maps = args["world.map_id"].as<std::vector<std::int32_t>>();
 	std::vector<std::string_view> map_names;
 
-	for(auto map : maps) {
+	for(auto id : maps) {
 		auto it = std::ranges::find_if(dbc_store.map, [&](auto& record) {
-			return record.second.id == map;
+			return record.second.id == id;
 		});
 
 		if(it == dbc_store.map.end()) {
-			LOG_FATAL_SYNC(logger, "Unknown map ID ({}) specified", map);
+			LOG_FATAL_SYNC(logger, "Unknown map ID ({}) specified", id);
 			return EXIT_FAILURE;
 		}
 
