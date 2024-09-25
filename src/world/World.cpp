@@ -52,7 +52,7 @@ int launch(const boost::program_options::variables_map& args, log::Logger& logge
 bool validate_maps(std::span<const std::int32_t> maps,
                    const dbc::DBCMap<dbc::Map>& dbc,
                    log::Logger& logger) {
-	for(auto id : maps) {
+	auto validate = [&](const std::uint32_t id) {
 		auto it = std::ranges::find_if(dbc, [&](auto& record) {
 			return record.second.id == id;
 		});
@@ -68,9 +68,11 @@ bool validate_maps(std::span<const std::int32_t> maps,
 			LOG_ERROR_SYNC(logger, "Map {} ({}) is not an open world area", map.id, map.internal_name);
 			return false;
 		}
-	}
 
-	return true;
+		return true;
+	};
+
+	return std::ranges::find(maps, false, validate) == maps.end();
 }
 
 void print_maps(std::span<const std::int32_t> maps,
