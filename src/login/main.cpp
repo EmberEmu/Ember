@@ -25,9 +25,6 @@
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>
-#include <shared/util/LogConfig.h>
-#include <shared/util/STUN.h>
-#include <shared/util/Utility.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/metrics/MetricsPoll.h>
@@ -38,9 +35,12 @@
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/IPBanCache.h>
-#include <shared/util/xoroshiro128plus.h>
-#include <shared/util/PortForward.h>
 #include <shared/util/cstring_view.hpp>
+#include <shared/util/xoroshiro128plus.h>
+#include <shared/util/LogConfig.h>
+#include <shared/util/STUN.h>
+#include <shared/util/Utility.h>
+#include <shared/util/PortForward.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
 #include <botan/version.h>
