@@ -87,6 +87,8 @@ set(UTIL_SRC
     shared/util/polyfill/print
     shared/util/polyfill/start_lifetime_as
     shared/util/polyfill/inplace_vector
+    shared/util/Timing.h
+    shared/util/Timing.cpp
 )
 
 set(METRICS_SRC

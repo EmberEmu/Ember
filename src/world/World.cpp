@@ -9,6 +9,7 @@
 #include "World.h"
 #include <dbcreader/DBCReader.h>
 #include <boost/program_options.hpp>
+#include <shared/util/Timing.h>
 #include <algorithm>
 #include <span>
 #include <string_view>
@@ -52,7 +53,7 @@ int launch(const boost::program_options::variables_map& args, log::Logger& logge
 bool validate_maps(std::span<const std::int32_t> maps,
                    const dbc::DBCMap<dbc::Map>& dbc,
                    log::Logger& logger) {
-	auto validate = [&](const std::uint32_t id) {
+	auto validate = [&](const auto id) {
 		auto it = std::ranges::find_if(dbc, [&](auto& record) {
 			return record.second.id == id;
 		});
@@ -65,7 +66,8 @@ bool validate_maps(std::span<const std::int32_t> maps,
 		auto& [_, map] = *it;
 
 		if(map.instance_type != dbc::Map::InstanceType::NORMAL) {
-			LOG_ERROR_SYNC(logger, "Map {} ({}) is not an open world area", map.id, map.internal_name);
+			LOG_ERROR_SYNC(logger, "Map {} ({}) is not an open world area",
+			               map.id, map.internal_name);
 			return false;
 		}
 
