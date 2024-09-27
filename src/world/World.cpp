@@ -7,9 +7,9 @@
  */
 
 #include "World.h"
+#include "MapRunner.h"
 #include <dbcreader/DBCReader.h>
 #include <boost/program_options.hpp>
-#include <shared/util/Timing.h>
 #include <algorithm>
 #include <span>
 #include <string_view>
@@ -47,6 +47,7 @@ int launch(const boost::program_options::variables_map& args, log::Logger& logge
 	}
 
 	print_maps(maps, dbc_store.map, logger);
+	run(logger);
 	return EXIT_SUCCESS;
 }
 
