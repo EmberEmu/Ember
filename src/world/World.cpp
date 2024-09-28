@@ -9,8 +9,11 @@
 #include "World.h"
 #include "MapRunner.h"
 #include <dbcreader/DBCReader.h>
+#include <boost/container/static_vector.hpp>
 #include <boost/program_options.hpp>
 #include <algorithm>
+#include <random>
+#include <ranges>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -28,6 +31,8 @@ void print_maps(std::span<const std::int32_t> maps,
                 const dbc::DBCMap<dbc::Map>& dbc,
                 log::Logger& logger);
 
+void print_tip(const dbc::DBCMap<dbc::GameTips>& tips, log::Logger& logger);
+
 int launch(const boost::program_options::variables_map& args, log::Logger& logger) {
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
 
@@ -35,10 +40,12 @@ int launch(const boost::program_options::variables_map& args, log::Logger& logge
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load("Map");
+	auto dbc_store = loader.load("Map", "GameTips");
 
 	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
 	dbc::link(dbc_store);
+
+	print_tip(dbc_store.game_tips, logger);
 
 	const auto& maps = args["world.map_id"].as<std::vector<std::int32_t>>();
 
@@ -49,6 +56,25 @@ int launch(const boost::program_options::variables_map& args, log::Logger& logge
 	print_maps(maps, dbc_store.map, logger);
 	run(logger);
 	return EXIT_SUCCESS;
+}
+
+void print_tip(const dbc::DBCMap<dbc::GameTips>& tips, log::Logger& logger) {
+	boost::container::static_vector<dbc::GameTips, 1> out;
+	std::mt19937 gen{std::random_device{}()};
+	std::ranges::sample(tips.values(), std::back_inserter(out), 1, gen);
+
+	if(out.empty()) {
+		return;
+	}
+
+	std::string_view text(out.front().text.en_gb);
+	const auto pos = text.find_first_not_of("|cffffd100Tip:|r ");
+
+	if(pos != text.npos) {
+		text = text.substr(pos, text.size());
+	}
+
+	LOG_INFO_SYNC(logger, "Tip: {}", text);
 }
 
 bool validate_maps(std::span<const std::int32_t> maps,
