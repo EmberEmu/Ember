@@ -54,7 +54,7 @@ int launch(const boost::program_options::variables_map& args, log::Logger& logge
 bool validate_maps(std::span<const std::int32_t> maps,
                    const dbc::DBCMap<dbc::Map>& dbc,
                    log::Logger& logger) {
-	auto validate = [&](const auto id) {
+	const auto validate = [&](const auto id) {
 		auto it = std::ranges::find_if(dbc, [&](auto& record) {
 			return record.second.id == id;
 		});

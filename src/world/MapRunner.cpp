@@ -19,7 +19,7 @@ using namespace std::chrono_literals;
 namespace ember::world {
 
 const auto UPDATE_FREQUENCY = 60.0;
-const std::chrono::duration<double> UPDATE_DELTA { 1000ms / UPDATE_FREQUENCY };
+const auto TARGET_UPDATE_TIME { 1000ms / UPDATE_FREQUENCY };
 const auto TIME_PERIOD = 1ms;
 const auto WATCHDOG_PERIOD = 120s;
 
@@ -59,7 +59,7 @@ void run(log::Logger& log) {
 	Watchdog watchdog(log, WATCHDOG_PERIOD);
 
 	volatile bool stop = false; // temporary, prevent optimisation
-	auto previous = std::chrono::steady_clock::now() - UPDATE_DELTA;
+	auto previous = std::chrono::steady_clock::now() - TARGET_UPDATE_TIME;
 
 	while(!stop) {
 		const auto begin = std::chrono::steady_clock::now();
@@ -80,8 +80,8 @@ void run(log::Logger& log) {
 		 * 
 		 * Chrome, Firefox and so on pretty much do things the same way.
 		 */
-		if(update_time < UPDATE_DELTA) {
-			std::this_thread::sleep_for(UPDATE_DELTA - update_time);
+		if(update_time < TARGET_UPDATE_TIME) {
+			std::this_thread::sleep_for(TARGET_UPDATE_TIME - update_time);
 		}
 
 		previous = begin;
