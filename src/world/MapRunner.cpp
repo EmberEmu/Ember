@@ -21,7 +21,7 @@ namespace ember::world {
 const auto UPDATE_FREQUENCY = 60.0;
 const std::chrono::duration<double> UPDATE_DELTA { 1000ms / UPDATE_FREQUENCY };
 const auto TIME_PERIOD = 1ms;
-const auto WATCHDOG_PERIOD = 30s;
+const auto WATCHDOG_PERIOD = 120s;
 
 // placeholder
 void update(std::chrono::milliseconds delta) {
