@@ -30,14 +30,14 @@ void Watchdog::monitor(const std::stop_token token) {
 	auto cond_var = std::condition_variable_any();
 
 	while(!token.stop_requested()) {
-		check();
+		check_timeout();
 		cond_var.wait_for(mutex, token, max_idle_, [] { return false; });
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Watchdog stopped");
 }
 
-void Watchdog::check() {
+void Watchdog::check_timeout() {
 	const auto curr = std::chrono::steady_clock::now();
 	const auto delta = curr - prev_;
 
@@ -47,13 +47,17 @@ void Watchdog::check() {
 	}
 
 	if(timeout_) {
-		const auto delta_s = std::chrono::duration_cast<std::chrono::seconds>(delta);
-		LOG_FATAL_SYNC(logger_, "Watchdog triggered after {}, terminating...", delta_s);
-		std::abort();
+		timeout(delta);
 	}
 
 	prev_ = curr;
 	timeout_ = true;
+}
+
+[[noreturn]] void Watchdog::timeout(const std::chrono::nanoseconds& delta) {
+	LOG_FATAL_SYNC(logger_, "Watchdog triggered after {}, terminating...",
+	               std::chrono::duration_cast<std::chrono::seconds>(delta));
+	std::abort();
 }
 
 void Watchdog::notify() {

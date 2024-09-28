@@ -30,7 +30,8 @@ class Watchdog final {
 	std::jthread worker_;
 
 	void monitor(const std::stop_token stop);
-	void check();
+	void check_timeout();
+	void timeout(const std::chrono::nanoseconds& delta);
 
 public:
 	Watchdog(log::Logger& logger, std::chrono::seconds max_idle);
