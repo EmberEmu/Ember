@@ -59,6 +59,10 @@ public:
 	auto values()  {
 		return storage | boost::adaptors::map_values;
 	}
+
+	auto size() const {
+		return storage.size();
+	}
 };
 
 } // dbc, ember
