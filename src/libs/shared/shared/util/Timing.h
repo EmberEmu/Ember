@@ -18,7 +18,7 @@ namespace ember::util {
  * Allows for setting the timer period, ensuring that
  * it's reset to its original value when leaving scope
  */
-class ScopedTimerPeriod {
+class ScopedTimerPeriod final {
 	using Callback = std::function<void()>;
 
 	Callback cb_;
@@ -29,7 +29,7 @@ public:
 		: success_(success),
 		  cb_(std::move(cb)) {}
 
-	bool success() {
+	bool success() const {
 		return success_;
 	}
 

@@ -9,12 +9,14 @@ set(LIBRARY_NAME    libworld)
 
 set(LIBRARY_HDR
     World.h
-	MapRunner.h
+    MapRunner.h
+    Watchdog.h
     )
 
 set(LIBRARY_SRC
     World.cpp
-	MapRunner.cpp
+    MapRunner.cpp
+    Watchdog.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

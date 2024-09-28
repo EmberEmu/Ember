@@ -7,6 +7,7 @@
  */
 
 #include "MapRunner.h"
+#include "Watchdog.h"
 #include <logger/Logger.h>
 #include <shared/util/Timing.h>
 #include <chrono>
@@ -20,6 +21,7 @@ namespace ember::world {
 const auto UPDATE_FREQUENCY = 60.0;
 const std::chrono::duration<double> UPDATE_DELTA { 1000ms / UPDATE_FREQUENCY };
 const auto TIME_PERIOD = 1ms;
+const auto WATCHDOG_PERIOD = 30s;
 
 // placeholder
 void update(std::chrono::milliseconds delta) {
@@ -39,7 +41,7 @@ void update(std::chrono::milliseconds delta) {
 void run(log::Logger& log) {
 	LOG_TRACE(log) << log_func << LOG_ASYNC;
 
-	auto timer_guard = util::set_time_period(1ms);
+	const auto timer_guard = util::set_time_period(1ms);
 
 	/*
 	 * If we can't increase timer resolution, the worst that happens
@@ -54,15 +56,18 @@ void run(log::Logger& log) {
 						src.file_name(), src.line());
 	}
 
+	Watchdog watchdog(log, WATCHDOG_PERIOD);
+
 	volatile bool stop = false; // temporary, prevent optimisation
 	auto previous = std::chrono::steady_clock::now() - UPDATE_DELTA;
 
 	while(!stop) {
 		const auto begin = std::chrono::steady_clock::now();
-		auto delta = begin - previous;
-		auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+		const auto delta = begin - previous;
+		const auto delta_ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
 
 		update(delta_ms);
+		watchdog.notify();
 
 		const auto end = std::chrono::steady_clock::now();
 		const auto update_time = end - begin;
