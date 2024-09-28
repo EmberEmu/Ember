@@ -11,12 +11,14 @@ set(LIBRARY_HDR
     World.h
     MapRunner.h
     Watchdog.h
+    utilities/DeltaTimer.h
     )
 
 set(LIBRARY_SRC
     World.cpp
     MapRunner.cpp
     Watchdog.cpp
+    utilities/DeltaTimer.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
