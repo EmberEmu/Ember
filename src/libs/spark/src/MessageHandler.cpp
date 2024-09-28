@@ -115,8 +115,8 @@ bool MessageHandler::negotiate_protocols(NetworkSession& net, const Message& mes
 	auto servers = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::SERVER));
 	auto clients = detail::services_to_underlying(dispatcher_.services(EventDispatcher::Mode::CLIENT));
 
-	std::sort(servers.begin(), servers.end());
-	std::sort(clients.begin(), clients.end());
+	std::ranges::sort(servers);
+	std::ranges::sort(clients);
 //	std::sort(protocols->proto_in()->begin(), protocols->proto_in()->end());   // remote servers
 //	std::sort(protocols->proto_out()->begin(), protocols->proto_out()->end()); // remote clients
 

@@ -41,7 +41,7 @@ void EventDispatcher::post_event(const ClientUUID& client, std::unique_ptr<Event
  */
 void EventDispatcher::broadcast_event(std::vector<ClientUUID> clients,
                                       std::shared_ptr<const Event> event) const {
-	std::sort(clients.begin(), clients.end(), [](auto& lhs, auto& rhs) {
+	std::ranges::sort(clients, [](auto& lhs, auto& rhs) {
 		return lhs.service() < rhs.service();
 	});
 

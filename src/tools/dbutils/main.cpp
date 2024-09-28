@@ -207,12 +207,9 @@ bool validate_db_names(std::span<const std::string> input_names) {
 		valid_names.emplace_back(key);
 	}
 
-	std::sort(valid_names.begin(), valid_names.end());
-	std::sort(input.begin(), input.end());
-
-	std::set_difference(input.begin(), input.end(),
-	                    valid_names.begin(), valid_names.end(),
-	                    std::back_inserter(bad_names));
+	std::ranges::sort(valid_names);
+	std::ranges::sort(input);
+	std::ranges::set_difference(input, valid_names, std::back_inserter(bad_names));
 	
 	for(const auto& name : bad_names) {
 		LOG_INFO_GLOB << "Invalid or duplicate name: " << name << LOG_SYNC;
@@ -441,7 +438,7 @@ bool db_update(const po::variables_map& args, const std::string& db) {
 		paths.emplace_back(it.path());
 	}
 
-	std::sort(paths.begin(), paths.end());
+	std::ranges::sort(paths);
 	std::vector<std::string> migration_paths;
 
 	for(const auto& path : paths) {
