@@ -84,7 +84,7 @@ void print_maps(std::span<const std::int32_t> maps,
 	LOG_INFO_SYNC(logger, "Serving as world server for maps:");
 
 	for(auto id : maps) {
-		LOG_INFO_SYNC(logger, " - {}", dbc[id]->internal_name);
+		LOG_INFO_SYNC(logger, " - {}", dbc[id]->map_name.en_gb);
 	}
 }
 
