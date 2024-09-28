@@ -53,7 +53,7 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
 		throw std::invalid_argument("Provided PIN was too short");
 	}
 
-	std::reverse(pin_bytes_.begin(), pin_bytes_.end());
+	std::ranges::reverse(pin_bytes_);
 }
 
 /* 

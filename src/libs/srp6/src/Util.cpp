@@ -20,21 +20,21 @@ namespace ember::srp6 {
 namespace detail {
 
 Botan::BigInt decode_flip(std::span<std::uint8_t> val) {
-	std::reverse(val.begin(), val.end());
+	std::ranges::reverse(val);
 	return Botan::BigInt::decode(val.data(), val.size());
 }
 
 SmallVec encode_flip(const Botan::BigInt& val) {
 	SmallVec res(val.bytes(), boost::container::default_init);
 	val.binary_encode(res.data(), res.size());
-	std::reverse(res.begin(), res.end());
+	std::ranges::reverse(res);
 	return res;
 }
 
 SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 	SmallVec res(padding, boost::container::default_init);
 	Botan::BigInt::encode_1363(res.data(), res.size(), val);
-	std::reverse(res.begin(), res.end());
+	std::ranges::reverse(res);
 	return res;
 }
 

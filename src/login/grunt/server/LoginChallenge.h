@@ -39,7 +39,7 @@ class LoginChallenge final : public Packet {
 
 		std::array<std::uint8_t, PUB_KEY_LENGTH> b_buff;
 		stream.get(b_buff.data(), b_buff.size());
-		std::reverse(std::begin(b_buff), std::end(b_buff));
+		std::ranges::reverse(b_buff);
 		B = Botan::BigInt(b_buff.data(), b_buff.size());
 
 		stream >> g_len;
@@ -48,12 +48,12 @@ class LoginChallenge final : public Packet {
 
 		std::array<std::uint8_t, PRIME_LENGTH> n_buff;
 		stream.get(n_buff.data(), n_buff.size());
-		std::reverse(std::begin(n_buff), std::end(n_buff));
+		std::ranges::reverse(n_buff);
 		N = Botan::BigInt(n_buff.data(), n_buff.size());
 
 		std::array<std::uint8_t, SALT_LENGTH> s_buff;
 		stream.get(s_buff.data(), s_buff.size());
-		std::reverse(std::begin(s_buff), std::end(s_buff));
+		std::ranges::reverse(s_buff);
 		s = Botan::BigInt(s_buff.data(), s_buff.size());
 
 		stream.get(checksum_salt.data(), checksum_salt.size());

@@ -357,7 +357,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 	);
 
 	salt.binary_encode(bytes.data(), bytes.size());
-	std::reverse(bytes.begin(), bytes.end());
+	std::ranges::reverse(bytes);
 	return validate_client_integrity(hash, bytes, reconnect);
 }
 

@@ -44,12 +44,12 @@ class LoginProof final : public Packet {
 
 		std::array<std::uint8_t, A_LENGTH> a_buff;
 		stream.get(a_buff.data(), a_buff.size());
-		std::reverse(std::begin(a_buff), std::end(a_buff));
+		std::ranges::reverse(a_buff);
 		A = Botan::BigInt(a_buff.data(), a_buff.size());
 
 		std::array<std::uint8_t, M1_LENGTH> m1_buff;
 		stream.get(m1_buff.data(), m1_buff.size());
-		std::reverse(std::begin(m1_buff), std::end(m1_buff));
+		std::ranges::reverse(m1_buff);
 		M1 = Botan::BigInt(m1_buff.data(), m1_buff.size());
 
 		stream.get(client_checksum.data(), client_checksum.size());
