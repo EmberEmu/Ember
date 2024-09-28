@@ -39,7 +39,7 @@ class Watchdog final {
 	void timeout(const std::chrono::nanoseconds& delta);
 
 public:
-	Watchdog(log::Logger& logger, std::chrono::seconds max_idle);
+	Watchdog(std::chrono::seconds max_idle, log::Logger& logger);
 	~Watchdog();
 
 	void stop();

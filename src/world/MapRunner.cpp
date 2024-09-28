@@ -56,7 +56,7 @@ void run(log::Logger& log) {
 						src.file_name(), src.line());
 	}
 
-	Watchdog watchdog(log, WATCHDOG_PERIOD);
+	Watchdog watchdog(WATCHDOG_PERIOD, log);
 
 	volatile bool stop = false; // temporary, prevent optimisation
 	auto previous = std::chrono::steady_clock::now() - TARGET_UPDATE_TIME;

@@ -14,7 +14,7 @@
 
 namespace ember {
 
-Watchdog::Watchdog(log::Logger& logger, std::chrono::seconds max_idle)
+Watchdog::Watchdog(std::chrono::seconds max_idle, log::Logger& logger)
 	: logger_(logger),
 	  max_idle_(max_idle),
 	  timeout_(false),
