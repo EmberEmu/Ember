@@ -54,7 +54,7 @@ void Watchdog::check_timeout() {
 	timeout_ = true;
 }
 
-[[noreturn]] void Watchdog::timeout(const std::chrono::nanoseconds& delta) {
+void Watchdog::timeout(const std::chrono::nanoseconds& delta) {
 	LOG_FATAL_SYNC(logger_, "Watchdog triggered after {}, terminating...",
 	               std::chrono::duration_cast<std::chrono::seconds>(delta));
 	std::abort();

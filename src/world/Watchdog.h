@@ -34,6 +34,8 @@ class Watchdog final {
 
 	void run(const std::stop_token stop);
 	void check_timeout();
+
+	[[noreturn]]
 	void timeout(const std::chrono::nanoseconds& delta);
 
 public:
