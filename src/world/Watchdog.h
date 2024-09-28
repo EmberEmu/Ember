@@ -19,17 +19,17 @@ using namespace std::chrono_literals;
 
 /*
  * Used to periodically check whether a loop is still
- * updating, terminatING the process if it detects a
+ * updating, terminating the process if it detects a
  * potential hang.
  */
 class Watchdog final {
 	log::Logger& logger_;
-	std::chrono::seconds max_idle_;
+	const std::chrono::seconds max_idle_;
 	std::atomic_bool timeout_;
 	std::chrono::steady_clock::time_point prev_;
 	std::jthread worker_;
 
-	void monitor(std::stop_token stop);
+	void monitor(const std::stop_token stop);
 	void check();
 
 public:
