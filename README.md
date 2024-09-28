@@ -63,7 +63,7 @@ Want to do it the hard way? That's fine too, just see docs/GettingStarted.md.
 
 ## 💡Need help?
 
-We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg/WpPJzQS) or you can check [our website](https://emberemu.com) out for further documentation.
+We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg/WpPJzQS) or you can check [our website](https://mmoemulator.com) out for further documentation.
 
 ## 💻 Supported platforms
 
