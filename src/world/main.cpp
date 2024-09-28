@@ -24,6 +24,7 @@ constexpr ember::cstring_view APP_NAME { "World Server" };
 using namespace ember;
 namespace po = boost::program_options;
 
+int launch(const po::variables_map& args, log::Logger& logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 /*
@@ -44,9 +45,9 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 	util::configure_logger(logger, args);
 	log::global_logger(logger);
-	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 
-	const auto ret = world::launch(args, logger);
+	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
+	const auto ret = launch(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
 } catch(const std::exception& e) {
@@ -54,8 +55,15 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
+int launch(const po::variables_map& args, log::Logger& logger) try {
+	return world::launch(args, logger);
+} catch(const std::exception& e) {
+	LOG_FATAL_SYNC(logger, "{}", e.what());
+	return EXIT_FAILURE;
+}
+
 po::variables_map parse_arguments(int argc, const char* argv[]) {
-	//Command-line options
+	// Command-line options
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
