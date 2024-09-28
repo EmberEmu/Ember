@@ -32,7 +32,7 @@ class Watchdog final {
 	std::chrono::steady_clock::time_point prev_;
 	std::jthread worker_;
 
-	void monitor(const std::stop_token stop);
+	void run(const std::stop_token stop);
 	void check_timeout();
 	void timeout(const std::chrono::nanoseconds& delta);
 

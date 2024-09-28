@@ -19,11 +19,11 @@ Watchdog::Watchdog(log::Logger& logger, std::chrono::seconds max_idle)
 	  max_idle_(max_idle),
 	  timeout_(false),
 	  prev_(std::chrono::steady_clock::now()),
-	  worker_(std::jthread(std::bind_front(&Watchdog::monitor, this))) { 
+	  worker_(std::jthread(std::bind_front(&Watchdog::run, this))) { 
 	thread::set_name(worker_, "Watchdog");
 }
 
-void Watchdog::monitor(const std::stop_token token) {
+void Watchdog::run(const std::stop_token token) {
 	LOG_DEBUG_ASYNC(logger_, "Watchdog active ({} frequency)", max_idle_);
 
 	std::mutex mutex;
