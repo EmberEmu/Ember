@@ -41,7 +41,7 @@ void update(std::chrono::milliseconds delta) {
 void run(log::Logger& log) {
 	LOG_TRACE(log) << log_func << LOG_ASYNC;
 
-	const auto timer_guard = util::set_time_period(1ms);
+	const auto timer_guard = util::set_time_period(TIME_PERIOD);
 
 	/*
 	 * If we can't increase timer resolution, the worst that happens
