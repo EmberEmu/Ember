@@ -26,11 +26,12 @@ Watchdog::Watchdog(log::Logger& logger, std::chrono::seconds max_idle)
 void Watchdog::monitor(const std::stop_token token) {
 	LOG_DEBUG_ASYNC(logger_, "Watchdog active ({} frequency)", max_idle_);
 
-	std::mutex cv_mtx_;
+	std::mutex mutex;
+	auto cond_var = std::condition_variable_any();
 
 	while(!token.stop_requested()) {
 		check();
-		std::condition_variable_any().wait_for(cv_mtx_, token, max_idle_, [] { return false; });
+		cond_var.wait_for(mutex, token, max_idle_, [] { return false; });
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Watchdog stopped");
