@@ -67,11 +67,17 @@ void print_tip(const dbc::DBCMap<dbc::GameTips>& tips, log::Logger& logger) {
 		return;
 	}
 
+	// trim any leading formatting that we can't make use of
 	std::string_view text(out.front().text.en_gb);
-	const auto pos = text.find_first_not_of("|cffffd100Tip:|r ");
+	std::string_view needle("|cffffd100Tip:|r ");
+	
+	if(text.find(needle) != text.npos) {
+		text = text.substr(needle.size(), text.size());
+	}
 
-	if(pos != text.npos) {
-		text = text.substr(pos, text.size());
+	// trim any trailing newlines that we don't want to print
+	if(auto pos = text.find_first_of('\n'); pos != text.npos) {
+		text = text.substr(0, pos);
 	}
 
 	LOG_INFO_SYNC(logger, "Tip: {}", text);
