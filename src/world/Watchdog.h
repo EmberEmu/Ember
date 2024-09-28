@@ -21,6 +21,9 @@ using namespace std::chrono_literals;
  * Used to periodically check whether a loop is still
  * updating, terminating the process if it detects a
  * potential hang.
+ * 
+ * Termination will intentionally crash the process,
+ * allowing for a trace to be generated for debugging.
  */
 class Watchdog final {
 	log::Logger& logger_;
