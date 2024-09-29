@@ -17,7 +17,7 @@ class DeltaTimer final {
 	std::chrono::milliseconds elapsed_;
 
 public:
-	DeltaTimer(std::chrono::milliseconds deadline);
+	DeltaTimer(std::chrono::milliseconds interval);
 
 	const std::chrono::milliseconds& value() const;
 	const std::chrono::milliseconds& interval() const;

@@ -15,8 +15,6 @@
 
 namespace ember {
 
-using namespace std::chrono_literals;
-
 /*
  * Used to periodically check whether a loop is still
  * updating, terminating the process if it detects a

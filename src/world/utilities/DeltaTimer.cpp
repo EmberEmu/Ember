@@ -7,6 +7,7 @@
  */
 
 #include "DeltaTimer.h"
+#include <cassert>
 
 using namespace std::chrono_literals;
 
@@ -14,13 +15,16 @@ namespace ember {
 
 DeltaTimer::DeltaTimer(std::chrono::milliseconds interval)
 	: interval_(std::move(interval)),
-	  elapsed_(0) {}
+	  elapsed_(0) {
+	assert(delta >= 0ms);
+}
 
 bool DeltaTimer::elapsed() const {
 	return elapsed_ >= interval_;
 }
 
 bool DeltaTimer::update(const std::chrono::milliseconds& delta) {
+	assert(delta >= 0ms);
 	elapsed_ += delta;
 	return elapsed();
 }
