@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include <functional>
 #include <mutex>
+#include <stdexcept>
 #include <cassert>
 
 using namespace std::chrono_literals;
@@ -19,11 +20,11 @@ namespace ember {
 
 Watchdog::Watchdog(std::chrono::seconds max_idle, log::Logger& logger)
 	: logger_(logger),
-	  max_idle_(max_idle),
+	  max_idle_(std::move(max_idle)),
 	  timeout_(false),
 	  prev_(std::chrono::steady_clock::now()),
 	  worker_(std::jthread(std::bind_front(&Watchdog::run, this))) { 
-	if(max_idle <= 0s) {
+	if(max_idle_ <= 0s) {
 		throw std::runtime_error("max_idle must be > 0");
 	}
 

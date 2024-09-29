@@ -16,7 +16,7 @@ namespace ember {
 DeltaTimer::DeltaTimer(std::chrono::nanoseconds interval)
 	: interval_(std::move(interval)),
 	  elapsed_(0) {
-	assert(delta >= 0ns);
+	assert(interval_ >= 0ns);
 }
 
 bool DeltaTimer::elapsed() const {
