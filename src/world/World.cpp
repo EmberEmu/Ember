@@ -99,7 +99,7 @@ bool validate_maps(std::span<const std::int32_t> maps,
 
 		if(map.instance_type != dbc::Map::InstanceType::NORMAL) {
 			LOG_ERROR_SYNC(logger, "Map {} ({}) is not an open world area",
-			               map.id, map.internal_name);
+			               map.id, map.map_name.en_gb);
 			return false;
 		}
 
