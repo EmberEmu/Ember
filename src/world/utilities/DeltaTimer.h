@@ -13,21 +13,21 @@
 namespace ember {
 
 class DeltaTimer final {
-	const std::chrono::milliseconds interval_;
-	std::chrono::milliseconds elapsed_;
+	const std::chrono::nanoseconds interval_;
+	std::chrono::nanoseconds elapsed_;
 
 public:
-	DeltaTimer(std::chrono::milliseconds interval);
+	DeltaTimer(std::chrono::nanoseconds interval);
 
-	const std::chrono::milliseconds& value() const;
-	const std::chrono::milliseconds& interval() const;
+	const std::chrono::nanoseconds& value() const;
+	const std::chrono::nanoseconds& interval() const;
 
 	/*
 	 * Update the timer with the current frame diff/delta.
 	 * Expects a positive value.
 	 * Returns whether the timer has elapsed.
 	 */
-	bool update(const std::chrono::milliseconds& delta);
+	bool update(const std::chrono::nanoseconds& delta);
 
 	/*
 	 * Returns whether the timer has elapsed 

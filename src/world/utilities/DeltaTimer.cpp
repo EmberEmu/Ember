@@ -13,18 +13,18 @@ using namespace std::chrono_literals;
 
 namespace ember {
 
-DeltaTimer::DeltaTimer(std::chrono::milliseconds interval)
+DeltaTimer::DeltaTimer(std::chrono::nanoseconds interval)
 	: interval_(std::move(interval)),
 	  elapsed_(0) {
-	assert(delta >= 0ms);
+	assert(delta >= 0ns);
 }
 
 bool DeltaTimer::elapsed() const {
 	return elapsed_ >= interval_;
 }
 
-bool DeltaTimer::update(const std::chrono::milliseconds& delta) {
-	assert(delta >= 0ms);
+bool DeltaTimer::update(const std::chrono::nanoseconds& delta) {
+	assert(delta >= 0ns);
 	elapsed_ += delta;
 	return elapsed();
 }
@@ -42,11 +42,11 @@ void DeltaTimer::reset() {
 	elapsed_ = 0ms;
 }
 
-const std::chrono::milliseconds& DeltaTimer::value() const {
+const std::chrono::nanoseconds& DeltaTimer::value() const {
 	return elapsed_;
 }
 
-const std::chrono::milliseconds& DeltaTimer::interval() const {
+const std::chrono::nanoseconds& DeltaTimer::interval() const {
 	return interval_;
 }
 
