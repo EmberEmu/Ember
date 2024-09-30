@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "World.h"
+#include "Launch.h"
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/threading/Utility.h>

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "World.h"
+#include "Launch.h"
 #include "MapRunner.h"
 #include <dbcreader/DBCReader.h>
 #include <boost/container/static_vector.hpp>
