@@ -12,6 +12,7 @@ set(LIBRARY_HDR
     MapRunner.h
     Watchdog.h
     utilities/DeltaTimer.h
+    Weather.h
     )
 
 set(LIBRARY_SRC
@@ -19,6 +20,7 @@ set(LIBRARY_SRC
     MapRunner.cpp
     Watchdog.cpp
     utilities/DeltaTimer.cpp
+    Weather.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

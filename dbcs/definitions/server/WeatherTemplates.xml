@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<dbc>
+  <name>WeatherTemplates</name>
+
+  <field>
+	<type>uint32</type>
+	<name>id</name>
+	<key>
+	  <type>primary</type>
+	</key>
+  </field>
+
+  <field comment="for easier reading, code doesn't care">
+	<type>string_ref</type>
+	<name>biome_name</name>
+  </field>
+
+  <struct>
+	<name>WeatherProbabilities</name>
+
+	<field>
+	  <type>uint8</type>
+	  <name>fog</name>
+	</field>
+
+	<field>
+	  <type>uint8</type>
+	  <name>rain</name>
+	</field>
+
+	<field>
+	  <type>uint8</type>
+	  <name>sand</name>
+	</field>
+
+	<field>
+	  <type>uint8</type>
+	  <name>snow</name>
+	</field>
+  </struct>
+  
+  <field comment="One entry per month">
+	<type>WeatherProbabilities[12]</type>
+	<name>probabilities</name>
+  </field>
+</dbc>
