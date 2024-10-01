@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include <ranges>
 #include <type_traits>
 #include <cstdint>
 #include <cstddef>
 #include <boost/container/flat_map.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 namespace ember::dbc {
 
@@ -53,11 +53,11 @@ public:
 	}
 
 	auto values() const {
-		return storage | boost::adaptors::map_values;
+		return storage | std::views::values;
 	}
 
 	auto values()  {
-		return storage | boost::adaptors::map_values;
+		return storage | std::views::values;
 	}
 
 	auto size() const {
