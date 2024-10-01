@@ -28,6 +28,22 @@ class {{name}}Client : public spark::v2::Handler {
 	boost::uuids::uuid uuid_;
 
 protected:
+	void send(auto& msg, const spark::v2::Link& link) {
+		flatbuffers::FlatBufferBuilder fbb;
+
+		// serialise message
+		messaging::{{name}}::EnvelopeT env;
+		env.message.Set(msg);
+		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
+		fbb.Finish(packed);
+
+		auto channel = link.net.lock();
+
+		if(channel) {
+			channel->send(std::move(fbb));
+		}
+	}
+
 	void connect(std::string host, std::uint16_t port) {
 		spark_.connect(host, port, type(), this);
 	}

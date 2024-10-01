@@ -29,6 +29,7 @@ class {{name}}Service : public spark::v2::Handler {
 	spark::v2::Server& spark_;
 	boost::uuids::uuid uuid_;
 
+protected:
 	void send(auto& msg, const spark::v2::Link& link) {
 		flatbuffers::FlatBufferBuilder fbb;
 

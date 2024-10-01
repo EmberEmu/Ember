@@ -20,25 +20,17 @@ HelloClient::HelloClient(spark::v2::Server& spark)
 
 void HelloClient::on_link_up(const spark::v2::Link& link) {
 	LOG_DEBUG_GLOB << "Client: Link up" << LOG_SYNC;
-
-	messaging::Hello::HelloRequestT msg;
-	msg.name = "Aloha from the HelloClient!";
-	flatbuffers::FlatBufferBuilder fbb;
-	messaging::Hello::EnvelopeT env;
-	env.message.Set(msg);
-	auto packed = messaging::Hello::Envelope::Pack(fbb, &env);
-	fbb.Finish(packed);
-
-	auto channel = link.net.lock();
-
-	if(channel) {
-		channel->send(std::move(fbb));
-	}
-
+	say_hello(link);
 }
 
 void HelloClient::on_link_down(const spark::v2::Link& link) {
 
+}
+
+void HelloClient::say_hello(const spark::v2::Link& link) {
+	messaging::Hello::HelloRequestT msg;
+	msg.name = "Aloha from the HelloClient!";
+	send(msg, link);
 }
 
 void HelloClient::handle_say_hello_response(const messaging::Hello::HelloReply* msg) {

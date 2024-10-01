@@ -15,6 +15,7 @@ namespace ember {
 class HelloClient final : public services::HelloClient {
 	spark::v2::Server& spark_;
 
+	void say_hello(const spark::v2::Link& link);
 	void handle_say_hello_response(const messaging::Hello::HelloReply* msg);
 
 public:
