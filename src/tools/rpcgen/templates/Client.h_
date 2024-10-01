@@ -55,25 +55,28 @@ public:
 		switch(fb->message_type()) {
 ## for handler in handlers
 			case messaging::{{name}}::Message::{{handler.response}}:
-				dispatch_{{handler.response_sn}}(verifier, fb->message_as_{{handler.response}}());
+				dispatch_{{handler.response_sn}}(verifier, fb->message_as_{{handler.response}}(), link);
 				break;
 ## endfor
 		}
 	}
 
 ## for handler in handlers
-	void dispatch_{{handler.response_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.response}}* msg) {
+	void dispatch_{{handler.response_sn}}(
+		flatbuffers::Verifier& verifier,
+		const messaging::{{name}}::{{handler.response}}* msg,
+		const spark::v2::Link& link) {
 		if(!msg->Verify(verifier)) {
 			return;
 		}
 
-		//handle_{{handler.name}}_response(msg);
+		handle_{{handler.name}}_response(msg);
 	}
 ## endfor
 
 ## for handler in handlers
-	/*virtual void handle_{{handler.name}}_response(
-		{{handler.response_ns}}* msg) = 0;*/
+	virtual void handle_{{handler.name}}_response(
+		const {{handler.response_ns}}* msg) {}
 
 ## endfor
 };

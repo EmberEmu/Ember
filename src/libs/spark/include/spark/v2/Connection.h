@@ -25,7 +25,7 @@
 
 namespace ember::spark::v2 {
 
-class Message;
+struct Message;
 
 class Connection final {
 public:

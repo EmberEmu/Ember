@@ -21,7 +21,12 @@ Channel::Channel(boost::asio::io_context& ctx, log::Logger* logger,
 	: tracking_(ctx, logger),
 	  channel_id_(id),
 	  handler_(handler),
-	  link_{.peer_banner = banner, .service_name = service, .net = weak_from_this()} {}
+      connection_(std::move(net)) {
+	link_ = spark::v2::Link {
+		.peer_banner = banner,
+		.service_name = service,
+	};
+}
 
 void Channel::open() {
 	if(state_ != State::OPEN) {
@@ -36,8 +41,11 @@ bool Channel::is_open() const {
 
 void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t> data) {
 	if(!header.uuid.is_nil()) {
-
+		
 	}
+
+	link_.net = weak_from_this();
+	handler_->on_message(link_, data);
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb, Token token) {
@@ -49,14 +57,14 @@ void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
 	msg->fbb = std::move(fbb);
 	
 	MessageHeader header;
+	header.channel = channel_id_;
 	header.size = msg->fbb.GetSize();
 	header.set_alignment(msg->fbb.GetBufferMinAlignment());
 
 	io::BufferAdaptor adaptor(msg->header);
 	io::BinaryStream stream(adaptor);
 	header.write_to_stream(stream);
-
-	//connection_->send(std::move(msg));
+	connection_->send(std::move(msg));
 }
 
 auto Channel::state() const -> State {
@@ -69,6 +77,7 @@ Handler* Channel::handler() const {
 
 void Channel::link_up() {
 	assert(handler_);
+	link_.net = weak_from_this();
 	handler_->on_link_up(link_);
 }
 
@@ -78,6 +87,7 @@ Channel::~Channel() {
 	}
 
 	if(is_open()) {
+		link_.net = weak_from_this();
 		handler_->on_link_down(link_);
 	}
 }

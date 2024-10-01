@@ -29,7 +29,7 @@ class Connection;
 using Token = boost::uuids::uuid;
 using MessageCB = std::function<void()>;
 
-class Channel final : std::enable_shared_from_this<Channel> {
+class Channel final : public std::enable_shared_from_this<Channel> {
 public:
 	enum class State {
 		AWAITING, OPEN

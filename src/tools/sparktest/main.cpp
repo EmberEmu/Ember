@@ -22,6 +22,7 @@ void init_logger(log::Logger* logger);
 int main() {
 	auto logger = std::make_unique<log::Logger>();
 	init_logger(logger.get());
+	log::global_logger(logger.get());
 
 	boost::asio::io_context ctx;
 	spark::v2::Server spark(ctx, "test_server", "0.0.0.0", 8000, logger.get());
@@ -29,7 +30,7 @@ int main() {
 
 	HelloService hello_service(spark);
 	HelloClient hello_client(spark_cli);
-
+	
 	ctx.run();
 }
 

@@ -29,6 +29,22 @@ class {{name}}Service : public spark::v2::Handler {
 	spark::v2::Server& spark_;
 	boost::uuids::uuid uuid_;
 
+	void send(auto& msg, const spark::v2::Link& link) {
+		flatbuffers::FlatBufferBuilder fbb;
+
+		// serialise message
+		messaging::{{name}}::EnvelopeT env;
+		env.message.Set(msg);
+		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
+		fbb.Finish(packed);
+
+		auto channel = link.net.lock();
+
+		if(channel) {
+			channel->send(std::move(fbb));
+		}
+	}
+
 public:
 ## for handler in handlers
 	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
@@ -59,26 +75,31 @@ public:
 		switch(fb->message_type()) {
 ## for handler in handlers
 			case messaging::{{name}}::Message::{{handler.request}}:
-				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}());
+				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}(), link);
 				break;
 ## endfor
 		}
 	}
 
 ## for handler in handlers
-	void dispatch_{{handler.request_sn}}(flatbuffers::Verifier& verifier, const messaging::{{name}}::{{handler.request}}* msg) {
+	void dispatch_{{handler.request_sn}}(
+		flatbuffers::Verifier& verifier,
+	    const messaging::{{name}}::{{handler.request}}* msg,
+	    const spark::v2::Link& link) {
 		if(!msg->Verify(verifier)) {
 			return;
 		}
 
-		//handle_{{handler.name}}(msg);
+		{{handler.response_ns}}T reply;
+		handle_{{handler.name}}(msg, reply);
+		send(reply, link);
 	}
 ## endfor
 
 ## for handler in handlers
-	/*virtual void handle_{{handler.name}}(
-		{{handler.request_ns}}* msg,
-		{{handler.response_ns}} reply) = 0;*/
+	virtual void handle_{{handler.name}}(
+		const {{handler.request_ns}}* msg,
+		{{handler.response_ns}}T& reply) {}
 
 ## endfor
 };
