@@ -13,8 +13,11 @@
 namespace ember {
 
 class HelloService final : public services::HelloService {
-	void handle_say_hello(const messaging::Hello::HelloRequest* msg,
-	                      messaging::Hello::HelloReplyT& reply) override;
+
+	std::optional<messaging::Hello::HelloReplyT> handle_say_hello(
+		const messaging::Hello::HelloRequest* msg,
+	    const spark::v2::Link& link,
+	    const spark::v2::Token& token) override;
 
 public:
 	HelloService(spark::v2::Server& server);

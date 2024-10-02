@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
 #include <functional>
+#include <optional>
 
 namespace ember::services {
 
@@ -91,16 +92,19 @@ public:
 			return;
 		}
 
-		{{handler.response_ns}}T reply;
-		handle_{{handler.name}}(msg, reply);
-		send(reply, link);
+		auto reply = handle_{{handler.name}}(msg, link, {});
+
+		if(reply) {
+			send(*reply, link);
+		}
 	}
 ## endfor
 
 ## for handler in handlers
-	virtual void handle_{{handler.name}}(
+	virtual std::optional<{{handler.response_ns}}T> handle_{{handler.name}}(
 		const {{handler.request_ns}}* msg,
-		{{handler.response_ns}}T& reply) {}
+		const spark::v2::Link& link,
+		const spark::v2::Token& token) { return std::nullopt; }
 
 ## endfor
 };
