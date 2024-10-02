@@ -33,6 +33,16 @@ void HelloClient::say_hello(const spark::v2::Link& link) {
 	send(msg, link);
 }
 
+void HelloClient::say_hello_tracked(const spark::v2::Link& link) {
+	messaging::Hello::HelloRequestT msg;
+	msg.name = "Aloha from the HelloClient!";
+	//send(msg, link, [this](auto link, auto message) {
+	//	handle_reply(link, message, cb);
+	//}) != spark::Service::Result::OK) {
+	//	cb(em::character::Status::SERVER_LINK_ERROR, {});
+	//});
+}
+
 void HelloClient::handle_say_hello_response(const messaging::Hello::HelloReply* msg) {
 	LOG_INFO_GLOB << "[HelloClient] Received response: " << msg->message()->c_str() << LOG_SYNC;
 }

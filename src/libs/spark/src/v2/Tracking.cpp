@@ -11,65 +11,84 @@
 #include <logger/Logger.h>
 #include <shared/FilterTypes.h>
 #include <algorithm>
+#include <condition_variable>
+#include <functional>
 #include <memory>
 
 namespace sc = std::chrono;
+using namespace std::chrono_literals;
 
 namespace ember::spark::v2 {
 
-Tracking::Tracking(boost::asio::io_context& io_context, log::Logger* logger)
-                   : io_context_(io_context), logger_(logger) { }
+Tracking::Tracking(boost::asio::io_context& ctx, log::Logger* logger)
+	: timer_(ctx),
+	  logger_(logger) {
+	start_timer();
+}
+
+void Tracking::start_timer() {
+	timer_.expires_from_now(frequency_);
+	timer_.async_wait(std::bind_front(&Tracking::expired, this));
+}
+
+void Tracking::expired(const boost::system::error_code& ec) {
+	if(ec == boost::asio::error::operation_aborted) {
+		return;
+	}
+
+	for(auto it = requests_.begin(); it != requests_.end();) {
+		auto& [_, request] = *it;
+		request.ttl -= frequency_;
+
+		if(request.ttl <= 0s) {
+			timeout(request);
+			it = requests_.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	start_timer();
+}
+
+void Tracking::on_message(boost::uuids::uuid uuid, std::span<const std::uint8_t> data) {
+	auto it = requests_.find(uuid);
+
+	// request has already expired or never existed
+	if(it == requests_.end()) {
+		LOG_DEBUG_FILTER(logger_, LF_SPARK)
+			<< "[spark] Received invalid or expired tracked message"
+			<< LOG_ASYNC;
+		return;
+	}
+
+	auto& [_, request] = *it;
+	//request.cb(data);
+	requests_.erase(it);
+}
+
+void Tracking::track(boost::uuids::uuid id, MessageCB cb, sc::seconds ttl) {
+	Request request {
+		.id = std::move(id),
+		.cb = std::move(cb),
+		.ttl = ttl
+	};
+
+	requests_.emplace(id, std::move(request));
+}
+void Tracking::timeout(Request& request) {
+	//request.cb(std::nullopt);
+}
 
 Tracking::~Tracking() {
-
-}
-
-void Tracking::on_message(const Link& link, boost::uuids::uuid uuid, const Message& message) try {
-	auto request = std::move(handlers_.at(uuid));
-	handlers_.erase(uuid);
-
-	if(link != request->link) {
-		LOG_WARN_FILTER(logger_, LF_SPARK)
-			<< "[spark] Tracked message receipient != sender" << LOG_ASYNC;
-		return;
-	}
-
-	request->handler(link, false);
-} catch(const std::out_of_range) {
-	LOG_DEBUG_FILTER(logger_, LF_SPARK)
-		<< "[spark] Received invalid or expired tracked message" << LOG_ASYNC;
-}
-
-void Tracking::register_tracked(const Link& link,
-                                boost::uuids::uuid id,
-                                TrackedHandler handler,
-                                sc::milliseconds timeout) {
-	auto request = std::make_unique<Request>(io_context_, id, link, handler);
-	request->timer.expires_from_now(timeout);
-
-	request->timer.async_wait([this, id, link](const boost::system::error_code& ec) {
-		request_timeout(id, link, ec);
-	});
-
-	handlers_[id] = std::move(request);
-}
-
-void Tracking::request_timeout(const boost::uuids::uuid& id, Link link,
-                               const boost::system::error_code& ec) {
-	if(ec) { // timer was cancelled
-		return;
-	}
-
-	// inform the handler that no response was received and erase
-	auto request = std::move(handlers_.at(id));
-	handlers_.erase(id);
-
-	request->handler(link, false);
+	shutdown();
 }
 
 void Tracking::shutdown() {
-	for(auto& handler : handlers_) {
-		handler.second->timer.cancel();
+	timer_.cancel();
+
+	for(auto& [_, request] : requests_) {
+		timeout(request);
 	}
 }
 

@@ -15,6 +15,7 @@
 #include <logger/Logger.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/functional/hash.hpp>
 #include <flatbuffers/flatbuffer_builder.h>
 #include <functional>
@@ -27,7 +28,7 @@ namespace ember::spark::v2 {
 class Connection;
 
 using Token = boost::uuids::uuid;
-using MessageCB = std::function<void()>;
+using namespace std::chrono_literals;
 
 class Channel final : public std::enable_shared_from_this<Channel> {
 public:
@@ -42,13 +43,17 @@ private:
 	Handler* handler_;
 	std::shared_ptr<Connection> connection_;
 	Link link_;
+	boost::uuids::random_generator uuid_gen_;
 
 	void link_up();
+	void send(flatbuffers::FlatBufferBuilder&& fbb, boost::uuids::uuid uuid);
 
 public:
-	Channel(boost::asio::io_context& ctx, log::Logger* logger,
-	        std::uint8_t id, std::string banner, std::string service, 
-	        Handler* handler, std::shared_ptr<Connection> net);
+	Channel(boost::asio::io_context& ctx, std::uint8_t id,
+	        std::string banner, std::string service, 
+	        Handler* handler, std::shared_ptr<Connection> net,
+	        log::Logger* logger);
+
 	Channel() = default;
 	~Channel();
 
@@ -58,7 +63,8 @@ public:
 
 	void open();
 	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
-	void send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb, Token token);
+	void send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb,
+	          std::chrono::seconds timeout = 5s);
 	void send(flatbuffers::FlatBufferBuilder&& fbb);
 };
 

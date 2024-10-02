@@ -17,45 +17,35 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <mutex>
 #include <cstdint>
 
 namespace ember::spark::v2 {
 
 class Tracking final {
 	struct Request {
-		Request(boost::asio::io_context& service,
-		        boost::uuids::uuid id,
-		        Link link,
-		        TrackedHandler handler)
-		        : timer(service), id(id), handler(handler), link(std::move(link)) { }
-
-		boost::asio::steady_timer timer;
 		boost::uuids::uuid id;
-		TrackedHandler handler;
-		const Link link;
+		MessageCB cb;
+		std::chrono::seconds ttl;
 	};
 
-	boost::unordered_flat_map<boost::uuids::uuid, std::unique_ptr<Request>,
-	                          boost::hash<boost::uuids::uuid>> handlers_;
+	boost::unordered_flat_map<boost::uuids::uuid, Request,
+	                          boost::hash<boost::uuids::uuid>> requests_;
 
-	boost::asio::io_context& io_context_;
+	std::chrono::seconds frequency_ { 5 }; // temp
+	boost::asio::steady_timer timer_;
 	log::Logger* logger_;
 
-	void request_timeout(const boost::uuids::uuid& id, Link link,
-	                     const boost::system::error_code& ec);
+	void start_timer();
+	void expired(const boost::system::error_code& ec);
+	void timeout(Request& request);
 
 public:
 	Tracking(boost::asio::io_context& io_context, log::Logger* logger);
 	~Tracking();
 
-	void on_message(const Link& link, boost::uuids::uuid uuid, const Message& message);
+	void track(boost::uuids::uuid id, MessageCB cb, std::chrono::seconds ttl);
+	void on_message(boost::uuids::uuid id, std::span<const std::uint8_t> data);
 	void shutdown();
-
-	void register_tracked(const Link& link,
-	                      boost::uuids::uuid id,
-	                      TrackedHandler handler,
-	                      std::chrono::milliseconds timeout);
 };
 
 } // spark, ember

@@ -68,7 +68,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	if(msg->result() != core::Result::OK) {
-		auto channel = channels_[msg->requested_id()];
+		auto& channel = channels_[msg->requested_id()];
 		LOG_ERROR_ASYNC(log_, "[spark] Remote peer could not open channel ({}:{})",
 		                channel->handler()->type(), msg->requested_id());
 		channels_[msg->requested_id()].reset();
@@ -77,7 +77,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse* m
 
 	// todo, index bounds checks
 	auto id = msg->actual_id();
-	auto channel = channels_[id];
+	auto& channel = channels_[id];
 
 	if(id == 0) {
 		LOG_ERROR_ASYNC(log_, "[spark] Reserved channel ID returned by {}", remote_banner_);
@@ -177,7 +177,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	}
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, log_, id, banner_, handler->name(), handler, conn_
+		ctx_, id, banner_, handler->name(), handler, conn_, log_
 	);
 
 	channel->open();
@@ -288,7 +288,7 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
                                         std::span<const std::uint8_t> data) {
 	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
-	auto channel = channels_[header.channel];
+	auto& channel = channels_[header.channel];
 
 	if(!channel || !channel->is_open()) {
 		LOG_WARN_ASYNC(log_, "[spark] Received message for closed channel, {}", header.channel);
@@ -320,7 +320,7 @@ void RemotePeer::open_channel(const std::string& type, Handler* handler) {
 	LOG_DEBUG_ASYNC(log_, "[spark] Requesting channel {} for {}", id, type);
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, log_, id, banner_, handler->name(), handler, conn_
+		ctx_, id, banner_, handler->name(), handler, conn_, log_
 	);
 
 	channels_[id] = std::move(channel);
@@ -336,7 +336,7 @@ void RemotePeer::start() {
 // very temporary, not thread-safe etc
 void RemotePeer::remove_handler(Handler* handler) {
 	for(std::size_t i = 0u; i < channels_.size(); ++i) {
-		auto channel = channels_[i];
+		auto& channel = channels_[i];
 
 		if(!channel) {
 			continue;
