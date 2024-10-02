@@ -21,7 +21,7 @@ class Channel;
 struct Link {
 	std::string peer_banner;
 	std::string service_name;
-	std::weak_ptr<Channel> net;
+	std::weak_ptr<Channel> channel;
 };
 
 inline bool operator==(const Link& lhs, const Link& rhs) {

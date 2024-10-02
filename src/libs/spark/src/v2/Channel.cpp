@@ -37,7 +37,7 @@ bool Channel::is_open() const {
 }
 
 void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t> data) {
-	link_.net = weak_from_this();
+	link_.channel = weak_from_this();
 
 	// tracked message
 	if(!header.uuid.is_nil()) {
@@ -84,7 +84,7 @@ Handler* Channel::handler() const {
 
 void Channel::link_up() {
 	assert(handler_);
-	link_.net = weak_from_this();
+	link_.channel = weak_from_this();
 	handler_->on_link_up(link_);
 }
 
@@ -94,7 +94,7 @@ Channel::~Channel() {
 	}
 
 	if(is_open()) {
-		link_.net = weak_from_this();
+		link_.channel = weak_from_this();
 		handler_->on_link_down(link_);
 	}
 }

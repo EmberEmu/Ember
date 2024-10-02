@@ -40,7 +40,7 @@ protected:
 		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
 		fbb.Finish(packed);
 
-		auto channel = link.net.lock();
+		auto channel = link.channel.lock();
 
 		if(channel) {
 			channel->send(std::move(fbb));
