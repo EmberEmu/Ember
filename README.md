@@ -59,7 +59,7 @@ Ember uses `DOCKER_BUILDKIT=1` to enable experimental features in Docker 19 that
 docker build <path to Dockerfile>
 ```
 
-Want to do it the hard way? That's fine too, just see docs/GettingStarted.md.
+Want to do it the hard way? No problem, just see docs/GettingStarted.md.
 
 ## 💡Need help?
 
