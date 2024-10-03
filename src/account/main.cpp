@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "AccountService.h"
 #include "FilterTypes.h"
 //#include "MonitorCallbacks.h"
 #include "Service.h"
@@ -135,6 +136,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	Sessions sessions(true);
 	Service net_service(sessions, spark, discovery, logger);
+
+	spark::v2::Server sparkv2(service, "test", "0.0.0.0", 8000, logger);
+	AccountService servicev2(sparkv2, *logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);

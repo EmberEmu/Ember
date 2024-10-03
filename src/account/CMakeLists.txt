@@ -10,11 +10,13 @@ set(LIBRARY_NAME    libaccount)
 set(LIBRARY_HDR
     FilterTypes.h
     Service.h
+    AccountService.h
     Sessions.h
     )
 
 set(LIBRARY_SRC
     Service.cpp
+    AccountService.cpp
     Sessions.cpp
     )
 
