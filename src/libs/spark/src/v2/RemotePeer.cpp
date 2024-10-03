@@ -280,6 +280,7 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 		return;
 	}
 
+	channels_[id]->close();
 	channels_[id].reset();
 	LOG_DEBUG_ASYNC(log_, "[spark] Closed channel {}, requested by remote peer", id);
 }
@@ -351,7 +352,7 @@ void RemotePeer::remove_handler(Handler* handler) {
 
 RemotePeer::~RemotePeer() {
 	for(auto& channel : channels_) {
-		// todo, link down all channels
+		channel->close();
 	}
 }
 

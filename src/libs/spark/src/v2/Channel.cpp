@@ -65,16 +65,29 @@ void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, con
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
                    std::chrono::seconds timeout) {
+	if(!is_open()) {
+		state(link_, std::unexpected(Result::CHANNEL_CLOSED));
+		return;
+	}
+
 	const auto token = uuid_gen_();
-	send(std::move(fbb), token, false);
 	tracking_.track(token, state, timeout);
+	send(std::move(fbb), token, false);
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
+	if(!is_open()) {
+		return;
+	}
+
 	send(std::move(fbb), {}, false);
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token) {
+	if(!is_open()) {
+		return;
+	}
+
 	send(std::move(fbb), token, true);
 }
 
@@ -92,11 +105,18 @@ void Channel::link_up() {
 	handler_->on_link_up(link_);
 }
 
-Channel::~Channel() {
+void Channel::close() {
 	if(handler_ && is_open()) {
 		link_.channel = weak_from_this();
+		tracking_.shutdown();
 		handler_->on_link_down(link_);
 	}
+
+	state_ = State::CLOSED;
+}
+
+Channel::~Channel() {
+	close();
 }
 
 } // v2, spark, ember

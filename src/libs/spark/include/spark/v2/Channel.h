@@ -32,7 +32,7 @@ using namespace std::chrono_literals;
 class Channel final : public std::enable_shared_from_this<Channel> {
 public:
 	enum class State {
-		AWAITING, OPEN
+		AWAITING, OPEN, CLOSED
 	};
 
 private:
@@ -61,6 +61,7 @@ public:
 	bool is_open() const;
 
 	void open();
+	void close();
 	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
 	void send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
 	          std::chrono::seconds timeout = 5s);

@@ -15,6 +15,7 @@ enum class Result {
 	LINK_GONE,
 	TIMED_OUT,
 	NET_ERROR,
+	CHANNEL_CLOSED,
 	WRONG_MESSAGE_TYPE
 };
 
