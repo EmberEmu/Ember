@@ -50,7 +50,7 @@ private:
 public:
 	Channel(boost::asio::io_context& ctx, std::uint8_t id,
 	        std::string banner, std::string service, 
-	        Handler* handler, std::shared_ptr<Connection> net,
+	        Handler* handler, std::shared_ptr<Connection> connection,
 	        log::Logger* logger);
 
 	Channel() = default;

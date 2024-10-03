@@ -7,7 +7,6 @@
  */
 
 #include <spark/v2/Connection.h>
-#include <spark/v2/Common.h>
 #include <spark/Exception.h>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/deferred.hpp>
@@ -34,8 +33,8 @@ ba::awaitable<void> Connection::process_queue() try {
 		queue_.pop();
 
 		std::array<ba::const_buffer, 2> buffers {
-			ba::const_buffer { msg->header.data(), msg->header.size() },
-			ba::const_buffer { msg->fbb.GetBufferPointer(), msg->fbb.GetSize() }
+			ba::const_buffer { msg.header.data(), msg.header.size() },
+			ba::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
 		};
 
 		co_await ba::async_write(socket_, buffers, ba::deferred);
@@ -44,7 +43,7 @@ ba::awaitable<void> Connection::process_queue() try {
 	close();
 }
 
-void Connection::send(std::unique_ptr<Message> buffer) {
+void Connection::send(Message&& buffer) {
 	ba::post(strand_, [&, buffer = std::move(buffer)]() mutable {
 		if(!socket_.is_open()) {
 			return;

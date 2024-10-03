@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/v2/Common.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/strand.hpp>
@@ -25,8 +26,6 @@
 
 namespace ember::spark::v2 {
 
-struct Message;
-
 class Connection final {
 public:
 	using ReceiveHandler = std::function<void(std::span<const std::uint8_t>)>;
@@ -38,7 +37,7 @@ private:
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
-	std::queue<std::unique_ptr<Message>> queue_;
+	std::queue<Message> queue_;
 	CloseHandler on_close_;
 
 	boost::asio::awaitable<void> process_queue();
@@ -51,7 +50,7 @@ public:
 	Connection(Connection&&) = default;
 
 	std::string address() const;
-	void send(std::unique_ptr<Message> buffer);
+	void send(Message&& buffer);
 	boost::asio::awaitable<void> send(Message& msg);
 	boost::asio::awaitable<std::span<std::uint8_t>> receive_msg();
 	void start(ReceiveHandler handler);

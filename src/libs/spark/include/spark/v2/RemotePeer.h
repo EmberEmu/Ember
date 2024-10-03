@@ -46,7 +46,7 @@ class RemotePeer final {
 	std::uint32_t ping_sequence_ = 0;
 	std::chrono::steady_clock::time_point ping_time_;
 
-	void send(std::unique_ptr<Message> msg);
+	void send(Message&& msg);
 	Handler* find_handler(const core::OpenChannel* msg);
 	std::uint8_t next_empty_channel();
 

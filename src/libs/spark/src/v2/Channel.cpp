@@ -17,12 +17,12 @@ namespace ember::spark::v2 {
 
 Channel::Channel(boost::asio::io_context& ctx, std::uint8_t id,
                  std::string banner, std::string service,
-                 Handler* handler, std::shared_ptr<Connection> net,
+                 Handler* handler, std::shared_ptr<Connection> connection,
                  log::Logger* logger)
 	: tracking_(ctx, logger),
 	  channel_id_(id),
 	  handler_(handler),
-      connection_(std::move(net)),
+      connection_(std::move(connection)),
 	  link_ { .peer_banner = std::move(banner), .service_name = std::move(service) } {}
 
 void Channel::open() {
@@ -47,17 +47,17 @@ void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, const bool response) {
-	auto msg = std::make_unique<Message>();
-	msg->fbb = std::move(fbb);
+	Message msg;
+	msg.fbb = std::move(fbb);
 
 	MessageHeader header;
 	header.uuid = token;
 	header.response = response;
 	header.channel = channel_id_;
-	header.size = msg->fbb.GetSize();
-	header.set_alignment(msg->fbb.GetBufferMinAlignment());
+	header.size = msg.fbb.GetSize();
+	header.set_alignment(msg.fbb.GetBufferMinAlignment());
 
-	io::BufferAdaptor adaptor(msg->header);
+	io::BufferAdaptor adaptor(msg.header);
 	io::BinaryStream stream(adaptor);
 	header.write_to_stream(stream);
 	connection_->send(std::move(msg));
@@ -65,9 +65,9 @@ void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, con
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
                    std::chrono::seconds timeout) {
-	const auto uuid = uuid_gen_();
-	send(std::move(fbb), uuid, false);
-	tracking_.track(uuid, state, timeout);
+	const auto token = uuid_gen_();
+	send(std::move(fbb), token, false);
+	tracking_.track(token, state, timeout);
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {

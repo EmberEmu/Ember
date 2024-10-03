@@ -32,8 +32,8 @@ RemotePeer::RemotePeer(boost::asio::io_context& ctx,
 	  log_(log) {
 }
 
-void RemotePeer::send(std::unique_ptr<Message> msg) {
-	write_header(*msg);
+void RemotePeer::send(Message&& msg) {
+	write_header(msg);
 	conn_->send(std::move(msg));
 }
 
@@ -118,9 +118,9 @@ void RemotePeer::send_close_channel(const std::uint8_t id) {
 		.channel = id
 	};
 
-	auto msg = std::make_unique<Message>();
-	finish(body, *msg);
-	write_header(*msg);
+	Message msg;
+	finish(body, msg);
+	write_header(msg);
 	conn_->send(std::move(msg));
 }
 
@@ -210,9 +210,9 @@ void RemotePeer::open_channel_response(const core::Result result,
 		.banner = banner_,
 	};
 
-	auto msg = std::make_unique<Message>();
-	finish(response, *msg);
-	write_header(*msg);
+	Message msg;
+	finish(response, msg);
+	write_header(msg);
 	conn_->send(std::move(msg));
 }
 
@@ -250,9 +250,9 @@ void RemotePeer::handle_ping(const core::Ping* ping) {
 	core::PongT pong;
 	pong.sequence = ping->sequence();
 
-	auto msg = std::make_unique<Message>();
-	finish(pong, *msg);
-	write_header(*msg);
+	Message msg;
+	finish(pong, msg);
+	write_header(msg);
 	conn_->send(std::move(msg));
 }
 
@@ -307,9 +307,9 @@ void RemotePeer::send_open_channel(const std::string& name,
 		.service_name = name
 	};
 
-	auto msg = std::make_unique<Message>();
-	finish(body, *msg);
-	write_header(*msg);
+	Message msg;
+	finish(body, msg);
+	write_header(msg);
 	conn_->send(std::move(msg));
 }
 
