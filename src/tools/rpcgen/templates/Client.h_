@@ -52,6 +52,7 @@ protected:
 		spark::v2::TrackedState state = [cb = std::move(cb)](
 			const spark::v2::Link& link, spark::v2::MessageResult result) {
 			if(!result) {
+				cb(link, std::unexpected(result.error()));
 				return;
 			}
 

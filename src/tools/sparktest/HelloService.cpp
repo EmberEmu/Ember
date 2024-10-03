@@ -33,7 +33,9 @@ void HelloService::on_link_down(const spark::v2::Link& link) {
 			.message = "Greetings, this is the reply from HelloService!"
 		};
 	} else {
-		return std::nullopt;
+		return messaging::Hello::HelloReplyT {
+			.message = "Greetings, this is a tracked reply from HelloService!"
+		};
 	}
 }
 
