@@ -9,13 +9,14 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace ember {
 
 // These all exist to help demangle strings from FlatBuffers
-std::string remove_fbs_ns(const std::string& name);
-std::string snake_case(const std::string& val);
-std::string to_cpp_ns(const std::string& val);
-std::string fbs_to_name(const std::string& name);
+std::string remove_fbs_ns(std::string_view name);
+std::string snake_case(std::string_view val);
+std::string to_cpp_ns(std::string_view val);
+std::string fbs_to_name(std::string_view name);
 
 } // ember
