@@ -9,7 +9,9 @@
 namespace ember.messaging.Characterv2;
 
 enum Status : ubyte {
-	OK, UNKNOWN_ERROR, ILLFORMED_MESSAGE
+	UNKNOWN_ERROR,
+	OK,
+	ILLFORMED_MESSAGE
 }
 
 table CharacterTemplate {

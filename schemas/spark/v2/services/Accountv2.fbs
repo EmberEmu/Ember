@@ -9,12 +9,18 @@
 namespace ember.messaging.Accountv2;
 
 enum DisconnectReason : ubyte {
-	ACCOUNT_SUSPENDED, ACCOUNT_BANNED, PLAYER_KICKED,
-	INTERNAL_LINK_LOST
+	INTERNAL_ERROR,
+	ACCOUNT_SUSPENDED,
+	ACCOUNT_BANNED,
+	PLAYER_KICKED
 }
 
 enum Status : ubyte {
-	UNKNOWN_ERROR, OK, ILLFORMED_MESSAGE, ALREADY_LOGGED_IN, SESSION_NOT_FOUND
+	UNKNOWN_STATUS,
+	OK,
+	ILLFORMED_MESSAGE,
+	ALREADY_LOGGED_IN,
+	SESSION_NOT_FOUND
 }
 
 table Response {
@@ -58,6 +64,12 @@ table DisconnectSession {
 union Message {
 	SessionLookup,
 	SessionResponse,
+	RegisterSession,
+	Response,
+	LookupID,
+	LookupIDResponse,
+	DisconnectSession,
+	DisconnectID
 }
 
 table Envelope {
@@ -68,4 +80,8 @@ root_type Envelope;
 
 rpc_service Accountv2 {
 	SessionFetch(SessionLookup):SessionResponse;
+	RegisterSession(RegisterSession):Response;
+	AccountIDFetch(LookupID):LookupIDResponse;
+	DisconnectSession(DisconnectSession):Response;
+	DisconnectByID(DisconnectID):Response;
 }

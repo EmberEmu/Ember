@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+/* This defines the message types used by the Spark RPC core */
+
 namespace ember.spark.core;
 
 union Message {
