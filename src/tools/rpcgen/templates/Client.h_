@@ -42,6 +42,13 @@ class {{name}}Client : public spark::v2::Handler {
 protected:
 	template<typename T>
 	void send(auto& msg, const spark::v2::Link& link, auto&& cb) {
+		auto channel = link.channel.lock();
+
+		if(!channel) {
+			cb(link, std::unexpected(spark::v2::Result::LINK_GONE));
+			return;
+		}
+
 		spark::v2::TrackedState state = [cb = std::move(cb)](
 			const spark::v2::Link& link, spark::v2::MessageResult result) {
 			if(!result) {
@@ -61,14 +68,8 @@ protected:
 			cb(link, msg);
 		};
 
-		auto channel = link.channel.lock();
-
-		if(channel) {
-			auto fbb = serialise(msg);
-			channel->send(std::move(fbb), std::move(state));
-		} else {
-			cb(link, std::unexpected(spark::v2::Result::LINK_GONE));
-		}
+		auto fbb = serialise(msg);
+		channel->send(std::move(fbb), std::move(state));
 	}
 
 	void send(auto& msg, const spark::v2::Link& link) {
