@@ -19,6 +19,8 @@
 #include <spark/v2/Handler.h>
 #include <spark/v2/Link.h>
 #include <spark/v2/Message.h>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <format>
 #include <functional>
 
@@ -88,10 +90,11 @@ protected:
 
 public:
 	{{name}}Client(spark::v2::Server& spark)
-		: spark_(spark) {}
+		: spark_(spark),
+		  uuid_(boost::uuids::random_generator()()) {}
 
 	std::string name() override {
-		return "{{name}}Client";
+		return std::format("{{name}}Client:{}", boost::uuids::to_string(uuid_));
 	}
 
 	std::string type() override {
