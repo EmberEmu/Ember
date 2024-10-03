@@ -52,6 +52,7 @@ set(COREv2
     include/spark/v2/Utility.h
     include/spark/v2/Tracking.h
     include/spark/v2/Common.h
+    include/spark/v2/Result.h
     src/v2/Peers.cpp
     src/v2/Server.cpp
     src/v2/RemotePeer.cpp

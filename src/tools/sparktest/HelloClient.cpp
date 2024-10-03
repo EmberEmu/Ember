@@ -21,10 +21,11 @@ HelloClient::HelloClient(spark::v2::Server& spark)
 void HelloClient::on_link_up(const spark::v2::Link& link) {
 	LOG_DEBUG_GLOB << "Client: Link up" << LOG_SYNC;
 	say_hello(link);
+	say_hello_tracked(link);
 }
 
 void HelloClient::on_link_down(const spark::v2::Link& link) {
-
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 }
 
 void HelloClient::say_hello(const spark::v2::Link& link) {
@@ -33,14 +34,28 @@ void HelloClient::say_hello(const spark::v2::Link& link) {
 	send(msg, link);
 }
 
+void HelloClient::handle_tracked_reply(
+	const spark::v2::Link& link,
+    std::expected<const messaging::Hello::HelloReply*, spark::v2::Result> msg) {
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
+	
+	if(msg) {
+		LOG_INFO_GLOB << "Tracked response: " << (*msg)->message()->c_str() << LOG_SYNC;
+	} else {
+		LOG_INFO_GLOB << "Tracked request failed" << LOG_SYNC;
+	}
+}
+
 void HelloClient::say_hello_tracked(const spark::v2::Link& link) {
-	messaging::Hello::HelloRequestT msg;
-	msg.name = "Aloha from the HelloClient!";
-	//send(msg, link, [this](auto link, auto message) {
-	//	handle_reply(link, message, cb);
-	//}) != spark::Service::Result::OK) {
-	//	cb(em::character::Status::SERVER_LINK_ERROR, {});
-	//});
+	LOG_TRACE_GLOB << log_func << LOG_SYNC;
+
+	messaging::Hello::HelloRequestT msg {
+		.name = "This is a tracked request"
+	};
+	
+	send<messaging::Hello::HelloReply>(msg, link, [this](auto link, auto message) {
+		handle_tracked_reply(link, message);
+	});
 }
 
 void HelloClient::handle_say_hello_response(const messaging::Hello::HelloReply* msg) {

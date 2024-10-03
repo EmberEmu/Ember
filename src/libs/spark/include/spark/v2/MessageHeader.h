@@ -18,7 +18,7 @@ namespace ember::spark::v2 {
 namespace be = boost::endian;
 
 class MessageHeader final {
-	constexpr static auto MIN_HEADER_SIZE = 7u;
+	constexpr static auto MIN_HEADER_SIZE = 8u;
 
 public:
 	enum class State {
@@ -28,6 +28,7 @@ public:
 	boost::uuids::uuid uuid = {};
 	std::uint32_t size = 0;
 	std::uint8_t channel = 0;
+	std::uint8_t response = 0;
 	std::uint8_t padding = 0;
 
 private:
@@ -37,6 +38,7 @@ public:
 	State read_from_stream(auto& stream) try {
 		stream >> size;
 		stream >> channel;
+		stream >> response;
 
 		std::uint8_t has_uuid = 0;
 		stream >> has_uuid;
@@ -68,7 +70,8 @@ public:
 		auto pad = alignment_ - (write_size % alignment_);
 
 		stream << be::native_to_little(size) + write_size + pad;
-		stream << be::native_to_little(channel);
+		stream << channel;
+		stream << response;
 		stream << static_cast<std::uint8_t>(!uuid.is_nil());
 		
 		if(!uuid.is_nil()) {

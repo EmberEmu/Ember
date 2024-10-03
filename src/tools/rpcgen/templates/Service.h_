@@ -31,7 +31,7 @@ class {{name}}Service : public spark::v2::Handler {
 	boost::uuids::uuid uuid_;
 
 protected:
-	void send(auto& msg, const spark::v2::Link& link) {
+	void send(auto& msg, const spark::v2::Link& link, const spark::v2::Token& token) {
 		flatbuffers::FlatBufferBuilder fbb;
 
 		// serialise message
@@ -43,7 +43,7 @@ protected:
 		auto channel = link.channel.lock();
 
 		if(channel) {
-			channel->send(std::move(fbb));
+			channel->send(std::move(fbb), token);
 		}
 	}
 
@@ -70,14 +70,17 @@ public:
 		return "{{name}}";
 	}
 
-	void on_message(const spark::v2::Link& link, std::span<const std::uint8_t> msg) override {
+	void on_message(
+		const spark::v2::Link& link,
+		std::span<const std::uint8_t> msg,
+		const spark::v2::Token& token = {}) override {
 		auto fb = messaging::{{name}}::Get{{root}}(msg.data());
 		flatbuffers::Verifier verifier(msg.data(), msg.size());
 
 		switch(fb->message_type()) {
 ## for handler in handlers
 			case messaging::{{name}}::Message::{{handler.request}}:
-				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}(), link);
+				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}(), link, token);
 				break;
 ## endfor
 		}
@@ -86,16 +89,17 @@ public:
 ## for handler in handlers
 	void dispatch_{{handler.request_sn}}(
 		flatbuffers::Verifier& verifier,
-	    const messaging::{{name}}::{{handler.request}}* msg,
-	    const spark::v2::Link& link) {
+		const messaging::{{name}}::{{handler.request}}* msg,
+		const spark::v2::Link& link,
+		const spark::v2::Token& token) {
 		if(!msg->Verify(verifier)) {
 			return;
 		}
 
-		auto reply = handle_{{handler.name}}(msg, link, {});
+		auto reply = handle_{{handler.name}}(msg, link, token);
 
 		if(reply) {
-			send(*reply, link);
+			send(*reply, link, token);
 		}
 	}
 ## endfor

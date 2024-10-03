@@ -28,9 +28,15 @@ void HelloService::on_link_down(const spark::v2::Link& link) {
                                      -> std::optional<messaging::Hello::HelloReplyT> {
 	LOG_INFO_GLOB << "[HelloService] Received message: " << msg->name()->c_str() << LOG_SYNC;
 
-	return messaging::Hello::HelloReplyT {
-		.message = "Greetings, this is the reply from HelloService!"
-	};
+	if(token.is_nil()) {
+		return messaging::Hello::HelloReplyT {
+			.message = "Greetings, this is the reply from HelloService!"
+		};
+	} else {
+		return messaging::Hello::HelloReplyT {
+			.message = "Greetings, this is a tracked reply from HelloService!"
+		};
+	}
 }
 
 }

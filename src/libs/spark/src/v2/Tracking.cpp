@@ -51,7 +51,9 @@ void Tracking::expired(const boost::system::error_code& ec) {
 	start_timer();
 }
 
-void Tracking::on_message(boost::uuids::uuid uuid, std::span<const std::uint8_t> data) {
+void Tracking::on_message(const Link& link,
+                          std::span<const std::uint8_t> data,
+                          const boost::uuids::uuid& uuid) {
 	auto it = requests_.find(uuid);
 
 	// request has already expired or never existed
@@ -63,21 +65,22 @@ void Tracking::on_message(boost::uuids::uuid uuid, std::span<const std::uint8_t>
 	}
 
 	auto& [_, request] = *it;
-	//request.cb(data);
+	request.state(link, data);
 	requests_.erase(it);
 }
 
-void Tracking::track(boost::uuids::uuid id, MessageCB cb, sc::seconds ttl) {
+void Tracking::track(boost::uuids::uuid id, TrackedState state, sc::seconds ttl) {
 	Request request {
 		.id = std::move(id),
-		.cb = std::move(cb),
+		.state = std::move(state),
 		.ttl = ttl
 	};
 
 	requests_.emplace(id, std::move(request));
 }
 void Tracking::timeout(Request& request) {
-	//request.cb(std::nullopt);
+	spark::v2::Link link; // todo
+	request.state(link, std::unexpected(Result::TIMED_OUT));
 }
 
 Tracking::~Tracking() {

@@ -27,7 +27,6 @@ namespace ember::spark::v2 {
 
 class Connection;
 
-using Token = boost::uuids::uuid;
 using namespace std::chrono_literals;
 
 class Channel final : public std::enable_shared_from_this<Channel> {
@@ -46,7 +45,7 @@ private:
 	boost::uuids::random_generator uuid_gen_;
 
 	void link_up();
-	void send(flatbuffers::FlatBufferBuilder&& fbb, boost::uuids::uuid uuid);
+	void send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, const bool response);
 
 public:
 	Channel(boost::asio::io_context& ctx, std::uint8_t id,
@@ -63,9 +62,10 @@ public:
 
 	void open();
 	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
-	void send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb,
+	void send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
 	          std::chrono::seconds timeout = 5s);
 	void send(flatbuffers::FlatBufferBuilder&& fbb);
+	void send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token);
 };
 
 } // v2, spark, ember

@@ -23,7 +23,7 @@ Channel::Channel(boost::asio::io_context& ctx, std::uint8_t id,
 	  channel_id_(id),
 	  handler_(handler),
       connection_(std::move(net)),
-	  link_ { .peer_banner = banner, .service_name = service } {}
+	  link_ { .peer_banner = std::move(banner), .service_name = std::move(service) } {}
 
 void Channel::open() {
 	if(state_ != State::OPEN) {
@@ -39,20 +39,20 @@ bool Channel::is_open() const {
 void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t> data) {
 	link_.channel = weak_from_this();
 
-	// tracked message
-	if(!header.uuid.is_nil()) {
-		tracking_.on_message(header.uuid, data);
-	} else {
-		handler_->on_message(link_, data);
+	if(!header.response || header.uuid.is_nil()) {
+		handler_->on_message(link_, data, header.uuid);
+	} else { // tracked message response
+		tracking_.on_message(link_, data, header.uuid);
 	}
 }
 
-void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, boost::uuids::uuid uuid) {
+void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, const bool response) {
 	auto msg = std::make_unique<Message>();
 	msg->fbb = std::move(fbb);
 
 	MessageHeader header;
-	header.uuid = uuid;
+	header.uuid = token;
+	header.response = response;
 	header.channel = channel_id_;
 	header.size = msg->fbb.GetSize();
 	header.set_alignment(msg->fbb.GetBufferMinAlignment());
@@ -63,15 +63,19 @@ void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, boost::uuids::uuid uuid
 	connection_->send(std::move(msg));
 }
 
-void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, MessageCB cb,
+void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
                    std::chrono::seconds timeout) {
 	const auto uuid = uuid_gen_();
-	send(std::move(fbb), uuid);
-	tracking_.track(uuid, cb, timeout);
+	send(std::move(fbb), uuid, false);
+	tracking_.track(uuid, state, timeout);
 }
 
 void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
-	send(std::move(fbb), boost::uuids::uuid{0});
+	send(std::move(fbb), {}, false);
+}
+
+void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token) {
+	send(std::move(fbb), token, true);
 }
 
 auto Channel::state() const -> State {
@@ -89,11 +93,7 @@ void Channel::link_up() {
 }
 
 Channel::~Channel() {
-	if(!handler_) {
-		return;
-	}
-
-	if(is_open()) {
+	if(handler_ && is_open()) {
 		link_.channel = weak_from_this();
 		handler_->on_link_down(link_);
 	}

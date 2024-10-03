@@ -18,6 +18,10 @@ class HelloClient final : public services::HelloClient {
 	void say_hello(const spark::v2::Link& link);
 	void say_hello_tracked(const spark::v2::Link& link);
 	void handle_say_hello_response(const messaging::Hello::HelloReply* msg);
+	void handle_tracked_reply(
+		const spark::v2::Link& link,
+		std::expected<const messaging::Hello::HelloReply*, spark::v2::Result> msg
+	);
 
 public:
 	HelloClient(spark::v2::Server& spark);

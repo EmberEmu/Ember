@@ -14,6 +14,7 @@
 
 #include "{{fbs_name}}_generated.h"
 
+#include <spark/v2/Common.h>
 #include <spark/v2/Server.h>
 #include <spark/v2/Handler.h>
 #include <spark/v2/Link.h>
@@ -27,8 +28,7 @@ class {{name}}Client : public spark::v2::Handler {
 	spark::v2::Server& spark_;
 	boost::uuids::uuid uuid_;
 
-protected:
-	void send(auto& msg, const spark::v2::Link& link) {
+	flatbuffers::FlatBufferBuilder serialise(auto& msg) const {
 		flatbuffers::FlatBufferBuilder fbb;
 
 		// serialise message
@@ -36,10 +36,46 @@ protected:
 		env.message.Set(msg);
 		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
 		fbb.Finish(packed);
+		return fbb;
+	}
+
+protected:
+	template<typename T>
+	void send(auto& msg, const spark::v2::Link& link, auto&& cb) {
+		spark::v2::TrackedState state = [cb = std::move(cb)](
+			const spark::v2::Link& link, spark::v2::MessageResult result) {
+			if(!result) {
+				return;
+			}
+
+			auto fb = messaging::{{name}}::Get{{root}}(result->data());
+			flatbuffers::Verifier verifier(result->data(), result->size());
+
+			// todo, need to check whether the message is actually the correct type
+			const auto msg = static_cast<const T*>(fb->message());
+
+			if(!msg->Verify(verifier)) {
+				return;
+			}
+
+			cb(link, msg);
+		};
 
 		auto channel = link.channel.lock();
 
 		if(channel) {
+			auto fbb = serialise(msg);
+			channel->send(std::move(fbb), std::move(state));
+		} else {
+			cb(link, std::unexpected(spark::v2::Result::LINK_GONE));
+		}
+	}
+
+	void send(auto& msg, const spark::v2::Link& link) {
+		auto channel = link.channel.lock();
+
+		if(channel) {
+			auto fbb = serialise(msg);
 			channel->send(std::move(fbb));
 		}
 	}
@@ -64,7 +100,10 @@ public:
 		return "{{name}}";
 	}
 
-	void on_message(const spark::v2::Link& link, const std::span<const std::uint8_t> msg) override {
+	void on_message(
+		const spark::v2::Link& link,
+		const std::span<const std::uint8_t> msg,
+		const spark::v2::Token& token = {}) override {
 		auto fb = messaging::{{name}}::Get{{root}}(msg.data());
 		flatbuffers::Verifier verifier(msg.data(), msg.size());
 

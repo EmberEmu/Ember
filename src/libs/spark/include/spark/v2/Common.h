@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <spark/v2/Result.h>
 #include <flatbuffers/flatbuffer_builder.h>
 #include <boost/container/small_vector.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <expected>
 #include <functional>
 #include <span>
@@ -17,14 +19,18 @@
 
 namespace ember::spark::v2 {
 
-struct Link;
+using Token = boost::uuids::uuid;
 
+struct Link;
 struct Message {
 	boost::container::small_vector<std::uint8_t, 1000> header; // temp
 	flatbuffers::FlatBufferBuilder fbb;
 };
 
-using MessageCB = std::function<void()>;
-using TrackedHandler = std::function<void(const Link&, std::expected<bool, Message>)>;
+using MessageResult = std::expected<std::span<const std::uint8_t>, Result>;
+
+using TrackedState = std::function<void(
+	const spark::v2::Link& link, MessageResult 
+)>;
 
 } // v2, spark, ember

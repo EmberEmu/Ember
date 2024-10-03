@@ -24,7 +24,7 @@ namespace ember::spark::v2 {
 class Tracking final {
 	struct Request {
 		boost::uuids::uuid id;
-		MessageCB cb;
+		TrackedState state;
 		std::chrono::seconds ttl;
 	};
 
@@ -43,8 +43,8 @@ public:
 	Tracking(boost::asio::io_context& io_context, log::Logger* logger);
 	~Tracking();
 
-	void track(boost::uuids::uuid id, MessageCB cb, std::chrono::seconds ttl);
-	void on_message(boost::uuids::uuid id, std::span<const std::uint8_t> data);
+	void track(boost::uuids::uuid id, TrackedState state, std::chrono::seconds ttl);
+	void on_message(const Link& link, std::span<const std::uint8_t> data, const boost::uuids::uuid& id);
 	void shutdown();
 };
 
