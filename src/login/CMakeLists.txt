@@ -51,6 +51,7 @@ set(LIBRARY_HDR
     FilterTypes.h
     MonitorCallbacks.h
     AccountService.h
+    AccountClient.h
     RealmService.h
     PINAuthenticator.h
     ExecutablesChecksum.h
@@ -72,6 +73,7 @@ set(LIBRARY_SRC
     Patcher.cpp
     MonitorCallbacks.cpp
     AccountService.cpp
+    AccountClient.cpp
     RealmService.cpp
     PINAuthenticator.cpp
     ExecutablesChecksum.cpp

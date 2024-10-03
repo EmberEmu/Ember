@@ -137,7 +137,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	Sessions sessions(true);
 	Service net_service(sessions, spark, discovery, logger);
 
-	spark::v2::Server sparkv2(service, "test", "0.0.0.0", 8000, logger);
+	spark::v2::Server sparkv2(service, "account", "0.0.0.0", 8000, logger);
 	AccountService servicev2(sparkv2, *logger);
 
 	service.dispatch([logger]() {

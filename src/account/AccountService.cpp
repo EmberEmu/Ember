@@ -22,7 +22,8 @@ void AccountService::on_link_down(const spark::v2::Link& link) {
 	LOG_DEBUG_ASYNC(logger_, "Link down from {}", link.peer_banner);
 }
 
-std::optional<messaging::Accountv2::SessionResponseT> AccountService::handle_session_fetch(
+std::optional<messaging::Accountv2::SessionResponseT>
+AccountService::handle_session_fetch(
 	const messaging::Accountv2::SessionLookup* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
@@ -30,7 +31,8 @@ std::optional<messaging::Accountv2::SessionResponseT> AccountService::handle_ses
 	return std::nullopt; 
 }
 
-std::optional<messaging::Accountv2::ResponseT> AccountService::handle_register_session(
+std::optional<messaging::Accountv2::RegisterResponseT>
+AccountService::handle_register_session(
 	const messaging::Accountv2::RegisterSession* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
@@ -38,7 +40,8 @@ std::optional<messaging::Accountv2::ResponseT> AccountService::handle_register_s
 	return std::nullopt; 
 }
 
-std::optional<messaging::Accountv2::LookupIDResponseT> AccountService::handle_account_i_d_fetch(
+std::optional<messaging::Accountv2::AccountFetchResponseT>
+AccountService::handle_account_i_d_fetch(
 	const messaging::Accountv2::LookupID* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
@@ -46,7 +49,8 @@ std::optional<messaging::Accountv2::LookupIDResponseT> AccountService::handle_ac
 	return std::nullopt; 
 }
 
-std::optional<messaging::Accountv2::ResponseT> AccountService::handle_disconnect_session(
+std::optional<messaging::Accountv2::DisconnectSessionResponseT>
+AccountService::handle_disconnect_session(
 	const messaging::Accountv2::DisconnectSession* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
@@ -54,7 +58,8 @@ std::optional<messaging::Accountv2::ResponseT> AccountService::handle_disconnect
 	return std::nullopt; 
 }
 
-std::optional<messaging::Accountv2::ResponseT> AccountService::handle_disconnect_by_i_d(
+std::optional<messaging::Accountv2::DisconnectResponseT>
+AccountService::handle_disconnect_by_i_d(
 	const messaging::Accountv2::DisconnectID* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {

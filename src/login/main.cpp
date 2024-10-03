@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "AccountClient.h"
 #include "AccountService.h"
 #include "RealmService.h"
 #include "FilterTypes.h"
@@ -22,6 +23,7 @@
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
+#include <spark/v2/Server.h>
 #include <spark/Service.h>
 #include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>
@@ -301,6 +303,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO_SYNC(logger, "Starting network service on {}:{}", interface, port);
+
+	// test
+	spark::v2::Server sparkv2(service, "login", interface, 8001, logger);
+	AccountClient account_client(sparkv2, *logger);
 
 	NetworkListener server(
 		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics

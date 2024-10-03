@@ -23,15 +23,11 @@ enum Status : ubyte {
 	SESSION_NOT_FOUND
 }
 
-table Response {
-	status:Status;
-}
-
 table LookupID {
 	account_name:string;
 }
 
-table LookupIDResponse {
+table AccountFetchResponse {
 	status:Status;
 	account_id:uint;
 }
@@ -61,15 +57,29 @@ table DisconnectSession {
 	reason:DisconnectReason;
 }
 
+table RegisterResponse {
+	status:Status;
+}
+
+table DisconnectResponse {
+	status:Status;
+}
+
+table DisconnectSessionResponse {
+	status:Status;
+}
+
 union Message {
 	SessionLookup,
-	SessionResponse,
 	RegisterSession,
-	Response,
 	LookupID,
-	LookupIDResponse,
 	DisconnectSession,
-	DisconnectID
+	DisconnectID,
+	SessionResponse,
+	RegisterResponse,
+	AccountFetchResponse,
+	DisconnectResponse,
+	DisconnectSessionResponse
 }
 
 table Envelope {
@@ -80,8 +90,8 @@ root_type Envelope;
 
 rpc_service Accountv2 {
 	SessionFetch(SessionLookup):SessionResponse;
-	RegisterSession(RegisterSession):Response;
-	AccountIDFetch(LookupID):LookupIDResponse;
-	DisconnectSession(DisconnectSession):Response;
-	DisconnectByID(DisconnectID):Response;
+	RegisterSession(RegisterSession):RegisterResponse;
+	AccountIDFetch(LookupID):AccountFetchResponse;
+	DisconnectSession(DisconnectSession):DisconnectSessionResponse;
+	DisconnectByID(DisconnectID):DisconnectResponse;
 }
