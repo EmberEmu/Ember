@@ -48,10 +48,6 @@ protected:
 	}
 
 public:
-## for handler in handlers
-	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
-## endfor
-
 	{{name}}Service(spark::v2::Server& spark)
 		: spark_(spark),
 		  uuid_(boost::uuids::random_generator()()) {

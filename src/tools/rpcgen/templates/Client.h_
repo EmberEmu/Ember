@@ -87,10 +87,6 @@ protected:
 	}
 
 public:
-## for handler in handlers
-	using {{handler.call}}Response = std::function<void(messaging::{{name}}::{{handler.response}})>();
-## endfor
-
 	{{name}}Client(spark::v2::Server& spark)
 		: spark_(spark) {}
 
