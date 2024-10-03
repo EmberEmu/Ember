@@ -53,13 +53,13 @@ void Tracking::expired(const boost::system::error_code& ec) {
 
 void Tracking::on_message(const Link& link,
                           std::span<const std::uint8_t> data,
-                          const boost::uuids::uuid& uuid) {
-	auto it = requests_.find(uuid);
+                          const Token& token) {
+	auto it = requests_.find(token);
 
 	// request has already expired or never existed
 	if(it == requests_.end()) {
 		LOG_DEBUG_FILTER(logger_, LF_SPARK)
-			<< "[spark] Received invalid or expired tracked requested"
+			<< "[spark] Received invalid or expired tracked response"
 			<< LOG_ASYNC;
 		return;
 	}
@@ -69,14 +69,14 @@ void Tracking::on_message(const Link& link,
 	requests_.erase(it);
 }
 
-void Tracking::track(boost::uuids::uuid id, TrackedState state, sc::seconds ttl) {
+void Tracking::track(Token token, TrackedState state, sc::seconds ttl) {
 	Request request {
-		.id = std::move(id),
+		.token = token,
 		.state = std::move(state),
 		.ttl = ttl
 	};
 
-	requests_.emplace(id, std::move(request));
+	requests_.emplace(token, std::move(request));
 }
 void Tracking::timeout(Request& request) {
 	spark::v2::Link link; // todo
