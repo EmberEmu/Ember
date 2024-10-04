@@ -158,7 +158,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	// Encode the key without requiring an allocation
-	static constexpr auto key_size_hint = 32u;
+	static constexpr auto key_size_hint = 40u;
 
 	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(
 		key.bytes(), boost::container::default_init
