@@ -29,6 +29,7 @@ AccountService::handle_session_fetch(
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	messaging::Accountv2::SessionResponseT response;
 
 	if(!msg->account_id()) {

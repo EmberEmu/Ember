@@ -12,7 +12,6 @@
 #include <spark/v2/Connection.h>
 #include <spark/v2/Channel.h>
 #include <spark/v2/Handler.h>
-#include <spark/v2/SharedDefs.h>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <logger/Logger.h>

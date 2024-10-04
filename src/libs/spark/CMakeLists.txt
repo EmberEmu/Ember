@@ -46,7 +46,6 @@ set(COREv2
     include/spark/v2/Link.h
     include/spark/v2/MessageHeader.h
     include/spark/v2/Channel.h
-    include/spark/v2/SharedDefs.h
     include/spark/v2/HandlerRegistry.h
     include/spark/v2/Peers.h
     include/spark/v2/Utility.h
