@@ -31,7 +31,7 @@ class {{name}}Service : public spark::v2::Handler {
 	boost::uuids::uuid uuid_;
 
 protected:
-	void send(auto& msg, const spark::v2::Link& link, const spark::v2::Token& token) {
+	void send(auto& msg, const spark::v2::Link& link, const spark::v2::Token& token) const {
 		flatbuffers::FlatBufferBuilder fbb;
 
 		// serialise message

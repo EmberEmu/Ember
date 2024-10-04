@@ -7,7 +7,7 @@
  */
 
 #include "LoginHandler.h"
-#include "AccountService.h"
+#include "AccountClient.h"
 #include "ExecutablesChecksum.h"
 #include "IntegrityData.h"
 #include "LocaleMap.h"
@@ -31,7 +31,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 	const LoginState prev_state = state_;
 	update_state(LoginState::CLOSED);
 
-	switch(state_) {
+	switch(prev_state) {
 		case LoginState::INITIAL_CHALLENGE:
 			initiate_login(packet);
 			break;
@@ -291,10 +291,10 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 
 	const auto& [status, key] = action.get_result();
 
-	if(status == messaging::account::Status::OK) {
+	if(status == messaging::Accountv2::Status::OK) {
 		update_state(LoginState::RECONNECT_PROOF);
 		state_data_.emplace<ReconnectAuthenticator>(user_->username(), key, checksum_salt_);
-	} else if(status == messaging::account::Status::SESSION_NOT_FOUND) {
+	} else if(status == messaging::Accountv2::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response.result = grunt::Result::FAIL_NOACCESS;
 		LOG_DEBUG(logger_) << "Reconnect failed, session not found for "
@@ -302,7 +302,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 	} else {
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << util::fb_status(status, messaging::account::EnumNamesStatus())
+		LOG_ERROR(logger_) << util::fb_status(status, messaging::Accountv2::EnumNamesStatus())
 		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
 	
@@ -501,19 +501,19 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 	auto result = action.get_result();
 	grunt::Result response = grunt::Result::SUCCESS;
 
-	if(result == messaging::account::Status::OK) {
+	if(result == messaging::Accountv2::Status::OK) {
 		update_state(LoginState::FETCHING_CHARACTER_DATA);
-	} else if(result == messaging::account::Status::ALREADY_LOGGED_IN) {
+	} else if(result == messaging::Accountv2::Status::ALREADY_LOGGED_IN) {
 		response = grunt::Result::FAIL_ALREADY_ONLINE;
 	} else {
 		metrics_.increment("login_internal_failure");
 		response = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << util::fb_status(result, messaging::account::EnumNamesStatus())
+		LOG_ERROR(logger_) << util::fb_status(result, messaging::Accountv2::EnumNamesStatus())
 		                   << " from peer during login" << LOG_ASYNC;
 	}
 
 	// defer sending the response until we've fetched the character data
-	if(result == messaging::account::Status::OK) {
+	if(result == messaging::Accountv2::Status::OK) {
 		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_));
 	} else {
 		send_login_proof(response);

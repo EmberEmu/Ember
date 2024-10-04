@@ -275,7 +275,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
 	                               mcast_port, logger);
 
-	AccountService acct_svc(spark, discovery, logger);
+	// test
+	spark::v2::Server sparkv2(service, "login", s_address, 8001, logger);
+	AccountClient acct_svc(sparkv2, *logger);
+
 	RealmService realm_svc(realm_list, spark, discovery, logger);
 
 	// Start metrics service
@@ -303,10 +306,6 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO_SYNC(logger, "Starting network service on {}:{}", interface, port);
-
-	// test
-	spark::v2::Server sparkv2(service, "login", interface, 8001, logger);
-	AccountClient account_client(sparkv2, *logger);
 
 	NetworkListener server(
 		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics

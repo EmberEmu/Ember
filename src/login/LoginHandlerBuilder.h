@@ -18,7 +18,7 @@ class LoginHandlerBuilder final {
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_dao_;
-	const AccountService& acct_svc_;
+	const AccountClient &acct_svc_;
 	const Survey& survey_;
 	const IntegrityData& bin_data_;
 	Metrics& metrics_;
@@ -28,7 +28,7 @@ class LoginHandlerBuilder final {
 public:
 	LoginHandlerBuilder(log::Logger* logger, const Patcher& patcher, const Survey& survey,
 	                    const IntegrityData& exe_data, const dal::UserDAO& user_dao,
-	                    const AccountService& acct_svc, const RealmList& realm_list,
+	                    const AccountClient& acct_svc, const RealmList& realm_list,
 	                    Metrics& metrics, bool locale_enforce, bool integrity_enforce)
 	                    : logger_(logger), patcher_(patcher), user_dao_(user_dao),
 	                      acct_svc_(acct_svc), realm_list_(realm_list), metrics_(metrics),

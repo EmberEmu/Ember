@@ -18,6 +18,7 @@ enum DisconnectReason : ubyte {
 enum Status : ubyte {
 	UNKNOWN_STATUS,
 	OK,
+	RPC_ERROR,
 	ILLFORMED_MESSAGE,
 	ALREADY_LOGGED_IN,
 	SESSION_NOT_FOUND

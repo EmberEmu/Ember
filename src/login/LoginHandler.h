@@ -56,7 +56,7 @@ class LoginHandler final {
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_src_;
 	const std::string source_ip_;
-	const AccountService& acct_svc_;
+	const AccountClient& acct_svc_;
 	const IntegrityData& bin_data_;
 	const Survey& survey_;
 
@@ -122,7 +122,7 @@ public:
 	bool update_state(const grunt::Packet& packet);
 	void on_chunk_complete();
 
-	LoginHandler(const dal::UserDAO& users, const AccountService& acct_svc, const Patcher& patcher,
+	LoginHandler(const dal::UserDAO& users, const AccountClient& acct_svc, const Patcher& patcher,
 	             const IntegrityData& bin_data, const Survey& survey, log::Logger* logger,
 	             const RealmList& realm_list, std::string source, Metrics& metrics,
 	             bool locale_enforce, bool integrity_enforce)

@@ -7,6 +7,7 @@
  */
 
 #include "AccountClient.h"
+#include <vector>
 
 namespace ember {
 
@@ -18,6 +19,7 @@ AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
 
 void AccountClient::on_link_up(const spark::v2::Link& link) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	link_ = link;
 }
 
 void AccountClient::on_link_down(const spark::v2::Link& link) {
@@ -26,12 +28,62 @@ void AccountClient::on_link_down(const spark::v2::Link& link) {
 
 void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
+	messaging::Accountv2::SessionLookupT msg {
+		.account_id = account_id
+	};
+
+	send<messaging::Accountv2::SessionResponse>(msg, link_,
+		[this, cb = std::move(cb)](auto link, auto message) {
+			handle_locate_response(message, cb);
+		}
+	);
 }
 
 void AccountClient::register_session(const std::uint32_t account_id,
                                      const srp6::SessionKey& key,
                                      RegisterCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
+	std::vector keyvec(key.t.begin(), key.t.end());
+
+	messaging::Accountv2::RegisterSessionT msg {
+		.account_id = account_id,
+		.key = std::move(keyvec)
+	};
+
+	send<messaging::Accountv2::RegisterResponse>(msg, link_,
+		[this, cb = std::move(cb)](auto link, auto message) {
+			handle_register_response(message, cb);
+		}
+	);
+}
+
+void AccountClient::handle_register_response(
+	std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> msg,
+	const RegisterCB& cb) const {
+	if(!msg) {
+		cb(messaging::Accountv2::Status::RPC_ERROR); // temp
+	} else {
+		cb((*msg)->status());
+	}
+}
+
+void AccountClient::handle_locate_response(
+	std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> msg,
+	const LocateCB& cb) const {
+	if(!msg) {
+		cb(messaging::Accountv2::Status::RPC_ERROR, {}); // temp
+		return;
+	}
+	
+	if(!(*msg)->key()) {
+		cb(messaging::Accountv2::Status::ILLFORMED_MESSAGE, {}); // temp
+		return;
+	}
+
+	auto key = Botan::BigInt::decode((*msg)->key()->data(), (*msg)->key()->size());
+	cb((*msg)->status(), std::move(key));
 }
 
 } // ember

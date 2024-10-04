@@ -43,7 +43,7 @@ class {{name}}Client : public spark::v2::Handler {
 
 protected:
 	template<typename T>
-	void send(auto& msg, const spark::v2::Link& link, auto&& cb) {
+	void send(auto& msg, const spark::v2::Link& link, auto&& cb) const {
 		auto channel = link.channel.lock();
 
 		if(!channel) {
@@ -75,7 +75,7 @@ protected:
 		channel->send(std::move(fbb), std::move(state));
 	}
 
-	void send(auto& msg, const spark::v2::Link& link) {
+	void send(auto& msg, const spark::v2::Link& link) const {
 		auto channel = link.channel.lock();
 
 		if(channel) {

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "AccountService.h"
+#include "AccountClient.h"
 #include "grunt/Packet.h"
 #include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
@@ -28,16 +28,16 @@ public:
 };
 
 class RegisterSessionAction final : public Action {
-	const AccountService& account_svc_;
+	const AccountClient& account_svc_;
 	std::uint32_t account_id_;
 	srp6::SessionKey key_;
 
-	std::promise<messaging::account::Status> promise_;
-	messaging::account::Status res_;
+	std::promise<messaging::Accountv2::Status> promise_;
+	messaging::Accountv2::Status res_;
 	std::exception_ptr exception_;
 
-	std::future<messaging::account::Status> do_register() {
-		account_svc_.register_session(account_id_, key_, [&](messaging::account::Status res) {
+	std::future<messaging::Accountv2::Status> do_register() {
+		account_svc_.register_session(account_id_, key_, [&](messaging::Accountv2::Status res) {
 			promise_.set_value(res);
 		});
 
@@ -45,8 +45,10 @@ class RegisterSessionAction final : public Action {
 	}
 
 public:
-	RegisterSessionAction(const AccountService& account_svc, std::uint32_t account_id, srp6::SessionKey key)
-	                      : account_svc_(account_svc), account_id_(account_id), key_(key) { }
+	RegisterSessionAction(const AccountClient& account_svc, std::uint32_t account_id, srp6::SessionKey key)
+	    : account_svc_(account_svc),
+		  account_id_(account_id),
+		  key_(std::move(key)) { }
 
 	virtual void execute() override try {
 		res_ = do_register().get();
@@ -54,7 +56,7 @@ public:
 		exception_ = std::current_exception();
 	}
 
-	messaging::account::Status get_result() const {
+	messaging::Accountv2::Status get_result() const {
 		if(exception_) {
 			std::rethrow_exception(exception_);
 		}
@@ -64,16 +66,16 @@ public:
 };
 
 class FetchSessionKeyAction final : public Action {
-	const AccountService& account_svc_;
+	const AccountClient& account_svc_;
 	std::uint32_t account_id_;
 	Botan::BigInt key_;
 	std::exception_ptr exception_;
 
-	std::promise<std::pair<messaging::account::Status, Botan::BigInt>> promise_;
-	std::pair<messaging::account::Status, Botan::BigInt> res_;
+	std::promise<std::pair<messaging::Accountv2::Status, Botan::BigInt>> promise_;
+	std::pair<messaging::Accountv2::Status, Botan::BigInt> res_;
 
 	auto do_fetch() {
-		account_svc_.locate_session(account_id_, [&](messaging::account::Status res,
+		account_svc_.locate_session(account_id_, [&](messaging::Accountv2::Status res,
 		                            Botan::BigInt key) {
 			promise_.set_value({res, key});
 		});
@@ -82,8 +84,9 @@ class FetchSessionKeyAction final : public Action {
 	}
 
 public:
-	FetchSessionKeyAction(const AccountService& account_svc, std::uint32_t account_id)
-	                      : account_svc_(account_svc), account_id_(account_id) {}
+	FetchSessionKeyAction(const AccountClient& account_svc, std::uint32_t account_id)
+		: account_svc_(account_svc),
+		  account_id_(account_id) {}
 
 	virtual void execute() override try {
 		res_ = do_fetch().get();
@@ -108,7 +111,8 @@ class FetchUserAction final : public Action {
 
 public:
 	FetchUserAction(utf8_string username, const dal::UserDAO& user_src)
-	                : username_(std::move(username)), user_src_(user_src) {}
+		: username_(std::move(username)),
+		  user_src_(user_src) {}
 
 	virtual void execute() override try {
 		user_ = user_src_.user(username_);
@@ -138,7 +142,9 @@ class FetchCharacterCounts final : public Action {
 
 public:
 	FetchCharacterCounts(std::uint32_t user_id, const dal::UserDAO& user_src, bool reconnect = false)
-	                     : user_id_(user_id), user_src_(user_src), reconnect_(reconnect) {}
+		: user_id_(user_id),
+		  user_src_(user_src),
+		  reconnect_(reconnect) {}
 
 	virtual void execute() override try {
 		counts_ = user_src_.character_counts(user_id_);
@@ -169,8 +175,12 @@ class SaveSurveyAction final : public Action {
 
 public:
 	SaveSurveyAction(std::uint32_t user_id, const dal::UserDAO& user_src, std::uint32_t survey_id,
-	                 std::string data) : user_src_(user_src), user_id_(user_id), survey_id_(survey_id),
-	                                     data_(std::move(data)), error_(false) { }
+	                 std::string data)
+		: user_src_(user_src),
+		  user_id_(user_id),
+		  survey_id_(survey_id),
+		  data_(std::move(data)),
+		  error_(false) { }
 
 	virtual void execute() override try {
 		user_src_.save_survey(user_id_, survey_id_, data_);

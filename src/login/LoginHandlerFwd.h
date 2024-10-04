@@ -15,7 +15,7 @@ class Patcher;
 class Metrics;
 class Survey;
 class IntegrityData;
-class AccountService;
+class AccountClient;
 class RealmList;
 namespace dal { class UserDAO; }
 

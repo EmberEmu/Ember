@@ -24,14 +24,28 @@ public:
 
 private:
 	log::Logger& logger_;
+	spark::v2::Link link_;
 
 	void on_link_up(const spark::v2::Link& link) override;
 	void on_link_down(const spark::v2::Link& link) override;
 
+	void handle_register_response(
+		std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> msg,
+		const RegisterCB& cb
+	) const;
+
+	void handle_locate_response(
+		std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> msg,
+		const LocateCB& cb
+	) const;
+
 public:
 	AccountClient(spark::v2::Server& spark, log::Logger& logger);
 
-	void register_session(std::uint32_t account_id, const srp6::SessionKey& key, RegisterCB cb) const;
+	void register_session(std::uint32_t account_id,
+	                      const srp6::SessionKey& key,
+	                      RegisterCB cb) const;
+
 	void locate_session(std::uint32_t account_id, LocateCB cb) const;
 };
 
