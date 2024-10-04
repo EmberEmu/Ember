@@ -30,12 +30,12 @@ private:
 	void on_link_down(const spark::v2::Link& link) override;
 
 	void handle_register_response(
-		std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> msg,
+		std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> resp,
 		const RegisterCB& cb
 	) const;
 
 	void handle_locate_response(
-		std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> msg,
+		std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
 		const LocateCB& cb
 	) const;
 

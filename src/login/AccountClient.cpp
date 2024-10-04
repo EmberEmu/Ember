@@ -60,34 +60,37 @@ void AccountClient::register_session(const std::uint32_t account_id,
 }
 
 void AccountClient::handle_register_response(
-	std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> msg,
+	std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> resp,
 	const RegisterCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!msg) {
+	if(!resp) {
 		cb(messaging::Accountv2::Status::RPC_ERROR);
 	} else {
-		cb((*msg)->status());
+		const auto msg = *resp;
+		cb(msg->status());
 	}
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> msg,
+	std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!msg) {
+	if(!resp) {
 		cb(messaging::Accountv2::Status::RPC_ERROR, {});
 		return;
 	}
 	
-	if(!(*msg)->key()) {
-		cb((*msg)->status(), {});
+	const auto msg = *resp;
+
+	if(!msg->key()) {
+		cb(msg->status(), {});
 		return;
 	}
 
-	auto key = Botan::BigInt::decode((*msg)->key()->data(), (*msg)->key()->size());
-	cb((*msg)->status(), std::move(key));
+	auto key = Botan::BigInt::decode(msg->key()->data(), msg->key()->size());
+	cb(msg->status(), std::move(key));
 }
 
 } // ember
