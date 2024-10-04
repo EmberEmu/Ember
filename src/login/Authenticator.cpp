@@ -33,8 +33,10 @@ Botan::BigInt LoginAuthenticator::server_proof(const srp6::SessionKey& key,
 Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
                                                  const Botan::BigInt& A) const {
 	const Botan::BigInt& B = srp_.public_ephemeral();
-	return srp6::generate_client_proof(user_.username(), key, gen_.prime(), gen_.generator(),
-	                                   A, B, user_.salt());
+
+	return srp6::generate_client_proof(
+		user_.username(), key, gen_.prime(), gen_.generator(), A, B, user_.salt()
+	);
 }
 
 srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) const {
@@ -46,6 +48,7 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
                                                const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt)
                                                : username_(std::move(username)),
                                                  salt_(salt) {
+	sess_key_.t.resize(session_key.bytes());
 	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
 }
 
