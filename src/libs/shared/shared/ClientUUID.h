@@ -13,6 +13,9 @@
 #include <boost/functional/hash.hpp>
 #include <gsl/gsl_util>
 #include <algorithm>
+#include <iomanip>
+#include <string>
+#include <sstream>
 #include <cstdint>
 #include <cstddef>
 
@@ -46,6 +49,18 @@ public:
 		return service_;
 	}
 
+	// don't really care about efficiency here, it's for debugging
+	inline std::string to_string() const {
+		std::stringstream stream;
+		stream << std::hex;
+
+		for(auto byte : data_) {
+			stream << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+		}
+
+		return stream.str();
+	}
+
 	static ClientUUID from_bytes(const std::array<std::uint8_t, 16>& data) {
 		ClientUUID uuid;
 		std::ranges::copy(data, uuid.data_);
@@ -62,6 +77,7 @@ public:
 		uuid.service_ = gsl::narrow<std::uint8_t>(service_index);
 		return uuid;
 	}
+
 
 	friend bool operator==(const ClientUUID& rhs, const ClientUUID& lhs);
 };
