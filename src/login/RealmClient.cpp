@@ -53,7 +53,7 @@ void RealmClient::handle_status_request_response(
 	const ember::messaging::RealmStatusv2::RealmStatus* msg) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!msg->name() || !msg->id() || !msg->ip()) {
+	if(!msg->name() || !msg->id() || !msg->ip() || !msg->address()) {
 		LOG_WARN_ASYNC(logger_, "Incompatible realm status update from {}", link.peer_banner);
 		return;
 	}
@@ -63,6 +63,8 @@ void RealmClient::handle_status_request_response(
 		.id = msg->id(),
 		.name = msg->name()->str(),
 		.ip = msg->ip()->str(),
+		.port = msg->port(),
+		.address = msg->address()->str(),
 		.population = msg->population(),
 		.type = static_cast<Realm::Type>(msg->type()),
 		.flags = static_cast<Realm::Flags>(msg->flags()),

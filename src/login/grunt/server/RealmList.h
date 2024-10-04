@@ -119,7 +119,7 @@ public:
 			stream << be::native_to_little(realm.type);
 			stream << realm.flags;
 			stream << realm.name;
-			stream << realm.ip;
+			stream << realm.address;
 			stream << realm.population;
 			stream << gsl::narrow_cast<std::uint8_t>(entry.characters);
 			stream << gsl::narrow<std::uint8_t>(realm.category);

@@ -16,7 +16,6 @@
 [[nodiscard]]
 bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& stream) {
 	if(packet->read_from_stream(stream) == protocol::State::DONE) {
-		
 		if(stream.read_limit() != stream.total_read()) {
 			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
 				<< "Skipping superfluous stream data in message "

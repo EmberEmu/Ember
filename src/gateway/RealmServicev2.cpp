@@ -37,6 +37,8 @@ messaging::RealmStatusv2::RealmStatusT RealmServicev2::status() {
 		.id = realm_.id,
 		.name = realm_.name,
 		.ip = realm_.ip,
+		.port = realm_.port,
+		.address = realm_.address,
 		.population = realm_.population,
 		.type = std::to_underlying(realm_.type),
 		.flags = std::to_underlying(realm_.flags),

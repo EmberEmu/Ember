@@ -230,6 +230,13 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto& interface = args["network.interface"].as<std::string>();
 
+	if(port != realm->port) {
+		LOG_WARN_SYNC(logger, "Specified port {} differs from listening port {}, using {}",
+		              port, realm->port, port);
+		realm->port = port;
+		realm->address = std::format("{}:{}", realm->ip, realm->port);
+	}
+
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
 	std::unique_ptr<util::PortForward> forward;
 
@@ -239,7 +246,8 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 		if(result) {
 			const auto& ip = stun::extract_ip_to_string(*result);
-			realm->ip = std::format("{}:{}", ip, port);
+			realm->ip = ip;
+			realm->address = std::format("{}:{}", realm->ip, realm->port);
 		}
 
 		if(result && args["forward.enabled"].as<bool>()) {
@@ -261,7 +269,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 		}
 	}
 
-	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->ip);
+	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->address);
 
 	RealmQueue queue_service(service_pool.get());
 	RealmService realm_svc(*realm, spark, discovery, logger);

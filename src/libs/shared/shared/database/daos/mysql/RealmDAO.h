@@ -14,6 +14,8 @@
 #include <cppconn/exception.h>
 #include <conpool/drivers/MySQL/Driver.h>
 #include <cppconn/prepared_statement.h>
+#include <gsl/gsl_util>
+#include <format>
 #include <memory>
 #include <string_view>
 
@@ -30,7 +32,7 @@ public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
 	std::vector<Realm> get_realms() const override final try {
-		std::string_view query = "SELECT id, name, ip, type, flags, category, "
+		std::string_view query = "SELECT id, name, ip, port, type, flags, category, "
 		                         "region, creation_setting, population FROM realms";
 
 		auto conn = pool_.try_acquire_for(60s);
@@ -39,15 +41,21 @@ public:
 		std::vector<Realm> realms;
 
 		while(res->next()) {
-			realms.emplace_back(
-				res->getUInt("id"), res->getString("name"), res->getString("ip"),
-				static_cast<float>(res->getDouble("population")),
-				static_cast<Realm::Type>(res->getUInt("type")),
-				static_cast<Realm::Flags>(res->getUInt("flags")),
-				static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
-				static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
-				static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
-			);
+			Realm realm {
+				.id = res->getUInt("id"),
+				.name = res->getString("name"),
+				.ip = res->getString("ip"),
+				.port = gsl::narrow<std::uint16_t>(res->getUInt("port")),
+				.population = static_cast<float>(res->getDouble("population")),
+				.type = static_cast<Realm::Type>(res->getUInt("type")),
+				.flags = static_cast<Realm::Flags>(res->getUInt("flags")),
+				.category = static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
+				.region = static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
+				.creation_setting = static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
+			};
+
+			realm.address = std::format("{}:{}", realm.ip, realm.port);
+			realms.emplace_back(std::move(realm));
 		}
 
 		return realms;
@@ -56,7 +64,7 @@ public:
 	}
 
 	std::optional<Realm> get_realm(std::uint32_t id) const override final try {
-		std::string_view query = "SELECT id, name, ip, type, flags, category, "
+		std::string_view query = "SELECT id, name, ip, port, type, flags, category, "
 		                         "region, creation_setting, population FROM realms "
 		                         "WHERE id = ?";
 	
@@ -67,10 +75,11 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			return Realm {
+			Realm realm {
 				.id = res->getUInt("id"),
 				.name = res->getString("name"),
 				.ip = res->getString("ip"),
+				.port = gsl::narrow<std::uint16_t>(res->getUInt("port")),
 				.population = static_cast<float>(res->getDouble("population")),
 				.type = static_cast<Realm::Type>(res->getUInt("type")),
 				.flags = static_cast<Realm::Flags>(res->getUInt("flags")),
@@ -78,6 +87,9 @@ public:
 				.region = static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
 				.creation_setting = static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
 			};
+
+			realm.address = std::format("{}:{}", realm.ip, realm.port);
+			return realm;
 		}
 
 		return std::nullopt;

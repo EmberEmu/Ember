@@ -14,6 +14,8 @@ table RealmStatus {
 	id:uint;
 	name:string;
 	ip:string;
+	port:ushort;
+	address:string;
 	population:float;
 	type:uint;
 	flags:ubyte;
