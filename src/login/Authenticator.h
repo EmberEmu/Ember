@@ -20,13 +20,13 @@ constexpr auto CHECKSUM_SALT_LEN = 16u;
 
 class ReconnectAuthenticator final {
 	utf8_string username_;
-	const std::array<std::uint8_t, CHECKSUM_SALT_LEN> salt_;
+	std::array<std::uint8_t, CHECKSUM_SALT_LEN> salt_;
 	srp6::SessionKey sess_key_;
 
 public:
 	ReconnectAuthenticator(utf8_string username,
 	                       const Botan::BigInt& session_key,
-	                       const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt);
+	                       std::span<const std::uint8_t> salt);
 
 	bool proof_check(std::span<const std::uint8_t> salt,
 	                 std::span<const std::uint8_t> proof) const;

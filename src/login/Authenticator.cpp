@@ -11,6 +11,7 @@
 #include <srp6/Util.h>
 #include <boost/assert.hpp>
 #include <botan/hash.h>
+#include <algorithm>
 #include <utility>
 
 namespace ember {
@@ -45,9 +46,13 @@ srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) const {
 
 ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
                                                const Botan::BigInt& session_key,
-                                               const std::array<std::uint8_t, CHECKSUM_SALT_LEN>& salt)
-                                               : username_(std::move(username)),
-                                                 salt_(salt) {
+                                               std::span<const std::uint8_t> salt)
+                                               : username_(std::move(username)) {
+	if(salt.size() != salt_.size()) {
+		throw std::invalid_argument("Bad salt size");
+	}
+
+	std::ranges::copy(salt, salt_.data());
 	sess_key_.t.resize(session_key.bytes());
 	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
 }
