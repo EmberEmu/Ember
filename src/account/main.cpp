@@ -9,7 +9,6 @@
 #include "AccountService.h"
 #include "FilterTypes.h"
 //#include "MonitorCallbacks.h"
-#include "Service.h"
 #include "Sessions.h"
 #include <spark/Spark.h>
 #include <logger/Logger.h>
@@ -135,10 +134,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	                               mcast_port, logger);
 
 	Sessions sessions(true);
-	Service net_service(sessions, spark, discovery, logger);
 
-	spark::v2::Server sparkv2(service, "account", "0.0.0.0", 8000, logger);
-	AccountService servicev2(sparkv2, sessions, *logger);
+	spark::v2::Server sparkv2(service, "account", s_address, 8000, logger); // temp port
+	AccountService acct_service(sparkv2, sessions, *logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);

@@ -50,7 +50,6 @@ set(LIBRARY_HDR
     Patcher.h
     FilterTypes.h
     MonitorCallbacks.h
-    AccountService.h
     AccountClient.h
     RealmService.h
     PINAuthenticator.h
@@ -72,7 +71,6 @@ set(LIBRARY_SRC
     Authenticator.cpp
     Patcher.cpp
     MonitorCallbacks.cpp
-    AccountService.cpp
     AccountClient.cpp
     RealmService.cpp
     PINAuthenticator.cpp
