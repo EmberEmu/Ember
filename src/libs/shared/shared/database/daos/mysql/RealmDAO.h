@@ -68,13 +68,15 @@ public:
 
 		if(res->next()) {
 			return Realm {
-				res->getUInt("id"), res->getString("name"), res->getString("ip"),
-			    static_cast<float>(res->getDouble("population")),
-		        static_cast<Realm::Type>(res->getUInt("type")),
-				static_cast<Realm::Flags>(res->getUInt("flags")),
-			    static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
-		        static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
-			    static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
+				.id = res->getUInt("id"),
+				.name = res->getString("name"),
+				.ip = res->getString("ip"),
+				.population = static_cast<float>(res->getDouble("population")),
+				.type = static_cast<Realm::Type>(res->getUInt("type")),
+				.flags = static_cast<Realm::Flags>(res->getUInt("flags")),
+				.category = static_cast<dbc::Cfg_Categories::Category>(res->getUInt("category")),
+				.region = static_cast<dbc::Cfg_Categories::Region>(res->getUInt("region")),
+				.creation_setting = static_cast<Realm::CreationSetting>(res->getUInt("creation_setting"))
 			};
 		}
 

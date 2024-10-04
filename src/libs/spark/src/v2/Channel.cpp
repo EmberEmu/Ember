@@ -46,7 +46,7 @@ void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t
 	}
 }
 
-void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, const bool response) {
+bool Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, const bool response) {
 	Message msg;
 	msg.fbb = std::move(fbb);
 
@@ -61,34 +61,36 @@ void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, con
 	io::BinaryStream stream(adaptor);
 	header.write_to_stream(stream);
 	connection_->send(std::move(msg));
+	return true;
 }
 
-void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
+bool Channel::send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
                    std::chrono::seconds timeout) {
 	if(!is_open()) {
 		state(link_, std::unexpected(Result::CHANNEL_CLOSED));
-		return;
+		return false;
 	}
 
 	const auto token = uuid_gen_();
 	tracking_.track(token, state, timeout);
 	send(std::move(fbb), token, false);
+	return true;
 }
 
-void Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
+bool Channel::send(flatbuffers::FlatBufferBuilder&& fbb) {
 	if(!is_open()) {
-		return;
+		return false;
 	}
 
-	send(std::move(fbb), {}, false);
+	return send(std::move(fbb), {}, false);
 }
 
-void Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token) {
+bool Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token) {
 	if(!is_open()) {
-		return;
+		return false;
 	}
 
-	send(std::move(fbb), token, true);
+	return send(std::move(fbb), token, true);
 }
 
 auto Channel::state() const -> State {

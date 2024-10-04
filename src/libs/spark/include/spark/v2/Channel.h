@@ -45,7 +45,7 @@ private:
 	boost::uuids::random_generator uuid_gen_;
 
 	void link_up();
-	void send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, const bool response);
+	bool send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, bool response);
 
 public:
 	Channel(boost::asio::io_context& ctx, std::uint8_t id,
@@ -63,10 +63,11 @@ public:
 	void open();
 	void close();
 	void dispatch(const MessageHeader& header, std::span<const std::uint8_t> data);
-	void send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
+
+	bool send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
 	          std::chrono::seconds timeout = 5s);
-	void send(flatbuffers::FlatBufferBuilder&& fbb);
-	void send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token);
+	bool send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token);
+	bool send(flatbuffers::FlatBufferBuilder&& fbb);
 };
 
 } // v2, spark, ember

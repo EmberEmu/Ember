@@ -52,6 +52,7 @@ set(LIBRARY_HDR
     MonitorCallbacks.h
     AccountClient.h
     RealmService.h
+    RealmClient.h
     PINAuthenticator.h
     ExecutablesChecksum.h
     PatchGraph.h
@@ -73,6 +74,7 @@ set(LIBRARY_SRC
     MonitorCallbacks.cpp
     AccountClient.cpp
     RealmService.cpp
+    RealmClient.cpp
     PINAuthenticator.cpp
     ExecutablesChecksum.cpp
     PatchGraph.cpp

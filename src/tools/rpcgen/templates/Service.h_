@@ -30,20 +30,31 @@ class {{name}}Service : public spark::v2::Handler {
 	spark::v2::Server& spark_;
 	boost::uuids::uuid uuid_;
 
-protected:
-	void send(auto& msg, const spark::v2::Link& link, const spark::v2::Token& token) const {
+	flatbuffers::FlatBufferBuilder serialise(auto& msg) const {
 		flatbuffers::FlatBufferBuilder fbb;
-
-		// serialise message
 		messaging::{{name}}::EnvelopeT env;
 		env.message.Set(msg);
 		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
 		fbb.Finish(packed);
+		return fbb;
+	}
 
-		auto channel = link.channel.lock();
+protected:
+	bool send(auto& msg, const spark::v2::Link& link, const spark::v2::Token& token) const {
+		if(auto channel = link.channel.lock(); channel) {
+			auto fbb = serialise(msg);
+			return channel->send(std::move(fbb), token);
+		} else {
+			return false;
+		}
+	}
 
-		if(channel) {
-			channel->send(std::move(fbb), token);
+	bool send(auto& msg, const spark::v2::Link& link) const {
+		if(auto channel = link.channel.lock(); channel) {
+			auto fbb = serialise(msg);
+			return channel->send(std::move(fbb));
+		} else {
+			return false;
 		}
 	}
 

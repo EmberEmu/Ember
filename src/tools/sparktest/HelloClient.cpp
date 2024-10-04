@@ -58,7 +58,8 @@ void HelloClient::say_hello_tracked(const spark::v2::Link& link) {
 	});
 }
 
-void HelloClient::handle_say_hello_response(const messaging::Hello::HelloReply* msg) {
+void HelloClient::handle_say_hello_response(const spark::v2::Link& link, 
+                                            const messaging::Hello::HelloReply* msg) {
 	LOG_INFO_GLOB << "[HelloClient] Received response: " << msg->message()->c_str() << LOG_SYNC;
 }
 
