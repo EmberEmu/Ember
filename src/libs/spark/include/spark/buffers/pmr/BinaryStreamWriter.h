@@ -83,6 +83,7 @@ public:
 	template<typename T>
 	void put(const T& data) requires(std::integral<T> || std::floating_point<T>) {
 		buffer_.write(&data, sizeof(T));
+		total_write_ += sizeof(T);
 	}
 
 	template<typename T>

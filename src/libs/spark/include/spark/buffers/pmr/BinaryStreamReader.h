@@ -59,6 +59,7 @@ public:
 		}
 
 		dest.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
+			total_read_ += size;
 			buffer_.read(strbuf, size);
 			return size;
 		});

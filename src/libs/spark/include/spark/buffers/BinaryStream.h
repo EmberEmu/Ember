@@ -143,6 +143,7 @@ public:
 	template<typename T>
 	void put(const T& data) requires(std::integral<T> || std::floating_point<T>) {
 		buffer_.write(&data, sizeof(T));
+		total_write_ += sizeof(T);
 	}
 
 	template<typename T>
@@ -179,9 +180,11 @@ public:
 
 		dest.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
+			total_read_ += size;
 			return size;
 		});
 
+		total_read_ += 1;
 		buffer_.skip(1); // skip null term
 		return *this;
 	}
@@ -252,6 +255,7 @@ public:
 
 		std::string_view view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
 		buffer_.skip(pos + 1);
+		total_read_ += (pos + 1);
 		return view;
 	}
 
