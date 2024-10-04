@@ -58,7 +58,7 @@ public:
 			return;
 		}
 
-		service->post([&, event = std::move(event)] {
+		service->post([&, client, event = std::move(event)] {
 			if(auto it = handlers_.find(client); it != handlers_.end()) {
 				auto& [_, handler] = *it;
 				handler->handle_event(&event);

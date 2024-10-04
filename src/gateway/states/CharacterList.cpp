@@ -107,12 +107,12 @@ void character_enumerate(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler->uuid();
-
 	Locator::character()->retrieve_characters(ctx.client_id->id,
-	                                          [uuid](auto status, auto characters) {
-		CharEnumResponse event(status, std::move(characters));
-		Locator::dispatcher()->post_event(uuid, std::move(event));
-	});
+		[uuid](auto status, auto characters) {
+			CharEnumResponse event(status, std::move(characters));
+			Locator::dispatcher()->post_event(uuid, std::move(event));
+		}
+	);
 }
 
 void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* event) {

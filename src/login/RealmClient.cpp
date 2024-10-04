@@ -72,7 +72,7 @@ void RealmClient::handle_status_request_response(
 		.region = static_cast<dbc::Cfg_Categories::Region>(msg->region())
 	};
 
-	LOG_INFO_ASYNC(logger_, "Updated realm information for {} ({}:)", realm.name, realm.ip);
+	LOG_INFO_ASYNC(logger_, "Updated realm information for {} ({}:)", realm.name, realm.address);
 	realmlist_.add_realm(std::move(realm));
 
 	// keep track of this link's realm ID so we can mark it as offline if it disappears
