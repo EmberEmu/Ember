@@ -8,7 +8,7 @@
 
 #include "Authentication.h"
 #include "Account_generated.h"
-#include "../AccountService.h"
+#include "../AccountClient.h"
 #include "../Config.h"
 #include "../RealmQueue.h"
 #include "../ClientConnection.h"
@@ -94,7 +94,7 @@ void fetch_account_id(ClientContext& ctx, const utf8_string& username) {
 	const auto& uuid = ctx.handler->uuid();
 
 	Locator::account()->locate_account_id(username, [uuid](auto status, auto id) {
-		AccountIDResponse event(std::move(status), id);
+		AccountIDResponse event(status, id);
 		Locator::dispatcher()->post_event(uuid, event);
 	});
 }
@@ -104,7 +104,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(event->status != em::account::Status::OK) {
+	if(event->status != em::Accountv2::Status::OK) {
 		CLIENT_ERROR_FILTER_GLOB(LF_NETWORK, ctx)
 			<< "Account server returned "
 			<< util::fb_status(event->status, em::account::EnumNamesStatus())
@@ -146,7 +146,7 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 		<< util::fb_status(event->status, em::account::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
 
-	if(event->status == em::account::Status::OK) {
+	if(event->status == em::Accountv2::Status::OK) {
 		prove_session(ctx, event->key);
 	} else {
 		auth_state(ctx, State::FAILED);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Event.h"
-#include "Account_generated.h"
+#include "Accountv2_generated.h"
 #include "Character_generated.h"
 #include <protocol/ResultCodes.h>
 #include <protocol/Packets.h>
@@ -39,20 +39,20 @@ struct QueuePosition : Event {
 };
 
 struct AccountIDResponse : Event {
-	AccountIDResponse(messaging::account::Status status, std::uint32_t id)
+	AccountIDResponse(messaging::Accountv2::Status status, std::uint32_t id)
 	                  : Event { EventType::ACCOUNT_ID_RESPONSE },
 	                    status(status), account_id(id) { }
 
-	messaging::account::Status status;
+	messaging::Accountv2::Status status;
 	std::uint32_t account_id;
 };
 
 struct SessionKeyResponse : Event {
-	SessionKeyResponse(messaging::account::Status status, Botan::BigInt key)
+	SessionKeyResponse(messaging::Accountv2::Status status, Botan::BigInt key)
 	                   : Event { EventType::SESSION_KEY_RESPONSE },
 	                     status(status), key(std::move(key)) { }
 
-	messaging::account::Status status;
+	messaging::Accountv2::Status status;
 	Botan::BigInt key;
 };
 

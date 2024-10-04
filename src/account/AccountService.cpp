@@ -82,7 +82,13 @@ AccountService::handle_account_i_d_fetch(
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	return std::nullopt; 
+
+	messaging::Accountv2::AccountFetchResponseT response {
+		.status = messaging::Accountv2::Status::OK,
+		.account_id = 1 // todo, temp
+	};
+
+	return response; 
 }
 
 std::optional<messaging::Accountv2::DisconnectSessionResponseT>

@@ -21,7 +21,7 @@ set(LIBRARY_HDR
     NetworkListener.h
     ClientConnection.h
     ClientConnection.inl
-    AccountService.h
+    AccountClient.h
     RealmQueue.h
     ClientHandler.h
     ClientHandler.inl
@@ -62,7 +62,7 @@ set(LIBRARY_SRC
     ClientConnection.cpp
     RealmService.cpp
     RealmServicev2.cpp
-    AccountService.cpp
+    AccountClient.cpp
     RealmQueue.cpp
     ClientHandler.cpp
     QoS.cpp
