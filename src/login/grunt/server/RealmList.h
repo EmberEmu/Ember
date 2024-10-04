@@ -54,7 +54,7 @@ class RealmList final : public Packet {
 			stream >> realm.type;
 			stream >> realm.flags;
 			stream >> realm.name;
-			stream >> realm.ip;
+			stream >> realm.address;
 			stream >> realm.population;
 			stream >> num_chars;
 

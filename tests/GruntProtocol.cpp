@@ -278,7 +278,7 @@ TEST(GruntProtocol, ServerRealmList) {
 		ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Invalid realm flags";
 		ASSERT_EQ(Realm::Type::PvP, realm.type) << "Invalid realm type";
 		ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
-		ASSERT_EQ("127.0.0.1:1337"s, realm.ip) << "Invalid realm IP";
+		ASSERT_EQ("127.0.0.1:1337"s, realm.address) << "Invalid realm IP";
 		ASSERT_EQ("Ember"s, realm.name) << "Invalid realm name";
 		ASSERT_FLOAT_EQ(0.0f, realm.population) << "Invalid realm population";
 		ASSERT_EQ(0, chars) << "Invalid character count";
@@ -292,7 +292,7 @@ TEST(GruntProtocol, ServerRealmList) {
 		ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Invalid realm flags";
 		ASSERT_EQ(Realm::Type::PvE, realm.type) << "Invalid realm type";
 		ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
-		ASSERT_EQ("127.0.0.1:8085"s, realm.ip) << "Invalid realm IP";
+		ASSERT_EQ("127.0.0.1:8085"s, realm.address) << "Invalid realm IP";
 		ASSERT_EQ("Ember Test"s, realm.name) << "Invalid realm name";
 		ASSERT_FLOAT_EQ(1.4f, realm.population) << "Invalid realm population";
 		ASSERT_EQ(0, chars) << "Invalid character count";
