@@ -7,7 +7,6 @@
  */
 
 #include "CharacterList.h"
-#include "Account_generated.h"
 #include "../Config.h"
 #include "../Locator.h"
 #include "../ClientHandler.h"

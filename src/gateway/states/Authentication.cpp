@@ -7,7 +7,6 @@
  */
 
 #include "Authentication.h"
-#include "Account_generated.h"
 #include "../AccountClient.h"
 #include "../Config.h"
 #include "../RealmQueue.h"
