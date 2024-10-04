@@ -138,7 +138,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	Service net_service(sessions, spark, discovery, logger);
 
 	spark::v2::Server sparkv2(service, "account", "0.0.0.0", 8000, logger);
-	AccountService servicev2(sparkv2, *logger);
+	AccountService servicev2(sparkv2, sessions, *logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);

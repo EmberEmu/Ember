@@ -62,8 +62,10 @@ void AccountClient::register_session(const std::uint32_t account_id,
 void AccountClient::handle_register_response(
 	std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> msg,
 	const RegisterCB& cb) const {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	if(!msg) {
-		cb(messaging::Accountv2::Status::RPC_ERROR); // temp
+		cb(messaging::Accountv2::Status::RPC_ERROR);
 	} else {
 		cb((*msg)->status());
 	}
@@ -72,13 +74,15 @@ void AccountClient::handle_register_response(
 void AccountClient::handle_locate_response(
 	std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> msg,
 	const LocateCB& cb) const {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	if(!msg) {
-		cb(messaging::Accountv2::Status::RPC_ERROR, {}); // temp
+		cb(messaging::Accountv2::Status::RPC_ERROR, {});
 		return;
 	}
 	
 	if(!(*msg)->key()) {
-		cb(messaging::Accountv2::Status::ILLFORMED_MESSAGE, {}); // temp
+		cb((*msg)->status(), {});
 		return;
 	}
 

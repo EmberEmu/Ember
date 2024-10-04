@@ -10,8 +10,9 @@
 
 namespace ember {
 
-AccountService::AccountService(spark::v2::Server& spark, log::Logger& logger)
+AccountService::AccountService(spark::v2::Server& spark, Sessions& sessions, log::Logger& logger)
 	: services::Accountv2Service(spark),
+	  sessions_(sessions),
 	  logger_(logger) {}
 
 void AccountService::on_link_up(const spark::v2::Link& link) {
@@ -28,7 +29,26 @@ AccountService::handle_session_fetch(
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	return std::nullopt; 
+	messaging::Accountv2::SessionResponseT response;
+
+	if(!msg->account_id()) {
+		response.status = messaging::Accountv2::Status::ILLFORMED_MESSAGE;
+		return response;
+	}
+
+	const auto session = sessions_.lookup_session(msg->account_id());
+		
+	if(!session) {
+		response.status = messaging::Accountv2::Status::SESSION_NOT_FOUND;
+		return response;
+	}
+
+	auto key = Botan::BigInt::encode(*session);
+
+	response.status = messaging::Accountv2::Status::OK;
+	response.account_id = msg->account_id();
+	response.key = std::move(key);
+	return response;
 }
 
 std::optional<messaging::Accountv2::RegisterResponseT>
@@ -37,7 +57,22 @@ AccountService::handle_register_session(
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	return std::nullopt; 
+
+	messaging::Accountv2::RegisterResponseT response {
+		.status = messaging::Accountv2::Status::OK
+	};
+
+	if(msg->key() && msg->account_id()) {
+		Botan::BigInt key(msg->key()->data(), msg->key()->size());
+
+		if(!sessions_.register_session(msg->account_id(), key)) {
+			response.status = messaging::Accountv2::Status::ALREADY_LOGGED_IN;
+		}
+	} else {
+		response.status = messaging::Accountv2::Status::ILLFORMED_MESSAGE;
+	}
+
+	return response;
 }
 
 std::optional<messaging::Accountv2::AccountFetchResponseT>
