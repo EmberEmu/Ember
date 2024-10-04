@@ -31,7 +31,7 @@ class MySQLRealmDAO final : public RealmDAO {
 public:
 	MySQLRealmDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	std::vector<Realm> get_realms() const override final try {
+	std::vector<Realm> get_realms() const override try {
 		std::string_view query = "SELECT id, name, ip, port, type, flags, category, "
 		                         "region, creation_setting, population FROM realms";
 
@@ -63,7 +63,7 @@ public:
 		throw exception(e.what());
 	}
 
-	std::optional<Realm> get_realm(std::uint32_t id) const override final try {
+	std::optional<Realm> get_realm(std::uint32_t id) const override try {
 		std::string_view query = "SELECT id, name, ip, port, type, flags, category, "
 		                         "region, creation_setting, population FROM realms "
 		                         "WHERE id = ?";

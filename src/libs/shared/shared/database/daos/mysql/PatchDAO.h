@@ -33,7 +33,7 @@ class MySQLPatchDAO final : public PatchDAO {
 public:
 	MySQLPatchDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
 
-	std::vector<PatchMeta> fetch_patches() const final override try {
+	std::vector<PatchMeta> fetch_patches() const override try {
 		std::string_view query = "SELECT patches.id, `from`, `to`, mpq, name, size, md5, os, rollup, "
 		                         "architecture, locale, os.value AS os_val, "
 		                         "arch.value AS architecture_val, l.value AS locale_val "
@@ -77,7 +77,7 @@ public:
 		throw exception(e.what());
 	}
 
-	void update(const PatchMeta& meta) const final override try {
+	void update(const PatchMeta& meta) const override try {
 		std::string_view query = "UPDATE patches SET `from` = ?, `to` = ?, `mpq` = ?, "
 		                         "`name` = ?, `size` = ?, `md5` = ?, `locale` = ?, "
 		                         "`architecture` = ?, `os` = ?, `rollup` = ? "
