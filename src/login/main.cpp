@@ -7,7 +7,6 @@
  */
 
 #include "AccountClient.h"
-#include "RealmService.h"
 #include "RealmClient.h"
 #include "FilterTypes.h"
 #include "GameVersion.h"
@@ -279,7 +278,6 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	spark::v2::Server sparkv2(service, "login", s_address, 8001, logger); // temp port
 	AccountClient acct_svc(sparkv2, *logger);
 	RealmClient realm_svcv2(sparkv2, realm_list, *logger);
-	RealmService realm_svc(realm_list, spark, discovery, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<Metrics>();

@@ -11,7 +11,7 @@
 namespace ember {
 
 RealmClient::RealmClient(spark::v2::Server& server, RealmList& realmlist, log::Logger& logger)
-	: services::RealmStatusv2Client(server),
+	: services::RealmClient(server),
 	  realmlist_(realmlist),
 	  logger_(logger) {
 	connect("127.0.0.1", 8002); // temp
@@ -28,7 +28,7 @@ void RealmClient::on_link_down(const spark::v2::Link& link) {
 }
 
 void RealmClient::request_realm_status(const spark::v2::Link& link) {
-	messaging::RealmStatusv2::RequestRealmStatusT msg{};
+	messaging::Realm::RequestStatusT msg{};
 	send(msg, link);
 }
 
@@ -48,9 +48,9 @@ void RealmClient::mark_realm_offline(const spark::v2::Link& link) {
 	LOG_INFO_ASYNC(logger_, "Set realm {} to offline", realm->name);
 }
 
-void RealmClient::handle_status_request_response(
+void RealmClient::handle_get_status_response(
 	const spark::v2::Link& link,
-	const ember::messaging::RealmStatusv2::RealmStatus* msg) {
+	const ember::messaging::Realm::Status* msg) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!msg->name() || !msg->id() || !msg->ip() || !msg->address()) {

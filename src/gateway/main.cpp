@@ -14,7 +14,6 @@
 #include "EventDispatcher.h"
 #include "CharacterService.h"
 #include "RealmService.h"
-#include "RealmServicev2.h"
 #include "NetworkListener.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -272,12 +271,11 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->address);
 
 	RealmQueue queue_service(service_pool.get());
-	RealmService realm_svc(*realm, spark, discovery, logger);
 	CharacterService char_svc(spark, discovery, config, logger);
 	
 	// test
 	spark::v2::Server sparkv2(service_pool.get(), "realm", "0.0.0.0", 8002, logger);
-	RealmServicev2 realm_svcv2(sparkv2, *realm, *logger);
+	RealmService realm_svc(sparkv2, *realm, *logger);
 	AccountClient acct_svc(sparkv2, *logger);
 
 	// set services - not the best design pattern but it'll do for now

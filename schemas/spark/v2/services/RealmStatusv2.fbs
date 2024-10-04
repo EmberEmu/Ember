@@ -6,11 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-namespace ember.messaging.RealmStatusv2;
+namespace ember.messaging.Realm;
 
-table RequestRealmStatus {}
+table RequestStatus {}
 
-table RealmStatus {
+table Status {
 	id:uint;
 	name:string;
 	ip:string;
@@ -24,8 +24,8 @@ table RealmStatus {
 }
 
 union Message {
-	RequestRealmStatus,
-	RealmStatus
+	RequestStatus,
+	Status
 }
 
 table Envelope {
@@ -34,6 +34,6 @@ table Envelope {
 
 root_type Envelope;
 
-rpc_service RealmStatusv2 {
-	StatusRequest(RequestRealmStatus):RealmStatus;
+rpc_service Realm {
+	GetStatus(RequestStatus):Status;
 }

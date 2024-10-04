@@ -16,10 +16,10 @@ set(SERVICE_SCHEMAS
 set(FB_SCHEMAS
 	${SERVICE_SCHEMAS}
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Services.fbs
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Account.fbs
+    #${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Account.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Character.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Core.fbs
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/RealmStatus.fbs
+    #${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/RealmStatus.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Multicast.fbs
 
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/Spark.fbs

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2024 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,35 +8,34 @@
 
 #pragma once
 
-#include "RealmStatus_generated.h"
 #include <shared/Realm.h>
-#include <spark/Service.h>
-#include <spark/Common.h>
-#include <spark/ServiceDiscovery.h>
-#include <spark/Helpers.h>
-#include <logger/LoggerFwd.h>
-#include <memory>
+#include <RealmServiceStub.h>
+#include <logger/Logger.h>
+#include <mutex>
+#include <vector>
 
 namespace ember {
 
-class RealmService final : public spark::EventHandler {
+class RealmService : public services::RealmService {
+	std::vector<spark::v2::Link> links_;
+
 	Realm realm_;
-	spark::Service& spark_;
-	spark::ServiceDiscovery& discovery_;
-	log::Logger* logger_;
-	std::unordered_map<messaging::realm::Opcode, spark::LocalDispatcher> handlers_;
-	
-	std::shared_ptr<flatbuffers::FlatBufferBuilder> build_status() const;
-	void broadcast_status() const;
-	void send_status(const spark::Link& link, const spark::Message& message) const;
+	log::Logger& logger_;
+	std::mutex mutex;
+
+	messaging::Realm::StatusT status();
+
+	std::optional<messaging::Realm::StatusT> handle_get_status(
+		const messaging::Realm::RequestStatus* msg,
+		const spark::v2::Link& link,
+		const spark::v2::Token& token) override;
+
+	void on_link_up(const spark::v2::Link& link) override;
+	void on_link_down(const spark::v2::Link& link) override;
+	void broadcast_status();
 
 public:
-	RealmService(Realm realm, spark::Service& spark, spark::ServiceDiscovery& discovery, log::Logger* logger);
-	~RealmService();
-
-	void on_message(const spark::Link& link, const spark::Message& message) override;
-	void on_link_up(const spark::Link& link) override;
-	void on_link_down(const spark::Link& link) override;
+	RealmService(spark::v2::Server& server, Realm realm, log::Logger& logger);
 
 	void set_online();
 	void set_offline();

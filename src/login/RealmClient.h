@@ -10,12 +10,12 @@
 
 #include "RealmList.h"
 #include <logger/Logger.h>
-#include <RealmStatusv2ClientStub.h>
+#include <RealmClientStub.h>
 #include <unordered_map>
 
 namespace ember {
 
-class RealmClient final : public services::RealmStatusv2Client {
+class RealmClient final : public services::RealmClient {
 	RealmList& realmlist_;
 	log::Logger& logger_;
 	std::unordered_map<std::string, std::uint32_t> realms_;
@@ -26,9 +26,9 @@ class RealmClient final : public services::RealmStatusv2Client {
 	void request_realm_status(const spark::v2::Link& link);
 	void mark_realm_offline(const spark::v2::Link& link);
 
-	void handle_status_request_response(
+	void handle_get_status_response(
 		const spark::v2::Link& link,
-		const ember::messaging::RealmStatusv2::RealmStatus* msg
+		const ember::messaging::Realm::Status* msg
 	) override;
 
 public:
