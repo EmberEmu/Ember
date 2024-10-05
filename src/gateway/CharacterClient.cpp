@@ -37,11 +37,9 @@ void CharacterClient::retrieve_characters(const std::uint32_t account_id, Retrie
 		.realm_id = config_.realm->id
 	};
 
-	send<RetrieveResponse>(msg, link_,
-		[this, cb](auto link, auto message) {
-			handle_retrieve_reply(link, message, cb);
-		}
-	);
+	send<RetrieveResponse>(msg, link_, [this, cb](auto link, auto message) {
+		handle_retrieve_reply(link, message, cb);
+	});
 }
 
 void CharacterClient::create_character(const std::uint32_t account_id,
@@ -66,11 +64,9 @@ void CharacterClient::create_character(const std::uint32_t account_id,
 	msg.realm_id = config_.realm->id;
 	msg.character = std::make_unique<CharacterTemplateT>(std::move(tmpl));
 
-	send<CreateResponse>(msg, link_,
-		[this, cb](auto link, auto message) {
-			handle_create_reply(link, message, cb);
-		}
-	);
+	send<CreateResponse>(msg, link_, [this, cb](auto link, auto message) {
+		handle_create_reply(link, message, cb);
+	});
 }
 
 void CharacterClient::delete_character(std::uint32_t account_id,
@@ -84,11 +80,9 @@ void CharacterClient::delete_character(std::uint32_t account_id,
 		.character_id = id,
 	};
 
-	send<DeleteResponse>(msg, link_,
-		[this, cb](auto link, auto message) {
-			handle_delete_reply(link, message, cb);
-		}
-	);
+	send<DeleteResponse>(msg, link_, [this, cb](auto link, auto message) {
+		handle_delete_reply(link, message, cb);
+	});
 }
 
 void CharacterClient::rename_character(std::uint32_t account_id,
@@ -104,36 +98,34 @@ void CharacterClient::rename_character(std::uint32_t account_id,
 		.character_id = character_id,
 	};
 
-	send<RenameResponse>(msg, link_,
-		[this, cb](auto link, auto message) {
-			handle_rename_reply(link, message, cb);
-		}
-	);
+	send<RenameResponse>(msg, link_, [this, cb](auto link, auto message) {
+		handle_rename_reply(link, message, cb);
+	});
 }
 
 void CharacterClient::handle_create_reply(
 	const spark::v2::Link& link,
-	std::expected<const CreateResponse*, spark::v2::Result> resp,
+	std::expected<const CreateResponse*, spark::v2::Result> res,
 	ResponseCB cb) const {
-	if(!resp) {
+	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {});
 		return;
 	}
 
-	const auto* msg = *resp;
+	const auto* msg = *res;
 	cb(msg->status(), protocol::Result(msg->result()));
 }
 
 void CharacterClient::handle_rename_reply(
 	const spark::v2::Link& link,
-	std::expected<const RenameResponse*, spark::v2::Result> resp,
+	std::expected<const RenameResponse*, spark::v2::Result> res,
 	RenameCB cb) const {
-	if(!resp) {
+	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {}, 0, "");
 		return;
 	}
 
-	const auto* msg = *resp;
+	const auto* msg = *res;
 
 	if(!msg->name()) {
 		cb(Status::ILLFORMED_MESSAGE, {}, 0, "");
@@ -145,14 +137,14 @@ void CharacterClient::handle_rename_reply(
 
 void CharacterClient::handle_retrieve_reply(
 	const spark::v2::Link& link,
-	std::expected<const RetrieveResponse*, spark::v2::Result> resp,
+	std::expected<const RetrieveResponse*, spark::v2::Result> res,
 	RetrieveCB cb) const {
-	if(!resp) {
+	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {});
 		return;
 	}
 
-	const auto msg = *resp;
+	const auto msg = *res;
 
 	if(!msg->characters()) {
 		cb(Status::ILLFORMED_MESSAGE, {});
@@ -198,14 +190,14 @@ void CharacterClient::handle_retrieve_reply(
 
 void CharacterClient::handle_delete_reply(
 	const spark::v2::Link& link,
-	std::expected<const DeleteResponse*, spark::v2::Result> resp,
+	std::expected<const DeleteResponse*, spark::v2::Result> res,
 	ResponseCB cb) const {
-	if(!resp) {
+	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {});
 		return;
 	}
 
-	const auto* msg = *resp;
+	const auto* msg = *res;
 	cb(msg->status(), protocol::Result(msg->result()));
 }
 

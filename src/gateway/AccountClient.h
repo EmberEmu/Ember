@@ -30,12 +30,12 @@ private:
 	void on_link_down(const spark::v2::Link& link) override;
 
 	void handle_locate_response(
-		std::expected<const rpc::Account::SessionResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Account::SessionResponse*, spark::v2::Result> res,
 		const LocateCB& cb
 	) const;
 
 	void handle_lookup_response(
-		std::expected<const rpc::Account::AccountFetchResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Account::AccountFetchResponse*, spark::v2::Result> res,
 		const AccountCB& cb
 	) const;
 

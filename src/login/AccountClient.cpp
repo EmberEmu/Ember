@@ -35,11 +35,9 @@ void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) 
 		.account_id = account_id
 	};
 
-	send<SessionResponse>(msg, link_,
-		[this, cb = std::move(cb)](auto link, auto message) {
-			handle_locate_response(message, cb);
-		}
-	);
+	send<SessionResponse>(msg, link_, [this, cb = std::move(cb)](auto link, auto message) {
+		handle_locate_response(message, cb);
+	});
 }
 
 void AccountClient::register_session(const std::uint32_t account_id,
@@ -54,37 +52,35 @@ void AccountClient::register_session(const std::uint32_t account_id,
 		.key = std::move(keyvec)
 	};
 
-	send<RegisterResponse>(msg, link_,
-		[this, cb = std::move(cb)](auto link, auto message) {
-			handle_register_response(message, cb);
-		}
-	);
+	send<RegisterResponse>(msg, link_, [this, cb = std::move(cb)](auto link, auto message) {
+		handle_register_response(message, cb);
+	});
 }
 
 void AccountClient::handle_register_response(
-	std::expected<const RegisterResponse*, spark::v2::Result> resp,
+	std::expected<const RegisterResponse*, spark::v2::Result> res,
 	const RegisterCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!resp) {
+	if(!res) {
 		cb(Status::RPC_ERROR);
 	} else {
-		const auto msg = *resp;
+		const auto msg = *res;
 		cb(msg->status());
 	}
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const SessionResponse*, spark::v2::Result> resp,
+	std::expected<const SessionResponse*, spark::v2::Result> res,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!resp) {
+	if(!res) {
 		cb(Status::RPC_ERROR, {});
 		return;
 	}
 	
-	const auto msg = *resp;
+	const auto msg = *res;
 
 	if(!msg->key()) {
 		cb(msg->status(), {});

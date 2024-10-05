@@ -20,7 +20,7 @@ class CharacterClient final : public services::CharacterClient {
 public:
 	using ResponseCB = std::function<void(rpc::Character::Status, protocol::Result)>;
 	using RenameCB = std::function<void(rpc::Character::Status, protocol::Result, std::uint64_t, std::string)>;
-	using RetrieveCB = std::function<void(rpc::Character::Status, std::vector<Character>)>;
+	using RetrieveCB = std::function<void(rpc::Character::Status, std::vector<ember::Character>)>;
 
 private:
 	const Config& config_;
@@ -32,22 +32,22 @@ private:
 
 	void handle_create_reply(
 		const spark::v2::Link& link,
-		std::expected<const rpc::Character::CreateResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::CreateResponse*, spark::v2::Result> res,
 		ResponseCB cb) const;
 
 	void handle_rename_reply(
 		const spark::v2::Link& link,
-		std::expected<const rpc::Character::RenameResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::RenameResponse*, spark::v2::Result> res,
 		RenameCB cb) const;
 
 	void handle_retrieve_reply(
 		const spark::v2::Link& link,
-		std::expected<const rpc::Character::RetrieveResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::RetrieveResponse*, spark::v2::Result> res,
 		RetrieveCB cb) const;
 
 	void handle_delete_reply(
 		const spark::v2::Link& link,
-		std::expected<const rpc::Character::DeleteResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::DeleteResponse*, spark::v2::Result> res,
 		ResponseCB cb) const;
 
 public:

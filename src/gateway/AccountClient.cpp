@@ -35,11 +35,9 @@ void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) 
 		.account_id = account_id
 	};
 
-	send<SessionResponse>(msg, link_,
-		[this, cb = std::move(cb)](auto link, auto message) {
-			handle_locate_response(message, cb);
-		}
-	);
+	send<SessionResponse>(msg, link_, [this, cb = std::move(cb)](auto link, auto message) {
+		handle_locate_response(message, cb);
+	});
 }
 
 void AccountClient::locate_account_id(const std::string& username, AccountCB cb) const {
@@ -49,38 +47,36 @@ void AccountClient::locate_account_id(const std::string& username, AccountCB cb)
 		.account_name = username
 	};
 
-	send<AccountFetchResponse>(msg, link_,
-		[this, cb = std::move(cb)](auto link, auto message) {
-			handle_lookup_response(message, cb);
-		}
-	);
+	send<AccountFetchResponse>(msg, link_, [this, cb = std::move(cb)](auto link, auto message) {
+		handle_lookup_response(message, cb);
+	});
 }
 
 void AccountClient::handle_lookup_response(
-	std::expected<const AccountFetchResponse*, spark::v2::Result> resp,
+	std::expected<const AccountFetchResponse*, spark::v2::Result> res,
 	const AccountCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!resp) {
+	if(!res) {
 		cb(Status::RPC_ERROR, {});
 		return;
 	}
 
-	const auto msg = *resp;
+	const auto msg = *res;
 	cb(msg->status(), msg->account_id());
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const SessionResponse*, spark::v2::Result> resp,
+	std::expected<const SessionResponse*, spark::v2::Result> res,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!resp) {
+	if(!res) {
 		cb(Status::RPC_ERROR, {});
 		return;
 	}
 	
-	const auto msg = *resp;
+	const auto msg = *res;
 
 	if(!msg->key()) {
 		cb(msg->status(), {});
