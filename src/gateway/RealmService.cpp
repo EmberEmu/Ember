@@ -32,8 +32,8 @@ void RealmService::on_link_down(const spark::v2::Link& link) {
 	}
 }
 
-messaging::Realm::StatusT RealmService::status() {
-	return messaging::Realm::StatusT {
+em::StatusT RealmService::status() {
+	return em::StatusT {
 		.id = realm_.id,
 		.name = realm_.name,
 		.ip = realm_.ip,
@@ -47,9 +47,9 @@ messaging::Realm::StatusT RealmService::status() {
 	};
 }
 
-std::optional<messaging::Realm::StatusT>
+std::optional<em::StatusT>
 RealmService::handle_get_status(
-	const messaging::Realm::RequestStatus* msg,
+	const em::RequestStatus* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {	
 	return status();

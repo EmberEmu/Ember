@@ -12,6 +12,8 @@
 
 namespace ember {
 
+namespace em = messaging::Characterv2;
+
 class CharacterService final : public services::Characterv2Service {
 	log::Logger& logger_;
 

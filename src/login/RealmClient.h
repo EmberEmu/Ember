@@ -15,6 +15,8 @@
 
 namespace ember {
 
+namespace em = messaging::Realm;
+
 class RealmClient final : public services::RealmClient {
 	RealmList& realmlist_;
 	log::Logger& logger_;
@@ -28,7 +30,7 @@ class RealmClient final : public services::RealmClient {
 
 	void handle_get_status_response(
 		const spark::v2::Link& link,
-		const ember::messaging::Realm::Status* msg
+		const em::Status* msg
 	) override;
 
 public:

@@ -14,32 +14,34 @@
 
 namespace ember {
 
+namespace em = messaging::Accountv2;
+
 class AccountService final : public services::Accountv2Service {
 	Sessions& sessions_;
 	log::Logger& logger_;
 
-	std::optional<messaging::Accountv2::SessionResponseT> handle_session_fetch(
-		const messaging::Accountv2::SessionLookup* msg,
+	std::optional<em::SessionResponseT> handle_session_fetch(
+		const em::SessionLookup* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<messaging::Accountv2::RegisterResponseT> handle_register_session(
-		const messaging::Accountv2::RegisterSession* msg,
+	std::optional<em::RegisterResponseT> handle_register_session(
+		const em::RegisterSession* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<messaging::Accountv2::AccountFetchResponseT> handle_account_i_d_fetch(
-		const messaging::Accountv2::LookupID* msg,
+	std::optional<em::AccountFetchResponseT> handle_account_i_d_fetch(
+		const em::LookupID* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<messaging::Accountv2::DisconnectSessionResponseT> handle_disconnect_session(
-		const messaging::Accountv2::DisconnectSession* msg,
+	std::optional<em::DisconnectSessionResponseT> handle_disconnect_session(
+		const em::DisconnectSession* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<messaging::Accountv2::DisconnectResponseT> handle_disconnect_by_i_d(
-		const messaging::Accountv2::DisconnectID* msg,
+	std::optional<em::DisconnectResponseT> handle_disconnect_by_i_d(
+		const em::DisconnectID* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 

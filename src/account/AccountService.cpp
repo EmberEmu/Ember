@@ -23,86 +23,86 @@ void AccountService::on_link_down(const spark::v2::Link& link) {
 	LOG_DEBUG_ASYNC(logger_, "Link down from {}", link.peer_banner);
 }
 
-std::optional<messaging::Accountv2::SessionResponseT>
+std::optional<em::SessionResponseT>
 AccountService::handle_session_fetch(
-	const messaging::Accountv2::SessionLookup* msg,
+	const em::SessionLookup* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	messaging::Accountv2::SessionResponseT response;
+	em::SessionResponseT response;
 
 	if(!msg->account_id()) {
-		response.status = messaging::Accountv2::Status::ILLFORMED_MESSAGE;
+		response.status = em::Status::ILLFORMED_MESSAGE;
 		return response;
 	}
 
 	const auto session = sessions_.lookup_session(msg->account_id());
 		
 	if(!session) {
-		response.status = messaging::Accountv2::Status::SESSION_NOT_FOUND;
+		response.status = em::Status::SESSION_NOT_FOUND;
 		return response;
 	}
 
 	auto key = Botan::BigInt::encode(*session);
 
-	response.status = messaging::Accountv2::Status::OK;
+	response.status = em::Status::OK;
 	response.account_id = msg->account_id();
 	response.key = std::move(key);
 	return response;
 }
 
-std::optional<messaging::Accountv2::RegisterResponseT>
+std::optional<em::RegisterResponseT>
 AccountService::handle_register_session(
-	const messaging::Accountv2::RegisterSession* msg,
+	const em::RegisterSession* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	messaging::Accountv2::RegisterResponseT response {
-		.status = messaging::Accountv2::Status::OK
+	em::RegisterResponseT response {
+		.status = em::Status::OK
 	};
 
 	if(msg->key() && msg->account_id()) {
 		Botan::BigInt key(msg->key()->data(), msg->key()->size());
 
 		if(!sessions_.register_session(msg->account_id(), key)) {
-			response.status = messaging::Accountv2::Status::ALREADY_LOGGED_IN;
+			response.status = em::Status::ALREADY_LOGGED_IN;
 		}
 	} else {
-		response.status = messaging::Accountv2::Status::ILLFORMED_MESSAGE;
+		response.status = em::Status::ILLFORMED_MESSAGE;
 	}
 
 	return response;
 }
 
-std::optional<messaging::Accountv2::AccountFetchResponseT>
+std::optional<em::AccountFetchResponseT>
 AccountService::handle_account_i_d_fetch(
-	const messaging::Accountv2::LookupID* msg,
+	const em::LookupID* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	messaging::Accountv2::AccountFetchResponseT response {
-		.status = messaging::Accountv2::Status::OK,
+	em::AccountFetchResponseT response {
+		.status = em::Status::OK,
 		.account_id = 1 // todo, temp
 	};
 
 	return response; 
 }
 
-std::optional<messaging::Accountv2::DisconnectSessionResponseT>
+std::optional<em::DisconnectSessionResponseT>
 AccountService::handle_disconnect_session(
-	const messaging::Accountv2::DisconnectSession* msg,
+	const em::DisconnectSession* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	return std::nullopt; 
 }
 
-std::optional<messaging::Accountv2::DisconnectResponseT>
+std::optional<em::DisconnectResponseT>
 AccountService::handle_disconnect_by_i_d(
-	const messaging::Accountv2::DisconnectID* msg,
+	const em::DisconnectID* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;

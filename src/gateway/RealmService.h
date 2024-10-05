@@ -16,6 +16,8 @@
 
 namespace ember {
 
+namespace em = messaging::Realm;
+
 class RealmService : public services::RealmService {
 	std::vector<spark::v2::Link> links_;
 
@@ -23,10 +25,10 @@ class RealmService : public services::RealmService {
 	log::Logger& logger_;
 	std::mutex mutex;
 
-	messaging::Realm::StatusT status();
+	em::StatusT status();
 
-	std::optional<messaging::Realm::StatusT> handle_get_status(
-		const messaging::Realm::RequestStatus* msg,
+	std::optional<em::StatusT> handle_get_status(
+		const em::RequestStatus* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 

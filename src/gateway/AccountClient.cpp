@@ -29,11 +29,11 @@ void AccountClient::on_link_down(const spark::v2::Link& link) {
 void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	messaging::Accountv2::SessionLookupT msg {
+	em::SessionLookupT msg {
 		.account_id = account_id
 	};
 
-	send<messaging::Accountv2::SessionResponse>(msg, link_,
+	send<em::SessionResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_locate_response(message, cb);
 		}
@@ -43,11 +43,11 @@ void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) 
 void AccountClient::locate_account_id(const std::string& username, AccountCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	messaging::Accountv2::LookupIDT msg {
+	em::LookupIDT msg {
 		.account_name = username
 	};
 
-	send<messaging::Accountv2::AccountFetchResponse>(msg, link_,
+	send<em::AccountFetchResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_lookup_response(message, cb);
 		}
@@ -55,7 +55,7 @@ void AccountClient::locate_account_id(const std::string& username, AccountCB cb)
 }
 
 void AccountClient::handle_lookup_response(
-	std::expected<const messaging::Accountv2::AccountFetchResponse*, spark::v2::Result> resp,
+	std::expected<const em::AccountFetchResponse*, spark::v2::Result> resp,
 	const AccountCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
@@ -69,7 +69,7 @@ void AccountClient::handle_lookup_response(
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
+	std::expected<const em::SessionResponse*, spark::v2::Result> resp,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 

@@ -28,7 +28,7 @@ void RealmClient::on_link_down(const spark::v2::Link& link) {
 }
 
 void RealmClient::request_realm_status(const spark::v2::Link& link) {
-	messaging::Realm::RequestStatusT msg{};
+	em::RequestStatusT msg{};
 	send(msg, link);
 }
 
@@ -50,7 +50,7 @@ void RealmClient::mark_realm_offline(const spark::v2::Link& link) {
 
 void RealmClient::handle_get_status_response(
 	const spark::v2::Link& link,
-	const ember::messaging::Realm::Status* msg) {
+	const em::Status* msg) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!msg->name() || !msg->id() || !msg->ip() || !msg->address()) {
