@@ -45,7 +45,7 @@ table Character {
 	x:float;
 	y:float;
 	z:float;
-	o:float;
+	orientation:float;
 	guild_id:uint;
 	guild_rank:uint;
 	flags:uint;
@@ -53,11 +53,6 @@ table Character {
 	pet_display_id:uint;
 	pet_level:uint;
 	pet_family:uint;
-}
-
-table RetrieveResponse {
-	status:Status;
-	characters:[Character];
 }
 
 table Retrieve {
@@ -69,13 +64,6 @@ table Rename {
 	account_id:uint;
 	name:string;
 	realm_id:uint;
-	character_id:ulong;
-}
-
-table RenameResponse {
-	status:Status;
-	result:uint;
-	name:string;
 	character_id:ulong;
 }
 
@@ -96,6 +84,18 @@ table CreateResponse {
 	result:uint;
 }
 
+table RetrieveResponse {
+	status:Status;
+	characters:[Character];
+}
+
+table RenameResponse {
+	status:Status;
+	result:uint;
+	name:string;
+	character_id:ulong;
+}
+
 table DeleteResponse {
 	status:Status;
 	result:uint;
@@ -105,6 +105,7 @@ union Message {
 	CreateResponse,
 	RenameResponse,
 	RetrieveResponse,
+	DeleteResponse,
 	Create,
 	Delete,
 	Rename,
