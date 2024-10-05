@@ -11,7 +11,7 @@
 
 namespace ember {
 
-namespace em = rpc::Account;
+using namespace rpc::Account;
 
 AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
 	: services::AccountClient(spark),
@@ -31,11 +31,11 @@ void AccountClient::on_link_down(const spark::v2::Link& link) {
 void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	em::SessionLookupT msg {
+	SessionLookupT msg {
 		.account_id = account_id
 	};
 
-	send<em::SessionResponse>(msg, link_,
+	send<SessionResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_locate_response(message, cb);
 		}
@@ -45,11 +45,11 @@ void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) 
 void AccountClient::locate_account_id(const std::string& username, AccountCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	em::LookupIDT msg {
+	LookupIDT msg {
 		.account_name = username
 	};
 
-	send<em::AccountFetchResponse>(msg, link_,
+	send<AccountFetchResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_lookup_response(message, cb);
 		}
@@ -57,12 +57,12 @@ void AccountClient::locate_account_id(const std::string& username, AccountCB cb)
 }
 
 void AccountClient::handle_lookup_response(
-	std::expected<const em::AccountFetchResponse*, spark::v2::Result> resp,
+	std::expected<const AccountFetchResponse*, spark::v2::Result> resp,
 	const AccountCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(em::Status::RPC_ERROR, {});
+		cb(Status::RPC_ERROR, {});
 		return;
 	}
 
@@ -71,12 +71,12 @@ void AccountClient::handle_lookup_response(
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const em::SessionResponse*, spark::v2::Result> resp,
+	std::expected<const SessionResponse*, spark::v2::Result> resp,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(em::Status::RPC_ERROR, {});
+		cb(Status::RPC_ERROR, {});
 		return;
 	}
 	

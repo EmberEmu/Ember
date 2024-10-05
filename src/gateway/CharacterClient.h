@@ -57,7 +57,7 @@ public:
 	                         RetrieveCB cb) const;
 
 	void create_character(std::uint32_t account_id,
-	                      const CharacterTemplate& character,
+	                      const ember::CharacterTemplate& character,
 	                      ResponseCB cb) const;
 
 	void delete_character(std::uint32_t account_id,

@@ -10,7 +10,7 @@
 
 namespace ember {
 
-namespace em = rpc::Account;
+using namespace ember::rpc::Account;
 
 AccountService::AccountService(spark::v2::Server& spark, Sessions& sessions, log::Logger& logger)
 	: services::AccountService(spark),
@@ -25,86 +25,86 @@ void AccountService::on_link_down(const spark::v2::Link& link) {
 	LOG_DEBUG_ASYNC(logger_, "Link down from {}", link.peer_banner);
 }
 
-std::optional<em::SessionResponseT>
+std::optional<SessionResponseT>
 AccountService::handle_session_fetch(
-	const em::SessionLookup* msg,
+	const SessionLookup* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	em::SessionResponseT response;
+	SessionResponseT response;
 
 	if(!msg->account_id()) {
-		response.status = em::Status::ILLFORMED_MESSAGE;
+		response.status = Status::ILLFORMED_MESSAGE;
 		return response;
 	}
 
 	const auto session = sessions_.lookup_session(msg->account_id());
 		
 	if(!session) {
-		response.status = em::Status::SESSION_NOT_FOUND;
+		response.status = Status::SESSION_NOT_FOUND;
 		return response;
 	}
 
 	auto key = Botan::BigInt::encode(*session);
 
-	response.status = em::Status::OK;
+	response.status = Status::OK;
 	response.account_id = msg->account_id();
 	response.key = std::move(key);
 	return response;
 }
 
-std::optional<em::RegisterResponseT>
+std::optional<RegisterResponseT>
 AccountService::handle_register_session(
-	const em::RegisterSession* msg,
+	const RegisterSession* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	em::RegisterResponseT response {
-		.status = em::Status::OK
+	RegisterResponseT response {
+		.status = Status::OK
 	};
 
 	if(msg->key() && msg->account_id()) {
 		Botan::BigInt key(msg->key()->data(), msg->key()->size());
 
 		if(!sessions_.register_session(msg->account_id(), key)) {
-			response.status = em::Status::ALREADY_LOGGED_IN;
+			response.status = Status::ALREADY_LOGGED_IN;
 		}
 	} else {
-		response.status = em::Status::ILLFORMED_MESSAGE;
+		response.status = Status::ILLFORMED_MESSAGE;
 	}
 
 	return response;
 }
 
-std::optional<em::AccountFetchResponseT>
+std::optional<AccountFetchResponseT>
 AccountService::handle_account_i_d_fetch(
-	const em::LookupID* msg,
+	const LookupID* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	em::AccountFetchResponseT response {
-		.status = em::Status::OK,
+	AccountFetchResponseT response {
+		.status = Status::OK,
 		.account_id = 1 // todo, temp
 	};
 
 	return response; 
 }
 
-std::optional<em::DisconnectSessionResponseT>
+std::optional<DisconnectSessionResponseT>
 AccountService::handle_disconnect_session(
-	const em::DisconnectSession* msg,
+	const DisconnectSession* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	return std::nullopt; 
 }
 
-std::optional<em::DisconnectResponseT>
+std::optional<DisconnectResponseT>
 AccountService::handle_disconnect_by_i_d(
-	const em::DisconnectID* msg,
+	const DisconnectID* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;

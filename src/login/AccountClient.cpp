@@ -11,7 +11,7 @@
 
 namespace ember {
 
-namespace em = rpc::Account;
+using namespace rpc::Account;
 
 AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
 	: services::AccountClient(spark),
@@ -31,11 +31,11 @@ void AccountClient::on_link_down(const spark::v2::Link& link) {
 void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	em::SessionLookupT msg {
+	SessionLookupT msg {
 		.account_id = account_id
 	};
 
-	send<em::SessionResponse>(msg, link_,
+	send<SessionResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_locate_response(message, cb);
 		}
@@ -49,12 +49,12 @@ void AccountClient::register_session(const std::uint32_t account_id,
 
 	std::vector keyvec(key.t.begin(), key.t.end());
 
-	em::RegisterSessionT msg {
+	RegisterSessionT msg {
 		.account_id = account_id,
 		.key = std::move(keyvec)
 	};
 
-	send<em::RegisterResponse>(msg, link_,
+	send<RegisterResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_register_response(message, cb);
 		}
@@ -62,12 +62,12 @@ void AccountClient::register_session(const std::uint32_t account_id,
 }
 
 void AccountClient::handle_register_response(
-	std::expected<const em::RegisterResponse*, spark::v2::Result> resp,
+	std::expected<const RegisterResponse*, spark::v2::Result> resp,
 	const RegisterCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(em::Status::RPC_ERROR);
+		cb(Status::RPC_ERROR);
 	} else {
 		const auto msg = *resp;
 		cb(msg->status());
@@ -75,12 +75,12 @@ void AccountClient::handle_register_response(
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const em::SessionResponse*, spark::v2::Result> resp,
+	std::expected<const SessionResponse*, spark::v2::Result> resp,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(em::Status::RPC_ERROR, {});
+		cb(Status::RPC_ERROR, {});
 		return;
 	}
 	

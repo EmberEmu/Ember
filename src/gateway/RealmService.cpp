@@ -10,7 +10,7 @@
 
 namespace ember {
 
-namespace em = rpc::Realm;
+using namespace rpc::Realm;
 
 RealmService::RealmService(spark::v2::Server& server, Realm realm, log::Logger& logger)
 	: services::RealmService(server),
@@ -34,8 +34,8 @@ void RealmService::on_link_down(const spark::v2::Link& link) {
 	}
 }
 
-em::StatusT RealmService::status() {
-	return em::StatusT {
+StatusT RealmService::status() {
+	return StatusT {
 		.id = realm_.id,
 		.name = realm_.name,
 		.ip = realm_.ip,
@@ -49,9 +49,9 @@ em::StatusT RealmService::status() {
 	};
 }
 
-std::optional<em::StatusT>
+std::optional<StatusT>
 RealmService::handle_get_status(
-	const em::RequestStatus* msg,
+	const RequestStatus* msg,
 	const spark::v2::Link& link,
 	const spark::v2::Token& token) {	
 	return status();
