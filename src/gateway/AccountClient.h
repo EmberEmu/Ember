@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Accountv2ClientStub.h>
+#include <AccountClientStub.h>
 #include <logger/Logger.h>
 #include <spark/v2/Server.h>
 #include <botan/bigint.h>
@@ -17,10 +17,10 @@
 
 namespace ember {
 
-class AccountClient final : public services::Accountv2Client {
+class AccountClient final : public services::AccountClient {
 public:
-	using LocateCB = std::function<void(messaging::Accountv2::Status, Botan::BigInt)>;
-	using AccountCB = std::function<void(messaging::Accountv2::Status, std::uint32_t)>;
+	using LocateCB = std::function<void(messaging::Account::Status, Botan::BigInt)>;
+	using AccountCB = std::function<void(messaging::Account::Status, std::uint32_t)>;
 
 private:
 	log::Logger& logger_;
@@ -30,12 +30,12 @@ private:
 	void on_link_down(const spark::v2::Link& link) override;
 
 	void handle_locate_response(
-		std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Account::SessionResponse*, spark::v2::Result> resp,
 		const LocateCB& cb
 	) const;
 
 	void handle_lookup_response(
-		std::expected<const messaging::Accountv2::AccountFetchResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Account::AccountFetchResponse*, spark::v2::Result> resp,
 		const AccountCB& cb
 	) const;
 

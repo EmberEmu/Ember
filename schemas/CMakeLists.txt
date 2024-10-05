@@ -7,9 +7,9 @@
 set(FB_SCHEMA_TARGET_NAME FB_SCHEMA_COMPILE)
 
 set(SERVICE_SCHEMAS
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Accountv2.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Account.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Characterv2.fbs
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/RealmStatusv2.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Realm.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Hello.fbs
 )
 

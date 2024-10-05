@@ -11,10 +11,10 @@
 
 namespace ember {
 
-namespace em = messaging::Accountv2;
+namespace em = messaging::Account;
 
 AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
-	: services::Accountv2Client(spark),
+	: services::AccountClient(spark),
 	  logger_(logger) {
 	connect("127.0.0.1", 8000); // temp
 }

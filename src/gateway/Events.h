@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Event.h"
-#include "Accountv2_generated.h"
+#include "Account_generated.h"
 #include "Character_generated.h"
 #include <protocol/ResultCodes.h>
 #include <protocol/Packets.h>
@@ -39,20 +39,20 @@ struct QueuePosition : Event {
 };
 
 struct AccountIDResponse : Event {
-	AccountIDResponse(messaging::Accountv2::Status status, std::uint32_t id)
+	AccountIDResponse(messaging::Account::Status status, std::uint32_t id)
 	                  : Event { EventType::ACCOUNT_ID_RESPONSE },
 	                    status(status), account_id(id) { }
 
-	messaging::Accountv2::Status status;
+	messaging::Account::Status status;
 	std::uint32_t account_id;
 };
 
 struct SessionKeyResponse : Event {
-	SessionKeyResponse(messaging::Accountv2::Status status, Botan::BigInt key)
+	SessionKeyResponse(messaging::Account::Status status, Botan::BigInt key)
 	                   : Event { EventType::SESSION_KEY_RESPONSE },
 	                     status(status), key(std::move(key)) { }
 
-	messaging::Accountv2::Status status;
+	messaging::Account::Status status;
 	Botan::BigInt key;
 };
 

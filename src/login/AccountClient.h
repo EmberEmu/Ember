@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Accountv2ClientStub.h>
+#include <AccountClientStub.h>
 #include <logger/Logger.h>
 #include <spark/v2/Server.h>
 #include <srp6/Util.h>
@@ -17,10 +17,10 @@
 
 namespace ember {
 
-class AccountClient final : public services::Accountv2Client {
+class AccountClient final : public services::AccountClient {
 public:
-	using RegisterCB = std::function<void(messaging::Accountv2::Status)>;
-	using LocateCB = std::function<void(messaging::Accountv2::Status, Botan::BigInt)>;
+	using RegisterCB = std::function<void(messaging::Account::Status)>;
+	using LocateCB = std::function<void(messaging::Account::Status, Botan::BigInt)>;
 
 private:
 	log::Logger& logger_;
@@ -30,12 +30,12 @@ private:
 	void on_link_down(const spark::v2::Link& link) override;
 
 	void handle_register_response(
-		std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Account::RegisterResponse*, spark::v2::Result> resp,
 		const RegisterCB& cb
 	) const;
 
 	void handle_locate_response(
-		std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Account::SessionResponse*, spark::v2::Result> resp,
 		const LocateCB& cb
 	) const;
 

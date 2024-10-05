@@ -11,10 +11,10 @@
 
 namespace ember {
 
-namespace em = messaging::Accountv2;
+namespace em = messaging::Account;
 
 AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
-	: services::Accountv2Client(spark),
+	: services::AccountClient(spark),
 	  logger_(logger) {
 	connect("127.0.0.1", 8000); // temp
 }
@@ -62,7 +62,7 @@ void AccountClient::handle_lookup_response(
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(messaging::Accountv2::Status::RPC_ERROR, {});
+		cb(em::Status::RPC_ERROR, {});
 		return;
 	}
 
@@ -76,7 +76,7 @@ void AccountClient::handle_locate_response(
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(messaging::Accountv2::Status::RPC_ERROR, {});
+		cb(em::Status::RPC_ERROR, {});
 		return;
 	}
 	
