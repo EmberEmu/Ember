@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Character_generated.h>
 #include <protocol/Packet.h>
 #include <shared/database/objects/Character.h>
 #include <stdexcept>
@@ -22,7 +23,7 @@ class CharacterCreate final {
 	State state_ = State::INITIAL;
 
 public:
-	CharacterTemplate character;
+	rpc::Character::CharacterTemplateT character;
 	
 	State read_from_stream(auto& stream) try {
 		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");

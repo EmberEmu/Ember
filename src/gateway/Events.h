@@ -10,7 +10,7 @@
 
 #include "Event.h"
 #include "Account_generated.h"
-#include "Characterv2_generated.h"
+#include "Character_generated.h"
 #include <protocol/ResultCodes.h>
 #include <protocol/Packets.h>
 #include <shared/database/objects/Character.h>

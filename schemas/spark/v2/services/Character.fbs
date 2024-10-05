@@ -14,6 +14,25 @@ enum Status : ubyte {
 	ILLFORMED_MESSAGE
 }
 
+enum Flags : uint { /* todo, investigate */
+	NONE                   = 0x000,
+	UNKNOWN1               = 0x001,
+	UNKNOWN2               = 0x002,
+	LOCKED_FOR_TRANSFER    = 0x004,
+	UNKNOWN4               = 0x008,
+	UNKNOWN5               = 0x010,
+	UNKNOWN6               = 0x020,
+	UNKNOWN7               = 0x040,
+	UNKNOWN8               = 0x080,
+	UNKNOWN9               = 0x100,
+	UNKNOWN10              = 0x200,
+	HIDE_HELM              = 0x400,
+	HIDE_CLOAK             = 0x800,
+	UNKNOWN13              = 0x1000,
+	GHOST                  = 0x2000,
+	RENAME                 = 0x4000
+}
+
 table CharacterTemplate {
 	name:string;
 	race:ubyte;
@@ -24,6 +43,7 @@ table CharacterTemplate {
 	hairstyle:ubyte;
 	haircolour:ubyte;
 	facialhair:ubyte;
+	outfit_id:ubyte;
 }
 
 table Character {
@@ -48,7 +68,7 @@ table Character {
 	orientation:float;
 	guild_id:uint;
 	guild_rank:uint;
-	flags:uint;
+	flags:Flags;
 	first_login:ubyte;
 	pet_display_id:uint;
 	pet_level:uint;

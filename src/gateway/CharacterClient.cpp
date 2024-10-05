@@ -43,26 +43,14 @@ void CharacterClient::retrieve_characters(const std::uint32_t account_id, Retrie
 }
 
 void CharacterClient::create_character(const std::uint32_t account_id,
-									   const ember::CharacterTemplate& character,
+									   const CharacterTemplateT& character,
 									   ResponseCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-
-	CharacterTemplateT tmpl {
-		.name = character.name,
-		.race = character.race,
-		.class_ = character.class_,
-		.gender = character.gender,
-		.skin = character.skin,
-		.face = character.face,
-		.hairstyle = character.hairstyle,
-		.haircolour = character.haircolour,
-		.facialhair = character.facialhair
-	};
 
 	CreateT msg;
 	msg.account_id = account_id;
 	msg.realm_id = config_.realm->id;
-	msg.character = std::make_unique<CharacterTemplateT>(std::move(tmpl));
+	msg.character = std::make_unique<CharacterTemplateT>(character);
 
 	send<CreateResponse>(msg, link_, [this, cb](auto link, auto message) {
 		handle_create_reply(link, message, cb);

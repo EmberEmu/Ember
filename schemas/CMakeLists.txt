@@ -8,7 +8,7 @@ set(FB_SCHEMA_TARGET_NAME FB_SCHEMA_COMPILE)
 
 set(SERVICE_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Account.fbs
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Characterv2.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Character.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Realm.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Hello.fbs
 )
@@ -16,10 +16,7 @@ set(SERVICE_SCHEMAS
 set(FB_SCHEMAS
 	${SERVICE_SCHEMAS}
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Services.fbs
-    #${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Account.fbs
-    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Character.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Core.fbs
-    #${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/RealmStatus.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v1/Multicast.fbs
 
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/Spark.fbs
