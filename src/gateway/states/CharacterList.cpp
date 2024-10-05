@@ -11,7 +11,7 @@
 #include "../Locator.h"
 #include "../ClientHandler.h"
 #include "../RealmQueue.h"
-#include "../CharacterService.h"
+#include "../CharacterClient.h"
 #include "../ClientConnection.h"
 #include "../EventDispatcher.h"
 #include "../FilterTypes.h"
@@ -22,8 +22,6 @@
 #include <shared/util/UTF8String.h>
 #include <memory>
 #include <vector>
-
-namespace em = ember::messaging;
 
 namespace ember::character_list {
 

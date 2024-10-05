@@ -11,7 +11,7 @@
 namespace ember {
 
 EventDispatcher* Locator::dispatcher_;
-CharacterService* Locator::character_;
+CharacterClient* Locator::character_;
 AccountClient* Locator::account_;
 RealmService* Locator::realm_;
 RealmQueue* Locator::queue_;

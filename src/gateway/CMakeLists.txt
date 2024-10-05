@@ -31,7 +31,6 @@ set(LIBRARY_HDR
     WorldConnection.h
     WorldSessions.h
     WorldClients.h
-    CharacterService.h
     CharacterClient.h
     CompressMessage.h
     Routing.h
@@ -68,7 +67,6 @@ set(LIBRARY_SRC
     WorldConnection.cpp
     WorldSessions.cpp
     WorldClients.cpp
-    CharacterService.cpp
     CharacterClient.cpp
     CompressMessage.cpp
     NetworkListener.cpp

@@ -11,7 +11,7 @@
 namespace ember {
 
 class EventDispatcher;
-class CharacterService;
+class CharacterClient;
 class AccountClient;
 class RealmService;
 class RealmQueue;
@@ -19,7 +19,7 @@ struct Config;
 
 class Locator {
 	static EventDispatcher* dispatcher_;
-	static CharacterService* character_;
+	static CharacterClient* character_;
 	static AccountClient* account_;
 	static RealmService* realm_;
 	static RealmQueue* queue_;
@@ -30,14 +30,14 @@ public:
 	static void set(RealmQueue* queue) { queue_ = queue; }
 	static void set(RealmService* realm) { realm_ = realm; }
 	static void set(AccountClient* account) { account_ = account; }
-	static void set(CharacterService* character) { character_ = character; }
+	static void set(CharacterClient* character) { character_ = character; }
 	static void set(EventDispatcher* dispatcher) { dispatcher_ = dispatcher; }
 
 	static Config* config() { return config_; }
 	static RealmQueue* queue() { return queue_; }
 	static RealmService* realm() { return realm_; }
 	static AccountClient* account() { return account_; }
-	static CharacterService* character() { return character_; }
+	static CharacterClient* character() { return character_; }
 	static EventDispatcher* dispatcher() { return dispatcher_; }
 };
 
