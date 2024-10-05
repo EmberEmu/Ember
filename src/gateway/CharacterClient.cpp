@@ -6,12 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include "CharacterClient.h"
 #include <memory>
 
 namespace ember {
+
+namespace em = messaging::Characterv2;
 
 CharacterClient::CharacterClient(spark::v2::Server& server, Config& config, log::Logger& logger)
 	: services::Characterv2Client(server),

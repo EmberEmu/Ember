@@ -16,13 +16,11 @@
 
 namespace ember {
 
-namespace em = messaging::Characterv2;
-
 class CharacterClient final : public services::Characterv2Client {
 public:
-	using ResponseCB = std::function<void(em::Status, protocol::Result)>;
-	using RenameCB = std::function<void(em::Status, protocol::Result, std::uint64_t, std::string)>;
-	using RetrieveCB = std::function<void(em::Status, std::vector<Character>)>;
+	using ResponseCB = std::function<void(messaging::Characterv2::Status, protocol::Result)>;
+	using RenameCB = std::function<void(messaging::Characterv2::Status, protocol::Result, std::uint64_t, std::string)>;
+	using RetrieveCB = std::function<void(messaging::Characterv2::Status, std::vector<Character>)>;
 
 private:
 	const Config& config_;
@@ -34,22 +32,22 @@ private:
 
 	void handle_create_reply(
 		const spark::v2::Link& link,
-		std::expected<const em::CreateResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Characterv2::CreateResponse*, spark::v2::Result> resp,
 		ResponseCB cb) const;
 
 	void handle_rename_reply(
 		const spark::v2::Link& link,
-		std::expected<const em::RenameResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Characterv2::RenameResponse*, spark::v2::Result> resp,
 		RenameCB cb) const;
 
 	void handle_retrieve_reply(
 		const spark::v2::Link& link,
-		std::expected<const em::RetrieveResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Characterv2::RetrieveResponse*, spark::v2::Result> resp,
 		RetrieveCB cb) const;
 
 	void handle_delete_reply(
 		const spark::v2::Link& link,
-		std::expected<const em::DeleteResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Characterv2::DeleteResponse*, spark::v2::Result> resp,
 		ResponseCB cb) const;
 
 public:

@@ -10,6 +10,8 @@
 
 namespace ember {
 
+namespace em = messaging::Accountv2;
+
 AccountService::AccountService(spark::v2::Server& spark, Sessions& sessions, log::Logger& logger)
 	: services::Accountv2Service(spark),
 	  sessions_(sessions),

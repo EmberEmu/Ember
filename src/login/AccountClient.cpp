@@ -11,6 +11,8 @@
 
 namespace ember {
 
+namespace em = messaging::Accountv2;
+
 AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
 	: services::Accountv2Client(spark),
 	  logger_(logger) {
@@ -29,11 +31,11 @@ void AccountClient::on_link_down(const spark::v2::Link& link) {
 void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	messaging::Accountv2::SessionLookupT msg {
+	em::SessionLookupT msg {
 		.account_id = account_id
 	};
 
-	send<messaging::Accountv2::SessionResponse>(msg, link_,
+	send<em::SessionResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_locate_response(message, cb);
 		}
@@ -47,12 +49,12 @@ void AccountClient::register_session(const std::uint32_t account_id,
 
 	std::vector keyvec(key.t.begin(), key.t.end());
 
-	messaging::Accountv2::RegisterSessionT msg {
+	em::RegisterSessionT msg {
 		.account_id = account_id,
 		.key = std::move(keyvec)
 	};
 
-	send<messaging::Accountv2::RegisterResponse>(msg, link_,
+	send<em::RegisterResponse>(msg, link_,
 		[this, cb = std::move(cb)](auto link, auto message) {
 			handle_register_response(message, cb);
 		}
@@ -60,12 +62,12 @@ void AccountClient::register_session(const std::uint32_t account_id,
 }
 
 void AccountClient::handle_register_response(
-	std::expected<const messaging::Accountv2::RegisterResponse*, spark::v2::Result> resp,
+	std::expected<const em::RegisterResponse*, spark::v2::Result> resp,
 	const RegisterCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(messaging::Accountv2::Status::RPC_ERROR);
+		cb(em::Status::RPC_ERROR);
 	} else {
 		const auto msg = *resp;
 		cb(msg->status());
@@ -73,12 +75,12 @@ void AccountClient::handle_register_response(
 }
 
 void AccountClient::handle_locate_response(
-	std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
+	std::expected<const em::SessionResponse*, spark::v2::Result> resp,
 	const LocateCB& cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!resp) {
-		cb(messaging::Accountv2::Status::RPC_ERROR, {});
+		cb(em::Status::RPC_ERROR, {});
 		return;
 	}
 	

@@ -103,10 +103,10 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(event->status != em::Accountv2::Status::OK) {
+	if(event->status != messaging::Accountv2::Status::OK) {
 		CLIENT_ERROR_FILTER_GLOB(LF_NETWORK, ctx)
 			<< "Account server returned "
-			<< util::fb_status(event->status, em::Accountv2::EnumNamesStatus())
+			<< util::fb_status(event->status, messaging::Accountv2::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
 
 		auth_state(ctx, State::FAILED);
@@ -142,10 +142,10 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 
 	CLIENT_DEBUG_FILTER_GLOB(LF_NETWORK, ctx)
 		<< "Account server returned "
-		<< util::fb_status(event->status, em::Accountv2::EnumNamesStatus())
+		<< util::fb_status(event->status, messaging::Accountv2::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
 
-	if(event->status == em::Accountv2::Status::OK) {
+	if(event->status == messaging::Accountv2::Status::OK) {
 		prove_session(ctx, event->key);
 	} else {
 		auth_state(ctx, State::FAILED);

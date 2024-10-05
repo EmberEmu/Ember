@@ -17,12 +17,10 @@
 
 namespace ember {
 
-namespace em = messaging::Accountv2;
-
 class AccountClient final : public services::Accountv2Client {
 public:
-	using LocateCB = std::function<void(em::Status, Botan::BigInt)>;
-	using AccountCB = std::function<void(em::Status, std::uint32_t)>;
+	using LocateCB = std::function<void(messaging::Accountv2::Status, Botan::BigInt)>;
+	using AccountCB = std::function<void(messaging::Accountv2::Status, std::uint32_t)>;
 
 private:
 	log::Logger& logger_;
@@ -32,12 +30,12 @@ private:
 	void on_link_down(const spark::v2::Link& link) override;
 
 	void handle_locate_response(
-		std::expected<const em::SessionResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Accountv2::SessionResponse*, spark::v2::Result> resp,
 		const LocateCB& cb
 	) const;
 
 	void handle_lookup_response(
-		std::expected<const em::AccountFetchResponse*, spark::v2::Result> resp,
+		std::expected<const messaging::Accountv2::AccountFetchResponse*, spark::v2::Result> resp,
 		const AccountCB& cb
 	) const;
 

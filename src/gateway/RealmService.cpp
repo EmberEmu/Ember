@@ -10,6 +10,8 @@
 
 namespace ember {
 
+namespace em = messaging::Realm;
+
 RealmService::RealmService(spark::v2::Server& server, Realm realm, log::Logger& logger)
 	: services::RealmService(server),
 	  realm_(realm),
