@@ -32,9 +32,9 @@ class {{name}}Service : public spark::v2::Handler {
 
 	flatbuffers::FlatBufferBuilder serialise(auto& msg) const {
 		flatbuffers::FlatBufferBuilder fbb;
-		messaging::{{name}}::EnvelopeT env;
+		rpc::{{name}}::EnvelopeT env;
 		env.message.Set(msg);
-		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
+		const auto packed = rpc::{{name}}::Envelope::Pack(fbb, &env);
 		fbb.Finish(packed);
 		return fbb;
 	}
@@ -81,12 +81,12 @@ public:
 		const spark::v2::Link& link,
 		std::span<const std::uint8_t> msg,
 		const spark::v2::Token& token = {}) override {
-		auto fb = messaging::{{name}}::Get{{root}}(msg.data());
+		auto fb = rpc::{{name}}::Get{{root}}(msg.data());
 		flatbuffers::Verifier verifier(msg.data(), msg.size());
 
 		switch(fb->message_type()) {
 ## for handler in handlers
-			case messaging::{{name}}::Message::{{handler.request}}:
+			case rpc::{{name}}::Message::{{handler.request}}:
 				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}(), link, token);
 				break;
 ## endfor
@@ -96,7 +96,7 @@ public:
 ## for handler in handlers
 	void dispatch_{{handler.request_sn}}(
 		flatbuffers::Verifier& verifier,
-		const messaging::{{name}}::{{handler.request}}* msg,
+		const rpc::{{name}}::{{handler.request}}* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) {
 		if(!msg->Verify(verifier)) {

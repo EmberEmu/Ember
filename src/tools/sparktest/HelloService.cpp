@@ -22,18 +22,18 @@ void HelloService::on_link_down(const spark::v2::Link& link) {
 
 }
 
- auto HelloService::handle_say_hello(const messaging::Hello::HelloRequest* msg,
+ auto HelloService::handle_say_hello(const rpc::Hello::HelloRequest* msg,
                                      const spark::v2::Link& link,
                                      const spark::v2::Token& token)
-                                     -> std::optional<messaging::Hello::HelloReplyT> {
+                                     -> std::optional<rpc::Hello::HelloReplyT> {
 	LOG_INFO_GLOB << "[HelloService] Received message: " << msg->name()->c_str() << LOG_SYNC;
 
 	if(token.is_nil()) {
-		return messaging::Hello::HelloReplyT {
+		return rpc::Hello::HelloReplyT {
 			.message = "Greetings, this is the reply from HelloService!"
 		};
 	} else {
-		return messaging::Hello::HelloReplyT {
+		return rpc::Hello::HelloReplyT {
 			.message = "Greetings, this is a tracked reply from HelloService!"
 		};
 	}

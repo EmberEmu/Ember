@@ -23,10 +23,10 @@ class RealmService : public services::RealmService {
 	log::Logger& logger_;
 	std::mutex mutex;
 
-	messaging::Realm::StatusT status();
+	rpc::Realm::StatusT status();
 
-	std::optional<messaging::Realm::StatusT> handle_get_status(
-		const messaging::Realm::RequestStatus* msg,
+	std::optional<rpc::Realm::StatusT> handle_get_status(
+		const rpc::Realm::RequestStatus* msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 

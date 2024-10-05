@@ -291,10 +291,10 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 
 	const auto& [status, key] = action.get_result();
 
-	if(status == messaging::Account::Status::OK) {
+	if(status == rpc::Account::Status::OK) {
 		update_state(LoginState::RECONNECT_PROOF);
 		state_data_.emplace<ReconnectAuthenticator>(user_->username(), key, checksum_salt_);
-	} else if(status == messaging::Account::Status::SESSION_NOT_FOUND) {
+	} else if(status == rpc::Account::Status::SESSION_NOT_FOUND) {
 		metrics_.increment("login_failure");
 		response.result = grunt::Result::FAIL_NOACCESS;
 		LOG_DEBUG(logger_) << "Reconnect failed, session not found for "
@@ -302,7 +302,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 	} else {
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << util::fb_status(status, messaging::Account::EnumNamesStatus())
+		LOG_ERROR(logger_) << util::fb_status(status, rpc::Account::EnumNamesStatus())
 		                   << " from peer during reconnect challenge" << LOG_ASYNC;
 	}
 	
@@ -501,19 +501,19 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 	auto result = action.get_result();
 	grunt::Result response = grunt::Result::SUCCESS;
 
-	if(result == messaging::Account::Status::OK) {
+	if(result == rpc::Account::Status::OK) {
 		update_state(LoginState::FETCHING_CHARACTER_DATA);
-	} else if(result == messaging::Account::Status::ALREADY_LOGGED_IN) {
+	} else if(result == rpc::Account::Status::ALREADY_LOGGED_IN) {
 		response = grunt::Result::FAIL_ALREADY_ONLINE;
 	} else {
 		metrics_.increment("login_internal_failure");
 		response = grunt::Result::FAIL_DB_BUSY;
-		LOG_ERROR(logger_) << util::fb_status(result, messaging::Account::EnumNamesStatus())
+		LOG_ERROR(logger_) << util::fb_status(result, rpc::Account::EnumNamesStatus())
 		                   << " from peer during login" << LOG_ASYNC;
 	}
 
 	// defer sending the response until we've fetched the character data
-	if(result == messaging::Account::Status::OK) {
+	if(result == rpc::Account::Status::OK) {
 		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_));
 	} else {
 		send_login_proof(response);

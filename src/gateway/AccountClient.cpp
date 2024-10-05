@@ -11,7 +11,7 @@
 
 namespace ember {
 
-namespace em = messaging::Account;
+namespace em = rpc::Account;
 
 AccountClient::AccountClient(spark::v2::Server& spark, log::Logger& logger)
 	: services::AccountClient(spark),

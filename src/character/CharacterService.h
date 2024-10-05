@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <Characterv2ServiceStub.h>
+#include <CharacterServiceStub.h>
 
 namespace ember {
 
-class CharacterService final : public services::Characterv2Service {
+class CharacterService final : public services::CharacterService {
 	log::Logger& logger_;
 
 	void on_link_up(const spark::v2::Link& link) override;

@@ -81,8 +81,8 @@ void character_rename(ClientContext& ctx) {
 	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
-		CharRenameResponse event(status, result, id, name);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		//CharRenameResponse event(status, result, id, name);
+		//Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
@@ -91,7 +91,7 @@ void character_rename_completion(ClientContext& ctx, const CharRenameResponse* e
 
 	protocol::Result result = protocol::Result::CHAR_NAME_FAILURE;
 
-	if(event->status == em::character::Status::OK) {
+	if(event->status == rpc::Character::Status::OK) {
 		result = event->result;
 	}
 
@@ -108,8 +108,8 @@ void character_enumerate(ClientContext& ctx) {
 	const auto& uuid = ctx.handler->uuid();
 	Locator::character()->retrieve_characters(ctx.client_id->id,
 		[uuid](auto status, auto characters) {
-			CharEnumResponse event(status, std::move(characters));
-			Locator::dispatcher()->post_event(uuid, std::move(event));
+			//CharEnumResponse event(status, std::move(characters));
+			//Locator::dispatcher()->post_event(uuid, std::move(event));
 		}
 	);
 }
@@ -117,7 +117,7 @@ void character_enumerate(ClientContext& ctx) {
 void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
-	if(event->status == em::character::Status::OK) {
+	if(event->status == rpc::Character::Status::OK) {
 		send_character_list(ctx, event->characters);
 	} else {
 		send_character_list_fail(ctx);
@@ -153,14 +153,14 @@ void character_create(ClientContext& ctx) {
 
 	Locator::character()->create_character(ctx.client_id->id, packet->character,
 	                                       [uuid](auto status, auto result) {
-		Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
+		//Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
 	});
 }
 
 void character_create_completion(ClientContext& ctx, const CharCreateResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
-	if(event->status == em::character::Status::OK) {
+	if(event->status == rpc::Character::Status::OK) {
 		send_character_create(ctx, event->result);
 	} else {
 		send_character_create(ctx, protocol::Result::CHAR_CREATE_ERROR);
@@ -180,14 +180,14 @@ void character_delete(ClientContext& ctx) {
 
 	Locator::character()->delete_character(ctx.client_id->id, packet->id,
 	                                       [uuid](auto status, auto result) {
-		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
+		//Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
 	});
 }
 
 void character_delete_completion(ClientContext& ctx, const CharDeleteResponse* event) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
-	if(event->status == em::character::Status::OK) {
+	if(event->status == rpc::Character::Status::OK) {
 		send_character_delete(ctx, event->result);
 	} else {
 		send_character_delete(ctx, protocol::Result::CHAR_DELETE_FAILED);

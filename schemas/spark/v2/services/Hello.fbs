@@ -1,5 +1,5 @@
 
-namespace ember.messaging.Hello;
+namespace ember.rpc.Hello;
 
 table HelloReply {
   message:string;

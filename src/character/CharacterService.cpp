@@ -10,10 +10,10 @@
 
 namespace ember {
 
-namespace em = messaging::Characterv2;
+namespace em = rpc::Character;
 
 CharacterService::CharacterService(spark::v2::Server& server, log::Logger& logger) 
-	: services::Characterv2Service(server),
+	: services::CharacterService(server),
 	  logger_(logger) {}
 
 void on_link_up(const spark::v2::Link& link) {

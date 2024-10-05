@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-namespace ember.messaging.Characterv2;
+namespace ember.rpc.Character;
 
 enum Status : ubyte {
 	UNKNOWN_ERROR,
@@ -118,7 +118,7 @@ table Envelope {
 
 root_type Envelope;
 
-rpc_service Characterv2 {
+rpc_service Character {
 	Create(Create):CreateResponse;
 	Delete(Delete):DeleteResponse;
 	Rename(Rename):RenameResponse;

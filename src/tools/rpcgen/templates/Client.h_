@@ -34,9 +34,9 @@ class {{name}}Client : public spark::v2::Handler {
 		flatbuffers::FlatBufferBuilder fbb;
 
 		// serialise message
-		messaging::{{name}}::EnvelopeT env;
+		rpc::{{name}}::EnvelopeT env;
 		env.message.Set(msg);
-		const auto packed = messaging::{{name}}::Envelope::Pack(fbb, &env);
+		const auto packed = rpc::{{name}}::Envelope::Pack(fbb, &env);
 		fbb.Finish(packed);
 		return fbb;
 	}
@@ -58,7 +58,7 @@ protected:
 				return;
 			}
 
-			auto fb = messaging::{{name}}::Get{{root}}(result->data());
+			auto fb = rpc::{{name}}::Get{{root}}(result->data());
 			flatbuffers::Verifier verifier(result->data(), result->size());
 
 			// todo, need to check whether the message is actually the correct type
@@ -107,12 +107,12 @@ public:
 		const spark::v2::Link& link,
 		const std::span<const std::uint8_t> msg,
 		const spark::v2::Token& token = {}) override {
-		auto fb = messaging::{{name}}::Get{{root}}(msg.data());
+		auto fb = rpc::{{name}}::Get{{root}}(msg.data());
 		flatbuffers::Verifier verifier(msg.data(), msg.size());
 
 		switch(fb->message_type()) {
 ## for handler in handlers
-			case messaging::{{name}}::Message::{{handler.response}}:
+			case rpc::{{name}}::Message::{{handler.response}}:
 				dispatch_{{handler.response_sn}}(verifier, fb->message_as_{{handler.response}}(), link);
 				break;
 ## endfor
@@ -122,7 +122,7 @@ public:
 ## for handler in handlers
 	void dispatch_{{handler.response_sn}}(
 		flatbuffers::Verifier& verifier,
-		const messaging::{{name}}::{{handler.response}}* msg,
+		const rpc::{{name}}::{{handler.response}}* msg,
 		const spark::v2::Link& link) {
 		if(!msg->Verify(verifier)) {
 			return;

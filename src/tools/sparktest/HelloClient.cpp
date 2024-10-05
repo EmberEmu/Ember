@@ -29,14 +29,14 @@ void HelloClient::on_link_down(const spark::v2::Link& link) {
 }
 
 void HelloClient::say_hello(const spark::v2::Link& link) {
-	messaging::Hello::HelloRequestT msg;
+	rpc::Hello::HelloRequestT msg;
 	msg.name = "Aloha from the HelloClient!";
 	send(msg, link);
 }
 
 void HelloClient::handle_tracked_reply(
 	const spark::v2::Link& link,
-    std::expected<const messaging::Hello::HelloReply*, spark::v2::Result> msg) {
+    std::expected<const rpc::Hello::HelloReply*, spark::v2::Result> msg) {
 	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 	
 	if(msg) {
@@ -49,17 +49,17 @@ void HelloClient::handle_tracked_reply(
 void HelloClient::say_hello_tracked(const spark::v2::Link& link) {
 	LOG_TRACE_GLOB << log_func << LOG_SYNC;
 
-	messaging::Hello::HelloRequestT msg {
+	rpc::Hello::HelloRequestT msg {
 		.name = "This is a tracked request"
 	};
 	
-	send<messaging::Hello::HelloReply>(msg, link, [this](auto link, auto message) {
+	send<rpc::Hello::HelloReply>(msg, link, [this](auto link, auto message) {
 		handle_tracked_reply(link, message);
 	});
 }
 
 void HelloClient::handle_say_hello_response(const spark::v2::Link& link, 
-                                            const messaging::Hello::HelloReply* msg) {
+                                            const rpc::Hello::HelloReply* msg) {
 	LOG_INFO_GLOB << "[HelloClient] Received response: " << msg->message()->c_str() << LOG_SYNC;
 }
 

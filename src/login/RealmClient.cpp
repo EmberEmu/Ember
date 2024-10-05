@@ -10,7 +10,7 @@
 
 namespace ember {
 
-namespace em = messaging::Realm;
+namespace em = rpc::Realm;
 
 RealmClient::RealmClient(spark::v2::Server& server, RealmList& realmlist, log::Logger& logger)
 	: services::RealmClient(server),

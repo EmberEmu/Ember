@@ -10,17 +10,17 @@
 
 #include "Config.h"
 #include <logger/Logger.h>
-#include <Characterv2ClientStub.h>
+#include <CharacterClientStub.h>
 #include <protocol/ResultCodes.h>
 #include <shared/database/objects/Character.h>
 
 namespace ember {
 
-class CharacterClient final : public services::Characterv2Client {
+class CharacterClient final : public services::CharacterClient {
 public:
-	using ResponseCB = std::function<void(messaging::Characterv2::Status, protocol::Result)>;
-	using RenameCB = std::function<void(messaging::Characterv2::Status, protocol::Result, std::uint64_t, std::string)>;
-	using RetrieveCB = std::function<void(messaging::Characterv2::Status, std::vector<Character>)>;
+	using ResponseCB = std::function<void(rpc::Character::Status, protocol::Result)>;
+	using RenameCB = std::function<void(rpc::Character::Status, protocol::Result, std::uint64_t, std::string)>;
+	using RetrieveCB = std::function<void(rpc::Character::Status, std::vector<Character>)>;
 
 private:
 	const Config& config_;
@@ -32,22 +32,22 @@ private:
 
 	void handle_create_reply(
 		const spark::v2::Link& link,
-		std::expected<const messaging::Characterv2::CreateResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::CreateResponse*, spark::v2::Result> resp,
 		ResponseCB cb) const;
 
 	void handle_rename_reply(
 		const spark::v2::Link& link,
-		std::expected<const messaging::Characterv2::RenameResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::RenameResponse*, spark::v2::Result> resp,
 		RenameCB cb) const;
 
 	void handle_retrieve_reply(
 		const spark::v2::Link& link,
-		std::expected<const messaging::Characterv2::RetrieveResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::RetrieveResponse*, spark::v2::Result> resp,
 		RetrieveCB cb) const;
 
 	void handle_delete_reply(
 		const spark::v2::Link& link,
-		std::expected<const messaging::Characterv2::DeleteResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Character::DeleteResponse*, spark::v2::Result> resp,
 		ResponseCB cb) const;
 
 public:

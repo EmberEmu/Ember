@@ -19,8 +19,8 @@ namespace ember {
 
 class AccountClient final : public services::AccountClient {
 public:
-	using RegisterCB = std::function<void(messaging::Account::Status)>;
-	using LocateCB = std::function<void(messaging::Account::Status, Botan::BigInt)>;
+	using RegisterCB = std::function<void(rpc::Account::Status)>;
+	using LocateCB = std::function<void(rpc::Account::Status, Botan::BigInt)>;
 
 private:
 	log::Logger& logger_;
@@ -30,12 +30,12 @@ private:
 	void on_link_down(const spark::v2::Link& link) override;
 
 	void handle_register_response(
-		std::expected<const messaging::Account::RegisterResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Account::RegisterResponse*, spark::v2::Result> resp,
 		const RegisterCB& cb
 	) const;
 
 	void handle_locate_response(
-		std::expected<const messaging::Account::SessionResponse*, spark::v2::Result> resp,
+		std::expected<const rpc::Account::SessionResponse*, spark::v2::Result> resp,
 		const LocateCB& cb
 	) const;
 

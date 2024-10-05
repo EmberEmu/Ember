@@ -11,10 +11,10 @@
 
 namespace ember {
 
-namespace em = messaging::Characterv2;
+namespace em = rpc::Character;
 
 CharacterClient::CharacterClient(spark::v2::Server& server, Config& config, log::Logger& logger)
-	: services::Characterv2Client(server),
+	: services::CharacterClient(server),
 	  config_(config),
 	  logger_(logger) {
 	connect("127.0.0.1", 8003); // temp
