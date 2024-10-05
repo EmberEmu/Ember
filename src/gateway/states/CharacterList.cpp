@@ -79,8 +79,8 @@ void character_rename(ClientContext& ctx) {
 	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                       [uuid](auto status, auto result,
 	                                              auto id, const auto& name) {
-		//CharRenameResponse event(status, result, id, name);
-		//Locator::dispatcher()->post_event(uuid, std::move(event));
+		CharRenameResponse event(status, result, id, name);
+		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
 }
 
@@ -106,8 +106,8 @@ void character_enumerate(ClientContext& ctx) {
 	const auto& uuid = ctx.handler->uuid();
 	Locator::character()->retrieve_characters(ctx.client_id->id,
 		[uuid](auto status, auto characters) {
-			//CharEnumResponse event(status, std::move(characters));
-			//Locator::dispatcher()->post_event(uuid, std::move(event));
+			CharEnumResponse event(status, std::move(characters));
+			Locator::dispatcher()->post_event(uuid, std::move(event));
 		}
 	);
 }
@@ -151,7 +151,7 @@ void character_create(ClientContext& ctx) {
 
 	Locator::character()->create_character(ctx.client_id->id, packet->character,
 	                                       [uuid](auto status, auto result) {
-		//Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
+		Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
 	});
 }
 
@@ -178,7 +178,7 @@ void character_delete(ClientContext& ctx) {
 
 	Locator::character()->delete_character(ctx.client_id->id, packet->id,
 	                                       [uuid](auto status, auto result) {
-		//Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
+		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
 	});
 }
 

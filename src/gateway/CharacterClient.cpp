@@ -107,6 +107,8 @@ void CharacterClient::handle_create_reply(
 	const spark::v2::Link& link,
 	std::expected<const CreateResponse*, spark::v2::Result> res,
 	ResponseCB cb) const {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {});
 		return;
@@ -120,6 +122,8 @@ void CharacterClient::handle_rename_reply(
 	const spark::v2::Link& link,
 	std::expected<const RenameResponse*, spark::v2::Result> res,
 	RenameCB cb) const {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {}, 0, "");
 		return;
@@ -139,6 +143,8 @@ void CharacterClient::handle_retrieve_reply(
 	const spark::v2::Link& link,
 	std::expected<const RetrieveResponse*, spark::v2::Result> res,
 	RetrieveCB cb) const {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {});
 		return;
@@ -147,7 +153,7 @@ void CharacterClient::handle_retrieve_reply(
 	const auto msg = *res;
 
 	if(!msg->characters()) {
-		cb(Status::ILLFORMED_MESSAGE, {});
+		cb(msg->status(), {});
 		return;
 	}
 
@@ -192,6 +198,8 @@ void CharacterClient::handle_delete_reply(
 	const spark::v2::Link& link,
 	std::expected<const DeleteResponse*, spark::v2::Result> res,
 	ResponseCB cb) const {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	if(!res) {
 		cb(Status::UNKNOWN_ERROR, {});
 		return;

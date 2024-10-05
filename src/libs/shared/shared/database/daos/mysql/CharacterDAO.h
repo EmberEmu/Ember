@@ -116,13 +116,13 @@ public:
 	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
 		constexpr std::string_view full_query =
 			"SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
-		    "c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
-		    "c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
-		    "c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
-		    "FROM characters c "
-		    "LEFT JOIN guild_characters gc ON c.id = gc.character_id "
-		    "LEFT JOIN users u ON u.id = c.account_id "
-		    "WHERE u.id = ? AND c.deletion_date IS NULL AND c.realm_id = ?";
+			"c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
+			"c.map, c.x, c.y, c.z, c.o, c.flags, c.first_login, c.pet_display, c.pet_level, "
+			"c.pet_family, gc.id as guild_id, gc.rank as guild_rank "
+			"FROM characters c "
+			"LEFT JOIN guild_characters gc ON c.id = gc.character_id "
+			"LEFT JOIN users u ON u.id = c.account_id "
+			"WHERE u.id = ? AND c.deletion_date IS NULL AND c.realm_id = ?";
 		
 		/// done at compile-time, obviates std::string allocation
 		constexpr auto pos = full_query.find(" AND c.realm_id = ?");
@@ -154,7 +154,7 @@ public:
 	}
 
 	void restore(std::uint64_t id) const override try {
-		std::string_view query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
+		constexpr std::string_view query = "UPDATE characters SET deletion_date = NULL WHERE id = ?";
 	
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -184,12 +184,13 @@ public:
 	}
 
 	void create(const Character& character) const override try {
-		std::string_view query = "INSERT INTO characters (name, account_id, realm_id, race, class, gender, "
-		                         "skin, face, hairstyle, haircolour, facialhair, level, zone, "
-		                         "map, x, y, z, o, flags, first_login, pet_display, pet_level, "
-		                         "pet_family, internal_name) "
-		                         "VALUES "
-		                         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		constexpr std::string_view query = 
+			"INSERT INTO characters (name, account_id, realm_id, race, class, gender, "
+			"skin, face, hairstyle, haircolour, facialhair, level, zone, "
+			"map, x, y, z, o, flags, first_login, pet_display, pet_level, "
+			"pet_family, internal_name) "
+			"VALUES "
+			"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -226,12 +227,13 @@ public:
 	}
 
 	void update(const Character& character) const override try {
-		std::string_view query = "UPDATE characters SET name = ?, internal_name = ?, account_id = ?, "
-		                         "realm_id = ?, race = ?, class = ?, gender = ?, skin = ?, face = ?, "
-		                         "hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
-		                         "map = ?, x = ?, y = ?, z = ?, o = ?, flags = ?, first_login = ?, pet_display = ?, "
-		                         "pet_level = ?, pet_family = ? "
-		                         "WHERE id = ?";
+		constexpr std::string_view query =
+			"UPDATE characters SET name = ?, internal_name = ?, account_id = ?, "
+			"realm_id = ?, race = ?, class = ?, gender = ?, skin = ?, face = ?, "
+			"hairstyle = ?, haircolour = ?, facialhair = ?, level = ?, zone = ?, "
+			"map = ?, x = ?, y = ?, z = ?, o = ?, flags = ?, first_login = ?, pet_display = ?, "
+			"pet_level = ?, pet_family = ? "
+			"WHERE id = ?";
 		
 		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
@@ -270,7 +272,7 @@ public:
 
 	int count(std::uint32_t account_id, std::uint32_t realm_id) const override try {
 		constexpr std::string_view full_query =
-			"SELECT COUNT(*) FROM characters WHERE account_id = ? AND realm_id = ?";
+			"SELECT COUNT(*) AS count FROM characters WHERE account_id = ? AND realm_id = ?";
 		
 		/// done at compile-time, obviates std::string allocation
 		constexpr auto pos = full_query.find(" AND realm_id = ?");

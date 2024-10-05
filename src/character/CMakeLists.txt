@@ -10,14 +10,12 @@ set(LIBRARY_NAME    libcharacter)
 set(LIBRARY_HDR
     CharacterHandler.h
     InventoryTypes.h
-    Service.h
     FilterTypes.h
     CharacterService.h
     )
 
 set(LIBRARY_SRC
     CharacterHandler.cpp
-    Service.cpp
     CharacterService.cpp
     )
 

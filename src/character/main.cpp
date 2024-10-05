@@ -8,9 +8,10 @@
 
 #include "FilterTypes.h"
 #include "CharacterHandler.h"
-#include "Service.h"
+#include "CharacterService.h"
 #include <dbcreader/DBCReader.h>
 #include <spark/Spark.h>
+#include <spark/v2/Server.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -200,11 +201,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
 	                         dbc_store, character_dao, thread_pool, temp, logger);
 
-	spark::Service spark("character", service, s_address, s_port, logger);
-	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger);
-
-	Service char_service(character_dao, handler, spark, discovery, logger);
+	// test
+	spark::v2::Server sparkv2(service, "character", "0.0.0.0", 8003, logger);
+	CharacterService char_service(sparkv2, handler, *logger);
 	
 	service.dispatch([&, logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);

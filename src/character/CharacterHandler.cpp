@@ -16,7 +16,7 @@
 namespace ember {
 
 void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
-                              const messaging::character::CharacterTemplate& options,
+                              const rpc::Character::CharacterTemplate& options,
                               ResultCB callback) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
@@ -164,6 +164,13 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	// populate zone information
 	const dbc::CharStartZones* zone = base_info->second.zone;
 
+	if(!zone) {
+		LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
+						race->name.en_gb, class_->name.en_gb);
+		callback(protocol::Result::CHAR_CREATE_ERROR);
+		return;
+	}
+
 	character.zone = zone->area_id;
 	character.map = zone->area->map_id;
 	character.position.x = zone->position.x;
@@ -192,7 +199,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	if(spells != dbc_.char_start_spells.end()) {
 		populate_spells(character, spells->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG_ASYNC(logger_, "No starting spell data found for {}, {}",
+		LOG_DEBUG_ASYNC(logger_, "No starting spell data found for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
 	}
 
@@ -211,15 +218,15 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 
 	const char* subzone = nullptr;
 
-	if(zone->area->parent_area_table_id) {
+	if(zone && zone->area->parent_area_table_id) {
 		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Creating {} at {} {} {}", 
+	LOG_DEBUG_ASYNC(logger_, "Creating {} {} at {}{} {}", 
 	                race->name.en_gb,
 	                class_->name.en_gb,
 	                zone->area->area_name.en_gb,
-	                subzone? ", " : " ",
+	                subzone? "," : " ",
 	                subzone? subzone : " ");
 
 	dao_.create(character);
@@ -269,10 +276,10 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto characters = dao_.characters(account_id, realm_id);
-	callback(std::move(characters));
+	callback(protocol::Result::RESPONSE_SUCCESS, std::move(characters));
 } catch(dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(std::optional<std::vector<Character>>());
+	callback(protocol::Result::CHAR_LIST_FAILED, {});
 }
 
 void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,

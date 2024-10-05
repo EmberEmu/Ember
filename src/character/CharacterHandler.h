@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Character_generated.h"
+#include <Characterv2_generated.h>
 #include <dbcreader/Storage.h>
 #include <protocol/ResultCodes.h>
 #include <shared/database/daos/CharacterDAO.h>
@@ -31,8 +31,8 @@ class ThreadPool;
 
 class CharacterHandler final {
 	using ResultCB = std::function<void(protocol::Result)>;
-	using RenameCB = std::function<void(protocol::Result, std::optional<Character>)>;
-	using EnumResultCB = std::function<void(std::optional<std::vector<Character>>)>;
+	using RenameCB = std::function<void(protocol::Result, std::optional<ember::Character>)>;
+	using EnumResultCB = std::function<void(protocol::Result, std::vector<ember::Character>)>;
 
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;
@@ -51,17 +51,17 @@ class CharacterHandler final {
 	log::Logger* logger_;
 
 	protocol::Result validate_name(const utf8_string& name) const;
-	bool validate_options(const Character& character, std::uint32_t account_id) const;
-	void populate_items(Character& character, const dbc::CharStartOutfit& outfit) const;
-	void populate_spells(Character& character, const dbc::CharStartSpells& spells) const;
-	void populate_skills(Character& character, const dbc::CharStartSkills& skills) const;
+	bool validate_options(const ember::Character& character, std::uint32_t account_id) const;
+	void populate_items(ember::Character& character, const dbc::CharStartOutfit& outfit) const;
+	void populate_spells(ember::Character& character, const dbc::CharStartSpells& spells) const;
+	void populate_skills(ember::Character& character, const dbc::CharStartSkills& skills) const;
 	const dbc::FactionGroup* pvp_faction(const dbc::FactionTemplate& fac_template) const;
 
 	/** I/O heavy functions run async in a thread pool **/
 
 	void do_create(std::uint32_t account_id,
 	               std::uint32_t realm_id,
-	               Character character,
+	               ember::Character character,
 	               const ResultCB& callback) const;
 
 	void do_erase(std::uint32_t account_id,
@@ -88,15 +88,18 @@ public:
 	                 std::vector<util::pcre::Result> spam_names,
 	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
 	                 ThreadPool& pool, const std::locale& locale, log::Logger* logger)
-	                 : profane_names_(std::move(profane_names)),
-	                   reserved_names_(std::move(reserved_names)),
-	                   spam_names_(std::move(spam_names)),
-	                   dbc_(dbc), dao_(dao), pool_(pool), locale_(locale),
-	                   logger_(logger) {}
+		: profane_names_(std::move(profane_names)),
+		  reserved_names_(std::move(reserved_names)),
+		  spam_names_(std::move(spam_names)),
+		  dbc_(dbc),
+		  dao_(dao),
+		  pool_(pool),
+		  locale_(locale),
+		  logger_(logger) {}
 
 	void create(std::uint32_t account_id,
 	            std::uint32_t realm_id,
-	            const messaging::character::CharacterTemplate& options,
+	            const rpc::Character::CharacterTemplate& options,
 	            ResultCB callback) const;
 
 	void erase(std::uint32_t account_id,
