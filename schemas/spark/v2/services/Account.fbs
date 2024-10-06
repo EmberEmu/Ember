@@ -55,7 +55,7 @@ table DisconnectID {
 }
 
 table DisconnectSession {
-	session_key:[ubyte];
+	key:[ubyte];
 	reason:DisconnectReason;
 }
 
