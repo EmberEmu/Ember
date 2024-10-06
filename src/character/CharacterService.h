@@ -32,22 +32,22 @@ class CharacterService final : public services::CharacterService {
 	                     const spark::v2::Token& token) const;
 
 	std::optional<rpc::Character::CreateResponseT> handle_create(
-		const rpc::Character::Create* msg,
+		const rpc::Character::Create& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Character::DeleteResponseT> handle_delete(
-		const rpc::Character::Delete* msg,
+		const rpc::Character::Delete& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Character::RenameResponseT> handle_rename(
-		const rpc::Character::Rename* msg,
+		const rpc::Character::Rename& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Character::RetrieveResponseT> handle_enumerate(
-		const rpc::Character::Retrieve* msg,
+		const rpc::Character::Retrieve& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 

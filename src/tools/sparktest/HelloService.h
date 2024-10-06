@@ -15,7 +15,7 @@ namespace ember {
 class HelloService final : public services::HelloService {
 
 	std::optional<rpc::Hello::HelloReplyT> handle_say_hello(
-		const rpc::Hello::HelloRequest* msg,
+		const rpc::Hello::HelloRequest& msg,
 	    const spark::v2::Link& link,
 	    const spark::v2::Token& token) override;
 

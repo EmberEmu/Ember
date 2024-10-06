@@ -28,16 +28,16 @@ void CharacterService::on_link_down(const Link& link) {
 }
 
 std::optional<CreateResponseT>
-CharacterService::handle_create(const Create* msg, const Link& link, const Token& token) {
+CharacterService::handle_create(const Create& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!msg->character()) {
+	if(!msg.character()) {
 		return CreateResponseT {
 			.status = Status::ILLFORMED_MESSAGE 
 		};
 	}
 
-	handler_.create(msg->account_id(), msg->realm_id(), *msg->character(), [=](auto res) {
+	handler_.create(msg.account_id(), msg.realm_id(), *msg.character(), [=](auto res) {
 		CreateResponseT msg {
 			.status = Status::OK,
 			.result = std::to_underlying(res)
@@ -50,10 +50,10 @@ CharacterService::handle_create(const Create* msg, const Link& link, const Token
 }
 
 std::optional<DeleteResponseT>
-CharacterService::handle_delete(const Delete* msg, const Link& link, const Token& token) {
+CharacterService::handle_delete(const Delete& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	handler_.erase(msg->account_id(), msg->realm_id(), msg->character_id(), [=](auto res) {
+	handler_.erase(msg.account_id(), msg.realm_id(), msg.character_id(), [=](auto res) {
 		LOG_DEBUG_ASYNC(logger_, "Deletion response: {}", protocol::to_string(res));
 
 		DeleteResponseT msg {
@@ -68,16 +68,16 @@ CharacterService::handle_delete(const Delete* msg, const Link& link, const Token
 }
 
 std::optional<RenameResponseT> 
-CharacterService::handle_rename(const Rename* msg, const Link& link, const Token& token) {
+CharacterService::handle_rename(const Rename& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!msg->name()) {
+	if(!msg.name()) {
 		return RenameResponseT{
 			.status = Status::ILLFORMED_MESSAGE
 		};
 	}
 
-	handler_.rename(msg->account_id(), msg->character_id(), msg->name()->str(),
+	handler_.rename(msg.account_id(), msg.character_id(), msg.name()->str(),
 		[=](auto res, auto character) {
 			send_rename(res, character, link, token);
 		}
@@ -87,10 +87,10 @@ CharacterService::handle_rename(const Rename* msg, const Link& link, const Token
 }
 
 std::optional<RetrieveResponseT>
-CharacterService::handle_enumerate(const Retrieve* msg, const Link& link, const Token& token) {
+CharacterService::handle_enumerate(const Retrieve& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	handler_.enumerate(msg->account_id(), msg->realm_id(), [=](auto res, auto characters) {
+	handler_.enumerate(msg.account_id(), msg.realm_id(), [=](auto res, auto characters) {
 		send_characters(res, characters, link, token);
 	});
 

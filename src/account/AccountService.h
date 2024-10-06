@@ -19,27 +19,27 @@ class AccountService final : public services::AccountService {
 	log::Logger& logger_;
 
 	std::optional<rpc::Account::SessionResponseT> handle_session_fetch(
-		const rpc::Account::SessionLookup* msg,
+		const rpc::Account::SessionLookup& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Account::RegisterResponseT> handle_register_session(
-		const rpc::Account::RegisterSession* msg,
+		const rpc::Account::RegisterSession& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Account::AccountFetchResponseT> handle_account_i_d_fetch(
-		const rpc::Account::LookupID* msg,
+		const rpc::Account::LookupID& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Account::DisconnectSessionResponseT> handle_disconnect_session(
-		const rpc::Account::DisconnectSession* msg,
+		const rpc::Account::DisconnectSession& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
 	std::optional<rpc::Account::DisconnectResponseT> handle_disconnect_by_i_d(
-		const rpc::Account::DisconnectID* msg,
+		const rpc::Account::DisconnectID& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 

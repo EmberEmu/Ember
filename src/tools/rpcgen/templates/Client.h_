@@ -113,7 +113,7 @@ public:
 		switch(fb->message_type()) {
 ## for handler in handlers
 			case rpc::{{name}}::Message::{{handler.response}}:
-				dispatch_{{handler.response_sn}}(verifier, fb->message_as_{{handler.response}}(), link);
+				dispatch_{{handler.response_sn}}(verifier, *fb->message_as_{{handler.response}}(), link);
 				break;
 ## endfor
 		}
@@ -122,9 +122,9 @@ public:
 ## for handler in handlers
 	void dispatch_{{handler.response_sn}}(
 		flatbuffers::Verifier& verifier,
-		const rpc::{{name}}::{{handler.response}}* msg,
+		const rpc::{{name}}::{{handler.response}}& msg,
 		const spark::v2::Link& link) {
-		if(!msg->Verify(verifier)) {
+		if(!msg.Verify(verifier)) {
 			return;
 		}
 
@@ -135,7 +135,7 @@ public:
 ## for handler in handlers
 	virtual void handle_{{handler.name}}_response(
 		const spark::v2::Link& link,
-		const {{handler.response_ns}}* msg) {}
+		const {{handler.response_ns}}& msg) {}
 
 ## endfor
 };

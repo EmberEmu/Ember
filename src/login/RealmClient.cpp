@@ -10,7 +10,7 @@
 
 namespace ember {
 
-namespace em = rpc::Realm;
+using namespace rpc::Realm;
 
 RealmClient::RealmClient(spark::v2::Server& server, RealmList& realmlist, log::Logger& logger)
 	: services::RealmClient(server),
@@ -30,7 +30,7 @@ void RealmClient::on_link_down(const spark::v2::Link& link) {
 }
 
 void RealmClient::request_realm_status(const spark::v2::Link& link) {
-	em::RequestStatusT msg{};
+	RequestStatusT msg{};
 	send(msg, link);
 }
 
@@ -52,33 +52,33 @@ void RealmClient::mark_realm_offline(const spark::v2::Link& link) {
 
 void RealmClient::handle_get_status_response(
 	const spark::v2::Link& link,
-	const em::Status* msg) {
+	const Status& msg) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(!msg->name() || !msg->id() || !msg->ip() || !msg->address()) {
+	if(!msg.name() || !msg.id() || !msg.ip() || !msg.address()) {
 		LOG_WARN_ASYNC(logger_, "Incompatible realm status update from {}", link.peer_banner);
 		return;
 	}
 
 	// update everything rather than bothering to only set changed fields
 	Realm realm {
-		.id = msg->id(),
-		.name = msg->name()->str(),
-		.ip = msg->ip()->str(),
-		.port = msg->port(),
-		.address = msg->address()->str(),
-		.population = msg->population(),
-		.type = static_cast<Realm::Type>(msg->type()),
-		.flags = static_cast<Realm::Flags>(msg->flags()),
-		.category = static_cast<dbc::Cfg_Categories::Category>(msg->category()),
-		.region = static_cast<dbc::Cfg_Categories::Region>(msg->region())
+		.id = msg.id(),
+		.name = msg.name()->str(),
+		.ip = msg.ip()->str(),
+		.port = msg.port(),
+		.address = msg.address()->str(),
+		.population = msg.population(),
+		.type = static_cast<Realm::Type>(msg.type()),
+		.flags = static_cast<Realm::Flags>(msg.flags()),
+		.category = static_cast<dbc::Cfg_Categories::Category>(msg.category()),
+		.region = static_cast<dbc::Cfg_Categories::Region>(msg.region())
 	};
 
 	LOG_INFO_ASYNC(logger_, "Updated realm information for {} ({}:)", realm.name, realm.address);
 	realmlist_.add_realm(std::move(realm));
 
 	// keep track of this link's realm ID so we can mark it as offline if it disappears
-	realms_[link.peer_banner] = msg->id();
+	realms_[link.peer_banner] = msg.id();
 }
 
 } // ember

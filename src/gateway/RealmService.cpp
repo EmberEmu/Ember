@@ -11,20 +11,21 @@
 namespace ember {
 
 using namespace rpc::Realm;
+using namespace spark::v2;
 
-RealmService::RealmService(spark::v2::Server& server, Realm realm, log::Logger& logger)
+RealmService::RealmService(Server& server, Realm realm, log::Logger& logger)
 	: services::RealmService(server),
 	  realm_(realm),
 	  logger_(logger) { }
 
-void RealmService::on_link_up(const spark::v2::Link& link) {
+void RealmService::on_link_up(const Link& link) {
 	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
 
 	std::lock_guard guard(mutex);
 	links_.emplace_back(link);
 }
 
-void RealmService::on_link_down(const spark::v2::Link& link) {
+void RealmService::on_link_down(const Link& link) {
 	LOG_DEBUG_ASYNC(logger_, "Link closed: {}", link.peer_banner);
 
 	std::lock_guard guard(mutex);
@@ -50,10 +51,7 @@ StatusT RealmService::status() {
 }
 
 std::optional<StatusT>
-RealmService::handle_get_status(
-	const RequestStatus* msg,
-	const spark::v2::Link& link,
-	const spark::v2::Token& token) {	
+RealmService::handle_get_status(const RequestStatus& msg, const Link& link,	const Token& token) {	
 	return status();
 }
 

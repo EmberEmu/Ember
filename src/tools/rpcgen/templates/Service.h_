@@ -87,7 +87,7 @@ public:
 		switch(fb->message_type()) {
 ## for handler in handlers
 			case rpc::{{name}}::Message::{{handler.request}}:
-				dispatch_{{handler.request_sn}}(verifier, fb->message_as_{{handler.request}}(), link, token);
+				dispatch_{{handler.request_sn}}(verifier, *fb->message_as_{{handler.request}}(), link, token);
 				break;
 ## endfor
 		}
@@ -96,10 +96,10 @@ public:
 ## for handler in handlers
 	void dispatch_{{handler.request_sn}}(
 		flatbuffers::Verifier& verifier,
-		const rpc::{{name}}::{{handler.request}}* msg,
+		const rpc::{{name}}::{{handler.request}}& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) {
-		if(!msg->Verify(verifier)) {
+		if(!msg.Verify(verifier)) {
 			return;
 		}
 
@@ -113,7 +113,7 @@ public:
 
 ## for handler in handlers
 	virtual std::optional<{{handler.response_ns}}T> handle_{{handler.name}}(
-		const {{handler.request_ns}}* msg,
+		const {{handler.request_ns}}& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) { return std::nullopt; }
 

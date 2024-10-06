@@ -26,7 +26,7 @@ class RealmService : public services::RealmService {
 	rpc::Realm::StatusT status();
 
 	std::optional<rpc::Realm::StatusT> handle_get_status(
-		const rpc::Realm::RequestStatus* msg,
+		const rpc::Realm::RequestStatus& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 

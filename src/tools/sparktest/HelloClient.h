@@ -20,7 +20,7 @@ class HelloClient final : public services::HelloClient {
 
 	void handle_say_hello_response(
 		const spark::v2::Link& link,
-		const rpc::Hello::HelloReply* msg
+		const rpc::Hello::HelloReply& msg
 	) override;
 
 	void handle_tracked_reply(
