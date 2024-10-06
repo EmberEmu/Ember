@@ -32,7 +32,7 @@ public:
 	using CloseHandler = std::function<void()>;
 
 private:
-	static constexpr auto MAX_MESSAGE_SIZE = 1024u * 1024u;
+	static constexpr auto MAX_MESSAGE_SIZE = 8192u; // 8KB
 
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
