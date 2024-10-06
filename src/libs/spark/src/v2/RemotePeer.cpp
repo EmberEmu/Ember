@@ -177,7 +177,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel* msg) {
 	}
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, id, banner_, handler->name(), handler, conn_, log_
+		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_
 	);
 
 	channel->open();
@@ -322,7 +322,7 @@ void RemotePeer::open_channel(const std::string& type, gsl::not_null<Handler*> h
 	LOG_DEBUG_ASYNC(log_, "[spark] Requesting channel {} for {}", id, type);
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, id, banner_, handler->name(), handler, conn_, log_
+		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_
 	);
 
 	channels_[id] = std::move(channel);
