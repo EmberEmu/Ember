@@ -94,7 +94,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	auto ep = socket.remote_endpoint();
 	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
 
-	Connection connection(std::move(socket), [this, key]() {
+	Connection connection(std::move(socket), *logger_, [this, key]() {
 		close_peer(key);
 	});
 
@@ -146,7 +146,7 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 
 	const auto key = std::format("{}:{}", host, port);
 
-	Connection connection(std::move(socket), [this, key]() {
+	Connection connection(std::move(socket), *logger_, [this, key]() {
 		close_peer(key);
 	});
 

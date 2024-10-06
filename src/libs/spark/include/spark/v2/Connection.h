@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <logger/Logger.h>
 #include <spark/v2/Common.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -34,6 +35,7 @@ public:
 private:
 	static constexpr auto MAX_MESSAGE_SIZE = 8192u; // 8KB
 
+	log::Logger& logger_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
 	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
@@ -46,7 +48,7 @@ private:
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 
 public:
-	Connection(boost::asio::ip::tcp::socket socket, CloseHandler handler);
+	Connection(boost::asio::ip::tcp::socket socket, log::Logger& logger, CloseHandler handler);
 	Connection(Connection&&) = default;
 
 	std::string address() const;

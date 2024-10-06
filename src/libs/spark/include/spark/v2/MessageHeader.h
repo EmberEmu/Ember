@@ -81,7 +81,7 @@ public:
 		stream << static_cast<std::uint8_t>(be::native_to_little(pad));
 
 		// pad the header so the body starts at the correct alignment
-		// the underlying buffer also needs to be properly aligned
+		// as the payload buffer needs to be properly aligned
 		for(auto i = 0u; i < pad; ++i) {
 			stream << std::uint8_t(0);
 		}

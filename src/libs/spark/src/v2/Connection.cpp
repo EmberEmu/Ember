@@ -22,8 +22,9 @@ namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
 
-Connection::Connection(ba::ip::tcp::socket socket, CloseHandler handler)
-	: socket_(std::move(socket)),
+Connection::Connection(ba::ip::tcp::socket socket, log::Logger& logger, CloseHandler handler)
+	: logger_(logger),
+	  socket_(std::move(socket)),
       strand_(socket_.get_executor()),
 	  on_close_(handler) {}
 
@@ -89,7 +90,11 @@ Connection::do_receive(const std::size_t offset) {
 	boost::endian::little_to_native_inplace(msg_size);
 
 	if(msg_size > buffer_.size()) {
-		throw std::runtime_error("message too big to fit in receive buffer"); // todo
+		const auto log_msg = std::format(
+			"message too big to fit in receive buffer ({} and {} bytes)", msg_size, buffer_.size()
+		);
+
+		throw exception(log_msg);
 	}
 
 	// if the entire message wasn't received in a single read, continue reading
@@ -99,7 +104,6 @@ Connection::do_receive(const std::size_t offset) {
 
 	co_return std::make_pair(rcv_size, msg_size);
 }
-
 
 ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 	std::size_t offset = 0;
@@ -120,6 +124,7 @@ ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 		offset = rcv_size - msg_size; // buffer offset to start the next read at
 	}
 } catch(std::exception& e) {
+	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 	close();
 }
 
@@ -130,8 +135,12 @@ ba::awaitable<std::span<std::uint8_t>> Connection::receive_msg() {
 	co_await ba::async_read(socket_, buffer, ba::deferred);
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 
-	if(msg_size > buffer_.max_size()) {
-		throw exception("bad message size");
+	if(msg_size > buffer_.size()) {
+		const auto log_msg = std::format(
+			"message too big to fit in receive buffer ({} and {} bytes)", msg_size, buffer_.size()
+		);
+
+		throw exception(log_msg);
 	}
 
 	// read the rest of the message
@@ -155,6 +164,8 @@ void Connection::start(ReceiveHandler handler) {
 }
 
 void Connection::close() {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
 	socket_.close();
 
 	if(on_close_) {
