@@ -14,6 +14,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/any_io_executor.hpp>
+#include <boost/container/small_vector.hpp>
 #include <array>
 #include <functional>
 #include <memory>
@@ -33,18 +34,20 @@ public:
 	using CloseHandler = std::function<void()>;
 
 private:
-	static constexpr auto MAX_MESSAGE_SIZE = 8192u; // 8KB
+	static constexpr auto INITIAL_BUFFER_SIZE = 100u;         // 8KB
+	static constexpr auto MAXIMUM_BUFFER_SIZE = 1024u * 1024 ; // 1MB
 
 	log::Logger& logger_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
-	std::array<std::uint8_t, MAX_MESSAGE_SIZE> buffer_{};
+	boost::container::small_vector<std::uint8_t, INITIAL_BUFFER_SIZE> buffer_{};
 	std::queue<Message> queue_;
 	CloseHandler on_close_;
 
+	void buffer_resize(const std::uint32_t size);
 	boost::asio::awaitable<void> process_queue();
 	boost::asio::awaitable<void> begin_receive(ReceiveHandler handler);
-	boost::asio::awaitable<std::pair<std::size_t, std::uint32_t>> do_receive(std::size_t offset);
+	boost::asio::awaitable<std::uint32_t> do_receive();
 	boost::asio::awaitable<std::size_t> read_until(std::size_t offset, std::size_t read_size);
 
 public:

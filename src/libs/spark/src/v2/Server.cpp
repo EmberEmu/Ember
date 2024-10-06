@@ -228,7 +228,6 @@ ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto msg = co_await conn.receive_msg();
-
 	spark::io::BufferAdaptor adaptor(msg);
 	spark::io::BinaryStream stream(adaptor);
 

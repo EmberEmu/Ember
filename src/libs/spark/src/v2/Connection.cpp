@@ -18,6 +18,8 @@
 #include <cassert>
 #include <cstring>
 
+#include <iostream>
+
 namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
@@ -26,7 +28,9 @@ Connection::Connection(ba::ip::tcp::socket socket, log::Logger& logger, CloseHan
 	: logger_(logger),
 	  socket_(std::move(socket)),
       strand_(socket_.get_executor()),
-	  on_close_(handler) {}
+	  on_close_(handler) {
+	buffer_.resize(4);
+}
 
 ba::awaitable<void> Connection::process_queue() try {
 	while(!queue_.empty()) {
@@ -76,52 +80,47 @@ ba::awaitable<std::size_t> Connection::read_until(const std::size_t offset,
 	co_return received;
 }
 
-ba::awaitable<std::pair<std::size_t, std::uint32_t>> 
-Connection::do_receive(const std::size_t offset) {
-	std::size_t rcv_size = offset;
-	std::uint32_t msg_size = 0;
+void Connection::buffer_resize(const std::uint32_t size) {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	// read at least the message size
-	if(rcv_size < sizeof(msg_size)) {
-		rcv_size += co_await read_until(offset, sizeof(msg_size));
-	}
-	
-	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
-	boost::endian::little_to_native_inplace(msg_size);
-
-	if(msg_size > buffer_.size()) {
+	if(size > MAXIMUM_BUFFER_SIZE) {
 		const auto log_msg = std::format(
-			"message too big to fit in receive buffer ({} and {} bytes)", msg_size, buffer_.size()
+			"maximum message ({}b) exceeded", MAXIMUM_BUFFER_SIZE
 		);
 
 		throw exception(log_msg);
 	}
 
-	// if the entire message wasn't received in a single read, continue reading
-	while(rcv_size < msg_size) {
-		rcv_size += co_await read_until(rcv_size, msg_size);
+	LOG_TRACE_ASYNC(logger_, "Resizing RPC buffer to {}b", size);
+	buffer_.resize(size);
+}
+
+ba::awaitable<std::uint32_t>  Connection::do_receive() {
+	std::uint32_t msg_size = 0;
+
+	// read the message size
+	auto buf = boost::asio::buffer(buffer_.data(), sizeof(msg_size));
+	co_await socket_.async_read_some(buf, ba::deferred);
+	
+	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
+	boost::endian::little_to_native_inplace(msg_size);
+
+	if(msg_size > buffer_.size()) {
+		buffer_resize(msg_size);
 	}
 
-	co_return std::make_pair(rcv_size, msg_size);
+	buf = boost::asio::buffer(buffer_.data() + sizeof(msg_size), msg_size - sizeof(msg_size));
+	co_await socket_.async_read_some(buf, ba::deferred);
+	co_return msg_size;
 }
 
 ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
-	std::size_t offset = 0;
-
 	while(socket_.is_open()) {
-		auto [rcv_size, msg_size] = co_await do_receive(offset);
+		const auto msg_size = co_await do_receive();
 
 		// message complete, handle it
 		std::span view(buffer_.data(), msg_size);
 		handler(view);
-
-		// move any data belonging to the next message to the start
-		if(rcv_size > msg_size) {
-			std::memmove(buffer_.data(), buffer_.data() + msg_size, buffer_.size() - msg_size);
-		}
-
-		assert(msg_size <= rcv_size);
-		offset = rcv_size - msg_size; // buffer offset to start the next read at
 	}
 } catch(std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
@@ -131,16 +130,13 @@ ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 ba::awaitable<std::span<std::uint8_t>> Connection::receive_msg() {
 	// read message size uint32
 	std::uint32_t msg_size = 0;
+
 	auto buffer = ba::buffer(buffer_.data(), sizeof(msg_size));
 	co_await ba::async_read(socket_, buffer, ba::deferred);
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 
 	if(msg_size > buffer_.size()) {
-		const auto log_msg = std::format(
-			"message too big to fit in receive buffer ({} and {} bytes)", msg_size, buffer_.size()
-		);
-
-		throw exception(log_msg);
+		buffer_resize(msg_size);
 	}
 
 	// read the rest of the message
@@ -160,6 +156,7 @@ ba::awaitable<void> Connection::send(Message& msg) {
 
 // start full-duplex send/receive
 void Connection::start(ReceiveHandler handler) {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	ba::co_spawn(strand_, begin_receive(handler), ba::detached);
 }
 
