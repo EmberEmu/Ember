@@ -15,6 +15,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <logger/Logger.h>
+#include <gsl/pointers>
 #include <array>
 #include <chrono>
 #include <concepts>
@@ -68,8 +69,8 @@ public:
 	           HandlerRegistry& registry, log::Logger* log);
 	~RemotePeer();
 
-	void open_channel(const std::string& type, Handler* handler);
-	void remove_handler(Handler* handler);
+	void open_channel(const std::string& type, gsl::not_null<Handler*> handler);
+	void remove_handler(gsl::not_null<Handler*> handler);
 	void start();
 };
 

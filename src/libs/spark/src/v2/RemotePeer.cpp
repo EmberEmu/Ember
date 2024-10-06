@@ -315,7 +315,7 @@ void RemotePeer::send_open_channel(const std::string& name,
 	conn_->send(std::move(msg));
 }
 
-void RemotePeer::open_channel(const std::string& type, Handler* handler) {
+void RemotePeer::open_channel(const std::string& type, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	const auto id = next_empty_channel();
@@ -336,7 +336,7 @@ void RemotePeer::start() {
 }
 
 // very temporary, not thread-safe etc
-void RemotePeer::remove_handler(Handler* handler) {
+void RemotePeer::remove_handler(gsl::not_null<Handler*> handler) {
 	for(std::size_t i = 0u; i < channels_.size(); ++i) {
 		auto& channel = channels_[i];
 
