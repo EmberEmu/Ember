@@ -247,8 +247,9 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 }
 
 void RemotePeer::handle_ping(const core::Ping* ping) {
-	core::PongT pong;
-	pong.sequence = ping->sequence();
+	core::PongT pong {
+		.sequence = ping->sequence()
+	};
 
 	Message msg;
 	finish(pong, msg);
