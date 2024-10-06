@@ -272,7 +272,8 @@ public:
 
 	int count(std::uint32_t account_id, std::uint32_t realm_id) const override try {
 		constexpr std::string_view full_query =
-			"SELECT COUNT(*) AS count FROM characters WHERE account_id = ? AND realm_id = ?";
+			"SELECT COUNT(*) AS count FROM characters WHERE deletion_date IS NULL "
+			"AND account_id = ? AND realm_id = ?";
 		
 		/// done at compile-time, obviates std::string allocation
 		constexpr auto pos = full_query.find(" AND realm_id = ?");

@@ -276,10 +276,10 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto characters = dao_.characters(account_id, realm_id);
-	callback(protocol::Result::RESPONSE_SUCCESS, std::move(characters));
+	callback(true, std::move(characters));
 } catch(dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::CHAR_LIST_FAILED, {});
+	callback(false, {});
 }
 
 void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,

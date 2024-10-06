@@ -116,7 +116,7 @@ void CharacterService::send_rename(const protocol::Result& res,
 	send(response, link, token);
 }
 
-void CharacterService::send_characters(const protocol::Result& res,
+void CharacterService::send_characters(const bool result,
                                        std::span<ember::Character> characters,
                                        const Link& link,
                                        const Token& token) const {
@@ -124,8 +124,9 @@ void CharacterService::send_characters(const protocol::Result& res,
 
 	// painful
 	std::vector<std::unique_ptr<CharacterT>> chars;
+	chars.reserve(characters.size());
 
-	for(auto character : characters) {
+	for(const auto& character : characters) {
 		CharacterT fbchar {
 			.id = character.id,
 			.name = character.name,
@@ -152,12 +153,18 @@ void CharacterService::send_characters(const protocol::Result& res,
 			.pet_family = character.pet_family
 		};
 
-		chars.emplace_back(std::make_unique<CharacterT>(std::move(fbchar)));
+		chars.emplace_back(std::make_unique<CharacterT>(fbchar));
 	}
 
 	RetrieveResponseT response;
-	response.status = Status::OK;
-	response.characters = std::move(chars);
+
+	if(result) {
+		response.status = Status::OK;
+		response.characters = std::move(chars);
+	} else {
+		response.status = Status::UNKNOWN_ERROR;
+	}
+
 	send(response, link, token);
 }
 } // ember

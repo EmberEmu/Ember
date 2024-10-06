@@ -32,8 +32,9 @@ void handle_timeout(ClientContext& ctx);
 void send_character_list_fail(ClientContext& ctx) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
+	// displays an error dialogue on the client
 	protocol::SMSG_CHAR_CREATE response;
-	response->result = protocol::Result::AUTH_UNAVAILABLE;
+	response->result = protocol::Result::CHAR_LIST_FAILED;
 	ctx.connection->send(response);
 }
 

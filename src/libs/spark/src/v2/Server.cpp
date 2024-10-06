@@ -251,11 +251,11 @@ ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
 
 // todo, need to link down to all channels, error code
 void Server::close_peer(const std::string& key) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	peers_.remove(key);
+	//LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	//peers_.remove(key);
 
-	LOG_DEBUG_FILTER(logger_, LF_SPARK)
-		<< "[spark] Close connection " << key << LOG_ASYNC;
+	//LOG_DEBUG_FILTER(logger_, LF_SPARK)
+	//	<< "[spark] Close connection " << key << LOG_ASYNC;
 }
 
 void Server::shutdown() {

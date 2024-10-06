@@ -32,7 +32,7 @@ class ThreadPool;
 class CharacterHandler final {
 	using ResultCB = std::function<void(protocol::Result)>;
 	using RenameCB = std::function<void(protocol::Result, std::optional<ember::Character>)>;
-	using EnumResultCB = std::function<void(protocol::Result, std::vector<ember::Character>)>;
+	using EnumResultCB = std::function<void(bool, std::vector<ember::Character>)>;
 
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;

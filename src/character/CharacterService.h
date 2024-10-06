@@ -26,7 +26,7 @@ class CharacterService final : public services::CharacterService {
 	                 const spark::v2::Link& link,
 	                 const spark::v2::Token& token) const;
 
-	void send_characters(const protocol::Result& res,
+	void send_characters(bool result,
 	                     std::span<ember::Character> characters,
 	                     const spark::v2::Link& link,
 	                     const spark::v2::Token& token) const;
