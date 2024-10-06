@@ -98,12 +98,12 @@ void CharacterClient::handle_create_reply(
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::UNKNOWN_ERROR, {});
+		cb(protocol::Result::CHAR_CREATE_ERROR);
 		return;
 	}
 
 	const auto* msg = *res;
-	cb(msg->status(), protocol::Result(msg->result()));
+	cb(protocol::Result(msg->result()));
 }
 
 void CharacterClient::handle_rename_reply(
@@ -113,18 +113,18 @@ void CharacterClient::handle_rename_reply(
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::UNKNOWN_ERROR, {}, 0, "");
+		cb(protocol::Result::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
 	const auto* msg = *res;
 
 	if(!msg->name()) {
-		cb(Status::ILLFORMED_MESSAGE, {}, 0, "");
+		cb(protocol::Result::CHAR_NAME_FAILURE, 0, "");
 		return;
 	}
 
-	cb(msg->status(), protocol::Result(msg->result()), msg->character_id(), msg->name()->str());
+	cb(protocol::Result(msg->result()), msg->character_id(), msg->name()->str());
 }
 
 void CharacterClient::handle_retrieve_reply(
@@ -141,11 +141,12 @@ void CharacterClient::handle_retrieve_reply(
 	const auto msg = *res;
 
 	if(!msg->characters()) {
-		cb(msg->status(), {});
+		cb(Status::OK, {});
 		return;
 	}
 
 	std::vector<ember::Character> characters;
+	characters.reserve(msg->characters()->size());
 	auto key = msg->characters();
 
 	for(auto i = key->begin(); i != key->end(); ++i) {
@@ -179,7 +180,7 @@ void CharacterClient::handle_retrieve_reply(
 		characters.emplace_back(std::move(character));
 	}
 
-	cb(msg->status(), std::move(characters));
+	cb(Status::OK, std::move(characters));
 }
 
 void CharacterClient::handle_delete_reply(
@@ -189,12 +190,13 @@ void CharacterClient::handle_delete_reply(
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::UNKNOWN_ERROR, {});
+		cb(protocol::Result::CHAR_DELETE_FAILED);
 		return;
 	}
 
 	const auto* msg = *res;
-	cb(msg->status(), protocol::Result(msg->result()));
+	LOG_TRACE(logger_) << "Result:" << msg->result() << LOG_ASYNC;
+	cb(protocol::Result(msg->result()));
 }
 
 } // ember

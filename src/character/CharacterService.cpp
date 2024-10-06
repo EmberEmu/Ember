@@ -152,7 +152,7 @@ void CharacterService::send_characters(const protocol::Result& res,
 			.pet_family = character.pet_family
 		};
 
-		chars.emplace_back(std::make_unique<CharacterT>(fbchar));
+		chars.emplace_back(std::make_unique<CharacterT>(std::move(fbchar)));
 	}
 
 	RetrieveResponseT response;

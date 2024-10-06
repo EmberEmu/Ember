@@ -24,24 +24,25 @@ namespace ember {
 
 struct PlayerLogin : Event {
 	explicit PlayerLogin(std::uint64_t character_id)
-	                     : Event{ EventType::PLAYER_LOGIN },
-	                       character_id_(character_id) { }
+		: Event{ EventType::PLAYER_LOGIN },
+		  character_id_(character_id) { }
 
 	const std::uint64_t character_id_;
 };
 
 struct QueuePosition : Event {
-	explicit QueuePosition(std::size_t position) 
-	                       : Event { EventType::QUEUE_UPDATE_POSITION },
-	                         position(position) { }
+	explicit QueuePosition(std::size_t position)	
+		: Event { EventType::QUEUE_UPDATE_POSITION },
+	      position(position) { }
 
 	std::size_t position;
 };
 
 struct AccountIDResponse : Event {
 	AccountIDResponse(rpc::Account::Status status, std::uint32_t id)
-	                  : Event { EventType::ACCOUNT_ID_RESPONSE },
-	                    status(status), account_id(id) { }
+		: Event { EventType::ACCOUNT_ID_RESPONSE },
+	      status(status),
+		  account_id(id) { }
 
 	rpc::Account::Status status;
 	std::uint32_t account_id;
@@ -49,8 +50,9 @@ struct AccountIDResponse : Event {
 
 struct SessionKeyResponse : Event {
 	SessionKeyResponse(rpc::Account::Status status, Botan::BigInt key)
-	                   : Event { EventType::SESSION_KEY_RESPONSE },
-	                     status(status), key(std::move(key)) { }
+		: Event { EventType::SESSION_KEY_RESPONSE },
+	      status(status),
+		  key(std::move(key)) { }
 
 	rpc::Account::Status status;
 	Botan::BigInt key;
@@ -58,39 +60,37 @@ struct SessionKeyResponse : Event {
 
 struct CharEnumResponse : Event {
 	CharEnumResponse(rpc::Character::Status status, std::vector<Character> characters)
-	                 : Event{ EventType::CHAR_ENUM_RESPONSE },
-	                   status(status), characters(std::move(characters)) { }
+		: Event{ EventType::CHAR_ENUM_RESPONSE },
+		  status(status),
+		  characters(std::move(characters)) { }
 
 	rpc::Character::Status status;
 	std::vector<Character> characters;
 };
 
 struct CharCreateResponse : Event {
-	CharCreateResponse(rpc::Character::Status status, protocol::Result result)
-	                   : Event { EventType::CHAR_CREATE_RESPONSE },
-	                     status(status), result(result) { }
+	CharCreateResponse(protocol::Result result)
+		: Event { EventType::CHAR_CREATE_RESPONSE },
+		  result(result) { }
 
-	rpc::Character::Status status;
 	protocol::Result result;
 };
 
 struct CharDeleteResponse : Event {
-	CharDeleteResponse(rpc::Character::Status status, protocol::Result result)
-	                   : Event{ EventType::CHAR_DELETE_RESPONSE },
-	                     status(status), result(result) { }
+	CharDeleteResponse(protocol::Result result)
+		: Event{ EventType::CHAR_DELETE_RESPONSE },
+		  result(result) { }
 
-	rpc::Character::Status status;
 	protocol::Result result;
 };
 
 struct CharRenameResponse : Event {
-	CharRenameResponse(rpc::Character::Status status, protocol::Result result,
-	                   std::uint64_t id, std::string name)
-	                   : Event { EventType::CHAR_RENAME_RESPONSE },
-	                     status(status), result(result), character_id(id),
-	                     name(std::move(name)) { }
+	CharRenameResponse(protocol::Result result, std::uint64_t id, std::string name)
+		: Event { EventType::CHAR_RENAME_RESPONSE },
+		  result(result),
+		  character_id(id),
+		  name(std::move(name)) { }
 
-	rpc::Character::Status status;
 	protocol::Result result;
 	std::uint64_t character_id;
 	std::string name;

@@ -18,8 +18,8 @@ namespace ember {
 
 class CharacterClient final : public services::CharacterClient {
 public:
-	using ResponseCB = std::function<void(rpc::Character::Status, protocol::Result)>;
-	using RenameCB = std::function<void(rpc::Character::Status, protocol::Result, std::uint64_t, std::string)>;
+	using ResponseCB = std::function<void(protocol::Result)>;
+	using RenameCB = std::function<void(protocol::Result, std::uint64_t, std::string)>;
 	using RetrieveCB = std::function<void(rpc::Character::Status, std::vector<ember::Character>)>;
 
 private:

@@ -51,7 +51,7 @@ StatusT RealmService::status() {
 }
 
 std::optional<StatusT>
-RealmService::handle_get_status(const RequestStatus& msg, const Link& link,	const Token& token) {	
+RealmService::handle_get_status(const RequestStatus&, const Link& link,	const Token& token) {
 	return status();
 }
 

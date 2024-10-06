@@ -54,14 +54,13 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 	ctx.connection->send(response);
 }
 
-void send_character_rename(ClientContext& ctx, protocol::Result result,
-                           std::uint64_t id = 0, const utf8_string& name = "") {
+void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_RENAME response;
-	response->result = result;
-	response->id = id;
-	response->name = name;
+	response->result = res->result;
+	response->id = res->character_id;
+	response->name = res->name;
 	ctx.connection->send(response);
 }
 
@@ -77,27 +76,10 @@ void character_rename(ClientContext& ctx) {
 	const auto& uuid = ctx.handler->uuid();
 
 	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
-	                                       [uuid](auto status, auto result,
-	                                              auto id, const auto& name) {
-		CharRenameResponse event(status, result, id, name);
+	                                       [uuid](auto result, auto id, const auto& name) {
+		CharRenameResponse event(result, id, name);
 		Locator::dispatcher()->post_event(uuid, std::move(event));
 	});
-}
-
-void character_rename_completion(ClientContext& ctx, const CharRenameResponse* event) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
-
-	protocol::Result result = protocol::Result::CHAR_NAME_FAILURE;
-
-	if(event->status == rpc::Character::Status::OK) {
-		result = event->result;
-	}
-
-	if(result == protocol::Result::RESPONSE_SUCCESS) {
-		send_character_rename(ctx, result, event->character_id, event->name);
-	} else {
-		send_character_rename(ctx, result);
-	}
 }
 
 void character_enumerate(ClientContext& ctx) {
@@ -122,19 +104,19 @@ void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* 
 	}
 }
 
-void send_character_delete(ClientContext& ctx, protocol::Result result) {
+void send_character_delete(ClientContext& ctx, const CharDeleteResponse* res) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_DELETE response;
-	response->result = result;
+	response->result = res->result;
 	ctx.connection->send(response);
 }
 
-void send_character_create(ClientContext& ctx, protocol::Result result) {
+void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
 	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_CHAR_CREATE response;
-	response->result = result;
+	response->result = res->result;
 	ctx.connection->send(response);
 }
 
@@ -149,20 +131,9 @@ void character_create(ClientContext& ctx) {
 
 	const auto& uuid = ctx.handler->uuid();
 
-	Locator::character()->create_character(ctx.client_id->id, packet->character,
-	                                       [uuid](auto status, auto result) {
-		Locator::dispatcher()->post_event(uuid, CharCreateResponse(status, result));
+	Locator::character()->create_character(ctx.client_id->id, packet->character, [uuid](auto result) {
+		Locator::dispatcher()->post_event(uuid, CharCreateResponse(result));
 	});
-}
-
-void character_create_completion(ClientContext& ctx, const CharCreateResponse* event) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
-
-	if(event->status == rpc::Character::Status::OK) {
-		send_character_create(ctx, event->result);
-	} else {
-		send_character_create(ctx, protocol::Result::CHAR_CREATE_ERROR);
-	}
 }
 
 void character_delete(ClientContext& ctx) {
@@ -176,20 +147,9 @@ void character_delete(ClientContext& ctx) {
 
 	const auto& uuid = ctx.handler->uuid();
 
-	Locator::character()->delete_character(ctx.client_id->id, packet->id,
-	                                       [uuid](auto status, auto result) {
-		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(status, result));
+	Locator::character()->delete_character(ctx.client_id->id, packet->id, [uuid](auto result) {
+		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(result));
 	});
-}
-
-void character_delete_completion(ClientContext& ctx, const CharDeleteResponse* event) {
-	LOG_TRACE_FILTER_GLOB(LF_NETWORK) << log_func << LOG_ASYNC;
-
-	if(event->status == rpc::Character::Status::OK) {
-		send_character_delete(ctx, event->result);
-	} else {
-		send_character_delete(ctx, protocol::Result::CHAR_DELETE_FAILED);
-	}
 }
 
 void player_login(ClientContext& ctx) {
@@ -249,16 +209,16 @@ void handle_event(ClientContext& ctx, const Event* event) {
 			handle_timeout(ctx);
 			break;
 		case EventType::CHAR_CREATE_RESPONSE:
-			character_create_completion(ctx, static_cast<const CharCreateResponse*>(event));
+			send_character_create(ctx, static_cast<const CharCreateResponse*>(event));
 			break;
 		case EventType::CHAR_DELETE_RESPONSE:
-			character_delete_completion(ctx, static_cast<const CharDeleteResponse*>(event));
+			send_character_delete(ctx, static_cast<const CharDeleteResponse*>(event));
 			break;
 		case EventType::CHAR_ENUM_RESPONSE:
 			character_enumerate_completion(ctx, static_cast<const CharEnumResponse*>(event));
 			break;
 		case EventType::CHAR_RENAME_RESPONSE:
-			character_rename_completion(ctx, static_cast<const CharRenameResponse*>(event));
+			send_character_rename(ctx, static_cast<const CharRenameResponse*>(event));
 			break;
 		default:
 			break;
