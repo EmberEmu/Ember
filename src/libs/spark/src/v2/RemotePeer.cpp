@@ -277,13 +277,13 @@ void RemotePeer::handle_close_channel(const core::CloseChannel* msg) {
 	auto id = gsl::narrow<std::uint8_t>(msg->channel());
 
 	if(!channels_[id]) {
-		LOG_WARN(log_) << "[spark] Request to close empty channel" << LOG_ASYNC;
+		LOG_WARN_ASYNC(log_, "[spark] Request to close empty channel ({})", id);
 		return;
 	}
 
 	channels_[id]->close();
 	channels_[id].reset();
-	LOG_DEBUG_ASYNC(log_, "[spark] Closed channel {}, requested by remote peer", id);
+	LOG_DEBUG_ASYNC(log_, "[spark] Closed channel ({}), requested by remote peer", id);
 }
 
 void RemotePeer::handle_channel_message(const MessageHeader& header,
@@ -293,7 +293,7 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 	auto& channel = channels_[header.channel];
 
 	if(!channel || !channel->is_open()) {
-		LOG_WARN_ASYNC(log_, "[spark] Received message for closed channel, {}", header.channel);
+		LOG_WARN_ASYNC(log_, "[spark] Received message for closed channel ({})", header.channel);
 		return;
 	}
 
