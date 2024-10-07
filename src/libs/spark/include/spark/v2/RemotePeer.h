@@ -69,6 +69,11 @@ public:
 	           HandlerRegistry& registry, log::Logger* log);
 	~RemotePeer();
 
+	RemotePeer(RemotePeer&& peer) = delete;
+	RemotePeer operator=(RemotePeer&&) = delete;
+	RemotePeer(RemotePeer&) = delete;
+	RemotePeer operator=(RemotePeer&) = delete;
+
 	void open_channel(const std::string& type, gsl::not_null<Handler*> handler);
 	void remove_handler(gsl::not_null<Handler*> handler);
 	void start();

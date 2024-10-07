@@ -118,7 +118,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 void Server::register_handler(spark::v2::Handler* handler) {
 	handlers_.register_service(handler);
 
-	LOG_DEBUG_FILTER(logger_, LF_SPARK)
+	LOG_TRACE_FILTER(logger_, LF_SPARK)
 		<< "[spark] Registered handler for "
 		<< handler->type()
 		<< LOG_ASYNC;
@@ -128,13 +128,13 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 	handlers_.deregister_service(handler);
 	peers_.notify_remove_handler(handler);
 
-	LOG_DEBUG_FILTER(logger_, LF_SPARK)
+	LOG_TRACE_FILTER(logger_, LF_SPARK)
 		<< "[spark] Removed handler for "
 		<< handler->type()
 		<< LOG_ASYNC;
 }
 
-ba::awaitable<std::optional<RemotePeer>>
+ba::awaitable<std::shared_ptr<RemotePeer>>
 Server::connect(const std::string& host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
@@ -158,11 +158,10 @@ Server::connect(const std::string& host, const std::uint16_t port) try {
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	RemotePeer peer(
+	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
 	);
 
-	peer.start();
 	co_return peer;
 } catch(const std::exception& e) {
 	const auto msg = std::format(
@@ -170,46 +169,38 @@ Server::connect(const std::string& host, const std::uint16_t port) try {
 	);
 
 	LOG_WARN_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
-	co_return std::nullopt;
-}
-
-ba::awaitable<std::shared_ptr<RemotePeer>>
-Server::find_or_connect(const std::string& host, const std::uint16_t port) {
-	const auto key = std::format("{}:{}", host, port);
-	
-	if(auto peer = peers_.find(key); peer) {
-		co_return peer;
-	}
-
-	auto peer = co_await connect(host, port);
-
-	if(peer) {
-		auto peerptr = std::make_shared<RemotePeer>(std::move(*peer));
-		peers_.add(key, peerptr);
-		co_return peerptr;
-	}
-
 	co_return nullptr;
 }
 
-ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t port,
-                                         std::string service, Handler* handler) {
+ba::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
+                                     std::string service, Handler* handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	auto peer = co_await find_or_connect(host, port);
-	
-	if(!peer) {
-		handler->connect_failed(host, port);
+
+	const auto key = std::format("{}:{}", host, port);
+
+	// check if we've already established a connection with this peer
+	if(const auto& peer = peers_.find(key); peer) {
+		peer->open_channel(std::move(service), handler);
 		co_return;
 	}
 
-	peer->open_channel(service, handler);
+	// open a connection if we didn't find one
+	auto peer = co_await connect(host, port);
+
+	if(peer) {
+		peer->start();
+		peer->open_channel(std::move(service), handler);
+		peers_.add(key, std::move(peer));
+	} else {
+		handler->connect_failed(host, port);
+	}
 }
 
 void Server::connect(std::string host, const std::uint16_t port,
                      std::string service, Handler* handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	ba::co_spawn(ctx_, open_channel(
+	ba::co_spawn(ctx_, try_open(
 		std::move(host), port, std::move(service), handler), ba::detached
 	);
 }

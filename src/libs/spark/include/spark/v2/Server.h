@@ -38,17 +38,12 @@ class Server final {
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<void> accept_connection();
 	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
-	boost::asio::awaitable<std::optional<RemotePeer>> connect(const std::string& host, std::uint16_t port);
+	boost::asio::awaitable<std::shared_ptr<RemotePeer>> connect(const std::string& host, std::uint16_t port);
 	boost::asio::awaitable<void> send_banner(Connection& conn, const std::string& banner);
 	boost::asio::awaitable<std::string> receive_banner(Connection& conn);
 	void close_peer(const std::string& key);
-
-	boost::asio::awaitable<std::shared_ptr<RemotePeer>>
-	find_or_connect(const std::string& host, std::uint16_t port);
-
-	boost::asio::awaitable<void> open_channel(std::string host, std::uint16_t port,
-	                                          std::string service, Handler* handler);
-
+	boost::asio::awaitable<void> try_open(std::string host, std::uint16_t port,
+	                                      std::string service, Handler* handler);
 public:
 	Server(boost::asio::io_context& context, std::string_view name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);

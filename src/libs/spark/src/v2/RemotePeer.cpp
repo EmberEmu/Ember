@@ -353,7 +353,9 @@ void RemotePeer::remove_handler(gsl::not_null<Handler*> handler) {
 
 RemotePeer::~RemotePeer() {
 	for(auto& channel : channels_) {
-		channel->close();
+		if(channel) {
+			channel->close();
+		}
 	}
 }
 
