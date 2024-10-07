@@ -60,7 +60,7 @@ class RemotePeer final {
 
 	void open_channel_response(core::Result result, std::uint8_t id, std::uint8_t requested);
 	void send_close_channel(std::uint8_t id);
-	void send_open_channel(const std::string& name, const std::string& type, std::uint8_t id);
+	void send_open_channel(std::string name, std::string type, std::uint8_t id);
 	void receive(std::span<const std::uint8_t> data);
 
 public:
@@ -74,7 +74,7 @@ public:
 	RemotePeer(RemotePeer&) = delete;
 	RemotePeer operator=(RemotePeer&) = delete;
 
-	void open_channel(const std::string& type, gsl::not_null<Handler*> handler);
+	void open_channel(std::string type, gsl::not_null<Handler*> handler);
 	void remove_handler(gsl::not_null<Handler*> handler);
 	void start();
 };

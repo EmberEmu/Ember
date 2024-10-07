@@ -41,7 +41,6 @@ Server::Server(boost::asio::io_context& context, std::string_view name,
 	// generate random unique name for this service
 	const auto uuid = boost::uuids::random_generator()();
 	name_ = std::format("{}:{}", name, boost::uuids::to_string(uuid));
-
 	ba::co_spawn(ctx_, listen(), ba::detached);
 }
 
@@ -115,7 +114,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
 }
 
-void Server::register_handler(spark::v2::Handler* handler) {
+void Server::register_handler(gsl::not_null<Handler*> handler) {
 	handlers_.register_service(handler);
 
 	LOG_TRACE_FILTER(logger_, LF_SPARK)
@@ -124,7 +123,7 @@ void Server::register_handler(spark::v2::Handler* handler) {
 		<< LOG_ASYNC;
 }
 
-void Server::deregister_handler(spark::v2::Handler* handler) {
+void Server::deregister_handler(gsl::not_null<Handler*> handler) {
 	handlers_.deregister_service(handler);
 	peers_.notify_remove_handler(handler);
 
@@ -135,7 +134,7 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 }
 
 ba::awaitable<std::shared_ptr<RemotePeer>>
-Server::connect(const std::string& host, const std::uint16_t port) try {
+Server::connect(std::string_view host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto results = co_await resolver_.async_resolve(
@@ -173,7 +172,7 @@ Server::connect(const std::string& host, const std::uint16_t port) try {
 }
 
 ba::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
-                                     std::string service, Handler* handler) {
+                                     std::string service, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto key = std::format("{}:{}", host, port);
@@ -187,17 +186,18 @@ ba::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
 	// open a connection if we didn't find one
 	auto peer = co_await connect(host, port);
 
-	if(peer) {
-		peer->start();
-		peer->open_channel(std::move(service), handler);
-		peers_.add(key, std::move(peer));
-	} else {
+	if(!peer) {
 		handler->connect_failed(host, port);
+		co_return;
 	}
+
+	peer->start();
+	peer->open_channel(std::move(service), handler);
+	peers_.add(key, std::move(peer));
 }
 
 void Server::connect(std::string host, const std::uint16_t port,
-                     std::string service, Handler* handler) {
+                     std::string service, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	ba::co_spawn(ctx_, try_open(

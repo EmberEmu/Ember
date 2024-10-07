@@ -12,6 +12,7 @@
 #include <spark/v2/HandlerRegistry.h>
 #include <spark/v2/RemotePeer.h>
 #include <logger/LoggerFwd.h>
+#include <gsl/pointers>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -38,21 +39,25 @@ class Server final {
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<void> accept_connection();
 	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
-	boost::asio::awaitable<std::shared_ptr<RemotePeer>> connect(const std::string& host, std::uint16_t port);
+	boost::asio::awaitable<std::shared_ptr<RemotePeer>> connect(std::string_view host, std::uint16_t port);
 	boost::asio::awaitable<void> send_banner(Connection& conn, const std::string& banner);
 	boost::asio::awaitable<std::string> receive_banner(Connection& conn);
+	boost::asio::awaitable<void> try_open(std::string host,
+	                                      std::uint16_t port,
+	                                      std::string service,
+	                                      gsl::not_null<Handler*> handler);
+
 	void close_peer(const std::string& key);
-	boost::asio::awaitable<void> try_open(std::string host, std::uint16_t port,
-	                                      std::string service, Handler* handler);
 public:
 	Server(boost::asio::io_context& context, std::string_view name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);
 	~Server();
 
-	void register_handler(Handler* handler);
-	void deregister_handler(Handler* handler);
+	void register_handler(gsl::not_null<Handler*> handler);
+	void deregister_handler(gsl::not_null<Handler*> handler);
 
-	void connect(std::string host, std::uint16_t port, std::string service, Handler* handler);
+	void connect(std::string host, std::uint16_t port,
+	             std::string service, gsl::not_null<Handler*> handler);
 	void shutdown();
 };
 

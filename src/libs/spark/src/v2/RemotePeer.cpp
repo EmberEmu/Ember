@@ -300,13 +300,11 @@ void RemotePeer::handle_channel_message(const MessageHeader& header,
 	channel->dispatch(header, data);
 }
 
-void RemotePeer::send_open_channel(const std::string& name,
-                                   const std::string& type,
-                                   const std::uint8_t id) {
+void RemotePeer::send_open_channel(std::string name, std::string type, const std::uint8_t id) {
 	core::OpenChannelT body {
 		.id = id,
-		.service_type = type,
-		.service_name = name
+		.service_type = std::move(type),
+		.service_name = std::move(name)
 	};
 
 	Message msg;
@@ -315,7 +313,7 @@ void RemotePeer::send_open_channel(const std::string& name,
 	conn_->send(std::move(msg));
 }
 
-void RemotePeer::open_channel(const std::string& type, gsl::not_null<Handler*> handler) {
+void RemotePeer::open_channel(std::string type, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
 	const auto id = next_empty_channel();
@@ -326,7 +324,7 @@ void RemotePeer::open_channel(const std::string& type, gsl::not_null<Handler*> h
 	);
 
 	channels_[id] = std::move(channel);
-	send_open_channel("", type, id);
+	send_open_channel("", std::move(type), id);
 }
 
 void RemotePeer::start() {
