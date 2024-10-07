@@ -266,8 +266,8 @@ void RemotePeer::handle_pong(const core::Pong* pong) {
 	const auto delta = std::chrono::steady_clock::now() - ping_time_;
 	
 	if(delta > LATENCY_WARN_THRESHOLD) {
-		const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-		LOG_WARN_ASYNC(log_, "[spark] High latency to remote peer, {}: {}", remote_banner_, ms);
+		const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
+		LOG_WARN_ASYNC(log_, "[spark] Remote peer is slow to respond {} ({})", ms, remote_banner_);
 	}
 }
 
