@@ -118,6 +118,8 @@ public:
 		const spark::v2::Token& token) { return std::nullopt; }
 
 ## endfor
+
+	void connect_failed(std::string_view ip, std::uint16_t port) override {}
 };
 
 } // services, ember

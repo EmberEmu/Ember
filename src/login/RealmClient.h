@@ -22,6 +22,7 @@ class RealmClient final : public services::RealmClient {
 
 	void on_link_up(const spark::v2::Link& link) override;
 	void on_link_down(const spark::v2::Link& link) override;
+	void connect_failed(std::string_view ip, std::uint16_t port) override;
 
 	void request_realm_status(const spark::v2::Link& link);
 	void mark_realm_offline(const spark::v2::Link& link);

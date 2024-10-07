@@ -28,6 +28,7 @@ private:
 
 	void on_link_up(const spark::v2::Link& link) override;
 	void on_link_down(const spark::v2::Link& link) override;
+	void connect_failed(std::string_view ip, std::uint16_t port) override;
 
 	void handle_register_response(
 		std::expected<const rpc::Account::RegisterResponse*, spark::v2::Result> res,

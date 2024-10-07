@@ -138,6 +138,8 @@ public:
 		const {{handler.response_ns}}& msg) {}
 
 ## endfor
+
+	void connect_failed(std::string_view ip, std::uint16_t port) override {}
 };
 
 } // services, ember

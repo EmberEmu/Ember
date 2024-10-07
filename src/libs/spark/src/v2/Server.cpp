@@ -134,7 +134,8 @@ void Server::deregister_handler(spark::v2::Handler* handler) {
 		<< LOG_ASYNC;
 }
 
-ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t port) try {
+ba::awaitable<std::optional<RemotePeer>>
+Server::connect(const std::string& host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto results = co_await resolver_.async_resolve(
@@ -157,33 +158,35 @@ ba::awaitable<bool> Server::connect(const std::string& host, const std::uint16_t
 		<< std::format("[spark] Connected to {}", banner)
 		<< LOG_ASYNC;
 
-	auto peer = std::make_shared<RemotePeer>(
+	RemotePeer peer(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
 	);
 
-	peer->start();
-	peers_.add(key, std::move(peer));
-	co_return true;
+	peer.start();
+	co_return peer;
 } catch(const std::exception& e) {
 	const auto msg = std::format(
 		"[spark] Could not connect to {}:{} ({})", host, port, e.what()
 	);
 
 	LOG_WARN_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
-	co_return false;
+	co_return std::nullopt;
 }
 
 ba::awaitable<std::shared_ptr<RemotePeer>>
 Server::find_or_connect(const std::string& host, const std::uint16_t port) {
 	const auto key = std::format("{}:{}", host, port);
-	auto peer = peers_.find(key);
+	
+	if(auto peer = peers_.find(key); peer) {
+		co_return peer;
+	}
 
-	if(!peer) {
-		const bool result = co_await connect(host, port);
+	auto peer = co_await connect(host, port);
 
-		if(result) {
-			co_return peers_.find(key);
-		}
+	if(peer) {
+		auto peerptr = std::make_shared<RemotePeer>(std::move(*peer));
+		peers_.add(key, peerptr);
+		co_return peerptr;
 	}
 
 	co_return nullptr;
@@ -195,6 +198,7 @@ ba::awaitable<void> Server::open_channel(std::string host, const std::uint16_t p
 	auto peer = co_await find_or_connect(host, port);
 	
 	if(!peer) {
+		handler->connect_failed(host, port);
 		co_return;
 	}
 

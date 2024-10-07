@@ -11,6 +11,7 @@
 #include <spark/v2/Link.h>
 #include <spark/v2/Common.h>
 #include <string>
+#include <string_view>
 #include <span>
 #include <cstdint>
 
@@ -25,6 +26,7 @@ public:
 	                        const spark::v2::Token& token) = 0;
 	virtual void on_link_up(const spark::v2::Link& link) = 0;
 	virtual void on_link_down(const spark::v2::Link& link) = 0;
+	virtual void connect_failed(std::string_view ip, std::uint16_t port) = 0;
 
 	virtual ~Handler() = default;
 };

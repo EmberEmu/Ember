@@ -29,6 +29,10 @@ void CharacterClient::on_link_down(const spark::v2::Link& link) {
 	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
 }
 
+void CharacterClient::connect_failed(std::string_view ip, const std::uint16_t port) {
+	LOG_INFO_ASYNC(logger_, "Failed to connect to character service on {}:{}", ip, port);
+}
+
 void CharacterClient::retrieve_characters(const std::uint32_t account_id, RetrieveCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
