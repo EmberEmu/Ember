@@ -18,8 +18,6 @@
 #include <cassert>
 #include <cstring>
 
-#include <iostream>
-
 namespace ba = boost::asio;
 
 namespace ember::spark::v2 {
