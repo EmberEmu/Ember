@@ -106,7 +106,7 @@ void CharacterClient::handle_create_reply(
 		return;
 	}
 
-	const auto* msg = *res;
+	const auto msg = *res;
 	cb(protocol::Result(msg->result()));
 }
 
@@ -121,7 +121,7 @@ void CharacterClient::handle_rename_reply(
 		return;
 	}
 
-	const auto* msg = *res;
+	const auto msg = *res;
 
 	if(!msg->name()) {
 		cb(protocol::Result::CHAR_NAME_FAILURE, 0, "");
@@ -198,7 +198,7 @@ void CharacterClient::handle_delete_reply(
 		return;
 	}
 
-	const auto* msg = *res;
+	const auto msg = *res;
 	LOG_TRACE(logger_) << "Result:" << msg->result() << LOG_ASYNC;
 	cb(protocol::Result(msg->result()));
 }
