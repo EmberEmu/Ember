@@ -28,17 +28,17 @@ class AccountService final : public services::AccountService {
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<rpc::Account::AccountFetchResponseT> handle_account_i_d_fetch(
+	std::optional<rpc::Account::AccountFetchResponseT> handle_account_id_fetch(
 		const rpc::Account::LookupID& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<rpc::Account::DisconnectSessionResponseT> handle_disconnect_session(
+	std::optional<rpc::Account::DisconnectSessionResponseT> handle_disconnect_by_session(
 		const rpc::Account::DisconnectSession& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;
 
-	std::optional<rpc::Account::DisconnectResponseT> handle_disconnect_by_i_d(
+	std::optional<rpc::Account::DisconnectResponseT> handle_disconnect_by_id(
 		const rpc::Account::DisconnectID& msg,
 		const spark::v2::Link& link,
 		const spark::v2::Token& token) override;

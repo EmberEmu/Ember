@@ -77,7 +77,7 @@ AccountService::handle_register_session(const RegisterSession& msg,	const Link& 
 }
 
 std::optional<AccountFetchResponseT>
-AccountService::handle_account_i_d_fetch(const LookupID& msg, const Link& link, const Token& token) {
+AccountService::handle_account_id_fetch(const LookupID& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	AccountFetchResponseT response {
@@ -85,17 +85,17 @@ AccountService::handle_account_i_d_fetch(const LookupID& msg, const Link& link, 
 		.account_id = 1 // todo, temp
 	};
 
-	return response; 
+	return response;
 }
 
 std::optional<DisconnectSessionResponseT>
-AccountService::handle_disconnect_session(const DisconnectSession& msg,	const Link& link, const Token& token) {
+AccountService::handle_disconnect_by_session(const DisconnectSession& msg,	const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	return std::nullopt;
 }
 
 std::optional<DisconnectResponseT>
-AccountService::handle_disconnect_by_i_d(const DisconnectID& msg, const Link& link,	const Token& token) {
+AccountService::handle_disconnect_by_id(const DisconnectID& msg, const Link& link,	const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	return std::nullopt; 
 }

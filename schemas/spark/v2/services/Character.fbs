@@ -140,8 +140,8 @@ table Envelope {
 root_type Envelope;
 
 rpc_service Character {
-	Create(Create):CreateResponse;
-	Delete(Delete):DeleteResponse;
-	Rename(Rename):RenameResponse;
-	Enumerate(Retrieve):RetrieveResponse;
+	create(Create):CreateResponse;
+	delete(Delete):DeleteResponse;
+	rename(Rename):RenameResponse;
+	enumerate(Retrieve):RetrieveResponse;
 }

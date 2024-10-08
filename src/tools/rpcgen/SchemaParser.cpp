@@ -87,12 +87,12 @@ void SchemaParser::process(const reflection::Schema* schema, const reflection::S
 		data["handlers"].push_back(
 			{
 				{"call", call->name()->str() },
-				{"name", snake_case(call->name()->str()) },
+				{"name", call->name()->str() },
 				{"request_ns", to_cpp_ns(call->request()->name()->str())},
-				{"request_sn", snake_case(remove_fbs_ns(call->request()->name()->str()))},
+				{"request_sn", remove_fbs_ns(call->request()->name()->str())},
 				{"request", remove_fbs_ns(call->request()->name()->str())},
 				{"response_ns", to_cpp_ns(call->response()->name()->str())},
-				{"response_sn", snake_case(remove_fbs_ns(call->response()->name()->str()))},
+				{"response_sn", remove_fbs_ns(call->response()->name()->str())},
 				{"response", remove_fbs_ns(call->response()->name()->str())},
 			}
 		);

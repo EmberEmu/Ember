@@ -91,9 +91,9 @@ table Envelope {
 root_type Envelope;
 
 rpc_service Account {
-	SessionFetch(SessionLookup):SessionResponse;
-	RegisterSession(RegisterSession):RegisterResponse;
-	AccountIDFetch(LookupID):AccountFetchResponse;
-	DisconnectSession(DisconnectSession):DisconnectSessionResponse;
-	DisconnectByID(DisconnectID):DisconnectResponse;
+	session_fetch(SessionLookup):SessionResponse;
+	register_session(RegisterSession):RegisterResponse;
+	account_id_fetch(LookupID):AccountFetchResponse;
+	disconnect_by_session(DisconnectSession):DisconnectSessionResponse;
+	disconnect_by_id(DisconnectID):DisconnectResponse;
 }

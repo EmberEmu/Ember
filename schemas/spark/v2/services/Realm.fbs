@@ -35,5 +35,5 @@ table Envelope {
 root_type Envelope;
 
 rpc_service Realm {
-	GetStatus(RequestStatus):Status;
+	get_status(RequestStatus):Status;
 }
