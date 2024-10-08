@@ -26,7 +26,7 @@ void CharacterClient::on_link_up(const spark::v2::Link& link) {
 }
 
 void CharacterClient::on_link_down(const spark::v2::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
+	LOG_DEBUG_ASYNC(logger_, "Link down: {}", link.peer_banner);
 }
 
 void CharacterClient::connect_failed(std::string_view ip, const std::uint16_t port) {
