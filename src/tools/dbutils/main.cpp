@@ -87,7 +87,10 @@ int main(int argc, const char* argv[]) try {
 std::unique_ptr<QueryExecutor> db_executor(const std::string& type,
                                            const DatabaseDetails& details) {
 	auto lower_type = type;
-	std::transform(lower_type.begin(), lower_type.end(), lower_type.begin(), ::tolower);
+
+	std::ranges::transform(lower_type, lower_type.begin(), [](const auto c) {
+		return std::tolower(c);
+	});
 
 #ifdef DB_MYSQL
 	if(lower_type == "mysql") {

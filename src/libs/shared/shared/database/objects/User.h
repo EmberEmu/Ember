@@ -44,7 +44,9 @@ public:
 	       survey_request_(survey_request), subscriber_(subscriber), banned_(banned),
 	       suspended_(suspended) {
 		// Usernames aren't required to be uppercase in the DB but the client requires it for SRP6 calculations
-		std::transform(user_.begin(), user_.end(), user_.begin(), ::toupper);
+		std::ranges::transform(user_, user_.begin(), [](const auto c) {
+			return std::toupper(c);
+		});
 	}
 
 	std::uint32_t id() const {

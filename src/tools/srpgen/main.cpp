@@ -38,8 +38,12 @@ void launch(const po::variables_map& args) {
 	auto username = args["username"].as<std::string>();
 	auto password = args["password"].as<std::string>();
 
-	std::transform(username.begin(), username.end(), username.begin(), ::toupper);
-	std::transform(password.begin(), password.end(), password.begin(), ::toupper);
+	const auto upper = [](const auto c) {
+		return std::toupper(c);
+	};
+
+	std::ranges::transform(username, username.begin(), upper);
+	std::ranges::transform(password, password.begin(), upper);
 
 	auto gen = srp6::Generator(srp6::Generator::Group::_256_BIT);
 	std::array<std::uint8_t, 32> salt;

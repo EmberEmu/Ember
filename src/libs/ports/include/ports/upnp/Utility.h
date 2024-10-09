@@ -30,7 +30,9 @@ struct CaseInsensitive {
 	struct Hash {
 		std::size_t operator() (std::string_view key) const {
 			std::string hash_key(key.begin(), key.end());
-			std::transform(hash_key.begin(), hash_key.end(), hash_key.begin(), ::tolower);
+			std::ranges::transform(hash_key, hash_key.begin(), [](const auto c) {
+				return std::tolower(c);
+			});
 			return std::hash<std::string_view>{}(hash_key);
 		}
 	};

@@ -109,8 +109,9 @@ void PINAuthenticator::remap_pin() {
 void PINAuthenticator::pin_to_ascii() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	std::transform(pin_bytes_.begin(), pin_bytes_.end(), pin_bytes_.begin(),
-		[](auto pin_byte) { return pin_byte += 0x30; });
+	std::ranges::transform(pin_bytes_, pin_bytes_.begin(), [](auto pin_byte) {
+		return pin_byte += 0x30;
+	});
 }
 
 auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,

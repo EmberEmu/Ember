@@ -63,8 +63,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 	auto full_path = std::format("{}{}_{}_{}", path, grunt::to_string(system),
 		grunt::to_string(platform), std::to_string(build));
 
-	std::transform(full_path.begin(), full_path.end(), full_path.begin(),
-				   [](unsigned char c){ return std::tolower(c); });
+	std::ranges::transform(full_path, full_path.begin(), [](const auto c){ return std::tolower(c); });
 
 	fs::path dir(full_path);
 
