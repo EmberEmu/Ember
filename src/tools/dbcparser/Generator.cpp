@@ -11,6 +11,7 @@
 #include "TypeUtils.h"
 #include "Types.h"
 #include <logger/Logger.h>
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <regex>
