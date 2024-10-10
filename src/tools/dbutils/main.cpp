@@ -88,7 +88,7 @@ std::unique_ptr<QueryExecutor> db_executor(const std::string& type,
                                            const DatabaseDetails& details) {
 	auto lower_type = type;
 
-	std::ranges::transform(lower_type, lower_type.begin(), [](const auto c) {
+	std::ranges::transform(lower_type, lower_type.begin(), [](const unsigned char c) {
 		return std::tolower(c);
 	});
 

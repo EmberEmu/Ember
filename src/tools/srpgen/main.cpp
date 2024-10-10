@@ -38,7 +38,7 @@ void launch(const po::variables_map& args) {
 	auto username = args["username"].as<std::string>();
 	auto password = args["password"].as<std::string>();
 
-	const auto upper = [](const auto c) {
+	const auto upper = [](const unsigned char c) {
 		return std::toupper(c);
 	};
 

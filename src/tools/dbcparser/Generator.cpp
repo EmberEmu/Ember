@@ -504,7 +504,7 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 
 	for(auto i = def.options.begin(); i != def.options.end(); ++i) {
 		std::string name = i->first;
-		std::ranges::transform(name, name.begin(), [](const auto c) {
+		std::ranges::transform(name, name.begin(), [](const unsigned char c) {
 			return std::toupper(c);
 		});
 
