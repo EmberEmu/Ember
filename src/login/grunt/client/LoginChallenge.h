@@ -98,7 +98,7 @@ public:
 	Platform platform;
 	System os;
 	Locale locale;
-	be::little_uint32_t timezone_bias = 0;
+	be::little_int32_t timezone_bias = 0;
 	be::big_uint32_t ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
 	utf8_string username;
 
