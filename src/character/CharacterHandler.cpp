@@ -83,7 +83,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// class, race and visual customisation validation
-	bool success = validate_options(character, account_id);
+	const bool success = validate_options(character, account_id);
 
 	if(!success) {
 		callback(protocol::Result::CHAR_CREATE_ERROR);
