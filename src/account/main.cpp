@@ -10,11 +10,15 @@
 #include "FilterTypes.h"
 //#include "MonitorCallbacks.h"
 #include "Sessions.h"
+#include <conpool/ConnectionPool.h>
+#include <conpool/Policies.h>
+#include <conpool/drivers/AutoSelect.h>
 #include <spark/Spark.h>
 #include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
+#include <shared/database/daos/UserDAO.h>
 #include <shared/Banner.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
@@ -121,6 +125,25 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 
 void launch(const po::variables_map& args, boost::asio::io_context& service,
             std::binary_semaphore& sem, log::Logger* logger) try {
+	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
+	const auto& db_config_path = args["database.config_path"].as<std::string>();
+	auto driver(drivers::init_db_driver(db_config_path, "login"));
+	auto min_conns = args["database.min_connections"].as<unsigned short>();
+	auto max_conns = args["database.max_connections"].as<unsigned short>();
+
+	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+
+	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
+		driver, min_conns, max_conns, 30s
+	);
+
+	pool.logging_callback([logger](auto severity, auto message) {
+		pool_log_callback(severity, message, logger);
+	});
+
+	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
+	auto user_dao = dal::user_dao(pool);
+
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
@@ -150,7 +173,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 }
 
 po::variables_map parse_arguments(int argc, const char* argv[]) {
-	//Command-line options
+	// Command-line options
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
@@ -162,7 +185,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::positional_options_description pos; 
 	pos.add("config", 1);
 
-	//Config file options
+	// Config file options
 	po::options_description config_opts("Account configuration options");
 	config_opts.add_options()
 		("spark.address,", po::value<std::string>()->required())
