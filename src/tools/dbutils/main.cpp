@@ -30,6 +30,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <ranges>
 #include <regex>
 #include <thread>
 #include <unordered_map>
@@ -202,13 +203,10 @@ void validate_options(const po::variables_map& args) {
 }
 
 bool validate_db_names(std::span<const std::string> input_names) {
-	std::vector<std::string_view> valid_names;
+	auto view = db_args | std::views::keys;
+	auto valid_names = std::ranges::to<std::vector>(view);
 	std::vector<std::string_view> bad_names;
 	std::vector<std::string_view> input(input_names.begin(), input_names.end());
-
-	for(const auto& [key, _] : db_args) {
-		valid_names.emplace_back(key);
-	}
 
 	std::ranges::sort(valid_names);
 	std::ranges::sort(input);
