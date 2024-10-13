@@ -8,6 +8,7 @@
 
 #include <spark/v2/HandlerRegistry.h>
 #include <spark/v2/Handler.h>
+#include <ranges>
 
 namespace ember::spark::v2 {
 
@@ -82,13 +83,8 @@ std::vector<Handler*> HandlerRegistry::services(const std::string& type) const {
 
 std::vector<std::string> HandlerRegistry::services() const {
 	std::lock_guard guard(mutex_);
-	std::vector<std::string> types;
-
-	for(auto& [k, _]: services_) {
-		types.emplace_back(k);
-	}
-
-	return types;
+	auto view = services_ | std::views::keys;
+	return std::ranges::to<std::vector>(view);
 }
 
 } // v2, spark, ember
