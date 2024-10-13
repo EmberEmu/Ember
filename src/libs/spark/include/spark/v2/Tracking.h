@@ -38,6 +38,7 @@ class Tracking final {
 	void start_timer();
 	void expired(const boost::system::error_code& ec);
 	void timeout(Request& request);
+	void cancel(Request& request);
 
 public:
 	Tracking(boost::asio::io_context& io_context, log::Logger* logger);

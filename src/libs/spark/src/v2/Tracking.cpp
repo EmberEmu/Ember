@@ -78,9 +78,15 @@ void Tracking::track(Token token, TrackedState state, sc::seconds ttl) {
 
 	requests_.emplace(token, std::move(request));
 }
+
 void Tracking::timeout(Request& request) {
 	spark::v2::Link link; // todo
 	request.state(link, std::unexpected(Result::TIMED_OUT));
+}
+
+void Tracking::cancel(Request& request) {
+	spark::v2::Link link; // todo
+	request.state(link, std::unexpected(Result::CANCELLED));
 }
 
 Tracking::~Tracking() {
@@ -91,7 +97,7 @@ void Tracking::shutdown() {
 	timer_.cancel();
 
 	for(auto& [_, request] : requests_) {
-		timeout(request);
+		cancel(request);
 	}
 }
 
