@@ -9,12 +9,14 @@
 #pragma once
 
 #include "Sessions.h"
+#include "AccountHandler.h"
 #include <AccountServiceStub.h>
 #include <logger/Logger.h>
 
 namespace ember {
 
 class AccountService final : public services::AccountService {
+	AccountHandler& handler_;
 	Sessions& sessions_;
 	log::Logger& logger_;
 
@@ -47,7 +49,8 @@ class AccountService final : public services::AccountService {
 	void on_link_down(const spark::v2::Link& link) override;
 
 public:
-	AccountService(spark::v2::Server& spark, Sessions& sessions, log::Logger& logger);
+	AccountService(spark::v2::Server& spark, AccountHandler& handler,
+	               Sessions& sessions, log::Logger& logger);
 };
 
 } // ember

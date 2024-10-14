@@ -7,6 +7,7 @@
  */
 
 #include "AccountService.h"
+#include "AccountHandler.h"
 #include "FilterTypes.h"
 //#include "MonitorCallbacks.h"
 #include "Sessions.h"
@@ -22,6 +23,7 @@
 #include <shared/Banner.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
+#include <shared/threading/ThreadPool.h>
 #include <shared/util/cstring_view.hpp>
 #include <shared/util/LogConfig.h>
 #include <shared/util/Utility.h>
@@ -125,6 +127,10 @@ int asio_launch(const po::variables_map& args, log::Logger* logger) try {
 
 void launch(const po::variables_map& args, boost::asio::io_context& service,
             std::binary_semaphore& sem, log::Logger* logger) try {
+	constexpr auto concurrency = 1u; // temp
+	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	ThreadPool thread_pool(concurrency);
+
 	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
@@ -144,6 +150,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
 	auto user_dao = dal::user_dao(pool);
 
+	LOG_INFO(logger) << "Initialising account handler..." << LOG_SYNC; 
+	AccountHandler handler(user_dao, thread_pool);
+
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
@@ -159,7 +168,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	Sessions sessions(true);
 
 	spark::v2::Server sparkv2(service, "account", s_address, 8000, logger); // temp port
-	AccountService acct_service(sparkv2, sessions, *logger);
+	AccountService acct_service(sparkv2, handler, sessions, *logger);
 
 	service.dispatch([logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
@@ -182,7 +191,7 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("config,c", po::value<std::string>()->default_value("account.conf"),
 			"Path to the configuration file");
 
-	po::positional_options_description pos; 
+	po::positional_options_description pos;
 	pos.add("config", 1);
 
 	// Config file options

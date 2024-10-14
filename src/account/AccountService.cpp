@@ -13,8 +13,9 @@ namespace ember {
 using namespace ember::rpc::Account;
 using namespace spark::v2;
 
-AccountService::AccountService(Server& spark, Sessions& sessions, log::Logger& logger)
-	: services::AccountService(spark),
+AccountService::AccountService(Server& spark, AccountHandler& handler, Sessions& sessions, log::Logger& logger)
+	: handler_(handler), 
+	  services::AccountService(spark),
 	  sessions_(sessions),
 	  logger_(logger) {}
 
@@ -79,13 +80,33 @@ AccountService::handle_register_session(const RegisterSession& msg,	const Link& 
 std::optional<AccountFetchResponseT>
 AccountService::handle_account_id_fetch(const LookupID& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	
+	if(!msg.account_name()) {
+		return AccountFetchResponseT {
+			.status = Status::ILLFORMED_MESSAGE
+		};
+	}
 
-	AccountFetchResponseT response {
-		.status = Status::OK,
-		.account_id = 1 // todo, temp
-	};
+	handler_.lookup_id(msg.account_name()->str(), [&, link, token](auto result) {
+		if(!result) {
+			AccountFetchResponseT response {
+				.status = Status::UNKNOWN_ERROR
+			};
 
-	return response;
+			return;
+		}
+
+		const auto id = *result;
+
+		AccountFetchResponseT response {
+			.status = id? Status::OK : Status::ACCOUNT_NOT_FOUND,
+			.account_id = id? *id : 0
+		};
+		
+		send(response, link, token);
+	});
+
+	return std::nullopt;
 }
 
 std::optional<DisconnectSessionResponseT>

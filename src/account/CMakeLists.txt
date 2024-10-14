@@ -11,11 +11,13 @@ set(LIBRARY_HDR
     FilterTypes.h
     AccountService.h
     Sessions.h
+    AccountHandler.h
     )
 
 set(LIBRARY_SRC
     AccountService.cpp
     Sessions.cpp
+    AccountHandler.cpp
     )
 
 
