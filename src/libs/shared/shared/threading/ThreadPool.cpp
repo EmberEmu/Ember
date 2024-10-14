@@ -12,6 +12,8 @@
 namespace ember {
 
 ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_) {
+	workers_.reserve(initial_count);
+
 	for(std::size_t i = 0; i < initial_count; ++i) {
 		workers_.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
 			(&boost::asio::io_context::run), &service_);
