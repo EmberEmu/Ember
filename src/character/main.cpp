@@ -10,7 +10,6 @@
 #include "CharacterHandler.h"
 #include "CharacterService.h"
 #include <dbcreader/DBCReader.h>
-#include <spark/Spark.h>
 #include <spark/v2/Server.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>

@@ -16,7 +16,7 @@
 #include <shared/util/LogConfig.h>
 #include <shared/util/Utility.h>
 #include <shared/threading/Utility.h>
-#include <spark/Spark.h>
+#include <spark/v2/Server.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>

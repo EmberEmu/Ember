@@ -20,7 +20,7 @@
 #include <conpool/drivers/AutoSelect.h>
 #include <dbcreader/DBCReader.h>
 #include <logger/Logger.h>
-#include <spark/Spark.h>
+#include <spark/v2/Server.h>
 #include <shared/Banner.h>
 #include <shared/util/EnumHelper.h>
 #include <shared/Version.h>
@@ -220,18 +220,14 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
 	auto& service = service_pool.get();
-
-	spark::Service spark("gateway-" + realm->name, service, s_address, s_port, logger);
-	spark::ServiceDiscovery discovery(
-		service, s_address, s_port, mcast_iface, mcast_group, mcast_port, logger
-	);
-
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto& interface = args["network.interface"].as<std::string>();
 
 	if(port != realm->port) {
-		LOG_WARN_SYNC(logger, "Specified port {} differs from listening port {}, using {}",
-		              port, realm->port, port);
+		LOG_WARN_SYNC(
+			logger, "Specified port {} differs from listening port {}, using {}", port, realm->port, port
+		);
+
 		realm->port = port;
 		realm->address = std::format("{}:{}", realm->ip, realm->port);
 	}

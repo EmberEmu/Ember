@@ -14,7 +14,7 @@
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
-#include <spark/Spark.h>
+#include <spark/v2/Server.h>
 #include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -160,10 +160,6 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = el::Filter(FilterType::LF_SPARK);
-
-	es::Service spark("account", service, s_address, s_port, logger);
-	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger);
 
 	Sessions sessions(true);
 

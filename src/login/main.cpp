@@ -23,8 +23,6 @@
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <spark/v2/Server.h>
-#include <spark/Service.h>
-#include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
@@ -265,14 +263,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
-	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
-	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
-
-	spark::Service spark("login", service, s_address, s_port, logger);
-	spark::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger);
 
 	// test
 	spark::v2::Server sparkv2(service, "login", s_address, 8001, logger); // temp port
