@@ -259,16 +259,14 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		LOG_DEBUG_SYNC(logger, "#{} {}", realm.id, realm.name);
 	}
 
-	// Start Spark services
-	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
-	// test
-	spark::v2::Server sparkv2(service, "login", s_address, 8001, logger); // temp port
-	AccountClient acct_svc(sparkv2, *logger);
-	RealmClient realm_svcv2(sparkv2, realm_list, *logger);
+	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	spark::v2::Server spark(service, "login", s_address, s_port, logger);
+	AccountClient acct_svc(spark, *logger);
+	RealmClient realm_svcv2(spark, realm_list, *logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<Metrics>();

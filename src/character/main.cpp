@@ -188,7 +188,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	std::locale temp;
 
-	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
+	ThreadPool thread_pool(concurrency);
+	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
+	                         dbc_store, character_dao, thread_pool, temp, logger);
+
 	const auto&  s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 	const auto&  mcast_group = args["spark.multicast_group"].as<std::string>();
@@ -196,13 +199,9 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
-	ThreadPool thread_pool(concurrency);
-	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
-	                         dbc_store, character_dao, thread_pool, temp, logger);
-
-	// test
-	spark::v2::Server sparkv2(service, "character", "0.0.0.0", 8003, logger);
-	CharacterService char_service(sparkv2, handler, *logger);
+	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	spark::v2::Server spark(service, "character", s_address, s_port, logger);
+	CharacterService char_service(spark, handler, *logger);
 	
 	service.dispatch([&, logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);

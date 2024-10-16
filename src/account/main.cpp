@@ -153,7 +153,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Initialising account handler..." << LOG_SYNC; 
 	AccountHandler handler(user_dao, thread_pool);
 
-	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
+	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
@@ -163,7 +163,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	Sessions sessions(true);
 
-	spark::v2::Server sparkv2(service, "account", s_address, 8000, logger); // temp port
+	spark::v2::Server sparkv2(service, "account", s_address, s_port, logger); // temp port
 	AccountService acct_service(sparkv2, handler, sessions, *logger);
 
 	service.dispatch([logger]() {

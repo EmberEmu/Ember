@@ -167,4 +167,5 @@ void CharacterService::send_characters(const bool result,
 
 	send(response, link, token);
 }
+
 } // ember

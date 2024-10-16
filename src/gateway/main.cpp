@@ -268,11 +268,11 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 	RealmQueue queue_service(service_pool.get());
 	
-	// test
-	spark::v2::Server sparkv2(service_pool.get(), "realm", "0.0.0.0", 8002, logger);
-	RealmService realm_svc(sparkv2, *realm, *logger);
-	AccountClient acct_svc(sparkv2, *logger);
-	CharacterClient char_svc(sparkv2, config, *logger);
+	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	spark::v2::Server spark(service_pool.get(), "realm", s_address, s_port, logger);
+	RealmService realm_svc(spark, *realm, *logger);
+	AccountClient acct_svc(spark, *logger);
+	CharacterClient char_svc(spark, config, *logger);
 
 	// set services - not the best design pattern but it'll do for now
 	Locator::set(&dispatcher);
