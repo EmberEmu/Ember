@@ -9,18 +9,14 @@
 #pragma once
 
 #include <ports/pcp/Protocol.h>
-#include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/BufferAdaptor.h>
 #include <boost/endian.hpp>
-#include <span>
-#include <cstdint>
+#include <utility>
 
 namespace ember::ports {
 
 namespace be = boost::endian;
 
-template<typename T>
-void serialise(const pcp::RequestHeader& message, spark::io::BinaryStream<T> stream) {
+void serialise(const pcp::RequestHeader& message, auto& stream) {
 	stream << message.version;
 	auto opcode = std::to_underlying(message.opcode);
 	opcode |= (message.response << 7);
@@ -30,8 +26,7 @@ void serialise(const pcp::RequestHeader& message, spark::io::BinaryStream<T> str
 	stream.put(message.client_ip);
 }
 
-template<typename T>
-void serialise(const pcp::MapRequest& message, spark::io::BinaryStream<T> stream) {
+void serialise(const pcp::MapRequest& message, auto& stream) {
 	stream.put(message.nonce);
 	stream << message.protocol;
 	stream << message.reserved_0;
@@ -40,8 +35,7 @@ void serialise(const pcp::MapRequest& message, spark::io::BinaryStream<T> stream
 	stream << message.suggested_external_ip;
 }
 
-template<typename T>
-void serialise(const pcp::MapResponse& message, spark::io::BinaryStream<T> stream) {
+void serialise(const pcp::MapResponse& message, auto& stream) {
 	stream << message.nonce;
 	stream << message.protocol;
 	stream << message.reserved;
@@ -50,8 +44,7 @@ void serialise(const pcp::MapResponse& message, spark::io::BinaryStream<T> strea
 	stream << message.assigned_external_ip;
 }
 
-template<typename T>
-void serialise(const pcp::ResponseHeader& message, spark::io::BinaryStream<T> stream) {
+void serialise(const pcp::ResponseHeader& message, auto& stream) {
 	stream << message.version;
 	auto opcode = std::to_underlying(message.opcode);
 	opcode |= (message.response << 7);
@@ -63,8 +56,7 @@ void serialise(const pcp::ResponseHeader& message, spark::io::BinaryStream<T> st
 	stream << message.reserved_1;
 }
 
-template<typename T>
-void serialise(const natpmp::MapRequest& message, spark::io::BinaryStream<T> stream) {
+void serialise(const natpmp::MapRequest& message, auto& stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << message.reserved;
@@ -73,8 +65,7 @@ void serialise(const natpmp::MapRequest& message, spark::io::BinaryStream<T> str
 	stream << be::native_to_big(message.lifetime);
 }
 
-template<typename T>
-void serialise(const natpmp::MapResponse& message, spark::io::BinaryStream<T> stream) {
+void serialise(const natpmp::MapResponse& message, auto& stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << message.result_code;
@@ -84,16 +75,12 @@ void serialise(const natpmp::MapResponse& message, spark::io::BinaryStream<T> st
 	stream << be::native_to_big(message.lifetime);
 }
 
-template<typename T>
-void serialise(const natpmp::ExtAddressRequest& message,
-               spark::io::BinaryStream<T> stream) {
+void serialise(const natpmp::ExtAddressRequest& message, auto& stream) {
 	stream << message.version;
 	stream << message.opcode;
 }
 
-template<typename T>
-void serialise(const natpmp::ExtAddressResponse& message,
-               spark::io::BinaryStream<T> stream) {
+void serialise(const natpmp::ExtAddressResponse& message, auto& stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << be::native_to_big(message.result_code);
@@ -101,19 +88,17 @@ void serialise(const natpmp::ExtAddressResponse& message,
 	stream << message.external_ip;
 }
 
-template<typename T>
-void serialise(const natpmp::UnsupportedErrorResponse& message,
-               spark::io::BinaryStream<T> stream) {
+void serialise(const natpmp::UnsupportedErrorResponse& message, auto& stream) {
 	stream << message.version;
 	stream << message.opcode;
 	stream << be::native_to_big(message.result_code);
 	stream << be::native_to_big(message.secs_since_epoch);
 }
 
-template<typename T>
-void serialise(const pcp::OptionHeader& header, spark::io::BinaryStream<T> stream) {
+void serialise(const pcp::OptionHeader& header, auto& stream) {
 	stream << header.code;
 	stream << header.reserved;
 	stream << be::native_to_big(header.length);
 }
+
 } // ports, ember
