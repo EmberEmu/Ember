@@ -11,6 +11,7 @@ set(SERVICE_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Character.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Realm.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Hello.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/v2/services/Discovery.fbs
 )
 
 set(FB_SCHEMAS
