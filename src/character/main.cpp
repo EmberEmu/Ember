@@ -194,9 +194,6 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 
 	const auto&  s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	const auto&  mcast_group = args["spark.multicast_group"].as<std::string>();
-	const auto&  mcast_iface = args["spark.multicast_interface"].as<std::string>();
-	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
 	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;

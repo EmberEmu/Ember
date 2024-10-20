@@ -10,8 +10,6 @@
 #include "FilterTypes.h"
 #include "MonitorCallbacks.h"
 #include <logger/Logger.h>
-#include <spark/Service.h>
-#include <spark/ServiceDiscovery.h>
 #include <shared/Banner.h>
 #include <shared/util/LogConfig.h>
 #include <shared/metrics/MetricsImpl.h>
@@ -34,7 +32,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-namespace es = ember::spark;
 namespace el = ember::log;
 namespace po = boost::program_options;
 namespace ba = boost::asio;
@@ -75,19 +72,7 @@ int launch(const po::variables_map& args, el::Logger* logger) try {
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
 
-	// Start Spark services
-	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
-	const auto& s_address = args["spark.address"].as<std::string>();
-	auto s_port = args["spark.port"].as<std::uint16_t>();
-	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
-	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
-	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
-	auto spark_filter = el::Filter(ember::FilterType::LF_SPARK);
-
 	boost::asio::io_context service;
-	es::Service spark("social", service, s_address, s_port, logger);
-	es::ServiceDiscovery discovery(service, s_address, s_port, mcast_iface, mcast_group,
-	                               mcast_port, logger);
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();

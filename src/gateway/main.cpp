@@ -214,9 +214,6 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
-	const auto& mcast_group = args["spark.multicast_group"].as<std::string>();
-	const auto& mcast_iface = args["spark.multicast_interface"].as<std::string>();
-	auto mcast_port = args["spark.multicast_port"].as<std::uint16_t>();
 	auto spark_filter = log::Filter(FilterType::LF_SPARK);
 
 	auto& service = service_pool.get();
