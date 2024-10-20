@@ -199,7 +199,7 @@ void CharacterClient::handle_delete_reply(
 	}
 
 	const auto msg = *res;
-	LOG_TRACE(logger_) << "Result:" << msg->result() << LOG_ASYNC;
+	LOG_TRACE_ASYNC(logger_, "Result: {}", msg->result());
 	cb(protocol::Result(msg->result()));
 }
 
