@@ -14,10 +14,6 @@ tcp_no_delay = true  # Toggle Nagle's algorithm
 [spark]
 address = 127.0.0.1
 port = 6005
-multicast_interface = 0.0.0.0
-multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
-multicast_port = 6000
-#secret_key = changeme
 
 [database]
 config_path = mysql_config.conf

@@ -8,6 +8,9 @@ multicast_group = 239.255.0.1 # should be the same for all Spark services - may 
 multicast_port = 6000
 #secret_key = changeme
 
+[nds]
+port = 6010
+
 [database]
 config_path = mysql_config.conf
 min_connections = 1

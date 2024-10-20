@@ -22,10 +22,9 @@ tcp_no_delay = true  # Toggle Nagle's algorithm
 [spark]
 address = 127.0.0.1
 port = 6000
-multicast_interface = 0.0.0.0
-multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
-multicast_port = 6000
-#secret_key = changeme
+
+[nds]
+port = 6010
 
 # Enabling STUN will allow the server to auto-detect its IP address and NAT status
 [stun]
