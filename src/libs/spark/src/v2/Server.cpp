@@ -31,8 +31,8 @@ namespace ba = boost::asio;
 Server::Server(boost::asio::io_context& context, std::string_view name,
                const std::string& iface, const std::uint16_t port, log::Logger* logger)
 	: ctx_(context),
-	  acceptor_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),
-	  resolver_(ctx_),
+	  acceptor_(context, ba::ip::tcp::endpoint(ba::ip::address::from_string(iface), port)),
+	  resolver_(context),
 	  logger_(logger),
 	  stopped_(false) {
 	acceptor_.set_option(ba::ip::tcp::no_delay(true));
