@@ -56,6 +56,8 @@ public:
 	void register_handler(gsl::not_null<Handler*> handler);
 	void deregister_handler(gsl::not_null<Handler*> handler);
 
+	std::uint16_t port() const;
+
 	void connect(std::string host, std::uint16_t port,
 	             std::string service, gsl::not_null<Handler*> handler);
 	void shutdown();

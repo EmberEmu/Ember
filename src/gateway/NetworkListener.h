@@ -52,6 +52,7 @@ public:
 		accept_connection();
 	}
 
+	std::uint16_t port() const;
 	void shutdown();
 };
 

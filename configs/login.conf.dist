@@ -21,7 +21,7 @@ tcp_no_delay = true  # Toggle Nagle's algorithm
 
 [spark]
 address = 127.0.0.1
-port = 6000
+port = 6000          # use 0 to choose a random free port
 
 [nds]
 port = 6010

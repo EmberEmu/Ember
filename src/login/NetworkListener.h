@@ -115,6 +115,10 @@ public:
 	std::size_t connection_count() const {
 		return sessions_.count();
 	}
+
+	std::uint16_t port() const {
+		return acceptor_.local_endpoint().port();
+	}
 };
 
 } // ember

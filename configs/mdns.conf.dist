@@ -7,7 +7,7 @@ port = 5353
 
 [spark]
 address = 127.0.0.1
-port = 6010
+port = 6010          # use 0 to choose a random free port
 
 [remote_log]
 service_name = account

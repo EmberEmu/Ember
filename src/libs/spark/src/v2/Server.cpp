@@ -273,4 +273,8 @@ Server::~Server() {
 	shutdown();
 }
 
+std::uint16_t Server::port() const {
+	return acceptor_.local_endpoint().port();
+}
+
 } // spark, ember

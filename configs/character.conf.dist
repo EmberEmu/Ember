@@ -5,7 +5,7 @@ path = dbcs/
 
 [spark]
 address = 127.0.0.1
-port = 6001
+port = 6001          # use 0 to choose a random free port
 
 [nds]
 port = 6010

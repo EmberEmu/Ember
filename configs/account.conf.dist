@@ -2,11 +2,7 @@
 
 [spark]
 address = 127.0.0.1
-port = 6003
-multicast_interface = 0.0.0.0
-multicast_group = 239.255.0.1 # should be the same for all Spark services - may be IPv6
-multicast_port = 6000
-#secret_key = changeme
+port = 6003          # use 0 to choose a random free port
 
 [nds]
 port = 6010

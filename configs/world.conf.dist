@@ -13,7 +13,7 @@ tcp_no_delay = true  # Toggle Nagle's algorithm
 
 [spark]
 address = 127.0.0.1
-port = 6005
+port = 6005          # use 0 to choose a random free port
 
 [database]
 config_path = mysql_config.conf

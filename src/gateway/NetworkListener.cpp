@@ -58,4 +58,8 @@ void NetworkListener::shutdown() {
 	sessions_.stop_all();
 }
 
+std::uint16_t NetworkListener::port() const {
+	return acceptor_.local_endpoint().port();
+}
+
 } // ember

@@ -292,11 +292,13 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO_SYNC(logger, "Starting network service on {}:{}", interface, port);
+	LOG_INFO_SYNC(logger, "Starting network service...");
 
 	NetworkListener server(
 		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics
 	);
+
+	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, server.port());
 
 	// Start monitoring service
 	std::unique_ptr<Monitor> monitor;
