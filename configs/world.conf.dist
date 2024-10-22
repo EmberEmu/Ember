@@ -15,6 +15,10 @@ tcp_no_delay = true  # Toggle Nagle's algorithm
 address = 127.0.0.1
 port = 6005          # use 0 to choose a random free port
 
+[nsd]
+host = 127.0.0.1
+port = 6010
+
 [database]
 config_path = mysql_config.conf
 min_connections = 1

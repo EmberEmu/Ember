@@ -196,6 +196,11 @@ ba::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
 	peers_.add(key, std::move(peer));
 }
 
+void Server::connect(std::string_view host, const std::uint16_t port,
+                     std::string_view service, gsl::not_null<Handler*> handler) {
+	connect(std::string(host), port, std::string(service), handler);
+}
+
 void Server::connect(std::string host, const std::uint16_t port,
                      std::string service, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;

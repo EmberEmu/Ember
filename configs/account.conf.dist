@@ -4,7 +4,8 @@
 address = 127.0.0.1
 port = 6003          # use 0 to choose a random free port
 
-[nds]
+[nsd]
+host = 127.0.0.1
 port = 6010
 
 [database]

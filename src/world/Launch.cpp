@@ -131,6 +131,8 @@ po::options_description options() {
 		("dbc.path", po::value<std::string>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
+		("nsd.host", po::value<std::string>()->required())
+		("nsd.port", po::value<std::uint16_t>()->required())
 		("world.id", po::value<std::uint32_t>()->required())
 		("world.map_id", po::value<std::vector<std::int32_t>>()->required());
 	return opts;

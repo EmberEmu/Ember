@@ -20,6 +20,7 @@
 #include <conpool/drivers/AutoSelect.h>
 #include <dbcreader/DBCReader.h>
 #include <logger/Logger.h>
+#include <nsd/NSD.h>
 #include <spark/v2/Server.h>
 #include <shared/Banner.h>
 #include <shared/util/EnumHelper.h>
@@ -273,6 +274,11 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	AccountClient acct_svc(spark, *logger);
 	CharacterClient char_svc(spark, config, *logger);
 
+	const auto nsd_host = args["nsd.host"].as<std::string>();
+	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
+
+	NetworkServiceDiscovery nds(spark, nsd_host, nsd_port, *logger);
+
 	// set services - not the best design pattern but it'll do for now
 	Locator::set(&dispatcher);
 	Locator::set(&queue_service);
@@ -363,7 +369,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 		("stun.server", po::value<std::string>()->required())
 		("stun.port", po::value<std::uint16_t>()->required())
 		("stun.protocol", po::value<std::string>()->required())
-		("nds.port", po::value<std::uint16_t>()->required())
+		("nsd.host", po::value<std::string>()->required())
+		("nsd.port", po::value<std::uint16_t>()->required())
 		("forward.enabled", po::value<bool>()->required())
 		("forward.method", po::value<std::string>()->required())
 		("forward.gateway", po::value<std::string>()->required())

@@ -28,6 +28,7 @@ table Service {
 
 union Message {
     Service,
+	Response
 }
 
 table Envelope {

@@ -48,6 +48,7 @@ class Server final {
 	                                      gsl::not_null<Handler*> handler);
 
 	void close_peer(const std::string& key);
+
 public:
 	Server(boost::asio::io_context& context, std::string_view name,
 	       const std::string& iface, std::uint16_t port, log::Logger* logger);
@@ -57,6 +58,9 @@ public:
 	void deregister_handler(gsl::not_null<Handler*> handler);
 
 	std::uint16_t port() const;
+
+	void connect(std::string_view host, std::uint16_t port,
+	             std::string_view service, gsl::not_null<Handler*> handler);
 
 	void connect(std::string host, std::uint16_t port,
 	             std::string service, gsl::not_null<Handler*> handler);

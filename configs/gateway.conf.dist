@@ -25,7 +25,8 @@ tcp_no_delay = true # Toggle Nagle's algorithm
 address = 127.0.0.1
 port = 6002
 
-[nds]
+[nsd]
+host = 127.0.0.1
 port = 6010
 
 # Enabling STUN will allow the server to auto-detect its IP address
