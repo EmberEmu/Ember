@@ -111,7 +111,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	peer->start();
 	peers_.add(key, std::move(peer));
 } catch(const std::exception& e) {
-	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
 }
 
 void Server::register_handler(gsl::not_null<Handler*> handler) {
