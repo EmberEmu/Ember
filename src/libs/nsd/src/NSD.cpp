@@ -47,14 +47,10 @@ void NetworkServiceDiscovery::on_link_down(const spark::v2::Link& link) {
 void NetworkServiceDiscovery::connect_failed(std::string_view ip, std::uint16_t port) {
 	LOG_WARN_ASYNC(logger_, "Unable to connect to NSD service, retrying in {}", retry_interval_);
 
-	const auto interval = retry_interval_;
-	retry_interval_ *= 2;
 
-	if(retry_interval_ > RETRY_INTERVAL_MAX) {
-		retry_interval_ = RETRY_INTERVAL_MAX;
-	}
+	timer_.expires_from_now(retry_interval_);
+	increase_interval();
 
-	timer_.expires_from_now(interval);
 	timer_.async_wait([&](const boost::system::error_code& ec) {
 		if(ec == boost::asio::error::operation_aborted) {
 			return;
@@ -62,6 +58,14 @@ void NetworkServiceDiscovery::connect_failed(std::string_view ip, std::uint16_t 
 
 		connect();
 	});
+}
+
+void NetworkServiceDiscovery::increase_interval() {
+	retry_interval_ *= 2;
+
+	if(retry_interval_ > RETRY_INTERVAL_MAX) {
+		retry_interval_ = RETRY_INTERVAL_MAX;
+	}
 }
 
 void NetworkServiceDiscovery::stop() {

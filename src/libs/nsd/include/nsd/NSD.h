@@ -38,6 +38,7 @@ class NetworkServiceDiscovery final : public services::DiscoveryClient {
 	std::chrono::seconds retry_interval_;
 
 	void connect();
+	void increase_interval();
 
 	void on_link_up(const spark::v2::Link& link) override;
 	void on_link_down(const spark::v2::Link& link) override;
