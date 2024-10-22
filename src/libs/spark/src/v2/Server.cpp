@@ -111,7 +111,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	peer->start();
 	peers_.add(key, std::move(peer));
 } catch(const std::exception& e) {
-	LOG_DEBUG_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
+	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
 }
 
 void Server::register_handler(gsl::not_null<Handler*> handler) {
@@ -167,7 +167,7 @@ Server::connect(std::string_view host, const std::uint16_t port) try {
 		"[spark] Could not connect to {}:{} ({})", host, port, e.what()
 	);
 
-	LOG_WARN_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
+	LOG_DEBUG_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
 	co_return nullptr;
 }
 
