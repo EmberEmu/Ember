@@ -54,7 +54,7 @@ class PoolManager final {
 			}
 		}
 			
-		conn.reset();
+		conn.clear();
 		std::atomic_thread_fence(std::memory_order_release);
 		pool_->pool_guards_[conn.id].store(true, std::memory_order_relaxed);
 		--pool_->size_;

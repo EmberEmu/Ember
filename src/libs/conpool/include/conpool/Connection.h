@@ -21,6 +21,7 @@ using namespace std::chrono_literals;
 template<typename ConType>
 struct ConnDetail {
 	ConType conn;
+	sc::seconds idle = 0s;
 	unsigned int id = 0;
 	bool empty_slot = true;
 	bool dirty = false;
@@ -28,12 +29,16 @@ struct ConnDetail {
 	bool error = false;
 	bool sweep = false;
 	bool refresh = false;
-	sc::seconds idle = 0s;
 
-	ConnDetail(const ConType& connection, unsigned int id) : conn(connection), id(id), empty_slot(false) {}
+	ConnDetail(const ConType& connection, unsigned int id)
+		: conn(connection),
+		  id(id),
+		  empty_slot(false) {}
+
 	ConnDetail() = default;
 
-	void reset() {
+	void clear() {
+		idle = 0s;
 		empty_slot = true;
 		dirty = checked_out = error = sweep = refresh = false;
 	}
