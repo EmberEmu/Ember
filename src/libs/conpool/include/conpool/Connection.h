@@ -23,12 +23,12 @@ struct ConnDetail {
 	ConType conn;
 	sc::seconds idle = 0s;
 	unsigned int id = 0;
-	bool empty_slot = true;
-	bool dirty = false;
-	bool checked_out = false;
-	bool error = false;
-	bool sweep = false;
-	bool refresh = false;
+	bool empty_slot   : 1 = true;
+	bool dirty        : 1 = false;
+	bool checked_out  : 1 = false;
+	bool error        : 1 = false;
+	bool sweep        : 1 = false;
+	bool refresh      : 1 = false;
 
 	ConnDetail(const ConType& connection, unsigned int id)
 		: conn(connection),
