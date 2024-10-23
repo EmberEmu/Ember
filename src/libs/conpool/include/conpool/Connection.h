@@ -36,12 +36,6 @@ struct ConnDetail {
 		  empty_slot(false) {}
 
 	ConnDetail() = default;
-
-	void clear() {
-		idle = 0s;
-		empty_slot = true;
-		dirty = checked_out = error = sweep = refresh = false;
-	}
 };
 
 template<typename ConType>

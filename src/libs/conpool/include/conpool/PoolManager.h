@@ -53,8 +53,8 @@ class PoolManager final {
 				pool_->log_cb_(Severity::ERROR, "Connection close, driver threw: "s + e.what());
 			}
 		}
-			
-		conn.clear();
+
+		conn = ConnDetail<ConType>();
 		std::atomic_thread_fence(std::memory_order_release);
 		pool_->pool_guards_[conn.id].store(true, std::memory_order_relaxed);
 		--pool_->size_;
