@@ -9,7 +9,7 @@
 #pragma once
 
 //#include "RequestHandler_Generated.h"
-#include <spark/Service.h>
+//#include <spark/Service.h>
 #include <logger/LoggerFwd.h>
 #include <memory>
 #include <string>
@@ -24,9 +24,9 @@ public:
 	explicit RequestHandler(log::Logger* logger);
 	void shutdown();
 
-	void on_message(const spark::Link& link, const spark::Message& message);
-	void on_link_up(const spark::Link& link);
-	void on_link_down(const spark::Link& link);
+	//void on_message(const spark::Link& link, const spark::Message& message);
+	//void on_link_up(const spark::Link& link);
+	//void on_link_down(const spark::Link& link);
 };
 
 } // dns, ember

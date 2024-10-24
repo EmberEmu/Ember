@@ -7,38 +7,6 @@
 set(LIBRARY_NAME spark)
 
 set(CORE
-    src/Service.cpp
-    src/SessionManager.cpp
-    src/Listener.cpp
-    src/MessageHandler.cpp
-    src/HeartbeatService.cpp
-    src/EventDispatcher.cpp
-    src/Utility.cpp
-    src/TrackingService.cpp
-    src/ServicesMap.cpp
-    src/ServiceDiscovery.cpp
-    src/ServiceListener.cpp
-    include/spark/EventHandler.h
-    include/spark/ServiceListener.h
-    include/spark/ServiceDiscovery.h
-    include/spark/ServicesMap.h
-    include/spark/Common.h
-    include/spark/TrackingService.h
-    include/spark/Link.h
-    include/spark/EventDispatcher.h
-    include/spark/HeartbeatService.h
-    include/spark/MessageHandler.h
-    include/spark/Spark.h
-    include/spark/Service.h
-    include/spark/Listener.h
-    include/spark/NetworkSession.h
-    include/spark/SessionManager.h
-    include/spark/Utility.h
-    include/spark/Exception.h
-    include/spark/Helpers.h
-)
-
-set(COREv2
     include/spark/v2/Server.h
     include/spark/v2/Handler.h
     include/spark/v2/Connection.h
@@ -96,7 +64,6 @@ set(IO_ALLOC_SRC
 add_library(
     ${LIBRARY_NAME}
     ${CORE}
-    ${COREv2}
     ${IO_SRC}
     ${IO_PMR_SRC}
 	${IO_ALLOC_SRC}
@@ -106,7 +73,6 @@ source_group("Core" FILES ${CORE})
 source_group("IO" FILES ${IO_SRC})
 source_group("IO\\Polymorphic" FILES ${IO_PMR_SRC})
 source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
-source_group("v2\\Core" FILES ${COREv2})
 
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})

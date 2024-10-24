@@ -47,7 +47,6 @@ void NetworkServiceDiscovery::on_link_down(const spark::v2::Link& link) {
 void NetworkServiceDiscovery::connect_failed(std::string_view ip, std::uint16_t port) {
 	LOG_WARN_ASYNC(logger_, "Unable to connect to NSD service, retrying in {}", retry_interval_);
 
-
 	timer_.expires_from_now(retry_interval_);
 	increase_interval();
 
