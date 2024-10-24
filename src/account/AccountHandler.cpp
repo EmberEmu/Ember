@@ -26,10 +26,9 @@ std::optional<std::uint32_t> AccountHandler::lookup_id(const std::string& userna
 }
 
 void AccountHandler::lookup_id(const std::string& username, LookupCB cb) {
-	pool_.run([=]() {
+	pool_.run([=, this]() {
 		try {
-			auto id = lookup_id(username);
-			cb(id);
+			cb(lookup_id(username));
 		} catch(std::exception&) {
 			cb(std::unexpected(false));
 		}

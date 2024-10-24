@@ -37,7 +37,7 @@ CharacterService::handle_create(const Create& msg, const Link& link, const Token
 		};
 	}
 
-	handler_.create(msg.account_id(), msg.realm_id(), *msg.character(), [=](auto res) {
+	handler_.create(msg.account_id(), msg.realm_id(), *msg.character(), [=, this](auto res) {
 		CreateResponseT msg {
 			.status = Status::OK,
 			.result = std::to_underlying(res)
@@ -53,7 +53,7 @@ std::optional<DeleteResponseT>
 CharacterService::handle_delete(const Delete& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	handler_.erase(msg.account_id(), msg.realm_id(), msg.character_id(), [=](auto res) {
+	handler_.erase(msg.account_id(), msg.realm_id(), msg.character_id(), [=, this](auto res) {
 		LOG_DEBUG_ASYNC(logger_, "Deletion response: {}", protocol::to_string(res));
 
 		DeleteResponseT msg {
@@ -78,7 +78,7 @@ CharacterService::handle_rename(const Rename& msg, const Link& link, const Token
 	}
 
 	handler_.rename(msg.account_id(), msg.character_id(), msg.name()->str(),
-		[=](auto res, auto character) {
+		[=, this](auto res, auto character) {
 			send_rename(res, character, link, token);
 		}
 	);
@@ -90,7 +90,7 @@ std::optional<RetrieveResponseT>
 CharacterService::handle_enumerate(const Retrieve& msg, const Link& link, const Token& token) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	handler_.enumerate(msg.account_id(), msg.realm_id(), [=](auto res, auto characters) {
+	handler_.enumerate(msg.account_id(), msg.realm_id(), [=, this](auto res, auto characters) {
 		send_characters(res, characters, link, token);
 	});
 
