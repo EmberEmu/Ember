@@ -41,7 +41,7 @@ void print_dbc_fields(const dbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const dbc::types::Definitions& defs);
 
 int main(int argc, const char* argv[]) try {
-	const po::variables_map args = parse_arguments(argc, argv);
+	const auto args = parse_arguments(argc, argv);
 	const auto& con_verbosity = log::severity_string(args["verbosity"].as<std::string>());
 	const auto& file_verbosity = log::severity_string(args["fverbosity"].as<std::string>());
 

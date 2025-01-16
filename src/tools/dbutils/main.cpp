@@ -62,7 +62,7 @@ bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
 
 int main(int argc, const char* argv[]) try {
 	std::cout << "Build " << ember::version::VERSION << " (" << ember::version::GIT_HASH << ")\n";
-	const po::variables_map args = parse_arguments(argc, argv);
+	const auto args = parse_arguments(argc, argv);
 	const auto& con_verbosity = log::severity_string(args["verbosity"].as<std::string>());
 	const auto& file_verbosity = log::severity_string(args["fverbosity"].as<std::string>());
 

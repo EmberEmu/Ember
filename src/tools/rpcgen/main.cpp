@@ -25,7 +25,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
-	const po::variables_map args = parse_arguments(argc, argv);
+	const auto args = parse_arguments(argc, argv);
 	log::Logger logger;
 	configure_logger(logger, args);
 	return launch(args);

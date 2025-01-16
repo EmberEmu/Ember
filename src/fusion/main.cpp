@@ -52,7 +52,7 @@ int main(int argc, const char* argv[]) try {
 	print_banner(APP_NAME);
 	util::set_window_title(APP_NAME);
 
-	const po::variables_map args = parse_arguments(argc, argv);
+	const auto args = parse_arguments(argc, argv);
 
 	log::Logger logger;
 	util::configure_logger(logger, args);

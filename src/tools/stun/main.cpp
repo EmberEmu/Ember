@@ -30,7 +30,7 @@ void log_cb(stun::Verbosity verbosity, stun::Error reason);
 void print_error(std::string_view test, const stun::ErrorRet& error);
 
 int main(int argc, const char* argv[]) try {
-	const po::variables_map args = parse_arguments(argc, argv);
+	const auto args = parse_arguments(argc, argv);
 	launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {

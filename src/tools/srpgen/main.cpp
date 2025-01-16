@@ -24,7 +24,7 @@ void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
-	const po::variables_map args = parse_arguments(argc, argv);
+	const auto args = parse_arguments(argc, argv);
 	launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {

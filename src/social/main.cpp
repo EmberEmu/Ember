@@ -49,7 +49,8 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
  */
 int main(int argc, const char* argv[]) try {
 	print_banner("Social Daemon");
-	const po::variables_map args = parse_arguments(argc, argv);
+
+	const auto args = parse_arguments(argc, argv);
 
 	log::Logger logger;
 	util::configure_logger(logger, args);
