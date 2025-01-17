@@ -50,7 +50,7 @@ void launch(const po::variables_map& args) {
 
 	const auto interval = std::chrono::seconds(args.at("interval").as<unsigned int>());
 	const auto stream = args.at("stream").as<bool>();
-	auto skip = stream? args.at("skip").as<bool>() : false;
+	const auto skip = stream? args.at("skip").as<bool>() : false;
 	const auto size = std::filesystem::file_size(filename);
 
 	StreamReader reader(file, stream, size, skip, interval);
@@ -59,7 +59,7 @@ void launch(const po::variables_map& args) {
 
 	// remove any duplicate entries
 	std::ranges::sort(sorted);
-	auto ret = std::ranges::unique(sorted);
+	const auto ret = std::ranges::unique(sorted);
 	sorted.erase(ret.begin(), ret.end());
 
 	for(const auto& output : sorted) {
