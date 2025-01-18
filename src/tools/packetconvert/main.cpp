@@ -21,15 +21,12 @@
 
 namespace po = boost::program_options;
 
-namespace ember {
+using namespace ember;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
-} // ember
-
 int main(int argc, const char* argv[]) try {
-	using namespace ember;
 	const auto args = parse_arguments(argc, argv);
 	launch(args);
 	return EXIT_SUCCESS;
@@ -37,8 +34,6 @@ int main(int argc, const char* argv[]) try {
 	std::cerr << e.what();
 	return EXIT_FAILURE;
 }
-
-namespace ember {
 
 void launch(const po::variables_map& args) {
 	const auto filename = args.at("file").as<std::string>();
@@ -118,5 +113,3 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 
 	return options;
 }
-
-} // ember
