@@ -244,7 +244,7 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 			if(require_verified_email_ && !user_->verified()) {
 				response.result = grunt::Result::FAIL_UNKNOWN_ACCOUNT;
 				metrics_.increment("login_failure");
-				LOG_DEBUG(logger_) << "Account not verified: {} " << user_->username() << LOG_ASYNC;
+				LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
 			} else {
 				state_data_.emplace<LoginAuthenticator>(*user_);
 				response = build_login_challenge();
@@ -331,7 +331,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 	bool result = false;
 
 	if(user_->pin_method() == PINMethod::TOTP) {
-		for(auto interval : {0, -1, 1}) { // try time intervals -1 to +1
+		for(const auto interval : {0, -1, 1}) { // try time intervals -1 to +1
 			const auto pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
 
 			if(pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, pin)) {
