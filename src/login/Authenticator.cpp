@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,12 +16,15 @@
 
 namespace ember {
 
-LoginAuthenticator::LoginAuthenticator(User user)
-	: user_(std::move(user)),
-	  srp_(gen_, Botan::BigInt(user_.verifier())) {}
+LoginAuthenticator::LoginAuthenticator(utf8_string username,
+                                       std::string verifier,
+									   std::span<const std::uint8_t> salt)
+	: srp_(gen_, Botan::BigInt(verifier)),
+	  username_(std::move(username)),
+	  salt_(salt.begin(), salt.end()) {}
 
 auto LoginAuthenticator::challenge_reply() const -> ChallengeResponse {
-	Botan::BigInt salt { user_.salt().data(), user_.salt().size_bytes() };
+	Botan::BigInt salt { salt_.data(), salt_.size() };
 	return { srp_.public_ephemeral(), std::move(salt), gen_ };
 }
 
@@ -36,7 +39,7 @@ Botan::BigInt LoginAuthenticator::expected_proof(const srp6::SessionKey& key,
 	const Botan::BigInt& B = srp_.public_ephemeral();
 
 	return srp6::generate_client_proof(
-		user_.username(), key, gen_.prime(), gen_.generator(), A, B, user_.salt()
+		username_, key, gen_.prime(), gen_.generator(), A, B, salt_
 	);
 }
 

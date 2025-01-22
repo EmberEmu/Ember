@@ -246,7 +246,9 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 				metrics_.increment("login_failure");
 				LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
 			} else {
-				state_data_.emplace<LoginAuthenticator>(*user_);
+				state_data_.emplace<LoginAuthenticator>(user_->username(),
+				                                        user_->verifier(),
+														user_->salt());
 				response = build_login_challenge();
 				response.result = grunt::Result::SUCCESS;
 				update_state(LoginState::PROOF);
@@ -365,7 +367,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
                                              std::span<const uint8_t> salt,
-                                             bool reconnect) const {
+                                             const bool reconnect) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!integrity_enforce_) {
