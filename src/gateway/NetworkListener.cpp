@@ -16,7 +16,7 @@
 namespace ember::gateway {
 
 void NetworkListener::accept_connection() {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!acceptor_.is_open()) {
 		return;
@@ -31,8 +31,7 @@ void NetworkListener::accept_connection() {
 			const auto ep = socket_.remote_endpoint(ec);
 
 			if(!ec) {
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Accepted connection " << ep.address().to_string() << LOG_ASYNC;
+				LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ep.address().to_string());
 
 				auto client = std::make_unique<ClientConnection>(
 					sessions_, std::move(socket_), ClientRef(index_), logger_
@@ -40,8 +39,7 @@ void NetworkListener::accept_connection() {
 
 				sessions_.start(std::move(client));
 			} else {
-				LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-					<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
+				LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
 			}
 		}
 
@@ -53,7 +51,7 @@ void NetworkListener::accept_connection() {
 }
 
 void NetworkListener::shutdown() {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	acceptor_.close();
 	sessions_.stop_all();
 }

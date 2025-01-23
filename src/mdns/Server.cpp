@@ -32,10 +32,7 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 	const auto result = deserialise(datagram);
 
 	if(!result) {
-		LOG_WARN(logger_)
-			<< "DNS query deserialising failed: "
-			<< to_string(result.error())
-			<< LOG_ASYNC;
+		LOG_WARN_ASYNC(logger_, "DNS query deserialising failed: {}", to_string(result.error()));
 		return;
 	}
 

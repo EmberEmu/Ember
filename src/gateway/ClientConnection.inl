@@ -16,8 +16,7 @@
 void ClientConnection::send(const protocol::is_packet auto& packet) {
 	using Type = std::remove_reference_t<decltype(packet)>;
 
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
-		<< protocol::to_string(packet.opcode) << LOG_ASYNC;
+	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	spark::io::BinaryStream stream(*outbound_back_);
 	stream << packet;

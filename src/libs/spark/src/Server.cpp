@@ -110,20 +110,14 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 void Server::register_handler(gsl::not_null<Handler*> handler) {
 	handlers_.register_service(handler);
 
-	LOG_TRACE_FILTER(logger_, LF_SPARK)
-		<< "[spark] Registered handler for "
-		<< handler->type()
-		<< LOG_ASYNC;
+	LOG_TRACE_ASYNC(logger_, "[spark] Registered handler for {}", handler->type());
 }
 
 void Server::deregister_handler(gsl::not_null<Handler*> handler) {
 	handlers_.deregister_service(handler);
 	peers_.notify_remove_handler(handler);
 
-	LOG_TRACE_FILTER(logger_, LF_SPARK)
-		<< "[spark] Removed handler for "
-		<< handler->type()
-		<< LOG_ASYNC;
+	LOG_TRACE_ASYNC(logger_, "[spark] Removed handler for {}", handler->type());
 }
 
 ba::awaitable<std::shared_ptr<RemotePeer>>
@@ -146,9 +140,7 @@ Server::connect(std::string_view host, const std::uint16_t port) try {
 	co_await send_banner(connection, name_);
 	auto banner = co_await receive_banner(connection);
 
-	LOG_INFO_FILTER(logger_, LF_SPARK)
-		<< std::format("[spark] Connected to {}", banner)
-		<< LOG_ASYNC;
+	LOG_INFO_ASYNC(logger_, "[spark] Connected to {}", banner);
 
 	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
@@ -156,11 +148,7 @@ Server::connect(std::string_view host, const std::uint16_t port) try {
 
 	co_return peer;
 } catch(const std::exception& e) {
-	const auto msg = std::format(
-		"[spark] Could not connect to {}:{} ({})", host, port, e.what()
-	);
-
-	LOG_DEBUG_FILTER(logger_, LF_SPARK) << msg << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "[spark] Could not connect to {}:{} ({})", host, port, e.what());
 	co_return nullptr;
 }
 
@@ -259,9 +247,7 @@ void Server::shutdown() {
 		return;
 	}
 
-	LOG_DEBUG_FILTER(logger_, LF_SPARK)
-		<< "[spark] Service shutting down..."
-		<< LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "[spark] Service shutting down...");
 
 	acceptor_.close();
 	stopped_ = true;

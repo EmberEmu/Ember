@@ -42,7 +42,7 @@ class NetworkListener final {
 	IPBanCache& ban_list_;
 
 	void accept_connection() {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 		if(!acceptor_.is_open()) {
 			return;
@@ -57,8 +57,7 @@ class NetworkListener final {
 				const auto& ep = socket_.remote_endpoint(ec);
 
 				if(ec) {
-					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-						<< "Aborted connection, remote peer disconnected" << LOG_ASYNC;
+					LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
 					metrics_.increment("aborted_connections");
 					return;
 				}
@@ -66,14 +65,11 @@ class NetworkListener final {
 				const auto& ip = ep.address();
 
 				if(!ban_list_.is_banned(ip)) {
-					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-						<< "Accepted connection " << ip.to_string() << LOG_ASYNC;
+					LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ip.to_string());
 					metrics_.increment("accepted_connections");
 					start_session(std::move(socket_));
 				} else {
-					LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-						<< "Rejected connection " << ip.to_string()
-						<< " from banned IP range" << LOG_ASYNC;
+					LOG_DEBUG_ASYNC(logger_, "Rejected connection {} from banned IP range", ip.to_string());
 					metrics_.increment("rejected_connections");
 				}
 			}
@@ -84,7 +80,7 @@ class NetworkListener final {
 	}
 
 	void start_session(tcp_socket socket) {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 		auto session = session_builder_.create(sessions_, std::move(socket), logger_);
 		sessions_.start(session);
 	}
@@ -107,7 +103,7 @@ public:
 	}
 
 	void shutdown() {
-		LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 		acceptor_.close();
 		sessions_.stop_all();
 	}

@@ -100,7 +100,7 @@ bool LoginHandler::update_state(const Action& action) try {
 		case LoginState::CLOSED:
 			return false;
 		default:
-			LOG_WARN(logger_) << "Received action out of sync" << LOG_ASYNC;
+			LOG_WARN_ASYNC(logger_, "Received action out of sync");
 			return false;
 	}
 
@@ -257,7 +257,7 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 			// leaks information on whether the account exists (could send challenge anyway?)
 			response.result = grunt::Result::FAIL_UNKNOWN_ACCOUNT;
 			metrics_.increment("login_failure");
-			LOG_DEBUG(logger_) << "Account not found: " << action.username() << LOG_ASYNC;
+			LOG_DEBUG_ASYNC(logger_, "Account not found: {}", action.username());
 		}
 	} catch(dal::exception& e) {
 		response.result = grunt::Result::FAIL_DB_BUSY;
@@ -489,7 +489,7 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 	send_login_proof(grunt::Result::SUCCESS, state_ == LoginState::SURVEY_INITIATE);
 
 	if(state_ == LoginState::SURVEY_INITIATE) {
-		LOG_DEBUG(logger_) << "Initiating survey transfer..." << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "Initiating survey transfer...");
 		auto meta = survey_.meta(challenge_.platform, challenge_.os);
 		assert(meta);
 		initiate_file_transfer(*meta);
@@ -592,7 +592,7 @@ void LoginHandler::patch_client(const grunt::client::LoginChallenge& challenge) 
 
 	auto& fmeta = meta->file_meta;
 
-	LOG_DEBUG(logger_) << "Initiating patch transfer, " << fmeta.name << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Initiating patch transfer, {}", fmeta.name);
 	std::ifstream patch(fmeta.path + fmeta.name, std::ifstream::binary);
 
 	if(!patch) {
@@ -715,7 +715,7 @@ void LoginHandler::transfer_chunk() {
 		transfer_state_.file.read(reinterpret_cast<char*>(response.chunk.data()), read_size);
 
 		if(!transfer_state_.file.good()) {
-			LOG_ERROR(logger_) << "Patch reading failed during transfer" << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger_, "Patch reading failed during transfer");
 			return;
 		}
 	}

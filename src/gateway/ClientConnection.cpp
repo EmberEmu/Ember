@@ -35,7 +35,7 @@ void ClientConnection::parse_header(StaticBuffer& buffer) {
 	stream >> msg_size_;
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
-		LOG_DEBUG(logger_) << "Invalid message size from " << remote_address() << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "Invalid message size from {}", remote_address());
 		close_session();
 		return;
 	}
@@ -129,8 +129,7 @@ void ClientConnection::read() {
 	const auto free = inbound_buffer_.free();
 
 	if(!free) {
-		LOG_DEBUG(logger_)
-			<< "Inbound buffer full, closing " << remote_address() << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
 		close_session();
 		return;
 	}
@@ -168,7 +167,7 @@ void ClientConnection::start() {
 }
 
 void ClientConnection::stop() {
-	LOG_DEBUG(logger_) << "Closing connection to " << remote_address() << LOG_ASYNC;
+	LOG_DEBUG_ASYNC(logger_, "Closing connection to {}", remote_address());
 
 	handler_.stop();
 	boost::system::error_code ec; // we don't care about any errors

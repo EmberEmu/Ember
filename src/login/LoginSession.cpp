@@ -47,8 +47,7 @@ bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 
 	if(result) {
 		const auto& packet = result->get();
-		LOG_TRACE(logger_) << remote_address() << " -> "
-			<< grunt::to_string(packet.opcode) << LOG_ASYNC;
+		LOG_TRACE_ASYNC(logger_, "{} -> {}", remote_address(), grunt::to_string(packet.opcode));
 		return handler_.update_state(packet);
 	}
 
@@ -59,7 +58,7 @@ bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 }
 
 void LoginSession::execute_async(std::unique_ptr<Action> action) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto self(shared_from_this());
 	std::shared_ptr<Action> shared_act(std::move(action));
@@ -76,7 +75,7 @@ void LoginSession::execute_async(std::unique_ptr<Action> action) {
 }
 
 void LoginSession::async_completion(Action& action) try {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!handler_.update_state(action)) {
 		close_session(); // todo change
@@ -87,11 +86,8 @@ void LoginSession::async_completion(Action& action) try {
 }
 
 void LoginSession::write_packet(const grunt::Packet& packet, WriteCallback&& cb) {
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << log_func << LOG_ASYNC;
-
-	LOG_TRACE_FILTER(logger_, LF_NETWORK) << remote_address() << " <- "
-		<< grunt::to_string(packet.opcode) << LOG_ASYNC;
-
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE_ASYNC(logger_, "{} <- {}", remote_address(), grunt::to_string(packet.opcode));
 	write(packet, std::move(cb));
 }
 

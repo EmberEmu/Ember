@@ -165,9 +165,7 @@ private:
 			return;
 		}
 
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-			<< "Idle timeout triggered on " << remote_address() << LOG_ASYNC;
-
+		LOG_DEBUG_ASYNC(logger_, "Idle timeout triggered on {}", remote_address());
 		close_session();
 	}
 
@@ -226,8 +224,7 @@ public:
 		auto self(this->shared_from_this());
 
 		boost::asio::post(socket_.get_executor(), [this, self] {
-			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
-				<< "Closing connection to " << remote_address() << LOG_ASYNC;
+			LOG_DEBUG_ASYNC(logger_, "Closing connection to {}", remote_address());
 
 			stop_timer();
 			boost::system::error_code ec; // we don't care about any errors
