@@ -21,19 +21,23 @@
 
 namespace po = boost::program_options;
 
-using namespace ember;
+namespace ember {
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
+}
+
 int main(int argc, const char* argv[]) try {
-	const auto args = parse_arguments(argc, argv);
-	launch(args);
+	const auto args = ember::parse_arguments(argc, argv);
+	ember::launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
 	return EXIT_FAILURE;
 }
+
+namespace ember {
 
 void launch(const po::variables_map& args) {
 	const auto filename = args.at("file").as<std::string>();
@@ -83,26 +87,24 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	opt.add_options()
 		("help,h", "Displays a list of available options")
 		("file,f", po::value<std::string>()->required(),
-			"Path to packet capture dump file")
+		 "Path to packet capture dump file")
 		("stream,s", po::bool_switch(),
-			"Treat the input as a stream, monitoring for any new packets")
+		 "Treat the input as a stream, monitoring for any new packets")
 		("skip,k", po::bool_switch(),
-			"If treating the packet dump as a stream, skip output of existing packets")
+		 "If treating the packet dump as a stream, skip output of existing packets")
 		("interval,i", po::value<unsigned int>()->default_value(2),
-			"Frequency in seconds for checking the stream for new packets")
+		 "Frequency in seconds for checking the stream for new packets")
 		("output", po::value<std::vector<OutputOption>>()->multitoken()
-			->default_value({OutputOption("console")}, "console"),
-			"Options: console")
-		 ("filter", po::value<std::string>(),
-			"Todo");
+			->default_value({ OutputOption("console") }, "console"), "Options: console")
+		("filter", po::value<std::string>(), "Todo");
 
-	po::positional_options_description pos; 
+	po::positional_options_description pos;
 	pos.add("file", 1);
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(opt)
-	          .style(po::command_line_style::default_style & ~po::command_line_style::allow_guessing)
-	          .run(), options);
+			  .style(po::command_line_style::default_style & ~po::command_line_style::allow_guessing)
+			  .run(), options);
 
 	if(options.count("help") || argc <= 1) {
 		std::cout << opt;
@@ -112,4 +114,6 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	po::notify(options);
 
 	return options;
+}
+
 }
