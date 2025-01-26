@@ -40,7 +40,7 @@ int main(int argc, const char* argv[]) try {
 namespace ember {
 
 void launch(const po::variables_map& args) {
-	const auto filename = args.at("file").as<std::string>();
+	const auto& filename = args.at("file").as<std::string>();
 	std::ifstream file(filename, std::ifstream::in | std::ifstream::binary);
 
 	if(!file) {

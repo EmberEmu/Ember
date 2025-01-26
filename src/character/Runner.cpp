@@ -84,9 +84,10 @@ void stop() {
 
 void launch(const po::variables_map& args, boost::asio::io_context& service,
             std::binary_semaphore& sem, log::Logger& logger) try {
-	#ifdef DEBUG_NO_THREADS
+#ifdef DEBUG_NO_THREADS
 	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
 #endif
+
 	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;

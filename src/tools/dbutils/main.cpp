@@ -423,7 +423,9 @@ bool db_update(const po::variables_map& args, const std::string& db, log::Logger
 	}
 
 	const auto& db_type = args["database-type"].as<std::string>();
-	const std::filesystem::path migrations_dir(args["sql-dir"].as<std::string>() + db_type + "/" + db + "/migrations");
+	const auto& sql_dir = args["sql-dir"].as<std::string>();
+	const auto& path = std::format("{}{}/{}/migrations", sql_dir, db_type, db);
+	const std::filesystem::path migrations_dir(path);
 
 	// Fetch details of all applied migrations on this database
 	const auto& applied_migrations = executor->migrations();

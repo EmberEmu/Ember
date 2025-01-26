@@ -239,7 +239,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	AccountClient acct_svc(spark, logger);
 	CharacterClient char_svc(spark, config, logger);
 
-	const auto nsd_host = args["nsd.host"].as<std::string>();
+	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
 
 	NetworkServiceDiscovery nds(spark, nsd_host, nsd_port, logger);
