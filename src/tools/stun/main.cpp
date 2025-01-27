@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Ember
+ * Copyright (c) 2023 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -99,8 +99,8 @@ void launch(const po::variables_map& args) {
 
 void print_error(std::string_view test, const stun::ErrorRet& error) {
 	std::println("{} test failed: {} ({})", test,
-	           stun::to_string(error.reason),
-	           std::to_underlying(error.reason));
+	             stun::to_string(error.reason),
+	             std::to_underlying(error.reason));
 
 	if(error.ec.code) {
 		std::println("Server error code: {}, ({})", error.ec.code, error.ec.reason);
@@ -136,7 +136,7 @@ void log_cb(const stun::Verbosity verbosity, const stun::Error reason) {
 	std::println("{} {} ({})", verbstr, stun::to_string(reason), std::to_underlying(reason));
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
@@ -154,6 +154,5 @@ po::variables_map parse_arguments(int argc, const char* argv[]) {
 	}
 
 	po::notify(options);
-
 	return options;
 }
