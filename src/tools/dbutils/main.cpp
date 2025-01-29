@@ -480,7 +480,7 @@ bool db_update(const po::variables_map& args, const std::string& db, log::Logger
 	return res;
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description opt("Options");
 	opt.add_options()
 		("help,h", "Displays a list of available options")

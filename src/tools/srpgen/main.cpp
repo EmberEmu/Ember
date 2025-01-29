@@ -78,7 +78,7 @@ void launch(const po::variables_map& args) {
 	}
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("username,u", po::value<std::string>()->required(), "Username")

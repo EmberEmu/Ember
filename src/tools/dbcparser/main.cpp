@@ -200,7 +200,7 @@ std::vector<std::string> fetch_definitions(std::span<const std::string> paths) {
 	return xml_paths;
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description opt("Options");
 	opt.add_options()
 		("help,h", "Displays a list of available options")

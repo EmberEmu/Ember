@@ -176,7 +176,7 @@ void use_upnp(const po::variables_map& args) {
 	ctx.run();
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")

@@ -81,7 +81,7 @@ void validate(boost::any& v, const std::vector<std::string>& values, OutputOptio
 	}
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description opt("Options");
 
 	opt.add_options()

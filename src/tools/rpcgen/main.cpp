@@ -67,7 +67,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	log::global_logger(logger);
 }
 
-po::variables_map parse_arguments(int argc, const char* argv[]) {
+po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("schemas,s", po::value<std::vector<std::string>>()->multitoken()->required(), ".fbsb schemas")
