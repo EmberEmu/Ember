@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,20 +8,26 @@
 
 #include <srp6/Generator.h>
 #include <srp6/Util.h>
+#include "nlohmann/json.hpp"
 #include <boost/program_options.hpp>
 #include <algorithm>
 #include <exception>
+#include <format>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <cctype>
 #include <cstdlib>
 
+using namespace nlohmann;
 namespace po = boost::program_options;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
+void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
+void json_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -50,12 +56,10 @@ void launch(const po::variables_map& args) {
 	srp6::generate_salt(salt);
 	auto verifier = srp6::generate_verifier(username, password, gen, salt, srp6::Compliance::GAME);
 
-	std::cout << "Username: " << username << "\n";
-	std::cout << "Verifier: " << "0x" << std::hex << verifier << "\n";
-	std::cout << "Salt: ";
-
-	for(auto byte : salt) {
-		std::cout << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(byte);
+	if(args["json"].as<bool>()) {
+		json_output(username, verifier, salt);
+	} else {
+		plaintext_output(username, verifier, salt);
 	}
 
 	if(args["sbin"].empty()) {
@@ -78,12 +82,35 @@ void launch(const po::variables_map& args) {
 	}
 }
 
+void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
+	std::cout << "Username: " << username << "\n";
+	std::cout << "Verifier: " << "0x" << std::hex << verifier << "\n";
+	std::cout << "Salt: ";
+
+	for(auto byte : salt) {
+		std::cout << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(byte);
+	}
+}
+
+void json_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
+	const auto vstr = std::format("0x{}", verifier.to_hex_string());
+	const auto saltdec = Botan::BigInt::decode(salt.data(), salt.size());
+	const auto sstr = std::format("0x{}",  saltdec.to_hex_string());
+
+	json data;
+	data["username"] = username;
+	data["verifier"] = vstr;
+	data["salt"] = sstr;
+	std::cout << data.dump(4);
+}
+
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("username,u", po::value<std::string>()->required(), "Username")
 		("password,p", po::value<std::string>()->required(), "Password")
-		("sbin,s",     po::value<std::string>(), "Output salt into a binary file");
+		("sbin,s",     po::value<std::string>(), "Output salt into a binary file")
+		("json,j",     po::bool_switch(), "Output parameters as JSON");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
