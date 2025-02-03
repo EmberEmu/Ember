@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/Sink.h>
+#include <shared/utility/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <mutex>
 #include <string>
@@ -25,7 +26,7 @@ class ConsoleSink final : public Sink {
 	std::string prefix_;
 	boost::container::small_vector<char, SV_RESERVE> out_buf_;
 
-	void set_colour(Severity severity);
+	util::Colour severity_colour(Severity severity);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 
 public:

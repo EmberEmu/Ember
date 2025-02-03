@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,6 @@
 #include <logger/ConsoleSink.h>
 #include <logger/Exception.h>
 #include <logger/Utility.h>
-#include <shared/utility/ConsoleColour.h>
 #include <algorithm>
 #include <iterator>
 #include <string>
@@ -96,12 +95,9 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 
 	if(colour_) [[likely]] {
-		util::Colour old_colour;
 		std::lock_guard guard(colour_lock);
-		old_colour = util::save_output_colour();
-		set_colour(severity);
+		util::ConsoleColour concol(severity_colour(severity));
 		std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
-		util::set_output_colour(old_colour);
 	} else {
 		std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
 	}
@@ -120,27 +116,28 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 	}
 }
 
-void ConsoleSink::set_colour(Severity severity) {
+util::Colour ConsoleSink::severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::FATAL:
 			[[fallthrough]];
 		case Severity::ERROR_:
 			[[fallthrough]];
 		case Severity::WARN:
-			util::set_output_colour(util::Colour::LIGHT_RED);
+			return util::Colour::LIGHT_RED;
 			break;
 		case Severity::INFO:
-			util::set_output_colour(util::Colour::WHITE);
+			return util::Colour::WHITE;
 			break;
 		case Severity::DEBUG:
-			util::set_output_colour(util::Colour::LIGHT_CYAN);
+			return util::Colour::LIGHT_CYAN;
 			break;
 		case Severity::TRACE:
-			util::set_output_colour(util::Colour::DARK_GREY);
+			return util::Colour::DARK_GREY;
 			break;
 		case Severity::DISABLED:
-			// shutting the compiler up
-			break;
+			[[fallthrough]];
+		default:
+			return util::Colour::DEFAULT;
 	}
 }
 

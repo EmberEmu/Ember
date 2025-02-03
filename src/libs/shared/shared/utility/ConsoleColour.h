@@ -17,29 +17,29 @@ enum class Colour : unsigned int {
 	DEFAULT
 };
 
-void set_output_colour(Colour colour);
-Colour save_output_colour();
+void set_console_out_colour(Colour colour);
+Colour save_console_out_colour();
 
 class ConsoleColour final {
 	Colour original_;
 
 public:
-	ConsoleColour(Colour colour) : original_(save_output_colour()) {
-		set_output_colour(colour);
+	ConsoleColour(Colour colour) : original_(save_console_out_colour()) {
+		set_console_out_colour(colour);
 	}
 
-	ConsoleColour() : original_(save_output_colour()) {}
+	ConsoleColour() : original_(save_console_out_colour()) {}
 
 	~ConsoleColour() {
 		reset();
 	}
 
 	void set(Colour colour) {
-		set_output_colour(colour);
+		set_console_out_colour(colour);
 	}
 
 	void reset() {
-		set_output_colour(original_);
+		set_console_out_colour(original_);
 	}
 };
 

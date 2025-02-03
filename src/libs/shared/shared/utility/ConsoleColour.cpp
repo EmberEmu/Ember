@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -126,7 +126,7 @@ std::string_view ansi_sequence(Colour colour) {
 
 } // unnamed
 
-void set_output_colour(Colour colour) {
+void set_console_out_colour(Colour colour) {
 #if defined(_WIN32)
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(console, colour_attribute(colour));
@@ -135,7 +135,7 @@ void set_output_colour(Colour colour) {
 #endif
 }
 
-Colour save_output_colour() {
+Colour save_console_out_colour() {
 #if defined(_WIN32)
 	const HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO buffer;
