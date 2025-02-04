@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -714,7 +714,7 @@ void LoginHandler::transfer_chunk() {
 	} else {
 		transfer_state_.file.read(reinterpret_cast<char*>(response.chunk.data()), read_size);
 
-		if(!transfer_state_.file.good()) {
+		if(!transfer_state_.file) {
 			LOG_ERROR_ASYNC(logger_, "Patch reading failed during transfer");
 			return;
 		}

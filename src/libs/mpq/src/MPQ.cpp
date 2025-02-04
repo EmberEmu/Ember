@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -77,7 +77,7 @@ LocateResult locate_archive(const std::filesystem::path& path) try {
 
 	std::ifstream stream(path, std::ios::binary | std::ios::in);
 	
-	if(!stream.is_open()) {
+	if(!stream) {
 		return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
 	}
 
@@ -118,14 +118,14 @@ std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
 
 	std::ifstream stream(path, std::ios::binary | std::ios::in);
 
-	if(!stream.is_open()) {
+	if(!stream) {
 		throw exception("cannot open archive: stream is_open failed");
 	}
 
 	std::array<char, sizeof(v0::Header)> h_buf{};
 	stream.seekg(offset);
 
-	if(!stream.good()) {
+	if(!stream) {
 		throw exception("cannot read archive: bad seek offset");
 	}
 

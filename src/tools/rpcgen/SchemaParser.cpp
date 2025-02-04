@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -36,7 +36,7 @@ std::vector<std::uint8_t> SchemaParser::load_file(const std::filesystem::path& p
 	std::vector<std::uint8_t> buffer;
 	std::ifstream file(path, std::ios::in | std::ios::binary);
 
-	if(!file.is_open()) {
+	if(!file) {
 		throw std::runtime_error(std::format("Unable to open, {}", path.string()));
 	}
 

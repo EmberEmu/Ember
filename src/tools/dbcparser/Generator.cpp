@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -97,7 +97,7 @@ void save_output(const std::string& path, const std::string& name, const std::st
 	std::ofstream ofs(dir.string());
 	ofs << output;
 
-	if(!ofs.is_open() || !ofs.good()) {
+	if(!ofs) {
 		throw std::runtime_error(name + " could not be written");
 	}
 }
@@ -109,7 +109,7 @@ std::stringstream read_template(const std::string& path, const std::string& file
 	std::stringstream buffer;
 	buffer << ifs.rdbuf();
 
-	if(!ifs.is_open() || !ifs.good()) {
+	if(!ifs) {
 		throw std::runtime_error(path + file + " could not be opened for reading");
 	}
 

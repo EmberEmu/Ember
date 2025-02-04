@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@ void Survey::add_data(const grunt::Platform platform, const grunt::System os, co
 	std::vector<std::byte> buffer(static_cast<std::size_t>(fmeta.size));
 	file.read(reinterpret_cast<char*>(buffer.data()), fmeta.size);
 
-	if(!file.good()) {
+	if(!file) {
 		throw std::runtime_error("An error occured while reading " + path);
 	}
 
