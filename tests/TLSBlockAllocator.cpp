@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #define _DEBUG_TLS_BLOCK_ALLOCATOR
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
-#include <gsl/gsl_util>
+#include <gsl/narrow>
 #include <gtest/gtest.h>
 #include <array>
 #include <chrono>

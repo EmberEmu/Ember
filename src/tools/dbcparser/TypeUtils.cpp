@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2021 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #include "TypeUtils.h"
 #include "Defines.h"
 #include "Exception.h"
-#include <gsl/gsl_util>
+#include <gsl/narrow>
 #include <exception>
 #include <regex>
 #include <cctype>

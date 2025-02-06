@@ -20,7 +20,7 @@
 #include <shared/metrics/Metrics.h>
 #include <shared/utility/EnumHelper.h>
 #include <boost/container/small_vector.hpp>
-#include <gsl/gsl_util>
+#include <gsl/narrow>
 #include <ranges>
 #include <stdexcept>
 
