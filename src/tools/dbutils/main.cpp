@@ -112,11 +112,9 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 		const auto clean = args["clean"].as<bool>();
 
 		if(clean && !args["shutup"].as<bool>()) {
-			LOG_WARN(logger) << "You are performing an installation with --clean.\n"
-			                 << "This will drop any existing databases and users specified "
-			                    "in the arguments!\n"
-			                    "Proceeding in " << UPDATE_BACKOUT_PERIOD.count()
-			                 << " seconds..." << LOG_SYNC;
+			LOG_WARN_SYNC(logger, "You are performing an installation with --clean.\n"
+			                      "This will drop any existing databases and users specified in the arguments!\n"
+			                      "Proceeding in {} seconds...", UPDATE_BACKOUT_PERIOD.count());
 			std::this_thread::sleep_for(UPDATE_BACKOUT_PERIOD);
 		}
 
