@@ -47,7 +47,7 @@ const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_a
 	{ "world", { "world.root-user", "world.root-password" }}
 };
 
-const auto UPDATE_BACKOUT_PERIOD = std::chrono::seconds(5);
+const std::chrono::seconds UPDATE_BACKOUT_PERIOD { 10 };
 
 int launch(const po::variables_map& args, log::Logger& logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
