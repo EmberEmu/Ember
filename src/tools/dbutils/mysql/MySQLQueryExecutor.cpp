@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Ember
+ * Copyright (c) 2019 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 #include <conpool/drivers/MySQL/Driver.h>
 #include <cppconn/statement.h>
 #include <cppconn/prepared_statement.h>
+#include <format>
 #include <memory>
 #include <sstream>
 
@@ -36,21 +37,19 @@ void MySQLQueryExecutor::create_user(const std::string& username, const std::str
 		stmt->execute(std::move(query));
 	}
 	
-	std::stringstream query;
-	query << "CREATE USER '" << username << "'@'%' IDENTIFIED BY '"
-		  << password << "';";
+	const auto query = std::format("CREATE USER '{}'@'%' IDENTIFIED BY '{}';", username, password);
 	const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
-	stmt->execute(query.str());   
+	stmt->execute(query);   
 }
 
 void MySQLQueryExecutor::create_database(const std::string& name, bool drop) {
 	if(drop) {
-		const auto query = "DROP DATABASE IF EXISTS " + name + ";";
+		const auto query = std::format("DROP DATABASE IF EXISTS {};", name);
 		const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
 		stmt->execute(query);
 	}
 
-	const auto query = "CREATE DATABASE " + name + ";";
+	const auto query = std::format("CREATE DATABASE {};", name);
 	const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
 	stmt->execute(query);
 }
