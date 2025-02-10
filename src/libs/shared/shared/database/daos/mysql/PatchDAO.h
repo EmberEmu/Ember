@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,6 @@
 #include <conpool/drivers/MySQL/Driver.h>
 #include <cppconn/prepared_statement.h>
 #include <memory>
-#include <sstream>
 #include <string_view>
 #include <string>
 #include <vector>
@@ -63,12 +62,9 @@ public:
 			meta.arch = res->getString("architecture_val");
 			meta.rollup = res->getBoolean("rollup");
 
-			// sigh.
-			auto md5 = res->getString("MD5");
-			Botan::BigInt md5_int(reinterpret_cast<const std::uint8_t*>(md5.c_str()), md5.length(),
-			                      Botan::BigInt::Base::Hexadecimal);
-			Botan::BigInt::encode_1363(reinterpret_cast<std::uint8_t*>(meta.file_meta.md5.data()),
-			                           meta.file_meta.md5.size(), md5_int);
+			const auto md5 = res->getString("md5");
+			Botan::BigInt md5_int(md5.asStdString());
+			Botan::BigInt::encode_1363(meta.file_meta.md5.data(), meta.file_meta.md5.size(), md5_int);
 			patches.emplace_back(std::move(meta));
 		}
 
@@ -93,9 +89,8 @@ public:
 		stmt->setUInt64(5, meta.file_meta.size);
 		auto md5 = Botan::BigInt::decode(reinterpret_cast<const std::uint8_t*>(meta.file_meta.md5.data()),
 		                                 meta.file_meta.md5.size());
-		std::stringstream md5_str;
-		md5_str << std::hex << md5;
-		stmt->setString(6, md5_str.str());
+
+		stmt->setString(6, md5.to_hex_string());
 		stmt->setUInt(7, meta.locale_id);
 		stmt->setUInt(8, meta.arch_id);
 		stmt->setUInt(9, meta.os_id);
