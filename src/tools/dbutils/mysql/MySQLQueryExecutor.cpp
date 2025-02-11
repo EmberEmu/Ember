@@ -12,7 +12,6 @@
 #include <cppconn/prepared_statement.h>
 #include <format>
 #include <memory>
-#include <sstream>
 
 using namespace ember;
 
@@ -55,16 +54,15 @@ void MySQLQueryExecutor::create_database(const std::string& name, bool drop) {
 }
 
 void MySQLQueryExecutor::grant_user(const std::string& user, const std::string& db, bool read_only) {
-	std::stringstream query;
-	query << "GRANT SELECT";
+	std::string_view perms;
 
 	if(!read_only) {
-		query << ", INSERT, DELETE, UPDATE";
+		perms = ", INSERT, DELETE, UPDATE";
 	}
 
-	query << " ON " << db << ".* TO " << user << "@'%'";
+	const auto query = std::format("GRANT SELECT{} ON {} .* TO {} @'%'", perms, db, user);
 	const auto stmt = std::unique_ptr<sql::Statement>(conn_->createStatement());
-	stmt->execute(query.str());
+	stmt->execute(query);
 }
 
 void MySQLQueryExecutor::execute(const std::string& query) {
