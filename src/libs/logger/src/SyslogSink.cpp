@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,6 +16,7 @@
 #include <boost/asio/ip/udp.hpp>
 #include <boost/assert.hpp>
 #include <array>
+#include <format>
 
 namespace bai = boost::asio::ip;
 
@@ -107,7 +108,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 
 	const int priority_val = (static_cast<int>(facility_) * 8)
 		+ static_cast<std::uint8_t>(severity_map(severity));
-	std::string priority = "<" + std::to_string(priority_val) + ">";
+	std::string priority = std::format("<{}>", priority_val);
 
 	std::tm time = detail::current_time();
 	std::stringstream stream;

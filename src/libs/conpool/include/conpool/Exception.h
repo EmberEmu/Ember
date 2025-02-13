@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <format>
 #include <stdexcept>
 #include <string>
 
@@ -27,8 +28,8 @@ public:
 
 class active_connections final : public exception {
 public:
-	active_connections(int active) : exception("Attempted to close the pool with " + std::to_string(active) +
-	                                           " connection(s) still in use!") { }
+	active_connections(int active)
+		: exception(std::format("Attempted to close the pool with {} connection(s) still in use!", active)) {}
 	active_connections(const std::string& msg) : exception(msg) { };
 };
 

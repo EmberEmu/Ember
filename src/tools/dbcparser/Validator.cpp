@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 #include "Defines.h"
 #include "TypeUtils.h"
 #include <logger/Logger.h>
+#include <format>
 #include <iostream>
 #include <limits>
 #include <string_view>
@@ -345,8 +346,11 @@ template<typename T>
 void Validator::range_check(long long value) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 	if(value < std::numeric_limits<T>::lowest() || value > std::numeric_limits<T>::max()) {
-		throw exception("Enum option value is out of bounds: " + std::to_string(value)
-		                 + " is not within the range of " + typeid(T).name());
+		const auto str = std::format(
+			"Enum option value is out of bounds: {} is not within the range of {}",
+		    value, typeid(T).name()
+		);
+		throw exception(str);
 	}
 }
 

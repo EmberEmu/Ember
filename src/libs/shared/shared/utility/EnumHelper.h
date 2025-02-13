@@ -9,6 +9,7 @@
 #pragma once
 
 #include <gsl/narrow>
+#include <format>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -42,8 +43,8 @@ const char* safe_print(auto value, const char* const* enums) {
 }
 
 std::string fb_status(auto value, const char* const* enums) {
-	auto message = safe_print(value, enums);
-	return std::string(message) + " (" + std::to_string(std::to_underlying(value)) + ")";
+	const auto& message = safe_print(value, enums);
+	return std::format("{} ({})", message, std::to_underlying(value));
 }
 
 } // util, ember
