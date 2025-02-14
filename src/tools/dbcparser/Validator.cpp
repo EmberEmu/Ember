@@ -131,7 +131,7 @@ void Validator::check_key_types(const types::Field& field) {
 				throw exception(field.name + " did not specify a key type");
 			}
 
-			throw exception(key.type + " is not a valid key type" + " for " + field.name);
+			throw exception(std::format("{} is not a valid key type for {}", key.type, field.name));
 		} else if(key.type == "foreign" && key.parent.empty()) {
 			throw exception(field.name + " - orphaned foreign key");
 		} else if(key.type == "primary" && !key.parent.empty()) {
