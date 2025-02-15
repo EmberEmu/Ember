@@ -238,7 +238,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
 	}
 
 	// scan children of the current node
-	for(auto& child : node->children) {
+	for(const auto& child : node->children) {
 		// abort searching this level if we come across the node we backed out of
 		if(child.get() == prev_node) {
 			break;
@@ -458,7 +458,7 @@ void Validator::print_type_tree(const TreeNode<std::string>* types, std::size_t 
 	}
 }
 
-void Validator::validate(const types::Definitions& definitions, Options options) {
+void Validator::validate(const types::Definitions& definitions, const Options options) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	// reset the validation state
