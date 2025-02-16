@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <stun/MessageBuilder.h>
 #include <gtest/gtest.h>
 #include <array>
+#include <span>
 #include <variant>
 #include <cstddef>
 
@@ -29,7 +30,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 		std::to_underlying(stun::MessageType::BINDING_RESPONSE));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
-	std::array<uint8_t, 12> parse_tx_id{}, trans_id{
+	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
 		0xb7, 0xe7, 0xa7, 0x01, 0xbc, 0x34,
 		0xd6, 0x86, 0xfa, 0x87, 0xdf, 0xae
 	};
