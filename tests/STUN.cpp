@@ -26,8 +26,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 60);
-	ASSERT_EQ(static_cast<std::uint16_t>(header.type),
-		std::to_underlying(stun::MessageType::BINDING_RESPONSE));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_RESPONSE));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
 	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
@@ -35,7 +34,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 		0xd6, 0x86, 0xfa, 0x87, 0xdf, 0xae
 	};
 
-	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), 12);
+	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), parse_tx_id.size());
 	ASSERT_EQ(trans_id, parse_tx_id);
 	
 	const auto attrs = parser.attributes();
@@ -79,8 +78,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 72);
-	ASSERT_EQ(static_cast<std::uint16_t>(header.type),
-		std::to_underlying(stun::MessageType::BINDING_RESPONSE));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_RESPONSE));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
 	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
@@ -131,16 +129,15 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 96);
-	ASSERT_EQ(static_cast<std::uint16_t>(header.type),
-		std::to_underlying(stun::MessageType::BINDING_REQUEST));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_REQUEST));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
-	std::array<uint8_t, 12> parse_tx_id{}, trans_id{
+	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
 		0x78, 0xad, 0x34, 0x33, 0xc6, 0xad,
 		0x72, 0xc0, 0x29, 0xda, 0x41, 0x2e
 	};
 
-	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), 12);
+	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), parse_tx_id.size());
 	ASSERT_EQ(trans_id, parse_tx_id);
 	
 	const auto attrs = parser.attributes();
@@ -175,20 +172,19 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 
 TEST(STUNVectors, RFC5769_Request) {
 	std::span span(req);
-	stun::Parser parser(span, stun::RFC8445);
+	stun::Parser parser(req, stun::RFC8445);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 88);
-	ASSERT_EQ(static_cast<std::uint16_t>(header.type),
-			  std::to_underlying(stun::MessageType::BINDING_REQUEST));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_REQUEST));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
-	std::array<uint8_t, 12> parse_tx_id{}, trans_id{
+	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
 		0xb7, 0xe7, 0xa7, 0x01, 0xbc, 0x34,
 		0xd6, 0x86, 0xfa, 0x87, 0xdf, 0xae
 	};
 
-	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), 12);
+	memcpy(parse_tx_id.data(), header.tx_id.id_5389.data(), parse_tx_id.size());
 	ASSERT_EQ(trans_id, parse_tx_id);
 
 	const auto attrs = parser.attributes();
