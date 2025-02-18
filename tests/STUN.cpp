@@ -21,8 +21,7 @@
 using namespace ember;
 
 TEST(STUNVectors, RFC5769_IPv4Response) {
-	std::span span(respv4);
-	stun::Parser parser(span, stun::RFC5780);
+	stun::Parser parser(respv4, stun::RFC5780);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 60);
@@ -73,8 +72,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 }
 
 TEST(STUNVectors, RFC5769_IPv6Response) {
-	std::span span(respv6);
-	stun::Parser parser(span, stun::RFC5780);
+	stun::Parser parser(respv6, stun::RFC5780);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 72);
@@ -124,8 +122,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 }
 
 TEST(STUNVectors, RFC5769_LTARequest) {
-	std::span span(reqltc);
-	stun::Parser parser(span, stun::RFC5780);
+	stun::Parser parser(reqltc, stun::RFC5780);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 96);
@@ -171,7 +168,6 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 }
 
 TEST(STUNVectors, RFC5769_Request) {
-	std::span span(req);
 	stun::Parser parser(req, stun::RFC8445);
 	const auto header = parser.read_header();
 
