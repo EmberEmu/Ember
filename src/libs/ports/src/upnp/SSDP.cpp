@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -92,8 +92,8 @@ ErrorCode SSDP::validate_message(std::span<const std::uint8_t> datagram) {
 		return ErrorCode::HTTP_NOT_OK;
 	}
 
-	auto location = std::string(header.fields["Location"]);
-	auto service = std::string(header.fields["ST"]);
+	const auto& location = header.fields["Location"];
+	const auto& service = header.fields["ST"];
 
 	if(location.empty() || service.empty()) {
 		return ErrorCode::HTTP_HEADER_FIELD_AWOL;
