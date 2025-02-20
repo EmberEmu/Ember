@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -101,7 +101,6 @@ std::size_t HTTPTransport::http_body_completion(const HTTPHeader& header,
 }
 
 bool HTTPTransport::http_headers_completion(const std::size_t total_read) {
-	HTTPHeader header;
 	std::string_view view(buffer_.data(), total_read);
 	constexpr std::string_view header_delim("\r\n\r\n");
 	const auto headers_end = view.find(header_delim);
