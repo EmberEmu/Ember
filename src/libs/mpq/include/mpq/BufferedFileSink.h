@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,6 +20,7 @@ class BufferedFileSink final : public ExtractionSink {
 	std::FILE* file_ = nullptr;
 	std::vector<std::byte> buffer_;
 	std::size_t offset_ = 0;
+	bool flushed_ = false;
 
 	void store(std::span<const std::byte> data) {
 		const auto free = buffer_.size() - offset_;
@@ -57,11 +58,23 @@ public:
 		const auto res = std::fwrite(buffer_.data(), offset_, 1, file_);
 
 		if(res != 1) {
+			flushed_ = true; // don't try flushing in dtor
 			throw exception("extraction: file writing failed");
 		}
+
+		flushed_ = true;
+	}
+
+	void clear() {
+		buffer_.clear();
+		offset_ = 0;
 	}
 
 	~BufferedFileSink() {
+		if(!buffer_.empty() && !flushed_) {
+			flush();
+		}
+
 		std::fclose(file_);
 	}
 };
