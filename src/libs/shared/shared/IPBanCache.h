@@ -61,7 +61,7 @@ class IPBanCache {
 	}
 
 	bool check_ban(const boost::asio::ip::address_v4&& ip) const {
-		unsigned long ip_long = ip.to_ulong();
+		unsigned long ip_long = ip.to_uint();
 		
 		for(auto& e : ipv4_entries_) {
 			if((ip_long & e.mask) == (e.range & e.mask)) {

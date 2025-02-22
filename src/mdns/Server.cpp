@@ -82,7 +82,7 @@ void Server::handle_question(const Query& query) {
 	//	record.type = it->second.type;
 
 	//	if (record.type == RecordType::A && it->second.answer.is_v4()) {
-	//		Record_A rdata{ it->second.answer.to_v4().to_ulong() };
+	//		Record_A rdata{ it->second.answer.to_v4().to_uint() };
 	//		record.rdata = rdata;
 	//	}
 	//	else if (record.type == RecordType::AAAA && it->second.answer.is_v6()) {
