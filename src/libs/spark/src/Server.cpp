@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,8 +14,8 @@
 #include <spark/Utility.h>
 #include <logger/Logger.h>
 #include <shared/FilterTypes.h>
-#include <boost/asio/co_spawn.hpp>
 #include <boost/asio/as_tuple.hpp>
+#include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/deferred.hpp>
 #include <boost/asio/detached.hpp>
@@ -56,7 +56,7 @@ ba::awaitable<void> Server::accept_connection() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	ba::ip::tcp::socket socket(ctx_);
-	auto [ec] = co_await acceptor_.async_accept(socket, as_tuple(ba::deferred));
+	auto [ec] = co_await acceptor_.async_accept(socket, boost::asio::as_tuple(ba::deferred));
 
 	if(ec) {
 		co_return;
