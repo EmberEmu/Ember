@@ -83,7 +83,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientRef> clients,
 void EventDispatcher::register_handler(ClientHandler* handler) {
 	auto& service = pool_.get(handler->uuid().service());
 
-	service.dispatch([=] {
+	boost::asio::dispatch(service, [=] {
 		handlers_.insert_or_assign(handler->uuid(), handler);
 	});
 }
