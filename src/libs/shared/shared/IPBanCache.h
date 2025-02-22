@@ -79,7 +79,7 @@ class IPBanCache {
 	}
 
 	void load_ban(const std::string& ip, const std::uint32_t cidr) {
-		auto address = boost::asio::ip::address::from_string(ip);
+		auto address = boost::asio::ip::make_address(ip);
 
 		if(address.is_v6()) {
 			auto range = build_range(address.to_v6(), cidr);
@@ -106,7 +106,7 @@ public:
 			return false;
 		}
 
-		return is_banned(boost::asio::ip::address::from_string(ip));
+		return is_banned(boost::asio::ip::make_address(ip));
 	}
 
 	bool is_banned(const boost::asio::ip::address& ip) const {

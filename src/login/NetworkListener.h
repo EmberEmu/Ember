@@ -90,7 +90,7 @@ public:
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger& logger, Metrics& metrics)
 	                : acceptor_(io_context, boost::asio::ip::tcp::endpoint(
-	                            boost::asio::ip::address::from_string(interface), port)),
+	                            boost::asio::ip::make_address(interface), port)),
 	                  io_context_(io_context),
 	                  socket_(boost::asio::make_strand(io_context)),
 	                  session_builder_(session_create),

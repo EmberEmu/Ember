@@ -19,7 +19,7 @@
 namespace ember::ports::upnp {
 
 HTTPTransport::HTTPTransport(ba::io_context& ctx, const std::string& bind)
-	: socket_(ctx, ba::ip::tcp::endpoint(ba::ip::address::from_string(bind), 0)),
+	: socket_(ctx, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
 	resolver_(ctx),
 	timeout_(ctx) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));

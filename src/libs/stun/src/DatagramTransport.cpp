@@ -19,7 +19,7 @@ namespace ember::stun {
 DatagramTransport::DatagramTransport(const std::string& bind,
                                      std::chrono::milliseconds timeout,
                                      unsigned int retries)
-	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::address::from_string(bind), 0)),
+	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), 0)),
 	timeout_(timeout), retries_(retries), resolver_(ctx_) {
 	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &ctx_);

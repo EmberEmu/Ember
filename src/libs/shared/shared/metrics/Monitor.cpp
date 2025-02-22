@@ -20,7 +20,7 @@ namespace bai = boost::asio::ip;
 Monitor::Monitor(boost::asio::io_context& service, const std::string& interface,
                  std::uint16_t port, std::chrono::seconds frequency)
                  : strand_(service), timer_(service), TIMER_FREQUENCY(frequency),
-                   socket_(service, bai::udp::endpoint(bai::address::from_string(interface), port)),
+                   socket_(service, bai::udp::endpoint(bai::make_address(interface), port)),
                    signals_(service, SIGINT, SIGTERM) {
 	signals_.async_wait(std::bind(&Monitor::shutdown, this));
 	set_timer();
@@ -31,7 +31,7 @@ void Monitor::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
-	timer_.cancel(ec);;
+	timer_.cancel(ec);
 }
 
 void Monitor::receive() {

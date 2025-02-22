@@ -229,7 +229,7 @@ TEST_F(Ports, NATPMP_UnsupportedErrorResponseRoundtrip) {
 }
 
 TEST_F(Ports, PCP_TestRequestVector) {
-	const auto address = boost::asio::ip::address::from_string("::ffff:192.168.0.4");
+	const auto address = boost::asio::ip::make_address("::ffff:192.168.0.4");
 	const auto v6_bytes = address.to_v6().to_bytes();
 
 	const auto request = deserialise<pcp::RequestHeader>(pcp_mapping_request);
@@ -279,7 +279,7 @@ TEST_F(Ports, PCP_TestResponseVector) {
 		0x1c, 0x65, 0x4b, 0x26, 0x1f, 0x2f
 	};
 
-	const auto address = boost::asio::ip::address::from_string("::ffff:209.244.0.3");
+	const auto address = boost::asio::ip::make_address("::ffff:209.244.0.3");
 	const auto v6_bytes = address.to_v6().to_bytes();
 
 	const std::array<std::uint8_t, 3> reserved {};

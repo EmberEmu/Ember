@@ -41,7 +41,7 @@ public:
 	                bool tcp_no_delay, log::Logger& logger)
 	                : acceptor_(
 	                      pool.get(), 
-	                      bai::tcp::endpoint(bai::address::from_string(interface), port)
+	                      bai::tcp::endpoint(bai::make_address(interface), port)
 	                  ),
 	                  pool_(pool),
 	                  index_(0),

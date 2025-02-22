@@ -48,7 +48,7 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 
 	// verify the deserialisation results
 	GameVersion version { 1, 12, 1, 5875 };
-	auto ip = boost::asio::ip::address_v4::from_string("10.0.0.5").to_ulong();
+	auto ip = boost::asio::ip::make_address_v4("10.0.0.5").to_ulong();
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(version, packet.version)

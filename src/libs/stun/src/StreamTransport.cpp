@@ -20,7 +20,7 @@ namespace ember::stun {
 
 StreamTransport::StreamTransport(const std::string& bind, std::chrono::milliseconds timeout)
 	: timeout_(timeout), 
-	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::address::from_string(bind), 0)),
+	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
 	  resolver_(ctx_), 
 	  work_(boost::asio::make_work_guard(ctx_)) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
