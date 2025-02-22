@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 
 #include <boost/endian/conversion.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <span>
 #include <stdexcept>
 #include <cstdint>
 
@@ -44,7 +45,7 @@ public:
 		stream >> has_uuid;
 
 		if(has_uuid) {
-			stream >> uuid;
+			stream.get(uuid.begin(), uuid.end());
 		}
 
 		stream >> padding;
@@ -75,7 +76,7 @@ public:
 		stream << static_cast<std::uint8_t>(!uuid.is_nil());
 		
 		if(!uuid.is_nil()) {
-			stream << uuid;
+			stream.put(uuid.begin(), uuid.end());
 		}
 
 		stream << static_cast<std::uint8_t>(be::native_to_little(pad));
