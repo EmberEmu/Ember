@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <thread>
 #include <utility>
@@ -18,7 +19,7 @@ namespace ember {
 
 class ThreadPool final {
 	boost::asio::io_context service_;
-	boost::asio::io_context::work work_;
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 	std::vector<std::jthread> workers_;
 
 public:

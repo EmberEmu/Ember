@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stun/TransportBase.h>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <memory>
@@ -30,7 +31,7 @@ class StreamTransport final : public Transport {
 	ba::ip::tcp::socket socket_;
 	ba::ip::tcp::resolver resolver_;
 	std::jthread worker_;
-	std::unique_ptr<boost::asio::io_context::work> work_;
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 
 	std::vector<std::uint8_t> buffer_;
 

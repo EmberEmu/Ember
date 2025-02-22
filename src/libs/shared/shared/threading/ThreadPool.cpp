@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,8 @@
 
 namespace ember {
 
-ThreadPool::ThreadPool(std::size_t initial_count) : work_(service_) {
+ThreadPool::ThreadPool(std::size_t initial_count)
+	: work_(boost::asio::make_work_guard(service_)) {
 	workers_.reserve(initial_count);
 
 	for(std::size_t i = 0; i < initial_count; ++i) {

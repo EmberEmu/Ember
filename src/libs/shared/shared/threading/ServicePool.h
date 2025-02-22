@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/container/small_vector.hpp>
 #include <memory>
@@ -24,7 +25,7 @@ class ServicePool final {
 	std::size_t pool_size_;
 	std::size_t next_service_;
 	boost::container::small_vector<std::unique_ptr<boost::asio::io_context>, POOL_SIZE_HINT> services_;
-	std::vector<std::shared_ptr<boost::asio::io_context::work>> work_;
+	std::vector<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_;
 	std::vector<std::jthread> threads_;
 
 public:

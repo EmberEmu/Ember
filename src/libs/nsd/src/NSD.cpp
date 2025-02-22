@@ -18,7 +18,7 @@ NetworkServiceDiscovery::NetworkServiceDiscovery(spark::Server& spark, std::stri
 	  port_(port),
 	  spark_(spark),
 	  connected_(false),
-	  work_(ctx_),
+	  work_(boost::asio::make_work_guard(ctx_)),
 	  timer_(ctx_),
 	  logger_(logger),
       retry_interval_(RETRY_INTERVAL_MIN) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <DiscoveryClientStub.h>
 #include <logger/Logger.h>
 #include <spark/Server.h>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <atomic>
@@ -31,7 +32,7 @@ class NetworkServiceDiscovery final : public services::DiscoveryClient {
 	spark::Server& spark_;
 	std::atomic_bool connected_;
 	boost::asio::io_context ctx_;
-	boost::asio::io_context::work work_;
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 	boost::asio::steady_timer timer_;
 	std::jthread worker_;
 	log::Logger& logger_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,8 @@ ServicePool::ServicePool(const std::size_t pool_size, const int hint)
 		auto& ctx = services_.emplace_back(
 			std::make_unique<boost::asio::io_context>(hint)
 		);
-		work_.emplace_back(std::make_shared<boost::asio::io_context::work>(*ctx));
+
+		work_.emplace_back(boost::asio::make_work_guard(*ctx));
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Ember
+ * Copyright (c) 2023 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <stun/Transaction.h>
 #include <stun/TransportBase.h>
 #include <stun/Logging.h>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <expected>
 #include <future>
@@ -44,8 +45,8 @@ class Client final {
 	const int MAX_REDIRECTS = 5;
 
 	std::jthread worker_;
-	std::unique_ptr<boost::asio::io_context::work> work_;
 	boost::asio::io_context ctx_;
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 
 	Protocol proto_;
 	std::unique_ptr<Transport> transport_;

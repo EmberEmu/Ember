@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,6 +22,7 @@
 #include <shared/threading/Utility.h>
 #include <spark/Server.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include <exception>
 #include <semaphore>
 #include <string_view>
@@ -55,7 +56,7 @@ void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logg
  */
 int run(const po::variables_map& args, log::Logger& logger) try {
 	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	boost::asio::io_context::work work(service);
+	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");

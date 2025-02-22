@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,6 +43,7 @@
 #include <stun/Utility.h>
 #include <botan/version.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/container/small_vector.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
@@ -99,7 +100,7 @@ std::vector<GameVersion> client_versions();
 int run(const po::variables_map& args, log::Logger& logger) try {
 	const auto concurrency = check_concurrency(logger);
 	boost::asio::io_context service(concurrency);
-	boost::asio::io_context::work work(service);
+	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");
