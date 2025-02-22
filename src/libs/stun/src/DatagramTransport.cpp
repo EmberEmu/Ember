@@ -50,10 +50,9 @@ void DatagramTransport::connect(std::string_view host, const std::uint16_t port,
 
 void DatagramTransport::do_write() {
 	auto datagram = std::move(queue_.front());
-	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
 	queue_.pop();
 
-	socket_.async_send_to(buffer, remote_ep_,
+	socket_.async_send_to(boost::asio::buffer(*datagram), remote_ep_,
 		[this, dg = std::move(datagram)](boost::system::error_code ec,
 		                                 std::size_t /*bytes_sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {

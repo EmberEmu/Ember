@@ -46,7 +46,7 @@ void MulticastSocket::receive() {
 		return;
 	}
 
-	socket_.async_receive(boost::asio::buffer(buffer_.data(), buffer_.size()),
+	socket_.async_receive(boost::asio::buffer(buffer_),
         [this](const boost::system::error_code& ec, const std::size_t size) {
             if(ec == boost::asio::error::operation_aborted) {
 		        return;
@@ -101,9 +101,7 @@ void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
 		return;
 	}
 
-	const auto ba_buf = boost::asio::buffer(*buffer);
-
-	socket_.async_send_to(ba_buf, ep_,
+	socket_.async_send_to(boost::asio::buffer(*buffer), ep_,
 		[buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
 			if(ec) {
 				LOG_ERROR_GLOB

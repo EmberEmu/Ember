@@ -58,7 +58,7 @@ void DatagramTransport::resolve(std::string_view host, const std::uint16_t port,
 
 void DatagramTransport::do_write() {
 	auto datagram = std::move(queue_.front());
-	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
+	auto buffer = boost::asio::buffer(*datagram);
 	queue_.pop();
 
 	socket_.async_send_to(buffer, remote_ep_, boost::asio::bind_executor(strand_,

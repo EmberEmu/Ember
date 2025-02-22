@@ -49,7 +49,7 @@ auto MulticastSocket::receive() -> ba::awaitable<ReceiveType> {
 		co_return std::unexpected(ba::error::not_connected);
 	}
 
-	auto buffer = boost::asio::buffer(buffer_.data(), buffer_.size());
+	auto buffer = boost::asio::buffer(buffer_);
 	auto [ec, size] = co_await socket_.async_receive_from(buffer, remote_ep_, as_tuple(ba::deferred));
 
 	if(ec) {

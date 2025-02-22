@@ -40,7 +40,7 @@ public:
 			return;
 		}
 
-		boost::asio::post(service, [client, work = std::move(work)] {
+		boost::asio::post(*service, [client, work = std::move(work)] {
 			if(!handlers_.contains(client)) {
 				LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
 				return;
@@ -59,7 +59,7 @@ public:
 			return;
 		}
 
-		boost::asio::post(service, [&, client, event = std::move(event)] {
+		boost::asio::post(*service, [&, client, event = std::move(event)] {
 			if(auto it = handlers_.find(client); it != handlers_.end()) {
 				auto& [_, handler] = *it;
 				handler->handle_event(&event);

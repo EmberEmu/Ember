@@ -64,10 +64,9 @@ void StreamTransport::do_connect(ba::ip::tcp::resolver::results_type results, On
 
 void StreamTransport::do_write() {
 	auto data = std::move(queue_.front());
-	auto buffer = boost::asio::buffer(data->data(), data->size());
 	queue_.pop();
 
-	ba::async_write(socket_, buffer,
+	ba::async_write(socket_, boost::asio::buffer(*data),
 		[this, d = std::move(data)](boost::system::error_code ec, std::size_t /*sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
