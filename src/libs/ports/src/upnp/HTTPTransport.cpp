@@ -35,7 +35,7 @@ ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uin
 	auto results = co_await resolver_.async_resolve(std::string(host),
 													std::to_string(port),
 													ba::deferred);
-	co_await boost::asio::async_connect(socket_, results.begin(), results.end(), ba::deferred);
+	co_await boost::asio::async_connect(socket_, results, ba::deferred);
 }
 
 ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
