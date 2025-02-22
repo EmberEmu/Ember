@@ -48,7 +48,7 @@ void DatagramTransport::resolve(std::string_view host, const std::uint16_t port,
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		                        ba::ip::udp::resolver::results_type results) {
 			if(!ec) {
-				remote_ep_ = results->endpoint();
+				remote_ep_ = results.begin()->endpoint();
 			}
 
 			cb(ec, remote_ep_);
