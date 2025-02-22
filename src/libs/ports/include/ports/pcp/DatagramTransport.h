@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,6 +24,8 @@ namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
 class DatagramTransport final {
+	static const std::size_t INITIAL_RECV_BUFFER_SIZE = 2048;
+
 	using OnReceive = std::function<void(std::span<std::uint8_t>, const ba::ip::udp::endpoint&)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
 	using OnResolve = std::function<void(const boost::system::error_code&,

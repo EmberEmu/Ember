@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include <ports/pcp/DatagramTransport.h>
 #include <boost/asio/ip/multicast.hpp>
+#include <boost/container/small_vector.hpp>
 
 namespace ember::ports {
 
@@ -100,7 +101,7 @@ void DatagramTransport::receive() {
 				return;
 			}
 
-			std::vector<std::uint8_t> buffer(socket_.available());
+			boost::container::small_vector<std::uint8_t, INITIAL_RECV_BUFFER_SIZE> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
 			const std::size_t recv = socket_.receive_from(boost::asio::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);

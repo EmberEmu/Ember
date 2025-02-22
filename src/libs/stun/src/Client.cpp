@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Ember
+ * Copyright (c) 2023 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -50,7 +50,7 @@ Client::Client(const std::string& bind, std::string host, const std::uint16_t po
 	}
 
 	transport_->set_callbacks(
-		[this](std::vector<std::uint8_t> buffer) { handle_message(buffer); },
+		[this](std::span<std::uint8_t> buffer) { handle_message(buffer); },
 		[this](const boost::system::error_code& ec) { on_connection_error(ec); }
 	);
 }

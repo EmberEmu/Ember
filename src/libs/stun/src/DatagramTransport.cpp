@@ -11,6 +11,7 @@
 #include <boost/asio/ip/basic_resolver.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/container/small_vector.hpp>
 
 namespace ember::stun {
 
@@ -93,13 +94,13 @@ void DatagramTransport::receive() {
 				return;
 			}
 
-			std::vector<std::uint8_t> buffer(socket_.available());
+			boost::container::small_vector<std::uint8_t, INITIAL_RECV_BUFFER_SIZE> buffer(socket_.available());
 			boost::asio::socket_base::message_flags flags(0);
 			const std::size_t recv = socket_.receive_from(boost::asio::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {
-				rcb_(std::move(buffer));
+				rcb_(buffer);
 			} else {
 				ecb_(ec);
 			}

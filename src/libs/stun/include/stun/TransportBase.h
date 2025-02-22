@@ -12,8 +12,9 @@
 #include <chrono>
 #include <functional>
 #include <memory>
-#include <string_view>
+#include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
@@ -21,7 +22,7 @@ namespace ember::stun {
 
 class Transport {
 public:
-	using OnReceive = std::function<void(std::vector<std::uint8_t>)>;
+	using OnReceive = std::function<void(std::span<std::uint8_t>)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
 	using OnConnect = std::function<void(const boost::system::error_code&)>;
 

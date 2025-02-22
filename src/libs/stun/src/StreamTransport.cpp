@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -105,7 +105,8 @@ void StreamTransport::receive() {
 			break;
 		case ReadState::READ_DONE:
 			state_ = ReadState::READ_HEADER;
-			rcb_(std::move(buffer_));
+			rcb_(buffer_);
+			buffer_.clear();
 			[[fallthrough]];
 		case ReadState::READ_HEADER:
 			state_ = ReadState::READ_BODY;
