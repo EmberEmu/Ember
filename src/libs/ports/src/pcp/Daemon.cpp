@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,9 @@
  */
 
 #include <ports/pcp/Daemon.h>
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/post.hpp>
 #include <algorithm>
 #include <random>
 
@@ -16,7 +19,7 @@ Daemon::Daemon(Client& client, boost::asio::io_context& ctx)
 	: client_(client), timer_(ctx), strand_(ctx) {
 	daemon_epoch_ = std::chrono::steady_clock::now();
 
-	client_.announce_handler(strand_.wrap([&](std::uint32_t epoch) {
+	client_.announce_handler(boost::asio::bind_executor(strand_, [&](std::uint32_t epoch) {
 		check_epoch(epoch);
 	}));
 	
@@ -27,7 +30,7 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
 	state_ = State::TIMER_WAIT;
 
 	timer_.expires_from_now(time);
-	timer_.async_wait(strand_.wrap([&](const boost::system::error_code& ec) {
+	timer_.async_wait(boost::asio::bind_executor(strand_, [&](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}
@@ -85,7 +88,7 @@ void Daemon::process_queue() {
 
 void Daemon::renew_mapping(const Mapping& mapping) {
 	client_.add_mapping(mapping.request, mapping.strict,
-		strand_.wrap([&](const Result& result) mutable {
+		boost::asio::bind_executor(strand_, [&](const Result& result) mutable {
 		// we don't auto-delete the mapping if it fails because testing
 		// showed that it's possible to have transient errors,
 		// so we'll keep the entry and hope we have better luck next time
@@ -194,7 +197,7 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 		.handler = std::move(wrapped)
 	};
 
-	strand_.post([&, mapping = std::move(mapping)]() mutable {
+	boost::asio::post(strand_, [&, mapping = std::move(mapping)]() mutable {
 		queue_.emplace_front(std::move(mapping));
 
 		if(state_ == State::TIMER_WAIT) {
@@ -208,7 +211,7 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 	RequestHandler wrapped = 
 		[&, handler = std::move(handler)](const Result& result) {
 		if(result) {
-			strand_.dispatch([&, r = result] {
+			boost::asio::dispatch(strand_, [&, r = result] {
 				erase_mapping(r);
 			});
 		}
@@ -226,7 +229,7 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 		.handler = std::move(wrapped)
 	};
 
-	strand_.post([&, mapping = std::move(mapping)]() mutable {
+	boost::asio::post(strand_, [&, mapping = std::move(mapping)]() mutable {
 		queue_.emplace_front(std::move(mapping));
 
 		if(state_ == State::TIMER_WAIT) {

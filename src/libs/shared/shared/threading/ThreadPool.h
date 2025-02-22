@@ -10,6 +10,7 @@
 
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/post.hpp>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -30,7 +31,7 @@ public:
 #ifdef DEBUG_NO_THREADS
 		work();
 #else
-		service_.post(std::move(work));
+		boost::asio::post(service_, std::move(work));
 #endif
 	}
 

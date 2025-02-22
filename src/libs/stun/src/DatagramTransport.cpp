@@ -8,6 +8,7 @@
 
 #include <stun/DatagramTransport.h>
 #include <shared/threading/Utility.h>
+#include <boost/asio/post.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -24,7 +25,7 @@ DatagramTransport::DatagramTransport(const std::string& bind,
 		(&boost::asio::io_context::run), &ctx_);
 	thread::set_name(worker_, "STUN UDP Worker");
 
-	ctx_.post([&]() {
+	boost::asio::post(ctx_, [&]() {
 		receive();
 	});
 }
@@ -70,7 +71,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ctx_.post([&, datagram = std::move(message)]() mutable {
+	boost::asio::post(ctx_, [&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {

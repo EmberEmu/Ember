@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <ports/upnp/SSDP.h>
 #include <ports/upnp/IGDevice.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/post.hpp>
 #include <atomic>
 #include <memory>
 #include <semaphore>
@@ -144,7 +145,7 @@ class PortForward final {
 	}
 
 	void start_auto(const std::string& iface, const std::string& gateway, std::uint16_t port) {
-		ctx_.post([=, this]() mutable {
+		boost::asio::post(ctx_, [=, this]() mutable {
 			start_upnp(iface, port);
 			cb_sem_.acquire();
 

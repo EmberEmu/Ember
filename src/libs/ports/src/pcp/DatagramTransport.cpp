@@ -7,6 +7,8 @@
  */
 
 #include <ports/pcp/DatagramTransport.h>
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/ip/multicast.hpp>
 #include <boost/container/small_vector.hpp>
 
@@ -18,7 +20,7 @@ DatagramTransport::DatagramTransport(const std::string& bind, std::uint16_t port
 	  resolver_(ctx_) {
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 
-	ctx_.post(strand_.wrap([&]() {
+	boost::asio::post(ctx_, boost::asio::bind_executor(strand_, [&]() {
 		receive();
 	}));
 }
@@ -42,7 +44,7 @@ void DatagramTransport::join_group(const std::string& address) {
 }
 
 void DatagramTransport::resolve(std::string_view host, const std::uint16_t port, OnResolve&& cb) {
-	resolver_.async_resolve(host, std::to_string(port), strand_.wrap(
+	resolver_.async_resolve(host, std::to_string(port), boost::asio::bind_executor(strand_, 
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		                        ba::ip::udp::resolver::results_type results) {
 			if(!ec) {
@@ -59,7 +61,7 @@ void DatagramTransport::do_write() {
 	auto buffer = boost::asio::buffer(datagram->data(), datagram->size());
 	queue_.pop();
 
-	socket_.async_send_to(buffer, remote_ep_, strand_.wrap(
+	socket_.async_send_to(buffer, remote_ep_, boost::asio::bind_executor(strand_,
 		[this, dg = std::move(datagram)](boost::system::error_code ec,
 		                                 std::size_t /*bytes_sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {
@@ -77,7 +79,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ctx_.post(strand_.wrap([&, datagram = std::move(message)]() mutable {
+	boost::asio::post(ctx_, boost::asio::bind_executor(strand_, [&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
@@ -92,7 +94,7 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_receive_from(boost::asio::null_buffers(), ep_, strand_.wrap(
+	socket_.async_receive_from(boost::asio::null_buffers(), ep_, boost::asio::bind_executor(strand_,
 		[this](boost::system::error_code ec, std::size_t length) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;

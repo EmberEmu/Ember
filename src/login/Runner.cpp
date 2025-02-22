@@ -42,6 +42,7 @@
 #include <stun/Client.h>
 #include <stun/Utility.h>
 #include <botan/version.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/container/small_vector.hpp>
@@ -332,7 +333,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	}
 
 	// All done setting up
-	service.dispatch([&]() {
+	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 	

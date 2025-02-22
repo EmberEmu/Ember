@@ -18,6 +18,7 @@
 #include <shared/threading/ThreadPool.h>
 #include <shared/utility/PCREHelper.h>
 #include <spark/Server.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
@@ -158,7 +159,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	spark::Server spark(service, "character", s_address, s_port, logger);
 	CharacterService char_service(spark, handler, logger);
 	
-	service.dispatch([&]() {
+	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 

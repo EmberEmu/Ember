@@ -12,6 +12,7 @@
 #include <spark/buffers/BufferAdaptor.h>
 #include <shared/threading/Utility.h>
 #include <boost/asio/connect.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 
@@ -83,7 +84,7 @@ void StreamTransport::do_write() {
 }
 
 void StreamTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ctx_.post([&, message]() mutable {
+	boost::asio::post(ctx_, [&, message]() mutable {
 		queue_.emplace(std::move(message));
 
 		if(queue_.size() == 1) {

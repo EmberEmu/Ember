@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 
 #include <shared/metrics/Monitor.h>
+#include <boost/asio/bind_executor.hpp>
 #include <array>
 #include <memory>
 #include <sstream>
@@ -37,7 +38,7 @@ void Monitor::receive() {
 	std::array<char, 1> buffer;
 
 	socket_.async_receive_from(boost::asio::buffer(buffer), endpoint_, 
-		strand_.wrap([this](const boost::system::error_code& ec, std::size_t) {
+		boost::asio::bind_executor(strand_, [this](const boost::system::error_code& ec, std::size_t) {
 			if(!ec || ec == boost::asio::error::message_size) {
 				send_health_status();
 				receive();
@@ -49,7 +50,7 @@ void Monitor::send_health_status() {
 	auto message = std::make_shared<std::string>(generate_message());
 
 	socket_.async_send_to(boost::asio::buffer(*message), endpoint_,
-		strand_.wrap([message](const boost::system::error_code&, std::size_t) { }));
+		boost::asio::bind_executor(strand_, [message](const boost::system::error_code&, std::size_t) { }));
 }
 
 void Monitor::add_source(Source source, Severity severity, LogCallback log_callback) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include "ClientHandler.h"
 #include <shared/threading/ServicePool.h>
 #include <shared/ClientRef.h>
+#include <boost/asio/post.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <concepts>
 #include <memory>
@@ -39,7 +40,7 @@ public:
 			return;
 		}
 
-		service->post([client, work = std::move(work)] {
+		boost::asio::post(service, [client, work = std::move(work)] {
 			if(!handlers_.contains(client)) {
 				LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
 				return;
@@ -58,7 +59,7 @@ public:
 			return;
 		}
 
-		service->post([&, client, event = std::move(event)] {
+		boost::asio::post(service, [&, client, event = std::move(event)] {
 			if(auto it = handlers_.find(client); it != handlers_.end()) {
 				auto& [_, handler] = *it;
 				handler->handle_event(&event);

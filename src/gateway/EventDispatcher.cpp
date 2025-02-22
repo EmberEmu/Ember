@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <type_traits>
 
@@ -65,7 +66,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientRef> clients,
 
 		auto& service = pool_.get(i);
 
-		service.post([clients_ptr, range, event] {
+		boost::asio::post(service, [clients_ptr, range, event] {
 			auto [beg, end] = range;
 
 			while(beg != end) {
@@ -90,7 +91,7 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
 	auto& service = pool_.get(handler->uuid().service());
 
-	service.dispatch([=] {
+	boost::asio::dispatch(service, [=] {
 		handlers_.erase(handler->uuid());
 	});
 }

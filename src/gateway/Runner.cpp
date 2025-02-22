@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,6 +37,7 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>
 #include <botan/auto_rng.h>
@@ -263,7 +264,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, server.port());
 
-	service.dispatch([&]() {
+	boost::asio::dispatch(service, [&]() {
 		realm_svc.set_online();
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});

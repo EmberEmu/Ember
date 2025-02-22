@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,8 @@
 #include <ports/pcp/Serialise.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <algorithm>
 #include <random>
 
@@ -29,12 +31,12 @@ Client::Client(const std::string& interface, std::string gateway, boost::asio::i
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
-			ctx_.dispatch(strand_.wrap([&, buffer = std::move(buffer), ep]() {
+			boost::asio::dispatch(ctx_, boost::asio::bind_executor(strand_, [&, buffer = std::move(buffer), ep]() {
 				handle_message(buffer, ep);
 			}));
 		},
 		[&](const boost::system::error_code&) { 
-			ctx_.dispatch(strand_.wrap([&]() {
+			boost::asio::dispatch(ctx_, boost::asio::bind_executor(strand_, [&]() {
 				handle_connection_error(); 
 			}));
 		}
@@ -399,7 +401,7 @@ void Client::timeout_handler() {
 
 void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const int retries) {
 	timer_.expires_from_now(timeout);
-	timer_.async_wait(strand_.wrap([&, timeout, retries](const boost::system::error_code& ec) {
+	timer_.async_wait(boost::asio::bind_executor(strand_, [&, timeout, retries](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}

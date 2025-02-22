@@ -21,6 +21,7 @@
 #include <shared/threading/ThreadPool.h>
 #include <shared/threading/Utility.h>
 #include <spark/Server.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <exception>
@@ -117,7 +118,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	spark::Server spark(service, "account", s_address, s_port, logger);
 	AccountService acct_service(spark, handler, sessions, logger);
 
-	service.dispatch([&]() {
+	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 

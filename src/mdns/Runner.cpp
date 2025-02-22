@@ -14,6 +14,7 @@
 #include <spark/Server.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/Utility.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <exception>
@@ -95,7 +96,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	NSDService nsd(spark, logger);
 
 	// All done setting up
-	service.dispatch([&logger]() {
+	boost::asio::dispatch(service, [&logger]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 

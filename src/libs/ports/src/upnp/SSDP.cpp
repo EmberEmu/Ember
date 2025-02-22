@@ -10,6 +10,7 @@
 #include <ports/upnp/HTTPHeaderParser.h>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/post.hpp>
 #include <format>
 #include <regex>
 
@@ -180,7 +181,7 @@ std::future<LocateResult> SSDP::locate_gateways(use_future_t) {
 void SSDP::locate_gateways(LocateHandler&& handler) {
 	handler_ = handler;
 
-	strand_.post([&]() {
+	ba::post(strand_, [&]() {
 		ba::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 1), ba::detached);
 		ba::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 2), ba::detached);
 	});
@@ -190,7 +191,7 @@ void SSDP::search(std::string_view type, std::string_view subtype,
                   const int version, LocateHandler&& handler) {
 	handler_ = handler;
 
-	strand_.post([&]() {
+	ba::post(strand_, [&]() {
 		ba::co_spawn(ctx_, start_ssdp_search(type, subtype, version), ba::detached);
 	});
 }

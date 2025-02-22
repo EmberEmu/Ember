@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
@@ -96,7 +97,7 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 		);
 	}
 
-	service.dispatch([&]() {
+	boost::asio::dispatch(service, [&]() {
 		LOG_INFO(logger) << "Social daemon started successfully" << LOG_SYNC;
 	});
 
