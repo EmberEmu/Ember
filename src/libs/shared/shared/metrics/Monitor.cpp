@@ -31,7 +31,12 @@ void Monitor::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
-	timer_.cancel(ec);
+
+	try {
+		timer_.cancel();
+	} catch(boost::system::system_error&) {
+		// swallow exception, Asio removed the error code overload
+	}
 }
 
 void Monitor::receive() {
