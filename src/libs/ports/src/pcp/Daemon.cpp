@@ -29,7 +29,7 @@ Daemon::Daemon(Client& client, boost::asio::io_context& ctx)
 void Daemon::start_renew_timer(const std::chrono::seconds time) {
 	state_ = State::TIMER_WAIT;
 
-	timer_.expires_from_now(time);
+	timer_.expires_after(time);
 	timer_.async_wait(boost::asio::bind_executor(strand_, [&](const boost::system::error_code& ec) {
 		if(ec) {
 			return;

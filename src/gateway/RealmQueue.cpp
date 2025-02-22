@@ -11,7 +11,7 @@
 namespace ember::gateway {
 
 void RealmQueue::set_timer() {
-	timer_.expires_from_now(frequency_);
+	timer_.expires_after(frequency_);
 	timer_.async_wait([this](const boost::system::error_code& ec) {
 		if(!ec) { // if ec is set, the timer was aborted (shutdown)
 			update_clients();

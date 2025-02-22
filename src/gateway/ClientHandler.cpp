@@ -98,7 +98,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 }
 
 void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
-	timer_.expires_from_now(time);
+	timer_.expires_after(time);
 
 	timer_.async_wait([uuid = uuid_](const boost::system::error_code& ec) {
 		if(!ec) {

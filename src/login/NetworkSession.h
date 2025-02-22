@@ -142,7 +142,7 @@ private:
 		auto self(this->shared_from_this());
 		set_is_active(false);
 
-		timer_.expires_from_now(SOCKET_ACTIVITY_TIMEOUT);
+		timer_.expires_after(SOCKET_ACTIVITY_TIMEOUT);
 		timer_.async_wait([this, self](const boost::system::error_code& ec) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;

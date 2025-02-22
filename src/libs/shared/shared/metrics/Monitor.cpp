@@ -127,7 +127,7 @@ std::string Monitor::generate_message() const {
 }
 
 void Monitor::set_timer() {
-	timer_.expires_from_now(TIMER_FREQUENCY);
+	timer_.expires_after(TIMER_FREQUENCY);
 	timer_.async_wait(std::bind(&Monitor::timer_tick, this, std::placeholders::_1));
 }
 

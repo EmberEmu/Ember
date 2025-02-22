@@ -28,7 +28,7 @@ Tracking::Tracking(boost::asio::io_context& ctx, log::Logger& logger)
 }
 
 void Tracking::start_timer() {
-	timer_.expires_from_now(frequency_);
+	timer_.expires_after(frequency_);
 	timer_.async_wait(std::bind_front(&Tracking::expired, this));
 }
 

@@ -512,7 +512,7 @@ void Client::handle_no_response() {
 }
 
 void Client::start_transaction_timer() {
-	tx_->timer.expires_from_now(tx_->timeout);
+	tx_->timer.expires_after(tx_->timeout);
 	tx_->timer.async_wait([&](const boost::system::error_code& ec) {
 		if(ec) {
 			return;

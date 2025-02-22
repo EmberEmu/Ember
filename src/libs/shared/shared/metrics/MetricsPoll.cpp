@@ -12,7 +12,7 @@ namespace ember {
 
 MetricsPoll::MetricsPoll(boost::asio::io_context& service, Metrics& metrics)
                          : timer_(service), metrics_(metrics) {
-	timer_.expires_from_now(FREQUENCY);
+	timer_.expires_after(FREQUENCY);
 
 	timer_.async_wait([this](const boost::system::error_code& ec) {
 		timeout(ec);
@@ -48,7 +48,7 @@ void MetricsPoll::timeout(const boost::system::error_code& ec) {
 		}
 	}
 
-	timer_.expires_from_now(FREQUENCY);
+	timer_.expires_after(FREQUENCY);
 }
 
 } // ember

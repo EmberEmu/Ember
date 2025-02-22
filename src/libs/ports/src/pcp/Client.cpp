@@ -400,7 +400,7 @@ void Client::timeout_handler() {
 }
 
 void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const int retries) {
-	timer_.expires_from_now(timeout);
+	timer_.expires_after(timeout);
 	timer_.async_wait(boost::asio::bind_executor(strand_, [&, timeout, retries](const boost::system::error_code& ec) {
 		if(ec) {
 			return;

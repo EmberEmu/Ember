@@ -14,7 +14,7 @@
 namespace ember::gateway {
 
 void QoS::set_timer() {
-	timer_.expires_from_now(TIMER_FREQUENCY);
+	timer_.expires_after(TIMER_FREQUENCY);
 	timer_.async_wait([this](const boost::system::error_code& ec) {
 		if(!ec) { // if ec is set, the timer was aborted (shutdown)
 			measure_bandwidth();
