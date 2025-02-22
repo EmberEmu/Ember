@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,8 +21,8 @@ MetricsImpl::MetricsImpl(boost::asio::io_context& service, const std::string& ho
                          : signals_(service, SIGINT, SIGTERM), socket_(service) {
 	signals_.async_wait(std::bind(&MetricsImpl::shutdown, this));
 	boost::asio::ip::udp::resolver resolver(service);
-	boost::asio::ip::udp::resolver::query query(host, std::to_string(port));
-	boost::asio::connect(socket_, resolver.resolve(query));
+	const auto results = resolver.resolve(host, std::to_string(port));
+	boost::asio::connect(socket_, results);
 }
 
 void MetricsImpl::shutdown() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 Ember
+ * Copyright (c) 2023 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -135,9 +135,7 @@ std::string DatagramTransport::local_ip() const {
 	 */
 	if(local_ip == "0.0.0.0" || local_ip == "::") {
 		ba::ip::tcp::resolver resolver(ctx_);
-		const ba::ip::tcp::resolver::query query(ba::ip::host_name(), "");
-
-		const auto results = resolver.resolve(query);
+		const auto results = resolver.resolve(ba::ip::host_name(), "");
 
 		for(const auto& entry : results) {
 			if((entry.endpoint().address().is_v4()
