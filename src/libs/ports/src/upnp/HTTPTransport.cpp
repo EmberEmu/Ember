@@ -40,12 +40,12 @@ ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uin
 
 ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
 	auto buffer = boost::asio::buffer(*message);
-	co_await ba::async_write(socket_, buffer, as_tuple(ba::deferred));
+	co_await ba::async_write(socket_, buffer, ba::as_tuple(ba::deferred));
 }
 
 ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-	co_await ba::async_write(socket_, boost::asio::buffer(*data), as_tuple(ba::deferred));
+	co_await ba::async_write(socket_, boost::asio::buffer(*data), ba::as_tuple(ba::deferred));
 }
 
 auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {

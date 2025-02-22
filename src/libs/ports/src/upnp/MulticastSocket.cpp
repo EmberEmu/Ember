@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -50,7 +50,7 @@ auto MulticastSocket::receive() -> ba::awaitable<ReceiveType> {
 	}
 
 	auto buffer = boost::asio::buffer(buffer_);
-	auto [ec, size] = co_await socket_.async_receive_from(buffer, remote_ep_, as_tuple(ba::deferred));
+	auto [ec, size] = co_await socket_.async_receive_from(buffer, remote_ep_, ba::as_tuple(ba::deferred));
 
 	if(ec) {
 		co_return std::unexpected(ec);
@@ -77,7 +77,7 @@ ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8
 
 	const auto ba_buf = boost::asio::buffer(*buffer);
 
-	const auto& [ec, _] = co_await socket_.async_send_to(ba_buf, ep, as_tuple(ba::deferred));
+	const auto& [ec, _] = co_await socket_.async_send_to(ba_buf, ep, boost::asio::as_tuple(ba::deferred));
 
 	if(ec) {
 		socket_.close();
