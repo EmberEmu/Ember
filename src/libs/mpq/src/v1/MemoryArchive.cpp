@@ -107,7 +107,7 @@ void MemoryArchive::extract_file(const std::filesystem::path& path, ExtractionSi
 	auto fpos_hi = 0;
 
 	if(bt_hi_pos_) {
-		fpos_hi = high_mask((*bt_hi_pos_)[index]);;
+		fpos_hi = high_mask((*bt_hi_pos_)[index]);
 	}
 
 	extract_file_ext(path, store, fpos_hi);

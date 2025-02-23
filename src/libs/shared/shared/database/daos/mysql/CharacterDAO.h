@@ -105,7 +105,7 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			return result_to_character(res.get());;
+			return result_to_character(res.get());
 		}
 
 		return std::nullopt;

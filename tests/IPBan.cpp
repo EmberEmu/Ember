@@ -36,15 +36,15 @@ public:
 
 TEST_F(IPBanTest, Mask32) {
 	EXPECT_FALSE(bans->is_banned("192.88.99.61"))
-		<< "Banned below range";;
+		<< "Banned below range";
 	EXPECT_TRUE(bans->is_banned("192.88.99.62"));
 	EXPECT_FALSE(bans->is_banned("192.88.99.63"))
-		<< "Banned above range";;
+		<< "Banned above range";
 }
 
 TEST_F(IPBanTest, Mask31) {
 	EXPECT_FALSE(bans->is_banned("203.62.113.81"))
-		<< "Banned below range";;
+		<< "Banned below range";
 	EXPECT_TRUE(bans->is_banned("203.62.113.82"));
 	EXPECT_TRUE(bans->is_banned("203.62.113.83"));
 	EXPECT_FALSE(bans->is_banned("203.62.113.84"))
@@ -53,7 +53,7 @@ TEST_F(IPBanTest, Mask31) {
 
 TEST_F(IPBanTest, Mask24) {
 	EXPECT_FALSE(bans->is_banned("169.254.25.255"))
-		<< "Banned below range";;
+		<< "Banned below range";
 	EXPECT_TRUE(bans->is_banned("169.254.26.0"));
 	EXPECT_TRUE(bans->is_banned("169.254.26.21"));
 	EXPECT_TRUE(bans->is_banned("169.254.26.3"));
@@ -65,7 +65,7 @@ TEST_F(IPBanTest, Mask24) {
 
 TEST_F(IPBanTest, Mask16) {
 	EXPECT_FALSE(bans->is_banned("172.15.255.255"))
-		<< "Banned below range";;
+		<< "Banned below range";
 	EXPECT_TRUE(bans->is_banned("172.16.0.0"));
 	EXPECT_TRUE(bans->is_banned("172.16.125.134"));
 	EXPECT_TRUE(bans->is_banned("172.16.117.92"));
