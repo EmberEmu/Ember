@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,10 +13,10 @@
 #include <spark/buffers/allocators/DefaultAllocator.h>
 #include <spark/buffers/detail/IntrusiveStorage.h>
 #include <boost/assert.hpp>
-#include <algorithm>
 #include <concepts>
 #include <utility>
 #ifdef BUFFER_DEBUG
+#include <algorithm>
 #include <vector>
 #endif
 #include <cstddef>
