@@ -26,7 +26,7 @@ template<typename T>
 concept is_pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
 
 template <typename T>
-concept can_resize_overwrite =
+concept has_resize_overwrite =
 	requires(T t) {
 		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
 };
