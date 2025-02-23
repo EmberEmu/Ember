@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -78,7 +78,6 @@ TEST(StaticBuffer, Write) {
 	spark::io::StaticBuffer<std::uint8_t, 6> buffer;
 	const std::array<std::uint8_t, 6> values { 1, 2, 3, 4, 5, 6 };
 	buffer.write(values.data(), values.size());
-	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_TRUE(std::ranges::equal(values, buffer));
 }
