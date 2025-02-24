@@ -19,6 +19,10 @@
 
 #include "base32.h"
 
+int base32_decode(const char* encoded, uint8_t* result, int bufSize) {
+	return base32_decode(reinterpret_cast<const uint8_t*>(encoded), result, bufSize);
+}
+
 int base32_decode(const uint8_t *encoded, uint8_t *result, int bufSize) {
   int buffer = 0;
   int bitsLeft = 0;
