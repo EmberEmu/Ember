@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,6 @@
 
 using namespace ember;
 
-// only running on Linux/Unix distros for now
 TEST(ThreadUtility, Self_GetSetName) {
 	const char* set_name = "Test Name";
 	
@@ -33,7 +32,6 @@ TEST(ThreadUtility, Self_GetSetName) {
 	ASSERT_EQ(name, wname);
 }
 
-// only running on Linux/Unix distros for now
 TEST(ThreadUtility, GetSetName) {
 	std::binary_semaphore sem(0);
 	const char* set_name = "Test Name";
