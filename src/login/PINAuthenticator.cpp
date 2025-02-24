@@ -150,7 +150,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
 	const auto time = clock.now();
 	const auto now = std::chrono::time_point_cast<std::chrono::seconds>(time).time_since_epoch().count();
-	auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
+	const auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
 
 	HashBytes hmac_result;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
