@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@ std::optional<Botan::BigInt> Sessions::lookup_session(std::uint32_t account_id) 
 		return std::nullopt;
 	}
 
-	return std::optional<Botan::BigInt>(it->second);
+	return it->second;
 }
 
 } // ember
