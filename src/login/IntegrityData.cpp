@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include "IntegrityData.h"
 #include "IntegrityPlatforms.h"
+#include <gsl/narrow>
 #include <algorithm>
 #include <filesystem>
 #include <format>
@@ -77,7 +78,7 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 		}
 
 		const auto size = fs::file_size(fpath);
-		buffer.resize(static_cast<std::size_t>(size) + buffer.size());
+		buffer.resize(gsl::narrow<std::size_t>(size) + buffer.size());
 
 		if(!file.read(reinterpret_cast<char*>(buffer.data()) + write_offset, size)) {
 			throw std::runtime_error("Unable to read " + fpath.string());
