@@ -77,14 +77,21 @@ void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
 			throw std::runtime_error("Unable to open " + fpath.string());
 		}
 
-		const auto size = fs::file_size(fpath);
-		buffer.resize(gsl::narrow<std::size_t>(size) + buffer.size());
+		const auto file_size = fs::file_size(fpath);
+		const auto new_buf_size = gsl::narrow<std::size_t>(file_size) + buffer.size();
 
-		if(!file.read(reinterpret_cast<char*>(buffer.data()) + write_offset, size)) {
+		if(new_buf_size  < buffer.size()) {
+			throw std::runtime_error("Bad integrity data buffer size (wraparound)");
+		}
+
+		buffer.resize(new_buf_size);
+
+		if(!file.read(reinterpret_cast<char*>(buffer.data()) + write_offset,
+		              gsl::narrow<std::streamsize>(file_size))) {
 			throw std::runtime_error("Unable to read " + fpath.string());
 		}
 
-		write_offset += size;
+		write_offset += file_size;
 	}
 
 	data_.emplace(detail::Key{ build, platform, system }, std::move(buffer));
