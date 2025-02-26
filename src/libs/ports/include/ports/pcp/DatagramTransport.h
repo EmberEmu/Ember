@@ -13,6 +13,7 @@
 #include <boost/asio/strand.hpp>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <memory>
 #include <queue>
 #include <thread>
