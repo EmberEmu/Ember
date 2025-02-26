@@ -206,8 +206,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 		log_stun_result(stun, result, port, logger);
 
 		if(result) {
-			const auto& ip = stun::extract_ip_to_string(*result);
-			realm->ip = ip;
+			realm->ip = stun::extract_ip_to_string(*result);
 			realm->address = std::format("{}:{}", realm->ip, realm->port);
 		}
 
