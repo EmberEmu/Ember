@@ -52,7 +52,7 @@ int main(int argc, char** argv) try {
 			}
 		}
 		
-		auto index = archive->file_lookup(f, 0);
+		const auto index = archive->file_lookup(f, 0);
 
 		if(index == mpq::npos) {
 			std::println(stderr, "Skipping: {} found in listfile but not indexed", f);

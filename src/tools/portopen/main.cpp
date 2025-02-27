@@ -101,10 +101,10 @@ void use_natpmp(const po::variables_map& args) {
 
 	if(result) {
 		std::println("Successful {}: {} -> {} for {} seconds",
-		            deletion? "deletion" : "mapping",
-		            result->external_port,
-		            result->internal_port,
-		            result->lifetime);
+		             deletion? "deletion" : "mapping",
+		             result->external_port,
+		             result->internal_port,
+		             result->lifetime);
 	} else {
 		std::cout << "Error: could not map port" << std::endl;
 		print_error(result.error());

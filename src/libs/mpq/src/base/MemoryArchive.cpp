@@ -64,6 +64,7 @@ int MemoryArchive::version() const {
 	return boost::endian::little_to_native(header_->format_version);
 }
 
+[[nodiscard]]
 std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_t locale) const {
 	const auto table = hash_table();
 	auto index = hash_string(name, MPQ_HASH_TABLE_INDEX);

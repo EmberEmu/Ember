@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,7 +27,8 @@ class RealmList final {
 
 public:
 	explicit RealmList(std::span<const Realm> realms);
-	RealmList() : realms_(std::make_shared<RealmMap>()){}
+	RealmList();
+
 	void add_realm(std::span<const Realm> realms);
 	void add_realm(Realm realm);
 	std::optional<Realm> get_realm(std::uint32_t id) const;
