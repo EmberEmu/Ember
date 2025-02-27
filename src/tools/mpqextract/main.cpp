@@ -9,17 +9,20 @@
 #include <mpq/MPQ.h>
 #include <mpq/FileSink.h>
 #include <mpq/BufferedFileSink.h>
-#include <iostream>
+#include <shared/utility/polyfill/print>
 #include <regex>
+#include <cstdio>
 #include <cstdlib>
 
 using namespace ember;
 
 int main(int argc, char** argv) try {
 	if(argc < 2) {
-		std::cout << "Usage: mpqextract <input.mpq> [ecma regex]\n"
-			<< "Only files matching the optional regex will be extracted\n\n"
-			<< R"a(Example: mpqextract.exe test.mpq "([a-zA-Z0-9\s_\\.\-\(\):])+(.jpg|.gif)")a";
+		std::print(
+			"Usage: mpqextract <input.mpq> [ecma regex]\n"
+			"Only files matching the optional regex will be extracted\n\n"
+			R"a(Example: mpqextract.exe test.mpq "([a-zA-Z0-9\s_\\.\-\(\):])+(.jpg|.gif)")a"
+		);
 
 		return EXIT_FAILURE;
 	}
@@ -28,14 +31,14 @@ int main(int argc, char** argv) try {
 	mpq::LocateResult result = mpq::locate_archive(path);
 
 	if(!result) {
-		std::cerr << "Not found, error " << result.error();
+		std::print(stderr, "Not found, error {}", result.error());
 		return EXIT_FAILURE;
 	}
 
 	std::unique_ptr<mpq::Archive> archive = mpq::open_archive(path, *result);
 
 	if(!archive) {
-		std::cerr << "No archive";
+		std::print(stderr, "No archive");
 		return EXIT_FAILURE;
 	}
 
@@ -52,6 +55,7 @@ int main(int argc, char** argv) try {
 		auto index = archive->file_lookup(f, 0);
 
 		if(index == mpq::npos) {
+			std::println(stderr, "Skipping: {} found in listfile but not indexed", f);
 			continue;
 		}
 
@@ -59,12 +63,12 @@ int main(int argc, char** argv) try {
 		mpq::BufferedFileSink sink(f, entry.uncompressed_size);
 		archive->extract_file(f, sink);
 	} catch(mpq::exception& e) {
-		std::cerr << std::format("{} ({})\n", e.what(), f);
+		std::println(stderr, "Extraction error: {} ({})", e.what(), f);
 	}
 
-	std::cout << "Zug zug, work complete!";
+	std::print("Zug zug, work complete!");
 	return EXIT_SUCCESS;
 } catch(std::exception& e) {
-	std::cerr << e.what();
+	std::print(stderr, "Fatal error: {}", e.what());
 	return EXIT_FAILURE;
 }

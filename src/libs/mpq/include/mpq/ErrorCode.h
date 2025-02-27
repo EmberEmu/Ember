@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <format>
 #include <ostream>
 
 namespace ember::mpq {
@@ -47,3 +48,10 @@ inline bool operator!=(const ErrorCode& lhs, const ErrorCode& rhs) {
 }
 
 } // mpq, ember
+
+template <>
+struct std::formatter<ember::mpq::ErrorCode> : std::formatter<int> {
+	auto format(ember::mpq::ErrorCode ec, std::format_context& ctx) const {
+		return std::formatter<int>::format(ec.value(), ctx);
+	}
+};
