@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -142,7 +142,7 @@ void use_upnp(const po::variables_map& args) {
 
 	ssdp.locate_gateways([&](ports::upnp::LocateResult result) {
 		if(!result) {
-			std::cout << result.error() << '\n';
+			std::cerr << result.error() << '\n';
 			return true;
 		}
 
@@ -156,11 +156,11 @@ void use_upnp(const po::variables_map& args) {
 		auto callback = [&, map](ports::upnp::ErrorCode ec) {
 			if(!ec) {
 				std::println("Port {} {} mapping successfully using UPnP",
-				           map.external, deletion? "delete" : "add");
+				             map.external, deletion? "delete" : "add");
 			} else {
 				std::println("Port {} {} failed using UPnP, error {}",
-				           map.external, deletion? "delete" : "add",
-				           ec.value());
+				             map.external, deletion? "delete" : "add",
+				             ec.value());
 			}
 		};
 		
