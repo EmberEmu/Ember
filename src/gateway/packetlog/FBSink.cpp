@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,6 +53,10 @@ void FBSink::start_log(const std::string& filename, std::string_view host,
 	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
 	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
 	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
+
+	if(!file_) {
+		throw std::runtime_error("Error writing to packet log");
+	}
 }
 
 void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, 
@@ -87,6 +91,10 @@ void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
 	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
 	file_.flush();
+
+	if(!file_) {
+		throw std::runtime_error("Error writing to packet log");
+	}
 }
 
 } // gateway, ember
