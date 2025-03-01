@@ -9,6 +9,7 @@
 #include "SchemaParser.h"
 #include "Utility.h"
 #include "inja/inja.hpp"
+#include <gsl/narrow>
 #include <flatbuffers/reflection.h>
 #include <chrono>
 #include <format>
@@ -41,7 +42,7 @@ std::vector<std::uint8_t> SchemaParser::load_file(const std::filesystem::path& p
 	}
 
 	const auto size = std::filesystem::file_size(path);
-	buffer.resize(static_cast<std::size_t>(size));
+	buffer.resize(gsl::narrow<std::size_t>(size));
 
 	if(!file.read(reinterpret_cast<char*>(buffer.data()), buffer.size())) {
 		throw std::runtime_error(std::format("Unable to read, {}", path.string()));
