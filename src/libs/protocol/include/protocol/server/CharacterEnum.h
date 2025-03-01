@@ -88,7 +88,7 @@ public:
 
 		return (state_ = State::DONE);
 	} catch(const std::exception&) {
-		state_ = State::ERRORED;
+		return (state_ = State::ERRORED);
 	}
 
 	void write_to_stream(auto& stream) const {
