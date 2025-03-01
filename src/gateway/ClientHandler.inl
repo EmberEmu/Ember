@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,7 @@
 bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& stream) {
 	if(packet->read_from_stream(stream) == protocol::State::DONE) {
 		if(stream.read_limit() != stream.total_read()) {
-			LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+			LOG_DEBUG(logger_)
 				<< "Skipping superfluous stream data in message "
 				<< protocol::to_string(packet.opcode)
 				<< " from " << client_identify() << LOG_ASYNC;
@@ -43,21 +43,21 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 	const auto state = stream.state();
 
 	if(state == BinaryStream::State::READ_LIMIT_ERR) {
-		LOG_DEBUG_FILTER(logger_, LF_NETWORK)
+		LOG_DEBUG(logger_)
 			<< "Deserialisation of "
 			<< protocol::to_string(packet.opcode)
 			<< " failed, skipping any remaining data" << LOG_ASYNC;
 
 		stream.skip(stream.read_limit() - stream.total_read());
 	} else if(state == BinaryStream::State::BUFF_LIMIT_ERR) {
-		LOG_ERROR_FILTER(logger_, LF_NETWORK)
+		LOG_ERROR(logger_)
 			<< "Message framing lost at "
 			<< protocol::to_string(packet.opcode)
 			<< " from " << client_identify() << LOG_ASYNC;
 
 		close();
 	} else {
-		LOG_ERROR_FILTER(logger_, LF_NETWORK)
+		LOG_ERROR(logger_)
 			<< "Deserialisation failed but stream has not errored for "
 			<< protocol::to_string(packet.opcode)
 			<< " from " << client_identify() << LOG_ASYNC;
