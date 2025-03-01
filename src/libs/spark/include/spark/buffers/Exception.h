@@ -10,8 +10,6 @@
 
 #include <spark/Exception.h>
 #include <format>
-#include <stdexcept>
-#include <string>
 #include <cstddef>
 
 namespace ember::spark::io {
@@ -44,7 +42,7 @@ public:
 
 	stream_read_limit(std::size_t read_size, std::size_t total_read, std::size_t read_limit)
 		: exception(std::format(
-			"Read boundary exceeded: {} byte read requested, read limit was bytes and total bytes read was",
+			"Read boundary exceeded: {} byte read requested, read limit was {} bytes and total bytes read was {}",
 			read_size, read_limit, total_read)),
 		read_limit(read_limit), read_size(read_size), total_read(total_read) {}
 };
