@@ -392,7 +392,7 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		}
 
 		std::string id = primary_key.empty()? "i" : prefix + primary_key;
-		functions << "\t\t" << "storage." << store_name << ".emplace_back(" << id << ", entry);" << '\n';
+		functions << "\t\t" << "storage." << store_name << ".emplace(" << id << ", entry);" << '\n';
 		functions << "\t" << "}" << '\n';
 		functions << "}" << '\n' << '\n';
 	}
