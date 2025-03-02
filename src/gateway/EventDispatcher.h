@@ -10,6 +10,7 @@
 
 #include "Event.h"
 #include "ClientHandler.h"
+#include <logger/Logger.h>
 #include <shared/threading/ServicePool.h>
 #include <shared/ClientRef.h>
 #include <boost/asio/post.hpp>
@@ -26,23 +27,27 @@ class EventDispatcher final {
 	>;
 
 	const ServicePool& pool_;
+	log::Logger& logger_;
+
 	static inline thread_local HandlerMap handlers_;
 
 public:
-	explicit EventDispatcher(const ServicePool& pool) : pool_(pool) {}
+	explicit EventDispatcher(const ServicePool& pool, log::Logger& logger)
+		: pool_(pool),
+		  logger_(logger) {}
 
 	void exec(const ClientRef& client, auto work) const {
 		auto service = pool_.get_if(client.service());
 
 		// bad service index encoded in the UUID
 		if(service == nullptr) {
-			LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger_, "Invalid service index, {}", client.service());
 			return;
 		}
 
 		boost::asio::post(*service, [client, work = std::move(work)] {
 			if(!handlers_.contains(client)) {
-				LOG_DEBUG_GLOB << "Client disconnected, work discarded" << LOG_ASYNC;
+				LOG_DEBUG_ASYNC(logger_, "Client disconnected, work discarded");
 				return;
 			}
 
@@ -55,7 +60,7 @@ public:
 
 		// bad service index encoded in the UUID
 		if(service == nullptr) {
-			LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger_, "Invalid service index, {}", client.service());
 			return;
 		}
 
@@ -64,7 +69,7 @@ public:
 				auto& [_, handler] = *it;
 				handler->handle_event(&event);
 			} else {
-				LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
+				LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
 			}
 		});
 	}

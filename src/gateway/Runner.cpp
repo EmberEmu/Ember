@@ -177,7 +177,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	}
 
 	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
-	EventDispatcher dispatcher(service_pool);
+	EventDispatcher dispatcher(service_pool, logger);
 
 	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
 	const auto& s_address = args["spark.address"].as<std::string>();
@@ -191,7 +191,8 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	// If the database port differs from the config file port, use the config file port
 	if(port != realm->port) {
 		LOG_WARN_SYNC(
-			logger, "Configured port {} differs from database entry port {}, using {}", port, realm->port, port
+			logger, "Configured port {} differs from database entry port {}, using {}",
+			port, realm->port, port
 		);
 
 		realm->port = port;

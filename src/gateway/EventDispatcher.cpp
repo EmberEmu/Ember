@@ -19,15 +19,15 @@ void EventDispatcher::post_event(const ClientRef& client, std::unique_ptr<Event>
 
 	// bad service index encoded in the UUID
 	if(service == nullptr) {
-		LOG_ERROR_GLOB << "Invalid service index, " << client.service() << LOG_ASYNC;
+		LOG_ERROR_ASYNC(logger_, "Invalid service index, {}", client.service());
 		return;
 	}
 
-	boost::asio::post(*service, [client, event = std::move(event)] {
+	boost::asio::post(*service, [&, client, event = std::move(event)] {
 		if(auto handler = handlers_.find(client); handler != handlers_.end()) {
 			handler->second->handle_event(event.get());
 		} else {
-			LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
+			LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
 		}
 	});
 }
@@ -66,14 +66,14 @@ void EventDispatcher::broadcast_event(std::vector<ClientRef> clients,
 
 		auto& service = pool_.get(i);
 
-		boost::asio::post(service, [clients_ptr, range, event] {
+		boost::asio::post(service, [&, clients_ptr, range, event] {
 			auto [beg, end] = range;
 
 			while(beg != end) {
 				if(auto handler = handlers_.find(*beg++); handler != handlers_.end()) {
 					handler->second->handle_event(event.get());
 				} else {
-					LOG_DEBUG_GLOB << "Client disconnected, event discarded" << LOG_ASYNC;
+					LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
 				}
 			}
 		});
