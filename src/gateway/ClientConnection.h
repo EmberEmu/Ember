@@ -81,19 +81,20 @@ class ClientConnection final {
 
 public:
 	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientRef uuid, log::Logger& logger)
-	                 : sessions_(sessions),
-	                   socket_(std::move(socket)),
-	                   remote_ep_(socket_.remote_endpoint()),
-	                   stats_{},
-	                   msg_size_{0},
-	                   logger_(logger),
-	                   read_state_(ReadState::HEADER),
-	                   stopped_(true),
-	                   write_in_progress_(false),
-	                   handler_(*this, uuid, socket_.get_executor(), logger),
-	                   compression_level_(0),
-	                   outbound_front_(&outbound_buffers_.front()),
-	                   outbound_back_(&outbound_buffers_.back()), stopping_(false) { }
+		: sessions_(sessions),
+		  socket_(std::move(socket)),
+		  remote_ep_(socket_.remote_endpoint()),
+		  stats_{},
+		  msg_size_{0},
+		  logger_(logger),
+		  read_state_(ReadState::HEADER),
+		  stopped_(true),
+		  write_in_progress_(false),
+		  handler_(*this, uuid, socket_.get_executor(), logger),
+		  compression_level_(0),
+		  outbound_front_(&outbound_buffers_.front()),
+		  outbound_back_(&outbound_buffers_.back()),
+		  stopping_(false) { }
 
 	void start();
 
