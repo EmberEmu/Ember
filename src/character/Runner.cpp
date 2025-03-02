@@ -44,7 +44,6 @@ void launch(const po::variables_map& args,
             log::Logger& logger);
 
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
-unsigned int check_concurrency(log::Logger& logger);
 
 /*
  * Starts ASIO worker threads, blocking until the launch thread exits
@@ -127,7 +126,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
-	auto concurrency = check_concurrency(logger);
+	auto concurrency = thread::check_concurrency(logger);
 
 	if(!max_conns) {
 		max_conns = concurrency;
@@ -192,22 +191,6 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}
-}
-
-/*
- * The concurrency level returned is usually the number of logical cores
- * in the machine but the standard doesn't guarantee that it won't be zero.
- * In that case, we just set the minimum concurrency level to one.
- */
-unsigned int check_concurrency(log::Logger& logger) {
-	unsigned int concurrency = std::thread::hardware_concurrency();
-
-	if(!concurrency) {
-		concurrency = 1;
-		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
-	}
-
-	return concurrency;
 }
 
 po::options_description options() {

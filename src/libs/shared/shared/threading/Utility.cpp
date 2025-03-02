@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 
 #include "Utility.h"
+#include <logger/Logger.h>
 #include <shared/CompilerWarn.h>
 #include <array>
 #include <stdexcept>
@@ -214,5 +215,22 @@ std::expected<std::wstring, Result> get_name() {
 	return std::unexpected(Result::unsupported);
 #endif
 }
+
+/*
+ * The concurrency level returned is usually the number of logical cores
+ * in the machine but the standard doesn't guarantee that it won't be zero.
+ * In that case, we just set the minimum concurrency level to one.
+ */
+unsigned int check_concurrency(log::Logger& logger) {
+	unsigned int concurrency = std::thread::hardware_concurrency();
+
+	if(!concurrency) {
+		concurrency = 1;
+		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
+	}
+
+	return concurrency;
+}
+
 
 } // thread, ember

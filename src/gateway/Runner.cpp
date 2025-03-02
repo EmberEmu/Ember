@@ -26,14 +26,15 @@
 #include <shared/Banner.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/Version.h>
+#include <shared/database/daos/RealmDAO.h>
+#include <shared/database/daos/UserDAO.h>
+#include <shared/threading/ServicePool.h>
+#include <shared/threading/Utility.h>
+#include <shared/utility/cstring_view.hpp>
 #include <shared/utility/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/STUN.h>
 #include <shared/utility/PortForward.h>
-#include <shared/database/daos/RealmDAO.h>
-#include <shared/database/daos/UserDAO.h>
-#include <shared/threading/ServicePool.h>
-#include <shared/utility/cstring_view.hpp>
 #include <shared/utility/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
@@ -73,7 +74,6 @@ void launch(const po::variables_map& args,
 std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logger);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
-unsigned int check_concurrency(log::Logger& logger);
 void print_lib_versions(log::Logger& logger);
 
 /*
@@ -85,7 +85,7 @@ void print_lib_versions(log::Logger& logger);
  * explicit shutdown() calls in a signal handler.
  */
 int run(const po::variables_map& args, log::Logger& logger) try {
-	const auto concurrency = check_concurrency(logger);
+	const auto concurrency = thread::check_concurrency(logger);
 
 	// Start ASIO service pool
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
@@ -170,7 +170,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	config.realm = &*realm;
 
 	// Determine concurrency level
-	unsigned int concurrency = check_concurrency(logger);
+	unsigned int concurrency = thread::check_concurrency(logger);
 
 	if(args.count("misc.concurrency")) {
 		concurrency = args["misc.concurrency"].as<unsigned int>();
@@ -330,22 +330,6 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}
-}
-
-/*
- * The concurrency level returned is usually the number of logical cores
- * in the machine but the standard doesn't guarantee that it won't be zero.
- * In that case, we just set the minimum concurrency level to one.
- */
-unsigned int check_concurrency(log::Logger& logger) {
-	unsigned int concurrency = std::thread::hardware_concurrency();
-
-	if(!concurrency) {
-		concurrency = 1;
-		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
-	}
-
-	return concurrency;
 }
 
 void print_lib_versions(log::Logger& logger) {

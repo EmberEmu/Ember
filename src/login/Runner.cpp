@@ -72,7 +72,7 @@ namespace ep = ember::connection_pool;
 #if defined TARGET_WORKER_COUNT
 constexpr std::size_t WORKER_NUM_HINT = TARGET_WORKER_COUNT;
 #else
-constexpr std::size_t WORKER_NUM_HINT = 16;
+constexpr std::size_t WORKER_NUM_HINT = 32;
 #endif
 
 namespace ember::login {
@@ -86,7 +86,6 @@ void launch(const po::variables_map& args,
             log::Logger& logger);
 
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
-unsigned int check_concurrency(log::Logger& logger);
 void print_lib_versions(log::Logger& logger);
 std::vector<GameVersion> client_versions();
 
@@ -99,7 +98,7 @@ std::vector<GameVersion> client_versions();
  * explicit shutdown() calls in a signal handler.
  */
 int run(const po::variables_map& args, log::Logger& logger) try {
-	const auto concurrency = check_concurrency(logger);
+	const auto concurrency = thread::check_concurrency(logger);
 	boost::asio::io_context service(concurrency);
 	auto work = boost::asio::make_work_guard(service);
 
@@ -110,6 +109,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 
 	// Spawn worker threads for ASIO
 	boost::container::small_vector<std::jthread, WORKER_NUM_HINT> workers;
+	workers.reserve(concurrency);
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
 		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
@@ -168,7 +168,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
-	unsigned int concurrency = check_concurrency(logger);
+	unsigned int concurrency = thread::check_concurrency(logger);
 
 	if(!max_conns) {
 		max_conns = concurrency;
@@ -364,22 +364,6 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}
-}
-
-/*
- * The concurrency level returned is usually the number of logical cores
- * in the machine but the standard doesn't guarantee that it won't be zero.
- * In that case, we just set the minimum concurrency level to one.
- */
-unsigned int check_concurrency(log::Logger& logger) {
-	unsigned int concurrency = std::thread::hardware_concurrency();
-
-	if(!concurrency) {
-		concurrency = 1;
-		LOG_WARN(logger) << "Unable to determine concurrency level" << LOG_SYNC;
-	}
-
-	return concurrency;
 }
 
 po::options_description options() {
