@@ -221,15 +221,26 @@ std::expected<std::wstring, Result> get_name() {
  * in the machine but the standard doesn't guarantee that it won't be zero.
  * In that case, we just set the minimum concurrency level to one.
  */
-unsigned int hardware_concurrency(log::Logger& logger) {
+unsigned int hardware_concurrency(log::Logger* logger) {
 	unsigned int concurrency = std::thread::hardware_concurrency();
 
 	if(!concurrency) {
 		concurrency = 1;
-		LOG_WARN_SYNC(logger, "Unable to determine concurrency level, defaulting to {}", concurrency);
+
+		if(logger) {
+			LOG_WARN_SYNC(logger, "Unable to determine concurrency level, defaulting to {}", concurrency);
+		}
 	}
 
 	return concurrency;
+}
+
+unsigned int hardware_concurrency(log::Logger& logger) {
+	return hardware_concurrency(&logger);
+}
+
+unsigned int hardware_concurrency() {
+	return hardware_concurrency(nullptr);
 }
 
 

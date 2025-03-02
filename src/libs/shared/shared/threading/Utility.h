@@ -33,6 +33,7 @@ std::expected<std::wstring, Result> get_name(std::thread& thread);
 std::expected<std::wstring, Result> get_name(std::jthread& thread);
 std::expected<std::wstring, Result> get_name();
 
+unsigned int hardware_concurrency();
 unsigned int hardware_concurrency(log::Logger& logger);
 
 } // thread, ember
