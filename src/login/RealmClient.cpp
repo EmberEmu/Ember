@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,8 +53,8 @@ void RealmClient::mark_realm_offline(const spark::Link& link) {
 	std::optional<Realm> realm = realmlist_.get_realm(realm_id);
 	assert(realm);
 	realm->flags |= Realm::Flags::OFFLINE;
-	realmlist_.add_realm(*realm);
-	LOG_INFO_ASYNC(logger_, "Set realm {} to offline", realm->name);
+	LOG_INFO_ASYNC(logger_, "Setting realm {} to offline", realm->name);
+	realmlist_.add_realm(std::move(*realm));
 }
 
 bool RealmClient::validate_status(const Status& msg) const {
