@@ -85,7 +85,7 @@ void print_lib_versions(log::Logger& logger);
  * explicit shutdown() calls in a signal handler.
  */
 int run(const po::variables_map& args, log::Logger& logger) try {
-	const auto concurrency = thread::check_concurrency(logger);
+	const auto concurrency = thread::hardware_concurrency(logger);
 
 	// Start Asio service pool
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
@@ -170,7 +170,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	config.realm = &*realm;
 
 	// Determine concurrency level
-	unsigned int concurrency = thread::check_concurrency(logger);
+	unsigned int concurrency = thread::hardware_concurrency(logger);
 
 	if(args.count("misc.concurrency")) {
 		concurrency = args["misc.concurrency"].as<unsigned int>();

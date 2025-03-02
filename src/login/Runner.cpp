@@ -98,7 +98,7 @@ std::vector<GameVersion> client_versions();
  * explicit shutdown() calls in a signal handler.
  */
 int run(const po::variables_map& args, log::Logger& logger) try {
-	const auto concurrency = thread::check_concurrency(logger);
+	const auto concurrency = thread::hardware_concurrency(logger);
 	boost::asio::io_context service(concurrency);
 	auto work = boost::asio::make_work_guard(service);
 
@@ -168,7 +168,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
-	unsigned int concurrency = thread::check_concurrency(logger);
+	unsigned int concurrency = thread::hardware_concurrency(logger);
 
 	if(!max_conns) {
 		max_conns = concurrency;
