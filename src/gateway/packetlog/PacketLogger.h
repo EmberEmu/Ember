@@ -31,7 +31,20 @@ public:
 	void reset();
 
 	void log(std::span<const std::uint8_t> buffer, PacketDirection dir);
-	void log(const spark::io::pmr::Buffer& buffer, std::size_t length, PacketDirection dir);
+
+	void log(const auto& buffer, std::size_t length, PacketDirection dir) {
+		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+		boost::container::small_vector<std::uint8_t, RESERVE_LEN> out_buf(
+			length, boost::container::default_init
+		);
+
+		buffer.copy(out_buf.data(), length);
+
+		for(auto& sink : sinks_) {
+			sink->log(out_buf, time, dir);
+		}
+	}
 
 	void log(const protocol::is_packet auto& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
