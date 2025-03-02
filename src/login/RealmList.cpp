@@ -11,9 +11,11 @@
 
 namespace ember {
 
-RealmList::RealmList() : realms_(std::make_shared<RealmMap>()){}
+RealmList::RealmList()
+	: realms_(std::make_shared<RealmMap>()){}
 
-RealmList::RealmList(std::span<const Realm> realms) : realms_(std::make_shared<RealmMap>()) {
+RealmList::RealmList(std::span<const Realm> realms)
+	: realms_(std::make_shared<RealmMap>()) {
 	add_realm(realms);
 }
 

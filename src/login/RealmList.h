@@ -14,12 +14,12 @@
 #include <mutex>
 #include <optional>
 #include <span>
-#include <unordered_map>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <cstdint>
 
 namespace ember {
 
-using RealmMap = std::unordered_map<std::uint32_t, Realm>;
+using RealmMap = boost::unordered_flat_map<std::uint32_t, Realm>;
 
 class RealmList final {
 	std::atomic<std::shared_ptr<const RealmMap>> realms_;
