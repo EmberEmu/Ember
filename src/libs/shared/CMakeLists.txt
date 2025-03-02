@@ -43,7 +43,7 @@ set(POSTGRESQL_DAOS_SRC
 )
 
 set(MEMORY_SRC
-    shared/memory/ASIOAllocator.h
+    shared/memory/AsioAllocator.h
 )
 
 set(THREADING_SRC

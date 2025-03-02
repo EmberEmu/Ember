@@ -84,7 +84,7 @@ void use_natpmp(const po::variables_map& args) {
 
 	ports::Client client(interface, gateway, ctx);
 
-	// Create an ASIO worker with a single thread
+	// Create an Asio worker with a single thread
 	auto worker = std::jthread(
 		static_cast<size_t(boost::asio::io_context::*)()>(&boost::asio::io_context::run), &ctx
 	);

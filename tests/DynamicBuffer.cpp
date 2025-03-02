@@ -283,7 +283,7 @@ TEST(DynamicBuffer, ReadIterator) {
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
 }
 
-TEST(DynamicBuffer, ASIOIteratorRegressionTest) {
+TEST(DynamicBuffer, AsioIteratorRegressionTest) {
 	spark::io::DynamicBuffer<1> chain;
 	spark::io::BufferSequence sequence(chain);
 

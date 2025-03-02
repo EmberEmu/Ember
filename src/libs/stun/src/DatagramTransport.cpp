@@ -126,11 +126,11 @@ std::string DatagramTransport::local_ip() const {
 	auto local_ip = address.to_string();
 
 	/*
-     * Hack to try to work around ASIO always reporting the local IP as
+     * Hack to try to work around Asio always reporting the local IP as
 	 * 0.0.0.0 when told to listen on every interface - it will not always
 	 * work!
 	 * 
-	 * ASIO can't enumerate NICs, so the only robust solution is to
+	 * Asio can't enumerate NICs, so the only robust solution is to
 	 * encourage the user to explicitly bind to an interface (supported)
 	 */
 	if(local_ip == "0.0.0.0" || local_ip == "::") {

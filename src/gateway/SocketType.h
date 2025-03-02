@@ -12,7 +12,7 @@
 #include <boost/asio/io_context.hpp>
 
 /*
- * These aliases exist so we can avoid relying on ASIO's
+ * These aliases exist so we can avoid relying on Asio's
  * default polymorphic executor (any_io_executor) and
  * having to pay a performance penalty for a feature we
  * don't need

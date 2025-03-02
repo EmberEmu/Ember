@@ -77,7 +77,7 @@ std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Cat
 void print_lib_versions(log::Logger& logger);
 
 /*
- * Starts ASIO worker threads, blocking until the launch thread exits
+ * Starts Asio worker threads, blocking until the launch thread exits
  * upon error or signal handling.
  * 
  * io_context is only stopped after the thread joins to ensure that all
@@ -87,7 +87,7 @@ void print_lib_versions(log::Logger& logger);
 int run(const po::variables_map& args, log::Logger& logger) try {
 	const auto concurrency = thread::check_concurrency(logger);
 
-	// Start ASIO service pool
+	// Start Asio service pool
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
 	ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	service_pool.run();

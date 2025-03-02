@@ -15,7 +15,7 @@
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/BufferSequence.h>
-#include <shared/memory/ASIOAllocator.h>
+#include <shared/memory/AsioAllocator.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -38,7 +38,7 @@ private:
 	using Buffer = spark::io::DynamicBuffer<1024>;
 
 	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
-	ASIOAllocator<thread_safe> allocator_;
+	AsioAllocator<thread_safe> allocator_;
 
 	SessionManager& sessions_;
 	tcp_socket socket_;

@@ -41,7 +41,7 @@ void stop() {
 }
 
 /*
- * Starts ASIO worker threads, blocking until the launch thread exits
+ * Starts Asio worker threads, blocking until the launch thread exits
  * upon error or signal handling.
  * 
  * io_context is only stopped after the thread joins to ensure that all
@@ -59,7 +59,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 
 	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
 		(&boost::asio::io_context::run), &service);
-	thread::set_name(worker, "ASIO Worker");
+	thread::set_name(worker, "Asio Worker");
 
 	thread.join();
 	service.stop();

@@ -17,7 +17,7 @@ ServicePool::ServicePool(const std::size_t pool_size, const int hint)
 	: pool_size_(pool_size),
 	  next_service_(0) {
 	if(pool_size == 0) {
-		throw std::runtime_error("Cannot have an empty ASIO IO service pool!");
+		throw std::runtime_error("Cannot have an empty Asio IO service pool!");
 	}
 
 	for(std::size_t i = 0; i < pool_size; ++i) {

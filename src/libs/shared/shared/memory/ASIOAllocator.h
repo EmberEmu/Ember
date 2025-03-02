@@ -21,7 +21,7 @@ enum ThreadPolicy {
 };
 
 template<ThreadPolicy _policy = thread_safe>
-class ASIOAllocator final {
+class AsioAllocator final {
 	constexpr static std::size_t SMALL_SIZE  = 64;
 	constexpr static std::size_t MEDIUM_SIZE = 128;
 	constexpr static std::size_t LARGE_SIZE  = 256;
@@ -42,14 +42,14 @@ class ASIOAllocator final {
 	}
 
 public:
-	ASIOAllocator()
+	AsioAllocator()
 		: small_(SMALL_SIZE),
 		  medium_(MEDIUM_SIZE),
 		  large_(LARGE_SIZE),
 		  huge_(HUGE_SIZE) { }
 
-	ASIOAllocator(const ASIOAllocator&) = delete;
-	ASIOAllocator& operator=(const ASIOAllocator&) = delete;
+	AsioAllocator(const AsioAllocator&) = delete;
+	AsioAllocator& operator=(const AsioAllocator&) = delete;
 
 	[[nodiscard]]
 	void* allocate(const std::size_t size) {
@@ -89,12 +89,13 @@ public:
 	std::mutex m_;
 };
 
-// from the ASIO examples
+// from the Asio examples
 template <typename Handler, typename Allocator>
 class alloc_handler {
 public:
 	alloc_handler(Allocator& a, Handler&& h)
-		: allocator_(a), handler_(std::move(h)) { }
+		: allocator_(a),
+		  handler_(std::move(h)) { }
 
 	template <typename ...Args>
 	void operator()(Args&&... args) {

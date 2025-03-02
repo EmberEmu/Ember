@@ -35,7 +35,7 @@ void DatagramTransport::join_group(const std::string& address) {
 	const auto mcast_iface = socket_.local_endpoint().address();
 	ba::ip::multicast::join_group join_opt{};
 
-	// ASIO is doing something weird on Windows, this is a hack
+	// Asio is doing something weird on Windows, this is a hack
 	if(mcast_iface.is_v4()) {
 		join_opt = ba::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
 	}

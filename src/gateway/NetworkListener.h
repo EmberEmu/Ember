@@ -12,7 +12,7 @@
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientRef.h>
-#include <shared/memory/ASIOAllocator.h>
+#include <shared/memory/AsioAllocator.h>
 #include <shared/threading/ServicePool.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>

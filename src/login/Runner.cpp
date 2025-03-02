@@ -90,7 +90,7 @@ void print_lib_versions(log::Logger& logger);
 std::vector<GameVersion> client_versions();
 
 /*
- * Starts ASIO worker threads, blocking until the launch thread exits
+ * Starts Asio worker threads, blocking until the launch thread exits
  * upon error or signal handling.
  * 
  * io_context is only stopped after the thread joins to ensure that all
@@ -107,14 +107,14 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 		launch(args, service, stop_flag, logger);
 	});
 
-	// Spawn worker threads for ASIO
+	// Spawn worker threads for Asio
 	boost::container::small_vector<std::jthread, WORKER_NUM_HINT> workers;
 	workers.reserve(concurrency);
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
 		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
 							 (&boost::asio::io_context::run), &service);
-		thread::set_name(workers[i], "ASIO Worker");
+		thread::set_name(workers[i], "Asio Worker");
 	}
 
 
