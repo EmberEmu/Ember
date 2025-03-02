@@ -54,8 +54,7 @@ class MySQL final {
 public:
 	using ConnectionType = sql::Connection*;
 
-	MySQL(std::string user, std::string password, std::string_view host, std::uint16_t port,
-	      std::string db = "");
+	MySQL(std::string user, std::string password, std::string_view host, std::uint16_t port, std::string db = "");
 
 	MySQL(MySQL&& rhs) noexcept
 		: dsn(rhs.dsn),

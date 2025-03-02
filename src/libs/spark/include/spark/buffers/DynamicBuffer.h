@@ -70,7 +70,7 @@ private:
 			- offsetof(IntrusiveStorage, node));
 	}
 
-	void move(DynamicBuffer& rhs) {
+	void move(DynamicBuffer& rhs) noexcept {
 		if(this == &rhs) { // self-assignment
 			return;
 		}
@@ -154,10 +154,24 @@ public:
 		clear();
 	}
 
-	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept { move(rhs); return *this;  }
-	DynamicBuffer(DynamicBuffer&& rhs) noexcept {  move(rhs); }
-	DynamicBuffer(const DynamicBuffer& rhs) { copy(rhs); }
-	DynamicBuffer& operator=(const DynamicBuffer& rhs) { clear(); copy(rhs); return *this;  }
+	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept {
+		move(rhs);
+		return *this;
+	}
+
+	DynamicBuffer(DynamicBuffer&& rhs) noexcept {
+		move(rhs);
+	}
+
+	DynamicBuffer(const DynamicBuffer& rhs) {
+		copy(rhs);
+	}
+
+	DynamicBuffer& operator=(const DynamicBuffer& rhs) {
+		clear();
+		copy(rhs);
+		return *this;
+	}
 
 	template<typename T>
 	void read(T* destination) {
