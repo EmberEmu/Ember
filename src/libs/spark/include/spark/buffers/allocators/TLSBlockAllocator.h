@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 
 #include <shared/utility/Utility.h>
 #include <shared/utility/polyfill/start_lifetime_as>
+#include <array>
 #include <memory>
 #include <new>
 #include <utility>
@@ -42,7 +43,7 @@ concept gte_freeblock = sizeof(_ty) >= sizeof(FreeBlock);
 template<typename _ty, std::size_t _elements, PagePolicy _policy>
 requires gt_zero<_elements> && gte_freeblock<_ty>
 struct Allocator {
-	std::unique_ptr<char[]> storage_;
+	std::array<char, sizeof(_ty) * _elements> storage_;
 	FreeBlock* head_ = nullptr;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -52,8 +53,16 @@ struct Allocator {
 	std::size_t total_deallocs = 0;
 #endif
 
+	Allocator() {
+		if constexpr(_policy == PagePolicy::lock) {
+			util::page_lock(storage_.data(), storage_.size());
+		}
+
+		link_blocks();
+	}
+
 	void link_blocks() {
-		auto storage = storage_.get();
+		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
 			auto block = std::start_lifetime_as<FreeBlock>(storage + (sizeof(_ty) * i));
@@ -77,23 +86,8 @@ struct Allocator {
 		return block;
 	}
 
-	void init() {
-		storage_ = std::make_unique<char[]>(sizeof(_ty) * _elements);
-
-		if constexpr(_policy == PagePolicy::lock) {
-			util::page_lock(storage_.get(), sizeof(_ty) * _elements);
-		}
-
-		link_blocks();
-	}
-
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
-		// lazy allocation to prevent every created thread allocating
-		if(!storage_) [[unlikely]] {
-			init();
-		}
-
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			++total_allocs;
 #endif
@@ -113,7 +107,8 @@ struct Allocator {
 	}
 
 	inline void deallocate(_ty* t) {
-		const auto lower = storage_.get();
+		// todo, store metadata in blocks to avoid this
+		const auto lower = storage_.data();
 		const auto upper = lower + (sizeof(_ty) * _elements);
 		const auto t_ptr = reinterpret_cast<const char*>(t);
 
@@ -141,7 +136,7 @@ struct Allocator {
 
 	~Allocator() {
 		if constexpr(_policy == PagePolicy::lock) {
-			util::page_unlock(storage_.get(), sizeof(_ty) * _elements);
+			util::page_unlock(storage_.data(), storage_.size());
 		}
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -161,13 +156,19 @@ struct TLSBlockAllocator final {
 	std::size_t active_allocs = 0;
 #endif
 
+	TLSBlockAllocator() {
+		if(!allocator) {
+			allocator = std::make_unique<Allocator<_ty, _elements, policy>>();
+		}
+	}
+
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_allocs;
 		++active_allocs;
 #endif
-		return allocator.allocate(std::forward<Args>(args)...);
+		return allocator->allocate(std::forward<Args>(args)...);
 	}
 
 	inline void deallocate(_ty* t) {
@@ -175,7 +176,7 @@ struct TLSBlockAllocator final {
 		++total_deallocs;
 		--active_allocs;
 #endif
-		allocator.deallocate(t);
+		allocator->deallocate(t);
 	}
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -188,7 +189,7 @@ struct TLSBlockAllocator final {
 #ifndef _DEBUG_TLS_BLOCK_ALLOCATOR
 private:
 #endif
-	static inline thread_local Allocator<_ty, _elements, policy> allocator;
+	static inline thread_local std::unique_ptr<Allocator<_ty, _elements, policy>> allocator;
 };
 
 } // io, spark, ember
