@@ -133,9 +133,7 @@ struct Allocator {
 			return;
 		} else {
 			t->~_ty();
-
-			auto block = std::start_lifetime_as<FreeBlock>(t);
-			add_block(block);
+			add_block(std::start_lifetime_as<FreeBlock>(t));
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			--storage_active_count;
