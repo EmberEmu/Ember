@@ -43,7 +43,17 @@ concept gte_freeblock = sizeof(_ty) >= sizeof(FreeBlock);
 template<typename _ty, std::size_t _elements, PagePolicy _policy>
 requires gt_zero<_elements> && gte_freeblock<_ty>
 struct Allocator {
-	std::array<char, sizeof(_ty) * _elements> storage_;
+	struct Block {
+		_ty obj;
+
+		struct Metadata {
+			bool using_new;
+		} meta;
+	};
+
+	static constexpr auto block_size = sizeof(Block);
+
+	std::array<char, block_size * _elements> storage_;
 	FreeBlock* head_ = nullptr;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -65,11 +75,11 @@ struct Allocator {
 		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
-			auto block = std::start_lifetime_as<FreeBlock>(storage + (sizeof(_ty) * i));
-			block->next = reinterpret_cast<FreeBlock*>(storage + (sizeof(_ty) * (i + 1)));
+			auto block = std::start_lifetime_as<FreeBlock>(storage + (block_size * i));
+			block->next = reinterpret_cast<FreeBlock*>(storage + (block_size * (i + 1)));
 		}
 
-		auto tail = reinterpret_cast<FreeBlock*>(storage + (sizeof(_ty) * (_elements - 1)));
+		auto tail = reinterpret_cast<FreeBlock*>(storage + (block_size * (_elements - 1)));
 		tail->next = nullptr;
 		head_ = reinterpret_cast<FreeBlock*>(storage);
 	}
@@ -91,47 +101,47 @@ struct Allocator {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			++total_allocs;
 #endif
+		Block* block = nullptr;
 
 		if(head_) {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			++storage_active_count;
 #endif
-			auto block = remove_block(head_);
-			return new (block) _ty(std::forward<Args>(args)...);
+			block = std::start_lifetime_as<Block>(remove_block(head_));
+			block->meta.using_new = false;
 		} else {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			++new_active_count;
 #endif
-			return new _ty(std::forward<Args>(args)...);
+			block = new Block;
+			block->meta.using_new = true;
 		}
+
+		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
 
 	inline void deallocate(_ty* t) {
-		// todo, store metadata in blocks to avoid this
-		const auto lower = storage_.data();
-		const auto upper = lower + (sizeof(_ty) * _elements);
-		const auto t_ptr = reinterpret_cast<const char*>(t);
+		auto block = std::start_lifetime_as<Block>(t);
 
-		// later allocations that didn't come from the pool will *probably* be
-		// at a higher address, so check that first
-		if(t_ptr >= upper || t_ptr < lower) [[unlikely]] {
+		if(block->meta.using_new) [[unlikely]] {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			--new_active_count;
 			++total_deallocs;
 #endif
-			delete t;
+			t->~_ty();
+			delete block;
 			return;
-		}
+		} else {
+			t->~_ty();
 
-		t->~_ty();
-
-		auto block = std::start_lifetime_as<FreeBlock>(t);
-		add_block(block);
+			auto block = std::start_lifetime_as<FreeBlock>(t);
+			add_block(block);
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-		--storage_active_count;
-		++total_deallocs;
+			--storage_active_count;
+			++total_deallocs;
 #endif
+		}
 	}
 
 	~Allocator() {
@@ -156,14 +166,17 @@ struct TLSBlockAllocator final {
 	std::size_t active_allocs = 0;
 #endif
 
-	TLSBlockAllocator() {
+	template<typename ...Args>
+	[[nodiscard]] inline _ty* allocate(Args&&... args) {
+		/*
+		 * Can't do this in a ctor unless we can be 100% sure that any object using the
+		 * allocator is created on the same thread that ends up using it, otherwise nullptr.
+		 * That's probably going to be hassle to keep track of, so we'll just do it here.
+		 */
 		if(!allocator) {
 			allocator = std::make_unique<Allocator<_ty, _elements, policy>>();
 		}
-	}
 
-	template<typename ...Args>
-	[[nodiscard]] inline _ty* allocate(Args&&... args) {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_allocs;
 		++active_allocs;
