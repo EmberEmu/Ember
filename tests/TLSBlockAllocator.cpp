@@ -20,13 +20,13 @@ using namespace ember;
 TEST(TLSBlockAllocator, SingleAlloc) {
 	spark::io::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
 	auto mem = tlsalloc.allocate();
-	ASSERT_EQ(tlsalloc.allocator->storage_active_count, 1);
-	ASSERT_EQ(tlsalloc.allocator->new_active_count, 0);
+	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
+	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 0);
 	ASSERT_EQ(tlsalloc.total_allocs, 1);
 	ASSERT_EQ(tlsalloc.total_deallocs, 0);
 	tlsalloc.deallocate(mem);
-	ASSERT_EQ(tlsalloc.allocator->storage_active_count, 0);
-	ASSERT_EQ(tlsalloc.allocator->new_active_count, 0);
+	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 0);
+	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 0);
 	ASSERT_EQ(tlsalloc.total_allocs, 1);
 	ASSERT_EQ(tlsalloc.total_deallocs, 1);
 }
@@ -39,8 +39,8 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
 	std::srand(seed);
 	const auto allocs = std::rand() % MAX_ALLOCS;
-	const auto tls_total_alloc = tlsalloc.allocator->total_allocs;
-	const auto tls_total_dealloc = tlsalloc.allocator->total_deallocs;
+	const auto tls_total_alloc = tlsalloc.allocator()->total_allocs;
+	const auto tls_total_dealloc = tlsalloc.allocator()->total_deallocs;
 
 	for(std::size_t i = 0u; i < allocs; ++i) {
 		auto mem = tlsalloc.allocate();
@@ -50,8 +50,8 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 	ASSERT_EQ(tlsalloc.total_allocs, allocs);
 	ASSERT_EQ(tlsalloc.active_allocs, allocs);
 	ASSERT_EQ(tlsalloc.total_deallocs, 0);
-	ASSERT_EQ(tlsalloc.allocator->total_allocs, tls_total_alloc + allocs);
-	ASSERT_EQ(tlsalloc.allocator->total_deallocs, tls_total_dealloc);
+	ASSERT_EQ(tlsalloc.allocator()->total_allocs, tls_total_alloc + allocs);
+	ASSERT_EQ(tlsalloc.allocator()->total_deallocs, tls_total_dealloc);
 
 	for(std::size_t i = 0u; i < allocs; ++i) {
 		tlsalloc.deallocate(chunks[i]);
@@ -60,8 +60,8 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 	ASSERT_EQ(tlsalloc.total_allocs, allocs);
 	ASSERT_EQ(tlsalloc.active_allocs, 0);
 	ASSERT_EQ(tlsalloc.total_deallocs, allocs);
-	ASSERT_EQ(tlsalloc.allocator->total_allocs, tls_total_alloc + allocs);
-	ASSERT_EQ(tlsalloc.allocator->total_deallocs, tls_total_dealloc + allocs);
+	ASSERT_EQ(tlsalloc.allocator()->total_allocs, tls_total_alloc + allocs);
+	ASSERT_EQ(tlsalloc.allocator()->total_deallocs, tls_total_dealloc + allocs);
 }
 
 TEST(TLSBlockAllocator, OverCapacity) {
@@ -69,44 +69,44 @@ TEST(TLSBlockAllocator, OverCapacity) {
 	std::array<std::uint64_t*, 2> mem{};
 	mem[0] = tlsalloc.allocate();
 	mem[1] = tlsalloc.allocate();
-	ASSERT_EQ(tlsalloc.allocator->storage_active_count, 1);
-	ASSERT_EQ(tlsalloc.allocator->new_active_count, 1);
+	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
+	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 1);
 	ASSERT_EQ(tlsalloc.total_allocs, 2);
 	ASSERT_EQ(tlsalloc.total_deallocs, 0);
 	tlsalloc.deallocate(mem[0]);
-	ASSERT_EQ(tlsalloc.allocator->storage_active_count, 0);
-	ASSERT_EQ(tlsalloc.allocator->new_active_count, 1);
+	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 0);
+	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 1);
 	ASSERT_EQ(tlsalloc.total_allocs, 2);
 	ASSERT_EQ(tlsalloc.total_deallocs, 1);
 	tlsalloc.deallocate(mem[1]);
-	ASSERT_EQ(tlsalloc.allocator->storage_active_count, 0);
-	ASSERT_EQ(tlsalloc.allocator->new_active_count, 0);
+	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 0);
+	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 0);
 	ASSERT_EQ(tlsalloc.total_allocs, 2);
 	ASSERT_EQ(tlsalloc.total_deallocs, 2);
 }
 
 TEST(TLSBlockAllocator, NoSharing) {
 	spark::io::TLSBlockAllocator<std::uint64_t, 2> tlsalloc;
-	const auto tls_total_alloc = tlsalloc.allocator->total_allocs;
-	const auto tls_total_dealloc = tlsalloc.allocator->total_deallocs;
+	const auto tls_total_alloc = tlsalloc.allocator()->total_allocs;
+	const auto tls_total_dealloc = tlsalloc.allocator()->total_deallocs;
 	auto chunk = tlsalloc.allocate();
-	ASSERT_EQ(tlsalloc.allocator->storage_active_count, 1);
-	ASSERT_EQ(tlsalloc.allocator->total_allocs, tls_total_alloc + 1);
+	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
+	ASSERT_EQ(tlsalloc.allocator()->total_allocs, tls_total_alloc + 1);
 
 	std::thread thread([&] {
 		spark::io::TLSBlockAllocator<std::uint64_t, 2> tlsalloc;
-		ASSERT_EQ(tlsalloc.allocator->total_allocs, 0);
-		ASSERT_EQ(tlsalloc.allocator->storage_active_count, 0);
+		ASSERT_EQ(tlsalloc.allocator()->total_allocs, 0);
+		ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 0);
 		auto chunk = tlsalloc.allocate();
-		ASSERT_EQ(tlsalloc.allocator->storage_active_count, 1);
-		ASSERT_EQ(tlsalloc.allocator->total_allocs, 1);
-		ASSERT_EQ(tlsalloc.allocator->total_deallocs, 0);
+		ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
+		ASSERT_EQ(tlsalloc.allocator()->total_allocs, 1);
+		ASSERT_EQ(tlsalloc.allocator()->total_deallocs, 0);
 		tlsalloc.deallocate(chunk);
-		ASSERT_EQ(tlsalloc.allocator->total_deallocs, 1);
+		ASSERT_EQ(tlsalloc.allocator()->total_deallocs, 1);
 	});
 
 	thread.join();
 
 	tlsalloc.deallocate(chunk);
-	ASSERT_EQ(tlsalloc.allocator->total_deallocs, tls_total_dealloc + 1);
+	ASSERT_EQ(tlsalloc.allocator()->total_deallocs, tls_total_dealloc + 1);
 }

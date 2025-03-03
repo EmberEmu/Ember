@@ -157,29 +157,40 @@ struct Allocator {
 } // unnamed
 
 template<typename _ty, std::size_t _elements, PagePolicy policy = PagePolicy::lock>
-struct TLSBlockAllocator final {
+class TLSBlockAllocator final {
+	static inline thread_local std::unique_ptr<Allocator<_ty, _elements, policy>> allocator_;
+
+	inline void init_allocator() {
+		if(!allocator_) {
+			allocator_ = std::make_unique<Allocator<_ty, _elements, policy>>();
+		}
+	}
+
+public:
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	std::size_t total_allocs = 0;
 	std::size_t total_deallocs = 0;
 	std::size_t active_allocs = 0;
 #endif
 
+	TLSBlockAllocator() {
+		init_allocator();
+	}
+
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
 		/*
-		 * Can't do this in a ctor unless we can be 100% sure that any object using the
+		 * Need to do this here & in ctor unless we can be 100% sure that any object using the
 		 * allocator is created on the same thread that ends up using it, otherwise nullptr.
-		 * That's probably going to be hassle to keep track of, so we'll just do it here.
+		 * That's probably going to be hassle to keep track of, so we'll just do it here too.
 		 */
-		if(!allocator) {
-			allocator = std::make_unique<Allocator<_ty, _elements, policy>>();
-		}
+		init_allocator();
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_allocs;
 		++active_allocs;
 #endif
-		return allocator->allocate(std::forward<Args>(args)...);
+		return allocator_->allocate(std::forward<Args>(args)...);
 	}
 
 	inline void deallocate(_ty* t) {
@@ -187,7 +198,7 @@ struct TLSBlockAllocator final {
 		++total_deallocs;
 		--active_allocs;
 #endif
-		allocator->deallocate(t);
+		allocator_->deallocate(t);
 	}
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -197,10 +208,12 @@ struct TLSBlockAllocator final {
 	}
 #endif
 
-#ifndef _DEBUG_TLS_BLOCK_ALLOCATOR
-private:
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	auto allocator() {
+		init_allocator();
+		return allocator_.get();
+	}
 #endif
-	static inline thread_local std::unique_ptr<Allocator<_ty, _elements, policy>> allocator;
 };
 
 } // io, spark, ember
