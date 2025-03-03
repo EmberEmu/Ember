@@ -6,14 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#define _DEBUG_TLS_BLOCK_ALLOCATOR
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <gsl/narrow>
 #include <gtest/gtest.h>
 #include <array>
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+
+#undef NDEBUG
+#include <spark/buffers/allocators/TLSBlockAllocator.h>
 
 using namespace ember;
 
@@ -109,4 +110,16 @@ TEST(TLSBlockAllocator, NoSharing) {
 
 	tlsalloc.deallocate(chunk);
 	ASSERT_EQ(tlsalloc.allocator()->total_deallocs, tls_total_dealloc + 1);
+}
+
+TEST(TLSBlockAllocator, ThreadMismatch) {
+	spark::io::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	auto chunk = tlsalloc.allocate();
+
+	std::jthread thread([&] {
+		ASSERT_DEATH(tlsalloc.deallocate(chunk), "");
+	});
+
+	// needed to stop further asserts from triggering
+	tlsalloc.deallocate(chunk);
 }

@@ -13,6 +13,7 @@
 #include <array>
 #include <memory>
 #include <new>
+#include <thread>
 #include <utility>
 #include <cassert>
 #include <cstddef>
@@ -20,6 +21,10 @@
 
 #ifndef NDEBUG
 	#define _DEBUG_TLS_BLOCK_ALLOCATOR
+#endif
+
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#include <thread>
 #endif
 
 namespace ember::spark::io {
@@ -47,6 +52,7 @@ struct Allocator {
 		_ty obj;
 
 		struct Metadata {
+			std::thread::id thread_id;
 			bool using_new;
 		} meta;
 	};
@@ -57,13 +63,18 @@ struct Allocator {
 	FreeBlock* head_ = nullptr;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	std::thread::id thread_id_;
 	std::size_t storage_active_count = 0;
 	std::size_t new_active_count = 0;
 	std::size_t total_allocs = 0;
 	std::size_t total_deallocs = 0;
 #endif
 
-	Allocator() {
+	Allocator()
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		: thread_id_(std::this_thread::get_id())
+#endif
+	{
 		if constexpr(_policy == PagePolicy::lock) {
 			util::page_lock(storage_.data(), storage_.size());
 		}
@@ -117,11 +128,19 @@ struct Allocator {
 			block->meta.using_new = true;
 		}
 
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		block->meta.thread_id = thread_id_;
+#endif
+
 		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
 
 	inline void deallocate(_ty* t) {
 		auto block = std::start_lifetime_as<Block>(t);
+
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		assert(block->meta.thread_id == thread_id_ && "Thread ID mismatch or clobbered block");
+#endif
 
 		if(block->meta.using_new) [[unlikely]] {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
