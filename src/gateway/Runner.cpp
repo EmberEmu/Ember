@@ -116,7 +116,7 @@ void stop() {
 void launch(const po::variables_map& args, ServicePool& service_pool,
             std::binary_semaphore& sem, log::Logger& logger) try {
 #ifdef DEBUG_NO_THREADS
-	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
 
 	print_lib_versions(logger);
@@ -131,23 +131,23 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 			stun_log_callback(verbosity, reason, logger);
 		});
 
-		LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "Starting STUN query...");
 		stun_res = stun.external_address();
 	}
 
-	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Seeding xorshift RNG...");
 	Botan::AutoSeeded_RNG rng;
 	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
-	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Loading DBC data...");
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
 	auto dbc_store = loader.load("AddonData", "Cfg_Categories");
 
-	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Resolving DBC references...");
 	dbc::link(dbc_store);
 
 	auto realm = load_realm(args, logger);
@@ -176,10 +176,10 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 		concurrency = args["misc.concurrency"].as<unsigned int>();
 	}
 
-	LOG_INFO(logger) << "Starting event dispatcher..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Starting event dispatcher...");
 	EventDispatcher dispatcher(service_pool, logger);
 
-	LOG_INFO(logger) << "Starting Spark service..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Starting Spark service...");
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
@@ -234,7 +234,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 	RealmQueue queue_service(service_pool.get());
 	
-	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Starting RPC services...");
 	spark::Server spark(service_pool.get(), "realm", s_address, s_port, logger);
 	RealmService realm_svc(spark, *realm, logger);
 	AccountClient acct_svc(spark, logger);
@@ -291,21 +291,21 @@ std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Cat
  * connections elsewhere in the future, this should be merged back.
  */
 std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logger) {
-	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database driver...");
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
 	
 	pool.logging_callback([&](auto severity, auto message) {
 		pool_log_callback(severity, message, logger);
 	});
 
-	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising DAOs...");
 	auto realm_dao = dal::realm_dao(pool);
 
-	LOG_INFO(logger) << "Retrieving realm information..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Retrieving realm information...");
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
 }
 
@@ -327,7 +327,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		default:
-			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}
 }

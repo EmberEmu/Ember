@@ -221,7 +221,7 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 	auto fb = core::GetHeader(data.data());
 	
 	if(!fb->Verify(verifier)) {
-		LOG_WARN(log_) << "[spark] Bad Flatbuffer message" << LOG_ASYNC;
+		LOG_WARN_ASYNC(log_, "[spark] Bad Flatbuffer message");
 		return;
 	}
 
@@ -242,7 +242,7 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 			handle_pong(*fb->message_as_Pong());
 			break;
 		default:
-			LOG_WARN(log_) << "[spark] Unknown control message type" << LOG_ASYNC;
+			LOG_WARN_ASYNC(log_, "[spark] Unknown control message type");
 	}
 }
 
@@ -259,7 +259,7 @@ void RemotePeer::handle_ping(const core::Ping& ping) {
 
 void RemotePeer::handle_pong(const core::Pong& pong) {
 	if(pong.sequence() != ping_sequence_) {
-		LOG_DEBUG(log_) << "[spark] Bad pong sequence" << LOG_ASYNC;
+		LOG_DEBUG_ASYNC(log_, "[spark] Bad pong sequence");
 		return;
 	}
 

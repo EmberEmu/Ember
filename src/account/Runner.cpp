@@ -87,13 +87,13 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	ThreadPool thread_pool(concurrency);
 
-	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database driver...");
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
 		driver, min_conns, max_conns, 30s
@@ -103,13 +103,13 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		pool_log_callback(severity, message, logger);
 	});
 
-	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
+	LOG_INFO_SYNC(logger,"Initialising DAOs...");
 	auto user_dao = dal::user_dao(pool);
 
-	LOG_INFO(logger) << "Initialising account handler..." << LOG_SYNC; 
+	LOG_INFO_SYNC(logger, "Initialising account handler..."); 
 	AccountHandler handler(user_dao, thread_pool);
 
-	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Starting RPC services...");
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
@@ -187,7 +187,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		default:
-			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}	
 }

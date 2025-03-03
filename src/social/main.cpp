@@ -69,7 +69,7 @@ int main(int argc, const char* argv[]) try {
 
 int launch(const po::variables_map& args, log::Logger& logger) try {
 #ifdef DEBUG_NO_THREADS
-	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
 
 	boost::asio::io_context service;

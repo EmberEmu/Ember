@@ -40,29 +40,30 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 	 * happen and message framing has likely been lost if this ever
 	 * occurs. Don't try to recover.
 	 */
-	const auto state = stream.state();
+	switch(stream.state()) {
+		case BinaryStream::State::READ_LIMIT_ERR:
+			LOG_DEBUG_ASYNC(
+				logger_, "Deserialisation of {} failed, skipping any remaining data",
+				protocol::to_string(packet.opcode)
+			);
 
-	if(state == BinaryStream::State::READ_LIMIT_ERR) {
-		LOG_DEBUG(logger_)
-			<< "Deserialisation of "
-			<< protocol::to_string(packet.opcode)
-			<< " failed, skipping any remaining data" << LOG_ASYNC;
+			stream.skip(stream.read_limit() - stream.total_read());
+			break;
+		case BinaryStream::State::BUFF_LIMIT_ERR:
+			LOG_ERROR_ASYNC(
+				logger_, "Message framing lost for {} from {}",
+				protocol::to_string(packet.opcode), client_identify()
+			);
 
-		stream.skip(stream.read_limit() - stream.total_read());
-	} else if(state == BinaryStream::State::BUFF_LIMIT_ERR) {
-		LOG_ERROR(logger_)
-			<< "Message framing lost at "
-			<< protocol::to_string(packet.opcode)
-			<< " from " << client_identify() << LOG_ASYNC;
+			close();
+			break;
+		default:
+			LOG_ERROR_ASYNC(
+				logger_, "Deserialisation failed, stream has not errored or unhandled error for {} from {}",
+				protocol::to_string(packet.opcode), client_identify()
+			);
 
-		close();
-	} else {
-		LOG_ERROR(logger_)
-			<< "Deserialisation failed but stream has not errored for "
-			<< protocol::to_string(packet.opcode)
-			<< " from " << client_identify() << LOG_ASYNC;
-
-		close();
+			close();
 	}
 
 	return false;

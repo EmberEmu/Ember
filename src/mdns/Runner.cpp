@@ -77,7 +77,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 void launch(const po::variables_map& args, boost::asio::io_context& service,
             std::binary_semaphore& sem, log::Logger& logger) try {
 #ifdef DEBUG_NO_THREADS
-	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
 
 	const auto& iface = args["mdns.interface"].as<std::string>();

@@ -61,7 +61,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 		case LoginState::CLOSED:
 			return false;
 		default:
-			LOG_DEBUG(logger_) << "Received packet out of sync" << LOG_ASYNC;
+			LOG_DEBUG_ASYNC(logger_, "Received packet out of sync");
 			return false;
 	}
 

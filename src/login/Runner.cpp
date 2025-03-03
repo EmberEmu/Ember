@@ -138,7 +138,7 @@ void stop() {
 void launch(const po::variables_map& args, boost::asio::io_context& service,
             std::binary_semaphore& sem, log::Logger& logger) try {
 #ifdef DEBUG_NO_THREADS
-	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
 
 	print_lib_versions(logger);
@@ -153,16 +153,16 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 			stun_log_callback(verbosity, reason, logger);
 		});
 
-		LOG_INFO(logger) << "Starting STUN query..." << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "Starting STUN query...");
 		stun_res = stun.external_address();
 	}
 
-	LOG_INFO(logger) << "Seeding xorshift RNG..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Seeding xorshift RNG...");
 	Botan::AutoSeeded_RNG rng;
 	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
-	LOG_INFO(logger) << "Initialising database driver..."<< LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database driver...");
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
@@ -177,7 +177,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		                      "(use {} to match logical core count)", concurrency);
 	}
 
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
 		driver, min_conns, max_conns, 30s
 	);
@@ -186,7 +186,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		pool_log_callback(severity, message, logger);
 	});
 
-	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC; 
+	LOG_INFO_SYNC(logger, "Initialising DAOs...");
 	auto user_dao = dal::user_dao(pool);
 	auto realm_dao = dal::realm_dao(pool);
 	auto patch_dao = dal::patch_dao(pool);
@@ -194,7 +194,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto ip_ban_cache = IPBanCache(ip_ban_dao.all_bans());
 
 	// Load integrity, patch and survey data
-	LOG_INFO(logger) << "Loading client integrity validation data..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Loading client integrity validation data...");
 	IntegrityData bin_data;
 
 	const auto allowed_clients = client_versions(); // move
@@ -204,7 +204,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		bin_data.add_versions(allowed_clients, bin_path);
 	}
 
-	LOG_INFO(logger) << "Loading patch data..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Loading patch data...");
 
 	auto patches = Patcher::load_patches(
 		args["patches.bin_path"].as<std::string>(), patch_dao
@@ -214,13 +214,13 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	Survey survey(args["survey.id"].as<std::uint32_t>());
 
 	if(survey.id()) {
-		LOG_INFO(logger) << "Loading survey data..." << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "Loading survey data...");
 
 		survey.add_data(grunt::Platform::x86, grunt::System::Win,
 		                args["survey.path"].as<std::string>());
 	}
 
-	LOG_INFO(logger) << "Loading realm list..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Loading realm list...");
 	RealmList realm_list(realm_dao.get_realms());
 
 	LOG_INFO_SYNC(logger, "Added {} realm(s)", realm_list.realms()->size());
@@ -232,7 +232,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
-	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Starting RPC services...");
 	spark::Server spark(service, "login", s_address, s_port, logger);
 	AccountClient acct_svc(spark, logger);
 	RealmClient realm_svcv2(spark, realm_list, logger);
@@ -241,7 +241,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	auto metrics = std::make_unique<Metrics>();
 
 	if(args["metrics.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Starting metrics service..." << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "Starting metrics service...");
 		metrics = std::make_unique<MetricsImpl>(
 			service, args["metrics.statsd_host"].as<std::string>(),
 			args["metrics.statsd_port"].as<std::uint16_t>()
@@ -274,7 +274,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	std::unique_ptr<Monitor> monitor;
 
 	if(args["monitor.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
+		LOG_INFO_SYNC(logger, "Starting monitoring service...");
 
 		monitor = std::make_unique<Monitor>(	
 			service, args["monitor.interface"].as<std::string>(),
@@ -361,7 +361,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		default:
-			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}
 }

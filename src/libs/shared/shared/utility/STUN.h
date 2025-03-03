@@ -76,18 +76,16 @@ inline void log_stun_result(stun::Client& client, const stun::MappedResult& resu
 
 	if(!nat) {
 		LOG_WARN_SYNC(logger, "STUN: Unable to determine if gateway is behind NAT ({})",
-		                  stun::to_string(nat.error().reason));
+		                      stun::to_string(nat.error().reason));
 		return;
 	}
 
 	if(*nat) {
 		LOG_INFO_SYNC(logger, "STUN: Service appears to be behind NAT, "
-		                  "forward port {} for external access", port);
+		                      "forward port {} for external access", port);
 	} else {
-		LOG_INFO(logger)
-			<< "STUN: Service does not appear to be behind NAT - "
-				"server is available online (firewall rules permitting)"
-			<< LOG_SYNC;
+		LOG_INFO_SYNC(logger, "STUN: Service does not appear to be behind NAT - "
+		                      "server is available online (firewall rules permitting)");
 	}
 }
 } // ember

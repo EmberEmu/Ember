@@ -86,10 +86,10 @@ void stop() {
 void launch(const po::variables_map& args, boost::asio::io_context& service,
             std::binary_semaphore& sem, log::Logger& logger) try {
 #ifdef DEBUG_NO_THREADS
-	LOG_WARN(logger) << "Compiled with DEBUG_NO_THREADS!" << LOG_SYNC;
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
 
-	LOG_INFO(logger) << "Loading DBC data..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Loading DBC data...");
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
@@ -101,10 +101,10 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
 	);
 
-	LOG_INFO(logger) << "Resolving DBC references..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Resolving DBC references...");
 	dbc::link(dbc_store);
 
-	LOG_INFO(logger) << "Compiling DBC regular expressions..." << LOG_ASYNC;
+	LOG_INFO_SYNC(logger, "Compiling DBC regular expressions...");
 	std::vector<util::pcre::Result> profanity, reserved, spam;
 
 	for(auto& record : dbc_store.names_profanity | std::views::values) {
@@ -119,11 +119,11 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		spam.emplace_back(util::pcre::utf8_jit_compile(record.text));
 	}
 
-	LOG_INFO(logger) << "Initialising database driver..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database driver...");
 	const auto&  db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	const auto concurrency = thread::hardware_concurrency(logger);
 	const auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
@@ -135,14 +135,14 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		                      "(use {} to match logical core count)", concurrency);
 	}
 
-	LOG_INFO(logger) << "Initialising database connection pool..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
 	
 	pool.logging_callback([&](auto severity, auto message) {
 		pool_log_callback(severity, message, logger);
 	});
 
-	LOG_INFO(logger) << "Initialising DAOs..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Initialising DAOs...");
 	auto character_dao = dal::character_dao(pool);
 
 	std::locale temp;
@@ -154,7 +154,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto&  s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
-	LOG_INFO(logger) << "Starting RPC services..." << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Starting RPC services...");
 	spark::Server spark(service, "character", s_address, s_port, logger);
 	CharacterService char_service(spark, handler, logger);
 	
@@ -188,7 +188,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		default:
-			LOG_ERROR(logger) << "Unhandled pool log callback severity" << LOG_ASYNC;
+			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 	}
 }

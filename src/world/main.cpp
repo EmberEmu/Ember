@@ -44,7 +44,7 @@ int main(int argc, const char* argv[]) try {
 	util::configure_logger(logger, args);
 	log::global_logger(logger);
 
-	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "Logger configured successfully");
 	const auto ret = launch(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated ({})", world::APP_NAME, ret);
 	return ret;
