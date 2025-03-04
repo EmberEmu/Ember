@@ -33,6 +33,10 @@ enum class PagePolicy {
 	no_lock, lock
 };
 
+enum class ThreadPolicy {
+	none, same_thread
+};
+
 namespace {
 
 struct FreeBlock {
@@ -45,7 +49,27 @@ concept gt_zero = size > 0;
 template<typename _ty>
 concept gte_freeblock = sizeof(_ty) >= sizeof(FreeBlock);
 
-template<typename _ty, std::size_t _elements, PagePolicy _policy>
+/*
+ * Basic fixed-size block allocator that preallocates a slab of memory
+ * capable of holding a compile-time determined number of elements.
+ * When constructed, a linked list of chunks is built within the slab and
+ * each allocation request will take the head node. Since the allocations
+ * are fixed-size, the list does not need to be traversed for a suitable
+ * size. Deallocations place the chunk as the new head (LIFO).
+ *
+ * If the preallocated slab runs out of chunks, it will fall back to using the
+ * system allocator rather than allocating additional slabs. This means sizing
+ * the initial allocation correctly is important for maximum performance, so
+ * it's better to be pessimistic. This is a server application and RAM is cheap. :)
+ *
+ * PagePolicy: 'lock' requests that the OS does not page out the memory slab to disk.
+ *
+ * ThreadPolicy: 'same_thread' triggers an assert if an allocated object
+ * is deallocated from a different thread. Used by the TLS allocator, since
+ * implementing the functionality there is messier (and slower).
+ */
+template<typename _ty, std::size_t _elements, PagePolicy _policy = PagePolicy::no_lock,
+	ThreadPolicy _thread_policy = ThreadPolicy::none>
 requires gt_zero<_elements> && gte_freeblock<_ty>
 struct Allocator {
 	struct Block {
@@ -61,19 +85,16 @@ struct Allocator {
 
 	std::array<char, block_size * _elements> storage_;
 	FreeBlock* head_ = nullptr;
+	std::thread::id thread_id_;
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-	std::thread::id thread_id_;
 	std::size_t storage_active_count = 0;
 	std::size_t new_active_count = 0;
 	std::size_t total_allocs = 0;
 	std::size_t total_deallocs = 0;
 #endif
 
-	Allocator()
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-		: thread_id_(std::this_thread::get_id())
-#endif
+	Allocator()	: thread_id_(std::this_thread::get_id())
 	{
 		if constexpr(_policy == PagePolicy::lock) {
 			util::page_lock(storage_.data(), storage_.size());
@@ -128,9 +149,9 @@ struct Allocator {
 			block->meta.using_new = true;
 		}
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-		block->meta.thread_id = thread_id_;
-#endif
+		if constexpr(_thread_policy == ThreadPolicy::same_thread) {
+			block->meta.thread_id = thread_id_;
+		}
 
 		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
@@ -138,9 +159,10 @@ struct Allocator {
 	inline void deallocate(_ty* t) {
 		auto block = std::start_lifetime_as<Block>(t);
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-		assert(block->meta.thread_id == thread_id_ && "Thread ID mismatch or clobbered block");
-#endif
+		if constexpr(_thread_policy == ThreadPolicy::same_thread) {
+			assert(block->meta.thread_id == thread_id_
+				&& "thread policy error or clobbered block");
+		}
 
 		if(block->meta.using_new) [[unlikely]] {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -177,11 +199,13 @@ struct Allocator {
 
 template<typename _ty, std::size_t _elements, PagePolicy policy = PagePolicy::lock>
 class TLSBlockAllocator final {
-	static inline thread_local std::unique_ptr<Allocator<_ty, _elements, policy>> allocator_;
+	using AllocatorType = Allocator<_ty, _elements, policy, ThreadPolicy::same_thread>;
+
+	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
 
 	inline void init_allocator() {
 		if(!allocator_) {
-			allocator_ = std::make_unique<Allocator<_ty, _elements, policy>>();
+			allocator_ = std::make_unique<AllocatorType>();
 		}
 	}
 
