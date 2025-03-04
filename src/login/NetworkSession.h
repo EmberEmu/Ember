@@ -41,7 +41,7 @@ private:
 	AsioAllocator<thread_safe> allocator_;
 
 	SessionManager& sessions_;
-	tcp_socket socket_;
+	tcp_strand_socket socket_;
 	boost::asio::steady_timer timer_;
 
 	Buffer inbound_buffer_;
@@ -174,17 +174,17 @@ private:
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, tcp_socket socket, log::Logger& logger)
-	               : sessions_(sessions),
-	                 socket_(std::move(socket)),
-	                 timer_(socket_.get_executor()),
-	                 outbound_front_(&outbound_buffers_.front()),
-	                 outbound_back_(&outbound_buffers_.back()),
-	                 write_in_progress_(false),
-	                 is_active_(false),
-	                 logger_(logger),
-	                 stopped_(false),
-	                 address_(socket_.remote_endpoint().address()) {}
+	NetworkSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger)
+		: sessions_(sessions),
+		  socket_(std::move(socket)),
+		  timer_(socket_.get_executor()),
+		  outbound_front_(&outbound_buffers_.front()),
+		  outbound_back_(&outbound_buffers_.back()),
+		  write_in_progress_(false),
+		  is_active_(false),
+		  logger_(logger),
+		  stopped_(false),
+		  address_(socket_.remote_endpoint().address()) {}
 
 	void start() {
 		read();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,13 +20,13 @@
 
 namespace ember {
 
-LoginSession::LoginSession(SessionManager& sessions, tcp_socket socket, log::Logger& logger,
+LoginSession::LoginSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger,
                            ThreadPool& pool, const LoginHandlerBuilder& builder)
-                           : NetworkSession(sessions, std::move(socket), logger),
-                             handler_(builder.create(remote_address())),
-                             logger_(logger),
-                             pool_(pool),
-                             grunt_handler_(logger) {
+		: NetworkSession(sessions, std::move(socket), logger),
+		  handler_(builder.create(remote_address())),
+		  logger_(logger),
+		  pool_(pool),
+		  grunt_handler_(logger) {
 	handler_.send = [&](auto& packet) {
 		write_packet(packet, nullptr);
 	};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,12 +28,9 @@
 namespace ember {
 
 class NetworkListener final {
-	using tcp_acceptor = boost::asio::basic_socket_acceptor<
-		boost::asio::ip::tcp, boost::asio::io_context::executor_type>;
-
 	boost::asio::io_context& io_context_;
 	tcp_acceptor acceptor_;
-	tcp_socket socket_;
+	tcp_strand_socket socket_;
 
 	SessionManager sessions_;
 	const NetworkSessionBuilder& session_builder_;
@@ -74,12 +71,12 @@ class NetworkListener final {
 				}
 			}
 
-			socket_ = tcp_socket(boost::asio::make_strand(io_context_));
+			socket_ = tcp_strand_socket(boost::asio::make_strand(io_context_));
 			accept_connection();
 		});
 	}
 
-	void start_session(tcp_socket socket) {
+	void start_session(tcp_strand_socket socket) {
 		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 		auto session = session_builder_.create(sessions_, std::move(socket), logger_);
 		sessions_.start(session);

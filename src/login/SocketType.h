@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,8 +22,8 @@ namespace ember {
 
 using executor = boost::asio::io_context::executor_type;
 
-using tcp_socket = boost::asio::basic_stream_socket<
-	boost::asio::ip::tcp, boost::asio::strand<executor>
->;
+using tcp_socket = boost::asio::basic_stream_socket<boost::asio::ip::tcp, executor>;
+using tcp_strand_socket = boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::strand<executor>>;
+using tcp_acceptor = boost::asio::basic_socket_acceptor<boost::asio::ip::tcp, executor>;
 
 } // ember
