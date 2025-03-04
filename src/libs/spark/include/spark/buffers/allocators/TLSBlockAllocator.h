@@ -157,6 +157,7 @@ struct Allocator {
 	}
 
 	inline void deallocate(_ty* t) {
+		assert(t);
 		auto block = std::start_lifetime_as<Block>(t);
 
 		if constexpr(_thread_policy == ThreadPolicy::same_thread) {
@@ -171,15 +172,14 @@ struct Allocator {
 #endif
 			t->~_ty();
 			delete block;
-			return;
 		} else {
-			t->~_ty();
-			add_block(std::start_lifetime_as<FreeBlock>(t));
-
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			--storage_active_count;
 			++total_deallocs;
 #endif
+
+			t->~_ty();
+			add_block(std::start_lifetime_as<FreeBlock>(t));
 		}
 	}
 
@@ -237,6 +237,8 @@ public:
 	}
 
 	inline void deallocate(_ty* t) {
+		assert(t);
+
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_deallocs;
 		--active_allocs;
