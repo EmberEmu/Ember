@@ -69,6 +69,6 @@ public:
 	}
 };
 
-#include "ClientHandler.inl"
-
 } // gateway, ember
+
+#include "ClientHandler.inl"

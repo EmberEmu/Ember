@@ -13,14 +13,16 @@
 #include <logger/Logger.h>
 #include <optional>
 
+namespace ember::gateway {
+
 [[nodiscard]]
 bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& stream) {
 	if(packet->read_from_stream(stream) == protocol::State::DONE) {
 		if(stream.read_limit() != stream.total_read()) {
-			LOG_DEBUG(logger_)
-				<< "Skipping superfluous stream data in message "
-				<< protocol::to_string(packet.opcode)
-				<< " from " << client_identify() << LOG_ASYNC;
+			LOG_DEBUG_ASYNC(
+				logger_, "Skipping superfluous stream data in message {} from {}",
+				protocol::to_string(packet.opcode), client_identify()
+			);
 
 			stream.skip(stream.read_limit() - stream.total_read());
 		}
@@ -80,3 +82,5 @@ std::optional<T> ClientHandler::deserialise(BinaryStream& stream) {
 		return std::nullopt;
 	}
 }
+
+} // gateway, ember
