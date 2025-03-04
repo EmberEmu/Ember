@@ -248,7 +248,6 @@ public:
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	~TLSBlockAllocator() {
-		assert(total_allocs == total_deallocs);
 		assert(active_allocs == 0);
 	}
 #endif
