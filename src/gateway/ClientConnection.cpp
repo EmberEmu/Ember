@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -57,7 +57,7 @@ void ClientConnection::dispatch_message(StaticBuffer& buffer) {
 }
 
 void ClientConnection::process_buffered_data(StaticBuffer& buffer) {
-	while(!buffer.empty()) {
+	do {
 		if(read_state_ == ReadState::HEADER) {
 			parse_header(buffer);
 		}
@@ -76,11 +76,10 @@ void ClientConnection::process_buffered_data(StaticBuffer& buffer) {
 			
 			dispatch_message(buffer);
 			read_state_ = ReadState::HEADER;
-			continue;
+		} else {
+			break;
 		}
-
-		break;
-	}
+	} while(!buffer.empty());
 
 	// if there are any unread bytes left in the buffer, shift
 	// them to the beginning so we get them next time
