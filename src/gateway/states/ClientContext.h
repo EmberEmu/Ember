@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,8 +12,6 @@
 #include "AuthenticationContext.h"
 #include "WorldEnterContext.h"
 #include "../ConnectionDefines.h"
-#include <spark/buffers/pmr/Buffer.h>
-#include <protocol/PacketHeaders.h>
 #include <shared/utility/UTF8String.h>
 #include <optional>
 #include <variant>
@@ -40,11 +38,11 @@ struct ClientID {
 };
 
 struct ClientContext {
+	ClientHandler* handler;
+	ClientConnection* connection;
 	BinaryStream* stream;
 	ClientState state;
 	ClientState prev_state;
-	ClientHandler* handler;
-	ClientConnection* connection;
 	StateContext state_ctx;
 	std::optional<ClientID> client_id;
 };
