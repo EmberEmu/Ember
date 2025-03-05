@@ -12,7 +12,6 @@
 #include <boost/asio/ip/udp.hpp>
 #include <boost/asio/strand.hpp>
 #include <functional>
-#include <string>
 #include <string_view>
 #include <memory>
 #include <queue>
@@ -50,14 +49,14 @@ class DatagramTransport final {
 	void do_write();
 
 public:
-	DatagramTransport(const std::string& bind, std::uint16_t port, ba::io_context& ctx_);
+	DatagramTransport(std::string_view bind, std::uint16_t port, ba::io_context& ctx_);
 	~DatagramTransport();
 
 	void set_callbacks(OnReceive rcb, OnConnectionError ecb);
 	void resolve(std::string_view host, std::uint16_t port, OnResolve&& cb);
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message);
 	void send(std::vector<std::uint8_t> message);
-	void join_group(const std::string& address);
+	void join_group(std::string_view address);
 	void close();
 };
 

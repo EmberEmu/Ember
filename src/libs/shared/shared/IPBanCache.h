@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <shared/database/daos/shared_base/IPBanBase.h>
+#include <shared/database/daos/shared_base/Types.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/address_v6_range.hpp>
 #include <stdexcept>
 #include <span>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
@@ -61,9 +62,9 @@ class IPBanCache {
 	}
 
 	bool check_ban(const boost::asio::ip::address_v4&& ip) const {
-		unsigned long ip_long = ip.to_uint();
+		const auto ip_long = ip.to_uint();
 		
-		for(auto& e : ipv4_entries_) {
+		for(const auto& e : ipv4_entries_) {
 			if((ip_long & e.mask) == (e.range & e.mask)) {
 				return true;
 			}
@@ -78,7 +79,7 @@ class IPBanCache {
 		}
 	}
 
-	void load_ban(const std::string& ip, const std::uint32_t cidr) {
+	void load_ban(std::string_view ip, const std::uint32_t cidr) {
 		auto address = boost::asio::ip::make_address(ip);
 
 		if(address.is_v6()) {
@@ -97,11 +98,15 @@ public:
 
 	IPBanCache() = default;
 
-	void ban(const std::string& ip, const std::uint32_t mask) {
+	void ban(const IPEntry& entry) {
+		load_ban(entry.first, entry.second);
+	}
+
+	void ban(std::string_view ip, const std::uint32_t mask) {
 		load_ban(ip, mask);
 	}
 
-	bool is_banned(const std::string& ip) const {
+	bool is_banned(std::string_view ip) const {
 		if(ipv4_entries_.empty() && ipv6_entries_.empty()) {
 			return false;
 		}

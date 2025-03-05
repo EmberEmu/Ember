@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,6 +17,7 @@
 #include <memory>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <cstdint>
 
@@ -35,8 +36,8 @@ public:
 	using ReceiveType = std::expected<std::span<std::uint8_t>, boost::system::error_code>;
 
     MulticastSocket(boost::asio::io_context& context,
-                    const std::string& listen_addr,
-                    const std::string& mcast_group,
+                    std::string_view listen_addr,
+                    std::string_view mcast_group,
                     std::uint16_t port);
 	~MulticastSocket();
 

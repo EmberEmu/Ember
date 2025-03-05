@@ -16,7 +16,7 @@
 
 namespace ember::stun {
 
-DatagramTransport::DatagramTransport(const std::string& bind,
+DatagramTransport::DatagramTransport(std::string_view bind,
                                      std::chrono::milliseconds timeout,
                                      unsigned int retries)
 	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), 0)),

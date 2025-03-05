@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <expected>
 #include <memory>
 #include <queue>
+#include <string_view>
 #include <thread>
 #include <vector>
 #include <cstdint>
@@ -48,7 +49,7 @@ private:
 	std::size_t http_body_completion(const HTTPHeader& header, std::size_t read);
 
 public:
-	HTTPTransport(ba::io_context& ctx, const std::string& bind);
+	HTTPTransport(ba::io_context& ctx, std::string_view bind);
 	~HTTPTransport();
 
 	ba::awaitable<Response> receive_http_response();

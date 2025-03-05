@@ -15,8 +15,8 @@
 namespace ember::ports {
 
 MulticastSocket::MulticastSocket(boost::asio::io_context& context,
-								 const std::string& listen_iface,
-								 const std::string& mcast_group,
+								 std::string_view listen_iface,
+								 std::string_view mcast_group,
 								 const std::uint16_t port)
 	: context_(context), socket_(context),
 	buffer_{},

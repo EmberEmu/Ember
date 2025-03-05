@@ -18,7 +18,7 @@
 
 namespace ember::stun {
 
-StreamTransport::StreamTransport(const std::string& bind, std::chrono::milliseconds timeout)
+StreamTransport::StreamTransport(std::string_view bind, std::chrono::milliseconds timeout)
 	: timeout_(timeout), 
 	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
 	  resolver_(ctx_), 

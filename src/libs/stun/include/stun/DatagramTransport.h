@@ -42,7 +42,7 @@ class DatagramTransport final : public Transport {
 	void do_write();
 
 public:
-	DatagramTransport(const std::string& bind, std::chrono::milliseconds timeout = 500ms,
+	DatagramTransport(std::string_view bind, std::chrono::milliseconds timeout = 500ms,
 	                  unsigned int retries = 7);
 	~DatagramTransport() override;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,6 +16,7 @@
 #include <chrono>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <mutex>
 #include <unordered_map>
 #include <tuple>
@@ -69,7 +70,7 @@ private:
 	void shutdown();
 
 public:
-	Monitor(boost::asio::io_context& service, const std::string& interface,
+	Monitor(boost::asio::io_context& service, std::string_view interface,
 	        std::uint16_t port, std::chrono::seconds frequency = 5s);
 
 	void add_source(Source source, Severity severity, LogCallback log_callback);

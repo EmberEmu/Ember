@@ -17,11 +17,11 @@ namespace ember {
 using namespace std::chrono_literals;
 namespace bai = boost::asio::ip;
 
-Monitor::Monitor(boost::asio::io_context& service, const std::string& interface,
+Monitor::Monitor(boost::asio::io_context& service, std::string_view interface,
                  std::uint16_t port, std::chrono::seconds frequency)
-                 : strand_(service), timer_(service), TIMER_FREQUENCY(frequency),
-                   socket_(service, bai::udp::endpoint(bai::make_address(interface), port)),
-                   signals_(service, SIGINT, SIGTERM) {
+	: strand_(service), timer_(service), TIMER_FREQUENCY(frequency),
+	  socket_(service, bai::udp::endpoint(bai::make_address(interface), port)),
+	  signals_(service, SIGINT, SIGTERM) {
 	signals_.async_wait(std::bind(&Monitor::shutdown, this));
 	set_timer();
 	receive();

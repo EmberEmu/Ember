@@ -18,10 +18,10 @@
 
 namespace ember::ports::upnp {
 
-HTTPTransport::HTTPTransport(ba::io_context& ctx, const std::string& bind)
+HTTPTransport::HTTPTransport(ba::io_context& ctx, std::string_view bind)
 	: socket_(ctx, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
-	resolver_(ctx),
-	timeout_(ctx) {
+	  resolver_(ctx),
+	  timeout_(ctx) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
 	buffer_.resize(INITIAL_BUFFER_SIZE);
 }

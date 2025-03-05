@@ -21,6 +21,7 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <cstdint>
 #include <cstddef>
@@ -83,17 +84,17 @@ class NetworkListener final {
 	}
 
 public:
-	NetworkListener(boost::asio::io_context& io_context, const std::string& interface, std::uint16_t port,
+	NetworkListener(boost::asio::io_context& io_context, std::string_view interface, std::uint16_t port,
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger& logger, Metrics& metrics)
-	                : acceptor_(io_context, boost::asio::ip::tcp::endpoint(
-	                            boost::asio::ip::make_address(interface), port)),
-	                  io_context_(io_context),
-	                  socket_(boost::asio::make_strand(io_context)),
-	                  session_builder_(session_create),
-	                  logger_(logger),
-	                  metrics_(metrics),
-	                  ban_list_(bans) {
+		: acceptor_(io_context, boost::asio::ip::tcp::endpoint(
+		  boost::asio::ip::make_address(interface), port)),
+		  io_context_(io_context),
+		  socket_(boost::asio::make_strand(io_context)),
+		  session_builder_(session_create),
+		  logger_(logger),
+		  metrics_(metrics),
+		  ban_list_(bans) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		accept_connection();

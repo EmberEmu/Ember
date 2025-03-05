@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,7 +51,7 @@ class Server final {
 
 public:
 	Server(boost::asio::io_context& context, std::string_view name,
-	       const std::string& iface, std::uint16_t port, log::Logger& logger);
+	       std::string_view iface, std::uint16_t port, log::Logger& logger);
 	~Server();
 
 	void register_handler(gsl::not_null<Handler*> handler);

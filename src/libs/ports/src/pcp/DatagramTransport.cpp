@@ -14,7 +14,7 @@
 
 namespace ember::ports {
 
-DatagramTransport::DatagramTransport(const std::string& bind, std::uint16_t port, ba::io_context& ctx)
+DatagramTransport::DatagramTransport(std::string_view bind, std::uint16_t port, ba::io_context& ctx)
 	: ctx_(ctx), strand_(ctx),
 	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), port)),
 	  resolver_(ctx_) {
@@ -30,7 +30,7 @@ DatagramTransport::~DatagramTransport() {
 	ctx_.stop();
 }
 
-void DatagramTransport::join_group(const std::string& address) {
+void DatagramTransport::join_group(std::string_view address) {
 	const auto group_ip = boost::asio::ip::make_address(address);
 	const auto mcast_iface = socket_.local_endpoint().address();
 	ba::ip::multicast::join_group join_opt{};

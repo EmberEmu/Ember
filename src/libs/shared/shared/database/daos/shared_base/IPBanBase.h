@@ -8,16 +8,14 @@
 
 #pragma once
 
+#include "Types.h"
 #include <shared/database/Exception.h>
 #include <string>
 #include <optional>
-#include <utility>
 #include <vector>
 #include <cstdint>
 
 namespace ember { 
-
-using IPEntry = std::pair<std::string, std::uint32_t>;
 
 namespace dal {
 

@@ -17,6 +17,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <string>
+#include <string_view>
 #include <cstddef>
 
 namespace ember::gateway {
@@ -34,7 +35,7 @@ class NetworkListener final {
 	void accept_connection();
 
 public:
-	NetworkListener(ServicePool& pool, const std::string& interface, std::uint16_t port,
+	NetworkListener(ServicePool& pool, std::string_view interface, std::uint16_t port,
 	                bool tcp_no_delay, log::Logger& logger)
 		: acceptor_(
 			pool.get(), 
