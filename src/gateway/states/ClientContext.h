@@ -17,6 +17,12 @@
 #include <variant>
 #include <cstdint>
 
+namespace ember::log {
+
+class Logger;
+
+} // log, ember
+
 namespace ember::gateway {
 
 class ClientHandler;
@@ -38,8 +44,9 @@ struct ClientID {
 };
 
 struct ClientContext {
-	ClientHandler* handler;
-	ClientConnection* connection;
+	ClientHandler& handler;
+	ClientConnection& connection;
+	log::Logger& logger;
 	BinaryStream* stream;
 	ClientState state;
 	ClientState prev_state;

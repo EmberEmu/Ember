@@ -136,16 +136,19 @@ std::string_view ClientHandler::client_identify() const {
 }
 
 ClientHandler::ClientHandler(ClientConnection& connection, ClientRef uuid,
-                             executor executor, log::Logger& logger)
-                             : context_{},
-                               connection_(connection),
-                               opcode_{},
-                               logger_(logger),
-                               uuid_(uuid),
-                               timer_(executor) { 
-	context_.state = context_.prev_state = ClientState::AUTHENTICATING;
-	context_.connection = &connection_;
-	context_.handler = this;
+							 executor executor, log::Logger& logger)
+	: context_ {
+		.handler = *this,
+		.connection = connection,
+		.logger = logger,
+		.state = ClientState::AUTHENTICATING,
+		.prev_state = ClientState::AUTHENTICATING,
+	  },
+	  connection_(connection),
+	  opcode_{},
+	  logger_(logger),
+	  uuid_(uuid),
+	  timer_(executor) {
 }
 
 } // gateway, ember

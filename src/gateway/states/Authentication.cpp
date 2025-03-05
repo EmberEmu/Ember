@@ -68,7 +68,7 @@ void handle_authentication(ClientContext& ctx) {
 
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(!ctx.handler->deserialise(auth_ctx.packet, *ctx.stream)) {
+	if(!ctx.handler.deserialise(auth_ctx.packet, *ctx.stream)) {
 		return;
 	}
 
@@ -88,7 +88,7 @@ void handle_authentication(ClientContext& ctx) {
 void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 
 	Locator::account()->locate_account_id(username, [uuid](auto status, auto id) {
 		AccountIDResponse event(status, id);
@@ -108,7 +108,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
 
 		auth_state(ctx, State::FAILED);
-		ctx.handler->close();
+		ctx.handler.close();
 		return;
 	}
 
@@ -120,14 +120,14 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 			<< "Account ID lookup for failed for "
 			<< auth_ctx.packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
-		ctx.handler->close();
+		ctx.handler.close();
 	}
 }
 
 void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 
 	Locator::account()->locate_session(account_id, [uuid](auto status, auto key) {
 		SessionKeyResponse event(status, key);
@@ -147,7 +147,7 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 		prove_session(ctx, event->key);
 	} else {
 		auth_state(ctx, State::FAILED);
-		ctx.handler->close();
+		ctx.handler.close();
 	}
 }
 
@@ -180,11 +180,11 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	if(hash != packet->digest) {
 		CLIENT_DEBUG_GLOB(ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
-		ctx.handler->close(); // key mismatch, client can't decrypt response
+		ctx.handler.close(); // key mismatch, client can't decrypt response
 		return;
 	}
 
-	ctx.connection->set_key(k_bytes);
+	ctx.connection.set_key(k_bytes);
 	ctx.client_id = { auth_ctx.account_id, packet->username };
 
 	 // todo, allowing for multiple gateways to connect to a single world server
@@ -197,7 +197,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 		auth_queue(ctx);
 	}
 
-	ctx.handler->stop_timer();
+	ctx.handler.stop_timer();
 }
 
 void send_auth_challenge(ClientContext& ctx) {
@@ -205,7 +205,7 @@ void send_auth_challenge(ClientContext& ctx) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	protocol::SMSG_AUTH_CHALLENGE response;
 	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void send_addon_data(ClientContext& ctx) {
@@ -234,13 +234,13 @@ void send_addon_data(ClientContext& ctx) {
 		response->addon_data.emplace_back(std::move(data));
 	}
 
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void auth_queue(ClientContext& ctx) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 
 	Locator::queue()->enqueue(uuid,
 		[uuid](const std::size_t position) {
@@ -262,7 +262,7 @@ void auth_success(ClientContext& ctx) {
 	send_auth_result(ctx, protocol::Result::AUTH_OK);
 	send_addon_data(ctx);
 	auth_state(ctx, State::SUCCESS);
-	ctx.handler->state_update(ClientState::CHARACTER_LIST);
+	ctx.handler.state_update(ClientState::CHARACTER_LIST);
 	CLIENT_DEBUG_GLOB(ctx) << "authenticated" << LOG_ASYNC;
 }
 
@@ -271,7 +271,7 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 
 	protocol::SMSG_AUTH_RESPONSE response;
 	response->result = result;
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
@@ -280,7 +280,7 @@ void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
 	protocol::SMSG_AUTH_RESPONSE packet;
 	packet->result = protocol::Result::AUTH_WAIT_QUEUE;
 	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
-	ctx.connection->send(packet);
+	ctx.connection.send(packet);
 }
 
 void handle_queue_success(ClientContext& ctx) {
@@ -290,12 +290,12 @@ void handle_queue_success(ClientContext& ctx) {
 
 void handle_timeout(ClientContext& ctx) {
 	CLIENT_DEBUG_GLOB(ctx) << "Authentication timed out" << LOG_ASYNC;
-	ctx.handler->close();
+	ctx.handler.close();
 }
 
 void enter(ClientContext& ctx) {
 	ctx.state_ctx = Context{};
-	ctx.handler->start_timer(AUTH_TIMEOUT);
+	ctx.handler.start_timer(AUTH_TIMEOUT);
 	send_auth_challenge(ctx);
 }
 
@@ -305,7 +305,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			handle_authentication(ctx);
 			break;
 		default:
-			ctx.handler->skip(*ctx.stream);
+			ctx.handler.skip(*ctx.stream);
 	}
 }
 
@@ -335,7 +335,7 @@ void exit(ClientContext& ctx) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(auth_ctx.state == State::IN_QUEUE) {
-		Locator::queue()->dequeue(ctx.handler->uuid());
+		Locator::queue()->dequeue(ctx.handler.uuid());
 	}
 }
 

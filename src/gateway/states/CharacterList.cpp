@@ -35,7 +35,7 @@ void send_character_list_fail(ClientContext& ctx) {
 	// displays an error dialogue on the client
 	protocol::SMSG_CHAR_CREATE response;
 	response->result = protocol::Result::CHAR_LIST_FAILED;
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
@@ -52,7 +52,7 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 
 	protocol::SMSG_CHAR_ENUM response;
 	response->characters = std::move(characters);
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
@@ -62,7 +62,7 @@ void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
 	response->result = res->result;
 	response->id = res->character_id;
 	response->name = res->name;
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void character_rename(ClientContext& ctx) {
@@ -70,11 +70,11 @@ void character_rename(ClientContext& ctx) {
 
 	protocol::CMSG_CHAR_RENAME packet;
 
-	if(!ctx.handler->deserialise(packet, *ctx.stream)) {
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 
 	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                       [uuid](auto result, auto id, const auto& name) {
@@ -86,7 +86,7 @@ void character_rename(ClientContext& ctx) {
 void character_enumerate(const ClientContext& ctx) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 	Locator::character()->retrieve_characters(ctx.client_id->id,
 		[uuid](auto status, auto characters) {
 			CharEnumResponse event(status, std::move(characters));
@@ -110,7 +110,7 @@ void send_character_delete(ClientContext& ctx, const CharDeleteResponse* res) {
 
 	protocol::SMSG_CHAR_DELETE response;
 	response->result = res->result;
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
@@ -118,7 +118,7 @@ void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
 
 	protocol::SMSG_CHAR_CREATE response;
 	response->result = res->result;
-	ctx.connection->send(response);
+	ctx.connection.send(response);
 }
 
 void character_create(ClientContext& ctx) {
@@ -126,11 +126,11 @@ void character_create(ClientContext& ctx) {
 
 	protocol::CMSG_CHAR_CREATE packet;
 
-	if(!ctx.handler->deserialise(packet, *ctx.stream)) {
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 
 	Locator::character()->create_character(ctx.client_id->id, packet->character, [uuid](auto result) {
 		Locator::dispatcher()->post_event(uuid, CharCreateResponse(result));
@@ -142,11 +142,11 @@ void character_delete(ClientContext& ctx) {
 
 	protocol::CMSG_CHAR_DELETE packet;
 
-	if(!ctx.handler->deserialise(packet, *ctx.stream)) {
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
-	const auto& uuid = ctx.handler->uuid();
+	const auto& uuid = ctx.handler.uuid();
 
 	Locator::character()->delete_character(ctx.client_id->id, packet->id, [uuid](auto result) {
 		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(result));
@@ -156,30 +156,30 @@ void character_delete(ClientContext& ctx) {
 void player_login(ClientContext& ctx) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	ctx.handler->state_update(ClientState::WORLD_ENTER);
+	ctx.handler.state_update(ClientState::WORLD_ENTER);
 
 	protocol::CMSG_PLAYER_LOGIN packet;
 
-	if(!ctx.handler->deserialise(packet, *ctx.stream)) {
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
 	}
 
 	Locator::dispatcher()->post_event(
-		ctx.handler->uuid(), PlayerLogin(packet->character_id)
+		ctx.handler.uuid(), PlayerLogin(packet->character_id)
 	);
 
-	ctx.handler->state_update(ClientState::WORLD_ENTER);
+	ctx.handler.state_update(ClientState::WORLD_ENTER);
 }
 
 void handle_timeout(ClientContext& ctx) {
 	CLIENT_DEBUG_GLOB(ctx) << "Character list timed out" << LOG_ASYNC;
-	ctx.handler->close();
+	ctx.handler.close();
 }
 
 } // unnamed
 
 void enter(ClientContext& ctx) {
-	ctx.handler->start_timer(CHAR_LIST_TIMEOUT);
+	ctx.handler.start_timer(CHAR_LIST_TIMEOUT);
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
@@ -200,7 +200,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			player_login(ctx);
 			break;
 		default:
-			ctx.handler->skip(*ctx.stream);
+			ctx.handler.skip(*ctx.stream);
 	}
 }
 
@@ -227,7 +227,7 @@ void handle_event(ClientContext& ctx, const Event* event) {
 }
 
 void exit(ClientContext& ctx) {
-	ctx.handler->stop_timer();
+	ctx.handler.stop_timer();
 
 	if(ctx.state == ClientState::SESSION_CLOSED) {
 		//--test;
