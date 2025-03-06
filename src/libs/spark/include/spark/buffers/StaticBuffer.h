@@ -11,6 +11,7 @@
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/detail/SharedDefs.h>
 #include <array>
+#include <span>
 #include <utility>
 #include <cassert>
 #include <cstddef>
@@ -132,7 +133,11 @@ public:
 		return write_ == read_;
 	}
 
-	consteval static bool can_write_seek() {
+	bool full() const {
+		return write_ == capacity();
+	}
+
+	constexpr static bool can_write_seek() {
 		return std::is_same<seeking, supported>::value;
 	}
 
@@ -180,7 +185,7 @@ public:
 		return buffer_.begin() + write_;
 	}
 
-	consteval size_type capacity() const {
+	constexpr static size_type capacity() {
 		return buf_size;
 	}
 
@@ -222,6 +227,14 @@ public:
 
 	const value_type* storage() const {
 		return buffer_.data();
+	}
+
+	std::span<value_type> read_span() {
+		return { read_ptr(), size() };
+	}
+
+	std::span<value_type> write_span() {
+		return { write_ptr(), free() };
 	}
 };
 

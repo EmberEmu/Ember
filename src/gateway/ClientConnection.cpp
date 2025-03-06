@@ -120,9 +120,7 @@ void ClientConnection::read() {
 		return;
 	}
 
-	auto free = inbound_buffer_.free();
-
-	if(!free) {
+	if(inbound_buffer_.full()) {
 		// If there's partially processed data in the buffer, we may be
 		// able to free space by defragmenting it.
 		if(!inbound_buffer_.defragment()) {
@@ -130,13 +128,9 @@ void ClientConnection::read() {
 			close_session();
 			return;
 		}
-
-		free = inbound_buffer_.free();
 	}
 
-	const auto begin = inbound_buffer_.write_ptr();
-
-	socket_.async_receive(boost::asio::buffer(begin, free),
+	socket_.async_receive(inbound_buffer_.write_span(),
 		create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
 			if(!ec) {
