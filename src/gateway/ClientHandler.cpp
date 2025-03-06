@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ namespace ember::gateway {
 
 void ClientHandler::start() {
 	Locator::dispatcher()->register_handler(this);
-	enter_states[context_.state](context_);
+	enter_state[context_.state](context_);
 }
 
 void ClientHandler::stop() {
@@ -69,8 +69,8 @@ void ClientHandler::state_update(ClientState new_state) {
 
 	context_.prev_state = context_.state;
 	context_.state = new_state;
-	exit_states[context_.prev_state](context_);
-	enter_states[context_.state](context_);
+	exit_state[context_.prev_state](context_);
+	enter_state[context_.state](context_);
 }
 
 void ClientHandler::skip(BinaryStream& stream) {

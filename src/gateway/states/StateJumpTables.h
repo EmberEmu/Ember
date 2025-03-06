@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,7 +53,7 @@ constexpr JumpTable<packet_handler> update_packet {
 	&session_close::handle_packet
 };
 
-constexpr JumpTable<state_func> exit_states {
+constexpr JumpTable<state_func> exit_state {
 	&authentication::exit,
 	&character_list::exit,
 	&world_enter::exit,
@@ -62,7 +62,7 @@ constexpr JumpTable<state_func> exit_states {
 	&session_close::exit
 };
 
-constexpr JumpTable<state_func> enter_states {
+constexpr JumpTable<state_func> enter_state {
 	&authentication::enter,
 	&character_list::enter,
 	&world_enter::enter,
@@ -72,8 +72,8 @@ constexpr JumpTable<state_func> enter_states {
 };
 
 // ensure jump tables cannot be resized without new entries being added
-VALIDATE_JUMP_ENTRIES(enter_states);
-VALIDATE_JUMP_ENTRIES(exit_states);
+VALIDATE_JUMP_ENTRIES(enter_state);
+VALIDATE_JUMP_ENTRIES(exit_state);
 VALIDATE_JUMP_ENTRIES(update_event);
 VALIDATE_JUMP_ENTRIES(update_packet);
 
