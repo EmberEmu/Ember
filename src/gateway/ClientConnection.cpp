@@ -8,8 +8,8 @@
 
 #include "ClientConnection.h"
 #include "SessionManager.h"
-#include "packetlog/FBSink.h"
-#include "packetlog/LogSink.h"
+#include "packet_log/FBSink.h"
+#include "packet_log/LogSink.h"
 #include <logger/Logger.h>
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>

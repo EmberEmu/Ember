@@ -13,7 +13,7 @@
 #include "ConnectionDefines.h"
 #include "PacketCrypto.h"
 #include "FilterTypes.h"
-#include "packetlog/PacketLogger.h"
+#include "packet_log/PacketLogger.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <spark/buffers/DynamicBuffer.h>

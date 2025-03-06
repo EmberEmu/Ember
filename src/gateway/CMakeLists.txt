@@ -49,10 +49,10 @@ set(LIBRARY_HDR
     states/WorldEnter.h
     states/WorldEnterContext.h
     states/StateFwdDecl.h
-    packetlog/PacketLogger.h
-    packetlog/PacketSink.h
-    packetlog/FBSink.h
-    packetlog/LogSink.h
+    packet_log/PacketLogger.h
+    packet_log/PacketSink.h
+    packet_log/FBSink.h
+    packet_log/LogSink.h
     Runner.h
     )
 
@@ -77,9 +77,9 @@ set(LIBRARY_SRC
     states/WorldForwarder.cpp
     states/SessionClose.cpp
     states/WorldEnter.cpp
-    packetlog/PacketLogger.cpp
-    packetlog/FBSink.cpp
-    packetlog/LogSink.cpp
+    packet_log/PacketLogger.cpp
+    packet_log/FBSink.cpp
+    packet_log/LogSink.cpp
     Runner.cpp
     )
 
