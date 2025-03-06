@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:noble AS builder
+FROM ubuntu:oracular AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
