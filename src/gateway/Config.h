@@ -8,9 +8,13 @@
 
 #pragma once
 
-#include <shared/Realm.h>
 #include <chrono>
-#include <cstddef>
+
+namespace ember {
+
+struct Realm;
+
+} // ember
 
 namespace ember::gateway {
 
