@@ -241,10 +241,11 @@ void ClientConnection::terminate() {
  * That's the theory anyway.
  */
 void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
+	auto executor = client->socket_.get_executor();
 	client->terminate();
 
-	boost::asio::post(client->socket_.get_executor(), [client]() {
-		LOG_TRACE_GLOB
+	boost::asio::post(executor, [client = std::move(client)]() {
+		LOG_TRACE(client->logger_)
 			<< "Handler for "
 			<< client->remote_address()
 			<< " destroyed" << LOG_ASYNC;
