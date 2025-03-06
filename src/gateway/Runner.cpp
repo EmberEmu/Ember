@@ -163,15 +163,6 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
 	LOG_INFO_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
 
-	// Set config
-	Config config {
-		.realm = *realm,
-		.list_zone_hide = args["quirks.list_zone_hide"].as<bool>(),
-		.max_slots = args["realm.max_slots"].as<unsigned int>(),
-		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
-		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
-	};
-
 	// Determine concurrency level
 	unsigned int concurrency = thread::hardware_concurrency(logger);
 
@@ -232,6 +223,14 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 			);
 		}
 	}
+
+	Config config {
+		.realm = *realm,
+		.list_zone_hide = args["quirks.list_zone_hide"].as<bool>(),
+		.max_slots = args["realm.max_slots"].as<unsigned int>(),
+		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
+		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>())
+	};
 
 	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->address);
 
