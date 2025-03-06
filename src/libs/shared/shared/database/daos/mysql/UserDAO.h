@@ -33,7 +33,7 @@ public:
 
 	std::optional<User> user(const std::string& username) const override try {
 		std::string_view query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "
-		                         "u.totp_key, b.user_id as banned, u.survey_request, u.subscriber, u.verified "
+		                         "u.totp_key, b.user_id as banned, u.survey_request, u.subscriber, u.verified, "
 		                         "s.user_id as suspended FROM users u "
 		                         "LEFT JOIN bans b ON u.id = b.user_id "
 		                         "LEFT JOIN suspensions s ON u.id = s.user_id "
