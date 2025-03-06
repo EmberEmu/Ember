@@ -164,10 +164,12 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	LOG_INFO_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
 
 	// Set config
-	Config config;
-	config.max_slots = args["realm.max_slots"].as<unsigned int>();
-	config.list_zone_hide = args["quirks.list_zone_hide"].as<bool>();
-	config.realm = &*realm;
+	Config config{
+		.realm = *realm,
+		.list_zone_hide = args["quirks.list_zone_hide"].as<bool>(),
+		.max_slots = args["realm.max_slots"].as<unsigned int>(),
+		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
+	};
 
 	// Determine concurrency level
 	unsigned int concurrency = thread::hardware_concurrency(logger);
@@ -232,7 +234,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->address);
 
-	RealmQueue queue_service(service_pool.get());
+	RealmQueue realm_queue(service_pool.get());
 	
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
 	spark::Server spark(service_pool.get(), "realm", s_address, s_port, logger);
@@ -247,7 +249,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 
 	// set services - not the best design pattern but it'll do for now
 	Locator::set(&dispatcher);
-	Locator::set(&queue_service);
+	Locator::set(&realm_queue);
 	Locator::set(&realm_svc);
 	Locator::set(&acct_svc);
 	Locator::set(&char_svc);
@@ -354,6 +356,7 @@ po::options_description options() {
 		("realm.id", po::value<unsigned int>()->required())
 		("realm.max_slots", po::value<unsigned int>()->required())
 		("realm.reserved_slots", po::value<unsigned int>()->required())
+		("realm.auth_timeout", po::value<unsigned int>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("stun.enabled", po::value<bool>()->required())

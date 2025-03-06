@@ -295,7 +295,7 @@ void handle_timeout(ClientContext& ctx) {
 
 void enter(ClientContext& ctx) {
 	ctx.state_ctx = Context{};
-	ctx.handler.start_timer(AUTH_TIMEOUT);
+	ctx.handler.start_timer(Locator::config()->auth_timeout);
 	send_auth_challenge(ctx);
 }
 
