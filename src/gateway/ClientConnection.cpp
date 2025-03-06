@@ -125,14 +125,15 @@ void ClientConnection::read() {
 	if(!free) {
 		// If there's partially processed data in the buffer, we may be
 		// able to free space by defragmenting it.
-		inbound_buffer_.defragment();
-
-		if(!(free = inbound_buffer_.free())) {
+		if(!inbound_buffer_.defragment()) {
 			LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
 			close_session();
 			return;
 		}
+
+		free = inbound_buffer_.free();
 	}
+
 	const auto begin = inbound_buffer_.write_ptr();
 
 	socket_.async_receive(boost::asio::buffer(begin, free),

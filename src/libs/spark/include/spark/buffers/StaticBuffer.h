@@ -104,6 +104,8 @@ public:
 	/*
 	 * Moves any unread data to the front of the buffer, freeing space at the end.
 	 * If a move is performed, pointers obtained from read/write_ptr() will be invalidated.
+	 * 
+	 * Return true if additional space was made available.
 	 */
 	bool defragment() {
 		if(read_ == 0) {
