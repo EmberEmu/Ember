@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,8 @@
  */
 
 #include "CharacterList.h"
+#include "ClientContext.h"
+#include "../ClientHandler.h"
 #include "../Config.h"
 #include "../Locator.h"
 #include "../ClientHandler.h"
@@ -16,6 +18,7 @@
 #include "../EventDispatcher.h"
 #include "../FilterTypes.h"
 #include "../ClientLogHelper.h"
+#include "../Events.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
 #include <protocol/Opcodes.h>
@@ -179,7 +182,7 @@ void handle_timeout(ClientContext& ctx) {
 } // unnamed
 
 void enter(ClientContext& ctx) {
-	ctx.handler.start_timer(CHAR_LIST_TIMEOUT);
+	ctx.handler.start_timer(Locator::config()->char_list_timeout);
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {

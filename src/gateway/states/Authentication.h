@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include "ClientContext.h"
-#include "../Events.h"
-#include <vector>
+#include "StateFwdDecl.h"
+#include <protocol/Opcodes.h>
 
 namespace ember::gateway::authentication {
 

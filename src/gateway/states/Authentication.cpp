@@ -7,13 +7,16 @@
  */
 
 #include "Authentication.h"
+#include "ClientContext.h"
 #include "../AccountClient.h"
+#include "../ClientHandler.h"
 #include "../Config.h"
 #include "../RealmQueue.h"
 #include "../ClientConnection.h"
 #include "../Locator.h"
 #include "../EventDispatcher.h"
 #include "../ClientLogHelper.h"
+#include "../Events.h"
 #include <protocol/Opcodes.h>
 #include <protocol/PacketHeaders.h>
 #include <protocol/Packets.h>

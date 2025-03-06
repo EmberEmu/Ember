@@ -8,11 +8,11 @@
 
 #include "ClientHandler.h"
 #include "ClientConnection.h"
-#include "Locator.h"
-#include "EventDispatcher.h"
-#include "states/StateJumpTables.h"
-#include "FilterTypes.h"
 #include "ClientLogHelper.h"
+#include "EventDispatcher.h"
+#include "FilterTypes.h"
+#include "Locator.h"
+#include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
 #include <format>

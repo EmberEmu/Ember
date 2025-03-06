@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,8 @@
  */
 
 #include "WorldForwarder.h"
+#include "ClientContext.h"
+#include "../Events.h"
 #include "../Routing.h"
 #include "../FilterTypes.h"
 #include "../ClientLogHelper.h"

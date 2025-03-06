@@ -164,11 +164,12 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 	LOG_INFO_SYNC(logger, "Serving as gateway for {} ({})", realm->name, cat_name);
 
 	// Set config
-	Config config{
+	Config config {
 		.realm = *realm,
 		.list_zone_hide = args["quirks.list_zone_hide"].as<bool>(),
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
+		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
 	};
 
 	// Determine concurrency level
@@ -357,6 +358,7 @@ po::options_description options() {
 		("realm.max_slots", po::value<unsigned int>()->required())
 		("realm.reserved_slots", po::value<unsigned int>()->required())
 		("realm.auth_timeout", po::value<unsigned int>()->required())
+		("realm.char_list_timeout", po::value<unsigned int>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())
 		("stun.enabled", po::value<bool>()->required())

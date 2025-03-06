@@ -4,7 +4,8 @@
 id = 1                   # ID of this realm in the database
 max_slots = 5000         # Max number of clients to allow before queueing
 reserved_slots = 5       # Slots reserved for admins
-auth_timeout = 30        # How long authentication can take before client kick
+auth_timeout = 30        # How long authentication can take before client kick (seconds)
+char_list_timeout = 900  # How long the client can idle on the character list before kick (seconds)
 
 [dbc]
 path = dbcs/
