@@ -1,4 +1,4 @@
-# Copyright (c) 2021 - 2024 Ember
+# Copyright (c) 2021 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -27,8 +27,8 @@ function(build_spark_services
 
     add_custom_command(
 		TARGET FB_SCHEMA_COMPILE
+		PRE_BUILD
         COMMAND rpcgen -t ${template_dir} -s ${input_name_str} -o ${output_dir}
-        DEPENDS rpcgen
         COMMENT "Generating Spark RPC service stubs..."
     )
 

@@ -4,8 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.30)
 project(Ember)
+
+# Disable Boost warnings for now
+cmake_policy(SET CMP0167 OLD)
 
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
 
