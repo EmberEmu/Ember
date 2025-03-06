@@ -45,6 +45,8 @@ public:
 	ClientHandler(ClientConnection& connection, ClientRef uuid,
 	              executor executor, log::Logger& logger);
 
+	~ClientHandler();
+
 	void start();
 	void stop();
 	void close();

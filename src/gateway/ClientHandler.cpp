@@ -151,4 +151,10 @@ ClientHandler::ClientHandler(ClientConnection& connection, ClientRef uuid,
 	  timer_(executor) {
 }
 
+ClientHandler::~ClientHandler() {
+	if(context_.state != ClientState::SESSION_CLOSED) {
+		close();
+	}
+}
+
 } // gateway, ember
