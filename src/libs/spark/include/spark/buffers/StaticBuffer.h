@@ -229,7 +229,7 @@ public:
 		return buffer_.data();
 	}
 
-	std::span<value_type> read_span() {
+	std::span<const value_type> read_span() const {
 		return { read_ptr(), size() };
 	}
 
