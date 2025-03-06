@@ -80,10 +80,6 @@ void ClientConnection::process_buffered_data(StaticBuffer& buffer) {
 			break;
 		}
 	} while(!buffer.empty());
-
-	// if there are any unread bytes left in the buffer, shift
-	// them to the beginning so we get them next time
-	inbound_buffer_.shift_unread_front();
 }
 
 void ClientConnection::write() {
@@ -124,14 +120,20 @@ void ClientConnection::read() {
 		return;
 	}
 
-	const auto begin = inbound_buffer_.write_ptr();
-	const auto free = inbound_buffer_.free();
+	auto free = inbound_buffer_.free();
 
 	if(!free) {
-		LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
-		close_session();
-		return;
+		// If there's partially processed data in the buffer, we may be
+		// able to free space by defragmenting it.
+		inbound_buffer_.defragment();
+
+		if(!(free = inbound_buffer_.free())) {
+			LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
+			close_session();
+			return;
+		}
 	}
+	const auto begin = inbound_buffer_.write_ptr();
 
 	socket_.async_receive(boost::asio::buffer(begin, free),
 		create_alloc_handler(allocator_,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -101,15 +101,20 @@ public:
 		read_ = write_ = 0;
 	}
 
-	void shift_unread_front() {
-		if(write_ == read_) {
-			return;
+	/*
+	 * Moves any unread data to the front of the buffer, freeing space at the end.
+	 * If a move is performed, pointers obtained from read/write_ptr() will be invalidated.
+	 */
+	bool defragment() {
+		if(read_ == 0) {
+			return false;
 		}
 
 		const auto prev_size = size();
 		std::memmove(buffer_.data(), read_ptr(), prev_size);
 		read_ = 0;
 		write_ = prev_size;
+		return true;
 	}
 
 	value_type& operator[](const size_type index) {
@@ -173,7 +178,7 @@ public:
 		return buffer_.begin() + write_;
 	}
 
-	size_type capacity() const {
+	consteval size_type capacity() const {
 		return buf_size;
 	}
 

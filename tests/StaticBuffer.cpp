@@ -152,14 +152,14 @@ TEST(StaticBuffer, AdvanceWrite) {
 	ASSERT_EQ(buffer[1], val);
 }
 
-TEST(StaticBuffer, Shift) {
+TEST(StaticBuffer, Defragment) {
 	spark::io::StaticBuffer<char, 3> buffer { 'a', 'b', 'c' };
 	ASSERT_EQ(buffer.free(), 0);
 	char value = 0;
 	buffer.read(&value, sizeof(value));
 	ASSERT_EQ(value, 'a');
 	ASSERT_EQ(buffer.free(), 0);
-	buffer.shift_unread_front();
+	buffer.defragment();
 	ASSERT_EQ(buffer.free(), 1);
 	buffer.copy(&value, sizeof(value));
 	ASSERT_EQ(value, 'b');
