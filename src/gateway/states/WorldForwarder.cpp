@@ -29,7 +29,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 		auto& [_, route] = *it;
 		route_packet(ctx, opcode, route);
 	} else {
-		CLIENT_DEBUG_GLOB(ctx) << "Unroutable message, "
+		CLIENT_DEBUG(ctx.logger, ctx) << "Unroutable message, "
 			<< protocol::to_string(opcode) << " (" << std::to_underlying(opcode) << ")"
 			<< " from " << ctx.client_id->username << LOG_ASYNC;
 	}

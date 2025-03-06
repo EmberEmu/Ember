@@ -62,7 +62,7 @@ State auth_state(ClientContext& ctx) {
 }
 
 void handle_authentication(ClientContext& ctx) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	// prevent repeated auth attempts
 	if(auth_state(ctx) != State::NOT_AUTHED) {
@@ -75,7 +75,7 @@ void handle_authentication(ClientContext& ctx) {
 		return;
 	}
 
-	CLIENT_DEBUG_GLOB(ctx)
+	CLIENT_DEBUG(ctx.logger, ctx)
 		<< "Received session proof for "
 		<< auth_ctx.packet->username
 		<< LOG_ASYNC;
@@ -89,7 +89,7 @@ void handle_authentication(ClientContext& ctx) {
 }
 
 void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler.uuid();
 
@@ -100,12 +100,12 @@ void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 }
 
 void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 	
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(event->status != rpc::Account::Status::OK) {
-		CLIENT_ERROR_GLOB(ctx)
+		CLIENT_ERROR(ctx.logger, ctx)
 			<< "Account server returned "
 			<< util::fb_status(event->status, rpc::Account::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
@@ -119,7 +119,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 		auth_ctx.account_id = event->account_id;
 		fetch_session_key(ctx, event->account_id);
 	} else {
-		CLIENT_DEBUG_GLOB(ctx)
+		CLIENT_DEBUG(ctx.logger, ctx)
 			<< "Account ID lookup for failed for "
 			<< auth_ctx.packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
@@ -128,7 +128,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 }
 
 void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler.uuid();
 
@@ -141,7 +141,7 @@ void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id)
 void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	CLIENT_DEBUG_GLOB(ctx)
+	CLIENT_DEBUG(ctx.logger, ctx)
 		<< "Account server returned "
 		<< util::fb_status(event->status, rpc::Account::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
@@ -155,7 +155,7 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 }
 
 void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	// Encode the key without requiring an allocation
 	static constexpr auto key_size_hint = 40u;
@@ -181,7 +181,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	hasher->final(hash.data());
 
 	if(hash != packet->digest) {
-		CLIENT_DEBUG_GLOB(ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
+		CLIENT_DEBUG(ctx.logger, ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
 		auth_state(ctx, State::FAILED);
 		ctx.handler.close(); // key mismatch, client can't decrypt response
 		return;
@@ -202,7 +202,8 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 }
 
 void send_auth_challenge(ClientContext& ctx) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
+
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	protocol::SMSG_AUTH_CHALLENGE response;
 	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
@@ -210,7 +211,7 @@ void send_auth_challenge(ClientContext& ctx) {
 }
 
 void send_addon_data(ClientContext& ctx) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	const auto& addons = auth_ctx.packet->addons;
@@ -226,7 +227,7 @@ void send_addon_data(ClientContext& ctx) {
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
-			CLIENT_DEBUG_GLOB(ctx) << "Repairing " << addon.name << LOG_ASYNC;
+			CLIENT_DEBUG(ctx.logger, ctx) << "Repairing " << addon.name << LOG_ASYNC;
 			data.key_version = 1;
 		} else {
 			data.key_version = 0;
@@ -239,7 +240,7 @@ void send_addon_data(ClientContext& ctx) {
 }
 
 void auth_queue(ClientContext& ctx) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	const auto& uuid = ctx.handler.uuid();
 
@@ -255,21 +256,21 @@ void auth_queue(ClientContext& ctx) {
 
 	ctx.handler.cancel_timer();
 	auth_state(ctx, State::IN_QUEUE);
-	CLIENT_DEBUG_GLOB(ctx) << "added to queue" << LOG_ASYNC;
+	CLIENT_DEBUG(ctx.logger, ctx) << "added to queue" << LOG_ASYNC;
 }
 
 void auth_success(ClientContext& ctx) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	send_auth_result(ctx, protocol::Result::AUTH_OK);
 	send_addon_data(ctx);
 	auth_state(ctx, State::SUCCESS);
 	ctx.handler.state_update(ClientState::CHARACTER_LIST);
-	CLIENT_DEBUG_GLOB(ctx) << "authenticated" << LOG_ASYNC;
+	CLIENT_DEBUG(ctx.logger, ctx) << "authenticated" << LOG_ASYNC;
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE response;
 	response->result = result;
@@ -277,7 +278,7 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 }
 
 void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	protocol::SMSG_AUTH_RESPONSE packet;
 	packet->result = protocol::Result::AUTH_WAIT_QUEUE;
@@ -286,12 +287,12 @@ void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
 }
 
 void handle_queue_success(ClientContext& ctx) {
-	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
+	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 	auth_success(ctx);
 }
 
 void handle_timeout(ClientContext& ctx) {
-	CLIENT_DEBUG_GLOB(ctx) << "Authentication timed out" << LOG_ASYNC;
+	CLIENT_DEBUG(ctx.logger, ctx) << "Authentication timed out" << LOG_ASYNC;
 	ctx.handler.close();
 }
 
