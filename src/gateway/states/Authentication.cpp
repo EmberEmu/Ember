@@ -199,8 +199,6 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	} else {
 		auth_queue(ctx);
 	}
-
-	ctx.handler.stop_timer();
 }
 
 void send_auth_challenge(ClientContext& ctx) {
@@ -255,6 +253,7 @@ void auth_queue(ClientContext& ctx) {
 		}
 	);
 
+	ctx.handler.cancel_timer();
 	auth_state(ctx, State::IN_QUEUE);
 	CLIENT_DEBUG_GLOB(ctx) << "added to queue" << LOG_ASYNC;
 }
@@ -339,6 +338,8 @@ void exit(ClientContext& ctx) {
 
 	if(auth_ctx.state == State::IN_QUEUE) {
 		Locator::queue()->dequeue(ctx.handler.uuid());
+	} else {
+		ctx.handler.cancel_timer();
 	}
 }
 

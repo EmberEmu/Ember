@@ -109,8 +109,8 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 	});
 }
 
-void ClientHandler::stop_timer() {
-	timer_.cancel();
+void ClientHandler::cancel_timer() {
+	timer_.cancel_one();
 }
 
 /*

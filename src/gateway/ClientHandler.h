@@ -63,7 +63,7 @@ public:
 	void handle_event(std::unique_ptr<const Event> event);
 
 	void start_timer(const std::chrono::milliseconds& time);
-	void stop_timer();
+	void cancel_timer();
 
 	const ClientRef& uuid() const {
 		return uuid_;

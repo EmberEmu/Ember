@@ -230,7 +230,7 @@ void handle_event(ClientContext& ctx, const Event* event) {
 }
 
 void exit(ClientContext& ctx) {
-	ctx.handler.stop_timer();
+	ctx.handler.cancel_timer();
 
 	if(ctx.state == ClientState::SESSION_CLOSED) {
 		//--test;
