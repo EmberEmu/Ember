@@ -34,14 +34,16 @@ void ClientHandler::close() {
 	connection_.close_session();
 }
 
-void ClientHandler::handle_message(BinaryStream& stream) {
+void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeType msg_size) {
+	BinaryStream stream(buffer, msg_size);
 	context_.stream = &stream;
-	stream >> opcode_;
+	protocol::ClientOpcode opcode;
+	stream >> opcode;
 
-	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode_) << LOG_ASYNC;
+	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
 
 	// handle ping & keep-alive as special cases
-	switch(opcode_) {
+	switch(opcode) {
 		case protocol::ClientOpcode::CMSG_PING:
 			handle_ping(stream);
 			return;
@@ -51,7 +53,7 @@ void ClientHandler::handle_message(BinaryStream& stream) {
 			break;
 	}
 
-	update_packet[context_.state](context_, opcode_);
+	update_packet[context_.state](context_, opcode);
 }
 
 void ClientHandler::handle_event(const Event* event) {
@@ -74,10 +76,9 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 void ClientHandler::skip(BinaryStream& stream) {
-	CLIENT_DEBUG(logger_, context_)
-		<< ClientState_to_string(context_.state) << " skipping "
-		<< protocol::to_string(opcode_)
-		<< " (" << std::to_underlying(opcode_) << ")" << LOG_ASYNC;
+	CLIENT_TRACE(logger_, context_)
+		<< ClientState_to_string(context_.state)
+		<< " skipping message" << LOG_ASYNC;
 
 	stream.skip(stream.read_limit() - stream.total_read());
 }
@@ -145,7 +146,6 @@ ClientHandler::ClientHandler(ClientConnection& connection, ClientRef uuid,
 		.prev_state = ClientState::AUTHENTICATING,
 	  },
 	  connection_(connection),
-	  opcode_{},
 	  logger_(logger),
 	  uuid_(uuid),
 	  timer_(executor) {

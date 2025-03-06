@@ -95,7 +95,8 @@ public:
 	using contiguous_type    = typename buf_type::contiguous;
 
 	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
-		: buffer_(source), read_limit_(read_limit) {};
+		: buffer_(source),
+		  read_limit_(read_limit) {};
 
 	/*** Write ***/
 

@@ -114,7 +114,7 @@ TEST_F(srp6SessionTest, SelfAuthentication) {
 	Botan::BigInt s_proof = server_->generate_proof(s_key, A, c_proof);
 
 	Botan::BigInt expected_c_proof = srp6::generate_client_proof(identifier_, s_key, gen_->prime(),
-	                                                            gen_->generator(), A, B, salt_);
+	                                                             gen_->generator(), A, B, salt_);
 	Botan::BigInt expected_s_proof = srp6::generate_server_proof(A, c_proof, c_key, gen_->prime().bytes());
 
 	EXPECT_EQ(expected_c_proof, c_proof) << "Server could not verify client proof!";
@@ -142,7 +142,7 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 
 	srp6::SessionKey key = server.session_key(A);
 	Botan::BigInt M1_S = srp6::generate_client_proof("CHAOSVEX", key, gen.prime(), gen.generator(), A,
-	                                                server.public_ephemeral(), Botan::BigInt::encode(salt));
+	                                                 server.public_ephemeral(), Botan::BigInt::encode(salt));
 	Botan::BigInt M2_S = server.generate_proof(key, A, M1);
 
 	EXPECT_EQ(M1, M1_S) << "Server's calculated client proof did not match the replayed proof!";

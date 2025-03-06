@@ -33,7 +33,6 @@ class ClientHandler final {
 	ClientContext context_;
 	const ClientRef uuid_;
 	boost::asio::steady_timer timer_;
-	protocol::ClientOpcode opcode_;
 	log::Logger& logger_;
 
 	mutable std::string client_id_;
@@ -59,7 +58,7 @@ public:
 	void skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);
-	void handle_message(BinaryStream& stream);
+	void handle_message(StaticBuffer& buffer, protocol::SizeType msg_size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 

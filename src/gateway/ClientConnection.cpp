@@ -13,7 +13,6 @@
 #include <logger/Logger.h>
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BufferSequence.h>
-#include <spark/buffers/BinaryStream.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <algorithm>
@@ -31,8 +30,7 @@ void ClientConnection::parse_header(StaticBuffer& buffer) {
 		crypt_->decrypt(buffer.read_ptr(), protocol::ClientHeader::WIRE_SIZE);
 	}
 
-	BinaryStream stream(buffer);
-	stream >> msg_size_;
+	buffer.read(&msg_size_);
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
 		LOG_DEBUG_ASYNC(logger_, "Invalid message size from {}", remote_address());
@@ -52,8 +50,7 @@ void ClientConnection::completion_check(const StaticBuffer& buffer) {
 }
 
 void ClientConnection::dispatch_message(StaticBuffer& buffer) {
-	BinaryStream stream(buffer, msg_size_);
-	handler_.handle_message(stream);
+	handler_.handle_message(buffer, msg_size_);
 }
 
 void ClientConnection::process_buffered_data(StaticBuffer& buffer) {

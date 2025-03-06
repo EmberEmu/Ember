@@ -124,7 +124,7 @@ public:
 			"LEFT JOIN users u ON u.id = c.account_id "
 			"WHERE u.id = ? AND c.deletion_date IS NULL AND c.realm_id = ?";
 		
-		/// done at compile-time, obviates std::string allocation
+		// done at compile-time, obviates std::string allocation
 		constexpr auto pos = full_query.find(" AND c.realm_id = ?");
 		static_assert(pos != std::string_view::npos);
 		auto query = full_query;
@@ -275,7 +275,7 @@ public:
 			"SELECT COUNT(*) AS count FROM characters WHERE deletion_date IS NULL "
 			"AND account_id = ? AND realm_id = ?";
 		
-		/// done at compile-time, obviates std::string allocation
+		// done at compile-time, obviates std::string allocation
 		constexpr auto pos = full_query.find(" AND realm_id = ?");
 		static_assert(pos != std::string_view::npos);
 		auto query = full_query;
