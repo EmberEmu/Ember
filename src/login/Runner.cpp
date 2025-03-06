@@ -255,7 +255,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	                            acct_svc, realm_list, *metrics,
 	                            args["misc.locale_enforce"].as<bool>(),
 	                            args["integrity.enabled"].as<bool>(),
-	                            args["misc.verified_email"].as<bool>());
+	                            args["misc.verified_emails"].as<bool>());
 	LoginSessionBuilder s_builder(builder, thread_pool);
 
 	const auto& interface = args["network.interface"].as<std::string>();
