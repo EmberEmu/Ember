@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -100,7 +100,7 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const is_pod auto& data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(const pod auto& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;
@@ -142,7 +142,8 @@ public:
 	}
 
 	template<typename T>
-	void put(const T& data) requires(std::integral<T> || std::floating_point<T>) {
+	requires arithmetic<T>
+	void put(const T& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(T));
 		total_write_ += sizeof(T);
 	}
@@ -204,7 +205,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator >>(is_pod auto& data) {
+	BinaryStream& operator >>(pod auto& data) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(data), *this);
 		buffer_.read(&data, sizeof(data));
 		return *this;

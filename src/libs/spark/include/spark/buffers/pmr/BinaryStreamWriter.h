@@ -39,7 +39,7 @@ public:
 	explicit BinaryStreamWriter(BufferWrite& source)
 		: StreamBase(source), buffer_(source), total_write_(0) {}
 
-	BinaryStreamWriter& operator <<(const is_pod auto& data) {
+	BinaryStreamWriter& operator <<(const pod auto& data) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;
@@ -81,7 +81,7 @@ public:
 	}
 
 	template<typename T>
-	void put(const T& data) requires(std::integral<T> || std::floating_point<T>) {
+	void put(const T& data) requires(arithmetic<T>) {
 		buffer_.write(&data, sizeof(T));
 		total_write_ += sizeof(T);
 	}

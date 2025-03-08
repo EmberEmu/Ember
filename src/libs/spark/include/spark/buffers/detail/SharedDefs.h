@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,6 +16,9 @@
 
 namespace ember::spark::io {
 
+template<typename T>
+concept arithmetic = std::integral<T> || std::floating_point<T>;
+
 template<typename buf_t>
 concept byte_oriented = sizeof(typename buf_t::value_type) == 1;
 
@@ -23,7 +26,7 @@ template<typename type>
 concept byte_type = sizeof(type) == 1;
 
 template<typename T>
-concept is_pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
+concept pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
 
 template <typename T>
 concept has_resize_overwrite =

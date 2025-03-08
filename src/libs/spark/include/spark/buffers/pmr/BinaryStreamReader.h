@@ -68,7 +68,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator >>(is_pod auto& data) {
+	BinaryStreamReader& operator >>(pod auto& data) {
 		check_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;
