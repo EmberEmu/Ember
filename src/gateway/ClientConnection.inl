@@ -10,8 +10,8 @@
 
 #include <spark/buffers/BinaryStream.h>
 #include <gsl/narrow>
-#include <algorithm>
 #include <type_traits>
+#include <utility>
 
 namespace ember::gateway {
 
