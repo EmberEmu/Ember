@@ -211,6 +211,22 @@ public:
 		return *this;
 	}
 
+	template<typename T>
+	requires arithmetic<T>
+	void get(T& dest) {
+		STREAM_READ_BOUNDS_CHECK(sizeof(T), void());
+		buffer_.read(&dest, sizeof(T));
+	}
+
+	template<typename T>
+	requires arithmetic<T>
+	T get() {
+		STREAM_READ_BOUNDS_CHECK(sizeof(T), void());
+		T t{};
+		buffer_.read(&t, sizeof(T));
+		return t;
+	}
+
 	void get(std::string& dest, std::size_t size) {
 		STREAM_READ_BOUNDS_CHECK(size, void());
 		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {

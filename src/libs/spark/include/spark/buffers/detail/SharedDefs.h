@@ -19,11 +19,11 @@ namespace ember::spark::io {
 template<typename T>
 concept arithmetic = std::integral<T> || std::floating_point<T>;
 
-template<typename buf_t>
-concept byte_oriented = sizeof(typename buf_t::value_type) == 1;
+template<typename T>
+concept byte_type = sizeof(T) == 1;
 
-template<typename type>
-concept byte_type = sizeof(type) == 1;
+template<typename T>
+concept byte_oriented = byte_type<typename T::value_type>;
 
 template<typename T>
 concept pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
