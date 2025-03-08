@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,21 +37,29 @@ private:
 
 public:
 	explicit BinaryStreamWriter(BufferWrite& source)
-		: StreamBase(source), buffer_(source), total_write_(0) {}
+		: StreamBase(source),
+		  buffer_(source),
+		  total_write_(0) {}
 
-	BinaryStreamWriter& operator <<(const pod auto& data) {
+	BinaryStreamWriter& operator<<(const has_shl_override<BinaryStreamWriter> auto& data) {
+		return data.operator<<(*this);
+	}
+
+	template<typename T>
+	requires pod<T> && (!has_shl_override<T, BinaryStreamWriter>)
+	BinaryStreamWriter& operator<<(const T& data) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 		return *this;
 	}
 
-	BinaryStreamWriter& operator <<(const std::string& data) {
+	BinaryStreamWriter& operator<<(const std::string& data) {
 		buffer_.write(data.data(), data.size() + 1); // +1 also writes terminator
 		total_write_ += (data.size() + 1);
 		return *this;
 	}
 
-	BinaryStreamWriter& operator <<(const char* data) {
+	BinaryStreamWriter& operator<<(const char* data) {
 		assert(data);
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
@@ -59,7 +67,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator <<(std::string_view& data) {
+	BinaryStreamWriter& operator<<(std::string_view& data) {
 		buffer_.write(data.data(), data.size());
 		const char term = '\0';
 		buffer_.write(&term, sizeof(term));
@@ -67,7 +75,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator <<(cstring_view& data) {
+	BinaryStreamWriter& operator<<(cstring_view& data) {
 		buffer_.write(data.data(), data.size() + 1);
 		total_write_ += (data.size() + 1);
 		return *this;

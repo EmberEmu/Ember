@@ -49,6 +49,8 @@ concept contiguous = requires(buf_type t) {
 
 template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw>
 class BinaryStream final {
+	using StreamType = BinaryStream<buf_type, exceptions>;
+
 	buf_type& buffer_;
 	std::size_t total_write_ = 0;
 	std::size_t total_read_ = 0;
@@ -100,9 +102,16 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const pod auto& data) requires(writeable<buf_type>) {
-		buffer_.write(&data, sizeof(data));
-		total_write_ += sizeof(data);
+	BinaryStream& operator <<(const has_shl_override<StreamType> auto& data)
+	requires(writeable<buf_type>) {
+		return data.operator<<(*this);
+	}
+
+	template<typename T>
+	requires pod<T> && (!has_shl_override<T, StreamType>)
+	BinaryStream& operator <<(const T& data) requires(writeable<buf_type>) {
+		buffer_.write(&data, sizeof(T));
+		total_write_ += sizeof(T);
 		return *this;
 	}
 
@@ -172,7 +181,7 @@ public:
 	/*** Read ***/
 
 	// terminates when it hits a null byte, empty string if none found
-	BinaryStream& operator >>(std::string& dest) {
+	BinaryStream& operator>>(std::string& dest) {
 		auto pos = buffer_.find_first_of(value_type(0));
 
 		if(pos == buf_type::npos) {
@@ -193,19 +202,25 @@ public:
 
 	// terminates when it hits a null byte, empty string_view if none found
 	// goes without saying that the buffer must outlive the string_view
-	BinaryStream& operator >>(std::string_view& dest) requires(contiguous<buf_type>) {
+	BinaryStream& operator>>(std::string_view& dest) requires(contiguous<buf_type>) {
 		dest = view();
 		return *this;
 	}
 
 	// terminates when it hits a null byte, empty cstring_view if none found
 	// goes without saying that the buffer must outlive the cstring_view
-	BinaryStream& operator >>(cstring_view& dest) requires(contiguous<buf_type>) {
+	BinaryStream& operator>>(cstring_view& dest) requires(contiguous<buf_type>) {
 		dest = cstring_view(cstring_view::null_terminated, view());
 		return *this;
 	}
 
-	BinaryStream& operator >>(pod auto& data) {
+	BinaryStream& operator>>(has_shr_override<StreamType> auto& data) {
+		return data.operator>>(*this);
+	}
+
+	template<typename T>
+	requires pod<T> && (!has_shr_override<T, StreamType>)
+	BinaryStream& operator>>(T& data) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(data), *this);
 		buffer_.read(&data, sizeof(data));
 		return *this;

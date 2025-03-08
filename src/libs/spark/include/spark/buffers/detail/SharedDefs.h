@@ -34,6 +34,19 @@ concept has_resize_overwrite =
 		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
 };
 
+template <typename T, typename U>
+concept has_shl_override =
+	requires(T t, U& u) {
+		{ t.operator<<(u) } -> std::same_as<U&>;
+};
+
+template <typename T, typename U>
+concept has_shr_override =
+	requires(T t, U& u) {
+		{ t.operator>>(u) } -> std::same_as<U&>;
+};
+
+
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD
 };

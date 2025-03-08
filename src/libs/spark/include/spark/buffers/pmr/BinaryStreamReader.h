@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,11 +45,14 @@ class BinaryStreamReader : virtual public StreamBase {
 
 public:
 	explicit BinaryStreamReader(BufferRead& source, std::size_t read_limit = 0)
-                            : StreamBase(source), buffer_(source), total_read_(0),
-                              read_limit_(read_limit), state_(StreamState::OK) {}
+		: StreamBase(source),
+		  buffer_(source),
+		  total_read_(0),
+		  read_limit_(read_limit),
+		  state_(StreamState::OK) {}
 
 	// terminates when it hits a null byte, empty string if none found
-	BinaryStreamReader& operator >>(std::string& dest) {
+	BinaryStreamReader& operator>>(std::string& dest) {
 		check_read_bounds(1); // just to prevent trying to read from an empty buffer
 		auto pos = buffer_.find_first_of(std::byte(0));
 
@@ -68,7 +71,19 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator >>(pod auto& data) {
+	BinaryStreamReader& operator>>(has_shr_override<BinaryStreamReader> auto& data) {
+		return data.operator>>(*this);
+	}
+
+	template<typename T>
+	requires pod<T> && (!has_shr_override<T, BinaryStreamReader>)
+	BinaryStreamReader& operator>>(T& data) {
+		check_read_bounds(sizeof(data));
+		buffer_.read(&data, sizeof(data));
+		return *this;
+	}
+
+	BinaryStreamReader& operator>>(pod auto& data) {
 		check_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;
