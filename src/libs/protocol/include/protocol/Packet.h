@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,17 +8,12 @@
 
 #pragma once
 
-#include <protocol/PacketHeaders.h>
 #include <protocol/Concepts.h>
-#include <concepts>
+#include <protocol/PacketHeaders.h>
+#include <protocol/StreamResult.h>
 #include <cstddef>
 
 namespace ember::protocol {
-
-// todo, remove INITIAL when codegen is done
-enum class State {
-	INITIAL, DONE, ERRORED
-};
 
 template <typename HeaderType, typename HeaderType::OpcodeType op_, typename Payload>
 struct Packet final {
@@ -33,18 +28,14 @@ struct Packet final {
 
 	Payload payload;
 
-	State read_from_stream(auto& stream) {
+	StreamResult read_from_stream(auto& stream) {
+		stream >> SizeType{} >> OpcodeType{};
 		return payload.read_from_stream(stream);
 	}
 
-	void write_to_stream(auto& stream) const {
-		payload.write_to_stream(stream);
-	}
-
-	friend auto& operator<<(auto& stream, const Packet& p) {
+	StreamResult write_to_stream(auto& stream) const {
 		stream << SizeType{} << OpcodeType{};
-		p.write_to_stream(stream);
-		return stream;
+		return payload.write_to_stream(stream);
 	}
 
 	auto operator->() {

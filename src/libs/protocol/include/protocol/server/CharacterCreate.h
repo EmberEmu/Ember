@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,32 +8,28 @@
 
 #pragma once
 
-#include <protocol/Packet.h>
+#include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <stdexcept>
-#include <string>
-#include <cstdint>
-#include <cstddef>
 
 namespace ember::protocol::server {
 
-class CharacterCreate final{
-	State state_ = State::INITIAL;
-
-public:
+struct CharacterCreate final{
 	Result result;
 	
-	State read_from_stream(auto& stream) try {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+	StreamResult read_from_stream(auto& stream) try {
 		stream >> result;
-		return (state_ = State::DONE);
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
 	} catch(const std::exception&) {
-		return State::ERRORED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	void write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << result;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 
-} // protocol, ember
+} // server, protocol, ember

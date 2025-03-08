@@ -8,25 +8,20 @@
 
 #pragma once
 
-
-#include <protocol/Packet.h>
+#include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
-#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <gsl/narrow>
 #include <array>
 #include <stdexcept>
 #include <vector>
 #include <cstdint>
-#include <cstddef>
 
 namespace ember::protocol::server {
 
 namespace be = boost::endian;
 
-class AddonInfo final {
-	State state_ = State::INITIAL;
-
+struct AddonInfo final {
 	const std::array<std::uint8_t, 256> public_key_ = {
 		0xC3, 0x5B, 0x50, 0x84, 0xB9, 0x3E, 0x32, 0x42, 0x8C, 0xD0, 0xC7, 0x48, 0xFA, 0x0E, 0x5D, 0x54,
 		0x5A, 0xA3, 0x0E, 0x14, 0xBA, 0x9E, 0x0D, 0xB9, 0x5D, 0x8B, 0xEE, 0xB6, 0x84, 0x93, 0x45, 0x75,
@@ -46,9 +41,8 @@ class AddonInfo final {
 		0x0D, 0x36, 0xEA, 0x01, 0xE0, 0xAA, 0x91, 0x20, 0x54, 0xF0, 0x72, 0xD8, 0x1E, 0xC7, 0x89, 0xD2
 	};
 
-public:
 	struct AddonData {
-		enum class Type : std::uint8_t {
+		enum struct Type : std::uint8_t {
 			BANNED,     // does what you expect it to
 			ENABLED,    // shows the addon in the list - probably intended for player-created addons
 			BLIZZARD    // hides the addon from the list
@@ -64,15 +58,13 @@ public:
 	Result result;
 	std::vector<AddonData> addon_data;
 
-	State read_from_stream(auto& stream) try {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
-
-		return (state_ = State::DONE);
+	StreamResult read_from_stream(auto& stream) try {
+		return StreamResult::SUCCESS;
 	} catch(const std::exception&) {
-		return State::ERRORED;
+		return StreamResult::FAILED;
 	}
 
-	void write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 
@@ -96,7 +88,11 @@ public:
 				stream << addon.update_url;
 			}
 		}
+
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 
-} // protocol, ember
+} // server, protocol, ember

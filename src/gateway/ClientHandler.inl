@@ -17,7 +17,7 @@ namespace ember::gateway {
 
 [[nodiscard]]
 bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& stream) {
-	if(packet->read_from_stream(stream) == protocol::State::DONE) {
+	if(packet->read_from_stream(stream)) {
 		if(stream.read_limit() != stream.total_read()) {
 			LOG_DEBUG_ASYNC(
 				logger_, "Skipping superfluous stream data in message {} from {}",
@@ -28,7 +28,7 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 		}
 
 		return true;
-	}	
+	}
 
 	/*
 	 * READ_LIMIT_ERR:

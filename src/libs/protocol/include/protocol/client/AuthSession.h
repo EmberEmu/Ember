@@ -8,12 +8,10 @@
 
 #pragma once
 
+#include <protocol/StreamResult.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <protocol/Packet.h>
-#include <logger/Logger.h>
 #include <shared/utility/UTF8String.h>
-#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
@@ -21,20 +19,15 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <cstdint>
-#include <cstddef>
 #include <zlib.h>
 
 namespace ember::protocol::client {
 
 namespace be = boost::endian;
 
-class AuthSession final {
+struct AuthSession final {
 	static const std::size_t DIGEST_LENGTH = 20;
 
-	State state_ = State::INITIAL;
-
-public:
 	struct AddonData {
 		std::string name;
 		be::little_uint8_t key_version;
@@ -52,9 +45,7 @@ public:
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
-	State read_from_stream(auto& stream) try {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
-
+	StreamResult read_from_stream(auto& stream) try {
 		const auto initial_stream_size = stream.size();
 
 		stream >> build;
@@ -68,8 +59,7 @@ public:
 		stream >> decompressed_size;
 
 		if(!stream.read_limit()) {
-			LOG_ERROR_GLOB << "CMSG_AUTH_SESSION size not specified?" << LOG_ASYNC;
-			return (state_ = State::ERRORED);
+			return StreamResult::BAD_FIELD_SIZE;
 		}
 
 		// calculate how many bytes are left in this message
@@ -77,8 +67,7 @@ public:
 		const uLongf compressed_size = gsl::narrow<uLongf>(remaining);
 
 		if(decompressed_size > 0xFFFFF) {
-			LOG_DEBUG_GLOB << "Rejecting compressed addon data for being too large "  << LOG_ASYNC;
-			return (state_ = State::ERRORED);
+			return StreamResult::BAD_FIELD_SIZE;
 		}
 		
 		boost::container::small_vector<std::uint8_t, 512> source(
@@ -95,8 +84,7 @@ public:
 		auto ret = uncompress(dest.data(), &dest_len, source.data(), compressed_size);
 
 		if(ret != Z_OK) {
-			LOG_DEBUG_GLOB << "Decompression of addon data failed with code " << ret << LOG_ASYNC;
-			return (state_ = State::ERRORED);
+			return StreamResult::DECOMPRESSION_FAILED;
 		}
 
 		spark::io::BufferAdaptor buffer(dest);
@@ -111,18 +99,21 @@ public:
 			addons.emplace_back(std::move(data));
 		}
 
-		return (state_ = State::DONE);
+		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
 	} catch(const std::exception&) {
-		return State::ERRORED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	void write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << build;
 		stream << server_id;
 		stream << username;
 		stream << seed;
 		stream.put(digest.data(), digest.size());
+		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 
-} // protocol, ember
+} // client, protocol, ember

@@ -79,6 +79,8 @@ class ClientConnection final {
 	void completion_check();
 	void dispatch_message();
 
+	bool write_packet_stream(const protocol::is_packet auto& packet);
+
 public:
 	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientRef uuid, log::Logger& logger)
 		: sessions_(sessions),
