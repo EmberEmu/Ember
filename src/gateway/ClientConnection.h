@@ -44,9 +44,9 @@ class ClientConnection final {
 	boost::asio::ip::tcp::endpoint remote_ep_;
 
 	StaticBuffer inbound_buffer_{};
-	std::array<DynamicBuffer, 2> outbound_buffers_{};
-	DynamicBuffer* outbound_front_;
-	DynamicBuffer* outbound_back_;
+	std::array<DynamicTLSBuffer, 2> outbound_buffers_{};
+	DynamicTLSBuffer* outbound_front_;
+	DynamicTLSBuffer* outbound_back_;
 
 	ClientHandler handler_;
 	ConnectionStats stats_;
@@ -73,11 +73,11 @@ class ClientConnection final {
 	void close_session_sync();
 	void terminate();
 
-	// packet reassembly & dispatching
-	void dispatch_message(StaticBuffer& buffer);
-	void process_buffered_data(StaticBuffer& buffer);
-	void parse_header(StaticBuffer& buffer);
-	void completion_check(const StaticBuffer& buffer);
+	// message reading & dispatching
+	void process_buffered_data();
+	void parse_header();
+	void completion_check();
+	void dispatch_message();
 
 public:
 	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientRef uuid, log::Logger& logger)

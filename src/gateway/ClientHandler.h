@@ -12,9 +12,9 @@
 #include "FilterTypes.h"
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
+#include <logger/LoggerFwd.h>
 #include <protocol/Packet.h>
 #include <spark/buffers/BinaryStream.h>
-#include <logger/LoggerFwd.h>
 #include <shared/ClientRef.h>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/uuid/uuid.hpp>
