@@ -13,10 +13,12 @@
 #include <algorithm>
 #include <type_traits>
 
+namespace ember::gateway {
+
 void ClientConnection::send(const protocol::is_packet auto& packet) {
 	using Type = std::remove_reference_t<decltype(packet)>;
 
-	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
+	LOG_TRACE_ASYNC(logger_, "{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	spark::io::BinaryStream stream(*outbound_back_);
 	stream << packet;
@@ -46,3 +48,5 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 
 	++stats_.messages_out;
 }
+
+} // gateway, ember
