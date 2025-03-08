@@ -11,9 +11,7 @@
 #include <protocol/StreamResult.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <logger/Logger.h>
 #include <shared/utility/UTF8String.h>
-#include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
@@ -21,8 +19,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <cstdint>
-#include <cstddef>
 #include <zlib.h>
 
 namespace ember::protocol::client {
@@ -63,8 +59,7 @@ struct AuthSession final {
 		stream >> decompressed_size;
 
 		if(!stream.read_limit()) {
-			LOG_ERROR_GLOB << "CMSG_AUTH_SESSION size not specified?" << LOG_ASYNC;
-			return StreamResult::FAILED;
+			return StreamResult::BAD_FIELD_SIZE;
 		}
 
 		// calculate how many bytes are left in this message
@@ -72,8 +67,7 @@ struct AuthSession final {
 		const uLongf compressed_size = gsl::narrow<uLongf>(remaining);
 
 		if(decompressed_size > 0xFFFFF) {
-			LOG_DEBUG_GLOB << "Rejecting compressed addon data for being too large "  << LOG_ASYNC;
-			return StreamResult::FAILED;
+			return StreamResult::BAD_FIELD_SIZE;
 		}
 		
 		boost::container::small_vector<std::uint8_t, 512> source(
@@ -90,8 +84,7 @@ struct AuthSession final {
 		auto ret = uncompress(dest.data(), &dest_len, source.data(), compressed_size);
 
 		if(ret != Z_OK) {
-			LOG_DEBUG_GLOB << "Decompression of addon data failed with code " << ret << LOG_ASYNC;
-			return StreamResult::FAILED;
+			return StreamResult::DECOMPRESSION_FAILED;
 		}
 
 		spark::io::BufferAdaptor buffer(dest);
