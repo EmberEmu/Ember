@@ -19,18 +19,18 @@
 
 namespace ember::gateway {
 
-void ClientConnection::parse_header(StaticBuffer& buffer) {
+void ClientConnection::parse_header() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(buffer.size() < protocol::ClientHeader::WIRE_SIZE) {
+	if(inbound_buffer_.size() < protocol::ClientHeader::WIRE_SIZE) {
 		return;
 	}
 
 	if(crypt_) [[likely]] {
-		crypt_->decrypt(buffer.read_ptr(), protocol::ClientHeader::WIRE_SIZE);
+		crypt_->decrypt(inbound_buffer_.read_ptr(), protocol::ClientHeader::WIRE_SIZE);
 	}
 
-	buffer.read(&msg_size_);
+	inbound_buffer_.read(&msg_size_);
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
 		LOG_DEBUG_ASYNC(logger_, "Invalid message size from {}", remote_address());
@@ -41,42 +41,42 @@ void ClientConnection::parse_header(StaticBuffer& buffer) {
 	read_state_ = ReadState::BODY;
 }
 
-void ClientConnection::completion_check(const StaticBuffer& buffer) {
-	if(buffer.size() < msg_size_) {
+void ClientConnection::completion_check() {
+	if(inbound_buffer_.size() < msg_size_) {
 		return;
 	}
 
 	read_state_ = ReadState::DONE;
 }
 
-void ClientConnection::dispatch_message(StaticBuffer& buffer) {
-	handler_.handle_message(buffer, msg_size_);
+void ClientConnection::dispatch_message() {
+	handler_.handle_message(inbound_buffer_, msg_size_);
 }
 
-void ClientConnection::process_buffered_data(StaticBuffer& buffer) {
+void ClientConnection::process_buffered_data() {
 	do {
 		if(read_state_ == ReadState::HEADER) {
-			parse_header(buffer);
+			parse_header();
 		}
 
 		if(read_state_ == ReadState::BODY) {
-			completion_check(buffer);
+			completion_check();
 		}
 
 		if(read_state_ == ReadState::DONE) {
 			++stats_.messages_in;
 
 			if(packet_logger_) [[unlikely]] {
-				std::span packet(buffer.read_ptr(), msg_size_);
+				std::span packet(inbound_buffer_.read_ptr(), msg_size_);
 				packet_logger_->log(packet, PacketDirection::INBOUND);
 			}
 			
-			dispatch_message(buffer);
+			dispatch_message();
 			read_state_ = ReadState::HEADER;
 		} else {
 			break;
 		}
-	} while(!buffer.empty());
+	} while(!inbound_buffer_.empty());
 }
 
 void ClientConnection::write() {
@@ -127,15 +127,14 @@ void ClientConnection::read() {
 		}
 	}
 
-	socket_.async_receive(inbound_buffer_.write_span(),
-		create_alloc_handler(allocator_,
+	socket_.async_receive(inbound_buffer_.write_span(), create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;
 				++stats_.packets_in;
 
 				inbound_buffer_.advance_write(size);
-				process_buffered_data(inbound_buffer_);
+				process_buffered_data();
 				read();
 			} else if(ec != boost::asio::error::operation_aborted) {
 				close_session();

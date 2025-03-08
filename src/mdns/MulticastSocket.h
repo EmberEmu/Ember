@@ -11,6 +11,7 @@
 #include "Handler.h"
 #include "DNSDefines.h"
 #include "Socket.h"
+#include <logger/Logger.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <span>
@@ -23,6 +24,7 @@ class MulticastSocket final : public Socket {
     boost::asio::io_context& context_;
     boost::asio::ip::udp::socket socket_;
     boost::asio::ip::udp::endpoint ep_, remote_ep_;
+	log::Logger& logger_;
 
     Handler* handler_;
     std::array<std::uint8_t, MAX_DGRAM_LEN> buffer_;
@@ -35,7 +37,8 @@ public:
     MulticastSocket(boost::asio::io_context& context,
                     std::string_view listen_addr,
                     std::string_view mcast_group,
-                    std::uint16_t port);
+                    std::uint16_t port,
+	                log::Logger& logger);
 
     void send(std::unique_ptr<std::vector<std::uint8_t>> buffer) override;
     void register_handler(Handler* handler) override;

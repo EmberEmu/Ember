@@ -10,8 +10,10 @@
 
 #include <spark/buffers/BinaryStream.h>
 #include <gsl/narrow>
-#include <algorithm>
 #include <type_traits>
+#include <utility>
+
+namespace ember::gateway {
 
 bool ClientConnection::write_packet_stream(const protocol::is_packet auto& packet) {
 	using Type = std::remove_reference_t<decltype(packet)>;
@@ -60,3 +62,5 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 
 	++stats_.messages_out;
 }
+
+} // gateway, ember

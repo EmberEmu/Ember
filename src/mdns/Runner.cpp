@@ -85,7 +85,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	const auto port = args["mdns.port"].as<std::uint16_t>();
 
 	// start multicast DNS services
-	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port);
+	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port, logger);
 	dns::Server server(std::move(socket), logger);
 
 	const auto& spark_iface = args["spark.address"].as<std::string>();
