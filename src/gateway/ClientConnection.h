@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -78,6 +78,8 @@ class ClientConnection final {
 	void process_buffered_data(StaticBuffer& buffer);
 	void parse_header(StaticBuffer& buffer);
 	void completion_check(const StaticBuffer& buffer);
+
+	bool write_packet_stream(const protocol::is_packet auto& packet);
 
 public:
 	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientRef uuid, log::Logger& logger)

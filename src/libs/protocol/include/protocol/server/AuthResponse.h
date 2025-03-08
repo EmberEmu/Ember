@@ -37,12 +37,12 @@ struct AuthResponse final {
 			stream >> billing_rested;
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << result;
 
 		if(result == Result::AUTH_WAIT_QUEUE) {
@@ -55,7 +55,9 @@ struct AuthResponse final {
 			stream << billing_rested;
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 

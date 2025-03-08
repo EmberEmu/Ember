@@ -11,6 +11,7 @@
 #include <array>
 #include <ostream>
 #include <string_view>
+#include <cassert>
 
 namespace ember::protocol {
 
@@ -18,11 +19,12 @@ struct StreamResult {
 	enum {
 		SUCCESS              = 0x00,
 		FAILED               = 0x01,
-		BAD_FIELD_SIZE       = 0x02,
-		DECOMPRESSION_FAILED = 0x03,
-		COMPRESSION_FAILED   = 0x04,
-		TOO_BIG              = 0x05,
-		STREAM_ERROR         = 0x06,
+		CAUGHT_EXCEPTION     = 0x02,
+		BAD_FIELD_SIZE       = 0x03,
+		DECOMPRESSION_FAILED = 0x04,
+		COMPRESSION_FAILED   = 0x05,
+		TOO_BIG              = 0x06,
+		STREAM_ERROR         = 0x07,
 
 		STREAM_RESULT_MAX    = STREAM_ERROR + 1
 	} val_;
@@ -30,6 +32,7 @@ struct StreamResult {
 	std::array<std::string_view, STREAM_RESULT_MAX> result_strings {
 		"success",
 		"unspecified failure",
+		"encountered an exception",
 		"bad data size",
 		"data size too large",
 		"decompression failed",
@@ -52,6 +55,7 @@ struct StreamResult {
 	}
 
 	std::string_view what() const {
+		assert(val_ < result_strings.size());
 		return result_strings[val_];
 	}
 };

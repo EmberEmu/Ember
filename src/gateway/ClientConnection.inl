@@ -13,15 +13,17 @@
 #include <algorithm>
 #include <type_traits>
 
-void ClientConnection::send(const protocol::is_packet auto& packet) {
+bool ClientConnection::write_packet_stream(const protocol::is_packet auto& packet) {
 	using Type = std::remove_reference_t<decltype(packet)>;
 
-	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
-
 	spark::io::BinaryStream stream(*outbound_back_);
-	packet.write_to_stream(stream);
+
+	if(!packet.write_to_stream(stream)) {
+		return false;
+	}
 
 	const auto written = stream.total_write();
+	const auto end_pos = written - Type::HEADER_WIRE_SIZE;
 	auto size = gsl::narrow<typename Type::SizeType>(written - sizeof(typename Type::SizeType));
 	auto opcode = packet.opcode;
 
@@ -32,8 +34,20 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 
 	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::io::StreamSeek::SK_FORWARD, written - Type::HEADER_WIRE_SIZE);
+	stream.write_seek(spark::io::StreamSeek::SK_FORWARD, end_pos);
+	return true;
+}
 
+void ClientConnection::send(const protocol::is_packet auto& packet) {
+	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
+
+	// we're in a bad state if writing fails, we can't recover
+	if(!write_packet_stream(packet)) {
+		close_session();
+		return;
+	}
+
+	// initiate sending if not already in progress
 	if(!write_in_progress_) {
 		write_in_progress_ = true;
 		std::swap(outbound_front_, outbound_back_);

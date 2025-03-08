@@ -64,7 +64,7 @@ struct AddonInfo final {
 		return StreamResult::FAILED;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 
@@ -89,7 +89,9 @@ struct AddonInfo final {
 			}
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 

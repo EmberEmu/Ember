@@ -32,12 +32,12 @@ struct CharacterRename final {
 			stream >> name;
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << result;
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {
@@ -45,7 +45,9 @@ struct CharacterRename final {
 			stream << name;
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 

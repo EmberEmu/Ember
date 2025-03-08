@@ -79,12 +79,12 @@ struct CharacterEnum final {
 			characters.emplace_back(std::move(c));
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {
@@ -120,7 +120,9 @@ struct CharacterEnum final {
 			stream.put(arr, sizeof(arr));
 		}
 
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 

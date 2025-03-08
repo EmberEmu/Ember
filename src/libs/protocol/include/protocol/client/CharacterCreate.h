@@ -33,12 +33,12 @@ struct CharacterCreate final {
 		stream >> character.haircolour;
 		stream >> character.facialhair;
 		stream >> character.outfit_id;
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << character.name;
 		stream << character.race;
 		stream << character.class_;
@@ -49,7 +49,9 @@ struct CharacterCreate final {
 		stream << character.haircolour;
 		stream << character.facialhair;
 		stream << character.outfit_id;
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 

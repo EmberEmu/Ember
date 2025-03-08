@@ -23,14 +23,16 @@ struct CharacterDelete final {
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> id;
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << id;
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 

@@ -19,14 +19,16 @@ struct LogoutComplete final {
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> result;
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const try {
 		stream << result;
-		return StreamResult::SUCCESS;
+		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+	} catch(const std::exception&) {
+		return StreamResult::CAUGHT_EXCEPTION;
 	}
 };
 
