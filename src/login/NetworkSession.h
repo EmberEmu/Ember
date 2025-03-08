@@ -205,7 +205,7 @@ public:
 		}
 
 		spark::io::pmr::BinaryStream stream(*outbound_back_);
-		data.write_to_stream(stream); // todo, provide operator<< for packets?
+		data.write_to_stream(stream);
 
 		if(!write_in_progress_) {
 			write_in_progress_ = true;
