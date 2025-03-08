@@ -219,7 +219,7 @@ void send_addon_data(ClientContext& ctx) {
 
 	// todo, use AddonData.dbc
 	for(const auto& addon : addons) {
-		CLIENT_DEBUG_GLOB(ctx) << "Addon: " << addon.name << ", Key version: " << addon.key_version
+		CLIENT_DEBUG(ctx.logger, ctx) << "Addon: " << addon.name << ", Key version: " << addon.key_version
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
 		protocol::server::AddonInfo::AddonData data;
