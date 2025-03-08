@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <protocol/StreamResult.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <protocol/Packet.h>
 #include <logger/Logger.h>
 #include <shared/utility/UTF8String.h>
 #include <boost/assert.hpp>
@@ -29,12 +29,9 @@ namespace ember::protocol::client {
 
 namespace be = boost::endian;
 
-class AuthSession final {
+struct AuthSession final {
 	static const std::size_t DIGEST_LENGTH = 20;
 
-	State state_ = State::INITIAL;
-
-public:
 	struct AddonData {
 		std::string name;
 		be::little_uint8_t key_version;
@@ -52,9 +49,7 @@ public:
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
-	State read_from_stream(auto& stream) try {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
-
+	StreamResult read_from_stream(auto& stream) try {
 		const auto initial_stream_size = stream.size();
 
 		stream >> build;
@@ -69,7 +64,7 @@ public:
 
 		if(!stream.read_limit()) {
 			LOG_ERROR_GLOB << "CMSG_AUTH_SESSION size not specified?" << LOG_ASYNC;
-			return (state_ = State::ERRORED);
+			return StreamResult::FAILED;
 		}
 
 		// calculate how many bytes are left in this message
@@ -78,7 +73,7 @@ public:
 
 		if(decompressed_size > 0xFFFFF) {
 			LOG_DEBUG_GLOB << "Rejecting compressed addon data for being too large "  << LOG_ASYNC;
-			return (state_ = State::ERRORED);
+			return StreamResult::FAILED;
 		}
 		
 		boost::container::small_vector<std::uint8_t, 512> source(
@@ -96,7 +91,7 @@ public:
 
 		if(ret != Z_OK) {
 			LOG_DEBUG_GLOB << "Decompression of addon data failed with code " << ret << LOG_ASYNC;
-			return (state_ = State::ERRORED);
+			return StreamResult::FAILED;
 		}
 
 		spark::io::BufferAdaptor buffer(dest);
@@ -111,18 +106,19 @@ public:
 			addons.emplace_back(std::move(data));
 		}
 
-		return (state_ = State::DONE);
+		return StreamResult::SUCCESS;
 	} catch(const std::exception&) {
-		return State::ERRORED;
+		return StreamResult::FAILED;
 	}
 
-	void write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const {
 		stream << build;
 		stream << server_id;
 		stream << username;
 		stream << seed;
 		stream.put(digest.data(), digest.size());
+		return StreamResult::SUCCESS;
 	}
 };
 
-} // protocol, ember
+} // client, protocol, ember

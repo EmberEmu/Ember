@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2021 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,29 +8,22 @@
 
 #pragma once
 
-#include <protocol/Packet.h>
+#include <protocol/StreamResult.h>
 #include <shared/database/objects/Character.h>
-#include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <boost/endian/buffers.hpp>
 #include <stdexcept>
 #include <vector>
 #include <cstdint>
-#include <cstddef>
 
 namespace ember::protocol::server {
 
 namespace be = boost::endian;
 
-class CharacterEnum final {
-	State state_ = State::INITIAL;
-
-public:
+struct CharacterEnum final {
 	std::vector<Character> characters;
 
-	State read_from_stream(auto& stream) try {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
-
+	StreamResult read_from_stream(auto& stream) try {
 		std::uint8_t char_count;
 		stream >> char_count;
 
@@ -86,12 +79,12 @@ public:
 			characters.emplace_back(std::move(c));
 		}
 
-		return (state_ = State::DONE);
+		return StreamResult::SUCCESS;
 	} catch(const std::exception&) {
-		return (state_ = State::ERRORED);
+		return StreamResult::FAILED;
 	}
 
-	void write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(auto& stream) const {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {
@@ -126,7 +119,9 @@ public:
 			                        0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 			stream.put(arr, sizeof(arr));
 		}
+
+		return StreamResult::SUCCESS;
 	}
 };
 
-} // protocol, ember
+} // server, protocol, ember
