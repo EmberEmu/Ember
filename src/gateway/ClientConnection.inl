@@ -19,7 +19,7 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	spark::io::BinaryStream stream(*outbound_back_);
-	stream << packet;
+	packet.write_to_stream(stream);
 
 	const auto written = stream.total_write();
 	auto size = gsl::narrow<typename Type::SizeType>(written - sizeof(typename Type::SizeType));

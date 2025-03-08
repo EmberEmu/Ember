@@ -29,17 +29,13 @@ struct Packet final {
 	Payload payload;
 
 	StreamResult read_from_stream(auto& stream) {
+		stream >> SizeType{} >> OpcodeType{};
 		return payload.read_from_stream(stream);
 	}
 
 	StreamResult write_to_stream(auto& stream) const {
-		return payload.write_to_stream(stream);
-	}
-
-	friend auto& operator<<(auto& stream, const Packet& p) {
 		stream << SizeType{} << OpcodeType{};
-		p.write_to_stream(stream);
-		return stream;
+		return payload.write_to_stream(stream);
 	}
 
 	auto operator->() {
