@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -277,7 +277,7 @@ TEST(DynamicBuffer, ReadIterator) {
 	
 	for(auto i = sequence.begin(), j = sequence.end(); i != j; ++i) {
 		auto buffer = i.get_buffer();
-		std::copy(buffer.first, buffer.first + buffer.second, std::back_inserter(output));
+		std::copy(buffer.data(), buffer.data()  + buffer.size(), std::back_inserter(output));
 	}
 
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
@@ -299,7 +299,7 @@ TEST(DynamicBuffer, AsioIteratorRegressionTest) {
 
 	// do first read
 	for(std::size_t i = 0; it != sequence.end() && i != 64; ++i, ++it) {
-		bytes_sent += it.get_buffer().second;
+		bytes_sent += it.get_buffer().size();
 	}
 
 	chain.skip(bytes_sent);
@@ -311,7 +311,7 @@ TEST(DynamicBuffer, AsioIteratorRegressionTest) {
 
 	// do second read
 	for(std::size_t i = 0; it_s != sequence.end() && i != 64; ++i, ++it_s) {
-		bytes_sent += it_s.get_buffer().second;
+		bytes_sent += it_s.get_buffer().size();
 	}
 
 	chain.skip(bytes_sent);
@@ -328,7 +328,7 @@ TEST(DynamicBuffer, AsioIteratorRegressionTest) {
 
 	// do third read
 	for(std::size_t i = 0; it_t != sequence.end() && i != 64; ++i, ++it_t) {
-		bytes_sent += it_t.get_buffer().second;
+		bytes_sent += it_t.get_buffer().size();
 	}
 
 	chain.skip(bytes_sent);

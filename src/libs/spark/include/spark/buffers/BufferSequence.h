@@ -9,7 +9,7 @@
 #include <boost/asio/buffer.hpp>
 
 #ifdef BUFFER_DEBUG
-#include <utility>
+#include <span>
 #endif
 
 namespace ember::spark::io {
@@ -19,7 +19,8 @@ class BufferSequence {
 	const BufferType& buffer_;
 
 public:
-	BufferSequence(const BufferType& buffer) : buffer_(buffer) { }
+	BufferSequence(const BufferType& buffer)
+		: buffer_(buffer) { }
 
 	class const_iterator {
 		using Node = typename BufferType::node_type;
@@ -56,11 +57,11 @@ public:
 		const_iterator& operator=(const_iterator&) = delete;
 
 	#ifdef BUFFER_DEBUG
-		std::pair<const char*, std::size_t> get_buffer() {
+		std::span<const char> get_buffer() {
 			auto buffer = buffer_.buffer_from_node(curr_node_);
-			return std::make_pair<char*, std::size_t>(
-				const_cast<char*>(reinterpret_cast<const char*>(buffer->read_data())), buffer->size()
-			);
+			return {
+				reinterpret_cast<const char*>(buffer->read_data()), buffer->size()
+			};
 		}
 	#endif
 
