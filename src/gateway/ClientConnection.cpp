@@ -154,7 +154,7 @@ void ClientConnection::start() {
 
 	// when using DynamicTLSBuffer, we need to ensure the first write
 	// (triggered by handler_) is invoked from the service thread
-	boost::asio::post(socket_.get_executor(), [&] {
+	boost::asio::dispatch(socket_.get_executor(), [&] {
 		handler_.start();
 		read();
 	});
