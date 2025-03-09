@@ -87,7 +87,7 @@ void ClientConnection::write() {
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	socket_.async_send(sequence, create_alloc_handler(allocator_,
-		[this](boost::system::error_code ec, std::size_t size) {
+		[this](const boost::system::error_code& ec, const std::size_t size) {
 			stats_.bytes_out += size;
 			++stats_.async_sends;
 
@@ -130,7 +130,7 @@ void ClientConnection::read() {
 	}
 
 	socket_.async_receive(inbound_buffer_.write_span(), create_alloc_handler(allocator_,
-		[this](boost::system::error_code ec, std::size_t size) {
+		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;
 				++stats_.async_receives;

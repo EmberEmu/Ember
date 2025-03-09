@@ -129,7 +129,7 @@ void StreamTransport::read(const std::size_t size, const std::size_t offset) {
 	const auto buffer = boost::asio::buffer(buffer_.data() + offset, size);
 
 	boost::asio::async_read(socket_, buffer,
-		[this](boost::system::error_code ec, std::size_t size) {
+		[this](const boost::system::error_code& ec, std::size_t) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			}

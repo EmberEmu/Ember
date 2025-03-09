@@ -86,7 +86,7 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 
 void DatagramTransport::receive() {
 	socket_.async_receive_from(boost::asio::null_buffers(), ep_,
-		[this](boost::system::error_code ec, std::size_t length) {
+		[this](boost::system::error_code ec, std::size_t) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
