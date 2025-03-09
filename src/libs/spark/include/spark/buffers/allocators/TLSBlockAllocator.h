@@ -23,10 +23,6 @@
 	#define _DEBUG_TLS_BLOCK_ALLOCATOR
 #endif
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-#include <thread>
-#endif
-
 namespace ember::spark::io {
 
 enum class PagePolicy {
