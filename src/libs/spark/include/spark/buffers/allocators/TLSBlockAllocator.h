@@ -112,14 +112,18 @@ struct Allocator {
 		head_ = reinterpret_cast<FreeBlock*>(storage);
 	}
 
-	inline void add_block(FreeBlock* block) {
+	inline void push(FreeBlock* block) {
 		assert(block);
 		block->next = head_;
 		head_ = block;
 	}
 
-	inline FreeBlock* remove_block(FreeBlock* block) {
-		assert(block);
+	inline FreeBlock* pop() {
+		if(!head_) {
+			return nullptr;
+		}
+
+		auto block = head_;
 		head_ = block->next;
 		return block;
 	}
@@ -129,13 +133,12 @@ struct Allocator {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			++total_allocs;
 #endif
-		Block* block = nullptr;
+		Block* block = std::start_lifetime_as<Block>(pop());
 
-		if(head_) {
+		if(block) [[likely]] {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			++storage_active_count;
 #endif
-			block = std::start_lifetime_as<Block>(remove_block(head_));
 			block->meta.using_new = false;
 		} else {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
@@ -175,7 +178,7 @@ struct Allocator {
 #endif
 
 			t->~_ty();
-			add_block(std::start_lifetime_as<FreeBlock>(t));
+			push(std::start_lifetime_as<FreeBlock>(t));
 		}
 	}
 
