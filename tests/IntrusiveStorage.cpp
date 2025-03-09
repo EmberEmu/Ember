@@ -63,7 +63,7 @@ TEST(IntrusiveStorage, Skip) {
 		<< "Skip/read produced incorrect result";
 }
 
-TEST(IntrusiveStorage, ReadWriteStringView) {
+TEST(IntrusiveStorage, ReadWriteStringview) {
 	spark::io::detail::IntrusiveStorage<128, char> buffer;
 	std::string_view str { "The quick brown fox jumped over the lazy dog" };
 	buffer.write(str.data(), str.size()+1);

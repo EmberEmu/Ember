@@ -250,11 +250,11 @@ TEST(BinaryStream, NoCopyStringRead) {
 	// ensure we can still read subsequent data as normal
 	stream.skip(pos + 1); // +1 to skip terminator
 	std::uint32_t trailing_output = 0;
-	stream >> trailing_output ;
+	stream >> trailing_output;
 	ASSERT_EQ(trailing, trailing_output);
 }
 
-TEST(BinaryStream, StringViewRead) {
+TEST(BinaryStream, StringviewRead) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
@@ -271,7 +271,7 @@ TEST(BinaryStream, StringViewRead) {
 	ASSERT_EQ(trailing, trailing_output);
 }
 
-TEST(BinaryStream, PartialStringViewRead) {
+TEST(BinaryStream, PartialStringviewRead) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
@@ -288,7 +288,7 @@ TEST(BinaryStream, PartialStringViewRead) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStream, StringViewStream) {
+TEST(BinaryStream, StringviewStream) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
@@ -343,7 +343,7 @@ TEST(BinaryStream, Span) {
 	ASSERT_EQ(span[3], 1);
 }
 
-TEST(BinaryStream, CStringView) {
+TEST(BinaryStream, CStringview) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);

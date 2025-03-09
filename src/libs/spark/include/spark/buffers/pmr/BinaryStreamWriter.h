@@ -13,7 +13,6 @@
 #include <shared/utility/cstring_view.hpp>
 #include <algorithm>
 #include <array>
-#include <concepts>
 #include <string>
 #include <string_view>
 #include <cassert>

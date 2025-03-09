@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,8 +10,6 @@
 
 #include <spark/buffers/pmr/BufferRead.h>
 #include <spark/buffers/detail/SharedDefs.h>
-#include <boost/assert.hpp>
-#include <span>
 #include <stdexcept>
 #include <utility>
 #include <cassert>
@@ -26,7 +24,9 @@ class BufferReadAdaptor : public BufferRead {
 	std::size_t read_;
 
 public:
-	BufferReadAdaptor(buf_type& buffer) : buffer_(buffer), read_(0) {}
+	BufferReadAdaptor(buf_type& buffer)
+		: buffer_(buffer),
+		  read_(0) {}
 
 	template<typename T>
 	void read(T* destination) {

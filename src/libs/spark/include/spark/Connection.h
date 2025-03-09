@@ -34,8 +34,8 @@ public:
 	using CloseHandler = std::function<void()>;
 
 private:
-	static constexpr auto INITIAL_BUFFER_SIZE = 100u;         // 8KB
-	static constexpr auto MAXIMUM_BUFFER_SIZE = 1024u * 1024 ; // 1MB
+	static constexpr auto INITIAL_BUFFER_SIZE = 1024u * 8;    // 8KB
+	static constexpr auto MAXIMUM_BUFFER_SIZE = 1024u * 1024; // 1MB
 
 	log::Logger& logger_;
 	boost::asio::ip::tcp::socket socket_;

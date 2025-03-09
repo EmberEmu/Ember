@@ -276,7 +276,7 @@ TEST(BinaryStreamPMR, PutIntegralLiterals) {
 	ASSERT_TRUE(stream);
 }
 
-TEST(BinaryStreamPMR, StringViewWrite) {
+TEST(BinaryStreamPMR, StringviewWrite) {
 	std::string buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
@@ -287,7 +287,7 @@ TEST(BinaryStreamPMR, StringViewWrite) {
 	ASSERT_EQ(view, res);
 }
 
-TEST(BinaryStreamPMR, CStringViewWrite) {
+TEST(BinaryStreamPMR, CStringviewWrite) {
 	std::string buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);

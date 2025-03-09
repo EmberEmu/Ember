@@ -12,7 +12,6 @@
 #include <spark/buffers/pmr/BufferRead.h>
 #include <spark/buffers/Exception.h>
 #include <algorithm>
-#include <concepts>
 #include <ranges>
 #include <string>
 #include <cassert>
@@ -40,7 +39,7 @@ class BinaryStreamReader : virtual public StreamBase {
 			throw stream_read_limit(read_size, total_read_, read_limit_);
 		}
 
-		total_read_ = req_total_read ;
+		total_read_ = req_total_read;
 	}
 
 public:

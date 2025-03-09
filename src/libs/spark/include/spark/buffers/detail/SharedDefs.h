@@ -8,10 +8,8 @@
 
 #pragma once
 
-#include <bit>
 #include <concepts>
 #include <type_traits>
-#include <cstdint>
 #include <cstddef>
 
 namespace ember::spark::io {
@@ -26,7 +24,7 @@ template<typename T>
 concept byte_oriented = byte_type<typename T::value_type>;
 
 template<typename T>
-concept pod = std::is_standard_layout<T>::value && std::is_trivial<T>::value;
+concept pod = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
 
 template <typename T>
 concept has_resize_overwrite =
@@ -46,6 +44,13 @@ concept has_shr_override =
 		{ t.operator>>(u) } -> std::same_as<U&>;
 };
 
+struct is_contiguous {};
+struct is_non_contiguous {};
+struct supported {};
+struct unsupported {};
+struct except_tag{};
+struct allow_throw : except_tag{};
+struct no_throw : except_tag{};
 
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD
@@ -63,14 +68,6 @@ enum class StreamSeek {
 enum class StreamState {
 	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
 };
-
-struct is_contiguous {};
-struct is_non_contiguous {};
-struct supported {};
-struct unsupported {};
-struct except_tag{};
-struct allow_throw : except_tag{};
-struct no_throw : except_tag{};
 
 // Returns true if there's any overlap between source and destination ranges
 static inline bool region_overlap(const auto* src, std::size_t src_len, const auto* dst, std::size_t dst_len) {
