@@ -89,7 +89,7 @@ void ClientConnection::write() {
 	socket_.async_send(sequence, create_alloc_handler(allocator_,
 		[this](boost::system::error_code ec, std::size_t size) {
 			stats_.bytes_out += size;
-			++stats_.packets_out;
+			++stats_.async_sends;
 
 			outbound_front_->skip(size);
 
@@ -133,7 +133,7 @@ void ClientConnection::read() {
 		[this](boost::system::error_code ec, std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;
-				++stats_.packets_in;
+				++stats_.async_receives;
 
 				inbound_buffer_.advance_write(size);
 				process_buffered_data();

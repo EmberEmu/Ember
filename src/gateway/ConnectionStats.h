@@ -17,8 +17,8 @@ struct ConnectionStats {
 	std::size_t bytes_out;
 	std::size_t messages_in;
 	std::size_t messages_out;
-	std::size_t packets_in;
-	std::size_t packets_out;
+	std::size_t async_receives;
+	std::size_t async_sends;
 	std::size_t latency;
 };
 

@@ -60,8 +60,8 @@ ConnectionStats SessionManager::aggregate_stats() const {
 		ag_stats.latency += stats.latency;
 		ag_stats.messages_in += stats.messages_in;
 		ag_stats.messages_out += stats.messages_out;
-		ag_stats.packets_in += stats.packets_in;
-		ag_stats.packets_out += stats.packets_out;
+		ag_stats.async_receives += stats.async_receives;
+		ag_stats.async_receives += stats.async_receives;
 	}
 
 	ag_stats.latency /= count(); // average latency
