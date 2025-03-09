@@ -94,16 +94,16 @@ void ClientConnection::write() {
 			outbound_front_->skip(size);
 
 			if(!ec) {
-				if(!outbound_front_->empty()) {
-					write(); // entire buffer wasn't sent, hit gather-write limits?
-				} else {
+				if(outbound_front_->empty()) {
 					std::swap(outbound_front_, outbound_back_);
 
-					if(!outbound_front_->empty()) {
-						write();
-					} else { // all done!
+					if(outbound_front_->empty()) { // all done!
 						write_in_progress_ = false;
+					} else {
+						write();
 					}
+				} else {
+					write(); // entire buffer wasn't sent, hit gather-write limits?
 				}
 			} else if(ec != boost::asio::error::operation_aborted) {
 				close_session();
@@ -150,7 +150,9 @@ void ClientConnection::set_key(std::span<const std::uint8_t> key) {
 }
 
 void ClientConnection::start() {
-	stopped_ = false;
+	if(stopped_) {
+		return;
+	}
 
 	// when using DynamicTLSBuffer, we need to ensure the first write
 	// (triggered by handler_) is invoked from the service thread

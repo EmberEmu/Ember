@@ -100,20 +100,20 @@ private:
 			outbound_front_->skip(size);
 
 			if(!ec) {
-				if(!outbound_front_->empty()) {
-					write(std::move(cb)); // entire buffer wasn't sent, hit gather-write limits?
-				} else {
+				if(outbound_front_->empty()) {
 					std::swap(outbound_front_, outbound_back_);
 
-					if(!outbound_front_->empty()) {
-						write(std::move(cb));
-					} else { // all done!
+					if(outbound_front_->empty()) { // all done!
 						write_in_progress_ = false;
 					
 						if(cb) {
 							cb();
 						}
+					} else {
+						write(std::move(cb));
 					}
+				} else {
+					write(std::move(cb)); // entire buffer wasn't sent, hit gather-write limits?
 				}
 			} else if(ec != boost::asio::error::operation_aborted) {
 				close_session();

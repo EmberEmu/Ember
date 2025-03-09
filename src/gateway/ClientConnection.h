@@ -90,7 +90,7 @@ public:
 		  msg_size_{0},
 		  logger_(logger),
 		  read_state_(ReadState::HEADER),
-		  stopped_(true),
+		  stopped_(false),
 		  write_in_progress_(false),
 		  handler_(*this, uuid, socket_.get_executor(), logger),
 		  compression_level_(0),
