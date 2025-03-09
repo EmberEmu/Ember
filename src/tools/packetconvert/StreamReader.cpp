@@ -79,7 +79,7 @@ void StreamReader::process() {
 
 template<typename T>
 std::optional<T> StreamReader::try_read(std::ifstream& file) {
-	static_assert(std::is_trivially_copyable<T>::value, "Cannot safely read this type");
+	static_assert(std::is_trivially_copyable_v<T>, "Cannot safely read this type");
 
 	T val;
 

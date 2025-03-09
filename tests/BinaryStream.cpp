@@ -235,7 +235,7 @@ TEST(BinaryStream, NoCopyStringRead) {
 	stream << input << trailing;
 
 	// check this stream uses a contiguous buffer
-	const auto contig = std::is_same<decltype(stream)::contiguous_type, spark::io::is_contiguous>::value;
+	const auto contig = std::is_same_v<decltype(stream)::contiguous_type, spark::io::is_contiguous>;
 	ASSERT_TRUE(contig);
 
 	// find the end of the string within the buffer

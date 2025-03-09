@@ -137,7 +137,7 @@ public:
 	}
 
 	constexpr static bool can_write_seek() {
-		return std::is_same<seeking, supported>::value;
+		return std::is_same_v<seeking, supported>;
 	}
 
 	void write(const auto& source) {

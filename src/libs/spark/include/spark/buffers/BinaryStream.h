@@ -30,7 +30,7 @@ namespace ember::spark::io {
 #define STREAM_READ_BOUNDS_CHECK(read_size, ret_var)              \
 	check_read_bounds(read_size);                                 \
 	                                                              \
-	if constexpr(!std::is_same<exceptions, allow_throw>::value) { \
+	if constexpr(!std::is_same_v<exceptions, allow_throw>) {      \
 		if(state_ != StreamState::OK) [[unlikely]] {              \
 			return ret_var;                                       \
 		}                                                         \
@@ -44,7 +44,7 @@ concept writeable =
 
 template<typename buf_type>
 concept contiguous = requires(buf_type t) {
-	std::is_same<typename buf_type::contiguous, is_contiguous>::value;
+	std::is_same_v<typename buf_type::contiguous, is_contiguous>;
 };
 
 template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw>
@@ -61,7 +61,7 @@ class BinaryStream final {
 		if(read_size > buffer_.size()) [[unlikely]] {
 			state_ = StreamState::BUFF_LIMIT_ERR;
 
-			if constexpr(std::is_same<exceptions, allow_throw>::value) {
+			if constexpr(std::is_same_v<exceptions, allow_throw>) {
 				throw buffer_underrun(read_size, total_read_, buffer_.size());
 			}
 
@@ -73,7 +73,7 @@ class BinaryStream final {
 		if(read_limit_ && req_total_read > read_limit_) [[unlikely]] {
 			state_ = StreamState::READ_LIMIT_ERR;
 
-			if constexpr(std::is_same<exceptions, allow_throw>::value) {
+			if constexpr(std::is_same_v<exceptions, allow_throw>) {
 				throw stream_read_limit(read_size, total_read_, read_limit_);
 			}
 
@@ -302,7 +302,7 @@ public:
 	/**  Misc functions **/
 
 	consteval static bool can_write_seek() requires(writeable<buf_type>) {
-		return std::is_same<seeking, supported>::value;
+		return std::is_same_v<seeking, supported>;
 	}
 
 	void write_seek(const StreamSeek direction, const std::size_t offset) requires(writeable<buf_type>) {

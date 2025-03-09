@@ -19,7 +19,7 @@ struct EnableBitMask {
 };
 
 template<typename T>
-concept bitmask_enum = EnableBitMask<T>::value && std::is_scoped_enum<T>::value;
+concept bitmask_enum = EnableBitMask<T>::value && std::is_scoped_enum_v<T>;
 
 template<bitmask_enum Enum>
 Enum operator|(Enum lhs, Enum rhs) {
@@ -94,7 +94,7 @@ Enum operator^=(Enum &lhs, Enum rhs) {
 template<>                               \
 struct EnableBitMask<x>                  \
 {                                        \
-    static constexpr bool value = true; \
+    static constexpr bool value = true;  \
 };
 
 } // ember

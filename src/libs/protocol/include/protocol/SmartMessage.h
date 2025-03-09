@@ -47,10 +47,10 @@ class SmartMessage final {
 
 	template<typename Reader>
 	consteval static bool can_create_view() {
-		return std::is_same<typename Reader::contiguous_type, spark::io::is_contiguous>::value
-			&& std::is_same<typename MessageType::aligned, is_aligned>::value
-			&& std::is_standard_layout<T>::value
-			&& std::is_trivial<T>::value;
+		return std::is_same_v<typename Reader::contiguous_type, spark::io::is_contiguous>
+			&& std::is_same_v<typename MessageType::aligned, is_aligned>
+			&& std::is_standard_layout_v<T>
+			&& std::is_trivial_v<T>;
 	}
 
 public:
