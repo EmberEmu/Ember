@@ -12,6 +12,7 @@
 #include <concepts>
 #include <type_traits>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember::spark::io {
 
