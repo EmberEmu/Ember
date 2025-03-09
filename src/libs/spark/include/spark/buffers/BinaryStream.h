@@ -107,8 +107,8 @@ public:
 		return data.operator<<(*this);
 	}
 
-	template<typename T>
-	requires pod<T> && (!has_shl_override<T, StreamType>)
+	template<pod T>
+	requires (!has_shl_override<T, StreamType>)
 	BinaryStream& operator <<(const T& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(T));
 		total_write_ += sizeof(T);
@@ -150,8 +150,7 @@ public:
 		total_write_ += write_size;
 	}
 
-	template<typename T>
-	requires arithmetic<T>
+	template<arithmetic T>
 	void put(const T& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(T));
 		total_write_ += sizeof(T);
@@ -218,23 +217,21 @@ public:
 		return data.operator>>(*this);
 	}
 
-	template<typename T>
-	requires pod<T> && (!has_shr_override<T, StreamType>)
+	template<pod T>
+	requires (!has_shr_override<T, StreamType>)
 	BinaryStream& operator>>(T& data) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(data), *this);
 		buffer_.read(&data, sizeof(data));
 		return *this;
 	}
 
-	template<typename T>
-	requires arithmetic<T>
+	template<arithmetic T>
 	void get(T& dest) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(T), void());
 		buffer_.read(&dest, sizeof(T));
 	}
 
-	template<typename T>
-	requires arithmetic<T>
+	template<arithmetic T>
 	T get() {
 		STREAM_READ_BOUNDS_CHECK(sizeof(T), void());
 		T t{};

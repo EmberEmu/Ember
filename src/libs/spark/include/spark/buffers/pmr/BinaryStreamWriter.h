@@ -44,8 +44,8 @@ public:
 		return data.operator<<(*this);
 	}
 
-	template<typename T>
-	requires pod<T> && (!has_shl_override<T, BinaryStreamWriter>)
+	template<pod T>
+	requires (!has_shl_override<T, BinaryStreamWriter>)
 	BinaryStreamWriter& operator<<(const T& data) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);

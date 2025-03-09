@@ -10,14 +10,11 @@
 
 #include <spark/buffers/BinaryStream.h>
 #include <gsl/narrow>
-#include <type_traits>
-#include <utility>
 
 namespace ember::gateway {
 
-bool ClientConnection::write_packet_stream(const protocol::is_packet auto& packet) {
-	using Type = std::remove_reference_t<decltype(packet)>;
-
+template<protocol::is_packet T>
+bool ClientConnection::write_packet_stream(const T& packet) {
 	spark::io::BinaryStream stream(*outbound_back_);
 
 	if(!packet.write_to_stream(stream)) {
@@ -25,8 +22,8 @@ bool ClientConnection::write_packet_stream(const protocol::is_packet auto& packe
 	}
 
 	const auto written = stream.total_write();
-	const auto end_pos = written - Type::HEADER_WIRE_SIZE;
-	auto size = gsl::narrow<typename Type::SizeType>(written - sizeof(typename Type::SizeType));
+	const auto end_pos = written - T::HEADER_WIRE_SIZE;
+	auto size = gsl::narrow<typename T::SizeType>(written - sizeof(typename T::SizeType));
 	auto opcode = packet.opcode;
 
 	if(crypt_) [[likely]] {

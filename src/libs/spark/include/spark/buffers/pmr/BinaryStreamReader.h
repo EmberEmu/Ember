@@ -74,8 +74,8 @@ public:
 		return data.operator>>(*this);
 	}
 
-	template<typename T>
-	requires pod<T> && (!has_shr_override<T, BinaryStreamReader>)
+	template<pod T>
+	requires (!has_shr_override<T, BinaryStreamReader>)
 	BinaryStreamReader& operator>>(T& data) {
 		check_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
