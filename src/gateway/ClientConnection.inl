@@ -51,7 +51,6 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 
 	// initiate sending if not already in progress
 	if(!write_in_progress_) {
-		write_in_progress_ = true;
 		std::swap(outbound_front_, outbound_back_);
 		write();
 	}

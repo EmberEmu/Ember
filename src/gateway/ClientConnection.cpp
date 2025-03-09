@@ -110,6 +110,8 @@ void ClientConnection::write() {
 			}
 		}
 	));
+
+	write_in_progress_ = true;
 }
 
 void ClientConnection::read() {
