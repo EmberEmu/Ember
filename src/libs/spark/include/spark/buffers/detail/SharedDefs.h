@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <bit>
 #include <concepts>
 #include <type_traits>
 #include <cstddef>

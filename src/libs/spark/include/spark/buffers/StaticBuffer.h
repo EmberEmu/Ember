@@ -113,10 +113,9 @@ public:
 			return false;
 		}
 
-		const auto prev_size = size();
-		std::memmove(buffer_.data(), read_ptr(), prev_size);
+		write_ = size();
+		std::memmove(buffer_.data(), read_ptr(), write_);
 		read_ = 0;
-		write_ = prev_size;
 		return true;
 	}
 
