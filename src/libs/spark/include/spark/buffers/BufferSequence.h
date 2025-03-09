@@ -6,13 +6,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#ifdef USE_STANDALONE_ASIO
+#include <asio/buffer.hpp>
+#else
 #include <boost/asio/buffer.hpp>
+#endif
 
 #ifdef BUFFER_DEBUG
 #include <span>
 #endif
 
 namespace ember::spark::io {
+
+#ifndef USE_STANDALONE_ASIO
+namespace asio = boost::asio;
+#endif
 
 template<typename BufferType>
 class BufferSequence {
@@ -41,9 +49,9 @@ public:
 			return current;
 		}
 
-		boost::asio::const_buffer operator*() const {
+		asio::const_buffer operator*() const {
 			const auto buffer = buffer_.buffer_from_node(curr_node_);
-			return boost::asio::const_buffer(buffer->read_data(), buffer->size());
+			return asio::const_buffer(buffer->read_data(), buffer->size());
 		}
 
 		bool operator==(const const_iterator& rhs) const {
