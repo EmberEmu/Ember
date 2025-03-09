@@ -346,12 +346,16 @@ public:
 		return state_ == StreamState::OK;
 	}
 
-	void clear_state() {
+	void clear_error_state() {
 		state_ = StreamState::OK;
 	}
 
 	operator bool() const {
 		return good();
+	}
+
+	void set_error_state() {
+		state_ = StreamState::USER_DEFINED_ERR;
 	}
 };
 

@@ -68,7 +68,10 @@ enum class StreamSeek {
 };
 
 enum class StreamState {
-	OK, READ_LIMIT_ERR, BUFF_LIMIT_ERR
+	OK,
+	READ_LIMIT_ERR,
+	BUFF_LIMIT_ERR,
+	USER_DEFINED_ERR
 };
 
 // Returns true if there's any overlap between source and destination ranges

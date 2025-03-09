@@ -71,8 +71,6 @@ template<typename _ty, std::size_t _elements,
 >
 requires gt_zero<_elements> && gte_freeblock<_ty>
 struct Allocator {
-	static constexpr auto block_size = sizeof(Block);
-
 	using tid_type = std::conditional<
 		std::is_same_v<ThreadPolicy, enforce_same>, std::thread::id, std::monostate
 	>::type;
@@ -85,6 +83,8 @@ struct Allocator {
 			bool using_new;
 		} meta;
 	};
+
+	static constexpr auto block_size = sizeof(Block);
 
 	std::array<char, block_size * _elements> storage_;
 	FreeBlock* head_ = nullptr;
