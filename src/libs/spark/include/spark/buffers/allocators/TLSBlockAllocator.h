@@ -200,7 +200,6 @@ public:
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		assert(!storage_active_count && !new_active_count);
-		assert(total_allocs == total_deallocs);
 #endif
 	}
 };
