@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/detail/SharedDefs.h>
-#include <concepts>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -19,11 +19,7 @@
 
 namespace ember::spark::io {
 
-template <typename T>
-concept can_resize = 
-	requires(T t) {
-		{ t.resize( std::size_t() ) } -> std::same_as<void>;
-};
+using namespace detail;
 
 template<byte_oriented buf_type, bool space_optimise = true>
 requires std::ranges::contiguous_range<buf_type>
@@ -42,10 +38,10 @@ private:
 	size_type write_;
 
 public:
-	BufferAdaptor(buf_type& buffer) :
-		buffer_(buffer),
-		read_(0),
-		write_(buffer.size()) {}
+	BufferAdaptor(buf_type& buffer)
+		: buffer_(buffer),
+		  read_(0),
+		  write_(buffer.size()) {}
 
 	template<typename T>
 	void read(T* destination) {

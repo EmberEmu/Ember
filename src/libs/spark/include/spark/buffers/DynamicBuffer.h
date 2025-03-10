@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/buffers/pmr/Buffer.h>
-#include <spark/buffers/detail/SharedDefs.h>
+#include <spark/buffers/Shared.h>
 #include <spark/buffers/allocators/DefaultAllocator.h>
 #include <spark/buffers/detail/IntrusiveStorage.h>
 #include <boost/assert.hpp>
@@ -24,6 +24,8 @@
 
 namespace ember::spark::io {
 
+using namespace detail;
+
 template<typename BufferType>
 class BufferSequence;
 
@@ -33,12 +35,11 @@ concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
 template<
 	decltype(auto) BlockSize,
 	byte_type StorageType = std::byte,
-	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageType>>
+	typename Allocator = DefaultAllocator<IntrusiveStorage<BlockSize, StorageType>>
 >
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public pmr::Buffer {
-	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, StorageType>;
-	using IntrusiveNode = detail::IntrusiveNode;
+	using IntrusiveStorage = typename IntrusiveStorage<BlockSize, StorageType>;
 
 public:
 	using value_type = StorageType;

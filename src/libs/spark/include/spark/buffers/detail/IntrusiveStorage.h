@@ -9,7 +9,8 @@
 #pragma once
 #pragma warning(disable : 4996)
 
-#include <spark/buffers/detail/SharedDefs.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <array>
 #include <concepts>
 #include <type_traits>

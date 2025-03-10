@@ -9,7 +9,8 @@
 #pragma once
 
 #include <spark/buffers/Exception.h>
-#include <spark/buffers/detail/SharedDefs.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <array>
 #include <span>
 #include <utility>
@@ -18,6 +19,8 @@
 #include <cstring>
 
 namespace ember::spark::io {
+
+using namespace detail;
 
 template<byte_type StorageType, std::size_t buf_size>
 class StaticBuffer final {

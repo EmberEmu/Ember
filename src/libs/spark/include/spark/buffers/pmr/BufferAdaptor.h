@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <spark/buffers/pmr/Buffer.h>
 #include <spark/buffers/pmr/BufferReadAdaptor.h>
 #include <spark/buffers/pmr/BufferWriteAdaptor.h>
+#include <spark/buffers/Concepts.h>
 
 namespace ember::spark::io::pmr {
 
@@ -26,7 +27,8 @@ class BufferAdaptor final : public BufferReadAdaptor<buf_type>,
 	}
 public:
 	explicit BufferAdaptor(buf_type& buffer)
-		: BufferReadAdaptor<buf_type>(buffer), BufferWriteAdaptor<buf_type>(buffer) {}
+		: BufferReadAdaptor<buf_type>(buffer),
+		  BufferWriteAdaptor<buf_type>(buffer) {}
 
 	template<typename T>
 	void read(T* destination) {

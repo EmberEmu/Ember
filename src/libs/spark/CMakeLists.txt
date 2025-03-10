@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2024 Ember
+# Copyright (c) 2015 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,12 +33,13 @@ set(IO_SRC
     include/spark/buffers/Exception.h
     include/spark/buffers/DynamicBuffer.h
     include/spark/buffers/DynamicTLSBuffer.h
-    include/spark/buffers/detail/IntrusiveStorage.h
-    include/spark/buffers/detail/SharedDefs.h
+    include/spark/buffers/Shared.h
     include/spark/buffers/BufferAdaptor.h
     include/spark/buffers/BufferSequence.h
     include/spark/buffers/BinaryStream.h
     include/spark/buffers/StaticBuffer.h
+	include/spark/buffers/Concepts.h
+    include/spark/buffers/detail/IntrusiveStorage.h
 )
 
 set(IO_PMR_SRC

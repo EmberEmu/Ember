@@ -9,7 +9,8 @@
 #pragma once
 
 #include <spark/buffers/pmr/BufferRead.h>
-#include <spark/buffers/detail/SharedDefs.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <stdexcept>
 #include <utility>
 #include <cassert>
@@ -17,6 +18,8 @@
 #include <cstring>
 
 namespace ember::spark::io::pmr {
+
+using namespace detail;
 
 template<byte_oriented buf_type>
 class BufferReadAdaptor : public BufferRead {

@@ -16,36 +16,6 @@
 
 namespace ember::spark::io {
 
-template<typename T>
-concept arithmetic = std::integral<T> || std::floating_point<T>;
-
-template<typename T>
-concept byte_type = sizeof(T) == 1;
-
-template<typename T>
-concept byte_oriented = byte_type<typename T::value_type>;
-
-template<typename T>
-concept pod = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
-
-template <typename T>
-concept has_resize_overwrite =
-	requires(T t) {
-		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
-};
-
-template <typename T, typename U>
-concept has_shl_override =
-	requires(T t, U& u) {
-		{ t.operator<<(u) } -> std::same_as<U&>;
-};
-
-template <typename T, typename U>
-concept has_shr_override =
-	requires(T t, U& u) {
-		{ t.operator>>(u) } -> std::same_as<U&>;
-};
-
 struct is_contiguous {};
 struct is_non_contiguous {};
 struct supported {};
@@ -74,6 +44,8 @@ enum class StreamState {
 	USER_DEFINED_ERR
 };
 
+namespace detail {
+
 // Returns true if there's any overlap between source and destination ranges
 static inline bool region_overlap(const auto* src, std::size_t src_len, const auto* dst, std::size_t dst_len) {
 	const auto src_beg = std::bit_cast<std::uintptr_t>(src);
@@ -87,5 +59,7 @@ static inline bool region_overlap(const auto* src, std::size_t src_len, const au
 		|| (dst_beg >= src_beg && dst_beg < src_end)
 		|| (dst_end > src_beg && dst_end <= src_end);
 }
+
+} // detail
 
 } // io, spark, ember

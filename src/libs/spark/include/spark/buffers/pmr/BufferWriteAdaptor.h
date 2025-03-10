@@ -9,12 +9,15 @@
 #pragma once
 
 #include <spark/buffers/pmr/BufferWrite.h>
-#include <spark/buffers/detail/SharedDefs.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
 
 namespace ember::spark::io::pmr {
+
+using namespace detail;
 
 template<byte_oriented buf_type>
 class BufferWriteAdaptor : public BufferWrite {

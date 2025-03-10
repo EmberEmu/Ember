@@ -11,6 +11,8 @@
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferRead.h>
 #include <spark/buffers/Exception.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <algorithm>
 #include <ranges>
 #include <string>
@@ -19,6 +21,8 @@
 #include <cstring>
 
 namespace ember::spark::io::pmr {
+
+using namespace detail;
 
 class BinaryStreamReader : virtual public StreamBase {
 	BufferRead& buffer_;

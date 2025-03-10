@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/detail/SharedDefs.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <spark/buffers/Exception.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/polyfill/start_lifetime_as>
@@ -27,6 +28,8 @@
 
 namespace ember::spark::io {
 
+using namespace detail;
+
 #define STREAM_READ_BOUNDS_CHECK(read_size, ret_var)              \
 	check_read_bounds(read_size);                                 \
 	                                                              \
@@ -35,17 +38,6 @@ namespace ember::spark::io {
 			return ret_var;                                       \
 		}                                                         \
 	}
-
-template <typename buf_type>
-concept writeable =
-	requires(buf_type t, void* v, std::size_t s) {
-		{ t.write(v, s) } -> std::same_as<void>;
-};
-
-template<typename buf_type>
-concept contiguous = requires(buf_type t) {
-	std::is_same_v<typename buf_type::contiguous, is_contiguous>;
-};
 
 template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw>
 class BinaryStream final {

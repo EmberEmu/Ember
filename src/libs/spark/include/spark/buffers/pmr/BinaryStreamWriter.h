@@ -10,6 +10,8 @@
 
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferWrite.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/Concepts.h>
 #include <shared/utility/cstring_view.hpp>
 #include <algorithm>
 #include <array>
@@ -21,6 +23,8 @@
 #include <cstring>
 
 namespace ember::spark::io::pmr {
+
+using namespace detail;
 
 class BinaryStreamWriter : virtual public StreamBase {
 private:
