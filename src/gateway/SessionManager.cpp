@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,15 +11,9 @@
 
 namespace ember::gateway {
 
-void SessionManager::start(std::unique_ptr<ClientConnection> session) {
-	auto sess_ptr = session.get();
-
-	{
-		std::lock_guard guard(sessions_lock_);
-		sessions_.insert(std::move(session));
-	}
-
-	sess_ptr->start();
+void SessionManager::insert(std::unique_ptr<ClientConnection> session) {
+	std::lock_guard guard(sessions_lock_);
+	sessions_.insert(std::move(session));
 }
 
 void SessionManager::stop(ClientConnection* session) {

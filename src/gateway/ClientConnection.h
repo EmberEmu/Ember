@@ -69,6 +69,7 @@ class ClientConnection final {
 	void write();
 
 	// session management
+	void start();
 	void stop();
 	void close_session_sync();
 	void terminate();
@@ -97,9 +98,9 @@ public:
 		  compression_level_(0),
 		  outbound_front_(&outbound_buffers_.front()),
 		  outbound_back_(&outbound_buffers_.back()),
-		  stopping_(false) { }
-
-	void start();
+		  stopping_(false) { 
+		start();
+	}
 
 	void set_key(std::span<const std::uint8_t> key);
 	void compression_level(unsigned int level);

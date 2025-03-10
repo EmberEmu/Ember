@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,8 @@
 #include <logger/Logger.h>
 #include "FilterTypes.h"
 #include "ClientConnection.h"
+#include <boost/asio/dispatch.hpp>
+#include <functional>
 #include <memory>
 #include <utility>
 
@@ -33,11 +35,9 @@ void NetworkListener::accept_connection() {
 			if(!ec) {
 				LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ep.address().to_string());
 
-				auto client = std::make_unique<ClientConnection>(
-					sessions_, std::move(socket_), ClientRef(index_), logger_
-				);
-
-				sessions_.start(std::move(client));
+				boost::asio::dispatch(pool_.get(index_), [&, socket = std::move(socket_), index = index_]() mutable {
+					sessions_.emplace(sessions_, std::move(socket), ClientRef(index), logger_);
+				});
 			} else {
 				LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
 			}

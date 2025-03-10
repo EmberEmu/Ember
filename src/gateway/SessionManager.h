@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -54,7 +54,14 @@ class SessionManager final {
 public:
 	~SessionManager();
 
-	void start(std::unique_ptr<ClientConnection> session);
+	template<typename... Args>
+	void emplace(Args&&... args) {
+		auto client = std::make_unique<ClientConnection>(std::forward<Args>(args)...);
+		std::lock_guard guard(sessions_lock_);
+		sessions_.emplace(std::move(client));
+	}
+
+	void insert(std::unique_ptr<ClientConnection> session);
 	void stop(ClientConnection* session);
 	void stop_all();
 	std::size_t count() const;
