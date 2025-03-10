@@ -41,8 +41,6 @@ using namespace detail;
 
 template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw>
 class BinaryStream final {
-	using StreamType = BinaryStream<buf_type, exceptions>;
-
 	buf_type& buffer_;
 	std::size_t total_write_ = 0;
 	std::size_t total_read_ = 0;
@@ -94,13 +92,13 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const has_shl_override<StreamType> auto& data)
+	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data)
 	requires(writeable<buf_type>) {
 		return data.operator<<(*this);
 	}
 
 	template<pod T>
-	requires (!has_shl_override<T, StreamType>)
+	requires (!has_shl_override<T, BinaryStream>)
 	BinaryStream& operator <<(const T& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(T));
 		total_write_ += sizeof(T);
@@ -205,12 +203,12 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(has_shr_override<StreamType> auto& data) {
+	BinaryStream& operator>>(has_shr_override<BinaryStream> auto& data) {
 		return data.operator>>(*this);
 	}
 
 	template<pod T>
-	requires (!has_shr_override<T, StreamType>)
+	requires (!has_shr_override<T, BinaryStream>)
 	BinaryStream& operator>>(T& data) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(data), *this);
 		buffer_.read(&data, sizeof(data));
