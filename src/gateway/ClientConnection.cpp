@@ -248,10 +248,7 @@ void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) 
 	client->terminate();
 
 	boost::asio::post(executor, [client = std::move(client)]() {
-		LOG_TRACE(client->logger_)
-			<< "Handler for "
-			<< client->remote_address()
-			<< " destroyed" << LOG_ASYNC;
+		LOG_TRACE_ASYNC(client->logger_, "Handler for {} destroyed", client->remote_address());
 	});
 }
 

@@ -89,7 +89,7 @@ inline std::size_t hash_value(const ClientRef& uuid) {
 
 } // ember
 
-template <>
+template<>
 struct std::hash<ember::ClientRef> {
 	std::size_t operator()(const ember::ClientRef& uuid) const {
 		return uuid.hash();

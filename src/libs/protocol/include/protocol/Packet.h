@@ -15,7 +15,7 @@
 
 namespace ember::protocol {
 
-template <typename HeaderType, typename HeaderType::OpcodeType op_, typename Payload>
+template<typename HeaderType, typename HeaderType::OpcodeType op_, typename Payload>
 struct Packet final {
 	struct packet_tag_t{};
 	using packet_tag = packet_tag_t;

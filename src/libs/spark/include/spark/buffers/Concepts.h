@@ -17,7 +17,7 @@
 
 namespace ember::spark::io {
 
-template <typename buf_type>
+template<typename buf_type>
 concept writeable =
 	requires(buf_type t, void* v, std::size_t s) {
 		{ t.write(v, s) } -> std::same_as<void>;
@@ -40,25 +40,25 @@ concept byte_oriented = byte_type<typename T::value_type>;
 template<typename T>
 concept pod = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
 
-template <typename T>
+template<typename T>
 concept has_resize_overwrite =
 	requires(T t) {
 		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
 };
 
-template <typename T>
+template<typename T>
 concept can_resize = 
 	requires(T t) {
 		{ t.resize( std::size_t() ) } -> std::same_as<void>;
 };
 
-template <typename T, typename U>
+template<typename T, typename U>
 concept has_shl_override =
 	requires(T t, U& u) {
 		{ t.operator<<(u) } -> std::same_as<U&>;
 };
 
-template <typename T, typename U>
+template<typename T, typename U>
 concept has_shr_override =
 	requires(T t, U& u) {
 		{ t.operator>>(u) } -> std::same_as<U&>;

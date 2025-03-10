@@ -90,14 +90,14 @@ public:
 };
 
 // from the Asio examples
-template <typename Handler, typename Allocator>
+template<typename Handler, typename Allocator>
 class alloc_handler {
 public:
 	alloc_handler(Allocator& a, Handler&& h)
 		: allocator_(a),
 		  handler_(std::move(h)) { }
 
-	template <typename ...Args>
+	template<typename ...Args>
 	void operator()(Args&&... args) {
 		handler_(std::forward<Args>(args)...);
 	}
@@ -118,7 +118,7 @@ private:
 	Handler handler_;
 };
 
-template <typename Handler, typename Allocator>
+template<typename Handler, typename Allocator>
 inline alloc_handler<Handler, Allocator> create_alloc_handler(Allocator& a, Handler&& h) {
 	return alloc_handler(a, std::move(h));
 }

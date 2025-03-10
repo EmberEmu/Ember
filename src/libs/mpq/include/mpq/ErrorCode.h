@@ -48,7 +48,7 @@ inline bool operator!=(const ErrorCode& lhs, const ErrorCode& rhs) {
 
 } // mpq, ember
 
-template <>
+template<>
 struct std::formatter<ember::mpq::ErrorCode> : std::formatter<int> {
 	auto format(ember::mpq::ErrorCode ec, std::format_context& ctx) const {
 		return std::formatter<int>::format(ec.value(), ctx);
