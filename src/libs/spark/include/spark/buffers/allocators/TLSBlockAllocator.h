@@ -142,9 +142,6 @@ public:
 
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-			++total_allocs;
-#endif
 		Block* block = std::start_lifetime_as<Block>(pop());
 
 		if(block) [[likely]] {
@@ -164,6 +161,9 @@ public:
 			block->meta.thread_id = thread_id_;
 		}
 
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		++total_allocs;
+#endif
 		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
 
@@ -179,19 +179,20 @@ public:
 		if(block->meta.using_new) [[unlikely]] {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			--new_active_count;
-			++total_deallocs;
 #endif
 			t->~_ty();
 			delete block;
 		} else {
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 			--storage_active_count;
-			++total_deallocs;
 #endif
-
 			t->~_ty();
 			push(std::start_lifetime_as<FreeBlock>(t));
 		}
+
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+		++total_deallocs;
+#endif
 	}
 
 	~Allocator() {
