@@ -92,6 +92,10 @@ public:
 		return *this;
 	}
 
+	void get(std::string& dest) {
+		*this >> dest;
+	}
+
 	void get(std::string& dest, std::size_t size) {
 		check_read_bounds(size);
 		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {

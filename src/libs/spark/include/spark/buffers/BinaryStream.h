@@ -229,6 +229,10 @@ public:
 		return t;
 	}
 
+	void get(std::string& dest) {
+		*this >> dest;
+	}
+
 	void get(std::string& dest, std::size_t size) {
 		STREAM_READ_BOUNDS_CHECK(size, void());
 		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
