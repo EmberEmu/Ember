@@ -260,7 +260,7 @@ public:
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(range::value_type);
 		STREAM_READ_BOUNDS_CHECK(read_size, void());
-		buffer_.read(dest, read_size);
+		buffer_.read(dest.data(), read_size);
 	}
 
 	void skip(const std::size_t count) {

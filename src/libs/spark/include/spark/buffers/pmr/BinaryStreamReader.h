@@ -123,7 +123,7 @@ public:
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(range::value_type);
 		check_read_bounds(read_size);
-		buffer_.read(dest, read_size);
+		buffer_.read(dest.data(), read_size);
 	}
 
 	/**  Misc functions **/ 
