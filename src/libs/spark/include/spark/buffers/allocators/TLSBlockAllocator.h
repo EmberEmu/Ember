@@ -47,7 +47,7 @@ struct enforce_same : thread_tag{};
 struct no_thread_policy: thread_tag{};
 
 /*
- * Basic fixed-size block allocator that preallocates a slab of memory
+ * Basic fixed-size block stack allocator that preallocates a slab of memory
  * capable of holding a compile-time determined number of elements.
  * When constructed, a linked list of chunks is built within the slab and
  * each allocation request will take the head node. Since the allocations
@@ -70,7 +70,7 @@ template<typename _ty, std::size_t _elements,
 	std::derived_from<thread_tag> ThreadPolicy = no_thread_policy
 >
 requires gt_zero<_elements> && gte_freeblock<_ty>
-struct Allocator {
+class Allocator {
 	using tid_type = std::conditional<
 		std::is_same_v<ThreadPolicy, enforce_same>, std::thread::id, std::monostate
 	>::type;
@@ -86,28 +86,9 @@ struct Allocator {
 
 	static constexpr auto block_size = sizeof(Block);
 
-	std::array<char, block_size * _elements> storage_;
 	FreeBlock* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
-
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-	std::size_t storage_active_count = 0;
-	std::size_t new_active_count = 0;
-	std::size_t total_allocs = 0;
-	std::size_t total_deallocs = 0;
-#endif
-
-	Allocator()	{
-		if constexpr(std::is_same_v<ThreadPolicy, enforce_same>) {
-			thread_id_ = std::this_thread::get_id();
-		}
-
-		if constexpr(_policy == PagePolicy::lock) {
-			util::page_lock(storage_.data(), storage_.size());
-		}
-
-		link_blocks();
-	}
+	std::array<char, block_size * _elements> storage_;
 
 	void link_blocks() {
 		auto storage = storage_.data();
@@ -136,6 +117,26 @@ struct Allocator {
 		auto block = head_;
 		head_ = block->next;
 		return block;
+	}
+
+public:
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	std::size_t storage_active_count = 0;
+	std::size_t new_active_count = 0;
+	std::size_t total_allocs = 0;
+	std::size_t total_deallocs = 0;
+#endif
+
+	Allocator()	{
+		if constexpr(std::is_same_v<ThreadPolicy, enforce_same>) {
+			thread_id_ = std::this_thread::get_id();
+		}
+
+		if constexpr(_policy == PagePolicy::lock) {
+			util::page_lock(storage_.data(), storage_.size());
+		}
+
+		link_blocks();
 	}
 
 	template<typename ...Args>
