@@ -24,6 +24,8 @@
 
 namespace ember::spark::io {
 
+using namespace detail;
+
 template<typename BufferType>
 class BufferSequence;
 
@@ -32,15 +34,15 @@ concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
 
 template<
 	decltype(auto) BlockSize,
-	byte_type StorageType = std::byte,
-	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageType>>
+	byte_type StorageValueType = std::byte,
+	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageValueType>>
 >
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public pmr::Buffer {
-	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, StorageType>;
+	using Storage = IntrusiveStorage<BlockSize, StorageValueType>;
 
 public:
-	using value_type = StorageType;
+	using value_type = StorageValueType;
 	using node_type  = IntrusiveNode;
 	using size_type  = std::size_t;
 	using contiguous = is_non_contiguous;
@@ -64,9 +66,9 @@ private:
 		node->prev->next = node->next;
 	}
 
-	inline IntrusiveStorage* buffer_from_node(const IntrusiveNode* node) const {
-		return reinterpret_cast<IntrusiveStorage*>(std::uintptr_t(node)
-			- offsetof(IntrusiveStorage, node));
+	inline Storage* buffer_from_node(const IntrusiveNode* node) const {
+		return reinterpret_cast<Storage*>(std::uintptr_t(node)
+			- offsetof(Storage, node));
 	}
 
 	void move(DynamicBuffer& rhs) noexcept {
@@ -105,7 +107,7 @@ private:
 	}
 	
 #ifdef BUFFER_DEBUG
-	void offset_buffers(std::vector<IntrusiveStorage*>& buffers, size_type offset) {
+	void offset_buffers(std::vector<Storage*>& buffers, size_type offset) {
 		std::erase_if(buffers, [&](auto block) {
 			if(block->size() > offset) {
 				block->read_offset += offset;
@@ -220,11 +222,11 @@ public:
 	}
 
 #ifdef BUFFER_DEBUG
-	std::vector<IntrusiveStorage*> fetch_buffers(const size_type length,
+	std::vector<Storage*> fetch_buffers(const size_type length,
 	                                             const size_type offset = 0) {
 		size_type total = length + offset;
 		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
-		std::vector<IntrusiveStorage*> buffers;
+		std::vector<Storage*> buffers;
 		auto head = root_.next;
 
 		while(total) {
@@ -275,7 +277,7 @@ public:
 		IntrusiveNode* tail = root_.prev;
 
 		do {
-			IntrusiveStorage* buffer;
+			Storage* buffer;
 
 			if(tail != &root_) [[likely]] {
 				buffer = buffer_from_node(tail);
@@ -300,7 +302,7 @@ public:
 		IntrusiveNode* tail = root_.prev;
 
 		do {
-			IntrusiveStorage* buffer;
+			Storage* buffer;
 
 			if(tail == &root_) [[unlikely]] {
 				buffer = allocate();
@@ -321,7 +323,7 @@ public:
 		return size_;
 	}
 
-	IntrusiveStorage* back() const {
+	Storage* back() const {
 		if(root_.prev == &root_) {
 			return nullptr;
 		}
@@ -329,7 +331,7 @@ public:
 		return buffer_from_node(root_.prev);
 	}
 
-	IntrusiveStorage* front() const {
+	Storage* front() const {
 		if(root_.next == &root_) {
 			return nullptr;
 		}
@@ -344,16 +346,16 @@ public:
 		return buffer;
 	}
 
-	void push_back(IntrusiveStorage* buffer) {
+	void push_back(Storage* buffer) {
 		link_tail_node(&buffer->node);
 		size_ += buffer->write_offset;
 	}
 
-	[[nodiscard]] IntrusiveStorage* allocate() {
+	[[nodiscard]] Storage* allocate() {
 		return alloc_.allocate();
 	}
 
-	void deallocate(IntrusiveStorage* buffer) {
+	void deallocate(Storage* buffer) {
 		alloc_.deallocate(buffer);
 	}
 

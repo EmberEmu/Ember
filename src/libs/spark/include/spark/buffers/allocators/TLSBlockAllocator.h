@@ -131,7 +131,7 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	Allocator()	requires requires { std::is_same_v<ThreadPolicy, enforce_same> }
+	Allocator()	requires requires { std::is_same_v<ThreadPolicy, enforce_same>; }
 		: thread_id_(std::this_thread::get_id()) {
 		initialise();
 	}
