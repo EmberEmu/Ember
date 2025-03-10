@@ -208,15 +208,26 @@ public:
 
 } // unnamed
 
-template<typename _ty, std::size_t _elements, PagePolicy policy = PagePolicy::lock>
+struct EntrantPolicy{};
+struct SafeEntrant : EntrantPolicy{};
+struct UnsafeEntrant : EntrantPolicy{};
+
+template<typename _ty,
+	std::size_t _elements,
+	std::derived_from<EntrantPolicy> entrant = SafeEntrant,
+	PagePolicy policy = PagePolicy::lock
+>
 class TLSBlockAllocator final {
 	using AllocatorType = Allocator<_ty, _elements, policy, enforce_same>;
 
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
 
-	inline void init_allocator() {
-		if(!allocator_) {
-			allocator_ = std::make_unique<AllocatorType>();
+	// Compiler will optimise calls to this out when using UnsafeEntrant
+	inline void initialise() {
+		if constexpr(std::is_same_v<entrant, SafeEntrant>) {
+			if(!allocator_) {
+				allocator_ = std::make_unique<AllocatorType>();
+			}
 		}
 	}
 
@@ -228,17 +239,28 @@ public:
 #endif
 
 	TLSBlockAllocator() {
-		init_allocator();
+		initialise();
+	}
+
+	/*
+	 * When used in conjunction with UnsafeMigration, allows the owning object
+	 * to be executed on another thread without paying for checks on every
+	 * allocation
+	 */
+	inline void thread_enter() {
+		if(!allocator_) {
+			allocator_ = std::make_unique<AllocatorType>();
+		}
 	}
 
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
 		/*
-		 * Need to do this here & in ctor unless we can be 100% sure that any object using the
-		 * allocator is created on the same thread that ends up using it, otherwise nullptr.
-		 * That's probably going to be hassle to keep track of, so we'll just do it here too.
+		 * When SafeEntrant is set, need to do this here & in ctor unless
+		 * we can be 100% sure that any object using the allocator is created
+		 * on the same thread that ends up using it.
 		 */
-		init_allocator();
+		initialise();
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_allocs;
@@ -258,15 +280,13 @@ public:
 	}
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+	auto allocator() {
+		initialise();
+		return allocator_.get();
+	}
+
 	~TLSBlockAllocator() {
 		assert(active_allocs == 0);
-	}
-#endif
-
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-	auto allocator() {
-		init_allocator();
-		return allocator_.get();
 	}
 #endif
 };
