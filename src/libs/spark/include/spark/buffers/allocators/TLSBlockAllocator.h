@@ -113,7 +113,7 @@ class Allocator {
 		head_ = block;
 	}
 
-	inline FreeBlock* pop() {
+	[[nodiscard]] inline FreeBlock* pop() {
 		if(!head_) {
 			return nullptr;
 		}
