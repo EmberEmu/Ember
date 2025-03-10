@@ -148,7 +148,7 @@ public:
 		total_write_ += sizeof(T);
 	}
 
-	template<typename T>
+	template<pod T>
 	void put(const T* data, std::size_t count) requires(writeable<buf_type>) {
 		const auto write_size = count * sizeof(T);
 		buffer_.write(data, write_size);

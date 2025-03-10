@@ -97,7 +97,7 @@ public:
 		total_write_ += sizeof(T);
 	}
 
-	template<typename T>
+	template<pod T>
 	void put(const T* data, std::size_t count) {
 		assert(data);
 		const auto write_size = count * sizeof(T);
