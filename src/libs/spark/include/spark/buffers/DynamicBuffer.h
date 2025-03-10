@@ -24,8 +24,6 @@
 
 namespace ember::spark::io {
 
-using namespace detail;
-
 template<typename BufferType>
 class BufferSequence;
 
@@ -35,11 +33,11 @@ concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
 template<
 	decltype(auto) BlockSize,
 	byte_type StorageType = std::byte,
-	typename Allocator = DefaultAllocator<IntrusiveStorage<BlockSize, StorageType>>
+	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageType>>
 >
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public pmr::Buffer {
-	using IntrusiveStorage = typename IntrusiveStorage<BlockSize, StorageType>;
+	using IntrusiveStorage = typename detail::IntrusiveStorage<BlockSize, StorageType>;
 
 public:
 	using value_type = StorageType;
