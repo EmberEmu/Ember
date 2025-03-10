@@ -90,7 +90,11 @@ class Allocator {
 	[[no_unique_address]] tid_type thread_id_;
 	std::array<char, block_size * _elements> storage_;
 
-	void link_blocks() {
+	void initialise() {
+		if constexpr(_policy == PagePolicy::lock) {
+			util::page_lock(storage_.data(), storage_.size());
+		}
+
 		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
@@ -127,16 +131,13 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
+	Allocator()	requires requires { std::is_same_v<ThreadPolicy, enforce_same> }
+		: thread_id_(std::this_thread::get_id()) {
+		initialise();
+	}
+
 	Allocator()	{
-		if constexpr(std::is_same_v<ThreadPolicy, enforce_same>) {
-			thread_id_ = std::this_thread::get_id();
-		}
-
-		if constexpr(_policy == PagePolicy::lock) {
-			util::page_lock(storage_.data(), storage_.size());
-		}
-
-		link_blocks();
+		initialise();
 	}
 
 	template<typename ...Args>
