@@ -36,11 +36,11 @@ struct FreeBlock {
 	FreeBlock* next;
 };
 
-template<std::size_t size>
+template<decltype(auto) size>
 concept gt_zero = size > 0;
 
-template<typename _ty>
-concept gte_freeblock = sizeof(_ty) >= sizeof(FreeBlock);
+template<typename T, typename U>
+concept sizeof_gte = sizeof(T) >= sizeof(U);
 
 struct thread_tag{};
 struct enforce_same : thread_tag{};
@@ -69,7 +69,7 @@ template<typename _ty, std::size_t _elements,
 	PagePolicy _policy = PagePolicy::no_lock,
 	std::derived_from<thread_tag> ThreadPolicy = no_thread_policy
 >
-requires gt_zero<_elements> && gte_freeblock<_ty>
+requires gt_zero<_elements> && sizeof_gte<_ty, FreeBlock>
 class Allocator {
 	using tid_type = std::conditional<
 		std::is_same_v<ThreadPolicy, enforce_same>, std::thread::id, std::monostate
