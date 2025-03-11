@@ -71,9 +71,9 @@ template<typename _ty, std::size_t _elements,
 >
 requires gt_zero<_elements> && sizeof_gte<_ty, FreeBlock>
 class Allocator {
-	using tid_type = std::conditional<
+	using tid_type = std::conditional_t<
 		std::is_same_v<ValidationPolicy, Validate>, std::thread::id, std::monostate
-	>::type;
+	>;
 
 	struct Block {
 		_ty obj;
@@ -227,9 +227,9 @@ template<typename _ty,
 	std::derived_from<PageLockTag> PageLockPolicy = NoPageLock
 >
 class TLSBlockAllocator final {
-	using RefCountType = std::conditional<
+	using RefCountType = std::conditional_t<
 		std::is_same_v<LifetimePolicy, RefCounting>, int, std::monostate
-	>::type;
+	>;
 
 	using AllocatorType = Allocator<_ty, _elements, PageLockPolicy, NoValidate>;
 
