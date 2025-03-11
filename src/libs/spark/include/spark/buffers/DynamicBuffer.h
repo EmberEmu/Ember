@@ -475,12 +475,8 @@ public:
 		return npos;
 	}
 
-	auto& get_allocator() {
-		return allocator_;
-	}
-
-	auto& get_allocator() const {
-		return allocator_;
+	auto&& get_allocator(this auto&& self) {
+		return self.allocator_;
 	}
 
 	template<typename BufferType>
