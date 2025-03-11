@@ -475,11 +475,11 @@ public:
 		return npos;
 	}
 
-	auto get_allocator() {
+	auto& get_allocator() {
 		return allocator_;
 	}
 
-	auto get_allocator() const {
+	auto& get_allocator() const {
 		return allocator_;
 	}
 
