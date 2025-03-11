@@ -189,7 +189,7 @@ public:
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
 		size_type remaining = length;
 
-		do {
+		while(true) {
 			auto buffer = buffer_from_node(root_.next);
 			remaining -= buffer->read(
 				static_cast<value_type*>(destination) + length - remaining, remaining,
@@ -199,8 +199,10 @@ public:
 			if(remaining) [[unlikely]] {
 				unlink_node(root_.next);
 				deallocate(buffer);
+			} else {
+				break;
 			}
-		} while(remaining);
+		}
 
 		size_ -= length;
 	}
@@ -215,16 +217,18 @@ public:
 		size_type remaining = length;
 		auto head = root_.next;
 
-		do {
+		while(true) {
 			const auto buffer = buffer_from_node(head);
 			remaining -= buffer->copy(
 				static_cast<value_type*>(destination) + length - remaining, remaining
 			);
 
-			if(remaining) {
+			if(remaining) [[unlikely]] {
 				head = head->next;
+			} else {
+				break;
 			}
-		} while(remaining);
+		}
 	}
 
 #ifdef BUFFER_DEBUG
@@ -261,15 +265,17 @@ public:
 		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
 		size_type remaining = length;
 
-		do {
+		while(true) {
 			auto buffer = buffer_from_node(root_.next);
 			remaining -= buffer->skip(remaining, root_.next == root_.prev);
 
 			if(remaining) [[unlikely]] {
 				unlink_node(root_.next);
 				deallocate(buffer);
+			} else {
+				break;
 			}
-		} while(remaining);
+		}
 
 		size_ -= length;
 	}
