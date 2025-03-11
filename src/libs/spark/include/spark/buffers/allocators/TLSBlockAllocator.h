@@ -90,7 +90,7 @@ class Allocator {
 	[[no_unique_address]] tid_type thread_id_;
 	std::array<char, block_size * _elements> storage_;
 
-	void initialise() {
+	void initialise_free_list() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
 			util::page_lock(storage_.data(), storage_.size());
 		}
@@ -99,12 +99,8 @@ class Allocator {
 
 		for(std::size_t i = 0; i < _elements; ++i) {
 			auto block = std::start_lifetime_as<FreeBlock>(storage + (block_size * i));
-			block->next = reinterpret_cast<FreeBlock*>(storage + (block_size * (i + 1)));
+			push(block);
 		}
-
-		auto tail = reinterpret_cast<FreeBlock*>(storage + (block_size * (_elements - 1)));
-		tail->next = nullptr;
-		head_ = reinterpret_cast<FreeBlock*>(storage);
 	}
 
 	inline void push(FreeBlock* block) {
@@ -133,11 +129,11 @@ public:
 
 	Allocator()	requires std::same_as<ValidationPolicy, Validate>
 		: thread_id_(std::this_thread::get_id()) {
-		initialise();
+		initialise_free_list();
 	}
 
 	Allocator()	{
-		initialise();
+		initialise_free_list();
 	}
 
 	template<typename ...Args>
