@@ -239,7 +239,7 @@ public:
 #endif
 
 	TLSBlockAllocator() {
-		initialise();
+		thread_enter();
 	}
 
 	/*
