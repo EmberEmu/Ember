@@ -32,21 +32,19 @@ class BufferSequence;
 template<decltype(auto) BlockSize>
 concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
 
-template<
-	decltype(auto) BlockSize,
+template<decltype(auto) BlockSize,
 	byte_type StorageValueType = std::byte,
 	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageValueType>>
 >
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public pmr::Buffer {
-	using Storage = IntrusiveStorage<BlockSize, StorageValueType>;
-
 public:
-	using value_type = StorageValueType;
-	using node_type  = IntrusiveNode;
-	using size_type  = std::size_t;
-	using contiguous = is_non_contiguous;
-	using seeking    = supported;
+	using storage_type = IntrusiveStorage<BlockSize, StorageValueType>;
+	using value_type   = StorageValueType;
+	using node_type    = IntrusiveNode;
+	using size_type    = std::size_t;
+	using contiguous   = is_non_contiguous;
+	using seeking      = supported;
 
 	static constexpr size_type npos = -1;
 
@@ -66,9 +64,9 @@ private:
 		node->prev->next = node->next;
 	}
 
-	inline Storage* buffer_from_node(const IntrusiveNode* node) const {
-		return reinterpret_cast<Storage*>(std::uintptr_t(node)
-			- offsetof(Storage, node));
+	inline storage_type* buffer_from_node(const IntrusiveNode* node) const {
+		return reinterpret_cast<storage_type*>(std::uintptr_t(node)
+			- offsetof(storage_type, node));
 	}
 
 	void move(DynamicBuffer& rhs) noexcept {
@@ -107,7 +105,7 @@ private:
 	}
 	
 #ifdef BUFFER_DEBUG
-	void offset_buffers(std::vector<Storage*>& buffers, size_type offset) {
+	void offset_buffers(std::vector<storage_type*>& buffers, size_type offset) {
 		std::erase_if(buffers, [&](auto block) {
 			if(block->size() > offset) {
 				block->read_offset += offset;
@@ -146,11 +144,11 @@ private:
 		}
 	}
 
-	[[nodiscard]] Storage* allocate() {
+	[[nodiscard]] storage_type* allocate() {
 		return allocator_.allocate();
 	}
 
-	void deallocate(Storage* buffer) {
+	void deallocate(storage_type* buffer) {
 		allocator_.deallocate(buffer);
 	}
 
@@ -230,11 +228,11 @@ public:
 	}
 
 #ifdef BUFFER_DEBUG
-	std::vector<Storage*> fetch_buffers(const size_type length,
+	std::vector<storage_type*> fetch_buffers(const size_type length,
 	                                             const size_type offset = 0) {
 		size_type total = length + offset;
 		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
-		std::vector<Storage*> buffers;
+		std::vector<storage_type*> buffers;
 		auto head = root_.next;
 
 		while(total) {
@@ -285,7 +283,7 @@ public:
 		IntrusiveNode* tail = root_.prev;
 
 		do {
-			Storage* buffer;
+			storage_type* buffer;
 
 			if(tail != &root_) [[likely]] {
 				buffer = buffer_from_node(tail);
@@ -310,7 +308,7 @@ public:
 		IntrusiveNode* tail = root_.prev;
 
 		do {
-			Storage* buffer;
+			storage_type* buffer;
 
 			if(tail == &root_) [[unlikely]] {
 				buffer = allocate();
@@ -331,7 +329,7 @@ public:
 		return size_;
 	}
 
-	Storage* back() const {
+	storage_type* back() const {
 		if(root_.prev == &root_) {
 			return nullptr;
 		}
@@ -339,7 +337,7 @@ public:
 		return buffer_from_node(root_.prev);
 	}
 
-	Storage* front() const {
+	storage_type* front() const {
 		if(root_.next == &root_) {
 			return nullptr;
 		}
@@ -354,7 +352,7 @@ public:
 		return buffer;
 	}
 
-	void push_back(Storage* buffer) {
+	void push_back(storage_type* buffer) {
 		link_tail_node(&buffer->node);
 		size_ += buffer->write_offset;
 	}
