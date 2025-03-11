@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@ namespace ember::spark::io {
 // other than the one on which it was created, not even if synchronised
 // ... unless you're positive it won't result in the allocator being called.
 // 
-// Minimum memory usage is IntrusiveStorage<BlockSize> * PreallocElements.
+// Minimum memory usage is IntrusiveStorage<BlockSize> * count.
 // Additional blocks are not added if the original is exhausted ('colony' structure),
 // so the allocator will fall back to the system allocator instead.
 //
@@ -28,9 +28,12 @@ namespace ember::spark::io {
 // Cons: everything else.
 // 
 // TL;DR Do not use unless you know what you're doing.
-template<decltype(auto) BlockSize, std::size_t PreallocElements, typename StorageType = std::byte>
+template<decltype(auto) BlockSize,
+	std::size_t count,
+	typename EnrantPolicy = SafeEntrant,
+	typename StorageType = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<BlockSize, StorageType,
-	TLSBlockAllocator<detail::IntrusiveStorage<BlockSize>, PreallocElements>
+	TLSBlockAllocator<detail::IntrusiveStorage<BlockSize>, count, EnrantPolicy>
 >;
 
 } // io, spark, ember
