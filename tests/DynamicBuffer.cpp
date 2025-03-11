@@ -126,7 +126,7 @@ TEST(DynamicBuffer, Clear) {
 
 TEST(DynamicBuffer, AttachTail) {
 	spark::io::DynamicBuffer<32> chain;
-	auto buffer = chain.allocate();
+	auto buffer = chain.get_allocator().allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
 	std::size_t written = buffer->write(text.c_str(), text.length());
@@ -150,7 +150,7 @@ TEST(DynamicBuffer, AttachTail) {
 
 TEST(DynamicBuffer, PopFrontPushBack) {
 	spark::io::DynamicBuffer<32> chain;
-	auto buffer = chain.allocate();
+	auto buffer = chain.get_allocator().allocate();
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
 	std::size_t written = buffer->write(text.c_str(), text.length());
@@ -159,7 +159,7 @@ TEST(DynamicBuffer, PopFrontPushBack) {
 	chain.push_back(buffer);
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 	auto front = chain.pop_front();
-	chain.deallocate(front);
+	chain.get_allocator().deallocate(front);
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 }
 
@@ -362,7 +362,7 @@ TEST(DynamicBuffer, BlockCount) {
 	chain.write(&value, sizeof(value));
 	ASSERT_EQ(chain.block_count(), 4);
 	auto node = chain.pop_front();
-	chain.deallocate(node);
+	chain.get_allocator().deallocate(node);
 	ASSERT_EQ(chain.block_count(), 3);
 }
 

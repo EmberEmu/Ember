@@ -53,7 +53,7 @@ public:
 private:
 	IntrusiveNode root_;
 	size_type size_;
-	[[no_unique_address]] Allocator alloc_;
+	[[no_unique_address]] Allocator allocator_;
 
 	void link_tail_node(IntrusiveNode* node) {
 		node->next = &root_;
@@ -144,6 +144,14 @@ private:
 		} else {
 			return 0;
 		}
+	}
+
+	[[nodiscard]] Storage* allocate() {
+		return allocator_.allocate();
+	}
+
+	void deallocate(Storage* buffer) {
+		allocator_.deallocate(buffer);
 	}
 
 public:
@@ -351,14 +359,6 @@ public:
 		size_ += buffer->write_offset;
 	}
 
-	[[nodiscard]] Storage* allocate() {
-		return alloc_.allocate();
-	}
-
-	void deallocate(Storage* buffer) {
-		alloc_.deallocate(buffer);
-	}
-
 	void advance_write(const size_type size) {
 		auto buffer = buffer_from_node(root_.prev);
 		const auto actual = buffer->advance_write(size);
@@ -475,6 +475,14 @@ public:
 		}
 
 		return npos;
+	}
+
+	auto get_allocator() {
+		return allocator_;
+	}
+
+	auto get_allocator() const {
+		return allocator_;
 	}
 
 	template<typename BufferType>

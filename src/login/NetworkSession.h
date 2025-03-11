@@ -61,7 +61,7 @@ private:
 
 		// if the buffer chain has no more space left, allocate & attach new node
 		if(!tail || !tail->free()) {
-			tail = inbound_buffer_.allocate();
+			tail = inbound_buffer_.get_allocator().allocate();
 			inbound_buffer_.push_back(tail);
 		}
 
