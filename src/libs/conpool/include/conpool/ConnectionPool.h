@@ -130,6 +130,8 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	}
 	
 	std::optional<Connection<ConType>> get_connection() {
+		driver_.thread_enter();
+
 #ifdef DEBUG_NO_THREADS
 		manager_.run();
 #endif
@@ -154,7 +156,6 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 		}
 
 		guard.unlock();
-		driver_.thread_enter();
 
 		return Connection<ConType>([this](Connection<ConType>& arg) {
 			this->return_connection(arg);
@@ -172,6 +173,8 @@ public:
 		  pool_guards_(max_size),
 		  size_(0),
 		  closed_(false) {
+		driver_.thread_enter();
+
 		if(!max_size) {
 			throw exception("Max. database connections cannot be zero");
 		}
@@ -207,6 +210,8 @@ public:
 				}
 			}
 		}
+
+		driver_.thread_exit();
 	}
 
 	void close() {

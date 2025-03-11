@@ -173,8 +173,6 @@ public:
 #else
 		manage_pool();
 #endif
-
-		pool_->driver_.thread_exit();
 	} catch(...) {
 		std::lock_guard lock(exception_lock_);
 		exception_ = std::current_exception();
@@ -182,6 +180,8 @@ public:
 		if(pool_->log_cb_) {
 			pool_->log_cb_(Severity::DEBUG, "Pool manager trapped exception - passing to next caller");
 		}
+
+		pool_->driver_.thread_exit();
 	}
 
 	void stop() {
