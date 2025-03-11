@@ -90,11 +90,19 @@ class Allocator {
 	[[no_unique_address]] tid_type thread_id_;
 	std::array<char, block_size * _elements> storage_;
 
-	void initialise_free_list() {
+	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
 			util::page_lock(storage_.data(), storage_.size());
 		}
+	}
 
+	void page_unlock_conditional() {
+		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
+			util::page_unlock(storage_.data(), storage_.size());
+		}
+	}
+
+	void initialise_free_list() {
 		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
@@ -129,10 +137,12 @@ public:
 
 	Allocator()	requires std::same_as<ValidationPolicy, Validate>
 		: thread_id_(std::this_thread::get_id()) {
+		page_lock_conditional();
 		initialise_free_list();
 	}
 
 	Allocator()	{
+		page_lock_conditional();
 		initialise_free_list();
 	}
 
@@ -192,9 +202,7 @@ public:
 	}
 
 	~Allocator() {
-		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			util::page_unlock(storage_.data(), storage_.size());
-		}
+		page_unlock_conditional();
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		assert(!storage_active_count && !new_active_count);
