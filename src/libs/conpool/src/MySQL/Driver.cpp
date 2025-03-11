@@ -32,7 +32,6 @@ MySQL::MySQL(std::string user, std::string pass, std::string_view host, std::uin
 sql::Connection* MySQL::open() const {
 	thread_enter();
 	sql::Connection* conn = driver->connect(dsn, username, password);
-	thread_exit();
 
 	if(!database.empty()) {
 		conn->setSchema(database);
@@ -41,7 +40,7 @@ sql::Connection* MySQL::open() const {
 	conn->setAutoCommit(true);
 	constexpr bool opt = true;
 	conn->setClientOption("MYSQL_OPT_RECONNECT", &opt);
-
+	thread_exit();
 	return conn;
 }
 
