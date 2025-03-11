@@ -33,12 +33,7 @@ template<decltype(auto) BlockSize,
 	typename EnrantPolicy = SafeEntrant,
 	typename StorageType = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<BlockSize, StorageType,
-	TLSBlockAllocator<
-		typename DynamicBuffer<BlockSize>::storage_type,
-		count,
-		ThreadLifetime,
-		EnrantPolicy
-	>
+	TLSBlockAllocator<typename DynamicBuffer<BlockSize>::storage_type, count, void, EnrantPolicy>
 >;
 
 } // io, spark, ember
