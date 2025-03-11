@@ -39,7 +39,7 @@ template<decltype(auto) BlockSize,
 requires int_gt_zero<BlockSize>
 class DynamicBuffer final : public pmr::Buffer {
 public:
-	using storage_type = typename IntrusiveStorage<BlockSize, StorageValueType>;
+	using storage_type = IntrusiveStorage<BlockSize, StorageValueType>;
 	using value_type   = StorageValueType;
 	using node_type    = IntrusiveNode;
 	using size_type    = std::size_t;

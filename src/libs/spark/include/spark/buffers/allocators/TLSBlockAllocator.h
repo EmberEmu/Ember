@@ -26,9 +26,9 @@
 
 namespace ember::spark::io {
 
-enum class PagePolicy {
-	no_lock, lock
-};
+struct PageLockTag{};
+struct PageLock : PageLockTag{};
+struct NoPageLock : PageLockTag{};
 
 namespace {
 
@@ -42,9 +42,9 @@ concept gt_zero = size > 0;
 template<typename T, typename U>
 concept sizeof_gte = sizeof(T) >= sizeof(U);
 
-struct thread_tag{};
-struct enforce_same : thread_tag{};
-struct no_thread_policy: thread_tag{};
+struct ValidateTag{};
+struct Validate : ValidateTag{};
+struct NoValidate : ValidateTag{};
 
 /*
  * Basic fixed-size block stack allocator that preallocates a slab of memory
@@ -66,13 +66,13 @@ struct no_thread_policy: thread_tag{};
  * implementing the functionality there is messier (and slower).
  */
 template<typename _ty, std::size_t _elements,
-	PagePolicy _policy = PagePolicy::no_lock,
-	std::derived_from<thread_tag> ThreadPolicy = no_thread_policy
+	std::derived_from<PageLockTag> PageLockPolicy = NoPageLock,
+	std::derived_from<ValidateTag> ValidationPolicy = NoValidate
 >
 requires gt_zero<_elements> && sizeof_gte<_ty, FreeBlock>
 class Allocator {
 	using tid_type = std::conditional<
-		std::is_same_v<ThreadPolicy, enforce_same>, std::thread::id, std::monostate
+		std::is_same_v<ValidationPolicy, Validate>, std::thread::id, std::monostate
 	>::type;
 
 	struct Block {
@@ -91,7 +91,7 @@ class Allocator {
 	std::array<char, block_size * _elements> storage_;
 
 	void initialise() {
-		if constexpr(_policy == PagePolicy::lock) {
+		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
 			util::page_lock(storage_.data(), storage_.size());
 		}
 
@@ -131,7 +131,7 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	Allocator()	requires requires { std::is_same_v<ThreadPolicy, enforce_same>; }
+	Allocator()	requires std::same_as<ValidationPolicy, Validate>
 		: thread_id_(std::this_thread::get_id()) {
 		initialise();
 	}
@@ -157,7 +157,7 @@ public:
 			block->meta.using_new = true;
 		}
 
-		if constexpr(std::is_same_v<ThreadPolicy, enforce_same>) {
+		if constexpr(std::is_same_v<ValidationPolicy, Validate>) {
 			block->meta.thread_id = thread_id_;
 		}
 
@@ -171,7 +171,7 @@ public:
 		assert(t);
 		auto block = std::start_lifetime_as<Block>(t);
 
-		if constexpr(std::is_same_v<ThreadPolicy, enforce_same>) {
+		if constexpr(std::is_same_v<ValidationPolicy, Validate>) {
 			assert(block->meta.thread_id == thread_id_
 				&& "thread policy error or clobbered block");
 		}
@@ -196,7 +196,7 @@ public:
 	}
 
 	~Allocator() {
-		if constexpr(_policy == PagePolicy::lock) {
+		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
 			util::page_unlock(storage_.data(), storage_.size());
 		}
 
@@ -212,29 +212,29 @@ struct EntrantTag{};
 struct SafeEntrant : EntrantTag{};
 struct UnsafeEntrant : EntrantTag{};
 
-struct RefCountTag{};
-struct RefCounted: RefCountTag{};
-struct ThreadLifetime : RefCountTag{};
+struct LifetimeTag{};
+struct RefCounting : LifetimeTag{};
+struct ThreadLifetime : LifetimeTag{};
 
 template<typename _ty,
 	std::size_t _elements,
-	std::derived_from<RefCountTag> RefCount = ThreadLifetime,
-	std::derived_from<EntrantTag> Entrant = SafeEntrant,
-	PagePolicy policy = PagePolicy::lock
+	std::derived_from<LifetimeTag> LifetimePolicy = ThreadLifetime,
+	std::derived_from<EntrantTag> EntrantPolicy = SafeEntrant,
+	std::derived_from<PageLockTag> PageLockPolicy = NoPageLock
 >
 class TLSBlockAllocator final {
 	using RefCountType = std::conditional<
-		std::is_same_v<RefCount, RefCounted>, int, std::monostate
+		std::is_same_v<LifetimePolicy, RefCounting>, int, std::monostate
 	>::type;
 
-	using AllocatorType = Allocator<_ty, _elements, policy, enforce_same>;
+	using AllocatorType = Allocator<_ty, _elements, PageLockPolicy, NoValidate>;
 
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
 	static inline thread_local RefCountType ref_count_{};
 
 	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
-		if constexpr(std::is_same_v<Entrant, SafeEntrant>) {
+		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
 			if(!allocator_) {
 				allocator_ = std::make_unique<AllocatorType>();
 			}
@@ -249,7 +249,7 @@ public:
 #endif
 
 	TLSBlockAllocator() {
-		if constexpr(std::is_same_v<RefCount, RefCounted>) {
+		if constexpr(std::is_same_v<LifetimePolicy, RefCounting>) {
 			++ref_count_;
 		}
 
@@ -301,7 +301,7 @@ public:
 #endif
 
 	~TLSBlockAllocator() {
-		if constexpr(std::is_same_v<RefCount, RefCounted>) {
+		if constexpr(std::is_same_v<LifetimePolicy, RefCounting>) {
 			--ref_count_;
 
 			if(ref_count_ == 0) {
