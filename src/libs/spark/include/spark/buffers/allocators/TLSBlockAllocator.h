@@ -208,23 +208,33 @@ public:
 
 } // unnamed
 
-struct EntrantPolicy{};
-struct SafeEntrant : EntrantPolicy{};
-struct UnsafeEntrant : EntrantPolicy{};
+struct EntrantTag{};
+struct SafeEntrant : EntrantTag{};
+struct UnsafeEntrant : EntrantTag{};
+
+struct RefCountTag{};
+struct RefCounted: RefCountTag{};
+struct ThreadLifetime : RefCountTag{};
 
 template<typename _ty,
 	std::size_t _elements,
-	std::derived_from<EntrantPolicy> entrant = SafeEntrant,
+	std::derived_from<RefCountTag> RefCount = ThreadLifetime,
+	std::derived_from<EntrantTag> Entrant = SafeEntrant,
 	PagePolicy policy = PagePolicy::lock
 >
 class TLSBlockAllocator final {
+	using RefCountType = std::conditional<
+		std::is_same_v<RefCount, RefCounted>, int, std::monostate
+	>::type;
+
 	using AllocatorType = Allocator<_ty, _elements, policy, enforce_same>;
 
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
+	static inline thread_local RefCountType ref_count_{};
 
 	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
-		if constexpr(std::is_same_v<entrant, SafeEntrant>) {
+		if constexpr(std::is_same_v<Entrant, SafeEntrant>) {
 			if(!allocator_) {
 				allocator_ = std::make_unique<AllocatorType>();
 			}
@@ -239,6 +249,10 @@ public:
 #endif
 
 	TLSBlockAllocator() {
+		if constexpr(std::is_same_v<RefCount, RefCounted>) {
+			++ref_count_;
+		}
+
 		thread_enter();
 	}
 
@@ -284,11 +298,21 @@ public:
 		initialise();
 		return allocator_.get();
 	}
+#endif
 
 	~TLSBlockAllocator() {
+		if constexpr(std::is_same_v<RefCount, RefCounted>) {
+			--ref_count_;
+
+			if(ref_count_ == 0) {
+				allocator_.reset();
+			}
+		}
+
+#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		assert(active_allocs == 0);
-	}
 #endif
+	}
 };
 
 } // io, spark, ember
