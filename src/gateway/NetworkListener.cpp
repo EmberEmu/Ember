@@ -35,8 +35,9 @@ void NetworkListener::accept_connection() {
 			if(!ec) {
 				LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ep.address().to_string());
 
-				boost::asio::dispatch(pool_.get(index_), [&, socket = std::move(socket_), index = index_]() mutable {
-					sessions_.emplace(sessions_, std::move(socket), ClientRef(index), logger_);
+				boost::asio::dispatch(socket_.get_executor(),
+				                      [&, socket = std::move(socket_), i = index_]() mutable {
+					sessions_.emplace(sessions_, std::move(socket), ClientRef(i), logger_);
 				});
 			} else {
 				LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
