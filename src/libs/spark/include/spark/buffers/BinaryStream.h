@@ -33,7 +33,7 @@ using namespace detail;
 #define STREAM_READ_BOUNDS_CHECK(read_size, ret_var)              \
 	check_read_bounds(read_size);                                 \
 	                                                              \
-	if constexpr(!std::is_same_v<exceptions, allow_throw>) {      \
+	if constexpr(std::is_same_v<exceptions, no_throw>) {          \
 		if(state_ != StreamState::OK) [[unlikely]] {              \
 			return ret_var;                                       \
 		}                                                         \
@@ -81,12 +81,12 @@ class BinaryStream final {
 	}
 
 public:
-	using State              = StreamState;
+	using StreamState        = StreamState;
 	using seeking            = typename buf_type::seeking;
 	using value_type         = typename buf_type::value_type;
 	using contiguous_type    = typename buf_type::contiguous;
 
-	explicit BinaryStream(buf_type& source, const std::size_t read_limit = 0)
+	explicit BinaryStream(buf_type& source, std::size_t read_limit = 0)
 		: buffer_(source),
 		  read_limit_(read_limit) {};
 

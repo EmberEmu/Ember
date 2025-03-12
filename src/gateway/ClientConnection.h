@@ -43,8 +43,8 @@ class ClientConnection final {
 	tcp_socket socket_;
 	boost::asio::ip::tcp::endpoint remote_ep_;
 
-	StaticBuffer inbound_buffer_{};
-	std::array<DynamicTLSBuffer, 2> outbound_buffers_{};
+	StaticBuffer inbound_buffer_;
+	std::array<DynamicTLSBuffer, 2> outbound_buffers_;
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
 

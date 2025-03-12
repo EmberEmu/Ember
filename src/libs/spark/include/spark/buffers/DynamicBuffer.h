@@ -232,8 +232,7 @@ public:
 	}
 
 #ifdef BUFFER_DEBUG
-	std::vector<storage_type*> fetch_buffers(const size_type length,
-	                                             const size_type offset = 0) {
+	std::vector<storage_type*> fetch_buffers(const size_type length, const size_type offset = 0) {
 		size_type total = length + offset;
 		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
 		std::vector<storage_type*> buffers;
