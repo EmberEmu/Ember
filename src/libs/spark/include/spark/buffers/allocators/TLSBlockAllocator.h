@@ -26,7 +26,8 @@
 
 namespace ember::spark::io {
 
-struct PageLock {};
+struct NoPageLock {};
+struct PageLock : NoPageLock {};
 
 namespace {
 
@@ -40,7 +41,8 @@ concept gt_zero = size > 0;
 template<typename T, typename U>
 concept sizeof_gte = sizeof(T) >= sizeof(U);
 
-struct ValidateDealloc {};
+struct NoValidateDealloc {};
+struct ValidateDealloc : NoValidateDealloc {};
 
 /*
  * Basic fixed-size block stack allocator that preallocates a slab of memory
@@ -61,7 +63,9 @@ struct ValidateDealloc {};
  * is deallocated from a different thread. Used by the TLS allocator, since
  * implementing the functionality there is messier (and slower).
  */
-template<typename _ty, std::size_t _elements, typename PageLockPolicy = void, typename ValidatePolicy = void>
+template<typename _ty, std::size_t _elements,
+	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
+	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc>
 requires gt_zero<_elements> && sizeof_gte<_ty, FreeBlock>
 class Allocator {
 	using tid_type = std::conditional_t<
@@ -206,30 +210,47 @@ public:
 } // unnamed
 
 struct SafeEntrant {};
-struct RefCounting {};
+struct NoRefCounting {};
+
+struct UnsafeEntrant : SafeEntrant {};
+struct RefCounting : NoRefCounting {};
 
 template<typename _ty,
 	std::size_t _elements,
-	typename RefCountPolicy = void,
-	typename EntrantPolicy = void,
-	typename PageLockPolicy = void
+	std::derived_from<NoRefCounting> RefCountPolicy = NoRefCounting,
+	std::derived_from<SafeEntrant> EntrantPolicy = SafeEntrant,
+	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock
 >
 class TLSBlockAllocator final {
-	using RefCountType = std::conditional_t<
+	using AllocatorType = Allocator<_ty, _elements, PageLockPolicy>;
+
+	using RefCount = std::conditional_t<
 		std::is_same_v<RefCountPolicy, RefCounting>, int, std::monostate
 	>;
 
-	using AllocatorType = Allocator<_ty, _elements, PageLockPolicy>;
+	using TLSHandleCache = std::conditional_t<
+		std::is_same_v<EntrantPolicy, UnsafeEntrant>, AllocatorType*, std::monostate
+	>;
 
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
-	static inline thread_local RefCountType ref_count_{};
+	static inline thread_local RefCount ref_count_{};
+
+	[[no_unique_address]] TLSHandleCache cached_handle_{};
 
 	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
-		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
+		if constexpr(!std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
 			if(!allocator_) {
 				allocator_ = std::make_unique<AllocatorType>();
 			}
+		}
+	}
+
+	inline AllocatorType* allocator_handle() {
+		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
+			return cached_handle_;
+		} else {
+			return allocator_.get();
 		}
 	}
 
@@ -257,7 +278,11 @@ public:
 		if(!allocator_) {
 			allocator_ = std::make_unique<AllocatorType>();
 		}
-	}
+
+		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
+			cached_handle_ = allocator_.get();
+		}
+ 	}
 
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
@@ -272,7 +297,7 @@ public:
 		++total_allocs;
 		++active_allocs;
 #endif
-		return allocator_->allocate(std::forward<Args>(args)...);
+		return allocator_handle()->allocate(std::forward<Args>(args)...);
 	}
 
 	inline void deallocate(_ty* t) {
@@ -282,13 +307,13 @@ public:
 		++total_deallocs;
 		--active_allocs;
 #endif
-		allocator_->deallocate(t);
+		allocator_handle()->deallocate(t);
 	}
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	auto allocator() {
 		initialise();
-		return allocator_.get();
+		return allocator_handle();
 	}
 #endif
 
