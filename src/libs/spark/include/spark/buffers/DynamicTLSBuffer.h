@@ -30,10 +30,11 @@ namespace ember::spark::io {
 // TL;DR Do not use unless you know what you're doing.
 template<decltype(auto) BlockSize,
 	std::size_t count,
+	typename RefCountPolicy = NoRefCounting,
 	typename EnrantPolicy = SafeEntrant,
 	typename StorageType = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<BlockSize, StorageType,
-	TLSBlockAllocator<typename DynamicBuffer<BlockSize>::storage_type, count, void, EnrantPolicy>
+	TLSBlockAllocator<typename DynamicBuffer<BlockSize>::storage_type, count, NoRefCounting, EnrantPolicy>
 >;
 
 } // io, spark, ember

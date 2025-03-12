@@ -25,8 +25,11 @@ static constexpr std::size_t PREALLOC_NODES {  16 };
 #endif
 
 using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, INBOUND_SIZE>;
-using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<OUTBOUND_SIZE, PREALLOC_NODES>;
-
 using BinaryStream = spark::io::BinaryStream<StaticBuffer>;
+
+using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
+	OUTBOUND_SIZE, PREALLOC_NODES, spark::io::NoRefCounting, spark::io::UnsafeEntrant
+>;
+
 
 } // gateway, ember
