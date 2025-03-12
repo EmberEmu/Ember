@@ -34,6 +34,7 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GL")  # Whole program optimisation
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Ot")  # Favour speed over size
 
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")  # Conformance mode
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG /ignore:4075")  # Link-time code generation
 
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.36)
