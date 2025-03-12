@@ -41,20 +41,13 @@ using namespace detail;
 
 template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw>
 class BinaryStream final {
-public:
-	using size_type          = typename buf_type::size_type;
-	using seeking            = typename buf_type::seeking;
-	using value_type         = typename buf_type::value_type;
-	using contiguous_type    = typename buf_type::contiguous;
-	
-private:
 	buf_type& buffer_;
-	size_type total_write_ = 0;
-	size_type total_read_ = 0;
+	std::size_t total_write_ = 0;
+	std::size_t total_read_ = 0;
 	StreamState state_ = StreamState::OK;
-	const size_type read_limit_;
+	const std::size_t read_limit_;
 
-	inline void check_read_bounds(const size_type read_size) {
+	inline void check_read_bounds(const std::size_t read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
 			state_ = StreamState::BUFF_LIMIT_ERR;
 
@@ -80,7 +73,7 @@ private:
 		total_read_ = req_total_read;
 	}
 
-	template<size_type size>
+	template<std::size_t size>
 	constexpr auto generate_filled(const std::uint8_t value) {
 		std::array<std::uint8_t, size> target{};
 		std::ranges::fill(target, value);
@@ -88,7 +81,11 @@ private:
 	}
 
 public:
-	explicit BinaryStream(buf_type& source, size_type read_limit = 0)
+	using seeking            = typename buf_type::seeking;
+	using value_type         = typename buf_type::value_type;
+	using contiguous_type    = typename buf_type::contiguous;
+
+	explicit BinaryStream(buf_type& source, std::size_t read_limit = 0)
 		: buffer_(source),
 		  read_limit_(read_limit) {};
 
@@ -149,7 +146,7 @@ public:
 	}
 
 	template<pod T>
-	void put(const T* data, size_type count) requires(writeable<buf_type>) {
+	void put(const T* data, std::size_t count) requires(writeable<buf_type>) {
 		const auto write_size = count * sizeof(T);
 		buffer_.write(data, write_size);
 		total_write_ += write_size;
@@ -162,7 +159,7 @@ public:
 		}
 	}
 
-	template<size_type size>
+	template<std::size_t size>
 	void fill(const std::uint8_t value) requires(writeable<buf_type>) {
 		const auto filled = generate_filled<size>(value);
 		buffer_.write(filled.data(), filled.size());
@@ -180,7 +177,7 @@ public:
 			return *this;
 		}
 
-		dest.resize_and_overwrite(pos, [&](char* strbuf, size_type size) {
+		dest.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			total_read_ += size;
 			return size;
@@ -235,16 +232,16 @@ public:
 		*this >> dest;
 	}
 
-	void get(std::string& dest, size_type size) {
+	void get(std::string& dest, std::size_t size) {
 		STREAM_READ_BOUNDS_CHECK(size, void());
-		dest.resize_and_overwrite(size, [&](char* strbuf, size_type len) {
+		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
 			buffer_.read(strbuf, len);
 			return len;
 		});
 	}
 
 	template<typename T>
-	void get(T* dest, size_type count) {
+	void get(T* dest, std::size_t count) {
 		assert(dest);
 		const auto read_size = count * sizeof(T);
 		STREAM_READ_BOUNDS_CHECK(read_size, void());
@@ -265,7 +262,7 @@ public:
 		buffer_.read(dest.data(), read_size);
 	}
 
-	void skip(const size_type count) {
+	void skip(const std::size_t count) {
 		STREAM_READ_BOUNDS_CHECK(count, void());
 		buffer_.skip(count);
 	}
@@ -288,7 +285,7 @@ public:
 	// Reads a span<T> from the buffer
 	// Fails if buffer length < requested bytes
 	template<typename OutType = value_type>
-	std::span<OutType> span(size_type count) requires(contiguous<buf_type>) {
+	std::span<OutType> span(std::size_t count) requires(contiguous<buf_type>) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(OutType) * count, {});
 		std::span span { std::start_lifetime_as<OutType>(buffer_.read_ptr()), count };
 		buffer_.skip(sizeof(OutType) * count);
@@ -301,7 +298,7 @@ public:
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const StreamSeek direction, const size_type offset) requires(writeable<buf_type>) {
+	void write_seek(const StreamSeek direction, const std::size_t offset) requires(writeable<buf_type>) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
 			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
 		} else {
@@ -309,7 +306,7 @@ public:
 		}
 	}
 
-	size_type size() const {
+	std::size_t size() const {
 		return buffer_.size();
 	}
 
@@ -318,7 +315,7 @@ public:
 		return buffer_.empty();
 	}
 
-	size_type total_write() const requires(writeable<buf_type>) {
+	std::size_t total_write() const requires(writeable<buf_type>) {
 		return total_write_;
 	}
 
@@ -330,11 +327,11 @@ public:
 		return state_;
 	}
 
-	size_type total_read() const {
+	std::size_t total_read() const {
 		return total_read_;
 	}
 
-	size_type read_limit() const {
+	std::size_t read_limit() const {
 		return read_limit_;
 	}
 
