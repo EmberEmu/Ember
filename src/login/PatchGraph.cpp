@@ -60,10 +60,10 @@ std::deque<PatchGraph::Node> PatchGraph::path(std::uint16_t from, std::uint16_t 
 	std::priority_queue<Node, std::vector<Node>, NodeComp> queue;
 
 	for(auto& [index, edges] : adjacency_) {
-		distance[index] = -1;
+		distance[index] = static_cast<decltype(distance)::mapped_type>(-1);
 	
 		for(const auto& e : edges) {
-			distance[e.build_to] = -1;
+			distance[e.build_to] = static_cast<decltype(distance)::mapped_type>(-1);
 		}
 	}
 

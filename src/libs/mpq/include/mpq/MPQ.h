@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@
 
 namespace ember::mpq {
 
-static constexpr std::uintptr_t npos = -1;
+static constexpr auto npos { static_cast<std::uintptr_t>(-1) };
 
 using LocateResult = std::expected<std::uintptr_t, ErrorCode>;
 

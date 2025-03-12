@@ -38,7 +38,7 @@ public:
 	using contiguous      = is_contiguous;
 	using seeking         = supported;
 
-	static constexpr size_type npos = -1;
+	static constexpr auto npos { static_cast<size_type>(-1) };
 	
 	StaticBuffer() = default;
 
