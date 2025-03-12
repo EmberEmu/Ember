@@ -13,7 +13,7 @@
 #include <thread>
 #include <cstdlib>
 
-#undef NDEBUG
+#define EMBER_DEBUG_ALLOCATORS
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 
 using namespace ember;

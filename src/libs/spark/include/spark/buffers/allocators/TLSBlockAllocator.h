@@ -16,7 +16,7 @@
 #include <cstdint>
 
 #ifndef NDEBUG
-	#define _DEBUG_TLS_BLOCK_ALLOCATOR
+#define EMBER_DEBUG_ALLOCATORS
 #endif
 
 namespace ember::spark::io {
@@ -67,7 +67,7 @@ class TLSBlockAllocator final {
 	}
 
 public:
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t total_allocs = 0;
 	std::size_t total_deallocs = 0;
 	std::size_t active_allocs = 0;
@@ -105,7 +105,7 @@ public:
 		 */
 		initialise();
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 		++total_allocs;
 		++active_allocs;
 #endif
@@ -115,14 +115,14 @@ public:
 	inline void deallocate(_ty* t) {
 		assert(t);
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 		++total_deallocs;
 		--active_allocs;
 #endif
 		allocator_handle()->deallocate(t);
 	}
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 	auto allocator() {
 		initialise();
 		return allocator_handle();
@@ -138,7 +138,7 @@ public:
 			}
 		}
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_allocs == 0);
 #endif
 	}

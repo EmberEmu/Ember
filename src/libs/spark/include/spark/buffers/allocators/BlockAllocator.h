@@ -21,7 +21,7 @@
 #include <cstdint>
 
 #ifndef NDEBUG
-	#define _DEBUG_TLS_BLOCK_ALLOCATOR
+#define EMBER_DEBUG_ALLOCATORS
 #endif
 
 namespace ember::spark::io {
@@ -130,7 +130,7 @@ class BlockAllocator {
 	}
 
 public:
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t storage_active_count = 0;
 	std::size_t new_active_count = 0;
 	std::size_t active_count = 0;
@@ -154,12 +154,12 @@ public:
 		Block* block = std::start_lifetime_as<Block>(pop());
 
 		if(block) [[likely]] {
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 			++storage_active_count;
 #endif
 			block->meta.using_new = false;
 		} else {
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 			++new_active_count;
 #endif
 			block = new Block;
@@ -170,7 +170,7 @@ public:
 			block->meta.thread_id = thread_id_;
 		}
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 		++total_allocs;
 		++active_count;
 #endif
@@ -187,20 +187,20 @@ public:
 		}
 
 		if(block->meta.using_new) [[unlikely]] {
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 			--new_active_count;
 #endif
 			t->~_ty();
 			delete block;
 		} else {
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 			--storage_active_count;
 #endif
 			t->~_ty();
 			push(std::start_lifetime_as<FreeBlock>(t));
 		}
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 		++total_deallocs;
 		--active_count;
 #endif
@@ -209,7 +209,7 @@ public:
 	~BlockAllocator() {
 		page_unlock_conditional();
 
-#ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
+#ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_count == 0);
 #endif
 	}
