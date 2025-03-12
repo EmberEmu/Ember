@@ -128,6 +128,7 @@ public:
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 	std::size_t storage_active_count = 0;
 	std::size_t new_active_count = 0;
+	std::size_t active_count = 0;
 	std::size_t total_allocs = 0;
 	std::size_t total_deallocs = 0;
 #endif
@@ -166,6 +167,7 @@ public:
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_allocs;
+		++active_count;
 #endif
 		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
@@ -195,6 +197,7 @@ public:
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
 		++total_deallocs;
+		--active_count;
 #endif
 	}
 
@@ -202,7 +205,7 @@ public:
 		page_unlock_conditional();
 
 #ifdef _DEBUG_TLS_BLOCK_ALLOCATOR
-		assert(!storage_active_count && !new_active_count);
+		assert(active_count == 0);
 #endif
 	}
 };
