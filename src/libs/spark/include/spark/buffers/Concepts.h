@@ -12,14 +12,12 @@
 #include <bit>
 #include <concepts>
 #include <type_traits>
-#include <cstddef>
-#include <cstdint>
 
 namespace ember::spark::io {
 
 template<typename buf_type>
 concept writeable =
-	requires(buf_type t, void* v, std::size_t s) {
+	requires(buf_type t, void* v, typename buf_type::size_type s) {
 		{ t.write(v, s) } -> std::same_as<void>;
 };
 
@@ -43,13 +41,13 @@ concept pod = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
 template<typename T>
 concept has_resize_overwrite =
 	requires(T t) {
-		{ t.resize_and_overwrite(std::size_t(), [](char*, std::size_t) {}) } -> std::same_as<void>;
+		{ t.resize_and_overwrite(T::size_type(), [](char*, T::size_type) {}) } -> std::same_as<void>;
 };
 
 template<typename T>
 concept has_resize = 
 	requires(T t) {
-		{ t.resize( std::size_t() ) } -> std::same_as<void>;
+		{ t.resize( T::size_type() ) } -> std::same_as<void>;
 };
 
 template<typename T, typename U>
