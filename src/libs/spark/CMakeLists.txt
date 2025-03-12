@@ -60,6 +60,7 @@ set(IO_PMR_SRC
 set(IO_ALLOC_SRC
     include/spark/buffers/allocators/DefaultAllocator.h
     include/spark/buffers/allocators/TLSBlockAllocator.h
+    include/spark/buffers/allocators/BlockAllocator.h
 )
 
 add_library(
