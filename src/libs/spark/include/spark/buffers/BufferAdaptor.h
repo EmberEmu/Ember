@@ -81,11 +81,11 @@ public:
 		}
 	}
 
-	void write(const auto& source) requires(can_resize<buf_type>) {
+	void write(const auto& source) requires(has_resize<buf_type>) {
 		write(source, sizeof(source));
 	}
 
-	void write(const void* source, size_type length) requires(can_resize<buf_type>) {
+	void write(const void* source, size_type length) requires(has_resize<buf_type>) {
 		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
@@ -133,11 +133,11 @@ public:
 		return read_ptr()[index];
 	}
 
-	consteval static bool can_write_seek() requires(can_resize<buf_type>) {
+	consteval static bool can_write_seek() requires(has_resize<buf_type>) {
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const BufferSeek direction, const size_type offset) requires(can_resize<buf_type>) {
+	void write_seek(const BufferSeek direction, const size_type offset) requires(has_resize<buf_type>) {
 		switch(direction) {
 			case BufferSeek::SK_BACKWARD:
 				write_ -= offset;

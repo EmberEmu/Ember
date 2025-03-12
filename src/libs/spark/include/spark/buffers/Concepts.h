@@ -47,7 +47,7 @@ concept has_resize_overwrite =
 };
 
 template<typename T>
-concept can_resize = 
+concept has_resize = 
 	requires(T t) {
 		{ t.resize( std::size_t() ) } -> std::same_as<void>;
 };
