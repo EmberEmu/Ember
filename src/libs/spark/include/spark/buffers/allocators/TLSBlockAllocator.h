@@ -242,7 +242,7 @@ class TLSBlockAllocator final {
 
 	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
-		if constexpr(!std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
+		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
 			if(!allocator_) {
 				allocator_ = std::make_unique<AllocatorType>();
 			}
