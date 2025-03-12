@@ -82,7 +82,7 @@ public:
 	}
 
 	/*
-	 * When used in conjunction with UnsafeMigration, allows the owning object
+	 * When used in conjunction with UnsafeEntrant, allows the owning object
 	 * to be executed on another thread without paying for checks on every
 	 * allocation
 	 */
