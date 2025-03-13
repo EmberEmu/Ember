@@ -319,7 +319,11 @@ public:
 		return total_write_;
 	}
 
-	buf_type* buffer() const {
+	const buf_type* buffer() const {
+		return &buffer_;
+	}
+
+	buf_type* buffer() {
 		return &buffer_;
 	}
 

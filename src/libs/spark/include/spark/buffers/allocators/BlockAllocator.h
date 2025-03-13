@@ -138,13 +138,13 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator()	requires std::same_as<ValidatePolicy, ValidateDealloc>
+	BlockAllocator() requires std::same_as<ValidatePolicy, ValidateDealloc>
 		: thread_id_(std::this_thread::get_id()) {
 		page_lock_conditional();
 		initialise_free_list();
 	}
 
-	BlockAllocator()	{
+	BlockAllocator() {
 		page_lock_conditional();
 		initialise_free_list();
 	}
