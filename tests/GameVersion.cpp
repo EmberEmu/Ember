@@ -138,3 +138,20 @@ TEST(GameVersion, GreaterThan) {
 
 	ASSERT_GT(higher_version, version);
 }
+
+TEST(GameVersion, LessThan) {
+	const GameVersion version {
+		.major = 1,
+		.minor = 13,
+		.build = 5875,
+	};
+
+	const GameVersion lower_version {
+		.major = 1,
+		.minor = 12,
+		.build = 6001,
+	};
+
+	ASSERT_LT(lower_version, version);
+}
+
