@@ -11,6 +11,7 @@
 #include <botan/bigint.h>
 #include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
+#include <limits>
 #include <span>
 #include <cstdint>
 #include <cstddef>
