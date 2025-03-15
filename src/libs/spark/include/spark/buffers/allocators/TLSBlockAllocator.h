@@ -74,10 +74,6 @@ public:
 #endif
 
 	TLSBlockAllocator() {
-		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
-			++ref_count_;
-		}
-
 		thread_enter();
 	}
 
@@ -94,7 +90,21 @@ public:
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
 			cached_handle_ = allocator_.get();
 		}
- 	}
+
+		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
+			++ref_count_;
+		}
+	}
+
+	inline void thread_exit() {
+		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
+			--ref_count_;
+
+			if(ref_count_ == 0) {
+				allocator_.reset();
+			}
+		}
+	}
 
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
@@ -130,13 +140,7 @@ public:
 #endif
 
 	~TLSBlockAllocator() {
-		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
-			--ref_count_;
-
-			if(ref_count_ == 0) {
-				allocator_.reset();
-			}
-		}
+		thread_exit();
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_allocs == 0);
