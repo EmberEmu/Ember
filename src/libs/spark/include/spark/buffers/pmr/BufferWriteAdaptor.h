@@ -73,7 +73,11 @@ public:
 		}
 	}
 
-	auto underlying_data() const {
+	const auto storage() const {
+		return buffer_.data();
+	}
+
+	auto storage() {
 		return buffer_.data();
 	}
 

@@ -77,7 +77,7 @@ public:
 
 	std::byte& operator[](const std::size_t index) override {
 		const auto offset = BufferReadAdaptor<buf_type>::read_offset();
-		auto buffer = BufferWriteAdaptor<buf_type>::underlying_data();
+		auto buffer = BufferWriteAdaptor<buf_type>::storage();
 		return reinterpret_cast<std::byte*>(buffer + offset)[index];
 	}
 
