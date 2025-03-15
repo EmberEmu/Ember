@@ -11,6 +11,7 @@
 #include <spark/buffers/pmr/BufferRead.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <ranges>
 #include <stdexcept>
 #include <utility>
 #include <cassert>
@@ -22,6 +23,7 @@ namespace ember::spark::io::pmr {
 using namespace detail;
 
 template<byte_oriented buf_type>
+requires std::ranges::contiguous_range<buf_type>
 class BufferReadAdaptor : public BufferRead {
 	buf_type& buffer_;
 	std::size_t read_;

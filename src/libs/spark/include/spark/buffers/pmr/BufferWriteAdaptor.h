@@ -11,6 +11,7 @@
 #include <spark/buffers/pmr/BufferWrite.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <ranges>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
@@ -20,6 +21,7 @@ namespace ember::spark::io::pmr {
 using namespace detail;
 
 template<byte_oriented buf_type>
+requires std::ranges::contiguous_range<buf_type>
 class BufferWriteAdaptor : public BufferWrite {
 	buf_type& buffer_;
 	std::size_t write_;

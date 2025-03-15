@@ -12,10 +12,12 @@
 #include <spark/buffers/pmr/BufferReadAdaptor.h>
 #include <spark/buffers/pmr/BufferWriteAdaptor.h>
 #include <spark/buffers/Concepts.h>
+#include <ranges>
 
 namespace ember::spark::io::pmr {
 
 template<byte_oriented buf_type, bool allow_optimise  = true>
+requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final : public BufferReadAdaptor<buf_type>,
                             public BufferWriteAdaptor<buf_type>,
                             public Buffer {
