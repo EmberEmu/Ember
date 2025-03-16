@@ -43,11 +43,7 @@ public:
 		generate(service_index);
 	}
 
-	explicit ClientRef(std::span<const std::uint8_t> data) {
-		if(data.size() != data_.size()) {
-			throw std::invalid_argument("bad client data size");
-		}
-
+	explicit ClientRef(std::span<const std::uint8_t, UUID_SIZE> data) {
 		std::ranges::copy(data, data_.data());
 	}
 
