@@ -14,14 +14,13 @@
 #include <span>
 #include <cstddef>
 #include <cctype>
-#include <cmath>
 
 namespace ember::util {
 
-template<typename T>
-inline std::string format_packet(const T* packet, std::size_t size, unsigned int columns = 16) {
+inline std::string format_packet(const auto* packet, std::size_t size, unsigned int columns = 16) {
 	auto data = reinterpret_cast<const unsigned char*>(packet);
-	auto rows = static_cast<std::size_t>(std::ceil(size / static_cast<double>(columns)));
+	const auto rows = size / columns + (size % columns? 1 : 0); // have faith, compiler will optimise this
+
 	std::stringstream buffer;
 	std::size_t offset = 0u;
 
