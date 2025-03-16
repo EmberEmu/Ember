@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -86,13 +86,12 @@ public:
 		}
 	}
 
-	template<is_scoped_enum T>
-	std::uint32_t update(T data) {
+	std::uint32_t update(is_scoped_enum auto data) {
 		return update(std::to_underlying(data));
 	}
 
 	template<typename T>
-	std::uint32_t update(std::span<T> span) {
+	std::uint32_t update(std::span<const T> span) {
 		return update(span.begin(), span.end());
 	}
 
