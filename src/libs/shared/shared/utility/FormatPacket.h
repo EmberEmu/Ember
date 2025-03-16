@@ -22,12 +22,12 @@ inline std::string format_packet(const auto* packet, std::size_t size, unsigned 
 	const auto rows = size / columns + (size % columns? 1 : 0); // have faith, compiler will optimise this
 
 	std::stringstream buffer;
-	std::size_t offset = 0u;
+	std::size_t offset { 0 };
 
-	for(std::size_t i = 0; i != rows; ++i) {
+	for(auto i = 0u; i != rows; ++i) {
 		buffer << std::hex << std::setw(4) << std::setfill('0') << i * columns << "   ";
 
-		for(std::size_t j = 0; j < columns; ++j) {
+		for(auto j = 0u; j < columns; ++j) {
 			buffer << std::setfill('0');
 
 			if(j + offset < size) {
@@ -39,7 +39,7 @@ inline std::string format_packet(const auto* packet, std::size_t size, unsigned 
 
 		buffer << "     ";
 
-		for(std::size_t j = 0; j < columns; ++j) {
+		for(auto j = 0u; j < columns; ++j) {
 			if(j + offset < size) {
 				buffer << gsl::narrow_cast<char>(std::isprint(data[j + offset])? data[j + offset] : '.');
 			} else {
@@ -50,7 +50,7 @@ inline std::string format_packet(const auto* packet, std::size_t size, unsigned 
 		offset += columns;
 
 		if(i != rows - 1) {
-			buffer << "\n";
+			buffer << '\n';
 		}
 	}
 
