@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include <srp6/Generator.h>
 #include <srp6/detail/Primes.h>
 #include <boost/assert.hpp>
+#include <exception>
 
 namespace ember::srp6 {
 
@@ -30,10 +31,10 @@ Botan::BigInt Generator::g_from_group(Group& group) {
 			return 5;
 		case Group::_8192_BIT:
 			return 19;
-		default:
-			BOOST_ASSERT_MSG(0, "Unhandled enum constant - this is an SRP6 library error!");
-			return {};
 	}
+
+	BOOST_ASSERT_MSG(0, "Unhandled enum constant - this is an SRP6 library error!");
+	std::terminate();
 }
 
 // todo: Botan 3 should have std::span overloads to clean this up
@@ -55,10 +56,10 @@ Botan::BigInt Generator::n_from_group(Group& group) {
 			return { _6144_bit.data(), _6144_bit.size() };
 		case Group::_8192_BIT:
 			return { _8192_bit.data(), _8192_bit.size() };
-		default:
-			BOOST_ASSERT_MSG(0, "Unhandled enum constant - this is an SRP6 library error!");
-			return {};
 	}
+
+	BOOST_ASSERT_MSG(0, "Unhandled enum constant - this is an SRP6 library error!");
+	std::terminate();
 }
 
 Generator::Generator(Group group)
