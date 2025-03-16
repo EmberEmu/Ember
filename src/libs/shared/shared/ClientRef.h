@@ -31,11 +31,11 @@ class ClientRef final {
 	std::array<std::uint8_t, UUID_SIZE> data_;
 
 	void generate(const std::size_t service_index) {
-		for(std::size_t i = 0; i < sizeof(data_); ++i) {
+		data_[SERVICE_BYTE] = gsl::narrow<std::uint8_t>(service_index);
+
+		for(std::size_t i = 1; i < sizeof(data_); ++i) {
 			data_[i] = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
 		}
-
-		data_[SERVICE_BYTE] = gsl::narrow<std::uint8_t>(service_index);
 	}
 
 public:
