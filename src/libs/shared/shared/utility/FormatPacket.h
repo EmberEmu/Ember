@@ -28,7 +28,7 @@ inline std::string format_packet(const auto* packet, std::size_t size, unsigned 
 		buffer << std::hex << std::setw(4) << std::setfill('0') << i * columns << "   ";
 
 		for(std::size_t j = 0; j < columns; ++j) {
-			buffer << std::hex << std::setfill('0');
+			buffer << std::setfill('0');
 
 			if(j + offset < size) {
 				buffer << std::setw(2) << gsl::narrow_cast<unsigned>(data[j + offset]) << " ";
