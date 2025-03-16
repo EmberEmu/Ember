@@ -26,16 +26,17 @@ namespace ember {
 
 class ClientRef final {
 	static constexpr std::size_t UUID_SIZE = 16;
-	static constexpr std::size_t SERVICE_BYTE = 0;
+	static constexpr std::size_t SERVICE_INDEX = 0;
 
-	std::array<std::uint8_t, UUID_SIZE> data_;
+	std::array<std::uint64_t, UUID_SIZE / sizeof(std::uint64_t)> data_;
 
 	void generate(const std::size_t service_index) {
-		data_[SERVICE_BYTE] = gsl::narrow<std::uint8_t>(service_index);
-
-		for(std::size_t i = 1; i < sizeof(data_); ++i) {
-			data_[i] = gsl::narrow_cast<std::uint8_t>(rng::xorshift::next());
+		for(auto& val : data_) {
+			val = rng::xorshift::next();
 		}
+
+		auto bytes = std::as_writable_bytes(std::span(data_));
+		bytes[SERVICE_INDEX] = gsl::narrow<std::byte>(service_index);
 	}
 
 public:
@@ -49,11 +50,17 @@ public:
 
 	inline std::size_t hash() const {
 		FNVHash hasher;
-		return hasher.update(data_.begin(), data_.end());
+		auto bytes = std::as_bytes(std::span(data_));
+
+		for(auto byte : bytes) {
+			hasher.update_byte(byte);
+		}
+
+		return hasher.finalise();
 	}
 
 	inline std::uint8_t service() const {
-		return data_[SERVICE_BYTE];
+		return data_[SERVICE_INDEX];
 	}
 
 	// don't really care about efficiency here, it's for debugging
@@ -61,7 +68,9 @@ public:
 		std::stringstream stream;
 		stream << std::hex;
 
-		for(auto byte : data_) {
+		auto bytes = std::as_bytes(std::span(data_));
+
+		for(auto byte : bytes) {
 			stream << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
 		}
 

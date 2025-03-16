@@ -58,6 +58,11 @@ public:
 		return hash_;
 	}
 
+	std::uint32_t update_byte(std::byte value) {
+		hash_ = (hash_ * 0x1000193) ^ static_cast<std::uint8_t>(value);
+		return hash_;
+	}
+
 	std::uint32_t update_byte(std::uint8_t value) {
 		hash_ = (hash_ * 0x1000193) ^ value;
 		return hash_;
