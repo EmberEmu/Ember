@@ -95,7 +95,7 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data) requires(writeable<buf_type>)
+	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data)
 	requires(writeable<buf_type>) {
 		return data.operator<<(*this);
 	}
