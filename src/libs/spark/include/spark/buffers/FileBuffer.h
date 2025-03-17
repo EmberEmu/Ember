@@ -106,7 +106,7 @@ public:
 
 	size_type find_first_of(value_type val) noexcept {
 		if(error_) {
-			return;
+			return npos;
 		}
 
 		if(std::fseek(file_, read_, SEEK_SET)) {
