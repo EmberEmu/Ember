@@ -43,6 +43,7 @@ public:
 	using value_type   = StorageValueType;
 	using node_type    = IntrusiveNode;
 	using size_type    = std::size_t;
+	using offset_type  = std::size_t;
 	using contiguous   = is_non_contiguous;
 	using seeking      = supported;
 

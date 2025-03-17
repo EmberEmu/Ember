@@ -83,6 +83,7 @@ class BinaryStream final {
 public:
 	using seeking            = typename buf_type::seeking;
 	using value_type         = typename buf_type::value_type;
+	using offset_type        = typename buf_type::offset_type;
 	using contiguous_type    = typename buf_type::contiguous;
 
 	explicit BinaryStream(buf_type& source, std::size_t read_limit = 0)
@@ -298,7 +299,7 @@ public:
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const StreamSeek direction, const std::size_t offset) requires(writeable<buf_type>) {
+	void write_seek(const StreamSeek direction, const offset_type offset) requires(writeable<buf_type>) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
 			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
 		} else {

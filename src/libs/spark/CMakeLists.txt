@@ -40,6 +40,7 @@ set(IO_SRC
     include/spark/buffers/StaticBuffer.h
 	include/spark/buffers/Concepts.h
     include/spark/buffers/detail/IntrusiveStorage.h
+    include/spark/buffers/FileBuffer.h
 )
 
 set(IO_PMR_SRC
