@@ -93,7 +93,7 @@ public:
 		// we don't use std::back_inserter so we can support seeks
 		if(buffer_.size() < min_req_size) {
 			if constexpr(has_resize_overwrite<buf_type>) {
-				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
+				buffer_.resize_and_overwrite(min_req_size, [](char*, size_type size) {
 					return size;
 				});
 			} else {
@@ -108,7 +108,7 @@ public:
 	size_type find_first_of(value_type val) const {
 		const auto data = read_ptr();
 
-		for(size_type i = 0u; i < size(); ++i) {
+		for(size_type i = 0; i < size(); ++i) {
 			if(data[i] == val) {
 				return i;
 			}
