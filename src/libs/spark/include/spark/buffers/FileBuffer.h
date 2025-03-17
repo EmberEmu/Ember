@@ -21,7 +21,6 @@ using namespace detail;
 
 class FileBuffer final {
 public:
-public:
 	using size_type       = std::size_t;
 	using offset_type     = long;
 	using value_type      = char;
