@@ -17,7 +17,9 @@ using Botan::power_mod;
 namespace ember::srp6 {
 
 Server::Server(const Generator& gen, BigInt v, BigInt b, bool srp6a)
-              : v_(std::move(v)), N_(gen.prime()), b_(std::move(b)) {
+	: v_(std::move(v)),
+	  N_(gen.prime()),
+	  b_(std::move(b)) {
 	if(srp6a) {
 		k_ = detail::compute_k(gen.generator(), N_);
 	}
@@ -26,8 +28,7 @@ Server::Server(const Generator& gen, BigInt v, BigInt b, bool srp6a)
 }
 
 Server::Server(const Generator& gen, BigInt v, std::size_t key_size, bool srp6a)
-               : Server(gen, std::move(v), BigInt(rng, key_size * 8) % gen.prime(),
-                 srp6a) { }
+	: Server(gen, std::move(v), BigInt(rng, key_size * 8) % gen.prime(), srp6a) { }
 
 SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave_override) const {
 	bool interleave = (mode == Compliance::GAME);

@@ -20,15 +20,15 @@ using Botan::AutoSeeded_RNG;
 namespace ember::srp6 {
 
 Client::Client(std::string identifier, std::string password, Generator gen, std::size_t key_size, bool srp6a)
-               : Client(std::move(identifier), std::move(password), gen,
-                 BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(), srp6a) { }
+	: Client(std::move(identifier), std::move(password), gen,
+             BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(), srp6a) { }
 
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
-               : gen_(std::move(gen)),
-                 a_(a),
-                 A_(gen_(a_)) /* % N */,
-                 identifier_(std::move(identifier)),
-                 password_(std::move(password)) {
+	: gen_(std::move(gen)),
+	  a_(a),
+	  A_(gen_(a_)) /* % N */,
+	  identifier_(std::move(identifier)),
+	  password_(std::move(password)) {
 	if(srp6a) {
 		k_ = detail::compute_k(gen_.generator(), gen_.prime());
 	}
@@ -67,7 +67,7 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 }
 
 BigInt Client::generate_proof(const SessionKey& key, const Botan::BigInt& B,
-                             std::span<std::uint8_t> salt) const {
+                              std::span<std::uint8_t> salt) const {
 	return generate_client_proof(identifier_, key, gen_.prime(), gen_.generator(), A_, B, salt);
 }
 
