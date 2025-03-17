@@ -25,10 +25,11 @@ template<byte_oriented buf_type, bool space_optimise = true>
 requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final {
 public:
-	using value_type = typename buf_type::value_type;
-	using size_type  = typename buf_type::size_type;
-	using contiguous = is_contiguous;
-	using seeking    = supported;
+	using value_type  = typename buf_type::value_type;
+	using size_type   = typename buf_type::size_type;
+	using offset_type = typename buf_type::size_type;
+	using contiguous  = is_contiguous;
+	using seeking     = supported;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -137,7 +138,7 @@ public:
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const BufferSeek direction, const size_type offset) requires(has_resize<buf_type>) {
+	void write_seek(const BufferSeek direction, const offset_type offset) requires(has_resize<buf_type>) {
 		switch(direction) {
 			case BufferSeek::SK_BACKWARD:
 				write_ -= offset;
