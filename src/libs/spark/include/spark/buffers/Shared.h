@@ -47,7 +47,7 @@ enum class StreamState {
 namespace detail {
 
 // Returns true if there's any overlap between source and destination ranges
-static inline bool region_overlap(const auto* src, std::size_t src_len, const auto* dst, std::size_t dst_len) {
+static inline bool region_overlap(const void* src, std::size_t src_len, const void* dst, std::size_t dst_len) {
 	const auto src_beg = std::bit_cast<std::uintptr_t>(src);
 	const auto src_end = src_beg + src_len;
 	const auto dst_beg = std::bit_cast<std::uintptr_t>(dst);
