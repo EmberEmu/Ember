@@ -50,6 +50,10 @@ public:
 		}
 
 		write_ = std::ftell(file_);
+
+		if(write_ == -1) {
+			error_ = true;
+		}
 	}
 
 	template<typename T>
