@@ -43,6 +43,7 @@ template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allo
 class BinaryStream final {
 public:
 	using size_type          = typename buf_type::size_type;
+	using offset_type        = typename buf_type::offset_type;
 	using seeking            = typename buf_type::seeking;
 	using value_type         = typename buf_type::value_type;
 	using contiguous_type    = typename buf_type::contiguous;
@@ -94,7 +95,7 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data)
+	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data) requires(writeable<buf_type>)
 	requires(writeable<buf_type>) {
 		return data.operator<<(*this);
 	}
