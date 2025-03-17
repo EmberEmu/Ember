@@ -60,7 +60,7 @@ RUN --mount=type=cache,target=build \
     && cp -r ${working_dir}/tests/ . \
     && make test
 
-FROM ubuntu:noble AS run_environment
+FROM ubuntu:oracular AS run_environment
 ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
