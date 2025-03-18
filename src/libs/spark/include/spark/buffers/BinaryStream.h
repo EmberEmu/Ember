@@ -302,7 +302,7 @@ public:
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const StreamSeek direction, const offset_type offset) requires(writeable<buf_type>) {
+	void write_seek(const StreamSeek direction, const offset_type offset) requires(seekable<buf_type>) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
 			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
 		} else {

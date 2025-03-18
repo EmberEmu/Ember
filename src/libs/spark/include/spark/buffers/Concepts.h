@@ -22,6 +22,11 @@ concept writeable =
 };
 
 template<typename buf_type>
+concept seekable = requires(buf_type t) {
+	std::is_same_v<typename buf_type::seeking, supported>;
+};
+
+template<typename buf_type>
 concept contiguous = requires(buf_type t) {
 	std::is_same_v<typename buf_type::contiguous, is_contiguous>;
 };
