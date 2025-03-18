@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,6 @@
 #include <botan/bigint.h>
 #include <botan/hash.h>
 #include <boost/assert.hpp>
-#include <filesystem>
 #include <fstream>
 
 namespace ember::util {
@@ -24,11 +23,11 @@ std::array<std::uint8_t, 16> generate_md5(std::span<const std::byte> buffer) {
 	return res;
 }
 
-std::array<std::uint8_t, 16> generate_md5(const std::string& file) {
+std::array<std::uint8_t, 16> generate_md5(const std::filesystem::path& file) {
 	std::ifstream stream(file, std::ios::in | std::ios::binary);
 
 	if(!stream) {
-		throw std::runtime_error("Could not open file for MD5, " + file);
+		throw std::runtime_error("Could not open file for MD5, " + file.string());
 	}
 
 	auto remaining = std::filesystem::file_size(file);
@@ -44,7 +43,7 @@ std::array<std::uint8_t, 16> generate_md5(const std::string& file) {
 		remaining -= read_size;
 
 		if(!stream) {
-			throw std::runtime_error("Could not read file for MD5, " + file);
+			throw std::runtime_error("Could not read file for MD5, " + file.string());
 		}
 	}
 
