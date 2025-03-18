@@ -32,6 +32,7 @@ set(EXECUTABLE_SRC
     TLSBlockAllocator.cpp
     StaticBuffer.cpp
     GameVersion.cpp
+    FileBuffer.cpp
     )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
