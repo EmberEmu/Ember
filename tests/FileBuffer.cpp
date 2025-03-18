@@ -30,7 +30,7 @@ TEST(FileBuffer, Read) {
 	std::uint32_t y = 0;
 	std::uint64_t z = 0;
 
-	std::string_view strcmp {"The quick brown fox jumped over the lazy dog." };
+	std::string_view strcmp { "The quick brown fox jumped over the lazy dog." };
 	std::string str_out;
 	str_out.resize(strcmp.size());
 
@@ -54,7 +54,7 @@ TEST(FileBuffer, Read) {
 }
 
 TEST(FileBuffer, Write) {
-	std::filesystem::path path { "tmp_unittest_filebuffer_write" };
+	std::filesystem::path path { "tmp_unittest_FileBuffer_Write" };
 
 	gsl::final_action fa([path] {
 		std::filesystem::remove(path);
@@ -141,7 +141,7 @@ TEST(FileBuffer, InitialSize) {
 }
 
 TEST(FileBuffer, ReadWriteMix) {
-	std::filesystem::path path { "tmp_unittest_filebuffer_readwritemix" };
+	std::filesystem::path path { "tmp_unittest_FileBuffer_ReadWriteMix" };
 
 	gsl::final_action fa([path] {
 		std::filesystem::remove(path);

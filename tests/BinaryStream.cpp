@@ -7,10 +7,13 @@
  */
 
 #include <spark/buffers/DynamicBuffer.h>
+#include <spark/buffers/FileBuffer.h>
 #include <spark/buffers/StaticBuffer.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
 #include <shared/utility/cstring_view.hpp>
+#include <shared/utility/FileMD5.h>
+#include <boost/endian/conversion.hpp>
 #include <gtest/gtest.h>
 #include <gsl/narrow>
 #include <algorithm>
@@ -457,4 +460,67 @@ TEST(BinaryStream, PutIntegralLiterals) {
 	ASSERT_EQ(result32, std::numeric_limits<std::int32_t>::max());
 	ASSERT_EQ(result64, std::numeric_limits<std::int64_t>::max());
 	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, FileBufferRead) {
+	std::filesystem::path path("test_data/filebuffer");
+	ASSERT_TRUE(std::filesystem::exists(path));
+
+	spark::io::FileBuffer buffer(path);
+	ASSERT_TRUE(buffer) << "File open failed";
+
+	spark::io::BinaryStream stream(buffer);
+	std::uint8_t w = 0;
+	std::uint16_t x = 0;
+	std::uint32_t y = 0;
+	std::uint64_t z = 0;
+
+	std::string_view strcmp { "The quick brown fox jumped over the lazy dog." };
+	std::string str_out;
+
+	stream >> w >> x >> y >> z >> str_out;
+	ASSERT_TRUE(buffer) << "File read error occurred";
+
+	boost::endian::little_to_native_inplace(x);
+	boost::endian::little_to_native_inplace(y);
+	boost::endian::little_to_native_inplace(z);
+
+	ASSERT_EQ(w, 47) << "Wrong uint8 value";
+	ASSERT_EQ(x, 49197) << "Wrong uint16 value";
+	ASSERT_EQ(y, 2173709693) << "Wrong uint32 value";
+	ASSERT_EQ(z, 1438110846748337907) << "Wrong uint64 value";
+	ASSERT_EQ(str_out, strcmp);
+}
+
+TEST(BinaryStream, FileBufferWrite) {
+	std::filesystem::path path { "tmp_unittest_BinaryStream_FileBufferWrite" };
+
+	gsl::final_action fa([path] {
+		std::filesystem::remove(path);
+	});
+
+	// in case previous clean-up failed
+	std::filesystem::remove(path);
+
+	spark::io::FileBuffer buffer(path);
+	ASSERT_TRUE(buffer) << "File open failed";
+
+	spark::io::BinaryStream stream(buffer);
+
+	std::uint8_t w = 47;
+	std::uint16_t x = 49197;
+	std::uint32_t y = 2173709693;
+	std::uint64_t z = 1438110846748337907;
+	std::string str { "The quick brown fox jumped over the lazy dog."};
+
+	boost::endian::native_to_little_inplace(x);
+	boost::endian::native_to_little_inplace(y);
+	boost::endian::native_to_little_inplace(z);
+
+	stream << w << x << y << z << str;
+	buffer.close(); // flush to OS
+
+	const auto md5_1 = util::generate_md5("test_data/filebuffer");
+	const auto md5_2 = util::generate_md5(path);
+	ASSERT_EQ(md5_1, md5_2);
 }
