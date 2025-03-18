@@ -25,7 +25,7 @@ public:
 	using offset_type     = long;
 	using value_type      = char;
 	using contiguous      = is_non_contiguous;
-	using seeking         = supported;
+	using seeking         = unsupported;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -36,18 +36,36 @@ private:
 	bool error_ = false;
 
 public:
-	FileBuffer(const std::string& path) {
-		file_ = std::fopen(path.c_str(), "a+b");
+	FileBuffer(const std::filesystem::path& path)
+		: FileBuffer(path.string().c_str()) { }
+
+	FileBuffer(const char* path) {
+		file_ = std::fopen(path, "a+b");
 		
 		if(!file_) {
 			error_ = true;
 			return;
+		}
+		
+		if(std::fseek(file_, 0, SEEK_END)) {
+			error_ = true;
 		}
 
 		write_ = std::ftell(file_);
 
 		if(write_ == -1) {
 			error_ = true;
+		}
+	}
+
+	~FileBuffer() {
+		close();
+	}
+
+	void close() {
+		if(file_) {
+			std::fclose(file_);
+			file_ = nullptr;
 		}
 	}
 
@@ -61,9 +79,8 @@ public:
 			return;
 		}
 
-		error_ = std::fseek(file_, read_, 0);
-
-		if(error_) {
+		if(std::fseek(file_, read_, 0)) {
+			error_ = true;
 			return;
 		}
 
@@ -173,18 +190,6 @@ public:
 		write_ += length;
 	}
 
-	void write_seek(const BufferSeek direction, const offset_type offset) {
-		switch(direction) {
-			case BufferSeek::SK_BACKWARD:
-				write_ -= offset;
-				break;
-			case BufferSeek::SK_FORWARD:
-				write_ += offset;
-				break;
-			case BufferSeek::SK_ABSOLUTE:
-				write_ = offset;
-		}
-	}
 
 	size_type size() const {
 		return write_ - read_;
@@ -203,7 +208,7 @@ public:
 	}
 
 	operator bool() const {
-		return error();
+		return !error();
 	}
 };
 
