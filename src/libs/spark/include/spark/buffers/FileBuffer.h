@@ -24,10 +24,6 @@ public:
 	using size_type       = std::size_t;
 	using offset_type     = long;
 	using value_type      = char;
-	using pointer         = value_type*;
-	using const_pointer   = const value_type*;
-	using reference       = value_type&;
-	using const_reference = const value_type&;
 	using contiguous      = is_non_contiguous;
 	using seeking         = supported;
 

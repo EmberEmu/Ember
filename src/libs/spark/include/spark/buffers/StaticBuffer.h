@@ -32,10 +32,6 @@ public:
 	using size_type       = std::size_t;
 	using offset_type     = std::size_t;
 	using value_type      = StorageType;
-	using pointer         = value_type*;
-	using const_pointer   = const value_type*;
-	using reference       = value_type&;
-	using const_reference = const value_type&;
 	using contiguous      = is_contiguous;
 	using seeking         = supported;
 
