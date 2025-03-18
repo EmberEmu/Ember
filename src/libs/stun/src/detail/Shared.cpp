@@ -210,9 +210,11 @@ std::size_t generate_key(const TxID& tx_id, RFCMode mode) {
 	FNVHash fnv;
 
 	if(mode == RFC3489) {
-		fnv.update(tx_id.id_3489.begin(), tx_id.id_3489.end());
+		auto bytes = std::as_bytes(std::span(tx_id.id_3489));
+		fnv.update<std::byte>(bytes);
 	} else {
-		fnv.update(tx_id.id_5389.begin(), tx_id.id_5389.end());
+		auto bytes = std::as_bytes(std::span(tx_id.id_5389));
+		fnv.update<std::byte>(bytes);
 	}
 
 	return fnv.hash();

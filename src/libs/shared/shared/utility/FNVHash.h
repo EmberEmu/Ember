@@ -49,7 +49,19 @@ class FNVHash final {
 	}
 
 public:
+
 	template<typename It>
+	requires(sizeof(std::remove_pointer_t<It>) == 1)
+	std::uint32_t update(It begin, const It end) {
+		for(; begin != end; ++begin) {
+			hash_ = (hash_ * 0x1000193) ^ static_cast<unsigned char>(*begin);
+		}
+
+		return hash_;
+	}
+
+	template<typename It>
+	requires(sizeof(typename It::value_type) == 1)
 	std::uint32_t update(It begin, const It end) {
 		for(; begin != end; ++begin) {
 			hash_ = (hash_ * 0x1000193) ^ static_cast<unsigned char>(*begin);
@@ -96,6 +108,7 @@ public:
 	}
 
 	template<typename T>
+	requires(sizeof(T) == 1)
 	std::uint32_t update(std::span<const T> span) {
 		return update(span.begin(), span.end());
 	}
@@ -118,6 +131,16 @@ public:
 
 	std::uint32_t update(std::string_view t) {
 		return update(t.begin(), t.end());
+	}
+
+	template<typename T>
+	requires(sizeof(T) == 1)
+	std::uint32_t update(const T* data, const std::size_t length) {
+		for(std::size_t i = 0; i != length; ++i) {
+			hash_ = (hash_ * 0x1000193) ^ static_cast<unsigned char>(data[i]);
+		}
+
+		return hash_;
 	}
 
 	void reset() {
