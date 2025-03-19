@@ -123,7 +123,7 @@ private:
 
 	/*
 	 * Timeout works by starting a timer that elapses every n seconds
-	 * and checks whether any activity has occured on the socket since
+	 * and checks whether any activity has occurred on the socket since
 	 * the last run. If not, the connection is considered inactive and
 	 * will be closed. Any activity marks the socket as active, with
 	 * the timer setting it back to inactive each time it elapses.

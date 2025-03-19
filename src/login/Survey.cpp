@@ -32,7 +32,7 @@ void Survey::add_data(const grunt::Platform platform, const grunt::System os, co
 	file.read(reinterpret_cast<char*>(buffer.data()), fmeta.size);
 
 	if(!file) {
-		throw std::runtime_error("An error occured while reading " + path);
+		throw std::runtime_error("An error occurred while reading " + path);
 	}
 
 	const auto md5 = util::generate_md5(buffer);

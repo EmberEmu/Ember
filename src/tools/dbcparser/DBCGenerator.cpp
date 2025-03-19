@@ -154,7 +154,7 @@ void generate_dbc_template(const types::Struct* dbc, const std::string& out_path
 	file.write(string_data.data(), string_data.size());
 
 	if(!file) {
-		throw std::runtime_error("An error occured during DBC template generation");
+		throw std::runtime_error("An error occurred during DBC template generation");
 	}
 
 	LOG_DEBUG_GLOB << "Completed template generation for " << dbc->name << LOG_ASYNC;
