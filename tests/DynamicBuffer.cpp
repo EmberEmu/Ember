@@ -367,7 +367,6 @@ TEST(DynamicBuffer, BlockCount) {
 }
 
 TEST(DynamicBuffer, FindFirstOf) {
-	std::vector<char> buffer;
 	spark::io::DynamicBuffer<64> dynbuf;
 	const auto str = "The quick brown fox jumped over the lazy dog"sv;
 	dynbuf.write(str.data(), str.size());

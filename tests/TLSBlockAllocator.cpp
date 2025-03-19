@@ -95,15 +95,15 @@ TEST(TLSBlockAllocator, NoSharing) {
 	ASSERT_EQ(tlsalloc.allocator()->total_allocs, tls_total_alloc + 1);
 
 	std::thread thread([&] {
-		spark::io::TLSBlockAllocator<std::uint64_t, 2> tlsalloc;
-		ASSERT_EQ(tlsalloc.allocator()->total_allocs, 0);
-		ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 0);
-		auto chunk = tlsalloc.allocate();
-		ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
-		ASSERT_EQ(tlsalloc.allocator()->total_allocs, 1);
-		ASSERT_EQ(tlsalloc.allocator()->total_deallocs, 0);
-		tlsalloc.deallocate(chunk);
-		ASSERT_EQ(tlsalloc.allocator()->total_deallocs, 1);
+		spark::io::TLSBlockAllocator<std::uint64_t, 2> _tlsalloc;
+		ASSERT_EQ(_tlsalloc.allocator()->total_allocs, 0);
+		ASSERT_EQ(_tlsalloc.allocator()->storage_active_count, 0);
+		auto _chunk = _tlsalloc.allocate();
+		ASSERT_EQ(_tlsalloc.allocator()->storage_active_count, 1);
+		ASSERT_EQ(_tlsalloc.allocator()->total_allocs, 1);
+		ASSERT_EQ(_tlsalloc.allocator()->total_deallocs, 0);
+		_tlsalloc.deallocate(_chunk);
+		ASSERT_EQ(_tlsalloc.allocator()->total_deallocs, 1);
 	});
 
 	thread.join();
