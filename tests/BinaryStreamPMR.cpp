@@ -140,10 +140,10 @@ TEST(BinaryStreamPMR, ReadWriteVector) {
 
 	// read the integers back one by one, making sure they
 	// match the expected value
-	for(auto it = in.begin(); it != in.end(); ++it) {
+	for(auto value : in) {
 		int output;
 		stream >> output;
-		ASSERT_EQ(output, *it);
+		ASSERT_EQ(output, value);
 	}
 
 	stream.put(in.begin(), in.end());
