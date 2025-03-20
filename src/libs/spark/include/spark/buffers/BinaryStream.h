@@ -93,6 +93,11 @@ public:
 		: buffer_(source),
 		  read_limit_(read_limit) {};
 
+	BinaryStream(BinaryStream&& rhs) = delete;
+	BinaryStream& operator=(BinaryStream&&) = delete;
+	BinaryStream& operator=(BinaryStream&) = delete;
+	BinaryStream(BinaryStream&) = delete;
+
 	/*** Write ***/
 
 	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data)

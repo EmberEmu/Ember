@@ -33,6 +33,11 @@ public:
 		: buffer_(buffer),
 		  read_(0) {}
 
+	BufferReadAdaptor(BufferReadAdaptor&& rhs) = delete;
+	BufferReadAdaptor& operator=(BufferReadAdaptor&&) = delete;
+	BufferReadAdaptor& operator=(const BufferReadAdaptor&) = delete;
+	BufferReadAdaptor(const BufferReadAdaptor&) = delete;
+
 	template<typename T>
 	void read(T* destination) {
 		read(destination, sizeof(T));

@@ -31,6 +31,11 @@ public:
 		: buffer_(buffer),
 		  write_(buffer.size()) {}
 
+	BufferWriteAdaptor(BufferWriteAdaptor&& rhs) = delete;
+	BufferWriteAdaptor& operator=(BufferWriteAdaptor&&) = delete;
+	BufferWriteAdaptor& operator=(const BufferWriteAdaptor&) = delete;
+	BufferWriteAdaptor(const BufferWriteAdaptor&) = delete;
+
 	void write(auto& source) {
 		write(&source, sizeof(source));
 	}

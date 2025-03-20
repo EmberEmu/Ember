@@ -44,6 +44,11 @@ public:
 		write_ = sizeof... (vals);
 	}
 
+	StaticBuffer(StaticBuffer&& rhs) = default;
+	StaticBuffer& operator=(StaticBuffer&&) = default;
+	StaticBuffer& operator=(const StaticBuffer&) = default;
+	StaticBuffer(const StaticBuffer&) = default;
+
 	template<typename T>
 	void read(T* destination) {
 		read(destination, sizeof(T));

@@ -58,6 +58,26 @@ public:
 		}
 	}
 
+	FileBuffer(FileBuffer&& rhs) noexcept {
+		file_ = rhs.file_;
+		read_ = rhs.read_;
+		write_ = rhs.write_;
+		error_ = rhs.error_;
+		rhs.file_ = nullptr;
+	}
+
+	FileBuffer& operator=(FileBuffer&& rhs) noexcept {
+		file_ = rhs.file_;
+		read_ = rhs.read_;
+		write_ = rhs.write_;
+		error_ = rhs.error_;
+		rhs.file_ = nullptr;
+		return *this;
+	}
+
+	FileBuffer& operator=(const FileBuffer&) = delete;
+	FileBuffer(const FileBuffer&) = delete;
+
 	~FileBuffer() {
 		close();
 	}
