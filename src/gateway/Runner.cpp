@@ -46,11 +46,9 @@
 #include <pcre.h>
 #include <zlib.h>
 #include <chrono>
-#include <exception>
 #include <format>
 #include <memory>
 #include <ranges>
-#include <semaphore>
 #include <string>
 #include <string_view>
 #include <stdexcept>
@@ -63,18 +61,11 @@ namespace ep = ember::connection_pool;
 
 namespace ember::gateway {
 
-std::exception_ptr eptr = nullptr;
-std::binary_semaphore stop_flag { 0 };
-
-void launch(const po::variables_map& args,
-            ServicePool& service_pool,
-            std::binary_semaphore& sem,
-            log::Logger& logger);
-
 std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logger);
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
 void print_lib_versions(log::Logger& logger);
+boost::program_options::options_description options();
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
@@ -84,7 +75,7 @@ void print_lib_versions(log::Logger& logger);
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int run(const po::variables_map& args, log::Logger& logger) try {
+int Runner::run(const po::variables_map& args) try {
 	const auto concurrency = thread::hardware_concurrency(logger);
 
 	// Start Asio service pool
@@ -94,7 +85,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");
-		launch(args, service_pool, stop_flag, logger);
+		launch(args, service_pool);
 	});
 
 	thread.join();
@@ -109,12 +100,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
-void stop() {
+void Runner::stop() {
 	stop_flag.release();
 }
 
-void launch(const po::variables_map& args, ServicePool& service_pool,
-            std::binary_semaphore& sem, log::Logger& logger) try {
+void Runner::launch(const po::variables_map& args, ServicePool& service_pool) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -271,7 +261,7 @@ void launch(const po::variables_map& args, ServicePool& service_pool,
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
-	sem.acquire();
+	stop_flag.acquire();
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
@@ -347,7 +337,7 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
-po::options_description options() {
+po::options_description Runner::options() {
 	po::options_description opts;
 	opts.add_options()
 		("quirks.list_zone_hide", po::value<bool>()->required())

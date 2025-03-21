@@ -62,9 +62,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
+	gateway::Runner runner(logger);
+
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
-		gateway::stop();
+		runner.stop();
 		service.stop();
 	});
 
@@ -73,7 +75,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 		service.run();
 	});
 
-	return gateway::run(args, logger);
+	return runner.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
@@ -92,7 +94,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 	//Config file options
 	po::options_description config_opts("Realm gateway configuration options");
-	config_opts.add(gateway::options());
+	config_opts.add(gateway::Runner::options());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);

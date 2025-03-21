@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 #include <atomic>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <span>
 #include <thread>
@@ -44,6 +45,8 @@ void launch_account(const po::variables_map&, log::Logger&);
 void launch_character(const po::variables_map&, log::Logger&);
 void launch_world(const po::variables_map&, log::Logger&);
 void stop_services();
+
+std::vector<std::function<void()>> stop_handlers;
 
 std::atomic_bool shutting_down = false;
 
@@ -134,9 +137,12 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 void stop_services() {
 	shutting_down = true;
 
+	for(auto& stop : stop_handlers) {
+		stop();
+	}
+
 	// stopping a service which is not running should be a nop
 	login::stop();
-	gateway::stop();
 	character::stop();
 	dns::stop();
 	account::stop();
@@ -195,7 +201,7 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting gateway service...");
 
 	const auto& conf_path = args["gateway.config"].as<std::string>();
-	auto opts = load_options(conf_path, gateway::options());
+	auto opts = load_options(conf_path, gateway::Runner::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[gateway]");
@@ -204,7 +210,13 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	const auto res = gateway::run(opts, service_logger);
+	gateway::Runner runner(logger);
+
+	stop_handlers.emplace_back([&] {
+		runner.stop();
+	});
+
+	const auto res = runner.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Gateway terminated abnormally or unexpectedly, aborting");
