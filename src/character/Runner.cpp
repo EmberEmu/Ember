@@ -20,11 +20,8 @@
 #include <spark/Server.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#include <boost/asio/io_context.hpp>
 #include <chrono>
-#include <exception>
 #include <ranges>
-#include <semaphore>
 #include <cstddef>
 #include <cstdlib>
 #include <cstdint>
@@ -34,14 +31,6 @@ namespace ep = ember::connection_pool;
 using namespace std::chrono_literals;
 
 namespace ember::character {
-
-std::exception_ptr eptr = nullptr;
-std::binary_semaphore stop_flag { 0 };
-
-void launch(const po::variables_map& args,
-            boost::asio::io_context& service,
-            std::binary_semaphore& sem,
-            log::Logger& logger);
 
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 
@@ -53,13 +42,13 @@ void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logg
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int run(const po::variables_map& args, log::Logger& logger) try {
+int Runner::run(const po::variables_map& args) try {
 	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");
-		launch(args, service, stop_flag, logger);
+		launch(args, service);
 	});
 
 	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
@@ -79,12 +68,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
-void stop() {
+void Runner::stop() {
 	stop_flag.release();
 }
 
-void launch(const po::variables_map& args, boost::asio::io_context& service,
-            std::binary_semaphore& sem, log::Logger& logger) try {
+void Runner::launch(const po::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -162,7 +150,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
-	sem.acquire();
+	stop_flag.acquire();
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
@@ -193,7 +181,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 	}
 }
 
-po::options_description options() {
+po::options_description Runner::options() {
 	po::options_description opts;
 	opts.add_options()
 		("dbc.path", po::value<std::string>()->required())
