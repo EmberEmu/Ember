@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Runner.h"
+#include "Service.h"
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
@@ -58,23 +58,23 @@ int main(int argc, const char* argv[]) try {
 
 int run(const po::variables_map& args, log::Logger& logger) try {
 	// Install signal handler
-	boost::asio::io_context service;
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+	boost::asio::io_context io_ctx;
+	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	account::Runner runner(logger);
+	account::Service service(logger);
 
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
-		runner.stop();
 		service.stop();
+		io_ctx.stop();
 	});
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		service.run();
+		io_ctx.run();
 	});
 
-	return runner.run(args);
+	return service.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
@@ -95,7 +95,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 	// Config file options
 	po::options_description config_opts("Account configuration options");
-	config_opts.add(account::Runner::options());
+	config_opts.add(account::Service::options());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);

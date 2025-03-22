@@ -10,26 +10,25 @@
 
 #include <logger/LoggerFwd.h>
 #include <shared/utility/cstring_view.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
-#include <boost/asio/io_context.hpp>
 #include <exception>
 #include <semaphore>
 
-namespace ember::login {
+namespace ember::character {
 
-constexpr cstring_view APP_NAME { "Login Daemon" };
+constexpr cstring_view APP_NAME { "Character Daemon" };
 
-class Runner {
+class Service {
+	log::Logger& logger;
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
-	log::Logger& logger;
 
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
-
 public:
-	Runner(log::Logger& logger) : logger(logger) {}
-	~Runner() { stop(); }
+	Service(log::Logger& logger) : logger(logger) {}
+	~Service() { stop(); }
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
@@ -37,4 +36,4 @@ public:
 	static boost::program_options::options_description options();
 };
 
-} // login, ember
+} // character, ember

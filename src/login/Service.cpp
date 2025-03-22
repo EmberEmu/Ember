@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Runner.h"
+#include "Service.h"
 #include "AccountClient.h"
 #include "FilterTypes.h"
 #include "GameVersion.h"
@@ -91,7 +91,7 @@ std::vector<GameVersion> client_versions();
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int Runner::run(const po::variables_map& args) try {
+int Service::run(const po::variables_map& args) try {
 	const auto concurrency = thread::hardware_concurrency(logger);
 	boost::asio::io_context service(concurrency);
 	auto work = boost::asio::make_work_guard(service);
@@ -124,11 +124,11 @@ int Runner::run(const po::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Runner::stop() {
+void Service::stop() {
 	stop_flag.release();
 }
 
-void Runner::launch(const po::variables_map& args, boost::asio::io_context& service) try {
+void Service::launch(const po::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -358,7 +358,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 	}
 }
 
-po::options_description Runner::options() {
+po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
 		("misc.locale_enforce", po::value<bool>()->required())

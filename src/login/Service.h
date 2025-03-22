@@ -12,34 +12,29 @@
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/asio/io_context.hpp>
 #include <exception>
 #include <semaphore>
 
-namespace ember {
+namespace ember::login {
 
-class ServicePool;
+constexpr cstring_view APP_NAME { "Login Daemon" };
 
-};
-
-namespace ember::gateway {
-
-static inline constexpr cstring_view APP_NAME { "Realm Gateway" };
-
-class Runner {
+class Service {
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
 	log::Logger& logger;
 
-	void launch(const boost::program_options::variables_map& args, ServicePool& service_pool);
+	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:
-	static boost::program_options::options_description options();
-
-	Runner(log::Logger& logger) : logger(logger) { }
-	~Runner() { stop(); }
+	Service(log::Logger& logger) : logger(logger) {}
+	~Service() { stop(); }
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
+
+	static boost::program_options::options_description options();
 };
 
-} // gateway, ember
+} // login, ember

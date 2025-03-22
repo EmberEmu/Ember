@@ -18,7 +18,7 @@ set(LIBRARY_HDR
 	Serialisation.h
 	detail/Parser.h
 	NSDService.h
-	Runner.h
+	Service.h
     )
 
 set(LIBRARY_SRC
@@ -29,7 +29,7 @@ set(LIBRARY_SRC
 	Serialisation.cpp
 	detail/Parser.cpp
 	NSDService.cpp
-	Runner.cpp
+	Service.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

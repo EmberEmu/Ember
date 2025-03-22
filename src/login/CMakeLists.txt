@@ -62,7 +62,7 @@ set(LIBRARY_HDR
 	Survey.h
     LoginHandlerFwd.h
     SocketType.h
-    Runner.h
+    Service.h
     )
 
 set(LIBRARY_SRC
@@ -81,7 +81,7 @@ set(LIBRARY_SRC
     IntegrityData.cpp
     LocaleMap.cpp
 	Survey.cpp
-    Runner.cpp
+    Service.cpp
     )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

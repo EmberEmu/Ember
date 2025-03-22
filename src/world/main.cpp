@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Runner.h"
+#include "Service.h"
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/threading/Utility.h>
@@ -54,8 +54,8 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const po::variables_map& args, log::Logger& logger) try {
-	world::Runner runner(logger);
-	return runner.run(args);
+	world::Service service(logger);
+	return service.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
@@ -76,7 +76,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 	// Config file options
 	po::options_description config_opts("World configuration options");
-	config_opts.add(world::Runner::options());
+	config_opts.add(world::Service::options());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);

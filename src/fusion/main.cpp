@@ -6,12 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <account/Runner.h>
-#include <character/Runner.h>
-#include <gateway/Runner.h>
-#include <login/Runner.h>
-#include <mdns/Runner.h>
-#include <world/Runner.h>
+#include <account/Service.h>
+#include <character/Service.h>
+#include <gateway/Service.h>
+#include <login/Service.h>
+#include <mdns/Service.h>
+#include <world/Service.h>
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/utility/cstring_view.hpp>
@@ -145,7 +145,7 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting DNS service...");
 
 	const auto& conf_path = args["dns.config"].as<std::string>();
-	auto opts = load_options(conf_path, dns::Runner::options());
+	auto opts = load_options(conf_path, dns::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[mdns]");
@@ -154,13 +154,13 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	dns::Runner runner(service_logger);
+	dns::Service service(service_logger);
 
 	stop_handlers.emplace_back([&] {
-		runner.stop();
+		service.stop();
 	});
 
-	const auto res = runner.run(opts);
+	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "DNS service terminated abnormally or unexpectedly, aborting");
@@ -175,7 +175,7 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting login service...");
 
 	const auto& conf_path = args["login.config"].as<std::string>();
-	auto opts = load_options(conf_path, login::Runner::options());
+	auto opts = load_options(conf_path, login::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[login]");
@@ -184,13 +184,13 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	login::Runner runner(service_logger);
+	login::Service service(service_logger);
 
 	stop_handlers.emplace_back([&] {
-		runner.stop();
+		service.stop();
 	});
 
-	const auto res = runner.run(opts);
+	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Login service terminated abnormally or unexpectedly, aborting");
@@ -205,7 +205,7 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting gateway service...");
 
 	const auto& conf_path = args["gateway.config"].as<std::string>();
-	auto opts = load_options(conf_path, gateway::Runner::options());
+	auto opts = load_options(conf_path, gateway::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[gateway]");
@@ -214,13 +214,13 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	gateway::Runner runner(logger);
+	gateway::Service service(logger);
 
 	stop_handlers.emplace_back([&] {
-		runner.stop();
+		service.stop();
 	});
 
-	const auto res = runner.run(opts);
+	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Gateway terminated abnormally or unexpectedly, aborting");
@@ -235,7 +235,7 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting account service...");
 
 	const auto& conf_path = args["account.config"].as<std::string>();
-	auto opts = load_options(conf_path, account::Runner::options());
+	auto opts = load_options(conf_path, account::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[account]");
@@ -244,13 +244,13 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	account::Runner runner(service_logger);
+	account::Service service(service_logger);
 
 	stop_handlers.emplace_back([&] {
-		runner.stop();
+		service.stop();
 	});
 
-	const auto res = runner.run(opts);
+	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Account service terminated abnormally or unexpectedly, aborting");
@@ -265,7 +265,7 @@ void launch_character(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting character service...");
 
 	const auto& conf_path = args["character.config"].as<std::string>();
-	auto opts = load_options(conf_path, character::Runner::options());
+	auto opts = load_options(conf_path, character::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[character]");
@@ -274,13 +274,13 @@ void launch_character(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	character::Runner runner(service_logger);
+	character::Service service(service_logger);
 
 	stop_handlers.emplace_back([&] {
-		runner.stop();
+		service.stop();
 	});
 
-	const auto res = runner.run(opts);
+	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Character service terminated abnormally or unexpectedly, aborting");
@@ -295,7 +295,7 @@ void launch_world(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting world service...");
 
 	const auto& conf_path = args["world.config"].as<std::string>();
-	auto opts = load_options(conf_path, world::Runner::options());
+	auto opts = load_options(conf_path, world::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[world]");
@@ -304,13 +304,13 @@ void launch_world(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	world::Runner runner(service_logger);
+	world::Service service(service_logger);
 
 	stop_handlers.emplace_back([&] {
-		runner.stop();
+		service.stop();
 	});
 
-	const auto res = runner.run(opts);
+	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "World service terminated abnormally or unexpectedly, aborting");

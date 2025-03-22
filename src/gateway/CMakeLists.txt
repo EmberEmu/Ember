@@ -53,7 +53,7 @@ set(LIBRARY_HDR
     packet_log/PacketSink.h
     packet_log/FBSink.h
     packet_log/LogSink.h
-    Runner.h
+    Service.h
     )
 
 set(LIBRARY_SRC
@@ -80,7 +80,7 @@ set(LIBRARY_SRC
     packet_log/PacketLogger.cpp
     packet_log/FBSink.cpp
     packet_log/LogSink.cpp
-    Runner.cpp
+    Service.cpp
     )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})

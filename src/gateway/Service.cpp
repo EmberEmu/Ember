@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Runner.h"
+#include "Service.h"
 #include "Config.h"
 #include "Locator.h"
 #include "FilterTypes.h"
@@ -75,7 +75,7 @@ boost::program_options::options_description options();
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int Runner::run(const po::variables_map& args) try {
+int Service::run(const po::variables_map& args) try {
 	const auto concurrency = thread::hardware_concurrency(logger);
 
 	// Start Asio service pool
@@ -100,11 +100,11 @@ int Runner::run(const po::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Runner::stop() {
+void Service::stop() {
 	stop_flag.release();
 }
 
-void Runner::launch(const po::variables_map& args, ServicePool& service_pool) try {
+void Service::launch(const po::variables_map& args, ServicePool& service_pool) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -337,7 +337,7 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
-po::options_description Runner::options() {
+po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
 		("quirks.list_zone_hide", po::value<bool>()->required())

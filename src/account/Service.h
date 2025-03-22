@@ -20,7 +20,7 @@ namespace ember::account {
 
 constexpr cstring_view APP_NAME { "Account Daemon" };
 
-class Runner {
+class Service {
 	log::Logger& logger;
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
@@ -28,8 +28,8 @@ class Runner {
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:
-	Runner(log::Logger& logger) : logger(logger) {}
-	~Runner() { stop(); }
+	Service(log::Logger& logger) : logger(logger) {}
+	~Service() { stop(); }
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();

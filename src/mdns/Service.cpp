@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Runner.h"
+#include "Service.h"
 #include "Server.h"
 #include "MulticastSocket.h"
 #include "NSDService.h"
@@ -33,7 +33,7 @@ namespace ember::dns {
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int Runner::run(const po::variables_map& args) try {
+int Service::run(const po::variables_map& args) try {
 	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	auto work = boost::asio::make_work_guard(service);
 
@@ -59,11 +59,11 @@ int Runner::run(const po::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Runner::stop() {
+void Service::stop() {
 	stop_flag.release();
 }
 
-void Runner::launch(const po::variables_map& args, boost::asio::io_context& service) try {
+void Service::launch(const po::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -94,7 +94,7 @@ void Runner::launch(const po::variables_map& args, boost::asio::io_context& serv
 	eptr = std::current_exception();
 }
 
-po::options_description Runner::options() {
+po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
 		("mdns.interface", po::value<std::string>()->required())

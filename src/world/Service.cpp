@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Runner.h"
+#include "Service.h"
 #include "MapRunner.h"
 #include "utilities/Utility.h"
 #include <logger/Logger.h>
@@ -20,7 +20,7 @@ namespace po = boost::program_options;
 
 namespace ember::world {
 
-int Runner::run(const boost::program_options::variables_map& args) {
+int Service::run(const boost::program_options::variables_map& args) {
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
 
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
@@ -52,11 +52,11 @@ int Runner::run(const boost::program_options::variables_map& args) {
 	return EXIT_SUCCESS;
 }
 
-void Runner::stop() {
+void Service::stop() {
 	// todo
 }
 
-po::options_description Runner::options() {
+po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
 		("console_log.verbosity", po::value<std::string>()->required())

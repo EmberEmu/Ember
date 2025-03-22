@@ -12,14 +12,14 @@ set(LIBRARY_HDR
     AccountService.h
     Sessions.h
     AccountHandler.h
-    Runner.h
+    Service.h
     )
 
 set(LIBRARY_SRC
     AccountService.cpp
     Sessions.cpp
     AccountHandler.cpp
-    Runner.cpp
+    Service.cpp
     )
 
 include_directories(${SPARK_INCLUDES_DIR})

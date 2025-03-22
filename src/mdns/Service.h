@@ -10,24 +10,32 @@
 
 #include <logger/LoggerFwd.h>
 #include <shared/utility/cstring_view.hpp>
-#include <boost/program_options/variables_map.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <exception>
+#include <semaphore>
 
-namespace ember::world {
+namespace ember::dns {
 
-constexpr cstring_view APP_NAME { "World Server" };
+static constexpr cstring_view APP_NAME { "MDNS-SD" };
 
-class Runner {
+class Service {
 	log::Logger& logger;
+	std::exception_ptr eptr;
+	std::binary_semaphore stop_flag { 0 };
+
+	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:
-	Runner(log::Logger& logger) : logger(logger) {}
-	~Runner() { stop(); }
+	Service(log::Logger& logger) : logger(logger) {}
+	~Service() { stop(); }
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
 
 	static boost::program_options::options_description options();
+
 };
 
-} // world, ember
+} // dns, ember
