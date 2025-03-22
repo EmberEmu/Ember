@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -54,7 +54,8 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const po::variables_map& args, log::Logger& logger) try {
-	return world::run(args, logger);
+	world::Runner runner(logger);
+	return runner.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
@@ -75,7 +76,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 	// Config file options
 	po::options_description config_opts("World configuration options");
-	config_opts.add(world::options());
+	config_opts.add(world::Runner::options());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,9 +17,17 @@ namespace ember::world {
 
 constexpr cstring_view APP_NAME { "World Server" };
 
-int run(const boost::program_options::variables_map& args, log::Logger& logger);
-void stop();
+class Runner {
+	log::Logger& logger;
 
-boost::program_options::options_description options();
+public:
+	Runner(log::Logger& logger) : logger(logger) {}
+	~Runner() { stop(); }
+
+	int run(const boost::program_options::variables_map& args);
+	void stop();
+
+	static boost::program_options::options_description options();
+};
 
 } // world, ember

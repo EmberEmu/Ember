@@ -47,7 +47,6 @@ void launch_world(const po::variables_map&, log::Logger&);
 void stop_services();
 
 std::vector<std::function<void()>> stop_handlers;
-
 std::atomic_bool shutting_down = false;
 
 int main(int argc, const char* argv[]) try {
@@ -140,9 +139,6 @@ void stop_services() {
 	for(auto& stop : stop_handlers) {
 		stop();
 	}
-
-	// stopping a service which is not running should be a nop
-	world::stop();
 }
 
 void launch_dns(const po::variables_map& args, log::Logger& logger) try {
@@ -299,7 +295,7 @@ void launch_world(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting world service...");
 
 	const auto& conf_path = args["world.config"].as<std::string>();
-	auto opts = load_options(conf_path, world::options());
+	auto opts = load_options(conf_path, world::Runner::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[world]");
@@ -308,7 +304,13 @@ void launch_world(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	const auto res = world::run(opts, service_logger);
+	world::Runner runner(service_logger);
+
+	stop_handlers.emplace_back([&] {
+		runner.stop();
+	});
+
+	const auto res = runner.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "World service terminated abnormally or unexpectedly, aborting");

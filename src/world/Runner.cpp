@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@ namespace po = boost::program_options;
 
 namespace ember::world {
 
-int run(const boost::program_options::variables_map& args, log::Logger& logger) {
+int Runner::run(const boost::program_options::variables_map& args) {
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
 
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
@@ -52,11 +52,11 @@ int run(const boost::program_options::variables_map& args, log::Logger& logger) 
 	return EXIT_SUCCESS;
 }
 
-void stop() {
+void Runner::stop() {
 	// todo
 }
 
-po::options_description options() {
+po::options_description Runner::options() {
 	po::options_description opts;
 	opts.add_options()
 		("console_log.verbosity", po::value<std::string>()->required())
