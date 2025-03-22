@@ -142,7 +142,6 @@ void stop_services() {
 	}
 
 	// stopping a service which is not running should be a nop
-	dns::stop();
 	world::stop();
 }
 
@@ -150,7 +149,7 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting DNS service...");
 
 	const auto& conf_path = args["dns.config"].as<std::string>();
-	auto opts = load_options(conf_path, dns::options());
+	auto opts = load_options(conf_path, dns::Runner::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[mdns]");
@@ -159,7 +158,13 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	const auto res = dns::run(opts, service_logger);
+	dns::Runner runner(service_logger);
+
+	stop_handlers.emplace_back([&] {
+		runner.stop();
+	});
+
+	const auto res = runner.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "DNS service terminated abnormally or unexpectedly, aborting");

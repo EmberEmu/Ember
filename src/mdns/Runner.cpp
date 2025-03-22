@@ -15,11 +15,8 @@
 #include <shared/threading/Utility.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/dispatch.hpp>
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#include <exception>
 #include <memory>
-#include <semaphore>
 #include <utility>
 #include <cstddef>
 #include <cstdlib>
@@ -27,18 +24,6 @@
 namespace po = boost::program_options;
 
 namespace ember::dns {
-
-std::exception_ptr eptr = nullptr;
-std::binary_semaphore stop_flag { 0 };
-
-void launch(const boost::program_options::variables_map& args,
-            boost::asio::io_context& service,
-            std::binary_semaphore& sem,
-            ember::log::Logger& logger);
-
-void stop() {
-	stop_flag.release();
-}
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
@@ -48,13 +33,13 @@ void stop() {
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int run(const po::variables_map& args, log::Logger& logger) try {
+int Runner::run(const po::variables_map& args) try {
 	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");
-		launch(args, service, stop_flag, logger);
+		launch(args, service);
 	});
 
 	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
@@ -74,8 +59,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
-void launch(const po::variables_map& args, boost::asio::io_context& service,
-            std::binary_semaphore& sem, log::Logger& logger) try {
+void Runner::stop() {
+	stop_flag.release();
+}
+
+void Runner::launch(const po::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -96,17 +84,17 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	NSDService nsd(spark, logger);
 
 	// All done setting up
-	boost::asio::dispatch(service, [&logger]() {
+	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 
-	sem.acquire();
+	stop_flag.acquire();
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
 }
 
-po::options_description options() {
+po::options_description Runner::options() {
 	po::options_description opts;
 	opts.add_options()
 		("mdns.interface", po::value<std::string>()->required())

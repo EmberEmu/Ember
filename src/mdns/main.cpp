@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -58,9 +58,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
+	dns::Runner runner(logger);
+
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
-		dns::stop();
+		runner.stop();
 		service.stop();
 	});
 
@@ -69,7 +71,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 		service.run();
 	});
 
-	return dns::run(args, logger);
+	return runner.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
@@ -88,7 +90,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 	// Config file options
 	po::options_description config_opts("Multicast DNS configuration options");
-	config_opts.add(dns::options());
+	config_opts.add(dns::Runner::options());
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
