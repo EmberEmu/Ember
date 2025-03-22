@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -89,6 +89,10 @@ void FileSink::open(Mode mode) {
 	} else {
 		mode_str = "wb";
 	}
+
+	std::error_code ec; // ignore any errors, could fail, that's fine
+	std::filesystem::path path(file_name_);
+	std::filesystem::create_directories(path.parent_path(), ec);
 
 	file_ = std::move(File(file_name_, mode_str));
 
