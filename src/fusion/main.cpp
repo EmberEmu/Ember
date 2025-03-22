@@ -142,7 +142,6 @@ void stop_services() {
 	}
 
 	// stopping a service which is not running should be a nop
-	login::stop();
 	character::stop();
 	dns::stop();
 	account::stop();
@@ -177,7 +176,7 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting login service...");
 
 	const auto& conf_path = args["login.config"].as<std::string>();
-	auto opts = load_options(conf_path, login::options());
+	auto opts = load_options(conf_path, login::Runner::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[login]");
@@ -186,7 +185,13 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	const auto res = login::run(opts, service_logger);
+	login::Runner runner(service_logger);
+
+	stop_handlers.emplace_back([&] {
+		runner.stop();
+	});
+
+	const auto res = runner.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Login service terminated abnormally or unexpectedly, aborting");

@@ -43,18 +43,15 @@
 #include <stun/Utility.h>
 #include <botan/version.h>
 #include <boost/asio/dispatch.hpp>
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/container/small_vector.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <pcre.h>
 #include <zlib.h>
-#include <exception>
 #include <functional>
 #include <memory>
 #include <ranges>
-#include <semaphore>
 #include <string>
 #include <span>
 #include <string_view>
@@ -77,9 +74,6 @@ constexpr std::size_t WORKER_NUM_HINT = 32;
 
 namespace ember::login {
 
-std::exception_ptr eptr = nullptr;
-std::binary_semaphore stop_flag { 0 };
-
 void launch(const po::variables_map& args,
             boost::asio::io_context& service,
             std::binary_semaphore& sem,
@@ -97,14 +91,14 @@ std::vector<GameVersion> client_versions();
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int run(const po::variables_map& args, log::Logger& logger) try {
+int Runner::run(const po::variables_map& args) try {
 	const auto concurrency = thread::hardware_concurrency(logger);
 	boost::asio::io_context service(concurrency);
 	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");
-		launch(args, service, stop_flag, logger);
+		launch(args, service);
 	});
 
 	// Spawn worker threads for Asio
@@ -116,7 +110,6 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 							 (&boost::asio::io_context::run), &service);
 		thread::set_name(workers[i], "Asio Worker");
 	}
-
 
 	thread.join();
 	service.stop();
@@ -131,12 +124,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
-void stop() {
+void Runner::stop() {
 	stop_flag.release();
 }
 
-void launch(const po::variables_map& args, boost::asio::io_context& service,
-            std::binary_semaphore& sem, log::Logger& logger) try {
+void Runner::launch(const po::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -149,7 +141,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 	std::future<stun::MappedResult> stun_res;
 
 	if(stun_enabled) {
-		stun.log_callback([&logger](const stun::Verbosity verbosity, const stun::Error reason) {
+		stun.log_callback([&](const stun::Verbosity verbosity, const stun::Error reason) {
 			stun_log_callback(verbosity, reason, logger);
 		});
 
@@ -337,7 +329,7 @@ void launch(const po::variables_map& args, boost::asio::io_context& service,
 		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
 	});
 	
-	sem.acquire();
+	stop_flag.acquire();
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
@@ -366,7 +358,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 	}
 }
 
-po::options_description options() {
+po::options_description Runner::options() {
 	po::options_description opts;
 	opts.add_options()
 		("misc.locale_enforce", po::value<bool>()->required())
