@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024 Ember
+# Copyright (c) 2016 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,4 +31,5 @@ add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} protocol dbcreader spark conpool logger shared ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(character libcharacter PROPERTIES FOLDER "Services")
+set_target_properties(character PROPERTIES FOLDER "Services/Applications")
+set_target_properties(libcharacter PROPERTIES FOLDER "Services/Libraries")

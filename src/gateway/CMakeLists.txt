@@ -91,4 +91,5 @@ add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logger shared ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(gateway libgateway PROPERTIES FOLDER "Services")
+set_target_properties(gateway PROPERTIES FOLDER "Services/Applications")
+set_target_properties(libgateway PROPERTIES FOLDER "Services/Libraries")

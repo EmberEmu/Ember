@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024 Ember
+# Copyright (c) 2016 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,4 +30,5 @@ add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logger shared ${Boost_LIBRARIES})
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(world libworld PROPERTIES FOLDER "Services")
+set_target_properties(world PROPERTIES FOLDER "Services/Applications")
+set_target_properties(libworld PROPERTIES FOLDER "Services/Libraries")
