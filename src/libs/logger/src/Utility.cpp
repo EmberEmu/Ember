@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,8 +10,7 @@
 #include <logger/Exception.h>
 #include <chrono>
 #include <iomanip>
-#include <sstream>
-#include <ctime>
+#include <cstring>
 
 namespace ember::log {
 
@@ -32,20 +31,30 @@ std::tm current_time() {
 	return time;
 }
 
+std::size_t put_time(const std::tm& time, cstring_view format, std::span<char> buffer) {
+	const auto res = std::strftime(buffer.data(), buffer.size(), format.c_str(), &time);
+
+	if(!res) [[unlikely]] {
+		const char err[] = "[error]";
+
+		if(buffer.size() >= sizeof(err)) {
+			std::memcpy(std::data(buffer), err, sizeof(err));
+		} else {
+			buffer[0] = '\0';
+		}
+	}
+
+	return res;
+}
+
 std::string put_time(const std::tm& time, cstring_view format) {
-#if defined __GNUC__  || defined __MINGW32__
 	const std::size_t BUFFER_SIZE = 128;
 	char buffer[BUFFER_SIZE];
 
 	if(!std::strftime(buffer, BUFFER_SIZE, format.c_str(), &time)) {
 		return "[error]";
 	}
-#else
-	auto out = std::put_time(&time, format.c_str());
-	std::stringstream stream;
-	stream << out;
-	const std::string& buffer = stream.str();
-#endif
+
 	return buffer;
 }
 

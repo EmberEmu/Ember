@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/FormatPacket.h>
 #include <logger/Utility.h>
+#include <array>
 #include <memory>
 #include <string_view>
 #include <cstddef>
@@ -41,8 +42,11 @@ void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	localtime_r(&time, &tm);
 #endif
 
+	std::array<char, 32> time_buf{};
+	log::detail::put_time(tm, fmt, std::span(time_buf));
+
 	logger_ << severity_ << log::Filter(LF_PACKET_LOG)
-		<< "[" << log::detail::put_time(tm, fmt) << "] " << remote_host_ << ", " << direction
+		<< "[" << time_buf.data() << "] " << remote_host_ << ", " << direction
 		<< ":\n" << output << log::flush;
 }
 

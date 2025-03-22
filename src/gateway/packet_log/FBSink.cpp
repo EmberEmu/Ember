@@ -10,6 +10,7 @@
 #include <PacketLog_generated.h>
 #include <logger/Utility.h>
 #include <boost/endian/conversion.hpp>
+#include <array>
 #include <memory>
 #include <cstddef>
 #include <ctime>
@@ -69,10 +70,13 @@ void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	gmtime_r(&time, &utc_time);
 #endif
 
+
 	flatbuffers::FlatBufferBuilder fbb;
 	const auto payload = fbb.CreateVector(buffer.data(), buffer.size());
-	const auto time_str = log::detail::put_time(utc_time, time_fmt_);
-	const auto fbtime = fbb.CreateString(time_str);
+
+	std::array<char, 64> time_buf{};
+	const auto time_sz = log::detail::put_time(utc_time, time_fmt_, std::span(time_buf));
+	const auto fbtime = fbb.CreateString(std::data(time_buf), time_sz);
 	const auto fbdir = dir == PacketDirection::INBOUND?
 		fblog::Direction::INBOUND : fblog::Direction::OUTBOUND;
 
