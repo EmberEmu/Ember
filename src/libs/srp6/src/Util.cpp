@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -106,7 +106,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 	std::array<std::uint8_t, SHA1_LEN> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(reinterpret_cast<const uint8_t*>(identifier.data()), identifier.size());
-	hasher->update(":");
+	hasher->update(':');
 	hasher->update(reinterpret_cast<const uint8_t*>(password.data()), password.size());
 	hasher->final(hash.data());
 
