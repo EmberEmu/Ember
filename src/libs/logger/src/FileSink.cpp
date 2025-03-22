@@ -94,7 +94,7 @@ void FileSink::open(Mode mode) {
 	std::filesystem::path path(file_name_);
 	std::filesystem::create_directories(path.parent_path(), ec);
 
-	file_ = std::move(File(file_name_, mode_str));
+	file_ = File(file_name_, mode_str);
 
 	if(!file_) {
 		throw exception("Logger could not open " + file_name_);
