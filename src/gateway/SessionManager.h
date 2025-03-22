@@ -12,6 +12,7 @@
 #include <memory>
 #include <mutex>
 #include <unordered_set>
+#include <cstddef>
 
 namespace ember::gateway {
 
