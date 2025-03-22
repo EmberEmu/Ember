@@ -144,7 +144,6 @@ void stop_services() {
 	// stopping a service which is not running should be a nop
 	character::stop();
 	dns::stop();
-	account::stop();
 	world::stop();
 }
 
@@ -236,7 +235,7 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting account service...");
 
 	const auto& conf_path = args["account.config"].as<std::string>();
-	auto opts = load_options(conf_path, account::options());
+	auto opts = load_options(conf_path, account::Runner::options());
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[account]");
@@ -245,7 +244,13 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	const auto res = account::run(opts, service_logger);
+	account::Runner runner(service_logger);
+
+	stop_handlers.emplace_back([&] {
+		runner.stop();
+	});
+
+	const auto res = runner.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
 		LOG_FATAL_SYNC(logger, "Account service terminated abnormally or unexpectedly, aborting");
