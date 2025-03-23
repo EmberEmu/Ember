@@ -32,7 +32,7 @@ private:
 	std::size_t total_write_;
 
 	template<std::size_t size>
-	constexpr auto generate_filled(const std::uint8_t value) {
+	auto generate_filled(const std::uint8_t value) {
 		std::array<std::uint8_t, size> target{};
 		std::ranges::fill(target, value);
 		return target;
@@ -49,7 +49,7 @@ public:
 	BinaryStreamWriter& operator=(const BinaryStreamWriter&) = delete;
 	BinaryStreamWriter(const BinaryStreamWriter&) = delete;
 
-	BinaryStreamWriter& operator<<(const has_shl_override<BinaryStreamWriter> auto& data) {
+	BinaryStreamWriter& operator<<(has_shl_override<BinaryStreamWriter> auto&& data) {
 		return data.operator<<(*this);
 	}
 

@@ -79,7 +79,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(has_shr_override<BinaryStreamReader> auto& data) {
+	BinaryStreamReader& operator>>(has_shr_override<BinaryStreamReader> auto&& data) {
 		return data.operator>>(*this);
 	}
 

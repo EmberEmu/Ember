@@ -100,7 +100,7 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(const has_shl_override<BinaryStream> auto& data)
+	BinaryStream& operator <<(has_shl_override<BinaryStream> auto&& data)
 	requires(writeable<buf_type>) {
 		return data.operator<<(*this);
 	}
@@ -211,7 +211,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(has_shr_override<BinaryStream> auto& data) {
+	BinaryStream& operator>>(has_shr_override<BinaryStream> auto&& data) {
 		return data.operator>>(*this);
 	}
 
