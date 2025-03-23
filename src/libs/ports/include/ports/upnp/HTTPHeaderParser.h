@@ -61,7 +61,7 @@ static bool parse_http_header(std::string_view text, HTTPHeader& header) {
 			try {
 				auto code = sv_to_int(line.substr(results.position(2), results.length(2)));
 				header.code = HTTPStatus{ code };
-			} catch(std::invalid_argument&) {
+			} catch(const std::invalid_argument&) {
 				return false;
 			}
 

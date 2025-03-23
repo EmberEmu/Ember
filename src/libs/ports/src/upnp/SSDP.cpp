@@ -73,7 +73,7 @@ LocateResult SSDP::build_locate_result(std::span<const std::uint8_t> datagram) {
 		};
 		
 		return result;
-	} catch(std::exception&) {
+	} catch(const std::exception&) {
 		return std::unexpected(ErrorCode::HTTP_BAD_RESPONSE);
 	}
 }

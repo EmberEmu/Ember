@@ -231,7 +231,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 
 	dao_.create(character);
 	callback(protocol::Result::CHAR_CREATE_SUCCESS);
-} catch(dal::exception& e) {
+} catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 	callback(protocol::Result::CHAR_CREATE_ERROR);
 }
@@ -264,7 +264,7 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 
 	dao_.delete_character(character_id, true);
 	callback(protocol::Result::CHAR_DELETE_SUCCESS);
-} catch(dal::exception& e) {
+} catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 	callback(protocol::Result::CHAR_DELETE_FAILED);
 }
@@ -275,7 +275,7 @@ void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t real
 
 	auto characters = dao_.characters(account_id, realm_id);
 	callback(true, std::move(characters));
-} catch(dal::exception& e) {
+} catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 	callback(false, {});
 }
@@ -324,7 +324,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 
 	dao_.update(*character);
 	callback(protocol::Result::RESPONSE_SUCCESS, *character);
-} catch(dal::exception& e) {
+} catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 	callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
 }
@@ -365,7 +365,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	dao_.update(*character);
 	dao_.restore(id);
 	callback(protocol::Result::RESPONSE_SUCCESS);
-} catch(dal::exception& e) {
+} catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
 	callback(protocol::Result::RESPONSE_FAILURE);
 }

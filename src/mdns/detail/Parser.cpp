@@ -66,7 +66,7 @@ std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
 	}
 
 	return name.str();
-} catch(spark::exception&) {
+} catch(const spark::exception&) {
 	throw Result::LABEL_PARSE_ERROR;
 }
 
@@ -86,7 +86,7 @@ void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream) try 
 	be::big_to_native_inplace(query.header.answers);
 	be::big_to_native_inplace(query.header.authority_rrs);
 	be::big_to_native_inplace(query.header.additional_rrs);
-} catch(spark::exception&) {
+} catch(const spark::exception&) {
 	throw Result::HEADER_PARSE_ERROR;
 }
 
@@ -109,7 +109,7 @@ Question parse_question(ParseContext& ctx) try {
 	question.type = static_cast<RecordType>(type);
 	question.cc = static_cast<Class>(cc);
 	return question;
-} catch(spark::exception&) {
+} catch(const spark::exception&) {
 	throw Result::QUESTION_PARSE_ERROR;
 }
 
@@ -208,7 +208,7 @@ std::vector<std::string_view> parse_labels(ParseContext& ctx) try {
 	auto labels = extract_labels(ctx.buffer, ctx.stream.total_read());
 	skip_stream_labels(ctx.stream);
 	return labels;
-} catch(spark::exception&) {
+} catch(const spark::exception&) {
 	throw Result::NAME_PARSE_ERROR;
 }
 
@@ -236,7 +236,7 @@ ResourceRecord parse_resource_record(ParseContext& ctx) try {
 	record.resource_class = static_cast<Class>(rc);
 	parse_rdata(record, ctx);
 	return record;
-} catch(spark::exception&) {
+} catch(const spark::exception&) {
 	throw Result::RR_PARSE_ERROR;
 }
 
@@ -278,7 +278,7 @@ void parse_rdata(ResourceRecord& rr, ParseContext& ctx) try {
 		default:
 			throw Result::UNHANDLED_RDATA;
 	}
-} catch(spark::exception&) {
+} catch(const spark::exception&) {
 	throw Result::RR_PARSE_ERROR;
 }
 

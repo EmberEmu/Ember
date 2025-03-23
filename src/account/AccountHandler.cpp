@@ -29,7 +29,7 @@ void AccountHandler::lookup_id(const std::string& username, LookupCB cb) {
 	pool_.run([=, this]() {
 		try {
 			cb(lookup_id(username));
-		} catch(std::exception&) {
+		} catch(const std::exception&) {
 			cb(std::unexpected(false));
 		}
 	});

@@ -42,7 +42,7 @@ ba::awaitable<void> Connection::process_queue() try {
 
 		co_await ba::async_write(socket_, buffers, ba::deferred);
 	}
-} catch(std::exception&) {
+} catch(const std::exception&) {
 	close();
 }
 
@@ -120,7 +120,7 @@ ba::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 		std::span view(buffer_.data(), msg_size);
 		handler(view);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
 	close();
 }

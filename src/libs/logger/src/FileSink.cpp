@@ -56,7 +56,7 @@ FileSink::~FileSink() {
 
 bool FileSink::file_exists(const std::string& name) try {
 	return fs::exists(fs::path(name));
-} catch(std::filesystem::filesystem_error& e) {
+} catch(const std::filesystem::filesystem_error& e) {
 	throw exception(e.what());
 }
 

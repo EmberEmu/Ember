@@ -62,13 +62,13 @@ int main(int argc, char** argv) try {
 		const auto& entry = archive->file_entry(index);
 		mpq::BufferedFileSink sink(f, entry.uncompressed_size);
 		archive->extract_file(f, sink);
-	} catch(mpq::exception& e) {
+	} catch(const mpq::exception& e) {
 		std::println(stderr, "Extraction error: {} ({})", e.what(), f);
 	}
 
 	std::print("Zug zug, work complete!");
 	return EXIT_SUCCESS;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	std::print(stderr, "Fatal error: {}", e.what());
 	return EXIT_FAILURE;
 }

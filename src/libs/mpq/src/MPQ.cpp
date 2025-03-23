@@ -88,7 +88,7 @@ LocateResult locate_archive(const std::filesystem::path& path) try {
 	}
 
 	return offset;
-} catch(std::exception&) {
+} catch(const std::exception&) {
 	return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
 }
 

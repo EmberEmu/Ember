@@ -110,7 +110,7 @@ std::unordered_map<SizeType, std::string_view> make_enum_map(std::source_locatio
     \
     inline std::string_view Type##_to_string(Type value) try { \
         return Type##_enum_names.at((Underlying)value); \
-    } catch(std::out_of_range&) { \
+    } catch(const std::out_of_range&) { \
 		return smart_enum::unknown_enum_str; \
 	} \
     \
@@ -121,7 +121,7 @@ std::unordered_map<SizeType, std::string_view> make_enum_map(std::source_locatio
     \
     inline std::string_view to_string(Type value) try { \
         return Type##_enum_names.at((Underlying)value);\
-    } catch(std::out_of_range&) { \
+    } catch(const std::out_of_range&) { \
 		return smart_enum::unknown_enum_str; \
 	} \
     \

@@ -34,7 +34,7 @@ void Monitor::shutdown() {
 
 	try {
 		timer_.cancel();
-	} catch(boost::system::system_error&) {
+	} catch(const boost::system::system_error&) {
 		// swallow exception, Asio removed the error code overload
 	}
 }

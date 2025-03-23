@@ -39,7 +39,7 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 	}
 
 	return query;
-} catch(parser::Result& r) {
+} catch(const parser::Result& r) {
 	return std::unexpected(r);
 }
 

@@ -63,7 +63,7 @@ int main(int argc, const char* argv[]) try {
 	const auto ret = launch(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	std::cerr << e.what();
 	return EXIT_FAILURE;
 }
@@ -128,7 +128,7 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	return EXIT_SUCCESS;
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
 }
@@ -166,7 +166,7 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 		LOG_FATAL_SYNC(logger, "DNS service terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "DNS error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }
@@ -196,7 +196,7 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 		LOG_FATAL_SYNC(logger, "Login service terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "Login error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }
@@ -226,7 +226,7 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 		LOG_FATAL_SYNC(logger, "Gateway terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "Gateway error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }
@@ -256,7 +256,7 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 		LOG_FATAL_SYNC(logger, "Account service terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "Account service error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }
@@ -286,7 +286,7 @@ void launch_character(const po::variables_map& args, log::Logger& logger) try {
 		LOG_FATAL_SYNC(logger, "Character service terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "Character error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }
@@ -316,7 +316,7 @@ void launch_world(const po::variables_map& args, log::Logger& logger) try {
 		LOG_FATAL_SYNC(logger, "World service terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
-} catch(std::exception& e) {
+} catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "World error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }

@@ -259,11 +259,11 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 			metrics_.increment("login_failure");
 			LOG_DEBUG_ASYNC(logger_, "Account not found: {}", action.username());
 		}
-	} catch(dal::exception& e) {
+	} catch(const dal::exception& e) {
 		response.result = grunt::Result::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR_ASYNC(logger_, "DAL failure for {}: {}", action.username(), e.what());
-	} catch(Botan::Exception& e) {
+	} catch(const Botan::Exception& e) {
 		response.result = grunt::Result::FAIL_DB_BUSY;
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR_ASYNC(logger_, "Encoding failure for {}: {}", action.username(), e.what());
@@ -468,7 +468,7 @@ void LoginHandler::on_character_data(const FetchCharacterCounts& action) {
 
 	try {
 		state_data_ = action.get_result();
-	} catch(dal::exception& e) { // not a fatal exception, we'll keep going without the data
+	} catch(const dal::exception& e) { // not a fatal exception, we'll keep going without the data
 		state_data_ = CharacterCount();
 		metrics_.increment("login_internal_failure");
 		LOG_ERROR_ASYNC(logger_, "DAL failure for {}: {}", user_->username(), e.what());

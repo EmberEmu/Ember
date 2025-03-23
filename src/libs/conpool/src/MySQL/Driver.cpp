@@ -66,13 +66,13 @@ bool MySQL::keep_alive(sql::Connection* conn) const try {
 	std::unique_ptr<sql::Statement> stmt(conn->createStatement());
 	stmt->execute("/* ping */");
 	return true;
-} catch(sql::SQLException&) {
+} catch(const sql::SQLException&) {
 	return false;
 }
 
 bool MySQL::clean(sql::Connection* conn) const try {
 	return conn->isValid();
-} catch(sql::SQLException&) {
+} catch(const sql::SQLException&) {
 	return false;
 }
 

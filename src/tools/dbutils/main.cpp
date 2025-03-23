@@ -380,7 +380,7 @@ bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
 			if(transactions && !batched) {
 				exec.end_transaction();
 			}
-		} catch(std::exception& e) {
+		} catch(const std::exception& e) {
 			LOG_ERROR_SYNC(logger, "{}: {}", path, e.what());
 
 			if (transactions || batched) {

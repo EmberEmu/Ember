@@ -52,7 +52,7 @@ bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 	}
 
 	return true;
-} catch(grunt::bad_packet& e) {
+} catch(const grunt::bad_packet& e) {
 	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
 	return false;
 }

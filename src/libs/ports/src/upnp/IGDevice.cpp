@@ -201,7 +201,7 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 		try {
 			const auto value = sv_to_int(split_argument(field->second, '='));
 			scpd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
-		} catch(std::invalid_argument&) {
+		} catch(const std::invalid_argument&) {
 			scpd_cc_ = std::chrono::steady_clock::now();
 		}
 	} else {
@@ -231,7 +231,7 @@ ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 		try {
 			const auto value = sv_to_int(split_argument(field->second, '='));
 			igdd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
-		} catch(std::invalid_argument&) {
+		} catch(const std::invalid_argument&) {
 			igdd_cc_ = std::chrono::steady_clock::now();
 		}
 	} else {
@@ -257,9 +257,9 @@ ba::awaitable<ErrorCode> IGDevice::process_request(HTTPTransport& transport, use
 	co_await transport.connect(hostname_, port_);
 	co_await refresh_xml_cache(transport);	
 	co_return ErrorCode::SUCCESS;
-} catch(boost::system::error_code&) {
+} catch(const boost::system::error_code&) {
 	co_return ErrorCode::NETWORK_FAILURE;
-} catch(std::exception&)  {
+} catch(const std::exception&)  {
 	co_return  ErrorCode::HTTP_BAD_RESPONSE;
 }
 
@@ -269,9 +269,9 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 	try {
 		co_await request->transport->connect(hostname_, port_);
 		co_await refresh_xml_cache(*request->transport);
-	}  catch(boost::system::error_code&) {
+	}  catch(const boost::system::error_code&) {
 		ec = ErrorCode::NETWORK_FAILURE;
-	} catch(std::exception&)  {
+	} catch(const std::exception&)  {
 		ec = ErrorCode::HTTP_BAD_RESPONSE;
 	}
 
