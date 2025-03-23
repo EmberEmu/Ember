@@ -27,13 +27,13 @@ class Service {
 
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 public:
-	Service(log::Logger& logger) : logger(logger) {}
+	static boost::program_options::options_description options();
+
+	explicit Service(log::Logger& logger) : logger(logger) {}
 	~Service() { stop(); }
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
-
-	static boost::program_options::options_description options();
 };
 
 } // character, ember

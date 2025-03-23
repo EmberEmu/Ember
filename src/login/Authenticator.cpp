@@ -50,7 +50,7 @@ srp6::SessionKey LoginAuthenticator::session_key(const Botan::BigInt& A) const {
 ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
                                                const Botan::BigInt& session_key,
                                                std::span<const std::uint8_t, CHECKSUM_SALT_LEN> salt)
-                                               : username_(std::move(username)) {
+	: username_(std::move(username)) {
 	std::ranges::copy(salt, salt_.data());
 	sess_key_.t.resize(session_key.bytes());
 	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
