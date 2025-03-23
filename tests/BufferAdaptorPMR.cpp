@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2025 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -79,7 +79,7 @@ TEST(BufferAdaptorPMR, SingleSkipRead) {
 
 TEST(BufferAdaptorPMR, MultiskipRead) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3, 4, 5, 6 };
-	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BufferAdaptor<decltype(buffer), false> adaptor(buffer);
 	std::uint8_t value = 0;
 	adaptor.skip(5);
 	adaptor.read(&value, 1);
