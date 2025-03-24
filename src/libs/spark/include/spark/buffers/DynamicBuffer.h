@@ -439,7 +439,7 @@ public:
 		return BlockSize;
 	}
 
-	value_type& operator[](const size_type index) {
+	value_type& operator[](const size_type index) override {
 		return byte_at_index(index);
 	}
 

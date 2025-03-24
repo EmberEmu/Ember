@@ -53,7 +53,7 @@ public:
 		BufferWriteAdaptor<buf_type>::write(source);
 	};
 
-	void write(const void* source, std::size_t length) {
+	void write(const void* source, std::size_t length) override {
 		BufferWriteAdaptor<buf_type>::write(source, length);
 	};
 
