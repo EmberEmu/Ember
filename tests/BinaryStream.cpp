@@ -524,3 +524,15 @@ TEST(BinaryStream, FileBufferWrite) {
 	const auto md5_2 = util::generate_md5(path);
 	ASSERT_EQ(md5_1, md5_2);
 }
+
+TEST(BinaryStream, SetErrorState) {
+	spark::io::StaticBuffer<char, 64> buffer;
+	spark::io::BinaryStream stream(buffer);
+	ASSERT_TRUE(stream);
+	ASSERT_TRUE(stream.good());
+	ASSERT_TRUE(stream.state() == spark::io::StreamState::OK);
+	stream.set_error_state();
+	ASSERT_FALSE(stream);
+	ASSERT_FALSE(stream.good());
+	ASSERT_TRUE(stream.state() == spark::io::StreamState::USER_DEFINED_ERR);
+}

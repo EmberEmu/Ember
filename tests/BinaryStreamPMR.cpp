@@ -297,3 +297,16 @@ TEST(BinaryStreamPMR, CStringviewWrite) {
 	stream >> res;
 	ASSERT_EQ(view, res);
 }
+
+TEST(BinaryStreamPMR, SetErrorState) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	ASSERT_TRUE(stream);
+	ASSERT_TRUE(stream.good());
+	ASSERT_TRUE(stream.state() == spark::io::StreamState::OK);
+	stream.set_error_state();
+	ASSERT_FALSE(stream);
+	ASSERT_FALSE(stream.good());
+	ASSERT_TRUE(stream.state() == spark::io::StreamState::USER_DEFINED_ERR);
+}
