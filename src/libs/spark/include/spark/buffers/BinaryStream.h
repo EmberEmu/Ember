@@ -148,10 +148,9 @@ public:
 		total_write_ += write_size;
 	}
 
-	template<arithmetic T>
-	void put(const T& data) requires(writeable<buf_type>) {
-		buffer_.write(&data, sizeof(T));
-		total_write_ += sizeof(T);
+	void put(const arithmetic& data) requires(writeable<buf_type>) {
+		buffer_.write(&data, sizeof(data));
+		total_write_ += sizeof(data);
 	}
 
 	template<pod T>
@@ -223,10 +222,9 @@ public:
 		return *this;
 	}
 
-	template<arithmetic T>
-	void get(T& dest) {
-		STREAM_READ_BOUNDS_CHECK(sizeof(T), void());
-		buffer_.read(&dest, sizeof(T));
+	void get(arithmetic auto& dest) {
+		STREAM_READ_BOUNDS_CHECK(sizeof(dest), void());
+		buffer_.read(&dest, sizeof(dest));
 	}
 
 	template<arithmetic T>
