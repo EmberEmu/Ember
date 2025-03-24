@@ -169,6 +169,7 @@ TEST(DynamicBuffer, RetrieveTail) {
 	chain.write(text.data(), text.length());
 
 	auto tail = chain.back();
+	ASSERT_TRUE(tail);
 	ASSERT_EQ(0, std::memcmp(text.data(), tail->storage.data(), text.length())) << "Tail data is incorrect";
 }
 
