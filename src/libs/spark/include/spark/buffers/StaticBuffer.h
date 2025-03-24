@@ -30,7 +30,7 @@ class StaticBuffer final {
 
 public:
 	using size_type       = typename decltype(buffer_)::size_type;
-	using offset_type     = offset_type;
+	using offset_type     = size_type;
 	using value_type      = StorageType;
 	using contiguous      = is_contiguous;
 	using seeking         = supported;

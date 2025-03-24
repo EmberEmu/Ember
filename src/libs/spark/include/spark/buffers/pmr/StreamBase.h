@@ -15,9 +15,17 @@ namespace ember::spark::io::pmr {
 
 class StreamBase {
 	BufferBase& buffer_;
+	StreamState state_;
+
+protected:
+	void set_state(StreamState state) {
+		state_ = state;
+	}
 
 public:
-	explicit StreamBase(BufferBase& buffer) : buffer_(buffer) { }
+	explicit StreamBase(BufferBase& buffer)
+		: buffer_(buffer),
+		  state_(StreamState::OK) { }
 	
 	std::size_t size() const {
 		return buffer_.size();
@@ -26,6 +34,26 @@ public:
 	[[nodiscard]]
 	bool empty() const {
 		return buffer_.empty();
+	}
+
+	StreamState state() {
+		return state_;
+	}
+
+	void set_error_state() {
+		state_ = StreamState::USER_DEFINED_ERR;
+	}
+
+	bool good() const {
+		return state_ == StreamState::OK;
+	}
+
+	void clear_state() {
+		state_ = StreamState::OK;
+	}
+
+	operator bool() const {
+		return good();
 	}
 
 	virtual ~StreamBase() = default;

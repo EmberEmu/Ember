@@ -148,7 +148,7 @@ public:
 		total_write_ += write_size;
 	}
 
-	void put(const arithmetic& data) requires(writeable<buf_type>) {
+	void put(const arithmetic auto& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(data));
 		total_write_ += sizeof(data);
 	}
