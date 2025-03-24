@@ -29,8 +29,8 @@ class StaticBuffer final {
 	std::size_t write_ = 0;
 
 public:
-	using size_type       = std::size_t;
-	using offset_type     = std::size_t;
+	using size_type       = decltype(buffer_)::size_type;
+	using offset_type     = offset_type;
 	using value_type      = StorageType;
 	using contiguous      = is_contiguous;
 	using seeking         = supported;
