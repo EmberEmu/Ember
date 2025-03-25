@@ -11,6 +11,7 @@
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
 #include <spark/buffers/Exception.h>
+#include <spark/buffers/Endian.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/polyfill/start_lifetime_as>
 #include <algorithm>
@@ -153,6 +154,13 @@ public:
 		total_write_ += sizeof(data);
 	}
 
+	template<endian::Conversion conversion>
+	void put(const arithmetic auto& data) requires(writeable<buf_type>) {
+		const auto swapped = endian::convert<conversion>(data);
+		buffer_.write(&swapped, sizeof(data));
+		total_write_ += sizeof(data);
+	}
+
 	template<pod T>
 	void put(const T* data, size_type count) requires(writeable<buf_type>) {
 		const auto write_size = count * sizeof(T);
@@ -233,6 +241,21 @@ public:
 		T t{};
 		buffer_.read(&t, sizeof(T));
 		return t;
+	}
+
+	template<endian::Conversion conversion>
+	void get(arithmetic auto& dest) {
+		STREAM_READ_BOUNDS_CHECK(sizeof(dest), void());
+		buffer_.read(&dest, sizeof(dest));
+		dest = endian::convert<conversion>(dest);
+	}
+
+	template<arithmetic T, endian::Conversion conversion>
+	T get() {
+		STREAM_READ_BOUNDS_CHECK(sizeof(T), void());
+		T t{};
+		buffer_.read(&t, sizeof(T));
+		return endian::convert<conversion>(t);
 	}
 
 	void get(std::string& dest) {

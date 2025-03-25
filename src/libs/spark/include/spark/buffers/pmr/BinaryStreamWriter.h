@@ -10,6 +10,7 @@
 
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferWrite.h>
+#include <spark/buffers/Endian.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
 #include <shared/utility/cstring_view.hpp>
@@ -98,6 +99,13 @@ public:
 
 	void put(const arithmetic auto& data) {
 		buffer_.write(&data, sizeof(data));
+		total_write_ += sizeof(data);
+	}
+
+	template<endian::Conversion conversion>
+	void put(const arithmetic auto& data) {
+		const auto swapped = endian::convert<conversion>(data);
+		buffer_.write(&swapped, sizeof(data));
 		total_write_ += sizeof(data);
 	}
 

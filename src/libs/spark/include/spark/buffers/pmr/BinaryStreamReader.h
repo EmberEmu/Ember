@@ -11,6 +11,7 @@
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferRead.h>
 #include <spark/buffers/Exception.h>
+#include <spark/buffers/Endian.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
 #include <algorithm>
@@ -127,6 +128,29 @@ public:
 		const auto read_size = dest.size() * sizeof(range::value_type);
 		check_read_bounds(read_size);
 		buffer_.read(dest.data(), read_size);
+	}
+
+	template<arithmetic T>
+	T get() {
+		check_read_bounds(sizeof(T));
+		T t{};
+		buffer_.read(&t, sizeof(T));
+		return t;
+	}
+
+	template<endian::Conversion conversion>
+	void get(arithmetic auto& dest) {
+		check_read_bounds(sizeof(dest));
+		buffer_.read(&dest, sizeof(dest));
+		dest = endian::convert<conversion>(dest);
+	}
+
+	template<arithmetic T, endian::Conversion conversion>
+	T get() {
+		check_read_bounds(sizeof(T));
+		T t{};
+		buffer_.read(&t, sizeof(T));
+		return endian::convert<conversion>(t);
 	}
 
 	/**  Misc functions **/ 
