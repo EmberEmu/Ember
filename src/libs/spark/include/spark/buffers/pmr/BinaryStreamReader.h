@@ -138,6 +138,11 @@ public:
 		return t;
 	}
 
+	void get(arithmetic auto& dest) {
+		check_read_bounds(sizeof(dest));
+		buffer_.read(&dest, sizeof(dest));
+	}
+
 	template<endian::Conversion conversion>
 	void get(arithmetic auto& dest) {
 		check_read_bounds(sizeof(dest));
