@@ -171,6 +171,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 		return;
 	}
 
+	out_buf_.clear();
 	out_buf_.reserve(size + (20 * records.size()));
 	std::array<std::string, std::to_underlying(Severity::Severity_MAX) + 1> cache;
 
@@ -196,18 +197,16 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 	rotate_check(buffer_size, curr_time);
 
 	if(!std::fwrite(out_buf_.data(), buffer_size, 1, file_)) {
-		out_buf_.clear();
 		throw exception("Unable to write log record batch to file");
 	}
 
 	current_size_ += buffer_size;
-	out_buf_.clear();
 
 	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }
-
 
 void FileSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {

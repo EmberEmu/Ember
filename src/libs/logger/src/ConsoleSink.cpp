@@ -44,6 +44,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 		return;
 	}
 
+	out_buf_.clear();
 	out_buf_.reserve(size + (10 * records.size()));
 
 	const bool prefix = !prefix_.empty();
@@ -69,9 +70,9 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 	}
 
 	std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
-	out_buf_.clear();
 
 	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }
@@ -104,14 +105,12 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 	if(flush) {
 		if(std::fflush(stdout) != 0) {
-			out_buf_.clear();
 			throw exception("Unable to flush log record to console");
 		}
 	}
 
-	out_buf_.clear();
-
 	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }
