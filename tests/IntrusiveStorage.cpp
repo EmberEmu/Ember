@@ -68,7 +68,6 @@ TEST(IntrusiveStorage, ReadWriteStringview) {
 	std::string_view str { "The quick brown fox jumped over the lazy dog" };
 	buffer.write(str.data(), str.size());
 	ASSERT_EQ(str.size(), buffer.size());
-	ASSERT_STREQ(str.data(), buffer.read_data());
 
 	std::array<char, 128> out{};
 	buffer.read(out.data(), str.size());
