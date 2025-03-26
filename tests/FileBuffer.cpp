@@ -81,7 +81,7 @@ TEST(FileBuffer, Write) {
 	buffer.write(y);
 	buffer.write(z);
 	buffer.write(str.data(), str.size() + 1); // write terminator
-	buffer.close(); // flush to OS
+	buffer.flush(); // ensure data has been written before the read
 
 	const auto md5_1 = util::generate_md5("test_data/filebuffer");
 	const auto md5_2 = util::generate_md5(path);

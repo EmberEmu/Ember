@@ -89,6 +89,10 @@ public:
 		}
 	}
 
+	void flush() {
+		std::fflush(file_);
+	}
+
 	template<typename T>
 	void read(T* destination) {
 		read(destination, sizeof(T));
