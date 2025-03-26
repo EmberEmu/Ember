@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2020 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -66,12 +66,12 @@ TEST(IntrusiveStorage, Skip) {
 TEST(IntrusiveStorage, ReadWriteStringview) {
 	spark::io::detail::IntrusiveStorage<128, char> buffer;
 	std::string_view str { "The quick brown fox jumped over the lazy dog" };
-	buffer.write(str.data(), str.size()+1);
-	ASSERT_EQ(str.size() + 1, buffer.size());
+	buffer.write(str.data(), str.size());
+	ASSERT_EQ(str.size(), buffer.size());
 	ASSERT_STREQ(str.data(), buffer.read_data());
 
 	std::array<char, 128> out{};
-	buffer.read(out.data(), str.size() + 1);
+	buffer.read(out.data(), str.size());
 	ASSERT_STREQ(str.data(), out.data());
 	ASSERT_TRUE(buffer.size() == 0);
 }
@@ -91,7 +91,7 @@ TEST(IntrusiveStorage, ReadWriteInts) {
 TEST(IntrusiveStorage, Subscript) {
 	spark::io::detail::IntrusiveStorage<8, char> buffer;
 	std::string_view str { "ABC" };
-	buffer.write(str.data(), str.size()+1);
+	buffer.write(str.data(), str.size());
 	ASSERT_EQ(str[0], buffer[0]);
 	ASSERT_EQ(str[1], buffer[1]);
 	ASSERT_EQ(str[2], buffer[2]);
