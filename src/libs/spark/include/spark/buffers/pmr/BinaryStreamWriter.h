@@ -158,7 +158,11 @@ public:
 		return total_write_;
 	}
 
-	BufferWrite* buffer() const {
+	BufferWrite* buffer() {
+		return &buffer_;
+	}
+
+	const BufferWrite* buffer() const {
 		return &buffer_;
 	}
 };
