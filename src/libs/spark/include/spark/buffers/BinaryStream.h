@@ -70,9 +70,9 @@ private:
 			return;
 		}
 
-		const auto req_total_read = total_read_ + read_size;
+		const auto max_read_remaining = read_limit_ - total_read_;
 
-		if(read_limit_ && req_total_read > read_limit_) [[unlikely]] {
+		if(read_limit_ && read_size > max_read_remaining) [[unlikely]] {
 			state_ = StreamState::READ_LIMIT_ERR;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw>) {
@@ -82,7 +82,7 @@ private:
 			return;
 		}
 
-		total_read_ = req_total_read;
+		total_read_ += read_size;
 	}
 
 	template<size_type size>
