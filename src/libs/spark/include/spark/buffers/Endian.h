@@ -11,6 +11,7 @@
 #include <spark/buffers/Concepts.h>
 #include <bit>
 #include <type_traits>
+#include <utility>
 #include <cstdint>
 
 namespace ember::spark::io::endian {
@@ -72,7 +73,7 @@ constexpr auto native_to_big(arithmetic auto value) {
 }
 
 template<std::endian from, std::endian to>
-constexpr auto conditional_reverse_inplace(arithmetic auto& value) {
+constexpr void conditional_reverse_inplace(arithmetic auto& value) {
 	using type = std::remove_reference_t<decltype(value)>;
 
 	if constexpr(from != to) {
@@ -86,7 +87,7 @@ constexpr auto conditional_reverse_inplace(arithmetic auto& value) {
 	}
 }
 
-constexpr auto conditional_reverse_inplace(arithmetic auto& value, std::endian from, std::endian to) {
+constexpr void conditional_reverse_inplace(arithmetic auto& value, std::endian from, std::endian to) {
 	using type = std::remove_reference_t<decltype(value)>;
 
 	if(from != to) {
@@ -131,10 +132,8 @@ constexpr auto convert(arithmetic auto value) -> decltype(value) {
 		case Conversion::native_to_little:
 			return native_to_little(value);
 			break;
-#if defined(_MSC_VER) && (_MSC_VER >= 1940) // todo: drop in next version of VS
 		default:
-			static_assert(false, "Unhandled conversion");
-#endif
+			std::unreachable();
 	};
 }
 
