@@ -38,7 +38,7 @@ struct IntrusiveStorage final {
 	IntrusiveNode node {};
 	std::array<value_type, BlockSize> storage;
 
-	void reset() {
+	void clear() {
 		read_offset = 0;
 		write_offset = 0;
 	}
@@ -73,7 +73,7 @@ struct IntrusiveStorage final {
 		read_offset += static_cast<OffsetType>(read_len);
 
 		if(read_offset == write_offset && allow_optimise) {
-			reset();
+			clear();
 		}
 
 		return read_len;
@@ -89,7 +89,7 @@ struct IntrusiveStorage final {
 		read_offset += static_cast<OffsetType>(skip_len);
 
 		if(read_offset == write_offset && allow_optimise) {
-			reset();
+			clear();
 		}
 
 		return skip_len;

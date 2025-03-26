@@ -94,7 +94,7 @@ public:
 		return npos;
 	}
 
-	void reset() {
+	void clear() {
 		read_ = 0;
 		buffer_.clear();
 	}

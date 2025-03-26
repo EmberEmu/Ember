@@ -21,10 +21,10 @@ requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final : public BufferReadAdaptor<buf_type>,
                             public BufferWriteAdaptor<buf_type>,
                             public Buffer {
-	void reset() {
+	void clear() {
 		if(BufferReadAdaptor<buf_type>::read_ptr() == BufferWriteAdaptor<buf_type>::write_ptr()) {
-			BufferReadAdaptor<buf_type>::reset();
-			BufferWriteAdaptor<buf_type>::reset();
+			BufferReadAdaptor<buf_type>::clear();
+			BufferWriteAdaptor<buf_type>::clear();
 		}
 	}
 public:
@@ -37,7 +37,7 @@ public:
 		BufferReadAdaptor<buf_type>::read(destination);
 
 		if constexpr(allow_optimise) {
-			reset();
+			clear();
 		}
 	}
 
@@ -45,7 +45,7 @@ public:
 		BufferReadAdaptor<buf_type>::read(destination, length);
 
 		if constexpr(allow_optimise) {
-			reset();
+			clear();
 		}
 	};
 
@@ -69,7 +69,7 @@ public:
 		BufferReadAdaptor<buf_type>::skip(length);
 
 		if constexpr(allow_optimise) {
-			reset();
+			clear();
 		}
 	};
 

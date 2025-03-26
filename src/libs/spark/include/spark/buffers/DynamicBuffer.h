@@ -435,7 +435,7 @@ public:
 		return !size_;
 	}
 	
-	consteval static size_type block_size() {
+	constexpr static size_type block_size() {
 		return BlockSize;
 	}
 
