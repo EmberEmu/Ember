@@ -283,8 +283,10 @@ inline auto& log_deref(auto* x) { return *x; }
 #endif
 
 // used to generate decorated output (e.g. 'namespace::func' vs simply 'func')
-#if _MSC_VER && !__INTEL_COMPILER
+#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 	#define log_func __FUNCTION__
-#elif __clang__ || __GNUC__
+#elif defined(__clang__) || defined(__GNUC__)
 	#define log_func __PRETTY_FUNCTION__
+#else
+	#define log_func __func__
 #endif
