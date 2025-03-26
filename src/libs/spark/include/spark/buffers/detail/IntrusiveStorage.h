@@ -128,11 +128,19 @@ struct IntrusiveStorage final {
 		return size;
 	}
 
+	value_type* read_data() {
+		return storage.data() + read_offset;
+	}
+
 	const value_type* read_data() const {
 		return storage.data() + read_offset;
 	}
 
 	value_type* write_data() {
+		return storage.data() + write_offset;
+	}
+
+	const value_type* write_data() const {
 		return storage.data() + write_offset;
 	}
 

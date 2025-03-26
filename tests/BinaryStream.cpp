@@ -518,7 +518,7 @@ TEST(BinaryStream, FileBufferWrite) {
 	boost::endian::native_to_little_inplace(z);
 
 	stream << w << x << y << z << str;
-	buffer.close(); // flush to OS
+	buffer.flush(); // ensure data is written before following read
 
 	const auto md5_1 = util::generate_md5("test_data/filebuffer");
 	const auto md5_2 = util::generate_md5(path);
