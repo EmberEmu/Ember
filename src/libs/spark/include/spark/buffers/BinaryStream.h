@@ -22,6 +22,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -50,8 +51,10 @@ public:
 	using contiguous_type    = typename buf_type::contiguous;
 	
 private:
+	using cond_size_type = std::conditional_t<writeable<buf_type>, size_type, std::monostate>;
+
 	buf_type& buffer_;
-	size_type total_write_ = 0;
+	[[no_unique_address]] cond_size_type total_write_{};
 	size_type total_read_ = 0;
 	StreamState state_ = StreamState::OK;
 	const size_type read_limit_;
@@ -328,7 +331,8 @@ public:
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const StreamSeek direction, const offset_type offset) requires(seekable<buf_type>) {
+	void write_seek(const StreamSeek direction, const offset_type offset)
+		requires(seekable<buf_type> && writeable<buf_type>) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
 			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
 		} else {
