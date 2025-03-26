@@ -220,7 +220,7 @@ public:
 
 
 	size_type size() const {
-		return write_ - read_;
+		return static_cast<size_type>(write_) - read_;
 	}
 
 	FILE* handle() {
