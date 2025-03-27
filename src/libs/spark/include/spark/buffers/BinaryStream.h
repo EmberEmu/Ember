@@ -97,7 +97,16 @@ public:
 		: buffer_(source),
 		  read_limit_(read_limit) {};
 
-	BinaryStream(BinaryStream&& rhs) = delete;
+	BinaryStream(BinaryStream&& rhs) noexcept
+		: buffer_(rhs.buffer_), 
+		  total_write_(rhs.total_write_),
+		  total_read_(rhs.total_read_),
+		  state_(rhs.state_),
+		  read_limit_(rhs.read_limit_) {
+		rhs.total_read_ = static_cast<size_type>(-1);
+		rhs.state_ = StreamState::INVALID_STREAM;
+	}
+
 	BinaryStream& operator=(BinaryStream&&) = delete;
 	BinaryStream& operator=(BinaryStream&) = delete;
 	BinaryStream(BinaryStream&) = delete;

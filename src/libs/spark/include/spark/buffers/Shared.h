@@ -41,6 +41,7 @@ enum class StreamState {
 	OK,
 	READ_LIMIT_ERR,
 	BUFF_LIMIT_ERR,
+	INVALID_STREAM,
 	USER_DEFINED_ERR
 };
 
