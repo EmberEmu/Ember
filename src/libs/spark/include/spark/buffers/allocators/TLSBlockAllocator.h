@@ -97,9 +97,9 @@ public:
 	}
 
 	inline void thread_exit() {
-		assert(ref_count);
-
 		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
+			assert(ref_count_);
+
 			--ref_count_;
 
 			if(ref_count_ == 0) {

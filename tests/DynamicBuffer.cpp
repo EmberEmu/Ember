@@ -277,7 +277,7 @@ TEST(DynamicBuffer, ReadIterator) {
 	
 	for(auto i = sequence.begin(), j = sequence.end(); i != j; ++i) {
 		auto buffer = i.get_buffer();
-		std::copy(buffer.data(), buffer.data()  + buffer.size(), std::back_inserter(output));
+		std::copy(buffer.data(), buffer.data() + buffer.size(), std::back_inserter(output));
 	}
 
 	ASSERT_EQ(input, output) << "Read iterator produced incorrect result";
