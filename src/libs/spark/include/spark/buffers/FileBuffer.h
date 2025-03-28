@@ -139,10 +139,6 @@ public:
 			error_ = true;
 			return;
 		}
-
-		if(std::fseek(file_, read_, SEEK_SET)) {
-			error_ = true;
-		}
 	}
 
 	size_type find_first_of(value_type val) noexcept {
@@ -164,17 +160,8 @@ public:
 			}
 
 			if(buffer == val) {
-				if(std::fseek(file_, read_, SEEK_SET)) {
-					error_ = true;
-					return npos;
-				}
-
 				return i;
 			}
-		}
-
-		if(std::fseek(file_, read_, SEEK_SET)) {
-			error_ = true;
 		}
 
 		return npos;
