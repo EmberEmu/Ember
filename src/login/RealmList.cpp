@@ -30,7 +30,7 @@ void RealmList::add_realm(std::span<const Realm> realms) {
 		copy->insert_or_assign(realm.id, realm);
 	}
 
-	realms_ = copy;
+	realms_ = std::move(copy);
 }
 
 void RealmList::add_realm(Realm realm) {
@@ -41,7 +41,7 @@ void RealmList::add_realm(Realm realm) {
 	auto copy = std::make_shared<RealmMap>(*realm_map);
 	copy->insert_or_assign(realm.id, std::move(realm));
 
-	realms_ = copy;
+	realms_ = std::move(copy);
 }
 
 std::optional<Realm> RealmList::get_realm(const std::uint32_t id) const {
