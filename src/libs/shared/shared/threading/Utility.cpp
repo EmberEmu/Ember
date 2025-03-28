@@ -68,7 +68,7 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 		throw std::runtime_error("set_name: thread name too long");
 	}
 
-#if defined _WIN32
+#if defined _WIN32 // todo, drop this eventually when bumping minimum Win version
 	auto lib = LoadLibrary("Kernel32.dll");
 
 	if(!lib) {
@@ -85,8 +85,12 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 	auto ret = set_thread_desc(handle, wstr.c_str());
 
 	if(FAILED(ret)) {
+		FreeLibrary(lib);
 		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
 	}
+
+	FreeLibrary(lib);
+
 #elif defined TARGET_OS_MAC
 	auto ret = pthread_setname_np(name);
 
