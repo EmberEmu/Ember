@@ -148,7 +148,7 @@ struct IntrusiveStorage final {
 		return *(storage.data() + index);
 	}
 
-	value_type& operator[](const std::size_t index) const {
+	const value_type& operator[](const std::size_t index) const {
 		return *(storage.data() + index);
 	}
 };
