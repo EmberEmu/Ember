@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -150,20 +150,14 @@ void Patcher::load_patch(PatchMeta& patch, const dal::PatchDAO& dao, const std::
 	patch.file_meta.path = path;
 
 	// we open each patch to make sure that it at least exists
-	std::ifstream file(path + patch.file_meta.name, std::ios::binary);
+	std::error_code ec;
+	const auto size = std::filesystem::file_size(path + patch.file_meta.name, ec);
 
-	if(!file) {
+	if(ec) {
 		throw std::runtime_error("Error opening patch " + path + patch.file_meta.name);
 	}
 
 	if(patch.file_meta.size == 0) {
-		std::error_code ec;
-		const auto size = std::filesystem::file_size(path + patch.file_meta.name, ec);
-
-		if(ec) {
-			throw std::runtime_error("Unable determine patch size for " + path + patch.file_meta.name);
-		}
-
 		patch.file_meta.size = static_cast<std::uint64_t>(size);
 		dirty = true;
 	}
