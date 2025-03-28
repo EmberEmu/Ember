@@ -13,13 +13,15 @@
 #include <regex>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 using namespace ember;
 
 int main(int argc, char** argv) try {
 	if(argc < 2) {
 		std::print(
-			"Usage: mpqextract <input.mpq> [ecma regex]\n"
+			"Usage: mpqextract <input.mpq> [--v] [ecma regex]\n"
+			"Add --v for verbose printing\n\n"
 			"Only files matching the optional regex will be extracted\n\n"
 			R"a(Example: mpqextract.exe test.mpq "([a-zA-Z0-9\s_\\.\-\(\):])+(.jpg|.gif)")a"
 		);
@@ -31,18 +33,31 @@ int main(int argc, char** argv) try {
 	mpq::LocateResult result = mpq::locate_archive(path);
 
 	if(!result) {
-		std::print(stderr, "Not found, error {}", result.error());
+		std::print("Not found, error {}", result.error());
 		return EXIT_FAILURE;
 	}
 
 	std::unique_ptr<mpq::Archive> archive = mpq::open_archive(path, *result);
 
 	if(!archive) {
-		std::print(stderr, "No archive");
+		std::print("No archive");
 		return EXIT_FAILURE;
 	}
 
-	const std::string pattern = argc >= 3? argv[2] : "";
+	int pattern_index = 0;
+	bool verbose = false;
+
+	if(argc >= 3) {
+		for(int i = 2; i < argc; ++i) {
+			if(std::strcmp(argv[i], "--v") == 0) {
+				verbose = true;
+			} else {
+				pattern_index = i;
+			}
+		}
+	}
+
+	const std::string pattern = pattern_index? argv[pattern_index] : "";
 	const std::regex regex(pattern, std::regex::ECMAScript);
 
 	for(auto& f : archive->files()) try {
@@ -55,20 +70,25 @@ int main(int argc, char** argv) try {
 		const auto index = archive->file_lookup(f, 0);
 
 		if(index == mpq::npos) {
-			std::println(stderr, "Skipping: {} found in listfile but not indexed", f);
+			std::println("Skipping: {} found in listfile but not indexed", f);
 			continue;
 		}
 
 		const auto& entry = archive->file_entry(index);
 		mpq::BufferedFileSink sink(f, entry.uncompressed_size);
+
+		if(verbose) {
+			std::println("Extracting {} ({} bytes)... ", f, entry.uncompressed_size);
+		}
+
 		archive->extract_file(f, sink);
 	} catch(const mpq::exception& e) {
-		std::println(stderr, "Extraction error: {} ({})", e.what(), f);
+		std::println("Extraction error: {} ({})", e.what(), f);
 	}
 
 	std::print("Zug zug, work complete!");
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	std::print(stderr, "Fatal error: {}", e.what());
+	std::print("Fatal error: {}", e.what());
 	return EXIT_FAILURE;
 }
