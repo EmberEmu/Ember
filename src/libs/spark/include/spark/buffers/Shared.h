@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <array>
+#include <algorithm>
 #include <bit>
 #include <concepts>
 #include <type_traits>
@@ -46,6 +48,13 @@ enum class StreamState {
 };
 
 namespace detail {
+
+template<decltype(auto) size>
+constexpr auto generate_filled(const std::uint8_t value) {
+	std::array<std::uint8_t, size> target{};
+	std::ranges::fill(target, value);
+	return target;
+}
 
 // Returns true if there's any overlap between source and destination ranges
 static inline bool region_overlap(const void* src, std::size_t src_len, const void* dst, std::size_t dst_len) {

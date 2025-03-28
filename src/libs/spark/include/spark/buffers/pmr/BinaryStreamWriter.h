@@ -32,13 +32,6 @@ private:
 	BufferWrite& buffer_;
 	std::size_t total_write_;
 
-	template<std::size_t size>
-	auto generate_filled(const std::uint8_t value) {
-		std::array<std::uint8_t, size> target{};
-		std::ranges::fill(target, value);
-		return target;
-	}
-
 public:
 	explicit BinaryStreamWriter(BufferWrite& source)
 		: StreamBase(source),
