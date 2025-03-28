@@ -70,7 +70,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	boost::asio::post(ctx_, [&, datagram = std::move(message)]() mutable {
+	boost::asio::post(ctx_, [this, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
