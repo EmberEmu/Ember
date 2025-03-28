@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,8 +20,11 @@ using Botan::AutoSeeded_RNG;
 namespace ember::srp6 {
 
 Client::Client(std::string identifier, std::string password, Generator gen, std::size_t key_size, bool srp6a)
-	: Client(std::move(identifier), std::move(password), gen,
-             BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(), srp6a) { }
+	: Client(std::move(identifier),
+	         std::move(password),
+	         gen,
+             BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
+	         srp6a) { }
 
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
 	: gen_(std::move(gen)),
