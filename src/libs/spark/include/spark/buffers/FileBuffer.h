@@ -12,6 +12,7 @@
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
 #include <filesystem>
+#include <utility>
 #include <cstddef>
 #include <cstdio>
 
@@ -59,20 +60,19 @@ public:
 		}
 	}
 
-	FileBuffer(FileBuffer&& rhs) noexcept {
-		file_ = rhs.file_;
-		read_ = rhs.read_;
-		write_ = rhs.write_;
-		error_ = rhs.error_;
+	FileBuffer(FileBuffer&& rhs) noexcept 
+		: file_(rhs.file_),
+		  read_(rhs.read_),
+		  write_(rhs.write_),
+		  error_(rhs.error_) {
 		rhs.file_ = nullptr;
 	}
 
 	FileBuffer& operator=(FileBuffer&& rhs) noexcept {
-		file_ = rhs.file_;
+		std::exchange(file_, rhs.file_);
 		read_ = rhs.read_;
 		write_ = rhs.write_;
 		error_ = rhs.error_;
-		rhs.file_ = nullptr;
 		return *this;
 	}
 
