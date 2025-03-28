@@ -16,6 +16,7 @@
 #include <spark/buffers/Concepts.h>
 #include <array>
 #include <concepts>
+#include <span>
 #include <type_traits>
 #include <cassert>
 #include <cstring>
@@ -128,20 +129,36 @@ struct IntrusiveStorage final {
 		return size;
 	}
 
-	value_type* read_data() {
+	value_type* read_ptr() {
 		return storage.data() + read_offset;
 	}
 
-	const value_type* read_data() const {
+	const value_type* read_ptr() const {
 		return storage.data() + read_offset;
 	}
 
-	value_type* write_data() {
+	value_type* write_ptr() {
 		return storage.data() + write_offset;
 	}
 
-	const value_type* write_data() const {
+	const value_type* write_ptr() const {
 		return storage.data() + write_offset;
+	}
+
+	std::span<const value_type> read_data() const {
+		return { storage.data() + read_offset, size() };
+	}
+
+	std::span<value_type> read_data() {
+		return { storage.data() + read_offset, size() } ;
+	}
+
+	std::span<const value_type> write_data() const {
+		return { storage.data() + write_offset, free() } ;
+	}
+
+	std::span<value_type> write_data() {
+		return { storage.data() + write_offset, free() } ;
 	}
 
 	value_type& operator[](const std::size_t index) {

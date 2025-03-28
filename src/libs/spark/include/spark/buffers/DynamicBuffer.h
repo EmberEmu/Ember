@@ -467,7 +467,7 @@ public:
 		return count;
 	}
 
-	size_type find_first_of(value_type val) const override {
+	size_type find_first_of(value_type value) const override {
 		size_type index = 0;
 		auto head = root_.next;
 
@@ -475,10 +475,12 @@ public:
 			const auto buffer = buffer_from_node(head);
 			const auto data = buffer->read_data();
 			
-			for(size_type i = 0, j = buffer->size(); i < j; ++i, ++index) {
-				if(data[i] == val) {
+			for(const auto& byte : data) {
+				if(byte == value) {
 					return index;
 				}
+
+				++index;
 			}
 
 			head = head->next;

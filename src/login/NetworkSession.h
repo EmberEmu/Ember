@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -67,7 +67,7 @@ private:
 
 		set_is_active(true);
 
-		socket_.async_receive(boost::asio::buffer(tail->write_data(), tail->free()), 
+		socket_.async_receive(tail->write_data(), 
 			create_alloc_handler(allocator_,
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(stopped_ || ec == boost::asio::error::operation_aborted) {
