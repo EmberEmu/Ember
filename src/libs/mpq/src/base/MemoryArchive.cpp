@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,6 @@
 #include <boost/container/small_vector.hpp>
 #include <bit>
 #include <iterator>
-#include <cmath>
 
 namespace ember::mpq {
 
@@ -97,9 +96,9 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 
 std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entry) {
 	const auto sector_size = BLOCK_SIZE << header_->block_size_shift;
-	auto count = static_cast<std::uint32_t>(
-		std::ceil(entry.uncompressed_size / static_cast<double>(sector_size)) + 1
-	);
+	// compiler will optimise
+	auto count = (entry.uncompressed_size / sector_size
+		+ (entry.uncompressed_size % sector_size? 1 : 0)) + 1;
 
 	if(entry.flags & Flags::MPQ_FILE_SECTOR_CRC) {
 		++count;
