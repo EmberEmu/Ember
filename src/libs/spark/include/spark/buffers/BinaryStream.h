@@ -121,7 +121,7 @@ public:
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, T>
 	BinaryStream& operator <<(prefixed<T> data) requires(writeable<buf_type>) {
-		buffer_.write(data.str.size(), sizeof(T::size_type));
+		buffer_.write(data.str.size());
 		buffer_.write(data.str.data(), data.str.size());
 		total_write_ += static_cast<size_type>(data.size()) + sizeof(T::size_type);
 		return *this;
@@ -149,7 +149,7 @@ public:
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string>
-	BinaryStream& operator <<(terminated<std::string> data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(terminated<T> data) requires(writeable<buf_type>) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
 		total_write_ += (data.str.size() + 1);
