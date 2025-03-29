@@ -27,8 +27,6 @@
 #include <cstdint>
 #include <cstring>
 
-#include <iostream> // temp
-
 namespace ember::spark::io {
 
 using namespace detail;
