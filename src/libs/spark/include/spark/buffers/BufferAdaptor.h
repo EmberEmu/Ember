@@ -88,7 +88,7 @@ public:
 	}
 
 	void write(const auto& source) requires(has_resize<buf_type>) {
-		write(source, sizeof(source));
+		write(&source, sizeof(source));
 	}
 
 	void write(const void* source, size_type length) requires(has_resize<buf_type>) {

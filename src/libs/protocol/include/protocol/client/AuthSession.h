@@ -50,7 +50,7 @@ struct AuthSession final {
 
 		stream >> build;
 		stream >> server_id;
-		stream >> username;
+		stream >> spark::io::terminated(username);
 		stream >> seed;
 		stream.get(digest.data(), DIGEST_LENGTH);
 		
@@ -92,7 +92,7 @@ struct AuthSession final {
 
 		while(!addon_stream.empty()) {
 			AddonData data;
-			addon_stream >> data.name;
+			addon_stream >> spark::io::terminated(data.name);
 			addon_stream >> data.key_version;
 			addon_stream >> data.crc;
 			addon_stream >> data.update_url_crc;
@@ -107,7 +107,7 @@ struct AuthSession final {
 	StreamResult write_to_stream(auto& stream) const try {
 		stream << build;
 		stream << server_id;
-		stream << username;
+		stream << spark::io::terminated(username);
 		stream << seed;
 		stream.put(digest.data(), digest.size());
 		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;

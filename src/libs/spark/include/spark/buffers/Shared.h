@@ -26,6 +26,11 @@ struct except_tag{};
 struct allow_throw : except_tag{};
 struct no_throw : except_tag{};
 
+template<typename T> struct raw { T& str; };
+template<typename T> struct prefixed { T& str; };
+template<typename T> struct prefixed_vi { T& str; };
+template<typename T> struct terminated { T& str; };
+
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD
 };
@@ -48,6 +53,42 @@ enum class StreamState {
 };
 
 namespace detail {
+
+template<typename size_type, typename stream_type>
+auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> {
+	int shift { 0 };
+	size_type value { 0 };
+	std::uint8_t byte { 0 };
+
+	do {
+		// if reading another byte would violate the read limit
+		if(stream.read_max() == 0) {
+			return { false, 0 };
+		}
+
+		stream.get(byte);
+		value |= (static_cast<size_type>(byte & 0x7F) << shift);
+		shift += 7;
+	} while(byte & 0x80);
+
+	return { true, value };
+}
+
+template<typename size_type, typename stream_type>
+stream_type::size_type varint_encode(stream_type& stream, size_type value) {
+	typename stream_type::size_type written = 0;
+
+	while(value > 0x7F) {
+		const std::uint8_t byte = (value & 0x7F) | 0x80;
+		stream.put(byte);
+		value >>= 7;
+		++written;
+	}
+
+	const std::uint8_t byte = value & 0x7F;
+	stream.put(&byte, 1);
+	return ++written;
+}
 
 template<decltype(auto) size>
 constexpr auto generate_filled(const std::uint8_t value) {

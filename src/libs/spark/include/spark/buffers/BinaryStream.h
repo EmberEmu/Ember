@@ -118,9 +118,49 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator <<(const std::string& data) requires(writeable<buf_type>) {
-		buffer_.write(data.data(), data.size() + 1); // +1 also writes terminator
-		total_write_ += (data.size() + 1);
+	template<typename T>
+	requires requires { std::is_same_v<std::decay_t<T>,	T>; }
+	BinaryStream& operator <<(prefixed<T> data) requires(writeable<buf_type>) {
+		buffer_.write(data.str.size(), sizeof(T::size_type));
+		buffer_.write(data.str.data(), data.str.size());
+		total_write_ += static_cast<size_type>(data.size()) + sizeof(T::size_type);
+		return *this;
+	}
+
+	template<typename T>
+	requires requires { std::is_same_v<std::decay_t<T>, T>; }
+	BinaryStream& operator <<(prefixed_vi<T> data) requires(writeable<buf_type>) {
+		const auto encode_len = varint_encode(*this, data.str.size());
+		buffer_.write(encode_len);
+		buffer_.write(data.str.data(), data.str.size());
+		total_write_ += static_cast<size_type>(data.str.size() + encode_len);
+		return *this;
+	}
+
+	template<typename T>
+	requires requires { std::is_same_v<std::decay_t<T>, std::string_view>; }
+	BinaryStream& operator <<(terminated<T> data) requires(writeable<buf_type>) {
+		assert(data.str.find_first_of('\0') == data.str.npos);
+		buffer_.write(data.str.data(), data.str.size());
+		buffer_.write('\0');
+		total_write_ += (data.str.size() + 1);
+		return *this;
+	}
+
+	template<typename T>
+	requires requires { std::is_same_v<std::decay_t<T>, std::string>; }
+	BinaryStream& operator <<(terminated<std::string> data) requires(writeable<buf_type>) {
+		assert(data.str.find_first_of('\0') == data.str.npos);
+		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
+		total_write_ += (data.str.size() + 1);
+		return *this;
+	}
+
+	template<typename T>
+	requires requires { std::is_same_v<std::decay_t<T>, T>; }
+	BinaryStream& operator <<(raw<T> data) requires(writeable<buf_type>) {
+		buffer_.write(data.data(), data.size());
+		total_write_ += data.size();
 		return *this;
 	}
 
@@ -129,14 +169,6 @@ public:
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
 		total_write_ += len + 1;
-		return *this;
-	}
-
-	BinaryStream& operator <<(std::string_view& data) requires(writeable<buf_type>) {
-		buffer_.write(data.data(), data.size());
-		const char term = '\0';
-		buffer_.write(&term, sizeof(term));
-		total_write_ += (data.size() + 1);
 		return *this;
 	}
 
@@ -188,30 +220,88 @@ public:
 
 	/*** Read ***/
 
-	// terminates when it hits a null byte, empty string if none found
-	BinaryStream& operator>>(std::string& dest) {
-		auto pos = buffer_.find_first_of(value_type(0));
+	template<typename T>
+	BinaryStream& operator>>(prefixed<std::string> dest) {
+		STREAM_READ_BOUNDS_CHECK(sizeof(std::string::size_type), *this);
 
-		if(pos == buf_type::npos) {
-			dest.clear();
-			return *this;
-		}
+		const std::string::size_type size {};
+		buffer_.read(&size);
 
-		dest.resize_and_overwrite(pos, [&](char* strbuf, size_type size) {
+		STREAM_READ_BOUNDS_CHECK(size, *this);
+
+		dest.str.resize_and_overwrite(size, [&](char* strbuf, size_type size) {
 			buffer_.read(strbuf, size);
 			total_read_ += size;
 			return size;
 		});
 
-		total_read_ += 1;
-		buffer_.skip(1); // skip null term
 		return *this;
 	}
 
-	// terminates when it hits a null byte, empty string_view if none found
-	// goes without saying that the buffer must outlive the string_view
-	BinaryStream& operator>>(std::string_view& dest) requires(contiguous<buf_type>) {
-		dest = view();
+	template<typename T>
+	BinaryStream& operator>>(prefixed<std::string_view> dest) {
+		const std::string_view::size_type size {};
+		STREAM_READ_BOUNDS_CHECK(sizeof(std::string_view::size_type), *this);
+		buffer_.read(&size);
+		dest.str = std::string_view { span<char>(size) };
+		return *this;
+	}
+	
+	BinaryStream& operator>>(prefixed_vi<std::string> dest) {
+		const auto& [result, size] = varint_decode(*this);
+
+		// if decoding the varint failed due to detecting a potential read overrun,
+		// we'll trigger the error handling here instead
+		if(!result) {
+			STREAM_READ_BOUNDS_CHECK(1, *this);
+		}
+
+		STREAM_READ_BOUNDS_CHECK(size, *this);
+
+		dest.str.resize_and_overwrite(size, [&](char* strbuf, size_type size) {
+			buffer_.read(strbuf, size);
+			total_read_ += size;
+			return size;
+		});
+
+		return *this;
+	}
+
+	BinaryStream& operator>>(prefixed_vi<std::string_view> dest) {
+		const auto& [result, size] = varint_decode(*this);
+
+		// if decoding the varint failed due to detecting a potential read overrun,
+		// we'll trigger the error handling here instead
+		if(!result) {
+			STREAM_READ_BOUNDS_CHECK(1, *this);
+		}
+		
+		dest.str = std::string_view { span<char>(size) };
+		return *this;
+	}
+
+	BinaryStream& operator>>(terminated<std::string> dest) {
+		auto pos = buffer_.find_first_of(value_type(0));
+
+		if(pos == buf_type::npos) {
+			dest.str.clear();
+			return *this;
+		}
+
+		dest.str.resize_and_overwrite(pos, [&](char* strbuf, size_type size) {
+			STREAM_READ_BOUNDS_CHECK(size + 1, *this); // include null term in bounds
+			buffer_.read(strbuf, size);
+			total_read_ += size;
+			return size;
+		});
+
+		buffer_.skip(1); // skip null term
+		total_read_ += 1;
+		return *this;
+	}
+
+	BinaryStream& operator>>(terminated<std::string_view> dest) {
+		dest.str = view();
 		return *this;
 	}
 
@@ -372,6 +462,14 @@ public:
 
 	size_type read_limit() const {
 		return read_limit_;
+	}
+
+	size_type read_max() const {
+		if(read_limit_) {
+			return read_limit_ - total_read_;
+		} else {
+			return buffer_.size();
+		}
 	}
 
 	bool good() const {
