@@ -66,23 +66,60 @@ public:
 	BinaryStreamReader& operator=(const BinaryStreamReader&) = delete;
 	BinaryStreamReader(const BinaryStreamReader&) = delete;
 
-	// terminates when it hits a null byte, empty string if none found
-	BinaryStreamReader& operator>>(std::string& dest) {
-		check_read_bounds(1); // just to prevent trying to read from an empty buffer
-		auto pos = buffer_.find_first_of(std::byte(0));
+	BinaryStreamReader& operator>>(prefixed<std::string> dest) {
+		check_read_bounds(sizeof(std::size_t));
+
+		std::size_t size {};
+		buffer_.read(&size, sizeof(size));
+
+		check_read_bounds(size);
+
+		dest.str.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+			buffer_.read(strbuf, size);
+			total_read_ += size;
+			return size;
+		});
+
+		return *this;
+	}
+
+	BinaryStreamReader& operator>>(prefixed_varint<std::string> dest) {
+		const auto& [result, size] = varint_decode<std::size_t>(*this);
+
+		// if decoding the varint failed due to detecting a potential read overrun,
+		// we'll trigger the error handling here instead
+		if(!result) {
+			check_read_bounds(1);
+		}
+
+		check_read_bounds(size);
+
+		dest.str.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+			buffer_.read(strbuf, size);
+			total_read_ += size;
+			return size;
+		});
+
+		return *this;
+	}
+
+	BinaryStreamReader& operator>>(terminated<std::string> dest) {
+		auto pos = buffer_.find_first_of(std::byte{0});
 
 		if(pos == BufferRead::npos) {
-			dest.clear();
+			dest.str.clear();
 			return *this;
 		}
 
-		dest.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
-			total_read_ += size;
+		dest.str.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
+			check_read_bounds(size + 1); // include null term in bounds
 			buffer_.read(strbuf, size);
+			total_read_ += size;
 			return size;
 		});
 
 		buffer_.skip(1); // skip null term
+		total_read_ += 1;
 		return *this;
 	}
 
@@ -105,7 +142,7 @@ public:
 	}
 
 	void get(std::string& dest) {
-		*this >> dest;
+		*this >> terminated(dest);
 	}
 
 	void get(std::string& dest, std::size_t size) {
@@ -179,6 +216,14 @@ public:
 
 	std::size_t read_limit() const {
 		return read_limit_;
+	}
+
+	std::size_t read_max() const {
+		if(read_limit_) {
+			return read_limit_ - total_read_;
+		} else {
+			return buffer_.size();
+		}
 	}
 
 	BufferRead* buffer() const {

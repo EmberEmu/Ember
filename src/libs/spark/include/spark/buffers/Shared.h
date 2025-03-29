@@ -28,7 +28,7 @@ struct no_throw : except_tag{};
 
 template<typename T> struct raw { T& str; };
 template<typename T> struct prefixed { T& str; };
-template<typename T> struct prefixed_vi { T& str; };
+template<typename T> struct prefixed_varint { T& str; };
 template<typename T> struct terminated { T& str; };
 
 enum class BufferSeek {
@@ -66,7 +66,7 @@ auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> {
 			return { false, 0 };
 		}
 
-		stream.get(byte);
+		stream.get(&byte, 1);
 		value |= (static_cast<size_type>(byte & 0x7F) << shift);
 		shift += 7;
 	} while(byte & 0x80);
@@ -80,7 +80,7 @@ stream_type::size_type varint_encode(stream_type& stream, size_type value) {
 
 	while(value > 0x7F) {
 		const std::uint8_t byte = (value & 0x7F) | 0x80;
-		stream.put(byte);
+		stream.put(&byte, 1);
 		value >>= 7;
 		++written;
 	}

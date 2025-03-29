@@ -104,8 +104,8 @@ public:
 		return BufferReadAdaptor<buf_type>::empty();
 	}
 
-	std::size_t find_first_of(std::byte val) const override { 
-		return BufferReadAdaptor<buf_type>::find_first_of(val);
+	std::size_t find_first_of(std::byte value) const override { 
+		return BufferReadAdaptor<buf_type>::find_first_of(value);
 	}
 };
 

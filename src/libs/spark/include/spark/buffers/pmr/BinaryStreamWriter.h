@@ -40,8 +40,8 @@ public:
 
 	BinaryStreamWriter(BinaryStreamWriter&& rhs) noexcept
 		: StreamBase(rhs),
-		 buffer_(rhs.buffer_), 
-		 total_write_(rhs.total_write_) {
+		  buffer_(rhs.buffer_), 
+		  total_write_(rhs.total_write_) {
 		 rhs.total_write_ = static_cast<std::size_t>(-1);
 		 rhs.set_state(StreamState::INVALID_STREAM);
 	}
@@ -62,9 +62,51 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(const std::string& data) {
-		buffer_.write(data.data(), data.size() + 1); // +1 also writes terminator
-		total_write_ += (data.size() + 1);
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, T>
+	BinaryStreamWriter& operator <<(prefixed<T> data) {
+		const auto size = data.str.size();
+		buffer_.write(&size, sizeof(size));
+		buffer_.write(data.str.data(), data.str.size());
+		total_write_ += (size + sizeof(size));
+		return *this;
+	}
+
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, T>
+	BinaryStreamWriter& operator <<(prefixed_varint<T> data) {
+		const auto encode_len = varint_encode(*this, data.str.size());
+		buffer_.write(&encode_len, sizeof(encode_len));
+		buffer_.write(data.str.data(), data.str.size());
+		total_write_ += (data.str.size() + encode_len);
+		return *this;
+	}
+
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, std::string_view>
+	BinaryStreamWriter& operator <<(terminated<T> data) {
+		assert(data.str.find_first_of('\0') == data.str.npos);
+		buffer_.write(data.str.data(), data.str.size());
+		const char term { '\0' };
+		buffer_.write(&term, 1);
+		total_write_ += (data.str.size() + 1);
+		return *this;
+	}
+
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, std::string>
+	BinaryStreamWriter& operator <<(terminated<T> data) {
+		assert(data.str.find_first_of('\0') == data.str.npos);
+		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
+		total_write_ += (data.str.size() + 1);
+		return *this;
+	}
+
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, T>
+	BinaryStreamWriter& operator <<(raw<T> data) {
+		buffer_.write(data.data(), data.size());
+		total_write_ += data.size();
 		return *this;
 	}
 
@@ -73,14 +115,6 @@ public:
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
 		total_write_ += len + 1;
-		return *this;
-	}
-
-	BinaryStreamWriter& operator<<(std::string_view& data) {
-		buffer_.write(data.data(), data.size());
-		const char term = '\0';
-		buffer_.write(&term, sizeof(term));
-		total_write_ += (data.size() + 1);
 		return *this;
 	}
 

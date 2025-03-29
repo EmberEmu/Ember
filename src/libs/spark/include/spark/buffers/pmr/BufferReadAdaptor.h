@@ -84,9 +84,9 @@ public:
 		return read_;
 	}
 
-	std::size_t find_first_of(std::byte val) const override {
+	std::size_t find_first_of(std::byte value) const override {
 		for(auto i = read_; i < size(); ++i) {
-			if(static_cast<std::byte>(buffer_[i]) == val) {
+			if(static_cast<std::byte>(buffer_[i]) == value) {
 				return i - read_;
 			}
 		}

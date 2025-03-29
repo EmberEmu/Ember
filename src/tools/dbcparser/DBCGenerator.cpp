@@ -44,11 +44,11 @@ class RecordPrinter final : public types::TypeVisitor {
 			record_ << 1.0;
 		} else if(type == "string_ref") {
 			record_ << gsl::narrow<std::uint32_t>(string_block_.size());
-			string_block_ << default_string;
+			string_block_ << spark::io::terminated(default_string);
 		} else if(type == "string_ref_loc") {
 			for(const auto& loc : string_ref_loc_regions) {
 				record_ << gsl::narrow<std::uint32_t>(string_block_.size());
-				string_block_ << default_string_loc;
+				string_block_ << spark::io::terminated(default_string_loc);
 			}
 
 			record_ << std::uint32_t{1};

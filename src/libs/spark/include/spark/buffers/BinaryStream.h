@@ -129,7 +129,7 @@ public:
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStream& operator <<(prefixed_vi<T> data) requires(writeable<buf_type>) {
+	BinaryStream& operator <<(prefixed_varint<T> data) requires(writeable<buf_type>) {
 		const auto encode_len = varint_encode(*this, data.str.size());
 		buffer_.write(encode_len);
 		buffer_.write(data.str.data(), data.str.size());
@@ -223,7 +223,7 @@ public:
 	BinaryStream& operator>>(prefixed<std::string> dest) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(std::string::size_type), *this);
 
-		const std::string::size_type size {};
+		std::string::size_type size {};
 		buffer_.read(&size);
 
 		STREAM_READ_BOUNDS_CHECK(size, *this);
@@ -245,7 +245,7 @@ public:
 		return *this;
 	}
 	
-	BinaryStream& operator>>(prefixed_vi<std::string> dest) {
+	BinaryStream& operator>>(prefixed_varint<std::string> dest) {
 		const auto& [result, size] = varint_decode(*this);
 
 		// if decoding the varint failed due to detecting a potential read overrun,
@@ -265,7 +265,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(prefixed_vi<std::string_view> dest) {
+	BinaryStream& operator>>(prefixed_varint<std::string_view> dest) {
 		const auto& [result, size] = varint_decode(*this);
 
 		// if decoding the varint failed due to detecting a potential read overrun,

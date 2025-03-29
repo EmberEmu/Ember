@@ -91,13 +91,13 @@ TEST(BinaryStreamPMR, ReadWriteStdString) {
 	spark::io::DynamicBuffer<32> buffer;
 	spark::io::pmr::BinaryStream stream(buffer);
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
-	stream << in;
+	stream << spark::io::terminated(in);
 
 	// +1 to account for the terminator that's written
 	ASSERT_EQ(stream.size(), in.size() + 1);
 
 	std::string out;
-	stream >> out;
+	stream >> spark::io::terminated(out);
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(in, out);
@@ -114,7 +114,7 @@ TEST(BinaryStreamPMR, ReadWriteCString) {
 	ASSERT_EQ(stream.size(), strlen(in) + 1);
 
 	std::string out;
-	stream >> out;
+	stream >> spark::io::terminated(out);
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(0, strcmp(in, out.c_str()));
@@ -281,9 +281,9 @@ TEST(BinaryStreamPMR, StringviewWrite) {
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
 	std::string_view view { "There's coffee in that nebula" };
-	stream << view;
+	stream << spark::io::terminated(view);
 	std::string res;
-	stream >> res;
+	stream >> spark::io::terminated(res);
 	ASSERT_EQ(view, res);
 }
 
@@ -294,7 +294,7 @@ TEST(BinaryStreamPMR, CStringviewWrite) {
 	ember::cstring_view view { "There's coffee in that nebula" };
 	stream << view;
 	std::string res;
-	stream >> res;
+	stream >> spark::io::terminated(res);
 	ASSERT_EQ(view, res);
 }
 
