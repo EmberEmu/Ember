@@ -76,7 +76,6 @@ public:
 
 		dest.str.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
-			total_read_ += size;
 			return size;
 		});
 
@@ -96,14 +95,13 @@ public:
 
 		dest.str.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
-			total_read_ += size;
 			return size;
 		});
 
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(terminated<std::string> dest) {
+	BinaryStreamReader& operator>>(null_terminated<std::string> dest) {
 		auto pos = buffer_.find_first_of(std::byte{0});
 
 		if(pos == BufferRead::npos) {
@@ -111,16 +109,19 @@ public:
 			return *this;
 		}
 
+		check_read_bounds(pos + 1); // include null terminator
+
 		dest.str.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
-			check_read_bounds(size + 1); // include null term in bounds
 			buffer_.read(strbuf, size);
-			total_read_ += size;
 			return size;
 		});
 
 		buffer_.skip(1); // skip null term
-		total_read_ += 1;
 		return *this;
+	}
+
+	BinaryStreamReader& operator>>(std::string& dest) {
+		return (*this >> prefixed(dest));
 	}
 
 	BinaryStreamReader& operator>>(has_shr_override<BinaryStreamReader> auto&& data) {
@@ -142,11 +143,12 @@ public:
 	}
 
 	void get(std::string& dest) {
-		*this >> terminated(dest);
+		*this >> null_terminated(dest);
 	}
 
 	void get(std::string& dest, std::size_t size) {
 		check_read_bounds(size);
+
 		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
 			buffer_.read(strbuf, len);
 			return len;

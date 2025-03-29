@@ -53,8 +53,8 @@ class RealmList final : public Packet {
 
 			stream >> realm.type;
 			stream >> realm.flags;
-			stream >> spark::io::terminated(realm.name);
-			stream >> spark::io::terminated(realm.address);
+			stream >> spark::io::null_terminated(realm.name);
+			stream >> spark::io::null_terminated(realm.address);
 			stream >> realm.population;
 			stream >> num_chars;
 
@@ -118,8 +118,8 @@ public:
 			auto& realm = entry.realm;
 			stream << be::native_to_little(realm.type);
 			stream << realm.flags;
-			stream << spark::io::terminated(realm.name);
-			stream << spark::io::terminated(realm.address);
+			stream << spark::io::null_terminated(realm.name);
+			stream << spark::io::null_terminated(realm.address);
 			stream << realm.population;
 			stream << gsl::narrow_cast<std::uint8_t>(entry.characters);
 			stream << gsl::narrow<std::uint8_t>(realm.category);

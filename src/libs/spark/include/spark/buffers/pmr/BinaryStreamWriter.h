@@ -63,8 +63,7 @@ public:
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStreamWriter& operator <<(prefixed<T> data) {
+	BinaryStreamWriter& operator<<(prefixed<T> data) {
 		const auto size = data.str.size();
 		buffer_.write(&size, sizeof(size));
 		buffer_.write(data.str.data(), data.str.size());
@@ -73,8 +72,7 @@ public:
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStreamWriter& operator <<(prefixed_varint<T> data) {
+	BinaryStreamWriter& operator<<(prefixed_varint<T> data) {
 		const auto encode_len = varint_encode(*this, data.str.size());
 		buffer_.write(&encode_len, sizeof(encode_len));
 		buffer_.write(data.str.data(), data.str.size());
@@ -84,7 +82,7 @@ public:
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string_view>
-	BinaryStreamWriter& operator <<(terminated<T> data) {
+	BinaryStreamWriter& operator<<(null_terminated<T> data) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size());
 		const char term { '\0' };
@@ -95,7 +93,7 @@ public:
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string>
-	BinaryStreamWriter& operator <<(terminated<T> data) {
+	BinaryStreamWriter& operator<<(null_terminated<T> data) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
 		total_write_ += (data.str.size() + 1);
@@ -103,11 +101,18 @@ public:
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStreamWriter& operator <<(raw<T> data) {
+	BinaryStreamWriter& operator<<(raw<T> data) {
 		buffer_.write(data.data(), data.size());
 		total_write_ += data.size();
 		return *this;
+	}
+
+	BinaryStreamWriter& operator<<(std::string_view& data) {
+		return (*this << prefixed(data));
+	}
+
+	BinaryStreamWriter& operator<<(const std::string& data) {
+		return (*this << prefixed(data));
 	}
 
 	BinaryStreamWriter& operator<<(const char* data) {

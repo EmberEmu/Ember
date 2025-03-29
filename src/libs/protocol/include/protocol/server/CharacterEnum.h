@@ -31,7 +31,7 @@ struct CharacterEnum final {
 		for(auto i = 0; i < char_count; ++i) {
 			Character c;
 			stream >> c.id;
-			stream >> spark::io::terminated(c.name);
+			stream >> spark::io::null_terminated(c.name);
 			stream >> c.race;
 			stream >> c.class_;
 			stream >> c.gender;
@@ -90,7 +90,7 @@ struct CharacterEnum final {
 
 		for(auto& c : characters) {
 			stream << be::native_to_little(c.id);
-			stream << spark::io::terminated(c.name);
+			stream << spark::io::null_terminated(c.name);
 			stream << c.race;
 			stream << c.class_;
 			stream << c.gender;

@@ -98,13 +98,13 @@ TEST(BinaryStream, ReadWriteStdString) {
 	spark::io::DynamicBuffer<32> buffer;
 	spark::io::BinaryStream stream(buffer);
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
-	stream << spark::io::terminated(in);
+	stream << spark::io::null_terminated(in);
 
 	// +1 to account for the terminator that's written
 	ASSERT_EQ(stream.size(), in.size() + 1);
 
 	std::string out;
-	stream >> spark::io::terminated(out);
+	stream >> spark::io::null_terminated(out);
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(in, out);
@@ -121,7 +121,7 @@ TEST(BinaryStream, ReadWriteCString) {
 	ASSERT_EQ(stream.size(), strlen(in) + 1);
 
 	std::string out;
-	stream >> spark::io::terminated(out);
+	stream >> spark::io::null_terminated(out);
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(0, strcmp(in, out.c_str()));
@@ -235,7 +235,7 @@ TEST(BinaryStream, NoCopyStringRead) {
 	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	const std::uint32_t trailing { 0x0DDBA11 };
-	stream << spark::io::terminated(input) << trailing;
+	stream << spark::io::null_terminated(input) << trailing;
 
 	// check this stream uses a contiguous buffer
 	const auto contig = std::is_same_v<decltype(stream)::contiguous_type, spark::io::is_contiguous>;
@@ -263,7 +263,7 @@ TEST(BinaryStream, StringviewRead) {
 	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	const std::uint32_t trailing { 0x0DDBA11 };
-	stream << spark::io::terminated(input) << trailing;
+	stream << spark::io::null_terminated(input) << trailing;
 
 	auto view = stream.view();
 	ASSERT_EQ(input, view);
@@ -279,7 +279,7 @@ TEST(BinaryStream, PartialStringviewRead) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
-	stream << spark::io::terminated(input);
+	stream << spark::io::null_terminated(input);
 
 	auto span = stream.span(20);
 	std::string_view view(span);
@@ -297,10 +297,10 @@ TEST(BinaryStream, StringviewStream) {
 	spark::io::BinaryStream stream(adaptor);
 	const std::string input { "The quick brown fox jumped over the lazy dog" };
 	const std::uint32_t trailing { 0xDEFECA7E };
-	stream << spark::io::terminated(input) << trailing;
+	stream << spark::io::null_terminated(input) << trailing;
 
 	std::string_view output;
-	stream >> spark::io::terminated(output);
+	stream >> spark::io::null_terminated(output);
 	ASSERT_EQ(input, output);
 
 	// ensure we can still read subsequent data as normal
@@ -351,7 +351,7 @@ TEST(BinaryStream, CStringview) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 	std::string_view view { "There's coffee in that nebula" };
-	stream << spark::io::terminated(view);
+	stream << spark::io::null_terminated(view);
 	ember::cstring_view cview;
 	stream >> cview;
 	ASSERT_EQ(view, cview);
@@ -478,7 +478,7 @@ TEST(BinaryStream, FileBufferRead) {
 	std::string_view strcmp { "The quick brown fox jumped over the lazy dog." };
 	std::string str_out;
 
-	stream >> w >> x >> y >> z >> spark::io::terminated(str_out);
+	stream >> w >> x >> y >> z >> spark::io::null_terminated(str_out);
 	ASSERT_TRUE(buffer) << "File read error occurred";
 
 	boost::endian::little_to_native_inplace(x);
@@ -517,7 +517,7 @@ TEST(BinaryStream, FileBufferWrite) {
 	boost::endian::native_to_little_inplace(y);
 	boost::endian::native_to_little_inplace(z);
 
-	stream << w << x << y << z << spark::io::terminated(str);
+	stream << w << x << y << z << spark::io::null_terminated(str);
 	buffer.flush(); // ensure data is written before following read
 
 	const auto md5_1 = util::generate_md5("test_data/filebuffer");

@@ -86,7 +86,7 @@ struct AddonInfo final {
 				stream << gsl::narrow_cast<std::uint8_t>(0); // URL not present
 			} else {
 				stream << gsl::narrow_cast<std::uint8_t>(1); // URL present
-				stream << spark::io::terminated(addon.update_url);
+				stream << spark::io::null_terminated(addon.update_url);
 			}
 		}
 

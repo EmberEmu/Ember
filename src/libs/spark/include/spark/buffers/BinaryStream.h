@@ -27,6 +27,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include <iostream> // temp
+
 namespace ember::spark::io {
 
 using namespace detail;
@@ -105,22 +107,21 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator <<(has_shl_override<BinaryStream> auto&& data)
+	BinaryStream& operator<<(has_shl_override<BinaryStream> auto&& data)
 	requires(writeable<buf_type>) {
 		return data.operator<<(*this);
 	}
 
 	template<pod T>
 	requires (!has_shl_override<T, BinaryStream>)
-	BinaryStream& operator <<(const T& data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(const T& data) requires(writeable<buf_type>) {
 		buffer_.write(&data, sizeof(T));
 		total_write_ += sizeof(T);
 		return *this;
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStream& operator <<(prefixed<T> data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(prefixed<T> data) requires(writeable<buf_type>) {
 		buffer_.write(data.str.size());
 		buffer_.write(data.str.data(), data.str.size());
 		total_write_ += static_cast<size_type>(data.size()) + sizeof(T::size_type);
@@ -128,8 +129,7 @@ public:
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStream& operator <<(prefixed_varint<T> data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(prefixed_varint<T> data) requires(writeable<buf_type>) {
 		const auto encode_len = varint_encode(*this, data.str.size());
 		buffer_.write(encode_len);
 		buffer_.write(data.str.data(), data.str.size());
@@ -139,7 +139,7 @@ public:
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string_view>
-	BinaryStream& operator <<(terminated<T> data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(null_terminated<T> data) requires(writeable<buf_type>) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size());
 		buffer_.write('\0');
@@ -149,7 +149,7 @@ public:
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string>
-	BinaryStream& operator <<(terminated<T> data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(null_terminated<T> data) requires(writeable<buf_type>) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
 		total_write_ += (data.str.size() + 1);
@@ -157,14 +157,21 @@ public:
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, T>
-	BinaryStream& operator <<(raw<T> data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(raw<T> data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size());
 		total_write_ += data.size();
 		return *this;
 	}
 
-	BinaryStream& operator <<(const char* data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(std::string_view data) requires(writeable<buf_type>) {
+		return (*this << prefixed(data));
+	}
+
+	BinaryStream& operator<<(const std::string& data) requires(writeable<buf_type>) {
+		return (*this << prefixed(data));
+	}
+
+	BinaryStream& operator<<(const char* data) requires(writeable<buf_type>) {
 		assert(data);
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
@@ -172,7 +179,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator <<(cstring_view& data) requires(writeable<buf_type>) {
+	BinaryStream& operator<<(cstring_view& data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size() + 1);
 		total_write_ += (data.size() + 1);
 		return *this;
@@ -230,7 +237,6 @@ public:
 
 		dest.str.resize_and_overwrite(size, [&](char* strbuf, size_type size) {
 			buffer_.read(strbuf, size);
-			total_read_ += size;
 			return size;
 		});
 
@@ -258,7 +264,6 @@ public:
 
 		dest.str.resize_and_overwrite(size, [&](char* strbuf, size_type size) {
 			buffer_.read(strbuf, size);
-			total_read_ += size;
 			return size;
 		});
 
@@ -278,7 +283,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(terminated<std::string> dest) {
+	BinaryStream& operator>>(null_terminated<std::string> dest) {
 		auto pos = buffer_.find_first_of(value_type(0));
 
 		if(pos == buf_type::npos) {
@@ -286,21 +291,28 @@ public:
 			return *this;
 		}
 
+		STREAM_READ_BOUNDS_CHECK(pos + 1, *this); // include null terminator
+
 		dest.str.resize_and_overwrite(pos, [&](char* strbuf, size_type size) {
-			STREAM_READ_BOUNDS_CHECK(size + 1, *this); // include null term in bounds
 			buffer_.read(strbuf, size);
-			total_read_ += size;
 			return size;
 		});
 
-		buffer_.skip(1); // skip null term
-		total_read_ += 1;
+		buffer_.skip(1); // skip null terminator
 		return *this;
 	}
 
-	BinaryStream& operator>>(terminated<std::string_view> dest) {
+	BinaryStream& operator>>(null_terminated<std::string_view> dest) {
 		dest.str = view();
 		return *this;
+	}
+
+	BinaryStream& operator >>(std::string_view& data) requires(writeable<buf_type>) {
+		return (*this >> prefixed(data));
+	}
+
+	BinaryStream& operator >>(std::string& data) requires(writeable<buf_type>) {
+		return (*this >> prefixed(data));
 	}
 
 	// terminates when it hits a null byte, empty cstring_view if none found

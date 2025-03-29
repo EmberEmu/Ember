@@ -29,7 +29,7 @@ struct no_throw : except_tag{};
 template<typename T> struct raw { T& str; };
 template<typename T> struct prefixed { T& str; };
 template<typename T> struct prefixed_varint { T& str; };
-template<typename T> struct terminated { T& str; };
+template<typename T> struct null_terminated { T& str; };
 
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD
@@ -55,7 +55,7 @@ enum class StreamState {
 namespace detail {
 
 template<typename size_type, typename stream_type>
-auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> {
+constexpr auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> {
 	int shift { 0 };
 	size_type value { 0 };
 	std::uint8_t byte { 0 };
@@ -75,7 +75,7 @@ auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> {
 }
 
 template<typename size_type, typename stream_type>
-stream_type::size_type varint_encode(stream_type& stream, size_type value) {
+constexpr auto varint_encode(stream_type& stream, size_type value) -> stream_type::size_type {
 	typename stream_type::size_type written = 0;
 
 	while(value > 0x7F) {

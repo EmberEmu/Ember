@@ -30,7 +30,7 @@ struct CharacterRename final {
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {
 			stream >> id;
-			stream >> spark::io::terminated(name);
+			stream >> spark::io::null_terminated(name);
 		}
 
 		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
@@ -43,7 +43,7 @@ struct CharacterRename final {
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {
 			stream << id;
-			stream << spark::io::terminated(name);
+			stream << spark::io::null_terminated(name);
 		}
 
 		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
