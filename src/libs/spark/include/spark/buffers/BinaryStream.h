@@ -119,7 +119,7 @@ public:
 	}
 
 	template<typename T>
-	requires requires { std::is_same_v<std::decay_t<T>,	T>; }
+	requires std::is_same_v<std::decay_t<T>, T>
 	BinaryStream& operator <<(prefixed<T> data) requires(writeable<buf_type>) {
 		buffer_.write(data.str.size(), sizeof(T::size_type));
 		buffer_.write(data.str.data(), data.str.size());
@@ -128,7 +128,7 @@ public:
 	}
 
 	template<typename T>
-	requires requires { std::is_same_v<std::decay_t<T>, T>; }
+	requires std::is_same_v<std::decay_t<T>, T>
 	BinaryStream& operator <<(prefixed_vi<T> data) requires(writeable<buf_type>) {
 		const auto encode_len = varint_encode(*this, data.str.size());
 		buffer_.write(encode_len);
@@ -138,7 +138,7 @@ public:
 	}
 
 	template<typename T>
-	requires requires { std::is_same_v<std::decay_t<T>, std::string_view>; }
+	requires std::is_same_v<std::decay_t<T>, std::string_view>
 	BinaryStream& operator <<(terminated<T> data) requires(writeable<buf_type>) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size());
@@ -148,7 +148,7 @@ public:
 	}
 
 	template<typename T>
-	requires requires { std::is_same_v<std::decay_t<T>, std::string>; }
+	requires std::is_same_v<std::decay_t<T>, std::string>
 	BinaryStream& operator <<(terminated<std::string> data) requires(writeable<buf_type>) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
 		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
@@ -157,7 +157,7 @@ public:
 	}
 
 	template<typename T>
-	requires requires { std::is_same_v<std::decay_t<T>, T>; }
+	requires  std::is_same_v<std::decay_t<T>, T>
 	BinaryStream& operator <<(raw<T> data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size());
 		total_write_ += data.size();
