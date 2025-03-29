@@ -157,7 +157,7 @@ public:
 	}
 
 	template<typename T>
-	requires  std::is_same_v<std::decay_t<T>, T>
+	requires std::is_same_v<std::decay_t<T>, T>
 	BinaryStream& operator <<(raw<T> data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size());
 		total_write_ += data.size();
@@ -220,7 +220,6 @@ public:
 
 	/*** Read ***/
 
-	template<typename T>
 	BinaryStream& operator>>(prefixed<std::string> dest) {
 		STREAM_READ_BOUNDS_CHECK(sizeof(std::string::size_type), *this);
 
@@ -238,7 +237,6 @@ public:
 		return *this;
 	}
 
-	template<typename T>
 	BinaryStream& operator>>(prefixed<std::string_view> dest) {
 		const std::string_view::size_type size {};
 		STREAM_READ_BOUNDS_CHECK(sizeof(std::string_view::size_type), *this);
