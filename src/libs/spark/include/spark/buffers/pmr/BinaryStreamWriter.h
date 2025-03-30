@@ -67,7 +67,7 @@ public:
 		const auto size = adaptor->size();
 		buffer_.write(&size, sizeof(size));
 		buffer_.write(adaptor->data(), adaptor->size());
-		total_write_ += (adaptor->size()) + sizeof(T::size_type);
+		total_write_ += (adaptor->size()) + sizeof(adaptor->size());
 		return *this;
 	}
 

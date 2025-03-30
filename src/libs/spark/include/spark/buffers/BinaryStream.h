@@ -122,7 +122,7 @@ public:
 	BinaryStream& operator<<(prefixed<T> adaptor) requires(writeable<buf_type>) {
 		buffer_.write(adaptor->size());
 		buffer_.write(adaptor->data(), adaptor->size());
-		total_write_ += static_cast<size_type>(adaptor->size()) + sizeof(T::size_type);
+		total_write_ += static_cast<size_type>(adaptor->size()) + sizeof(adaptor->size());
 		return *this;
 	}
 
@@ -140,7 +140,7 @@ public:
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		buffer_.write(adaptor->data(), adaptor->size());
 		buffer_.write('\0');
-		total_write_ += (adaptor->size() + 1);
+		total_write_ += static_cast<size_type>(adaptor->size() + 1);
 		return *this;
 	}
 
@@ -149,14 +149,14 @@ public:
 	BinaryStream& operator<<(null_terminated<T> adaptor) requires(writeable<buf_type>) {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		buffer_.write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
-		total_write_ += (adaptor->size() + 1);
+		total_write_ += static_cast<size_type>(adaptor->size() + 1);
 		return *this;
 	}
 
 	template<typename T>
 	BinaryStream& operator<<(raw<T> adaptor) requires(writeable<buf_type>) {
 		buffer_.write(adaptor->data(), adaptor->size());
-		total_write_ += adaptor->size();
+		total_write_ += static_cast<size_type>(adaptor->size());
 		return *this;
 	}
 
