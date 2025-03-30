@@ -26,11 +26,17 @@ struct except_tag{};
 struct allow_throw : except_tag{};
 struct no_throw : except_tag{};
 
-template<typename T> struct raw { T& str; };
-template<typename T> struct raw_null_terminated { T& str; };
-template<typename T> struct prefixed { T& str; };
-template<typename T> struct prefixed_varint { T& str; };
-template<typename T> struct null_terminated { T& str; };
+#define STRING_ADAPTOR(adaptor_name)           \
+template<typename string_type>                 \
+struct adaptor_name {                          \
+    string_type& str;                          \
+    string_type* operator->() { return &str; } \
+};
+
+STRING_ADAPTOR(raw)
+STRING_ADAPTOR(prefixed)
+STRING_ADAPTOR(prefixed_varint)
+STRING_ADAPTOR(null_terminated)
 
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD

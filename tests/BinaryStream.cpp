@@ -20,6 +20,7 @@
 #include <array>
 #include <chrono>
 #include <limits>
+#include <format>
 #include <numeric>
 #include <random>
 #include <cstdint>
@@ -535,4 +536,238 @@ TEST(BinaryStream, SetErrorState) {
 	ASSERT_FALSE(stream);
 	ASSERT_FALSE(stream.good());
 	ASSERT_TRUE(stream.state() == spark::io::StreamState::USER_DEFINED_ERR);
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedVarint_Long) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring three bytes
+	input.resize_and_overwrite(80'000, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+	
+	stream << spark::io::prefixed_varint(input);
+	std::string output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedVarint_Medium) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring two bytes
+	input.resize_and_overwrite(5'000, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+	
+	stream << spark::io::prefixed_varint(input);
+	std::string output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedVarint_Short) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring one byte
+	input.resize_and_overwrite(127, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+	
+	stream << spark::io::prefixed_varint(input);
+	std::string output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StringAdaptor_Prefixed) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed(input);
+	std::string output;
+	stream >> spark::io::prefixed(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_Default) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << input;
+	std::string output;
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_Raw) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const auto input = std::format("String with {} embedded null", '\0');
+	stream << spark::io::raw(input);
+	ASSERT_EQ(input.size(), buffer.size());
+	std::string output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(output, "String with ");
+	ASSERT_FALSE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_NullTerminated) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "We're just normal strings. Innocent strings."};
+	stream << spark::io::null_terminated(input);
+	std::string output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Long) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring three bytes
+	input.resize_and_overwrite(80'000, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+
+	stream << spark::io::prefixed_varint(input);
+	std::string_view output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Medium) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring two bytes
+	input.resize_and_overwrite(5'000, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+
+	stream << spark::io::prefixed_varint(input);
+	std::string_view output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Short) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring one byte
+	input.resize_and_overwrite(127, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+
+	stream << spark::io::prefixed_varint(input);
+	std::string_view output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, StringViewAdaptor_Prefixed) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed(input);
+	std::string_view output;
+	stream >> spark::io::prefixed(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringViewAdaptor_Default) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	stream << input;
+	std::string_view output;
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringViewAdaptor_Raw) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const auto input = std::format("String with {} embedded null", '\0');
+	stream << spark::io::raw(input);
+	ASSERT_EQ(input.size(), buffer.size());
+	std::string_view output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(output, "String with ");
+	ASSERT_FALSE(stream.empty());
+}
+
+TEST(BinaryStream, StringViewAdaptor_NullTerminated) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string_view input { "We're just normal strings. Innocent strings."};
+	stream << spark::io::null_terminated(input);
+	std::string_view output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
 }

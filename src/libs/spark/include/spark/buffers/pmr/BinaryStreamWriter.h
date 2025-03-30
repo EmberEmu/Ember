@@ -107,14 +107,6 @@ public:
 		return *this;
 	}
 
-	template<typename T>
-	BinaryStreamWriter& operator<<(raw_null_terminated<T> data) {
-		buffer_.write(data.data(), data.size());
-		buffer_.write('\0', 1);
-		total_write_ += (data.size() + 1);
-		return *this;
-	}
-
 	BinaryStreamWriter& operator<<(std::string_view& data) {
 		return (*this << prefixed(data));
 	}
