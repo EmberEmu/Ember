@@ -246,7 +246,7 @@ public:
 		STREAM_READ_BOUNDS_CHECK(sizeof(std::string_view::size_type), *this);
 		buffer_.read(&size);
 		endian::little_to_native_inplace(size);
-		adaptor.str = { span<char>(size) };
+		adaptor.str = std::string_view { span<char>(size) };
 		return *this;
 	}
 	
