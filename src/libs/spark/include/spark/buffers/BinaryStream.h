@@ -149,7 +149,7 @@ public:
 	requires std::is_same_v<std::decay_t<T>, std::string>
 	BinaryStream& operator<<(null_terminated<T> data) requires(writeable<buf_type>) {
 		assert(data.str.find_first_of('\0') == data.str.npos);
-		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
+		buffer_.write(data.str.data(), data.str.size() + 1); // yes, the standard allows this
 		total_write_ += (data.str.size() + 1);
 		return *this;
 	}
@@ -158,6 +158,14 @@ public:
 	BinaryStream& operator<<(raw<T> data) requires(writeable<buf_type>) {
 		buffer_.write(data.data(), data.size());
 		total_write_ += data.size();
+		return *this;
+	}
+
+	template<typename T>
+	BinaryStream& operator<<(raw_null_terminated<T> data) requires(writeable<buf_type>) {
+		buffer_.write(data.data(), data.size());
+		buffer_.write('\0');
+		total_write_ += (data.size() + 1);
 		return *this;
 	}
 

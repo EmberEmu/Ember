@@ -27,6 +27,7 @@ struct allow_throw : except_tag{};
 struct no_throw : except_tag{};
 
 template<typename T> struct raw { T& str; };
+template<typename T> struct raw_null_terminated { T& str; };
 template<typename T> struct prefixed { T& str; };
 template<typename T> struct prefixed_varint { T& str; };
 template<typename T> struct null_terminated { T& str; };
