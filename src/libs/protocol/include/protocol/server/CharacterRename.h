@@ -10,6 +10,7 @@
 
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
+#include <spark/buffers/Shared.h>
 #include <shared/utility/UTF8String.h>
 #include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
@@ -29,7 +30,7 @@ struct CharacterRename final {
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {
 			stream >> id;
-			stream >> name;
+			stream >> spark::io::null_terminated(name);
 		}
 
 		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
@@ -42,7 +43,7 @@ struct CharacterRename final {
 
 		if(result == protocol::Result::RESPONSE_SUCCESS) {
 			stream << id;
-			stream << name;
+			stream << spark::io::null_terminated(name);
 		}
 
 		return stream? StreamResult::SUCCESS : StreamResult::FAILED;

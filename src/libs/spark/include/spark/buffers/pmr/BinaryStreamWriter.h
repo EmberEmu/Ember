@@ -40,8 +40,8 @@ public:
 
 	BinaryStreamWriter(BinaryStreamWriter&& rhs) noexcept
 		: StreamBase(rhs),
-		 buffer_(rhs.buffer_), 
-		 total_write_(rhs.total_write_) {
+		  buffer_(rhs.buffer_), 
+		  total_write_(rhs.total_write_) {
 		 rhs.total_write_ = static_cast<std::size_t>(-1);
 		 rhs.set_state(StreamState::INVALID_STREAM);
 	}
@@ -62,10 +62,56 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(const std::string& data) {
-		buffer_.write(data.data(), data.size() + 1); // +1 also writes terminator
-		total_write_ += (data.size() + 1);
+	template<typename T>
+	BinaryStreamWriter& operator<<(prefixed<T> adaptor) {
+		const auto size = endian::native_to_little(adaptor->size());
+		buffer_.write(&size, sizeof(size));
+		buffer_.write(adaptor->data(), adaptor->size());
+		total_write_ += (adaptor->size()) + sizeof(adaptor->size());
 		return *this;
+	}
+
+	template<typename T>
+	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
+		const auto encode_len = varint_encode(*this, adaptor->size());
+		buffer_.write(adaptor->data(), adaptor->size());
+		total_write_ += (adaptor->size() + encode_len);
+		return *this;
+	}
+
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, std::string_view>
+	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
+		assert(adaptor->find_first_of('\0') == adaptor->npos);
+		buffer_.write(adaptor->data(), adaptor->size());
+		const char terminator = '\0';
+		buffer_.write(&terminator, 1);
+		total_write_ += (adaptor->size() + 1);
+		return *this;
+	}
+
+	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, std::string>
+	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
+		assert(adaptor->find_first_of('\0') == adaptor->npos);
+		buffer_.write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
+		total_write_ += (adaptor->size() + 1);
+		return *this;
+	}
+
+	template<typename T>
+	BinaryStreamWriter& operator<<(raw<T> adaptor) {
+		buffer_.write(adaptor->data(), adaptor->size());
+		total_write_ += adaptor->size();
+		return *this;
+	}
+
+	BinaryStreamWriter& operator<<(std::string_view string) {
+		return (*this << prefixed(string));
+	}
+
+	BinaryStreamWriter& operator<<(const std::string& string) {
+		return (*this << prefixed(string));
 	}
 
 	BinaryStreamWriter& operator<<(const char* data) {
@@ -73,14 +119,6 @@ public:
 		const auto len = std::strlen(data);
 		buffer_.write(data, len + 1); // include terminator
 		total_write_ += len + 1;
-		return *this;
-	}
-
-	BinaryStreamWriter& operator<<(std::string_view& data) {
-		buffer_.write(data.data(), data.size());
-		const char term = '\0';
-		buffer_.write(&term, sizeof(term));
-		total_write_ += (data.size() + 1);
 		return *this;
 	}
 

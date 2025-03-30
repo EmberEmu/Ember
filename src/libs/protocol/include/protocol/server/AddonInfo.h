@@ -11,6 +11,7 @@
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <boost/endian/arithmetic.hpp>
+#include <spark/buffers/Shared.h>
 #include <gsl/narrow>
 #include <array>
 #include <stdexcept>
@@ -85,7 +86,7 @@ struct AddonInfo final {
 				stream << gsl::narrow_cast<std::uint8_t>(0); // URL not present
 			} else {
 				stream << gsl::narrow_cast<std::uint8_t>(1); // URL present
-				stream << addon.update_url;
+				stream << spark::io::null_terminated(addon.update_url);
 			}
 		}
 

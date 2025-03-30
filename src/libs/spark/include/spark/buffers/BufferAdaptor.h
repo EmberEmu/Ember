@@ -88,7 +88,7 @@ public:
 	}
 
 	void write(const auto& source) requires(has_resize<buf_type>) {
-		write(source, sizeof(source));
+		write(&source, sizeof(source));
 	}
 
 	void write(const void* source, size_type length) requires(has_resize<buf_type>) {
@@ -98,7 +98,7 @@ public:
 		// we don't use std::back_inserter so we can support seeks
 		if(buffer_.size() < min_req_size) {
 			if constexpr(has_resize_overwrite<buf_type>) {
-				buffer_.resize_and_overwrite(min_req_size, [](char*, size_type size) {
+				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
 					return size;
 				});
 			} else {

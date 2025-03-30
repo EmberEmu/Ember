@@ -92,6 +92,9 @@ TEST(BufferAdaptor, Write) {
 	ASSERT_EQ(adaptor.size(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_TRUE(std::ranges::equal(values, buffer));
+	const auto size = adaptor.size();
+	adaptor.write('\0');
+	ASSERT_EQ(adaptor.size(), size + 1);
 }
 
 TEST(BufferAdaptor, WriteAppend) {

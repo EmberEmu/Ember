@@ -23,7 +23,7 @@ struct CharacterCreate final {
 	rpc::Character::CharacterTemplateT character;
 	
 	StreamResult read_from_stream(auto& stream) try {
-		stream >> character.name;
+		stream >> spark::io::null_terminated(character.name);
 		stream >> character.race;
 		stream >> character.class_;
 		stream >> character.gender;
@@ -39,7 +39,7 @@ struct CharacterCreate final {
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
-		stream << character.name;
+		stream << spark::io::null_terminated(character.name);
 		stream << character.race;
 		stream << character.class_;
 		stream << character.gender;

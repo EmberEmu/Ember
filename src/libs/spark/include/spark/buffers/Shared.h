@@ -13,6 +13,7 @@
 #include <bit>
 #include <concepts>
 #include <type_traits>
+#include <utility>
 #include <cstddef>
 #include <cstdint>
 
@@ -25,6 +26,18 @@ struct unsupported {};
 struct except_tag{};
 struct allow_throw : except_tag{};
 struct no_throw : except_tag{};
+
+#define STRING_ADAPTOR(adaptor_name)           \
+template<typename string_type>                 \
+struct adaptor_name {                          \
+    string_type& str;                          \
+    string_type* operator->() { return &str; } \
+};
+
+STRING_ADAPTOR(raw)
+STRING_ADAPTOR(prefixed)
+STRING_ADAPTOR(prefixed_varint)
+STRING_ADAPTOR(null_terminated)
 
 enum class BufferSeek {
 	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD
@@ -48,6 +61,42 @@ enum class StreamState {
 };
 
 namespace detail {
+
+template<typename size_type, typename stream_type>
+constexpr auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> {
+	int shift { 0 };
+	size_type value { 0 };
+	std::uint8_t byte { 0 };
+
+	do {
+		// if reading another byte would violate the read limit
+		if(stream.read_max() == 0) {
+			return { false, 0 };
+		}
+
+		stream.get(&byte, 1);
+		value |= (static_cast<size_type>(byte & 0x7f) << shift);
+		shift += 7;
+	} while(byte & 0x80);
+
+	return { true, value };
+}
+
+template<typename size_type, typename stream_type>
+constexpr auto varint_encode(stream_type& stream, size_type value) -> size_type {
+	size_type written = 0;
+
+	while(value > 0x7f) {
+		const std::uint8_t byte = (value & 0x7f) | 0x80;
+		stream.put(&byte, 1);
+		value >>= 7;
+		++written;
+	}
+
+	const std::uint8_t byte = value & 0x7f;
+	stream.put(&byte, 1);
+	return ++written;
+}
 
 template<decltype(auto) size>
 constexpr auto generate_filled(const std::uint8_t value) {

@@ -17,7 +17,7 @@ namespace ember::gateway {
 
 [[nodiscard]]
 bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& stream) {
-	if(packet->read_from_stream(stream)) {
+	if(auto result = packet->read_from_stream(stream); result) {
 		if(stream.read_limit() != stream.total_read()) {
 			LOG_DEBUG_ASYNC(
 				logger_, "Skipping superfluous stream data in message {} from {}",
@@ -28,6 +28,8 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 		}
 
 		return true;
+	} else {
+		LOG_TRACE_ASYNC(logger_, "Unexpected stream result: {} ({})", result.value(), result.what());
 	}
 
 	/*
@@ -60,9 +62,9 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 			close();
 			break;
 		default:
-			LOG_ERROR_ASYNC(
-				logger_, "Deserialisation failed, stream has not errored or unhandled error for {} from {}",
-				protocol::to_string(packet.opcode), client_identify()
+			LOG_ERROR_ASYNC(logger_,
+				"Deserialisation failed, stream state {}, unhandled error for {} from {}",
+				std::to_underlying(stream.state()), protocol::to_string(packet.opcode), client_identify()
 			);
 
 			close();
