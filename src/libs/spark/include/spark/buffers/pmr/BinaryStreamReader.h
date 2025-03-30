@@ -30,7 +30,7 @@ class BinaryStreamReader : virtual public StreamBase {
 	std::size_t total_read_;
 	const std::size_t read_limit_;
 
-	void check_read_bounds(std::size_t read_size) {
+	void enforce_read_bounds(std::size_t read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
 			set_state(StreamState::BUFF_LIMIT_ERR);
 			throw buffer_underrun(read_size, total_read_, buffer_.size());
@@ -68,13 +68,13 @@ public:
 
 	
 	BinaryStreamReader& operator>>(prefixed<std::string> adaptor) {
-		check_read_bounds(sizeof(std::string::size_type));
+		enforce_read_bounds(sizeof(std::string::size_type));
 
 		std::string::size_type size {};
 		buffer_.read(&size, sizeof(size));
 		endian::little_to_native_inplace(size);
 
-		check_read_bounds(size);
+		enforce_read_bounds(size);
 
 		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
@@ -90,11 +90,11 @@ public:
 		// if decoding the varint failed due to detecting a potential read overrun,
 		// we'll trigger the error handling here instead
 		if(!result) {
-			check_read_bounds(1);
+			enforce_read_bounds(1);
 			std::unreachable();
 		}
 
-		check_read_bounds(size);
+		enforce_read_bounds(size);
 
 		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
@@ -112,7 +112,7 @@ public:
 			return *this;
 		}
 
-		check_read_bounds(pos + 1); // include null terminator
+		enforce_read_bounds(pos + 1); // include null terminator
 
 		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, pos);
@@ -134,13 +134,13 @@ public:
 	template<pod T>
 	requires (!has_shr_override<T, BinaryStreamReader>)
 	BinaryStreamReader& operator>>(T& data) {
-		check_read_bounds(sizeof(data));
+		enforce_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;
 	}
 
 	BinaryStreamReader& operator>>(pod auto& data) {
-		check_read_bounds(sizeof(data));
+		enforce_read_bounds(sizeof(data));
 		buffer_.read(&data, sizeof(data));
 		return *this;
 	}
@@ -150,7 +150,7 @@ public:
 	}
 
 	void get(std::string& dest, std::size_t size) {
-		check_read_bounds(size);
+		enforce_read_bounds(size);
 
 		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
 			buffer_.read(strbuf, len);
@@ -162,7 +162,7 @@ public:
 	void get(T* dest, std::size_t count) {
 		assert(dest);
 		const auto read_size = count * sizeof(T);
-		check_read_bounds(read_size);
+		enforce_read_bounds(read_size);
 		buffer_.read(dest, read_size);
 	}
 
@@ -176,33 +176,33 @@ public:
 	template<std::ranges::contiguous_range range>
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(range::value_type);
-		check_read_bounds(read_size);
+		enforce_read_bounds(read_size);
 		buffer_.read(dest.data(), read_size);
 	}
 
 	template<arithmetic T>
 	T get() {
-		check_read_bounds(sizeof(T));
+		enforce_read_bounds(sizeof(T));
 		T t{};
 		buffer_.read(&t, sizeof(T));
 		return t;
 	}
 
 	void get(arithmetic auto& dest) {
-		check_read_bounds(sizeof(dest));
+		enforce_read_bounds(sizeof(dest));
 		buffer_.read(&dest, sizeof(dest));
 	}
 
 	template<endian::Conversion conversion>
 	void get(arithmetic auto& dest) {
-		check_read_bounds(sizeof(dest));
+		enforce_read_bounds(sizeof(dest));
 		buffer_.read(&dest, sizeof(dest));
 		dest = endian::convert<conversion>(dest);
 	}
 
 	template<arithmetic T, endian::Conversion conversion>
 	T get() {
-		check_read_bounds(sizeof(T));
+		enforce_read_bounds(sizeof(T));
 		T t{};
 		buffer_.read(&t, sizeof(T));
 		return endian::convert<conversion>(t);
@@ -211,7 +211,7 @@ public:
 	/**  Misc functions **/ 
 
 	void skip(std::size_t count) {
-		check_read_bounds(count);
+		enforce_read_bounds(count);
 		buffer_.skip(count);
 	}
 
