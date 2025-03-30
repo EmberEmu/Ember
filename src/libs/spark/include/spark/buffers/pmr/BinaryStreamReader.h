@@ -72,6 +72,7 @@ public:
 
 		std::string::size_type size {};
 		buffer_.read(&size, sizeof(size));
+		endian::little_to_native_inplace(size);
 
 		check_read_bounds(size);
 

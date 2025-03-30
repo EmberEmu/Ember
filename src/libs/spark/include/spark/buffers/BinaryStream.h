@@ -120,7 +120,7 @@ public:
 
 	template<typename T>
 	BinaryStream& operator<<(prefixed<T> adaptor) requires(writeable<buf_type>) {
-		buffer_.write(adaptor->size());
+		buffer_.write(endian::native_to_little(adaptor->size()));
 		buffer_.write(adaptor->data(), adaptor->size());
 		total_write_ += static_cast<size_type>(adaptor->size()) + sizeof(adaptor->size());
 		return *this;
@@ -229,6 +229,7 @@ public:
 
 		std::string::size_type size {};
 		buffer_.read(&size);
+		endian::little_to_native_inplace(size);
 
 		STREAM_READ_BOUNDS_CHECK(size, *this);
 
@@ -244,7 +245,8 @@ public:
 		std::string_view::size_type size {};
 		STREAM_READ_BOUNDS_CHECK(sizeof(std::string_view::size_type), *this);
 		buffer_.read(&size);
-		adaptor.str = std::string_view { span<char>(size) };
+		endian::little_to_native_inplace(size);
+		adaptor.str = { span<char>(size) };
 		return *this;
 	}
 	
