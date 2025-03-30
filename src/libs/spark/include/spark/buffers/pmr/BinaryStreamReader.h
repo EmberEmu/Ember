@@ -66,34 +66,36 @@ public:
 	BinaryStreamReader& operator=(const BinaryStreamReader&) = delete;
 	BinaryStreamReader(const BinaryStreamReader&) = delete;
 
-	BinaryStreamReader& operator>>(prefixed<std::string> dest) {
-		check_read_bounds(sizeof(std::size_t));
+	
+	BinaryStreamReader& operator>>(prefixed<std::string> adaptor) {
+		check_read_bounds(sizeof(std::string::size_type));
 
-		std::size_t size {};
+		std::string::size_type size {};
 		buffer_.read(&size, sizeof(size));
 
 		check_read_bounds(size);
 
-		dest.str.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
 
 		return *this;
 	}
-
-	BinaryStreamReader& operator>>(prefixed_varint<std::string> dest) {
+	
+	BinaryStreamReader& operator>>(prefixed_varint<std::string> adaptor) {
 		const auto& [result, size] = varint_decode<std::size_t>(*this);
 
 		// if decoding the varint failed due to detecting a potential read overrun,
 		// we'll trigger the error handling here instead
 		if(!result) {
 			check_read_bounds(1);
+			std::unreachable();
 		}
 
 		check_read_bounds(size);
 
-		dest.str.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -101,27 +103,27 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(null_terminated<std::string> dest) {
+	BinaryStreamReader& operator>>(null_terminated<std::string> adaptor) {
 		auto pos = buffer_.find_first_of(std::byte{0});
 
-		if(pos == BufferRead::npos) {
-			dest.str.clear();
+		if(pos == buffer_.npos) {
+			adaptor->clear();
 			return *this;
 		}
 
 		check_read_bounds(pos + 1); // include null terminator
 
-		dest.str.resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
 
-		buffer_.skip(1); // skip null term
+		buffer_.skip(1); // skip null terminator
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(std::string& dest) {
-		return (*this >> prefixed(dest));
+	BinaryStreamReader& operator >>(std::string& data) {
+		return (*this >> prefixed(data));
 	}
 
 	BinaryStreamReader& operator>>(has_shr_override<BinaryStreamReader> auto&& data) {

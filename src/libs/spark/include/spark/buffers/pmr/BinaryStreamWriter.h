@@ -63,56 +63,54 @@ public:
 	}
 
 	template<typename T>
-	BinaryStreamWriter& operator<<(prefixed<T> data) {
-		const auto size = data.str.size();
+	BinaryStreamWriter& operator<<(prefixed<T> adaptor) {
+		const auto size = adaptor->size();
 		buffer_.write(&size, sizeof(size));
-		buffer_.write(data.str.data(), data.str.size());
-		total_write_ += (size + sizeof(size));
+		buffer_.write(adaptor->data(), adaptor->size());
+		total_write_ += (adaptor->size()) + sizeof(T::size_type);
 		return *this;
 	}
 
 	template<typename T>
-	BinaryStreamWriter& operator<<(prefixed_varint<T> data) {
-		const auto encode_len = varint_encode(*this, data.str.size());
-		buffer_.write(&encode_len, sizeof(encode_len));
-		buffer_.write(data.str.data(), data.str.size());
-		total_write_ += (data.str.size() + encode_len);
+	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
+		const auto encode_len = varint_encode(*this, adaptor->size());
+		buffer_.write(adaptor->data(), adaptor->size());
+		total_write_ += (adaptor->size() + encode_len);
 		return *this;
 	}
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string_view>
-	BinaryStreamWriter& operator<<(null_terminated<T> data) {
-		assert(data.str.find_first_of('\0') == data.str.npos);
-		buffer_.write(data.str.data(), data.str.size());
-		const char term { '\0' };
-		buffer_.write(&term, 1);
-		total_write_ += (data.str.size() + 1);
+	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
+		assert(adaptor->find_first_of('\0') == adaptor->npos);
+		buffer_.write(adaptor->data(), adaptor->size());
+		buffer_.write('\0', 1);
+		total_write_ += (adaptor->size() + 1);
 		return *this;
 	}
 
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string>
-	BinaryStreamWriter& operator<<(null_terminated<T> data) {
-		assert(data.str.find_first_of('\0') == data.str.npos);
-		buffer_.write(data.str.data(), data.str.size() + 1); // +1 also writes terminator
-		total_write_ += (data.str.size() + 1);
+	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
+		assert(adaptor->find_first_of('\0') == adaptor->npos);
+		buffer_.write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
+		total_write_ += (adaptor->size() + 1);
 		return *this;
 	}
 
 	template<typename T>
-	BinaryStreamWriter& operator<<(raw<T> data) {
-		buffer_.write(data.data(), data.size());
-		total_write_ += data.size();
+	BinaryStreamWriter& operator<<(raw<T> adaptor) {
+		buffer_.write(adaptor->data(), adaptor->size());
+		total_write_ += adaptor->size();
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(std::string_view& data) {
-		return (*this << prefixed(data));
+	BinaryStreamWriter& operator<<(std::string_view string) {
+		return (*this << prefixed(string));
 	}
 
-	BinaryStreamWriter& operator<<(const std::string& data) {
-		return (*this << prefixed(data));
+	BinaryStreamWriter& operator<<(const std::string& string) {
+		return (*this << prefixed(string));
 	}
 
 	BinaryStreamWriter& operator<<(const char* data) {

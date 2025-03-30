@@ -232,7 +232,7 @@ public:
 
 		STREAM_READ_BOUNDS_CHECK(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](char* strbuf, size_type size) {
+		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -259,7 +259,7 @@ public:
 
 		STREAM_READ_BOUNDS_CHECK(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](char* strbuf, size_type size) {
+		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -290,7 +290,7 @@ public:
 
 		STREAM_READ_BOUNDS_CHECK(pos + 1, *this); // include null terminator
 
-		adaptor->resize_and_overwrite(pos, [&](char* strbuf, size_type size) {
+		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -365,7 +365,7 @@ public:
 
 	void get(std::string& dest, size_type size) {
 		STREAM_READ_BOUNDS_CHECK(size, void());
-		dest.resize_and_overwrite(size, [&](char* strbuf, size_type len) {
+		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
 			buffer_.read(strbuf, len);
 			return len;
 		});

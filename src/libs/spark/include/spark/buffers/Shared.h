@@ -13,6 +13,7 @@
 #include <bit>
 #include <concepts>
 #include <type_traits>
+#include <utility>
 #include <cstddef>
 #include <cstdint>
 
@@ -74,7 +75,7 @@ constexpr auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> 
 		}
 
 		stream.get(&byte, 1);
-		value |= (static_cast<size_type>(byte & 0x7F) << shift);
+		value |= (static_cast<size_type>(byte & 0x7f) << shift);
 		shift += 7;
 	} while(byte & 0x80);
 
@@ -82,17 +83,17 @@ constexpr auto varint_decode(stream_type& stream) -> std::pair<bool, size_type> 
 }
 
 template<typename size_type, typename stream_type>
-constexpr auto varint_encode(stream_type& stream, size_type value) -> stream_type::size_type {
-	typename stream_type::size_type written = 0;
+constexpr auto varint_encode(stream_type& stream, size_type value) -> size_type {
+	size_type written = 0;
 
-	while(value > 0x7F) {
-		const std::uint8_t byte = (value & 0x7F) | 0x80;
+	while(value > 0x7f) {
+		const std::uint8_t byte = (value & 0x7f) | 0x80;
 		stream.put(&byte, 1);
 		value >>= 7;
 		++written;
 	}
 
-	const std::uint8_t byte = value & 0x7F;
+	const std::uint8_t byte = value & 0x7f;
 	stream.put(&byte, 1);
 	return ++written;
 }

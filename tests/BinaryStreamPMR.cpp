@@ -310,3 +310,174 @@ TEST(BinaryStreamPMR, SetErrorState) {
 	ASSERT_FALSE(stream.good());
 	ASSERT_TRUE(stream.state() == spark::io::StreamState::USER_DEFINED_ERR);
 }
+
+TEST(BinaryStreamPMR, StringAdaptor_PrefixedVarint_Long) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring three bytes
+	input.resize_and_overwrite(80'000, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+	
+	stream << spark::io::prefixed_varint(input);
+	std::string output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStreamPMR, StringAdaptor_PrefixedVarint_Medium) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring two bytes
+	input.resize_and_overwrite(5'000, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+	
+	stream << spark::io::prefixed_varint(input);
+	std::string output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStreamPMR, StringAdaptor_PrefixedVarint_Short) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+
+	std::string input;
+
+	// encode varint requiring one byte
+	input.resize_and_overwrite(127, [&](char* buffer, const std::size_t size) {
+		for(std::size_t i = 0; i < size; ++i) {
+			buffer[i] = (rand() % 127) + 32; // ASCII a-z
+		}
+
+		return size;
+	});
+	
+	stream << spark::io::prefixed_varint(input);
+	std::string output;
+	stream >> spark::io::prefixed_varint(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStreamPMR, StringAdaptor_Prefixed) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed(input);
+	std::string output;
+	stream >> spark::io::prefixed(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringAdaptor_Default) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << input;
+	std::string output;
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringAdaptor_Raw) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const auto input = std::format("String with {} embedded null", '\0');
+	stream << spark::io::raw(input);
+	ASSERT_EQ(input.size(), buffer.size());
+	std::string output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(output, "String with ");
+	ASSERT_FALSE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringAdaptor_NullTerminated) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const std::string input { "We're just normal strings. Innocent strings."};
+	stream << spark::io::null_terminated(input);
+	std::string output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringViewAdaptor_Prefixed) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed(input);
+	std::string output;
+	stream >> spark::io::prefixed(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringViewAdaptor_Default) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	stream << input;
+	std::string output;
+	stream >> output;
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringViewAdaptor_Raw) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const auto str = std::format("String with {} embedded null", '\0');
+	std::string_view input { str };
+	stream << spark::io::raw(input);
+	ASSERT_EQ(input.size(), buffer.size());
+	std::string output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(output, "String with ");
+	ASSERT_FALSE(stream.empty());
+}
+
+TEST(BinaryStreamPMR, StringViewAdaptor_NullTerminated) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	const std::string_view input { "We're just normal strings. Innocent strings."};
+	stream << spark::io::null_terminated(input);
+	std::string output;
+	stream >> spark::io::null_terminated(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
