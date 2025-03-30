@@ -84,7 +84,8 @@ public:
 	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		buffer_.write(adaptor->data(), adaptor->size());
-		buffer_.write('\0', 1);
+		const char terminator = '\0';
+		buffer_.write(&terminator, 1);
 		total_write_ += (adaptor->size() + 1);
 		return *this;
 	}

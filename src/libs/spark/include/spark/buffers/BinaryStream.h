@@ -291,7 +291,7 @@ public:
 		STREAM_READ_BOUNDS_CHECK(pos + 1, *this); // include null terminator
 
 		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
-			buffer_.read(strbuf, size);
+			buffer_.read(strbuf, pos);
 			return size;
 		});
 

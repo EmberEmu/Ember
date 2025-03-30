@@ -432,11 +432,11 @@ TEST(BinaryStreamPMR, StringAdaptor_NullTerminated) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStreamPMR, StringViewAdaptor_Prefixed) {
+TEST(BinaryStreamPMR, StringviewAdaptor_Prefixed) {
 	std::vector<char> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
-	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	std::string_view input { "The quick brown fox jumped over the lazy dog" };
 	stream << spark::io::prefixed(input);
 	std::string output;
 	stream >> spark::io::prefixed(output);
@@ -444,11 +444,11 @@ TEST(BinaryStreamPMR, StringViewAdaptor_Prefixed) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStreamPMR, StringViewAdaptor_Default) {
+TEST(BinaryStreamPMR, StringviewAdaptor_Default) {
 	std::vector<char> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
-	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	std::string_view input { "The quick brown fox jumped over the lazy dog" };
 	stream << input;
 	std::string output;
 	stream >> output;
@@ -456,7 +456,7 @@ TEST(BinaryStreamPMR, StringViewAdaptor_Default) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStreamPMR, StringViewAdaptor_Raw) {
+TEST(BinaryStreamPMR, StringviewAdaptor_Raw) {
 	std::vector<char> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
@@ -470,12 +470,13 @@ TEST(BinaryStreamPMR, StringViewAdaptor_Raw) {
 	ASSERT_FALSE(stream.empty());
 }
 
-TEST(BinaryStreamPMR, StringViewAdaptor_NullTerminated) {
+TEST(BinaryStreamPMR, StringviewAdaptor_NullTerminated) {
 	std::vector<char> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
-	const std::string_view input { "We're just normal strings. Innocent strings."};
+	std::string_view input { "We're just normal strings. Innocent strings." };
 	stream << spark::io::null_terminated(input);
+	ASSERT_EQ(stream.size(), input.size() + 1); // account for the null terminator
 	std::string output;
 	stream >> spark::io::null_terminated(output);
 	ASSERT_EQ(input, output);

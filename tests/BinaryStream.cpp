@@ -101,8 +101,7 @@ TEST(BinaryStream, ReadWriteStdString) {
 	const std::string in { "The quick brown fox jumped over the lazy dog" };
 	stream << spark::io::null_terminated(in);
 
-	// +1 to account for the terminator that's written
-	ASSERT_EQ(stream.size(), in.size() + 1);
+	ASSERT_EQ(stream.size(), in.size() + 1); // +1, account for the terminator
 
 	std::string out;
 	stream >> spark::io::null_terminated(out);
@@ -655,7 +654,7 @@ TEST(BinaryStream, StringAdaptor_NullTerminated) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Long) {
+TEST(BinaryStream, StringviewAdaptor_PrefixedVarint_Long) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
@@ -679,7 +678,7 @@ TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Long) {
 	ASSERT_TRUE(stream);
 }
 
-TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Medium) {
+TEST(BinaryStream, StringviewAdaptor_PrefixedVarint_Medium) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
@@ -703,7 +702,7 @@ TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Medium) {
 	ASSERT_TRUE(stream);
 }
 
-TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Short) {
+TEST(BinaryStream, StringviewAdaptor_PrefixedVarint_Short) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
@@ -727,10 +726,10 @@ TEST(BinaryStream, StringViewAdaptor_PrefixedVarint_Short) {
 	ASSERT_TRUE(stream);
 }
 
-TEST(BinaryStream, StringViewAdaptor_Prefixed) {
+TEST(BinaryStream, StringviewAdaptor_Prefixed) {
 	spark::io::StaticBuffer<char, 128> buffer;
 	spark::io::BinaryStream stream(buffer);
-	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	std::string_view input { "The quick brown fox jumped over the lazy dog" };
 	stream << spark::io::prefixed(input);
 	std::string_view output;
 	stream >> spark::io::prefixed(output);
@@ -738,10 +737,10 @@ TEST(BinaryStream, StringViewAdaptor_Prefixed) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStream, StringViewAdaptor_Default) {
+TEST(BinaryStream, StringviewAdaptor_Default) {
 	spark::io::StaticBuffer<char, 128> buffer;
 	spark::io::BinaryStream stream(buffer);
-	const std::string_view input { "The quick brown fox jumped over the lazy dog" };
+	std::string_view input { "The quick brown fox jumped over the lazy dog" };
 	stream << input;
 	std::string_view output;
 	stream >> output;
@@ -749,7 +748,7 @@ TEST(BinaryStream, StringViewAdaptor_Default) {
 	ASSERT_TRUE(stream.empty());
 }
 
-TEST(BinaryStream, StringViewAdaptor_Raw) {
+TEST(BinaryStream, StringviewAdaptor_Raw) {
 	spark::io::StaticBuffer<char, 128> buffer;
 	spark::io::BinaryStream stream(buffer);
 	const auto input = std::format("String with {} embedded null", '\0');
@@ -761,11 +760,12 @@ TEST(BinaryStream, StringViewAdaptor_Raw) {
 	ASSERT_FALSE(stream.empty());
 }
 
-TEST(BinaryStream, StringViewAdaptor_NullTerminated) {
+TEST(BinaryStream, StringviewAdaptor_NullTerminated) {
 	spark::io::StaticBuffer<char, 128> buffer;
 	spark::io::BinaryStream stream(buffer);
-	const std::string_view input { "We're just normal strings. Innocent strings."};
+	std::string_view input { "We're just normal strings. Innocent strings."};
 	stream << spark::io::null_terminated(input);
+	ASSERT_EQ(stream.size(), input.size() + 1); // +1, account for the terminator
 	std::string_view output;
 	stream >> spark::io::null_terminated(output);
 	ASSERT_EQ(input, output);

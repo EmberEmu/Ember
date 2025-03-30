@@ -114,7 +114,7 @@ public:
 		check_read_bounds(pos + 1); // include null terminator
 
 		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
-			buffer_.read(strbuf, size);
+			buffer_.read(strbuf, pos);
 			return size;
 		});
 
