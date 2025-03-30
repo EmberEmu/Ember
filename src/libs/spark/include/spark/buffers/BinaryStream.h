@@ -305,11 +305,11 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator >>(std::string_view& data) requires(writeable<buf_type>) {
+	BinaryStream& operator >>(std::string_view& data) {
 		return (*this >> prefixed(data));
 	}
 
-	BinaryStream& operator >>(std::string& data) requires(writeable<buf_type>) {
+	BinaryStream& operator >>(std::string& data) {
 		return (*this >> prefixed(data));
 	}
 
