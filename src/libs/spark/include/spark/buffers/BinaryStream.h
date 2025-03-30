@@ -226,7 +226,6 @@ public:
 
 	BinaryStream& operator>>(prefixed<std::string> adaptor) {
 		STREAM_READ_BOUNDS_ENFORCE(sizeof(std::string::size_type), *this);
-
 		std::string::size_type size {};
 		buffer_.read(&size);
 		endian::little_to_native_inplace(size);
@@ -242,8 +241,8 @@ public:
 	}
 
 	BinaryStream& operator>>(prefixed<std::string_view> adaptor) {
-		std::string_view::size_type size {};
 		STREAM_READ_BOUNDS_ENFORCE(sizeof(std::string_view::size_type), *this);
+		std::string_view::size_type size {};
 		buffer_.read(&size);
 		endian::little_to_native_inplace(size);
 		adaptor.str = std::string_view { span<char>(size) };

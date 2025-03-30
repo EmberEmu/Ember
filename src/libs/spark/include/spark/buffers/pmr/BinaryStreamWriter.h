@@ -18,6 +18,7 @@
 #include <array>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
