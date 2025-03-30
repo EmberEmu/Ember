@@ -16,6 +16,7 @@
 #include <utility>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 namespace ember::spark::io::pmr {
