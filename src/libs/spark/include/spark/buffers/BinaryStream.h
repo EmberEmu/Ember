@@ -31,16 +31,16 @@ namespace ember::spark::io {
 
 using namespace detail;
 
-#define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)              \
-	enforce_read_bounds(read_size);                                 \
+#define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
+	enforce_read_bounds(read_size);                               \
 	                                                              \
-	if constexpr(std::is_same_v<exceptions, no_throw>) {          \
+	if constexpr(std::is_same_v<exceptions, no_throw_t>) {        \
 		if(state_ != StreamState::OK) [[unlikely]] {              \
 			return ret_var;                                       \
 		}                                                         \
 	}
 
-template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw>
+template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw_t>
 class BinaryStream final {
 public:
 	using size_type          = typename buf_type::size_type;
@@ -62,7 +62,7 @@ private:
 		if(read_size > buffer_.size()) [[unlikely]] {
 			state_ = StreamState::BUFF_LIMIT_ERR;
 
-			if constexpr(std::is_same_v<exceptions, allow_throw>) {
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 				throw buffer_underrun(read_size, total_read_, buffer_.size());
 			}
 
@@ -75,7 +75,7 @@ private:
 			if(read_size > max_read_remaining) [[unlikely]] {
 				state_ = StreamState::READ_LIMIT_ERR;
 
-				if constexpr(std::is_same_v<exceptions, allow_throw>) {
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 					throw stream_read_limit(read_size, total_read_, read_limit_);
 				}
 
@@ -90,6 +90,12 @@ public:
 	explicit BinaryStream(buf_type& source, size_type read_limit = 0)
 		: buffer_(source),
 		  read_limit_(read_limit) {};
+
+	explicit BinaryStream(buf_type& source, size_type read_limit, exceptions)
+		: BinaryStream(source, read_limit) {}
+
+	explicit BinaryStream(buf_type& source, exceptions)
+		: BinaryStream(source, 0) {}
 
 	BinaryStream(BinaryStream&& rhs) noexcept
 		: buffer_(rhs.buffer_), 

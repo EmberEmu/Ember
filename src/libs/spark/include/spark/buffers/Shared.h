@@ -23,9 +23,12 @@ struct is_contiguous {};
 struct is_non_contiguous {};
 struct supported {};
 struct unsupported {};
-struct except_tag{};
-struct allow_throw : except_tag{};
-struct no_throw : except_tag{};
+struct except_tag {};
+struct allow_throw_t : except_tag {};
+struct no_throw_t : except_tag {};
+
+constexpr static no_throw_t no_throw {};
+constexpr static allow_throw_t allow_throw {};
 
 #define STRING_ADAPTOR(adaptor_name)           \
 template<typename string_type>                 \

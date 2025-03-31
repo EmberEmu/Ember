@@ -414,7 +414,7 @@ TEST(BinaryStream, StaticBufferUnderrun) {
 
 TEST(BinaryStream, StaticBufferUnderrunNoExcept) {
 	spark::io::StaticBuffer<char, 4> buffer;
-	spark::io::BinaryStream<decltype(buffer), spark::io::no_throw> stream(buffer);
+	spark::io::BinaryStream stream(buffer, spark::io::no_throw);
 	std::uint32_t output = 0;
 	stream << output;
 	stream >> output;
