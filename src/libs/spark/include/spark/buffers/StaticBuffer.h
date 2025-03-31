@@ -233,11 +233,19 @@ public:
 		return buffer_.data();
 	}
 
+	std::span<value_type> read_span() {
+		return { read_ptr(), size() };
+	}
+
 	std::span<const value_type> read_span() const {
 		return { read_ptr(), size() };
 	}
 
 	std::span<value_type> write_span() {
+		return { write_ptr(), free() };
+	}
+
+	std::span<const value_type> write_span() const {
 		return { write_ptr(), free() };
 	}
 };
