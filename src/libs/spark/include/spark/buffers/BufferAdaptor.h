@@ -156,7 +156,7 @@ public:
 		}
 	}
 
-	const auto read_ptr() const {
+	auto read_ptr() const {
 		return buffer_.data() + read_;
 	}
 
@@ -172,7 +172,7 @@ public:
 		return buffer_.data() + write_;
 	}
 
-	const auto data() const {
+	auto data() const {
 		return buffer_.data() + read_;
 	}
 
@@ -180,7 +180,7 @@ public:
 		return buffer_.data() + read_;
 	}
 
-	const auto storage() const {
+	auto storage() const {
 		return buffer_.data();
 	}
 
