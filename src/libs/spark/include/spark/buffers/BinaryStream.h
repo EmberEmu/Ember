@@ -69,16 +69,18 @@ private:
 			return;
 		}
 
-		const auto max_read_remaining = read_limit_ - total_read_;
+		if(read_limit_) {
+			const auto max_read_remaining = read_limit_ - total_read_;
 
-		if(read_limit_ && read_size > max_read_remaining) [[unlikely]] {
-			state_ = StreamState::READ_LIMIT_ERR;
+			if(read_size > max_read_remaining) [[unlikely]] {
+				state_ = StreamState::READ_LIMIT_ERR;
 
-			if constexpr(std::is_same_v<exceptions, allow_throw>) {
-				throw stream_read_limit(read_size, total_read_, read_limit_);
+				if constexpr(std::is_same_v<exceptions, allow_throw>) {
+					throw stream_read_limit(read_size, total_read_, read_limit_);
+				}
+
+				return;
 			}
-
-			return;
 		}
 
 		total_read_ += read_size;
