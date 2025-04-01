@@ -453,7 +453,7 @@ public:
 		return byte_at_index(index);
 	}
 
-	size_type block_count() {
+	size_type block_count() const {
 		auto node = &root_;
 		size_type count = 0;
 
