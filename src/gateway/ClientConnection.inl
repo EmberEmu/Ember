@@ -13,17 +13,18 @@
 
 namespace ember::gateway {
 
-template<protocol::is_packet T>
-bool ClientConnection::write_packet_stream(const T& packet) {
+template<protocol::is_packet PacketType>
+bool ClientConnection::write_packet_stream(const PacketType& packet) {
+	using SizeType = typename PacketType::SizeType;
+
 	spark::io::BinaryStream stream(*outbound_back_);
 
 	if(!packet.write_to_stream(stream)) {
 		return false;
 	}
 
-	const auto written = stream.total_write();
-	const auto end_pos = written - T::HEADER_WIRE_SIZE;
-	auto size = gsl::narrow<typename T::SizeType>(written - sizeof(typename T::SizeType));
+	const auto end_pos = stream.total_write();
+	auto size = gsl::narrow<SizeType>(end_pos - sizeof(SizeType));
 	auto opcode = packet.opcode;
 
 	if(crypt_) [[likely]] {
@@ -33,7 +34,7 @@ bool ClientConnection::write_packet_stream(const T& packet) {
 
 	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::io::StreamSeek::SK_FORWARD, end_pos);
+	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, end_pos);
 	return true;
 }
 
