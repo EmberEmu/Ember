@@ -17,6 +17,8 @@
 #include <boost/asio/post.hpp>
 #include <algorithm>
 
+#include <boost/asio/read.hpp>
+
 namespace ember::gateway {
 
 void ClientConnection::parse_header() {
@@ -129,7 +131,16 @@ void ClientConnection::read() {
 		}
 	}
 
-	socket_.async_receive(inbound_buffer_.write_span(), create_alloc_handler(allocator_,
+	/**
+	 * Set a minimum expected transfer amount to mitigate the impact of
+	 * any clients sending large messages one byte at a time and wasting
+	 * resources on completion checks that can be avoided since we know
+	 * how much data is required before we can do anything with the buffer
+	 */
+	const auto transfer = boost::asio::transfer_at_least(minimum_transfer());
+
+	boost::asio::async_read(socket_, inbound_buffer_.write_span(), transfer,
+	                        create_alloc_handler(allocator_,
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;
@@ -262,6 +273,14 @@ void ClientConnection::log_packets(bool enable) {
 		);
 	} else {
 		packet_logger_.reset();
+	}
+}
+
+std::size_t ClientConnection::minimum_transfer() const {
+	if(read_state_ == ReadState::HEADER) {
+		return protocol::ClientHeader::WIRE_SIZE;
+	} else {
+		return msg_size_ - inbound_buffer_.size();
 	}
 }
 

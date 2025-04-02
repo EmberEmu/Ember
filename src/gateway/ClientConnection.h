@@ -82,6 +82,7 @@ class ClientConnection final {
 
 	template<protocol::is_packet T>
 	bool write_packet_stream(const T& packet);
+	std::size_t minimum_transfer() const;
 
 public:
 	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientRef uuid, log::Logger& logger)
