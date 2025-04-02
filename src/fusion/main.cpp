@@ -214,7 +214,7 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	gateway::Service service(logger);
+	gateway::Service service(service_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
