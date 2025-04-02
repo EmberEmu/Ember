@@ -179,7 +179,13 @@ public:
 
 	void write_seek(const StreamSeek direction, const std::size_t offset) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
-			buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
+			if(offset >= total_write_) {
+				buffer_.write_seek(BufferSeek::SK_FORWARD, offset - total_write_);
+			} else {
+				buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
+			}
+
+			total_write_ = offset;
 		} else {
 			buffer_.write_seek(static_cast<BufferSeek>(direction), offset);
 		}
