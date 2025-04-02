@@ -42,6 +42,7 @@ set(IO_SRC
     include/spark/buffers/detail/IntrusiveStorage.h
     include/spark/buffers/FileBuffer.h
     include/spark/buffers/Endian.h
+    include/spark/buffers/NullBuffer.h
 )
 
 set(IO_PMR_SRC
@@ -49,7 +50,6 @@ set(IO_PMR_SRC
     include/spark/buffers/pmr/BufferRead.h
     include/spark/buffers/pmr/BufferWrite.h
     include/spark/buffers/pmr/Buffer.h
-    include/spark/buffers/pmr/NullBuffer.h
     include/spark/buffers/pmr/BinaryStream.h
     include/spark/buffers/pmr/BinaryStreamReader.h
     include/spark/buffers/pmr/BinaryStreamWriter.h
