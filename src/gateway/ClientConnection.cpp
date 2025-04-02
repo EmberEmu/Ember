@@ -15,9 +15,8 @@
 #include <spark/buffers/BufferSequence.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
-#include <algorithm>
-
 #include <boost/asio/read.hpp>
+#include <algorithm>
 
 namespace ember::gateway {
 
