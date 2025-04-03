@@ -202,11 +202,11 @@ public:
 	}
 
 	const value_type* data() const {
-		return buffer_.data() + read_;
+		return read_ptr();
 	}
 
 	value_type* data() {
-		return buffer_.data() + read_;
+		return read_ptr();
 	}
 
 	const value_type* read_ptr() const {
