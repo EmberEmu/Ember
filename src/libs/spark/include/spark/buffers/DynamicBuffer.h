@@ -265,15 +265,6 @@ public:
 	}
 #endif
 
-	/**
-	 * @brief Skip the requested number of bytes.
-	 *
-	 * Skips over a number of bytes from the container. This should be used
-	 * if the container holds data that you don't care about but don't want
-	 * to have to read it to another buffer to move beyond it.
-	 * 
-	 * @param length The number of bytes to skip.
-	 */
 	void skip(const size_type length) override {
 		assert(length <= size_ && "Chained buffer skip too large!");
 		size_type remaining = length;
