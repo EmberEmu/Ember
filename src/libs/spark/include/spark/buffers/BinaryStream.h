@@ -97,7 +97,7 @@ private:
 	}
 
 	template<typename... Ts>
-	inline void write(Ts&&... args) requires std::is_same_v<exceptions, no_throw_t> try {
+	inline void write(Ts&&... args) try {
 		if(state_ == StreamState::OK) [[likely]] {
 			buffer_.write(std::forward<Ts>(args)...);
 			advance_write(std::forward<Ts>(args)...);
