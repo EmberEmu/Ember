@@ -225,7 +225,7 @@ public:
 	}
 
 	template<size_type size>
-	void fill(const std::uint8_t value) requires writeable<buf_type> {
+	constexpr void fill(const std::uint8_t value) requires writeable<buf_type> {
 		const auto filled = generate_filled<size>(value);
 		buffer_.write(filled.data(), filled.size());
 		total_write_ += size;
