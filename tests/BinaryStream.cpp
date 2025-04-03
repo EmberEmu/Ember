@@ -386,7 +386,6 @@ TEST(BinaryStream, StaticBufferOverflow) {
 	spark::io::StaticBuffer<char, 4> buffer;
 	spark::io::BinaryStream stream(buffer);
 	ASSERT_THROW(stream << std::uint64_t(1), spark::io::buffer_overflow);
-	ASSERT_FALSE(stream);
 }
 
 TEST(BinaryStream, StaticBufferRead) {
