@@ -43,6 +43,7 @@ set(IO_SRC
     include/spark/buffers/FileBuffer.h
     include/spark/buffers/Endian.h
     include/spark/buffers/NullBuffer.h
+    include/spark/buffers/StreamAdaptors.h
 )
 
 set(IO_PMR_SRC

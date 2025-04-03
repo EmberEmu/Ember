@@ -6,10 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#define BUFFER_DEBUG
+#define EMBER_BUFFER_DEBUG
 #include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/BufferSequence.h>
-#undef BUFFER_DEBUG
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>

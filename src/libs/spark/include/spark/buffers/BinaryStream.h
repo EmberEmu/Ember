@@ -12,9 +12,7 @@
 #include <spark/buffers/Concepts.h>
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/Endian.h>
-#include <shared/utility/cstring_view.hpp>
-#include <shared/utility/polyfill/start_lifetime_as>
-#include <array>
+#include <spark/buffers/StreamAdaptors.h>
 #include <concepts>
 #include <ranges>
 #include <span>
@@ -32,15 +30,27 @@ namespace ember::spark::io {
 using namespace detail;
 
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
+	if(state_ != StreamState::OK) [[unlikely]] {                 \
+		return ret_var;                                           \
+	}                                                             \
+                                                                  \
 	enforce_read_bounds(read_size);                               \
 	                                                              \
 	if constexpr(std::is_same_v<exceptions, no_throw_t>) {        \
-		if(state_ != StreamState::OK) [[unlikely]] {              \
+		if(state_ != StreamState::OK) [[unlikely]] {             \
 			return ret_var;                                       \
 		}                                                         \
 	}
 
-template<byte_oriented buf_type, std::derived_from<except_tag> exceptions = allow_throw_t>
+#define SAFE_READ(dest, read_size, ret_var)                       \
+	STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)                \
+	buffer_.read(dest, read_size);
+
+template<
+	byte_oriented buf_type,
+	std::derived_from<except_tag> exceptions = allow_throw_t,
+	std::derived_from<endian::storage_tag> endianness = endian::as_native_t
+>
 class BinaryStream final {
 public:
 	using size_type          = typename buf_type::size_type;
@@ -49,6 +59,8 @@ public:
 	using value_type         = typename buf_type::value_type;
 	using contiguous_type    = typename buf_type::contiguous;
 	
+	static constexpr endianness byte_order{};
+
 private:
 	using cond_size_type = std::conditional_t<writeable<buf_type>, size_type, std::monostate>;
 
@@ -97,23 +109,19 @@ private:
 	}
 
 	template<typename... Ts>
-	inline void write(Ts&&... args) try {
-		if(state_ == StreamState::OK) [[likely]] {
-			buffer_.write(std::forward<Ts>(args)...);
-			advance_write(std::forward<Ts>(args)...);
-		}
-	} catch(const std::exception&) {
-		state_ = StreamState::BUFF_WRITE_ERR;
+	inline void write(Ts&&... args) {
+		try {
+			if(state_ == StreamState::OK) [[likely]] {
+				buffer_.write(std::forward<Ts>(args)...);
+				advance_write(std::forward<Ts>(args)...);                            
+			}
+		} catch(...) {
+			state_ = StreamState::BUFF_WRITE_ERR;
 
-		if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-			throw;
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw;
+			}
 		}
-	}
-
-	template<typename... Ts>
-	inline void write(Ts&&... args) requires std::is_same_v<exceptions, allow_throw_t> {
-		buffer_.write(std::forward<Ts>(args)...);
-		advance_write(std::forward<Ts>(args)...);
 	}
 
 public:
@@ -121,11 +129,23 @@ public:
 		: buffer_(source),
 		  read_limit_(read_limit) {};
 
+	explicit BinaryStream(buf_type& source, exceptions)
+		: BinaryStream(source, 0) {}
+
+	explicit BinaryStream(buf_type& source, endianness)
+		: BinaryStream(source, 0) {}
+
+	explicit BinaryStream(buf_type& source, exceptions, endianness)
+		: BinaryStream(source, 0) {}
+
 	explicit BinaryStream(buf_type& source, size_type read_limit, exceptions)
 		: BinaryStream(source, read_limit) {}
 
-	explicit BinaryStream(buf_type& source, exceptions)
-		: BinaryStream(source, 0) {}
+	explicit BinaryStream(buf_type& source, size_type read_limit, endianness)
+		: BinaryStream(source, read_limit) {}
+
+	explicit BinaryStream(buf_type& source, size_type read_limit, exceptions, endianness)
+		: BinaryStream(source, read_limit) {}
 
 	BinaryStream(BinaryStream&& rhs) noexcept
 		: buffer_(rhs.buffer_), 
@@ -143,13 +163,38 @@ public:
 
 	/*** Write ***/
 
-	BinaryStream& operator<<(has_shl_override<BinaryStream> auto&& data)
+	void serialise(auto&& object) requires writeable<buf_type> {
+		stream_write_adaptor adaptor(*this);
+		object.serialise(adaptor);
+	}
+
+	template<typename T>
+	requires has_serialise<T, stream_write_adaptor<BinaryStream>>
+	BinaryStream& operator<<(T& data) requires writeable<buf_type> {
+		serialise(data);
+		return *this;
+	}
+
+	BinaryStream& operator<<(const has_shl_override<BinaryStream> auto& data)
 	requires writeable<buf_type> {
 		return data.operator<<(*this);
 	}
 
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	BinaryStream& operator<<(endian_func adaptor) requires writeable<buf_type> {
+		const auto converted = adaptor.to();
+		write(&converted, sizeof(converted));
+		return *this;
+	}
+
+	BinaryStream& operator<<(const arithmetic auto& data) requires writeable<buf_type> {
+		const auto converted = endian::storage_in(data, byte_order);
+		write(&converted, sizeof(converted));
+		return *this;
+	}
+
 	template<pod T>
-	requires (!has_shl_override<T, BinaryStream>)
+	requires (!has_shl_override<T, BinaryStream> && !arithmetic<T> && !is_iterable<T>)
 	BinaryStream& operator<<(const T& data) requires writeable<buf_type> {
 		write(&data, sizeof(T));
 		return *this;
@@ -208,33 +253,73 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator<<(cstring_view& data) requires writeable<buf_type> {
-		write(data.data(), data.size() + 1);
+	template<std::ranges::contiguous_range range>
+	requires pod<typename range::value_type>
+	BinaryStream& operator <<(const range& data) requires writeable<buf_type> {
+		const auto write_size = data.size() * sizeof(typename range::value_type);
+		write(data.data(), write_size);
 		return *this;
 	}
 
+	template<is_iterable T>
+	requires (!pod<typename T::value_type> || !std::ranges::contiguous_range<T>)
+	BinaryStream& operator<<(T& data) requires writeable<buf_type> {
+		for(auto& element : data) {
+           *this << element;
+        }
+
+		return *this;
+	}
+
+	/**
+	 * @brief Writes a contiguous range to the stream.
+	 * 
+	 * @param data The contiguous range to be written to the stream.
+	 */
 	template<std::ranges::contiguous_range range>
 	void put(const range& data) requires writeable<buf_type> {
 		const auto write_size = data.size() * sizeof(typename range::value_type);
 		write(data.data(), write_size);
 	}
 
+	/**
+	 * @brief Writes a the provided value to the stream.
+	 * 
+	 * @param data The value to be written to the stream.
+	 */
 	void put(const arithmetic auto& data) requires writeable<buf_type> {
 		write(&data, sizeof(data));
 	}
 
-	template<endian::Conversion conversion>
-	void put(const arithmetic auto& data) requires writeable<buf_type> {
-		const auto swapped = endian::convert<conversion>(data);
-		write(&swapped, sizeof(data));
+	/**
+	 * @brief Writes data to the stream.
+	 * 
+	 * @param data The element to be written to the stream.
+	 */
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	void put(const endian_func& adaptor) requires writeable<buf_type> {
+		const auto swapped = adaptor.to();
+		write(&swapped, sizeof(swapped));
 	}
 
+	/**
+	 * @brief Writes count elements from the provided buffer to the stream.
+	 * 
+	 * @param data Pointer to the buffer from which data will be copied to the stream.
+	 * @param count The number of elements to write.
+	 */
 	template<pod T>
 	void put(const T* data, size_type count) requires writeable<buf_type> {
 		const auto write_size = count * sizeof(T);
 		write(data, write_size);
 	}
 
+	/**
+	 * @brief Writes the data from the iterator range to the stream.
+	 * 
+	 * @param begin Iterator to the beginning of the data.
+	 * @param end Iterator to the end of the data.
+	 */
 	template<typename It>
 	void put(It begin, const It end) requires writeable<buf_type> {
 		for(auto it = begin; it != end; ++it) {
@@ -242,6 +327,12 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Allows for writing a provided byte value a specified number of times to
+	 * the stream.
+	 * 
+	 * @param The byte value that will fill the specified number of bytes.
+	 */
 	template<size_type size>
 	constexpr void fill(const std::uint8_t value) requires writeable<buf_type> {
 		const auto filled = generate_filled<size>(value);
@@ -250,11 +341,25 @@ public:
 
 	/*** Read ***/
 
+	void deserialise(auto& object) {
+		stream_read_adaptor adaptor(*this);
+		object.serialise(adaptor);
+	}
+
+	template<typename T>
+	requires has_serialise<T, stream_read_adaptor<BinaryStream>>
+	BinaryStream& operator>>(T& data) requires writeable<buf_type> {
+		deserialise(data);
+		return *this;
+	}
+
 	BinaryStream& operator>>(prefixed<std::string> adaptor) {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(std::uint32_t), *this);
-		std::uint32_t size {};
-		buffer_.read(&size);
-		endian::little_to_native_inplace(size);
+		std::uint32_t size = 0;
+		*this >> endian::le(size);
+
+		if(state_ != StreamState::OK) {
+			return *this;
+		}
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
@@ -267,10 +372,13 @@ public:
 	}
 
 	BinaryStream& operator>>(prefixed<std::string_view> adaptor) {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(std::uint32_t), *this);
-		std::uint32_t size{};
-		buffer_.read(&size);
-		endian::little_to_native_inplace(size);
+		std::uint32_t size = 0;
+		*this >> endian::le(size);
+
+		if(state_ != StreamState::OK) {
+			return *this;
+		}
+
 		adaptor.str = std::string_view { span<char>(size) };
 		return *this;
 	}
@@ -337,73 +445,120 @@ public:
 		return (*this >> prefixed(data));
 	}
 
-	// terminates when it hits a null byte, empty cstring_view if none found
-	// goes without saying that the buffer must outlive the cstring_view
-	BinaryStream& operator>>(cstring_view& dest) requires contiguous<buf_type> {
-		dest = cstring_view(cstring_view::null_terminated, view());
-		return *this;
-	}
-
 	BinaryStream& operator>>(has_shr_override<BinaryStream> auto&& data) {
 		return data.operator>>(*this);
 	}
 
-	template<pod T>
-	requires (!has_shr_override<T, BinaryStream>)
-	BinaryStream& operator>>(T& data) {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(data), *this);
-		buffer_.read(&data, sizeof(data));
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	BinaryStream& operator>>(endian_func adaptor) {
+		SAFE_READ(&adaptor.value, sizeof(adaptor.value), *this);
+		adaptor.value = adaptor.from();
 		return *this;
 	}
 
-	void get(arithmetic auto& dest) {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(dest), void());
-		buffer_.read(&dest, sizeof(dest));
+	BinaryStream& operator>>(arithmetic auto& data) {
+		SAFE_READ(&data, sizeof(data), *this);
+		endian::storage_out(data, byte_order);
+		return *this;
 	}
 
+	template<pod T>
+	requires (!has_shr_override<T, BinaryStream> && !arithmetic<T>)
+	BinaryStream& operator>>(T& data) {
+		SAFE_READ(&data, sizeof(data), *this);
+		return *this;
+	}
+
+	/**
+	 * @brief Read an arithmetic type from the stream.
+	 * 
+	 * @return The destination for the read value.
+	 */
+	void get(arithmetic auto& dest) {
+		SAFE_READ(&dest, sizeof(dest), void());
+	}
+
+	/**
+	 * @brief Read an arithmetic type from the stream.
+	 * 
+	 * @return The arithmetic value.
+	 */
 	template<arithmetic T>
 	T get() {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(T), void());
 		T t{};
-		buffer_.read(&t, sizeof(T));
+		SAFE_READ(&t, sizeof(T), t);
 		return t;
 	}
 
-	template<endian::Conversion conversion>
-	void get(arithmetic auto& dest) {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(dest), void());
-		buffer_.read(&dest, sizeof(dest));
-		dest = endian::convert<conversion>(dest);
+	/**
+	 * @brief Read an arithmetic type from the stream, allowing for endian
+	 * conversion.
+	 * 
+	 * @param The destination for the read value.
+	 */
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	void get(endian_func& adaptor) {
+		SAFE_READ(&adaptor.value, sizeof(adaptor), void());
+		adaptor.value = adaptor.from();
 	}
 
-	template<arithmetic T, endian::Conversion conversion>
+	/**
+	 * @brief Read an arithmetic type from the stream, allowing for endian
+	 * conversion.
+	 * 
+	 * @return The arithmetic value.
+	 */
+	template<arithmetic T, endian::conversion conversion>
 	T get() {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(T), void());
 		T t{};
-		buffer_.read(&t, sizeof(T));
+		SAFE_READ(&t, sizeof(T), t);
 		return endian::convert<conversion>(t);
 	}
 
+
+	/**
+	 * @brief Reads a string from the stream.
+	 * 
+	 * @param dest The destination string.
+	 */
 	void get(std::string& dest) {
 		*this >> dest;
 	}
 
+	/**
+	 * @brief Reads a fixed-length string from the stream.
+	 * 
+	 * @param dest The destination string.
+	 * @param count The number of bytes to be read.
+	 */
 	void get(std::string& dest, size_type size) {
 		STREAM_READ_BOUNDS_ENFORCE(size, void());
-		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
+
+		dest.resize_and_overwrite(size, [&](char* strbuf, size_type len) {
 			buffer_.read(strbuf, len);
 			return len;
 		});
 	}
 
+	/**
+	 * @brief Read data from the stream into the provided destination argument.
+	 * 
+	 * @param dest The destination buffer.
+	 * @param count The number of bytes to be read into the destination.
+	 */
 	template<typename T>
 	void get(T* dest, size_type count) {
 		assert(dest);
 		const auto read_size = count * sizeof(T);
-		STREAM_READ_BOUNDS_ENFORCE(read_size, void());
-		buffer_.read(dest, read_size);
+		SAFE_READ(dest, read_size, void());
 	}
 
+	/**
+	 * @brief Read data from the stream to the destination represented by the iterators.
+	 * 
+	 * @param begin The beginning iterator.
+	 * @param end The end iterator.
+	 */
 	template<typename It>
 	void get(It begin, const It end) {
 		for(; begin != end; ++begin) {
@@ -411,20 +566,39 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Read data from the stream into the provided destination argument.
+	 * 
+	 * @param dest A contiguous range into which the data should be read.
+	 */
 	template<std::ranges::contiguous_range range>
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(typename range::value_type);
-		STREAM_READ_BOUNDS_ENFORCE(read_size, void());
-		buffer_.read(dest.data(), read_size);
+		SAFE_READ(dest.data(), read_size, void());
 	}
 
+	/**
+	 * @brief Skip over count bytes
+	 *
+	 * Skips over a number of bytes from the stream. This should be used
+	 * if the stream holds data that you don't care about but don't want
+	 * to have to read it to another buffer to move beyond it.
+	 * 
+	 * @param length The number of bytes to skip.
+	 */
 	void skip(const size_type count) {
 		STREAM_READ_BOUNDS_ENFORCE(count, void());
 		buffer_.skip(count);
 	}
 
-	// Reads a string_view from the buffer, up to the terminator value
-	// Returns an empty string_view if a terminator is not found
+	/**
+	 * @brief Provides a string_view over the stream's data, up to the terminator value.
+	 * 
+	 * @param terminator An optional terminating/sentinel value.
+	 * 
+	 * @return A string view over data up to the provided terminator.
+	 * An empty string_view if a terminator is not found
+	 */
 	std::string_view view(value_type terminator = value_type(0)) requires contiguous<buf_type> {
 		const auto pos = buffer_.find_first_of(terminator);
 
@@ -433,27 +607,51 @@ public:
 		}
 
 		std::string_view view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
+
+		// no need to enforce bounds, we know there's enough data
 		buffer_.skip(pos + 1);
 		total_read_ += (pos + 1);
 		return view;
 	}
 
-	// Reads a span<T> from the buffer
-	// Fails if buffer length < requested bytes
-	template<typename OutType = value_type>
-	std::span<OutType> span(size_type count) requires contiguous<buf_type> {
-		STREAM_READ_BOUNDS_ENFORCE(sizeof(OutType) * count, {});
-		std::span span { std::start_lifetime_as<OutType>(buffer_.read_ptr()), count };
-		buffer_.skip(sizeof(OutType) * count);
-		return span;
+	/**
+	 * @brief Provides a span over the specified number of elements in the stream.
+	 * 
+	 * @param count The number of elements the span will provide a view over.
+	 * 
+	 * @return A span representing a view over the requested number of elements
+	 * in the stream.
+	 * 
+	 * @note The stream will error if the stream does not contain the requested amount of data.
+	 */
+	template<typename out_type = value_type>
+	std::span<out_type> span(size_type count) requires contiguous<buf_type> {
+		std::span view { reinterpret_cast<out_type*>(buffer_.read_ptr()), count };
+		skip(sizeof(out_type) * count);
+		return (state_ == StreamState::OK? view : std::span<out_type>());
 	}
 
 	/**  Misc functions **/
 
+	/**
+	 * @brief Determine whether the adaptor supports write seeking.
+	 * 
+	 * This is determined at compile-time and does not need to checked at
+	 * run-time.
+	 * 
+	 * @return True if write seeking is supported, otherwise false.
+	 */
 	constexpr static bool can_write_seek() requires writeable<buf_type> {
 		return std::is_same_v<seeking, supported>;
 	}
 
+	/**
+	 * @brief Performs write seeking within the stream.
+	 * 
+	 * @param direction Specify whether to seek in a given direction or to absolute seek.
+	 * @param offset The offset relative to the seek direction or the absolute value
+	 * when using absolute seeking.
+	 */
 	void write_seek(const StreamSeek direction, const offset_type offset)
 		requires(seekable<buf_type> && writeable<buf_type>) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
@@ -469,39 +667,78 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Returns the size of the stream.
+	 * 
+	 * @return The number of bytes of data available to read within the stream.
+	 */
 	size_type size() const {
 		return buffer_.size();
 	}
 
+	/**
+	 * @brief Whether the stream is empty.
+	 * 
+	 * @return Returns true if the stream is empty (has no data to be read).
+	 */
 	[[nodiscard]]
 	bool empty() const {
 		return buffer_.empty();
 	}
 
+	/**
+	 * @return The total number of bytes written to the stream.
+	 */
 	size_type total_write() const requires writeable<buf_type> {
 		return total_write_;
 	}
 
+	/**
+	 * @return Pointer to stream's underlying buffer.
+	 */
 	const buf_type* buffer() const {
 		return &buffer_;
 	}
 
+	/**
+	 * @return Pointer to stream's underlying buffer.
+	 */
 	buf_type* buffer() {
 		return &buffer_;
 	}
 
+	/**
+	 * @return The stream's state.
+	 */
 	StreamState state() const {
 		return state_;
 	}
 
+	/**
+	 * @return The total number of bytes read from the stream.
+	 */
 	size_type total_read() const {
 		return total_read_;
 	}
 
+	/**
+	 * @return If provided to the constructor, the upper limit on how much data
+	 * can be read from this stream before an error is triggers.
+	 */
 	size_type read_limit() const {
 		return read_limit_;
 	}
 
+	/**
+	 * @brief Determine the maximum number of bytes that can be
+	 * safely read from this stream.
+	 * 
+	 * The value returned may be lower than the amount of data
+	 * available in the buffer if a read limit was set during
+	 * the stream's construction.
+	 * 
+	 * @return The number of bytes available for reading.
+	 */
 	size_type read_max() const {
 		if(read_limit_) {
 			return read_limit_ - total_read_;
@@ -510,10 +747,18 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Determine whether the stream is in an error state.
+	 * 
+	 * @return True if no errors occurred on this stream.
+	 */
 	bool good() const {
 		return state_ == StreamState::OK;
 	}
 
+	/**
+	 * @brief Clears the reset state of the stream if an error has occurred.
+	 */
 	void clear_error_state() {
 		state_ = StreamState::OK;
 	}
@@ -522,6 +767,9 @@ public:
 		return good();
 	}
 
+	/**
+	 * @brief Set the stream to an error state.
+	 */
 	void set_error_state() {
 		state_ = StreamState::USER_DEFINED_ERR;
 	}

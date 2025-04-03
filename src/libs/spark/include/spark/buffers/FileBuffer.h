@@ -36,6 +36,21 @@ private:
 	offset_type write_ = 0;
 	bool error_ = false;
 
+	/**
+	* @brief Explicitly close the underlying file handle.
+	* 
+	* This function will be called by the object's destructor
+	* and does not need to be called explicitly.
+	* 
+	* @note Idempotent.
+	*/
+	void close() {
+		if(file_) {
+			std::fclose(file_);
+			file_ = nullptr;
+		}
+	}
+
 public:
 	FileBuffer(const std::filesystem::path& path)
 		: FileBuffer(path.string().c_str()) { }
@@ -60,7 +75,7 @@ public:
 		}
 	}
 
-	FileBuffer(FileBuffer&& rhs) noexcept 
+	FileBuffer(FileBuffer&& rhs) noexcept
 		: file_(rhs.file_),
 		  read_(rhs.read_),
 		  write_(rhs.write_),
@@ -83,22 +98,30 @@ public:
 		close();
 	}
 
-	void close() {
-		if(file_) {
-			std::fclose(file_);
-			file_ = nullptr;
-		}
-	}
 
+	/**
+	 * @brief Flush unwritten data.
+	 */
 	void flush() {
 		std::fflush(file_);
 	}
 
+	/**
+	 * @brief Reads a number of bytes to the provided buffer.
+	 * 
+	 * @param destination The buffer to copy the data to.
+	 */
 	template<typename T>
 	void read(T* destination) {
 		read(destination, sizeof(T));
 	}
 
+	/**
+	 * @brief Reads a number of bytes to the provided buffer.
+	 * 
+	 * @param destination The buffer to copy the data to.
+	 * @param length The number of bytes to read into the buffer.
+	 */
 	void read(void* destination, size_type length) {
 		if(error_) {
 			return;
@@ -117,11 +140,24 @@ public:
 		read_ += length;
 	}
 
+	/**
+	 * @brief Copies a number of bytes to the provided buffer but without advancing
+	 * the read cursor.
+	 * 
+	 * @param destination The buffer to copy the data to.
+	 */
 	template<typename T>
 	void copy(T* destination) {
 		copy(destination, sizeof(T));
 	}
 
+	/**
+	 * @brief Copies a number of bytes to the provided buffer but without advancing
+	 * the read cursor.
+	 * 
+	 * @param destination The buffer to copy the data to.
+	 * @param length The number of bytes to copy.
+	 */
 	void copy(void* destination, size_type length) {
 		if(error_) {
 			return;
@@ -141,6 +177,13 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Attempts to locate the provided value within the container.
+	 * 
+	 * @param value The value to locate.
+	 * 
+	 * @return The position of value or npos if not found.
+	 */
 	size_type find_first_of(value_type val) noexcept {
 		if(error_) {
 			return npos;
@@ -153,7 +196,7 @@ public:
 
 		value_type buffer{};
 
-		for(size_type i = 0u, j = size(); i < j; ++i) {
+		for(size_type i = 0, j = size(); i < j; ++i) {
 			if(std::fread(&buffer, sizeof(value_type), 1, file_) != 1) {
 				error_ = true;
 				return npos;
@@ -167,27 +210,56 @@ public:
 		return npos;
 	}
 
+	/**
+	 * @brief Skip a requested number of bytes.
+	 *
+	 * Skips over a number of bytes from the file. This should be used
+	 * if the file holds data that you don't care about but don't want
+	 * to have to read it to another buffer to move beyond it.
+	 * 
+	 * @param length The number of bytes to skip.
+	 */
 	void skip(const size_type length) {
 		read_ += length;
 	}
 
-	void advance_write(size_type bytes) {
-		write_ += bytes;
-	}
-
+	/**
+	 * @brief Whether the container is empty.
+	 * 
+	 * @return Returns true if the container is empty (has no data to be read).
+	 */
 	[[nodiscard]]
 	bool empty() const {
 		return write_ == read_;
 	}
 
+	/**
+	 * @brief Determine whether the adaptor supports write seeking.
+	 * 
+	 * This is determined at compile-time and does not need to checked at
+	 * run-time.
+	 * 
+	 * @return True if write seeking is supported, otherwise false.
+	 */
 	constexpr static bool can_write_seek() {
 		return std::is_same_v<seeking, supported>;
 	}
 
+	/**
+	 * @brief Write data to the container.
+	 * 
+	 * @param source Pointer to the data to be written.
+	 */
 	void write(const auto& source) {
 		write(&source, sizeof(source));
 	}
 
+	/**
+	 * @brief Write provided data to the file.
+	 * 
+	 * @param source Pointer to the data to be written.
+	 * @param length Number of bytes to write from the source.
+	 */
 	void write(const void* source, size_type length) {
 		if(error_) {
 			return;
@@ -207,22 +279,43 @@ public:
 	}
 
 
+	/**
+	 * @brief Returns the amount of data available in the file.
+	 * 
+	 * @return The number of bytes of data available to read from the file.
+	 */
 	size_type size() const {
 		return static_cast<size_type>(write_) - read_;
 	}
 
+	/** 
+	 * @brief Retrieve the file handle.
+	 * 
+	 * @return The file handle.
+	 */
 	FILE* handle() {
 		return file_;
 	}
 
+	/** 
+	 * @brief Retrieve the file handle.
+	 * 
+	 * @return The file handle.
+	 */
 	const FILE* handle() const {
 		return file_;
 	}
 
+	/** 
+	 * @return True if an error has occurred during file operations.
+	 */
 	bool error() const {
 		return error_;
 	}
 
+	/** 
+	 * @return True if no error has occurred during file operations.
+	 */
 	operator bool() const {
 		return !error();
 	}

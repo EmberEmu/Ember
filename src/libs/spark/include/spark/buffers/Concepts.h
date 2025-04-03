@@ -1,16 +1,17 @@
 /*
-* Copyright (c) 2024 - 2025 Ember
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-*/
+ * Copyright (c) 2024 - 2025 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
 #pragma once
 
 #include <spark/buffers/Shared.h>
 #include <bit>
 #include <concepts>
+#include <ranges>
 #include <type_traits>
 
 namespace ember::spark::io {
@@ -77,6 +78,18 @@ template<typename T, typename U>
 concept has_shr_override =
 	requires(T t, U& u) {
 		{ t.operator>>(u) } -> std::same_as<U&>;
+};
+
+template<typename T, typename U>
+concept has_serialise =
+	requires(T t, U& u) {
+		{ t.serialise(u) } -> std::same_as<void>;
+};
+
+template<typename T>
+concept is_iterable =
+	requires(T t) {
+		t.begin(); t.end();
 };
 
 } // io, spark, ember

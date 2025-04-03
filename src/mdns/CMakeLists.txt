@@ -10,12 +10,12 @@ set(LIBRARY_NAME    libmdns)
 set(LIBRARY_HDR
     ServiceRegistry.h
     MulticastSocket.h
-    Server.h
+    # Server.h - ICE workaround
     Socket.h
     DNSDefines.h
     Handler.h
 	Utility.h
-	Serialisation.h
+	# Serialisation.h - ICE workaround
 	detail/Parser.h
 	NSDService.h
 	Service.h
@@ -24,9 +24,9 @@ set(LIBRARY_HDR
 set(LIBRARY_SRC
     ServiceRegistry.cpp
     MulticastSocket.cpp
-    Server.cpp
+    # Server.cpp - ICE workaround
 	Utility.cpp
-	Serialisation.cpp
+	# Serialisation.cpp - ICE workaround
 	detail/Parser.cpp
 	NSDService.cpp
 	Service.cpp

@@ -10,14 +10,16 @@
 
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferRead.h>
-#include <spark/buffers/Exception.h>
-#include <spark/buffers/Endian.h>
-#include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <spark/buffers/Endian.h>
+#include <spark/buffers/Exception.h>
+#include <spark/buffers/Shared.h>
+#include <spark/buffers/StreamAdaptors.h>
 #include <ranges>
 #include <string>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember::spark::io::pmr {
 
@@ -46,6 +48,13 @@ class BinaryStreamReader : virtual public StreamBase {
 		total_read_ += read_size;
 	}
 
+	inline void read(void* dest, const std::size_t size) {
+		if(state() == StreamState::OK) [[likely]] {
+			enforce_read_bounds(size);
+			buffer_.read(dest, size);
+		}
+	}
+
 public:
 	explicit BinaryStreamReader(BufferRead& source, std::size_t read_limit = 0)
 		: StreamBase(source),
@@ -55,7 +64,7 @@ public:
 
 	BinaryStreamReader(BinaryStreamReader&& rhs) noexcept
 		: StreamBase(rhs),
-	 	  buffer_(rhs.buffer_), 
+		  buffer_(rhs.buffer_), 
 		  total_read_(rhs.total_read_),
 		  read_limit_(rhs.read_limit_) {
 		rhs.total_read_ = static_cast<std::size_t>(-1);
@@ -66,12 +75,25 @@ public:
 	BinaryStreamReader& operator=(const BinaryStreamReader&) = delete;
 	BinaryStreamReader(const BinaryStreamReader&) = delete;
 
-	
+	void deserialise(auto& object) {
+		stream_read_adaptor adaptor(*this);
+		object.serialise(adaptor);
+	}
+
+	template<typename T>
+	requires has_serialise<T, stream_read_adaptor<BinaryStreamReader>>
+	BinaryStreamReader& operator>>(T& data) {
+		deserialise(data);
+		return *this;
+	}
+
 	BinaryStreamReader& operator>>(prefixed<std::string> adaptor) {
-		std::uint32_t size {};
-		enforce_read_bounds(sizeof(size));
-		buffer_.read(&size, sizeof(size));
-		endian::little_to_native_inplace(size);
+		std::uint32_t size = 0;
+		*this >> endian::le(size);
+
+		if(state() != StreamState::OK) {
+			return *this;
+		}
 
 		enforce_read_bounds(size);
 
@@ -128,24 +150,40 @@ public:
 		return data.operator>>(*this);
 	}
 
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	BinaryStreamReader& operator>>(endian_func adaptor) {
+		read(&adaptor.value, sizeof(adaptor.value));
+		adaptor.value = adaptor.from();
+		return *this;
+	}
+
 	template<pod T>
 	requires (!has_shr_override<T, BinaryStreamReader>)
 	BinaryStreamReader& operator>>(T& data) {
-		enforce_read_bounds(sizeof(data));
-		buffer_.read(&data, sizeof(data));
+		read(&data, sizeof(data));
 		return *this;
 	}
 
 	BinaryStreamReader& operator>>(pod auto& data) {
-		enforce_read_bounds(sizeof(data));
-		buffer_.read(&data, sizeof(data));
+		read(&data, sizeof(data));
 		return *this;
 	}
 
+	/**
+	 * @brief Reads a string from the stream.
+	 * 
+	 * @param dest The destination string.
+	 */
 	void get(std::string& dest) {
-		*this >> null_terminated(dest);
+		*this >> dest;
 	}
 
+	/**
+	 * @brief Reads a fixed-length string from the stream.
+	 * 
+	 * @param dest The destination string.
+	 * @param count The number of bytes to be read.
+	 */
 	void get(std::string& dest, std::size_t size) {
 		enforce_read_bounds(size);
 
@@ -155,14 +193,25 @@ public:
 		});
 	}
 
+	/**
+	 * @brief Read data from the stream into the provided destination argument.
+	 * 
+	 * @param dest The destination buffer.
+	 * @param count The number of bytes to be read into the destination.
+	 */
 	template<typename T>
 	void get(T* dest, std::size_t count) {
 		assert(dest);
 		const auto read_size = count * sizeof(T);
-		enforce_read_bounds(read_size);
-		buffer_.read(dest, read_size);
+		read(dest, read_size);
 	}
 
+	/**
+	 * @brief Read data from the stream to the destination represented by the iterators.
+	 * 
+	 * @param begin The beginning iterator.
+	 * @param end The end iterator.
+	 */
 	template<typename It>
 	void get(It begin, const It end) {
 		for(; begin != end; ++begin) {
@@ -170,56 +219,104 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Read data from the stream into the provided destination argument.
+	 * 
+	 * @param dest A contiguous range into which the data should be read.
+	 */
 	template<std::ranges::contiguous_range range>
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(typename range::value_type);
-		enforce_read_bounds(read_size);
-		buffer_.read(dest.data(), read_size);
+		read(dest.data(), read_size);
 	}
 
+	/**
+	 * @brief Read an arithmetic type from the stream.
+	 * 
+	 * @return The arithmetic value.
+	 */
 	template<arithmetic T>
 	T get() {
-		enforce_read_bounds(sizeof(T));
 		T t{};
-		buffer_.read(&t, sizeof(T));
+		read(&t, sizeof(T));
 		return t;
 	}
 
+	/**
+	 * @brief Read an arithmetic type from the stream.
+	 * 
+	 * @return The arithmetic value.
+	 */
 	void get(arithmetic auto& dest) {
-		enforce_read_bounds(sizeof(dest));
-		buffer_.read(&dest, sizeof(dest));
+		read(&dest, sizeof(dest));
 	}
 
-	template<endian::Conversion conversion>
-	void get(arithmetic auto& dest) {
-		enforce_read_bounds(sizeof(dest));
-		buffer_.read(&dest, sizeof(dest));
-		dest = endian::convert<conversion>(dest);
+	/**
+	 * @brief Read an arithmetic type from the stream, allowing for endian
+	 * conversion.
+	 * 
+	 * @param The destination for the read value.
+	 */
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	void get(endian_func& adaptor) {
+		read(&adaptor.value, sizeof(adaptor.value));
+		adaptor.value = adaptor.from();
 	}
 
-	template<arithmetic T, endian::Conversion conversion>
+	/**
+	 * @brief Read an arithmetic type from the stream, allowing for endian
+	 * conversion.
+	 * 
+	 * @return The arithmetic value.
+	 */
+	template<arithmetic T, endian::conversion conversion>
 	T get() {
-		enforce_read_bounds(sizeof(T));
 		T t{};
-		buffer_.read(&t, sizeof(T));
+		read(&t, sizeof(T));
 		return endian::convert<conversion>(t);
 	}
 
 	/**  Misc functions **/ 
 
+	/**
+	 * @brief Skip over count bytes
+	 *
+	 * Skips over a number of bytes from the container. This should be used
+	 * if the container holds data that you don't care about but don't want
+	 * to have to read it to another buffer to move beyond it.
+	 * 
+	 * @param length The number of bytes to skip.
+	 */
 	void skip(std::size_t count) {
 		enforce_read_bounds(count);
 		buffer_.skip(count);
 	}
 
+	/**
+	 * @return The total number of bytes read from the stream.
+	 */
 	std::size_t total_read() const {
 		return total_read_;
 	}
 
+	/**
+	 * @return If provided to the constructor, the upper limit on how much data
+	 * can be read from this stream before an error is triggers.
+	 */
 	std::size_t read_limit() const {
 		return read_limit_;
 	}
 
+	/**
+	 * @brief Determine the maximum number of bytes that can be
+	 * safely read from this stream.
+	 * 
+	 * The value returned may be lower than the amount of data
+	 * available in the buffer if a read limit was set during
+	 * the stream's construction.
+	 * 
+	 * @return The number of bytes available for reading.
+	 */
 	std::size_t read_max() const {
 		if(read_limit_) {
 			return read_limit_ - total_read_;
@@ -228,6 +325,9 @@ public:
 		}
 	}
 
+	/**
+	 * @return Pointer to stream's underlying buffer.
+	 */
 	BufferRead* buffer() const {
 		return &buffer_;
 	}

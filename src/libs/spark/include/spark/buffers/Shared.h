@@ -1,15 +1,15 @@
 /*
-* Copyright (c) 2024 - 2025 Ember
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-*/
+ * Copyright (c) 2024 - 2025 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
 #pragma once
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <concepts>
 #include <type_traits>
@@ -26,18 +26,21 @@ struct except_tag {};
 struct allow_throw_t : except_tag {};
 struct no_throw_t : except_tag {};
 
-constexpr static no_throw_t no_throw {};
-constexpr static allow_throw_t allow_throw {};
+[[maybe_unused]] constexpr static no_throw_t no_throw {};
+[[maybe_unused]] constexpr static allow_throw_t allow_throw {};
 
 struct init_empty_t {};
 constexpr static init_empty_t init_empty {};
 
-#define STRING_ADAPTOR(adaptor_name)           \
-template<typename string_type>                 \
-struct adaptor_name {                          \
-    string_type& str;                          \
-    string_type* operator->() { return &str; } \
-};
+#define STRING_ADAPTOR(adaptor_name)                      \
+template<typename string_type>                            \
+struct adaptor_name {                                     \
+    string_type& str;                                     \
+    string_type* operator->() { return &str; }            \
+};                                                        \
+/* deduction guide required for clang 17 support */       \
+template<typename string_type>                            \
+adaptor_name(string_type&) -> adaptor_name<string_type>;  \
 
 STRING_ADAPTOR(raw)
 STRING_ADAPTOR(prefixed)
@@ -101,7 +104,7 @@ constexpr auto varint_encode(stream_type& stream, size_type value) -> size_type 
 }
 
 template<decltype(auto) size>
-constexpr auto generate_filled(const std::uint8_t value) {
+static constexpr auto generate_filled(const std::uint8_t value) {
 	std::array<std::uint8_t, size> target{};
 	std::ranges::fill(target, value);
 	return target;

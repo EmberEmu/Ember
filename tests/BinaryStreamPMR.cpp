@@ -287,16 +287,16 @@ TEST(BinaryStreamPMR, StringviewWrite) {
 	ASSERT_EQ(view, res);
 }
 
-TEST(BinaryStreamPMR, CStringviewWrite) {
-	std::string buffer;
-	spark::io::pmr::BufferAdaptor adaptor(buffer);
-	spark::io::pmr::BinaryStream stream(adaptor);
-	ember::cstring_view view { "There's coffee in that nebula" };
-	stream << view;
-	std::string res;
-	stream >> spark::io::null_terminated(res);
-	ASSERT_EQ(view, res);
-}
+//TEST(BinaryStreamPMR, CStringviewWrite) {
+//	std::string buffer;
+//	spark::io::pmr::BufferAdaptor adaptor(buffer);
+//	spark::io::pmr::BinaryStream stream(adaptor);
+//	ember::cstring_view view { "There's coffee in that nebula" };
+//	stream << view;
+//	std::string res;
+//	stream >> spark::io::null_terminated(res);
+//	ASSERT_EQ(view, res);
+//}
 
 TEST(BinaryStreamPMR, SetErrorState) {
 	std::vector<char> buffer;

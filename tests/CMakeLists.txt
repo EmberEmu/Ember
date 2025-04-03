@@ -14,7 +14,7 @@ set(EXECUTABLE_SRC
     GruntProtocol.cpp
     Patcher.cpp
     IPBan.cpp
-    DNS.cpp
+    # DNS.cpp - ICE workaround
     PINAuthenticator.cpp
     UTF8Utilities.cpp
     STUN.cpp
