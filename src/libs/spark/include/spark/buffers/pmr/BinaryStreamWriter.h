@@ -159,43 +159,22 @@ public:
 		return *this;
 	}
 
-	/**
-	 * @brief Writes a contiguous range to the stream.
-	 * 
-	 * @param data The contiguous range to be written to the stream.
-	 */
 	template<std::ranges::contiguous_range range>
 	void put(range& data) {
 		const auto write_size = data.size() * sizeof(typename range::value_type);
 		write(data.data(), write_size);
 	}
 
-	/**
-	 * @brief Writes a the provided value to the stream.
-	 * 
-	 * @param data The value to be written to the stream.
-	 */
 	void put(const arithmetic auto& data) {
 		write(&data, sizeof(data));
 	}
 
-	/**
-	 * @brief Writes data to the stream.
-	 * 
-	 * @param data The element to be written to the stream.
-	 */
 	template<std::derived_from<endian::adaptor_tag_t> endian_func>
 	void put(const endian_func& adaptor) {
 		const auto swapped = adaptor.to();
 		write(&swapped, sizeof(swapped));
 	}
 
-	/**
-	 * @brief Writes count elements from the provided buffer to the stream.
-	 * 
-	 * @param data Pointer to the buffer from which data will be copied to the stream.
-	 * @param count The number of elements to write.
-	 */
 	template<pod T>
 	void put(const T* data, std::size_t count) {
 		assert(data);
@@ -203,24 +182,14 @@ public:
 		write(data, write_size);
 	}
 
-	/**
-	 * @brief Writes the data from the iterator range to the stream.
-	 * 
-	 * @param begin Iterator to the beginning of the data.
-	 * @param end Iterator to the end of the data.
-	 */
 	template<typename It>
 	void put(It begin, const It end) {
 		for(auto it = begin; it != end; ++it) {
 			*this << *it;
 		}
 	}
-	/**
-	 * @brief Allows for writing a provided byte value a specified number of times to
-	 * the stream.
-	 * 
-	 * @param The byte value that will fill the specified number of bytes.
-	 */
+
+
 	template<std::size_t size>
 	void fill(const std::uint8_t value) {
 		const auto filled = generate_filled<size>(value);
@@ -229,22 +198,10 @@ public:
 
 	/**  Misc functions **/ 
 
-	/**
-	 * @brief Determines whether this container can write seek.
-	 * 
-	 * @return Whether this container is capable of write seeking.
-	 */
 	bool can_write_seek() const {
 		return buffer_.can_write_seek();
 	}
 
-	/**
-	 * @brief Performs write seeking within the container.
-	 * 
-	 * @param direction Specify whether to seek in a given direction or to absolute seek.
-	 * @param offset The offset relative to the seek direction or the absolute value
-	 * when using absolute seeking.
-	 */
 	void write_seek(const StreamSeek direction, const std::size_t offset) {
 		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
 			if(offset >= total_write_) {
@@ -259,46 +216,23 @@ public:
 		}
 	}
 
-	/**
-	 * @brief Returns the size of the container.
-	 * 
-	 * @return The number of bytes of data available to read within the stream.
-	 */
 	std::size_t size() const {
 		return buffer_.size();
 	}
 
-	/**
-	 * @brief Whether the container is empty.
-	 * 
-	 * @return Returns true if the container is empty (has no data to be read).
-	 */
 	[[nodiscard]]
 	bool empty() const {
 		return buffer_.empty();
 	}
 
-	/**
-	 * @return The total number of bytes written to the stream.
-	 */
 	std::size_t total_write() const {
 		return total_write_;
 	}
 
-	/** 
-	 * @brief Get a pointer to the buffer.
-	 *
-	 * @return Pointer to the underlying buffer. 
-	 */
 	BufferWrite* buffer() {
 		return &buffer_;
 	}
 
-	/** 
-	 * @brief Get a pointer to the buffer.
-	 *
-	 * @return Pointer to the underlying buffer. 
-	 */
 	const BufferWrite* buffer() const {
 		return &buffer_;
 	}

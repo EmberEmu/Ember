@@ -185,22 +185,11 @@ public:
 		return *this;
 	}
 
-	/**
-	 * @brief Reads a number of bytes to the provided buffer.
-	 * 
-	 * @param destination The buffer to copy the data to.
-	 */
 	template<typename T>
 	void read(T* destination) {
 		read(destination, sizeof(T));
 	}
 
-	/**
-	 * @brief Reads a number of bytes to the provided buffer.
-	 * 
-	 * @param destination The buffer to copy the data to.
-	 * @param length The number of bytes to read into the buffer.
-	 */
 	void read(void* destination, size_type length) override {
 		assert(length <= size_ && "Chained buffer read too large!");
 		size_type remaining = length;
@@ -223,24 +212,11 @@ public:
 		size_ -= length;
 	}
 
-	/**
-	 * @brief Copies a number of bytes to the provided buffer but without advancing
-	 * the container's read cursor.
-	 * 
-	 * @param destination The buffer to copy the data to.
-	 */
 	template<typename T>
 	void copy(T* destination) const {
 		copy(destination, sizeof(T));
 	}
 
-	/**
-	 * @brief Copies a number of bytes to the provided buffer but without advancing
-	 * the container's read cursor.
-	 * 
-	 * @param destination The buffer to copy the data to.
-	 * @param length The number of bytes to copy.
-	 */
 	void copy(void* destination, const size_type length) const override {
 		assert(length <= size_ && "Chained buffer copy too large!");
 		size_type remaining = length;
@@ -317,21 +293,10 @@ public:
 		size_ -= length;
 	}
 
-	/**
-	 * @brief Write data to the container.
-	 * 
-	 * @param source Pointer to the data to be written.
-	 */
 	void write(const auto& source) {
 		write(&source, sizeof(source));
 	}
 
-	/**
-	 * @brief Write provided data to the container.
-	 * 
-	 * @param source Pointer to the data to be written.
-	 * @param length Number of bytes to write from the source.
-	 */
 	void write(const void* source, const size_type length) override {
 		size_type remaining = length;
 		IntrusiveNode* tail = root_.prev;
@@ -357,11 +322,6 @@ public:
 		size_ += length;
 	}
 
-	/**
-	 * @brief Reserves a number of bytes within the container for future use.
-	 * 
-	 * @param length The number of bytes that the container should reserve.
-	 */
 	void reserve(const size_type length) override {
 		size_type remaining = length;
 		IntrusiveNode* tail = root_.prev;
@@ -384,22 +344,10 @@ public:
 		size_ += length;
 	}
 
-	/**
-	 * @brief Returns the size of the container.
-	 * 
-	 * @return The number of bytes of data available to read within the container.
-	 */
 	size_type size() const override {
 		return size_;
 	}
 
-	/**
-	 * @brief Retrieves the last buffer in the container's list.
-	 * 
-	 * @return A reference to the value at the specified index.
-	 * @note The container retains ownership over the buffer, so it must not
-	 * be deallocated by the caller.
-	 */
 	storage_type* back() const {
 		if(root_.prev == &root_) {
 			return nullptr;
@@ -408,12 +356,6 @@ public:
 		return buffer_from_node(root_.prev);
 	}
 
-	/**
-	 * @brief Retrieves the buffer's block sized.
-	 * 
-	 * @param index The index within the buffer.
-	 * @return A reference to the value at the specified index.
-	 */
 	storage_type* front() const {
 		if(root_.next == &root_) {
 			return nullptr;
@@ -422,16 +364,6 @@ public:
 		return buffer_from_node(root_.next);
 	}
 
-	/**
-	 * @brief Removes the first buffer from the container.
-	 * 
-	 * @return A pointer to the popped buffer.
-	 * 
-	 * @note Removing the buffer from the container also transfers ownership.
-	 * Therefore, the caller assumes responsibility for deallocating the buffer
-	 * when it is no longer required. Alternatively, it can be pushed back into
-	 * the container to transfer ownership back.
-	 */
 	auto pop_front() {
 		auto buffer = buffer_from_node(root_.next);
 		size_ -= buffer->size();
@@ -441,24 +373,11 @@ public:
 		});
 	}
 
-	/**
-	 * @brief Attaches additional storage to the container.
-	 * 
-	 * @param buffer The block to add to the container.
-	 * 
-	 * @note Once pushed, the container is assumed to have ownership over the buffer.
-	 * The buffer storage must have been allocated by the same allocator as the container.
-	 */
 	void push_back(storage_type* buffer) {
 		link_tail_node(&buffer->node);
 		size_ += buffer->write_offset;
 	}
 
-	/**
-	 * @brief Advances the write cursor.
-	 * 
-	 * @param size The number of bytes by which the write cursor to advance the cursor.
-	 */
 	void advance_write(const size_type size) {
 		auto buffer = buffer_from_node(root_.prev);
 		const auto actual = buffer->advance_write(size);
@@ -467,25 +386,10 @@ public:
 		size_ += size;
 	}
 
-	/**
-	 * @brief Determine whether the adaptor supports write seeking.
-	 * 
-	 * This is determined at compile-time and does not need to checked at
-	 * run-time.
-	 * 
-	 * @return True if write seeking is supported, otherwise false.
-	 */
 	bool can_write_seek() const override {
 		return std::is_same_v<seeking, supported>;
 	}
 
-	/**
-	 * @brief Performs write seeking within the container.
-	 * 
-	 * @param direction Specify whether to seek in a given direction or to absolute seek.
-	 * @param offset The offset relative to the seek direction or the absolute value
-	 * when using absolute seeking.
-	 */
 	void write_seek(const BufferSeek direction, size_type offset) override {
 		// nothing to do in this case
 		if(direction == BufferSeek::SK_ABSOLUTE && offset == size_) {
@@ -528,9 +432,6 @@ public:
 		root_.prev = tail;
 	}
 
-	/**
-	 * @brief Clears the container.
-	 */
 	void clear() {
 		IntrusiveNode* head = root_.next;
 
@@ -545,52 +446,23 @@ public:
 		size_ = 0;
 	}
 
-	/**
-	 * @brief Whether the container is empty.
-	 * 
-	 * @return Returns true if the container is empty (has no data to be read).
-	 */
 	[[nodiscard]]
 	bool empty() const override {
 		return !size_;
 	}
 
-	/**
-	 * @brief Retrieves the container's block size.
-	 * 
-	 * @return The block size.
-	 */
 	consteval static size_type block_size() {
 		return block_sz;
 	}
 
-	/**
-	 * @brief Retrieves a reference to the specified index within the container.
-	 * 
-	 * @param index The index within the container.
-	 * 
-	 * @return A reference to the value at the specified index.
-	 */
 	value_type& operator[](const size_type index) override {
 		return byte_at_index(index);
 	}
 
-	/**
-	 * @brief Retrieves a reference to the specified index within the container.
-	 * 
-	 * @param index The index within the container.
-	 * 
-	 * @return A reference to the value at the specified index.
-	 */
 	const value_type& operator[](const size_type index) const override {
 		return byte_at_index(index);
 	}
 
-	/**
-	 * @brief Retrieves the number of allocated blocks currently being used by the container.
-	 * 
-	 * @return The number of allocated blocks.
-	 */
 	size_type block_count() const {
 		auto node = &root_;
 		size_type count = 0;
@@ -605,13 +477,6 @@ public:
 		return count;
 	}
 
-	/**
-	 * @brief Attempts to locate the provided value within the container.
-	 * 
-	 * @param value The value to locate.
-	 * 
-	 * @return The position of value or npos if not found.
-	 */
 	size_type find_first_of(value_type value) const override {
 		size_type index = 0;
 		auto head = root_.next;
@@ -634,20 +499,10 @@ public:
 		return npos;
 	}
 
-	/**
-	 * @brief Retrieves the container's allocator.
-	 * 
-	 * @return The memory allocator.
-	 */
 	auto& get_allocator() {
 		return allocator_;
 	}
 
-	/**
-	 * @brief Retrieves the container's allocator.
-	 * 
-	 * @return The memory allocator.
-	 */
 	auto& get_allocator() const {
 		return allocator_;
 	}
