@@ -31,6 +31,10 @@ public:
 		: buffer_(buffer),
 		  write_(buffer.size()) {}
 
+	BufferWriteAdaptor(buf_type& buffer, init_empty_t)
+		: buffer_(buffer),
+		  write_(0) {}
+
 	BufferWriteAdaptor(BufferWriteAdaptor&& rhs) = delete;
 	BufferWriteAdaptor& operator=(BufferWriteAdaptor&&) = delete;
 	BufferWriteAdaptor& operator=(const BufferWriteAdaptor&) = delete;
@@ -50,8 +54,10 @@ public:
 				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
 					return size;
 				});
-			} else {
+			} else if constexpr(has_resize<buf_type>) {
 				buffer_.resize(min_req_size);
+			} else {
+				throw buffer_overflow(free(), length, write_);
 			}
 		}
 
@@ -60,7 +66,9 @@ public:
 	}
 
 	void reserve(const std::size_t length) override {
-		buffer_.reserve(length);
+		if constexpr(has_reserve<buf_type>) {
+			buffer_.reserve(length);
+		}
 	}
 
 	bool can_write_seek() const override {
@@ -95,10 +103,26 @@ public:
 	const auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
+
+	auto write_offset() const {
+		return write_;
+	}
 	
 	void clear() {
 		write_ = 0;
-		buffer_.clear();
+
+		if constexpr(has_clear<buf_type>) {
+			buffer_.clear();
+		}
+	}
+
+	void advance_write(std::size_t bytes) {
+		assert(buffer_.size() >= (write_ + bytes));
+		write_ += bytes;
+	}
+
+	std::size_t free() const {
+		return buffer_.size() - write_;
 	}
 };
 

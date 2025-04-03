@@ -44,6 +44,11 @@ public:
 		  read_(0),
 		  write_(buffer.size()) {}
 
+	BufferAdaptor(buf_type& buffer, init_empty_t)
+		: buffer_(buffer),
+		  read_(0),
+		  write_(0) {}
+
 	BufferAdaptor(BufferAdaptor&& rhs) = delete;
 	BufferAdaptor& operator=(BufferAdaptor&&) = delete;
 	BufferAdaptor& operator=(const BufferAdaptor&) = delete;
@@ -72,8 +77,7 @@ public:
 	}
 
 	void copy(void* destination, size_type length) const {
-		assert(destination);
-		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
+		assert(destination && !region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, read_ptr(), length);
 	}
 
@@ -87,11 +91,11 @@ public:
 		}
 	}
 
-	void write(const auto& source) requires has_resize<buf_type> {
+	void write(const auto& source) {
 		write(&source, sizeof(source));
 	}
 
-	void write(const void* source, size_type length) requires has_resize<buf_type> {
+	void write(const void* source, size_type length) {
 		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
@@ -101,8 +105,10 @@ public:
 				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
 					return size;
 				});
-			} else {
+			} else if constexpr(has_resize<buf_type>) {
 				buffer_.resize(min_req_size);
+			} else {
+				throw buffer_overflow(length, write_, free());
 			}
 		}
 
@@ -139,11 +145,11 @@ public:
 		return read_ptr()[index];
 	}
 
-	constexpr static bool can_write_seek() requires has_resize<buf_type> {
+	constexpr static bool can_write_seek() {
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const BufferSeek direction, const offset_type offset) requires has_resize<buf_type> {
+	void write_seek(const BufferSeek direction, const offset_type offset) {
 		switch(direction) {
 			case BufferSeek::SK_BACKWARD:
 				write_ -= offset;
@@ -164,11 +170,11 @@ public:
 		return buffer_.data() + read_;
 	}
 
-	const auto write_ptr() const requires has_resize<buf_type> {
+	const auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
 
-	auto write_ptr() requires has_resize<buf_type> {
+	auto write_ptr() {
 		return buffer_.data() + write_;
 	}
 
@@ -191,6 +197,14 @@ public:
 	void advance_write(size_type bytes) {
 		assert(buffer_.size() >= (write_ + bytes));
 		write_ += bytes;
+	}
+
+	auto free() const {
+		return buffer_.size() - write_;
+	}
+
+	void clear() {
+		read_ = write_ = 0;
 	}
 };
 

@@ -33,6 +33,11 @@ private:
 	BufferWrite& buffer_;
 	std::size_t total_write_;
 
+	inline void write(const void* data, const std::size_t size) {
+		buffer_.write(data, size);
+		total_write_ += size;
+	}
+
 public:
 	explicit BinaryStreamWriter(BufferWrite& source)
 		: StreamBase(source),
@@ -58,8 +63,7 @@ public:
 	template<pod T>
 	requires (!has_shl_override<T, BinaryStreamWriter>)
 	BinaryStreamWriter& operator<<(const T& data) {
-		buffer_.write(&data, sizeof(data));
-		total_write_ += sizeof(data);
+		write(&data, sizeof(data));
 		return *this;
 	}
 
@@ -67,17 +71,15 @@ public:
 	BinaryStreamWriter& operator<<(prefixed<T> adaptor) {
 		auto size = static_cast<std::uint32_t>(adaptor->size());
 		endian::native_to_little_inplace(size);
-		buffer_.write(&size, sizeof(size));
-		buffer_.write(adaptor->data(), adaptor->size());
-		total_write_ += (adaptor->size()) + sizeof(adaptor->size());
+		write(&size, sizeof(size));
+		write(adaptor->data(), adaptor->size());
 		return *this;
 	}
 
 	template<typename T>
 	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
-		const auto encode_len = varint_encode(*this, adaptor->size());
-		buffer_.write(adaptor->data(), adaptor->size());
-		total_write_ += (adaptor->size() + encode_len);
+		varint_encode(*this, adaptor->size());
+		write(adaptor->data(), adaptor->size());
 		return *this;
 	}
 
@@ -85,10 +87,9 @@ public:
 	requires std::is_same_v<std::decay_t<T>, std::string_view>
 	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
-		buffer_.write(adaptor->data(), adaptor->size());
+		write(adaptor->data(), adaptor->size());
 		const char terminator = '\0';
-		buffer_.write(&terminator, 1);
-		total_write_ += (adaptor->size() + 1);
+		write(&terminator, 1);
 		return *this;
 	}
 
@@ -96,15 +97,13 @@ public:
 	requires std::is_same_v<std::decay_t<T>, std::string>
 	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
-		buffer_.write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
-		total_write_ += (adaptor->size() + 1);
+		write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
 		return *this;
 	}
 
 	template<typename T>
 	BinaryStreamWriter& operator<<(raw<T> adaptor) {
-		buffer_.write(adaptor->data(), adaptor->size());
-		total_write_ += adaptor->size();
+		write(adaptor->data(), adaptor->size());
 		return *this;
 	}
 
@@ -119,42 +118,36 @@ public:
 	BinaryStreamWriter& operator<<(const char* data) {
 		assert(data);
 		const auto len = std::strlen(data);
-		buffer_.write(data, len + 1); // include terminator
-		total_write_ += len + 1;
+		write(data, len + 1); // include terminator
 		return *this;
 	}
 
 	BinaryStreamWriter& operator<<(cstring_view& data) {
-		buffer_.write(data.data(), data.size() + 1);
-		total_write_ += (data.size() + 1);
+		write(data.data(), data.size() + 1);
 		return *this;
 	}
 
 	template<std::ranges::contiguous_range range>
 	void put(range& data) {
-		const auto write_size = data.size() * sizeof(range::value_type);
-		buffer_.write(data.data(), write_size);
-		total_write_ += write_size;
+		const auto write_size = data.size() * sizeof(typename range::value_type);
+		write(data.data(), write_size);
 	}
 
 	void put(const arithmetic auto& data) {
-		buffer_.write(&data, sizeof(data));
-		total_write_ += sizeof(data);
+		write(&data, sizeof(data));
 	}
 
 	template<endian::Conversion conversion>
 	void put(const arithmetic auto& data) {
 		const auto swapped = endian::convert<conversion>(data);
-		buffer_.write(&swapped, sizeof(data));
-		total_write_ += sizeof(data);
+		write(&swapped, sizeof(data));
 	}
 
 	template<pod T>
 	void put(const T* data, std::size_t count) {
 		assert(data);
 		const auto write_size = count * sizeof(T);
-		buffer_.write(data, write_size);
-		total_write_ += write_size;
+		write(data, write_size);
 	}
 
 	template<typename It>
@@ -167,8 +160,7 @@ public:
 	template<std::size_t size>
 	void fill(const std::uint8_t value) {
 		const auto filled = generate_filled<size>(value);
-		buffer_.write(filled.data(), filled.size());
-		total_write_ += size;
+		write(filled.data(), filled.size());
 	}
 
 	/**  Misc functions **/ 

@@ -55,6 +55,18 @@ concept has_resize =
 		{ t.resize(typename T::size_type() ) } -> std::same_as<void>;
 };
 
+template<typename T>
+concept has_reserve = 
+	requires(T t) {
+		{ t.reserve(typename T::size_type() ) } -> std::same_as<void>;
+};
+
+template<typename T>
+concept has_clear = 
+	requires(T t) {
+		{ t.clear() } -> std::same_as<void>;
+};
+
 template<typename T, typename U>
 concept has_shl_override =
 	requires(T t, U& u) {

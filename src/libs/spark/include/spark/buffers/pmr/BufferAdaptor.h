@@ -21,7 +21,7 @@ requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final : public BufferReadAdaptor<buf_type>,
                             public BufferWriteAdaptor<buf_type>,
                             public Buffer {
-	void clear() {
+	void conditional_clear() {
 		if(BufferReadAdaptor<buf_type>::read_ptr() == BufferWriteAdaptor<buf_type>::write_ptr()) {
 			BufferReadAdaptor<buf_type>::clear();
 			BufferWriteAdaptor<buf_type>::clear();
@@ -32,12 +32,16 @@ public:
 		: BufferReadAdaptor<buf_type>(buffer),
 		  BufferWriteAdaptor<buf_type>(buffer) {}
 
+	explicit BufferAdaptor(buf_type& buffer, init_empty_t)
+		: BufferReadAdaptor<buf_type>(buffer),
+		  BufferWriteAdaptor<buf_type>(buffer, init_empty) {}
+
 	template<typename T>
 	void read(T* destination) {
 		BufferReadAdaptor<buf_type>::read(destination);
 
 		if constexpr(allow_optimise) {
-			clear();
+			conditional_clear();
 		}
 	}
 
@@ -45,7 +49,7 @@ public:
 		BufferReadAdaptor<buf_type>::read(destination, length);
 
 		if constexpr(allow_optimise) {
-			clear();
+			conditional_clear();
 		}
 	};
 
@@ -69,7 +73,7 @@ public:
 		BufferReadAdaptor<buf_type>::skip(length);
 
 		if constexpr(allow_optimise) {
-			clear();
+			conditional_clear();
 		}
 	};
 
@@ -100,12 +104,18 @@ public:
 	};
 
 	[[nodiscard]]
-	bool empty() const override { 
-		return BufferReadAdaptor<buf_type>::empty();
+	bool empty() const override {
+		return BufferReadAdaptor<buf_type>::read_offset()
+			== BufferWriteAdaptor<buf_type>::write_offset();
 	}
 
 	std::size_t find_first_of(std::byte value) const override { 
 		return BufferReadAdaptor<buf_type>::find_first_of(value);
+	}
+
+	void clear() {
+		BufferReadAdaptor<buf_type>::clear();
+		BufferWriteAdaptor<buf_type>::clear();
 	}
 };
 
