@@ -279,7 +279,7 @@ public:
 		const auto size = varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
-		if(state_ != stream_state::ok) {
+		if(state_ != StreamState::OK) {
 			return *this;
 		}
 
@@ -297,7 +297,7 @@ public:
 		const auto size = varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
-		if(state_ != stream_state::ok) {
+		if(state_ != StreamState::OK) {
 			return *this;
 		}
 		
