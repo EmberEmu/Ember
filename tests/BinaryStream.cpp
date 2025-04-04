@@ -346,20 +346,6 @@ TEST(BinaryStream, Span) {
 	ASSERT_EQ(span[3], 1);
 }
 
-//TEST(BinaryStream, CStringview) {
-//	std::vector<char> buffer;
-//	spark::io::BufferAdaptor adaptor(buffer);
-//	spark::io::BinaryStream stream(adaptor);
-//	std::string_view view { "There's coffee in that nebula" };
-//	stream << spark::io::null_terminated(view);
-//	ember::cstring_view cview;
-//	stream >> cview;
-//	ASSERT_EQ(view, cview);
-//	const auto len = std::strlen(cview.c_str());
-//	ASSERT_EQ(view.size(), len);
-//	ASSERT_EQ(*(cview.data() + len), '\0');
-//}
-
 TEST(BinaryStream, StaticBufferWrite) {
 	spark::io::StaticBuffer<char, 4> buffer;
 	spark::io::BinaryStream stream(buffer);
