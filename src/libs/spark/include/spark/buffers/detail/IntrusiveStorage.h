@@ -29,15 +29,15 @@ struct IntrusiveNode {
 	IntrusiveNode* prev;
 };
 
-template<std::size_t BlockSize, byte_type StorageType = std::byte>
+template<std::size_t block_size, byte_type storage_type = std::byte>
 struct IntrusiveStorage final {
-	using value_type = StorageType;
-	using OffsetType = std::remove_const_t<decltype(BlockSize)>;
+	using value_type = storage_type;
+	using offset_type = std::remove_const_t<decltype(block_size)>;
 
-	OffsetType read_offset = 0;
-	OffsetType write_offset = 0;
+	offset_type read_offset = 0;
+	offset_type write_offset = 0;
 	IntrusiveNode node {};
-	std::array<value_type, BlockSize> storage;
+	std::array<value_type, block_size> storage;
 
 	void clear() {
 		read_offset = 0;
@@ -46,20 +46,20 @@ struct IntrusiveStorage final {
 
 	std::size_t write(const auto source, std::size_t length) {
 		assert(!region_overlap(source, length, storage.data(), storage.size()));
-		std::size_t write_len = BlockSize - write_offset;
+		std::size_t write_len = block_size - write_offset;
 
 		if(write_len > length) {
 			write_len = length;
 		}
 
 		std::memcpy(storage.data() + write_offset, source, write_len);
-		write_offset += static_cast<OffsetType>(write_len);
+		write_offset += static_cast<offset_type>(write_len);
 		return write_len;
 	}
 
 	std::size_t copy(auto destination, const std::size_t length) const {
 		assert(!region_overlap(storage.data(), storage.size(), destination, length));
-		std::size_t read_len = BlockSize - read_offset;
+		std::size_t read_len = block_size - read_offset;
 
 		if(read_len > length) {
 			read_len = length;
@@ -71,7 +71,7 @@ struct IntrusiveStorage final {
 
 	std::size_t read(auto destination, const std::size_t length, const bool allow_optimise = false) {
 		std::size_t read_len = copy(destination, length);
-		read_offset += static_cast<OffsetType>(read_len);
+		read_offset += static_cast<offset_type>(read_len);
 
 		if(read_offset == write_offset && allow_optimise) {
 			clear();
@@ -81,13 +81,13 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t skip(const std::size_t length, const bool allow_optimise = false) {
-		std::size_t skip_len = BlockSize - read_offset;
+		std::size_t skip_len = block_size - read_offset;
 
 		if(skip_len > length) {
 			skip_len = length;
 		}
 
-		read_offset += static_cast<OffsetType>(skip_len);
+		read_offset += static_cast<offset_type>(skip_len);
 
 		if(read_offset == write_offset && allow_optimise) {
 			clear();
@@ -101,7 +101,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t free() const {
-		return BlockSize - write_offset;
+		return block_size - write_offset;
 	}
 
 	void write_seek(const BufferSeek direction, const std::size_t offset) {
@@ -110,10 +110,10 @@ struct IntrusiveStorage final {
 				write_offset = offset;
 				break;
 			case BufferSeek::SK_BACKWARD:
-				write_offset -= static_cast<OffsetType>(offset);
+				write_offset -= static_cast<offset_type>(offset);
 				break;
 			case BufferSeek::SK_FORWARD:
-				write_offset += static_cast<OffsetType>(offset);
+				write_offset += static_cast<offset_type>(offset);
 				break;
 		}
 	}
@@ -125,23 +125,23 @@ struct IntrusiveStorage final {
 			size = remaining;
 		}
 
-		write_offset += static_cast<OffsetType>(size);
+		write_offset += static_cast<offset_type>(size);
 		return size;
-	}
-
-	value_type* read_ptr() {
-		return storage.data() + read_offset;
 	}
 
 	const value_type* read_ptr() const {
 		return storage.data() + read_offset;
 	}
 
-	value_type* write_ptr() {
+	value_type* read_ptr() {
+		return storage.data() + read_offset;
+	}
+
+	const value_type* write_ptr () const {
 		return storage.data() + write_offset;
 	}
 
-	const value_type* write_ptr() const {
+	value_type* write_ptr() {
 		return storage.data() + write_offset;
 	}
 

@@ -10,6 +10,7 @@
 
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <spark/buffers/Exception.h>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -99,10 +100,9 @@ public:
 		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
-		// we don't use std::back_inserter so we can support seeks
-		if(buffer_.size() < min_req_size) {
+		if(buffer_.size() < min_req_size) [[likely]] {
 			if constexpr(has_resize_overwrite<buf_type>) {
-				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
+				buffer_.resize_and_overwrite(min_req_size, [](char*, size_type size) {
 					return size;
 				});
 			} else if constexpr(has_resize<buf_type>) {
@@ -129,7 +129,7 @@ public:
 	}
 	
 	size_type size() const {
-		return buffer_.size() - read_;
+		return write_ - read_;
 	}
 
 	[[nodiscard]]
@@ -170,7 +170,7 @@ public:
 		return buffer_.data() + read_;
 	}
 
-	const auto write_ptr() const {
+	auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
 

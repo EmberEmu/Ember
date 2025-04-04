@@ -16,7 +16,7 @@
 
 namespace ember::spark::io::endian {
 
-enum class Conversion {
+enum class conversion {
 	big_to_native,
 	native_to_big,
 	little_to_native,
@@ -117,24 +117,73 @@ constexpr void native_to_big_inplace(arithmetic auto& value) {
 	conditional_reverse_inplace<std::endian::native, std::endian::big>(value);
 }
 
-template<Conversion conversion>
+template<conversion _conversion>
 constexpr auto convert(arithmetic auto value) -> decltype(value) {
-	switch(conversion) {
-		case Conversion::big_to_native:
+	switch(_conversion) {
+		case conversion::big_to_native:
 			return big_to_native(value);
-			break;
-		case Conversion::native_to_big:
+		case conversion::native_to_big:
 			return native_to_big(value);
-			break;
-		case Conversion::little_to_native:
+		case conversion::little_to_native:
 			return little_to_native(value);
-			break;
-		case Conversion::native_to_little:
+		case conversion::native_to_little:
 			return native_to_little(value);
-			break;
 		default:
 			std::unreachable();
 	};
 }
+
+struct adaptor_tag_t {};
+
+#define ENDIAN_ADAPTOR(name, func_to, func_from) \
+template<arithmetic T>                           \
+struct name final : adaptor_tag_t {              \
+	T& value;                                    \
+                                                 \
+    name(T& t) : value(t) {}                     \
+    name(T&& t) : value(t) {}                    \
+                                                 \
+	auto to() -> T {                             \
+		return func_to(value);                   \
+	}                                            \
+	auto from() -> T {                           \
+		return func_from(value);                 \
+	}                                            \
+};
+
+ENDIAN_ADAPTOR(be, native_to_big,    big_to_native)
+ENDIAN_ADAPTOR(le, native_to_little, little_to_native)
+
+struct storage_tag {};
+struct as_big_t final : storage_tag {};
+struct as_little_t final : storage_tag {};
+struct as_native_t final : storage_tag {};
+
+[[maybe_unused]] constexpr static as_big_t big {};
+[[maybe_unused]] constexpr static as_little_t little {};
+[[maybe_unused]] constexpr static as_native_t native {};
+
+inline auto storage_in(const arithmetic auto& value, as_native_t) {
+	return value;
+}
+
+inline auto storage_in(const arithmetic auto& value, as_little_t) {
+	return native_to_little(value);
+}
+
+inline auto storage_in(const arithmetic auto& value, as_big_t) {
+	return native_to_big(value);
+}
+
+inline void storage_out(arithmetic auto& value, as_native_t) {}
+
+inline void storage_out(arithmetic auto& value, as_little_t) {
+	return little_to_native_inplace(value);
+}
+
+inline void storage_out(arithmetic auto& value, as_big_t) {
+	return big_to_native_inplace(value);
+}
+
 
 } // endian, io, spark, ember

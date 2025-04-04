@@ -20,7 +20,7 @@ namespace ember::spark::io {
 // other than the one on which it was created, not even if synchronised
 // ... unless you're positive it won't result in the allocator being called.
 // 
-// Minimum memory usage is IntrusiveStorage<BlockSize> * count.
+// Minimum memory usage is IntrusiveStorage<block_size> * count.
 // Additional blocks are not added if the original is exhausted ('colony' structure),
 // so the allocator will fall back to the system allocator instead.
 //
@@ -28,13 +28,13 @@ namespace ember::spark::io {
 // Cons: everything else.
 // 
 // TL;DR Do not use unless you know what you're doing.
-template<decltype(auto) BlockSize,
+template<decltype(auto) block_size,
 	std::size_t count,
-	typename RefCountPolicy = NoRefCounting,
-	typename EnrantPolicy = SafeEntrant,
-	typename StorageType = std::byte>
-using DynamicTLSBuffer = DynamicBuffer<BlockSize, StorageType,
-	TLSBlockAllocator<typename DynamicBuffer<BlockSize>::storage_type, count, NoRefCounting, EnrantPolicy>
+	typename ref_count_policy = NoRefCounting,
+	typename entrant_policy = SafeEntrant,
+	typename storage_type = std::byte>
+using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
+	TLSBlockAllocator<typename DynamicBuffer<block_size>::storage_type, count, NoRefCounting, entrant_policy>
 >;
 
 } // io, spark, ember

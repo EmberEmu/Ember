@@ -22,16 +22,16 @@ namespace ember::spark::io {
 
 using namespace detail;
 
-template<byte_type StorageType, std::size_t buf_size>
+template<byte_type storage_type, std::size_t buf_size>
 class StaticBuffer final {
-	std::array<StorageType, buf_size> buffer_ = {};
+	std::array<storage_type, buf_size> buffer_ = {};
 	std::size_t read_ = 0;
 	std::size_t write_ = 0;
 
 public:
 	using size_type       = typename decltype(buffer_)::size_type;
 	using offset_type     = size_type;
-	using value_type      = StorageType;
+	using value_type      = storage_type;
 	using contiguous      = is_contiguous;
 	using seeking         = supported;
 
@@ -81,7 +81,7 @@ public:
 	size_type find_first_of(value_type val) const noexcept {
 		const auto data = read_ptr();
 
-		for(size_type i = 0u, j = size(); i < j; ++i) {
+		for(size_type i = 0, j = size(); i < j; ++i) {
 			if(data[i] == val) {
 				return i;
 			}
@@ -107,12 +107,6 @@ public:
 		read_ = write_ = 0;
 	}
 
-	/*
-	 * Moves any unread data to the front of the buffer, freeing space at the end.
-	 * If a move is performed, pointers obtained from read/write_ptr() will be invalidated.
-	 * 
-	 * Return true if additional space was made available.
-	 */
 	bool defragment() {
 		if(read_ == 0) {
 			return false;
@@ -177,7 +171,7 @@ public:
 		return buffer_.begin() + read_;
 	}
 
-	const auto begin() const {
+	auto begin() const {
 		return buffer_.begin() + read_;
 	}
 
@@ -185,7 +179,7 @@ public:
 		return buffer_.begin() + write_;
 	}
 
-	const auto end() const {
+	auto end() const {
 		return buffer_.begin() + write_;
 	}
 
@@ -233,19 +227,11 @@ public:
 		return buffer_.data();
 	}
 
-	std::span<value_type> read_span() {
-		return { read_ptr(), size() };
-	}
-
 	std::span<const value_type> read_span() const {
 		return { read_ptr(), size() };
 	}
 
 	std::span<value_type> write_span() {
-		return { write_ptr(), free() };
-	}
-
-	std::span<const value_type> write_span() const {
 		return { write_ptr(), free() };
 	}
 };

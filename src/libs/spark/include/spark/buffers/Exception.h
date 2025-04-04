@@ -10,6 +10,8 @@
 
 #include <spark/Exception.h>
 #include <format>
+#include <stdexcept>
+#include <utility>
 #include <cstddef>
 
 namespace ember::spark::io {

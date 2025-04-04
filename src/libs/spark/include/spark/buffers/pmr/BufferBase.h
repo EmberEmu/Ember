@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,10 @@
 namespace ember::spark::io::pmr {
 
 class BufferBase {
+protected:
+	std::size_t read_ = 0;
+	std::size_t write_ = 0;
+
 public:
 	virtual std::size_t size() const = 0;
 	virtual bool empty() const = 0;

@@ -1,16 +1,17 @@
 /*
-* Copyright (c) 2024 - 2025 Ember
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-*/
+ * Copyright (c) 2024 - 2025 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
 #pragma once
 
 #include <spark/buffers/pmr/BufferWrite.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <spark/buffers/Exception.h>
 #include <ranges>
 #include <cassert>
 #include <cstddef>
@@ -24,21 +25,15 @@ template<byte_oriented buf_type>
 requires std::ranges::contiguous_range<buf_type>
 class BufferWriteAdaptor : public BufferWrite {
 	buf_type& buffer_;
-	std::size_t write_;
 
 public:
 	BufferWriteAdaptor(buf_type& buffer)
-		: buffer_(buffer),
-		  write_(buffer.size()) {}
+		: buffer_(buffer) {
+		write_ = buffer.size();
+	}
 
 	BufferWriteAdaptor(buf_type& buffer, init_empty_t)
-		: buffer_(buffer),
-		  write_(0) {}
-
-	BufferWriteAdaptor(BufferWriteAdaptor&& rhs) = delete;
-	BufferWriteAdaptor& operator=(BufferWriteAdaptor&&) = delete;
-	BufferWriteAdaptor& operator=(const BufferWriteAdaptor&) = delete;
-	BufferWriteAdaptor(const BufferWriteAdaptor&) = delete;
+		: buffer_(buffer) {}
 
 	void write(auto& source) {
 		write(&source, sizeof(source));
@@ -48,8 +43,7 @@ public:
 		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
-		// we don't use std::back_inserter so we can support seeks
-		if(buffer_.size() < min_req_size) {
+		if(buffer_.size() < min_req_size) [[likely]] {
 			if constexpr(has_resize_overwrite<buf_type>) {
 				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
 					return size;
@@ -88,7 +82,7 @@ public:
 		}
 	}
 
-	const auto storage() const {
+	auto storage() const {
 		return buffer_.data();
 	}
 
@@ -100,14 +94,14 @@ public:
 		return buffer_.data() + write_;
 	}
 
-	const auto write_ptr() const {
+	auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
 
 	auto write_offset() const {
 		return write_;
 	}
-	
+
 	void clear() {
 		write_ = 0;
 

@@ -10,7 +10,7 @@
 
 #include <spark/buffers/pmr/BufferWrite.h>
 #include <spark/buffers/Shared.h>
-#include <spark/Exception.h>
+#include <spark/buffers/Exception.h>
 #include <cstddef>
 
 namespace ember::spark::io {
@@ -30,7 +30,7 @@ public:
 	void copy(auto* /*elem*/) const {}
 	void copy(void* /*destination*/, size_type /*length*/) const {};
 	void reserve(const size_type /*length*/) {};
-	size_type size() const{ return 0; };
+	size_type size() const  { return 0; };
 	[[nodiscard]] bool empty() const { return true; };
 	bool can_write_seek() const { return false; }
 

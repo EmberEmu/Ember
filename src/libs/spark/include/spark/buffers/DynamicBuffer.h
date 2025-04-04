@@ -12,37 +12,37 @@
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/allocators/DefaultAllocator.h>
 #include <spark/buffers/detail/IntrusiveStorage.h>
-#include <boost/assert.hpp>
 #include <concepts>
 #include <functional>
 #include <memory>
 #include <utility>
-#ifdef BUFFER_DEBUG
+#ifdef EMBER_BUFFER_DEBUG
 #include <algorithm>
 #include <vector>
 #endif
 #include <cstddef>
 #include <cstdint>
+#include <cassert>
 
 namespace ember::spark::io {
 
 using namespace detail;
 
-template<typename BufferType>
+template<typename buffer_type>
 class BufferSequence;
 
-template<decltype(auto) BlockSize>
-concept int_gt_zero = std::integral<decltype(BlockSize)> && BlockSize > 0;
+template<decltype(auto) block_sz>
+concept int_gt_zero = std::integral<decltype(block_sz)> && block_sz > 0;
 
-template<decltype(auto) BlockSize,
-	byte_type StorageValueType = std::byte,
-	typename Allocator = DefaultAllocator<detail::IntrusiveStorage<BlockSize, StorageValueType>>
+template<decltype(auto) block_sz,
+	byte_type storage_value_type = std::byte,
+	typename allocator = DefaultAllocator<detail::IntrusiveStorage<block_sz, storage_value_type>>
 >
-requires int_gt_zero<BlockSize>
+requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {
 public:
-	using storage_type = IntrusiveStorage<BlockSize, StorageValueType>;
-	using value_type   = StorageValueType;
+	using storage_type = IntrusiveStorage<block_sz, storage_value_type>;
+	using value_type   = storage_value_type;
 	using node_type    = IntrusiveNode;
 	using size_type    = std::size_t;
 	using offset_type  = std::size_t;
@@ -56,7 +56,7 @@ public:
 private:
 	IntrusiveNode root_;
 	size_type size_;
-	[[no_unique_address]] Allocator allocator_;
+	[[no_unique_address]] allocator allocator_;
 
 	void link_tail_node(IntrusiveNode* node) {
 		node->next = &root_;
@@ -109,7 +109,7 @@ private:
 		}
 	}
 	
-#ifdef BUFFER_DEBUG
+#ifdef EMBER_BUFFER_DEBUG
 	void offset_buffers(std::vector<storage_type*>& buffers, size_type offset) {
 		std::erase_if(buffers, [&](auto block) {
 			if(block->size() > offset) {
@@ -124,19 +124,19 @@ private:
 #endif
 
 	value_type& byte_at_index(const size_type index) const {
-		BOOST_ASSERT_MSG(index < size_, "Buffer subscript index out of range");
+		assert(index < size_ && "buffer subscript index out of range");
 
 		auto head = root_.next;
 		auto buffer = buffer_from_node(head);
 		const auto offset_index = index + buffer->read_offset;
-		const auto node_index = offset_index / BlockSize;
+		const auto node_index = offset_index / block_sz;
 
 		for(size_type i = 0; i < node_index; ++i) {
 			head = head->next;
 		}
 
 		buffer = buffer_from_node(head);
-		return (*buffer)[offset_index % BlockSize];
+		return (*buffer)[offset_index % block_sz];
 	}
 
 	size_type abs_seek_offset(size_type offset) {
@@ -191,7 +191,7 @@ public:
 	}
 
 	void read(void* destination, size_type length) override {
-		BOOST_ASSERT_MSG(length <= size_, "Chained buffer read too large!");
+		assert(length <= size_ && "Chained buffer read too large!");
 		size_type remaining = length;
 
 		while(true) {
@@ -218,7 +218,7 @@ public:
 	}
 
 	void copy(void* destination, const size_type length) const override {
-		BOOST_ASSERT_MSG(length <= size_, "Chained buffer copy too large!");
+		assert(length <= size_ && "Chained buffer copy too large!");
 		size_type remaining = length;
 		auto head = root_.next;
 
@@ -236,16 +236,16 @@ public:
 		}
 	}
 
-#ifdef BUFFER_DEBUG
+#ifdef EMBER_BUFFER_DEBUG
 	std::vector<storage_type*> fetch_buffers(const size_type length, const size_type offset = 0) {
 		size_type total = length + offset;
-		BOOST_ASSERT_MSG(total <= size_, "Chained buffer fetch too large!");
+		assert(total <= size_ && "Chained buffer fetch too large!");
 		std::vector<storage_type*> buffers;
 		auto head = root_.next;
 
 		while(total) {
 			auto buffer = buffer_from_node(head);
-			size_type read_size = BlockSize - buffer->read_offset;
+			size_type read_size = block_sz - buffer->read_offset;
 			
 			// guard against overflow - buffer may have more content than requested
 			if(read_size > total) {
@@ -266,7 +266,7 @@ public:
 #endif
 
 	void skip(const size_type length) override {
-		BOOST_ASSERT_MSG(length <= size_, "Chained buffer skip too large!");
+		assert(length <= size_ && "Chained buffer skip too large!");
 		size_type remaining = length;
 
 		while(true) {
@@ -372,8 +372,8 @@ public:
 	void advance_write(const size_type size) {
 		auto buffer = buffer_from_node(root_.prev);
 		const auto actual = buffer->advance_write(size);
-		BOOST_ASSERT_MSG(size <= BlockSize && actual <= size,
-		                 "Attempted to advance write cursor out of bounds!");
+		assert(size <= block_sz && actual <= size &&
+		       "Attempted to advance write cursor out of bounds!");
 		size_ += size;
 	}
 
@@ -381,15 +381,15 @@ public:
 		return std::is_same_v<seeking, supported>;
 	}
 
-	void write_seek(const BufferSeek mode, size_type offset) override {
+	void write_seek(const BufferSeek direction, size_type offset) override {
 		// nothing to do in this case
-		if(mode == BufferSeek::SK_ABSOLUTE && offset == size_) {
+		if(direction == BufferSeek::SK_ABSOLUTE && offset == size_) {
 			return;
 		}
 
 		auto tail = root_.prev;
 
-		switch(mode) {
+		switch(direction) {
 			case BufferSeek::SK_BACKWARD:
 				size_ -= offset;
 				break;
@@ -402,18 +402,19 @@ public:
 				break;
 		}
 
-		const bool rewind = (mode == BufferSeek::SK_BACKWARD
-							 || (mode == BufferSeek::SK_ABSOLUTE && offset < size_));
+		const bool rewind
+			= (direction == BufferSeek::SK_BACKWARD
+			   || (direction == BufferSeek::SK_ABSOLUTE && offset < size_));
 
 		while(offset) {
 			auto buffer = buffer_from_node(tail);
 			const auto max_seek = rewind? buffer->size() : buffer->free();
 
 			if(max_seek >= offset) {
-				buffer->write_seek(mode, offset);
+				buffer->write_seek(direction, offset);
 				offset = 0;
 			} else {
-				buffer->write_seek(mode, max_seek);
+				buffer->write_seek(direction, max_seek);
 				offset -= max_seek;
 				tail = rewind? tail->prev : tail->next;
 			}
@@ -440,9 +441,9 @@ public:
 	bool empty() const override {
 		return !size_;
 	}
-	
+
 	constexpr static size_type block_size() {
-		return BlockSize;
+		return block_sz;
 	}
 
 	value_type& operator[](const size_type index) override {
@@ -489,11 +490,15 @@ public:
 		return npos;
 	}
 
-	auto&& get_allocator(this auto&& self) {
-		return self.allocator_;
+	auto& get_allocator() {
+		return allocator_;
 	}
 
-	template<typename BufferType>
+	auto& get_allocator() const {
+		return allocator_;
+	}
+
+	template<typename buffer_type>
 	friend class BufferSequence;
 };
 

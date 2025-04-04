@@ -36,6 +36,13 @@ private:
 	offset_type write_ = 0;
 	bool error_ = false;
 
+	void close() {
+		if(file_) {
+			std::fclose(file_);
+			file_ = nullptr;
+		}
+	}
+
 public:
 	FileBuffer(const std::filesystem::path& path)
 		: FileBuffer(path.string().c_str()) { }
@@ -60,7 +67,7 @@ public:
 		}
 	}
 
-	FileBuffer(FileBuffer&& rhs) noexcept 
+	FileBuffer(FileBuffer&& rhs) noexcept
 		: file_(rhs.file_),
 		  read_(rhs.read_),
 		  write_(rhs.write_),
@@ -83,12 +90,6 @@ public:
 		close();
 	}
 
-	void close() {
-		if(file_) {
-			std::fclose(file_);
-			file_ = nullptr;
-		}
-	}
 
 	void flush() {
 		std::fflush(file_);
@@ -153,7 +154,7 @@ public:
 
 		value_type buffer{};
 
-		for(size_type i = 0u, j = size(); i < j; ++i) {
+		for(size_type i = 0, j = size(); i < j; ++i) {
 			if(std::fread(&buffer, sizeof(value_type), 1, file_) != 1) {
 				error_ = true;
 				return npos;
@@ -169,10 +170,6 @@ public:
 
 	void skip(const size_type length) {
 		read_ += length;
-	}
-
-	void advance_write(size_type bytes) {
-		write_ += bytes;
 	}
 
 	[[nodiscard]]

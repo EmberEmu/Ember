@@ -7,7 +7,6 @@
  */
 
 #include "STUNVectors.h"
-#include <spark/buffers/pmr/BinaryStream.h>
 #include <stun/Client.h>
 #include <stun/Parser.h>
 #include <stun/Utility.h>

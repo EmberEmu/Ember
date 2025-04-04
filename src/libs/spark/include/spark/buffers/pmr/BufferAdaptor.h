@@ -1,10 +1,10 @@
 /*
-* Copyright (c) 2024 - 2025 Ember
-*
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-*/
+ * Copyright (c) 2024 - 2025 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
 #pragma once
 
@@ -23,17 +23,17 @@ class BufferAdaptor final : public BufferReadAdaptor<buf_type>,
                             public Buffer {
 	void conditional_clear() {
 		if(BufferReadAdaptor<buf_type>::read_ptr() == BufferWriteAdaptor<buf_type>::write_ptr()) {
-			BufferReadAdaptor<buf_type>::clear();
-			BufferWriteAdaptor<buf_type>::clear();
+			clear();
 		}
 	}
+
 public:
 	explicit BufferAdaptor(buf_type& buffer)
 		: BufferReadAdaptor<buf_type>(buffer),
 		  BufferWriteAdaptor<buf_type>(buffer) {}
 
 	explicit BufferAdaptor(buf_type& buffer, init_empty_t)
-		: BufferReadAdaptor<buf_type>(buffer),
+		: BufferReadAdaptor<buf_type>(buffer, init_empty),
 		  BufferWriteAdaptor<buf_type>(buffer, init_empty) {}
 
 	template<typename T>
@@ -109,8 +109,8 @@ public:
 			== BufferWriteAdaptor<buf_type>::write_offset();
 	}
 
-	std::size_t find_first_of(std::byte value) const override { 
-		return BufferReadAdaptor<buf_type>::find_first_of(value);
+	std::size_t find_first_of(std::byte val) const override { 
+		return BufferReadAdaptor<buf_type>::find_first_of(val);
 	}
 
 	void clear() {

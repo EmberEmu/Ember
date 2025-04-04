@@ -26,7 +26,7 @@ public:
 	explicit StreamBase(BufferBase& buffer)
 		: buffer_(buffer),
 		  state_(StreamState::OK) { }
-	
+
 	std::size_t size() const {
 		return buffer_.size();
 	}
@@ -36,24 +36,24 @@ public:
 		return buffer_.empty();
 	}
 
-	StreamState state() {
+	StreamState state() const {
 		return state_;
 	}
 
-	void set_error_state() {
-		state_ = StreamState::USER_DEFINED_ERR;
-	}
-
 	bool good() const {
-		return state_ == StreamState::OK;
+		return state() == StreamState::OK;
 	}
 
 	void clear_state() {
-		state_ = StreamState::OK;
+		set_state(StreamState::OK);
 	}
 
 	operator bool() const {
 		return good();
+	}
+
+	void set_error_state() {
+		set_state(StreamState::USER_DEFINED_ERR);
 	}
 
 	virtual ~StreamBase() = default;

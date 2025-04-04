@@ -10,12 +10,11 @@
 
 #include <spark/buffers/pmr/StreamBase.h>
 #include <spark/buffers/pmr/BufferWrite.h>
+#include <spark/buffers/Concepts.h>
 #include <spark/buffers/Endian.h>
 #include <spark/buffers/Shared.h>
-#include <spark/buffers/Concepts.h>
-#include <shared/utility/cstring_view.hpp>
+#include <spark/buffers/StreamAdaptors.h>
 #include <algorithm>
-#include <array>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -29,13 +28,28 @@ namespace ember::spark::io::pmr {
 using namespace detail;
 
 class BinaryStreamWriter : virtual public StreamBase {
-private:
 	BufferWrite& buffer_;
 	std::size_t total_write_;
 
 	inline void write(const void* data, const std::size_t size) {
-		buffer_.write(data, size);
-		total_write_ += size;
+		if(state() == StreamState::OK) [[likely]] {
+			buffer_.write(data, size);
+			total_write_ += size;
+		}
+	}
+
+	template<typename container_type>
+	void write_container(container_type& container) {
+		using c_value_type = typename container_type::value_type;
+
+		if constexpr(memcpy_write<container_type, BinaryStreamWriter>) {
+			const auto bytes = container.size() * sizeof(c_value_type);
+			write(container.data(), bytes);
+		} else {
+			for(auto& element : container) {
+				*this << element;
+			}
+		}
 	}
 
 public:
@@ -48,16 +62,35 @@ public:
 		: StreamBase(rhs),
 		  buffer_(rhs.buffer_), 
 		  total_write_(rhs.total_write_) {
-		 rhs.total_write_ = static_cast<std::size_t>(-1);
-		 rhs.set_state(StreamState::INVALID_STREAM);
+		rhs.total_write_ = static_cast<std::size_t>(-1);
+		rhs.set_state(StreamState::INVALID_STREAM);
 	}
 
 	BinaryStreamWriter& operator=(BinaryStreamWriter&&) = delete;
 	BinaryStreamWriter& operator=(const BinaryStreamWriter&) = delete;
 	BinaryStreamWriter(const BinaryStreamWriter&) = delete;
 
+	void serialise(auto&& object) {
+		stream_write_adaptor adaptor(*this);
+		object.serialise(adaptor);
+	}
+
 	BinaryStreamWriter& operator<<(has_shl_override<BinaryStreamWriter> auto&& data) {
 		return data.operator<<(*this);
+	}
+
+	template<typename T>
+	requires has_serialise<T, stream_write_adaptor<BinaryStreamWriter>>
+	BinaryStreamWriter& operator<<(T& data) {
+		serialise(data);
+		return *this;
+	}
+
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	BinaryStreamWriter& operator<<(endian_func adaptor) {
+		const auto converted = adaptor.to();
+		write(&converted, sizeof(converted));
+		return *this;
 	}
 
 	template<pod T>
@@ -122,8 +155,41 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(cstring_view& data) {
-		write(data.data(), data.size() + 1);
+	template<std::ranges::contiguous_range range>
+	requires pod<typename range::value_type>
+	BinaryStreamWriter& operator <<(const range& data) {
+		const auto write_size = data.size() * sizeof(typename range::value_type);
+		write(data.data(), write_size);
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!pod<typename T::value_type> || !std::ranges::contiguous_range<T>)
+	BinaryStreamWriter& operator<<(T& data) {
+		for(auto& element : data) {
+			*this << element;
+		}
+
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStreamWriter& operator<<(prefixed<T> adaptor) {
+		const auto count = endian::native_to_little(static_cast<std::uint32_t>(adaptor->size()));
+		write(&count, sizeof(count));
+		write_container(adaptor.str);
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
+		varint_encode(*this, adaptor->size());
+		write(adaptor->data(), adaptor->size());
+		write_container(adaptor.str);
 		return *this;
 	}
 
@@ -137,10 +203,10 @@ public:
 		write(&data, sizeof(data));
 	}
 
-	template<endian::Conversion conversion>
-	void put(const arithmetic auto& data) {
-		const auto swapped = endian::convert<conversion>(data);
-		write(&swapped, sizeof(data));
+	template<std::derived_from<endian::adaptor_tag_t> endian_func>
+	void put(const endian_func& adaptor) {
+		const auto swapped = adaptor.to();
+		write(&swapped, sizeof(swapped));
 	}
 
 	template<pod T>
@@ -156,6 +222,7 @@ public:
 			*this << *it;
 		}
 	}
+
 
 	template<std::size_t size>
 	void fill(const std::uint8_t value) {

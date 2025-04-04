@@ -20,9 +20,12 @@
 #include <array>
 #include <chrono>
 #include <limits>
+#include <list>
 #include <format>
 #include <numeric>
 #include <random>
+#include <set>
+#include <vector>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -346,20 +349,6 @@ TEST(BinaryStream, Span) {
 	ASSERT_EQ(span[3], 1);
 }
 
-TEST(BinaryStream, CStringview) {
-	std::vector<char> buffer;
-	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
-	std::string_view view { "There's coffee in that nebula" };
-	stream << spark::io::null_terminated(view);
-	ember::cstring_view cview;
-	stream >> cview;
-	ASSERT_EQ(view, cview);
-	const auto len = std::strlen(cview.c_str());
-	ASSERT_EQ(view.size(), len);
-	ASSERT_EQ(*(cview.data() + len), '\0');
-}
-
 TEST(BinaryStream, StaticBufferWrite) {
 	spark::io::StaticBuffer<char, 4> buffer;
 	spark::io::BinaryStream stream(buffer);
@@ -386,6 +375,7 @@ TEST(BinaryStream, StaticBufferOverflow) {
 	spark::io::StaticBuffer<char, 4> buffer;
 	spark::io::BinaryStream stream(buffer);
 	ASSERT_THROW(stream << std::uint64_t(1), spark::io::buffer_overflow);
+	ASSERT_FALSE(stream);
 }
 
 TEST(BinaryStream, StaticBufferRead) {
@@ -831,4 +821,272 @@ TEST(BinaryStream, TotalWriteConsistency) {
 	ASSERT_EQ(stream.total_write(), 120);
 	stream.put(data.begin(), data.end());
 	ASSERT_EQ(stream.total_write(), 136);
+}
+
+TEST(BinaryStream, EndianessBigMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
+	std::uint64_t input = 100, output = 0;
+	stream << std::uint64_t(100);
+	stream >> output;
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, EndiannessLittleMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::little);
+	std::uint64_t input = 100, output = 0;
+	stream << std::uint64_t(100);
+	stream >> output;
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, EndiannessNativeMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::native);
+	std::uint64_t input = 100, output = 0;
+	stream << std::uint64_t(100);
+	stream >> output;
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, EndiannessBigExplicitMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_EQ(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, EndiannessLittleExplicitMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::little);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_EQ(input, output);
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, EndiannessNativeExplicitMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::native);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_EQ(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStream, EndiannessBigExplicitMismatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_NE(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_NE(input, output);
+}
+
+TEST(BinaryStream, EndiannessLittleExplicitMismatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::little);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_NE(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_NE(input, output);
+}
+
+TEST(BinaryStream, EndiannessNativeExplicitMismatch) {
+	std::array<char, 16> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::native);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_NE(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_NE(input, output);
+}
+
+namespace {
+
+struct Foo {
+	std::uint16_t x;
+	std::uint32_t y;
+	std::uint64_t z;
+	std::string_view str;
+
+	void serialise(auto& stream) {
+		stream(x, y, z, spark::io::null_terminated(str));
+		stream & spark::io::endian::be(x);
+	}
+
+	bool operator==(const Foo& rhs) const {
+		return x == rhs.x && y == rhs.y && z == rhs.z && str == rhs.str;
+	}
+};
+
+}
+
+TEST(BinaryStream, ExperimentalSerialise) {
+	std::array<char, 32> buffer{};
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor);
+
+	Foo input {
+		.x = 100,
+		.y = 200,
+		.z = 300,
+		.str = { "It's a fake!"  }
+	};
+
+	stream.serialise(input);
+	ASSERT_EQ(stream.total_write(), 29);
+
+	Foo output{};
+	ASSERT_NE(input, output);
+	stream.deserialise(output);
+	ASSERT_EQ(stream.total_read(), 29);
+	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
+	ASSERT_EQ(input, output);
+}
+
+namespace {
+
+struct Complex {
+	std::string str = "Hello, world!";
+	std::vector<int> vec { 1, 2, 3, 4, 5 };
+	std::list<int> list { 6, 7, 8, 9, 10 };
+	std::set<int> set { 11, 12, 13, 14, 15 };
+
+	void serialise(auto& stream) {
+		stream(str, vec, list, set);
+	}
+};
+
+}
+
+TEST(BinaryStream, IterableContainers) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::vector primitives { 1, 2, 3, 4, 5 };
+	stream << primitives;
+	ASSERT_EQ(primitives.size() * sizeof(int), stream.total_write());
+	ASSERT_EQ(primitives.size() * sizeof(int), adaptor.size());
+	ASSERT_EQ(primitives.size() * sizeof(int), buffer.size());
+
+	std::vector<std::string> strings { "hello, ", "world!" };
+	stream << strings;
+
+	ASSERT_EQ(stream.get<int>(), 1);
+	ASSERT_EQ(stream.get<int>(), 2);
+	ASSERT_EQ(stream.get<int>(), 3);
+	ASSERT_EQ(stream.get<int>(), 4);
+	ASSERT_EQ(stream.get<int>(), 5);
+
+	std::string hello, world;
+	stream >> hello >> world;
+	ASSERT_EQ(hello, "hello, ");
+	ASSERT_EQ(world, "world!");
+
+	Complex obj_in;
+	stream << obj_in;
+
+	std::string out;
+	stream >> out;
+	ASSERT_EQ(obj_in.str, out);
+	ASSERT_EQ(stream.get<int>(), 1);
+	ASSERT_EQ(stream.get<int>(), 2);
+	ASSERT_EQ(stream.get<int>(), 3);
+	ASSERT_EQ(stream.get<int>(), 4);
+	ASSERT_EQ(stream.get<int>(), 5);
+	ASSERT_EQ(stream.get<int>(), 6);
+	ASSERT_EQ(stream.get<int>(), 7);
+	ASSERT_EQ(stream.get<int>(), 8);
+	ASSERT_EQ(stream.get<int>(), 9);
+	ASSERT_EQ(stream.get<int>(), 10);
+	ASSERT_EQ(stream.get<int>(), 11);
+	ASSERT_EQ(stream.get<int>(), 12);
+	ASSERT_EQ(stream.get<int>(), 13);
+	ASSERT_EQ(stream.get<int>(), 14);
+	ASSERT_EQ(stream.get<int>(), 15);
+}
+
+namespace {
+
+struct PrefixedContainers {
+	std::vector<int> vec;
+	std::list<int> list;
+
+	void serialise(auto& stream) {
+		stream & spark::io::prefixed(vec);
+		stream & spark::io::prefixed(list);
+	}
+
+	bool operator==(const PrefixedContainers& rhs) const {
+		return vec == rhs.vec && list == rhs.list;
+	}
+};
+
+}
+
+TEST(BinaryStream, PrefixedContainers) {
+	std::vector<char> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+
+	std::vector primitives { 1, 2, 3, 4, 5 };
+	stream << spark::io::prefixed(primitives);
+
+	std::vector<int> output;
+	stream >> spark::io::prefixed(output);
+	ASSERT_TRUE(std::ranges::equal(primitives, output));
+
+	std::vector<PrefixedContainers> objects;
+
+	for(int i = 0u; i < 5; ++i) {
+		objects.emplace_back(PrefixedContainers{ { 1 + i, 2 + i }, { 3 + i, 4 + i} });
+	}
+
+	stream << spark::io::prefixed(objects);
+
+	std::vector<PrefixedContainers> output_objs;
+	stream >> spark::io::prefixed(output_objs);
+	EXPECT_EQ(objects.size(), output_objs.size());
+	ASSERT_EQ(objects, output_objs);
+}
+
+TEST(BinaryStream, StdArrayTest) {
+	std::array<char, 16> buffer;
+	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::BinaryStream stream(adaptor);
+	ASSERT_TRUE(adaptor.empty());
+	ASSERT_EQ(adaptor.size(), 0);
+	ASSERT_EQ(stream.size(), 0);
 }
