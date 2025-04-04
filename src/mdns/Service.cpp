@@ -7,7 +7,7 @@
  */
 
 #include "Service.h"
-//#include "Server.h"
+#include "Server.h"
 #include "MulticastSocket.h"
 #include "NSDService.h"
 #include <logger/Logger.h>
@@ -74,7 +74,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	// start multicast DNS services
 	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port, logger);
-	//dns::Server server(std::move(socket), logger);
+	dns::Server server(std::move(socket), logger);
 
 	const auto& spark_iface = args["spark.address"].as<std::string>();
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();

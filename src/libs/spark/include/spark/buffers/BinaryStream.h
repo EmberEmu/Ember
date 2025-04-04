@@ -13,6 +13,7 @@
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/Endian.h>
 #include <spark/buffers/StreamAdaptors.h>
+#include <shared/utility/polyfill/start_lifetime_as>
 #include <concepts>
 #include <ranges>
 #include <span>
@@ -589,7 +590,7 @@ public:
 
 	template<typename out_type = value_type>
 	std::span<out_type> span(size_type count) requires contiguous<buf_type> {
-		std::span view { reinterpret_cast<out_type*>(buffer_.read_ptr()), count };
+		std::span view { std::start_lifetime_as<out_type>(buffer_.read_ptr()), count };
 		skip(sizeof(out_type) * count);
 		return (state_ == StreamState::OK? view : std::span<out_type>());
 	}

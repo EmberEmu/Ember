@@ -122,7 +122,7 @@ void MessageBuilder::set_header_length(const std::uint16_t length) {
 	const auto pos = stream_.size();
 	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, HEADER_LEN_OFFSET);
 	stream_ << len_be(length);
-	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, pos)
+	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, pos);
 }
 
 void MessageBuilder::add_fingerprint() {

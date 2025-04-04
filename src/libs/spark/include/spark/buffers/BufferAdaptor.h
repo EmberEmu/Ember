@@ -170,7 +170,7 @@ public:
 		return buffer_.data() + read_;
 	}
 
-	auto write_ptr() const  {
+	auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
 
