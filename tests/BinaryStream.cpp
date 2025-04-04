@@ -20,9 +20,12 @@
 #include <array>
 #include <chrono>
 #include <limits>
+#include <list>
 #include <format>
 #include <numeric>
 #include <random>
+#include <set>
+#include <vector>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
