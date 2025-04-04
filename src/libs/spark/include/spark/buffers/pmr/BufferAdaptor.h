@@ -33,7 +33,7 @@ public:
 		  BufferWriteAdaptor<buf_type>(buffer) {}
 
 	explicit BufferAdaptor(buf_type& buffer, init_empty_t)
-		: BufferReadAdaptor<buf_type>(buffer),
+		: BufferReadAdaptor<buf_type>(buffer, init_empty),
 		  BufferWriteAdaptor<buf_type>(buffer, init_empty) {}
 
 	template<typename T>

@@ -26,12 +26,15 @@ template<byte_oriented buf_type>
 requires std::ranges::contiguous_range<buf_type>
 class BufferReadAdaptor : public BufferRead {
 	buf_type& buffer_;
-	std::size_t read_;
 
 public:
 	BufferReadAdaptor(buf_type& buffer)
-		: buffer_(buffer),
-		  read_(0) {}
+		: buffer_(buffer) {
+		write_ = buffer_.size();
+	}
+
+	BufferReadAdaptor(buf_type& buffer, init_empty_t)
+		: buffer_(buffer) {}
 
 	template<typename T>
 	void read(T* destination) {
@@ -59,12 +62,12 @@ public:
 	}
 
 	std::size_t size() const override {
-		return buffer_.size() - read_;
+		return write_ - read_;
 	}
 
 	[[nodiscard]]
 	bool empty() const override {
-		return !(buffer_.size() - read_);
+		return read_ == write_;
 	}
 
 	const std::byte& operator[](const std::size_t index) const override {

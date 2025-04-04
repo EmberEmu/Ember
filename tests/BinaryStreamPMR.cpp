@@ -543,3 +543,190 @@ TEST(BinaryStreamPMR, TotalWriteConsistency) {
 	stream.put(data.begin(), data.end());
 	ASSERT_EQ(stream.total_write(), 136);
 }
+
+TEST(BinaryStreamPMR, EndiannessExplicitMatch) {
+	std::array<char, 16> buffer{};
+	spark::io::pmr::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_EQ(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_EQ(input, output);
+}
+
+TEST(BinaryStreamPMR, EndiannessExplicitMismatch) {
+	std::array<char, 16> buffer{};
+	spark::io::pmr::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	std::uint64_t input = 100, output = 0;
+	stream << spark::io::endian::le(input);
+	stream >> spark::io::endian::be(output);
+	ASSERT_NE(input, output);
+	stream << spark::io::endian::be(input);
+	stream >> spark::io::endian::le(output);
+	ASSERT_NE(input, output);
+}
+
+namespace {
+
+struct Foo {
+	std::uint16_t x;
+	std::uint32_t y;
+	std::uint64_t z;
+	std::string str;
+
+	void serialise(auto& stream) {
+		stream(x, y, z, spark::io::null_terminated(str));
+		stream & spark::io::endian::be(x);
+	}
+
+	bool operator==(const Foo& rhs) const {
+		return x == rhs.x && y == rhs.y && z == rhs.z && str == rhs.str;
+	}
+};
+
+}
+
+TEST(BinaryStreamPMR, ExperimentalSerialise) {
+	std::vector<unsigned char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+
+	Foo input {
+		.x = 100,
+		.y = 200,
+		.z = 300,
+		.str = { "It's a fake!" }
+	};
+
+
+	stream.serialise(input);
+	ASSERT_EQ(stream.total_write(), 29);
+
+	Foo output{};
+	ASSERT_NE(input, output);
+	stream.deserialise(output);
+	ASSERT_EQ(stream.total_read(), 29);
+	ASSERT_EQ(stream.size(), 0);
+	ASSERT_TRUE(stream);
+	ASSERT_EQ(input, output);
+}
+
+namespace {
+
+struct Complex {
+	std::string str = "Hello, world!";
+	std::vector<int> vec { 1, 2, 3, 4, 5 };
+	std::list<int> list { 6, 7, 8, 9, 10 };
+	std::set<int> set { 11, 12, 13, 14, 15 };
+
+	void serialise(auto& stream) {
+		stream(str, vec, list, set);
+	}
+};
+
+}
+
+TEST(BinaryStreamPMR, IterableContainers) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+
+	std::vector primitives { 1, 2, 3, 4, 5 };
+	stream << primitives;
+	ASSERT_EQ(primitives.size() * sizeof(int), stream.total_write());
+	ASSERT_EQ(primitives.size() * sizeof(int), adaptor.size());
+	ASSERT_EQ(primitives.size() * sizeof(int), buffer.size());
+
+	std::vector<std::string> strings { "hello, ", "world!" };
+	stream << strings;
+
+	ASSERT_EQ(stream.get<int>(), 1);
+	ASSERT_EQ(stream.get<int>(), 2);
+	ASSERT_EQ(stream.get<int>(), 3);
+	ASSERT_EQ(stream.get<int>(), 4);
+	ASSERT_EQ(stream.get<int>(), 5);
+
+	std::string hello, world;
+	stream >> hello >> world;
+	ASSERT_EQ(hello, "hello, ");
+	ASSERT_EQ(world, "world!");
+
+	Complex obj_in;
+	stream << obj_in;
+
+	std::string out;
+	stream >> out;
+	ASSERT_EQ(obj_in.str, out);
+	ASSERT_EQ(stream.get<int>(), 1);
+	ASSERT_EQ(stream.get<int>(), 2);
+	ASSERT_EQ(stream.get<int>(), 3);
+	ASSERT_EQ(stream.get<int>(), 4);
+	ASSERT_EQ(stream.get<int>(), 5);
+	ASSERT_EQ(stream.get<int>(), 6);
+	ASSERT_EQ(stream.get<int>(), 7);
+	ASSERT_EQ(stream.get<int>(), 8);
+	ASSERT_EQ(stream.get<int>(), 9);
+	ASSERT_EQ(stream.get<int>(), 10);
+	ASSERT_EQ(stream.get<int>(), 11);
+	ASSERT_EQ(stream.get<int>(), 12);
+	ASSERT_EQ(stream.get<int>(), 13);
+	ASSERT_EQ(stream.get<int>(), 14);
+	ASSERT_EQ(stream.get<int>(), 15);
+}
+
+namespace {
+
+struct PrefixedContainers {
+	std::vector<int> vec;
+	std::list<int> list;
+
+	void serialise(auto& stream) {
+		stream & spark::io::prefixed(vec);
+		stream & spark::io::prefixed(list);
+	}
+
+	bool operator==(const PrefixedContainers& rhs) const {
+		return vec == rhs.vec && list == rhs.list;
+	}
+};
+
+}
+
+TEST(BinaryStreamPMR, PrefixedContainers) {
+	std::vector<char> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+
+	std::vector primitives { 1, 2, 3, 4, 5 };
+	stream << spark::io::prefixed(primitives);
+
+	std::vector<int> output;
+	stream >> spark::io::prefixed(output);
+	ASSERT_TRUE(std::ranges::equal(primitives, output));
+
+	std::vector<PrefixedContainers> objects;
+
+	for(int i = 0u; i < 5; ++i) {
+		objects.emplace_back(PrefixedContainers{ { 1 + i, 2 + i }, { 3 + i, 4 + i} });
+	}
+
+	stream << spark::io::prefixed(objects);
+
+	std::vector<PrefixedContainers> output_objs;
+	stream >> spark::io::prefixed(output_objs);
+	EXPECT_EQ(objects.size(), output_objs.size());
+	ASSERT_EQ(objects, output_objs);
+}
+
+TEST(BinaryStreamPMR, StdArraySize) {
+	std::array<char, 16> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer, spark::io::init_empty);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	EXPECT_TRUE(adaptor.empty());
+	EXPECT_EQ(adaptor.size(), 0);
+	EXPECT_EQ(stream.size(), 0);
+}

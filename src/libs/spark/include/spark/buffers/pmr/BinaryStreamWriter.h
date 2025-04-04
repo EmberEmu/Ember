@@ -38,6 +38,20 @@ class BinaryStreamWriter : virtual public StreamBase {
 		}
 	}
 
+	template<typename container_type>
+	void write_container(container_type& container) {
+		using c_value_type = typename container_type::value_type;
+
+		if constexpr(memcpy_write<container_type, BinaryStreamWriter>) {
+			const auto bytes = container.size() * sizeof(c_value_type);
+			write(container.data(), bytes);
+		} else {
+			for(auto& element : container) {
+				*this << element;
+			}
+		}
+	}
+
 public:
 	explicit BinaryStreamWriter(BufferWrite& source)
 		: StreamBase(source),
@@ -156,6 +170,26 @@ public:
 			*this << element;
 		}
 
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStreamWriter& operator<<(prefixed<T> adaptor) {
+		const auto count = endian::native_to_little(static_cast<std::uint32_t>(adaptor->size()));
+		write(&count, sizeof(count));
+		write_container(adaptor.str);
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
+		varint_encode(*this, adaptor->size());
+		write(adaptor->data(), adaptor->size());
+		write_container(adaptor.str);
 		return *this;
 	}
 

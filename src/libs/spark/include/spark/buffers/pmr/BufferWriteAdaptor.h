@@ -25,16 +25,15 @@ template<byte_oriented buf_type>
 requires std::ranges::contiguous_range<buf_type>
 class BufferWriteAdaptor : public BufferWrite {
 	buf_type& buffer_;
-	std::size_t write_;
 
 public:
 	BufferWriteAdaptor(buf_type& buffer)
-		: buffer_(buffer),
-		  write_(buffer.size()) {}
+		: buffer_(buffer) {
+		write_ = buffer.size();
+	}
 
 	BufferWriteAdaptor(buf_type& buffer, init_empty_t)
-		: buffer_(buffer),
-		  write_(0) {}
+		: buffer_(buffer) {}
 
 	void write(auto& source) {
 		write(&source, sizeof(source));
@@ -44,11 +43,11 @@ public:
 		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
-		if(buffer_.size() < min_req_size) {
+		if(buffer_.size() < min_req_size) [[likely]] {
 			if constexpr(has_resize_overwrite<buf_type>) {
 				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
 					return size;
-											 });
+				});
 			} else if constexpr(has_resize<buf_type>) {
 				buffer_.resize(min_req_size);
 			} else {

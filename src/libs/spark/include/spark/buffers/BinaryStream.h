@@ -100,7 +100,7 @@ private:
 
 	template<typename T>
 	inline void advance_write(T&& arg) {
-		total_write_ += sizeof(std::decay_t<T>);
+		total_write_ += sizeof(T);
 	}
 
 	template<typename T, typename U>
@@ -120,6 +120,40 @@ private:
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 				throw;
+			}
+		}
+	}
+
+	template<typename container_type>
+	void write_container(container_type& container) {
+		using c_value_type = typename container_type::value_type;
+
+		if constexpr(memcpy_write<container_type, BinaryStream>) {
+			const auto bytes = container.size() * sizeof(c_value_type);
+			write(container.data(), static_cast<size_type>(bytes));
+		} else {
+			for(auto& element : container) {
+				*this << element;
+			}
+		}
+	}
+
+	template<typename container_type, typename count_type>
+	void read_container(container_type& container, const count_type count) {
+		using c_value_type = typename container_type::value_type;
+
+		container.clear();
+
+		if constexpr(memcpy_read<container_type, BinaryStream>) {
+			container.resize(count);
+
+			const auto bytes = static_cast<size_type>(count * sizeof(c_value_type));
+			SAFE_READ(container.data(), bytes, void());
+		} else {
+			for(count_type i = 0; i < count; ++i) {
+				c_value_type value;
+				*this >> value;
+				container.emplace_back(std::move(value));
 			}
 		}
 	}
@@ -175,8 +209,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator<<(const has_shl_override<BinaryStream> auto& data)
-	requires writeable<buf_type> {
+	BinaryStream& operator<<(const has_shl_override<BinaryStream> auto& data) requires writeable<buf_type> {
 		return data.operator<<(*this);
 	}
 
@@ -201,6 +234,7 @@ public:
 	}
 
 	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, std::string_view>
 	BinaryStream& operator<<(prefixed<T> adaptor) requires writeable<buf_type> {
 		const auto size = static_cast<std::uint32_t>(adaptor->size());
 		write(endian::native_to_little(size));
@@ -209,6 +243,7 @@ public:
 	}
 
 	template<typename T>
+	requires std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, std::string_view>
 	BinaryStream& operator<<(prefixed_varint<T> adaptor) requires writeable<buf_type> {
 		varint_encode(*this, adaptor->size());
 		write(adaptor->data(), adaptor->size());
@@ -268,6 +303,26 @@ public:
            *this << element;
         }
 
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+			BinaryStream& operator<<(prefixed<T> adaptor) requires writeable<buf_type> {
+		const auto count = static_cast<std::uint32_t>(adaptor->size());
+		write(endian::native_to_little(count));
+		write_container(adaptor.str);
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStream& operator<<(prefixed_varint<T> adaptor) requires writeable<buf_type> {
+		varint_encode(*this, adaptor->size());
+		write(adaptor->data(), adaptor->size());
+		write_container(adaptor.str);
 		return *this;
 	}
 
@@ -433,6 +488,25 @@ public:
 	requires (!has_shr_override<T, BinaryStream> && !arithmetic<T>)
 	BinaryStream& operator>>(T& data) {
 		SAFE_READ(&data, sizeof(data), *this);
+		return *this;
+	}
+
+		template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStream& operator>>(prefixed<T> adaptor) {
+		std::uint32_t count = 0;
+		*this >> endian::le(count);
+		read_container(adaptor.str, count);
+		return *this;
+	}
+
+	template<is_iterable T>
+	requires (!std::is_same_v<std::decay_t<T>, std::string>
+		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	BinaryStream& operator>>(prefixed_varint<T> adaptor) {
+		const auto count = varint_decode<size_type>(*this);
+		read_container(adaptor.str, count);
 		return *this;
 	}
 
