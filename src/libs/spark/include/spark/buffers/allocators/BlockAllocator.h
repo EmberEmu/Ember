@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <shared/utility/Utility.h>
+#include <shared/utility/polyfill/start_lifetime_as>
 #include <array>
 #include <memory>
 #include <new>
@@ -40,10 +42,13 @@ concept sizeof_gte = sizeof(T) >= sizeof(U);
 
 using namespace detail;
 
-struct no_validate_dealloc {};
-struct validate_dealloc : no_validate_dealloc {};
+struct NoPageLock {};
+struct PageLock : NoPageLock {};
 
-/**
+struct NoValidateDealloc {};
+struct ValidateDealloc : NoValidateDealloc {};
+
+/*
  * Basic fixed-size block stack allocator that preallocates a slab of memory
  * capable of holding a compile-time determined number of elements.
  * When constructed, a linked list of chunks is built within the slab and
@@ -64,14 +69,15 @@ struct validate_dealloc : no_validate_dealloc {};
  */
 template<typename _ty, 
 	std::size_t _elements,
-	std::derived_from<no_validate_dealloc> ValidatePolicy = no_validate_dealloc>
+	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
+	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc>
 requires gt_zero<_elements> && sizeof_gte<_ty, FreeBlock>
 class BlockAllocator {
 	using tid_type = std::conditional_t<
-		std::is_same_v<ValidatePolicy, validate_dealloc>, std::thread::id, std::monostate
+		std::is_same_v<ValidatePolicy, ValidateDealloc>, std::thread::id, std::monostate
 	>;
 
-	struct mem_block {
+	struct Block {
 		_ty obj;
 
 		struct {
@@ -80,17 +86,29 @@ class BlockAllocator {
 		} meta;
 	};
 
-	static constexpr auto block_size = sizeof(mem_block);
+	static constexpr auto block_size = sizeof(Block);
 
 	FreeBlock* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
 	std::array<char, block_size * _elements> storage_;
 
+	void page_lock_conditional() {
+		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
+			util::page_lock(storage_.data(), storage_.size());
+		}
+	}
+
+	void page_unlock_conditional() {
+		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
+			util::page_unlock(storage_.data(), storage_.size());
+		}
+	}
+
 	void initialise_free_list() {
 		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
-			auto block = reinterpret_cast<FreeBlock*>(storage + (block_size * i));
+			auto block = std::start_lifetime_as<FreeBlock>(storage + (block_size * i));
 			push(block);
 		}
 	}
@@ -120,18 +138,20 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator() requires std::same_as<ValidatePolicy, validate_dealloc>
+	BlockAllocator() requires std::same_as<ValidatePolicy, ValidateDealloc>
 		: thread_id_(std::this_thread::get_id()) {
+		page_lock_conditional();
 		initialise_free_list();
 	}
 
 	BlockAllocator() {
+		page_lock_conditional();
 		initialise_free_list();
 	}
 
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
-		auto block = reinterpret_cast<mem_block*>(pop());
+		Block* block = std::start_lifetime_as<Block>(pop());
 
 		if(block) [[likely]] {
 #ifdef EMBER_DEBUG_ALLOCATORS
@@ -142,11 +162,11 @@ public:
 #ifdef EMBER_DEBUG_ALLOCATORS
 			++new_active_count;
 #endif
-			block = new mem_block;
+			block = new Block;
 			block->meta.using_new = true;
 		}
 
-		if constexpr(std::is_same_v<ValidatePolicy, validate_dealloc>) {
+		if constexpr(std::is_same_v<ValidatePolicy, ValidateDealloc>) {
 			block->meta.thread_id = thread_id_;
 		}
 
@@ -159,9 +179,9 @@ public:
 
 	inline void deallocate(_ty* t) {
 		assert(t);
-		auto block = reinterpret_cast<mem_block*>(t);
+		auto block = std::start_lifetime_as<Block>(t);
 
-		if constexpr(std::is_same_v<ValidatePolicy, validate_dealloc>) {
+		if constexpr(std::is_same_v<ValidatePolicy, ValidateDealloc>) {
 			assert(block->meta.thread_id == thread_id_
 				&& "thread policy violation or clobbered block");
 		}
@@ -177,7 +197,7 @@ public:
 			--storage_active_count;
 #endif
 			t->~_ty();
-			push(reinterpret_cast<FreeBlock*>(t));
+			push(std::start_lifetime_as<FreeBlock>(t));
 		}
 
 #ifdef EMBER_DEBUG_ALLOCATORS
@@ -187,6 +207,8 @@ public:
 	}
 
 	~BlockAllocator() {
+		page_unlock_conditional();
+
 #ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_count == 0);
 #endif

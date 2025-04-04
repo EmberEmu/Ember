@@ -29,36 +29,37 @@ struct RefCounting : NoRefCounting {};
 
 template<typename _ty,
 	std::size_t _elements,
-	std::derived_from<NoRefCounting> ref_count_policy = NoRefCounting,
-	std::derived_from<SafeEntrant> entrant_policy = SafeEntrant
+	std::derived_from<NoRefCounting> RefCountPolicy = NoRefCounting,
+	std::derived_from<SafeEntrant> EntrantPolicy = SafeEntrant,
+	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock
 >
 class TLSBlockAllocator final {
-	using allocator_type = BlockAllocator<_ty, _elements>;
+	using AllocatorType = BlockAllocator<_ty, _elements, PageLockPolicy>;
 
-	using ref_count = std::conditional_t<
-		std::is_same_v<ref_count_policy, RefCounting>, int, std::monostate
+	using RefCount = std::conditional_t<
+		std::is_same_v<RefCountPolicy, RefCounting>, int, std::monostate
 	>;
 
-	using tls_handle_cache = std::conditional_t<
-		std::is_same_v<entrant_policy, UnsafeEntrant>, allocator_type*, std::monostate
+	using TLSHandleCache = std::conditional_t<
+		std::is_same_v<EntrantPolicy, UnsafeEntrant>, AllocatorType*, std::monostate
 	>;
 
-	static inline thread_local std::unique_ptr<allocator_type> allocator_;
-	static inline thread_local ref_count ref_count_{};
+	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
+	static inline thread_local RefCount ref_count_{};
 
-	[[no_unique_address]] tls_handle_cache cached_handle_{};
+	[[no_unique_address]] TLSHandleCache cached_handle_{};
 
 	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
-		if constexpr(std::is_same_v<entrant_policy, SafeEntrant>) {
+		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
 			if(!allocator_) {
-				allocator_ = std::make_unique<allocator_type>();
+				allocator_ = std::make_unique<AllocatorType>();
 			}
 		}
 	}
 
-	inline allocator_type* allocator_handle() {
-		if constexpr(std::is_same_v<entrant_policy, UnsafeEntrant>) {
+	inline AllocatorType* allocator_handle() {
+		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
 			return cached_handle_;
 		} else {
 			return allocator_.get();
@@ -83,20 +84,20 @@ public:
 	 */
 	inline void thread_enter() {
 		if(!allocator_) {
-			allocator_ = std::make_unique<allocator_type>();
+			allocator_ = std::make_unique<AllocatorType>();
 		}
 
-		if constexpr(std::is_same_v<entrant_policy, UnsafeEntrant>) {
+		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
 			cached_handle_ = allocator_.get();
 		}
 
-		if constexpr(std::is_same_v<ref_count_policy, RefCounting>) {
+		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
 			++ref_count_;
 		}
 	}
 
 	inline void thread_exit() {
-		if constexpr(std::is_same_v<ref_count_policy, RefCounting>) {
+		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
 			assert(ref_count_);
 
 			--ref_count_;
