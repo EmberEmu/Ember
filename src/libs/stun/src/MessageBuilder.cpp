@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,15 +45,15 @@ void MessageBuilder::write_padding(const std::size_t length) {
 	}
 }
 
-be::big_uint16_t MessageBuilder::len_be(const std::size_t length) {
+be::big_uint16_t MessageBuilder::len_be(const std::size_t length) const {
 	return gsl::narrow<std::uint16_t>(length);
 }
 
-be::big_uint16_t MessageBuilder::attr_be(const Attributes attr) {
+be::big_uint16_t MessageBuilder::attr_be(const Attributes attr) const {
 	return std::to_underlying(attr);
 }
 
-void MessageBuilder::generate_tx_id(Header& header) {
+void MessageBuilder::generate_tx_id(Header& header) const {
 	std::random_device rd;
 	std::mt19937 mt(rd());
 

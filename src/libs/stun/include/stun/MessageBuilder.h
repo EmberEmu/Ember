@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,9 +30,9 @@ class MessageBuilder final {
 	std::size_t key_ = 0;
 
 	void write_padding(std::size_t length);
-	be::big_uint16_t len_be(std::size_t length);
-	be::big_uint16_t attr_be(Attributes attr);
-	void generate_tx_id(Header& header);
+	be::big_uint16_t len_be(std::size_t length) const;
+	be::big_uint16_t attr_be(Attributes attr) const;
+	void generate_tx_id(Header& header) const;
 	void write_header(Header& header);
 	Header build_header(MessageType type, RFCMode mode);
 	void set_header_length(std::uint16_t length);
