@@ -19,6 +19,8 @@
 
 namespace ember {
 
+// todo, this should be implemented as a radix tree, although this was only meant
+// to be for a low number of bans, rather than replacing blocking at a higher level
 class IPBanCache {
 	struct IPv4Entry {
 		boost::asio::ip::address_v4::uint_type range;
