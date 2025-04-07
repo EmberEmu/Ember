@@ -75,10 +75,10 @@ void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
 		copy_size -= remainder;
 		--copy_size;
 
-		std::uint8_t* src_ptr = grid.data() + remainder + 1;
-		std::uint8_t* dst_ptr = grid.data() + remainder;
+		for(std::size_t j = remainder; j < i - 1; ++j) {
+			grid[j] = grid[j + 1];
+		}
 
-		std::copy(src_ptr, src_ptr + copy_size, dst_ptr);
 		++remapped_index;
 	}
 }
@@ -154,18 +154,15 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == hmac_result.size(), "Bad hash size");
 	hmac->set_key(decoded_key.data(), key_size);
-
-	if constexpr(std::endian::native == std::endian::little) {
-		hmac->update_be(step);
-	} else {
-		hmac->update_le(step);
-	}
-
+	hmac->update_be(step);
 	hmac->final(hmac_result.data());
 
 	const unsigned int offset = hmac_result[19] & 0xF;
-	std::uint32_t pin = (hmac_result[offset] & 0x7f) << 24 | (hmac_result[offset + 1] & 0xff) << 16
-	                     | (hmac_result[offset + 2] & 0xff) << 8 | (hmac_result[offset + 3] & 0xff);
+	std::uint32_t pin =
+		(hmac_result[offset] & 0x7f)     << 24 |
+		(hmac_result[offset + 1] & 0xff) << 16 |
+		(hmac_result[offset + 2] & 0xff) << 8 |
+		(hmac_result[offset + 3] & 0xff);
 
     be::little_to_native_inplace(pin);
 
