@@ -10,12 +10,15 @@ function(build_spark_services
          bfbs_dir
          output_dir)
 
+	SET(rpcgen "rpcgen")
+
     foreach(schema_path ${service_schemas})
 		message(${schema_path})
         cmake_path(GET schema_path FILENAME out)
         cmake_path(REMOVE_EXTENSION out)
         set(input_files ${input_files} ${bfbs_dir}/${out}.bfbs)
-        set(output_files ${output_files} ${output_dir}/${out}Service_generated.h)
+        set(output_files ${output_files} ${output_dir}/${out}ClientStub.h)
+		set(output_files ${output_files} ${output_dir}/${out}ServiceStub.h)
     endforeach()
   
 	# concat the filenames into a format usable by the tool
@@ -26,10 +29,15 @@ function(build_spark_services
     set_source_files_properties(${${output_files}} PROPERTIES GENERATED TRUE)
 
     add_custom_command(
-		TARGET FB_SCHEMA_COMPILE
 		PRE_BUILD
-        COMMAND rpcgen -t ${template_dir} -s ${input_name_str} -o ${output_dir}
+		OUTPUT ${output_files}
+        COMMAND ${rpcgen} -t ${template_dir} -s ${input_name_str} -o ${output_dir}
         COMMENT "Generating Spark RPC service stubs..."
+		DEPENDS ${rpcgen} ${input_files}
+    )
+
+	add_custom_target(SPARK_RPC_GENERATE ALL
+        DEPENDS ${output_files}
     )
 
     set(${output_files} ${${output_files}} PARENT_SCOPE)
