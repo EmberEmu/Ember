@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Ember
+# Copyright (c) 2016 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,8 @@ function(build_dbc_loaders dbc_hdr dbc_src
                            template_dir
                            target_name
                            fverbosity)
+	set(dbc_parser "dbc-parser")
+
     set(${dbc_hdr})
     set(${dbc_src})
 
@@ -29,16 +31,20 @@ function(build_dbc_loaders dbc_hdr dbc_src
     # concat the paths into a format usable by the tool
     foreach(dir ${definition_dirs})
         set(definition_dir_str \"${dir}\" ${definition_dir_str})
+		file(GLOB input_dbcs ${input_dbcs} ${dir}/*.xml)
     endforeach()
 
     add_custom_command(
         OUTPUT ${${dbc_hdr}} ${${dbc_src}}
-        COMMAND dbc-parser -d ${definition_dir_str} -t ${template_dir} -o ${output_dir} --fverbosity ${fverbosity} --disk
-        DEPENDS dbc-parser
+        COMMAND ${dbc_parser} -d ${definition_dir_str} -t ${template_dir} -o ${output_dir} --fverbosity ${fverbosity} --disk
+        DEPENDS ${dbc_parser} ${input_dbcs} 
         COMMENT "Generating DBC loaders..."
     )
 
-    add_custom_target(${target_name} DEPENDS dbc-parser ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies})
+    add_custom_target(
+		${target_name} ALL
+		DEPENDS dbc-parser ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies})
+
     set(${dbc_hdr} ${${dbc_hdr}} PARENT_SCOPE)
     set(${dbc_src} ${${dbc_src}} PARENT_SCOPE)
 
