@@ -25,15 +25,38 @@ namespace ember::spark::io::pmr {
 
 using namespace detail;
 
+#define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
+	if(state() != StreamState::OK) [[unlikely]] {                \
+		return ret_var;                                           \
+	}                                                             \
+                                                                  \
+	enforce_read_bounds(read_size);                               \
+	                                                              \
+	if(!allow_throw()) {                                          \
+		if(state() != StreamState::OK) [[unlikely]] {            \
+			return ret_var;                                       \
+		}                                                         \
+	}
+
+#define SAFE_READ(dest, read_size, ret_var)                       \
+	STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)                \
+	buffer_.read(dest, read_size);
+
+
 class BinaryStreamReader : virtual public StreamBase {
 	BufferRead& buffer_;
 	std::size_t total_read_;
 	const std::size_t read_limit_;
 
-	void enforce_read_bounds(std::size_t read_size) {
+	inline void enforce_read_bounds(const std::size_t read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
 			set_state(StreamState::BUFF_LIMIT_ERR);
-			throw buffer_underrun(read_size, total_read_, buffer_.size());
+
+			if(allow_throw()) {
+				throw buffer_underrun(read_size, total_read_, buffer_.size());
+			}
+
+			return;
 		}
 
 		if(read_limit_) {
@@ -41,18 +64,16 @@ class BinaryStreamReader : virtual public StreamBase {
 
 			if(read_size > max_read_remaining) [[unlikely]] {
 				set_state(StreamState::READ_LIMIT_ERR);
-				throw stream_read_limit(read_size, total_read_, read_limit_);
+
+				if(allow_throw()) {
+					throw stream_read_limit(read_size, total_read_, read_limit_);
+				}
+
+				return;
 			}
 		}
 
 		total_read_ += read_size;
-	}
-
-	inline void read(void* dest, const std::size_t size) {
-		if(state() == StreamState::OK) [[likely]] {
-			enforce_read_bounds(size);
-			buffer_.read(dest, size);
-		}
 	}
 
 	template<typename container_type, typename count_type>
@@ -71,7 +92,7 @@ class BinaryStreamReader : virtual public StreamBase {
 			container.resize(count);
 
 			const auto bytes = count * sizeof(c_value_type);
-			read(container.data(), bytes);
+			SAFE_READ(container.data(), bytes, void());
 		} else {
 			for(count_type i = 0; i < count; ++i) {
 				c_value_type value;
@@ -88,9 +109,15 @@ public:
 		  total_read_(0),
 		  read_limit_(read_limit) {}
 
+	explicit BinaryStreamReader(BufferRead& source, no_throw_t, std::size_t read_limit = 0)
+		: StreamBase(source, false),
+		  buffer_(source),
+		  total_read_(0),
+		  read_limit_(read_limit) {}
+
 	BinaryStreamReader(BinaryStreamReader&& rhs) noexcept
 		: StreamBase(rhs),
-		  buffer_(rhs.buffer_), 
+		  buffer_(rhs.buffer_),
 		  total_read_(rhs.total_read_),
 		  read_limit_(rhs.read_limit_) {
 		rhs.total_read_ = static_cast<std::size_t>(-1);
@@ -121,7 +148,7 @@ public:
 			return *this;
 		}
 
-		enforce_read_bounds(size);
+		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
 		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
@@ -139,7 +166,7 @@ public:
 			std::unreachable();
 		}
 
-		enforce_read_bounds(size);
+		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
 		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
@@ -157,7 +184,7 @@ public:
 			return *this;
 		}
 
-		enforce_read_bounds(pos + 1); // include null terminator
+		STREAM_READ_BOUNDS_ENFORCE(pos + 1, *this); // include null terminator
 
 		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
 			buffer_.read(strbuf, pos);
@@ -178,7 +205,7 @@ public:
 
 	template<std::derived_from<endian::adaptor_tag_t> endian_func>
 	BinaryStreamReader& operator>>(endian_func adaptor) {
-		read(&adaptor.value, sizeof(adaptor.value));
+		SAFE_READ(&adaptor.value, sizeof(adaptor.value), *this);
 		adaptor.value = adaptor.from();
 		return *this;
 	}
@@ -186,7 +213,7 @@ public:
 	template<pod T>
 	requires (!has_shr_override<T, BinaryStreamReader>)
 	BinaryStreamReader& operator>>(T& data) {
-		read(&data, sizeof(data));
+		SAFE_READ(&data, sizeof(data), *this);
 		return *this;
 	}
 
@@ -219,7 +246,7 @@ public:
 	}
 
 	void get(std::string& dest, std::size_t size) {
-		enforce_read_bounds(size);
+		STREAM_READ_BOUNDS_ENFORCE(size, void());
 
 		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
 			buffer_.read(strbuf, len);
@@ -231,7 +258,7 @@ public:
 	void get(T* dest, std::size_t count) {
 		assert(dest);
 		const auto read_size = count * sizeof(T);
-		read(dest, read_size);
+		SAFE_READ(dest, read_size, void());
 	}
 
 	template<typename It>
@@ -244,37 +271,37 @@ public:
 	template<std::ranges::contiguous_range range>
 	void get(range& dest) {
 		const auto read_size = dest.size() * sizeof(typename range::value_type);
-		read(dest.data(), read_size);
+		SAFE_READ(dest.data(), read_size, void());
 	}
 
 	template<arithmetic T>
 	T get() {
 		T t{};
-		read(&t, sizeof(T));
+		SAFE_READ(&t, sizeof(T), t);
 		return t;
 	}
 
 	void get(arithmetic auto& dest) {
-		read(&dest, sizeof(dest));
+		SAFE_READ(&dest, sizeof(dest), void());
 	}
 
 	template<std::derived_from<endian::adaptor_tag_t> endian_func>
 	void get(endian_func& adaptor) {
-		read(&adaptor.value, sizeof(adaptor.value));
+		SAFE_READ(&adaptor.value, sizeof(adaptor.value), void());
 		adaptor.value = adaptor.from();
 	}
 
 	template<arithmetic T, endian::conversion conversion>
 	T get() {
 		T t{};
-		read(&t, sizeof(T));
+		SAFE_READ(&t, sizeof(T), t);
 		return endian::convert<conversion>(t);
 	}
 
 	/**  Misc functions **/ 
 
 	void skip(std::size_t count) {
-		enforce_read_bounds(count);
+		STREAM_READ_BOUNDS_ENFORCE(count, void());
 		buffer_.skip(count);
 	}
 
@@ -298,5 +325,8 @@ public:
 		return &buffer_;
 	}
 };
+
+#undef SAFE_READ
+#undef STREAM_READ_BOUNDS_ENFORCE
 
 } // pmr, io, spark, ember

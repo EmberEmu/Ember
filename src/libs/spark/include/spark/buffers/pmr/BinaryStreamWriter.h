@@ -31,10 +31,17 @@ class BinaryStreamWriter : virtual public StreamBase {
 	BufferWrite& buffer_;
 	std::size_t total_write_;
 
-	inline void write(const void* data, const std::size_t size) {
+	inline void write(const void* data, const std::size_t size) try {
 		if(state() == StreamState::OK) [[likely]] {
 			buffer_.write(data, size);
 			total_write_ += size;
+		}
+
+	} catch(...) {
+		set_state(StreamState::BUFF_WRITE_ERR);
+
+		if(allow_throw()) {
+			throw;
 		}
 	}
 
@@ -55,6 +62,11 @@ class BinaryStreamWriter : virtual public StreamBase {
 public:
 	explicit BinaryStreamWriter(BufferWrite& source)
 		: StreamBase(source),
+		  buffer_(source),
+		  total_write_(0) {}
+
+	explicit BinaryStreamWriter(BufferWrite& source, no_throw_t)
+		: StreamBase(source, false),
 		  buffer_(source),
 		  total_write_(0) {}
 

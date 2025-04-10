@@ -485,6 +485,8 @@ TEST(BinaryStreamPMR, StdArray) {
 	// array is considered full by default as size == capacity
 	ASSERT_THROW(stream << input, spark::io::buffer_overflow);
 	adaptor.clear();
+	stream.clear_error_state();
+	ASSERT_TRUE(stream.empty());
 
 	// try again now we've reset the state
 	std::string output;
@@ -492,6 +494,7 @@ TEST(BinaryStreamPMR, StdArray) {
 	stream >> output;
 	ASSERT_EQ(input, output);
 	ASSERT_TRUE(stream.empty());
+	ASSERT_TRUE(stream);
 }
 
 TEST(BinaryStreamPMR, TotalWriteConsistency) {
