@@ -235,23 +235,6 @@ public:
 	}
 
 	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, std::string_view>
-	BinaryStream& operator<<(prefixed<T> adaptor) requires writeable<buf_type> {
-		const auto size = static_cast<std::uint32_t>(adaptor->size());
-		write(endian::native_to_little(size));
-		write(adaptor->data(), static_cast<size_type>(size));
-		return *this;
-	}
-
-	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, std::string_view>
-	BinaryStream& operator<<(prefixed_varint<T> adaptor) requires writeable<buf_type> {
-		varint_encode(*this, adaptor->size());
-		write(adaptor->data(), adaptor->size());
-		return *this;
-	}
-
-	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string_view>
 	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
@@ -289,28 +272,13 @@ public:
 		return *this;
 	}
 
-	template<std::ranges::contiguous_range range>
-	requires pod<typename range::value_type>
-	BinaryStream& operator <<(const range& data) requires writeable<buf_type> {
-		const auto write_size = data.size() * sizeof(typename range::value_type);
-		write(data.data(), write_size);
+	BinaryStream& operator<<(const is_iterable auto& data) requires writeable<buf_type> {
+		write_container(data);
 		return *this;
 	}
 
 	template<is_iterable T>
-	requires (!pod<typename T::value_type> || !std::ranges::contiguous_range<T>)
-	BinaryStream& operator<<(T& data) requires writeable<buf_type> {
-		for(auto& element : data) {
-           *this << element;
-        }
-
-		return *this;
-	}
-
-	template<is_iterable T>
-	requires (!std::is_same_v<std::decay_t<T>, std::string>
-		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
-			BinaryStream& operator<<(prefixed<T> adaptor) requires writeable<buf_type> {
+	BinaryStream& operator<<(prefixed<T> adaptor) requires writeable<buf_type> {
 		const auto count = static_cast<std::uint32_t>(adaptor->size());
 		write(endian::native_to_little(count));
 		write_container(adaptor.str);
@@ -318,11 +286,8 @@ public:
 	}
 
 	template<is_iterable T>
-	requires (!std::is_same_v<std::decay_t<T>, std::string>
-		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
 	BinaryStream& operator<<(prefixed_varint<T> adaptor) requires writeable<buf_type> {
 		varint_encode(*this, adaptor->size());
-		write(adaptor->data(), adaptor->size());
 		write_container(adaptor.str);
 		return *this;
 	}
@@ -460,11 +425,11 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator >>(std::string_view& data) {
+	BinaryStream& operator>>(std::string_view& data) {
 		return (*this >> prefixed(data));
 	}
 
-	BinaryStream& operator >>(std::string& data) {
+	BinaryStream& operator>>(std::string& data) {
 		return (*this >> prefixed(data));
 	}
 
@@ -492,9 +457,7 @@ public:
 		return *this;
 	}
 
-		template<is_iterable T>
-	requires (!std::is_same_v<std::decay_t<T>, std::string>
-		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	template<is_iterable T>
 	BinaryStream& operator>>(prefixed<T> adaptor) {
 		std::uint32_t count = 0;
 		*this >> endian::le(count);
@@ -503,8 +466,6 @@ public:
 	}
 
 	template<is_iterable T>
-	requires (!std::is_same_v<std::decay_t<T>, std::string>
-		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
 	BinaryStream& operator>>(prefixed_varint<T> adaptor) {
 		const auto count = varint_decode<size_type>(*this);
 		read_container(adaptor.str, count);

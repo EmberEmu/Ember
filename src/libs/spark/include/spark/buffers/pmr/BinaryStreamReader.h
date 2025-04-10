@@ -162,7 +162,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator >>(std::string& data) {
+	BinaryStreamReader& operator>>(std::string& data) {
 		return (*this >> prefixed(data));
 	}
 
