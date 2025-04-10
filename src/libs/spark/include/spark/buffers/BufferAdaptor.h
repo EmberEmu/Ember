@@ -116,6 +116,12 @@ public:
 		write_ += length;
 	}
 
+	void reserve(const size_type length) {
+		if constexpr(has_reserve<buf_type>) {
+			buffer_.reserve(length);
+		}
+	}
+
 	size_type find_first_of(value_type val) const {
 		const auto data = read_ptr();
 
