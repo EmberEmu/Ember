@@ -103,6 +103,14 @@ public:
 		write_ += bytes;
 	}
 
+	void resize(size_type size) {
+		if(size > buffer_.size()) {
+			throw exception("attempted to resize StaticBuffer to larger than capacity");
+		}
+
+		write_ = size;
+	}
+
 	void clear() {
 		read_ = write_ = 0;
 	}

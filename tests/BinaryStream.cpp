@@ -412,6 +412,40 @@ TEST(BinaryStream, StaticBufferUnderrunNoExcept) {
 	ASSERT_EQ(output, 0);
 }
 
+TEST(BinaryStream, static_buffer_adaptor_regression) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(buffer);
+	stream << 1 << 2 << 3;
+
+	std::string foo { "foo " };
+	stream << foo;
+
+	std::string_view sv;
+	stream.skip(sizeof(int) * 3);
+	stream >> sv;
+	ASSERT_TRUE(stream);
+}
+
+TEST(BinaryStream, static_buffer_adaptor_exception_regression) {
+	spark::io::StaticBuffer<char, 16> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(buffer);
+	std::string_view str { "This is a string that is longer than the size of the buffer..." };
+	ASSERT_THROW(stream << str, spark::exception);
+	ASSERT_FALSE(stream);
+}
+
+TEST(BinaryStream, StaticBufferAdaptor_NoExceptionRegression) {
+	spark::io::StaticBuffer<char, 16> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(buffer, spark::io::no_throw);
+	std::string_view str { "This is a string that is longer than the size of the buffer..." };
+	ASSERT_NO_THROW(stream << str);
+	ASSERT_FALSE(stream);
+
+}
+
 TEST(BinaryStream, PutIntegralLiterals) {
 	spark::io::StaticBuffer<char, 64> buffer;
 	spark::io::BinaryStream stream(buffer);
