@@ -64,22 +64,14 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
 void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
 	std::array<std::uint8_t, GRID_SIZE> grid { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-	std::uint8_t* remapped_index = remapped_grid.data();
-
-	for(std::size_t i = grid.size(); i > 0; --i) {
+	for(std::size_t i = grid.size(), j = 0; i > 0; --i, ++j) {
 		const auto remainder = grid_seed % i;
 		grid_seed /= i;
-		*remapped_index = grid[remainder];
+		remapped_grid[j] = grid[remainder];
 
-		std::size_t copy_size = i;
-		copy_size -= remainder;
-		--copy_size;
-
-		for(std::size_t j = remainder; j < i - 1; ++j) {
-			grid[j] = grid[j + 1];
+		for(std::size_t k = remainder; k < i - 1; ++k) {
+			grid[k] = grid[k + 1];
 		}
-
-		++remapped_index;
 	}
 }
 
