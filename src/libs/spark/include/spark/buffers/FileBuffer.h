@@ -26,7 +26,6 @@ public:
 	using offset_type     = long;
 	using value_type      = char;
 	using contiguous      = is_non_contiguous;
-	using seeking         = unsupported;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -178,7 +177,7 @@ public:
 	}
 
 	constexpr static bool can_write_seek() {
-		return std::is_same_v<seeking, supported>;
+		return seekable<FileBuffer>;
 	}
 
 	void write(const auto& source) {

@@ -68,10 +68,12 @@ std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_
 	const auto table = hash_table();
 	auto index = hash_string(name, MPQ_HASH_TABLE_INDEX);
 
-	if(!table.empty()) {
-		index %= table.size();
+	if(table.empty()) {
+		return npos;
 	}
-	
+
+	index %= table.size();
+
 	if(table[index].block_index == MPQ_HASH_ENTRY_EMPTY) {
 		return npos;
 	}

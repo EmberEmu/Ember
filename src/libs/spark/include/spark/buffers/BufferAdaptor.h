@@ -30,7 +30,6 @@ public:
 	using size_type   = typename buf_type::size_type;
 	using offset_type = typename buf_type::size_type;
 	using contiguous  = is_contiguous;
-	using seeking     = supported;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -152,7 +151,7 @@ public:
 	}
 
 	constexpr static bool can_write_seek() {
-		return std::is_same_v<seeking, supported>;
+		return seekable<BufferAdaptor>;
 	}
 
 	void write_seek(const BufferSeek direction, const offset_type offset) {

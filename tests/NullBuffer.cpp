@@ -32,9 +32,3 @@ TEST(NullBuffer, WriteSize) {
 	ASSERT_EQ(stream.total_write(), 71);
 	ASSERT_TRUE(buffer.empty());
 }
-
-TEST(NullBuffer, WriteSeek) {
-	spark::io::NullBuffer buffer;
-	spark::io::BinaryStream stream(buffer);
-	ASSERT_THROW(buffer.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0), spark::exception);
-}

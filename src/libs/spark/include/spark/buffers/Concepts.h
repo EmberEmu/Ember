@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/buffers/Shared.h>
 #include <spark/buffers/StreamAdaptors.h>
 #include <bit>
 #include <concepts>
@@ -23,8 +24,9 @@ concept writeable =
 };
 
 template<typename buf_type>
-concept seekable = requires(buf_type t) {
-	std::is_same_v<typename buf_type::seeking, supported>;
+concept seekable = writeable<buf_type>
+	&& requires(buf_type t, BufferSeek direction, typename buf_type::offset_type offset) {
+	{ t.write_seek(direction, offset) } -> std::same_as<void>;
 };
 
 template<typename buf_type>

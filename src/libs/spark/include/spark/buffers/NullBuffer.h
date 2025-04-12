@@ -21,22 +21,17 @@ public:
 	using offset_type     = std::size_t;
 	using value_type      = std::byte;
 	using contiguous      = is_contiguous;
-	using seeking         = unsupported;
 
-	void write(const auto& /*elem*/) {}
-	void write(const void* /*source*/, size_type /*length*/) {};
-	void read(auto* /*elem*/) {}
-	void read(void* /*destination*/, size_type /*length*/) {};
-	void copy(auto* /*elem*/) const {}
-	void copy(void* /*destination*/, size_type /*length*/) const {};
-	void reserve(const size_type /*length*/) {};
-	size_type size() const  { return 0; };
-	[[nodiscard]] bool empty() const { return true; };
-	bool can_write_seek() const { return false; }
-
-	void write_seek(const BufferSeek /*direction*/, const std::size_t /*offset*/) {
-		throw exception("Don't do this on a NullBuffer"); 
-	};
+	constexpr void write(const auto& /*elem*/) {}
+	constexpr void write(const void* /*source*/, size_type /*length*/) {};
+	constexpr void read(auto* /*elem*/) {}
+	constexpr void read(void* /*destination*/, size_type /*length*/) {};
+	constexpr void copy(auto* /*elem*/) const {}
+	constexpr void copy(void* /*destination*/, size_type /*length*/) const {};
+	constexpr void reserve(const size_type /*length*/) {};
+	constexpr size_type size() const  { return 0; };
+	[[nodiscard]] constexpr bool empty() const { return true; };
+	constexpr bool can_write_seek() const { return false; }
 };
 
 } // io, spark, ember

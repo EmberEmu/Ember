@@ -47,7 +47,6 @@ public:
 	using size_type    = std::size_t;
 	using offset_type  = std::size_t;
 	using contiguous   = is_non_contiguous;
-	using seeking      = supported;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -378,7 +377,7 @@ public:
 	}
 
 	bool can_write_seek() const override {
-		return std::is_same_v<seeking, supported>;
+		return seekable<DynamicBuffer>;
 	}
 
 	void write_seek(const BufferSeek direction, size_type offset) override {

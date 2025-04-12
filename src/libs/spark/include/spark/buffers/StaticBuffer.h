@@ -33,7 +33,6 @@ public:
 	using offset_type     = size_type;
 	using value_type      = storage_type;
 	using contiguous      = is_contiguous;
-	using seeking         = supported;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 	
@@ -144,7 +143,7 @@ public:
 	}
 
 	constexpr static bool can_write_seek() {
-		return std::is_same_v<seeking, supported>;
+		return seekable<StaticBuffer>;
 	}
 
 	void write(const auto& source) {
