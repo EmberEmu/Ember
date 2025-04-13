@@ -21,8 +21,8 @@ namespace ember::spark::io {
 struct is_contiguous {};
 struct is_non_contiguous {};
 struct except_tag {};
-struct allow_throw_t : except_tag {};
-struct no_throw_t : except_tag {};
+struct allow_throw_t final : except_tag {};
+struct no_throw_t final : except_tag {};
 
 [[maybe_unused]] constexpr static no_throw_t no_throw {};
 [[maybe_unused]] constexpr static allow_throw_t allow_throw {};
