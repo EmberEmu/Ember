@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -328,13 +328,11 @@ public:
 	}
 
 	auto dirty() const {
-		return std::count_if(pool_.begin(), pool_.end(),
-			[](const ConnDetail<ConType>& c) { return c.dirty; });
+		return std::ranges::count_if(pool_, [](const auto& c) { return c.dirty; });
 	}
 
 	auto checked_out() const {
-		return std::count_if(pool_.begin(), pool_.end(),
-			[](const ConnDetail<ConType>& c) { return c.checked_out; });
+		return std::ranges::count_if(pool_, [](const auto& c) { return c.checked_out; });
 	}
 
 	Driver* get_driver() const {

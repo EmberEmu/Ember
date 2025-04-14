@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -341,7 +341,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		return;
 	}
 
-	auto realm_chars = std::count_if(characters.begin(), characters.end(), [&](const auto& c) {
+	auto realm_chars = std::ranges::count_if(characters, [&](const auto& c) {
 		return c.realm_id == character->realm_id;
 	});
 
