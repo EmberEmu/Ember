@@ -120,14 +120,12 @@ void ClientConnection::read() {
 		return;
 	}
 
-	if(inbound_buffer_.full()) {
-		// If there's partially processed data in the buffer, we may be
-		// able to free space by defragmenting it.
-		if(!inbound_buffer_.defragment()) {
-			LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
-			close_session();
-			return;
-		}
+	// If there's partially processed data in the buffer, we may be
+	// able to free space by defragmenting it.
+	if(inbound_buffer_.full() && !inbound_buffer_.defragment()) {
+		LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
+		close_session();
+		return;
 	}
 
 	/**
