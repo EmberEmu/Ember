@@ -155,8 +155,6 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
 		(hmac_result[offset + 2] & 0xff) << 8 |
 		(hmac_result[offset + 3] & 0xff);
 
-    be::little_to_native_inplace(pin);
-
 	pin &= 0x7FFFFFFF;
 	pin %= 1000000;
 	return pin;
