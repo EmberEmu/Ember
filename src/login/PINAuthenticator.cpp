@@ -20,7 +20,6 @@
 #include <memory>
 #include <utility>
 #include <cstddef>
-#include <cmath>
 #include <ctime>
 
 namespace be = boost::endian;
@@ -128,7 +127,7 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 }
 
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
-                                                  int interval,
+                                                  const int interval,
                                                   const util::ClockBase& clock) {
 	std::inplace_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
 	const int key_size = base32_decode(secret.data(), decoded_key.data(), decoded_key.size());
@@ -140,7 +139,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
 	const auto time = clock.now();
 	const auto now = std::chrono::time_point_cast<std::chrono::seconds>(time).time_since_epoch().count();
-	const auto step = static_cast<std::uint64_t>((std::floor(now / 30))) + interval;
+	const auto step = static_cast<std::uint64_t>(now / 30) + interval;
 
 	HashBytes hmac_result;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
