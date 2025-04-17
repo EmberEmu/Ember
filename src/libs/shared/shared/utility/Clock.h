@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Ember
+ * Copyright (c) 2021 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ struct ClockBase {
 };
 
 struct Clock final : ClockBase {
-	virtual std::chrono::time_point<std::chrono::system_clock> now() const override {
+	std::chrono::time_point<std::chrono::system_clock> now() const override {
 		return std::chrono::system_clock::now();
 	}
 };

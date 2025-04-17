@@ -26,22 +26,6 @@
 
 namespace ember::spark::io {
 
-namespace detail {
-
-struct FreeBlock {
-	FreeBlock* next;
-};
-
-template<decltype(auto) size>
-concept gt_zero = size > 0;
-
-template<typename T, typename U>
-concept sizeof_gte = sizeof(T) >= sizeof(U);
-
-} // detail
-
-using namespace detail;
-
 struct NoPageLock {};
 struct PageLock : NoPageLock {};
 
@@ -71,14 +55,19 @@ template<typename _ty,
 	std::size_t _elements,
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
 	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc>
-requires gt_zero<_elements> && sizeof_gte<_ty, FreeBlock>
+requires (_elements > 0)
 class BlockAllocator {
 	using tid_type = std::conditional_t<
 		std::is_same_v<ValidatePolicy, ValidateDealloc>, std::thread::id, std::monostate
 	>;
 
 	struct Block {
-		_ty obj;
+		Block() {};
+
+		union {
+			Block* next;
+			_ty obj;
+		};
 
 		struct {
 			[[no_unique_address]] tid_type thread_id;
@@ -88,7 +77,7 @@ class BlockAllocator {
 
 	static constexpr auto block_size = sizeof(Block);
 
-	FreeBlock* head_ = nullptr;
+	Block* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
 	std::array<char, block_size * _elements> storage_;
 
@@ -108,18 +97,18 @@ class BlockAllocator {
 		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
-			auto block = std::start_lifetime_as<FreeBlock>(storage + (block_size * i));
+			auto block = std::start_lifetime_as<Block>(storage + (block_size * i));
 			push(block);
 		}
 	}
 
-	inline void push(FreeBlock* block) {
+	inline void push(Block* block) {
 		assert(block);
 		block->next = head_;
 		head_ = block;
 	}
 
-	[[nodiscard]] inline FreeBlock* pop() {
+	[[nodiscard]] inline Block* pop() {
 		if(!head_) {
 			return nullptr;
 		}
@@ -151,7 +140,7 @@ public:
 
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
-		Block* block = std::start_lifetime_as<Block>(pop());
+		Block* block = pop();
 
 		if(block) [[likely]] {
 #ifdef EMBER_DEBUG_ALLOCATORS
@@ -197,7 +186,7 @@ public:
 			--storage_active_count;
 #endif
 			t->~_ty();
-			push(std::start_lifetime_as<FreeBlock>(t));
+			push(block);
 		}
 
 #ifdef EMBER_DEBUG_ALLOCATORS
