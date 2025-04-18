@@ -27,10 +27,10 @@
 namespace ember::spark::io {
 
 struct NoPageLock {};
-struct PageLock : NoPageLock {};
+struct PageLock final : NoPageLock {};
 
 struct NoValidateDealloc {};
-struct ValidateDealloc : NoValidateDealloc {};
+struct ValidateDealloc final : NoValidateDealloc {};
 
 /*
  * Basic fixed-size block stack allocator that preallocates a slab of memory
