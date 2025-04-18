@@ -2,7 +2,7 @@
 <img src="docs/assets/header_medres.png" width="464" title="Ember"/><br />
 <h2 align="center">🔥 High-performance, distributed emulator for WoW 1.12</h2>
 <p align="center">
-<a href="https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml"><img src="https://img.shields.io/github/actions/workflow/status/emberemu/ember/docker-image.yml?logo=githubactions&label=GitHub Actions CI&logoColor=white&color=e67a19" /></a>
+<a href="https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml"><img src="https://img.shields.io/github/actions/workflow/status/emberemu/ember/docker-image.yml?logo=githubactions&label=GitHub%20Actions%20CI&logoColor=white&color=e67a19" /></a>
 <a href="https://ci.appveyor.com/project/Chaosvex/ember/branch/development"><img src="https://img.shields.io/appveyor/build/Chaosvex/ember?logo=appveyor&label=Appveyor%20CI&logoColor=white&color=e67a19" /></a>
 </p>
 </p>
