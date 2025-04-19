@@ -57,7 +57,7 @@ private:
 	size_type size_;
 	[[no_unique_address]] allocator allocator_;
 
-	void link_tail_node(IntrusiveNode* node) {
+	void push_back(IntrusiveNode* node) {
 		node->next = &root_;
 		node->prev = root_.prev;
 		root_.prev = root_.prev->next = node;
@@ -102,7 +102,7 @@ private:
 		while(head != &rhs.root_) {
 			auto buffer = allocate();
 			*buffer = *buffer_from_node(head);
-			link_tail_node(&buffer->node);
+			push_back(&buffer->node);
 			size_ += buffer->write_offset;
 			head = head->next;
 		}
@@ -298,7 +298,7 @@ public:
 				buffer = buffer_from_node(tail);
 			} else {
 				buffer = allocate();
-				link_tail_node(&buffer->node);
+				push_back(&buffer->node);
 				tail = root_.prev;
 			}
 
@@ -321,7 +321,7 @@ public:
 
 			if(tail == &root_) [[unlikely]] {
 				buffer = allocate();
-				link_tail_node(&buffer->node);
+				push_back(&buffer->node);
 				tail = root_.prev;
 			} else {
 				buffer = buffer_from_node(tail);
@@ -364,7 +364,7 @@ public:
 	}
 
 	void push_back(storage_type* buffer) {
-		link_tail_node(&buffer->node);
+		push_back(&buffer->node);
 		size_ += buffer->write_offset;
 	}
 
