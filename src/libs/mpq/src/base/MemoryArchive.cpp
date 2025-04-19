@@ -18,6 +18,7 @@
 #include <boost/container/small_vector.hpp>
 #include <bit>
 #include <iterator>
+#include <sstream>
 
 namespace ember::mpq {
 
