@@ -51,7 +51,7 @@ void set_affinity(auto thread, unsigned int core) {
 		throw std::runtime_error("Unable to set thread affinity, error code " + std::to_string(ret));
 	}
 #else
-	#pragma message WARN("Setting thread affinity is not implemented for this platform. Implement it, please!");
+	#pragma message WARN("Setting thread affinity is not implemented for this platform. Implement it, please!")
 #endif
 }
 
@@ -113,7 +113,7 @@ Result set_name(std::jthread& thread, const char* name) {
 	const auto handle = thread.native_handle();
 	return set_name(handle, name);
 #else
-#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!");
+	#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!")
 	return Result::unsupported;
 #endif
 }
@@ -123,7 +123,7 @@ Result set_name(std::thread& thread, const char* name) {
 	const auto handle = thread.native_handle();
 	return set_name(handle, name);
 #else
-#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!");
+	#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!")
 	return Result::unsupported;
 #endif
 }
@@ -136,7 +136,7 @@ Result set_name(const char* name) {
 	auto handle = pthread_self();
 	return set_name(handle, name);
 #else
-#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!");
+	#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!")
 	return Result::unsupported;
 #endif
 }
@@ -164,16 +164,7 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 	}
 
 	return std::wstring(buffer.data(), buffer.data() + wcslen(buffer.data()));
-#elif defined TARGET_OS_MAC
-	std::array<char, BUFFER_LEN> buffer{};
-	auto res = pthread_getname_np(buffer.data(), buffer.size()); // todo, taking a guess here, can't test
-
-	if(res) {
-		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
-	}
-
-	return std::wstring(buffer, buffer + strlen(buffer));
-#elif defined __linux__ || defined __unix__
+#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
 	std::array<char, BUFFER_LEN> buffer{};
 	auto res = pthread_getname_np(thread, buffer.data(), buffer.size());
 	
@@ -188,23 +179,13 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 }
 
 std::expected<std::wstring, Result> get_name(std::jthread& thread) {
-#ifndef TARGET_OS_MAC
 	const auto handle = thread.native_handle();
 	return get_name(handle);
-#else
-	// not implemented, MacOS POSIX functions don't take a thread arg (might for getter, not sure)
-	return std::unexpected(Result::unsupported);
-#endif
 }
 
 std::expected<std::wstring, Result> get_name(std::thread& thread) {
-#ifndef TARGET_OS_MAC
 	const auto handle = thread.native_handle();
 	return get_name(handle);
-#else
-	// not implemented, MacOS POSIX functions don't take a thread arg (might for getter, not sure)
-	return std::unexpected(Result::unsupported);
-#endif
 }
 
 std::expected<std::wstring, Result> get_name() {
@@ -215,7 +196,7 @@ std::expected<std::wstring, Result> get_name() {
 	auto handle = pthread_self();
 	return get_name(handle);
 #else
-#pragma message WARN("Getting thread names is not implemented for this platform. Implement it, please!");
+	#pragma message WARN("Getting thread names is not implemented for this platform. Implement it, please!")
 	return std::unexpected(Result::unsupported);
 #endif
 }
