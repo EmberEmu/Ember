@@ -21,6 +21,7 @@
 #include <regex>
 #include <utility>
 #include <cstddef>
+#include <algorithm>
 
 namespace ember::dbc {
 

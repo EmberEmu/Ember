@@ -17,6 +17,7 @@
 #include <queue>
 #include <thread>
 #include <cstdint>
+#include <span>
 
 namespace ember::ports {
 
