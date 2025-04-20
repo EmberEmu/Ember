@@ -232,3 +232,16 @@ std::expected<std::size_t, DecompressionError> decompress(std::span<const std::b
 }
 
 } // mpq, ember
+
+#if defined(__APPLE__)
+namespace std {
+	inline namespace __1 {
+	  // Provide the out-of-line definition for the already explicitly specialized
+	  // member function for bad_expected_access<void>
+	  const char* bad_expected_access<void>::what() const noexcept {
+		return "bad expected access";
+	  	}
+	} // inline namespace __1
+} // namespace std
+
+#endif  // __APPLE__
