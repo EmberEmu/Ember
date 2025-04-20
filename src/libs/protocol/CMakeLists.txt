@@ -29,24 +29,29 @@ set(SERVER_MESSAGES
     include/protocol/server/CharacterLoginFailed.h
 )
 
-source_group("Server Messages" FILES ${SERVER_MESSAGES})
-source_group("Client Messages" FILES ${CLIENT_MESSAGES})
-
-set(LIBRARY_SRC
-    ${SERVER_MESSAGES}
-    ${CLIENT_MESSAGES}
-    src/Dummy.cpp
+set(CORE_HEADERS
     include/protocol/Opcodes.h
     include/protocol/Packet.h
     include/protocol/Packets.h
     include/protocol/ResultCodes.h
     include/protocol/PacketHeaders.h
-	include/protocol/SmartMessage.h
+    include/protocol/SmartMessage.h
     include/protocol/Concepts.h
     include/protocol/StreamResult.h
 )
 
-add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(HEADERS
+    ${CLIENT_MESSAGES}
+    ${SERVER_MESSAGES}
+    ${CORE_HEADERS}
+)
+
+source_group("Client Messages" FILES ${CLIENT_MESSAGES})
+source_group("Server Messages" FILES ${SERVER_MESSAGES})
+source_group("Core Headers" FILES ${CORE_HEADERS})
+
+add_library(${LIBRARY_NAME} INTERFACE)
+target_sources(${LIBRARY_NAME} INTERFACE ${HEADERS})
+target_link_libraries(${LIBRARY_NAME} INTERFACE shared spark ${Boost_LIBRARIES})
+target_include_directories(${LIBRARY_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
