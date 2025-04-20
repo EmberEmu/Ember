@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2023 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,9 +25,9 @@ utf8_string name_format(const utf8_string& string, const std::locale& locale) {
 
 	while(it != end) {
 		if(it == beg) {
-			*it.base() = std::toupper(static_cast<unsigned char>(*it), locale);
+			*it.base() = std::toupper(static_cast<char32_t>(*it), locale);
 		} else {
-			*it.base() = std::tolower(static_cast<unsigned char>(*it), locale);
+			*it.base() = std::tolower(static_cast<char32_t>(*it), locale);
 		}
 
 		++it;
@@ -43,7 +43,7 @@ bool is_alpha(const utf8_string& string, const std::locale& locale) {
 	auto end = ::utf8::iterator(data_end, data_beg, data_end);
 
 	while(it != end) {
-		if(!std::isalpha(*it, locale)) {
+		if(!std::isalpha(static_cast<char32_t>(*it), locale)) {
 			return false;
 		}
 
@@ -62,10 +62,10 @@ std::size_t max_consecutive(const utf8_string& string, const bool case_insensiti
 
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;
-	std::uint32_t last = 0;
+	char32_t last = 0;
 
 	while (it != end) {
-		const std::uint32_t current = case_insensitive? std::tolower(*it, locale) : *it;
+		const char32_t current = case_insensitive? std::tolower(static_cast<char32_t>(*it), locale) : *it;
 		
 		if(current == last) {
 			++current_run;
