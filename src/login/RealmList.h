@@ -22,7 +22,7 @@ namespace ember {
 using RealmMap = boost::unordered_flat_map<std::uint32_t, Realm>;
 
 class RealmList final {
-	std::atomic<std::shared_ptr<const RealmMap>> realms_;
+	std::shared_ptr<const RealmMap> realms_;
 	mutable std::mutex lock_;
 
 public:

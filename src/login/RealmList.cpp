@@ -23,7 +23,7 @@ void RealmList::add_realm(std::span<const Realm> realms) {
 	// ensure consistency if we add from multiple workers (not a thread safety issue)
 	std::lock_guard guard(lock_);
 
-	auto realm_map = realms_.load();
+	auto realm_map = std::atomic_load(&realms_);
 	auto copy = std::make_shared<RealmMap>(*realm_map);
 	
 	for(const auto& realm : realms) {
@@ -37,7 +37,7 @@ void RealmList::add_realm(Realm realm) {
 	// ensure consistency if we add from multiple workers (not a thread safety issue)
 	std::lock_guard guard(lock_);
 
-	auto realm_map = realms_.load();
+	auto realm_map = std::atomic_load(&realms_);
 	auto copy = std::make_shared<RealmMap>(*realm_map);
 	copy->insert_or_assign(realm.id, std::move(realm));
 
@@ -45,7 +45,7 @@ void RealmList::add_realm(Realm realm) {
 }
 
 std::optional<Realm> RealmList::get_realm(const std::uint32_t id) const {
-	auto realms = realms_.load();
+	auto realms = std::atomic_load(&realms_);
 
 	if(auto it = realms->find(id); it != realms->end()) {
 		return it->second;
@@ -55,7 +55,7 @@ std::optional<Realm> RealmList::get_realm(const std::uint32_t id) const {
 }
 
 auto RealmList::realms() const -> std::shared_ptr<const RealmMap> {
-	auto realms = realms_.load();
+	auto realms = std::atomic_load(&realms_);
 	return realms;
 }
 
