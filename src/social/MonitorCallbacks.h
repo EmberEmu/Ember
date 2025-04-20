@@ -35,7 +35,7 @@ void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger& logger) 
 
 	monitor.add_source(source, Monitor::Severity::ERROR,
 		std::bind(monitor_log_callback, std::placeholders::_1, std::placeholders::_2,
-		          std::placeholders::_3, logger)
+		          std::placeholders::_3, std::ref(logger))
 	);
 }
 
