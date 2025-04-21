@@ -272,21 +272,21 @@ inline namespace string_view_literals {
 /*******************************************************************************************************************/
 /**                                     suffix for basic_cstring_view literals                                    **/
 /*******************************************************************************************************************/
-[[nodiscard]] constexpr ember::cstring_view operator"" _csv(const char* str, const std::size_t len) noexcept {
+[[nodiscard]] constexpr ember::cstring_view operator""_csv(const char* str, const std::size_t len) noexcept {
   return { ember::cstring_view::null_terminated, str, len };
 }
 #if defined(__cpp_char8_t)
-[[nodiscard]] constexpr ember::u8cstring_view operator"" _csv(const char8_t* str, const std::size_t len) noexcept {
+[[nodiscard]] constexpr ember::u8cstring_view operator""_csv(const char8_t* str, const std::size_t len) noexcept {
   return { ember::u8cstring_view::null_terminated, str, len };
 }
 #endif
-[[nodiscard]] constexpr ember::u16cstring_view operator"" _csv(const char16_t* str, const std::size_t len) noexcept {
+[[nodiscard]] constexpr ember::u16cstring_view operator""_csv(const char16_t* str, const std::size_t len) noexcept {
   return { ember::u16cstring_view::null_terminated, str, len };
 }
-[[nodiscard]] constexpr ember::u32cstring_view operator"" _csv(const char32_t* str, const std::size_t len) noexcept {
+[[nodiscard]] constexpr ember::u32cstring_view operator""_csv(const char32_t* str, const std::size_t len) noexcept {
   return { ember::u32cstring_view::null_terminated, str, len };
 }
-[[nodiscard]] constexpr ember::wcstring_view operator"" _csv(const wchar_t* str, const std::size_t len) noexcept {
+[[nodiscard]] constexpr ember::wcstring_view operator""_csv(const wchar_t* str, const std::size_t len) noexcept {
   return { ember::wcstring_view::null_terminated, str, len };
 }
 
