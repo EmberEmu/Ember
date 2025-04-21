@@ -135,7 +135,7 @@ TEST(BinaryStreamPMR, ReadWriteVector) {
 	std::srand(seed);
 
 	std::vector<int> in(std::rand() % 200);
-	std::ranges::iota(in, std::rand() % 100);
+	std::iota(in.begin(), in.end(), std::rand() % 100);
 	std::ranges::shuffle(in, std::default_random_engine(seed));
 
 	stream.put(in.begin(), in.end());
