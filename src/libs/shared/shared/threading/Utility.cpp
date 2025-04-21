@@ -17,7 +17,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <cwchar>
-#elif defined TARGET_OS_MAC
+#elif defined __APPLE__
 #include <pthread.h>
 #elif defined __linux__ || defined __unix__
 #include <sched.h>
@@ -39,7 +39,7 @@ void set_affinity(auto thread, unsigned int core) {
 	if(SetThreadAffinityMask(thread, 1u << core) == 0) {
 		throw std::runtime_error("Unable to set thread affinity, error code " + std::to_string(GetLastError()));
 	}
-#elif defined TARGET_OS_MAC
+#elif defined __APPLE__
 	// todo, no support for pthread_setaffinity_np - implement when I'm in a position to test it
 #elif defined __linux__ || defined __unix__
 	cpu_set_t mask;
@@ -91,7 +91,7 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 
 	FreeLibrary(lib);
 
-#elif defined TARGET_OS_MAC
+#elif defined __APPLE__
 	auto ret = pthread_setname_np(name);
 
 	if(ret) {
@@ -109,7 +109,7 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 }
 
 Result set_name(std::jthread& thread, const char* name) {
-#ifndef TARGET_OS_MAC
+#ifndef __APPLE__
 	const auto handle = thread.native_handle();
 	return set_name(handle, name);
 #else
@@ -119,7 +119,7 @@ Result set_name(std::jthread& thread, const char* name) {
 }
 
 Result set_name(std::thread& thread, const char* name) {
-#ifndef TARGET_OS_MAC
+#ifndef __APPLE__
 	const auto handle = thread.native_handle();
 	return set_name(handle, name);
 #else
@@ -132,7 +132,7 @@ Result set_name(const char* name) {
 #ifdef _WIN32
 	auto handle = GetCurrentThread();
 	return set_name(handle, name);
-#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__ || defined __APPLE__
 	auto handle = pthread_self();
 	return set_name(handle, name);
 #else
@@ -164,7 +164,7 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 	}
 
 	return std::wstring(buffer.data(), buffer.data() + wcslen(buffer.data()));
-#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__ || defined __APPLE__
 	std::array<char, BUFFER_LEN> buffer{};
 	auto res = pthread_getname_np(thread, buffer.data(), buffer.size());
 	
@@ -192,7 +192,7 @@ std::expected<std::wstring, Result> get_name() {
 #ifdef _WIN32
 	auto handle = GetCurrentThread();
 	return get_name(handle);
-#elif defined __linux__ || defined __unix__ || TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__ || __APPLE__
 	auto handle = pthread_self();
 	return get_name(handle);
 #else

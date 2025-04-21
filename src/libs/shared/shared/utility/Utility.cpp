@@ -11,13 +11,13 @@
 
 #ifdef _WIN32
     #include <Windows.h>
-#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__ || defined __APPLE__
 	#include <sys/resource.h>
 	#include <iostream>
 #endif
 
 // signal stuff
-#if defined _WIN32 || defined TARGET_OS_MAC
+#if defined _WIN32 || defined __APPLE__
 	#include <signal.h>
 #elif defined __linux__ || defined __unix__
 	#include <format>
@@ -27,7 +27,7 @@
 // page locking stuff
 #if defined _WIN32
 	#include <memoryapi.h>
-#elif defined __linux__ || defined __unix__  || defined TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__  || defined __APPLE__
 	#include <sys/mman.h>
 #endif
 
@@ -69,7 +69,7 @@ void set_window_title(cstring_view title) {
 }
 
 int max_sockets() {
-#if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+#if defined __linux__ || defined __unix__ || defined __APPLE__
 	rlimit limit{};
 	const int res = getrlimit(RLIMIT_NOFILE, &limit);
 	
@@ -102,7 +102,7 @@ case x: \
 	return #x;
 
 std::string sig_str(const int signal) {
-#if defined _WIN32 || defined TARGET_OS_MAC
+#if defined _WIN32 || defined __APPLE__
 	switch(signal) {
 		STRINGIZE_CASE(SIGINT)
 		STRINGIZE_CASE(SIGILL)
@@ -113,7 +113,7 @@ std::string sig_str(const int signal) {
 #ifdef  _WIN32
 		STRINGIZE_CASE(SIGBREAK)
 		STRINGIZE_CASE(SIGABRT)
-#elif defined TARGET_OS_MAC
+#elif defined __APPLE__
 		STRINGIZE_CASE(SIGHUP)
 		STRINGIZE_CASE(SIGQUIT)
 		STRINGIZE_CASE(SIGTRAP)
@@ -141,7 +141,7 @@ std::string sig_str(const int signal) {
 		STRINGIZE_CASE(SIGUSR1)
 		STRINGIZE_CASE(SIGUSR2)
 #endif
-#if defined _WIN32 || defined TARGET_OS_MAC
+#if defined _WIN32 || defined __APPLE__
 		default:
 			return "<unknown>";
 	}
@@ -161,7 +161,7 @@ std::string sig_str(const int signal) {
 bool page_lock(void* address, std::size_t length) {
 #if defined _WIN32
 	return VirtualLock(address, length) != 0;
-#elif defined __linux__ || defined __unix__|| defined TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__|| defined __APPLE__
 	return mlock(address, length) == 0;
 #else
 	#pragma message WARN("Implement page_lock for this platform, thanks");
@@ -172,7 +172,7 @@ bool page_lock(void* address, std::size_t length) {
 bool page_unlock(void* address, std::size_t length) {
 #if defined _WIN32
 	return VirtualUnlock(address, length) != 0;
-#elif defined __linux__ || defined __unix__|| defined TARGET_OS_MAC
+#elif defined __linux__ || defined __unix__|| defined __APPLE__
 	return munlock(address, length) == 0;
 #else
 	#pragma message WARN("Implement page_unlock for this platform, thanks");
