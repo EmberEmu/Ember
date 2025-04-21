@@ -9,11 +9,11 @@
 #pragma once
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
-#define ember_x86_or_x64
+#define YIELD_INSTRUCTION _mm_pause()
 #elif defined(__APPLE__) && defined(__aarch64__)
-#define ember_arm_osx
+#define YIELD_INSTRUCTION __builtin_arm_yield()
 #elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(__aarch64__)
-#define ember_arm
+#define YIELD_INSTRUCTION __yield()
 #endif
 
 #include <atomic>
@@ -49,13 +49,7 @@ public:
 				spins = 0;
 				std::this_thread::yield();
 			} else {
-#ifdef ember_x86_or_x64
-				_mm_pause();
-#elif defined(ember_arm)
-				__yield();
-#elif defined(ember_arm_osx)
-				__builtin_arm_yield();
-#endif
+				YIELD_INSTRUCTION;
 			}
 		}
 	}
