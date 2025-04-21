@@ -9,6 +9,7 @@
 #pragma once
 
 #include <shared/Realm.h>
+#include <shared/utility/polyfill/atomic_shared_ptr>
 #include <atomic>
 #include <memory>
 #include <mutex>
