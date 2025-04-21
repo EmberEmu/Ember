@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:oracular AS builder
+FROM ubuntu:plucky AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
@@ -60,7 +60,7 @@ RUN --mount=type=cache,target=build \
     && cp -r ${working_dir}/tests/ . \
     && make test
 
-FROM ubuntu:oracular AS run_environment
+FROM ubuntu:plucky AS run_environment
 ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
