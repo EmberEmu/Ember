@@ -10,7 +10,7 @@
 
 #pragma once
 
-#ifndef __cpp_lib_atomic_shared_ptr
+#if !defined __cpp_lib_atomic_shared_ptr && defined _LIBCPP_VERSION
 
 #include <atomic>
 #include <memory>
