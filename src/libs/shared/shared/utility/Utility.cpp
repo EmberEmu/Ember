@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,10 @@
 
 #include "Utility.h"
 #include <shared/CompilerWarn.h>
+
+#if defined __APPLE__
+	#include <TargetConditionals.h>
+#endif
 
 #ifdef _WIN32
     #include <Windows.h>
@@ -155,6 +159,7 @@ std::string sig_str(const int signal) {
 	}
 #else
 	#pragma message WARN("Implement sig_str for this platform, thanks");
+	return "<unknown>";
 #endif
 }
 
