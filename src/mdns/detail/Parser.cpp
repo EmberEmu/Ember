@@ -146,6 +146,11 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 
 		if(notation == NOTATION_STR) {
 			std::uint8_t len = buffer[offset];
+
+			if(offset + 1 + len >= buffer.size_bytes()) {
+				throw Result::BAD_NAME_OFFSET;
+			}
+
 			labels.emplace_back(chars.data() + offset + 1, len);
 			offset += len + 1;
 		} else if(notation == NOTATION_PTR) {
@@ -153,9 +158,14 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 				throw Result::BAD_NAME_OFFSET;
 			}
 
-			auto ptr = buffer[offset + 1];
+			auto ptr = ((buffer[offset] & 0x3F) << 8) | buffer[offset + 1];
 
 			if(ptr >= buffer.size_bytes()) {
+				throw Result::BAD_NAME_OFFSET;
+			}
+
+			// Label pointer must point backwards to prevent potential infinite loops
+			if (ptr >= offset) {
 				throw Result::BAD_NAME_OFFSET;
 			}
 
