@@ -16,11 +16,5 @@
         "jdbc"
       ]
     }
-  ],
-  "overrides": [
-    {
-      "name": "botan",
-      "version": "2.19.3"
-    }
   ]
 }
