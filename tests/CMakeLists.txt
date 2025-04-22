@@ -40,5 +40,10 @@ add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 libmdns stun ports mpq ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../src)
 gtest_discover_tests(${EXECUTABLE_NAME})
+
+add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/tests/test_data ${CMAKE_CURRENT_BINARY_DIR}/test_data)
+
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 INSTALL(DIRECTORY test_data/ DESTINATION ${CMAKE_INSTALL_PREFIX}/test_data)
