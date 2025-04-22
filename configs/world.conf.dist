@@ -4,6 +4,9 @@
 id = 0     # realm ID, matching database value
 map_id = 0 # -1 = instances, 0 - EK, 1 - Kalimdor
 
+[dbc]
+path = dbcs/
+
 [network]
 # IPv4 or IPv6 bind interface - this should be an internal address or closed port!
 # Do NOT expose this port to the Internet, only to the private/internal network
