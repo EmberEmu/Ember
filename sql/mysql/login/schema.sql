@@ -320,4 +320,4 @@ CREATE TABLE `users` (
 -- Dump completed on 2024-11-15  4:33:21
 
 # Default realm
-INSERT INTO `realms` (`name`, `ip`, `type`, `flags`, `population`, `creation_setting`, `category`, `region`, `port`) VALUES ('Ember', '127.0.0.1', '1', '0', '0', '0', '1', '3', 3724);
+INSERT INTO `realms` (`name`, `ip`, `type`, `flags`, `population`, `creation_setting`, `category`, `region`, `port`) VALUES ('Ember', '127.0.0.1', '1', '0', '0', '0', '1', '3', 8085);
