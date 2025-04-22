@@ -451,7 +451,7 @@ bool db_update(const po::variables_map& args, const std::string& db, log::Logger
 	}
 
 	LOG_INFO_SYNC(logger, "Database has {} migration(s) applied", applied_migrations.size());
-	LOG_INFO_SYNC(logger, "Found {}  applicable migration(s)", migration_paths.size());
+	LOG_INFO_SYNC(logger, "Found {} applicable migration(s)", migration_paths.size());
 
 	if(!applied_migrations.empty()) {
 		const auto& last = applied_migrations.back();
