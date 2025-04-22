@@ -551,7 +551,7 @@ void write_label_notation(std::string_view name, spark::io::pmr::BinaryStream& s
 		auto index = segment.find_first_of('.', last);
 
 		if(index == std::string::npos && segment.size()) {
-			segment = segment.substr(1, -1);
+			segment = segment.substr(1);
 			stream << std::uint8_t(segment.size());
 			stream.put(segment.data(), segment.size());
 			break;
@@ -559,7 +559,7 @@ void write_label_notation(std::string_view name, spark::io::pmr::BinaryStream& s
 			break;
 		} else {
 			std::string_view print_segment = segment.substr(0, index);
-			segment = segment.substr(last ? index : index + 1, -1);
+			segment = segment.substr(last? index : index + 1);
 			stream << std::uint8_t(print_segment.size());
 			stream.put(print_segment.data(), print_segment.size());
 		}
