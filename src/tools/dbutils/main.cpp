@@ -50,6 +50,7 @@ const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_a
 const std::chrono::seconds UPDATE_BACKOUT_PERIOD { 10 };
 
 int launch(const po::variables_map& args, log::Logger& logger);
+int launch(const po::variables_map& args, log::Logger& logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void validate_options(const po::variables_map& args, log::Logger& logger);
 void validate_db_args(const po::variables_map& args, const std::string& mode, log::Logger& logger);
@@ -59,6 +60,7 @@ DatabaseDetails db_details(const po::variables_map& args, const std::string& db)
 bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
                    std::span<std::string> migration_paths, const std::string& db,
                    log::Logger& logger);
+bool pluralise(auto value);
 
 int main(int argc, const char* argv[]) try {
 	std::cout << "Build " << ember::version::VERSION << " (" << ember::version::GIT_HASH << ")\n";
@@ -450,8 +452,10 @@ bool db_update(const po::variables_map& args, const std::string& db, log::Logger
 		migration_paths.emplace_back(path.string());
 	}
 
-	LOG_INFO_SYNC(logger, "Database has {} migration(s) applied", applied_migrations.size());
-	LOG_INFO_SYNC(logger, "Found {} applicable migration(s)", migration_paths.size());
+	const auto applied_sz = applied_migrations.size();
+	const auto paths_sz = migration_paths.size();
+	LOG_INFO_SYNC(logger, "Database has {} migration{} applied", applied_sz, pluralise(applied_sz)? "s" : "");
+	LOG_INFO_SYNC(logger, "Found {} applicable migration{}", paths_sz, pluralise(paths_sz)? "s" : "");
 
 	if(!applied_migrations.empty()) {
 		const auto& last = applied_migrations.back();
@@ -476,6 +480,10 @@ bool db_update(const po::variables_map& args, const std::string& db, log::Logger
 	}
 
 	return res;
+}
+
+bool pluralise(auto value) {
+	return value != 1;
 }
 
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
