@@ -73,7 +73,7 @@ struct IntrusiveStorage final {
 		std::size_t read_len = copy(destination, length);
 		read_offset += static_cast<offset_type>(read_len);
 
-		if(read_offset == write_offset && allow_optimise) {
+		if(allow_optimise && read_offset == write_offset) {
 			clear();
 		}
 
@@ -89,7 +89,7 @@ struct IntrusiveStorage final {
 
 		read_offset += static_cast<offset_type>(skip_len);
 
-		if(read_offset == write_offset && allow_optimise) {
+		if(allow_optimise && read_offset == write_offset) {
 			clear();
 		}
 
