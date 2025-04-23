@@ -31,7 +31,7 @@ RUN apt-get -y update && apt-get -y upgrade \
  && tar -zxf boost_1_87_0.tar.gz \
  && cd boost_1_87_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
- && ./b2 link=static install -d0 -j 2 cxxflags="-std=c++23"
+ && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
 # Copy source
 ARG working_dir=/usr/src/ember
@@ -57,7 +57,6 @@ RUN --mount=type=cache,target=build \
     -DBOTAN_ROOT_DIR=/usr/include/botan-2/ \
     -DBOTAN_LIBRARY=/usr/lib/x86_64-linux-gnu/libbotan-2.so \
     && cd build && make -j$(nproc) install \
-    && cp -r ${working_dir}/tests/ . \
     && make test
 
 FROM ubuntu:plucky AS run_environment
