@@ -146,6 +146,9 @@ App_Data/*.ldf
 *.iml
 *.iws
 
+# vcpkg
+vcpkg_installed/
+
 # =========================
 # Windows detritus
 # =========================
