@@ -1,3 +1,4 @@
 /build
+/vcpkg_installed
 Dockerfile
 docker-compose.yml
