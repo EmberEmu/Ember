@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,11 +19,11 @@
 
 namespace ember::drivers {
 
-MySQL::MySQL(std::string user, std::string pass, std::string_view host, std::uint16_t port, std::string db) :
-	dsn(std::format("tcp://{}:{}", host, port)),
-	database(std::move(db)),
-	username(std::move(user)),
-    password(std::move(pass)) {
+MySQL::MySQL(std::string user, std::string pass, std::string_view host, std::uint16_t port, std::string db)
+	: dsn(std::format("tcp://{}:{}", host, port)),
+	  database(std::move(db)),
+	  username(std::move(user)),
+      password(std::move(pass)) {
 	std::lock_guard guard(driver_lock);
 	driver = get_driver_instance();
 	assert(driver);
