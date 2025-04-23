@@ -38,8 +38,6 @@ sql::Connection* MySQL::open() const {
 	}
 
 	conn->setAutoCommit(true);
-	constexpr bool opt = true;
-	conn->setClientOption("MYSQL_OPT_RECONNECT", &opt);
 	thread_exit();
 	return conn;
 }
