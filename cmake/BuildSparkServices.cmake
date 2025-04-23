@@ -29,7 +29,6 @@ function(build_spark_services
     set_source_files_properties(${${output_files}} PROPERTIES GENERATED TRUE)
 
     add_custom_command(
-		PRE_BUILD
 		OUTPUT ${output_files}
         COMMAND ${rpcgen} -t ${template_dir} -s ${input_name_str} -o ${output_dir}
         COMMENT "Generating Spark RPC service stubs..."
