@@ -76,12 +76,11 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
 		stop_services();
-		service.stop();
 	});
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		service.run();
+		service.run_one();
 	});
 
 	// Start services

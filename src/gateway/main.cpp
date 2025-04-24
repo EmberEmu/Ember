@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -67,12 +67,11 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
 		service.stop();
-		io_ctx.stop();
 	});
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run();
+		io_ctx.run_one();
 	});
 
 	return service.run(args);
