@@ -64,6 +64,7 @@ class BlockAllocator {
 	struct Block {
 		Block() {};
 
+		// this is fine because we're always reading from the member that was last assigned to
 		union {
 			Block* next;
 			_ty obj;
