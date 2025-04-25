@@ -45,6 +45,12 @@ ARG disable_threads=0
 ARG build_type=Rel
 ARG install_dir=/usr/local/bin
 
+# Patch the Botan config file for header paths: (THIS IS FIXED IN BOTAN 3.8 - REMOVE WHEN apt-get HAS UPDATED)
+RUN sh -c 'arch=$(dpkg-architecture -qDEB_HOST_MULTIARCH) && \
+  BOTAN_CFG=$(find / -type f -iname "botan-config.cmake" 2>/dev/null | grep "/usr/lib/$arch" | head -n1) && \
+  [ -n "$BOTAN_CFG" ] && \
+  sed -i -e "s|\${_Botan_PREFIX}/include|/usr/include|g" -e "s|\${_Botan_PREFIX}/lib|/usr/lib/$arch|g" "$BOTAN_CFG"'
+
 # Generate Makefile & compile
 RUN --mount=type=cache,target=build \
     cmake -S . -B build \
