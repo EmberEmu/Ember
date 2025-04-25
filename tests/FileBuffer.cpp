@@ -93,6 +93,7 @@ TEST(FileBuffer, Copy) {
 	ASSERT_TRUE(std::filesystem::exists(path));
 
 	spark::io::FileBuffer buffer(path);
+	ASSERT_TRUE(buffer) << "File open failed";
 
 	std::uint8_t in = 0;
 	buffer.copy(&in);
@@ -110,6 +111,7 @@ TEST(FileBuffer, Skip) {
 	ASSERT_TRUE(std::filesystem::exists(path));
 
 	spark::io::FileBuffer buffer(path);
+	ASSERT_TRUE(buffer) << "File open failed";
 
 	{
 		std::uint8_t in = 0;
