@@ -124,11 +124,13 @@ include_directories(${ZLIB_INCLUDE_DIR})
 ##############################
 #            PCRE            #
 ##############################
-find_package(PCRE 8.39 REQUIRED)
-include_directories(${PCRE_INCLUDE_DIR})
+find_file(PCRE_INCLUDE_DIR pcre.h)
+find_library(PCRE_LIBRARY pcre)
 option(PCRE_STATIC_LIB "Statically link to PCRE" ON)
 
-if(PCRE_STATIC_LIB)
+if(NOT PCRE_INCLUDE_DIR OR NOT PCRE_LIBRARY)
+  message(FATAL_ERROR "PCRE was not found.")
+elseif(PCRE_STATIC_LIB)
   add_definitions(-DPCRE_STATIC)
 endif()
 
