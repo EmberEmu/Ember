@@ -9,6 +9,7 @@
 #include <spark/buffers/pmr/BinaryStream.h>
 #include <spark/buffers/pmr/BufferAdaptor.h>
 #include <spark/buffers/DynamicBuffer.h>
+#include <shared/utility/polyfill/ranged_iota>
 #include <gtest/gtest.h>
 #include <gsl/narrow>
 #include <algorithm>
