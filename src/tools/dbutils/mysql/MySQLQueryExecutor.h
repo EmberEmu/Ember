@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../QueryExecutor.h"
-#include <cppconn/connection.h>
+#include <jdbc/cppconn/connection.h>
 #include <memory>
 
 class MySQLQueryExecutor final : public QueryExecutor {
