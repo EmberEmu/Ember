@@ -9,7 +9,6 @@
 #include <mpq/Compression.h>
 #include <mpq/Exception.h>
 #include <mpq/SharedDefs.h>
-#include <bit>
 #include <zlib.h>
 #include <bzip2/bzlib.h>
 #include <lzma/LzmaLib.h>
@@ -17,6 +16,7 @@
 #include <sparse/sparse.h>
 #include <huffman/huff.h>
 #include <boost/container/small_vector.hpp>
+#include <bit>
 
 namespace ember::mpq {
 
