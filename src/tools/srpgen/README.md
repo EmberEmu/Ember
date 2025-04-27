@@ -5,8 +5,12 @@ This is a simple tool for generating SRP6 credentials for storing in the databas
 
 For example:
 
-`srpgen -u MyUser -p MyPass -s`
+```
+srpgen -u MyUser -p MyPass -s
+```
 
-The `-s` flag will place the salt in a binary file in addition to printing out the hexadecimal form.
+### Flags:
 
-The account service is intended to make this tool obsolete in the future.
+`-s` (`--sbin`) flag will place the salt in a binary file in addition to printing out the hexadecimal representation. 
+
+`-j` (`--json`) flag will output the result as JSON.
