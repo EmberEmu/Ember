@@ -85,8 +85,8 @@ set(LIBRARY_SRC
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE ${Boost_LIBRARIES} PRIVATE nsd conpool stun ports dbcreader protocol spark 
-                                             logger shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} nsd conpool stun ports dbcreader protocol spark logger shared ${Boost_LIBRARIES}
+                                      ${BOTAN_LIBRARY} ${MYSQLCCPP_LIBRARY} ${ZLIB_LIBRARY} Threads::Threads)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_BINARY_DIR})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
