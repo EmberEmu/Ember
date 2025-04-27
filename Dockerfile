@@ -6,7 +6,7 @@ LABEL description="Development build environment"
 # Update the distro and install our tools
 RUN apt-get -y update && apt-get -y upgrade \
  && apt-get -y install software-properties-common \
- && apt-get -y install wget \
+ && apt-get -y install wget tar \
  # GCC stuff
  && apt-get -y install build-essential gcc-14 g++-14 \
  # Clang stuff
@@ -23,7 +23,8 @@ RUN apt-get -y update && apt-get -y upgrade \
  && apt-get -y install git \
  # Install required library packages
  && apt-get install -y libbotan-3-dev \
- && apt-get install -y libmysqlcppconn-dev \
+ && apt-get install -y libmysqlclient-dev \
+ && apt-get install -y libssl-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
@@ -32,6 +33,22 @@ RUN apt-get -y update && apt-get -y upgrade \
  && cd boost_1_87_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
  && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
+
+# Replace the apt-get install of libmysqlcppconn-dev with a custom installer
+RUN arch=$(uname -m) && case "$arch" in \
+      x86_64) url="https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-9.3.0-linux-glibc2.28-x86-64bit.tar.gz" ;; \
+      aarch64) url="https://dev.mysql.com/get/Downloads/Connector-C++/mysql-connector-c++-9.3.0-linux-glibc2.28-aarch64.tar.gz" ;; \
+      *) echo "Unsupported architecture: $arch" && exit 1 ;; esac && \
+    echo "Downloading MySQL Connector/C++ from ${url}" && \
+    wget "$url" -O /tmp/mysql-connector.tar.gz && \
+    mkdir -p /usr/lib/cmake/mysql-concpp && \
+    tar -zxf /tmp/mysql-connector.tar.gz -C /usr/lib/cmake/mysql-concpp --strip-components=1 && \
+    echo "Installing headers and libraries..." && \
+    mkdir -p /usr/include/mysql-cppconn && \
+    cp -r /usr/lib/cmake/mysql-concpp/include/* /usr/include/mysql-cppconn/ && \
+    cp -r /usr/lib/cmake/mysql-concpp/lib64/* /usr/local/lib/ && \
+    ldconfig && \
+    echo "MySQL Connector/C++ installed."
 
 # Copy source
 ARG working_dir=/usr/src/ember
@@ -43,7 +60,7 @@ WORKDIR ${working_dir}
 ARG build_optional_tools=1
 ARG pcre_static_lib=1
 ARG disable_threads=0
-ARG build_type=Rel
+ARG build_type=Debug
 ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile

@@ -10,10 +10,10 @@
 
 #include <shared/database/daos/shared_base/CharacterBase.h>
 #include <conpool/ConnectionPool.h>
-#include <mysql_connection.h>
-#include <cppconn/exception.h>
 #include <conpool/drivers/MySQL/Driver.h>
-#include <cppconn/prepared_statement.h>
+#include <jdbc/mysql_connection.h>
+#include <jdbc/cppconn/exception.h>
+#include <jdbc/cppconn/prepared_statement.h>
 #include <chrono>
 #include <memory>
 #include <string>
