@@ -79,7 +79,6 @@ source_group("IO" FILES ${IO_SRC})
 source_group("IO\\Polymorphic" FILES ${IO_PMR_SRC})
 source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
 
-add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

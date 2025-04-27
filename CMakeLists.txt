@@ -112,8 +112,6 @@ include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 #         FlatBuffers        #
 ##############################
 find_package(FlatBuffers 2.0.8 REQUIRED)
-include_directories(${FLATBUFFERS_INCLUDE_DIR})
-include(${CMAKE_MODULE_PATH}/BuildFlatBuffers.cmake)
 
 ##############################
 #            zlib            #
