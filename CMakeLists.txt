@@ -101,8 +101,22 @@ include_directories(${BOTAN_INCLUDE_DIRS})
 ##############################
 #     MySQL Connector C++    #
 ##############################
-find_package(MySQLConnectorCPP REQUIRED)
-include_directories(${MYSQLCCPP_INCLUDE_DIRS})
+find_package(mysql-concpp REQUIRED)
+# Check if the static JDBC target exists; otherwise fallback to the shared JDBC target.
+if(TARGET mysql::concpp-jdbc-static)
+    set(MYSQLCCPP_LIBRARY mysql::concpp-jdbc-static)
+    message(STATUS "Using MySQL Connector/C++ JDBC static library")
+elseif(TARGET mysql::concpp-jdbc)
+    set(MYSQLCCPP_LIBRARY mysql::concpp-jdbc)
+    message(STATUS "Using MySQL Connector/C++ JDBC shared library")
+else()
+    message(FATAL_ERROR "No valid MySQL Connector/C++ JDBC target found")
+endif()
+
+##############################
+#           OpenSSL          #
+##############################
+find_package(OpenSSL REQUIRED)
 
 ##############################
 #         FlatBuffers        #

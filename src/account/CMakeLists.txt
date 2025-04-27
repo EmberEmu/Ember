@@ -25,8 +25,9 @@ set(LIBRARY_SRC
 include_directories(${SPARK_INCLUDES_DIR})
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool logger shared ${MYSQLCCPP_LIBRARY} 
-                                      ${BOTAN_LIBRARY} ${Boost_LIBRARIES} Threads::Threads FB_SCHEMA_COMPILE)
+target_link_libraries(${LIBRARY_NAME} spark conpool logger shared
+                                      ${Boost_LIBRARIES} ${BOTAN_LIBRARY}
+                                      ${MYSQLCCPP_LIBRARY} Threads::Threads)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_BINARY_DIR})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

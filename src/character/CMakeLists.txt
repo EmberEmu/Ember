@@ -24,13 +24,14 @@ set(LIBRARY_SRC
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} dbcreader spark logger protocol shared ${BOTAN_LIBRARY} 
-                                      ${Boost_LIBRARIES} Threads::Threads FB_SCHEMA_COMPILE)
+target_link_libraries(${LIBRARY_NAME} dbcreader spark logger protocol shared
+                                      ${Boost_LIBRARIES} ${BOTAN_LIBRARY}
+                                      ${MYSQLCCPP_LIBRARY} Threads::Threads)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_BINARY_DIR})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} protocol dbcreader spark conpool logger shared 
-                                                         ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
+                                         ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(character PROPERTIES FOLDER "Services/Applications")

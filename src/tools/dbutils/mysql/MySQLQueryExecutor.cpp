@@ -8,8 +8,8 @@
  
 #include "MySQLQueryExecutor.h"
 #include <conpool/drivers/MySQL/Driver.h>
-#include <cppconn/statement.h>
-#include <cppconn/prepared_statement.h>
+#include <jdbc/cppconn/statement.h>
+#include <jdbc/cppconn/prepared_statement.h>
 #include <format>
 #include <memory>
 
