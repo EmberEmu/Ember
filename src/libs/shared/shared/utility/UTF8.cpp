@@ -12,6 +12,7 @@
 #include <locale>
 #include <cstdint>
 #include <cstddef>
+#include <shared/utility/polyfill/toUpper>
 
 namespace ember::util::utf8 {
 
