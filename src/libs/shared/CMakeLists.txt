@@ -83,7 +83,7 @@ set(UTIL_SRC
     shared/utility/Clock.h
     shared/utility/StringHash.h
     shared/utility/STUN.h
-    shared/utility/PortForward.h
+	shared/utility/PortForward.h
     shared/utility/polyfill/print
     shared/utility/polyfill/start_lifetime_as
     shared/utility/polyfill/inplace_vector
@@ -92,7 +92,6 @@ set(UTIL_SRC
     shared/utility/Timing.h
     shared/utility/Timing.cpp
     shared/utility/Exception.h
-    shared/utility/CompilerDefs.h
 )
 
 set(METRICS_SRC

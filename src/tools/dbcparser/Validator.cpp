@@ -7,9 +7,9 @@
  */
 
 #include "Validator.h"
+#include "Defines.h"
 #include "TypeUtils.h"
 #include <logger/Logger.h>
-#include <shared/utility/CompilerDefs.h>
 #include <format>
 #include <iostream>
 #include <limits>
