@@ -45,9 +45,9 @@ private:
 	boost::asio::steady_timer timer_;
 
 	Buffer inbound_buffer_;
+	std::array<Buffer, 2> outbound_buffers_{};
 	Buffer* outbound_front_;
 	Buffer* outbound_back_;
-	std::array<Buffer, 2> outbound_buffers_{};
 	bool write_in_progress_;
 	bool is_active_;
 
