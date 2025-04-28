@@ -7,8 +7,8 @@
  */
 
 #include "TypeUtils.h"
-#include "Defines.h"
 #include "Exception.h"
+#include <shared/utility/CompilerDefs.h>
 #include <gsl/narrow>
 #include <exception>
 #include <regex>
