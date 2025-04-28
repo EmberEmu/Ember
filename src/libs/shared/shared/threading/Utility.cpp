@@ -19,6 +19,10 @@
 #include <cwchar>
 #elif defined TARGET_OS_MAC
 #include <pthread.h>
+#include <mach/mach.h>
+#include <mach/thread_policy.h>
+#include <signal.h>
+#include <atomic>
 #elif defined __linux__ || defined __unix__
 #include <sched.h>
 #include <pthread.h>
@@ -92,53 +96,65 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 	FreeLibrary(lib);
 
 #elif defined TARGET_OS_MAC
-	auto ret = pthread_setname_np(name);
+	static std::atomic<const char*> desiredThreadName{name};
+	static std::atomic<kern_return_t> ret{KERN_FAILURE};
+	static std::atomic<bool> busy{true};
 
-	if(ret) {
-		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
+	// Define the signal handler
+	const auto threadNameHandler = +[](int /*signum*/) -> void {
+		const char* name = desiredThreadName.load(std::memory_order_acquire);
+		if (name != nullptr) {
+			ret.store(pthread_setname_np(name), std::memory_order_release);
+		}
+		busy.store(false, std::memory_order_release);
+	};
+
+	// Install the signal handler once for the process.
+	static std::atomic_flag handlerInstalled = ATOMIC_FLAG_INIT;
+	if (!handlerInstalled.test_and_set(std::memory_order_acquire)) {
+		signal(SIGUSR1, threadNameHandler);
 	}
+
+	// Send SIGUSR1 to the target thread so it runs the signal handler.
+	if (pthread_kill(handle, SIGUSR1) != 0) {
+		throw std::runtime_error("Unable to send signal handler to thread, error code " + std::to_string(ret));
+	}
+
+	while (busy == true) {std::this_thread::yield();}
+
+    if (ret.load(std::memory_order_acquire) != KERN_SUCCESS) {
+        throw std::runtime_error("Unable to set thread name, error code " + std::to_string(ret));
+    }
+
 #elif defined __linux__ || defined __unix__
 	auto ret = pthread_setname_np(handle, name);
 
 	if(ret) {
 		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
 	}
+
 #endif
 
 	return Result::ok;
 }
 
 Result set_name(std::jthread& thread, const char* name) {
-#ifndef TARGET_OS_MAC
 	const auto handle = thread.native_handle();
 	return set_name(handle, name);
-#else
-	#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!")
-	return Result::unsupported;
-#endif
 }
 
 Result set_name(std::thread& thread, const char* name) {
-#ifndef TARGET_OS_MAC
 	const auto handle = thread.native_handle();
 	return set_name(handle, name);
-#else
-	#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!")
-	return Result::unsupported;
-#endif
 }
 
 Result set_name(const char* name) {
 #ifdef _WIN32
 	auto handle = GetCurrentThread();
-	return set_name(handle, name);
-#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
-	auto handle = pthread_self();
-	return set_name(handle, name);
 #else
-	#pragma message WARN("Setting thread names is not implemented for this platform. Implement it, please!")
-	return Result::unsupported;
+	auto handle = pthread_self();
 #endif
+	return set_name(handle, name);
 }
 
 std::expected<std::wstring, Result> get_name(auto& thread) {
@@ -191,14 +207,10 @@ std::expected<std::wstring, Result> get_name(std::thread& thread) {
 std::expected<std::wstring, Result> get_name() {
 #ifdef _WIN32
 	auto handle = GetCurrentThread();
-	return get_name(handle);
-#elif defined __linux__ || defined __unix__ || TARGET_OS_MAC
-	auto handle = pthread_self();
-	return get_name(handle);
 #else
-	#pragma message WARN("Getting thread names is not implemented for this platform. Implement it, please!")
-	return std::unexpected(Result::unsupported);
+	auto handle = pthread_self();
 #endif
+	return get_name(handle);
 }
 
 /*
@@ -227,6 +239,5 @@ unsigned int hardware_concurrency(log::Logger& logger) {
 unsigned int hardware_concurrency() {
 	return hardware_concurrency(nullptr);
 }
-
 
 } // thread, ember
