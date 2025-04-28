@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2025 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+// Until libc++ maybe provides this functionality...
+#if defined(_LIBCPP_VERSION)
+
+#include <string>
+#include <locale>
+#include <vector>
+#include <utf8cpp/utf8.h>
+
+inline void toUpper(std::string &str, const std::string &localeStr)
+{
+    std::locale loc(localeStr);
+    // Decode the UTF‑8 string into Unicode code points.
+    std::vector<char32_t> codepoints;
+    using unchecked_iterator = utf8::unchecked::iterator<std::string::const_iterator>;
+    unchecked_iterator it(str.begin());
+    unchecked_iterator it_end(str.end());
+
+    for (; it != it_end; ++it)
+    {
+        char32_t cp = *it;
+        wchar_t buf[1] = {static_cast<wchar_t>(cp)};
+        std::use_facet<std::ctype<wchar_t>>(loc).toupper(buf, buf + 1);
+        cp = static_cast<char32_t>(buf[0]);
+        codepoints.push_back(cp);
+    }
+
+    // Re-encode the code points back into a UTF‑8 string.
+    std::string out;
+    utf8::utf32to8(codepoints.begin(), codepoints.end(), std::back_inserter(out));
+    str = std::move(out);
+}
+
+namespace std {
+    // Convert a code point to a wide character, apply the locale's
+    // toupper (via the ctype<wchar_t> facet), and convert it back.
+    inline char32_t toupper(char32_t c, const locale &loc) {
+        wchar_t buf[1] = {static_cast<wchar_t>(c)};
+        std::use_facet<std::ctype<wchar_t>>(loc).toupper(buf, buf + 1);
+        return static_cast<char32_t>(buf[0]);
+    }
+
+    // Convert a char32_t code point to lowercase 
+    // using the locale's ctype<wchar_t> facet.
+    inline char32_t tolower(char32_t c, const locale &loc) {
+        wchar_t buf[1] = {static_cast<wchar_t>(c)};
+        std::use_facet<std::ctype<wchar_t>>(loc).tolower(buf, buf + 1);
+        return static_cast<char32_t>(buf[0]);
+    }
+
+    // Overload for per‑codepoint isalpha for char32_t.
+    inline bool isalpha(char32_t c, const locale &loc) {
+        auto &facet = std::use_facet<std::ctype<wchar_t>>(loc);
+        return facet.is(std::ctype_base::alpha, static_cast<wchar_t>(c)) != 0;
+    }
+}
+
+#endif // defined(_LIBCPP_VERSION)
