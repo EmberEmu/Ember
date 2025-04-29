@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,8 +26,8 @@
 
 namespace ember::ports::upnp {
 
-constexpr std::string MULTICAST_IPV4_ADDR { "239.255.255.250" };
-constexpr std::string MULTICAST_IPV6_ADDR { "ff05::c" };
+constexpr std::string_view MULTICAST_IPV4_ADDR { "239.255.255.250" };
+constexpr std::string_view MULTICAST_IPV6_ADDR { "ff05::c" };
 constexpr std::uint16_t DEST_PORT { 1900 };
 
 struct DeviceResult {
