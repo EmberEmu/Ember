@@ -65,18 +65,11 @@ ba::awaitable<void> Server::accept_connection() {
 	const auto ep = socket.remote_endpoint(ec);
 
 	if(ec) {
-		LOG_DEBUG(logger_)
-			<< "[spark] Unable to obtain endpoint, remote peer disconnected"
-			<< LOG_ASYNC;
+		LOG_DEBUG_ASYNC(logger_, "[spark] Unable to obtain endpoint, remote peer disconnected");
 		co_return;
 	}
 
-	LOG_DEBUG_FILTER(logger_, LF_SPARK)
-		<< "[spark] Accepted connection "
-		<< ep.address().to_string()
-		<< ":" << ep.port()
-		<< LOG_ASYNC;
-
+	LOG_DEBUG_ASYNC(logger_, "[spark] Accepted connection {}:{}", ep.address().to_string(), ep.port());
 	co_await accept(std::move(socket));
 }
 
@@ -93,9 +86,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	auto banner = co_await receive_banner(connection);
 	co_await send_banner(connection, name_);
 
-	LOG_INFO_FILTER(logger_, LF_SPARK)
-		<< std::format("[spark] Connected to {}", banner)
-		<< LOG_ASYNC;
+	LOG_INFO_ASYNC(logger_, "[spark] Connected to {}", banner);
 
 	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
@@ -104,7 +95,7 @@ ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	peer->start();
 	peers_.add(key, std::move(peer));
 } catch(const std::exception& e) {
-	LOG_WARN_FILTER(logger_, LF_SPARK) << e.what() << LOG_ASYNC;
+	LOG_WARN_ASYNC(logger_, "{}", e.what());
 }
 
 void Server::register_handler(gsl::not_null<Handler*> handler) {

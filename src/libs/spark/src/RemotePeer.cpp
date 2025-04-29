@@ -47,10 +47,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 
 	if(header.read_from_stream(stream) != MessageHeader::State::OK
 	   || header.size <= stream.total_read()) {
-		LOG_WARN_FILTER(log_, LF_SPARK)
-			<< "[spark] Bad message from "
-			<< conn_->address()
-			<< LOG_ASYNC;
+		LOG_WARN_ASYNC(log_, "[spark] Bad message from {}", conn_->address());
 		return;
 	}
 
