@@ -27,6 +27,6 @@ flatbuffers_generate_headers(
   BINARY_SCHEMAS_DIR  ${CMAKE_BINARY_DIR}
   FLAGS               ${FLATC_ARGS}
 )
-
+target_include_directories(${FB_SCHEMA_TARGET_NAME} INTERFACE ${CMAKE_BINARY_DIR}/schemas/FB_SCHEMA_COMPILE)
 set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/src/tools/rpcgen/templates/)
 build_spark_services("${SERVICE_SCHEMAS}" ${TEMPLATE_DIR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR})
