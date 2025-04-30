@@ -58,7 +58,6 @@ WORKDIR ${working_dir}
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
-ARG pcre_static_lib=1
 ARG disable_threads=0
 ARG build_type=Debug
 ARG install_dir=/usr/local/bin
@@ -75,7 +74,6 @@ RUN --mount=type=cache,target=build \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
-    -DPCRE_STATIC_LIB=${pcre_static_lib} \
     -DDISABLE_EMBER_THREADS=${disable_threads} \
     && cd build && make -j$(nproc) install \
     && make test
