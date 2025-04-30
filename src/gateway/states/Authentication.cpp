@@ -164,7 +164,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 		key.bytes(), boost::container::default_init
 	);
 
-	key.binary_encode(k_bytes.data(), k_bytes.size());
+	key.serialize_to(std::span<uint8_t>(k_bytes.data() + (k_bytes.size() - key.bytes()), key.bytes()));
 
 	const std::uint32_t protocol_id = 0; // best guess, this is hardcoded to zero in the client
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);

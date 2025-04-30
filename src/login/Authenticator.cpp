@@ -53,7 +53,7 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
 	: username_(std::move(username)) {
 	std::ranges::copy(salt, salt_.data());
 	sess_key_.t.resize(session_key.bytes());
-	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
+	session_key.serialize_to(std::span<uint8_t>(sess_key_.t.data() + (sess_key_.t.size() - session_key.bytes()), session_key.bytes()));
 }
 
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,

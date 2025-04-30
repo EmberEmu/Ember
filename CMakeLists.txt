@@ -95,8 +95,17 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ##############################
 #            Botan           #
 ##############################
-find_package(Botan 2.14.0 REQUIRED)
-include_directories(${BOTAN_INCLUDE_DIRS})
+find_package(Botan 3.7.0 REQUIRED)
+# Check if the static target exists; otherwise fallback to the shared target.
+if(TARGET Botan::Botan-static)
+  set(BOTAN_LIBRARY Botan::Botan-static)
+  message(STATUS "Using Botan static library")
+elseif(TARGET Botan::Botan)
+  set(BOTAN_LIBRARY Botan::Botan)
+  message(STATUS "Using Botan shared library")
+else()
+  message(FATAL_ERROR "No valid Botan target found")
+endif()
 
 ##############################
 #     MySQL Connector C++    #
