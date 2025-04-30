@@ -24,18 +24,18 @@ jobs:
       uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-docker-${{ github.sha }}
+        key: ${{ runner.os }}-docker-layer-cache
         restore-keys: |
-          ${{ runner.os }}-docker-
+          ${{ runner.os }}-docker-layer-cache
 
-    # Build the Docker image using BuildKit and inline cache
+    # Build the Docker image with inline cache
     - name: Build the Docker image
       env:
         DOCKER_BUILDKIT: 1
       run: |
         docker buildx build . \
           --file Dockerfile \
-          --tag my-image-name:$(date +%s) \
+          --tag my-image-name:latest \
           --cache-from=type=local,src=/tmp/.buildx-cache \
           --cache-to=type=local,dest=/tmp/.buildx-cache \
           --cache-to=type=inline \
