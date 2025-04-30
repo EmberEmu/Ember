@@ -132,7 +132,8 @@ public:
 		}
 		
 		std::array<std::uint8_t, PUB_KEY_LENGTH> bytes{};
-		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), B);
+		std::fill(bytes.begin(), bytes.end(), 0); // 1363 style padding
+		B.serialize_to({ bytes.data() + (bytes.size() - B.bytes()), B.bytes() });
 		stream.put(bytes.rbegin(), bytes.rend());
 
 		stream << g_len;
@@ -140,11 +141,13 @@ public:
 		stream << n_len;
 
 		static_assert(bytes.size() == PRIME_LENGTH);
-		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), N);
+		std::fill(bytes.begin(), bytes.end(), 0); // 1363 style padding
+		N.serialize_to({ bytes.data() + (bytes.size() - N.bytes()), N.bytes() });
 		stream.put(bytes.rbegin(), bytes.rend());
 
 		static_assert(bytes.size() == SALT_LENGTH);
-		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), s);
+		std::fill(bytes.begin(), bytes.end(), 0); // 1363 style padding
+		s.serialize_to({ bytes.data() + (bytes.size() - s.bytes()), s.bytes() });
 		stream.put(bytes.rbegin(), bytes.rend());
 
 		stream.put(checksum_salt.data(), checksum_salt.size());

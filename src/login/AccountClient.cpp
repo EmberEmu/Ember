@@ -89,7 +89,7 @@ void AccountClient::handle_locate_response(std::expected<const SessionResponse*,
 		return;
 	}
 
-	auto key = Botan::BigInt::decode(msg->key()->data(), msg->key()->size());
+	auto key = Botan::BigInt::from_bytes(std::span<const std::uint8_t>(msg->key()->data(), msg->key()->size()));
 	cb(msg->status(), std::move(key));
 }
 

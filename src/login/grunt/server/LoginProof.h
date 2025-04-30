@@ -93,7 +93,8 @@ public:
 		}
 
 		std::array<std::uint8_t, PROOF_LENGTH> bytes{};
-		Botan::BigInt::encode_1363(bytes.data(), bytes.size(), M2);
+		std::fill(bytes.begin(), bytes.end(), 0); // 1363 style padding
+		M2.serialize_to({ bytes.data() + (bytes.size() - M2.bytes()), M2.bytes() });
 		stream.put(bytes.rbegin(), bytes.rend());
 		stream << survey_id;
 	

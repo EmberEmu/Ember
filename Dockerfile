@@ -22,7 +22,7 @@ RUN apt-get -y update && apt-get -y upgrade \
  && apt-get -y install cmake \
  && apt-get -y install git \
  # Install required library packages
- && apt-get install -y libbotan-2-dev \
+ && apt-get install -y libbotan-3-dev \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
@@ -54,8 +54,6 @@ RUN --mount=type=cache,target=build \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
     -DPCRE_STATIC_LIB=${pcre_static_lib} \
     -DDISABLE_EMBER_THREADS=${disable_threads} \
-    -DBOTAN_ROOT_DIR=/usr/include/botan-2/ \
-    -DBOTAN_LIBRARY=/usr/lib/x86_64-linux-gnu/libbotan-2.so \
     && cd build && make -j$(nproc) install \
     && make test
 
@@ -64,7 +62,7 @@ ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
 RUN apt-get -y update \
- && apt-get install -y libbotan-2-19 \
+ && apt-get install -y libbotan-3-7 \
  && apt-get install -y libmysqlcppconn7v5 \
  && apt-get install -y mysql-client
 COPY --from=builder ${install_dir} ${install_dir}

@@ -84,7 +84,7 @@ void launch(const po::variables_map& args) {
 
 void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	std::cout << "Username: " << username << "\n";
-	std::cout << "Verifier: " << "0x" << std::hex << verifier << "\n";
+	std::cout << "Verifier: " << "0x" << verifier.to_hex_string() << "\n";
 	std::cout << "Salt: ";
 
 	for(auto byte : salt) {
@@ -94,7 +94,7 @@ void plaintext_output(std::string_view username, const Botan::BigInt& verifier, 
 
 void json_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	const auto vstr = std::format("0x{}", verifier.to_hex_string());
-	const auto saltdec = Botan::BigInt::decode(salt.data(), salt.size());
+	const auto saltdec = Botan::BigInt::from_bytes(std::span<const uint8_t>(salt.data(), salt.size()));
 	const auto sstr = std::format("0x{}",  saltdec.to_hex_string());
 
 	json data;
