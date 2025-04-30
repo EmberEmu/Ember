@@ -53,7 +53,7 @@ public:
 	        Handler* handler, std::shared_ptr<Connection> connection,
 	        log::Logger& logger);
 
-	Channel() = default;
+	Channel() = delete;
 	~Channel();
 
 	Handler* handler() const;
