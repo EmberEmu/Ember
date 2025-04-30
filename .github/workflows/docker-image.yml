@@ -14,7 +14,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
+    # Enable BuildKit
+    - name: Enable BuildKit
+      run: |
+        echo '{"experimental":true,"features":{"buildkit":true}}' | sudo tee /etc/docker/daemon.json
+        sudo systemctl restart docker
+
+    # Set up cache for Docker build layers
     - name: Cache Docker layers
       uses: actions/cache@v3
       with:
@@ -23,7 +30,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-docker-
 
+    # Build the Docker image using BuildKit
     - name: Build the Docker image
+      env:
+        DOCKER_BUILDKIT: 1
       run: |
         docker build . \
           --file Dockerfile \
