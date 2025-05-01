@@ -360,7 +360,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 		salt.bytes(), boost::container::default_init
 	);
 
-	salt.binary_encode(bytes.data(), bytes.size());
+	salt.serialize_to(std::span<uint8_t>(bytes.data(), salt.bytes()));
 	std::ranges::reverse(bytes);
 	return validate_client_integrity(hash, bytes, reconnect);
 }

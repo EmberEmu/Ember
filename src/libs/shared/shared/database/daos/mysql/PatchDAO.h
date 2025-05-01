@@ -64,7 +64,8 @@ public:
 
 			const auto md5 = res->getString("md5");
 			Botan::BigInt md5_int(md5.asStdString());
-			Botan::BigInt::encode_1363(meta.file_meta.md5.data(), meta.file_meta.md5.size(), md5_int);
+			std::fill(meta.file_meta.md5.begin(), meta.file_meta.md5.end(), 0);		// 1363 style padding
+			md5_int.serialize_to({ meta.file_meta.md5.data() + meta.file_meta.md5.size() - md5_int.bytes(), md5_int.bytes() });
 			patches.emplace_back(std::move(meta));
 		}
 
@@ -87,8 +88,8 @@ public:
 		stmt->setBoolean(3, meta.mpq);
 		stmt->setString(4, meta.file_meta.name);
 		stmt->setUInt64(5, meta.file_meta.size);
-		auto md5 = Botan::BigInt::decode(reinterpret_cast<const std::uint8_t*>(meta.file_meta.md5.data()),
-		                                 meta.file_meta.md5.size());
+		auto md5 = Botan::BigInt::from_bytes(std::span<const uint8_t>(reinterpret_cast<const std::uint8_t*>(
+                                                     meta.file_meta.md5.data()), meta.file_meta.md5.size()));
 
 		stmt->setString(6, md5.to_hex_string());
 		stmt->setUInt(7, meta.locale_id);

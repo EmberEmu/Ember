@@ -48,7 +48,7 @@ SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N_.bytes())));
 	} else {
 		KeyType key(N_.bytes(), boost::container::default_init);
-		S.binary_encode(key.data(), key.size());
+		S.serialize_to(std::span<uint8_t>(key.data(), key.size()));
 		return SessionKey(key);
 	}
 }
