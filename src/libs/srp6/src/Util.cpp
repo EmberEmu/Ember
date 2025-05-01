@@ -21,19 +21,20 @@ namespace detail {
 
 Botan::BigInt decode_flip(std::span<std::uint8_t> val) {
 	std::ranges::reverse(val);
-	return Botan::BigInt::decode(val.data(), val.size());
+	return Botan::BigInt::from_bytes(std::span<const uint8_t>(val.data(), val.size()));
 }
 
 SmallVec encode_flip(const Botan::BigInt& val) {
 	SmallVec res(val.bytes(), boost::container::default_init);
-	val.binary_encode(res.data(), res.size());
+	val.serialize_to(std::span<uint8_t>(res.data(), res.size()));
 	std::ranges::reverse(res);
 	return res;
 }
 
 SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 	SmallVec res(padding, boost::container::default_init);
-	Botan::BigInt::encode_1363(res.data(), res.size(), val);
+	std::fill(res.begin(), res.end(), 0); // 1363 style padding
+	val.serialize_to({ res.data() + res.size() - val.bytes(), val.bytes() });
 	std::ranges::reverse(res);
 	return res;
 }
@@ -69,15 +70,15 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	std::array<std::uint8_t, SHA1_LEN> hash_out;
-	SmallVec vec(padding, boost::container::default_init);
+	SmallVec vec(padding, 0); // 1363 style padding
 
 	if(mode == Compliance::RFC5054) {
-		Botan::BigInt::encode_1363(vec.data(), vec.size(), A);
+		A.serialize_to(std::span<uint8_t>(vec.data(), vec.size()));
 		hasher->update(vec.data(), vec.size());
-		Botan::BigInt::encode_1363(vec.data(), vec.size(), B);
+		B.serialize_to(std::span<uint8_t>(vec.data(), vec.size()));
 		hasher->update(vec.data(), vec.size());
 		hasher->final(hash_out.data());
-		return Botan::BigInt::decode(hash_out.data(), hash_out.size());
+		return Botan::BigInt::from_bytes(std::span<const uint8_t>(hash_out.data(), hash_out.size()));
 	} else {
 		const auto& a_enc = encode_flip_1363(A, padding);
 		const auto& b_enc = encode_flip_1363(B, padding);
@@ -93,10 +94,14 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	std::array<std::uint8_t, SHA1_LEN> hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
-	hasher->update(Botan::BigInt::encode(N));
-	hasher->update(Botan::BigInt::encode_1363(g, N.bytes()));
+	std::vector<uint8_t> n_buf(N.bytes(), 0);		// 1363 style padding
+	N.serialize_to({ n_buf.data() + n_buf.size() - N.bytes(), N.bytes() });
+	std::vector<uint8_t> g_buf(N.bytes(), 0);		// 1363 style padding
+	g.serialize_to({ g_buf.data() + g_buf.size() - g.bytes(), g.bytes() });
+	hasher->update(n_buf.data(), n_buf.size());
+	hasher->update(g_buf.data(), g_buf.size());
 	hasher->final(hash.data());
-	return Botan::BigInt::decode(hash.data(), hash.size());
+	return Botan::BigInt::from_bytes(std::span<const uint8_t>(hash.data(), hash.size()));
 }
 
 Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
@@ -123,7 +128,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 	hasher->final(hash.data());
 
 	if(mode == Compliance::RFC5054) {
-		return Botan::BigInt::decode(hash.data(), hash.size());
+		return Botan::BigInt::from_bytes(std::span<const uint8_t>(hash.data(), hash.size()));
 	} else {
 		return detail::decode_flip(hash);
 	}

@@ -46,7 +46,8 @@ AccountService::handle_session_fetch(const SessionLookup& msg, const Link& link,
 		return response;
 	}
 
-	auto key = Botan::BigInt::encode(*session);
+	std::vector<uint8_t> key((*session).bytes());
+	(*session).serialize_to(std::span<uint8_t>(key.data(), key.size()));
 
 	response.status = Status::OK;
 	response.account_id = msg.account_id();

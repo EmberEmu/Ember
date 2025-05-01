@@ -166,11 +166,13 @@ public:
 		stream << opcode;
 
 		std::array<std::uint8_t, A_LENGTH> a_bytes;
-		Botan::BigInt::encode_1363(a_bytes.data(), a_bytes.size(), A);
+		std::fill(a_bytes.begin(), a_bytes.end(), 0); // 1363 style padding
+		A.serialize_to({ a_bytes.data() + a_bytes.size() - A.bytes(), A.bytes() });
 		stream.put(a_bytes.rbegin(), a_bytes.rend());
 
 		std::array<std::uint8_t, M1_LENGTH> m1_bytes;
-		Botan::BigInt::encode_1363(m1_bytes.data(), m1_bytes.size(), M1);
+		std::fill(m1_bytes.begin(), m1_bytes.end(), 0); // 1363 style padding
+		M1.serialize_to({ m1_bytes.data() + m1_bytes.size() - M1.bytes(), M1.bytes() });
 		stream.put(m1_bytes.rbegin(), m1_bytes.rend());
 
 		stream.put(client_checksum.data(), client_checksum.size());

@@ -44,7 +44,7 @@ public:
 		);
 
 		key_.resize(key.bytes(), boost::container::default_init);
-		key.binary_encode(key_.data(), key_.size());
+		key.serialize_to(std::span<uint8_t>( key_.data() + (key_.size() - key.bytes()), key.bytes() ));
 	}
 
 	inline void encrypt(auto& data) {

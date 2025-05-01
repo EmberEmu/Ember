@@ -23,7 +23,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, std:
 	: Client(std::move(identifier),
 	         std::move(password),
 	         gen,
-             BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
+             BigInt::from_bytes(std::span<const uint8_t>{ (AutoSeeded_RNG().random_vec(key_size)).data(), key_size }) % gen.prime(),
 	         srp6a) { }
 
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
@@ -64,7 +64,7 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N.bytes())));
 	} else {
 		KeyType key(S.bytes(), boost::container::default_init);
-		S.binary_encode(key.data(), key.size());
+		S.serialize_to(std::span<uint8_t>(key.data(), key.size()));
 		return SessionKey(key);
 	}
 }
