@@ -7,9 +7,7 @@ on:
     branches: [ "development" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -19,16 +17,16 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    # Set up cache for Docker layers
+    # Cache Docker layers
     - name: Cache Docker layers
       uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-docker-layer-cache
+        key: ${{ runner.os }}-docker-layer-cache-${{ hashFiles('Dockerfile', '**/*.dockerignore', '**/*.env') }}
         restore-keys: |
-          ${{ runner.os }}-docker-layer-cache
+          ${{ runner.os }}-docker-layer-cache-
 
-    # Build the Docker image with inline cache
+    # Build the Docker image with cache
     - name: Build the Docker image
       env:
         DOCKER_BUILDKIT: 1
@@ -37,6 +35,4 @@ jobs:
           --file Dockerfile \
           --tag my-image-name:latest \
           --cache-from=type=local,src=/tmp/.buildx-cache \
-          --cache-to=type=local,dest=/tmp/.buildx-cache \
-          --cache-to=type=inline \
-          --output=type=image,push=false
+          --cache-to=type=local,dest=/tmp/.buildx-cache
