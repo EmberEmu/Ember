@@ -146,7 +146,7 @@ types::Base* locate_type_base(const types::Struct& base, const std::string& type
 		return nullptr;
 	}
 
-	MUST_TAIL return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
+	EMBER_MUSTTAIL return locate_type_base(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
 } // dbc, ember

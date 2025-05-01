@@ -10,7 +10,7 @@
 
 // todo, this file can be deleted in GCC 15
 #if __clang__
-#define MUST_TAIL [[clang::musttail]]
+#define EMBER_MUSTTAIL [[clang::musttail]]
 #else
-#define MUST_TAIL
+#define EMBER_MUSTTAIL
 #endif

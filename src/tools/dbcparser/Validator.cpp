@@ -250,7 +250,7 @@ bool Validator::recursive_ascent_field_type_check(const std::string& type,
 	}
 
 	// go up a level, if this node has a parent
-	MUST_TAIL return recursive_ascent_field_type_check(type, node->parent, node);
+	EMBER_MUSTTAIL return recursive_ascent_field_type_check(type, node->parent, node);
 }
 
 /*
