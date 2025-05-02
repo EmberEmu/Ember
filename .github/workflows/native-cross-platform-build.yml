@@ -1,0 +1,141 @@
+name: Native Cross-Platform Build with Centralized vcpkg Repo
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+
+jobs:
+  update_vcpkg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Restore the entire vcpkg repository from remote cache.
+      - name: Restore vcpkg Repository Cache
+        uses: actions/cache@v3
+        with:
+          path: vcpkg
+          key: vcpkg-repo-${{ hashFiles('vcpkg.json') }}
+          enableCrossOsArchive: true
+
+      - name: Update vcpkg Repository
+        run: |
+          if [ -d "vcpkg" ]; then
+              echo "vcpkg repo exists. Updating..."
+              cd vcpkg
+              git fetch --all
+              git rebase origin/master || true
+              cd ..
+          else
+              echo "vcpkg repo not found; cloning..."
+              git clone https://github.com/microsoft/vcpkg.git
+              cd vcpkg
+              git fetch --all
+              git rebase origin/master || true
+              cd ..
+          fi
+
+      # Save the updated vcpkg repository as an artifact for sharing.
+      - name: Upload vcpkg Repository Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vcpkg-repo
+          path: vcpkg
+
+  build_windows:
+    runs-on: windows-latest
+    needs: update_vcpkg
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Download the centralized and updated vcpkg repository artifact.
+      - name: Download Shared vcpkg Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vcpkg-repo
+          path: .
+
+      # Restore the OS-specific cache of installed dependencies.
+      - name: Restore vcpkg_installed Cache (Windows)
+        uses: actions/cache@v3
+        with:
+          path: vcpkg_installed
+          key: vcpkg-installed-${{ hashFiles('vcpkg.json') }}
+          enableCrossOsArchive: true
+
+      # Run your external Windows build script.
+      - name: Run Windows Build Script
+        shell: pwsh
+        run: .\build_windows.ps1
+
+      - name: Upload Build Artifact (Windows)
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: build\
+
+  build_macos:
+    runs-on: macos-latest
+    needs: update_vcpkg
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Shared vcpkg Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vcpkg-repo
+          path: .
+
+      - name: Restore vcpkg_installed Cache (macOS)
+        uses: actions/cache@v3
+        with:
+          path: vcpkg_installed
+          key: vcpkg-installed-${{ hashFiles('vcpkg.json') }}
+          enableCrossOsArchive: true
+
+      - name: Run macOS Build Script
+        run: |
+          chmod +x ./build_macos.sh
+          ./build_macos.sh
+
+      - name: Upload Build Artifact (macOS)
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-build
+          path: build/
+
+  build_linux:
+    runs-on: ubuntu-latest
+    needs: update_vcpkg
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Shared vcpkg Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: vcpkg-repo
+          path: .
+
+      - name: Restore vcpkg_installed Cache (Linux)
+        uses: actions/cache@v3
+        with:
+          path: vcpkg_installed
+          key: vcpkg-installed-${{ hashFiles('vcpkg.json') }}
+          enableCrossOsArchive: true
+
+      - name: Run Linux Build Script
+        run: |
+          chmod +x ./build_linux.sh
+          ./build_linux.sh
+
+      - name: Upload Build Artifact (Linux)
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-build
+          path: build/
