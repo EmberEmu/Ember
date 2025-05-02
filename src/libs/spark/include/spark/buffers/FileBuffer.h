@@ -180,6 +180,19 @@ public:
 		return seekable<FileBuffer>;
 	}
 
+	void write_seek(const BufferSeek direction, const offset_type offset) {
+		switch(direction) {
+			case BufferSeek::SK_BACKWARD:
+				write_ -= offset;
+				break;
+			case BufferSeek::SK_FORWARD:
+				write_ += offset;
+				break;
+			case BufferSeek::SK_ABSOLUTE:
+				write_ = offset;
+		}
+	}
+
 	void write(const auto& source) {
 		write(&source, sizeof(source));
 	}
