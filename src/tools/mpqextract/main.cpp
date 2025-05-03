@@ -17,7 +17,7 @@
 
 using namespace ember;
 
-int main(int argc, char** argv) try {
+int main(int argc, const char* argv[]) try {
 	if(argc < 2) {
 		std::print(
 			"Usage: mpqextract <input.mpq> [--v] [ecma regex]\n"
