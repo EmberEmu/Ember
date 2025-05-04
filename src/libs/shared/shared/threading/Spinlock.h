@@ -11,12 +11,18 @@
 #include <atomic>
 #include <thread>
 
+#if defined __APPLE__
+	#include <TargetConditionals.h>
+#endif
+
 #if defined(__x86_64__) || defined(_M_X64) || defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
 #define YIELD_INSTRUCTION _mm_pause()
 #define ember_x86_or_x64
-#elif defined(__APPLE__) && defined(__aarch64__)
+#elif defined(TARGET_OS_MAC) && defined(__aarch64__)
 #define YIELD_INSTRUCTION __builtin_arm_yield()
-#elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(__aarch64__)
+#elif defined(__aarch64__)
+#define YIELD_INSTRUCTION __asm__ volatile("yield" ::: "memory")
+#elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define YIELD_INSTRUCTION __yield()
 #endif
 
