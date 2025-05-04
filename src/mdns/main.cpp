@@ -46,7 +46,7 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
 	const auto ret = run(args, logger);
-	LOG_INFO_SYNC(logger, "{} terminated ({})", dns::APP_NAME, ret);
+	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", dns::APP_NAME, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
