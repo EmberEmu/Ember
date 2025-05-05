@@ -6,6 +6,8 @@
 
 set(FB_SCHEMA_TARGET_NAME FB_SCHEMA_COMPILE)
 
+set(BINARY_SCHEMAS_DIR ${CMAKE_BINARY_DIR}/schemas/FB_SCHEMA_COMPILE)
+
 set(SERVICE_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/Account.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/Character.fbs
@@ -24,9 +26,14 @@ flatbuffers_generate_headers(
   TARGET              ${FB_SCHEMA_TARGET_NAME}
   SCHEMAS             ${FB_SCHEMAS}
   INCLUDE             ${CMAKE_CURRENT_SOURCE_DIR}
-  BINARY_SCHEMAS_DIR  ${CMAKE_BINARY_DIR}
+  BINARY_SCHEMAS_DIR  ${BINARY_SCHEMAS_DIR}
   FLAGS               ${FLATC_ARGS}
+  BYPRODUCTS          ${BINARY_SCHEMAS_DIR}/Spark_generated.h
 )
-target_include_directories(${FB_SCHEMA_TARGET_NAME} INTERFACE ${CMAKE_BINARY_DIR}/schemas/FB_SCHEMA_COMPILE)
+target_include_directories(${FB_SCHEMA_TARGET_NAME} INTERFACE ${BINARY_SCHEMAS_DIR})
+
+# This is required on Windows buildrunner - DO NOT REMOVE UNLESS YOU KNOW WHAT YOU'RE DOING
+add_custom_target(GenerateSparkHeaders ALL DEPENDS ${BINARY_SCHEMAS_DIR}/Spark_generated.h)
+
 set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/src/tools/rpcgen/templates/)
-build_spark_services("${SERVICE_SCHEMAS}" ${TEMPLATE_DIR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR})
+build_spark_services("${SERVICE_SCHEMAS}" ${TEMPLATE_DIR} ${BINARY_SCHEMAS_DIR} ${BINARY_SCHEMAS_DIR})

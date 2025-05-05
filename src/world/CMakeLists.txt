@@ -28,7 +28,7 @@ target_link_libraries(${LIBRARY_NAME} dbcreader spark logger shared ${Boost_LIBR
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logger shared ${Boost_LIBRARIES})
-
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+
 set_target_properties(world PROPERTIES FOLDER "Services/Applications")
 set_target_properties(libworld PROPERTIES FOLDER "Services/Libraries")
