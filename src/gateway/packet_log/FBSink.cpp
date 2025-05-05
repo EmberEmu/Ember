@@ -35,7 +35,7 @@ void FBSink::start_log(const std::string& filename, std::string_view host,
 
 	auto fb_host = fbb.CreateString(host);
 	auto fb_remote = fbb.CreateString(remote_host);
-	auto fb_time_fmt = fbb.CreateString(time_fmt_);
+	auto fb_time_fmt = fbb.CreateString(time_fmt_.c_str());
 	auto fb_host_desc = fbb.CreateString("unused");
 
 	fblog::HeaderBuilder hb(fbb);

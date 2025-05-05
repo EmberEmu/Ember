@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,11 +9,12 @@
 #pragma once
 
 #include "Sink.h"
+#include <shared/utility/cstring_view.hpp>
 
 namespace ember {
 
 class ConsoleSink final : public Sink {
-	inline static const char* time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601, can be overriden by header
+	inline static constexpr cstring_view time_fmt_ { "%Y-%m-%dT%H:%M:%SZ" }; // ISO 8601, can be overriden by header
 
 	void print_opcode(const fblog::Message& message) const;
 
