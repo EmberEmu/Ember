@@ -65,7 +65,6 @@ std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logg
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
 void print_lib_versions(log::Logger& logger);
-boost::program_options::options_description options();
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits

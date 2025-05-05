@@ -10,7 +10,7 @@
 
 #include "LoginSession.h"
 #include "SocketType.h"
-#include <logger/Logger.h>
+#include <logger/LoggerFwd.h>
 #include <memory>
 #include <utility>
 

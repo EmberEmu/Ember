@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2025 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,7 @@
 
 #include <shared/Realm.h>
 #include <RealmServiceStub.h>
-#include <logger/Logger.h>
+#include <logger/LoggerFwd.h>
 #include <mutex>
 #include <vector>
 

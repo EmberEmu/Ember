@@ -11,7 +11,7 @@
 #include "Handler.h"
 #include "DNSDefines.h"
 #include "Socket.h"
-#include <logger/Logger.h>
+#include <logger/LoggerFwd.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <span>

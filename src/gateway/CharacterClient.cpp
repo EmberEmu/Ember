@@ -7,6 +7,7 @@
  */
 
 #include "CharacterClient.h"
+#include <logger/Logger.h>
 #include <shared/Realm.h>
 #include <memory>
 

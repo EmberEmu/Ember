@@ -13,6 +13,7 @@
 #include <spark/HandlerRegistry.h>
 #include <spark/Peers.h>
 #include <spark/Utility.h>
+#include <logger/Logger.h>
 #include <shared/FilterTypes.h>
 #include <gsl/narrow>
 

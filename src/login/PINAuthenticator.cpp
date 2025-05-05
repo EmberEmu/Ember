@@ -7,7 +7,6 @@
  */
 
 #include "PINAuthenticator.h"
-#include <logger/Logger.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/base32.h>
 #include <boost/assert.hpp>

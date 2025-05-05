@@ -7,6 +7,7 @@
  */
 
 #include "MulticastSocket.h"
+#include <logger/Logger.h>
 #include <boost/asio/ip/multicast.hpp>
 
 namespace ember::dns {

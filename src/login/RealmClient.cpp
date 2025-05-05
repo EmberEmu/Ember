@@ -7,6 +7,7 @@
  */
 
 #include "RealmClient.h"
+#include <logger/Logger.h>
 #include <algorithm>
 
 namespace ember {

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <DiscoveryClientStub.h>
-#include <logger/Logger.h>
+#include <logger/LoggerFwd.h>
 #include <spark/Server.h>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
