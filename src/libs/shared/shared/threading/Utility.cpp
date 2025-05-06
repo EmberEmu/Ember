@@ -17,6 +17,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <cwchar>
+#include <gsl/narrow>
 #elif defined TARGET_OS_MAC
 #include <pthread.h>
 #elif defined __linux__ || defined __unix__
@@ -151,19 +152,22 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 
 	auto get_thread_desc = reinterpret_cast<GetThreadDescription>(GetProcAddress(lib, "GetThreadDescription"));
 
+	FreeLibrary(lib);
+
 	if(!get_thread_desc) {
 		return std::unexpected(Result::unsupported);
 	}
 
-	std::array<wchar_t, BUFFER_LEN> buffer{};
-	wchar_t* pbuffer = buffer.data();
-	auto res = get_thread_desc(thread, &pbuffer);
+	PWSTR desc = nullptr;
+	auto res = get_thread_desc(thread, &desc);
 
 	if(FAILED(res)) {
-		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
+		throw std::runtime_error("Unable to get thread name, error code " + std::to_string(res));
 	}
 
-	return std::wstring(buffer.data(), buffer.data() + wcslen(buffer.data()));
+	auto freeDesc = gsl::final_action([desc]() noexcept { LocalFree(desc); });
+
+	return std::wstring(desc);
 #elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
 	std::array<char, BUFFER_LEN> buffer{};
 	auto res = pthread_getname_np(thread, buffer.data(), buffer.size());
