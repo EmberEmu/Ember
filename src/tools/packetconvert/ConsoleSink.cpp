@@ -115,6 +115,6 @@ void ConsoleSink::print_opcode(const fblog::Message& message) const {
 	}
 
 	std::cout << op_desc << "\n";
-} 
+}
 
 } // ember

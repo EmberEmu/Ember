@@ -58,7 +58,6 @@ int main(int argc, const char* argv[]) try {
 }
 
 int run(const po::variables_map& args, log::Logger& logger) try {
-	// Install signal handler
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
