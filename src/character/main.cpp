@@ -65,6 +65,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
 		service.stop();
+		signals.clear();
 	});
 
 	std::jthread worker([&]() {
