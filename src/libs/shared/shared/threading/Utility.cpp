@@ -86,7 +86,7 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 
 	if(FAILED(ret)) {
 		FreeLibrary(lib);
-		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
+		throw std::runtime_error("Unable to set thread name, error code " + std::to_string(ret));
 	}
 
 	FreeLibrary(lib);
@@ -95,13 +95,13 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 	auto ret = pthread_setname_np(name);
 
 	if(ret) {
-		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
+		throw std::runtime_error("Unable to set thread name, error code " + std::to_string(ret));
 	}
 #elif defined __linux__ || defined __unix__
 	auto ret = pthread_setname_np(handle, name);
 
 	if(ret) {
-		throw std::runtime_error("Unable to set thread name, error code" + std::to_string(ret));
+		throw std::runtime_error("Unable to set thread name, error code " + std::to_string(ret));
 	}
 #endif
 
@@ -160,7 +160,7 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 	auto res = get_thread_desc(thread, &pbuffer);
 
 	if(FAILED(res)) {
-		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
+		throw std::runtime_error("Unable to get thread name, error code " + std::to_string(res));
 	}
 
 	return std::wstring(buffer.data(), buffer.data() + wcslen(buffer.data()));
@@ -169,7 +169,7 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 	auto res = pthread_getname_np(thread, buffer.data(), buffer.size());
 	
 	if(res) {
-		throw std::runtime_error("Unable to get thread name, error code" + std::to_string(res));
+		throw std::runtime_error("Unable to get thread name, error code " + std::to_string(res));
 	}
 
 	return std::wstring(buffer.data(), buffer.data() + strlen(buffer.data()));
