@@ -165,7 +165,9 @@ std::expected<std::wstring, Result> get_name(auto& thread) {
 		throw std::runtime_error("Unable to get thread name, error code " + std::to_string(res));
 	}
 
-	auto freeDesc = gsl::final_action([desc]() noexcept { LocalFree(desc); });
+	gsl::final_action fa([desc] {
+		LocalFree(desc);
+	});
 
 	return std::wstring(desc);
 #elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
