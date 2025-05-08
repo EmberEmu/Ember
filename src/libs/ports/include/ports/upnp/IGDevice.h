@@ -101,10 +101,10 @@ public:
 	IGDevice(boost::asio::io_context& ctx_, std::string bind,
 	         std::string service, const std::string& location);
 
-	IGDevice(IGDevice&) = default;
-	IGDevice(IGDevice&&) = default;
-	IGDevice& operator=(IGDevice&) = default;
-	IGDevice& operator=(IGDevice&&) = default;
+	IGDevice(IGDevice&) = delete;
+	IGDevice(IGDevice&&) = delete;
+	IGDevice& operator=(IGDevice&) = delete;
+	IGDevice& operator=(IGDevice&&) = delete;
 
 	void add_port_mapping(Mapping mapping, Result cb);
 	std::future<ErrorCode> add_port_mapping(const Mapping& mapping, use_future_t);
