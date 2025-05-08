@@ -9,10 +9,24 @@ on:
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Docker Cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/docker-cache
+          key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: docker-cache-${{ runner.os }}
+
+      - name: Build the Docker image
+        run: |
+          docker buildx create --use --name mybuilder || docker buildx use mybuilder
+          docker buildx build \
+            --load \
+            --file Dockerfile \
+            --cache-from=type=local,src=/tmp/docker-cache \
+            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
+            .
