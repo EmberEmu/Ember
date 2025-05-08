@@ -1,0 +1,106 @@
+# Copyright (c) 2025 Ember
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+name: Native Buildrunner
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+
+jobs:
+  # Windows – Cached Debug Build
+  Windows_x64_debug:
+    runs-on: windows-2025
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Cache Build Folder
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: win-build-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: win-build-
+
+      - name: Run Windows Build Script
+        shell: pwsh
+        run: .\build_windows.ps1
+
+  # Windows ARM – Cached Debug Build
+  Windows_ARM64_debug:
+    runs-on: windows-11-arm
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Cache Build Folder
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: win_arm-build-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: win_arm-build-
+
+      - name: Run Windows Build Script
+        shell: pwsh
+        run: .\build_windows.ps1
+
+  # macOS – Cached Debug Build
+  macOS_Apple_Silicon_debug:
+    runs-on: macos-15
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Cache Dependencies and Homebrew
+        uses: actions/cache@v3
+        with:
+          path: |
+            /Users/runner/Library/Caches/Homebrew
+            dependencies
+          key: macOS-deps
+          restore-keys: macOS-deps
+
+      - name: Cache Build Folder
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: macOS-build-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: macOS-build-
+
+      - name: Run macOS Build Script
+        run: |
+          chmod +x ./build_macos.sh
+          ./build_macos.sh
+
+  # Linux – Cached Debug Build
+  Linux_Ubuntu_debug:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Cache Dependencies and Homebrew
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/Homebrew
+            dependencies
+          key: linux-deps
+          restore-keys: linux-deps
+
+      - name: Cache Build Folder
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: linux-build-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: linux-build-
+
+      - name: Run Linux Build Script
+        run: |
+          chmod +x ./build_linux.sh
+          ./build_linux.sh
