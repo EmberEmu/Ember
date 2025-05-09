@@ -52,11 +52,11 @@ We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg
 
 Ember aims to support the following platforms as a minimum:
 
-| Operating System  | Architectures |
-| :------------ |:---------------:|
-| Linux         | x86, x64, ARMv7 |
-| Windows       | x86, x64        |
-| Mac OS        | x86, x64        |
+| Operating System | Architectures |
+| :--------------- |:-------------:|
+| Windows          | x64, ARM64    |
+| macOS            | Apple Silicon |
+| Linux            | x64, ARM64    |
 
 ## ⚙️ Supported compilers
 
