@@ -54,9 +54,9 @@ Ember aims to support the following platforms as a minimum:
 
 | Operating System | Architectures |
 | :--------------- |:-------------:|
-| Windows          | x64, ARM64    |
-| macOS            | Apple Silicon |
-| Linux            | x64, ARM64    |
+| <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Windows_logo_-_2021.svg" alt="Windows Logo" width="20" height="20" style="vertical-align: middle; margin-left: 4px;"> Windows | x86_64, ARM64 |
+| <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Icon-Mac.svg" alt="Apple Logo" width="20" height="20" style="vertical-align: middle; margin-left: 4px;"> macOS                | Apple Silicon |
+| <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png" alt="Linux (Tux) Logo" width="20" height="20" style="vertical-align: middle; margin-left: 4px;"> Linux               | x86_64, ARM64 |
 
 ## ⚙️ Supported compilers
 
