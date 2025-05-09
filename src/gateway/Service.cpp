@@ -55,7 +55,7 @@
 #include <cstdlib>
 
 using namespace std::chrono_literals;
-using namespace std::placeholders;
+
 namespace po = boost::program_options;
 namespace ep = ember::connection_pool;
 
