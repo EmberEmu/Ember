@@ -7,17 +7,17 @@
 set(LIBRARY_NAME srp6)
 
 add_library(${LIBRARY_NAME}
-            src/Generator.cpp
-            src/Util.cpp
-            src/Client.cpp
-            src/Server.cpp
-            include/srp6/Util.h
-            include/srp6/Server.h
-            include/srp6/Client.h
-            include/srp6/Generator.h
-            include/srp6/Exception.h
-			include/srp6/detail/Primes.h
-           )
+    src/Generator.cpp
+    src/Util.cpp
+    src/Client.cpp
+    src/Server.cpp
+    include/srp6/Util.h
+    include/srp6/Server.h
+    include/srp6/Client.h
+    include/srp6/Generator.h
+    include/srp6/Exception.h
+    include/srp6/detail/Primes.h
+)
 
 target_link_libraries(${LIBRARY_NAME} PRIVATE ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

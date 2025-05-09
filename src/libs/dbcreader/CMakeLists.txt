@@ -24,13 +24,13 @@ build_dbc_loaders(DBC_HDR DBC_SRC
                   ${FILE_LOG_VERBOSITY})
 
 add_library(${LIBRARY_NAME} ${DBC_HDR} ${DBC_SRC}
-            include/dbcreader/Reader.h
-            include/dbcreader/Header.h
-            include/dbcreader/Store.h
-            include/dbcreader/DiskLoader.h
-            include/dbcreader/Linker.h
-            include/dbcreader/Loader.h
-           )
+    include/dbcreader/Reader.h
+    include/dbcreader/Header.h
+    include/dbcreader/Store.h
+    include/dbcreader/DiskLoader.h
+    include/dbcreader/Linker.h
+    include/dbcreader/Loader.h
+)
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})

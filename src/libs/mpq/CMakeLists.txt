@@ -7,22 +7,22 @@
 set(LIBRARY_NAME mpq)
 
 set(ARCHIVE
-	include/mpq/base/Archive.h
-	include/mpq/base/MemoryArchive.h
-	include/mpq/base/MappedArchive.h
-	src/base/MemoryArchive.cpp
+    include/mpq/base/Archive.h
+    include/mpq/base/MemoryArchive.h
+    include/mpq/base/MappedArchive.h
+    src/base/MemoryArchive.cpp
 )
 
 set(ARCHIVE_V0
-	include/mpq/v0/MemoryArchive.h
-	include/mpq/v0/MappedArchive.h
-	src/v0/MemoryArchive.cpp
+    include/mpq/v0/MemoryArchive.h
+    include/mpq/v0/MappedArchive.h
+    src/v0/MemoryArchive.cpp
 )
 
 set(ARCHIVE_V1
-	include/mpq/v1/MemoryArchive.h
-	include/mpq/v1/MappedArchive.h
-	src/v1/MemoryArchive.cpp
+    include/mpq/v1/MemoryArchive.h
+    include/mpq/v1/MappedArchive.h
+    src/v1/MemoryArchive.cpp
 )
 
 source_group("Archive" FILES ${ARCHIVE})
@@ -30,28 +30,28 @@ source_group("Archive\\v0" FILES ${ARCHIVE_V0})
 source_group("Archive\\v1" FILES ${ARCHIVE_V1})
 
 add_library(${LIBRARY_NAME}
-	${ARCHIVE}
-	${ARCHIVE_V0}
-	${ARCHIVE_V1}
-	include/mpq/MPQ.h
-	include/mpq/Archive.h
-	include/mpq/ErrorCode.h
-	include/mpq/Structures.h
-	include/mpq/Crypt.h
-	include/mpq/Compression.h
-	include/mpq/Exception.h
-	include/mpq/SharedDefs.h
-	include/mpq/ExtractionSink.h
-	include/mpq/FileSink.h
-	include/mpq/BufferedFileSink.h
-	include/mpq/MemorySink.h
-	include/mpq/DynamicMemorySink.h
-	include/mpq/Utility.h
-	include/mpq/DecompressionError.h
-	src/MPQ.cpp
-	src/Compression.cpp
-	src/PKCompression.cpp
-	src/Utility.cpp
+    ${ARCHIVE}
+    ${ARCHIVE_V0}
+    ${ARCHIVE_V1}
+    include/mpq/MPQ.h
+    include/mpq/Archive.h
+    include/mpq/ErrorCode.h
+    include/mpq/Structures.h
+    include/mpq/Crypt.h
+    include/mpq/Compression.h
+    include/mpq/Exception.h
+    include/mpq/SharedDefs.h
+    include/mpq/ExtractionSink.h
+    include/mpq/FileSink.h
+    include/mpq/BufferedFileSink.h
+    include/mpq/MemorySink.h
+    include/mpq/DynamicMemorySink.h
+    include/mpq/Utility.h
+    include/mpq/DecompressionError.h
+    src/MPQ.cpp
+    src/Compression.cpp
+    src/PKCompression.cpp
+    src/Utility.cpp
 )
 
 target_link_libraries(${LIBRARY_NAME} shared storm_pklib

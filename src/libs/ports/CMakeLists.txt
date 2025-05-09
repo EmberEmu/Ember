@@ -7,36 +7,36 @@
 set(LIBRARY_NAME ports)
 
 add_library(${LIBRARY_NAME}
-           src/pcp/Client.cpp
-		   src/pcp/DatagramTransport.cpp
-		   src/pcp/Daemon.cpp
-		   src/upnp/SSDP.cpp
-		   src/upnp/MulticastSocket.cpp
-		   src/upnp/IGDevice.cpp
-		   src/upnp/HTTPTransport.cpp
-		   src/upnp/XMLParser.cpp
-		   src/upnp/Utility.cpp
-		   src/upnp/SCPDXMLParser.cpp
-		   include/ports/Protocol.h
-           include/ports/pcp/Client.h
-		   include/ports/pcp/Results.h
-		   include/ports/pcp/Daemon.h
-		   include/ports/pcp/DatagramTransport.h
-           include/ports/pcp/Protocol.h
-           include/ports/pcp/Serialise.h
-           include/ports/pcp/Deserialise.h
-		   include/ports/upnp/SSDP.h
-		   include/ports/upnp/MulticastSocket.h
-		   include/ports/upnp/HTTPHeaderParser.h
-		   include/ports/upnp/IGDevice.h
-		   include/ports/upnp/HTTPTransport.h
-		   include/ports/upnp/XMLParser.h
-		   include/ports/upnp/XMLVisitor.h
-		   include/ports/upnp/Utility.h
-		   include/ports/upnp/HTTPTypes.h
-		   include/ports/upnp/SCPDXMLParser.h
-		   include/ports/upnp/ErrorCode.h
-           )
+    src/pcp/Client.cpp
+    src/pcp/DatagramTransport.cpp
+    src/pcp/Daemon.cpp
+    src/upnp/SSDP.cpp
+    src/upnp/MulticastSocket.cpp
+    src/upnp/IGDevice.cpp
+    src/upnp/HTTPTransport.cpp
+    src/upnp/XMLParser.cpp
+    src/upnp/Utility.cpp
+    src/upnp/SCPDXMLParser.cpp
+    include/ports/Protocol.h
+    include/ports/pcp/Client.h
+    include/ports/pcp/Results.h
+    include/ports/pcp/Daemon.h
+    include/ports/pcp/DatagramTransport.h
+    include/ports/pcp/Protocol.h
+    include/ports/pcp/Serialise.h
+    include/ports/pcp/Deserialise.h
+    include/ports/upnp/SSDP.h
+    include/ports/upnp/MulticastSocket.h
+    include/ports/upnp/HTTPHeaderParser.h
+    include/ports/upnp/IGDevice.h
+    include/ports/upnp/HTTPTransport.h
+    include/ports/upnp/XMLParser.h
+    include/ports/upnp/XMLVisitor.h
+    include/ports/upnp/Utility.h
+    include/ports/upnp/HTTPTypes.h
+    include/ports/upnp/SCPDXMLParser.h
+    include/ports/upnp/ErrorCode.h
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
 target_link_libraries(${LIBRARY_NAME} spark ${Boost_LIBRARIES})

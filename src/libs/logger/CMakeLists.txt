@@ -7,27 +7,27 @@
 set(LIBRARY_NAME logger)
 
 add_library(${LIBRARY_NAME}
-            src/FileSink.cpp
-            src/SyslogSink.cpp
-            src/Logger.cpp
-            src/Utility.cpp
-            src/Worker.cpp
-            src/ConsoleSink.cpp
-            src/GlobalLogger.cpp
-            include/logger/concurrentqueue.h
-            include/logger/LoggerImpl.h
-            include/logger/FileSink.h
-            include/logger/HelperMacros.h
-            include/logger/SyslogSink.h
-            include/logger/Worker.h
-            include/logger/Logger.h
-            include/logger/Sink.h
-            include/logger/Utility.h
-            include/logger/ConsoleSink.h
-            include/logger/Exception.h
-            include/logger/FileWrapper.h
-            include/logger/Severity.h
-            include/logger/GlobalLogger.h
+    src/FileSink.cpp
+    src/SyslogSink.cpp
+    src/Logger.cpp
+    src/Utility.cpp
+    src/Worker.cpp
+    src/ConsoleSink.cpp
+    src/GlobalLogger.cpp
+    include/logger/concurrentqueue.h
+    include/logger/LoggerImpl.h
+    include/logger/FileSink.h
+    include/logger/HelperMacros.h
+    include/logger/SyslogSink.h
+    include/logger/Worker.h
+    include/logger/Logger.h
+    include/logger/Sink.h
+    include/logger/Utility.h
+    include/logger/ConsoleSink.h
+    include/logger/Exception.h
+    include/logger/FileWrapper.h
+    include/logger/Severity.h
+    include/logger/GlobalLogger.h
 )
 
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES} Threads::Threads)
