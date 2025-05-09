@@ -10,12 +10,13 @@ set(EXECUTABLE_SRC
     main.cpp
     SchemaParser.h
     SchemaParser.cpp
-	Utility.h
-	Utility.cpp
-    )
+    Utility.h
+    Utility.cpp
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/nlohmann)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_link_libraries(${EXECUTABLE_NAME} logger shared ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)
+add_dependencies(${EXECUTABLE_NAME} GenerateSparkHeaders)
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")

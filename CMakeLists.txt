@@ -125,7 +125,7 @@ endif()
 ##############################
 #         FlatBuffers        #
 ##############################
-find_package(FlatBuffers 2.0.8 REQUIRED)
+find_package(flatbuffers 2.0.8 REQUIRED)
 
 ##############################
 #            zlib            #
