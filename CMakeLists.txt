@@ -107,7 +107,7 @@ include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 ##############################
 #         FlatBuffers        #
 ##############################
-find_package(FlatBuffers 2.0.8 REQUIRED)
+find_package(flatbuffers 2.0.8 REQUIRED)
 
 ##############################
 #            zlib            #

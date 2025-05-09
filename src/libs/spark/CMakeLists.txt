@@ -38,7 +38,7 @@ set(IO_SRC
     include/spark/buffers/BufferSequence.h
     include/spark/buffers/BinaryStream.h
     include/spark/buffers/StaticBuffer.h
-	include/spark/buffers/Concepts.h
+    include/spark/buffers/Concepts.h
     include/spark/buffers/detail/IntrusiveStorage.h
     include/spark/buffers/FileBuffer.h
     include/spark/buffers/Endian.h
@@ -71,7 +71,7 @@ add_library(
     ${CORE}
     ${IO_SRC}
     ${IO_PMR_SRC}
-	${IO_ALLOC_SRC}
+    ${IO_ALLOC_SRC}
 )
 
 source_group("Core" FILES ${CORE})
@@ -80,5 +80,6 @@ source_group("IO\\Polymorphic" FILES ${IO_PMR_SRC})
 source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
 
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)
+add_dependencies(${LIBRARY_NAME} GenerateSparkHeaders)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

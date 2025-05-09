@@ -1,10 +1,12 @@
-# Copyright (c) 2016 - 2024 Ember
+# Copyright (c) 2016 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(FB_SCHEMA_TARGET_NAME FB_SCHEMA_COMPILE)
+
+set(BINARY_SCHEMAS_DIR ${CMAKE_BINARY_DIR}/schemas/FB_SCHEMA_COMPILE)
 
 set(SERVICE_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/Account.fbs
@@ -25,10 +27,16 @@ flatbuffers_generate_headers(
   TARGET              ${FB_SCHEMA_TARGET_NAME}
   SCHEMAS             ${FB_SCHEMAS}
   INCLUDE             ${CMAKE_CURRENT_SOURCE_DIR}
-  BINARY_SCHEMAS_DIR  ${CMAKE_BINARY_DIR}
+  BINARY_SCHEMAS_DIR  ${BINARY_SCHEMAS_DIR}
   FLAGS               ${FLATC_ARGS}
+  BYPRODUCTS          ${BINARY_SCHEMAS_DIR}/Spark_generated.h
 )
 
-target_include_directories(${FB_SCHEMA_TARGET_NAME} INTERFACE ${CMAKE_BINARY_DIR}/schemas/FB_SCHEMA_COMPILE)
+target_link_libraries(${FB_SCHEMA_TARGET_NAME} INTERFACE flatbuffers::flatbuffers)
+target_include_directories(${FB_SCHEMA_TARGET_NAME} INTERFACE ${BINARY_SCHEMAS_DIR})
+
+# MSVC requires a post-compile target to depend upon or it will not respsect build order
+add_custom_target(GenerateSparkHeaders ALL DEPENDS ${BINARY_SCHEMAS_DIR}/Spark_generated.h)
+
 set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/src/tools/rpcgen/templates/)
-build_spark_services("${SERVICE_SCHEMAS}" ${TEMPLATE_DIR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR})
+build_spark_services("${SERVICE_SCHEMAS}" ${TEMPLATE_DIR} ${BINARY_SCHEMAS_DIR} ${BINARY_SCHEMAS_DIR})
