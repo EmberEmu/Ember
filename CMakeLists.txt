@@ -7,9 +7,6 @@
 cmake_minimum_required(VERSION 3.30)
 project(Ember)
 
-# Disable Boost warnings for now
-cmake_policy(SET CMP0167 OLD)
-
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -84,7 +81,6 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.87.0 REQUIRED COMPONENTS program_options system)
-include_directories(${Boost_INCLUDE_DIRS})
 
 ##############################
 #             Git            #
