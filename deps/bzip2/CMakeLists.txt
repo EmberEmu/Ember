@@ -7,14 +7,14 @@
 set(LIBRARY_NAME bzip2)
 
 add_library(${LIBRARY_NAME} STATIC
-	blocksort.c
-	bzlib.c
-	compress.c
-	crctable.c
-	decompress.c
-	huffman.c
-	randtable.c
-	bzlib.h
+    blocksort.c
+    bzlib.c
+    compress.c
+    crctable.c
+    decompress.c
+    huffman.c
+    randtable.c
+    bzlib.h
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

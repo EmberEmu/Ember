@@ -7,8 +7,8 @@
 set(LIBRARY_NAME storm_adpcm)
 
 add_library(${LIBRARY_NAME} STATIC
-	adpcm.h
-	adpcm.cpp
+    adpcm.h
+    adpcm.cpp
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

@@ -7,8 +7,8 @@
 set(LIBRARY_NAME storm_sparse)
 
 add_library(${LIBRARY_NAME} STATIC
-	sparse.h
-	sparse.cpp
+    sparse.h
+    sparse.cpp
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

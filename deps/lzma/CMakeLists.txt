@@ -7,20 +7,20 @@
 set(LIBRARY_NAME lzma)
 
 add_library(${LIBRARY_NAME} STATIC
-	LzFind.c
-	Lzma2Dec.c
-	Lzma2Enc.c
-	LzmaDec.c
-	LzmaEnc.c
-	LzmaLib.c
-	CpuArch.c
-	LzFindMt.c
-	MtDec.c
-	Alloc.c
-	Threads.c
-	LzmaLib.h
-	MtCoder.c
-	LzFindOpt.c
+    LzFind.c
+    Lzma2Dec.c
+    Lzma2Enc.c
+    LzmaDec.c
+    LzmaEnc.c
+    LzmaLib.c
+    CpuArch.c
+    LzFindMt.c
+    MtDec.c
+    Alloc.c
+    Threads.c
+    LzmaLib.h
+    MtCoder.c
+    LzFindOpt.c
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

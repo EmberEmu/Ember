@@ -7,8 +7,8 @@
 set(LIBRARY_NAME storm_huffman)
 
 add_library(${LIBRARY_NAME} STATIC
-	huff.h
-	huff.cpp
+    huff.h
+    huff.cpp
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")

@@ -7,10 +7,10 @@
 set(LIBRARY_NAME storm_pklib)
 
 add_library(${LIBRARY_NAME} STATIC
-	crc32.c
-	explode.c
-	implode.c
-	pklib.h
+    crc32.c
+    explode.c
+    implode.c
+    pklib.h
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")
