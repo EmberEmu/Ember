@@ -161,6 +161,17 @@ include_directories(${CMAKE_SOURCE_DIR}/deps)
 include(BuildDBCLoaders)
 include(BuildSparkServices)
 
+# For Apple: Amend homebrew installed libraries to cmake's search path
+if(APPLE)
+  file(GLOB HOME_BREW_LIB_DIRS "/opt/homebrew/opt/*/lib")
+  set(HOMEBREW_LINKER_FLAGS_LIST "")
+  foreach(libdir ${HOME_BREW_LIB_DIRS})
+    list(APPEND HOMEBREW_LINKER_FLAGS_LIST "-L${libdir}")
+  endforeach()
+  message(STATUS "Appending Homebrew linker flags: ${HOMEBREW_LINKER_FLAGS_LIST}")
+  add_link_options(${HOMEBREW_LINKER_FLAGS_LIST})
+endif()
+
 add_subdirectory(schemas)
 set(cmake_ctest_arguments "CTEST_OUTPUT_ON_FAILURE")
 enable_testing()
