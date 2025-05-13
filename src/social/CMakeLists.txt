@@ -5,16 +5,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME social)
-set(LIBRARY_NAME    libsocial)
+set(LIBRARY_NAME libsocial)
 
 set(LIBRARY_HDR
     MonitorCallbacks.h
     FilterTypes.h
-    )
+)
 
 set(LIBRARY_SRC
     MonitorCallbacks.cpp
-    )
+)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} logger shared ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)

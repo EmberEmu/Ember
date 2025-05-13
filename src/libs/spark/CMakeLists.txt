@@ -38,7 +38,7 @@ set(IO_SRC
     include/spark/buffers/BufferSequence.h
     include/spark/buffers/BinaryStream.h
     include/spark/buffers/StaticBuffer.h
-	include/spark/buffers/Concepts.h
+    include/spark/buffers/Concepts.h
     include/spark/buffers/detail/IntrusiveStorage.h
     include/spark/buffers/FileBuffer.h
     include/spark/buffers/Endian.h
@@ -71,7 +71,7 @@ add_library(
     ${CORE}
     ${IO_SRC}
     ${IO_PMR_SRC}
-	${IO_ALLOC_SRC}
+    ${IO_ALLOC_SRC}
 )
 
 source_group("Core" FILES ${CORE})

@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME character)
-set(LIBRARY_NAME    libcharacter)
+set(LIBRARY_NAME libcharacter)
 
 set(LIBRARY_HDR
     CharacterHandler.h
@@ -13,13 +13,13 @@ set(LIBRARY_HDR
     FilterTypes.h
     CharacterService.h
     Service.h
-    )
+)
 
 set(LIBRARY_SRC
     CharacterHandler.cpp
     CharacterService.cpp
     Service.cpp
-    )
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 

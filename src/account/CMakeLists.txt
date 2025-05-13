@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME account)
-set(LIBRARY_NAME    libaccount)
+set(LIBRARY_NAME libaccount)
 
 set(LIBRARY_HDR
     FilterTypes.h
@@ -13,14 +13,14 @@ set(LIBRARY_HDR
     Sessions.h
     AccountHandler.h
     Service.h
-    )
+)
 
 set(LIBRARY_SRC
     AccountService.cpp
     Sessions.cpp
     AccountHandler.cpp
     Service.cpp
-    )
+)
 
 include_directories(${SPARK_INCLUDES_DIR})
 

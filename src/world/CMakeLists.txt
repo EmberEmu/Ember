@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME world)
-set(LIBRARY_NAME    libworld)
+set(LIBRARY_NAME libworld)
 
 set(LIBRARY_HDR
     Service.h
@@ -13,7 +13,7 @@ set(LIBRARY_HDR
     Watchdog.h
     utilities/DeltaTimer.h
     utilities/Utility.h
-    )
+)
 
 set(LIBRARY_SRC
     Service.cpp
@@ -21,7 +21,7 @@ set(LIBRARY_SRC
     Watchdog.cpp
     utilities/DeltaTimer.cpp
     utilities/Utility.cpp
-    )
+)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} dbcreader spark logger shared ${Boost_LIBRARIES})

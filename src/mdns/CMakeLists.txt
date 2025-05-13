@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME mdns)
-set(LIBRARY_NAME    libmdns)
+set(LIBRARY_NAME libmdns)
 
 set(LIBRARY_HDR
     ServiceRegistry.h
@@ -14,23 +14,23 @@ set(LIBRARY_HDR
     Socket.h
     DNSDefines.h
     Handler.h
-	Utility.h
-	Serialisation.h
-	detail/Parser.h
-	NSDService.h
-	Service.h
-    )
+    Utility.h
+    Serialisation.h
+    detail/Parser.h
+    NSDService.h
+    Service.h
+)
 
 set(LIBRARY_SRC
     ServiceRegistry.cpp
     MulticastSocket.cpp
     Server.cpp
-	Utility.cpp
-	Serialisation.cpp
-	detail/Parser.cpp
-	NSDService.cpp
-	Service.cpp
-    )
+    Utility.cpp
+    Serialisation.cpp
+    detail/Parser.cpp
+    NSDService.cpp
+    Service.cpp
+)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} PRIVATE logger shared spark ${Boost_LIBRARIES} Threads::Threads FB_SCHEMA_COMPILE)

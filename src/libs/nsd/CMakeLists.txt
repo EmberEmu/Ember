@@ -8,11 +8,11 @@ set(LIBRARY_NAME nsd)
 
 set(LIBRARY_HDR
     include/nsd/NSD.h
-    )
+)
 
 set(LIBRARY_SRC
     src/NSD.cpp
-    )
+)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 

@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME login)
-set(LIBRARY_NAME    liblogin)
+set(LIBRARY_NAME liblogin)
 
 set(GRUNT_SRC
     grunt/Magic.h
@@ -58,12 +58,12 @@ set(LIBRARY_HDR
     IntegrityData.h
     IntegrityPlatforms.h
     LocaleMap.h
-	LoginState.h
-	Survey.h
+    LoginState.h
+    Survey.h
     LoginHandlerFwd.h
     SocketType.h
     Service.h
-    )
+)
 
 set(LIBRARY_SRC
     LoginHandler.cpp
@@ -80,9 +80,9 @@ set(LIBRARY_SRC
     PatchGraph.cpp
     IntegrityData.cpp
     LocaleMap.cpp
-	Survey.cpp
+    Survey.cpp
     Service.cpp
-    )
+)
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
