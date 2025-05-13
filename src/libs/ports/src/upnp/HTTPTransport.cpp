@@ -32,9 +32,7 @@ HTTPTransport::~HTTPTransport() {
 }
 
 ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uint16_t port) {
-	auto results = co_await resolver_.async_resolve(std::string(host),
-													std::to_string(port),
-													ba::deferred);
+	auto results = co_await resolver_.async_resolve(host, std::to_string(port),ba::deferred);
 	co_await boost::asio::async_connect(socket_, results, ba::deferred);
 }
 
