@@ -21,29 +21,41 @@ $ConanScripts = "$env:APPDATA\Python\Python39\Scripts"
 Write-Host "Adding $ConanScripts to PATH"
 $env:PATH += ";$ConanScripts"
 
+# Conan does not recognize perfectly valid architecture names 
+# like AMD64 or ARM64, so we have to play their game
+if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
+    $conanArch = "x86_64"
+} elseif ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
+    $conanArch = "armv8"
+} else {
+    $conanArch = $env:PROCESSOR_ARCHITECTURE
+}
+
 # Detect and patch the default profile for Release and C++23
 # These values need to be hardcoded, so change to build_type=Release for a release build
 conan profile detect
 $profilePath = (& conan profile path default).Trim()
 (Get-Content $profilePath) `
-    -replace '^(build_type=).*$', 'build_type=Debug' `
-    -replace '^(compiler\.cppstd=).*$', 'compiler.cppstd=23' `
+    -replace '^(arch=).*$', "arch=$($conanArch)" `
+    -replace '^(build_type=).*$', "build_type=$($buildType)" `
+    -replace '^(compiler\.cppstd=).*$', "compiler.cppstd=23" `
     | Set-Content $profilePath -Force
-if (-not (Test-Path $buildDir)) {
-    New-Item -ItemType Directory -Path $buildDir | Out-Null
+
+if (Test-Path Join-Path $buildDir "conan_cache.tzst") {
+    conan cache restore $buildDir\conan_cache.tzst
 }
 
 # Dependencies to install via Conan.
-$conanCmd = "conan install"
-$conanCmd += " --requires boost/1.87.0"
-$conanCmd += " --requires botan/3.6.1"
-$conanCmd += " --requires flatbuffers/24.12.23"
-$conanCmd += " --requires pcre/8.45"
-$conanCmd += " --requires zlib/1.3.1"
-$conanCmd += " -of $buildDir --build missing -g CMakeToolchain -g CMakeDeps --profile default"
-
+New-Item -ItemType Directory -Path $buildDir | Out-Null
 Write-Host "Running Conan install..."
-Invoke-Expression $conanCmd
+conan install -of $buildDir --build missing -g CMakeToolchain -g CMakeDeps --profile default `
+      --requires boost/1.87.0 `
+      --requires botan/3.6.1 `
+      --requires flatbuffers/24.12.23 `
+      --requires pcre/8.45 `
+      --requires zlib/1.3.1 `
+
+conan cache save -f $buildDir\conan_cache.tzst * --folder=$buildDir
 
 ####################################################
 # --- Patch Conan configuration ---
@@ -98,8 +110,8 @@ if (-not (Test-Path "C:\mysql-connector-c++\")) {
     # Determine architecture and set download parameters accordingly
     if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
         Write-Host "ARM64 architecture detected. Downloading MySQL Connector/C++ source code."
-        $url = "https://github.com/mysql/mysql-connector-cpp/archive/refs/tags/9.3.0.zip"
-        $connectorSubDir = "mysql-connector-c++-9.3.0"
+        $url = "https://github.com/mysql/mysql-connector-cpp/archive/refs/tags/9.2.0.zip"
+        $connectorSubDir = "mysql-connector-cpp-9.2.0"
     } 
     else {
         Write-Host "x86_64 architecture detected. Using prebuilt MySQL Connector/C++ binaries."
@@ -121,7 +133,6 @@ if (-not (Test-Path "C:\mysql-connector-c++\")) {
         Invoke-WebRequest -Uri $url -OutFile $CACHE_ZIP
     }
 
-    # Set extraction directory for the connector (within the cache folder)
     $extractDir = Join-Path $cacheDir "mysql-connector-c++"
     New-Item -ItemType Directory -Path $extractDir | Out-Null
 
@@ -134,31 +145,42 @@ if (-not (Test-Path "C:\mysql-connector-c++\")) {
         $sourceBase = $extractDir
     }
 
-    if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
-        # For ARM64: Downloaded Source – Build Required
-        Write-Host "ARM64 architecture: MySQL Connector/C++ source downloaded."
-        Write-Host "Source code is available at: $sourceBase"
-        Write-Host "You must now build the connector from source for ARM64."
-        Write-Host "For example, use CMake along with your preferred build configuration."
-    } 
-    else {
+    $mysqlconcppTargetDir = "C:\mysql-connector-c++"
+    if (-not (Test-Path $mysqlconcppTargetDir)) {
+        New-Item -ItemType Directory -Path $mysqlconcppTargetDir | Out-Null
+    }
+
+    if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
         # For x86_64: Install Prebuilt Libraries
-        $mysqlconcppTargetDir = "C:\mysql-connector-c++"
-
-        if (-not (Test-Path $mysqlconcppTargetDir)) {
-            New-Item -ItemType Directory -Path $mysqlconcppTargetDir | Out-Null
-        }
-
         Write-Host "Installing MySQL Connector/C++ (prebuilt x86_64) to $mysqlconcppTargetDir..."
 
-        # Set the expected extracted folder name from the ZIP archive (as provided by Oracle)
         $sourceBase = Join-Path $extractDir "mysql-connector-c++-9.3.0-winx64"
-
-        # Instead of selecting only a few subdirectories, copy the entire contents to preserve the layout.
         Copy-Item -Path (Join-Path $sourceBase "*") -Destination $mysqlconcppTargetDir -Recurse -Force
-
-        Write-Host "MySQL Connector/C++ installed at: $mysqlconcppTargetDir"
     }
+    else {
+        # For ARM64 (and others): Downloaded Source – Build Required
+        New-Item -ItemType Directory -Path "$sourceBase\build" -Force | Out-Null
+
+        Push-Location "$sourceBase\build"
+
+        Write-Host "Configuring with CMake ($buildType)..."
+        cmake .. -G "Visual Studio 17 2022" -A $env:PROCESSOR_ARCHITECTURE `
+                 -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>" `
+                 -DBUILD_STATIC=ON `
+                 -DWITH_JDBC=ON `
+                 -DWITH_MYSQL="C:\Program Files\MySQL\MySQL Server 8.0" `
+                 -DWITH_SSL="C:\Program Files\OpenSSL-Win64" `
+                 -DCMAKE_INSTALL_PREFIX="$mysqlconcppTargetDir"
+
+        Write-Host "Building MySQL Connector/C++ ($buildType)..."
+        cmake --build . --config $buildType
+
+        Write-Host "Installing MySQL Connector/C++ to $mysqlconcppTargetDir..."
+        cmake --install . --config $buildType
+
+        Pop-Location
+    }
+    Write-Host "MySQL Connector/C++ installed at: $mysqlconcppTargetDir"
 } 
 else {
     Write-Host "MySQL Connector/C++ is already installed at $mysqlconcppTargetDir"
