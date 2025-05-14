@@ -18,8 +18,9 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context,
 								 std::string_view listen_iface,
 								 std::string_view mcast_group,
 								 const std::uint16_t port)
-	: context_(context), socket_(context),
-	buffer_{},
+	: context_(context),
+	  socket_(context),
+	  buffer_{},
 	ep_(boost::asio::ip::make_address(mcast_group), port) {
 	const auto mcast_iface = boost::asio::ip::make_address(listen_iface);
 	const auto group_ip = boost::asio::ip::make_address(mcast_group);
