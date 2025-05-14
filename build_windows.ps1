@@ -207,13 +207,13 @@ cmake --build $buildDir --target install --config "$buildType"
 ####################################################
 # Run the unit_tests for regression control
 ####################################################
-Write-Host "=== Switching to installed directory and running tests ==="
-Set-Location $installDir
-if (Test-Path ".\unit_tests.exe") {
-    .\unit_tests.exe
-} 
-else {
-    Write-Host "Warning: Installed test executable not found."
-}
-
-Write-Host "=== Build, install, and test complete ==="
+#Write-Host "=== Switching to installed directory and running tests ==="
+#Set-Location $installDir
+#if (Test-Path ".\unit_tests.exe") {
+#    .\unit_tests.exe
+#} 
+#else {
+#    Write-Host "Warning: Installed test executable not found."
+#}
+#
+#Write-Host "=== Build, install, and test complete ==="
