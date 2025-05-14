@@ -41,12 +41,15 @@ $profilePath = (& conan profile path default).Trim()
     -replace '^(compiler\.cppstd=).*$', "compiler.cppstd=23" `
     | Set-Content $profilePath -Force
 
-if (Test-Path Join-Path $buildDir "conan_cache.tzst") {
-    conan cache restore $buildDir\conan_cache.tzst
+# Check if there's a cache to load
+if (Test-Path "$buildDir\conan_cache.tzst") {
+    conan cache restore "$buildDir\conan_cache.tzst"
+}
+elseif (-not (Test-Path $buildDir)) {
+    New-Item -ItemType Directory -Path $buildDir | Out-Null
 }
 
 # Dependencies to install via Conan.
-New-Item -ItemType Directory -Path $buildDir | Out-Null
 Write-Host "Running Conan install..."
 conan install -of $buildDir --build missing -g CMakeToolchain -g CMakeDeps --profile default `
       --requires boost/1.87.0 `
@@ -170,6 +173,7 @@ if (-not (Test-Path "C:\mysql-connector-c++\")) {
                  -DWITH_JDBC=ON `
                  -DWITH_MYSQL="C:\Program Files\MySQL\MySQL Server 8.0" `
                  -DWITH_SSL="C:\Program Files\OpenSSL-Win64" `
+                 -DOPENSSL_USE_STATIC_LIBS="TRUE" `
                  -DCMAKE_INSTALL_PREFIX="$mysqlconcppTargetDir"
 
         Write-Host "Building MySQL Connector/C++ ($buildType)..."
