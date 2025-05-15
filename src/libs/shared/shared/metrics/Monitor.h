@@ -10,7 +10,6 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/io_context_strand.hpp>
-#include <boost/asio/signal_set.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <chrono>
@@ -52,7 +51,6 @@ private:
 	boost::asio::steady_timer timer_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
-	boost::asio::signal_set signals_;
 	boost::asio::io_context::strand strand_;
 
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
