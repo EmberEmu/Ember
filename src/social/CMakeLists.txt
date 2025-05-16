@@ -16,7 +16,7 @@ set(LIBRARY_SRC
     MonitorCallbacks.cpp
     )
 
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} logger shared ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)

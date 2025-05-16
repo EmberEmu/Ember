@@ -83,7 +83,7 @@ set(LIBRARY_SRC
     Service.cpp
     )
 
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE ${Boost_LIBRARIES} PRIVATE nsd conpool stun ports dbcreader protocol spark 
                                              logger shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} Threads::Threads)
