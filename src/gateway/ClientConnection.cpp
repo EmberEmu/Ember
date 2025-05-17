@@ -273,7 +273,7 @@ void ClientConnection::log_packets(bool enable) {
 	}
 }
 
-std::size_t ClientConnection::minimum_transfer() const {
+inline std::size_t ClientConnection::minimum_transfer() const {
 	if(read_state_ == ReadState::HEADER) {
 		return protocol::ClientHeader::WIRE_SIZE;
 	} else {
