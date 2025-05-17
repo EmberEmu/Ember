@@ -120,23 +120,25 @@ void ClientConnection::read() {
 		return;
 	}
 
+	/*
+	* Set a minimum expected transfer amount to mitigate the impact of
+	* any clients sending large messages one byte at a time and wasting
+	* resources on completion checks that can be avoided since we know
+	* how much data is required before we can do anything with the buffer
+	*/
+	const auto min_transfer = minimum_transfer();
+
 	// If there's partially processed data in the buffer, we may be
 	// able to free space by defragmenting it.
-	if(inbound_buffer_.full() && !inbound_buffer_.defragment()) {
+	if(inbound_buffer_.free() < min_transfer && !inbound_buffer_.defragment()) {
 		LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
 		close_session();
 		return;
 	}
 
-	/**
-	 * Set a minimum expected transfer amount to mitigate the impact of
-	 * any clients sending large messages one byte at a time and wasting
-	 * resources on completion checks that can be avoided since we know
-	 * how much data is required before we can do anything with the buffer
-	 */
-	const auto transfer = boost::asio::transfer_at_least(minimum_transfer());
+	const auto transfer_al = boost::asio::transfer_at_least(min_transfer);
 
-	boost::asio::async_read(socket_, inbound_buffer_.write_span(), transfer,
+	boost::asio::async_read(socket_, inbound_buffer_.write_span(), transfer_al,
 	                        create_alloc_handler(allocator_,
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
