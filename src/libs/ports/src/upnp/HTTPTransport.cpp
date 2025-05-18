@@ -22,7 +22,7 @@ HTTPTransport::HTTPTransport(ba::io_context& ctx, std::string_view bind)
 	: socket_(ctx, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
 	  resolver_(ctx),
 	  timeout_(ctx) {
-	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
+	socket_.set_option(ba::ip::tcp::no_delay(true));
 	buffer_.resize(INITIAL_BUFFER_SIZE);
 }
 
@@ -33,17 +33,17 @@ HTTPTransport::~HTTPTransport() {
 
 ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uint16_t port) {
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port),ba::deferred);
-	co_await boost::asio::async_connect(socket_, results, ba::deferred);
+	co_await ba::async_connect(socket_, results, ba::deferred);
 }
 
 ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	auto buffer = boost::asio::buffer(*message);
+	auto buffer = ba::buffer(*message);
 	co_await ba::async_write(socket_, buffer, ba::as_tuple(ba::deferred));
 }
 
 ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-	co_await ba::async_write(socket_, boost::asio::buffer(*data), ba::as_tuple(ba::deferred));
+	co_await ba::async_write(socket_, ba::buffer(*data), ba::as_tuple(ba::deferred));
 }
 
 auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
