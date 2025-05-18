@@ -101,12 +101,7 @@ bool HTTPTransport::http_headers_completion(const std::size_t total_read) {
 	std::string_view view(buffer_.data(), total_read);
 	constexpr std::string_view header_delim("\r\n\r\n");
 	const auto headers_end = view.find(header_delim);
-
-	if(headers_end == std::string_view::npos) {
-		return false;
-	}
-
-	return true;
+	return headers_end != std::string_view::npos;
 }
 
 bool HTTPTransport::buffer_resize(const std::size_t offset) {
