@@ -12,7 +12,6 @@
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/asio/deferred.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
 #include <stdexcept>
 
@@ -32,18 +31,18 @@ HTTPTransport::~HTTPTransport() {
 }
 
 ba::awaitable<void> HTTPTransport::connect(std::string_view host, const std::uint16_t port) {
-	auto results = co_await resolver_.async_resolve(host, std::to_string(port),ba::deferred);
-	co_await ba::async_connect(socket_, results, ba::deferred);
+	auto results = co_await resolver_.async_resolve(host, std::to_string(port));
+	co_await ba::async_connect(socket_, results);
 }
 
 ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
 	auto buffer = ba::buffer(*message);
-	co_await ba::async_write(socket_, buffer, ba::as_tuple(ba::deferred));
+	co_await ba::async_write(socket_, buffer, ba::as_tuple);
 }
 
 ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-	co_await ba::async_write(socket_, ba::buffer(*data), ba::as_tuple(ba::deferred));
+	co_await ba::async_write(socket_, ba::buffer(*data), ba::as_tuple);
 }
 
 auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
@@ -135,7 +134,7 @@ ba::awaitable<std::size_t> HTTPTransport::read(const std::size_t offset) {
 	}
 
 	const auto buffer = ba::buffer(buffer_.data() + offset, buffer_.size() - offset);
-	auto size = co_await socket_.async_receive(buffer, ba::deferred);
+	auto size = co_await socket_.async_receive(buffer);
 	co_return size;
 }
 
