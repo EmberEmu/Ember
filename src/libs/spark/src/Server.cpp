@@ -17,7 +17,6 @@
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect.hpp>
-#include <boost/asio/deferred.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -56,7 +55,7 @@ ba::awaitable<void> Server::accept_connection() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	ba::ip::tcp::socket socket(ctx_);
-	auto [ec] = co_await acceptor_.async_accept(socket, boost::asio::as_tuple(ba::deferred));
+	auto [ec] = co_await acceptor_.async_accept(socket, boost::asio::as_tuple);
 
 	if(ec) {
 		co_return;
@@ -115,12 +114,10 @@ ba::awaitable<std::shared_ptr<RemotePeer>>
 Server::connect(std::string_view host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto results = co_await resolver_.async_resolve(
-		host, std::to_string(port), ba::deferred
-	);
+	auto results = co_await resolver_.async_resolve(host, std::to_string(port));
 
 	ba::ip::tcp::socket socket(ctx_);
-	co_await ba::async_connect(socket, results.begin(), results.end(), ba::deferred);
+	co_await ba::async_connect(socket, results.begin(), results.end());
 
 	const auto key = std::format("{}:{}", host, port);
 

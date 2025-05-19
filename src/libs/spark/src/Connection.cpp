@@ -10,7 +10,6 @@
 #include <spark/Exception.h>
 #include <logger/Logger.h>
 #include <boost/asio/co_spawn.hpp>
-#include <boost/asio/deferred.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
@@ -41,7 +40,7 @@ ba::awaitable<void> Connection::process_queue() try {
 			ba::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
 		};
 
-		co_await ba::async_write(socket_, buffers, ba::deferred);
+		co_await ba::async_write(socket_, buffers);
 	}
 } catch(const std::exception&) {
 	close();
@@ -73,7 +72,7 @@ ba::awaitable<std::size_t> Connection::read_until(const std::size_t offset,
 
 	while(received < read_size) {
 		auto buffer = ba::buffer(buffer_.data() + received, buffer_.size() - received);
-		received += co_await socket_.async_receive(buffer, ba::deferred);
+		received += co_await socket_.async_receive(buffer);
 	}
 
 	co_return received;
@@ -99,7 +98,7 @@ ba::awaitable<std::uint32_t>  Connection::do_receive() {
 
 	// read the message size
 	auto buf = boost::asio::buffer(buffer_.data(), sizeof(msg_size));
-	co_await socket_.async_read_some(buf, ba::deferred);
+	co_await socket_.async_read_some(buf);
 	
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 	boost::endian::little_to_native_inplace(msg_size);
@@ -109,7 +108,7 @@ ba::awaitable<std::uint32_t>  Connection::do_receive() {
 	}
 
 	buf = boost::asio::buffer(buffer_.data() + sizeof(msg_size), msg_size - sizeof(msg_size));
-	co_await socket_.async_read_some(buf, ba::deferred);
+	co_await socket_.async_read_some(buf);
 	co_return msg_size;
 }
 
@@ -131,7 +130,7 @@ ba::awaitable<std::span<std::uint8_t>> Connection::receive_msg() {
 	std::uint32_t msg_size = 0;
 
 	auto buffer = ba::buffer(buffer_.data(), sizeof(msg_size));
-	co_await ba::async_read(socket_, buffer, ba::deferred);
+	co_await ba::async_read(socket_, buffer);
 	std::memcpy(&msg_size, buffer_.data(), sizeof(msg_size));
 
 	if(msg_size > buffer_.size()) {
@@ -140,7 +139,7 @@ ba::awaitable<std::span<std::uint8_t>> Connection::receive_msg() {
 
 	// read the rest of the message
 	buffer = ba::buffer(buffer_.data() + sizeof(msg_size), msg_size - sizeof(msg_size));
-	co_await ba::async_read(socket_, buffer, ba::deferred);
+	co_await ba::async_read(socket_, buffer);
 	co_return std::span{buffer_.data(), msg_size};
 }
 
@@ -150,7 +149,7 @@ ba::awaitable<void> Connection::send(Message& msg) {
 		ba::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
 	};
 
-	co_await ba::async_write(socket_, buffers, ba::deferred);
+	co_await ba::async_write(socket_, buffers);
 }
 
 // start full-duplex send/receive
