@@ -35,5 +35,6 @@ namespace ember::mpq {
 }
 
 extern const std::invoke_result<decltype(&crypt_table)>::type CRYPT_TABLE;
+extern const std::array<char, 256> TOUPPER_TABLE;
 
 } // mpq, ember

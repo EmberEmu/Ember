@@ -7,7 +7,7 @@
  */
 
 #include <mpq/Utility.h>
-#include <mpq/CryptTable.h>
+#include <mpq/CryptTables.h>
 #include <tuple>
 #include <utility>
 
