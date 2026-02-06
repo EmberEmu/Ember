@@ -232,7 +232,6 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 
 	Config config {
 		.realm = *realm,
-		.list_zone_hide = args["quirks.list_zone_hide"].as<bool>(),
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>())
@@ -356,7 +355,6 @@ void print_lib_versions(log::Logger& logger) {
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
-		("quirks.list_zone_hide", po::value<bool>()->required())
 		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())
