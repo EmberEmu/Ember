@@ -136,7 +136,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	std::locale temp;
 
 	const Config config {
-		.defer_zone_placement = args["database.config_path"].as<bool>()
+		.defer_zone_placement = args["defer_zone_placement"].as<bool>()
 	};
 
 	ThreadPool thread_pool(concurrency);
