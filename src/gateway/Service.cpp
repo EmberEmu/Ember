@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -202,7 +202,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 		if(result && forward_enabled) {
 			const auto nat = stun.nat_present().get();
 
-			if(nat && *nat) {
+			if(nat && !*nat) {
 				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
 			} else {
 				const auto& mode_str = args["forward.method"].as<std::string>();

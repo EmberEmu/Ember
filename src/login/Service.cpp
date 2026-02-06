@@ -313,7 +313,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 		if(result && forward_enabled) {
 			const auto nat = stun.nat_present().get();
 
-			if(nat && *nat) {
+			if(nat && !*nat) {
 				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
 			} else {
 				const auto& mode_str = args["forward.method"].as<std::string>();
