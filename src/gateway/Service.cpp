@@ -176,6 +176,10 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
+	auto update_realm_address = [](Realm& realm) {
+		realm.address = std::format("{}:{}", realm.ip, realm.port);
+	};
+
 	// If the database port differs from the config file port, use the config file port
 	if(port != realm->port) {
 		LOG_WARN_SYNC(
@@ -184,7 +188,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 		);
 
 		realm->port = port;
-		realm->address = std::format("{}:{}", realm->ip, realm->port);
+		update_realm_address(*realm);
 	}
 
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
@@ -196,7 +200,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 
 		if(result) {
 			realm->ip = stun::extract_ip_to_string(*result);
-			realm->address = std::format("{}:{}", realm->ip, realm->port);
+			update_realm_address(*realm);
 		}
 
 		if(result && forward_enabled) {
