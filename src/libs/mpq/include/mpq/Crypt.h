@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include <mpq/CryptTable.h>
+#include <mpq/CryptTables.h>
 #include <shared/utility/polyfill/start_lifetime_as>
 #include <span>
 #include <type_traits>
-#include <cctype>
 #include <cstddef>
 #include <cstdint>
 
@@ -41,7 +40,7 @@ static constexpr std::uint32_t hash_string(std::string_view key, std::uint32_t t
 	std::uint32_t seed2 = 0xEEEEEEEE;
 
 	for(auto byte : key) {
-		auto ch = std::toupper(byte);
+		auto ch = TOUPPER_TABLE[byte];
 		seed1 = CRYPT_TABLE[(type << 8) + ch] ^ (seed1 + seed2);
 		seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
 	}

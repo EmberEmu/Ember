@@ -38,7 +38,7 @@ add_library(${LIBRARY_NAME}
     include/mpq/ErrorCode.h
     include/mpq/Structures.h
     include/mpq/Crypt.h
-    include/mpq/CryptTable.h
+    include/mpq/CryptTables.h
     include/mpq/Compression.h
     include/mpq/Exception.h
     include/mpq/SharedDefs.h
@@ -49,7 +49,7 @@ add_library(${LIBRARY_NAME}
     include/mpq/DynamicMemorySink.h
     include/mpq/Utility.h
     include/mpq/DecompressionError.h
-    src/CryptTable.cpp
+    src/CryptTables.cpp
     src/MPQ.cpp
     src/Compression.cpp
     src/PKCompression.cpp
