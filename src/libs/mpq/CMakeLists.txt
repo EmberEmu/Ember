@@ -1,4 +1,4 @@
-# Copyright (c) 2024 - 2025 Ember
+# Copyright (c) 2024 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ set(ARCHIVE_V1
     src/v1/MemoryArchive.cpp
 )
 
-source_group("Archive" FILES ${ARCHIVE})
+source_group("Archive"     FILES ${ARCHIVE})
 source_group("Archive\\v0" FILES ${ARCHIVE_V0})
 source_group("Archive\\v1" FILES ${ARCHIVE_V1})
 
@@ -38,6 +38,7 @@ add_library(${LIBRARY_NAME}
     include/mpq/ErrorCode.h
     include/mpq/Structures.h
     include/mpq/Crypt.h
+    include/mpq/CryptTable.h
     include/mpq/Compression.h
     include/mpq/Exception.h
     include/mpq/SharedDefs.h
@@ -48,6 +49,7 @@ add_library(${LIBRARY_NAME}
     include/mpq/DynamicMemorySink.h
     include/mpq/Utility.h
     include/mpq/DecompressionError.h
+    src/CryptTable.cpp
     src/MPQ.cpp
     src/Compression.cpp
     src/PKCompression.cpp
