@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -137,6 +137,11 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
+	const auto forward_enabled = args["forward.enabled"].as<bool>();
+
+	if(forward_enabled && !stun_enabled) {
+		throw std::invalid_argument("Port forwarding requires STUN to be enabled");
+	}
 
 	std::future<stun::MappedResult> stun_res;
 
@@ -305,22 +310,30 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 		const auto result = stun_res.get();
 		log_stun_result(stun, result, port, logger);
 
-		if(result && args["forward.enabled"].as<bool>()) {
-			const auto& mode_str = args["forward.method"].as<std::string>();
-			const auto& gateway = args["forward.gateway"].as<std::string>();
-			auto mode = util::PortForward::Mode::AUTO;
+		if(result && forward_enabled) {
+			const auto nat = stun.nat_present().get();
 
-			if(mode_str == "natpmp") {
-				mode = util::PortForward::Mode::PMP_PCP;
-			} else if(mode_str == "upnp") {
-				mode = util::PortForward::Mode::UPNP;
-			} else if(mode_str != "auto") {
-				throw std::invalid_argument("Unknown port forwarding method");
+			if(nat && *nat) {
+				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
+			} else {
+				const auto& mode_str = args["forward.method"].as<std::string>();
+				const auto& gateway = args["forward.gateway"].as<std::string>();
+				auto mode = util::PortForward::Mode::AUTO;
+
+				if(mode_str == "natpmp") {
+					mode = util::PortForward::Mode::PMP_PCP;
+				} else if(mode_str == "upnp") {
+					mode = util::PortForward::Mode::UPNP;
+				} else if(mode_str != "auto") {
+					throw std::invalid_argument("Unknown port forwarding method");
+				}
+
+				forward = std::make_unique<util::PortForward>(
+					logger, service, mode, interface, gateway, port
+				);
 			}
-
-			forward = std::make_unique<util::PortForward>(
-				logger, service, mode, interface, gateway, port
-			);
+		} else if(!result && forward_enabled) {
+			LOG_WARN_SYNC(logger, "Port forwarding skipped due to STUN failure");
 		}
 	}
 
