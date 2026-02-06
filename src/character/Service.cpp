@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -135,9 +135,13 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	std::locale temp;
 
+	const Config config {
+		.defer_zone_placement = args["defer_zone_placement"].as<bool>()
+	};
+
 	ThreadPool thread_pool(concurrency);
 	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
-	                         dbc_store, character_dao, thread_pool, temp, logger);
+	                         dbc_store, character_dao, config, thread_pool, temp, logger);
 
 	const auto&  s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
@@ -184,6 +188,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
+		("defer_zone_placement", po::value<bool>()->required())
 		("dbc.path", po::value<std::string>()->required())
 		("spark.address", po::value<std::string>()->required())
 		("spark.port", po::value<std::uint16_t>()->required())

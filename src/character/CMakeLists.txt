@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2025 Ember
+# Copyright (c) 2016 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@ set(LIBRARY_HDR
     FilterTypes.h
     CharacterService.h
     Service.h
+    Config.h
     )
 
 set(LIBRARY_SRC

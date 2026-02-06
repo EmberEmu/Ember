@@ -1,5 +1,8 @@
 # Character daemon configuration
 
+# Defers placing the character in a zone until entering the world, following original server behaviour
+defer_zone_placement = 0
+
 [dbc]
 path = dbcs/
 
