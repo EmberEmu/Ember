@@ -43,15 +43,6 @@ void send_character_list_fail(ClientContext& ctx) {
 void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	// emulate a quirk of the retail server
-	if(Locator::config()->list_zone_hide) {
-		for(auto& c : characters) {
-			if(c.first_login) {
-				c.zone = 0;
-			}
-		}
-	}
-
 	protocol::SMSG_CHAR_ENUM response;
 	response->characters = std::move(characters);
 	ctx.connection.send(response);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -161,22 +161,17 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		return;
 	}
 
-	// populate zone information
-	const dbc::CharStartZones* zone = base_info->second.zone;
-
-	if(!zone) {
-		LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
-						race->name.en_gb, class_->name.en_gb);
-		callback(protocol::Result::CHAR_CREATE_ERROR);
-		return;
+	// defer zone placement until first world entry (original retail behaviour)
+	if(!config_.defer_zone_placement) {
+		if(!base_info->second.zone) {
+			LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
+			                race->name.en_gb, class_->name.en_gb);
+			callback(protocol::Result::CHAR_CREATE_ERROR);
+			return;
+		}
+		
+		populate_zone(character, *base_info->second.zone);
 	}
-
-	character.zone = zone->area_id;
-	character.map = zone->area->map_id;
-	character.position.x = zone->position.x;
-	character.position.y = zone->position.y;
-	character.position.z = zone->position.z;
-	character.orientation = zone->orientation;
 
 	// populate starting equipment
 	const auto& items = std::ranges::find_if(dbc_.char_start_outfit, [&](const auto& record) {
@@ -216,6 +211,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		                race->name.en_gb, class_->name.en_gb);
 	}
 
+	const auto zone = base_info->second.zone;
 	const char* subzone = nullptr;
 
 	if(zone && zone->area->parent_area_table_id) {
@@ -532,6 +528,15 @@ const dbc::FactionGroup* CharacterHandler::pvp_faction(const dbc::FactionTemplat
 	}
 
 	return nullptr;
+}
+
+void CharacterHandler::populate_zone(Character& character, const dbc::CharStartZones& zone) const {
+	character.zone = zone.area_id;
+	character.map = zone.area->map_id;
+	character.position.x = zone.position.x;
+	character.position.y = zone.position.y;
+	character.position.z = zone.position.z;
+	character.orientation = zone.orientation;
 }
 
 void CharacterHandler::populate_items(Character& character, const dbc::CharStartOutfit& outfit) const {
