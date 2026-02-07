@@ -27,9 +27,9 @@ RUN apt-get -y update && apt-get -y upgrade \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
- && wget -q https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.gz \
- && tar -zxf boost_1_88_0.tar.gz \
- && cd boost_1_88_0 \
+ && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
+ && tar -zxf boost_1_90_0.tar.gz \
+ && cd boost_1_90_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
  && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
