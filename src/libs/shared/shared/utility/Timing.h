@@ -21,20 +21,38 @@ namespace ember::util {
 class ScopedTimerPeriod final {
 	using Callback = std::function<void()>;
 
-	Callback cb_;
 	bool success_;
+	bool restored_;
+	Callback cb_;
+
+	static int invokations;
 
 public:
 	ScopedTimerPeriod(bool success, Callback cb)
 		: success_(success),
-		  cb_(std::move(cb)) {}
+		  restored_(false),
+		  cb_(std::move(cb)) {
+		++invokations;
+	}
 
 	bool success() const {
 		return success_;
 	}
 
+	void end() {
+		if(!restored_) {
+			restored_ = true;
+			--invokations;
+			cb_();
+		}
+	}
+
 	~ScopedTimerPeriod() {
-		cb_();
+		end();
+	}
+
+	static bool valid() {
+		return !invokations;
 	}
 };
 
