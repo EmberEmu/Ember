@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Ember
+ * Copyright (c) 2023 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -85,8 +85,8 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_receive_from(boost::asio::null_buffers(), ep_,
-		[this](boost::system::error_code ec, std::size_t) {
+	socket_.async_wait(boost::asio::ip::tcp::socket::wait_read,
+		[this](boost::system::error_code ec) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
