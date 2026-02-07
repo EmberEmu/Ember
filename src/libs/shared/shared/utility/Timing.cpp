@@ -40,6 +40,7 @@ bool ScopedTimerPeriod::success() const {
 }
 
 void ScopedTimerPeriod::end() {
+#ifdef _WIN32
 	std::lock_guard guard(lock_);
 	
 	if(!restored_) {
@@ -48,6 +49,7 @@ void ScopedTimerPeriod::end() {
 		restored_ = true;
 		--invokations_;
 	}
+#endif
 }
 
 ScopedTimerPeriod::~ScopedTimerPeriod() {
