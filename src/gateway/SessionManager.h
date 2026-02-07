@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,9 +9,9 @@
 #pragma once
 
 #include "ClientConnection.h"
+#include <boost/unordered/unordered_flat_set.hpp>
 #include <memory>
 #include <mutex>
-#include <unordered_set>
 #include <cstddef>
 
 namespace ember::gateway {
@@ -49,7 +49,7 @@ class SessionManager final {
 		}
 	};
 
-	std::unordered_set<std::unique_ptr<ClientConnection>, Hasher, KeyEqual> sessions_;
+	boost::unordered_flat_set<std::unique_ptr<ClientConnection>, Hasher, KeyEqual> sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:
