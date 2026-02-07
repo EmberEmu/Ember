@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,6 @@
 #include "../ClientHandler.h"
 #include "../Config.h"
 #include "../Locator.h"
-#include "../ClientHandler.h"
 #include "../RealmQueue.h"
 #include "../CharacterClient.h"
 #include "../ClientConnection.h"
@@ -43,15 +42,6 @@ void send_character_list_fail(ClientContext& ctx) {
 
 void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
-
-	// emulate a quirk of the retail server
-	if(Locator::config()->list_zone_hide) {
-		for(auto& c : characters) {
-			if(c.first_login) {
-				c.zone = 0;
-			}
-		}
-	}
 
 	protocol::SMSG_CHAR_ENUM response;
 	response->characters = std::move(characters);

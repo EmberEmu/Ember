@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -112,6 +112,11 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
+	const auto forward_enabled = args["forward.enabled"].as<bool>();
+
+	if(forward_enabled && !stun_enabled) {
+		throw std::invalid_argument("Port forwarding requires STUN to be enabled");
+	}
 
 	std::future<stun::MappedResult> stun_res;
 
@@ -171,6 +176,10 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
+	auto update_realm_address = [](Realm& realm) {
+		realm.address = std::format("{}:{}", realm.ip, realm.port);
+	};
+
 	// If the database port differs from the config file port, use the config file port
 	if(port != realm->port) {
 		LOG_WARN_SYNC(
@@ -179,7 +188,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 		);
 
 		realm->port = port;
-		realm->address = std::format("{}:{}", realm->ip, realm->port);
+		update_realm_address(*realm);
 	}
 
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
@@ -191,31 +200,38 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 
 		if(result) {
 			realm->ip = stun::extract_ip_to_string(*result);
-			realm->address = std::format("{}:{}", realm->ip, realm->port);
+			update_realm_address(*realm);
 		}
 
-		if(result && args["forward.enabled"].as<bool>()) {
-			const auto& mode_str = args["forward.method"].as<std::string>();
-			const auto& gateway = args["forward.gateway"].as<std::string>();
-			auto mode = util::PortForward::Mode::AUTO;
+		if(result && forward_enabled) {
+			const auto nat = stun.nat_present().get();
 
-			if(mode_str == "natpmp") {
-				mode = util::PortForward::Mode::PMP_PCP;
-			} else if(mode_str == "upnp") {
-				mode = util::PortForward::Mode::UPNP;
-			} else if(mode_str != "auto") {
-				throw std::invalid_argument("Unknown port forwarding method");
+			if(nat && !*nat) {
+				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
+			} else {
+				const auto& mode_str = args["forward.method"].as<std::string>();
+				const auto& gateway = args["forward.gateway"].as<std::string>();
+				auto mode = util::PortForward::Mode::AUTO;
+
+				if(mode_str == "natpmp") {
+					mode = util::PortForward::Mode::PMP_PCP;
+				} else if(mode_str == "upnp") {
+					mode = util::PortForward::Mode::UPNP;
+				} else if(mode_str != "auto") {
+					throw std::invalid_argument("Unknown port forwarding method");
+				}
+
+				forward = std::make_unique<util::PortForward>(
+					logger, service, mode, interface, gateway, port
+				);
 			}
-
-			forward = std::make_unique<util::PortForward>(
-				logger, service, mode, interface, gateway, port
-			);
+		} else if(!result && forward_enabled) {
+			LOG_WARN_SYNC(logger, "Port forwarding skipped due to STUN failure");
 		}
 	}
 
 	Config config {
 		.realm = *realm,
-		.list_zone_hide = args["quirks.list_zone_hide"].as<bool>(),
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>())
@@ -339,7 +355,6 @@ void print_lib_versions(log::Logger& logger) {
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
-		("quirks.list_zone_hide", po::value<bool>()->required())
 		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())

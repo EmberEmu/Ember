@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Config.h"
 #include <Character_generated.h>
 #include <dbcreader/Storage.h>
 #include <protocol/ResultCodes.h>
@@ -45,6 +46,7 @@ class CharacterHandler final {
 	const std::vector<util::pcre::Result> spam_names_;
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
+	const Config& config_;
 	const std::locale locale_;
 
 	ThreadPool& pool_;
@@ -55,6 +57,8 @@ class CharacterHandler final {
 	void populate_items(ember::Character& character, const dbc::CharStartOutfit& outfit) const;
 	void populate_spells(ember::Character& character, const dbc::CharStartSpells& spells) const;
 	void populate_skills(ember::Character& character, const dbc::CharStartSkills& skills) const;
+	void populate_zone(ember::Character& character, const dbc::CharStartZones& zone) const;
+
 	const dbc::FactionGroup* pvp_faction(const dbc::FactionTemplate& fac_template) const;
 
 	/** I/O heavy functions run async in a thread pool **/
@@ -86,13 +90,16 @@ public:
 	CharacterHandler(std::vector<util::pcre::Result> profane_names,
 	                 std::vector<util::pcre::Result> reserved_names,
 	                 std::vector<util::pcre::Result> spam_names,
-	                 const dbc::Storage& dbc, const dal::CharacterDAO& dao,
+	                 const dbc::Storage& dbc,
+	                 const dal::CharacterDAO& dao,
+	                 const Config& config,
 	                 ThreadPool& pool, const std::locale& locale, log::Logger& logger)
 		: profane_names_(std::move(profane_names)),
 		  reserved_names_(std::move(reserved_names)),
 		  spam_names_(std::move(spam_names)),
 		  dbc_(dbc),
 		  dao_(dao),
+	      config_(config),
 		  pool_(pool),
 		  locale_(locale),
 		  logger_(logger) {}

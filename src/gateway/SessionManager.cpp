@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ void SessionManager::stop(ClientConnection* session) {
 		return;
 	}
 
-	auto client = std::move(sessions_.extract(it).value());
+	auto client = sessions_.pull(it);
 	ClientConnection::async_shutdown(std::move(client));
 }
 
@@ -33,7 +33,7 @@ void SessionManager::stop_all() {
 	std::lock_guard guard(sessions_lock_);
 
 	while(!sessions_.empty()) {
-		auto client = std::move(sessions_.extract(sessions_.begin()).value());
+		auto client = sessions_.pull(sessions_.begin());
 		ClientConnection::async_shutdown(std::move(client));
 	}
 }

@@ -8,32 +8,32 @@
 
 #include <ports/upnp/MulticastSocket.h>
 #include <boost/asio/as_tuple.hpp>
-#include <boost/asio/deferred.hpp>
 #include <boost/asio/ip/multicast.hpp>
 #include <utility>
 
 namespace ember::ports {
 
-MulticastSocket::MulticastSocket(boost::asio::io_context& context,
+MulticastSocket::MulticastSocket(ba::io_context& context,
 								 std::string_view listen_iface,
 								 std::string_view mcast_group,
 								 const std::uint16_t port)
-	: context_(context), socket_(context),
-	buffer_{},
-	ep_(boost::asio::ip::make_address(mcast_group), port) {
-	const auto mcast_iface = boost::asio::ip::make_address(listen_iface);
-	const auto group_ip = boost::asio::ip::make_address(mcast_group);
+	: context_(context),
+	  socket_(context),
+	  buffer_{},
+	ep_(ba::ip::make_address(mcast_group), port) {
+	const auto mcast_iface = ba::ip::make_address(listen_iface);
+	const auto group_ip = ba::ip::make_address(mcast_group);
 
-	boost::asio::ip::udp::endpoint ep(mcast_iface, 0);
+	ba::ip::udp::endpoint ep(mcast_iface, 0);
 	socket_.open(ep.protocol());
-	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-	boost::asio::ip::multicast::join_group join_opt{};
+	socket_.set_option(ba::ip::udp::socket::reuse_address(true));
+	ba::ip::multicast::join_group join_opt{};
 
 	// Asio is doing something weird on Windows, this is a hack
 	if(mcast_iface.is_v4()) {
-		join_opt = boost::asio::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
+		join_opt = ba::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
 	} else {
-		join_opt = boost::asio::ip::multicast::join_group(group_ip);
+		join_opt = ba::ip::multicast::join_group(group_ip);
 	}
 
 	socket_.set_option(join_opt);
@@ -49,8 +49,8 @@ auto MulticastSocket::receive() -> ba::awaitable<ReceiveType> {
 		co_return std::unexpected(ba::error::not_connected);
 	}
 
-	auto buffer = boost::asio::buffer(buffer_);
-	auto [ec, size] = co_await socket_.async_receive_from(buffer, remote_ep_, ba::as_tuple(ba::deferred));
+	auto buffer = ba::buffer(buffer_);
+	auto [ec, size] = co_await socket_.async_receive_from(buffer, remote_ep_, ba::as_tuple);
 
 	if(ec) {
 		co_return std::unexpected(ec);
@@ -75,9 +75,9 @@ ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8
 		co_return false;
 	}
 
-	const auto ba_buf = boost::asio::buffer(*buffer);
+	const auto ba_buf = ba::buffer(*buffer);
 
-	const auto& [ec, _] = co_await socket_.async_send_to(ba_buf, ep, boost::asio::as_tuple(ba::deferred));
+	const auto& [ec, _] = co_await socket_.async_send_to(ba_buf, ep, ba::as_tuple);
 
 	if(ec) {
 		socket_.close();
@@ -93,7 +93,7 @@ ba::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8
 
 void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
+	socket_.shutdown(ba::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 }
 

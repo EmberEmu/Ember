@@ -10,7 +10,6 @@
 
 #include <shared/metrics/Metrics.h>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/signal_set.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <chrono>
 #include <string>
@@ -19,7 +18,6 @@
 namespace ember {
 
 class MetricsImpl final : public Metrics {
-	boost::asio::signal_set signals_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
 

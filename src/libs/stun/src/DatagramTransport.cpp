@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Ember
+ * Copyright (c) 2023 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,12 +20,14 @@ DatagramTransport::DatagramTransport(std::string_view bind,
                                      std::chrono::milliseconds timeout,
                                      unsigned int retries)
 	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), 0)),
-	timeout_(timeout), retries_(retries), resolver_(ctx_) {
-	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &ctx_);
+	  timeout_(timeout),
+	  retries_(retries),
+	  resolver_(ctx_) {
+	worker_ = std::jthread(static_cast<size_t(ba::io_context::*)()>
+		(&ba::io_context::run), &ctx_);
 	thread::set_name(worker_, "STUN UDP Worker");
 
-	boost::asio::post(ctx_, [&]() {
+	ba::post(ctx_, [&]() {
 		receive();
 	});
 }
@@ -52,10 +54,10 @@ void DatagramTransport::do_write() {
 	auto datagram = std::move(queue_.front());
 	queue_.pop();
 
-	socket_.async_send_to(boost::asio::buffer(*datagram), remote_ep_,
+	socket_.async_send_to(ba::buffer(*datagram), remote_ep_,
 		[this, dg = std::move(datagram)](boost::system::error_code ec,
 		                                 std::size_t /*bytes_sent*/) {
-			if(ec == boost::asio::error::operation_aborted) {
+			if(ec == ba::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -70,7 +72,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	boost::asio::post(ctx_, [this, datagram = std::move(message)]() mutable {
+	ba::post(ctx_, [this, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
@@ -85,9 +87,9 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_receive_from(boost::asio::null_buffers(), ep_,
-		[this](boost::system::error_code ec, std::size_t) {
-			if(ec == boost::asio::error::operation_aborted) {
+	socket_.async_wait(ba::ip::tcp::socket::wait_read,
+		[this](boost::system::error_code ec) {
+			if(ec == ba::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -95,8 +97,8 @@ void DatagramTransport::receive() {
 			}
 
 			boost::container::small_vector<std::uint8_t, INITIAL_RECV_BUFFER_SIZE> buffer(socket_.available());
-			boost::asio::socket_base::message_flags flags(0);
-			const std::size_t recv = socket_.receive_from(boost::asio::buffer(buffer), ep_, flags, ec);
+			ba::socket_base::message_flags flags(0);
+			const std::size_t recv = socket_.receive_from(ba::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {
