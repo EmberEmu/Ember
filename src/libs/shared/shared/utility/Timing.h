@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <functional>
+#include <mutex>
 #include <utility>
 
 namespace ember::util {
@@ -23,39 +24,21 @@ class ScopedTimerPeriod final {
 
 	bool success_;
 	bool restored_;
-	Callback cb_;
+	const std::chrono::milliseconds ms_;
+	
+	static std::mutex lock_;
+	static int invokations_;
 
-	static int invokations;
+	void set_timer();
 
 public:
-	ScopedTimerPeriod(bool success, Callback cb)
-		: success_(success),
-		  restored_(false),
-		  cb_(std::move(cb)) {
-		++invokations;
-	}
+	ScopedTimerPeriod(std::chrono::milliseconds ms);
+	~ScopedTimerPeriod();
 
-	bool success() const {
-		return success_;
-	}
+	bool success() const;
+	void end();
 
-	void end() {
-		if(!restored_) {
-			restored_ = true;
-			--invokations;
-			cb_();
-		}
-	}
-
-	~ScopedTimerPeriod() {
-		end();
-	}
-
-	static bool valid() {
-		return !invokations;
-	}
+	static bool valid();
 };
-
-ScopedTimerPeriod set_time_period(std::chrono::milliseconds ms);
 
 } // util, ember

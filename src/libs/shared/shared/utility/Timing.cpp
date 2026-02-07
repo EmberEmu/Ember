@@ -17,24 +17,45 @@
 
 namespace ember::util {
 
+ScopedTimerPeriod::ScopedTimerPeriod(std::chrono::milliseconds ms)
+	: success_(true),
+	  restored_(false),
+	  ms_(ms) {
+	std::lock_guard guard(lock_);
+	BOOST_ASSERT_MSG(valid(), "Bad consecutive ScopedTimerPeriod calls");
+	++invokations_;
+	set_timer();
+}
+
 // That's right, this only does something on Windows
 // Not required for other platforms but it's nice to abstract it anyway
-ScopedTimerPeriod set_time_period(const std::chrono::milliseconds ms) {
-	BOOST_ASSERT_MSG(ScopedTimerPeriod::valid(), "Bad consecutive set_timer_period call");
-
+void ScopedTimerPeriod::set_timer() {
 #ifdef _WIN32
-	const auto count = gsl::narrow<UINT>(ms.count());
-	const auto result = timeBeginPeriod(count);
-
-	ScopedTimerPeriod sf(result == TIMERR_NOERROR, [count] {
-		// don't care about the result, nothing to do if it fails
-		timeEndPeriod(count);
-	});
-
-	return sf;
-#else
-	return { true, [] {} };
+	success_ = timeBeginPeriod(gsl::narrow<UINT>(ms_.count())) == TIMERR_NOERROR;
 #endif
+}
+
+bool ScopedTimerPeriod::success() const {
+	return success_;
+}
+
+void ScopedTimerPeriod::end() {
+	std::lock_guard guard(lock_);
+	
+	if(!restored_) {
+		timeEndPeriod(gsl::narrow<UINT>(ms_.count()));
+
+		restored_ = true;
+		--invokations_;
+	}
+}
+
+ScopedTimerPeriod::~ScopedTimerPeriod() {
+	end();
+}
+
+bool ScopedTimerPeriod::valid() {
+	return !invokations_;
 }
 
 } // utils, ember
