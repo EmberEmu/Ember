@@ -9,7 +9,6 @@
 #pragma once
 
 #include <chrono>
-#include <functional>
 #include <mutex>
 #include <utility>
 
@@ -20,14 +19,12 @@ namespace ember::util {
  * it's reset to its original value when leaving scope
  */
 class ScopedTimerPeriod final {
-	using Callback = std::function<void()>;
-
 	bool success_;
 	bool restored_;
 	const std::chrono::milliseconds ms_;
 	
-	static std::mutex lock_;
-	static int invokations_;
+	inline static std::mutex lock_;
+	inline static int invokations_;
 
 	void set_timer();
 
