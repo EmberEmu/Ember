@@ -20,7 +20,7 @@ set(LIBRARY_SRC
     CharacterHandler.cpp
     CharacterService.cpp
     Service.cpp
-    )
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 

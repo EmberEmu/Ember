@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2025 Ember
+# Copyright (c) 2015 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,14 +13,14 @@ set(LIBRARY_HDR
     Sessions.h
     AccountHandler.h
     Service.h
-    )
+)
 
 set(LIBRARY_SRC
     AccountService.cpp
     Sessions.cpp
     AccountHandler.cpp
     Service.cpp
-    )
+)
 
 include_directories(${SPARK_INCLUDES_DIR})
 

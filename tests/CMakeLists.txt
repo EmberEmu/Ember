@@ -34,7 +34,7 @@ set(EXECUTABLE_SRC
     GameVersion.cpp
     FileBuffer.cpp
     NullBuffer.cpp
-    )
+)
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_link_libraries(${EXECUTABLE_NAME} gtest gtest_main liblogin shared spark srp6 libmdns stun ports mpq ${BOTAN_LIBRARY} ${Boost_LIBRARIES})

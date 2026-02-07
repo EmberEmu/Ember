@@ -1,4 +1,4 @@
-# Copyright (c) 2014 - 2025 Ember
+# Copyright (c) 2014 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -58,12 +58,12 @@ set(LIBRARY_HDR
     IntegrityData.h
     IntegrityPlatforms.h
     LocaleMap.h
-	LoginState.h
-	Survey.h
+    LoginState.h
+    Survey.h
     LoginHandlerFwd.h
     SocketType.h
     Service.h
-    )
+)
 
 set(LIBRARY_SRC
     LoginHandler.cpp
@@ -80,9 +80,9 @@ set(LIBRARY_SRC
     PatchGraph.cpp
     IntegrityData.cpp
     LocaleMap.cpp
-	Survey.cpp
+    Survey.cpp
     Service.cpp
-    )
+)
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 

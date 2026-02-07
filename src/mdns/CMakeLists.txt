@@ -1,4 +1,4 @@
-# Copyright (c) 2021 - 2025 Ember
+# Copyright (c) 2021 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,23 +14,23 @@ set(LIBRARY_HDR
     Socket.h
     DNSDefines.h
     Handler.h
-	Utility.h
-	Serialisation.h
-	detail/Parser.h
-	NSDService.h
-	Service.h
-    )
+    Utility.h
+    Serialisation.h
+    detail/Parser.h
+    NSDService.h
+    Service.h
+)
 
 set(LIBRARY_SRC
     ServiceRegistry.cpp
     MulticastSocket.cpp
     Server.cpp
-	Utility.cpp
-	Serialisation.cpp
-	detail/Parser.cpp
-	NSDService.cpp
-	Service.cpp
-    )
+    Utility.cpp
+    Serialisation.cpp
+    detail/Parser.cpp
+    NSDService.cpp
+    Service.cpp
+)
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} PRIVATE logger shared spark ${Boost_LIBRARIES} Threads::Threads FB_SCHEMA_COMPILE)

@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2025 Ember
+# Copyright (c) 2016 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,11 +10,11 @@ set(LIBRARY_NAME    libsocial)
 set(LIBRARY_HDR
     MonitorCallbacks.h
     FilterTypes.h
-    )
+)
 
 set(LIBRARY_SRC
     MonitorCallbacks.cpp
-    )
+)
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} logger shared ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)

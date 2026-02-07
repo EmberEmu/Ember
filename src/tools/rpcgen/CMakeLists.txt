@@ -1,4 +1,4 @@
-# Copyright (c) 2021 - 2024 Ember
+# Copyright (c) 2021 - 2025 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,9 +10,9 @@ set(EXECUTABLE_SRC
     main.cpp
     SchemaParser.h
     SchemaParser.cpp
-	Utility.h
-	Utility.cpp
-    )
+    Utility.h
+    Utility.cpp
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/nlohmann)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})

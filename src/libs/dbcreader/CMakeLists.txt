@@ -17,11 +17,12 @@ set(CODE_OUTPUT_DIR      ${PROJECT_BINARY_DIR}/src/dbcreader)
 set(FILE_LOG_VERBOSITY   info)
 
 build_dbc_loaders(DBC_HDR DBC_SRC
-                 "${DBC_DEFINITION_DIRS}"
-                  ${CODE_OUTPUT_DIR}
-                  ${CODE_TEMPLATE_DIR}
-                  ${DBC_TARGET_NAME}
-                  ${FILE_LOG_VERBOSITY})
+    "${DBC_DEFINITION_DIRS}"
+     ${CODE_OUTPUT_DIR}
+     ${CODE_TEMPLATE_DIR}
+     ${DBC_TARGET_NAME}
+     ${FILE_LOG_VERBOSITY}
+)
 
 add_library(${LIBRARY_NAME} ${DBC_HDR} ${DBC_SRC}
     include/dbcreader/Reader.h
