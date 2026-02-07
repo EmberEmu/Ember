@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME gateway)
-set(LIBRARY_NAME libgateway)
+set(LIBRARY_NAME    libgateway)
 
 set(LIBRARY_HDR
     Config.h
