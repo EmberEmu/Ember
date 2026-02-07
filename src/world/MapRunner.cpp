@@ -41,7 +41,7 @@ void update(std::chrono::milliseconds delta) {
 void run(log::Logger& log) {
 	LOG_TRACE(log) << log_func << LOG_ASYNC;
 
-	const auto timer_guard = util::set_time_period(TIME_PERIOD);
+	const util::ScopedTimerPeriod timer_guard(TIME_PERIOD);
 
 	/*
 	 * If we can't increase timer resolution, the worst that happens
@@ -52,8 +52,7 @@ void run(log::Logger& log) {
 	if(!timer_guard.success()) {
 		const auto src = std::source_location::current();
 
-		LOG_ERROR_ASYNC(log, "{}:{} - failed to set time period", 
-						src.file_name(), src.line());
+		LOG_ERROR_ASYNC(log, "{}:{} - failed to set time period", src.file_name(), src.line());
 	}
 
 	Watchdog watchdog(WATCHDOG_PERIOD, log);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <chrono>
-#include <functional>
+#include <mutex>
 #include <utility>
 
 namespace ember::util {
@@ -19,25 +19,23 @@ namespace ember::util {
  * it's reset to its original value when leaving scope
  */
 class ScopedTimerPeriod final {
-	using Callback = std::function<void()>;
-
-	Callback cb_;
 	bool success_;
+	bool restored_;
+	const std::chrono::milliseconds ms_;
+	
+	inline static std::mutex lock_;
+	inline static int invokations_;
+
+	void set_timer();
 
 public:
-	ScopedTimerPeriod(bool success, Callback cb)
-		: success_(success),
-		  cb_(std::move(cb)) {}
+	ScopedTimerPeriod(std::chrono::milliseconds ms);
+	~ScopedTimerPeriod();
 
-	bool success() const {
-		return success_;
-	}
+	bool success() const;
+	void end();
 
-	~ScopedTimerPeriod() {
-		cb_();
-	}
+	static bool valid();
 };
-
-ScopedTimerPeriod set_time_period(std::chrono::milliseconds ms);
 
 } // util, ember
