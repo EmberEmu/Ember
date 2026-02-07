@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,9 +18,9 @@ DatagramTransport::DatagramTransport(std::string_view bind, std::uint16_t port, 
 	: ctx_(ctx), strand_(ctx),
 	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), port)),
 	  resolver_(ctx_) {
-	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
+	socket_.set_option(ba::ip::udp::socket::reuse_address(true));
 
-	boost::asio::post(ctx_, boost::asio::bind_executor(strand_, [&]() {
+	ba::post(ctx_, ba::bind_executor(strand_, [&]() {
 		receive();
 	}));
 }
@@ -31,7 +31,7 @@ DatagramTransport::~DatagramTransport() {
 }
 
 void DatagramTransport::join_group(std::string_view address) {
-	const auto group_ip = boost::asio::ip::make_address(address);
+	const auto group_ip = ba::ip::make_address(address);
 	const auto mcast_iface = socket_.local_endpoint().address();
 	ba::ip::multicast::join_group join_opt{};
 
@@ -44,7 +44,7 @@ void DatagramTransport::join_group(std::string_view address) {
 }
 
 void DatagramTransport::resolve(std::string_view host, const std::uint16_t port, OnResolve&& cb) {
-	resolver_.async_resolve(host, std::to_string(port), boost::asio::bind_executor(strand_, 
+	resolver_.async_resolve(host, std::to_string(port), ba::bind_executor(strand_, 
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		                        ba::ip::udp::resolver::results_type results) {
 			if(!ec) {
@@ -58,13 +58,13 @@ void DatagramTransport::resolve(std::string_view host, const std::uint16_t port,
 
 void DatagramTransport::do_write() {
 	auto datagram = std::move(queue_.front());
-	auto buffer = boost::asio::buffer(*datagram);
+	auto buffer = ba::buffer(*datagram);
 	queue_.pop();
 
-	socket_.async_send_to(buffer, remote_ep_, boost::asio::bind_executor(strand_,
+	socket_.async_send_to(buffer, remote_ep_, ba::bind_executor(strand_,
 		[this, dg = std::move(datagram)](boost::system::error_code ec,
 		                                 std::size_t /*bytes_sent*/) {
-			if(ec == boost::asio::error::operation_aborted) {
+			if(ec == ba::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -79,7 +79,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	boost::asio::post(ctx_, boost::asio::bind_executor(strand_, [&, datagram = std::move(message)]() mutable {
+	ba::post(ctx_, ba::bind_executor(strand_, [&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
@@ -94,9 +94,9 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_receive_from(boost::asio::null_buffers(), ep_, boost::asio::bind_executor(strand_,
-		[this](boost::system::error_code ec, std::size_t) {
-			if(ec == boost::asio::error::operation_aborted) {
+	socket_.async_wait(ba::ip::udp::socket::wait_read, ba::bind_executor(strand_,
+		[this](boost::system::error_code ec) {
+			if(ec == ba::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -104,8 +104,8 @@ void DatagramTransport::receive() {
 			}
 
 			boost::container::small_vector<std::uint8_t, INITIAL_RECV_BUFFER_SIZE> buffer(socket_.available());
-			boost::asio::socket_base::message_flags flags(0);
-			const std::size_t recv = socket_.receive_from(boost::asio::buffer(buffer), ep_, flags, ec);
+			ba::socket_base::message_flags flags(0);
+			const std::size_t recv = socket_.receive_from(ba::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {
