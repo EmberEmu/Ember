@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME character)
-set(LIBRARY_NAME libcharacter)
+set(LIBRARY_NAME    libcharacter)
 
 set(LIBRARY_HDR
     CharacterHandler.h
