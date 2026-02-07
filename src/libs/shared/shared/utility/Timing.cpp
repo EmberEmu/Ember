@@ -9,7 +9,6 @@
 #include "Timing.h"
 #include <boost/assert.hpp>
 #include <gsl/narrow>
-#include <cassert>
 
 #ifdef _WIN32
 	#include <Windows.h>
