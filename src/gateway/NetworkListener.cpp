@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,24 +24,15 @@ void NetworkListener::accept_connection() {
 		return;
 	}
 
-	acceptor_.async_accept(socket_, [this](boost::system::error_code ec) {
+	acceptor_.async_accept(socket_, [this](const boost::system::error_code& ec) {
 		if(ec == boost::asio::error::operation_aborted) {
 			return;
 		}
 
 		if(!ec) {
-			const auto ep = socket_.remote_endpoint(ec);
-
-			if(!ec) {
-				LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ep.address().to_string());
-
-				boost::asio::dispatch(socket_.get_executor(),
-				                      [&, socket = std::move(socket_), i = index_]() mutable {
-					sessions_.emplace(sessions_, std::move(socket), ClientRef(i), logger_);
-				});
-			} else {
-				LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
-			}
+			dispatch_socket();
+		} else {
+			LOG_DEBUG_ASYNC(logger_, "Unable to accept connection, {}", ec.message());
 		}
 
 		++index_;
@@ -49,6 +40,22 @@ void NetworkListener::accept_connection() {
 		socket_ = tcp_socket(pool_.get(index_));
 		accept_connection();
 	});
+}
+
+void NetworkListener::dispatch_socket() {
+	boost::system::error_code ec{};
+	const auto ep = socket_.remote_endpoint(ec);
+
+	if(!ec) {
+		LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ep.address().to_string());
+	
+		boost::asio::dispatch(socket_.get_executor(),
+		                      [&, socket = std::move(socket_), i = index_]() mutable {
+			sessions_.emplace(sessions_, std::move(socket), ClientRef(i), logger_);
+		});
+	} else {
+		LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
+	}
 }
 
 void NetworkListener::shutdown() {
