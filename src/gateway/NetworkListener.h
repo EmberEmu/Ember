@@ -33,6 +33,7 @@ class NetworkListener final {
 	log::Logger& logger_;
 
 	void accept_connection();
+	void dispatch_socket();
 
 public:
 	NetworkListener(ServicePool& pool, std::string_view interface, std::uint16_t port,
