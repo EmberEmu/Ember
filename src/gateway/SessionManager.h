@@ -75,7 +75,7 @@ public:
 		auto client = ClientConnPtr(
 			allocator_.allocate(std::forward<Args>(args)...), [&](auto ptr) {
 				allocator_.deallocate(ptr);
-			};
+			}
 		);
 
 		std::lock_guard guard(sessions_lock_);
