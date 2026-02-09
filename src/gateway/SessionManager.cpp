@@ -11,11 +11,6 @@
 
 namespace ember::gateway {
 
-void SessionManager::insert(std::unique_ptr<ClientConnection> session) {
-	std::lock_guard guard(sessions_lock_);
-	sessions_.insert(std::move(session));
-}
-
 void SessionManager::stop(ClientConnection* session) {
 	std::lock_guard guard(sessions_lock_);
 

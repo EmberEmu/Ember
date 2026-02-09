@@ -64,7 +64,7 @@ class SessionManager final {
 	};
 
 	SessionAllocator allocator_;
-	boost::unordered_flat_set<std::unique_ptr<ClientConnection>, Hasher, KeyEqual> sessions_;
+	boost::unordered_flat_set<ClientConnPtr, Hasher, KeyEqual> sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:
@@ -72,7 +72,7 @@ public:
 
 	template<typename... Args>
 	void emplace(Args&&... args) {
-		auto client = std::unique_ptr<ClientConnection>(
+		auto client = ClientConnPtr(
 			allocator_.allocate(std::forward<Args>(args)...), [&](auto ptr) {
 				allocator_.deallocate(ptr);
 			};
@@ -82,7 +82,6 @@ public:
 		sessions_.emplace(std::move(client));
 	}
 
-	void insert(std::unique_ptr<ClientConnection> session);
 	void stop(ClientConnection* session);
 	void stop_all();
 	std::size_t count() const;
