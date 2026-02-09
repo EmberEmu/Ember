@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ClientConnection.h"
+#include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <boost/unordered/unordered_flat_set.hpp>
 #include <memory>
 #include <mutex>
@@ -18,7 +19,20 @@ namespace ember::gateway {
 
 struct ConnectionStats;
 
+#ifndef PREALLOCATED_SESSIONS_PER_THREAD
+	#define PREALLOCATED_SESSIONS_PER_THREAD 32
+#endif
+
 class SessionManager final {
+	using SessionAllocator = spark::io::TLSBlockAllocator<
+		ClientConnection,
+		PREALLOCATED_SESSIONS_PER_THREAD,
+		spark::io::NoRefCounting,
+		spark::io::SafeEntrant
+	>;
+
+	using ClientConnPtr = std::unique_ptr<ClientConnection, std::function<void(ClientConnection*)>>;
+
 	struct Hasher {
 		using is_transparent = void;
 
@@ -26,7 +40,7 @@ class SessionManager final {
 			return std::hash<ClientConnection*>{}(p);
 		}
 
-		std::size_t operator()(const std::unique_ptr<ClientConnection>& p) const {
+		std::size_t operator()(const ClientConnPtr& p) const {
 			return std::hash<const ClientConnection*>{}(p.get()); 
 		}
 	};
@@ -44,12 +58,13 @@ class SessionManager final {
 			return p; 
 		}
 
-		static const ClientConnection* to_ptr(const std::unique_ptr<ClientConnection>& p) {
+		static const ClientConnection* to_ptr(const ClientConnPtr& p) {
 			return p.get(); 
 		}
 	};
 
-	boost::unordered_flat_set<std::unique_ptr<ClientConnection>, Hasher, KeyEqual> sessions_;
+	SessionAllocator allocator_;
+	boost::unordered_flat_set<ClientConnPtr, Hasher, KeyEqual> sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:
@@ -57,12 +72,16 @@ public:
 
 	template<typename... Args>
 	void emplace(Args&&... args) {
-		auto client = std::make_unique<ClientConnection>(std::forward<Args>(args)...);
+		auto client = ClientConnPtr(
+			allocator_.allocate(std::forward<Args>(args)...), [&](auto ptr) {
+				allocator_.deallocate(ptr);
+			}
+		);
+
 		std::lock_guard guard(sessions_lock_);
 		sessions_.emplace(std::move(client));
 	}
 
-	void insert(std::unique_ptr<ClientConnection> session);
 	void stop(ClientConnection* session);
 	void stop_all();
 	std::size_t count() const;
