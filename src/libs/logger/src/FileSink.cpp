@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ namespace ember::log {
 namespace fs = std::filesystem;
 
 FileSink::FileSink(Severity severity, Filter filter, std::string file_name, Mode mode)
-                   : Sink(severity, filter),
+                   : Sink(severity, filter, "FileSink"),
                      file_name_format_(std::move(file_name)) {
 	format_file_name();
 

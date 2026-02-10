@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2025 Ember
+# Copyright (c) 2015 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,11 +24,16 @@ add_library(${LIBRARY_NAME}
     include/logger/Sink.h
     include/logger/Utility.h
     include/logger/ConsoleSink.h
+    include/logger/CommandSink.h
     include/logger/Exception.h
     include/logger/FileWrapper.h
     include/logger/Severity.h
     include/logger/GlobalLogger.h
 )
+
+if(WIN32)
+    target_sources(${LIBRARY_NAME} PRIVATE src/win32/CommandSink.cpp)
+endif(WIN32)
 
 target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES} Threads::Threads)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

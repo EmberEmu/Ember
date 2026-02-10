@@ -68,10 +68,14 @@ std::string_view severity_string(Severity severity) {
 			return "[warning] ";
 		case Severity::INFO:
 			return "[info] ";
-		case Severity::FATAL:
-			return "[fatal] ";
 		case Severity::ERROR_:
 			return "[error] ";
+		case Severity::FATAL:
+			return "[fatal] ";
+		case Severity::CONSOLE_ERROR:
+			[[fallthrough]];
+		case Severity::CONSOLE:
+			return "[console] ";
 		default:
 			return "[unknown] ";
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <mutex>
 #include <semaphore>
 #include <string>
 #include <thread>
@@ -35,7 +36,8 @@ class Logger::impl final {
 
 	Severity severity_ = Severity::DISABLED;
 	Filter filter_ = Filter(0);
-	std::vector<std::unique_ptr<Sink>> sinks_;
+	std::vector<std::shared_ptr<Sink>> sinks_;
+	std::mutex sink_lock_;
 	Worker worker_;
 
 	static inline thread_local std::pair<RecordDetail, std::vector<char>> buffer_;
@@ -65,7 +67,7 @@ class Logger::impl final {
 	}
 
 public:
-	impl() : worker_(sinks_) {
+	impl() : worker_(sinks_, sink_lock_) {
 #ifndef DEBUG_NO_THREADS
 		worker_.start();
 #endif
@@ -160,13 +162,33 @@ public:
 		return filter_;
 	}
 
-	void add_sink(std::unique_ptr<Sink> sink) {
+	void add_sink(std::shared_ptr<Sink> sink) {
+		std::lock_guard lock(sink_lock_);
+
 		if(sink->severity() < severity_) {
 			severity_ = sink->severity();
 		}
 
 		filter_ |= sink->filter();
 		sinks_.emplace_back(std::move(sink));
+	}
+
+	std::vector<std::shared_ptr<Sink>> fetch_sinks() {
+		std::lock_guard lock(sink_lock_);
+		return sinks_;
+	}
+
+	std::vector<std::shared_ptr<Sink>> fetch_sink(std::string_view name) {
+		std::lock_guard lock(sink_lock_);
+		std::vector<std::shared_ptr<Sink>> sinks;
+
+		for(auto& sink : sinks_) {
+			if(sink->name() == name) {
+				sinks.emplace_back(sink);
+			}
+		}
+
+		return sinks;
 	}
 
 	impl(const impl&) = delete;

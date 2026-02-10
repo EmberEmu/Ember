@@ -59,6 +59,7 @@ void Service::stop() {
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
+		("console_log.enable_input", po::value<bool>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", po::value<bool>()->required())

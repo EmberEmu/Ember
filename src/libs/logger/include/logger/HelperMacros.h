@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2015 - 2025 Ember
+* Copyright (c) 2015 - 2026 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -74,6 +74,26 @@ inline auto& log_deref(auto* x) { return *x; }
 			log_deref(logger)
 #endif
 
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE(logger) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE) \
+			log_deref(logger) << ember::log::Severity::CONSOLE
+#else
+#define LOG_CONSOLE(logger) \
+		if(false) \
+			log_deref(logger)
+#endif
+
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_ERR(logger) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE_ERROR) \
+			log_deref(logger) << ember::log::Severity::CONSOLE_ERROR
+#else
+#define LOG_CONSOLE_ERR(logger) \
+		if(false) \
+			log_deref(logger)
+#endif
+
 #if !defined(NO_LOGGING) && !defined(NO_TRACE_LOGGING)
 	#define LOG_TRACE_FILTER(logger, type) \
 		if(logger->severity() <= ember::log::Severity::TRACE && !(logger->filter() & type)) \
@@ -135,6 +155,26 @@ inline auto& log_deref(auto* x) { return *x; }
 			log_deref(logger)
 #endif
 
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_FILTER(logger, type) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE && !(logger->filter() & type)) \
+			log_deref(logger) << ember::log::Severity::CONSOLE << ember::log::Filter(type)
+#else
+#define LOG_CONSOLE_FILTER(logger, type) \
+		if(false) \
+			log_deref(logger)
+#endif
+
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_ERROR_FILTER(logger, type) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE_ERROR && !(logger->filter() & type)) \
+			log_deref(logger) << ember::log::Severity::CONSOLE_ERROR << ember::log::Filter(type)
+#else
+#define LOG_CONSOLE_ERROR_FILTER(logger, type) \
+		if(false) \
+			log_deref(logger)
+#endif
+
 #define LOG_TRACE_GLOB \
 	LOG_TRACE(ember::log::global_logger())
 
@@ -153,6 +193,9 @@ inline auto& log_deref(auto* x) { return *x; }
 #define LOG_FATAL_GLOB \
 	LOG_FATAL(ember::log::global_logger())
 
+#define LOG_CONSOLE_GLOB \
+	LOG_CONSOLE(ember::log::global_logger())
+
 #define LOG_TRACE_FILTER_GLOB(filter) \
 	LOG_TRACE_FILTER(ember::log::global_logger(), filter)
 
@@ -170,6 +213,12 @@ inline auto& log_deref(auto* x) { return *x; }
 
 #define LOG_FATAL_FILTER_GLOB(filter) \
 	LOG_FATAL_FILTER(ember::log::global_logger(), filter)
+
+#define LOG_CONSOLE_FILTER_GLOB(filter) \
+	LOG_CONSOLE_FILTER(ember::log::global_logger(), filter)
+
+#define LOG_CONSOLE_ERROR_FILTER_GLOB(filter) \
+	LOG_CONSOLE_ERROR_FILTER_GLOB(ember::log::global_logger(), filter)
 
 #define LOG_ASYNC ember::log::flush
 #define LOG_SYNC  ember::log::flush_sync
@@ -228,6 +277,24 @@ inline auto& log_deref(auto* x) { return *x; }
 		if(false);
 #endif
 
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_ASYNC(logger, fmt_str, ...) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE) \
+			logger->fmt_write<true>(ember::log::Severity::CONSOLE, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_CONSOLE_ASYNC(logger, fmt_str, ...) \
+		if(false);
+#endif
+
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_ERROR_ASYNC(logger, fmt_str, ...) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE_ERROR) \
+			logger->fmt_write<true>(ember::log::Severity::CONSOLE_ERROR, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_CONSOLE_ERROR_ASYNC(logger, fmt_str, ...) \
+		if(false);
+#endif
+
 #if !defined(NO_LOGGING) && !defined(NO_TRACE_LOGGING)
 	#define LOG_TRACE_SYNC(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::TRACE) \
@@ -281,6 +348,25 @@ inline auto& log_deref(auto* x) { return *x; }
 	#define LOG_FATAL_SYNC(logger, fmt_str, ...) \
 		if(false);
 #endif
+
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_SYNC(logger, fmt_str, ...) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE) \
+			logger->fmt_write<false>(ember::log::Severity::CONSOLE, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_CONSOLE_SYNC(logger, fmt_str, ...) \
+		if(false);
+#endif
+
+#if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
+#define LOG_CONSOLE_ERROR_SYNC(logger, fmt_str, ...) \
+		if(logger->severity() <= ember::log::Severity::CONSOLE_ERROR) \
+			logger->fmt_write<false>(ember::log::Severity::CONSOLE_ERROR, fmt_str __VA_OPT__(,) __VA_ARGS__);
+#else
+#define LOG_CONSOLE_ERROR_SYNC(logger, fmt_str, ...) \
+		if(false);
+#endif
+
 
 // used to generate decorated output (e.g. 'namespace::func' vs simply 'func')
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,14 @@ namespace ember::log {
 
 class SyslogSink::impl final : public Sink {
 	enum class SyslogSeverity {
-		EMERGENCY, ALERT, CRITICAL, ERROR_, WARNING, NOTICE, INFORMATIONAL, DEBUG
+		SYSLOG_EMERGENCY,
+		SYSLOG_ALERT,
+		SYSLOG_CRITICAL,
+		SYSLOG_ERROR,
+		SYSLOG_WARNING,
+		SYSLOG_NOTICE,
+		SYSLOG_INFORMATIONAL,
+		SYSLOG_DEBUG
 	};
 
 	boost::asio::io_context service_;
@@ -47,8 +54,10 @@ public:
 
 SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
                        Facility facility, std::string tag) try
-                       : Sink(severity, filter), socket_(service_), host_(bai::host_name()),
-                         tag_(std::move(tag)) {
+    : Sink(severity, filter, "SyslogSink"),
+	  socket_(service_),
+	  host_(bai::host_name()),
+      tag_(std::move(tag)) {
 	facility_ = facility;
 
 	if(tag_.size() > 32) {
@@ -65,19 +74,19 @@ SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host
 auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	switch(severity) {
 		case Severity::FATAL:
-			return SyslogSink::impl::SyslogSeverity::EMERGENCY;
+			return SyslogSink::impl::SyslogSeverity::SYSLOG_EMERGENCY;
 		case Severity::ERROR_:
-			return SyslogSink::impl::SyslogSeverity::ERROR_;
+			return SyslogSink::impl::SyslogSeverity::SYSLOG_ERROR;
 		case Severity::WARN:
-			return SyslogSink::impl::SyslogSeverity::WARNING;
+			return SyslogSink::impl::SyslogSeverity::SYSLOG_WARNING;
 		case Severity::INFO:
-			return SyslogSink::impl::SyslogSeverity::INFORMATIONAL;
+			return SyslogSink::impl::SyslogSeverity::SYSLOG_INFORMATIONAL;
 		case Severity::DEBUG:
 		case Severity::TRACE:
-			return SyslogSink::impl::SyslogSeverity::DEBUG;
+			return SyslogSink::impl::SyslogSeverity::SYSLOG_DEBUG;
 		default:
 			BOOST_ASSERT_MSG(false, "SyslogSink encountered an unknown severity.");
-			return SyslogSink::impl::SyslogSeverity::DEBUG;
+			return SyslogSink::impl::SyslogSeverity::SYSLOG_DEBUG;
 	}
 }
 
@@ -137,10 +146,8 @@ void SyslogSink::impl::batch_write(const std::span<std::pair<RecordDetail, std::
 
 SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsigned int port,
                        Facility facility, std::string tag)
-                       : Sink(severity, filter),
-                         pimpl_(std::make_unique<impl>(severity, filter,
-                                std::move(host), port, facility,
-                                std::move(tag))) {}
+	: Sink(severity, filter, "SyslogSink"),
+      pimpl_(std::make_unique<impl>(severity, filter, std::move(host), port, facility, std::move(tag))) {}
 
 SyslogSink::~SyslogSink() = default;
 

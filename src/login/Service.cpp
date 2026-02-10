@@ -395,6 +395,7 @@ po::options_description Service::options() {
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", po::value<bool>()->default_value(true))
+		("console_log.enable_input", po::value<bool>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", po::value<bool>()->required())

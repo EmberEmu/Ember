@@ -21,6 +21,8 @@ Worker::~Worker() {
 void Worker::process_outstanding_sync() {
 	std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*> item;
 
+	std::lock_guard lock(sink_lock_);
+
 	while(queue_sync_.try_dequeue(item)) {
 		for(auto& s : sinks_) {
 			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item), true);
@@ -35,6 +37,8 @@ void Worker::process_outstanding() {
 	}
 		
 	std::size_t records = dequeued_.size();
+
+	std::lock_guard lock(sink_lock_);
 
 	if(records < 5) {
 		for(auto& s : sinks_) {

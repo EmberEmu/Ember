@@ -7,9 +7,11 @@
  */
 
 #include "Service.h"
+#include <logger/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/commands/Registry.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
@@ -47,6 +49,74 @@ int main(int argc, const char* argv[]) try {
 	util::configure_logger(logger, args);
 	log::global_logger(logger);
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
+
+	// test
+	commands::Registry registry;
+
+	registry.register_command("sv_map")
+		.arg("name")
+		.arg("mode")
+		.optional_arg("test")
+		.handler([&](auto values) {
+		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
+			values["name"].as<std::string>(), values["mode"].as<std::string>());
+	});
+
+	registry.register_command("sv_map_test")
+		.arg("name")
+		.arg("mode")
+		.optional_arg("test")
+		.handler([&](auto values) {
+		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
+			values["name"].as<std::string>(), values["mode"].as<std::string>());
+	});
+
+	registry.register_command("test_command_1")
+		.arg("name")
+		.arg("mode")
+		.optional_arg("test")
+		.handler([&](auto values) {
+		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
+			values["name"].as<std::string>(), values["mode"].as<std::string>());
+	});
+
+	registry.register_command("test_command_2")
+		.arg("name")
+		.arg("mode")
+		.optional_arg("test")
+		.handler([&](auto values) {
+		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
+			values["name"].as<std::string>(), values["mode"].as<std::string>());
+	});
+
+	auto sink = logger.fetch_sink("CommandSink")[0];
+
+	static_cast<log::CommandSink*>(sink.get())->register_handler([&](auto input) {
+		const auto tokens = registry.parse_input(std::string(input));
+		const auto result = registry.execute_command(tokens);
+
+		if(result != commands::Registry::Result::Success) {
+			auto cmd = registry.get_command(tokens[0]);
+
+			if(cmd) {
+				LOG_CONSOLE_ERROR_SYNC(logger, "Usage: {}", cmd->usage_string());
+			} else {
+				LOG_CONSOLE_ERROR_SYNC(logger, "Command \"{}\" not found", tokens[0]);
+			}
+		}
+	});
+
+	static_cast<log::CommandSink*>(sink.get())->register_autocomplete([&](auto cmd) {
+		std::string mut_cmd = cmd;
+		auto cmds = registry.autocomplete(mut_cmd);
+
+		log::AutocompleteResult result {
+			.command = mut_cmd,
+			.commands = std::move(cmds)
+		};
+
+		return result;
+	});
 
 	const auto ret = run(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);

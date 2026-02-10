@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,7 +14,8 @@ enum class Colour : unsigned int {
 	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA,
 	BROWN, GREY, DARK_GREY, LIGHT_BLUE, LIGHT_GREEN,
 	LIGHT_CYAN, LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE,
-	DEFAULT
+	WHITE_ON_RED_BG, BLACK_ON_WHITE_BG, WHITE_ON_GREY_BG,
+	WHITE_ON_CYAN_BG, DEFAULT
 };
 
 void set_console_out_colour(Colour colour);

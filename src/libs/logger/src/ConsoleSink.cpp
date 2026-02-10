@@ -94,7 +94,6 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 	offset += sevsv.size();
 	std::memcpy(out_buf_.data() + offset, record.data(), record.size());
 
-
 	if(colour_) [[likely]] {
 		std::lock_guard guard(colour_lock);
 		util::ConsoleColour concol(severity_colour(severity));
