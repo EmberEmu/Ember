@@ -16,6 +16,7 @@ set(LIBRARY_SRC
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 
-target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES} FB_SCHEMA_COMPILE)
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_BINARY_DIR})
+add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
+target_link_libraries(${LIBRARY_NAME} shared spark ${Boost_LIBRARIES})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
