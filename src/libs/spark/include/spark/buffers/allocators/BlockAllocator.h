@@ -63,6 +63,7 @@ class BlockAllocator {
 
 	struct Block {
 		Block() {};
+		~Block() = delete;
 
 		// this is fine because we're always reading from the member that was last assigned to
 		union {
