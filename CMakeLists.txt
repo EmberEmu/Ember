@@ -108,6 +108,8 @@ include_directories(${MYSQLCCPP_INCLUDE_DIRS})
 #         FlatBuffers        #
 ##############################
 find_package(FlatBuffers 2.0.8 REQUIRED)
+include_directories(${FLATBUFFERS_INCLUDE_DIR})
+include(${CMAKE_MODULE_PATH}/BuildFlatBuffers.cmake)
 
 ##############################
 #            zlib            #
@@ -119,6 +121,11 @@ include_directories(${ZLIB_INCLUDE_DIR})
 #            PCRE            #
 ##############################
 find_package(PCRE 8.39 REQUIRED)
+option(PCRE_STATIC_LIB "Statically link to PCRE" ON)
+
+if(PCRE_STATIC_LIB)
+  add_definitions(-DPCRE_STATIC)
+endif()
 
 ##############################
 #         Google Test        #
