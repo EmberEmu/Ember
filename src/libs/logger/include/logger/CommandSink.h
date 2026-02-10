@@ -12,6 +12,7 @@
 #include <shared/utility/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <atomic>
+#include <deque>
 #include <functional>
 #include <mutex>
 #include <span>
@@ -19,7 +20,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-#include <deque>
 
 namespace ember::log {
 
@@ -67,6 +67,7 @@ class CommandSink final : public Sink {
 
 	util::Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
+	void print_command_table(std::span<const std::string> commands) const;
 
 	void clear_line();
 	void redraw_prompt();

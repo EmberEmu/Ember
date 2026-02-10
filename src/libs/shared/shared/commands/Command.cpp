@@ -22,14 +22,14 @@ Command& Command::arg(std::string argument) {
 		throw std::invalid_argument("Required arguments must be placed before optional arguments");
 	}
 		
-	args_.emplace_back(std::move(argument), false);
+	args_.emplace_back(std::move(argument), true);
 	++req_args;
 	++total_args;
 	return *this;
 }
 
 Command& Command::optional_arg(std::string argument) {
-	args_.emplace_back(std::move(argument), true);
+	args_.emplace_back(std::move(argument), false);
 	++opt_args;
 	++total_args;
 	return *this;
@@ -56,7 +56,7 @@ std::string Command::usage_string() const {
 			if(arg.required) {
 				ss << " [" << arg.value << "]";
 			} else {
-				ss << "(optional) [" << arg.value << "]";
+				ss << " (opt:" << arg.value << ")";
 			}
 		}
 	}

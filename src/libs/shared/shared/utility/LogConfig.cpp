@@ -67,6 +67,7 @@ std::unique_ptr<log::Sink> init_console_sink(const po::variables_map& args, log:
 	return sink;
 }
 
+#ifdef _WIN32
 std::unique_ptr<log::Sink> init_command_sink(const po::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
@@ -79,22 +80,23 @@ std::unique_ptr<log::Sink> init_command_sink(const po::variables_map& args, log:
 
 	return sink;
 }
+#endif
 
 } // unnamed
 
 void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	log::Severity severity;
 
-#ifdef _WIN32
 	const bool enable_input = args["console_log.enable_input"].as<bool>();
-#else
-	const bool enable_input = false;
-#endif
 	severity = log::severity_string(args["console_log.verbosity"].as<std::string>());
 
 	if(enable_input) {
 		if(severity != log::Severity::DISABLED) {
+#ifdef _WIN32
 			logger.add_sink(init_command_sink(args, severity));
+#else
+			logger.add_sink(init_console_sink(args, severity));
+#endif
 		}
 	} else {
 		if(severity != log::Severity::DISABLED) {

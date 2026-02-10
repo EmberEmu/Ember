@@ -12,33 +12,41 @@
 #include "Command.h"
 #include <exception>
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <unordered_map>
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cstddef>
 
 namespace ember::commands {
 
 class Registry {
-	std::unordered_map<std::string, Command> registry_;
-
 public:
 	enum class Result {
 		Success,
 		NotFound,
 		TooManyArgs,
 		MissingArgs,
-		BadInput
+		BadInput,
+		NoHandler
 	};
 
+private:
+	std::unordered_map<std::string, Command> registry_;
+	mutable std::mutex lock_;
+
+	Result validate_arg_count(std::size_t count, const Command& cmd) const;
+
+public:
 	std::vector<std::string> parse_input(const std::string& input) const;
+	std::vector<std::string> autocomplete(std::string& cmd_buffer) const;
 
 	Result execute_command(const std::string& input);
 	Result execute_command(const std::vector<std::string>& input);
 	Command& register_command(std::string name);
 	std::optional<Command> get_command(std::string name);
-	std::vector<std::string> autocomplete(std::string& cmd);
 };
 
 } // commands, ember

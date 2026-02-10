@@ -7,13 +7,16 @@
  */
 
 #include "Registry.h"
+#include <ranges>
 #include <boost/tokenizer.hpp>
 
 namespace ember::commands {
 
 Command& Registry::register_command(std::string name) {
+	std::lock_guard guard(lock_);
+
 	Command cmd(name);
-	auto [f, s] = registry_.emplace(name, cmd);
+	auto [f, s] = registry_.try_emplace(name, cmd);
 	return f->second;
 }
 
@@ -34,10 +37,23 @@ auto Registry::execute_command(const std::string& input) -> Result {
 	return execute_command(tokens);
 }
 
+auto Registry::validate_arg_count(const std::size_t count, const Command& cmd) const -> Result {
+	if(count < cmd.req_args) {
+		return Result::MissingArgs;
+	}
+
+	if(count > cmd.total_args) {
+		return Result::TooManyArgs;
+	}
+
+	return Result::Success;
+}
+
 auto Registry::execute_command(const std::vector<std::string>& tokens) -> Result {
 	if(tokens.empty()) {
 		return Result::BadInput;
 	}
+	std::lock_guard guard(lock_);
 
 	const auto& cmd_name = tokens.front();
 	auto res = registry_.find(cmd_name);
@@ -48,12 +64,8 @@ auto Registry::execute_command(const std::vector<std::string>& tokens) -> Result
 
 	auto& [key, value] = *res;
 
-	if(tokens.size() < value.req_args) {
-		return Result::MissingArgs;
-	}
-
-	if(tokens.size() > value.total_args) {
-		return Result::TooManyArgs;
+	if(auto res = validate_arg_count(tokens.size(), value); res != Result::Success) {
+		return res;
 	}
 
 	ArgumentStore arg_store;
@@ -63,11 +75,18 @@ auto Registry::execute_command(const std::vector<std::string>& tokens) -> Result
 		arg_store.emplace(value.args_[i].value, std::move(arg));
 	}
 
-	value.handler_(std::move(arg_store));
+	if(value.handler_) {
+		value.handler_(std::move(arg_store));
+	} else {
+		return Result::NoHandler;
+	}
+
 	return Result::Success;
 }
 
 std::optional<Command> Registry::get_command(std::string name) {
+	std::lock_guard guard(lock_);
+
 	auto cmd = registry_.find(name);
 
 	if(cmd == registry_.end()) {
@@ -78,14 +97,16 @@ std::optional<Command> Registry::get_command(std::string name) {
 }
 
 // todo, needs a lock!
-std::vector<std::string> Registry::autocomplete(std::string& cmd) {
+std::vector<std::string> Registry::autocomplete(std::string& cmd_buffer) const {
+	std::lock_guard guard(lock_);
+
 	std::vector<std::string> matches;
 
 	// find potential command matches
-	for(const auto& [_, v] : registry_) {
-		const auto& name = v.args().begin()->value;
+	for(const auto& cmd : registry_ | std::views::values) {
+		const auto& name = cmd.args().begin()->value;
 
-		if(name.starts_with(cmd)) {
+		if(name.starts_with(cmd_buffer)) {
 			matches.emplace_back(name);
 		}
 	}
@@ -93,17 +114,18 @@ std::vector<std::string> Registry::autocomplete(std::string& cmd) {
 	// hack to find the shortest common substring without
 	// bothering to write an entire trie (this is not perf. sensitive)
 	if(!matches.empty()) {
-		cmd = matches.front();
+		cmd_buffer = matches.front();
 	}
 	
 	for(auto it = matches.begin(); it != matches.end();) {
-		if(!it->starts_with(cmd)) {
-			cmd.pop_back();
+		if(!it->starts_with(cmd_buffer)) {
+			cmd_buffer.pop_back();
 		} else {
 			++it;
 		}
 	}
 
+	std::ranges::sort(matches);
 	return matches;
 }
 

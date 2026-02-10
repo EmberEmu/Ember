@@ -9,6 +9,7 @@
 #include <logger/CommandSink.h>
 #include <logger/Exception.h>
 #include <logger/Utility.h>
+#include <bprinter/table_printer.h>
 #include <gsl/narrow>
 #include <boost/algorithm/string.hpp>
 #include <Windows.h>
@@ -367,14 +368,30 @@ void CommandSink::autocomplete() {
 	std::lock_guard guard(console_lock_);
 	command_ = result.command;
 	clear_line();
+	print_command_table(result.commands);
+	redraw_prompt();
+}
 
-	for(const auto& command : result.commands) {
-		std::cout << command << "\t";
+void CommandSink::print_command_table(std::span<const std::string> commands) const {
+	bprinter::TablePrinter printer(&std::cout);
+	printer.AddColumn("Command", 20);
+	printer.AddColumn("Description", 50);
+	printer.PrintHeader();
+
+	std::string desc_tmp = "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque";
+
+	for(const auto& command : commands) {
+		printer << command;
+
+		if(desc_tmp.size() > 50) {
+			const std::string truncated = desc_tmp.substr(0, 45) + "...";
+			printer << truncated;
+		} else {
+			printer << desc_tmp;
+		}
 	}
 
-	std::cout << '\n';
-
-	redraw_prompt();
+	printer.PrintFooter();
 }
 
 void CommandSink::cursor_reposition(const CursorPosition position) {
