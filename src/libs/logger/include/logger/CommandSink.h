@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/Sink.h>
+#include <shared/commands/PartialMatches.h>
 #include <shared/utility/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <atomic>
@@ -22,11 +23,6 @@
 #include <vector>
 
 namespace ember::log {
-
-struct AutocompleteResult {
-	std::string command;
-	std::vector<std::string> commands;
-};
 
 class CommandSink final : public Sink {
 	enum class ScrollDirection {
@@ -42,11 +38,13 @@ class CommandSink final : public Sink {
 	};
 
 	using CommandHandler = std::function<void(std::string_view)>;
-	using Autocomplete = std::function<AutocompleteResult(const std::string&)>;
+	using Autocomplete = std::function<commands::PartialMatches(const std::string&)>;
 
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto history_size = 5u;
+	static constexpr auto table_name_cols = 20u;
+	static constexpr auto table_desc_cols = 50u;
 
 	static inline std::mutex colour_lock;
 
@@ -67,7 +65,7 @@ class CommandSink final : public Sink {
 
 	util::Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
-	void print_command_table(std::span<const std::string> commands) const;
+	void print_command_table(std::span<const commands::PartialMatches::Record> matches) const;
 
 	void clear_line();
 	void redraw_prompt();

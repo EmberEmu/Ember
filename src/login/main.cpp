@@ -30,6 +30,8 @@ namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const po::variables_map& args, log::Logger& logger);
+void register_command_handlers(commands::Registry& registry, log::Logger& logger);
+void register_help_command(commands::Registry& registry, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -50,73 +52,9 @@ int main(int argc, const char* argv[]) try {
 	log::global_logger(logger);
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
-	// test
 	commands::Registry registry;
-
-	registry.register_command("sv_map")
-		.arg("name")
-		.arg("mode")
-		.optional_arg("test")
-		.handler([&](auto values) {
-		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
-			values["name"].as<std::string>(), values["mode"].as<std::string>());
-	});
-
-	registry.register_command("sv_map_test")
-		.arg("name")
-		.arg("mode")
-		.optional_arg("test")
-		.handler([&](auto values) {
-		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
-			values["name"].as<std::string>(), values["mode"].as<std::string>());
-	});
-
-	registry.register_command("test_command_1")
-		.arg("name")
-		.arg("mode")
-		.optional_arg("test")
-		.handler([&](auto values) {
-		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
-			values["name"].as<std::string>(), values["mode"].as<std::string>());
-	});
-
-	registry.register_command("test_command_2")
-		.arg("name")
-		.arg("mode")
-		.optional_arg("test")
-		.handler([&](auto values) {
-		LOG_CONSOLE_SYNC(logger, "Now playing {} {}", 
-			values["name"].as<std::string>(), values["mode"].as<std::string>());
-	});
-
-	auto sink = logger.fetch_sink("CommandSink")[0];
-
-	static_cast<log::CommandSink*>(sink.get())->register_handler([&](auto input) {
-		const auto tokens = registry.parse_input(std::string(input));
-		const auto result = registry.execute_command(tokens);
-
-		if(result != commands::Registry::Result::Success) {
-			auto cmd = registry.get_command(tokens[0]);
-
-			if(cmd) {
-				LOG_CONSOLE_ERROR_SYNC(logger, "Usage: {}", cmd->usage_string());
-			} else {
-				LOG_CONSOLE_ERROR_SYNC(logger, "Command \"{}\" not found", tokens[0]);
-			}
-		}
-	});
-
-	static_cast<log::CommandSink*>(sink.get())->register_autocomplete([&](auto cmd) {
-		std::string mut_cmd = cmd;
-		auto cmds = registry.autocomplete(mut_cmd);
-
-		log::AutocompleteResult result {
-			.command = mut_cmd,
-			.commands = std::move(cmds)
-		};
-
-		return result;
-	});
+	register_command_handlers(registry, logger);
+	register_help_command(registry, logger);
 
 	const auto ret = run(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);
@@ -186,4 +124,51 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::notify(options);
 
 	return options;
+}
+
+void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
+	auto sinks = logger.fetch_sink("CommandSink");
+
+	if(sinks.empty()) {
+		LOG_INFO_SYNC(logger, "Console commands disabled, no suitable logging sink found");
+		return;
+	} else if(sinks.size() > 1) {
+		LOG_ERROR_SYNC(logger, "Console commands disabled, multiple command logging sinks found");
+		return;
+	}
+
+	auto sink = static_cast<log::CommandSink*>(sinks.front().get());
+
+	// register autocompletion handler
+	sink->register_autocomplete([&](auto cmd) {
+		return registry.autocomplete(cmd);
+	});
+
+	// register default command handler
+	sink->register_handler([&](auto input) {
+		const auto tokens = registry.parse_input(input);
+		const auto result = registry.execute(tokens);
+
+		if(result != commands::Registry::Result::Success) {
+			const auto& command = registry.get(tokens.front());
+
+			if(command) {
+				LOG_CONSOLE_ERROR_SYNC(logger, "Usage: {}", command->usage_string());
+			} else if(!tokens.empty()) {
+				LOG_CONSOLE_ERROR_SYNC(logger, R"(Command "{}" not found)", tokens.front());
+			} else {
+				LOG_CONSOLE_ERROR_SYNC(logger, "Unable to process command");
+			}
+		}
+	});
+}
+
+void register_help_command(commands::Registry& registry, log::Logger& logger) {
+	auto handler = [&](const auto&) {
+		LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
+	};
+
+	registry.register_command("help")
+		.description("Display console command usage information")
+		.handler(handler);
 }

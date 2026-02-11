@@ -361,33 +361,30 @@ void CommandSink::autocomplete() {
 
 	const auto result = autocomplete_(command_);
 
-	if(result.commands.empty()) {
+	if(result.records.empty()) {
 		return;
 	}
 	
 	std::lock_guard guard(console_lock_);
-	command_ = result.command;
+	command_ = result.partial_match;
 	clear_line();
-	print_command_table(result.commands);
+	print_command_table(result.records);
 	redraw_prompt();
 }
 
-void CommandSink::print_command_table(std::span<const std::string> commands) const {
+void CommandSink::print_command_table(std::span<const commands::PartialMatches::Record> matches) const {
 	bprinter::TablePrinter printer(&std::cout);
-	printer.AddColumn("Command", 20);
-	printer.AddColumn("Description", 50);
+	printer.AddColumn("Command", table_name_cols);
+	printer.AddColumn("Description", table_desc_cols);
 	printer.PrintHeader();
 
-	std::string desc_tmp = "Lorem ipsum dolor sit amet consectetur adipiscing elit quisque";
+	for(const auto& match : matches) {
+		printer << match.name;
 
-	for(const auto& command : commands) {
-		printer << command;
-
-		if(desc_tmp.size() > 50) {
-			const std::string truncated = desc_tmp.substr(0, 45) + "...";
-			printer << truncated;
+		if(match.desc.size() <= table_desc_cols) {
+			printer << match.desc;
 		} else {
-			printer << desc_tmp;
+			printer << (match.desc.substr(0, table_desc_cols - 3) + "...");
 		}
 	}
 

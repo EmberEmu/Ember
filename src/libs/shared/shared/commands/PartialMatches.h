@@ -8,23 +8,20 @@
 
 #pragma once
 
-#include <boost/lexical_cast.hpp>
+#include "Command.h"
 #include <string>
+#include <vector>
 
 namespace ember::commands {
 
-struct Argument {
-	std::string value;
-	bool required;
+struct PartialMatches {
+	struct Record {
+		std::string name;
+		std::string desc;
+	};
 
-	Argument(std::string value, bool required)
-		: value(std::move(value)),
-		  required(required) {}
-
-	template<typename T>
-	T as() const {
-		return boost::lexical_cast<T>(value);
-	}
+	std::string partial_match;
+	std::vector<Record> records;
 };
 
 } // commands, ember

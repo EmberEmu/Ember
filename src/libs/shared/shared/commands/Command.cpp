@@ -13,7 +13,7 @@
 
 namespace ember::commands {
 
-Command::Command(std::string name) {
+Command::Command(std::string name) : name_(name) {
 	args_.emplace_back(std::move(name), false);
 }
 
@@ -35,12 +35,17 @@ Command& Command::optional_arg(std::string argument) {
 	return *this;
 }
 
+Command& Command::description(std::string description) {
+	description_ = std::move(description);
+	return *this;
+}
+
 Command& Command::handler(CommandHandler handler) {
 	handler_ = handler;
 	return *this;
 }
 
-const std::vector<Argument>& Command::args() const {
+std::span<const Argument> Command::args() const {
 	return args_;
 }
 

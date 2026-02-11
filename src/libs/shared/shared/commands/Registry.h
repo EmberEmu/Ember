@@ -10,12 +10,14 @@
 
 #include "Argument.h"
 #include "Command.h"
+#include "PartialMatches.h"
 #include <exception>
 #include <functional>
 #include <mutex>
 #include <optional>
 #include <unordered_map>
 #include <sstream>
+#include <span>
 #include <string>
 #include <vector>
 #include <cstddef>
@@ -38,15 +40,18 @@ private:
 	mutable std::mutex lock_;
 
 	Result validate_arg_count(std::size_t count, const Command& cmd) const;
+	ArgumentStore build_argument_store(std::span<const std::string> tokens, const Command& command);
 
 public:
 	std::vector<std::string> parse_input(const std::string& input) const;
-	std::vector<std::string> autocomplete(std::string& cmd_buffer) const;
+	std::vector<std::string> parse_input(std::string_view input) const;
+	PartialMatches autocomplete(std::string_view query) const;
 
-	Result execute_command(const std::string& input);
-	Result execute_command(const std::vector<std::string>& input);
+	Result execute(const std::string& input);
+	Result execute(std::span<const std::string> input);
 	Command& register_command(std::string name);
-	std::optional<Command> get_command(std::string name);
+	bool unregister(const std::string& name);
+	std::optional<Command> get(std::string name);
 };
 
 } // commands, ember

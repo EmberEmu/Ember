@@ -11,6 +11,7 @@
 #include "Argument.h"
 #include "Arguments.h"
 #include <functional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -22,18 +23,20 @@ class Command {
 	int req_args = 1;
 	int opt_args = 0;
 	int total_args = 1;
-
+	std::string description_;
+	std::string name_;
 	std::vector<Argument> args_;
 	CommandHandler handler_;
 
 public:
 	Command(std::string name);
 
+	Command& description(std::string description);
 	Command& arg(std::string argument);
 	Command& optional_arg(std::string argument);
 	Command& handler(CommandHandler handler);
 
-	const std::vector<Argument>& args() const;
+	std::span<const Argument> args() const;
 	std::string usage_string() const;
 
 	friend class Registry;

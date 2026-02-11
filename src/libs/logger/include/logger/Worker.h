@@ -23,6 +23,9 @@
 namespace ember::log {
 
 class Worker final {
+	static const std::size_t batch_write_threshold = 10;
+	static const std::size_t max_dequed_capacity   = 100;
+
 	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::vector<char>>> queue_;
 	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>> queue_sync_;
 	std::vector<std::pair<RecordDetail, std::vector<char>>> dequeued_;
