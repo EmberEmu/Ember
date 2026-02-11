@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,7 +30,10 @@ class ConsoleSink final : public Sink {
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 
 public:
-	ConsoleSink(Severity severity, Filter filter) : Sink(severity, filter), colour_(false) {}
+	ConsoleSink(Severity severity, Filter filter)
+		: Sink(severity, filter, "ConsoleSink"),
+		  colour_(false) {}
+
 	void write(Severity severity, Filter type, std::span<const char> record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
 	void colourise(bool colourise) { colour_ = colourise; }

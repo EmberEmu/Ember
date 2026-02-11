@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,8 +26,16 @@ void Logger::finalise_sync() {
 	pimpl_->finalise_sync();
 }
 
-void Logger::add_sink(std::unique_ptr<Sink> sink) {
+void Logger::add_sink(std::shared_ptr<Sink> sink) {
 	pimpl_->add_sink(std::move(sink));
+}
+
+std::vector<std::shared_ptr<Sink>> Logger::fetch_sinks() {
+	return pimpl_->fetch_sinks();
+}
+
+std::vector<std::shared_ptr<Sink>> Logger::fetch_sink(std::string_view name) {
+	return pimpl_->fetch_sink(name);
 }
 
 Severity Logger::severity() {

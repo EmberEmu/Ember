@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include "LogConfig.h"
 #include <logger/Logger.h>
+#include <logger/CommandSink.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <logger/SyslogSink.h>
@@ -66,23 +67,54 @@ std::unique_ptr<log::Sink> init_console_sink(const po::variables_map& args, log:
 	return sink;
 }
 
+#ifdef _WIN32
+std::unique_ptr<log::Sink> init_command_sink(const po::variables_map& args, log::Severity severity) {
+	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
+	auto colourise = args["console_log.colours"].as<bool>();
+	auto sink = std::make_unique<log::CommandSink>(severity, log::Filter(filter), "ember( ");
+	sink->colourise(colourise);
+
+	if(args.count("console_log.prefix")) {
+		sink->prefix(args["console_log.prefix"].as<std::string>());
+	}
+
+	return sink;
+}
+#endif
+
 } // unnamed
 
 void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	log::Severity severity;
 
-	if((severity = log::severity_string(args["console_log.verbosity"].as<std::string>()))
-		!= log::Severity::DISABLED) {
-		logger.add_sink(init_console_sink(args, severity));
+	const bool enable_input = args["console_log.enable_input"].as<bool>();
+	severity = log::severity_string(args["console_log.verbosity"].as<std::string>());
+
+	if(enable_input) {
+		if(severity != log::Severity::DISABLED) {
+#ifdef _WIN32
+			logger.add_sink(init_command_sink(args, severity));
+#else
+			logger.add_sink(init_console_sink(args, severity));
+#endif
+		}
+	} else {
+		if(severity != log::Severity::DISABLED) {
+			logger.add_sink(init_console_sink(args, severity));
+		}
 	}
 
-	if((severity = log::severity_string(args["file_log.verbosity"].as<std::string>()))
-		!= log::Severity::DISABLED) {
+	// file logger
+	severity = log::severity_string(args["file_log.verbosity"].as<std::string>());
+
+	if(severity != log::Severity::DISABLED) {
 		logger.add_sink(init_file_sink(args, severity));
 	}
 
-	if((severity = log::severity_string(args["remote_log.verbosity"].as<std::string>()))
-		!= log::Severity::DISABLED) {
+	// remote logger
+	severity = log::severity_string(args["remote_log.verbosity"].as<std::string>());
+
+	if(severity != log::Severity::DISABLED) {
 		logger.add_sink(init_remote_sink(args, severity));
 	}
 }

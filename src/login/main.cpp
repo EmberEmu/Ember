@@ -7,9 +7,11 @@
  */
 
 #include "Service.h"
+#include <logger/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/Banner.h>
 #include <shared/Version.h>
+#include <shared/commands/Registry.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
@@ -28,6 +30,8 @@ namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const po::variables_map& args, log::Logger& logger);
+void register_command_handlers(commands::Registry& registry, log::Logger& logger);
+void register_help_command(commands::Registry& registry, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -47,6 +51,10 @@ int main(int argc, const char* argv[]) try {
 	util::configure_logger(logger, args);
 	log::global_logger(logger);
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
+
+	commands::Registry registry;
+	register_command_handlers(registry, logger);
+	register_help_command(registry, logger);
 
 	const auto ret = run(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);
@@ -116,4 +124,55 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::notify(options);
 
 	return options;
+}
+
+void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
+#ifdef _WIN32
+	auto sinks = logger.fetch_sink("CommandSink");
+
+	if(sinks.empty()) {
+		LOG_INFO_SYNC(logger, "Console commands disabled, no suitable logging sink found");
+		return;
+	} else if(sinks.size() > 1) {
+		LOG_ERROR_SYNC(logger, "Console commands disabled, multiple command logging sinks found");
+		return;
+	}
+
+	auto sink = static_cast<log::CommandSink*>(sinks.front().get());
+
+	// register autocompletion handler
+	sink->register_autocomplete([&](auto cmd) {
+		return registry.autocomplete(cmd);
+	});
+
+	// register default command handler
+	sink->register_handler([&](auto input) {
+		const auto tokens = registry.parse_input(input);
+		const auto result = registry.execute(tokens);
+
+		if(result != commands::Registry::Result::Success) {
+			const auto& command = registry.get(tokens.front());
+
+			if(command) {
+				LOG_CONSOLE_ERROR_SYNC(logger, "Usage: {}", command->usage_string());
+			} else if(!tokens.empty()) {
+				LOG_CONSOLE_ERROR_SYNC(logger, R"(Command "{}" not found)", tokens.front());
+			} else {
+				LOG_CONSOLE_ERROR_SYNC(logger, "Unable to process command");
+			}
+		}
+	});
+#endif
+}
+
+void register_help_command(commands::Registry& registry, log::Logger& logger) {
+#ifdef _WIN32
+	auto handler = [&](const auto&) {
+		LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
+	};
+
+	registry.register_command("help")
+		.description("Display console command usage information")
+		.handler(handler);
+#endif
 }

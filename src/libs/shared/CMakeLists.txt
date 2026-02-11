@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2025 Ember
+# Copyright (c) 2015 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -104,6 +104,15 @@ set(METRICS_SRC
     shared/metrics/MetricsPoll.cpp
 )
 
+set(COMMANDS_SRC
+    shared/commands/Registry.h
+    shared/commands/Registry.cpp
+    shared/commands/Command.h
+    shared/commands/Command.cpp
+    shared/commands/Argument.h
+    shared/commands/Arguments.h
+)
+
 set(LIBRARY_SRC
     ${DB_OBJECTS}
     ${SHARED_DAOS_SRC}
@@ -113,6 +122,7 @@ set(LIBRARY_SRC
     ${THREADING_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
+	${COMMANDS_SRC}
     shared/ClientRef.h
     shared/CompilerWarn.h
     shared/IPBanCache.h
@@ -133,6 +143,7 @@ source_group("Memory" FILES ${MEMORY_SRC})
 source_group("Threading" FILES ${THREADING_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 source_group("Metrics" FILES ${METRICS_SRC})
+source_group("Command Parser" FILES ${COMMANDS_SRC})
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp ${PCRE_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
 add_library(${LIBRARY_NAME} ${LIBRARY_SRC})

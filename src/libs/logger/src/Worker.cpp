@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,10 +21,13 @@ Worker::~Worker() {
 void Worker::process_outstanding_sync() {
 	std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*> item;
 
+	std::lock_guard lock(sink_lock_);
+
 	while(queue_sync_.try_dequeue(item)) {
 		for(auto& s : sinks_) {
 			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item), true);
 		}
+
 		std::get<2>(item)->release();
 	}
 }
@@ -36,7 +39,9 @@ void Worker::process_outstanding() {
 		
 	std::size_t records = dequeued_.size();
 
-	if(records < 5) {
+	std::lock_guard lock(sink_lock_);
+
+	if(records < batch_write_threshold) {
 		for(auto& s : sinks_) {
 			for(auto& [detail, data] : dequeued_) {
 				s->write(detail.severity, detail.type, data, false);
@@ -50,7 +55,7 @@ void Worker::process_outstanding() {
 
 	dequeued_.clear();
 
-	if(dequeued_.capacity() > 100 && records < 100) {
+	if(dequeued_.capacity() > max_dequed_capacity && records < max_dequed_capacity) {
 		dequeued_.shrink_to_fit();
 	}
 }

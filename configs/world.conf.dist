@@ -44,5 +44,6 @@ timestamp_format = [%d/%m/%Y %H:%M:%S]
 log_severity = 1   # enable/disable writing severity to log records
 
 [console_log]
-verbosity = trace # trace, debug, info, warning, error, fatal or none to disable
-colours = true    # colourise the output
+enable_input = false # allows for commands to be executed on the console
+verbosity = trace    # trace, debug, info, warning, error, fatal or none to disable
+colours = true       # colourise the output

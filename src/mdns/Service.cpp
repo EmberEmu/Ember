@@ -105,6 +105,7 @@ po::options_description Service::options() {
 		("metrics.enabled", po::value<bool>()->required())
 		("metrics.statsd_host", po::value<std::string>()->required())
 		("metrics.statsd_port", po::value<std::uint16_t>()->required())
+		("console_log.enable_input", po::value<bool>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", po::value<bool>()->required())

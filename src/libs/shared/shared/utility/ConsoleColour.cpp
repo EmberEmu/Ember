@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,10 @@ namespace {
 WORD colour_attribute(Colour colour) {
 	WORD attribute = 0;
 	
+	// set foreground
 	switch(colour) {
+		case Colour::BLACK_ON_WHITE_BG:
+			[[fallthrough]];
 		case Colour::BLACK:
 			attribute = 0;
 			break;
@@ -64,14 +67,39 @@ WORD colour_attribute(Colour colour) {
 		case Colour::DARK_GREY:
 			attribute = FOREGROUND_INTENSITY;
 			break;
+		case Colour::WHITE_ON_GREY_BG:
+			[[fallthrough]];
+		case Colour::WHITE_ON_RED_BG:
+			[[fallthrough]];
+		case Colour::WHITE_ON_CYAN_BG:
+			[[fallthrough]];
 		case Colour::WHITE:
-			attribute = FOREGROUND_INTENSITY;
+			attribute |= FOREGROUND_INTENSITY;
 			[[fallthrough]];
 		case Colour::GREY:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 			break;
 		case Colour::YELLOW:
 			attribute = FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_RED;
+			break;
+		case Colour::DEFAULT:
+			// shutting the compiler up
+			break;
+	}
+
+	// set background
+	switch(colour) {
+		case Colour::WHITE_ON_GREY_BG:
+			attribute |= BACKGROUND_INTENSITY;
+			break;
+		case Colour::BLACK_ON_WHITE_BG:
+			attribute |= BACKGROUND_INTENSITY | BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
+			break;
+		case Colour::WHITE_ON_CYAN_BG:
+			attribute |= BACKGROUND_GREEN | BACKGROUND_BLUE;
+			break;
+		case Colour::WHITE_ON_RED_BG:
+			attribute |= BACKGROUND_RED;
 			break;
 		case Colour::DEFAULT:
 			// shutting the compiler up
@@ -117,6 +145,14 @@ std::string_view ansi_sequence(Colour colour) {
 			return "\033[01;37m";
 		case Colour::YELLOW:
 			return "\033[01;33m";
+		case Colour::WHITE_ON_RED_BG:
+			return "\033[01;37m\033[41m";
+		case Colour::WHITE_ON_GREY_BG:
+			return "\033[01;37m\033[100m";
+		case Colour::WHITE_ON_CYAN_BG:
+			return "\033[01;37m\033[46m";
+		case Colour::BLACK_ON_WHITE_BG:
+			return "\033[01;30m\033[107m";
 		default:
 			return "\033[0m";
 	}
