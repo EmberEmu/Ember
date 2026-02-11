@@ -36,7 +36,7 @@ port = 6010
 # If disabled, the IP is read from the database entry for this realm ID
 [stun]
 enabled = true
-server = stunserver2024.stunprotocol.org
+server = stun.l.google.com
 port = 3479
 protocol = udp
 

@@ -31,7 +31,7 @@ port = 6010
 # Enabling STUN will allow the server to auto-detect its IP address and NAT status
 [stun]
 enabled = true
-server = stunserver2024.stunprotocol.org
+server = stun.l.google.com
 port = 3479
 protocol = udp
 
