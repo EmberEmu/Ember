@@ -127,6 +127,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 }
 
 void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
+#ifdef _WIN32
 	auto sinks = logger.fetch_sink("CommandSink");
 
 	if(sinks.empty()) {
@@ -161,9 +162,11 @@ void register_command_handlers(commands::Registry& registry, log::Logger& logger
 			}
 		}
 	});
+#endif
 }
 
 void register_help_command(commands::Registry& registry, log::Logger& logger) {
+#ifdef _WIN32
 	auto handler = [&](const auto&) {
 		LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
 	};
@@ -171,4 +174,5 @@ void register_help_command(commands::Registry& registry, log::Logger& logger) {
 	registry.register_command("help")
 		.description("Display console command usage information")
 		.handler(handler);
+#endif
 }

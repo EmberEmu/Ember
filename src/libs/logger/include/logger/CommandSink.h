@@ -42,6 +42,7 @@ class CommandSink final : public Sink {
 
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
+	static constexpr auto reserve_buf_size = 1024u;
 	static constexpr auto history_size = 5u;
 	static constexpr auto table_name_cols = 20u;
 	static constexpr auto table_desc_cols = 50u;
@@ -65,7 +66,8 @@ class CommandSink final : public Sink {
 
 	util::Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
-	void print_command_table(std::span<const commands::PartialMatches::Record> matches) const;
+	void print_command_table(std::span<const commands::PartialMatches::Record> matches);
+	std::string truncate_description(std::string_view description);
 
 	void clear_line();
 	void redraw_prompt();
@@ -77,7 +79,7 @@ class CommandSink final : public Sink {
 
 	void read_console_input();
 	void dispatch_command();
-	void write_buffer(bool redraw = true);
+	void write_buffer(std::span<const char> buffer, bool redraw = true);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 	void autocomplete();
 

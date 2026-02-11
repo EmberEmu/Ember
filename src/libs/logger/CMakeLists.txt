@@ -29,6 +29,7 @@ add_library(${LIBRARY_NAME}
     include/logger/FileWrapper.h
     include/logger/Severity.h
     include/logger/GlobalLogger.h
+    include/logger/detail/StreamBuffer.h
 )
 
 if(WIN32)

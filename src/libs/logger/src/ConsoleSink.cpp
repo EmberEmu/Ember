@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,6 +33,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
+
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter &detail.type)) {
 			size += data.size();
@@ -44,7 +45,6 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 		return;
 	}
 
-	out_buf_.clear();
 	out_buf_.reserve(size + (10 * records.size()));
 
 	const bool prefix = !prefix_.empty();
@@ -71,8 +71,9 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 
 	std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
 
+	out_buf_.clear();
+
 	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
-		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }
@@ -84,15 +85,18 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 	std::string_view sevsv = detail::severity_string(severity);
 
-	out_buf_.clear();
 	out_buf_.resize(prefix_.size() + record.size() + sevsv.size(), boost::container::default_init);
 
 	std::size_t offset = 0;
-	std::memcpy(out_buf_.data(), prefix_.data(), prefix_.size());
-	offset += prefix_.size();
-	std::memcpy(out_buf_.data() + offset, sevsv.data(), sevsv.size());
-	offset += sevsv.size();
-	std::memcpy(out_buf_.data() + offset, record.data(), record.size());
+
+	const auto append = [&](auto& fragment) {
+		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
+		offset += fragment.size();
+	};
+
+	append(prefix_);
+	append(sevsv);
+	append(record);
 
 	if(colour_) [[likely]] {
 		std::lock_guard guard(colour_lock);
@@ -108,8 +112,9 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 		}
 	}
 
+	out_buf_.clear();
+
 	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
-		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }

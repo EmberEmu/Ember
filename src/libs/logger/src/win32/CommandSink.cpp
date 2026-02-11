@@ -9,20 +9,24 @@
 #include <logger/CommandSink.h>
 #include <logger/Exception.h>
 #include <logger/Utility.h>
+#include <logger/detail/StreamBuffer.h>
 #include <bprinter/table_printer.h>
 #include <gsl/narrow>
 #include <boost/algorithm/string.hpp>
+#include <boost/container/small_vector.hpp>
+#include <shared/utility/FormatPacket.h>
 #include <Windows.h>
 #include <algorithm>
 #include <array>
 #include <iostream>
 #include <iterator>
 #include <string_view>
-#include <string>
 #include <cstdio>
 #include <cstring>
 
 namespace ember::log {
+
+using namespace detail;
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	: Sink(severity, filter, "CommandSink"),
@@ -72,7 +76,6 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 		return;
 	}
 
-	out_buf_.clear();
 	out_buf_.reserve(size + (10 * records.size()));
 
 	const bool prefix = !prefix_.empty();
@@ -97,10 +100,10 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 		}
 	}
 
-	write_buffer();
+	write_buffer(out_buf_);
+	out_buf_.clear();
 
 	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
-		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }
@@ -111,23 +114,25 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 	}
 
 	std::string_view sevsv = detail::severity_string(severity);
-
-	out_buf_.clear();
 	out_buf_.resize(prefix_.size() + record.size() + sevsv.size(), boost::container::default_init);
 
 	std::size_t offset = 0;
-	std::memcpy(out_buf_.data(), prefix_.data(), prefix_.size());
-	offset += prefix_.size();
-	std::memcpy(out_buf_.data() + offset, sevsv.data(), sevsv.size());
-	offset += sevsv.size();
-	std::memcpy(out_buf_.data() + offset, record.data(), record.size());
+
+	const auto append = [&](auto& fragment) {
+		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
+		offset += fragment.size();
+	};
+
+	append(prefix_);
+	append(sevsv);
+	append(record);
 
 	if(colour_) [[likely]] {
 		std::lock_guard guard(colour_lock);
 		util::ConsoleColour concol(severity_colour(severity));
-		write_buffer(false);
+		write_buffer(out_buf_, false);
 	} else {
-		write_buffer(false);
+		write_buffer(out_buf_, false);
 	}
 
 	redraw_prompt();
@@ -138,8 +143,9 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 		}
 	}
 
+	out_buf_.clear();
+
 	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
-		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}
 }
@@ -171,35 +177,70 @@ util::Colour CommandSink::severity_colour(Severity severity) {
 
 void CommandSink::clear_line() {
 	auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO info;
-	GetConsoleScreenBufferInfo(handle, &info);
-	info.dwCursorPosition.X = 0;
 
-	SetConsoleCursorPosition(handle, info.dwCursorPosition);
-	std::string clear(info.dwSize.X - 1, ' ');
-	std::cout << clear;
-	SetConsoleCursorPosition(handle, info.dwCursorPosition);
-}
-
-void CommandSink::redraw_prompt() {
-	std::lock_guard guard(console_lock_);
-
-	auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO info{};
 	GetConsoleScreenBufferInfo(handle, &info);
 
-	const COORD cursor_pos {
-		.X = 0,
-		.Y = info.dwSize.Y - 1
+	const SHORT window_width = info.srWindow.Right - info.srWindow.Left + 1;
+	const SHORT bottom_row = info.srWindow.Bottom;
+	const COORD startPos = {
+		.X = 0, .Y = bottom_row 
 	};
 
-	clear_line();
-	SetConsoleCursorPosition(handle, cursor_pos);
+	DWORD written = 0;
 
-	// restrict displayed command length to keep the console output tidy
-	const auto clamp = min(info.dwSize.X - prompt_.size() - 1, command_.size());
-	std::string_view subcmd(command_);
-	std::cout << prompt_ << subcmd.substr(0, clamp);
+	FillConsoleOutputCharacter(handle, ' ',window_width, startPos, &written);
+	FillConsoleOutputAttribute(handle, info.wAttributes, window_width, startPos, &written);
+}
+
+void CommandSink::redraw_prompt() {
+    std::lock_guard guard(console_lock_);
+
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    CONSOLE_SCREEN_BUFFER_INFO info{};
+    GetConsoleScreenBufferInfo(handle, &info);
+
+    const SHORT width = info.dwSize.X;
+    std::string_view subcmd(command_);
+    const auto clamp = min(width - prompt_.size() - 1, command_.size());
+    std::string full = prompt_ + std::string(subcmd.substr(0, clamp));
+
+	boost::container::small_vector<CHAR_INFO, reserve_buf_size> buffer(width);
+
+    for(SHORT i = 0; i < width; ++i) {
+        buffer[i].Char.AsciiChar = ' ';
+        buffer[i].Attributes = info.wAttributes;
+    }
+
+    for(size_t i = 0; i < full.size() && i < width; ++i) {
+        buffer[i].Char.AsciiChar = full[i];
+    }
+
+    const SHORT bottom = info.dwSize.Y - 1;
+
+    SMALL_RECT region {
+		.Left = 0,
+		.Top = bottom,
+		.Right = gsl::narrow_cast<SHORT>(width - 1),
+		.Bottom = bottom
+    };
+
+    const COORD buf_size{ 
+		.X = width, 
+		.Y = 1
+	};
+
+    const COORD buf_coord {};
+
+	WriteConsoleOutput(handle, buffer.data(), buf_size, buf_coord, &region);
+
+    COORD cursor{
+		.X = gsl::narrow_cast<SHORT>(prompt_.size() + clamp),
+        .Y = bottom
+    };
+
+    SetConsoleCursorPosition(handle, cursor);
 }
 
 void CommandSink::dispatch_command() {
@@ -372,8 +413,18 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-void CommandSink::print_command_table(std::span<const commands::PartialMatches::Record> matches) const {
-	bprinter::TablePrinter printer(&std::cout);
+std::string CommandSink::truncate_description(std::string_view description) {
+	static_assert(table_desc_cols >= 3);
+	const auto ellipsis_space = table_desc_cols - 3;
+	return std::string(description.substr(0, ellipsis_space)) + "...";
+}
+
+void CommandSink::print_command_table(std::span<const commands::PartialMatches::Record> matches) {
+	boost::container::small_vector<char, max_buf_size> buffer;
+	StreamBuffer stream_buffer(buffer);
+	std::ostream stream(&stream_buffer);
+
+	bprinter::TablePrinter printer(&stream);
 	printer.AddColumn("Command", table_name_cols);
 	printer.AddColumn("Description", table_desc_cols);
 	printer.PrintHeader();
@@ -381,14 +432,15 @@ void CommandSink::print_command_table(std::span<const commands::PartialMatches::
 	for(const auto& match : matches) {
 		printer << match.name;
 
-		if(match.desc.size() <= table_desc_cols) {
-			printer << match.desc;
+		if(match.desc.size() > table_desc_cols) {
+			printer << truncate_description(match.desc);
 		} else {
-			printer << (match.desc.substr(0, table_desc_cols - 3) + "...");
+			printer << match.desc;
 		}
 	}
 
 	printer.PrintFooter();
+	write_buffer(buffer, true);
 }
 
 void CommandSink::cursor_reposition(const CursorPosition position) {
@@ -405,11 +457,108 @@ void CommandSink::cursor_reposition(const CursorPosition position) {
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
 
-void CommandSink::write_buffer(bool redraw) {
+static std::wstring utf8_to_utf16(std::string_view str) {
+	if (str.empty()) return {};
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), nullptr, 0);
+	std::wstring wstr(size_needed, L'\0');
+	MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), wstr.data(), size_needed);
+	return wstr;
+}
+
+void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {
 	std::lock_guard guard(console_lock_);
 
-	clear_line();
-	std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
+	if(buffer.empty()) {
+		return;
+	}
+
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO info{};
+
+	if(!GetConsoleScreenBufferInfo(handle, &info)) {
+		return;
+	}
+
+	const auto width = info.dwSize.X;
+	const auto prompt_row = info.dwCursorPosition.Y;
+
+	auto wlen = MultiByteToWideChar(
+		CP_UTF8, 0,
+		reinterpret_cast<const char*>(buffer.data()),
+		gsl::narrow_cast<int>(buffer.size()),
+		nullptr, 0
+	);
+
+	if(wlen <= 0) {
+		return;
+	}
+
+	boost::container::small_vector<wchar_t, reserve_buf_size> wbuf(wlen);
+
+	MultiByteToWideChar(
+		CP_UTF8, 0,
+		reinterpret_cast<const char*>(buffer.data()),
+		static_cast<int>(buffer.size()),
+		wbuf.data(),
+		wlen
+	);
+
+	std::size_t row_start = 0;
+
+	while(row_start < wbuf.size()) {
+		std::size_t row_end = row_start;
+		std::size_t row_len = 0;
+
+		while(row_end < wbuf.size() && row_len < width) {
+			if (wbuf[row_end] == L'\n') break;
+			++row_end;
+			++row_len;
+		}
+
+		if(prompt_row > 0) {
+			const SMALL_RECT scroll_rect {
+				.Right = width - 1,
+				.Bottom = prompt_row - 1
+			};
+
+			const COORD dest_origin {
+				 .Y = -1
+			};
+
+			CHAR_INFO fill{};
+			fill.Char.UnicodeChar = L' ';
+			fill.Attributes = info.wAttributes;
+			ScrollConsoleScreenBuffer(handle, &scroll_rect, nullptr, dest_origin, &fill);
+		}
+
+		boost::container::small_vector<CHAR_INFO, reserve_buf_size> row(width);
+
+		for(SHORT i = 0; i < width; ++i) {
+			row[i].Char.UnicodeChar = i < row_len? wbuf[row_start + i] : L' ';
+			row[i].Attributes = info.wAttributes;
+		}
+
+		SMALL_RECT rect {
+			.Left = 0, 
+			.Top = static_cast<SHORT>(prompt_row - 1),
+			.Right = width - 1,
+			.Bottom = static_cast<SHORT>(prompt_row - 1)
+		};
+
+		const COORD buf_size {
+			.X = width,
+			.Y = 1
+		};
+
+		const COORD buf_coord {};
+		WriteConsoleOutputW(handle, row.data(), buf_size, buf_coord, &rect);
+
+		row_start = row_end;
+
+		if(row_start < wbuf.size() && wbuf[row_start] == L'\n') {
+			++row_start;
+		}
+	}
 
 	if(redraw) {
 		redraw_prompt();
