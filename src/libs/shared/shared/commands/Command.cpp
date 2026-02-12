@@ -46,9 +46,9 @@ Result Command::execute(std::span<const std::string> arguments) {
 	{
 		std::lock_guard guard(mutex_);
 
-		/*if(auto validation = validate_arg_count(arguments.size()); validation != Result::success) {
+		if(auto validation = validate_arg_count(arguments.size()); validation != Result::success) {
 			return validation;
-		}*/
+		}
 
 		arg_store = std::move(build_argument_store(arguments));
 

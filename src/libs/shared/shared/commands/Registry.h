@@ -30,7 +30,7 @@ public:
 	using CommandGet = std::pair<std::shared_ptr<Command>, std::size_t>;
 
 private:
-	CommandMap registry_;
+	Command root_;
 	mutable std::mutex lock_;
 
 	PartialMatches autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
@@ -39,6 +39,8 @@ private:
 	std::shared_ptr<Command> find_command(std::span<const std::string> tokens, std::size_t& depth);
 
 public:
+	Registry();
+
 	std::vector<std::string> parse_input(std::string_view input) const;
 	PartialMatches autocomplete(std::string_view query) const;
 

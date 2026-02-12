@@ -12,12 +12,14 @@
 
 namespace ember::commands {
 
+Registry::Registry()
+	: root_("") {}
+
 std::shared_ptr<Command> Registry::register_command(std::string name) {
 	std::lock_guard guard(lock_);
 
 	auto command = std::make_shared<Command>(name);
-	registry_.try_emplace(name, command);
-	return command;
+	return root_.subcommand(name);
 }
 
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
@@ -41,7 +43,7 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 std::shared_ptr<Command> Registry::find_command(std::span<const std::string> tokens, std::size_t& depth) {
 	// we need go as deep as possible into the subcommand chain
 	std::shared_ptr<Command> command;
-	auto registry = registry_;
+	auto registry = root_.subcommands();
 
 	for(auto& token : tokens) {
 		const auto& command_name = token;
@@ -141,7 +143,7 @@ PartialMatches Registry::autocomplete(std::string_view query) const {
 	std::lock_guard guard(lock_);
 	
 	auto tokens = parse_input(query);
-	auto results = autocomplete_recurse(registry_, tokens);
+	auto results = autocomplete_recurse(root_.subcommands(), tokens);
 
 	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
 		return a.name < b.name;
@@ -152,7 +154,7 @@ PartialMatches Registry::autocomplete(std::string_view query) const {
 
 bool Registry::unregister(const std::string& name) {
 	std::lock_guard guard(lock_);
-	return !!registry_.erase(name);
+	return !!root_.remove_subcommand(name);
 }
 
 } // commands, ember
