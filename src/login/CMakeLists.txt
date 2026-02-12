@@ -88,6 +88,7 @@ source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
+add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} dbcreader spark srp6 logger stun ports shared ${ZLIB_LIBRARY} ${BOTAN_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
