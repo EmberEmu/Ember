@@ -19,11 +19,11 @@ set(SHARED_DAOS_SRC
     shared/database/daos/UserDAO.h
     shared/database/daos/CharacterDAO.h
     shared/database/daos/PatchDAO.h
-    shared/database/daos/shared_base/IPBanBase.h
-    shared/database/daos/shared_base/RealmBase.h
-    shared/database/daos/shared_base/UserBase.h
-    shared/database/daos/shared_base/CharacterBase.h
-    shared/database/daos/shared_base/PatchBase.h
+    shared/database/daos/base/IPBan.h
+    shared/database/daos/base/Realm.h
+    shared/database/daos/base/User.h
+    shared/database/daos/base/Character.h
+    shared/database/daos/base/Patch.h
 )
 
 set(MYSQL_DAOS_SRC

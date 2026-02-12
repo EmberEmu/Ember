@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <shared/database/daos/shared_base/Types.h>
+#include <shared/database/daos/base/Types.h>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/address_v6_range.hpp>
 #include <stdexcept>

@@ -7,7 +7,7 @@
  */
 
 #include <login/Patcher.h>
-#include <shared/database/daos/shared_base/PatchBase.h>
+#include <shared/database/daos/base/Patch.h>
 #include <gtest/gtest.h>
 #include <numeric>
 #include <span>
