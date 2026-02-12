@@ -48,6 +48,7 @@ public:
 	Command& operator=(Command&) = delete;
 	Command& operator=(Command&&) = delete;
 
+	void subcommand(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> subcommand(std::string name);
 	Command& description(std::string description);
 	Command& arg(std::string argument);

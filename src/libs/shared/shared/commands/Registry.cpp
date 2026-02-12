@@ -22,6 +22,11 @@ std::shared_ptr<Command> Registry::register_command(std::string name) {
 	return root_.subcommand(name);
 }
 
+void Registry::register_command(std::shared_ptr<Command> command) {
+	std::lock_guard guard(lock_);
+	return root_.subcommand(std::move(command));
+}
+
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
 	std::vector<std::string> arg_values;
 	std::string input_str(input);

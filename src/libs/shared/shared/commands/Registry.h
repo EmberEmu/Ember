@@ -41,10 +41,12 @@ private:
 public:
 	Registry();
 
+	std::shared_ptr<Command> register_command(std::string name);
+	void register_command(std::shared_ptr<Command> command);
+
 	std::vector<std::string> parse_input(std::string_view input) const;
 	Suggestions autocomplete(std::string_view query) const;
 
-	std::shared_ptr<Command> register_command(std::string name);
 	CommandGet get(std::span<const std::string> tokens);
 	bool unregister(const std::string& name);
 };

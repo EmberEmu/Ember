@@ -149,6 +149,12 @@ std::shared_ptr<Command> Command::subcommand(std::string name) {
 	return entry->second;
 }
 
+void Command::subcommand(std::shared_ptr<Command> command) {
+	std::lock_guard guard(mutex_);
+	const auto& name = command->name(); // avoid issues if right-to-left evaluation
+	subcommands_.insert_or_assign(name, std::move(command));
+}
+
 bool Command::remove_arg(const std::string& argument) {
 	std::lock_guard guard(mutex_);
 
