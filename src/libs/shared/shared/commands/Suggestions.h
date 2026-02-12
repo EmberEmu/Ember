@@ -14,13 +14,13 @@
 
 namespace ember::commands {
 
-struct PartialMatches {
+struct Suggestions {
 	struct Record {
 		std::string name;
 		std::string desc;
 	};
 
-	std::string partial_match;
+	std::string substring;
 	std::vector<Record> records;
 };
 

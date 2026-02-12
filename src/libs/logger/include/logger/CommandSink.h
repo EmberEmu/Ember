@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <shared/commands/PartialMatches.h>
+#include <shared/commands/Suggestions.h>
 #include <shared/utility/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <atomic>
@@ -38,7 +38,7 @@ class CommandSink final : public Sink {
 	};
 
 	using CommandHandler = std::function<void(std::string_view)>;
-	using Autocomplete = std::function<commands::PartialMatches(const std::string&)>;
+	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
 
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
@@ -66,7 +66,7 @@ class CommandSink final : public Sink {
 
 	util::Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
-	void print_command_table(std::span<const commands::PartialMatches::Record> matches);
+	void print_command_table(std::span<const commands::Suggestions::Record> matches);
 	std::string truncate_description(std::string_view description);
 
 	void clear_line();

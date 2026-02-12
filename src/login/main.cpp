@@ -12,6 +12,7 @@
 #include <shared/Banner.h>
 #include <shared/Version.h>
 #include <shared/commands/Registry.h>
+#include <shared/commands/Utility.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
@@ -21,6 +22,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <ranges>
 #include <string>
 #include <thread>
 #include <cstdlib>
@@ -29,7 +31,7 @@ using namespace ember;
 namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const po::variables_map& args, log::Logger& logger);
+int run(const po::variables_map& args, commands::Registry& registry, log::Logger& logger);
 void register_command_handlers(commands::Registry& registry, log::Logger& logger);
 void register_help_command(commands::Registry& registry, log::Logger& logger);
 
@@ -56,19 +58,18 @@ int main(int argc, const char* argv[]) try {
 	register_command_handlers(registry, logger);
 	register_help_command(registry, logger);
 
-	const auto ret = run(args, logger);
+	const auto ret = run(args, registry, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
-	return EXIT_FAILURE;
 }
 
-int run(const po::variables_map& args, log::Logger& logger) try {
+int run(const po::variables_map& args, commands::Registry& registry, log::Logger& logger) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	login::Service service(logger);
+	login::Service service(registry, logger);
 
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
@@ -147,18 +148,32 @@ void register_command_handlers(commands::Registry& registry, log::Logger& logger
 
 	// register default command handler
 	sink->register_handler([&](auto input) {
-		const auto tokens = registry.parse_input(input);
-		const auto result = registry.execute(tokens);
+		auto tokens = registry.parse_input(input);
+		const auto [command, depth] = registry.get(tokens);
 
-		if(result != commands::Registry::Result::Success) {
-			const auto& command = registry.get(tokens.front());
+		if(!command) {
+			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", tokens.front());
+			return;
+		}
 
-			if(command) {
-				LOG_CONSOLE_ERROR_SYNC(logger, "Usage: {}", command->usage_string());
-			} else if(!tokens.empty()) {
-				LOG_CONSOLE_ERROR_SYNC(logger, R"(Command "{}" not found)", tokens.front());
+		auto arguments = std::span(tokens).subspan(depth);
+
+		if(auto result = command->execute(arguments); result != commands::Result::success) {
+			const auto& path = commands::path_fragment(tokens, depth);
+
+			if(result == commands::Result::missing_args || result == commands::Result::too_many_args) {
+				LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {}{}", path, command->usage_string());
+			} else if(result == commands::Result::subcommands) {
+
+				LOG_CONSOLE_ASYNC(logger, R"(Available subcomands for "{}": )", path);
+
+				for(auto& subcommand : command->subcommands() | std::views::values) {
+					LOG_CONSOLE_ASYNC(logger, "{} : {}", subcommand->name(), subcommand->description());
+				}
+			} else if(result == commands::Result::unavailable) {
+				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);
 			} else {
-				LOG_CONSOLE_ERROR_SYNC(logger, "Unable to process command");
+				LOG_CONSOLE_ERROR_ASYNC(logger, R"(An error occurred while executing "{}")", path);
 			}
 		}
 	});
@@ -172,7 +187,7 @@ void register_help_command(commands::Registry& registry, log::Logger& logger) {
 	};
 
 	registry.register_command("help")
-		.description("Display console command usage information")
-		.handler(handler);
+		->description("Display console command usage information")
+		->handler(handler);
 #endif
 }

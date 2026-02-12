@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -38,6 +38,7 @@ class NetworkListener final {
 	log::Logger& logger_;
 	Metrics& metrics_;
 	IPBanCache& ban_list_;
+	std::size_t peak_connections_;
 
 	void accept_connection() {
 		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
@@ -66,6 +67,7 @@ class NetworkListener final {
 					LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ip.to_string());
 					metrics_.increment("accepted_connections");
 					start_session(std::move(socket_));
+					peak_connections_ = std::max(peak_connections_, sessions_.count());
 				} else {
 					LOG_DEBUG_ASYNC(logger_, "Rejected connection {} from banned IP range", ip.to_string());
 					metrics_.increment("rejected_connections");
@@ -94,7 +96,8 @@ public:
 		  session_builder_(session_create),
 		  logger_(logger),
 		  metrics_(metrics),
-		  ban_list_(bans) {
+		  ban_list_(bans),
+		  peak_connections_(0) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		accept_connection();
@@ -112,6 +115,10 @@ public:
 
 	std::uint16_t port() const {
 		return acceptor_.local_endpoint().port();
+	}
+
+	std::size_t peak_connections() const {
+		return peak_connections_;
 	}
 };
 

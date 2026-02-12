@@ -7,140 +7,154 @@
  */
 
 #include "Registry.h"
+#include <algorithm>
 #include <ranges>
-#include <boost/tokenizer.hpp>
-#include <cassert>
 
 namespace ember::commands {
 
-Command& Registry::register_command(std::string name) {
+Registry::Registry()
+	: root_("") {}
+
+std::shared_ptr<Command> Registry::register_command(std::string name) {
 	std::lock_guard guard(lock_);
 
-	auto [pair, _] = registry_.try_emplace(name, name);
-	return pair->second;
+	auto command = std::make_shared<Command>(name);
+	return root_.subcommand(name);
 }
 
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
-	return parse_input(std::string(input));
-}
-
-std::vector<std::string> Registry::parse_input(const std::string& input) const {
-	boost::char_separator<char> separator(" ");
-	boost::tokenizer<boost::char_separator<char>> tokens(input, separator);
 	std::vector<std::string> arg_values;
+	std::string input_str(input);
+	std::istringstream stream;
+	stream.str(std::move(input_str));
+	
+	std::string token;
 
-	for(const auto& token : tokens) {
-		arg_values.emplace_back(token);
+	while(stream >> token) {
+		arg_values.emplace_back(std::move(token));
+		token.clear(); // reset state
 	}
 
 	return arg_values;
 }
 
-auto Registry::execute(const std::string& input) -> Result {
-	auto tokens = parse_input(input);
-	return execute(tokens);
-}
+// this is really inefficient due to the registry copies (must be copied from subcommands for safety)
+// but it's not even remotely performance sensitive, so it'll do
+std::shared_ptr<Command> Registry::find_command(std::span<const std::string> tokens, std::size_t& depth) {
+	// we need go as deep as possible into the subcommand chain
+	std::shared_ptr<Command> command;
+	auto registry = root_.subcommands();
 
-auto Registry::validate_arg_count(const std::size_t count, const Command& cmd) const -> Result {
-	if(count < cmd.req_args) {
-		return Result::MissingArgs;
-	} else if(count > cmd.total_args) {
-		return Result::TooManyArgs;
+	for(auto& token : tokens) {
+		const auto& command_name = token;
+		const auto result = registry.find(command_name);
+
+		if(result != registry.end()) {
+			++depth;
+			command = result->second;
+			registry = command->subcommands();
+		} else {
+			break;
+		}
 	}
 
-	return Result::Success;
+	return command;
 }
 
-ArgumentStore Registry::build_argument_store(std::span<const std::string> tokens, const Command& command) {
-	ArgumentStore arg_store;
-
-	assert(command.args_.size() >= tokens.size());
-
-	for(auto i = 0u; i < tokens.size(); ++i) {
-		Argument arg(tokens[i], command.args_[i].required);
-		arg_store.emplace(command.args_[i].value, std::move(arg));
-	}
-	
-	return arg_store;
-}
-
-auto Registry::execute(std::span<const std::string> tokens) -> Result {
-	if(tokens.empty()) {
-		return Result::BadInput;
-	}
-
+auto Registry::get(std::span<const std::string> tokens) -> CommandGet {
 	std::lock_guard guard(lock_);
+	std::size_t depth = 0;
+	return { find_command(tokens, depth), depth };
+}
 
-	const auto& command_name = tokens.front();
-	auto result = registry_.find(command_name);
-
-	if(result == registry_.end()) {
-		return Result::NotFound;
+std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) const {
+	if(matches.empty()) {
+		return {};
 	}
 
-	auto& [_, command] = *result;
+	std::string prefix = matches.front().name;
 
-	if(auto result = validate_arg_count(tokens.size(), command); result != Result::Success) {
+	for(const auto& match : matches) {
+		std::size_t i = 0;
+
+		while(i < prefix.size() && i < match.name.size() && prefix[i] == match.name[i]) {
+			++i;
+		}
+
+		prefix.resize(i);
+
+		if(prefix.empty()) {
+			break;
+		}
+	}
+
+	return prefix;
+}
+
+Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const {
+	Suggestions result;
+
+	if(tokens.empty()) {
+		for(const auto& cmd : commands | std::views::values) {
+			result.records.emplace_back(cmd->name(), cmd->description());
+		}
+
 		return result;
 	}
 
-	auto arg_store = build_argument_store(tokens, command);
-
-	if(command.handler_) {
-		command.handler_(std::move(arg_store));
-		return Result::Success;
-	} else {
-		return Result::NoHandler;
-	}
-}
-
-std::optional<Command> Registry::get(std::string name) {
-	std::lock_guard guard(lock_);
-
-	if(auto cmd = registry_.find(name); cmd != registry_.end()) {
-		return cmd->second;
-	} else {
-		return std::nullopt;
-	}
-}
-
-PartialMatches Registry::autocomplete(std::string_view query) const {
-	std::lock_guard guard(lock_);
-
-	PartialMatches result;
-	result.partial_match = query;
-
-	// find potential command matches
-	for(const auto& cmd : registry_ | std::views::values) {
-		if(cmd.name_.starts_with(query)) {
-			result.records.emplace_back(cmd.name_, cmd.description_);
+	for(const auto& cmd : commands | std::views::values) {
+		if(cmd->name().starts_with(tokens.front())) {
+			result.records.emplace_back(cmd->name(), cmd->description());
 		}
 	}
 
 	// hack to find the longest common substring without
 	// bothering to write an entire trie (this is not perf. sensitive)
-	if(!result.records.empty()) {
-		result.partial_match = result.records.front().name;
-	}
-	
-	for(auto it = result.records.begin(); it != result.records.end();) {
-		if(!it->name.starts_with(result.partial_match)) {
-			result.partial_match.pop_back();
-		} else {
-			++it;
-		}
+	if(result.records.empty()) {
+		return result;
 	}
 
-	std::ranges::sort(result.records, [&](const auto& a, const auto& b) {
-		return a.name < b.name;
-	});
+	result.substring = longest_prefix(result.records);
+
+	if(auto it = commands.find(result.substring); it != commands.end()) {
+		const auto& [_, command] = *it;
+
+		if(!command->subcommands().empty()) {
+			// We'll only update the suggestions if we already had an exact match in the query.
+			// This means that this autocomplete will display info on the current command,
+			// not subcommands that match the new query string that we're about to return.
+			const bool exact_match = commands.contains(tokens.front());
+
+			if(exact_match) {
+				auto recurse_res = autocomplete_recurse(command->subcommands(), tokens.subspan<1>());
+				result.substring.push_back(' ');
+				result.substring += recurse_res.substring;
+				result.records = std::move(recurse_res.records);
+			} else {
+				result.substring.push_back(' ');
+			}
+		}
+	}
 
 	return result;
 }
 
+Suggestions Registry::autocomplete(std::string_view query) const {
+	std::lock_guard guard(lock_);
+	
+	auto tokens = parse_input(query);
+	auto results = autocomplete_recurse(root_.subcommands(), tokens);
+
+	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
+		return a.name < b.name;
+	});
+	
+	return results;
+}
+
 bool Registry::unregister(const std::string& name) {
 	std::lock_guard guard(lock_);
-	return !!registry_.erase(name);
+	return !!root_.remove_subcommand(name);
 }
 
 } // commands, ember

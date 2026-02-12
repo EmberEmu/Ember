@@ -26,6 +26,14 @@ public:
 	const Argument& operator[](const std::string& arg_name) {
 		return args_.at(arg_name);
 	}
+
+	auto begin() {
+		return args_.begin();
+	}
+	
+	auto end() {
+		return args_.end();
+	}
 };
 
 } // commands, ember
