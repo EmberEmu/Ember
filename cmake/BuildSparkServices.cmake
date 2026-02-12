@@ -1,4 +1,4 @@
-# Copyright (c) 2021 - 2025 Ember
+# Copyright (c) 2021 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,34 +10,36 @@ function(build_spark_services
          bfbs_dir
          output_dir)
 
-	SET(rpcgen "rpcgen")
+    set(rpcgen "rpcgen")
+    set(output_files "")
 
-    foreach(schema_path ${service_schemas})
-		message(${schema_path})
-        cmake_path(GET schema_path FILENAME out)
-        cmake_path(REMOVE_EXTENSION out)
-        set(input_files ${input_files} ${bfbs_dir}/${out}.bfbs)
-        set(output_files ${output_files} ${output_dir}/${out}ClientStub.h)
-		set(output_files ${output_files} ${output_dir}/${out}ServiceStub.h)
+    foreach(schema_path IN LISTS service_schemas)
+        cmake_path(GET schema_path FILENAME name)
+        cmake_path(REMOVE_EXTENSION name)
+
+        set(bfbs_file "${bfbs_dir}/${name}.bfbs")
+        set(client_h "${output_dir}/${name}ClientStub.h")
+        set(service_h "${output_dir}/${name}ServiceStub.h")
+
+        add_custom_command(
+            OUTPUT ${client_h} ${service_h}
+            COMMAND ${rpcgen}
+                    -t ${template_dir}
+                    -s ${bfbs_file}
+                    -o ${output_dir}
+            DEPENDS ${rpcgen} ${bfbs_file}
+            COMMENT "Generating Spark stubs for ${name}"
+            VERBATIM
+        )
+
+        list(APPEND output_files ${client_h} ${service_h})
     endforeach()
-  
-	# concat the filenames into a format usable by the tool
-    foreach(filename ${input_files})
-        set(input_name_str "${filename}" ${input_name_str})
-    endforeach()
 
-    set_source_files_properties(${${output_files}} PROPERTIES GENERATED TRUE)
-
-    add_custom_command(
-		OUTPUT ${output_files}
-        COMMAND ${rpcgen} -t ${template_dir} -s ${input_name_str} -o ${output_dir}
-        COMMENT "Generating Spark RPC service stubs..."
-		DEPENDS ${rpcgen} ${input_files}
-    )
-
-	add_custom_target(SPARK_RPC_GENERATE ALL
+    add_custom_target(
+        SPARK_RPC_GENERATE
         DEPENDS ${output_files}
     )
 
-    set(${output_files} ${${output_files}} PARENT_SCOPE)
+    set_source_files_properties(${output_files} PROPERTIES GENERATED TRUE)
+    set(${output_files} ${output_files} PARENT_SCOPE)
 endfunction()
