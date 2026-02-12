@@ -4,12 +4,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-function(build_dbc_loaders dbc_hdr dbc_src
-                           definition_dirs
-                           output_dir
-                           template_dir
-                           target_name
-                           fverbosity)
+
+ function(build_dbc_loaders dbc_hdr dbc_src
+                            definition_dirs
+                            output_dir
+                            template_dir
+                            target_name
+                            fverbosity)
     set(dbc_parser "dbc-parser")
 
     set(${dbc_hdr} "")
@@ -32,22 +33,23 @@ function(build_dbc_loaders dbc_hdr dbc_src
         file(GLOB input_dbcs ${input_dbcs} ${dir}/*.xml)
     endforeach()
 
-    set(definition_dir_str "")
-    foreach(dir ${definition_dirs})
-        set(definition_dir_str "${definition_dir_str}\"${dir}\" ")
-    endforeach()
-
     add_custom_command(
         OUTPUT ${${dbc_hdr}} ${${dbc_src}}
-        COMMAND ${dbc_parser} -d ${definition_dir_str} -t ${template_dir} -o ${output_dir} --fverbosity ${fverbosity} --disk
-        DEPENDS ${dbc_parser} ${input_dbcs} 
+        COMMAND ${dbc_parser} 
+        -d ${definition_dirs}
+        -t ${template_dir} 
+        -o ${output_dir} 
+        --fverbosity ${fverbosity} 
+        --disk
+        DEPENDS ${dbc_parser} ${input_dbcs}
         COMMENT "Generating DBC loaders..."
     )
 
     add_custom_target(
-        ${target_name}
+        ${target_name} ALL
         DEPENDS ${dbc_parser} ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies}
     )
 
+    set(${dbc_hdr} ${${dbc_hdr}} PARENT_SCOPE)
     set(${dbc_src} ${${dbc_src}} PARENT_SCOPE)
 endfunction()
