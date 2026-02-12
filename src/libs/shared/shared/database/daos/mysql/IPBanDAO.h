@@ -9,6 +9,8 @@
 #pragma once
 
 #include <shared/database/daos/base/IPBan.h>
+#include <shared/database/daos/base/Types.h>
+#include <shared/database/Exception.h>
 #include <conpool/ConnectionPool.h>
 #include <mysql_connection.h>
 #include <cppconn/exception.h>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,12 +8,16 @@
 
 #pragma once
 
-#include <shared/database/Exception.h>
-#include <shared/database/objects/Character.h>
-#include <string>
 #include <optional>
+#include <string>
 #include <vector>
 #include <cstdint>
+
+namespace ember {
+
+struct Character;
+
+} // ember
 
 namespace ember::dal {
 
