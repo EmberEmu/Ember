@@ -113,6 +113,7 @@ set(COMMANDS_SRC
     shared/commands/Arguments.h
     shared/commands/Utility.h
     shared/commands/Result.h
+    shared/commands/Suggestions.h
 )
 
 set(LIBRARY_SRC

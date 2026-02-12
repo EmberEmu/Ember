@@ -67,7 +67,7 @@ auto Registry::get(std::span<const std::string> tokens) -> CommandGet {
 	return { find_command(tokens, depth), depth };
 }
 
-std::string Registry::longest_prefix(std::span<const PartialMatches::Record> matches) const {
+std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) const {
 	if(matches.empty()) {
 		return {};
 	}
@@ -91,8 +91,8 @@ std::string Registry::longest_prefix(std::span<const PartialMatches::Record> mat
 	return prefix;
 }
 
-PartialMatches Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const {
-	PartialMatches result;
+Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const {
+	Suggestions result;
 
 	if(tokens.empty()) {
 		for(const auto& cmd : commands | std::views::values) {
@@ -114,9 +114,9 @@ PartialMatches Registry::autocomplete_recurse(const CommandMap& commands, std::s
 		return result;
 	}
 
-	result.partial_match = longest_prefix(result.records);
+	result.substring = longest_prefix(result.records);
 
-	if(auto it = commands.find(result.partial_match); it != commands.end()) {
+	if(auto it = commands.find(result.substring); it != commands.end()) {
 		const auto& [_, command] = *it;
 
 		if(!command->subcommands().empty()) {
@@ -127,11 +127,11 @@ PartialMatches Registry::autocomplete_recurse(const CommandMap& commands, std::s
 
 			if(exact_match) {
 				auto recurse_res = autocomplete_recurse(command->subcommands(), tokens.subspan<1>());
-				result.partial_match.push_back(' ');
-				result.partial_match += recurse_res.partial_match;
+				result.substring.push_back(' ');
+				result.substring += recurse_res.substring;
 				result.records = std::move(recurse_res.records);
 			} else {
-				result.partial_match.push_back(' ');
+				result.substring.push_back(' ');
 			}
 		}
 	}
@@ -139,7 +139,7 @@ PartialMatches Registry::autocomplete_recurse(const CommandMap& commands, std::s
 	return result;
 }
 
-PartialMatches Registry::autocomplete(std::string_view query) const {
+Suggestions Registry::autocomplete(std::string_view query) const {
 	std::lock_guard guard(lock_);
 	
 	auto tokens = parse_input(query);

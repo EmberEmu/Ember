@@ -144,9 +144,10 @@ std::string Command::usage_string() const {
 std::shared_ptr<Command> Command::subcommand(std::string name) {
 	std::lock_guard guard(mutex_);
 
-	auto [entry, _] = subcommands_.try_emplace(
+	auto [entry, _] = subcommands_.insert_or_assign(
 		name, std::make_shared<Command>(name)
 	);
+
 	return entry->second;
 }
 

@@ -11,7 +11,7 @@
 #include "Argument.h"
 #include "Result.h"
 #include "Command.h"
-#include "PartialMatches.h"
+#include "Suggestions.h"
 #include <exception>
 #include <functional>
 #include <memory>
@@ -33,16 +33,16 @@ private:
 	Command root_;
 	mutable std::mutex lock_;
 
-	PartialMatches autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
+	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
 
-	std::string longest_prefix(std::span<const PartialMatches::Record> matches) const;
+	std::string longest_prefix(std::span<const Suggestions::Record> matches) const;
 	std::shared_ptr<Command> find_command(std::span<const std::string> tokens, std::size_t& depth);
 
 public:
 	Registry();
 
 	std::vector<std::string> parse_input(std::string_view input) const;
-	PartialMatches autocomplete(std::string_view query) const;
+	Suggestions autocomplete(std::string_view query) const;
 
 	std::shared_ptr<Command> register_command(std::string name);
 	CommandGet get(std::span<const std::string> tokens);

@@ -34,9 +34,8 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	  colour_(false),
 	  stopped_(false),
 	  history_idx_(0) {
-	redraw_prompt();
-
 	event_handler_ = std::jthread([&]() {
+		redraw_prompt();
 		read_console_input();
 	});
 }
@@ -407,19 +406,19 @@ void CommandSink::autocomplete() {
 	}
 	
 	std::lock_guard guard(console_lock_);
-	command_ = result.partial_match;
-	clear_line();
+	command_ = result.substring;
 	print_command_table(result.records);
 	redraw_prompt();
 }
 
 std::string CommandSink::truncate_description(std::string_view description) {
-	static_assert(table_desc_cols >= 3);
-	const auto ellipsis_space = table_desc_cols - 3;
+	constexpr std::string_view ellipsis { "..." };
+	static_assert(table_desc_cols >= ellipsis.size());
+	const auto ellipsis_space = table_desc_cols - ellipsis.size();
 	return std::string(description.substr(0, ellipsis_space)) + "...";
 }
 
-void CommandSink::print_command_table(std::span<const commands::PartialMatches::Record> matches) {
+void CommandSink::print_command_table(std::span<const commands::Suggestions::Record> matches) {
 	boost::container::small_vector<char, max_buf_size> buffer;
 	StreamBuffer stream_buffer(buffer);
 	std::ostream stream(&stream_buffer);
@@ -458,8 +457,11 @@ void CommandSink::cursor_reposition(const CursorPosition position) {
 }
 
 static std::wstring utf8_to_utf16(std::string_view str) {
-	if (str.empty()) return {};
-	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), nullptr, 0);
+	if(str.empty()) {
+		return {};
+	}
+
+	auto size_needed = MultiByteToWideChar(CP_UTF8, 0, str.data(), gsl::narrow_cast<int>(str.size()), nullptr, 0);
 	std::wstring wstr(size_needed, L'\0');
 	MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), wstr.data(), size_needed);
 	return wstr;
