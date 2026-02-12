@@ -34,6 +34,7 @@ set(LIBRARY_SRC
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
+add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE logger shared spark ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
