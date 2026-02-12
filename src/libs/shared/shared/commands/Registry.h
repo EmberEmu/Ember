@@ -9,51 +9,42 @@
 #pragma once
 
 #include "Argument.h"
+#include "Result.h"
 #include "Command.h"
 #include "PartialMatches.h"
 #include <exception>
 #include <functional>
+#include <memory>
 #include <mutex>
-#include <optional>
-#include <unordered_map>
-#include <sstream>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
+#include <utility>
 #include <cstddef>
 
 namespace ember::commands {
 
 class Registry {
 public:
-	enum class Result {
-		Success,
-		NotFound,
-		TooManyArgs,
-		MissingArgs,
-		BadInput,
-		NoHandler
-	};
+	using CommandGet = std::pair<std::shared_ptr<Command>, std::size_t>;
 
 private:
-	std::unordered_map<std::string, Command> registry_;
+	CommandMap registry_;
 	mutable std::mutex lock_;
 
-	Result validate_arg_count(std::size_t count, const Command& cmd) const;
-	ArgumentStore build_argument_store(std::span<const std::string> tokens, const Command& command);
-	PartialMatches autocomplete_recurse(const std::unordered_map<std::string, Command>& commands, std::span<const std::string> tokens) const;
+	PartialMatches autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
+
 	std::string longest_prefix(std::span<const PartialMatches::Record> matches) const;
+	std::shared_ptr<Command> find_command(std::span<const std::string> tokens, std::size_t& depth);
 
 public:
-	std::vector<std::string> parse_input(const std::string& input) const;
 	std::vector<std::string> parse_input(std::string_view input) const;
 	PartialMatches autocomplete(std::string_view query) const;
 
-	Result execute(const std::string& input);
-	Result execute(std::span<const std::string> input);
-	Command& register_command(std::string name);
+	std::shared_ptr<Command> register_command(std::string name);
+	CommandGet get(std::span<const std::string> tokens);
 	bool unregister(const std::string& name);
-	std::optional<Command> get(std::string name);
 };
 
 } // commands, ember

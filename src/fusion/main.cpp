@@ -183,7 +183,8 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 
 	log::Logger service_logger;
 	util::configure_logger(service_logger, opts);
-	login::Service service(service_logger);
+	commands::Registry registry;
+	login::Service service(registry, service_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();

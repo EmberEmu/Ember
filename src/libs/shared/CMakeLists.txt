@@ -111,6 +111,8 @@ set(COMMANDS_SRC
     shared/commands/Command.cpp
     shared/commands/Argument.h
     shared/commands/Arguments.h
+    shared/commands/Utility.h
+    shared/commands/Result.h
 )
 
 set(LIBRARY_SRC

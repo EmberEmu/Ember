@@ -9,26 +9,23 @@
 #include "Registry.h"
 #include <algorithm>
 #include <ranges>
-#include <cassert>
-
-#include <iostream>
 
 namespace ember::commands {
 
-Command& Registry::register_command(std::string name) {
+std::shared_ptr<Command> Registry::register_command(std::string name) {
 	std::lock_guard guard(lock_);
 
-	auto [pair, _] = registry_.try_emplace(name, name);
-	return pair->second;
+	auto command = std::make_shared<Command>(name);
+	registry_.try_emplace(name, command);
+	return command;
 }
 
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
-	return parse_input(std::string(input));
-}
-
-std::vector<std::string> Registry::parse_input(const std::string& input) const {
 	std::vector<std::string> arg_values;
-	std::istringstream stream(input);
+	std::string input_str(input);
+	std::istringstream stream;
+	stream.str(std::move(input_str));
+	
 	std::string token;
 
 	while(stream >> token) {
@@ -39,75 +36,40 @@ std::vector<std::string> Registry::parse_input(const std::string& input) const {
 	return arg_values;
 }
 
-auto Registry::execute(const std::string& input) -> Result {
-	auto tokens = parse_input(input);
-	return execute(tokens);
-}
+// this is really inefficient due to the registry copies (must be copied from subcommands for safety)
+// but it's not even remotely performance sensitive, so it'll do
+std::shared_ptr<Command> Registry::find_command(std::span<const std::string> tokens, std::size_t& depth) {
+	// we need go as deep as possible into the subcommand chain
+	std::shared_ptr<Command> command;
+	auto registry = registry_;
 
-auto Registry::validate_arg_count(const std::size_t count, const Command& cmd) const -> Result {
-	if(count < cmd.req_args) {
-		return Result::MissingArgs;
-	} else if(count > cmd.total_args) {
-		return Result::TooManyArgs;
+	for(auto& token : tokens) {
+		const auto& command_name = token;
+		const auto result = registry.find(command_name);
+
+		if(result != registry.end()) {
+			++depth;
+			command = result->second;
+			registry = command->subcommands();
+		} else {
+			break;
+		}
 	}
 
-	return Result::Success;
+	return command;
 }
 
-ArgumentStore Registry::build_argument_store(std::span<const std::string> tokens, const Command& command) {
-	ArgumentStore arg_store;
-
-	assert(command.args_.size() >= tokens.size());
-
-	for(auto i = 0u; i < tokens.size(); ++i) {
-		Argument arg(tokens[i], command.args_[i].required);
-		arg_store.emplace(command.args_[i].value, std::move(arg));
-	}
-	
-	return arg_store;
-}
-
-auto Registry::execute(std::span<const std::string> tokens) -> Result {
-	if(tokens.empty()) {
-		return Result::BadInput;
-	}
-
+auto Registry::get(std::span<const std::string> tokens) -> CommandGet {
 	std::lock_guard guard(lock_);
-
-	const auto& command_name = tokens.front();
-	auto result = registry_.find(command_name);
-
-	if(result == registry_.end()) {
-		return Result::NotFound;
-	}
-
-	auto& [_, command] = *result;
-
-	if(auto validation = validate_arg_count(tokens.size(), command); validation != Result::Success) {
-		return validation;
-	}
-
-	auto arg_store = build_argument_store(tokens, command);
-
-	if(command.handler_) {
-		command.handler_(std::move(arg_store));
-		return Result::Success;
-	} else {
-		return Result::NoHandler;
-	}
-}
-
-std::optional<Command> Registry::get(std::string name) {
-	std::lock_guard guard(lock_);
-
-	if(auto cmd = registry_.find(name); cmd != registry_.end()) {
-		return cmd->second;
-	} else {
-		return std::nullopt;
-	}
+	std::size_t depth = 0;
+	return { find_command(tokens, depth), depth };
 }
 
 std::string Registry::longest_prefix(std::span<const PartialMatches::Record> matches) const {
+	if(matches.empty()) {
+		return {};
+	}
+
 	std::string prefix = matches.front().name;
 
 	for(const auto& match : matches) {
@@ -127,20 +89,20 @@ std::string Registry::longest_prefix(std::span<const PartialMatches::Record> mat
 	return prefix;
 }
 
-PartialMatches Registry::autocomplete_recurse(const std::unordered_map<std::string, Command>& commands, std::span<const std::string> tokens) const {
+PartialMatches Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const {
 	PartialMatches result;
 
 	if(tokens.empty()) {
 		for(const auto& cmd : commands | std::views::values) {
-			result.records.emplace_back(cmd.name_, cmd.description_);
+			result.records.emplace_back(cmd->name(), cmd->description());
 		}
 
 		return result;
 	}
 
 	for(const auto& cmd : commands | std::views::values) {
-		if(cmd.name_.starts_with(tokens.front())) {
-			result.records.emplace_back(cmd.name_, cmd.description_);
+		if(cmd->name().starts_with(tokens.front())) {
+			result.records.emplace_back(cmd->name(), cmd->description());
 		}
 	}
 
@@ -155,26 +117,22 @@ PartialMatches Registry::autocomplete_recurse(const std::unordered_map<std::stri
 	if(auto it = commands.find(result.partial_match); it != commands.end()) {
 		const auto& [_, command] = *it;
 
-		if(!command.subcommands_.empty()) {
+		if(!command->subcommands().empty()) {
 			// We'll only update the suggestions if we already had an exact match in the query.
 			// This means that this autocomplete will display info on the current command,
 			// not subcommands that match the new query string that we're about to return.
 			const bool exact_match = commands.contains(tokens.front());
 
 			if(exact_match) {
-				auto recurse_res = autocomplete_recurse(command.subcommands_, tokens.subspan<1>());
+				auto recurse_res = autocomplete_recurse(command->subcommands(), tokens.subspan<1>());
 				result.partial_match.push_back(' ');
 				result.partial_match += recurse_res.partial_match;
-				result.records = recurse_res.records;
+				result.records = std::move(recurse_res.records);
 			} else {
 				result.partial_match.push_back(' ');
 			}
 		}
 	}
-
-	std::ranges::sort(result.records, [&](const auto& a, const auto& b) {
-		return a.name < b.name;
-	});
 
 	return result;
 }
@@ -183,7 +141,13 @@ PartialMatches Registry::autocomplete(std::string_view query) const {
 	std::lock_guard guard(lock_);
 	
 	auto tokens = parse_input(query);
-	return autocomplete_recurse(registry_, tokens);
+	auto results = autocomplete_recurse(registry_, tokens);
+
+	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
+		return a.name < b.name;
+	});
+	
+	return results;
 }
 
 bool Registry::unregister(const std::string& name) {
