@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,16 +8,18 @@
 
 #pragma once
 
-#include <shared/database/Exception.h>
-#include <shared/Realm.h>
 #include <string>
 #include <optional>
-#include <utility>
 #include <vector>
+#include <cstdint>
 
-namespace ember { 
+namespace ember {
 
-namespace dal {
+struct Realm;
+
+} // ember
+
+namespace ember::dal {
 
 class RealmDAO {
 public:
@@ -26,4 +28,4 @@ public:
 	virtual ~RealmDAO() = default;
 };
 
-}} // dal, ember
+} // dal, ember

@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <shared/Realm.h>
 #include <shared/database/daos/base/Realm.h>
+#include <shared/database/Exception.h>
 #include <conpool/ConnectionPool.h>
 #include <mysql_connection.h>
 #include <cppconn/exception.h>

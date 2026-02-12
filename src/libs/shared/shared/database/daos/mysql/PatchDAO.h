@@ -9,6 +9,8 @@
 #pragma once
 
 #include <shared/database/daos/base/Patch.h>
+#include <shared/database/objects/PatchMeta.h>
+#include <shared/database/Exception.h>
 #include <botan/bigint.h>
 #include <conpool/ConnectionPool.h>
 #include <mysql_connection.h>

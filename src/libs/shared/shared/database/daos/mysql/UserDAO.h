@@ -9,6 +9,8 @@
 #pragma once
 
 #include <shared/database/daos/base/User.h>
+#include <shared/database/objects/User.h>
+#include <shared/database/Exception.h>
 #include <conpool/ConnectionPool.h>
 #include <mysql_connection.h>
 #include <cppconn/exception.h>
