@@ -69,4 +69,8 @@ std::string Command::usage_string() const {
 	return ss.str();
 }
 
+Command& Command::subcommand(std::string name) {
+	return subcommands_.try_emplace(name, name).first->second;
+}
+
 } // commands, ember

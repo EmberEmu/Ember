@@ -7,9 +7,11 @@
  */
 
 #include "Registry.h"
+#include <algorithm>
 #include <ranges>
-#include <boost/tokenizer.hpp>
 #include <cassert>
+
+#include <iostream>
 
 namespace ember::commands {
 
@@ -25,12 +27,13 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 }
 
 std::vector<std::string> Registry::parse_input(const std::string& input) const {
-	boost::char_separator<char> separator(" ");
-	boost::tokenizer<boost::char_separator<char>> tokens(input, separator);
 	std::vector<std::string> arg_values;
+	std::istringstream stream(input);
+	std::string token;
 
-	for(const auto& token : tokens) {
-		arg_values.emplace_back(token);
+	while(stream >> token) {
+		arg_values.emplace_back(std::move(token));
+		token.clear(); // reset state
 	}
 
 	return arg_values;
@@ -80,8 +83,8 @@ auto Registry::execute(std::span<const std::string> tokens) -> Result {
 
 	auto& [_, command] = *result;
 
-	if(auto result = validate_arg_count(tokens.size(), command); result != Result::Success) {
-		return result;
+	if(auto validation = validate_arg_count(tokens.size(), command); validation != Result::Success) {
+		return validation;
 	}
 
 	auto arg_store = build_argument_store(tokens, command);
@@ -104,30 +107,68 @@ std::optional<Command> Registry::get(std::string name) {
 	}
 }
 
-PartialMatches Registry::autocomplete(std::string_view query) const {
-	std::lock_guard guard(lock_);
+std::string Registry::longest_prefix(std::span<const PartialMatches::Record> matches) const {
+	std::string prefix = matches.front().name;
 
+	for(const auto& match : matches) {
+		std::size_t i = 0;
+
+		while(i < prefix.size() && i < match.name.size() && prefix[i] == match.name[i]) {
+			++i;
+		}
+
+		prefix.resize(i);
+
+		if(prefix.empty()) {
+			break;
+		}
+	}
+
+	return prefix;
+}
+
+PartialMatches Registry::autocomplete_recurse(const std::unordered_map<std::string, Command>& commands, std::span<const std::string> tokens) const {
 	PartialMatches result;
-	result.partial_match = query;
 
-	// find potential command matches
-	for(const auto& cmd : registry_ | std::views::values) {
-		if(cmd.name_.starts_with(query)) {
+	if(tokens.empty()) {
+		for(const auto& cmd : commands | std::views::values) {
+			result.records.emplace_back(cmd.name_, cmd.description_);
+		}
+
+		return result;
+	}
+
+	for(const auto& cmd : commands | std::views::values) {
+		if(cmd.name_.starts_with(tokens.front())) {
 			result.records.emplace_back(cmd.name_, cmd.description_);
 		}
 	}
 
 	// hack to find the longest common substring without
 	// bothering to write an entire trie (this is not perf. sensitive)
-	if(!result.records.empty()) {
-		result.partial_match = result.records.front().name;
+	if(result.records.empty()) {
+		return result;
 	}
-	
-	for(auto it = result.records.begin(); it != result.records.end();) {
-		if(!it->name.starts_with(result.partial_match)) {
-			result.partial_match.pop_back();
-		} else {
-			++it;
+
+	result.partial_match = longest_prefix(result.records);
+
+	if(auto it = commands.find(result.partial_match); it != commands.end()) {
+		const auto& [_, command] = *it;
+
+		if(!command.subcommands_.empty()) {
+			// We'll only update the suggestions if we already had an exact match in the query.
+			// This means that this autocomplete will display info on the current command,
+			// not subcommands that match the new query string that we're about to return.
+			const bool exact_match = commands.contains(tokens.front());
+
+			if(exact_match) {
+				auto recurse_res = autocomplete_recurse(command.subcommands_, tokens.subspan<1>());
+				result.partial_match.push_back(' ');
+				result.partial_match += recurse_res.partial_match;
+				result.records = recurse_res.records;
+			} else {
+				result.partial_match.push_back(' ');
+			}
 		}
 	}
 
@@ -136,6 +177,13 @@ PartialMatches Registry::autocomplete(std::string_view query) const {
 	});
 
 	return result;
+}
+
+PartialMatches Registry::autocomplete(std::string_view query) const {
+	std::lock_guard guard(lock_);
+	
+	auto tokens = parse_input(query);
+	return autocomplete_recurse(registry_, tokens);
 }
 
 bool Registry::unregister(const std::string& name) {

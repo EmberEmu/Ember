@@ -13,6 +13,7 @@
 #include <functional>
 #include <span>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ember::commands {
@@ -28,6 +29,8 @@ class Command {
 	std::vector<Argument> args_;
 	CommandHandler handler_;
 
+	std::unordered_map<std::string, Command> subcommands_;
+
 public:
 	Command(std::string name);
 
@@ -35,7 +38,7 @@ public:
 	Command& arg(std::string argument);
 	Command& optional_arg(std::string argument);
 	Command& handler(CommandHandler handler);
-
+	Command& subcommand(std::string name);
 	std::span<const Argument> args() const;
 	std::string usage_string() const;
 

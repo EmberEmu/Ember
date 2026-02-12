@@ -41,6 +41,8 @@ private:
 
 	Result validate_arg_count(std::size_t count, const Command& cmd) const;
 	ArgumentStore build_argument_store(std::span<const std::string> tokens, const Command& command);
+	PartialMatches autocomplete_recurse(const std::unordered_map<std::string, Command>& commands, std::span<const std::string> tokens) const;
+	std::string longest_prefix(std::span<const PartialMatches::Record> matches) const;
 
 public:
 	std::vector<std::string> parse_input(const std::string& input) const;
