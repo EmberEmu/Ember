@@ -8,6 +8,7 @@
 
 #include "Utility.h"
 #include <shared/CompilerWarn.h>
+#include <botan/bigint.h>
 
 #if defined __APPLE__
 	#include <TargetConditionals.h>
@@ -183,6 +184,24 @@ bool page_unlock(void* address, std::size_t length) {
 	#pragma message WARN("Implement page_unlock for this platform, thanks");
 	return false;
 #endif
+}
+
+std::uint32_t to_u32bit(const Botan::BigInt& value) {
+	if(value.is_negative()) {
+		throw Botan::Encoding_Error("BigInt::to_u32bit: Number is negative");
+	}
+
+	if(value.bits() > 32) {
+		throw Botan::Encoding_Error("BigInt::to_u32bit: Number is too big to convert");
+	}
+
+	uint32_t out = 0;
+
+	for(size_t i = 0; i != 4; ++i) {
+		out = (out << 8) | value.byte_at(3 - i);
+	}
+
+	return out;
 }
 
 } // util, ember

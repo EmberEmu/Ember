@@ -19,6 +19,7 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/utility/EnumHelper.h>
+#include <shared/utility/Utility.h>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
 #include <ranges>
@@ -217,7 +218,7 @@ grunt::server::LoginChallenge LoginHandler::build_login_challenge() {
 	const auto& values = authenticator.challenge_reply();
 	packet.B = values.B;
 	packet.g_len = gsl::narrow<std::uint8_t>(values.gen.generator().bytes());
-	packet.g = gsl::narrow<std::uint8_t>(values.gen.generator().to_u32bit());
+	packet.g = gsl::narrow<std::uint8_t>(util::to_u32bit(values.gen.generator()));
 	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet.N = values.gen.prime();
 	packet.s = values.salt;

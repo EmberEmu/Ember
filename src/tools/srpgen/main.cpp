@@ -84,7 +84,7 @@ void launch(const po::variables_map& args) {
 
 void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	std::cout << "Username: " << username << "\n";
-	std::cout << "Verifier: " << "0x" << std::hex << verifier << "\n";
+	std::cout << "Verifier: " << "0x" << verifier.to_hex_string() << "\n";
 	std::cout << "Salt: ";
 
 	for(auto byte : salt) {
