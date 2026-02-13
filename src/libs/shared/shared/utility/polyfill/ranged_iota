@@ -10,7 +10,7 @@
 
 #pragma once
 
-#ifndef __cpp_lib_ranges_iota
+#ifndef __cpp_lib_ranges_iota && __GNUC__ < 14
 
 #include <numeric>
 
