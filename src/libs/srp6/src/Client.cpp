@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,7 +23,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, std:
 	: Client(std::move(identifier),
 	         std::move(password),
 	         gen,
-             BigInt::decode((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
+             BigInt::from_bytes((AutoSeeded_RNG()).random_vec(key_size)) % gen.prime(),
 	         srp6a) { }
 
 Client::Client(std::string identifier, std::string password, Generator gen, BigInt a, bool srp6a)
@@ -64,7 +64,7 @@ SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> sa
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N.bytes())));
 	} else {
 		KeyType key(S.bytes(), boost::container::default_init);
-		S.binary_encode(key.data(), key.size());
+		S.serialize_to(key);
 		return SessionKey(key);
 	}
 }

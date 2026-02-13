@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,19 +21,19 @@ namespace detail {
 
 Botan::BigInt decode_flip(std::span<std::uint8_t> val) {
 	std::ranges::reverse(val);
-	return Botan::BigInt::decode(val.data(), val.size());
+	return Botan::BigInt::from_bytes(val);
 }
 
 SmallVec encode_flip(const Botan::BigInt& val) {
 	SmallVec res(val.bytes(), boost::container::default_init);
-	val.binary_encode(res.data(), res.size());
+	val.serialize_to(res);
 	std::ranges::reverse(res);
 	return res;
 }
 
 SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 	SmallVec res(padding, boost::container::default_init);
-	Botan::BigInt::encode_1363(res.data(), res.size(), val);
+	val.serialize_to(res);
 	std::ranges::reverse(res);
 	return res;
 }
@@ -72,12 +72,12 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 	SmallVec vec(padding, boost::container::default_init);
 
 	if(mode == Compliance::RFC5054) {
-		Botan::BigInt::encode_1363(vec.data(), vec.size(), A);
+		A.serialize_to(vec);
 		hasher->update(vec.data(), vec.size());
-		Botan::BigInt::encode_1363(vec.data(), vec.size(), B);
+		B.serialize_to(vec);
 		hasher->update(vec.data(), vec.size());
 		hasher->final(hash_out.data());
-		return Botan::BigInt::decode(hash_out.data(), hash_out.size());
+		return Botan::BigInt::from_bytes(hash_out);
 	} else {
 		const auto& a_enc = encode_flip_1363(A, padding);
 		const auto& b_enc = encode_flip_1363(B, padding);
@@ -93,10 +93,10 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	std::array<std::uint8_t, SHA1_LEN> hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
-	hasher->update(Botan::BigInt::encode(N));
-	hasher->update(Botan::BigInt::encode_1363(g, N.bytes()));
+	hasher->update(N.serialize());
+	hasher->update(g.serialize(N.bytes()));
 	hasher->final(hash.data());
-	return Botan::BigInt::decode(hash.data(), hash.size());
+	return Botan::BigInt::from_bytes(hash);
 }
 
 Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
@@ -123,7 +123,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 	hasher->final(hash.data());
 
 	if(mode == Compliance::RFC5054) {
-		return Botan::BigInt::decode(hash.data(), hash.size());
+		return Botan::BigInt::from_bytes(hash);
 	} else {
 		return detail::decode_flip(hash);
 	}

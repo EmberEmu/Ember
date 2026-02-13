@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -360,7 +360,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 		salt.bytes(), boost::container::default_init
 	);
 
-	salt.binary_encode(bytes.data(), bytes.size());
+	salt.serialize_to(bytes);
 	std::ranges::reverse(bytes);
 	return validate_client_integrity(hash, bytes, reconnect);
 }

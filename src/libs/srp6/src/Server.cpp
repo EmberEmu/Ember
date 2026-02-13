@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -48,7 +48,7 @@ SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave
 		return SessionKey(detail::interleaved_hash(detail::encode_flip_1363(S, N_.bytes())));
 	} else {
 		KeyType key(N_.bytes(), boost::container::default_init);
-		S.binary_encode(key.data(), key.size());
+		S.serialize_to(key);
 		return SessionKey(key);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -166,11 +166,11 @@ public:
 		stream << opcode;
 
 		std::array<std::uint8_t, A_LENGTH> a_bytes;
-		Botan::BigInt::encode_1363(a_bytes.data(), a_bytes.size(), A);
+		A.serialize_to(a_bytes);
 		stream.put(a_bytes.rbegin(), a_bytes.rend());
 
 		std::array<std::uint8_t, M1_LENGTH> m1_bytes;
-		Botan::BigInt::encode_1363(m1_bytes.data(), m1_bytes.size(), M1);
+		M1.serialize_to(m1_bytes);
 		stream.put(m1_bytes.rbegin(), m1_bytes.rend());
 
 		stream.put(client_checksum.data(), client_checksum.size());

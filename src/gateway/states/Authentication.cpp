@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -164,7 +164,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 		key.bytes(), boost::container::default_init
 	);
 
-	key.binary_encode(k_bytes.data(), k_bytes.size());
+	key.serialize_to(k_bytes);
 
 	const std::uint32_t protocol_id = 0; // best guess, this is hardcoded to zero in the client
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);

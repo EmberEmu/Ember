@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -90,7 +90,8 @@ void AccountClient::handle_locate_response(std::expected<const SessionResponse*,
 		return;
 	}
 
-	auto key = Botan::BigInt::decode(msg->key()->data(), msg->key()->size());
+	std::span buffer(msg->key()->data(), msg->key()->size());
+	auto key = Botan::BigInt::decode(buffer);
 	cb(msg->status(), std::move(key));
 }
 
