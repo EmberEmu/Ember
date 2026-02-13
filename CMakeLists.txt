@@ -42,7 +42,7 @@ endif()
 option(DISABLE_EMBER_THREADS "Disable multithreading for debugging" OFF)
 
 if(DISABLE_EMBER_THREADS)
-	add_definitions(-DDEBUG_NO_THREADS)
+	add_compile_definitions(DEBUG_NO_THREADS)
 endif()
 
 find_package(Threads REQUIRED)
@@ -69,14 +69,14 @@ if (WIN32)
     endmacro(get_WIN32_WINNT)
 
     get_WIN32_WINNT(ver)
-    add_definitions(-D_WIN32_WINNT=${ver})
+    add_compile_definitions(_WIN32_WINNT=${ver})
 endif(WIN32)
 
 ##############################
 #            Boost           #
 ##############################
-add_definitions(-DBOOST_ALL_NO_LIB)
-add_definitions(-DBOOST_UUID_FORCE_AUTO_LINK)
+add_compile_definitions(BOOST_ALL_NO_LIB)
+add_compile_definitions(BOOST_UUID_FORCE_AUTO_LINK)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
@@ -123,7 +123,7 @@ find_package(PCRE 8.39 REQUIRED)
 option(PCRE_STATIC_LIB "Statically link to PCRE" ON)
 
 if(PCRE_STATIC_LIB)
-  add_definitions(-DPCRE_STATIC)
+    add_compile_definitions(PCRE_STATIC)
 endif()
 
 ##############################
@@ -143,7 +143,7 @@ set(FETCHCONTENT_FULLY_DISCONNECTED ON)
 
 include(GoogleTest)
 
-add_definitions(-DDB_MYSQL) #temporary!
+add_compile_definitions(DB_MYSQL) # temporary!
 
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 include(BuildDBCLoaders)
