@@ -52,8 +52,6 @@ RUN --mount=type=cache,target=build \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
     -DDISABLE_EMBER_THREADS=${disable_threads} \
-    -DBOTAN_ROOT_DIR=/usr/include/botan-3/ \
-    -DBOTAN_LIBRARY=/usr/lib/x86_64-linux-gnu/libbotan-3.so \
     && cd build && make -j$(nproc) install \
     && make test
 
