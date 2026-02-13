@@ -95,7 +95,7 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ##############################
 #            Botan           #
 ##############################
-find_package(Botan 2.14.0 REQUIRED)
+find_package(Botan 3.10 REQUIRED)
 include_directories(${BOTAN_INCLUDE_DIRS})
 
 ##############################
