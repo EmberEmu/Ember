@@ -88,7 +88,7 @@ void AccountClient::handle_locate_response(std::expected<const SessionResponse*,
 	}
 
 	std::span buffer(msg->key()->data(), msg->key()->size());
-	auto key = Botan::BigInt::decode(buffer);
+	auto key = Botan::BigInt::from_bytes(buffer);
 	cb(msg->status(), std::move(key));
 }
 
