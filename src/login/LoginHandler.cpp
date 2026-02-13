@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/utility/EnumHelper.h>
+#include <shared/utility/Utility.h>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
 #include <ranges>
@@ -217,7 +218,7 @@ grunt::server::LoginChallenge LoginHandler::build_login_challenge() {
 	const auto& values = authenticator.challenge_reply();
 	packet.B = values.B;
 	packet.g_len = gsl::narrow<std::uint8_t>(values.gen.generator().bytes());
-	packet.g = gsl::narrow<std::uint8_t>(values.gen.generator().to_u32bit());
+	packet.g = gsl::narrow<std::uint8_t>(util::to_u32bit(values.gen.generator()));
 	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet.N = values.gen.prime();
 	packet.s = values.salt;
@@ -360,7 +361,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 		salt.bytes(), boost::container::default_init
 	);
 
-	salt.binary_encode(bytes.data(), bytes.size());
+	salt.serialize_to(bytes);
 	std::ranges::reverse(bytes);
 	return validate_client_integrity(hash, bytes, reconnect);
 }

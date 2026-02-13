@@ -14,6 +14,9 @@
 #include <string_view>
 #include <cstddef>
 
+// fwd decl
+namespace Botan { class BigInt; }
+
 /*
  * A small collection of random, mostly platform-specific,
  * utility functions
@@ -53,5 +56,9 @@ std::string sig_str(int signal);
  */
 bool page_lock(void* address, std::size_t length);
 bool page_unlock(void* address, std::size_t length);
+
+
+// Botan's deprecated this, so just copying their implementation here
+std::uint32_t to_u32bit(const Botan::BigInt& value);
 
 } // util, ember

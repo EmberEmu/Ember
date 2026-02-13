@@ -27,7 +27,7 @@ include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} dbcreader spark logger protocol shared ${BOTAN_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} dbcreader spark logger protocol shared botan::botan-static ${Boost_LIBRARIES} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} protocol dbcreader spark conpool logger shared ${PCRE_LIBRARY} ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,7 +53,7 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
 	: username_(std::move(username)) {
 	std::ranges::copy(salt, salt_.data());
 	sess_key_.t.resize(session_key.bytes());
-	session_key.binary_encode(sess_key_.t.data(), sess_key_.t.size());
+	session_key.serialize_to(sess_key_.t);
 }
 
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,

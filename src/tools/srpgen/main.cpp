@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -84,7 +84,7 @@ void launch(const po::variables_map& args) {
 
 void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	std::cout << "Username: " << username << "\n";
-	std::cout << "Verifier: " << "0x" << std::hex << verifier << "\n";
+	std::cout << "Verifier: " << verifier.to_hex_string() << "\n";
 	std::cout << "Salt: ";
 
 	for(auto byte : salt) {
@@ -94,7 +94,7 @@ void plaintext_output(std::string_view username, const Botan::BigInt& verifier, 
 
 void json_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	const auto vstr = std::format("0x{}", verifier.to_hex_string());
-	const auto saltdec = Botan::BigInt::decode(salt.data(), salt.size());
+	const auto saltdec = Botan::BigInt::from_bytes(salt);
 	const auto sstr = std::format("0x{}",  saltdec.to_hex_string());
 
 	json data;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,7 +43,7 @@ public:
 TEST(srp6a, RFC5054_TestVectors) {
 	std::string identifier { "alice" };
 	std::string password { "password123" };
-	const auto salt = Botan::BigInt::encode(Botan::BigInt(("0xBEB25379D1A8581EB5A727673A2441EE")));
+	const auto salt = Botan::BigInt("0xBEB25379D1A8581EB5A727673A2441EE").serialize();
 	srp6::Generator gen(srp6::Generator::Group::_1024_BIT);
 	
 	Botan::BigInt expected_k("0x7556AA045AEF2CDD07ABAF0F665C3E818913186F");
@@ -97,9 +97,9 @@ TEST(srp6a, RFC5054_TestVectors) {
 	const auto& c_sess_key = client.session_key(expected_B, salt, srp6::Compliance::RFC5054).t;
 	const auto& s_sess_key = server.session_key(expected_A, srp6::Compliance::RFC5054).t;
 
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(c_sess_key.data(), c_sess_key.size()))
+	EXPECT_EQ(expected_key, Botan::BigInt::from_bytes(c_sess_key))
 		<< "Client key did not match expected value!";
-	EXPECT_EQ(expected_key, Botan::BigInt::decode(s_sess_key.data(), s_sess_key.size()))
+	EXPECT_EQ(expected_key, Botan::BigInt::from_bytes(s_sess_key))
 		<< "Server key did not match expected value!";
 }
 
@@ -142,7 +142,7 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 
 	srp6::SessionKey key = server.session_key(A);
 	Botan::BigInt M1_S = srp6::generate_client_proof("CHAOSVEX", key, gen.prime(), gen.generator(), A,
-	                                                 server.public_ephemeral(), Botan::BigInt::encode(salt));
+	                                                 server.public_ephemeral(), salt.serialize());
 	Botan::BigInt M2_S = server.generate_proof(key, A, M1);
 
 	EXPECT_EQ(M1, M1_S) << "Server's calculated client proof did not match the replayed proof!";
@@ -176,7 +176,7 @@ TEST(srp6Regressions, SaltZeroPad_ComputeX) {
 	srp6::Generator gen(srp6::Generator::Group::_1024_BIT);
 
 	Botan::BigInt expected_x("0x7E5250F2CB894FD9703611318C387A773FD52C09");
-	Botan::BigInt x = srp6::detail::compute_x(username, password, Botan::BigInt::encode(salt), srp6::Compliance::GAME);
+	Botan::BigInt x = srp6::detail::compute_x(username, password, salt.serialize(), srp6::Compliance::GAME);
 	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
 }
 
@@ -186,7 +186,7 @@ TEST(srp6Regressions, SaltZeroPad_GenerateUser) {
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
 
 	auto gen = srp6::Generator(srp6::Generator::Group::_256_BIT);
-	auto verifier = srp6::generate_verifier(username, password, gen, Botan::BigInt::encode(salt), srp6::Compliance::GAME);
+	auto verifier = srp6::generate_verifier(username, password, gen, salt.serialize(), srp6::Compliance::GAME);
 	
 	Botan::BigInt expected_v("0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A");
 	ASSERT_EQ(expected_v, verifier) << "Verifier was calculated incorrectly!";
@@ -199,7 +199,7 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 	const Botan::BigInt b("0x809C1BC78BDB3873D286FDADF38D1524348C9CA5AB63E7793EF6A7944C5A8D");
 	Botan::BigInt session_val("0x42C6518D6F338C050717427B18F7C6B6131C968B0CFC20C43AAAD61625F286DA55E24BF6A2CBDC79");
 	srp6::KeyType kt(session_val.bytes(), boost::container::default_init);
-	session_val.binary_encode(kt.data(), kt.size());
+	session_val.serialize_to(kt);
 	const srp6::SessionKey key(std::move(kt));
 
 	const std::array<std::uint8_t, 32> salt {

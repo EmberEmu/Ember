@@ -1,4 +1,4 @@
-# Copyright (c) 2023 - 2025 Ember
+# Copyright (c) 2023 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,6 +30,6 @@ add_library(${LIBRARY_NAME}
     src/detail/Shared.cpp
 )
 
-target_link_libraries(${LIBRARY_NAME} shared spark ${BOTAN_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} shared spark botan::botan-static ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
