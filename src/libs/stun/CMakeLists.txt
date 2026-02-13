@@ -30,6 +30,6 @@ add_library(${LIBRARY_NAME}
     src/detail/Shared.cpp
 )
 
-target_link_libraries(${LIBRARY_NAME} shared spark botan::botan-static ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC shared spark botan::botan-static ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

@@ -26,7 +26,7 @@ include_directories(${SPARK_INCLUDES_DIR})
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool logger shared botan::botan-static ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} PUBLIC logger shared ${Boost_LIBRARIES} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logger shared ${Boost_LIBRARIES} Threads::Threads)
