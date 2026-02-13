@@ -1,4 +1,4 @@
-# Copyright (c) 2024 - 2025 Ember
+# Copyright (c) 2024 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,7 @@ set(SERVICE_LIBRARIES
     libcharacter
 )
 
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} logger shared ${SERVICE_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${SERVICE_LIBRARIES} logger shared ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
