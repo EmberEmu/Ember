@@ -47,7 +47,7 @@ if(MSVC)
 		"$<$<CONFIG:RelWithDebInfo>:/Ot>"
 
 		# Disable optimisations
-		"$<$<CONFIG:ReleaseNoOpt>:/Od>"
+		"$<$<CONFIG:ReleaseUnoptimised>:/Od>"
 
 		# String pooling
 		"$<$<CONFIG:Release>:/GF>"
