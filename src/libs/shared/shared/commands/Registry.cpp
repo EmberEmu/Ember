@@ -33,7 +33,7 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 
 	while(stream >> token) {
 		arg_values.emplace_back(std::move(token));
-		token.clear(); // reset state
+		token.clear(); // reset state (just to shut warnings up)
 	}
 
 	return arg_values;
@@ -41,9 +41,9 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 
 // this is really inefficient due to the registry copies (must be copied from subcommands for safety)
 // but it's not even remotely performance sensitive, so it'll do
-std::shared_ptr<Command> Registry::find_command(std::span<const std::string> tokens, std::size_t& depth) {
+auto Registry::search(std::span<const std::string> tokens) -> SearchResult {
 	// we need go as deep as possible into the subcommand chain
-	std::shared_ptr<Command> command;
+	SearchResult search;
 	auto registry = root_.subcommands();
 
 	for(auto& token : tokens) {
@@ -51,20 +51,15 @@ std::shared_ptr<Command> Registry::find_command(std::span<const std::string> tok
 		const auto result = registry.find(command_name);
 
 		if(result != registry.end()) {
-			++depth;
-			command = result->second;
-			registry = command->subcommands();
+			++search.depth;
+			search.command = result->second;
+			registry = search.command->subcommands();
 		} else {
 			break;
 		}
 	}
 
-	return command;
-}
-
-auto Registry::get(std::span<const std::string> tokens) -> CommandGet {
-	std::size_t depth = 0;
-	return { find_command(tokens, depth), depth };
+	return search;
 }
 
 std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) const {

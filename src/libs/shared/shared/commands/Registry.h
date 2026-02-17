@@ -26,15 +26,16 @@ namespace ember::commands {
 
 class Registry {
 public:
-	using CommandGet = std::pair<std::shared_ptr<Command>, std::size_t>;
+	struct SearchResult {
+		std::shared_ptr<Command> command;
+		std::size_t depth;
+	};
 
 private:
 	Command root_;
 
 	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
-
 	std::string longest_prefix(std::span<const Suggestions::Record> matches) const;
-	std::shared_ptr<Command> find_command(std::span<const std::string> tokens, std::size_t& depth);
 
 public:
 	Registry();
@@ -45,7 +46,7 @@ public:
 	std::vector<std::string> parse_input(std::string_view input) const;
 	Suggestions autocomplete(std::string_view query) const;
 
-	CommandGet get(std::span<const std::string> tokens);
+	SearchResult search(std::span<const std::string> tokens);
 	bool unregister(const std::string& name);
 };
 
