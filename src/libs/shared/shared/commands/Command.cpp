@@ -9,6 +9,7 @@
 #include "Command.h"
 #include "Exception.h"
 #include <algorithm>
+#include <ranges>
 #include <cassert>
 
 namespace ember::commands {
@@ -34,20 +35,29 @@ auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	return Result::success;
 }
 
-ArgumentStore Command::build_argument_store(std::span<const std::string> tokens) const {
+ArgumentStore Command::build_argument_store(std::span<const ArgumentValue> values) const {
 	ArgumentStore arg_store;
 
-	assert(args_.size() >= tokens.size() && "bad token input");
-
-	for(auto i = 0u; i < tokens.size(); ++i) {
-		Argument arg(tokens[i], args_[i].required);
-		arg_store.emplace(args_[i].value, std::move(arg));
+	for(auto [value, arg] : std::views::zip(values, args_)) {
+		arg_store.emplace(arg.name, value);
 	}
 
 	return arg_store;
 }
 
-Result Command::execute(std::span<const std::string> arguments) {
+bool Command::validate_types(const ArgumentStore& args) const {
+	for(auto [expected, map] : std::views::zip(args_, args)) {
+		const auto& [_, v] = map;
+
+		if(!validate_type(expected.type, v)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+Result Command::execute(std::span<const ArgumentValue> arguments) {
 	std::shared_ptr<CommandHandler> handler;
 	ArgumentStore arg_store;
 
@@ -59,6 +69,10 @@ Result Command::execute(std::span<const std::string> arguments) {
 		}
 
 		arg_store = std::move(build_argument_store(arguments));
+
+		if(!validate_types(arg_store)) {
+			return Result::invalid_types;
+		}
 
 		if(handler_) {
 			handler = handler_;
@@ -74,21 +88,21 @@ Result Command::execute(std::span<const std::string> arguments) {
 	return Result::success;
 }
 
-std::shared_ptr<Command> Command::arg(std::string argument) {
+std::shared_ptr<Command> Command::argument(std::string argument, ArgumentType type) {
 	std::lock_guard guard(mutex_);
 
 	if(optional_arg_count() > 0) {
 		throw std::invalid_argument("Required arguments must be placed before optional arguments");
 	}
 		
-	args_.emplace_back(std::move(argument), true);
+	args_.emplace_back(std::move(argument), true, type);
 	return this->shared_from_this();
 }
 
-std::shared_ptr<Command> Command::optional_arg(std::string argument) {
+std::shared_ptr<Command> Command::optional_argument(std::string argument, ArgumentType type) {
 	std::lock_guard guard(mutex_);
 
-	args_.emplace_back(std::move(argument), false);
+	args_.emplace_back(std::move(argument), false, type);
 	return this->shared_from_this();
 }
 
@@ -109,7 +123,7 @@ std::shared_ptr<Command> Command::handler(CommandHandler handler) {
 	return this->shared_from_this();
 }
 
-std::vector<Argument> Command::args() const {
+std::vector<Argument> Command::arguments() const {
 	std::lock_guard guard(mutex_);
 	return args_;
 }
@@ -147,7 +161,7 @@ std::string Command::usage_string() const {
 	}
 
 	for(const auto& arg : args_) {
-		result += (arg.required ? " <" : " [") + arg.value + (arg.required ? ">" : "]");
+		result += (arg.required ? " <" : " [") + arg.name + (arg.required ? ">" : "]");
 	}
 
 	return result;
@@ -169,18 +183,18 @@ void Command::subcommand(std::shared_ptr<Command> command) {
 	subcommands_.insert_or_assign(name, std::move(command));
 }
 
-bool Command::remove_arg(const std::string& argument) {
+bool Command::remove_argument(const std::string& argument) {
 	std::lock_guard guard(mutex_);
 
 	auto remove = std::ranges::remove_if(args_, [&](auto& arg){
-		return argument == arg.value;
+		return argument == arg.name;
 	});
 
 	args_.erase(remove.begin(), args_.end());
 	return !!remove.size();
 }
 
-void Command::clear_args() {
+void Command::clear_arguments() {
 	std::lock_guard guard(mutex_);
 	args_.clear();
 }
@@ -193,6 +207,55 @@ bool Command::remove_subcommand(const std::string& name) {
 void Command::clear_subcommands() {
 	std::lock_guard guard(mutex_);
 	subcommands_.clear();
+}
+
+bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
+	switch(type) {
+		case ArgumentType::at_string:
+			if(!std::holds_alternative<std::string>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint8:
+			if(!std::holds_alternative<std::uint8_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint16:
+			if(!std::holds_alternative<std::uint16_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint32:
+			if(!std::holds_alternative<std::uint32_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint64:
+			if(!std::holds_alternative<std::uint64_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int8:
+			if(!std::holds_alternative<std::int8_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int16:
+			if(!std::holds_alternative<std::int16_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int32:
+			if(!std::holds_alternative<std::int32_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int64:
+			if(!std::holds_alternative<std::int64_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_float:
+			if(!std::holds_alternative<float>(value)) { return false; }
+			break;
+		case ArgumentType::at_double:
+			if(!std::holds_alternative<double>(value)) { return false; }
+			break;
+		case ArgumentType::at_char:
+			if(!std::holds_alternative<char>(value)) { return false; }
+			break;
+		default:
+			return false;
+	}
+
+	return true;
+}
+
+std::size_t Command::argument_count() const {
+	return args_.size();
 }
 
 } // commands, ember

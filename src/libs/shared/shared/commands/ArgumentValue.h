@@ -8,16 +8,25 @@
 
 #pragma once
 
+#include <variant>
+#include <string>
+#include <cstdint>
+
 namespace ember::commands {
 
-enum class Result {
-	success,
-	too_many_args,
-	missing_args,
-	unavailable,
-	subcommands,
-	invalid_types,
-	error
-};
+using ArgumentValue = std::variant<
+	std::string,
+	std::uint8_t,
+	std::uint16_t,
+	std::uint32_t,
+	std::uint64_t,
+	std::int8_t,
+	std::int16_t,
+	std::int32_t,
+	std::int64_t,
+	float,
+	double,
+	char
+>;
 
 } // commands, ember

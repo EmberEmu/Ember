@@ -11,9 +11,11 @@
 #include <logger/Logger.h>
 #include <shared/commands/Registry.h>
 #include <shared/commands/Utility.h>
+#include <boost/lexical_cast.hpp>
 #include <ranges>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace ember::utility {
 
@@ -25,7 +27,10 @@ void log_subcommands(log::Logger& logger, const std::string& path, const command
 	}
 }
 
-void handle_command_result(commands::Result result, const std::string& path, const commands::Command& command, log::Logger& logger) {
+void handle_command_result(commands::Result result,
+                           const std::string& path,
+                           const commands::Command& command,
+                           log::Logger& logger) {
     switch(result) {
         case commands::Result::missing_args:
 			[[fallthrough]];
@@ -38,10 +43,56 @@ void handle_command_result(commands::Result result, const std::string& path, con
         case commands::Result::unavailable:
 			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);
             break;
+		case commands::Result::invalid_types:
+			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Bad argument types when attempting to execute "{}")", path);
+			break;
         default:
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(An error occurred while executing "{}")", path);
+			LOG_CONSOLE_ERROR_ASYNC(logger, R"(An unhandled error occurred while executing "{}")", path);
             break;
     }
+}
+
+commands::ArgumentValue convert_type(commands::ArgumentType type, std::string_view token) {
+	switch(type) {
+		case commands::ArgumentType::at_char:
+			return boost::lexical_cast<char>(token);
+			break;
+		case commands::ArgumentType::at_string:
+			return boost::lexical_cast<std::string>(token);
+			break;
+		case commands::ArgumentType::at_uint8:
+			return boost::lexical_cast<std::uint8_t>(token);
+			break;
+		case commands::ArgumentType::at_uint16:
+			return boost::lexical_cast<std::uint16_t>(token);
+			break;
+		case commands::ArgumentType::at_uint32:
+			return boost::lexical_cast<std::uint32_t>(token);
+			break;
+		case commands::ArgumentType::at_uint64:
+			return boost::lexical_cast<std::uint64_t>(token);
+			break;
+		case commands::ArgumentType::at_int8:
+			return boost::lexical_cast<std::int8_t>(token);
+			break;
+		case commands::ArgumentType::at_int16:
+			return boost::lexical_cast<std::int16_t>(token);
+			break;
+		case commands::ArgumentType::at_int32:
+			return boost::lexical_cast<std::int32_t>(token);
+			break;
+		case commands::ArgumentType::at_int64:
+			return boost::lexical_cast<std::int64_t>(token);
+			break;
+		case commands::ArgumentType::at_float:
+			return boost::lexical_cast<float>(token);
+			break;
+		case commands::ArgumentType::at_double:
+			return boost::lexical_cast<double>(token);
+			break;
+		default:
+			throw exception("Unhandled argument type");
+	}
 }
 
 void execute_command(std::string_view input, const commands::Registry& registry, log::Logger& logger) try {
@@ -53,9 +104,29 @@ void execute_command(std::string_view input, const commands::Registry& registry,
 		return;
 	}
 
-	const auto arguments = std::span(tokens).subspan(search.depth);
+	auto arguments = std::span(tokens).subspan(search.depth); // discard command name token
 
-	if(auto result = search.command->execute(arguments); result != commands::Result::success) {
+	/*
+	 * The execution handler validates argument count but the way we iterate for type conversion
+	 * means any unused tokens will be ignored, so the check for too many arguments will never
+	 * trigger from here. This check is only for user feedback, it is not required for correct behaviour.
+	 */
+	if(arguments.size() > search.command->argument_count()) {
+		LOG_CONSOLE_ERROR_ASYNC(logger, R"(Too many arguments passed to "{}" (takes {}, got {}))",
+			tokens.front(), search.command->argument_count(), arguments.size());
+		return;
+	}
+
+	// argument type conversion
+	std::vector<commands::ArgumentValue> arg_values;
+	auto command_args = search.command->arguments();
+
+	for(auto [expected, argument] : std::views::zip(command_args, arguments)) {
+		arg_values.emplace_back(convert_type(expected.type, argument));
+	}
+
+	// execute the command handler
+	if(auto result = search.command->execute(arg_values); result != commands::Result::success) {
 		const auto& path = commands::path_fragment(tokens, search.depth);
 		handle_command_result(result, path, *search.command, logger);
 	}

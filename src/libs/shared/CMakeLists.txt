@@ -117,6 +117,8 @@ set(COMMANDS_SRC
     shared/commands/Result.h
     shared/commands/Suggestions.h
     shared/commands/Exception.h
+    shared/commands/ArgumentType.h
+    shared/commands/ArgumentValue.h
 )
 
 set(LIBRARY_SRC
