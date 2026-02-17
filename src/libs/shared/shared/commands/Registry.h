@@ -28,7 +28,7 @@ class Registry {
 public:
 	struct SearchResult {
 		std::shared_ptr<Command> command;
-		std::size_t depth;
+		std::size_t depth = 0;
 	};
 
 private:

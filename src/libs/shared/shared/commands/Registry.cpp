@@ -7,6 +7,7 @@
  */
 
 #include "Registry.h"
+#include <boost/tokenizer.hpp>
 #include <algorithm>
 #include <ranges>
 
@@ -24,19 +25,17 @@ void Registry::register_command(std::shared_ptr<Command> command) {
 }
 
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
-	std::vector<std::string> arg_values;
-	std::string input_str(input);
-	std::istringstream stream;
-	stream.str(std::move(input_str));
-	
-	std::string token;
+	std::vector<std::string> tokens;
+	std::string str(input);
 
-	while(stream >> token) {
-		arg_values.emplace_back(std::move(token));
-		token.clear(); // reset state (just to shut warnings up)
+	boost::escaped_list_separator<char> sep('\\', ' ', '"');
+	boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
+
+	for(auto& t : tok) {
+		tokens.emplace_back(t);
 	}
 
-	return arg_values;
+	return tokens;
 }
 
 // this is really inefficient due to the registry copies (must be copied from subcommands for safety)
