@@ -119,7 +119,7 @@ void execute_command(std::string_view input, const commands::Registry& registry,
 
 	// argument type conversion
 	std::vector<commands::ArgumentValue> arg_values;
-	auto command_args = search.command->args();
+	auto command_args = search.command->arguments();
 
 	for(auto [expected, argument] : std::views::zip(command_args, arguments)) {
 		arg_values.emplace_back(convert_type(expected.type, argument));

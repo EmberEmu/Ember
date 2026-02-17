@@ -123,7 +123,7 @@ std::shared_ptr<Command> Command::handler(CommandHandler handler) {
 	return this->shared_from_this();
 }
 
-std::vector<Argument> Command::args() const {
+std::vector<Argument> Command::arguments() const {
 	std::lock_guard guard(mutex_);
 	return args_;
 }
@@ -183,7 +183,7 @@ void Command::subcommand(std::shared_ptr<Command> command) {
 	subcommands_.insert_or_assign(name, std::move(command));
 }
 
-bool Command::remove_arg(const std::string& argument) {
+bool Command::remove_argument(const std::string& argument) {
 	std::lock_guard guard(mutex_);
 
 	auto remove = std::ranges::remove_if(args_, [&](auto& arg){
@@ -194,7 +194,7 @@ bool Command::remove_arg(const std::string& argument) {
 	return !!remove.size();
 }
 
-void Command::clear_args() {
+void Command::clear_arguments() {
 	std::lock_guard guard(mutex_);
 	args_.clear();
 }

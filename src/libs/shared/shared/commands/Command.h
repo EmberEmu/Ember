@@ -60,14 +60,14 @@ public:
 	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
-	bool remove_arg(const std::string& argument);
-	void clear_args();
+	bool remove_argument(const std::string& argument);
+	void clear_arguments();
 	bool remove_subcommand(const std::string& name);
 	void clear_subcommands();
 
 	const std::string& name() const;
 	const std::string& description() const;
-	std::vector<Argument> args() const;
+	std::vector<Argument> arguments() const;
 	std::string usage_string() const;
 	CommandMap subcommands() const;
 	std::size_t argument_count() const;
