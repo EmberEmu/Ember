@@ -10,25 +10,37 @@
 
 #include "ArgumentType.h"
 #include <boost/lexical_cast.hpp>
-#include <string>
 #include <utility>
+#include <variant>
+#include <string>
+#include <cstdint>
 
 namespace ember::commands {
 
-struct Argument {
-	std::string value;
-	bool required;
+using ArgumentValue = std::variant<
+	std::string,
+	std::uint8_t,
+	std::uint16_t,
+	std::uint32_t,
+	std::uint64_t,
+	std::int8_t,
+	std::int16_t,
+	std::int32_t,
+	std::int64_t,
+	float,
+	double,
+	char
+>;
+
+struct ParsedArgument {
+	ArgumentValue value;
 	ArgumentType type;
+	bool required;
 
-	Argument(std::string value, bool required, ArgumentType type)
+	ParsedArgument(ArgumentValue value, ArgumentType type, bool required)
 		: value(std::move(value)),
-		  required(required),
-		  type(type) {}
-
-	template<typename T>
-	T as() const {
-		return boost::lexical_cast<T>(value);
-	}
+	      type(type),
+	      required(required){}
 };
 
 } // commands, ember

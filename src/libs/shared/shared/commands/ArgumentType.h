@@ -10,14 +10,19 @@
 
 namespace ember::commands {
 
-enum class Result {
-	success,
-	too_many_args,
-	missing_args,
-	unavailable,
-	subcommands,
-	invalid_types,
-	error
+enum class ArgumentType {
+	at_string,
+	at_uint8,
+	at_uint16,
+	at_uint32,
+	at_uint64,
+	at_int8,
+	at_int16,
+	at_int32,
+	at_int64,
+	at_float,
+	at_double,
+	at_char,
 };
 
 } // commands, ember

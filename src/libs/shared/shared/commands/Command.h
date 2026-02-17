@@ -10,6 +10,7 @@
 
 #include "Argument.h"
 #include "Arguments.h"
+#include "ArgumentType.h"
 #include "Result.h"
 #include <functional>
 #include <memory>
@@ -36,7 +37,9 @@ class Command : public std::enable_shared_from_this<Command> {
 	CommandMap subcommands_;
 
 	Result validate_arg_count(std::size_t count) const;
-	ArgumentStore build_argument_store(std::span<const std::string> tokens) const;
+	bool validate_types(const ArgumentStore& args) const;
+	bool validate_type(ArgumentType type, const ArgumentValue& value) const;
+	ArgumentStore build_argument_store(std::span<const ArgumentValue> values) const;
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 
@@ -53,8 +56,8 @@ public:
 	void subcommand(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> subcommand(std::string name);
 	std::shared_ptr<Command> description(std::string description);
-	std::shared_ptr<Command> arg(std::string argument);
-	std::shared_ptr<Command> optional_arg(std::string argument);
+	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
+	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
 	bool remove_arg(const std::string& argument);
 	void clear_args();
@@ -67,7 +70,7 @@ public:
 	std::string usage_string() const;
 	CommandMap subcommands() const;
 
-	Result execute(std::span<const std::string> arguments);
+	Result execute(std::span<const ArgumentValue> arguments);
 };
 
 } // commands, ember

@@ -14,6 +14,7 @@
 #include <ranges>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace ember::utility {
 
@@ -44,6 +45,49 @@ void handle_command_result(commands::Result result, const std::string& path, con
     }
 }
 
+commands::ArgumentValue convert_type(commands::ArgumentType type, std::string_view token) {
+	switch(type) {
+		case commands::ArgumentType::at_char:
+			return boost::lexical_cast<char>(token);
+			break;
+		case commands::ArgumentType::at_string:
+			return boost::lexical_cast<char>(token);
+			break;
+		case commands::ArgumentType::at_uint8:
+			return boost::lexical_cast<std::uint8_t>(token);
+			break;
+		case commands::ArgumentType::at_uint16:
+			return boost::lexical_cast<std::uint16_t>(token);
+			break;
+		case commands::ArgumentType::at_uint32:
+			return boost::lexical_cast<std::uint32_t>(token);
+			break;
+		case commands::ArgumentType::at_uint64:
+			return boost::lexical_cast<std::uint64_t>(token);
+			break;
+		case commands::ArgumentType::at_int8:
+			return boost::lexical_cast<std::int8_t>(token);
+			break;
+		case commands::ArgumentType::at_int16:
+			return boost::lexical_cast<std::int16_t>(token);
+			break;
+		case commands::ArgumentType::at_int32:
+			return boost::lexical_cast<std::int32_t>(token);
+			break;
+		case commands::ArgumentType::at_int64:
+			return boost::lexical_cast<std::int64_t>(token);
+			break;
+		case commands::ArgumentType::at_float:
+			return boost::lexical_cast<float>(token);
+			break;
+		case commands::ArgumentType::at_double:
+			return boost::lexical_cast<double>(token);
+			break;
+		default:
+			throw exception("Unhandled argument type");
+	}
+}
+
 void execute_command(std::string_view input, const commands::Registry& registry, log::Logger& logger) try {
 	const auto tokens = registry.parse_input(input);
 	const auto search = registry.search(tokens);
@@ -53,9 +97,15 @@ void execute_command(std::string_view input, const commands::Registry& registry,
 		return;
 	}
 
-	const auto arguments = std::span(tokens).subspan(search.depth);
+	auto arguments = std::span(tokens).subspan(search.depth);
+	std::vector<commands::ArgumentValue> arg_values;
+	auto command_args = search.command->args();
 
-	if(auto result = search.command->execute(arguments); result != commands::Result::success) {
+	for(auto [expected, token] : std::views::zip(command_args, tokens)) {
+		arg_values.emplace_back(convert_type(expected.type, token));
+	}
+
+	if(auto result = search.command->execute(arg_values); result != commands::Result::success) {
 		const auto& path = commands::path_fragment(tokens, search.depth);
 		handle_command_result(result, path, *search.command, logger);
 	}
