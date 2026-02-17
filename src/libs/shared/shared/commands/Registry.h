@@ -49,6 +49,7 @@ public:
 
 	SearchResult search(std::span<const std::string> tokens) const;
 	bool unregister(const std::string& name);
+	std::shared_ptr<Command> root() const;
 };
 
 } // commands, ember

@@ -152,4 +152,8 @@ bool Registry::unregister(const std::string& name) {
 	return !!root_->remove_subcommand(name);
 }
 
+std::shared_ptr<Command> Registry::root() const {
+	return root_;
+}
+
 } // commands, ember
