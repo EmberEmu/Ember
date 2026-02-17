@@ -114,6 +114,7 @@ set(COMMANDS_SRC
     shared/commands/Utility.h
     shared/commands/Result.h
     shared/commands/Suggestions.h
+    shared/commands/Exception.h
 )
 
 set(LIBRARY_SRC

@@ -9,8 +9,9 @@
 #pragma once
 
 #include "Argument.h"
-#include "Result.h"
 #include "Command.h"
+#include "Exception.h"
+#include "Result.h"
 #include "Suggestions.h"
 #include <exception>
 #include <functional>

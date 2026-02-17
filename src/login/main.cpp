@@ -148,33 +148,39 @@ void register_command_handlers(commands::Registry& registry, log::Logger& logger
 
 	// register default command handler
 	sink->register_handler([&](auto input) {
-		auto tokens = registry.parse_input(input);
-		const auto search = registry.search(tokens);
+		try {
+			auto tokens = registry.parse_input(input);
+			const auto search = registry.search(tokens);
 
-		if(!search.command) {
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", tokens.front());
-			return;
-		}
-
-		const auto arguments = std::span(tokens).subspan(search.depth);
-
-		if(auto result = search.command->execute(arguments); result != commands::Result::success) {
-			const auto& path = commands::path_fragment(tokens, search.depth);
-
-			if(result == commands::Result::missing_args || result == commands::Result::too_many_args) {
-				LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {}{}", path, search.command->usage_string());
-			} else if(result == commands::Result::subcommands) {
-
-				LOG_CONSOLE_ASYNC(logger, R"(Available subcomands for "{}": )", path);
-
-				for(auto& subcommand : search.command->subcommands() | std::views::values) {
-					LOG_CONSOLE_ASYNC(logger, "{} : {}", subcommand->name(), subcommand->description());
-				}
-			} else if(result == commands::Result::unavailable) {
-				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);
-			} else {
-				LOG_CONSOLE_ERROR_ASYNC(logger, R"(An error occurred while executing "{}")", path);
+			if(!search.command) {
+				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", tokens.front());
+				return;
 			}
+
+			const auto arguments = std::span(tokens).subspan(search.depth);
+
+			if(auto result = search.command->execute(arguments); result != commands::Result::success) {
+				const auto& path = commands::path_fragment(tokens, search.depth);
+
+				if(result == commands::Result::missing_args || result == commands::Result::too_many_args) {
+					LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {}{}", path, search.command->usage_string());
+				} else if(result == commands::Result::subcommands) {
+
+					LOG_CONSOLE_ASYNC(logger, R"(Available subcomands for "{}": )", path);
+
+					for(auto& subcommand : search.command->subcommands() | std::views::values) {
+						LOG_CONSOLE_ASYNC(logger, "{} : {}", subcommand->name(), subcommand->description());
+					}
+				} else if(result == commands::Result::unavailable) {
+					LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);
+				} else {
+					LOG_CONSOLE_ERROR_ASYNC(logger, R"(An error occurred while executing "{}")", path);
+				}
+			}
+		} catch(const commands::parse_error& e) {
+			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error parsing command arguments, "{}")", e.what());
+		} catch(const std::exception& e) {
+			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
 		}
 	});
 #endif

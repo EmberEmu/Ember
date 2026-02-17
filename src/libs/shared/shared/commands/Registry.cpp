@@ -28,11 +28,15 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 	std::vector<std::string> tokens;
 	std::string str(input);
 
-	boost::escaped_list_separator<char> sep('\\', ' ', '"');
-	boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
+	try {
+		boost::escaped_list_separator<char> sep('\\', ' ', '"');
+		boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
 
-	for(auto& t : tok) {
-		tokens.emplace_back(t);
+		for(auto& t : tok) {
+			tokens.emplace_back(t);
+		}
+	} catch(boost::escaped_list_error& e) {
+		throw parse_error(e.what());
 	}
 
 	return tokens;

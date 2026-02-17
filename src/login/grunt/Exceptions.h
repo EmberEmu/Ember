@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ namespace ember::grunt {
 
 class exception : public std::runtime_error {
 public:
-	exception() : std::runtime_error("An unknown Grunt error occured!") { }
+	exception() : std::runtime_error("An unknown Grunt error occurred!") { }
 	explicit exception(const std::string& msg) : std::runtime_error(msg) { };
 };
 
