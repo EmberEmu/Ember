@@ -17,8 +17,6 @@ Registry::Registry()
 
 std::shared_ptr<Command> Registry::register_command(std::string name) {
 	std::lock_guard guard(lock_);
-
-	auto command = std::make_shared<Command>(name);
 	return root_.subcommand(name);
 }
 
