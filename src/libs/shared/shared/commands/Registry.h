@@ -15,7 +15,6 @@
 #include <exception>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <span>
 #include <string>
 #include <string_view>
@@ -31,7 +30,6 @@ public:
 
 private:
 	Command root_;
-	mutable std::mutex lock_;
 
 	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
 

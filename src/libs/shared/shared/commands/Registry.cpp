@@ -16,12 +16,10 @@ Registry::Registry()
 	: root_("") {}
 
 std::shared_ptr<Command> Registry::register_command(std::string name) {
-	std::lock_guard guard(lock_);
 	return root_.subcommand(name);
 }
 
 void Registry::register_command(std::shared_ptr<Command> command) {
-	std::lock_guard guard(lock_);
 	return root_.subcommand(std::move(command));
 }
 
@@ -65,7 +63,6 @@ std::shared_ptr<Command> Registry::find_command(std::span<const std::string> tok
 }
 
 auto Registry::get(std::span<const std::string> tokens) -> CommandGet {
-	std::lock_guard guard(lock_);
 	std::size_t depth = 0;
 	return { find_command(tokens, depth), depth };
 }
@@ -143,8 +140,6 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 }
 
 Suggestions Registry::autocomplete(std::string_view query) const {
-	std::lock_guard guard(lock_);
-	
 	auto tokens = parse_input(query);
 	auto results = autocomplete_recurse(root_.subcommands(), tokens);
 
@@ -156,7 +151,6 @@ Suggestions Registry::autocomplete(std::string_view query) const {
 }
 
 bool Registry::unregister(const std::string& name) {
-	std::lock_guard guard(lock_);
 	return !!root_.remove_subcommand(name);
 }
 
