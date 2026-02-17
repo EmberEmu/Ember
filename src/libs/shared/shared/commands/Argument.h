@@ -9,26 +9,20 @@
 #pragma once
 
 #include "ArgumentType.h"
-#include <boost/lexical_cast.hpp>
 #include <string>
 #include <utility>
 
 namespace ember::commands {
 
 struct Argument {
-	std::string value;
+	std::string name;
 	bool required;
 	ArgumentType type;
 
-	Argument(std::string value, bool required, ArgumentType type)
-		: value(std::move(value)),
+	Argument(std::string name, bool required, ArgumentType type)
+		: name(std::move(name)),
 		  required(required),
 		  type(type) {}
-
-	template<typename T>
-	T as() const {
-		return boost::lexical_cast<T>(value);
-	}
 };
 
 } // commands, ember

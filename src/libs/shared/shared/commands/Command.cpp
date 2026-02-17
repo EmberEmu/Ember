@@ -39,7 +39,7 @@ ArgumentStore Command::build_argument_store(std::span<const ArgumentValue> value
 	ArgumentStore arg_store;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
-		arg_store.emplace(arg.value, value);
+		arg_store.emplace(arg.name, value);
 	}
 
 	return arg_store;
@@ -161,7 +161,7 @@ std::string Command::usage_string() const {
 	}
 
 	for(const auto& arg : args_) {
-		result += (arg.required ? " <" : " [") + arg.value + (arg.required ? ">" : "]");
+		result += (arg.required ? " <" : " [") + arg.name + (arg.required ? ">" : "]");
 	}
 
 	return result;
@@ -187,7 +187,7 @@ bool Command::remove_arg(const std::string& argument) {
 	std::lock_guard guard(mutex_);
 
 	auto remove = std::ranges::remove_if(args_, [&](auto& arg){
-		return argument == arg.value;
+		return argument == arg.name;
 	});
 
 	args_.erase(remove.begin(), args_.end());
