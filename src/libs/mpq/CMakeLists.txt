@@ -29,7 +29,7 @@ source_group("Archive"     FILES ${ARCHIVE})
 source_group("Archive\\v0" FILES ${ARCHIVE_V0})
 source_group("Archive\\v1" FILES ${ARCHIVE_V1})
 
-add_library(${LIBRARY_NAME}
+add_library(${LIBRARY_NAME} STATIC
     ${ARCHIVE}
     ${ARCHIVE_V0}
     ${ARCHIVE_V1}

@@ -1,4 +1,4 @@
-# Copyright (c) 2015 - 2025 Ember
+# Copyright (c) 2015 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,7 +6,7 @@
 
 set(LIBRARY_NAME conpool)
 
-add_library(${LIBRARY_NAME}
+add_library(${LIBRARY_NAME} STATIC
     src/MySQL/Driver.cpp
     src/MySQL/Config.cpp
     src/DummyDriver.cpp

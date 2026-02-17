@@ -46,7 +46,7 @@
     )
 
     add_custom_target(
-        ${target_name} ALL
+        ${target_name}
         DEPENDS ${dbc_parser} ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies}
     )
 

@@ -6,7 +6,7 @@
 
 set(LIBRARY_NAME logger)
 
-add_library(${LIBRARY_NAME}
+add_library(${LIBRARY_NAME} STATIC
     src/FileSink.cpp
     src/SyslogSink.cpp
     src/Logger.cpp

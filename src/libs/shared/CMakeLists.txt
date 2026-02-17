@@ -154,7 +154,7 @@ source_group("Metrics" FILES ${METRICS_SRC})
 source_group("Command Parser" FILES ${COMMANDS_SRC})
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp ${PCRE_INCLUDE_DIR} ${PROJECT_BINARY_DIR}/src)
-add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
+add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${PCRE_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(${LIBRARY_NAME} PUBLIC logger conpool botan::botan-static ${PCRE_LIBRARY})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

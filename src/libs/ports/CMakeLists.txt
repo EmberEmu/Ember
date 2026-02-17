@@ -6,7 +6,7 @@
 
 set(LIBRARY_NAME ports)
 
-add_library(${LIBRARY_NAME}
+add_library(${LIBRARY_NAME} STATIC
     src/pcp/Client.cpp
     src/pcp/DatagramTransport.cpp
     src/pcp/Daemon.cpp

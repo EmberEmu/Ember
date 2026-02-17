@@ -6,7 +6,7 @@
 
 set(LIBRARY_NAME stun)
 
-add_library(${LIBRARY_NAME}
+add_library(${LIBRARY_NAME} STATIC
     include/stun/Client.h
     include/stun/TransportBase.h
     include/stun/DatagramTransport.h
