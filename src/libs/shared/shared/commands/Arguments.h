@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include "ParsedArgument.h"
+#include "ArgumentValue.h"
 #include <string>
 #include <unordered_map>
 #include <utility>
 
 namespace ember::commands {
 
-using ArgumentStore = std::unordered_map<std::string, ParsedArgument>;
+using ArgumentStore = std::unordered_map<std::string, ArgumentValue>;
 
 class Arguments {
 	ArgumentStore args_;
@@ -24,7 +24,7 @@ public:
 	Arguments(ArgumentStore args)
 		: args_(std::move(args)) {}
 
-	const ParsedArgument& operator[](const std::string& arg_name) const {
+	const ArgumentValue& operator[](const std::string& arg_name) const {
 		return args_.at(arg_name);
 	}
 

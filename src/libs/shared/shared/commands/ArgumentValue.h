@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include "ArgumentType.h"
-#include <boost/lexical_cast.hpp>
-#include <utility>
 #include <variant>
 #include <string>
 #include <cstdint>
@@ -31,16 +28,5 @@ using ArgumentValue = std::variant<
 	double,
 	char
 >;
-
-struct ParsedArgument {
-	ArgumentValue value;
-	ArgumentType type;
-	bool required;
-
-	ParsedArgument(ArgumentValue value, ArgumentType type, bool required)
-		: value(std::move(value)),
-	      type(type),
-	      required(required){}
-};
 
 } // commands, ember

@@ -39,61 +39,17 @@ ArgumentStore Command::build_argument_store(std::span<const ArgumentValue> value
 	ArgumentStore arg_store;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
-		ParsedArgument parsed(value, arg.type, arg.required);
-		arg_store.emplace(arg.value, std::move(parsed));
+		arg_store.emplace(arg.value, value);
 	}
 
 	return arg_store;
 }
 
-bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
-	switch(type) {
-		case ArgumentType::at_string:
-			if(std::holds_alternative<std::string>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint8:
-			if(std::holds_alternative<std::uint8_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint16:
-			if(std::holds_alternative<std::uint16_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint32:
-			if(std::holds_alternative<std::uint32_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint64:
-			if(std::holds_alternative<std::uint64_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int8:
-			if(std::holds_alternative<std::int8_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int16:
-			if(std::holds_alternative<std::int16_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int32:
-			if(std::holds_alternative<std::int32_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int64:
-			if(std::holds_alternative<std::int64_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_float:
-			if(std::holds_alternative<float>(value)) { return false; }
-			break;
-		case ArgumentType::at_double:
-			if(std::holds_alternative<double>(value)) { return false; }
-			break;
-		case ArgumentType::at_char:
-			if(std::holds_alternative<char>(value)) { return false; }
-			break;
-		default:
-			return false;
-	}
-
-	return true;
-}
-
 bool Command::validate_types(const ArgumentStore& args) const {
-	for(auto& [_, v] : args) {
-		if(!validate_type(v.type, v.value)) {
+	for(auto [expected, map] : std::views::zip(args_, args)) {
+		const auto& [_, v] = map;
+
+		if(!validate_type(expected.type, v)) {
 			return false;
 		}
 	}
@@ -251,6 +207,51 @@ bool Command::remove_subcommand(const std::string& name) {
 void Command::clear_subcommands() {
 	std::lock_guard guard(mutex_);
 	subcommands_.clear();
+}
+
+bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
+	switch(type) {
+		case ArgumentType::at_string:
+			if(std::holds_alternative<std::string>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint8:
+			if(std::holds_alternative<std::uint8_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint16:
+			if(std::holds_alternative<std::uint16_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint32:
+			if(std::holds_alternative<std::uint32_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_uint64:
+			if(std::holds_alternative<std::uint64_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int8:
+			if(std::holds_alternative<std::int8_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int16:
+			if(std::holds_alternative<std::int16_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int32:
+			if(std::holds_alternative<std::int32_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_int64:
+			if(std::holds_alternative<std::int64_t>(value)) { return false; }
+			break;
+		case ArgumentType::at_float:
+			if(std::holds_alternative<float>(value)) { return false; }
+			break;
+		case ArgumentType::at_double:
+			if(std::holds_alternative<double>(value)) { return false; }
+			break;
+		case ArgumentType::at_char:
+			if(std::holds_alternative<char>(value)) { return false; }
+			break;
+		default:
+			return false;
+	}
+
+	return true;
 }
 
 } // commands, ember
