@@ -10,6 +10,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <string>
+#include <utility>
 
 namespace ember::commands {
 
