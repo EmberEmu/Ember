@@ -7,13 +7,18 @@
  */
 
 #include "Command.h"
+#include "Exception.h"
 #include <algorithm>
 #include <cassert>
 
 namespace ember::commands {
 
 Command::Command(std::string name)
-	: name_(name) {}
+	: name_(name) {
+	if(name_.empty()) {
+		throw exception("Command name cannot be empty");
+	}
+}
 
 std::shared_ptr<Command> Command::create(std::string name) {
 	return std::shared_ptr<Command>(new Command(name)); // make_shared can't access ctor

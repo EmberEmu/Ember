@@ -14,7 +14,7 @@
 namespace ember::commands {
 
 Registry::Registry()
-	: root_(std::move(Command::create(""))) {}
+	: root_(std::move(Command::create("_root"))) {}
 
 std::shared_ptr<Command> Registry::register_command(std::string name) {
 	return root_->subcommand(name);
