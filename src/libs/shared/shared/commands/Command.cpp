@@ -212,46 +212,50 @@ void Command::clear_subcommands() {
 bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
 	switch(type) {
 		case ArgumentType::at_string:
-			if(std::holds_alternative<std::string>(value)) { return false; }
+			if(!std::holds_alternative<std::string>(value)) { return false; }
 			break;
 		case ArgumentType::at_uint8:
-			if(std::holds_alternative<std::uint8_t>(value)) { return false; }
+			if(!std::holds_alternative<std::uint8_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_uint16:
-			if(std::holds_alternative<std::uint16_t>(value)) { return false; }
+			if(!std::holds_alternative<std::uint16_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_uint32:
-			if(std::holds_alternative<std::uint32_t>(value)) { return false; }
+			if(!std::holds_alternative<std::uint32_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_uint64:
-			if(std::holds_alternative<std::uint64_t>(value)) { return false; }
+			if(!std::holds_alternative<std::uint64_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_int8:
-			if(std::holds_alternative<std::int8_t>(value)) { return false; }
+			if(!std::holds_alternative<std::int8_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_int16:
-			if(std::holds_alternative<std::int16_t>(value)) { return false; }
+			if(!std::holds_alternative<std::int16_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_int32:
-			if(std::holds_alternative<std::int32_t>(value)) { return false; }
+			if(!std::holds_alternative<std::int32_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_int64:
-			if(std::holds_alternative<std::int64_t>(value)) { return false; }
+			if(!std::holds_alternative<std::int64_t>(value)) { return false; }
 			break;
 		case ArgumentType::at_float:
-			if(std::holds_alternative<float>(value)) { return false; }
+			if(!std::holds_alternative<float>(value)) { return false; }
 			break;
 		case ArgumentType::at_double:
-			if(std::holds_alternative<double>(value)) { return false; }
+			if(!std::holds_alternative<double>(value)) { return false; }
 			break;
 		case ArgumentType::at_char:
-			if(std::holds_alternative<char>(value)) { return false; }
+			if(!std::holds_alternative<char>(value)) { return false; }
 			break;
 		default:
 			return false;
 	}
 
 	return true;
+}
+
+std::size_t Command::argument_count() const {
+	return args_.size();
 }
 
 } // commands, ember

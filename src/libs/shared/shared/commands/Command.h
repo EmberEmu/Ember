@@ -19,6 +19,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <cstddef>
 
 namespace ember::commands {
 
@@ -69,6 +70,7 @@ public:
 	std::vector<Argument> args() const;
 	std::string usage_string() const;
 	CommandMap subcommands() const;
+	std::size_t argument_count() const;
 
 	Result execute(std::span<const ArgumentValue> arguments);
 };
