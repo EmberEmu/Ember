@@ -20,7 +20,7 @@ std::shared_ptr<Command> Registry::register_command(std::string name) {
 }
 
 void Registry::register_command(std::shared_ptr<Command> command) {
-	return root_.subcommand(std::move(command));
+	root_.subcommand(std::move(command));
 }
 
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
