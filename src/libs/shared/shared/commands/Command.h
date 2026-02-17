@@ -26,7 +26,7 @@ class Command;
 using CommandHandler = std::function<void(const Arguments&)>;
 using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>>;
 
-class Command {
+class Command : public std::enable_shared_from_this<Command> {
 	mutable std::mutex mutex_;
 
 	std::string description_;
@@ -40,8 +40,10 @@ class Command {
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 
-public:
 	Command(std::string name);
+
+public:
+	static std::shared_ptr<Command> create(std::string name);
 
 	Command(Command&) = delete;
 	Command(Command&&) = delete;
@@ -50,10 +52,10 @@ public:
 
 	void subcommand(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> subcommand(std::string name);
-	Command& description(std::string description);
-	Command& arg(std::string argument);
-	Command& optional_arg(std::string argument);
-	Command& handler(CommandHandler handler);
+	std::shared_ptr<Command> description(std::string description);
+	std::shared_ptr<Command> arg(std::string argument);
+	std::shared_ptr<Command> optional_arg(std::string argument);
+	std::shared_ptr<Command> handler(CommandHandler handler);
 	bool remove_arg(const std::string& argument);
 	void clear_args();
 	bool remove_subcommand(const std::string& name);
@@ -66,10 +68,6 @@ public:
 	CommandMap subcommands() const;
 
 	Result execute(std::span<const std::string> arguments);
-
-	Command* operator->() {
-		return this;
-	}
 };
 
 } // commands, ember

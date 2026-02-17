@@ -16,7 +16,7 @@ namespace ember::commands {
 
 constexpr auto approx_cmd_len = 10u;
 
-std::string path_fragment(std::span<const std::string> tokens, std::size_t depth) {
+inline std::string path_fragment(std::span<const std::string> tokens, std::size_t depth) {
 	if(tokens.size() < depth) {
 		return {};
 	}

@@ -92,6 +92,8 @@ set(UTIL_SRC
     shared/utility/Timing.h
     shared/utility/Timing.cpp
     shared/utility/Exception.h
+    shared/utility/CommandHelpers.h
+    shared/utility/CommandHelpers.cpp
 )
 
 set(METRICS_SRC
