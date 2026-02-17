@@ -132,6 +132,10 @@ std::string Command::usage_string() const {
 
 	std::string result;
 
+	if(args_.empty()) {
+		return "<no arguments>";
+	}
+
 	for(const auto& arg : args_) {
 		result += (arg.required ? " <" : " [") + arg.value + (arg.required ? ">" : "]");
 	}
