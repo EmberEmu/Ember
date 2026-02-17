@@ -14,6 +14,7 @@
 #include <shared/commands/Registry.h>
 #include <shared/commands/Utility.h>
 #include <shared/threading/Utility.h>
+#include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/io_context.hpp>
@@ -32,8 +33,6 @@ namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const po::variables_map& args, commands::Registry& registry, log::Logger& logger);
-void register_command_handlers(commands::Registry& registry, log::Logger& logger);
-void register_help_command(commands::Registry& registry, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -55,8 +54,8 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
 	commands::Registry registry;
-	register_command_handlers(registry, logger);
-	register_help_command(registry, logger);
+	utility::register_command_handlers(registry, logger);
+	utility::register_help_command(registry, logger);
 
 	const auto ret = run(args, registry, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);
@@ -125,75 +124,4 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::notify(options);
 
 	return options;
-}
-
-void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
-#ifdef _WIN32
-	auto sinks = logger.fetch_sink("CommandSink");
-
-	if(sinks.empty()) {
-		LOG_INFO_SYNC(logger, "Console commands disabled, no suitable logging sink found");
-		return;
-	} else if(sinks.size() > 1) {
-		LOG_ERROR_SYNC(logger, "Console commands disabled, multiple command logging sinks found");
-		return;
-	}
-
-	auto sink = static_cast<log::CommandSink*>(sinks.front().get());
-
-	// register autocompletion handler
-	sink->register_autocomplete([&](auto cmd) {
-		return registry.autocomplete(cmd);
-	});
-
-	// register default command handler
-	sink->register_handler([&](auto input) {
-		try {
-			auto tokens = registry.parse_input(input);
-			const auto search = registry.search(tokens);
-
-			if(!search.command) {
-				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", tokens.front());
-				return;
-			}
-
-			const auto arguments = std::span(tokens).subspan(search.depth);
-
-			if(auto result = search.command->execute(arguments); result != commands::Result::success) {
-				const auto& path = commands::path_fragment(tokens, search.depth);
-
-				if(result == commands::Result::missing_args || result == commands::Result::too_many_args) {
-					LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {}{}", path, search.command->usage_string());
-				} else if(result == commands::Result::subcommands) {
-
-					LOG_CONSOLE_ASYNC(logger, R"(Available subcomands for "{}": )", path);
-
-					for(auto& subcommand : search.command->subcommands() | std::views::values) {
-						LOG_CONSOLE_ASYNC(logger, "{} : {}", subcommand->name(), subcommand->description());
-					}
-				} else if(result == commands::Result::unavailable) {
-					LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);
-				} else {
-					LOG_CONSOLE_ERROR_ASYNC(logger, R"(An error occurred while executing "{}")", path);
-				}
-			}
-		} catch(const commands::parse_error& e) {
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error parsing command arguments, "{}")", e.what());
-		} catch(const std::exception& e) {
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
-		}
-	});
-#endif
-}
-
-void register_help_command(commands::Registry& registry, log::Logger& logger) {
-#ifdef _WIN32
-	auto handler = [&](const auto&) {
-		LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
-	};
-
-	registry.register_command("help")
-		->description("Display console command usage information")
-		->handler(handler);
-#endif
 }

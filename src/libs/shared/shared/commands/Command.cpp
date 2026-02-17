@@ -12,7 +12,12 @@
 
 namespace ember::commands {
 
-Command::Command(std::string name) : name_(name) {}
+Command::Command(std::string name)
+	: name_(name) {}
+
+std::shared_ptr<Command> Command::create(std::string name) {
+	return std::shared_ptr<Command>(new Command(name)); // make_shared can't access ctor
+}
 
 auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	if(count < required_arg_count()) {
@@ -64,7 +69,7 @@ Result Command::execute(std::span<const std::string> arguments) {
 	return Result::success;
 }
 
-Command& Command::arg(std::string argument) {
+std::shared_ptr<Command> Command::arg(std::string argument) {
 	std::lock_guard guard(mutex_);
 
 	if(optional_arg_count() > 0) {
@@ -72,31 +77,31 @@ Command& Command::arg(std::string argument) {
 	}
 		
 	args_.emplace_back(std::move(argument), true);
-	return *this;
+	return this->shared_from_this();
 }
 
-Command& Command::optional_arg(std::string argument) {
+std::shared_ptr<Command> Command::optional_arg(std::string argument) {
 	std::lock_guard guard(mutex_);
 
 	args_.emplace_back(std::move(argument), false);
-	return *this;
+	return this->shared_from_this();
 }
 
-Command& Command::description(std::string description) {
+std::shared_ptr<Command> Command::description(std::string description) {
 	std::lock_guard guard(mutex_);
 
 	description_ = std::move(description);
-	return *this;
+	return this->shared_from_this();
 }
 
-Command& Command::handler(CommandHandler handler) {
+std::shared_ptr<Command> Command::handler(CommandHandler handler) {
 	std::lock_guard guard(mutex_);
 
 	// shared_ptr to avoid having to copy a potentially heavyweight handler
 	// during invocation for thread safety reasons - guaranteeing the lifetime
 	// of the handler rather than copying is sufficient
 	handler_ = std::make_shared<CommandHandler>(handler);
-	return *this;
+	return this->shared_from_this();
 }
 
 std::vector<Argument> Command::args() const {
@@ -147,7 +152,7 @@ std::shared_ptr<Command> Command::subcommand(std::string name) {
 	std::lock_guard guard(mutex_);
 
 	auto [entry, _] = subcommands_.insert_or_assign(
-		name, std::make_shared<Command>(name)
+		name, create(name)
 	);
 
 	return entry->second;

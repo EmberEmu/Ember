@@ -14,14 +14,14 @@
 namespace ember::commands {
 
 Registry::Registry()
-	: root_("") {}
+	: root_(std::move(Command::create(""))) {}
 
 std::shared_ptr<Command> Registry::register_command(std::string name) {
-	return root_.subcommand(name);
+	return root_->subcommand(name);
 }
 
 void Registry::register_command(std::shared_ptr<Command> command) {
-	root_.subcommand(std::move(command));
+	root_->subcommand(std::move(command));
 }
 
 std::vector<std::string> Registry::parse_input(std::string_view input) const {
@@ -44,10 +44,10 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 
 // this is really inefficient due to the registry copies (must be copied from subcommands for safety)
 // but it's not even remotely performance sensitive, so it'll do
-auto Registry::search(std::span<const std::string> tokens) -> SearchResult {
+auto Registry::search(std::span<const std::string> tokens) const -> SearchResult {
 	// we need go as deep as possible into the subcommand chain
 	SearchResult search;
-	auto registry = root_.subcommands();
+	auto registry = root_->subcommands();
 
 	for(auto& token : tokens) {
 		const auto& command_name = token;
@@ -139,7 +139,7 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 
 Suggestions Registry::autocomplete(std::string_view query) const {
 	auto tokens = parse_input(query);
-	auto results = autocomplete_recurse(root_.subcommands(), tokens);
+	auto results = autocomplete_recurse(root_->subcommands(), tokens);
 
 	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
 		return a.name < b.name;
@@ -149,7 +149,7 @@ Suggestions Registry::autocomplete(std::string_view query) const {
 }
 
 bool Registry::unregister(const std::string& name) {
-	return !!root_.remove_subcommand(name);
+	return !!root_->remove_subcommand(name);
 }
 
 } // commands, ember
