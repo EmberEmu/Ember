@@ -23,7 +23,7 @@ public:
 	Arguments(ArgumentStore args)
 		: args_(std::move(args)) {}
 
-	const Argument& operator[](const std::string& arg_name) {
+	const Argument& operator[](const std::string& arg_name) const {
 		return args_.at(arg_name);
 	}
 
