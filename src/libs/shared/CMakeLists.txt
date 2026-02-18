@@ -119,7 +119,7 @@ set(COMMANDS_SRC
     shared/commands/Exception.h
     shared/commands/ArgumentType.h
     shared/commands/ArgumentValue.h
-    shared/commands/Register.h
+    shared/commands/PrefixedRegistry.h
 )
 
 set(LIBRARY_SRC
