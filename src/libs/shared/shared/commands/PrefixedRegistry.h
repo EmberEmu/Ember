@@ -16,7 +16,7 @@ namespace ember::commands {
 
 class PrefixedRegistry {
 	Registry& registry_;
-	std::string prefix_;
+	const std::string prefix_;
 
 public:
 	PrefixedRegistry(Registry& registry, std::string prefix = {})
