@@ -28,6 +28,8 @@ namespace ember::log {
 
 using namespace detail;
 
+static constexpr auto prompt_colour = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // white
+
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	: Sink(severity, filter, "CommandSink"),
 	  prompt_(std::move(prompt)),
@@ -215,6 +217,12 @@ void CommandSink::redraw_prompt() {
     for(size_t i = 0; i < full.size() && i < width; ++i) {
         buffer[i].Char.AsciiChar = full[i];
     }
+
+	if(colour_) {
+		for(size_t i = 0; i < prompt_.size() && i < width; ++i) {
+			buffer[i].Attributes = prompt_colour;
+		}
+	}
 
     const SHORT bottom = info.dwSize.Y - 1;
 
