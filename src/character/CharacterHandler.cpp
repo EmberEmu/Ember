@@ -162,17 +162,19 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	}
 
 	// defer zone placement until first world entry (original retail behaviour)
-	if(!config_.defer_zone_placement) {
-		if(!base_info->second.zone) {
-			LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
-			                race->name.en_gb, class_->name.en_gb);
-			callback(protocol::Result::CHAR_CREATE_ERROR);
-			return;
-		}
-		
-		populate_zone(character, *base_info->second.zone);
-	}
+	const auto zone = base_info->second.zone;
 
+	if(!zone) {
+		LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
+		                race->name.en_gb, class_->name.en_gb);
+		callback(protocol::Result::CHAR_CREATE_ERROR);
+		return;
+	}
+	
+	if(!config_.defer_zone_placement) {
+		populate_zone(character, *zone);
+	}
+	
 	// populate starting equipment
 	const auto& items = std::ranges::find_if(dbc_.char_start_outfit, [&](const auto& record) {
 		return record.second.race_id == character.race
@@ -211,10 +213,9 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		                race->name.en_gb, class_->name.en_gb);
 	}
 
-	const auto zone = base_info->second.zone;
 	const char* subzone = nullptr;
 
-	if(zone && zone->area->parent_area_table_id) {
+	if(zone->area->parent_area_table_id) {
 		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
 	}
 
