@@ -45,8 +45,8 @@ class CommandSink final : public Sink {
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto reserve_buf_size = 1024u;
 	static constexpr auto history_size = 5u;
-	static constexpr auto table_name_cols = 20u;
-	static constexpr auto table_desc_cols = 50u;
+	static constexpr auto table_name_cols = 25u;
+	static constexpr auto table_desc_cols = 52u;
 
 	static inline std::mutex colour_lock;
 
