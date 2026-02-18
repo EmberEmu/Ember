@@ -14,6 +14,7 @@
 #include <mdns/Service.h>
 #include <world/Service.h>
 #include <logger/Logger.h>
+#include <shared/commands/PrefixedRegistry.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/threading/Utility.h>
@@ -214,7 +215,8 @@ void launch_login(const po::variables_map& args, commands::Registry& registry, b
 		active_logger = &logger;
 	}
 
-	login::Service service(registry, *active_logger);
+	commands::PrefixedRegistry cmd_register(registry, "login_");
+	login::Service service(cmd_register, *active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();

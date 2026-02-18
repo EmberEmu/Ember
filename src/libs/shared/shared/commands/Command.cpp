@@ -258,4 +258,8 @@ std::size_t Command::argument_count() const {
 	return args_.size();
 }
 
+void Command::update_name(std::string name) {
+	name_ = name;
+}
+
 } // commands, ember

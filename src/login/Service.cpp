@@ -338,7 +338,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	}
 
 	// Install service command handlers
-	registry.register_command("connections")
+	cmd_register("connections")
 		->description("Displays open connection count")
 		->handler([&](auto& command) {
 			LOG_CONSOLE_ASYNC(logger, "{} active connection(s), {} peak",

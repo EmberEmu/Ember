@@ -60,6 +60,7 @@ public:
 	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
+	void update_name(std::string name);
 	bool remove_argument(const std::string& argument);
 	void clear_arguments();
 	bool remove_subcommand(const std::string& name);

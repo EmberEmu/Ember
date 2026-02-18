@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
-#include <shared/commands/Registry.h>
+#include <shared/commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -26,16 +26,16 @@ class Service {
 	std::binary_semaphore stop_flag { 0 };
 	log::Logger& logger;
 
-	commands::Registry& registry;
+	commands::PrefixedRegistry& cmd_register;
 
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(commands::Registry& registry, log::Logger& logger)
+	explicit Service(commands::PrefixedRegistry& cmd_register, log::Logger& logger)
 		: logger(logger),
-		  registry(registry) {}
+		  cmd_register(cmd_register) {}
 
 	~Service() {
 		stop();

@@ -11,6 +11,7 @@
 #include <logger/Logger.h>
 #include <banner/Banner.h>
 #include <banner/Banner.h>
+#include <shared/commands/PrefixedRegistry.h>
 #include <shared/commands/Registry.h>
 #include <shared/commands/Utility.h>
 #include <shared/threading/Utility.h>
@@ -32,7 +33,7 @@ using namespace ember;
 namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const po::variables_map& args, commands::Registry& registry, log::Logger& logger);
+int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -54,21 +55,22 @@ int main(int argc, const char* argv[]) try {
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
 	commands::Registry registry;
+	commands::PrefixedRegistry cmd_register(registry);
 	utility::register_command_handlers(registry, logger);
 	utility::register_help_command(registry, logger);
 
-	const auto ret = run(args, registry, logger);
+	const auto ret = run(args, cmd_register, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
 }
 
-int run(const po::variables_map& args, commands::Registry& registry, log::Logger& logger) try {
+int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register, log::Logger& logger) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	login::Service service(registry, logger);
+	login::Service service(cmd_register, logger);
 
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
