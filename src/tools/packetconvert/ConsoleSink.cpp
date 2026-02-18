@@ -76,7 +76,7 @@ void ConsoleSink::handle(const fblog::Message& message) {
 	
 	const auto payload = message.payload();
 
-	std::cout << util::format_packet(payload->data(), payload->size());
+	std::cout << utility::format_packet(payload->data(), payload->size());
 	std::cout << "\n</message>\n" << std::endl; // explicit flush to avoid stalls for ongoing streams
 }
 

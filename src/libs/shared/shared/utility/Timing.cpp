@@ -15,7 +15,7 @@
 	#pragma comment(lib, "Winmm.lib")
 #endif
 
-namespace ember::util {
+namespace ember::utility {
 
 ScopedTimerPeriod::ScopedTimerPeriod(std::chrono::milliseconds ms)
 	: success_(true),

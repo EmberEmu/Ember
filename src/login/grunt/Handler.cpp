@@ -36,7 +36,7 @@ void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
 	std::vector<std::uint8_t> contig_buff(stream.size());
 	stream.get(contig_buff.data(), stream.size());
 
-	auto output = util::format_packet(contig_buff.data(), contig_buff.size());
+	auto output = utility::format_packet(contig_buff.data(), contig_buff.size());
 
 	LOG_ERROR(logger_) << "Buffer stream underrun! \nRead request: "
 	                   << e.read_size << " bytes \nBuffer size: " << e.buff_size

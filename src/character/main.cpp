@@ -38,12 +38,12 @@ int run(const po::variables_map& args, log::Logger& logger);
  */
 int main(int argc, const char* argv[]) try {
 	print_banner(character::APP_NAME);
-	util::set_window_title(character::APP_NAME);
+	utility::set_window_title(character::APP_NAME);
 
 	const auto args = parse_arguments(argc, argv);
 
 	log::Logger logger;
-	util::configure_logger(logger, args);
+	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
@@ -62,7 +62,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 	character::Service service(logger);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		signals.clear();
 		service.stop();
 	});

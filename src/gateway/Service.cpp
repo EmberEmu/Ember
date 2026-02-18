@@ -149,7 +149,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	}
 	
 	const auto& title = std::format("{} - {}", APP_NAME, realm->name);
-	util::set_window_title(title);
+	utility::set_window_title(title);
 
 	// Validate category & region
 	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
@@ -190,7 +190,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	}
 
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
-	std::unique_ptr<util::PortForward> forward;
+	std::unique_ptr<utility::PortForward> forward;
 
 	if(stun_enabled) {
 		const auto result = stun_res.get();
@@ -209,17 +209,17 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 			} else {
 				const auto& mode_str = args["forward.method"].as<std::string>();
 				const auto& gateway = args["forward.gateway"].as<std::string>();
-				auto mode = util::PortForward::Mode::AUTO;
+				auto mode = utility::PortForward::Mode::AUTO;
 
 				if(mode_str == "natpmp") {
-					mode = util::PortForward::Mode::PMP_PCP;
+					mode = utility::PortForward::Mode::PMP_PCP;
 				} else if(mode_str == "upnp") {
-					mode = util::PortForward::Mode::UPNP;
+					mode = utility::PortForward::Mode::UPNP;
 				} else if(mode_str != "auto") {
 					throw std::invalid_argument("Unknown port forwarding method");
 				}
 
-				forward = std::make_unique<util::PortForward>(
+				forward = std::make_unique<utility::PortForward>(
 					logger, service, mode, interface, gateway, port
 				);
 			}
@@ -259,7 +259,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	Locator::set(&config);
 	
 	// Misc. information
-	const auto max_socks = util::max_sockets_desc();
+	const auto max_socks = utility::max_sockets_desc();
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener

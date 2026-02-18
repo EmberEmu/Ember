@@ -19,7 +19,7 @@
  * Utility functions for printing out enum values returned from remote
  * Spark services using the FlatBuffers-based protocol
  */
-namespace ember::util {
+namespace ember::utility {
 
 // makes sure converting an enum value to a string isn't going to cause a crash
 // in the case of a protocol mismatch

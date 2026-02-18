@@ -36,12 +36,12 @@ po::variables_map parse_arguments(int argc, const char* argv[]);
 int main(int argc, const char* argv[]) try {
 	thread::set_name("Main");
 	print_banner(world::APP_NAME);
-	util::set_window_title(world::APP_NAME);
+	utility::set_window_title(world::APP_NAME);
 
 	const auto args = parse_arguments(argc, argv);
 
 	log::Logger logger;
-	util::configure_logger(logger, args);
+	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 
 	LOG_INFO_SYNC(logger, "Logger configured successfully");

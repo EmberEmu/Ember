@@ -54,7 +54,7 @@ std::atomic_bool shutting_down = false;
 int main(int argc, const char* argv[]) try {
 	thread::set_name("Main");
 	print_banner(APP_NAME);
-	util::set_window_title(APP_NAME);
+	utility::set_window_title(APP_NAME);
 
 	auto args = parse_arguments(argc, argv);
 	const bool share_logger = args["console_log.enable_input"].as<bool>();
@@ -65,7 +65,7 @@ int main(int argc, const char* argv[]) try {
 	}
 
 	log::Logger logger;
-	util::configure_logger(logger, args);
+	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 
 	commands::Registry registry;
@@ -85,7 +85,7 @@ int launch(const po::variables_map& args, commands::Registry& registry, bool sha
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		signals.clear();
 		stop_services();
 	});
@@ -170,7 +170,7 @@ void launch_dns(const po::variables_map& args, commands::Registry& registry, boo
 	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
-		util::configure_logger(*active_logger, opts);
+		utility::configure_logger(*active_logger, opts);
 	} else {
 		active_logger = &logger;
 	}
@@ -210,7 +210,7 @@ void launch_login(const po::variables_map& args, commands::Registry& registry, b
 	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
-		util::configure_logger(*active_logger, opts);
+		utility::configure_logger(*active_logger, opts);
 	} else {
 		active_logger = &logger;
 	}
@@ -251,7 +251,7 @@ void launch_gateway(const po::variables_map& args, commands::Registry&, bool sha
 	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
-		util::configure_logger(service_logger, opts);
+		utility::configure_logger(service_logger, opts);
 	} else {
 		active_logger = &logger;
 	}
@@ -291,7 +291,7 @@ void launch_account(const po::variables_map& args, commands::Registry& registry,
 	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
-		util::configure_logger(service_logger, opts);
+		utility::configure_logger(service_logger, opts);
 	} else {
 		active_logger = &logger;
 	}
@@ -331,7 +331,7 @@ void launch_character(const po::variables_map& args, commands::Registry& registr
 	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
-		util::configure_logger(*active_logger, opts);
+		utility::configure_logger(*active_logger, opts);
 	} else {
 		active_logger = &logger;
 	}
@@ -371,7 +371,7 @@ void launch_world(const po::variables_map& args, commands::Registry& registry, b
 	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
-		util::configure_logger(*active_logger, opts);
+		utility::configure_logger(*active_logger, opts);
 	} else {
 		active_logger = &logger;
 	}

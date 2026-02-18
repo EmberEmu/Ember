@@ -17,7 +17,7 @@
 
 using namespace ember;
 
-struct MockClock final : util::ClockBase {
+struct MockClock final : utility::ClockBase {
 	std::chrono::time_point<std::chrono::system_clock> timepoint;
 
 	explicit MockClock(const std::uint64_t timestamp) {

@@ -20,7 +20,7 @@
 
 namespace po = boost::program_options;
 
-namespace ember::util {
+namespace ember::utility {
 
 namespace {
 

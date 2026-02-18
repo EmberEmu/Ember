@@ -107,7 +107,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	if(event->status != rpc::Account::Status::OK) {
 		CLIENT_ERROR(ctx.logger, ctx)
 			<< "Account server returned "
-			<< util::fb_status(event->status, rpc::Account::EnumNamesStatus())
+			<< utility::fb_status(event->status, rpc::Account::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
 
 		auth_state(ctx, State::FAILED);
@@ -143,7 +143,7 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 
 	CLIENT_DEBUG(ctx.logger, ctx)
 		<< "Account server returned "
-		<< util::fb_status(event->status, rpc::Account::EnumNamesStatus())
+		<< utility::fb_status(event->status, rpc::Account::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
 
 	if(event->status == rpc::Account::Status::OK) {

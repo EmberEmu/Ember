@@ -14,7 +14,7 @@
 
 using namespace std::string_literals;
 
-namespace ember::util::pcre {
+namespace ember::utility::pcre {
 
 Result utf8_jit_compile(std::string expression) {
 	int error_offset = 0;

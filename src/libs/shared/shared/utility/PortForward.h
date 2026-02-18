@@ -22,7 +22,7 @@
 #include <cassert>
 #include <cstdint>
 
-namespace ember::util {
+namespace ember::utility {
 
 /*
  * Helper class that provides a basic API for forwarding a port for

@@ -13,7 +13,7 @@
 #include <string>
 #include <cstddef>
 
-namespace ember::util::utf8 {
+namespace ember::utility::utf8 {
 
 utf8_string name_format(const utf8_string& string, const std::locale& locale);
 bool is_alpha(const utf8_string& string, const std::locale& locale);

@@ -10,7 +10,7 @@
 
 #include <cstdint>
 
-namespace ember::util {
+namespace ember::utility {
 
 constexpr std::uint32_t make_mcc(char const (&s)[4]) {
     return s[0] << 16 | s[1] << 8 | s[2];

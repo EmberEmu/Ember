@@ -35,7 +35,7 @@ void Survey::add_data(const grunt::Platform platform, const grunt::System os, co
 		throw std::runtime_error("An error occurred while reading " + path);
 	}
 
-	const auto md5 = util::generate_md5(buffer);
+	const auto md5 = utility::generate_md5(buffer);
 	static_assert(md5.size() == fmeta.md5.size());
 	std::ranges::copy(md5, fmeta.md5.data());
 

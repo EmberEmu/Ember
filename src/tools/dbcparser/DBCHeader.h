@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <cstddef>
 
-constexpr std::uint32_t DBC_MAGIC = ember::util::make_mcc("WDBC");
+constexpr std::uint32_t DBC_MAGIC = ember::utility::make_mcc("WDBC");
 constexpr auto DBC_HEADER_SIZE = 20u;
 
 namespace be = boost::endian;

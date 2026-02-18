@@ -85,13 +85,13 @@ class BlockAllocator {
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			util::page_lock(storage_.data(), storage_.size());
+			utility::page_lock(storage_.data(), storage_.size());
 		}
 	}
 
 	void page_unlock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			util::page_unlock(storage_.data(), storage_.size());
+			utility::page_unlock(storage_.data(), storage_.size());
 		}
 	}
 

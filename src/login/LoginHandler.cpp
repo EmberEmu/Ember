@@ -218,7 +218,7 @@ grunt::server::LoginChallenge LoginHandler::build_login_challenge() {
 	const auto& values = authenticator.challenge_reply();
 	packet.B = values.B;
 	packet.g_len = gsl::narrow<std::uint8_t>(values.gen.generator().bytes());
-	packet.g = gsl::narrow<std::uint8_t>(util::to_u32bit(values.gen.generator()));
+	packet.g = gsl::narrow<std::uint8_t>(utility::to_u32bit(values.gen.generator()));
 	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
 	packet.N = values.gen.prime();
 	packet.s = values.salt;
@@ -311,7 +311,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::FAIL_DB_BUSY;
 		LOG_ERROR_ASYNC(logger_, "{} from peer during reconnect challenge",
-		                util::fb_status(status, rpc::Account::EnumNamesStatus()));
+		                utility::fb_status(status, rpc::Account::EnumNamesStatus()));
 	}
 	
 	send(response);
@@ -511,7 +511,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 		metrics_.increment("login_internal_failure");
 		response = grunt::Result::FAIL_DB_BUSY;
 		LOG_ERROR_ASYNC(logger_, "{} from peer during login",
-		                util::fb_status(result, rpc::Account::EnumNamesStatus()));
+		                utility::fb_status(result, rpc::Account::EnumNamesStatus()));
 	}
 
 	// defer sending the response until we've fetched the character data

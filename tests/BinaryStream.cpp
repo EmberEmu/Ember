@@ -544,8 +544,8 @@ TEST(BinaryStream, FileBufferWrite) {
 	stream << w << x << y << z << spark::io::null_terminated(str);
 	buffer.flush(); // ensure data is written before following read
 
-	const auto md5_1 = util::generate_md5("test_data/filebuffer");
-	const auto md5_2 = util::generate_md5(path);
+	const auto md5_1 = utility::generate_md5("test_data/filebuffer");
+	const auto md5_2 = utility::generate_md5(path);
 	ASSERT_EQ(md5_1, md5_2);
 }
 

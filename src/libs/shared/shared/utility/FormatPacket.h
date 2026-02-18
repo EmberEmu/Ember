@@ -15,7 +15,7 @@
 #include <cstddef>
 #include <cctype>
 
-namespace ember::util {
+namespace ember::utility {
 
 inline std::string format_packet(const auto* packet, std::size_t size, unsigned int columns = 16) {
 	auto data = reinterpret_cast<const unsigned char*>(packet);

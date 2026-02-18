@@ -15,7 +15,7 @@
 	#include <string_view>
 #endif
 
-namespace ember::util {
+namespace ember::utility {
 
 namespace {
 

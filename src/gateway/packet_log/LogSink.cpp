@@ -30,7 +30,7 @@ void LogSink::start_log() {
 
 void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
                   PacketDirection dir) {
-	const auto output = util::format_packet(buffer.data(), buffer.size());
+	const auto output = utility::format_packet(buffer.data(), buffer.size());
 
 	cstring_view fmt("%H:%M:%S");
 	std::string_view direction = dir == PacketDirection::INBOUND? "inbound" : "outbound";

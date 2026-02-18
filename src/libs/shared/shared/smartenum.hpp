@@ -65,7 +65,7 @@ std::unordered_map<SizeType, std::string_view> make_enum_map(std::source_locatio
         if(equal_sign_pos != std::string_view::npos) {
 			std::string_view rhs = trim_whitespace(current_enum_entry.substr(equal_sign_pos + 1));
                 
-            // Handle using util::mcc_char - this makes me sad too
+            // Handle using utility::mcc_char - this makes me sad too
             if(auto first = rhs.find_first_of('"'), last = rhs.find_last_of('"');
                 first != std::string_view::npos && first != last) {
 				rhs = rhs.substr(first, (last - first) + 1);

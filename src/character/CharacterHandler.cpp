@@ -98,7 +98,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		return;
 	}
 
-	character.name = util::utf8::name_format(character.name, std::locale());
+	character.name = utility::utf8::name_format(character.name, std::locale());
 
 	const auto res = dao_.character(character.name, realm_id);
 
@@ -305,7 +305,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 
-	character->name = util::utf8::name_format(name, std::locale());
+	character->name = utility::utf8::name_format(name, std::locale());
 
 	const std::optional<Character>& match = dao_.character(character->name, character->realm_id);
 
@@ -450,11 +450,11 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		return protocol::Result::CHAR_NAME_NO_NAME;
 	}
 
-	if(!util::utf8::is_valid(name)) {
+	if(!utility::utf8::is_valid(name)) {
 		return protocol::Result::CHAR_NAME_FAILURE;
 	}
 	
-	const std::size_t length = util::utf8::length(name);
+	const std::size_t length = utility::utf8::length(name);
 
 	if(length > MAX_NAME_LENGTH) {
 		return protocol::Result::CHAR_NAME_TOO_LONG;
@@ -466,18 +466,18 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 
 	// todo, add a config option to restrict names to ASCII
 
-	if(util::utf8::max_consecutive(name, true) > MAX_CONSECUTIVE_LETTERS) {
+	if(utility::utf8::max_consecutive(name, true) > MAX_CONSECUTIVE_LETTERS) {
 		return protocol::Result::CHAR_NAME_THREE_CONSECUTIVE;
 	}
 
-	if(!util::utf8::is_alpha(name, std::locale())) {
+	if(!utility::utf8::is_alpha(name, std::locale())) {
 		return protocol::Result::CHAR_NAME_ONLY_LETTERS;
 	}
 
-	const auto& formatted_name = util::utf8::name_format(name, std::locale());
+	const auto& formatted_name = utility::utf8::name_format(name, std::locale());
 
 	for(auto& regex : reserved_names_) {
-		int ret = util::pcre::match(formatted_name, regex);
+		int ret = utility::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;
@@ -488,7 +488,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 	}
 
 	for(auto& regex : profane_names_) {
-		int ret = util::pcre::match(formatted_name, regex);
+		int ret = utility::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_PROFANE;
@@ -499,7 +499,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 	}
 
 	for(auto& regex : spam_names_) {
-		int ret = util::pcre::match(formatted_name, regex);
+		int ret = utility::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
 			return protocol::Result::CHAR_NAME_RESERVED;

@@ -65,7 +65,7 @@ class CommandSink final : public Sink {
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
 
-	util::Colour severity_colour(Severity severity);
+	utility::Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
 	std::string truncate_description(std::string_view description);

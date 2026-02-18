@@ -11,7 +11,7 @@
 #include <logger/LoggerFwd.h>
 #include <boost/program_options.hpp>
 
-namespace ember::util {
+namespace ember::utility {
 
 void configure_logger(log::Logger& logger, const boost::program_options::variables_map& args);
 

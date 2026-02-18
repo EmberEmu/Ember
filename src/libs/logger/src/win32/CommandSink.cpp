@@ -137,7 +137,7 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 
 	if(colour_) [[likely]] {
 		std::lock_guard guard(colour_lock);
-		util::ConsoleColour concol(severity_colour(severity));
+		utility::ConsoleColour concol(severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {
 		write_buffer(out_buf_, false);
@@ -158,28 +158,28 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 	}
 }
 
-util::Colour CommandSink::severity_colour(Severity severity) {
+utility::Colour CommandSink::severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::CONSOLE:
-			return util::Colour::WHITE_ON_CYAN_BG;
+			return utility::Colour::WHITE_ON_CYAN_BG;
 		case Severity::CONSOLE_ERROR:
-			return util::Colour::WHITE_ON_RED_BG;
+			return utility::Colour::WHITE_ON_RED_BG;
 		case Severity::FATAL:
 			[[fallthrough]];
 		case Severity::ERROR_:
 			[[fallthrough]];
 		case Severity::WARN:
-			return util::Colour::LIGHT_RED;
+			return utility::Colour::LIGHT_RED;
 		case Severity::INFO:
-			return util::Colour::WHITE;
+			return utility::Colour::WHITE;
 		case Severity::DEBUG:
-			return util::Colour::LIGHT_CYAN;
+			return utility::Colour::LIGHT_CYAN;
 		case Severity::TRACE:
-			return util::Colour::DARK_GREY;
+			return utility::Colour::DARK_GREY;
 		case Severity::DISABLED:
 			[[fallthrough]];
 		default:
-			return util::Colour::DEFAULT;
+			return utility::Colour::DEFAULT;
 	}
 }
 

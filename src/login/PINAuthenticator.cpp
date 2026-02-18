@@ -127,7 +127,7 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
                                                   const int interval,
-                                                  const util::ClockBase& clock) {
+                                                  const utility::ClockBase& clock) {
 	std::inplace_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
 	const int key_size = base32_decode(secret.data(), decoded_key.data(), decoded_key.size());
 

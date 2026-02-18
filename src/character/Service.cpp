@@ -93,18 +93,18 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	dbc::link(dbc_store);
 
 	LOG_INFO_SYNC(logger, "Compiling DBC regular expressions...");
-	std::vector<util::pcre::Result> profanity, reserved, spam;
+	std::vector<utility::pcre::Result> profanity, reserved, spam;
 
 	for(auto& record : dbc_store.names_profanity | std::views::values) {
-		profanity.emplace_back(util::pcre::utf8_jit_compile(record.name));
+		profanity.emplace_back(utility::pcre::utf8_jit_compile(record.name));
 	}
 
 	for(auto& record : dbc_store.names_reserved | std::views::values) {
-		reserved.emplace_back(util::pcre::utf8_jit_compile(record.name));
+		reserved.emplace_back(utility::pcre::utf8_jit_compile(record.name));
 	}
 
 	for(auto& record : dbc_store.spam_messages | std::views::values) {
-		spam.emplace_back(util::pcre::utf8_jit_compile(record.text));
+		spam.emplace_back(utility::pcre::utf8_jit_compile(record.text));
 	}
 
 	LOG_INFO_SYNC(logger, "Initialising database driver...");

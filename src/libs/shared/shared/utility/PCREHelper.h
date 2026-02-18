@@ -13,7 +13,7 @@
 #include <pcre.h>
 #include <cstddef>
 
-namespace ember::util::pcre {
+namespace ember::utility::pcre {
 
 struct Result {
 	std::unique_ptr<::pcre, void(*)(void*)> pcre;

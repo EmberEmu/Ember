@@ -54,7 +54,7 @@ int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
 
 	log::Logger logger;
-	util::configure_logger(logger, args);
+	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
 

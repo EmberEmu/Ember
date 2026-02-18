@@ -21,7 +21,7 @@ namespace Botan { class BigInt; }
  * A small collection of random, mostly platform-specific,
  * utility functions
  */
-namespace ember::util {
+namespace ember::utility {
 
 std::size_t max_consecutive(std::string_view name, bool case_insensitive = false,
                             const std::locale& locale = std::locale());

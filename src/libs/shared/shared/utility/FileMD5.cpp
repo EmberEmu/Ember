@@ -12,7 +12,7 @@
 #include <boost/assert.hpp>
 #include <fstream>
 
-namespace ember::util {
+namespace ember::utility {
 
 std::array<std::uint8_t, 16> generate_md5(std::span<const std::byte> buffer) {
 	std::array<std::uint8_t, 16> res;

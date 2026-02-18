@@ -36,7 +36,7 @@
 	#include <sys/mman.h>
 #endif
 
-namespace ember::util {
+namespace ember::utility {
 
 std::size_t max_consecutive(std::string_view name, const bool case_insensitive,
                             const std::locale& locale) {

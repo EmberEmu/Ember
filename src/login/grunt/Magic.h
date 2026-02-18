@@ -17,27 +17,27 @@
 namespace ember::grunt {
 
 smart_enum_class(Game, std::uint32_t,
-	WoW = util::make_mcc("WoW")
+	WoW = utility::make_mcc("WoW")
 );
 
 smart_enum_class(Platform, std::uint32_t,
-	x86 = util::make_mcc("x86"),
-	PPC = util::make_mcc("PPC")
+	x86 = utility::make_mcc("x86"),
+	PPC = utility::make_mcc("PPC")
 );
 
 smart_enum_class(System, std::uint32_t,
-	Win = util::make_mcc("Win"),
-	OSX = util::make_mcc("OSX")
+	Win = utility::make_mcc("Win"),
+	OSX = utility::make_mcc("OSX")
 );
 
 smart_enum_class(Locale, std::uint32_t,
-	enGB = util::make_mcc("enGB"), enUS = util::make_mcc("enUS"),
-	esMX = util::make_mcc("esMX"), ptBR = util::make_mcc("ptBR"),
-	frFR = util::make_mcc("frFR"), deDE = util::make_mcc("deDE"),
-	esES = util::make_mcc("esES"), ptPT = util::make_mcc("ptPT"),
-	itIT = util::make_mcc("itIT"), ruRU = util::make_mcc("ruRU"),
-	koKR = util::make_mcc("koKR"), zhTW = util::make_mcc("zhTW"),
-	enTW = util::make_mcc("enTW"), enCN = util::make_mcc("enCN")
+	enGB = utility::make_mcc("enGB"), enUS = utility::make_mcc("enUS"),
+	esMX = utility::make_mcc("esMX"), ptBR = utility::make_mcc("ptBR"),
+	frFR = utility::make_mcc("frFR"), deDE = utility::make_mcc("deDE"),
+	esES = utility::make_mcc("esES"), ptPT = utility::make_mcc("ptPT"),
+	itIT = utility::make_mcc("itIT"), ruRU = utility::make_mcc("ruRU"),
+	koKR = utility::make_mcc("koKR"), zhTW = utility::make_mcc("zhTW"),
+	enTW = utility::make_mcc("enTW"), enCN = utility::make_mcc("enCN")
 );
 
 } // grunt, ember

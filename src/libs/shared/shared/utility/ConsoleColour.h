@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace ember::util {
+namespace ember::utility {
 
 enum class Colour : unsigned int {
 	BLACK, BLUE, GREEN, CYAN, RED, MAGENTA,

@@ -45,12 +45,12 @@ int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register,
  */
 int main(int argc, const char* argv[]) try {
 	print_banner(login::APP_NAME);
-	util::set_window_title(login::APP_NAME);
+	utility::set_window_title(login::APP_NAME);
 
 	const auto args = parse_arguments(argc, argv);
 
 	log::Logger logger;
-	util::configure_logger(logger, args);
+	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
@@ -73,7 +73,7 @@ int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register,
 	login::Service service(cmd_register, logger);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}({})", util::sig_str(signal), signal);
+		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		signals.clear();
 		service.stop();
 	});

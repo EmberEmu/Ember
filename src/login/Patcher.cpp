@@ -168,7 +168,7 @@ void Patcher::load_patch(PatchMeta& patch, const dal::PatchDAO& dao, const std::
 	});
 
 	if(calc_md5) {
-		const auto md5 = util::generate_md5(path + patch.file_meta.name);
+		const auto md5 = utility::generate_md5(path + patch.file_meta.name);
 		assert(md5.size() == patch.file_meta.md5.size());
 		std::ranges::copy(md5, patch.file_meta.md5.data());
 		dirty = true;

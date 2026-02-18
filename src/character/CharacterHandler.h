@@ -41,9 +41,9 @@ class CharacterHandler final {
 	const std::size_t MAX_CHARACTER_SLOTS_SERVER = 10;
 	const std::size_t MAX_CHARACTER_SLOTS_ACCOUNT = 100; // todo, allow config
 
-	const std::vector<util::pcre::Result> profane_names_;
-	const std::vector<util::pcre::Result> reserved_names_;
-	const std::vector<util::pcre::Result> spam_names_;
+	const std::vector<utility::pcre::Result> profane_names_;
+	const std::vector<utility::pcre::Result> reserved_names_;
+	const std::vector<utility::pcre::Result> spam_names_;
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
 	const Config& config_;
@@ -87,9 +87,9 @@ class CharacterHandler final {
 
 
 public:
-	CharacterHandler(std::vector<util::pcre::Result> profane_names,
-	                 std::vector<util::pcre::Result> reserved_names,
-	                 std::vector<util::pcre::Result> spam_names,
+	CharacterHandler(std::vector<utility::pcre::Result> profane_names,
+	                 std::vector<utility::pcre::Result> reserved_names,
+	                 std::vector<utility::pcre::Result> spam_names,
 	                 const dbc::Storage& dbc,
 	                 const dal::CharacterDAO& dao,
 	                 const Config& config,

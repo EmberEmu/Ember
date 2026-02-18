@@ -15,7 +15,7 @@
  * that use the system clock but need to be set to fixed points during tests.
  */
 
-namespace ember::util {
+namespace ember::utility {
 
 struct ClockBase {
 	virtual std::chrono::time_point<std::chrono::system_clock> now() const = 0;

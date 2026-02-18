@@ -12,7 +12,7 @@
 #include <mutex>
 #include <utility>
 
-namespace ember::util {
+namespace ember::utility {
 
 /*
  * Allows for setting the timer period, ensuring that
