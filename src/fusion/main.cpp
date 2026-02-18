@@ -7,13 +7,14 @@
  */
 
 #include <account/Service.h>
+#include <banner/Banner.h>
 #include <character/Service.h>
 #include <gateway/Service.h>
 #include <login/Service.h>
 #include <mdns/Service.h>
 #include <world/Service.h>
 #include <logger/Logger.h>
-#include <banner/Banner.h>
+#include <shared/utility/CommandHelpers.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/threading/Utility.h>
 #include <shared/utility/LogConfig.h>
@@ -37,13 +38,13 @@ using namespace ember;
 
 po::variables_map parse_arguments(int, const char*[]);
 po::variables_map load_options(const std::string&, const po::options_description&);
-int launch(const po::variables_map&, log::Logger&);
-void launch_dns(const po::variables_map&, log::Logger&);
-void launch_login(const po::variables_map&, log::Logger&);
-void launch_gateway(const po::variables_map&, log::Logger&);
-void launch_account(const po::variables_map&, log::Logger&);
-void launch_character(const po::variables_map&, log::Logger&);
-void launch_world(const po::variables_map&, log::Logger&);
+int launch(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_dns(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_login(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_gateway(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_account(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_character(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_world(const po::variables_map&, commands::Registry&, bool, log::Logger&);
 void stop_services();
 
 std::vector<std::function<void()>> stop_handlers;
@@ -54,13 +55,23 @@ int main(int argc, const char* argv[]) try {
 	print_banner(APP_NAME);
 	util::set_window_title(APP_NAME);
 
-	const auto args = parse_arguments(argc, argv);
+	auto args = parse_arguments(argc, argv);
+	const bool share_logger = args["console_log.enable_input"].as<bool>();
+
+	if(share_logger) {
+		boost::any prefix(std::string(""));
+		args.insert_or_assign("console_log.prefix", po::variable_value(prefix, false));
+	}
 
 	log::Logger logger;
 	util::configure_logger(logger, args);
 	log::global_logger(logger);
 
-	const auto ret = launch(args, logger);
+	commands::Registry registry;
+	utility::register_command_handlers(registry, logger);
+	utility::register_help_command(registry, logger);
+
+	const auto ret = launch(args, registry, share_logger, logger);
 	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
 	return ret;
 } catch(const std::exception& e) {
@@ -68,7 +79,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, log::Logger& logger) try {
+int launch(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
@@ -88,37 +99,37 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 
 	if(args["dns.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_dns(args, logger);
+			launch_dns(args, registry, share_logger, logger);
 		}));
 	}
 
 	if(args["account.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_account(args, logger);
+			launch_account(args, registry, share_logger, logger);
 		}));
 	}
 
 	if(args["character.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_character(args, logger);
+			launch_character(args, registry, share_logger, logger);
 		}));
 	}
 
 	if(args["login.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_login(args, logger);
+			launch_login(args, registry, share_logger, logger);
 		}));
 	}
 
 	if(args["gateway.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_gateway(args, logger);
+			launch_gateway(args, registry, share_logger, logger);
 		}));
 	}
 
 	if(args["world.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_world(args, logger);
+			launch_world(args, registry, share_logger, logger);
 		}));
 	}
 
@@ -140,7 +151,7 @@ void stop_services() {
 	}
 }
 
-void launch_dns(const po::variables_map& args, log::Logger& logger) try {
+void launch_dns(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting DNS service...");
 
 	const auto& conf_path = args["dns.config"].as<std::string>();
@@ -152,8 +163,18 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	log::Logger service_logger;
-	util::configure_logger(service_logger, opts);
-	dns::Service service(service_logger);
+	log::Logger* active_logger = &service_logger;
+
+	// disable console input option
+	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+
+	if(!share_logger) {
+		util::configure_logger(*active_logger, opts);
+	} else {
+		active_logger = &logger;
+	}
+
+	dns::Service service(*active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -170,7 +191,7 @@ void launch_dns(const po::variables_map& args, log::Logger& logger) try {
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_login(const po::variables_map& args, log::Logger& logger) try {
+void launch_login(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting login service...");
 
 	const auto& conf_path = args["login.config"].as<std::string>();
@@ -182,9 +203,18 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	log::Logger service_logger;
-	util::configure_logger(service_logger, opts);
-	commands::Registry registry;
-	login::Service service(registry, service_logger);
+	log::Logger* active_logger = &service_logger;
+
+	// disable console input option
+	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+
+	if(!share_logger) {
+		util::configure_logger(*active_logger, opts);
+	} else {
+		active_logger = &logger;
+	}
+
+	login::Service service(registry, *active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -201,7 +231,7 @@ void launch_login(const po::variables_map& args, log::Logger& logger) try {
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
+void launch_gateway(const po::variables_map& args, commands::Registry&, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting gateway service...");
 
 	const auto& conf_path = args["gateway.config"].as<std::string>();
@@ -213,8 +243,18 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	log::Logger service_logger;
-	util::configure_logger(service_logger, opts);
-	gateway::Service service(service_logger);
+	log::Logger* active_logger = &service_logger;
+
+	// disable console input option
+	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+
+	if(!share_logger) {
+		util::configure_logger(service_logger, opts);
+	} else {
+		active_logger = &logger;
+	}
+
+	gateway::Service service(*active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -231,7 +271,7 @@ void launch_gateway(const po::variables_map& args, log::Logger& logger) try {
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_account(const po::variables_map& args, log::Logger& logger) try {
+void launch_account(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting account service...");
 
 	const auto& conf_path = args["account.config"].as<std::string>();
@@ -243,8 +283,18 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	log::Logger service_logger;
-	util::configure_logger(service_logger, opts);
-	account::Service service(service_logger);
+	log::Logger* active_logger = &service_logger;
+
+	// disable console input option
+	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+
+	if(!share_logger) {
+		util::configure_logger(service_logger, opts);
+	} else {
+		active_logger = &logger;
+	}
+
+	account::Service service(*active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -261,7 +311,7 @@ void launch_account(const po::variables_map& args, log::Logger& logger) try {
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_character(const po::variables_map& args, log::Logger& logger) try {
+void launch_character(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting character service...");
 
 	const auto& conf_path = args["character.config"].as<std::string>();
@@ -273,8 +323,18 @@ void launch_character(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	log::Logger service_logger;
-	util::configure_logger(service_logger, opts);
-	character::Service service(service_logger);
+	log::Logger* active_logger = &service_logger;
+
+	// disable console input option
+	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+
+	if(!share_logger) {
+		util::configure_logger(*active_logger, opts);
+	} else {
+		active_logger = &logger;
+	}
+
+	character::Service service(*active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -291,7 +351,7 @@ void launch_character(const po::variables_map& args, log::Logger& logger) try {
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_world(const po::variables_map& args, log::Logger& logger) try {
+void launch_world(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting world service...");
 
 	const auto& conf_path = args["world.config"].as<std::string>();
@@ -303,8 +363,18 @@ void launch_world(const po::variables_map& args, log::Logger& logger) try {
 	}
 
 	log::Logger service_logger;
-	util::configure_logger(service_logger, opts);
-	world::Service service(service_logger);
+	log::Logger* active_logger = &service_logger;
+
+	// disable console input option
+	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+
+	if(!share_logger) {
+		util::configure_logger(*active_logger, opts);
+	} else {
+		active_logger = &logger;
+	}
+
+	world::Service service(*active_logger);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -361,6 +431,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("world.config", po::value<std::string>()->required())
 		("login.active", po::value<bool>()->required())
 		("login.config", po::value<std::string>()->required())
+		("console_log.enable_input", po::value<bool>()->required())
 		("console_log.verbosity", po::value<std::string>()->required())
 		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", po::value<bool>()->required())
