@@ -65,6 +65,9 @@ auto Registry::search(std::span<const std::string> tokens) const -> SearchResult
 	return search;
 }
 
+/*
+ * 'hack' to find the longest common substring without bothering to write an entire trie (this is not perf. sensitive)
+ */
 std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) const {
 	if(matches.empty()) {
 		return {};
@@ -106,8 +109,6 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 		}
 	}
 
-	// hack to find the longest common substring without
-	// bothering to write an entire trie (this is not perf. sensitive)
 	if(result.records.empty()) {
 		return result;
 	}
