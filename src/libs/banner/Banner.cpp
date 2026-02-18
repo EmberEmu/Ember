@@ -35,6 +35,7 @@ void print_banner(std::string_view display_name) {
 		R"(     / ) (      88b     d88  d88  88P d88,  d8888b     d88)" << "\n"
 		R"(     \(_)/      `?888P'd88' d88'  88bd88'`?88P'`?888P'd88')" << "\n\n";
 
+	console.reset();
 	std::print("{}, v{} ({})\n\n", display_name, version::VERSION, version::GIT_HASH);
 }
 
