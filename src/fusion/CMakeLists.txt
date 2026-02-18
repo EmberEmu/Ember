@@ -17,7 +17,7 @@ set(SERVICE_LIBRARIES
     libcharacter
 )
 
-target_link_libraries(${EXECUTABLE_NAME} ${SERVICE_LIBRARIES} logger shared ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} ${SERVICE_LIBRARIES} banner logger shared ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

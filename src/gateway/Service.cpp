@@ -23,9 +23,7 @@
 #include <logger/Logger.h>
 #include <nsd/NSD.h>
 #include <spark/Server.h>
-#include <shared/Banner.h>
 #include <shared/utility/EnumHelper.h>
-#include <shared/Version.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/threading/ServicePool.h>

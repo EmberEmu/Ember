@@ -1,4 +1,4 @@
-# Copyright (c) 2019 - 2024 Ember
+# Copyright (c) 2019 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,7 @@ set(EXECUTABLE_SRC
     mysql/MySQLQueryExecutor.cpp
     )
 
-add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC} ${version_file})
-target_link_libraries(${EXECUTABLE_NAME} logger shared conpool ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
+add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC})
+target_link_libraries(${EXECUTABLE_NAME} banner logger shared conpool ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(dbutils PROPERTIES FOLDER "Tools")

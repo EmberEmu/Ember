@@ -8,8 +8,8 @@
 
 #include "Service.h"
 #include <logger/Logger.h>
-#include <shared/Banner.h>
-#include <shared/Version.h>
+#include <banner/Banner.h>
+#include <banner/Banner.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>

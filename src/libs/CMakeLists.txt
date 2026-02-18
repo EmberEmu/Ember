@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024 Ember
+# Copyright (c) 2016 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,3 +15,4 @@ add_subdirectory(nsd)
 add_subdirectory(stun)
 add_subdirectory(ports)
 add_subdirectory(mpq)
+add_subdirectory(banner)

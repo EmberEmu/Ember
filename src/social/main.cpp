@@ -10,7 +10,7 @@
 #include "FilterTypes.h"
 #include "MonitorCallbacks.h"
 #include <logger/Logger.h>
-#include <shared/Banner.h>
+#include <banner/Banner.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>

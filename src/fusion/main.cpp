@@ -13,7 +13,7 @@
 #include <mdns/Service.h>
 #include <world/Service.h>
 #include <logger/Logger.h>
-#include <shared/Banner.h>
+#include <banner/Banner.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/threading/Utility.h>
 #include <shared/utility/LogConfig.h>

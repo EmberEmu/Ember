@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2025 Ember
+ * Copyright (c) 2019 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@
 #include <logger/Logger.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
-#include <shared/Version.h>
+#include <banner/Version.h>
 #include <boost/program_options.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <array>

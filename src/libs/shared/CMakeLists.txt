@@ -135,12 +135,8 @@ set(LIBRARY_SRC
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/Realm.h
-    shared/Banner.cpp
-    shared/Banner.h
-    shared/Version.h
     shared/smartenum.hpp
     shared/smartenum.cpp
-    ${version_file}
 )
 
 source_group("Database Objects" FILES ${DB_OBJECTS})
