@@ -24,8 +24,8 @@ void Registry::register_command(std::shared_ptr<Command> command) {
 	root_->subcommand(std::move(command));
 }
 
-std::vector<std::string> Registry::parse_input(std::string_view input) const {
-	std::vector<std::string> tokens;
+std::vector<std::string_view> Registry::parse_input(std::string_view input) const {
+	std::vector<std::string_view> tokens;
 	std::string str(input);
 
 	try {
@@ -44,7 +44,7 @@ std::vector<std::string> Registry::parse_input(std::string_view input) const {
 
 // this is really inefficient due to the registry copies (must be copied from subcommands for safety)
 // but it's not even remotely performance sensitive, so it'll do
-auto Registry::search(std::span<const std::string> tokens) const -> SearchResult {
+auto Registry::search(std::span<const std::string_view> tokens) const -> SearchResult {
 	// we need go as deep as possible into the subcommand chain
 	SearchResult search;
 	auto registry = root_->subcommands();
@@ -92,7 +92,7 @@ std::string Registry::longest_prefix(std::span<const Suggestions::Record> matche
 	return prefix;
 }
 
-Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const {
+Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string_view> tokens) const {
 	Suggestions result;
 
 	if(tokens.empty()) {

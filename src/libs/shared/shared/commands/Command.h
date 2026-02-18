@@ -12,6 +12,7 @@
 #include "Arguments.h"
 #include "ArgumentType.h"
 #include "Result.h"
+#include <shared/utility/StringHash.h>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -26,7 +27,7 @@ namespace ember::commands {
 class Command;
 
 using CommandHandler = std::function<void(const Arguments&)>;
-using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>>;
+using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>, StringHash, std::equal_to<>>;
 
 class Command : public std::enable_shared_from_this<Command> {
 	mutable std::mutex mutex_;

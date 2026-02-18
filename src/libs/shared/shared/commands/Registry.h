@@ -35,7 +35,7 @@ public:
 private:
 	std::shared_ptr<Command> root_;
 
-	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
+	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string_view> tokens) const;
 	std::string longest_prefix(std::span<const Suggestions::Record> matches) const;
 
 public:
@@ -44,10 +44,10 @@ public:
 	std::shared_ptr<Command> register_command(std::string name);
 	void register_command(std::shared_ptr<Command> command);
 
-	std::vector<std::string> parse_input(std::string_view input) const;
+	std::vector<std::string_view> parse_input(std::string_view input) const;
 	Suggestions autocomplete(std::string_view query) const;
 
-	SearchResult search(std::span<const std::string> tokens) const;
+	SearchResult search(std::span<const std::string_view> tokens) const;
 	bool unregister(const std::string& name);
 	std::shared_ptr<Command> root() const;
 };
