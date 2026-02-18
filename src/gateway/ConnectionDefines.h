@@ -31,5 +31,4 @@ using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	OUTBOUND_SIZE, PREALLOC_NODES, spark::io::NoRefCounting, spark::io::UnsafeEntrant
 >;
 
-
 } // gateway, ember

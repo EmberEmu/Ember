@@ -121,11 +121,11 @@ void ClientConnection::read() {
 	}
 
 	/*
-	* Set a minimum expected transfer amount to mitigate the impact of
-	* any clients sending large messages one byte at a time and wasting
-	* resources on completion checks that can be avoided since we know
-	* how much data is required before we can do anything with the buffer
-	*/
+	 * Set a minimum expected transfer amount to mitigate the impact of
+	 * any clients sending large messages one byte at a time and wasting
+	 * resources on completion checks that can be avoided since we know
+	 * how much data is required before we can do anything with the buffer
+	 */
 	const auto min_transfer = minimum_transfer();
 
 	// If there's partially processed data in the buffer, we may be
