@@ -40,6 +40,7 @@ class CommandSink final : public Sink {
 	using CommandHandler = std::function<void(std::string_view)>;
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
 
+	inline static bool exists_ = false;
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto reserve_buf_size = 1024u;
@@ -95,6 +96,8 @@ public:
 
 	void register_handler(CommandHandler handler);
 	void register_autocomplete(Autocomplete handler);
+
+	bool unique() override { return true; }
 };
 
 } // log, ember

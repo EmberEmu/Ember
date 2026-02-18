@@ -165,6 +165,16 @@ public:
 	void add_sink(std::shared_ptr<Sink> sink) {
 		std::lock_guard lock(sink_lock_);
 
+		if(sink->unique()) {
+			for(auto& s : sinks_) {
+				if(s->name() == sink->name()) {
+					throw std::runtime_error(
+						std::format(R"(Attempt to register multiple instances of a sink, "{}", declared as unique)", sink->name())
+					);
+				}
+			}
+		}
+
 		if(sink->severity() < severity_) {
 			severity_ = sink->severity();
 		}

@@ -36,6 +36,12 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	  colour_(false),
 	  stopped_(false),
 	  history_idx_(0) {
+	if(exists_) {
+		throw std::runtime_error("A process cannot have multiple CommandSinks!");
+	} else {
+		exists_ = true;
+	}
+
 	event_handler_ = std::jthread([&]() {
 		redraw_prompt();
 		read_console_input();
@@ -44,6 +50,7 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 
 CommandSink::~CommandSink() {
 	stop();
+	exists_ = false;
 }
 
 void CommandSink::stop() {
