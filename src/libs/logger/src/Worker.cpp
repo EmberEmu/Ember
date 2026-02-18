@@ -19,7 +19,7 @@ Worker::~Worker() {
 }
 
 void Worker::process_outstanding_sync() {
-	std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*> item;
+	std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*> item{};
 
 	std::lock_guard lock(sink_lock_);
 
