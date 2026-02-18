@@ -29,7 +29,7 @@ Aside from emulation techniques, WoW is an old game but it still hides many secr
 * A multitude of message structure fixes that have been given directly to other projects, allowing cleaner implementations of game features (e.g. NPC emotes following player interactions)
 * Correct character customisation options validation
 
-Advancements in open source emulation flow in both directions, allowing the wider community to benefit, even if they all don't directly use or contribute to the same projects.
+Advancements in open source emulation flow in both directions, allowing the wider community to benefit, even if they don't directly use or contribute to the same projects.
 ### Anything else I should know?
 We have a retro ASCII-art banner straight from 1995 when the server runs. Priorities.
 
