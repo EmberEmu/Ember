@@ -374,7 +374,7 @@ void CommandSink::read_console_input() {
 		DWORD event_count = 0;
 		ReadConsoleInput(handle, events.data(), events.size(), &event_count);
 		
-		for(const auto& e : std::span(events)) {
+		for(const auto& e : std::span(events.data(), event_count)) {
 			if(e.EventType == KEY_EVENT && e.Event.KeyEvent.bKeyDown) {
 				if(isprint(e.Event.KeyEvent.uChar.AsciiChar)) {
 					insert_character(e.Event.KeyEvent.uChar.AsciiChar);
