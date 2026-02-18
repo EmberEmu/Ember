@@ -253,6 +253,8 @@ void CommandSink::dispatch_command() {
 
 	if(handler_) {
 		handler_(command_);
+	} else {
+		write_buffer("Unable to execute command, no command handler has been registered", true);
 	}
 
 	cmd_history_.emplace_back(command_);
