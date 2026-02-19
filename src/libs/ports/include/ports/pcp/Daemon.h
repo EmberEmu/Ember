@@ -24,10 +24,10 @@ using namespace std::literals;
 class Daemon final {
 public:
 	enum class Event {
-		ADDED_MAPPING,
-		RENEWED_MAPPING,
-		FAILED_TO_RENEW,
-		MAPPING_EXPIRED
+		added_mapping,
+		renewed_mapping,
+		failed_to_renew,
+		mapping_expired
 	};
 
 	using EventHandler = std::function<void(Event, const MapRequest&)>;
@@ -44,8 +44,10 @@ private:
 	};
 
 	enum class State {
-		IDLE, TIMER_WAIT, QUEUE
-	} state_ = State::IDLE;
+		idle,
+		timer_wait,
+		queue
+	} state_ = State::idle;
 
 	Client& client_;
 	boost::asio::steady_timer timer_;

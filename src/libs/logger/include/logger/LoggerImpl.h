@@ -34,7 +34,7 @@ class Logger::impl final {
 
 	static constexpr std::size_t BUFFER_RESERVE = 256;
 
-	Severity severity_ = Severity::DISABLED;
+	Severity severity_ = Severity::disabled;
 	Filter filter_ = Filter(0);
 	std::vector<std::shared_ptr<Sink>> sinks_;
 	std::mutex sink_lock_;

@@ -43,7 +43,7 @@ ba::awaitable<void> SSDP::read_broadcasts() {
 
 			continue;
 		} else if(result.error() != boost::asio::error::operation_aborted) {
-			handler_(std::unexpected(ErrorCode::NETWORK_FAILURE));
+			handler_(std::unexpected(ErrorCode::network_failure));
 		}
 
 		break;
@@ -74,7 +74,7 @@ LocateResult SSDP::build_locate_result(std::span<const std::uint8_t> datagram) {
 		
 		return result;
 	} catch(const std::exception&) {
-		return std::unexpected(ErrorCode::HTTP_BAD_RESPONSE);
+		return std::unexpected(ErrorCode::http_bad_response);
 	}
 }
 
@@ -86,21 +86,21 @@ ErrorCode SSDP::validate_message(std::span<const std::uint8_t> datagram) {
 	HTTPHeader header;
 
 	if(!parse_http_header(txt, header)) {
-		return ErrorCode::HTTP_BAD_HEADERS;
+		return ErrorCode::http_bad_headers;
 	}
 
-	if(header.code != HTTPStatus::OK) {
-		return ErrorCode::HTTP_NOT_OK;
+	if(header.code != HTTPStatus::ok) {
+		return ErrorCode::http_not_ok;
 	}
 
 	const auto& location = header.fields["Location"];
 	const auto& service = header.fields["ST"];
 
 	if(location.empty() || service.empty()) {
-		return ErrorCode::HTTP_HEADER_FIELD_AWOL;
+		return ErrorCode::http_header_field_awol;
 	}
 
-	return ErrorCode::SUCCESS;
+	return ErrorCode::success;
 }
 
 std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
@@ -127,7 +127,7 @@ ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type,
 	const auto result = co_await transport_.send(std::move(buffer));
 
 	if(!result) {
-		handler_(std::unexpected(ErrorCode::NETWORK_FAILURE));
+		handler_(std::unexpected(ErrorCode::network_failure));
 	}
 }
 
@@ -137,23 +137,23 @@ ba::awaitable<LocateResult> SSDP::locate_gateways(use_awaitable_t) {
 	auto result = co_await transport_.send(std::move(buffer));
 
 	if(!result) {
-		co_return std::unexpected(ErrorCode::NETWORK_FAILURE);
+		co_return std::unexpected(ErrorCode::network_failure);
 	}
 
 	buffer = build_ssdp_request("service", "WANIPConnection", 2);
 	result = co_await transport_.send(std::move(buffer));
 
 	if(!result) {
-		co_return std::unexpected(ErrorCode::NETWORK_FAILURE);
+		co_return std::unexpected(ErrorCode::network_failure);
 	}
 
 	auto recv_res = co_await transport_.receive();
 
 	if(!recv_res) {
 		if(recv_res.error() == ba::error::operation_aborted) {
-			co_return std::unexpected(ErrorCode::OPERATION_ABORTED);
+			co_return std::unexpected(ErrorCode::operation_aborted);
 		} else {
-			co_return std::unexpected(ErrorCode::NETWORK_FAILURE);
+			co_return std::unexpected(ErrorCode::network_failure);
 		}
 	}
 

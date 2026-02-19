@@ -202,7 +202,7 @@ ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
 
 	MessageHeader header;
 
-	if(header.read_from_stream(stream) != MessageHeader::State::OK
+	if(header.read_from_stream(stream) != MessageHeader::State::ok
 	   || header.size <= stream.total_read()) {
 		throw exception("bad message header");
 	}

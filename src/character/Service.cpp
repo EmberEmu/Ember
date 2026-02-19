@@ -164,19 +164,19 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 #undef ERROR // Windows moment
 
 	switch(severity) {
-		case ep::Severity::DEBUG:
+		case ep::Severity::debug:
 			LOG_DEBUG(logger) << message << LOG_ASYNC;
 			break;
-		case ep::Severity::INFO:
+		case ep::Severity::info:
 			LOG_INFO(logger) << message << LOG_ASYNC;
 			break;
-		case ep::Severity::WARN:
+		case ep::Severity::warn:
 			LOG_WARN(logger) << message << LOG_ASYNC;
 			break;
-		case ep::Severity::ERROR:
+		case ep::Severity::error:
 			LOG_ERROR(logger) << message << LOG_ASYNC;
 			break;
-		case ep::Severity::FATAL:
+		case ep::Severity::fatal:
 			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		default:

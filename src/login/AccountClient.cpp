@@ -67,7 +67,7 @@ void AccountClient::handle_register_response(std::expected<const RegisterRespons
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::RPC_ERROR);
+		cb(Status::rpc_error);
 	} else {
 		const auto msg = *res;
 		cb(msg->status());
@@ -79,7 +79,7 @@ void AccountClient::handle_locate_response(std::expected<const SessionResponse*,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::RPC_ERROR, {});
+		cb(Status::rpc_error, {});
 		return;
 	}
 	

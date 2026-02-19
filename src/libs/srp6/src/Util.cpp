@@ -54,7 +54,7 @@ KeyType interleaved_hash(SmallVec key) {
 	hasher->update(bound.get_ptr(), std::distance(bound, key.end()));
 	hasher->final(h.data());
 
-	KeyType final(INTERLEAVE_LENGTH, boost::container::default_init);
+	KeyType final(interleave_length, boost::container::default_init);
 
 	for(std::size_t i = 0, k = 0, j = g.size(); i < j; ++i) {
 		final[k++] = g[i];
@@ -71,7 +71,7 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 	std::array<std::uint8_t, SHA1_LEN> hash_out;
 	SmallVec vec(padding, boost::container::default_init);
 
-	if(mode == Compliance::RFC5054) {
+	if(mode == Compliance::rfc5054) {
 		A.serialize_to(vec);
 		hasher->update(vec.data(), vec.size());
 		B.serialize_to(vec);
@@ -110,7 +110,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 	hasher->update(reinterpret_cast<const uint8_t*>(password.data()), password.size());
 	hasher->final(hash.data());
 
-	if(mode == Compliance::RFC5054) {
+	if(mode == Compliance::rfc5054) {
 		hasher->update(salt.data(), salt.size_bytes());
 	} else {
 		// change if Botan adds iterator overloads
@@ -122,7 +122,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 	hasher->update(hash.data(), hash.size());
 	hasher->final(hash.data());
 
-	if(mode == Compliance::RFC5054) {
+	if(mode == Compliance::rfc5054) {
 		return Botan::BigInt::from_bytes(hash);
 	} else {
 		return detail::decode_flip(hash);

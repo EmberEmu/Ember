@@ -23,9 +23,9 @@ public:
 	virtual void SetUp() {
 		identifier_ = "CHAOSVEX";
 		password_ = "ABC";
-		gen_ = std::make_unique<srp6::Generator>(srp6::Generator::Group::_256_BIT);
+		gen_ = std::make_unique<srp6::Generator>(srp6::Generator::Group::g_256_bit);
 		srp6::generate_salt(salt_);
-		verifier_ = srp6::generate_verifier(identifier_, password_, *gen_, salt_, srp6::Compliance::GAME);
+		verifier_ = srp6::generate_verifier(identifier_, password_, *gen_, salt_, srp6::Compliance::game);
 		server_ = std::make_unique<srp6::Server>(*gen_, verifier_);
 		client_ = std::make_unique<srp6::Client>(identifier_, password_, *gen_);
 	}
@@ -44,21 +44,21 @@ TEST(srp6a, RFC5054_TestVectors) {
 	std::string identifier { "alice" };
 	std::string password { "password123" };
 	const auto salt = Botan::BigInt("0xBEB25379D1A8581EB5A727673A2441EE").serialize();
-	srp6::Generator gen(srp6::Generator::Group::_1024_BIT);
+	srp6::Generator gen(srp6::Generator::Group::g_1024_bit);
 	
 	Botan::BigInt expected_k("0x7556AA045AEF2CDD07ABAF0F665C3E818913186F");
 	Botan::BigInt k = srp6::detail::compute_k(gen.generator(), gen.prime());
 	ASSERT_EQ(expected_k, k) << "K was calculated incorrectly!";
 
 	Botan::BigInt expected_x("0x94B7555AABE9127CC58CCF4993DB6CF84D16C124");
-	Botan::BigInt x = srp6::detail::compute_x(identifier, password, salt, srp6::Compliance::RFC5054);
+	Botan::BigInt x = srp6::detail::compute_x(identifier, password, salt, srp6::Compliance::rfc5054);
 	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
 
 	Botan::BigInt expected_v("0x7E273DE8696FFC4F4E337D05B4B375BEB0DDE1569E8FA00A9886D8129BADA1F1822"
 	                         "223CA1A605B530E379BA4729FDC59F105B4787E5186F5C671085A1447B52A48CF1970"
 	                         "B4FB6F8400BBF4CEBFBB168152E08AB5EA53D15C1AFF87B2B9DA6E04E058AD51CC72B"
 	                         "FC9033B564E26480D78E955A5E29E7AB245DB2BE315E2099AFB");
-	Botan::BigInt v = srp6::generate_verifier(identifier, password, gen, salt, srp6::Compliance::RFC5054);
+	Botan::BigInt v = srp6::generate_verifier(identifier, password, gen, salt, srp6::Compliance::rfc5054);
 	ASSERT_EQ(expected_v, v) << "v was calculated incorrectly!";
 
 	Botan::BigInt test_a("0x60975527035CF2AD1989806F0407210BC81EDC04E2762A56AFD529DDDA2D4393");
@@ -85,7 +85,7 @@ TEST(srp6a, RFC5054_TestVectors) {
 
 	Botan::BigInt expected_u("0xCE38B9593487DA98554ED47D70A7AE5F462EF019");
 	Botan::BigInt u = srp6::detail::scrambler(expected_A, expected_B, gen.prime().bytes(),
-	                                          srp6::Compliance::RFC5054);
+	                                          srp6::Compliance::rfc5054);
 	ASSERT_EQ(expected_u, u) << "Scrambling parameter did not match";
 
 	Botan::BigInt expected_key("0xB0DC82BABCF30674AE450C0287745E7990A3381F63B387AAF271A10D"
@@ -94,8 +94,8 @@ TEST(srp6a, RFC5054_TestVectors) {
 	                           "3499B200210DCC1F10EB33943CD67FC88A2F39A4BE5BEC4EC0A3212D"
 	                           "C346D7E474B29EDE8A469FFECA686E5A");
 
-	const auto& c_sess_key = client.session_key(expected_B, salt, srp6::Compliance::RFC5054).t;
-	const auto& s_sess_key = server.session_key(expected_A, srp6::Compliance::RFC5054).t;
+	const auto& c_sess_key = client.session_key(expected_B, salt, srp6::Compliance::rfc5054).t;
+	const auto& s_sess_key = server.session_key(expected_A, srp6::Compliance::rfc5054).t;
 
 	EXPECT_EQ(expected_key, Botan::BigInt::from_bytes(c_sess_key))
 		<< "Client key did not match expected value!";
@@ -137,7 +137,7 @@ TEST_F(srp6SessionTest, GameAuthentication) {
 	Botan::BigInt verifier("0x37A75AE5BCF38899C75D28688C78434CB690657B5D8D77463668B83D0062A186");
 
 	// Start server
-	srp6::Generator gen(srp6::Generator::Group::_256_BIT);
+	srp6::Generator gen(srp6::Generator::Group::g_256_bit);
 	srp6::Server server(gen, verifier, b);
 
 	srp6::SessionKey key = server.session_key(A);
@@ -173,10 +173,10 @@ TEST(srp6Regressions, SaltZeroPad_ComputeX) {
 	std::string_view username { "alice" };
 	std::string_view password { "password123" };
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
-	srp6::Generator gen(srp6::Generator::Group::_1024_BIT);
+	srp6::Generator gen(srp6::Generator::Group::g_1024_bit);
 
 	Botan::BigInt expected_x("0x7E5250F2CB894FD9703611318C387A773FD52C09");
-	Botan::BigInt x = srp6::detail::compute_x(username, password, salt.serialize(), srp6::Compliance::GAME);
+	Botan::BigInt x = srp6::detail::compute_x(username, password, salt.serialize(), srp6::Compliance::game);
 	ASSERT_EQ(expected_x, x) << "x was calculated incorrectly!";
 }
 
@@ -185,8 +185,8 @@ TEST(srp6Regressions, SaltZeroPad_GenerateUser) {
 	std::string_view password { "password123" };
 	Botan::BigInt salt("0xBEB25379D1A8581EB5A727673A2441EE");
 
-	auto gen = srp6::Generator(srp6::Generator::Group::_256_BIT);
-	auto verifier = srp6::generate_verifier(username, password, gen, salt.serialize(), srp6::Compliance::GAME);
+	auto gen = srp6::Generator(srp6::Generator::Group::g_256_bit);
+	auto verifier = srp6::generate_verifier(username, password, gen, salt.serialize(), srp6::Compliance::game);
 	
 	Botan::BigInt expected_v("0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A");
 	ASSERT_EQ(expected_v, verifier) << "Verifier was calculated incorrectly!";
@@ -214,7 +214,7 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 }
 
 TEST(srp6Regressions, SPad_VerifyKey) {
-	const srp6::Generator gen(srp6::Generator::Group::_256_BIT);
+	const srp6::Generator gen(srp6::Generator::Group::g_256_bit);
 	const Botan::BigInt v("0x570B18E774242FAC149DB63458E8BA7C67C8CCD18F8C1B2779848703523AF502");
 	const Botan::BigInt c_pub_key("0x3AD9948BCEE582A3BFCEABC895B22FB3F0208E5D444D07CAA580CE24B1DEFC70"); // A
 	const Botan::BigInt s_priv_key("0x3865DD04A190926F04B241820503B53F8BF21B2C161FB2FE038B662943936A53"); // b

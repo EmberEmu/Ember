@@ -49,37 +49,37 @@ void Handler::handle_new_packet(spark::io::pmr::Buffer& buffer) {
 	buffer.copy(&opcode, sizeof(opcode));
 
 	switch(opcode) {
-		case Opcode::CMD_AUTH_LOGON_CHALLENGE:
+		case Opcode::cmd_auth_logon_challenge:
 			[[fallthrough]];
-		case Opcode::CMD_AUTH_RECONNECT_CHALLENGE:
+		case Opcode::cmd_auth_reconnect_challenge:
 			create_packet<client::LoginChallenge>();
 			break;
-		case Opcode::CMD_AUTH_LOGON_PROOF:
+		case Opcode::cmd_auth_logon_proof:
 			create_packet<client::LoginProof>();
 			break;
-		case Opcode::CMD_AUTH_RECONNECT_PROOF:
+		case Opcode::cmd_auth_reconnect_proof:
 			create_packet<client::ReconnectProof>();
 			break;
-		case Opcode::CMD_SURVEY_RESULT:
+		case Opcode::cmd_survey_result:
 			create_packet<client::SurveyResult>();
 			break;
-		case Opcode::CMD_REALM_LIST:
+		case Opcode::cmd_realm_list:
 			create_packet<client::RequestRealmList>();
 			break;
-		case Opcode::CMD_XFER_ACCEPT:
+		case Opcode::cmd_xfer_accept:
 			create_packet<client::TransferAccept>();
 			break;
-		case Opcode::CMD_XFER_RESUME:
+		case Opcode::cmd_xfer_resume:
 			create_packet<client::TransferResume>();
 			break;
-		case Opcode::CMD_XFER_CANCEL:
+		case Opcode::cmd_xfer_cancel:
 			create_packet<client::TransferCancel>();
 			break;
 		default:
 			throw bad_packet("Unknown opcode encountered!");
 	}
 
-	state_ = State::READ;
+	state_ = State::read;
 }
 
 void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) try {
@@ -87,11 +87,11 @@ void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) tr
 	Packet::State state = curr_packet_->read_from_stream(stream);
 
 	switch(state) {
-		case Packet::State::DONE:
-			state_ = State::NEW_PACKET;
+		case Packet::State::done:
+			state_ = State::new_packet;
 			break;
-		case Packet::State::CALL_AGAIN:
-			state_ = State::READ;
+		case Packet::State::call_again:
+			state_ = State::read;
 			break;
 		default:
 			BOOST_ASSERT_MSG(false, "Unreachable condition hit!");
@@ -103,15 +103,15 @@ void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) tr
 
 auto Handler::process_buffer(spark::io::pmr::Buffer& buffer) -> std::optional<const PacketRef> {
 	switch(state_) {
-		case State::NEW_PACKET:
+		case State::new_packet:
 			handle_new_packet(buffer);
 			[[fallthrough]];
-		case State::READ:
+		case State::read:
 			handle_read(buffer, buffer.size());
 			break;
 	}
 
-	if(state_ == State::NEW_PACKET) {
+	if(state_ == State::new_packet) {
 		return *curr_packet_;
 	} else {
 		return std::nullopt;

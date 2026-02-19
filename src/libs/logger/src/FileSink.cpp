@@ -29,7 +29,7 @@ FileSink::FileSink(Severity severity, Filter filter, std::string file_name, Mode
                      file_name_format_(std::move(file_name)) {
 	format_file_name();
 
-	if(mode == Mode::APPEND) {
+	if(mode == Mode::append) {
 		std::error_code ec;
 		std::uintmax_t size = fs::file_size(fs::path(file_name_), ec);
 
@@ -84,7 +84,7 @@ void FileSink::format_file_name() {
 void FileSink::open(Mode mode) {
 	cstring_view mode_str;
 
-	if(mode == Mode::APPEND && !rotations_) {
+	if(mode == Mode::append && !rotations_) {
 		mode_str = "ab";
 	} else {
 		mode_str = "wb";
@@ -173,7 +173,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 
 	out_buf_.clear();
 	out_buf_.reserve(size + (20 * records.size()));
-	std::array<std::string, std::to_underlying(Severity::Severity_MAX) + 1> cache;
+	std::array<std::string, std::to_underlying(Severity::severity_max) + 1> cache;
 
 	for(auto&& [detail, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {

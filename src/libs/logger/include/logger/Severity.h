@@ -11,21 +11,19 @@
 #include <boost/serialization/strong_typedef.hpp>
 #include <cstdint>
 
-#undef ERROR
-
 namespace ember::log {
 
 enum class Severity {
-	TRACE,
-	DEBUG,
-	INFO,
-	WARN,
+	trace,
+	debug,
+	info,
+	warn,
 	ERROR_,
-	FATAL,
-	CONSOLE,
-	CONSOLE_ERROR,
-	DISABLED,
-	Severity_MAX = DISABLED
+	fatal,
+	console,
+	console_error,
+	disabled,
+	severity_max = disabled
 };
 
 BOOST_STRONG_TYPEDEF(std::uint32_t, Filter);

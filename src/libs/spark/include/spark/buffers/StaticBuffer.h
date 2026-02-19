@@ -163,13 +163,13 @@ public:
 
 	void write_seek(const BufferSeek direction, const size_type offset) {
 		switch(direction) {
-			case BufferSeek::SK_BACKWARD:
+			case BufferSeek::sk_backward:
 				write_ -= offset;
 				break;
-			case BufferSeek::SK_FORWARD:
+			case BufferSeek::sk_forward:
 				write_ += offset;
 				break;
-			case BufferSeek::SK_ABSOLUTE:
+			case BufferSeek::sk_absolute:
 				write_ = offset;
 		}
 	}

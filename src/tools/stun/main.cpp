@@ -46,7 +46,7 @@ void launch(const po::variables_map& args) {
 	
 	std::println("Using {}:{} ({}) as our STUN server", host, port, protocol);
 
-	const auto proto = protocol == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP;
+	const auto proto = protocol == "tcp"? stun::Protocol::tcp : stun::Protocol::udp;
 
 	stun::Client client(bind, host, port, proto);
 	client.log_callback(log_cb);
@@ -111,22 +111,22 @@ void log_cb(const stun::Verbosity verbosity, const stun::Error reason) {
 	std::string_view verbstr{};
 
 	switch(verbosity) {
-		case stun::Verbosity::STUN_LOG_TRIVIAL:
+		case stun::Verbosity::trivial:
 			verbstr = "[trivial]";
 			break;
-		case stun::Verbosity::STUN_LOG_DEBUG:
+		case stun::Verbosity::debug:
 			verbstr = "[debug]";
 			break;
-		case stun::Verbosity::STUN_LOG_INFO:
+		case stun::Verbosity::info:
 			verbstr = "[info]";
 			break;
-		case stun::Verbosity::STUN_LOG_WARN:
+		case stun::Verbosity::warn:
 			verbstr = "[warn]";
 			break;
-		case stun::Verbosity::STUN_LOG_ERROR:
+		case stun::Verbosity::error:
 			verbstr = "[error]";
 			break;
-		case stun::Verbosity::STUN_LOG_FATAL:
+		case stun::Verbosity::fatal:
 			verbstr = "[fatal]";
 			break;
 		default:

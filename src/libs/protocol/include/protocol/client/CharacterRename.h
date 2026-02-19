@@ -26,17 +26,17 @@ struct CharacterRename final {
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> id;
 		stream >> spark::io::null_terminated(name);
-		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
 		stream << id;
 		stream << spark::io::null_terminated(name);
-		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 };
 

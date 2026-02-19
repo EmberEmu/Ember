@@ -26,14 +26,14 @@ namespace ember::spark::io::pmr {
 using namespace detail;
 
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
-	if(state() != StreamState::OK) [[unlikely]] {                \
+	if(state() != StreamState::ok) [[unlikely]] {                \
 		return ret_var;                                           \
 	}                                                             \
                                                                   \
 	enforce_read_bounds(read_size);                               \
 	                                                              \
 	if(!allow_throw()) {                                          \
-		if(state() != StreamState::OK) [[unlikely]] {            \
+		if(state() != StreamState::ok) [[unlikely]] {            \
 			return ret_var;                                       \
 		}                                                         \
 	}
@@ -50,7 +50,7 @@ class BinaryStreamReader : virtual public StreamBase {
 
 	inline void enforce_read_bounds(const std::size_t read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
-			set_state(StreamState::BUFF_LIMIT_ERR);
+			set_state(StreamState::buffer_limit_error);
 
 			if(allow_throw()) {
 				throw buffer_underrun(read_size, total_read_, buffer_.size());
@@ -63,7 +63,7 @@ class BinaryStreamReader : virtual public StreamBase {
 			const auto max_read_remaining = read_limit_ - total_read_;
 
 			if(read_size > max_read_remaining) [[unlikely]] {
-				set_state(StreamState::READ_LIMIT_ERR);
+				set_state(StreamState::read_limit_error);
 
 				if(allow_throw()) {
 					throw stream_read_limit(read_size, total_read_, read_limit_);
@@ -121,7 +121,7 @@ public:
 		  total_read_(rhs.total_read_),
 		  read_limit_(rhs.read_limit_) {
 		rhs.total_read_ = static_cast<std::size_t>(-1);
-		rhs.set_state(StreamState::INVALID_STREAM);
+		rhs.set_state(StreamState::invalid_stream);
 	}
 
 	BinaryStreamReader& operator=(BinaryStreamReader&&) = delete;
@@ -144,7 +144,7 @@ public:
 		std::uint32_t size = 0;
 		*this >> endian::le(size);
 
-		if(state() != StreamState::OK) {
+		if(state() != StreamState::ok) {
 			return *this;
 		}
 
@@ -162,7 +162,7 @@ public:
 		const auto size = varint_decode<std::size_t>(*this);
 
 		// if an error was triggered during decode, we shouldn't reach here
-		if(state() != StreamState::OK) {
+		if(state() != StreamState::ok) {
 			std::unreachable();
 		}
 

@@ -91,9 +91,9 @@ public:
 				throw std::runtime_error("Unable to locate base type");
 			}
 			
-			if(base->type == types::Type::ENUM) {
+			if(base->type == types::Type::t_enum) {
 				scalar_size = type_size_map.at(static_cast<const types::Enum*>(base)->underlying_type);
-			} else if(base->type == types::Type::STRUCT) {
+			} else if(base->type == types::Type::t_struct) {
 				visit(static_cast<const types::Struct*>(base), type);
 				return;
 			}

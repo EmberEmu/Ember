@@ -16,12 +16,12 @@ using namespace ember;
 
 TEST(MPQ, Locate_FileNotFound) {
 	const auto result = mpq::locate_archive("test_data/mpqs/no_such_file");
-	ASSERT_EQ(result.error(), mpq::ErrorCode::FILE_NOT_FOUND);
+	ASSERT_EQ(result.error(), mpq::ErrorCode::file_not_found);
 }
 
 TEST(MPQ, Locate_ArchiveNotFound) {
 	const auto result = mpq::locate_archive("test_data/mpqs/not_an_mpq");
-	ASSERT_EQ(result.error(), mpq::ErrorCode::NO_ARCHIVE_FOUND);
+	ASSERT_EQ(result.error(), mpq::ErrorCode::no_archive_found);
 }
 
 TEST(MPQ, Locate_ArchiveFound) {
@@ -37,13 +37,13 @@ TEST(MPQ, Locate_ArchiveFoundOffset) {
 TEST(MPQ, Locate_ArchiveNotFoundOffset) {
 	const auto result = mpq::locate_archive("test_data/mpqs/v0_2.mpq");
 	ASSERT_TRUE(!result);
-	ASSERT_EQ(result.error(), mpq::ErrorCode::NO_ARCHIVE_FOUND);
+	ASSERT_EQ(result.error(), mpq::ErrorCode::no_archive_found);
 }
 
 TEST(MPQ, Locate_BadFile_PartialMagic) {
 	const auto result = mpq::locate_archive("test_data/mpqs/v0_3.mpq");
 	ASSERT_TRUE(!result);
-	ASSERT_EQ(result.error(), mpq::ErrorCode::NO_ARCHIVE_FOUND);
+	ASSERT_EQ(result.error(), mpq::ErrorCode::no_archive_found);
 }
 
 TEST(MPQ, Locate_BadHeader_Size) {
@@ -230,8 +230,8 @@ TEST(MPQ, Extract_Text) {
 }
 
 TEST(MPQ, Locate_BadAlignment) {
-	alignas(mpq::v0::Header) std::byte data[mpq::HEADER_SIZE_V0]{};
+	alignas(mpq::v0::Header) std::byte data[mpq::header_size_v0]{};
 	std::span span(data + 1, sizeof(data) - 1); // force misaligned buffer
 	auto result = mpq::locate_archive(span);
-	ASSERT_EQ(result.error(), mpq::ErrorCode::BAD_ALIGNMENT);
+	ASSERT_EQ(result.error(), mpq::ErrorCode::bad_alignment);
 }

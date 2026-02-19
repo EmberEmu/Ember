@@ -53,7 +53,7 @@ void RealmClient::mark_realm_offline(const spark::Link& link) {
 	const auto& [realm_id, _] = *it;
 	std::optional<Realm> realm = realmlist_.get_realm(realm_id);
 	assert(realm);
-	realm->flags |= Realm::Flags::OFFLINE;
+	realm->flags |= Realm::Flags::offline;
 	LOG_INFO_ASYNC(logger_, "Setting realm {} to offline", realm->name);
 	realmlist_.add_realm(std::move(*realm));
 }

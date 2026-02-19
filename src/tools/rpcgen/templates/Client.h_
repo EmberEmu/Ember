@@ -47,7 +47,7 @@ protected:
 		auto channel = link.channel.lock();
 
 		if(!channel) {
-			cb(link, std::unexpected(spark::Result::LINK_GONE));
+			cb(link, std::unexpected(spark::Result::link_gone));
 			return false;
 		}
 

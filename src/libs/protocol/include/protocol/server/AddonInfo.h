@@ -44,9 +44,9 @@ struct AddonInfo final {
 
 	struct AddonData {
 		enum struct Type : std::uint8_t {
-			BANNED,     // does what you expect it to
-			ENABLED,    // shows the addon in the list - probably intended for player-created addons
-			BLIZZARD    // hides the addon from the list
+			banned,     // does what you expect it to
+			enabled,    // shows the addon in the list - probably intended for player-created addons
+			blizzard    // hides the addon from the list
 		};
 
 		Type type;
@@ -60,9 +60,9 @@ struct AddonInfo final {
 	std::vector<AddonData> addon_data;
 
 	StreamResult read_from_stream(auto& stream) try {
-		return StreamResult::SUCCESS;
+		return StreamResult::success;
 	} catch(const std::exception&) {
-		return StreamResult::FAILED;
+		return StreamResult::failed;
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
@@ -90,9 +90,9 @@ struct AddonInfo final {
 			}
 		}
 
-		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 };
 

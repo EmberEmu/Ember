@@ -25,7 +25,7 @@ namespace be = boost::endian;
 class SurveyResult final : public Packet {
 	static const std::size_t MIN_READ_LENGTH = 8;
 	static const std::size_t MAX_SURVEY_LEN  = 8192;
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 	be::little_uint16_t compressed_size_ = 0;
 
@@ -38,12 +38,12 @@ class SurveyResult final : public Packet {
 
 	void read_data(spark::io::pmr::BinaryStream& stream) {
 		if(error) {
-			state_ = State::DONE;
+			state_ = State::done;
 			return;
 		}
 
 		if(stream.size() < compressed_size_) {
-			state_ = State::CALL_AGAIN;
+			state_ = State::call_again;
 			return;
 		}
 
@@ -67,28 +67,29 @@ class SurveyResult final : public Packet {
 			throw bad_packet("Decompression of survey data failed with code " + std::to_string(ret));
 		}
 		
-		state_ = State::DONE;
+		state_ = State::done;
 	}
 
 public:
-	SurveyResult() : Packet(Opcode::CMD_SURVEY_RESULT) {}
+	SurveyResult()
+		: Packet(Opcode::cmd_survey_result) {}
 
 	be::little_uint32_t survey_id = 0;
 	be::little_uint8_t error = 0;
 	std::string data;
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < MIN_READ_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < MIN_READ_LENGTH) {
+			return State::call_again;
 		}
 
 		switch(state_) {
-			case State::INITIAL:
+			case State::initial:
 				read_body(stream);
 				[[fallthrough]];
-			case State::CALL_AGAIN:
+			case State::call_again:
 				read_data(stream);
 				break;
 			default:

@@ -32,12 +32,14 @@ using namespace std::chrono_literals;
 class Channel final : public std::enable_shared_from_this<Channel> {
 public:
 	enum class State {
-		AWAITING, OPEN, CLOSED
+		awaiting,
+		open,
+		closed
 	};
 
 private:
 	Tracking tracking_;
-	State state_ = State::AWAITING;
+	State state_ = State::awaiting;
 	std::uint8_t channel_id_;
 	Handler* handler_;
 	std::shared_ptr<Connection> connection_;

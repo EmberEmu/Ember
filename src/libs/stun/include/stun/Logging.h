@@ -19,12 +19,12 @@ namespace ember::stun {
  * transitively included through ten layers of crap.
  */
 enum class Verbosity {
-	STUN_LOG_TRIVIAL,
-	STUN_LOG_DEBUG,
-	STUN_LOG_INFO,
-	STUN_LOG_WARN,
-	STUN_LOG_ERROR,
-	STUN_LOG_FATAL
+	trivial,
+	debug,
+	info,
+	warn,
+	error,
+	fatal
 };
 
 /*
@@ -32,40 +32,40 @@ enum class Verbosity {
  * a string to make localising easier, if it ever gets that far.
  */
 smart_enum_class(Error, std::uint8_t,
-	OK,                               // s'all good, man
-	BAD_CALLBACK,
-	NO_RESPONSE_RECEIVED,             
-	CONNECTION_ABORTED,               
-	CONNECTION_RESET,
-	CONNECTION_ERROR,
-	UNABLE_TO_CONNECT,
-	BAD_ATTRIBUTE_DATA,
-	UDP_TEST_ONLY,
-	UNSUPPORTED_BY_SERVER,            // a test wasn't supported by the server
-	BUFFER_PARSE_ERROR,               // buffer stream reported an error, probably a bad attribute
-	RESP_BUFFER_LT_HEADER,            // buffer was smaller than the fixed header length
-	RESP_IPV6_NOT_VALID,              // received an IPv6 flag in RFC3489 mode (IPv4 only)
-	RESP_ADDR_FAM_NOT_VALID,          // address family was not valid (not IPv4 or IPv6)
-	RESP_COOKIE_MISSING,              // magic cookie value was incorrect in RFC5389 mode
-	RESP_BAD_HEADER_LENGTH,           // header specified attribute length as shorter than attribute header length
-	RESP_TX_NOT_FOUND,                // transaction ID was not found in the mapping, could be a delayed response
-	RESP_RFC5389_INVALID_ATTRIBUTE,   // received attribute that isn't valid for RFC5389
-	RESP_RFC3489_INVALID_ATTRIBUTE,   // received attribute that isn't valid for RFC3489
-	RESP_UNKNOWN_OPT_ATTRIBUTE,       // received optional attribute that we couldn't parse
-	RESP_UNKNOWN_REQ_ATTRIBUTE,       // received required attribute that we couldn't parse
-	RESP_BAD_REQ_ATTR_SERVER,         // received required attribute that it shouldn't have
-	RESP_UNK_ATTR_BAD_PAD,            // received UNKNOWN-ATTRIBUTES that wasn't a multiple of 4 bytes
-	RESP_ERROR_STRING_BAD_PAD,        // received error reason that wasn't a multiple of 4 bytes
-	RESP_ERROR_CODE_OUT_OF_RANGE,     // received error code that was out of range
-	RESP_BAD_HMAC_SHA_ATTR,           // received a bad SHA HMAC attribute
-	RESP_BAD_SOFTWARE_ATTR,           // received a bad software attribute
-	RESP_UNEXPECTED_ATTR,             // received an unexpected attribute
-	RESP_UNHANDLED_RESP_TYPE,         // received an unhandled response type
-	RESP_MISSING_ATTR,                // response was missing an expected attribute
-	RESP_BINDING_ERROR,               // server responded with an error 
-	RESP_BAD_REDIRECT,                // server tried to redirect us to a server we've already tried
-	RESP_UNK_MESSAGE_TYPE,            // unknown or unhandled message type
-	RESP_INVALID_FINGERPRINT          // crc32 in the fingerprint didn't match our own calculation
+	ok,                               // s'all good, man
+	bad_callback,
+	no_response_received,             
+	connection_aborted,               
+	connection_reset,
+	connection_error,
+	unable_to_connect,
+	bad_attribute_data,
+	udp_test_only,
+	unsupported_by_server,            // a test wasn't supported by the server
+	buffer_parse_error,               // buffer stream reported an error, probably a bad attribute
+	resp_buffer_lt_header,            // buffer was smaller than the fixed header length
+	resp_ipv6_not_valid,              // received an ipv6 flag in RFC3489 mode (IPv4 only)
+	resp_addr_fam_not_valid,          // address family was not valid (not IPv4 or IPv6)
+	resp_cookie_missing,              // magic cookie value was incorrect in RFC5389 mode
+	resp_bad_header_length,           // header specified attribute length as shorter than attribute header length
+	resp_tx_not_found,                // transaction id was not found in the mapping, could be a delayed response
+	resp_rfc5389_invalid_attribute,   // received attribute that isn't valid for RC5389
+	resp_rfc3489_invalid_attribute,   // received attribute that isn't valid for RC3489
+	resp_unknown_opt_attribute,       // received optional attribute that we couldn't parse
+	resp_unknown_req_attribute,       // received required attribute that we couldn't parse
+	resp_bad_req_attr_server,         // received required attribute that it shouldn't have
+	resp_unk_attr_bad_pad,            // received UNKNOWN-ATTRIBUTES that wasn't a multiple of 4 bytes
+	resp_error_string_bad_pad,        // received error reason that wasn't a multiple of 4 bytes
+	resp_error_code_out_of_range,     // received error code that was out of range
+	resp_bad_hmac_sha_attr,           // received a bad SHA HMAC attribute
+	resp_bad_software_attr,           // received a bad software attribute
+	resp_unexpected_attr,             // received an unexpected attribute
+	resp_unhandled_resp_type,         // received an unhandled response type
+	resp_missing_attr,                // response was missing an expected attribute
+	resp_binding_error,               // server responded with an error 
+	resp_bad_redirect,                // server tried to redirect us to a server we've already tried
+	resp_unk_message_type,            // unknown or unhandled message type
+	resp_invalid_fingerprint          // CRC32 in the fingerprint didn't match our own calculation
 );
 
 struct ErrorRet {

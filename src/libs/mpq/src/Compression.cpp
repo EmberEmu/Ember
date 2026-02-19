@@ -114,44 +114,44 @@ int next_compression(std::uint8_t& mask) {
 		return 0;
 	}
 
-	if(mask == MPQ_COMPRESSION_LZMA) {
+	if(mask == mpq_compression_lzma) {
 		mask = 0;
-		return MPQ_COMPRESSION_LZMA;
+		return mpq_compression_lzma;
 	}
 
-	if(mask & MPQ_COMPRESSION_HUFFMANN) {
-		mask ^= MPQ_COMPRESSION_HUFFMANN;
-		return MPQ_COMPRESSION_HUFFMANN;
+	if(mask & mpq_compression_huffman) {
+		mask ^= mpq_compression_huffman;
+		return mpq_compression_huffman;
 	}
 
-	if(mask & MPQ_COMPRESSION_ADPCM_MONO) {
-		mask ^= MPQ_COMPRESSION_ADPCM_MONO;
-		return MPQ_COMPRESSION_ADPCM_MONO;
+	if(mask & mpq_compression_adpcm_mono) {
+		mask ^= mpq_compression_adpcm_mono;
+		return mpq_compression_adpcm_mono;
 	}
 
-	if(mask & MPQ_COMPRESSION_ADPCM_STEREO) {
-		mask ^= MPQ_COMPRESSION_ADPCM_STEREO;
-		return MPQ_COMPRESSION_ADPCM_STEREO;
+	if(mask & mpq_compression_adpcm_stereo) {
+		mask ^= mpq_compression_adpcm_stereo;
+		return mpq_compression_adpcm_stereo;
 	}
 
-	if(mask & MPQ_COMPRESSION_SPARSE) {
-		mask ^= MPQ_COMPRESSION_SPARSE;
-		return MPQ_COMPRESSION_SPARSE;
+	if(mask & mpq_compression_sparse) {
+		mask ^= mpq_compression_sparse;
+		return mpq_compression_sparse;
 	}
 
-	if(mask & MPQ_COMPRESSION_BZIP2) {
-		mask ^= MPQ_COMPRESSION_BZIP2;
-		return MPQ_COMPRESSION_BZIP2;
+	if(mask & mpq_compression_bzip2) {
+		mask ^= mpq_compression_bzip2;
+		return mpq_compression_bzip2;
 	}
 
-	if(mask & MPQ_COMPRESSION_PKWARE) {
-		mask ^= MPQ_COMPRESSION_PKWARE;
-		return MPQ_COMPRESSION_PKWARE;
+	if(mask & mpq_compression_pkware) {
+		mask ^= mpq_compression_pkware;
+		return mpq_compression_pkware;
 	}
 
-	if(mask & MPQ_COMPRESSION_ZLIB) {
-		mask ^= MPQ_COMPRESSION_ZLIB;
-		return MPQ_COMPRESSION_ZLIB;
+	if(mask & mpq_compression_zlib) {
+		mask ^= mpq_compression_zlib;
+		return mpq_compression_zlib;
 	}
 
 	return -1;
@@ -161,21 +161,21 @@ std::expected<std::size_t, int> do_decompression(std::span<const std::byte> inpu
                                                  std::span<std::byte> output,
                                                  const int comp) {
 	switch(comp) {
-		case MPQ_COMPRESSION_HUFFMANN:
+		case mpq_compression_huffman:
 			return decompress_huffman(input, output);
-		case MPQ_COMPRESSION_SPARSE:
+		case mpq_compression_sparse:
 			return decompress_sparse(input, output);
-		case MPQ_COMPRESSION_ADPCM_MONO:
+		case mpq_compression_adpcm_mono:
 			return decompress_adpcm(input, output, 1);
-		case MPQ_COMPRESSION_ADPCM_STEREO:
+		case mpq_compression_adpcm_stereo:
 			return decompress_adpcm(input, output, 2);
-		case MPQ_COMPRESSION_LZMA:
+		case mpq_compression_lzma:
 			return decompress_lzma(input, output);
-		case MPQ_COMPRESSION_BZIP2:
+		case mpq_compression_bzip2:
 			return decompress_bzip2(input, output);
-		case MPQ_COMPRESSION_PKWARE:
+		case mpq_compression_pkware:
 			return decompress_pklib({ input.data() + 1, input.size_bytes() }, output);
-		case MPQ_COMPRESSION_ZLIB:
+		case mpq_compression_zlib:
 			return decompress_zlib(input, output);
 		default:
 			throw unknown_format();
@@ -191,14 +191,14 @@ std::expected<std::size_t, DecompressionError> decompress(std::span<const std::b
 	std::size_t prev_size = 0;
 
 	while(auto comp = next_compression(comp_mask)) try {
-		if(comp == MPQ_COMPRESSION_NEXT_SAME) {
+		if(comp == mpq_compression_next_same) {
 			comp = def_comp;
 		}
 
 		if(!prev) {
 			result = do_decompression(input, output, comp);
 		} else {
-			boost::container::small_vector<std::byte, SECTOR_SIZE_HINT> buffer(
+			boost::container::small_vector<std::byte, sector_size_hint> buffer(
 				prev_size, boost::container::default_init
 			);
 

@@ -14,7 +14,7 @@ namespace ember::gateway {
 
 // Service specific filters
 enum ExtendedFilterType {
-	LF_PACKET_LOG = 128
+	lf_packet_log = 128
 };
 
 } // gateway, ember

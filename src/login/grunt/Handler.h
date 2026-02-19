@@ -21,7 +21,8 @@ namespace ember::grunt {
 
 class Handler final {
 	enum class State {
-		NEW_PACKET, READ
+		new_packet,
+		read
 	};
 
 	std::variant<
@@ -36,7 +37,7 @@ class Handler final {
 	> packet_;
 
 	Packet* curr_packet_ = nullptr;
-	State state_ = State::NEW_PACKET;
+	State state_ = State::new_packet;
 
 	log::Logger& logger_;
 

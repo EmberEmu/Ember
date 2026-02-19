@@ -9,11 +9,13 @@
 namespace ember.fblog;
 
 enum Direction : short {
-	INBOUND, OUTBOUND
+	inbound,
+	outbound
 }
 
 enum Type : uint {
-	HEADER, MESSAGE
+	header,
+	message
 }
 
 table Header {

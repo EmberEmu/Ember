@@ -17,19 +17,19 @@ namespace ember::protocol {
 
 struct StreamResult {
 	enum {
-		SUCCESS              = 0x00,
-		FAILED               = 0x01,
-		CAUGHT_EXCEPTION     = 0x02,
-		BAD_FIELD_SIZE       = 0x03,
-		DECOMPRESSION_FAILED = 0x04,
-		COMPRESSION_FAILED   = 0x05,
-		TOO_BIG              = 0x06,
-		STREAM_ERROR         = 0x07,
+		success              = 0x00,
+		failed               = 0x01,
+		caught_exception     = 0x02,
+		bad_field_size       = 0x03,
+		decompression_failed = 0x04,
+		compression_failed   = 0x05,
+		too_big              = 0x06,
+		stream_error         = 0x07,
 
-		STREAM_RESULT_MAX    = STREAM_ERROR + 1
+		stream_result_max    = stream_error + 1
 	} val_;
 
-	std::array<std::string_view, STREAM_RESULT_MAX> result_strings {
+	std::array<std::string_view, stream_result_max> result_strings {
 		"success",
 		"unspecified failure",
 		"encountered an exception",
@@ -43,7 +43,7 @@ struct StreamResult {
 	StreamResult(decltype(val_) value) : val_(value) {}
 
 	explicit operator bool() {
-		return val_ == StreamResult::SUCCESS;
+		return val_ == StreamResult::success;
 	}
 
 	friend std::ostream& operator<< (std::ostream& os, const StreamResult& ec) {

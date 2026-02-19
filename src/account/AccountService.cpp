@@ -35,20 +35,20 @@ AccountService::handle_session_fetch(const SessionLookup& msg, const Link& link,
 	SessionResponseT response;
 
 	if(!msg.account_id()) {
-		response.status = Status::ILLFORMED_MESSAGE;
+		response.status = Status::illformed_message;
 		return response;
 	}
 
 	const auto session = sessions_.lookup_session(msg.account_id());
 		
 	if(!session) {
-		response.status = Status::SESSION_NOT_FOUND;
+		response.status = Status::session_not_found;
 		return response;
 	}
 
 	auto key = session->serialize();
 
-	response.status = Status::OK;
+	response.status = Status::ok;
 	response.account_id = msg.account_id();
 	response.key = std::move(key);
 	return response;
@@ -59,17 +59,17 @@ AccountService::handle_register_session(const RegisterSession& msg,	const Link& 
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	RegisterResponseT response {
-		.status = Status::OK
+		.status = Status::ok
 	};
 
 	if(msg.key() && msg.account_id()) {
 		Botan::BigInt key(msg.key()->data(), msg.key()->size());
 
 		if(!sessions_.register_session(msg.account_id(), key)) {
-			response.status = Status::ALREADY_LOGGED_IN;
+			response.status = Status::already_logged_in;
 		}
 	} else {
-		response.status = Status::ILLFORMED_MESSAGE;
+		response.status = Status::illformed_message;
 	}
 
 	return response;
@@ -81,14 +81,14 @@ AccountService::handle_account_id_fetch(const LookupID& msg, const Link& link, c
 	
 	if(!msg.account_name()) {
 		return AccountFetchResponseT {
-			.status = Status::ILLFORMED_MESSAGE
+			.status = Status::illformed_message
 		};
 	}
 
 	handler_.lookup_id(msg.account_name()->str(), [&, link, token](auto result) {
 		if(!result) {
 			AccountFetchResponseT response {
-				.status = Status::UNKNOWN_ERROR
+				.status = Status::unknown_error
 			};
 
 			send(response, link, token);
@@ -98,7 +98,7 @@ AccountService::handle_account_id_fetch(const LookupID& msg, const Link& link, c
 		const auto id = *result;
 
 		AccountFetchResponseT response {
-			.status = id? Status::OK : Status::ACCOUNT_NOT_FOUND,
+			.status = id? Status::ok : Status::account_not_found,
 			.account_id = id? *id : 0
 		};
 		

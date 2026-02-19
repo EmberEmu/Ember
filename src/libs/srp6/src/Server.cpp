@@ -31,7 +31,7 @@ Server::Server(const Generator& gen, BigInt v, std::size_t key_size, bool srp6a)
 	: Server(gen, std::move(v), BigInt(rng, key_size * 8) % gen.prime(), srp6a) { }
 
 SessionKey Server::session_key(const BigInt& A, Compliance mode, bool interleave_override) const {
-	bool interleave = (mode == Compliance::GAME);
+	bool interleave = (mode == Compliance::game);
 	
 	if(interleave_override) {
 		interleave = !interleave;

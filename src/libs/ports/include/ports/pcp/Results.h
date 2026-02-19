@@ -17,19 +17,19 @@
 namespace ember::ports {
 
 smart_enum_class(ErrorCode, int,
-	SUCCESS,
-	SERVER_INCOMPATIBLE,
-	RESOLVE_FAILURE,
-	CONNECTION_FAILURE,
-	ID_MISMATCH,
-	INTERNAL_ERROR,
-	NO_RESPONSE,
-	BAD_RESPONSE,
-	WRONG_SOURCE,
-	RETRY_NATPMP,
-	PCP_CODE,
-	NATPMP_CODE,
-	INVALID_PROTOCOL
+	success,
+	server_incompatible,
+	resolve_failure,
+	connection_failure,
+	id_mismatch,
+	internal_error,
+	no_response,
+	bad_response,
+	wrong_source,
+	retry_natpmp,
+	pcp_code,
+	natpmp_code,
+	invalid_protocol
 );
 
 struct Error {

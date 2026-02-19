@@ -56,7 +56,11 @@ class Patcher final {
 	static void load_patch(PatchMeta& patch, const dal::PatchDAO& dao, const std::string& path);
 
 public:
-	enum class PatchLevel { OK, TOO_OLD, TOO_NEW };
+	enum class PatchLevel { 
+		ok,
+		too_old,
+		too_new 
+	};
 
 	Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patches);
 	

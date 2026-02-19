@@ -23,13 +23,13 @@ class SyslogSink final : public Sink {
 
 public:	
 	enum class Facility : std::uint8_t {
-		KERNEL, USER_LEVEL, MAIL_SYSTEM, SYSTEM_DAEMON,
-		SECURITY_AND_AUTH, SYSLOGD_INTERNAL, LINE_PRINTER_SUBSYSTEM,
-		NETWORK_NEWS_SUBSYSTEM, UUCP_SUBSYSTEM, CLOCK_DAEMON,
-		SECURITY_AND_AUTH_2, FTP_DAEMON, NTP_SUBSYSTEM, LOG_AUDIT,
-		LOG_ALERT, CLOCK_DAEMON_2, LOCAL_USE_0, LOCAL_USE_1,
-		LOCAL_USE_2, LOCAL_USE_3, LOCAL_USE_4, LOCAL_USE_5,
-		LOCAL_USE_6, LOCAL_USE_7
+		kernel, user_level, mail_system, system_daemon,
+		security_and_auth, syslogd_internal, line_printer_subsystem,
+		network_news_subsystem, uucp_subsystem, clock_daemon,
+		security_and_auth_2, ftp_daemon, ntp_daemon, log_audit,
+		log_alert, clock_daemon_2, local_use_0, local_use_1,
+		local_use_2, local_use_3, local_use_4, local_use_5,
+		local_use_6, local_use_7
 	};
 
 	SyslogSink(log::Severity severity, Filter filter, std::string host, unsigned int port,

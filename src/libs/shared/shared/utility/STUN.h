@@ -32,7 +32,7 @@ inline static stun::Client create_stun_client(const po::variables_map& args) {
 		args["network.interface"].as<std::string>(),
 		args["stun.server"].as<std::string>(),
 		args["stun.port"].as<std::uint16_t>(),
-		proto_arg == "tcp"? stun::Protocol::TCP : stun::Protocol::UDP
+		proto_arg == "tcp"? stun::Protocol::tcp : stun::Protocol::udp
 	);
 }
 
@@ -41,22 +41,22 @@ inline static void stun_log_callback(stun::Verbosity verbosity, stun::Error reas
 	const std::string_view reason_str = to_string(reason);
 
 	switch(verbosity) {
-		case stun::Verbosity::STUN_LOG_TRIVIAL:
+		case stun::Verbosity::trivial:
 			LOG_TRACE_SYNC(logger, fmt, reason_str);
 			break;
-		case stun::Verbosity::STUN_LOG_DEBUG:
+		case stun::Verbosity::debug:
 			LOG_DEBUG_SYNC(logger, fmt, reason_str);
 			break;
-		case stun::Verbosity::STUN_LOG_INFO:
+		case stun::Verbosity::info:
 			LOG_INFO_SYNC(logger, fmt, reason_str);
 			break;
-		case stun::Verbosity::STUN_LOG_WARN:
+		case stun::Verbosity::warn:
 			LOG_WARN_SYNC(logger, fmt, reason_str);
 			break;
-		case stun::Verbosity::STUN_LOG_ERROR:
+		case stun::Verbosity::error:
 			LOG_ERROR_SYNC(logger, fmt, reason_str);
 			break;
-		case stun::Verbosity::STUN_LOG_FATAL:
+		case stun::Verbosity::fatal:
 			LOG_FATAL_SYNC(logger, fmt, reason_str);
 			break;
 	}

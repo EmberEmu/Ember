@@ -26,14 +26,14 @@ namespace ember::log {
 
 class SyslogSink::impl final : public Sink {
 	enum class SyslogSeverity {
-		SYSLOG_EMERGENCY,
-		SYSLOG_ALERT,
-		SYSLOG_CRITICAL,
-		SYSLOG_ERROR,
-		SYSLOG_WARNING,
-		SYSLOG_NOTICE,
-		SYSLOG_INFORMATIONAL,
-		SYSLOG_DEBUG
+		syslog_emergency,
+		syslog_alert,
+		syslog_critical,
+		syslog_error,
+		syslog_warning,
+		syslog_notice,
+		syslog_informational,
+		syslog_debug
 	};
 
 	boost::asio::io_context service_;
@@ -73,20 +73,20 @@ SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host
 
 auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	switch(severity) {
-		case Severity::FATAL:
-			return SyslogSink::impl::SyslogSeverity::SYSLOG_EMERGENCY;
+		case Severity::fatal:
+			return SyslogSink::impl::SyslogSeverity::syslog_emergency;
 		case Severity::ERROR_:
-			return SyslogSink::impl::SyslogSeverity::SYSLOG_ERROR;
-		case Severity::WARN:
-			return SyslogSink::impl::SyslogSeverity::SYSLOG_WARNING;
-		case Severity::INFO:
-			return SyslogSink::impl::SyslogSeverity::SYSLOG_INFORMATIONAL;
-		case Severity::DEBUG:
-		case Severity::TRACE:
-			return SyslogSink::impl::SyslogSeverity::SYSLOG_DEBUG;
+			return SyslogSink::impl::SyslogSeverity::syslog_error;
+		case Severity::warn:
+			return SyslogSink::impl::SyslogSeverity::syslog_warning;
+		case Severity::info:
+			return SyslogSink::impl::SyslogSeverity::syslog_informational;
+		case Severity::debug:
+		case Severity::trace:
+			return SyslogSink::impl::SyslogSeverity::syslog_debug;
 		default:
 			BOOST_ASSERT_MSG(false, "SyslogSink encountered an unknown severity.");
-			return SyslogSink::impl::SyslogSeverity::SYSLOG_DEBUG;
+			return SyslogSink::impl::SyslogSeverity::syslog_debug;
 	}
 }
 

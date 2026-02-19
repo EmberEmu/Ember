@@ -55,13 +55,13 @@ TEST(PatcherTest, VersionChecks) {
 	GameVersion version_too_old { 1, 1, 0, 4044 };
 	Patcher patcher(versions, {});
 	
-	ASSERT_EQ(Patcher::PatchLevel::OK, patcher.check_version(version_ok))
+	ASSERT_EQ(Patcher::PatchLevel::ok, patcher.check_version(version_ok))
 		<< "Build should have been accepted";
 
-	ASSERT_EQ(Patcher::PatchLevel::TOO_NEW, patcher.check_version(version_too_new))
+	ASSERT_EQ(Patcher::PatchLevel::too_new, patcher.check_version(version_too_new))
 		<< "Build should have been rejected as too new";
 
-	ASSERT_EQ(Patcher::PatchLevel::TOO_OLD, patcher.check_version(version_too_old))
+	ASSERT_EQ(Patcher::PatchLevel::too_old, patcher.check_version(version_too_old))
 		<< "Build should have been rejected as too old";
 }
 

@@ -49,7 +49,7 @@ public:
 		: account_svc_(account_svc),
 		  account_id_(account_id),
 		  key_(std::move(key)),
-		  res_(rpc::Account::Status::UNKNOWN_STATUS) { }
+		  res_(rpc::Account::Status::unknown_status) { }
 
 	virtual void execute() override try {
 		res_ = do_register().get();

@@ -39,7 +39,7 @@ Client::Client(std::string identifier, std::string password, Generator gen, BigI
 
 SessionKey Client::session_key(const BigInt& B, std::span<const std::uint8_t> salt, 
                                Compliance mode, bool interleave_override) const {
-	bool interleave = (mode == Compliance::GAME);
+	bool interleave = (mode == Compliance::game);
 	
 	if(interleave_override) {
 		interleave = !interleave;

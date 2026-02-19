@@ -18,7 +18,7 @@ namespace ember::dns {
 
 std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> buffer) try {
 	if(buffer.size() > MAX_DGRAM_LEN) {
-		return std::unexpected(parser::Result::PAYLOAD_TOO_LARGE);
+		return std::unexpected(parser::Result::payload_too_large);
 	}
 
 	spark::io::pmr::BufferReadAdaptor adaptor(buffer);
@@ -35,7 +35,7 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 	parser::parse_records(query, ctx);
 
 	if(!stream) {
-		return std::unexpected(parser::Result::STREAM_ERROR);
+		return std::unexpected(parser::Result::stream_error);
 	}
 
 	return query;

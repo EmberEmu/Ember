@@ -45,7 +45,7 @@ TEST_F(Ports, PCP_RequestHeaderRoundtrip) {
 	const pcp::RequestHeader input {
 		.version = PCP_VERSION,
 		.response = true,
-		.opcode = pcp::Opcode::MAP,
+		.opcode = pcp::Opcode::map,
 		.reserved_0 = 0xF00D,
 		.lifetime = 7200u,
 	};
@@ -69,9 +69,9 @@ TEST_F(Ports, PCP_ResponseHeaderRoundtrip) {
 	const pcp::ResponseHeader input {
 		.version = PCP_VERSION,
 		.response = true,
-		.opcode = pcp::Opcode::MAP,
+		.opcode = pcp::Opcode::map,
 		.reserved_0 = 0xFF,
-		.result = pcp::Result::ADDRESS_MISMATCH,
+		.result = pcp::Result::address_mismatch,
 		.lifetime = 0xAABBCCDD,
 		.epoch_time = 0x01020304,
 		.reserved_1 = reserved_1
@@ -91,7 +91,7 @@ TEST_F(Ports, PCP_ResponseHeaderRoundtrip) {
 
 TEST_F(Ports, PCP_MapResponseRoundtrip) {
 	const pcp::MapResponse input {
-		.protocol = pcp::Protocol::TCP,
+		.protocol = pcp::Protocol::tcp,
 		.reserved = { 0x01, 0x02, 0x03 },
 		.internal_port = 0xCAFE,
 		.assigned_external_port = 0xBEEF,
@@ -110,7 +110,7 @@ TEST_F(Ports, PCP_MapResponseRoundtrip) {
 TEST_F(Ports, PCP_MapRequestRoundtrip) {
 	const pcp::MapRequest input {
 		.nonce = nonce,
-		.protocol = pcp::Protocol::TCP,
+		.protocol = pcp::Protocol::tcp,
 		.reserved_0 = { 0x04, 0x05, 0x06 },
 		.internal_port = 0xBEEF,
 		.suggested_external_port = 0xCAFE,
@@ -129,7 +129,7 @@ TEST_F(Ports, PCP_MapRequestRoundtrip) {
 
 TEST_F(Ports, PCP_OptionHeaderRoundtrip) {
 	const pcp::OptionHeader input {
-		.code = pcp::OptionCode::PREFER_FAILURE,
+		.code = pcp::OptionCode::prefer_failure,
 		.reserved = 0xFE,
 		.length = 0xFAFA
 	};
@@ -144,7 +144,7 @@ TEST_F(Ports, PCP_OptionHeaderRoundtrip) {
 TEST_F(Ports, NATPMP_MapRequestRoundtrip) {
 	const natpmp::MapRequest input {
 		.version = 0,
-		.opcode = natpmp::Opcode::RESP_TCP,
+		.opcode = natpmp::Opcode::resp_tcp,
 		.reserved = 0xFFFF,
 		.internal_port = 0xCAFE,
 		.external_port = 0xBEEF,
@@ -164,8 +164,8 @@ TEST_F(Ports, NATPMP_MapRequestRoundtrip) {
 TEST_F(Ports, NATPMP_MapResponseRoundtrip) {
 	const natpmp::MapResponse input {
 		.version = 0,
-		.opcode = natpmp::Opcode::TCP,
-		.result_code = natpmp::Result::UNSUPPORTED_OPCODE,
+		.opcode = natpmp::Opcode::tcp,
+		.result_code = natpmp::Result::unsupported_opcode,
 		.secs_since_epoch = 0xBAADF00D,
 		.internal_port = 0xBEEF,
 		.external_port = 0xCAFE,
@@ -185,7 +185,7 @@ TEST_F(Ports, NATPMP_MapResponseRoundtrip) {
 TEST_F(Ports, NATPMP_ExtAddressRequestRoundtrip) {
 	const natpmp::ExtAddressRequest input {
 		.version = 0,
-		.opcode = natpmp::Opcode::REQUEST_EXTERNAL
+		.opcode = natpmp::Opcode::request_external
 	};
 
 	ports::serialise(input, stream);
@@ -197,8 +197,8 @@ TEST_F(Ports, NATPMP_ExtAddressRequestRoundtrip) {
 TEST_F(Ports, NATPMP_ExtAddressResponseRoundtrip) {
 	const natpmp::ExtAddressResponse input {
 		.version = 0,
-		.opcode = natpmp::Opcode::RESP_EXT,
-		.result_code = natpmp::Result::SUCCESS,
+		.opcode = natpmp::Opcode::resp_ext,
+		.result_code = natpmp::Result::success,
 		.secs_since_epoch = 0xBAADF00D,
 		.external_ip = 0xC0A80001
 	};
@@ -215,8 +215,8 @@ TEST_F(Ports, NATPMP_ExtAddressResponseRoundtrip) {
 TEST_F(Ports, NATPMP_UnsupportedErrorResponseRoundtrip) {
 	const natpmp::UnsupportedErrorResponse input {
 		.version = 0,
-		.opcode = natpmp::Opcode::RESP_EXT,
-		.result_code = natpmp::Result::UNSUPPORTED_VERSION,
+		.opcode = natpmp::Opcode::resp_ext,
+		.result_code = natpmp::Result::unsupported_version,
 		.secs_since_epoch = 0xBAADF00D
 	};
 
@@ -236,7 +236,7 @@ TEST_F(Ports, PCP_TestRequestVector) {
 	ASSERT_EQ(request.version, PCP_VERSION);
 	ASSERT_EQ(request.response, false);
 	ASSERT_EQ(request.reserved_0, 0);
-	ASSERT_EQ(request.opcode, pcp::Opcode::MAP);
+	ASSERT_EQ(request.opcode, pcp::Opcode::map);
 	ASSERT_EQ(request.lifetime, 7200);
 	ASSERT_EQ(request.client_ip, v6_bytes);
 
@@ -270,7 +270,7 @@ TEST_F(Ports, PCP_TestResponseVector) {
 	ASSERT_EQ(header.reserved_0, 0);
 	ASSERT_EQ(header.reserved_1, res_1);
 	ASSERT_EQ(header.epoch_time, 783343);
-	ASSERT_EQ(header.opcode, pcp::Opcode::MAP);
+	ASSERT_EQ(header.opcode, pcp::Opcode::map);
 	ASSERT_EQ(header.lifetime, 120);
 	ASSERT_EQ(header.response, true);
 
@@ -292,7 +292,7 @@ TEST_F(Ports, PCP_TestResponseVector) {
 	ASSERT_EQ(body.assigned_external_port, 8085);
 	ASSERT_EQ(body.assigned_external_ip, v6_bytes);
 	ASSERT_EQ(body.internal_port, 8085);
-	ASSERT_EQ(body.protocol, pcp::Protocol::TCP);
+	ASSERT_EQ(body.protocol, pcp::Protocol::tcp);
 	ASSERT_EQ(body.reserved, reserved);
 	ASSERT_EQ(body.nonce, nonce);
 }
@@ -315,7 +315,7 @@ TEST(PortsUPnP, HTTPHeader_Parse) {
 	upnp::HTTPHeader parsed{};
 	ASSERT_TRUE(upnp::parse_http_header(header, parsed));
 	ASSERT_EQ(parsed.text, "OK");
-	ASSERT_EQ(parsed.code, upnp::HTTPStatus::OK);
+	ASSERT_EQ(parsed.code, upnp::HTTPStatus::ok);
 	ASSERT_EQ(parsed.fields["Cache-Control"], "max-age=120");
 	ASSERT_EQ(parsed.fields["Connection"], "Keep-Alive");
 	ASSERT_EQ(parsed.fields["Content-Length"], "14813");

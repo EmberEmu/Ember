@@ -19,8 +19,8 @@ namespace ember::mpq::v0 {
 MemoryArchive::MemoryArchive(std::span<std::byte> buffer) : mpq::MemoryArchive(buffer) {
 	block_table_ = fetch_block_table();
 	hash_table_ = fetch_hash_table();
-	decrypt_block(std::as_writable_bytes(block_table_), MPQ_KEY_BLOCK_TABLE);
-	decrypt_block(std::as_writable_bytes(hash_table_), MPQ_KEY_HASH_TABLE);
+	decrypt_block(std::as_writable_bytes(block_table_), mpq_key_block_table);
+	decrypt_block(std::as_writable_bytes(hash_table_), mpq_key_hash_table);
 	load_listfile(0);
 }
 

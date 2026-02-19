@@ -15,18 +15,18 @@ namespace ember::mpq {
 
 struct ErrorCode {
 	enum {
-		SUCCESS,
-		NO_ARCHIVE_FOUND,
-		BAD_ALIGNMENT,
-		FILE_NOT_FOUND,
-		UNABLE_TO_OPEN,
-		FILE_READ_FAILED
+		success,
+		no_archive_found,
+		bad_alignment,
+		file_not_found,
+		unable_to_open,
+		file_read_failed
 	} val_;
 
 	ErrorCode(decltype(val_) value) : val_(value) {}
 
 	explicit operator bool() {
-		return val_ == ErrorCode::SUCCESS;
+		return val_ == ErrorCode::success;
 	}
 
 	friend std::ostream& operator<< (std::ostream& os, const ErrorCode& ec) {

@@ -31,10 +31,10 @@ class LoginChallenge final : public Packet {
 	static const std::size_t MAX_USERNAME_LEN = 16;
 	static const std::size_t HEADER_LENGTH = 4;
 
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 	std::uint8_t username_len_ = 0;
 
-	void read_header(spark::io::pmr::BinaryStream& stream) {
+	void header(spark::io::pmr::BinaryStream& stream) {
 		if(stream.size() < HEADER_LENGTH) {
 			return;
 		}
@@ -47,7 +47,7 @@ class LoginChallenge final : public Packet {
 
 	void read_body(spark::io::pmr::BinaryStream& stream) {
 		if(stream.size() < body_size) {
-			state_ = State::CALL_AGAIN;
+			state_ = State::call_again;
 			return;
 		}
 
@@ -82,11 +82,12 @@ class LoginChallenge final : public Packet {
 		be::little_to_native_inplace(platform);
 		be::little_to_native_inplace(os);
 		be::little_to_native_inplace(locale);
-		state_ = State::DONE;
+		state_ = State::done;
 	}
 
 public:
-	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGON_CHALLENGE) {}
+	LoginChallenge()
+		: Packet(Opcode::cmd_auth_logon_challenge) {}
 
 	const static int CHALLENGE_VER = 3;
 	const static int RECONNECT_CHALLENGE_VER = 2;
@@ -103,13 +104,13 @@ public:
 	utf8_string username;
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
 		switch(state_) {
-			case State::INITIAL:
-				read_header(stream);
+			case State::initial:
+				header(stream);
 				[[fallthrough]];
-			case State::CALL_AGAIN:
+			case State::call_again:
 				read_body(stream);
 				break;
 			default:
@@ -144,9 +145,9 @@ public:
 		const auto end_pos = stream.total_write();
 		const auto size = (end_pos - start_pos) - HEADER_LENGTH;
 
-		stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, size_pos);
+		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, size_pos);
 		stream << be::native_to_little(gsl::narrow<std::uint16_t>(size));
-		stream.write_seek(spark::io::StreamSeek::SK_FORWARD, size);
+		stream.write_seek(spark::io::StreamSeek::sk_forward, size);
 	}
 
 };

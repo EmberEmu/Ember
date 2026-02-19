@@ -42,11 +42,11 @@ using AnnounceHandler = std::function<void(std::uint32_t)>;
 class Client final {
 private:
 	enum class State {
-		IDLE,
-		AWAIT_MAP_RESULT_PCP,
-		AWAIT_MAP_RESULT_NATPMP,
-		AWAIT_EXTERNAL_ADDRESS_PCP,
-		AWAIT_EXTERNAL_ADDRESS_NATPMP,
+		idle,
+		await_map_result_pcp,
+		await_map_result_natpmp,
+		await_external_address_pcp,
+		await_external_address_natpmp,
 	};
 
 	ba::io_context& ctx_;
@@ -58,7 +58,7 @@ private:
 	std::atomic_bool has_resolved_;
 	std::atomic_bool resolve_res_;
 	std::stack<State> states_;
-	std::atomic<State> state_ { State::IDLE };
+	std::atomic<State> state_ { State::idle };
 	std::stack<RequestHandler> handlers_;
 	RequestHandler active_handler_;
 	MapRequest stored_request_{};

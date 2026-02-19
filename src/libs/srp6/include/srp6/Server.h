@@ -28,7 +28,7 @@ public:
 	Server(const Generator& gen, Botan::BigInt v, std::size_t key_size = 32, bool srp6a = false);
 
 	SessionKey session_key(const Botan::BigInt& A,
-	                       Compliance mode = Compliance::GAME,
+	                       Compliance mode = Compliance::game,
 	                       bool interleave_override = false) const;
 
 	Botan::BigInt generate_proof(const SessionKey& key,

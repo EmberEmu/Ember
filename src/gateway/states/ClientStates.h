@@ -13,15 +13,15 @@
 namespace ember::gateway {
 
 smart_enum(ClientState, char,
-	AUTHENTICATING,
-	CHARACTER_LIST,
-	WORLD_ENTER,
-	WORLD_TRANSFER,
-	WORLD_FORWARD,
-	SESSION_CLOSED
+	cs_authenticating,
+	cs_character_list,
+	cs_world_enter,
+	cs_world_transfer,
+	cs_world_forward,
+	cs_session_closed
 )
 
-constexpr auto STATES_MAX = SESSION_CLOSED;
-constexpr auto STATES_NUM = STATES_MAX + 1;
+constexpr auto states_max = cs_session_closed;
+constexpr auto states_num = states_max + 1;
 
 } // gateway, ember

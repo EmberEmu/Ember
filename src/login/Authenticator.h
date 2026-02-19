@@ -37,7 +37,7 @@ public:
 };
 
 class LoginAuthenticator final {
-	const static inline srp6::Generator gen_ { srp6::Generator::Group::_256_BIT };
+	const static inline srp6::Generator gen_ { srp6::Generator::Group::g_256_bit };
 
 	struct ChallengeResponse {
 		const Botan::BigInt& B;

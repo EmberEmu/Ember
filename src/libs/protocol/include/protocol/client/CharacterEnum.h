@@ -17,15 +17,15 @@ namespace ember::protocol::client {
 
 struct CharacterEnum final {
 	StreamResult read_from_stream(auto& stream) try {
-		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
-		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 };
 

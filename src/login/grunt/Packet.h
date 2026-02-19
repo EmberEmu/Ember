@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,9 @@ namespace ember::grunt {
 
 struct Packet {
 	enum class State {
-		INITIAL, CALL_AGAIN, DONE
+		initial,
+		call_again,
+		done
 	};
 
 	Opcode opcode;

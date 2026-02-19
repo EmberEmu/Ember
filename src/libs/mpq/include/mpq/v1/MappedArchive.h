@@ -25,7 +25,7 @@ public:
 		: v1::MemoryArchive({static_cast<std::byte*>(region.get_address()), region.get_size()}),
 	      file_(std::move(file)), region_(std::move(region)) {}
 
-	Backing backing() const override { return Backing::MAPPED; }
+	Backing backing() const override { return Backing::mapped; }
 };
 
 } // v1, mpq, ember

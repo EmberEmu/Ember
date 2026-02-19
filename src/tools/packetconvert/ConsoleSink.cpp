@@ -92,7 +92,7 @@ void ConsoleSink::print_opcode(const fblog::Message& message) const {
 	}
 
 	switch(message.direction()) {
-		case fblog::Direction::INBOUND:
+		case fblog::Direction::inbound:
 			if(payload->size() < sizeof(c_op)) {
 				std::cout << "<bad payload>\n";
 				return;
@@ -101,7 +101,7 @@ void ConsoleSink::print_opcode(const fblog::Message& message) const {
 			std::memcpy(&c_op, payload->data(), sizeof(c_op));
 			op_desc = protocol::to_string(c_op);
 			break;
-		case fblog::Direction::OUTBOUND:
+		case fblog::Direction::outbound:
 			if(payload->size() < sizeof(s_op)) {
 				std::cout << "<bad payload>\n";
 				return;

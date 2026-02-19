@@ -25,7 +25,9 @@ public:
 	static constexpr auto npos { static_cast<std::size_t>(-1) };
 
 	enum class Backing {
-		FILE, MAPPED, MEMORY
+		file,
+		mapped,
+		memory
 	};
 
 	virtual int version() const = 0;

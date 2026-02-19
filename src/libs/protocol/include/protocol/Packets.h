@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,24 +30,24 @@
 
 namespace ember::protocol {
 
-using SMSG_ADDON_INFO             = ServerPacket<ServerOpcode::SMSG_ADDON_INFO, server::AddonInfo>;
-using SMSG_AUTH_CHALLENGE         = ServerPacket<ServerOpcode::SMSG_AUTH_CHALLENGE, server::AuthChallenge>;
-using SMSG_AUTH_RESPONSE          = ServerPacket<ServerOpcode::SMSG_AUTH_RESPONSE, server::AuthResponse>;
-using SMSG_PONG                   = ServerPacket<ServerOpcode::SMSG_PONG, server::Pong>;
-using SMSG_CHAR_ENUM              = ServerPacket<ServerOpcode::SMSG_CHAR_ENUM, server::CharacterEnum>;
-using SMSG_CHAR_CREATE            = ServerPacket<ServerOpcode::SMSG_CHAR_CREATE, server::CharacterCreate>;
-using SMSG_CHAR_DELETE            = ServerPacket<ServerOpcode::SMSG_CHAR_DELETE, server::CharacterDelete>;
-using SMSG_CHAR_RENAME            = ServerPacket<ServerOpcode::SMSG_CHAR_RENAME, server::CharacterRename>;
-using SMSG_CHARACTER_LOGIN_FAILED = ServerPacket<ServerOpcode::SMSG_CHARACTER_LOGIN_FAILED, server::CharacterLoginFailed>;
-using SMSG_LOGOUT_COMPLETE        = ServerPacket<ServerOpcode::SMSG_LOGOUT_COMPLETE, server::LogoutComplete>;
+using smsg_addon_info             = ServerPacket<ServerOpcode::smsg_addon_info,             server::AddonInfo>;
+using smsg_auth_challenge         = ServerPacket<ServerOpcode::smsg_auth_challenge,         server::AuthChallenge>;
+using smsg_auth_response          = ServerPacket<ServerOpcode::smsg_auth_response,          server::AuthResponse>;
+using smsg_pong                   = ServerPacket<ServerOpcode::smsg_pong,                   server::Pong>;
+using smsg_char_enum              = ServerPacket<ServerOpcode::smsg_char_enum,              server::CharacterEnum>;
+using smsg_char_create            = ServerPacket<ServerOpcode::smsg_char_create,            server::CharacterCreate>;
+using smsg_char_delete            = ServerPacket<ServerOpcode::smsg_char_delete,            server::CharacterDelete>;
+using smsg_char_rename            = ServerPacket<ServerOpcode::smsg_char_rename,            server::CharacterRename>;
+using smsg_character_login_failed = ServerPacket<ServerOpcode::smsg_character_login_failed, server::CharacterLoginFailed>;
+using smsg_logout_complete        = ServerPacket<ServerOpcode::smsg_logout_complete,        server::LogoutComplete>;
 
-using CMSG_AUTH_SESSION           = ClientPacket<ClientOpcode::CMSG_AUTH_SESSION, client::AuthSession>;
-using CMSG_PING                   = ClientPacket<ClientOpcode::CMSG_PING, client::Ping>;
-using CMSG_CHAR_CREATE            = ClientPacket<ClientOpcode::CMSG_CHAR_CREATE, client::CharacterCreate>;
-using CMSG_CHAR_DELETE            = ClientPacket<ClientOpcode::CMSG_CHAR_DELETE, client::CharacterDelete>;
-using CMSG_CHAR_ENUM              = ClientPacket<ClientOpcode::CMSG_CHAR_ENUM, client::CharacterEnum>;
-using CMSG_CHAR_RENAME            = ClientPacket<ClientOpcode::CMSG_CHAR_RENAME, client::CharacterRename>;
-using CMSG_PLAYER_LOGIN           = ClientPacket<ClientOpcode::CMSG_PLAYER_LOGIN, client::PlayerLogin>;
+using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session, client::AuthSession>;
+using cmsg_ping                   = ClientPacket<ClientOpcode::cmsg_ping,         client::Ping>;
+using cmsg_char_create            = ClientPacket<ClientOpcode::cmsg_char_create,  client::CharacterCreate>;
+using cmsg_char_delete            = ClientPacket<ClientOpcode::cmsg_char_delete,  client::CharacterDelete>;
+using cmsg_char_enum              = ClientPacket<ClientOpcode::cmsg_char_enum,    client::CharacterEnum>;
+using cmsg_char_rename            = ClientPacket<ClientOpcode::cmsg_char_rename,  client::CharacterRename>;
+using cmsg_player_login           = ClientPacket<ClientOpcode::cmsg_player_login, client::PlayerLogin>;
 
 } // protocol, ember
 

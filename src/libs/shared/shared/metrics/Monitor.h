@@ -22,8 +22,6 @@
 #include <vector>
 #include <cstdint>
 
-#undef ERROR // blame Windows' headers
-
 namespace ember {
 
 using namespace std::chrono_literals;
@@ -31,7 +29,11 @@ using namespace std::chrono_literals;
 class Monitor final {
 public:
 	enum class Severity {
-		DEBUG, INFO, WARN, ERROR, FATAL
+		debug,
+		info,
+		warn,
+		error,
+		fatal
 	};
 
 	struct Source {

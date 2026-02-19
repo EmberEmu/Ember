@@ -29,7 +29,9 @@ public:
 };
 
 enum class Type {
-	STRUCT, ENUM, FIELD
+	t_struct,
+	t_enum,
+	t_field
 };
 
 using Definitions = std::vector<std::unique_ptr<Base>>;
@@ -56,7 +58,7 @@ struct Base : IVisitor {
 };
 
 struct Field final : Base {
-	Field() : Base(Type::FIELD) {}
+	Field() : Base(Type::t_field) {}
 	std::string underlying_type;
 	std::vector<Key> keys;
 
@@ -66,7 +68,7 @@ struct Field final : Base {
 };
 
 struct Enum final : Base {
-	Enum() : Base(Type::ENUM) {}
+	Enum() : Base(Type::t_enum) {}
 	std::string underlying_type;
 	std::vector<std::pair<std::string, std::string>> options;
 
@@ -76,7 +78,7 @@ struct Enum final : Base {
 };
 
 struct Struct final : Base {
-	Struct() : Base(Type::STRUCT), dbc(false) {}
+	Struct() : Base(Type::t_struct), dbc(false) {}
 	std::vector<Field> fields;
 	std::vector<std::unique_ptr<Base>> children;
 	bool dbc;

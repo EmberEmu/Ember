@@ -60,21 +60,21 @@ std::string put_time(const std::tm& time, cstring_view format) {
 
 std::string_view severity_string(Severity severity) {
 	switch(severity) {
-		case Severity::DEBUG:
+		case Severity::debug:
 			return "[debug] ";
-		case Severity::TRACE:
+		case Severity::trace:
 			return "[trace] ";
-		case Severity::WARN:
+		case Severity::warn:
 			return "[warning] ";
-		case Severity::INFO:
+		case Severity::info:
 			return "[info] ";
 		case Severity::ERROR_:
 			return "[error] ";
-		case Severity::FATAL:
+		case Severity::fatal:
 			return "[fatal] ";
-		case Severity::CONSOLE_ERROR:
+		case Severity::console_error:
 			[[fallthrough]];
-		case Severity::CONSOLE:
+		case Severity::console:
 			return "[console] ";
 		default:
 			return "[unknown] ";
@@ -85,19 +85,19 @@ std::string_view severity_string(Severity severity) {
 
 Severity severity_string(std::string_view severity) {
 	if(severity == "trace") {
-		return Severity::TRACE;
+		return Severity::trace;
 	} else if(severity == "debug") {
-		return Severity::DEBUG;
+		return Severity::debug;
 	} else if(severity == "info") {
-		return Severity::INFO;
+		return Severity::info;
 	} else if(severity == "warning") {
-		return Severity::WARN;
+		return Severity::warn;
 	} else if(severity == "error") {
 		return Severity::ERROR_;
 	} else if(severity == "fatal") {
-		return Severity::FATAL;
+		return Severity::fatal;
 	} else if(severity == "none" || severity == "disabled") {
-		return Severity::DISABLED;
+		return Severity::disabled;
 	} else {
 		throw exception("Unknown severity passed to severity_string");
 	}

@@ -46,7 +46,7 @@ TEST(BinaryStreamPMR, MessageReadLimit) {
 	// attempt to read past the stream message bound
 	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::stream_read_limit)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::io::StreamState::READ_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::read_limit_error)
 		<< "Unexpected stream state";
 }
 
@@ -68,7 +68,7 @@ TEST(BinaryStreamPMR, BufferLimit) {
 	// attempt to read past the buffer bound
 	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::buffer_underrun)
 		<< "Message boundary was not respected";
-	ASSERT_EQ(stream.state(), spark::io::StreamState::BUFF_LIMIT_ERR)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::buffer_limit_error)
 		<< "Unexpected stream state";
 }
 
@@ -88,7 +88,7 @@ TEST(BinaryStreamPMR, ReadWriteInts) {
 	ASSERT_EQ(in, out);
 	ASSERT_TRUE(stream.empty());
 	ASSERT_TRUE(buffer.empty());
-	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::ok)
 		<< "Unexpected stream state";
 }
 
@@ -106,7 +106,7 @@ TEST(BinaryStreamPMR, ReadWriteStdString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::ok)
 		<< "Unexpected stream state";
 }
 
@@ -123,7 +123,7 @@ TEST(BinaryStreamPMR, ReadWriteCString) {
 
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(0, strcmp(in, out.c_str()));
-	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::ok)
 		<< "Unexpected stream state";
 }
 
@@ -157,7 +157,7 @@ TEST(BinaryStreamPMR, ReadWriteVector) {
 	// read the integers to an output buffer and compare both
 	stream.get(out.begin(), out.end());
 	ASSERT_EQ(in, out);
-	ASSERT_EQ(stream.state(), spark::io::StreamState::OK)
+	ASSERT_EQ(stream.state(), spark::io::StreamState::ok)
 		<< "Unexpected stream state";
 }
 
@@ -298,11 +298,11 @@ TEST(BinaryStreamPMR, SetErrorState) {
 	spark::io::pmr::BinaryStream stream(adaptor);
 	ASSERT_TRUE(stream);
 	ASSERT_TRUE(stream.good());
-	ASSERT_TRUE(stream.state() == spark::io::StreamState::OK);
+	ASSERT_TRUE(stream.state() == spark::io::StreamState::ok);
 	stream.set_error_state();
 	ASSERT_FALSE(stream);
 	ASSERT_FALSE(stream.good());
-	ASSERT_TRUE(stream.state() == spark::io::StreamState::USER_DEFINED_ERR);
+	ASSERT_TRUE(stream.state() == spark::io::StreamState::user_defined_error);
 }
 
 TEST(BinaryStreamPMR, StringAdaptor_PrefixedVarint_Long) {

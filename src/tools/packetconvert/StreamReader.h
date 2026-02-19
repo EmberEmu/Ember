@@ -24,7 +24,9 @@ namespace ember {
 
 class StreamReader final {
 	enum class ReadState {
-		SIZE, TYPE, BODY
+		size,
+		type,
+		body
 	};
 
 	std::ifstream& in_;

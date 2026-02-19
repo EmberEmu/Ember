@@ -27,7 +27,7 @@ void ClientHandler::start() {
 
 void ClientHandler::stop() {
 	Locator::dispatcher()->remove_handler(this);
-	state_update(ClientState::SESSION_CLOSED);
+	state_update(ClientState::cs_session_closed);
 }
 
 void ClientHandler::close() {
@@ -44,10 +44,10 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 
 	// handle ping & keep-alive as special cases
 	switch(opcode) {
-		case protocol::ClientOpcode::CMSG_PING:
+		case protocol::ClientOpcode::cmsg_ping:
 			handle_ping(stream);
 			return;
-		case protocol::ClientOpcode::CMSG_KEEP_ALIVE: // no response required
+		case protocol::ClientOpcode::cmsg_keep_alive: // no response required
 			return;
 		default:
 			break;
@@ -86,13 +86,13 @@ void ClientHandler::skip(BinaryStream& stream) {
 void ClientHandler::handle_ping(BinaryStream& stream) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	protocol::CMSG_PING packet;
+	protocol::cmsg_ping packet;
 
 	if(!deserialise(packet, stream)) {
 		return;
 	}
 
-	protocol::SMSG_PONG response;
+	protocol::smsg_pong response;
 	response->sequence_id = packet->sequence_id;
 	connection_.latency(packet->latency);
 	connection_.send(response);
@@ -103,7 +103,7 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 
 	timer_.async_wait([uuid = uuid_](const boost::system::error_code& ec) {
 		if(!ec) {
-			Event event { EventType::TIMER_EXPIRED };
+			Event event { EventType::timer_expired };
 			Locator::dispatcher()->post_event(uuid, event);
 		}
 	});
@@ -142,8 +142,8 @@ ClientHandler::ClientHandler(ClientConnection& connection, ClientRef uuid,
 		.handler = *this,
 		.connection = connection,
 		.logger = logger,
-		.state = ClientState::AUTHENTICATING,
-		.prev_state = ClientState::AUTHENTICATING,
+		.state = ClientState::cs_authenticating,
+		.prev_state = ClientState::cs_authenticating,
 	  },
 	  connection_(connection),
 	  logger_(logger),
@@ -152,7 +152,7 @@ ClientHandler::ClientHandler(ClientConnection& connection, ClientRef uuid,
 }
 
 ClientHandler::~ClientHandler() {
-	if(context_.state != ClientState::SESSION_CLOSED) {
+	if(context_.state != ClientState::cs_session_closed) {
 		close();
 	}
 }

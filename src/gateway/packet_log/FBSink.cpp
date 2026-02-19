@@ -49,7 +49,7 @@ void FBSink::start_log(const std::string& filename, std::string_view host,
 
 	const auto size = fbb.GetSize();
 	const auto size_le = be::native_to_little(size);
-	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::HEADER));
+	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::header));
 
 	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
 	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
@@ -77,8 +77,8 @@ void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	std::array<char, 64> time_buf{};
 	const auto time_sz = log::detail::put_time(utc_time, time_fmt_, std::span(time_buf));
 	const auto fbtime = fbb.CreateString(std::data(time_buf), time_sz);
-	const auto fbdir = dir == PacketDirection::INBOUND?
-		fblog::Direction::INBOUND : fblog::Direction::OUTBOUND;
+	const auto fbdir = dir == PacketDirection::inbound?
+		fblog::Direction::inbound : fblog::Direction::outbound;
 
 	fblog::MessageBuilder mb(fbb);
 	mb.add_time(fbtime);
@@ -89,7 +89,7 @@ void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 
 	const auto size = fbb.GetSize();
 	const auto size_le = be::native_to_little(size);
-	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::MESSAGE));
+	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::message));
 
 	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
 	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));

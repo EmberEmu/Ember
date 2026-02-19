@@ -27,12 +27,12 @@ void StreamReader::add_sink(std::unique_ptr<Sink> sink) {
 }
 
 void StreamReader::process() {
-	ReadState state { ReadState::SIZE };
+	ReadState state { ReadState::size };
 	std::optional<fblog::Type> type;
 	boost::container::small_vector<std::uint8_t, 256> buffer;
 
 	while(stream_ || stream_size_ != in_.tellg()) {
-		if(state == ReadState::SIZE) {
+		if(state == ReadState::size) {
 			auto size = try_read<std::uint32_t>(in_);
 
 			if(!size) {
@@ -43,10 +43,10 @@ void StreamReader::process() {
 
 			boost::endian::little_to_native_inplace(*size);
 			buffer.resize(*size, boost::container::default_init);
-			state = ReadState::TYPE;
+			state = ReadState::type;
 		}
 
-		if(state == ReadState::TYPE) {
+		if(state == ReadState::type) {
 			type = try_read<fblog::Type>(in_);
 
 			if(!type) {
@@ -56,10 +56,10 @@ void StreamReader::process() {
 			}
 
 			boost::endian::little_to_native_inplace(*type);
-			state = ReadState::BODY;
+			state = ReadState::body;
 		}
 
-		if(state == ReadState::BODY) {
+		if(state == ReadState::body) {
 			auto ret = try_read(in_, buffer);
 
 			if(!ret) {
@@ -72,7 +72,7 @@ void StreamReader::process() {
 				handle_buffer(*type, buffer);
 			}
 
-			state = ReadState::SIZE;
+			state = ReadState::size;
 		}
 	}
 }
@@ -137,10 +137,10 @@ void StreamReader::handle_message(std::span<const std::uint8_t> buff) {
 
 void StreamReader::handle_buffer(const fblog::Type type, std::span<const std::uint8_t> buff) {
 	switch(type) {
-		case fblog::Type::HEADER:
+		case fblog::Type::header:
 			handle_header(buff);
 			break;
-		case fblog::Type::MESSAGE:
+		case fblog::Type::message:
 			handle_message(buff);
 			break;
 		default:

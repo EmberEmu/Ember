@@ -25,15 +25,15 @@ void Parser::set_logger(LogCB logger) {
 }
 
 Error Parser::validate_header(const Header& header) const {
-	if(mode_ != RFCMode::RFC3489 && header.cookie != MAGIC_COOKIE) {
-		return Error::RESP_COOKIE_MISSING;
+	if(mode_ != RFCMode::rfc3489 && header.cookie != MAGIC_COOKIE) {
+		return Error::resp_cookie_missing;
 	}
 
 	if(header.length < ATTR_HEADER_LENGTH) {
-		return Error::RESP_BAD_HEADER_LENGTH;
+		return Error::resp_bad_header_length;
 	}
 
-	return Error::OK;
+	return Error::ok;
 }
 
 attributes::XorMappedAddress
@@ -47,11 +47,11 @@ Parser::xor_mapped_address(spark::io::pmr::BinaryStreamReader& stream, const TxI
 	be::big_to_native_inplace(attr.port);
 	attr.port ^= MAGIC_COOKIE >> 16;
 
-	if(attr.family == AddressFamily::IPV4) {
+	if(attr.family == AddressFamily::ipv4) {
 		stream >> attr.ipv4;
 		be::big_to_native_inplace(attr.ipv4);
 		attr.ipv4 ^= MAGIC_COOKIE;
-	} else if(attr.family == AddressFamily::IPV6 && mode_ != RFC3489) {
+	} else if(attr.family == AddressFamily::ipv6 && mode_ != rfc3489) {
 		stream.get(attr.ipv6.begin(), attr.ipv6.end());
 		const std::uint32_t cookie[1]{ be::native_to_big(MAGIC_COOKIE) };
 		const auto cookie_bytes = std::as_bytes(std::span(cookie));
@@ -66,7 +66,7 @@ Parser::xor_mapped_address(spark::io::pmr::BinaryStreamReader& stream, const TxI
 			ipv6_bytes[i + sizeof(MAGIC_COOKIE)] ^= tx_bytes[i];
 		}
 	} else {
-		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,
+		throw parse_error(Error::resp_addr_fam_not_valid,
 			"Address family is not valid");
 	}
 
@@ -88,7 +88,7 @@ Header Parser::read_header() try {
 	stream >> header.type;
 	stream >> header.length;
 
-	if(mode_ != RFCMode::RFC3489) {
+	if(mode_ != RFCMode::rfc3489) {
 		stream >> header.cookie;
 		stream >> header.tx_id.id_5389;
 	} else {
@@ -97,7 +97,7 @@ Header Parser::read_header() try {
 
 	return header;
 } catch(const spark::exception& e) {
-	throw exception(Error::BUFFER_PARSE_ERROR, e.what());
+	throw exception(Error::buffer_parse_error, e.what());
 }
 
 attributes::MessageIntegrity
@@ -112,7 +112,7 @@ Parser::message_integrity_sha256(spark::io::pmr::BinaryStreamReader& stream, con
 	attributes::MessageIntegrity256 attr{};
 
 	if (length < 16 || length > attr.hmac_sha256.size()) {
-		throw parse_error(Error::RESP_BAD_HMAC_SHA_ATTR,
+		throw parse_error(Error::resp_bad_hmac_sha_attr,
 			"Invalid message integrity length");
 	}
 
@@ -142,7 +142,7 @@ Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t lengt
 	be::big_to_native_inplace(attr.code);
 
 	if(attr.code & 0xFFE00000) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+		logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
 	}
 
 	// (╯°□°）╯︵ ┻━┻
@@ -150,15 +150,15 @@ Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t lengt
 	const auto num = attr.code & 0xFF;
 
 	if(code < 300 || code >= 700) {
-		if(mode_ != RFCMode::RFC3489) {
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+		if(mode_ != RFCMode::rfc3489) {
+			logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
 		} else if(code < 100) { // original RFC has a wider range (1xx - 6xx)
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+			logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
 		}
 	}
 
 	if(num >= 100) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_ERROR_CODE_OUT_OF_RANGE);
+		logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
 	}
 
 	attr.code = code + num;
@@ -179,7 +179,7 @@ Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t lengt
 attributes::UnknownAttributes
 Parser::unknown_attributes(spark::io::pmr::BinaryStreamReader& stream, std::size_t length) {
 	if(length % 2) {
-		throw parse_error(Error::RESP_UNK_ATTR_BAD_PAD,
+		throw parse_error(Error::resp_unk_attr_bad_pad,
 			"Bad UNKNOWN-ATTRIBUTES length");
 	}
 	
@@ -194,7 +194,7 @@ Parser::unknown_attributes(spark::io::pmr::BinaryStreamReader& stream, std::size
 	}
 
 	if(attr.attributes.size() % 2) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNK_ATTR_BAD_PAD);
+		logger_(Verbosity::debug, Error::resp_unk_attr_bad_pad);
 	}
 
 	return attr;
@@ -233,7 +233,7 @@ std::vector<attributes::Attribute> Parser::attributes() try {
 
 	return attributes;
 } catch(const spark::exception& e) {
-	throw exception(Error::BUFFER_PARSE_ERROR, e.what());
+	throw exception(Error::buffer_parse_error, e.what());
 }
 
 std::optional<attributes::Attribute>
@@ -249,58 +249,58 @@ Parser::extract_attribute(spark::io::pmr::BinaryStreamReader& stream,
 	const bool attr_valid = check_attr_validity(attr_type, type, required);
 
 	if(!attr_valid && required) {
-		throw parse_error(Error::RESP_UNEXPECTED_ATTR,
+		throw parse_error(Error::resp_unexpected_attr,
 			"Encountered an unknown comprehension-required attribute");
 	}
 
 	switch(attr_type) {
-		case Attributes::MAPPED_ADDRESS:
+		case Attributes::mapped_address:
 			return extract_ip_pair<attributes::MappedAddress>(stream);
-		case Attributes::XOR_MAPPED_ADDR_OPT: // it's a faaaaake!
+		case Attributes::xor_mapped_addr_opt: // it's a faaaaake!
 			[[fallthrough]];
-		case Attributes::XOR_MAPPED_ADDRESS:
+		case Attributes::xor_mapped_address:
 			return xor_mapped_address(stream, id);
-		case Attributes::CHANGED_ADDRESS:
+		case Attributes::changed_address:
 			return extract_ipv4_pair<attributes::ChangedAddress>(stream);
-		case Attributes::SOURCE_ADDRESS:
+		case Attributes::source_address:
 			return extract_ipv4_pair<attributes::SourceAddress>(stream);
-		case Attributes::OTHER_ADDRESS:
+		case Attributes::other_address:
 			return extract_ip_pair<attributes::OtherAddress>(stream);
-		case Attributes::RESPONSE_ORIGIN:
+		case Attributes::response_origin:
 			return extract_ip_pair<attributes::ResponseOrigin>(stream);
-		case Attributes::REFLECTED_FROM:
+		case Attributes::reflected_from:
 			return extract_ipv4_pair<attributes::ReflectedFrom>(stream);
-		case Attributes::RESPONSE_ADDRESS:
+		case Attributes::response_address:
 			return extract_ipv4_pair<attributes::ResponseAddress>(stream);
-		case Attributes::MESSAGE_INTEGRITY:
+		case Attributes::message_integrity:
 			return message_integrity(stream);
-		case Attributes::MESSAGE_INTEGRITY_SHA256:
+		case Attributes::message_integrity_sha256:
 			return message_integrity_sha256(stream, length);
-		case Attributes::USERNAME:
+		case Attributes::username:
 			return username(stream, length);
-		case Attributes::SOFTWARE:
+		case Attributes::software:
 			return extract_utf8_text<attributes::Software>(stream, length);
-		case Attributes::ALTERNATE_SERVER:
+		case Attributes::alternate_server:
 			return extract_ip_pair<attributes::AlternateServer>(stream);
-		case Attributes::FINGERPRINT:
+		case Attributes::fingerprint:
 			return fingerprint(stream);
-		case Attributes::ERROR_CODE:
+		case Attributes::error_code:
 			return error_code(stream, length);
-		case Attributes::UNKNOWN_ATTRIBUTES:
+		case Attributes::unknown_attributes:
 			return unknown_attributes(stream, length);
-		case Attributes::REALM:
+		case Attributes::realm:
 			return extract_utf8_text<attributes::Realm>(stream, length);
-		case Attributes::NONCE:
+		case Attributes::nonce:
 			return extract_utf8_text<attributes::Nonce>(stream, length);
-		case Attributes::PADDING:
+		case Attributes::padding:
 			return extract_utf8_text<attributes::Padding>(stream, length);
-		case Attributes::ICE_CONTROLLING:
+		case Attributes::ice_controlling:
 			return ice_controlling(stream);
-		case Attributes::ICE_CONTROLLED:
+		case Attributes::ice_controlled:
 			return ice_controlled(stream);
-		case Attributes::PRIORITY:
+		case Attributes::priority:
 			return priority(stream);
-		case Attributes::USE_CANDIDATE:
+		case Attributes::use_candidate:
 			return attributes::UseCandidate{};
 	}
 
@@ -341,31 +341,31 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 			const auto res = std::ranges::find(rfc->second, mode_);
 
 			if(res == rfc->second.end()) { // definitely not our fault... probably
-				logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_REQ_ATTR_SERVER);
+				logger_(Verbosity::debug, Error::resp_bad_req_attr_server);
 				return false;
 			}
 		} else {
 			// might be our fault but probably not
-			logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_UNKNOWN_REQ_ATTRIBUTE);
+			logger_(Verbosity::debug, Error::resp_unknown_req_attribute);
 			return false;
 		}
 	}
 
 	// if we're parsing a request, don't bother checking
-	if(msg_type == MessageType::BINDING_REQUEST) {
+	if(msg_type == MessageType::binding_request) {
 		return true;
 	}
 
 	// Check whether this attribute is valid for the given response type
 	if(const auto entry = attr_valid_lut.find(attr_type); entry != attr_valid_lut.end()) {
 		if(entry->second != msg_type) { // not valid for this type
-			logger_(Verbosity::STUN_LOG_DEBUG,
-				required? Error::RESP_BAD_REQ_ATTR_SERVER : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
+			logger_(Verbosity::debug,
+				required? Error::resp_bad_req_attr_server : Error::resp_unknown_opt_attribute);
 			return false;
 		}
 	} else { // not valid for *any* response type
-		logger_(Verbosity::STUN_LOG_DEBUG,
-			required? Error::RESP_BAD_REQ_ATTR_SERVER : Error::RESP_UNKNOWN_OPT_ATTRIBUTE);
+		logger_(Verbosity::debug,
+			required? Error::resp_bad_req_attr_server : Error::resp_unknown_opt_attribute);
 		return false;
 	}
 

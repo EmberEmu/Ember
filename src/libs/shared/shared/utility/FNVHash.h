@@ -25,8 +25,8 @@ template<typename T>
 concept is_scoped_enum = std::is_scoped_enum_v<T>;
 
 class FNVHash final {
-	static constexpr std::uint32_t INITIAL = 0x811C9DC5;
-	std::uint32_t hash_ = INITIAL;
+	static constexpr std::uint32_t initial = 0x811C9DC5;
+	std::uint32_t hash_ = initial;
 
 	template<std::integral T>
 	std::uint32_t update_l2r(T data) {
@@ -144,7 +144,7 @@ public:
 	}
 
 	void reset() {
-		hash_ = INITIAL;
+		hash_ = initial;
 	}
 
 	std::uint32_t hash() const {
@@ -153,7 +153,7 @@ public:
 
 	std::uint32_t finalise() {
 		std::uint32_t ret = hash_;
-		hash_ = INITIAL;
+		hash_ = initial;
 		return ret;
 	}
 };

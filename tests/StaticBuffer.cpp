@@ -90,7 +90,7 @@ TEST(StaticBuffer, CanWriteSeek) {
 TEST(StaticBuffer, WriteSeekBack) {
 	spark::io::StaticBuffer<char, 3> buffer { '1', '2', '3' };
 	std::array<char, 2> values { '5', '6' };
-	buffer.write_seek(spark::io::BufferSeek::SK_BACKWARD, 2);
+	buffer.write_seek(spark::io::BufferSeek::sk_backward, 2);
 	buffer.write(values.data(), values.size());
 	std::array<char, 3> expected { '1', '5', '6' };
 	ASSERT_TRUE(std::ranges::equal(expected, buffer));
@@ -99,7 +99,7 @@ TEST(StaticBuffer, WriteSeekBack) {
 TEST(StaticBuffer, WriteSeekStart) {
 	spark::io::StaticBuffer<char, 3> buffer { '1', '2', '3' };
 	std::array<char, 3> values { '4', '5', '6' };
-	buffer.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0);
+	buffer.write_seek(spark::io::BufferSeek::sk_absolute, 0);
 	buffer.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_TRUE(std::ranges::equal(buffer, values));
@@ -145,7 +145,7 @@ TEST(StaticBuffer, FindFirstOf) {
 
 TEST(StaticBuffer, AdvanceWrite) {
 	spark::io::StaticBuffer<char, 3> buffer { 'a', 'b', 'c' };
-	buffer.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0);
+	buffer.write_seek(spark::io::BufferSeek::sk_absolute, 0);
 	const char val = 'd';
 	buffer.advance_write(1);
 	buffer.write(&val, 1);

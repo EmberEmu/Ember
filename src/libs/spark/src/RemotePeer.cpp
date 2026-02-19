@@ -46,7 +46,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 
 	MessageHeader header;
 
-	if(header.read_from_stream(stream) != MessageHeader::State::OK
+	if(header.read_from_stream(stream) != MessageHeader::State::ok
 	   || header.size <= stream.total_read()) {
 		LOG_WARN_ASYNC(log_, "[spark] Bad message from {}", conn_->address());
 		return;
@@ -65,7 +65,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse& msg) {
 	LOG_TRACE(log_) << log_func << LOG_ASYNC;
 
-	if(msg.result() != core::Result::OK) {
+	if(msg.result() != core::Result::ok) {
 		auto& channel = channels_[msg.requested_id()];
 		LOG_ERROR_ASYNC(log_, "[spark] Remote peer could not open channel ({}:{})",
 		                channel->handler()->type(), msg.requested_id());
@@ -154,13 +154,13 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	if(!handler) {
 		LOG_DEBUG_ASYNC(log_, "[spark] Requested service handler ({}) does not exist",
 		                msg.service_type()->str());
-		open_channel_response(core::Result::ERROR_UNK, 0, msg.id());
+		open_channel_response(core::Result::error_unk, 0, msg.id());
 		return;
 	}
 
 	if(msg.id() == 0 || msg.id() >= channels_.size()) {
 		LOG_DEBUG_ASYNC(log_, "[spark] Bad channel ID ({}) specified", msg.id());
-		open_channel_response(core::Result::ERROR_UNK, 0, msg.id());
+		open_channel_response(core::Result::error_unk, 0, msg.id());
 		return;
 	}
 
@@ -169,7 +169,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	if(channels_[id]) {
 		if(id = next_empty_channel(); id == 0) {
 			LOG_ERROR_ASYNC(log_, "[spark] Exhausted channel IDs");
-			open_channel_response(core::Result::ERROR_UNK, 0, msg.id());
+			open_channel_response(core::Result::error_unk, 0, msg.id());
 			return;
 		}
 	}
@@ -180,7 +180,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 
 	channel->open();
 	channels_[id] = std::move(channel);
-	open_channel_response(core::Result::OK, id, msg.id());
+	open_channel_response(core::Result::ok, id, msg.id());
 	LOG_DEBUG_ASYNC(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
 
@@ -263,7 +263,7 @@ void RemotePeer::handle_pong(const core::Pong& pong) {
 
 	const auto delta = std::chrono::steady_clock::now() - ping_time_;
 	
-	if(delta > LATENCY_WARN_THRESHOLD) {
+	if(delta > latency_warn_threshold) {
 		const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
 		LOG_WARN_ASYNC(log_, "[spark] Remote peer is slow to respond {} ({})", ms, remote_banner_);
 	}

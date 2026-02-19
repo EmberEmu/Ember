@@ -24,10 +24,20 @@
 namespace ember::dns::parser {
 
 smart_enum_class(Result, std::uint8_t,
-	OK, PAYLOAD_TOO_LARGE, NO_QUESTIONS, BAD_NAME_OFFSET,
-	BAD_NAME_NOTATION, UNHANDLED_RECORD_TYPE, STREAM_ERROR, NAME_PARSE_ERROR,
-	RR_PARSE_ERROR, QUESTION_PARSE_ERROR, HEADER_PARSE_ERROR, LABEL_PARSE_ERROR,
-	UNHANDLED_RDATA, STREAM_CANNOT_SEEK
+	ok,
+	payload_too_large,
+	no_questions,
+	bad_name_offset,
+	bad_name_notation,
+	unhandled_record_type,
+	stream_error,
+	name_parse_error,
+	rr_parse_error,
+	question_parse_error,
+	header_parse_error,
+	label_parse_error,
+	unhandled_rdata,
+	stream_cannot_seek
 );
 
 using Pointers = std::unordered_map<std::string_view, std::uint16_t>;

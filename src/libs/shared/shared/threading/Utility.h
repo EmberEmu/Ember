@@ -19,7 +19,8 @@ namespace ember::log {
 namespace ember::thread {
 
 enum Result {
-	ok, unsupported
+	ok,
+	unsupported
 };
 
 void set_affinity(std::thread& thread, unsigned int core);

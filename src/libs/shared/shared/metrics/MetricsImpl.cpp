@@ -47,11 +47,11 @@ void MetricsImpl::gauge(const char* key, std::uintmax_t value, Adjustment adjust
 	format << key << ":";
 
 	switch (adjustment) {
-		case Adjustment::POSITIVE: format << "+";
+		case Adjustment::positive: format << "+";
 			break;
-		case Adjustment::NEGATIVE: format << "-";
+		case Adjustment::negative: format << "-";
 			break;
-		case Adjustment::NONE:
+		case Adjustment::none:
 			break;
 	}
 

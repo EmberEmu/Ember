@@ -35,7 +35,7 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 	character.haircolour = options.haircolour();
 	character.facialhair = options.facialhair();
 	character.level = 1; // todo
-	character.flags = Character::Flags::NONE;
+	character.flags = Character::Flags::none;
 	character.first_login = true;
 
 	pool_.run([=, this] {
@@ -86,14 +86,14 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const bool success = validate_options(character, account_id);
 
 	if(!success) {
-		callback(protocol::Result::CHAR_CREATE_ERROR);
+		callback(protocol::Result::char_create_error);
 		return;
 	}
 
 	// name validation
 	auto result = validate_name(character.name);
 
-	if(result != protocol::Result::CHAR_NAME_SUCCESS) {
+	if(result != protocol::Result::char_name_success) {
 		callback(result);
 		return;
 	}
@@ -103,7 +103,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const auto res = dao_.character(character.name, realm_id);
 
 	if(res) {
-		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE);
+		callback(protocol::Result::char_create_name_in_use);
 		return;
 	}
 
@@ -111,7 +111,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const auto total_chars = dao_.count(account_id);
 
 	if(total_chars >= MAX_CHARACTER_SLOTS_ACCOUNT) {
-		callback(protocol::Result::CHAR_CREATE_ACCOUNT_LIMIT);
+		callback(protocol::Result::char_create_account_limit);
 		return;
 	}
 
@@ -120,7 +120,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		const auto count = dao_.count(account_id, realm_id);
 
 		if(count >= MAX_CHARACTER_SLOTS_SERVER) {
-			callback(protocol::Result::CHAR_CREATE_SERVER_LIMIT);
+			callback(protocol::Result::char_create_server_limit);
 			return;
 		}
 	}
@@ -141,7 +141,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		LOG_DEBUG_ASYNC(logger_, "Cannot create {} characters with existing {} characters on a PvP realm",
 		                opposing->internal_name, current->internal_name);
 
-		callback(protocol::Result::CHAR_CREATE_PVP_TEAMS_VIOLATION);
+		callback(protocol::Result::char_create_pvp_teams_violation);
 		return;
 	}
 
@@ -157,7 +157,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	if(base_info == dbc_.char_start_base.end()) {
 		LOG_ERROR_ASYNC(logger_, "Unable to find base data for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
-		callback(protocol::Result::CHAR_CREATE_ERROR);
+		callback(protocol::Result::char_create_error);
 		return;
 	}
 
@@ -167,7 +167,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	if(!zone) {
 		LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
-		callback(protocol::Result::CHAR_CREATE_ERROR);
+		callback(protocol::Result::char_create_error);
 		return;
 	}
 	
@@ -227,10 +227,10 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	                subzone? subzone : " ");
 
 	dao_.create(character);
-	callback(protocol::Result::CHAR_CREATE_SUCCESS);
+	callback(protocol::Result::char_create_success);
 } catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::CHAR_CREATE_ERROR);
+	callback(protocol::Result::char_create_error);
 }
 
 void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id,
@@ -242,28 +242,28 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 	// character must exist, belong to the same account and be on the same realm
 	if(!character || character->account_id != account_id || character->realm_id != realm_id) {
 		LOG_DEBUG_ASYNC(logger_, "Account {} attempted an invalid delete on character ", account_id, character_id);
-		callback(protocol::Result::CHAR_DELETE_FAILED);
+		callback(protocol::Result::char_delete_failed);
 		return;
 	}
 
-	if((character->flags & Character::Flags::LOCKED_FOR_TRANSFER) == Character::Flags::LOCKED_FOR_TRANSFER) {
-		callback(protocol::Result::CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER);
+	if((character->flags & Character::Flags::locked_for_transfer) == Character::Flags::locked_for_transfer) {
+		callback(protocol::Result::char_delete_failed_locked_for_transfer);
 		return;
 	}
 
 	// character cannot be a guild leader (no specific guild leader deletion message until TBC)
 	if(character->guild_rank == 1) { // todo, ranks need defined properly
-		callback(protocol::Result::CHAR_DELETE_FAILED);
+		callback(protocol::Result::char_delete_failed);
 		return;
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Deleting {}, #{}", character->name, character->id);
 
 	dao_.delete_character(character_id, true);
-	callback(protocol::Result::CHAR_DELETE_SUCCESS);
+	callback(protocol::Result::char_delete_success);
 } catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::CHAR_DELETE_FAILED);
+	callback(protocol::Result::char_delete_failed);
 }
 
 void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
@@ -284,23 +284,23 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	auto character = dao_.character(character_id);
 	
 	if(!character) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
+		callback(protocol::Result::char_name_failure, std::nullopt);
 		return;
 	}
 
 	if(character->account_id != account_id) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
+		callback(protocol::Result::char_name_failure, std::nullopt);
 		return;
 	}
 
-	if((character->flags & Character::Flags::RENAME) != Character::Flags::RENAME) {
-		callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
+	if((character->flags & Character::Flags::rename) != Character::Flags::rename) {
+		callback(protocol::Result::char_name_failure, std::nullopt);
 		return;
 	}
 
 	auto result = validate_name(name);
 
-	if(result != protocol::Result::CHAR_NAME_SUCCESS) {
+	if(result != protocol::Result::char_name_success) {
 		callback(result, std::nullopt);
 		return;
 	}
@@ -310,20 +310,20 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	const std::optional<Character>& match = dao_.character(character->name, character->realm_id);
 
 	if(match) {
-		callback(protocol::Result::CHAR_CREATE_NAME_IN_USE, std::nullopt);
+		callback(protocol::Result::char_create_name_in_use, std::nullopt);
 		return;
 	}
 	
 	LOG_DEBUG_ASYNC(logger_, "Renaming {} => {}, #{}", character->name, name, character->id);
 
 	character->internal_name = character->name;
-	character->flags ^= Character::Flags::RENAME;
+	character->flags ^= Character::Flags::rename;
 
 	dao_.update(*character);
-	callback(protocol::Result::RESPONSE_SUCCESS, *character);
+	callback(protocol::Result::response_success, *character);
 } catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::CHAR_NAME_FAILURE, std::nullopt);
+	callback(protocol::Result::char_name_failure, std::nullopt);
 }
 
 void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) const try {
@@ -334,7 +334,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 
 	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
 		LOG_WARN_ASYNC(logger_, "Cannot restore character - would exceed max account slots");
-		callback(protocol::Result::CHAR_CREATE_ACCOUNT_LIMIT);
+		callback(protocol::Result::char_create_account_limit);
 		return;
 	}
 
@@ -344,7 +344,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 
 	if(realm_chars >= MAX_CHARACTER_SLOTS_SERVER) {
 		LOG_WARN_ASYNC(logger_, "Cannot restore character - would exceed max server slots");
-		callback(protocol::Result::CHAR_CREATE_SERVER_LIMIT);
+		callback(protocol::Result::char_create_server_limit);
 		return;
 	}
 
@@ -352,7 +352,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	const auto& name_taken = dao_.character(character->name, character->realm_id);
 
 	if(name_taken) {
-		character->flags |= Character::Flags::RENAME;
+		character->flags |= Character::Flags::rename;
 	} else {
 		character->internal_name = character->name;
 	}
@@ -361,10 +361,10 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 
 	dao_.update(*character);
 	dao_.restore(id);
-	callback(protocol::Result::RESPONSE_SUCCESS);
+	callback(protocol::Result::response_success);
 } catch(const dal::exception& e) {
 	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
-	callback(protocol::Result::RESPONSE_FAILURE);
+	callback(protocol::Result::response_failure);
 }
 
 bool CharacterHandler::validate_options(const Character& character, std::uint32_t account_id) const {
@@ -447,31 +447,31 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(name.empty()) {
-		return protocol::Result::CHAR_NAME_NO_NAME;
+		return protocol::Result::char_name_no_name;
 	}
 
 	if(!utility::utf8::is_valid(name)) {
-		return protocol::Result::CHAR_NAME_FAILURE;
+		return protocol::Result::char_name_failure;
 	}
 	
 	const std::size_t length = utility::utf8::length(name);
 
 	if(length > MAX_NAME_LENGTH) {
-		return protocol::Result::CHAR_NAME_TOO_LONG;
+		return protocol::Result::char_name_too_long;
 	}
 
 	if(length < MIN_NAME_LENGTH) {
-		return protocol::Result::CHAR_NAME_TOO_SHORT;
+		return protocol::Result::char_name_too_short;
 	}
 
 	// todo, add a config option to restrict names to ASCII
 
 	if(utility::utf8::max_consecutive(name, true) > MAX_CONSECUTIVE_LETTERS) {
-		return protocol::Result::CHAR_NAME_THREE_CONSECUTIVE;
+		return protocol::Result::char_name_three_consecutive;
 	}
 
 	if(!utility::utf8::is_alpha(name, std::locale())) {
-		return protocol::Result::CHAR_NAME_ONLY_LETTERS;
+		return protocol::Result::char_name_only_letters;
 	}
 
 	const auto& formatted_name = utility::utf8::name_format(name, std::locale());
@@ -480,10 +480,10 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		int ret = utility::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
-			return protocol::Result::CHAR_NAME_RESERVED;
+			return protocol::Result::char_name_reserved;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
 			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
-			return protocol::Result::CHAR_NAME_FAILURE;
+			return protocol::Result::char_name_failure;
 		}
 	}
 
@@ -491,10 +491,10 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		int ret = utility::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
-			return protocol::Result::CHAR_NAME_PROFANE;
+			return protocol::Result::char_name_profane;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
 			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
-			return protocol::Result::CHAR_NAME_FAILURE;
+			return protocol::Result::char_name_failure;
 		}
 	}
 
@@ -502,14 +502,14 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		int ret = utility::pcre::match(formatted_name, regex);
 
 		if(ret >= 0) {
-			return protocol::Result::CHAR_NAME_RESERVED;
+			return protocol::Result::char_name_reserved;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
 			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
-			return protocol::Result::CHAR_NAME_FAILURE;
+			return protocol::Result::char_name_failure;
 		}
 	}
 
-	return protocol::Result::CHAR_NAME_SUCCESS;
+	return protocol::Result::char_name_success;
 }
 
 // This function should be moved when there's a more suitable home for it

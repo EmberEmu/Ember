@@ -27,7 +27,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 
 void handle_event(ClientContext& ctx, const Event* event) {
     switch(event->type) {
-        case EventType::PLAYER_LOGIN:
+        case EventType::player_login:
             initiate_player_login(ctx, static_cast<const PlayerLogin*>(event));
             break;
         default:

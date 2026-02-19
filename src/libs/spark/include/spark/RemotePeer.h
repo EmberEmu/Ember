@@ -28,12 +28,14 @@ namespace ember::spark {
 class HandlerRegistry;
 using namespace std::chrono_literals;
 
-static auto LATENCY_WARN_THRESHOLD = 100ms; // todo, move?
+static auto latency_warn_threshold = 100ms; // todo, move?
 
 class RemotePeer final {
 	enum class State {
-		HELLO, NEGOTIATING, DISPATCHING
-	} state_ = State::HELLO;
+		hello,
+		negotiating,
+		dispatching
+	} state_ = State::hello;
 
 	boost::asio::io_context& ctx_;
 	std::shared_ptr<Connection> conn_;

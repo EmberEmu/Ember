@@ -20,11 +20,11 @@
 using namespace ember;
 
 TEST(STUNVectors, RFC5769_IPv4Response) {
-	stun::Parser parser(respv4, stun::RFC5780);
+	stun::Parser parser(respv4, stun::rfc5780);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 60);
-	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_RESPONSE));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::binding_response));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
 	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
@@ -45,12 +45,12 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 	// XOR-MAPPED-ADDRESS
 	const auto xma = stun::retrieve_attribute<stun::attributes::XorMappedAddress>(attrs);
 	ASSERT_TRUE(xma);
-	ASSERT_EQ(xma->family, stun::AddressFamily::IPV4);
+	ASSERT_EQ(xma->family, stun::AddressFamily::ipv4);
 	ASSERT_EQ(xma->port, 32853);
 	ASSERT_EQ(xma->ipv4, 0x0c0000201);
 	ASSERT_EQ(stun::extract_ip_to_string(*xma), "192.0.2.1");
 
-	// FINGERPRINT
+	// fingerprint
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attrs);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, 0xc07d4c96);
@@ -71,11 +71,11 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 }
 
 TEST(STUNVectors, RFC5769_IPv6Response) {
-	stun::Parser parser(respv6, stun::RFC5780);
+	stun::Parser parser(respv6, stun::rfc5780);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 72);
-	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_RESPONSE));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::binding_response));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
 	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
@@ -96,11 +96,11 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	// XOR-MAPPED-ADDRESS
 	const auto xma = stun::retrieve_attribute<stun::attributes::XorMappedAddress>(attrs);
 	ASSERT_TRUE(xma);
-	ASSERT_EQ(xma->family, stun::AddressFamily::IPV6);
+	ASSERT_EQ(xma->family, stun::AddressFamily::ipv6);
 	ASSERT_EQ(xma->port, 32853);
 	ASSERT_EQ(stun::extract_ip_to_string(*xma), "2001:db8:1234:5678:11:2233:4455:6677");
 
-	// FINGERPRINT
+	// fingerprint
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attrs);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, 0xc8fb0b4c);
@@ -120,12 +120,13 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	ASSERT_TRUE(std::ranges::equal(msgi->hmac_sha1, res));
 }
 
+
 TEST(STUNVectors, RFC5769_LTARequest) {
-	stun::Parser parser(reqltc, stun::RFC5780);
+	stun::Parser parser(reqltc, stun::rfc5780);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 96);
-	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_REQUEST));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::binding_request));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
 	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
@@ -167,11 +168,11 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 }
 
 TEST(STUNVectors, RFC5769_Request) {
-	stun::Parser parser(req, stun::RFC8445);
+	stun::Parser parser(req, stun::rfc8445);
 	const auto header = parser.read_header();
 
 	ASSERT_EQ(header.length, 88);
-	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::BINDING_REQUEST));
+	ASSERT_EQ(header.type, std::to_underlying(stun::MessageType::binding_request));
 	ASSERT_EQ(header.cookie, stun::MAGIC_COOKIE);
 
 	std::array<uint8_t, 12> parse_tx_id{}, trans_id {
@@ -227,10 +228,10 @@ TEST(STUNVectors, RFC5769_Request) {
 }
 
 TEST(STUNVectors, Builder_CRC32) {
-	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	stun::MessageBuilder builder(stun::MessageType::binding_request, stun::rfc5780);
 	const auto buffer = builder.final(true);
 
-	stun::Parser parser(buffer, stun::RFC5780);
+	stun::Parser parser(buffer, stun::rfc5780);
 	const auto attributes = parser.attributes();
 
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attributes);
@@ -239,10 +240,10 @@ TEST(STUNVectors, Builder_CRC32) {
 }
 
 TEST(STUNVectors, Builder_MessageIntegrity) {
-	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	stun::MessageBuilder builder(stun::MessageType::binding_request, stun::rfc5780);
 	const auto buffer = builder.final("Banana");
 
-	stun::Parser parser(buffer, stun::RFC5780);
+	stun::Parser parser(buffer, stun::rfc5780);
 	const auto attributes = parser.attributes();
 
 	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
@@ -252,11 +253,11 @@ TEST(STUNVectors, Builder_MessageIntegrity) {
 }
 
 TEST(STUNVectors, Builder_MessageIntegrityFull) {
-	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	stun::MessageBuilder builder(stun::MessageType::binding_request, stun::rfc5780);
 	std::array<std::uint8_t, 8> username { 0x63, 0x68, 0x61, 0x6F, 0x73, 0x76, 0x65, 0x78 };
 	const auto buffer = builder.final(username, "lightshope.org", "bAhzJk!/kM");
 
-	stun::Parser parser(buffer, stun::RFC5780);
+	stun::Parser parser(buffer, stun::rfc5780);
 	const auto attributes = parser.attributes();
 
 	const auto attr = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attributes);
@@ -266,13 +267,13 @@ TEST(STUNVectors, Builder_MessageIntegrityFull) {
 }
 
 TEST(STUNVectors, Builder_MessageIntegrityCRC32) {
-	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	stun::MessageBuilder builder(stun::MessageType::binding_request, stun::rfc5780);
 	const auto buffer = builder.final("Banana", true);
 
-	stun::Parser parser(buffer, stun::RFC5780);
+	stun::Parser parser(buffer, stun::rfc5780);
 	const auto attributes = parser.attributes();
 
-	// FINGERPRINT
+	// fingerprint
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attributes);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, parser.fingerprint());
@@ -285,10 +286,10 @@ TEST(STUNVectors, Builder_MessageIntegrityCRC32) {
 }
 
 TEST(STUNVectors, Builder_Software) {
-	stun::MessageBuilder builder(stun::MessageType::BINDING_REQUEST, stun::RFC5780);
+	stun::MessageBuilder builder(stun::MessageType::binding_request, stun::rfc5780);
 	builder.add_software("Ember!");
 	const auto buffer = builder.final(true);
-	stun::Parser parser(buffer, stun::RFC5780);
+	stun::Parser parser(buffer, stun::rfc5780);
 	const auto attributes = parser.attributes();
 
 	// SOFTWARE
@@ -296,7 +297,7 @@ TEST(STUNVectors, Builder_Software) {
 	ASSERT_TRUE(attr);
 	ASSERT_EQ(attr->value, "Ember!");
 
-	// FINGERPRINT
+	// fingerprint
 	const auto fp = stun::retrieve_attribute<stun::attributes::Fingerprint>(attributes);
 	ASSERT_TRUE(fp);
 	ASSERT_EQ(fp->crc32, parser.fingerprint());

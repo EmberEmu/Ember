@@ -45,7 +45,7 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 	 * occurs. Don't try to recover.
 	 */
 	switch(stream.state()) {
-		case spark::io::StreamState::READ_LIMIT_ERR:
+		case spark::io::StreamState::read_limit_error:
 			LOG_DEBUG_ASYNC(
 				logger_, "Deserialisation of {} failed, skipping any remaining data",
 				protocol::to_string(packet.opcode)
@@ -53,7 +53,7 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 
 			stream.skip(stream.read_limit() - stream.total_read());
 			break;
-		case spark::io::StreamState::BUFF_LIMIT_ERR:
+		case spark::io::StreamState::buffer_limit_error:
 			LOG_ERROR_ASYNC(
 				logger_, "Message framing lost for {} from {}",
 				protocol::to_string(packet.opcode), client_identify()

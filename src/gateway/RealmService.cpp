@@ -57,12 +57,12 @@ RealmService::handle_get_status(const RequestStatus&, const Link& link,	const To
 }
 
 void RealmService::set_online() {
-	realm_.flags &= ~Realm::Flags::OFFLINE;
+	realm_.flags &= ~Realm::Flags::offline;
 	broadcast_status();
 }
 
 void RealmService::set_offline() {
-	realm_.flags |= Realm::Flags::OFFLINE;
+	realm_.flags |= Realm::Flags::offline;
 	broadcast_status();
 }
 

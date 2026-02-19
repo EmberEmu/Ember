@@ -18,7 +18,7 @@
 namespace ember::mpq {
 
 class DynamicMemorySink final : public ExtractionSink {
-	boost::container::small_vector<std::byte, SECTOR_SIZE_HINT> buffer_;
+	boost::container::small_vector<std::byte, sector_size_hint> buffer_;
 	std::size_t offset_ = 0;
 
 	void store(std::span<const std::byte> data) {

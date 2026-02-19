@@ -63,7 +63,7 @@ void AccountClient::handle_lookup_response(
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::RPC_ERROR, {});
+		cb(Status::rpc_error, {});
 		return;
 	}
 
@@ -76,7 +76,7 @@ void AccountClient::handle_locate_response(std::expected<const SessionResponse*,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::RPC_ERROR, {});
+		cb(Status::rpc_error, {});
 		return;
 	}
 	

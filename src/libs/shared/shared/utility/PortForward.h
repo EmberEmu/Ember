@@ -58,7 +58,7 @@ class PortForward final {
 				.external = port,
 				.internal = port,
 				.ttl = 0,
-				.protocol = ports::Protocol::TCP
+				.protocol = ports::Protocol::tcp
 			};
 
 			result->device->add_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
@@ -79,7 +79,7 @@ class PortForward final {
 
 	void start_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port) {
 		const ports::MapRequest request {
-			.protocol      = ports::Protocol::TCP,
+			.protocol      = ports::Protocol::tcp,
 			.internal_port = port,
 			.external_port = port,
 			.lifetime      = 7200u
@@ -112,7 +112,7 @@ class PortForward final {
 			.external = port_,
 			.internal = port_,
 			.ttl = 0,
-			.protocol = ports::Protocol::TCP
+			.protocol = ports::Protocol::tcp
 		};
 
 		upnp_device_->delete_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
@@ -131,7 +131,7 @@ class PortForward final {
 	void unmap_pmp() {
 		assert(daemon_);
 
-		daemon_->delete_mapping(port_, ports::Protocol::TCP, [&](const ports::Result& result) {
+		daemon_->delete_mapping(port_, ports::Protocol::tcp, [&](const ports::Result& result) {
 			if(result) {
 				LOG_INFO_ASYNC(logger_, "Successfully unmapped forwarded port", port_);
 			} else {
@@ -165,20 +165,27 @@ class PortForward final {
 
 public:
 	enum class Mode {
-		UPNP, PMP_PCP, AUTO
+		upnp,
+		pmp_pcp,
+		auto_determine
 	};
 
 	PortForward(log::Logger& logger, boost::asio::io_context& ctx, Mode mode,
 				const std::string& iface, const std::string& gateway, std::uint16_t port)
-		: ctx_(ctx), logger_(logger), port_(port), mapping_active_(false), cb_sem_(0), sem_(0) {
+		: ctx_(ctx),
+		  logger_(logger),
+		  port_(port),
+		  mapping_active_(false),
+		  cb_sem_(0),
+		  sem_(0) {
 		switch(mode) {
-			case Mode::UPNP:
+			case Mode::upnp:
 				start_upnp(iface, port);
 				break;
-			case Mode::PMP_PCP:
+			case Mode::pmp_pcp:
 				start_pmp(iface, gateway, port);
 				break;
-			case Mode::AUTO:
+			case Mode::auto_determine:
 				start_auto(iface, gateway, port);
 				break;
 			default:

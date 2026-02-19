@@ -67,7 +67,7 @@ std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
 
 	return name.str();
 } catch(const spark::exception&) {
-	throw Result::LABEL_PARSE_ERROR;
+	throw Result::label_parse_error;
 }
 
 void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream) try {
@@ -87,7 +87,7 @@ void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream) try 
 	be::big_to_native_inplace(query.header.authority_rrs);
 	be::big_to_native_inplace(query.header.additional_rrs);
 } catch(const spark::exception&) {
-	throw Result::HEADER_PARSE_ERROR;
+	throw Result::header_parse_error;
 }
 
 Question parse_question(ParseContext& ctx) try {
@@ -110,7 +110,7 @@ Question parse_question(ParseContext& ctx) try {
 	question.cc = static_cast<Class>(cc);
 	return question;
 } catch(const spark::exception&) {
-	throw Result::QUESTION_PARSE_ERROR;
+	throw Result::question_parse_error;
 }
 
 std::string labels_to_name(std::span<std::string_view> labels) {
@@ -133,7 +133,7 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 
 	while(true) {
 		if(offset >= buffer.size_bytes()) {
-			throw Result::BAD_NAME_OFFSET;
+			throw Result::bad_name_offset;
 		}
 
 		std::uint8_t notation = buffer[offset];
@@ -148,37 +148,37 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 			std::uint8_t len = buffer[offset];
 
 			if(offset + 1 + len >= buffer.size_bytes()) {
-				throw Result::BAD_NAME_OFFSET;
+				throw Result::bad_name_offset;
 			}
 
 			labels.emplace_back(chars.data() + offset + 1, len);
 			offset += len + 1;
 		} else if(notation == NOTATION_PTR) {
 			if(offset + 1 >= buffer.size_bytes()) {
-				throw Result::BAD_NAME_OFFSET;
+				throw Result::bad_name_offset;
 			}
 
 			auto ptr = ((buffer[offset] & 0x3F) << 8) | buffer[offset + 1];
 
 			if(ptr >= buffer.size_bytes()) {
-				throw Result::BAD_NAME_OFFSET;
+				throw Result::bad_name_offset;
 			}
 
 			// Label pointer must point backwards to prevent potential infinite loops
 			if (ptr >= offset) {
-				throw Result::BAD_NAME_OFFSET;
+				throw Result::bad_name_offset;
 			}
 
 			const auto len = buffer[ptr++];
 
 			if(ptr + len >= buffer.size_bytes()) {
-				throw Result::BAD_NAME_OFFSET;
+				throw Result::bad_name_offset;
 			}
 
 			labels.emplace_back(chars.data() + ptr, len);
 			offset = ptr + len;
 		} else {
-			throw Result::BAD_NAME_NOTATION;
+			throw Result::bad_name_notation;
 		}
 	}
 
@@ -205,7 +205,7 @@ void skip_stream_labels(spark::io::pmr::BinaryStreamReader& stream) {
 			stream.skip(2);
 			break;
 		} else {
-			throw Result::BAD_NAME_NOTATION;
+			throw Result::bad_name_notation;
 		}
 	}
 }
@@ -219,7 +219,7 @@ std::vector<std::string_view> parse_labels(ParseContext& ctx) try {
 	skip_stream_labels(ctx.stream);
 	return labels;
 } catch(const spark::exception&) {
-	throw Result::NAME_PARSE_ERROR;
+	throw Result::name_parse_error;
 }
 
 ResourceRecord parse_resource_record(ParseContext& ctx) try {
@@ -247,49 +247,49 @@ ResourceRecord parse_resource_record(ParseContext& ctx) try {
 	parse_rdata(record, ctx);
 	return record;
 } catch(const spark::exception&) {
-	throw Result::RR_PARSE_ERROR;
+	throw Result::rr_parse_error;
 }
 
 void parse_rdata(ResourceRecord& rr, ParseContext& ctx) try {
 	switch(rr.type) {
-		case RecordType::PTR:
+		case RecordType::ptr:
 			parse_rdata_ptr(rr, ctx);
 			break;
-		case RecordType::A:
+		case RecordType::a:
 			parse_rdata_a(rr, ctx);
 			break;
-		case RecordType::AAAA:
+		case RecordType::aaaa:
 			parse_rdata_aaaa(rr, ctx);
 			break;
-		case RecordType::SOA:
+		case RecordType::soa:
 			parse_rdata_soa(rr, ctx);
 			break;
-		case RecordType::MX:
+		case RecordType::mx:
 			parse_rdata_mx(rr, ctx);
 			break;
-		case RecordType::TXT:
+		case RecordType::txt:
 			parse_rdata_txt(rr, ctx);
 			break;
-		case RecordType::URI:
+		case RecordType::uri:
 			parse_rdata_uri(rr, ctx);
 			break;
-		case RecordType::SRV:
+		case RecordType::srv:
 			parse_rdata_srv(rr, ctx);
 			break;
-		case RecordType::CNAME:
+		case RecordType::cname:
 			parse_rdata_cname(rr, ctx);
 			break;
-		case RecordType::HINFO:
+		case RecordType::hinfo:
 			parse_rdata_hinfo(rr, ctx);
 			break;
-		case RecordType::NSEC:
+		case RecordType::nsec:
 			parse_rdata_nsec(rr, ctx);
 			break;
 		default:
-			throw Result::UNHANDLED_RDATA;
+			throw Result::unhandled_rdata;
 	}
 } catch(const spark::exception&) {
-	throw Result::RR_PARSE_ERROR;
+	throw Result::rr_parse_error;
 }
 
 void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx) {
@@ -515,16 +515,16 @@ void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
 	stream << be::native_to_big(rr.ttl);
 
 	if(!stream.can_write_seek()) {
-		throw Result::STREAM_CANNOT_SEEK;
+		throw Result::stream_cannot_seek;
 	}
 
 	const auto seek = stream.total_write();
 	stream << std::uint16_t(0);
 	const auto rdata_len = write_rdata(rr, stream);
 	const auto new_seek = stream.total_write();
-	stream.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, seek);
+	stream.write_seek(spark::io::StreamSeek::sk_buffer_absolute, seek);
 	stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
-	stream.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, new_seek);
+	stream.write_seek(spark::io::StreamSeek::sk_buffer_absolute, new_seek);
 }
 
 void write_resource_records(const Query& query, const Pointers& ptrs,

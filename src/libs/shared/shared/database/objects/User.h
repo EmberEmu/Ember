@@ -19,7 +19,9 @@
 namespace ember {
 
 enum class PINMethod {
-	NONE, FIXED, TOTP
+	none,
+	static_fixed,
+	totp
 };
 
 class User final {

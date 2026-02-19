@@ -18,14 +18,14 @@ auto Parser::extract_ip_pair(spark::io::pmr::BinaryStreamReader& stream) {
 	stream >> attr.family;
 	stream >> attr.port;
 
-	if(attr.family == AddressFamily::IPV4) {
-		attr.family = AddressFamily::IPV4;
+	if(attr.family == AddressFamily::ipv4) {
+		attr.family = AddressFamily::ipv4;
 		be::big_to_native_inplace(attr.port);
 		stream >> attr.ipv4;
 		be::big_to_native_inplace(attr.ipv4);
-	} else if(attr.family == AddressFamily::IPV6) {
-		if(mode_ == RFCMode::RFC3489) {
-			throw parse_error(Error::RESP_IPV6_NOT_VALID,
+	} else if(attr.family == AddressFamily::ipv6) {
+		if(mode_ == RFCMode::rfc3489) {
+			throw parse_error(Error::resp_ipv6_not_valid,
 				"IPV6 is not valid in this mode");
 		}
 
@@ -35,7 +35,7 @@ auto Parser::extract_ip_pair(spark::io::pmr::BinaryStreamReader& stream) {
 			be::big_to_native_inplace(bytes);
 		}
 	} else {
-		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,
+		throw parse_error(Error::resp_addr_fam_not_valid,
 			"Invalid address family");
 	}
 	
@@ -53,8 +53,8 @@ auto Parser::extract_ipv4_pair(spark::io::pmr::BinaryStreamReader& stream) {
 	stream >> attr.ipv4;
 	be::big_to_native_inplace(attr.ipv4);
 
-	if(attr.family != AddressFamily::IPV4) {
-		throw parse_error(Error::RESP_ADDR_FAM_NOT_VALID,
+	if(attr.family != AddressFamily::ipv4) {
+		throw parse_error(Error::resp_addr_fam_not_valid,
 			"Invalid address family");
 	}
 
@@ -65,7 +65,7 @@ template<typename T>
 auto Parser::extract_utf8_text(spark::io::pmr::BinaryStreamReader& stream, const std::size_t size) {
 	// UTF8 encoded sequence of less than 128 characters (which can be as long as 763 bytes)
 	if(size > 763) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BAD_SOFTWARE_ATTR);
+		logger_(Verbosity::debug, Error::resp_bad_software_attr);
 	}
 
 	T attr{};
@@ -80,7 +80,7 @@ auto Parser::extract_utf8_text(spark::io::pmr::BinaryStreamReader& stream, const
 		const auto skip_size = PADDING_ROUND - mod;
 
 		if(stream.size() < skip_size) {
-			throw parse_error(Error::BUFFER_PARSE_ERROR,
+			throw parse_error(Error::buffer_parse_error,
 				"Textual attribute was not padded correcly");
 		}
 

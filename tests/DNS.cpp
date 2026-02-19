@@ -43,7 +43,7 @@ TEST(DNSParser, FlagsEncode) {
 
 	const dns::Flags flags {
 		.qr = 1,
-		.opcode = dns::Opcode::IQUERY,
+		.opcode = dns::Opcode::iquery,
 		.aa = 1,
 		.tc = 0,
 		.rd = 1,
@@ -51,7 +51,7 @@ TEST(DNSParser, FlagsEncode) {
 		.z = 1,
 		.ad = 0,
 		.cd = 1,
-		.rcode = dns::ReplyCode::REFUSED
+		.rcode = dns::ReplyCode::refused
 	};
 	
 	const auto encoded = dns::parser::encode_flags(flags);
@@ -64,7 +64,7 @@ TEST(DNSParser, FlagsDecode) {
 	const std::uint16_t flags = 0b0101'1'0'1'0'1'0'1'0001'1;
 	const auto decoded = dns::parser::decode_flags(flags);
 	EXPECT_EQ(decoded.qr, 1);
-	EXPECT_EQ(decoded.opcode, dns::Opcode::IQUERY);
+	EXPECT_EQ(decoded.opcode, dns::Opcode::iquery);
 	EXPECT_EQ(decoded.aa, 1);
 	EXPECT_EQ(decoded.tc, 0);
 	EXPECT_EQ(decoded.rd, 1);
@@ -72,7 +72,7 @@ TEST(DNSParser, FlagsDecode) {
 	EXPECT_EQ(decoded.z, 1);
 	EXPECT_EQ(decoded.ad, 0);
 	EXPECT_EQ(decoded.cd, 1);
-	EXPECT_EQ(decoded.rcode, dns::ReplyCode::REFUSED);
+	EXPECT_EQ(decoded.rcode, dns::ReplyCode::refused);
 }
 
 // Generate a random set of flags and ensure the value can be decoded
@@ -97,20 +97,20 @@ TEST(DNSParser, DeserialiseQuery) {
 
 	// check question
 	EXPECT_EQ(result->questions[0].name, "_googlecast._tcp.local");
-	EXPECT_EQ(result->questions[0].cc, dns::Class::CLASS_IN);
-	EXPECT_EQ(result->questions[0].type, dns::RecordType::PTR);
+	EXPECT_EQ(result->questions[0].cc, dns::Class::class_in);
+	EXPECT_EQ(result->questions[0].type, dns::RecordType::ptr);
 }
 
 // intentionally don't pass enough data for a valid header
 TEST(DNSParser, Parser_HeaderBounds) {
 	constexpr std::array<std::uint8_t, DNS_HEADER_SIZE> header { 0 };
 	const auto result = dns::deserialise({ header.data(), header.size() - 1 });
-	EXPECT_EQ(result.error(), dns::parser::Result::HEADER_PARSE_ERROR);
+	EXPECT_EQ(result.error(), dns::parser::Result::header_parse_error);
 }
 
 // intentionally pass too much data for a valid payload
 TEST(DNSParser, Parser_PayloadBounds) {
 	constexpr std::array<std::uint8_t, DNS_MAX_PAYLOAD_SIZE + 1> payload { 0 };
 	const auto result = dns::deserialise(payload);
-	EXPECT_EQ(result.error(), dns::parser::Result::PAYLOAD_TOO_LARGE);
+	EXPECT_EQ(result.error(), dns::parser::Result::payload_too_large);
 }

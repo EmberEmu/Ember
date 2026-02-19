@@ -33,7 +33,7 @@ public:
 
 	SessionKey session_key(const Botan::BigInt& B,
 	                       std::span<const std::uint8_t> salt,
-	                       Compliance mode = Compliance::GAME,
+	                       Compliance mode = Compliance::game,
 	                       bool interleave_override = false) const;
 
 	Botan::BigInt generate_proof(const SessionKey& key,

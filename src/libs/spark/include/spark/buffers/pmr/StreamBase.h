@@ -30,12 +30,12 @@ protected:
 public:
 	explicit StreamBase(BufferBase& buffer)
 		: buffer_(buffer),
-		  state_(StreamState::OK),
+		  state_(StreamState::ok),
 		  allow_throw_(true) { }
 
 	explicit StreamBase(BufferBase& buffer, bool allow_throw)
 		: buffer_(buffer),
-		  state_(StreamState::OK),
+		  state_(StreamState::ok),
 		  allow_throw_(allow_throw) { }
 
 	std::size_t size() const {
@@ -52,7 +52,7 @@ public:
 	}
 
 	bool good() const {
-		return state() == StreamState::OK;
+		return state() == StreamState::ok;
 	}
 
 	operator bool() const {
@@ -60,11 +60,11 @@ public:
 	}
 
 	void set_error_state() {
-		set_state(StreamState::USER_DEFINED_ERR);
+		set_state(StreamState::user_defined_error);
 	}
 
 	void clear_error_state() {
-		set_state(StreamState::OK);
+		set_state(StreamState::ok);
 	}
 
 	virtual ~StreamBase() = default;
