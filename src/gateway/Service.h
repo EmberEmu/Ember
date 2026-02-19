@@ -35,7 +35,9 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger) : logger(logger) { }
+	explicit Service(log::Logger& logger)
+		: logger(logger) { }
+
 	~Service() { stop(); }
 
 	int run(const boost::program_options::variables_map& args);

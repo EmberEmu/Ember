@@ -18,15 +18,13 @@
 
 namespace ember::stun {
 
-StreamTransport::StreamTransport(std::string_view bind, std::chrono::milliseconds timeout)
-	: timeout_(timeout), 
+StreamTransport::StreamTransport(ba::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout)
+	: ctx_(ctx),
+	  timeout_(timeout), 
 	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
 	  resolver_(ctx_), 
 	  work_(boost::asio::make_work_guard(ctx_)) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
-	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &ctx_);
-	thread::set_name(worker_, "STUN TCP Worker");
 }
 
 StreamTransport::~StreamTransport() {

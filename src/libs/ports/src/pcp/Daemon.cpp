@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,10 +15,12 @@
 
 namespace ember::ports {
 
-Daemon::Daemon(Client& client, boost::asio::io_context& ctx)
-	: client_(client), timer_(ctx), strand_(ctx) {
-	daemon_epoch_ = std::chrono::steady_clock::now();
-
+Daemon::Daemon(Client& client, boost::asio::io_context& ctx, EventHandler&& handler)
+	: client_(client),
+	  timer_(ctx),
+	  strand_(ctx),
+	  daemon_callback_(handler),
+	  consecutive_failures_(0) {
 	client_.announce_handler(boost::asio::bind_executor(strand_, [&](std::uint32_t epoch) {
 		check_epoch(epoch);
 	}));
@@ -41,10 +43,10 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
 			const auto time_remaining = mapping.expiry - time;
 
 			if(time_remaining < 0s) {
-				handler_(Event::mapping_expired, mapping.request);
+				invoke_daemon_callback(Event::mapping_expired, mapping.request);
 			}
 
-			if(time_remaining < RENEW_WHEN_BELOW) {
+			if(time_remaining < renew_when_below) {
 				queue_.emplace_back(mapping);
 			}
 		}
@@ -61,7 +63,7 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
  * 
  * Calling it from within the renew handler is also fine, because it only continues
  * once the previously issued request has been finished
-
+ *
  *         ←←←←←←←←←←←←←←←
  *         ↓             ↑
  *         ↓          (empty)
@@ -76,7 +78,7 @@ void Daemon::process_queue() {
 	timer_.cancel();
 
 	if(queue_.empty()) {
-		start_renew_timer();
+		begin_timer();
 		return;
 	}
 
@@ -86,33 +88,70 @@ void Daemon::process_queue() {
 	mapping.handler = nullptr;
 }
 
+void Daemon::begin_timer() {
+	std::chrono::seconds nearest_expiry = timer_interval + renew_leeway;
+
+	// adjust the timer based on mappings' expiry times
+	for(const auto& mapping : mappings_) {
+		const auto time_remaining = std::chrono::duration_cast<std::chrono::seconds>(
+			mapping.expiry - std::chrono::steady_clock::now()
+		);
+
+		if(time_remaining < nearest_expiry) {
+			nearest_expiry = time_remaining;
+		}
+	}
+
+	if(nearest_expiry > renew_leeway) {
+		nearest_expiry -= renew_leeway;
+	} else {
+		nearest_expiry = 0s;
+	}
+
+	// Fire after the shortest remaining time, if sooner than we'd otherwise fire
+	start_renew_timer(nearest_expiry);
+}
+
 void Daemon::renew_mapping(const Mapping& mapping) {
-	client_.add_mapping(mapping.request, mapping.strict,
-		boost::asio::bind_executor(strand_, [&](const Result& result) mutable {
+	client_.add_mapping(mapping.request, mapping.strict,				
+	                    boost::asio::bind_executor(strand_, [&, mapping](const Result& result) {
+		last_received_time_ = std::chrono::steady_clock::now();
+
 		// we don't auto-delete the mapping if it fails because testing
 		// showed that it's possible to have transient errors,
 		// so we'll keep the entry and hope we have better luck next time
 		if(result) {
-			handler_(Event::renewed_mapping, mapping.request);
-			update_mapping(result);
+			if(result->lifetime) {
+				if(mapping.handler) {
+					invoke_daemon_callback(Event::added_mapping, *result);
+				} else {
+					invoke_daemon_callback(Event::renewed_mapping, *result);
+				}
+			} else {
+				invoke_daemon_callback(Event::deleted_mapping, *result);
+			}
+
+			update_mapping(result, mapping.request);
 			check_epoch(result->epoch);
 		} else {
-			handler_(Event::failed_to_renew, mapping.request);
+			if(mapping.handler) {
+				invoke_daemon_callback(Event::failed_to_renew, mapping.request);
+			} else {
+				invoke_daemon_callback(Event::failed_mapping, mapping.request);
+			}
 		}
 
 		if(mapping.handler) {
-			mapping.handler(mapping.request);
+			mapping.handler(result);
 		}
 
 		process_queue();
 	}));
 }
 
-void Daemon::update_mapping(const Result& result) {
+void Daemon::update_mapping(const Result& result, const MapRequest& request) {
 	for(auto& mapping : mappings_) {
 		if(mapping.request.internal_port == result->internal_port) {
-			mapping.request.external_port = result->external_port;
-			mapping.request.external_ip = result->external_ip;
 			const auto time = std::chrono::steady_clock::now();
 			mapping.expiry = time + std::chrono::seconds(result->lifetime);
 		}
@@ -136,27 +175,34 @@ void Daemon::check_epoch(std::uint32_t epoch) {
 	// if epoch is less than recorded time, gateway has (likely) dropped mappings
 	if(epoch < gateway_epoch_) {
 		gateway_epoch_ = epoch;
-		renew_mappings();
+
+		if(consecutive_failures_ <= max_consecutive_failures) {
+			renew_mappings();
+		}
+
 		return;
 	}
 
-	// does anybody actually like std::chrono?
-	const auto daemon_elapsed = std::chrono::duration_cast<std::chrono::seconds>(
-		std::chrono::steady_clock::now() - daemon_epoch_
+	const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+		std::chrono::steady_clock::now() - last_received_time_
 	);
 	
-	// RFC 6886 - 3.6.  Seconds Since Start of Epoch
-	const std::chrono::seconds gs {gateway_epoch_};
-	const auto expected_epoch = gs + (daemon_elapsed * 0.875);
-	const std::chrono::seconds es {epoch};
+	// RFC6886 - 3.6.  Seconds Since Start of Epoch
+	const auto expected_epoch = std::chrono::seconds(gateway_epoch_) + (elapsed * 0.875);
 	gateway_epoch_ = epoch;
 
-	if(es < (expected_epoch - 2s)) {
-		renew_mappings();
+	if(std::chrono::seconds(epoch) < (expected_epoch - 2s)) {
+		++consecutive_failures_;
+
+		if(consecutive_failures_ <= max_consecutive_failures) {
+			renew_mappings();
+		}
+	} else {
+		consecutive_failures_ = 0;
 	}
 }
 
-void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handler) {
+void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& callback) {
 	// If there's no ID set, we'll set our own and make sure we keep hold of it
 	// for refreshes (spec requires it to match OG request to refresh)
 	const auto it = std::ranges::find_if(request.nonce,
@@ -169,36 +215,32 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 		std::ranges::generate(request.nonce, std::ref(engine));
 	}
 
-	RequestHandler wrapped =
-		[&, strict, handler = std::move(handler)](const Result& result) {
+	RequestHandler wrapped = [&, strict, request, callback](const Result& result) {
 		if(result) {
 			const auto expiry = std::chrono::steady_clock::now()
 				+ std::chrono::seconds(result->lifetime);
 
 			Mapping mapping {
-				.request = {
-					.external_port = result->external_port,
-					.external_ip = result->external_ip,
-				},
+				.request = request,
 				.expiry = expiry,
 				.strict = strict,
 			};
 
-			handler_(Event::added_mapping, mapping.request);
+			mapping.request.external_ip = result.value().external_ip;
 			mappings_.emplace_back(std::move(mapping));
 			check_epoch(result->epoch);
 		}
 
-		handler(result);
+		callback(result);
 	};
 
-	Mapping mapping{
+	Mapping mapping {
 		.request = request,
 		.handler = std::move(wrapped)
 	};
 
-	boost::asio::post(strand_, [&, mapping = std::move(mapping)]() mutable {
-		queue_.emplace_front(std::move(mapping));
+	boost::asio::post(strand_, [&, mapping]() {
+		queue_.emplace_front(mapping);
 
 		if(state_ == State::timer_wait) {
 			start_renew_timer(0s);
@@ -206,10 +248,8 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 	});
 }
 
-void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
-							RequestHandler&& handler) {
-	RequestHandler wrapped = 
-		[&, handler = std::move(handler)](const Result& result) {
+void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol, RequestHandler&& handler) {
+	RequestHandler wrapped = [&, handler = std::move(handler)](const Result& result) {
 		if(result) {
 			boost::asio::dispatch(strand_, [&, r = result] {
 				erase_mapping(r);
@@ -224,7 +264,7 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 		.internal_port = internal_port,
 	};
 
-	Mapping mapping{
+	Mapping mapping {
 		.request = request,
 		.handler = std::move(wrapped)
 	};
@@ -257,12 +297,10 @@ void Daemon::erase_mapping(const Result& result) {
 	});
 }
 
-void Daemon::event_handler(EventHandler&& handler) {
-	if(!handler) {
-		throw std::invalid_argument("Handler cannot be null");
+void Daemon::invoke_daemon_callback(Event event, const MapRequest& request) {
+	if(daemon_callback_) {
+		daemon_callback_(event, request);
 	}
-
-	handler_ = std::move(handler);
 }
 
 } // ports, ember

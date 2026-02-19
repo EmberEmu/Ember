@@ -138,6 +138,12 @@ int launch(const po::variables_map& args, commands::Registry& registry, bool sha
 		LOG_INFO_SYNC(logger, "No services specified? Nothing to do, farewell.");
 	}
 
+	// explicitly join so we can cancel the signal afterwards
+	for(auto& threads : services) {
+		threads.join();
+	}
+
+	signals.cancel();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;

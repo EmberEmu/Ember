@@ -83,7 +83,6 @@ set(UTIL_SRC
     shared/utility/Clock.h
     shared/utility/StringHash.h
     shared/utility/STUN.h
-    shared/utility/PortForward.h
     shared/utility/polyfill/print
     shared/utility/polyfill/start_lifetime_as
     shared/utility/polyfill/inplace_vector

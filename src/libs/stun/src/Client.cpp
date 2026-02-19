@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Ember
+ * Copyright (c) 2023 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,8 +30,7 @@ namespace ember::stun {
 
 using namespace detail;
 
-Client::Client(const std::string& bind, std::string host, const std::uint16_t port,
-               Protocol proto, RFCMode mode)
+Client::Client(const std::string& bind, std::string host, const std::uint16_t port, Protocol proto, RFCMode mode)
 	: work_(boost::asio::make_work_guard(ctx_)),
 	  proto_(proto), 
 	  mode_(mode),
@@ -43,10 +42,10 @@ Client::Client(const std::string& bind, std::string host, const std::uint16_t po
 
 	switch(proto) {
 		case Protocol::tcp:
-			transport_ = std::make_unique<StreamTransport>(bind);
+			transport_ = std::make_unique<StreamTransport>(ctx_, bind);
 			break;
 		case Protocol::udp:
-			transport_ = std::make_unique<DatagramTransport>(bind);
+			transport_ = std::make_unique<DatagramTransport>(ctx_, bind);
 			break;
 	}
 

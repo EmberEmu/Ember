@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@ struct ErrorCode {
 	ErrorCode(decltype(val_) value) : val_(value) {}
 
 	explicit operator bool() {
-		return val_ == ErrorCode::success;
+		return val_ != ErrorCode::success;
 	}
 
 	friend std::ostream& operator<< (std::ostream& os, const ErrorCode& ec) {

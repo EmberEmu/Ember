@@ -7,6 +7,7 @@
 set(LIBRARY_NAME ports)
 
 add_library(${LIBRARY_NAME} STATIC
+    src/Forward.cpp
     src/pcp/Client.cpp
     src/pcp/DatagramTransport.cpp
     src/pcp/Daemon.cpp
@@ -18,6 +19,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/upnp/Utility.cpp
     src/upnp/SCPDXMLParser.cpp
     include/ports/Protocol.h
+    include/ports/Forward.h
     include/ports/pcp/Client.h
     include/ports/pcp/Results.h
     include/ports/pcp/Daemon.h
@@ -39,6 +41,6 @@ add_library(${LIBRARY_NAME} STATIC
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
-target_link_libraries(${LIBRARY_NAME} PUBLIC shared spark ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC shared logger spark ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

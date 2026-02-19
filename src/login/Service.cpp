@@ -23,6 +23,7 @@
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
+#include <ports/Forward.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/metrics/MetricsPoll.h>
@@ -37,7 +38,6 @@
 #include <shared/utility/Utility.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/STUN.h>
-#include <shared/utility/PortForward.h>
 #include <spark/Server.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
@@ -304,7 +304,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
 	
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
-	std::unique_ptr<utility::PortForward> forward;
+	std::unique_ptr<ports::Forward> forward;
 
 	if(stun_enabled) {
 		const auto result = stun_res.get();
@@ -318,17 +318,17 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 			} else {
 				const auto& mode_str = args["forward.method"].as<std::string>();
 				const auto& gateway = args["forward.gateway"].as<std::string>();
-				auto mode = utility::PortForward::Mode::auto_determine;
+				auto mode = ports::Forward::Method::auto_determine;
 
 				if(mode_str == "natpmp") {
-					mode = utility::PortForward::Mode::pmp_pcp;
+					mode = ports::Forward::Method::pmp_pcp;
 				} else if(mode_str == "upnp") {
-					mode = utility::PortForward::Mode::upnp;
+					mode = ports::Forward::Method::upnp;
 				} else if(mode_str != "auto") {
 					throw std::invalid_argument("Unknown port forwarding method");
 				}
 
-				forward = std::make_unique<utility::PortForward>(
+				forward = std::make_unique<ports::Forward>(
 					logger, service, mode, interface, gateway, port
 				);
 			}

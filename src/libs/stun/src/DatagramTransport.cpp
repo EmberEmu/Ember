@@ -16,17 +16,15 @@
 
 namespace ember::stun {
 
-DatagramTransport::DatagramTransport(std::string_view bind,
+DatagramTransport::DatagramTransport(ba::io_context& ctx,
+                                     std::string_view bind,
                                      std::chrono::milliseconds timeout,
                                      unsigned int retries)
-	: socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), 0)),
+	: ctx_(ctx),
+	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), 0)),
 	  timeout_(timeout),
 	  retries_(retries),
-	  resolver_(ctx_) {
-	worker_ = std::jthread(static_cast<size_t(ba::io_context::*)()>
-		(&ba::io_context::run), &ctx_);
-	thread::set_name(worker_, "STUN UDP Worker");
-
+	  resolver_(ctx_) {	
 	ba::post(ctx_, [&]() {
 		receive();
 	});
@@ -43,6 +41,7 @@ void DatagramTransport::connect(std::string_view host, const std::uint16_t port,
 		                        ba::ip::udp::resolver::results_type results) {
 			if(!ec) {
 				remote_ep_ = results.begin()->endpoint();
+
 			}
 
 			cb(ec);
