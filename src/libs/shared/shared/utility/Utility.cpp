@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,8 @@
 #include "Utility.h"
 #include <shared/CompilerWarn.h>
 #include <botan/bigint.h>
+#include <format>
+#include <cassert>
 
 #if defined __APPLE__
 	#include <TargetConditionals.h>
@@ -202,6 +204,23 @@ std::uint32_t to_u32bit(const Botan::BigInt& value) {
 	}
 
 	return out;
+}
+
+std::string time_duration_format(std::chrono::nanoseconds uptime) {
+	assert(uptime >= 0);
+
+	auto uptime_s = std::chrono::duration_cast<std::chrono::seconds>(uptime).count();
+
+	const auto days = uptime_s / (60 * 60 * 24);
+	uptime_s %= (60 * 60 * 24);
+	const auto hours = uptime_s / (60 * 60);
+	uptime_s %= (60 * 60);
+	const auto minutes = uptime_s / 60;
+	const auto seconds = uptime_s % 60;
+	
+	return std::format("{} day{}, {} hour{}, {} minute{}, {} second{}",
+		days, (days != 1)? "s" : "", hours, (hours != 1)? "s" : "",
+		minutes, (minutes != 1)? "s" : "", seconds, (seconds != 1)? "s" : "");
 }
 
 } // util, ember

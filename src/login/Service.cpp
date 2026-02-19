@@ -345,9 +345,19 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 				server.connection_count(), server.peak_connections());
 		});
 
+	cmd_register("uptime")
+		->description("Display service uptime")
+		->handler([&](auto& command) {
+			const auto uptime = std::chrono::steady_clock::now() - start_time;
+			LOG_CONSOLE_ASYNC(logger, "Server has been up for {}", utility::time_duration_format(uptime));
+		});
+
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
-		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+			std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::steady_clock::now() - start_time)
+		);
 	});
 	
 	stop_flag.acquire();

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "cstring_view.hpp"
+#include <chrono>
 #include <locale>
 #include <string>
 #include <string_view>
@@ -60,5 +61,7 @@ bool page_unlock(void* address, std::size_t length);
 
 // Botan's deprecated this, so just copying their implementation here
 std::uint32_t to_u32bit(const Botan::BigInt& value);
+
+std::string time_duration_format(std::chrono::nanoseconds uptime);
 
 } // util, ember

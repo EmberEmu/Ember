@@ -14,6 +14,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/asio/io_context.hpp>
+#include <chrono>
 #include <exception>
 #include <semaphore>
 
@@ -27,6 +28,7 @@ class Service {
 	log::Logger& logger;
 
 	commands::PrefixedRegistry& cmd_register;
+	std::chrono::steady_clock::time_point start_time;
 
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
@@ -35,7 +37,8 @@ public:
 
 	explicit Service(commands::PrefixedRegistry& cmd_register, log::Logger& logger)
 		: logger(logger),
-		  cmd_register(cmd_register) {}
+		  cmd_register(cmd_register),
+		  start_time(std::chrono::steady_clock::now()) {}
 
 	~Service() {
 		stop();

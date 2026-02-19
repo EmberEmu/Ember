@@ -13,6 +13,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <exception>
+#include <chrono>
 #include <semaphore>
 
 namespace ember {
@@ -29,6 +30,7 @@ class Service {
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
 	log::Logger& logger;
+	std::chrono::steady_clock::time_point start_time;
 
 	void launch(const boost::program_options::variables_map& args, ServicePool& service_pool);
 
@@ -36,7 +38,8 @@ public:
 	static boost::program_options::options_description options();
 
 	explicit Service(log::Logger& logger)
-		: logger(logger) { }
+		: logger(logger),
+		  start_time(std::chrono::steady_clock::now()) { }
 
 	~Service() { stop(); }
 
