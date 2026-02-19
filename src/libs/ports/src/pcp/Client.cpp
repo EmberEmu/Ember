@@ -620,13 +620,13 @@ void Client::add_mapping(const MapRequest& mapping, bool strict, RequestHandler 
 		return;
 	}
 
-	const auto res = add_mapping_pcp(mapping, strict);
+	const auto error_code = add_mapping_pcp(mapping, strict);
 
-	if(res == ErrorCode::success) {
+	if(error_code == ErrorCode::success) {
 		states_.push(State::await_map_result_pcp);
 		handlers_.emplace(std::move(handler));
 	} else {
-		handler(std::unexpected(res));
+		handler(std::unexpected(error_code));
 	}
 }
 
@@ -659,13 +659,13 @@ void Client::delete_all(Protocol protocol, RequestHandler handler) {
 
 	// PCP seems to provide no way to request deletion of all mappings
 	// Tested PCP hardware did not accept the same technique as NAT-PMP
-	const auto res = add_mapping_natpmp(request);
+	const auto error_code = add_mapping_natpmp(request);
 
-	if(res == ErrorCode::success) {
+	if(error_code == ErrorCode::success) {
 		states_.emplace(State::await_map_result_natpmp);
 		handlers_.emplace(std::move(handler));
 	} else {
-		handler(std::unexpected(res));
+		handler(std::unexpected(error_code));
 	}
 }
 
@@ -676,13 +676,13 @@ void Client::external_address(RequestHandler handler) {
 		handler(std::unexpected(ErrorCode::resolve_failure));
 	}
 
-	const auto res = get_external_address_pcp();
+	const auto error_code = get_external_address_pcp();
 
-	if(res == ErrorCode::success) {
+	if(error_code == ErrorCode::success) {
 		states_.emplace(State::await_external_address_pcp);
 		handlers_.emplace(std::move(handler));
 	} else {
-		handler(std::unexpected(res));
+		handler(std::unexpected(error_code));
 	}
 }
 

@@ -25,11 +25,10 @@ using namespace std::chrono_literals;
 class DatagramTransport final : public Transport {
 	static const std::size_t INITIAL_RECV_BUFFER_SIZE = 2048;
 
-	mutable ba::io_context ctx_;
+	ba::io_context& ctx_;
 	ba::ip::udp::socket socket_;
 	ba::ip::udp::endpoint ep_;
 	ba::ip::udp::endpoint remote_ep_;
-	std::jthread worker_;
 
 	const std::chrono::milliseconds timeout_;
 	const unsigned int retries_;
@@ -42,7 +41,7 @@ class DatagramTransport final : public Transport {
 	void do_write();
 
 public:
-	DatagramTransport(std::string_view bind, std::chrono::milliseconds timeout = 500ms,
+	DatagramTransport(ba::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout = 500ms,
 	                  unsigned int retries = 7);
 	~DatagramTransport() override;
 

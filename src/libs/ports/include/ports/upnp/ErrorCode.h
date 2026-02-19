@@ -30,7 +30,7 @@ struct ErrorCode {
 	ErrorCode(decltype(val_) value) : val_(value) {}
 
 	explicit operator bool() {
-		return val_ == ErrorCode::success;
+		return val_ != ErrorCode::success;
 	}
 
 	friend std::ostream& operator<< (std::ostream& os, const ErrorCode& ec) {

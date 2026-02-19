@@ -72,7 +72,11 @@ int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register,
 
 	login::Service service(cmd_register, logger);
 
-	signals.async_wait([&](auto error, auto signal) {
+	signals.async_wait([&](auto ec, auto signal) {
+		if(ec) {
+			return;
+		}
+
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		signals.clear();
 		service.stop();
@@ -83,7 +87,9 @@ int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register,
 		io_ctx.run_one();
 	});
 
-	return service.run(args);
+	const auto ret =  service.run(args);
+	signals.cancel();
+	return ret;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;

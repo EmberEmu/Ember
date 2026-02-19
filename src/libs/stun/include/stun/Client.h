@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Ember
+ * Copyright (c) 2023 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,8 +45,8 @@ class Client final {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
 	const int MAX_REDIRECTS = 5;
 
-	std::jthread worker_;
 	boost::asio::io_context ctx_;
+	std::jthread worker_;
 	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 
 	Protocol proto_;

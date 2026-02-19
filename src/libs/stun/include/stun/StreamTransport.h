@@ -29,10 +29,9 @@ class StreamTransport final : public Transport {
 		READ_HEADER, READ_BODY, READ_DONE
 	} state_ = ReadState::READ_HEADER;
 
-	ba::io_context ctx_;
+	ba::io_context& ctx_;
 	ba::ip::tcp::socket socket_;
 	ba::ip::tcp::resolver resolver_;
-	std::jthread worker_;
 	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 
 	std::vector<std::uint8_t> buffer_;
@@ -46,7 +45,7 @@ class StreamTransport final : public Transport {
 	void do_connect(ba::ip::tcp::resolver::results_type results, OnConnect&& cb);
 
 public:
-	StreamTransport(std::string_view bind, std::chrono::milliseconds timeout = 39500ms);
+	StreamTransport(ba::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout = 39500ms);
 	~StreamTransport();
 
 	void connect(std::string_view host, std::uint16_t port, OnConnect&& cb) override;

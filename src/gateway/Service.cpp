@@ -22,6 +22,7 @@
 #include <dbcreader/Reader.h>
 #include <logger/Logger.h>
 #include <nsd/NSD.h>
+#include <ports/Forward.h>
 #include <spark/Server.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -32,7 +33,6 @@
 #include <shared/utility/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/STUN.h>
-#include <shared/utility/PortForward.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
@@ -105,7 +105,6 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
-
 	print_lib_versions(logger);
 
 	auto stun = create_stun_client(args);
@@ -190,9 +189,11 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	}
 
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
-	std::unique_ptr<utility::PortForward> forward;
+	std::unique_ptr<ports::Forward> forward;
 
 	if(stun_enabled) {
+		LOG_INFO_SYNC(logger, "Waiting on STUN result...");
+
 		const auto result = stun_res.get();
 		log_stun_result(stun, result, port, logger);
 
@@ -209,17 +210,17 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 			} else {
 				const auto& mode_str = args["forward.method"].as<std::string>();
 				const auto& gateway = args["forward.gateway"].as<std::string>();
-				auto mode = utility::PortForward::Mode::auto_determine;
+				auto mode = ports::Forward::Method::auto_determine;
 
 				if(mode_str == "natpmp") {
-					mode = utility::PortForward::Mode::pmp_pcp;
+					mode = ports::Forward::Method::pmp_pcp;
 				} else if(mode_str == "upnp") {
-					mode = utility::PortForward::Mode::upnp;
+					mode = ports::Forward::Method::upnp;
 				} else if(mode_str != "auto") {
 					throw std::invalid_argument("Unknown port forwarding method");
 				}
 
-				forward = std::make_unique<utility::PortForward>(
+				forward = std::make_unique<ports::Forward>(
 					logger, service, mode, interface, gateway, port
 				);
 			}
