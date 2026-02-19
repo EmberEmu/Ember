@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -68,7 +68,7 @@ void Client::handle_connection_error() {
 	}
 
 	states_ = {};
-	state_ = State::idle;
+	state_ = State::errored;
 }
 
 ErrorCode Client::handle_pmp_to_pcp_error(std::span<const std::uint8_t> buffer) try {
@@ -403,6 +403,10 @@ void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const i
 	timer_.expires_after(timeout);
 	timer_.async_wait(boost::asio::bind_executor(strand_, [&, timeout, retries](const boost::system::error_code& ec) {
 		if(ec) {
+			return;
+		}
+
+		if(state_ == State::errored) {
 			return;
 		}
 

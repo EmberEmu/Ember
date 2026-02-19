@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -47,6 +47,7 @@ private:
 		await_map_result_natpmp,
 		await_external_address_pcp,
 		await_external_address_natpmp,
+		errored
 	};
 
 	ba::io_context& ctx_;
