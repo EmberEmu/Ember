@@ -74,11 +74,6 @@ constexpr std::size_t WORKER_NUM_HINT = 32;
 
 namespace ember::login {
 
-void launch(const po::variables_map& args,
-            boost::asio::io_context& service,
-            std::binary_semaphore& sem,
-            log::Logger& logger);
-
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 void print_lib_versions(log::Logger& logger);
 std::vector<GameVersion> client_versions();
