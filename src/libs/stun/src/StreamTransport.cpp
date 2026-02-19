@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -66,7 +66,7 @@ void StreamTransport::do_write() {
 	queue_.pop();
 
 	ba::async_write(socket_, boost::asio::buffer(*data),
-		[this, d = std::move(data)](boost::system::error_code ec, std::size_t /*sent*/) {
+		[this, d = data](boost::system::error_code ec, std::size_t /*sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
 			} else if(ec) {

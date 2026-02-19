@@ -55,8 +55,7 @@ void DatagramTransport::do_write() {
 	queue_.pop();
 
 	socket_.async_send_to(ba::buffer(*datagram), remote_ep_,
-		[this, dg = std::move(datagram)](boost::system::error_code ec,
-		                                 std::size_t /*bytes_sent*/) {
+		[this, dg = datagram](boost::system::error_code ec, std::size_t /*bytes_sent*/) {
 			if(ec == ba::error::operation_aborted) {
 				return;
 			} else if(ec) {
