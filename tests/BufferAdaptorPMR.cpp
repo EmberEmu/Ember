@@ -123,7 +123,7 @@ TEST(BufferAdaptorPMR, WriteSeekBack) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
-	adaptor.write_seek(spark::io::BufferSeek::SK_BACKWARD, 2);
+	adaptor.write_seek(spark::io::BufferSeek::sk_backward, 2);
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), 4);
 	ASSERT_EQ(adaptor.size(), buffer.size());
@@ -135,7 +135,7 @@ TEST(BufferAdaptorPMR, WriteSeekStart) {
 	std::vector<std::uint8_t> buffer { 1, 2, 3 };
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	std::array<std::uint8_t, 3> values { 4, 5, 6 };
-	adaptor.write_seek(spark::io::BufferSeek::SK_ABSOLUTE, 0);
+	adaptor.write_seek(spark::io::BufferSeek::sk_absolute, 0);
 	adaptor.write(values.data(), values.size());
 	ASSERT_EQ(buffer.size(), values.size());
 	ASSERT_EQ(adaptor.size(), buffer.size());

@@ -22,10 +22,11 @@ namespace ember::grunt::client {
 
 class ReconnectProof final : public Packet {
 	static const std::size_t WIRE_LENGTH = 58;
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 public:
-	ReconnectProof() : Packet(Opcode::CMD_AUTH_RECONNECT_PROOF) {}
+	ReconnectProof()
+		: Packet(Opcode::cmd_auth_reconnect_proof) {}
 
 	std::array<std::uint8_t, 16> salt;
 	std::array<std::uint8_t, 20> proof;
@@ -34,10 +35,10 @@ public:
 	std::vector<KeyData> keys;
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+			return State::call_again;
 		}
 
 		stream >> opcode;
@@ -47,7 +48,7 @@ public:
 		stream >> key_count;
 		// todo, read key data here
 
-		return (state_ = State::DONE);
+		return (state_ = State::done);
 	}
 
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {

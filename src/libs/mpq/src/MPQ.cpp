@@ -25,22 +25,22 @@ LocateResult archive_offset(std::ifstream& stream, const std::uintmax_t size) {
 	std::array<std::uint32_t, 1> magic{};
 	auto buffer = std::as_writable_bytes(std::span(magic));
 
-	for(std::uintptr_t i = 0; i < (size - buffer.size_bytes()); i += HEADER_ALIGNMENT) {
+	for(std::uintptr_t i = 0; i < (size - buffer.size_bytes()); i += header_alignment) {
 		stream.seekg(i);
 
 		if(!stream) {
-			return std::unexpected(ErrorCode::FILE_READ_FAILED);
+			return std::unexpected(ErrorCode::file_read_failed);
 		}
 
 		stream.read(reinterpret_cast<char*>(buffer.data()), buffer.size_bytes());
 
 		if(!stream) {
-			return std::unexpected(ErrorCode::FILE_READ_FAILED);
+			return std::unexpected(ErrorCode::file_read_failed);
 		}
 
 		boost::endian::big_to_native_inplace(magic[0]);
 
-		if(magic[0] == MPQA_FOURCC) {
+		if(magic[0] == mpqa_fourcc) {
 			return i;
 		}
 	}
@@ -51,11 +51,11 @@ LocateResult archive_offset(std::ifstream& stream, const std::uintmax_t size) {
 std::uintptr_t archive_offset(std::span<const std::byte> buffer) {
 	std::uint32_t magic{};
 
-	for(std::uintptr_t i = 0; i < buffer.size() - sizeof(magic); i += HEADER_ALIGNMENT) {
+	for(std::uintptr_t i = 0; i < buffer.size() - sizeof(magic); i += header_alignment) {
 		std::memcpy(&magic, &buffer[i], sizeof(magic));
 		boost::endian::big_to_native_inplace(magic);
 
-		if(magic == MPQA_FOURCC) {
+		if(magic == mpqa_fourcc) {
 			return i;
 		}
 	}
@@ -65,44 +65,44 @@ std::uintptr_t archive_offset(std::span<const std::byte> buffer) {
 
 LocateResult locate_archive(const std::filesystem::path& path) try {
 	if(!std::filesystem::exists(path)) {
-		return std::unexpected(ErrorCode::FILE_NOT_FOUND);
+		return std::unexpected(ErrorCode::file_not_found);
 	}
 
 	std::error_code ec;
 	const auto size = std::filesystem::file_size(path, ec);
 
 	if(ec) {
-		return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
+		return std::unexpected(ErrorCode::unable_to_open);
 	}
 
 	std::ifstream stream(path, std::ios::binary | std::ios::in);
 	
 	if(!stream) {
-		return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
+		return std::unexpected(ErrorCode::unable_to_open);
 	}
 
 	const auto offset = archive_offset(stream, size);
 
 	if(offset == npos) {
-		return std::unexpected(ErrorCode::NO_ARCHIVE_FOUND);
+		return std::unexpected(ErrorCode::no_archive_found);
 	}
 
 	return offset;
 } catch(const std::exception&) {
-	return std::unexpected(ErrorCode::UNABLE_TO_OPEN);
+	return std::unexpected(ErrorCode::unable_to_open);
 }
 
 LocateResult locate_archive(std::span<const std::byte> buffer) {
 	const auto address = std::bit_cast<std::uintptr_t>(buffer.data());
 
 	if(address % alignof(v0::Header)) {
-		return std::unexpected(ErrorCode::BAD_ALIGNMENT);
+		return std::unexpected(ErrorCode::bad_alignment);
 	}
 
 	const auto offset = archive_offset(buffer);
 
 	if(offset == npos) {
-		return std::unexpected(ErrorCode::NO_ARCHIVE_FOUND);
+		return std::unexpected(ErrorCode::no_archive_found);
 	}
 
 	return offset;
@@ -172,24 +172,24 @@ std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data,
 }
 
 bool validate_header(const v0::Header& header) {
-	if(boost::endian::native_to_big(header.magic) != MPQA_FOURCC) {
+	if(boost::endian::native_to_big(header.magic) != mpqa_fourcc) {
 		return false;
 	}
 
 	if(header.format_version == 0) {
-		if(header.header_size != HEADER_SIZE_V0) {
+		if(header.header_size != header_size_v0) {
 			return false;
 		}
 	} else if(header.format_version == 1) {
-		if(header.header_size != HEADER_SIZE_V1) {
+		if(header.header_size != header_size_v1) {
 			return false;
 		}
 	} else if(header.format_version == 2) {
-		if(header.header_size >= HEADER_SIZE_V2) {
+		if(header.header_size >= header_size_v2) {
 			return false;
 		}
 	} else if(header.format_version == 3) {
-		if(header.header_size != HEADER_SIZE_V3) {
+		if(header.header_size != header_size_v3) {
 			return false;
 		}
 	} else {

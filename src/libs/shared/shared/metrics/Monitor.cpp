@@ -98,7 +98,7 @@ void Monitor::execute_source(Source& source, Severity severity, const LogCallbac
 		++counters_[severity];
 	} else if(!trigger && source.triggered) { // Well, no, it's well within acceptable bounds again.
 		source.triggered = false;
-		log(source, Severity::INFO, value);
+		log(source, Severity::info, value);
 		--counters_[severity];
 	}
 }
@@ -114,9 +114,9 @@ std::string Monitor::generate_message() const {
 
 	message << "Status: ";
 
-	if(has_severity(Severity::FATAL) || has_severity(Severity::ERROR)) {
+	if(has_severity(Severity::fatal) || has_severity(Severity::error)) {
 		message << "ERROR; ";
-	} else if(has_severity(Severity::WARN)) {
+	} else if(has_severity(Severity::warn)) {
 		message << "WARNING; ";
 	} else {
 		message << "OK; ";

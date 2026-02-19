@@ -33,7 +33,7 @@ using event_handler = void(*)(ClientContext&, const Event*);
 using packet_handler = void(*)(ClientContext&, protocol::ClientOpcode);
 
 template<typename T>
-using JumpTable = std::array<T, STATES_NUM>;
+using JumpTable = std::array<T, states_num>;
 
 constexpr JumpTable<event_handler> update_event {
 	&authentication::handle_event,

@@ -30,7 +30,7 @@ Header MessageBuilder::build_header(const MessageType type, const RFCMode mode) 
 	header.type = std::to_underlying(type);
 	header.length = 0;
 
-	if(mode != RFC3489) {
+	if(mode != rfc3489) {
 		header.cookie = MAGIC_COOKIE;
 	}
 
@@ -79,7 +79,7 @@ void MessageBuilder::write_header(Header& header) {
 template<typename T>
 void MessageBuilder::add_textual(Attributes attr, std::span<const T> value) {
 	if(value.size_bytes() > 763) {
-		throw exception(Error::BAD_ATTRIBUTE_DATA,
+		throw exception(Error::bad_attribute_data,
 			"Data size exceeded maximum allowed for this attribute");
 	}
 
@@ -97,7 +97,7 @@ void MessageBuilder::add_textual(Attributes attr, std::span<const T> value) {
 }
 
 void MessageBuilder::add_software(std::string_view value) {
-	add_textual<const char>(Attributes::SOFTWARE, value);
+	add_textual<const char>(Attributes::software, value);
 }
 
 void MessageBuilder::add_change_request(const bool ip, const bool port) {
@@ -105,13 +105,13 @@ void MessageBuilder::add_change_request(const bool ip, const bool port) {
 	value |= ip? CHANGE_IP_MASK : 0;
 	value |= port? CHANGE_PORT_MASK : 0;
 
-	stream_ << attr_be(Attributes::CHANGE_REQUEST);
+	stream_ << attr_be(Attributes::change_request);
 	stream_ << len_be(CHANGE_REQUEST_BODY_LEN);
 	stream_ << be::big_uint32_t(value);
 }
 
 void MessageBuilder::add_response_port(std::uint16_t port) {
-	stream_ << attr_be(Attributes::RESPONSE_PORT);
+	stream_ << attr_be(Attributes::response_port);
 	stream_ << len_be(RESPONSE_PORT_BODY_LEN);
 	stream_ << be::big_uint16_t(port);
 	write_padding(2);
@@ -120,21 +120,21 @@ void MessageBuilder::add_response_port(std::uint16_t port) {
 void MessageBuilder::set_header_length(const std::uint16_t length) {
 	assert(stream_.can_write_seek());
 	const auto pos = stream_.size();
-	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, HEADER_LEN_OFFSET);
+	stream_.write_seek(spark::io::StreamSeek::sk_buffer_absolute, HEADER_LEN_OFFSET);
 	stream_ << len_be(length);
-	stream_.write_seek(spark::io::StreamSeek::SK_BUFFER_ABSOLUTE, pos);
+	stream_.write_seek(spark::io::StreamSeek::sk_buffer_absolute, pos);
 }
 
 void MessageBuilder::add_fingerprint() {
 	set_header_length(read_header(buffer_).length + 8);
 	const auto fp = fingerprint(buffer_, false);
-	stream_ << attr_be(Attributes::FINGERPRINT);
+	stream_ << attr_be(Attributes::fingerprint);
 	stream_ << len_be(FINGERPRINT_BODY_LEN);
 	stream_ << be::big_uint32_t(fp);
 }
 
 void MessageBuilder::add_message_integrity(std::span<const std::uint8_t> hash) {
-	stream_ << attr_be(Attributes::MESSAGE_INTEGRITY);
+	stream_ << attr_be(Attributes::message_integrity);
 	stream_ << len_be(hash.size());
 	stream_.put(hash.begin(), hash.end());
 };

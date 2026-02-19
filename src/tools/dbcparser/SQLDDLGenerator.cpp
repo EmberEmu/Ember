@@ -109,7 +109,7 @@ public:
 				throw std::runtime_error("Unable to locate type base");
 			}
 
-			if(found->type == types::Type::STRUCT) {
+			if(found->type == types::Type::t_struct) {
 				if(components.second) {
 					for(auto i = 0u; i < *components.second; ++i) {
 						suffix_ = std::to_string(i);
@@ -120,7 +120,7 @@ public:
 				} else {
 					visit(static_cast<const types::Struct*>(found), field);
 				}
-			} else if(found->type == types::Type::ENUM) {
+			} else if(found->type == types::Type::t_enum) {
 				const auto type = static_cast<const types::Enum*>(found);
 				auto i = 0u;
 
@@ -177,7 +177,7 @@ void generate_sql_ddl(const types::Definitions& defs, const std::string& out_pat
 	}
 	
 	for(const auto& def : defs) {
-		if(def->type != types::Type::STRUCT) {
+		if(def->type != types::Type::t_struct) {
 			continue;
 		}
 

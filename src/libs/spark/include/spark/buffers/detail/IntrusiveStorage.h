@@ -106,13 +106,13 @@ struct IntrusiveStorage final {
 
 	void write_seek(const BufferSeek direction, const std::size_t offset) {
 		switch(direction) {
-			case BufferSeek::SK_ABSOLUTE:
+			case BufferSeek::sk_absolute:
 				write_offset = offset;
 				break;
-			case BufferSeek::SK_BACKWARD:
+			case BufferSeek::sk_backward:
 				write_offset -= static_cast<offset_type>(offset);
 				break;
-			case BufferSeek::SK_FORWARD:
+			case BufferSeek::sk_forward:
 				write_offset += static_cast<offset_type>(offset);
 				break;
 		}

@@ -52,7 +52,7 @@ public:
 	MemoryArchive(std::span<std::byte> buffer);
 
 	int version() const override;
-	Backing backing() const override { return Backing::MEMORY; }
+	Backing backing() const override { return Backing::memory; }
 	std::span<const BlockTableEntry> block_table() const override;
 	std::span<const HashTableEntry> hash_table() const override;
 	std::size_t file_lookup(std::string_view name, const std::uint16_t locale) const override;

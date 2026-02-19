@@ -28,7 +28,7 @@ class RealmList final : public Packet {
 	static const std::size_t WIRE_LENGTH = 3; // header size 
 	static const std::size_t DEFAULT_REALMS = 10u;
 
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 	be::little_uint16_t size = 0;
 	be::little_uint8_t realm_count = 0;
 
@@ -36,7 +36,7 @@ class RealmList final : public Packet {
 		stream >> opcode;
 		stream >> size;
 
-		state_ = State::CALL_AGAIN;
+		state_ = State::call_again;
 	}
 
 	void parse_body(spark::io::pmr::BinaryStream& stream) {
@@ -72,7 +72,7 @@ class RealmList final : public Packet {
 
 		stream >> unknown2;
 
-		state_ = State::DONE;
+		state_ = State::done;
 	}
 
 public:
@@ -81,24 +81,25 @@ public:
 		std::uint32_t characters;
 	};
 
-	RealmList() : Packet(Opcode::CMD_REALM_LIST) {}
+	RealmList()
+		: Packet(Opcode::cmd_realm_list) {}
 
 	be::little_uint32_t unknown = 0; // appears to be ignored in public clients
 	boost::container::small_vector<RealmListEntry, DEFAULT_REALMS> realms;
 	be::little_uint16_t unknown2 = 5; // appears to be ignored in public clients
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+			return State::call_again;
 		}
 
 		switch(state_) {
-			case State::INITIAL:
+			case State::initial:
 				read_size(stream);
 				[[fallthrough]];
-			case State::CALL_AGAIN:
+			case State::call_again:
 				parse_body(stream);
 				break;
 			default:
@@ -135,9 +136,9 @@ public:
 		stream << opcode;
 		stream << std::uint16_t(0); // write placeholder size
 		const auto write_len = write_body(stream);
-		stream.write_seek(spark::io::StreamSeek::SK_BACKWARD, write_len + 2);
+		stream.write_seek(spark::io::StreamSeek::sk_backward, write_len + 2);
 		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_len)); // overwrite size
-		stream.write_seek(spark::io::StreamSeek::SK_FORWARD, write_len);
+		stream.write_seek(spark::io::StreamSeek::sk_forward, write_len);
 	}
 };
 

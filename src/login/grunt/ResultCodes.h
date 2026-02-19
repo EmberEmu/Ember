@@ -14,23 +14,23 @@
 namespace ember::grunt {
 
 smart_enum_class(Result, std::uint8_t,
-	SUCCESS                     = 0x00,
-	FAIL_UNKNOWN0               = 0x01, 
-	FAIL_UNKNOWN1               = 0x02,
-	FAIL_BANNED                 = 0x03,
-	FAIL_UNKNOWN_ACCOUNT        = 0x04,
-	FAIL_INCORRECT_PASSWORD     = 0x05,
-	FAIL_ALREADY_ONLINE         = 0x06,
-	FAIL_NO_TIME                = 0x07,
-	FAIL_DB_BUSY                = 0x08,
-	FAIL_VERSION_INVALID        = 0x09, 
-	FAIL_VERSION_UPDATE         = 0x0A,
-	FAIL_INVALID_SERVER         = 0x0B,
-	FAIL_SUSPENDED              = 0x0C,
-	FAIL_NOACCESS               = 0x0D,
-	SUCCESS_SURVEY              = 0x0E,
-	FAIL_PARENTAL_CONTROL       = 0x0F,
-	FAIL_OTHER                  = 0XFF
+	success                     = 0x00,
+	fail_unknown0               = 0x01, 
+	fail_unknown1               = 0x02,
+	fail_banned                 = 0x03,
+	fail_unknown_account        = 0x04,
+	fail_incorrect_password     = 0x05,
+	fail_already_online         = 0x06,
+	fail_no_time                = 0x07,
+	fail_db_busy                = 0x08,
+	fail_version_invalid        = 0x09, 
+	fail_version_update         = 0x0a,
+	fail_invalid_server         = 0x0b,
+	fail_suspended              = 0x0c,
+	fail_noaccess               = 0x0d,
+	success_survey              = 0x0e,
+	fail_parental_control       = 0x0f,
+	fail_other                  = 0xff
 )
 
 } // grunt, ember

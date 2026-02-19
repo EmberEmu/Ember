@@ -11,27 +11,27 @@
 namespace ember {
 
 enum class LoginState {
-	CHALLENGE,
-	PROOF,
-	RECONNECT_PROOF,
-	REQUEST_REALMS,
+	challenge,
+	proof,
+	reconnect_proof,
+	request_realms,
 
-	SURVEY_INITIATE,
-	SURVEY_TRANSFER,
-	SURVEY_RESULT,
+	survey_initiate,
+	survey_transfer,
+	survey_result,
 
-	PATCH_INITIATE,
-	PATCH_TRANSFER,
+	patch_initiate,
+	patch_transfer,
 
-	FETCHING_USER_LOGIN,
-	FETCHING_USER_RECONNECT,
-	FETCHING_SESSION,
-	FETCHING_CHARACTER_DATA,
+	fetching_user_login,
+	fetching_user_reconnect,
+	fetching_session,
+	fetching_character_data,
 
-	WRITING_SESSION,
-	WRITING_SURVEY,
+	writing_session,
+	writing_survey,
 
-	CLOSED
+	closed
 };
 
 } // ember

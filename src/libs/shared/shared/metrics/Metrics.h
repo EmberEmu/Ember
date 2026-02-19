@@ -16,11 +16,15 @@ namespace ember {
 
 class Metrics {
 public:
-	enum class Adjustment { NONE, POSITIVE, NEGATIVE };
+	enum class Adjustment {
+		none, 
+		positive,
+		negative
+	};
 
 	virtual void increment(const char* key, std::intmax_t value = 1) { }
 	virtual void timing(const char* key, const std::chrono::milliseconds& value) { }
-	virtual void gauge(const char* key, std::uintmax_t value, Adjustment adjustment = Adjustment::NONE) { }
+	virtual void gauge(const char* key, std::uintmax_t value, Adjustment adjustment = Adjustment::none) { }
 	virtual void set(const char* key, std::intmax_t value) { }
 	virtual ~Metrics() = default;
 };

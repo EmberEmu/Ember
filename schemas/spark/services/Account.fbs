@@ -9,21 +9,21 @@
 namespace ember.rpc.Account;
 
 enum DisconnectReason : ubyte {
-	INTERNAL_ERROR,
-	ACCOUNT_SUSPENDED,
-	ACCOUNT_BANNED,
-	PLAYER_KICKED
+	internal_error,
+	account_suspended,
+	account_banned,
+	player_kicked
 }
 
 enum Status : ubyte {
-	UNKNOWN_STATUS,
-	OK,
-	RPC_ERROR,
-	ILLFORMED_MESSAGE,
-	ALREADY_LOGGED_IN,
-	SESSION_NOT_FOUND,
-	ACCOUNT_NOT_FOUND,
-	UNKNOWN_ERROR
+	unknown_status,
+	ok,
+	rpc_error,
+	illformed_message,
+	already_logged_in,
+	session_not_found,
+	account_not_found,
+	unknown_error
 }
 
 table LookupID {

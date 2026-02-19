@@ -65,7 +65,7 @@ void handle_authentication(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	// prevent repeated auth attempts
-	if(auth_state(ctx) != State::NOT_AUTHED) {
+	if(auth_state(ctx) != State::not_authed) {
 		return;
 	}
 
@@ -84,7 +84,7 @@ void handle_authentication(ClientContext& ctx) {
 		// todo - check game build & server ID
 	}
 
-	auth_state(ctx, State::IN_PROGRESS);
+	auth_state(ctx, State::in_progress);
 	fetch_account_id(ctx, auth_ctx.packet->username);
 }
 
@@ -104,13 +104,13 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 	
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(event->status != rpc::Account::Status::OK) {
+	if(event->status != rpc::Account::Status::ok) {
 		CLIENT_ERROR(ctx.logger, ctx)
 			<< "Account server returned "
 			<< utility::fb_status(event->status, rpc::Account::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
 
-		auth_state(ctx, State::FAILED);
+		auth_state(ctx, State::failed);
 		ctx.handler.close();
 		return;
 	}
@@ -122,7 +122,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 		CLIENT_DEBUG(ctx.logger, ctx)
 			<< "Account ID lookup for failed for "
 			<< auth_ctx.packet->username << LOG_ASYNC;
-		auth_state(ctx, State::FAILED);
+		auth_state(ctx, State::failed);
 		ctx.handler.close();
 	}
 }
@@ -146,10 +146,10 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
 		<< utility::fb_status(event->status, rpc::Account::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
 
-	if(event->status == rpc::Account::Status::OK) {
+	if(event->status == rpc::Account::Status::ok) {
 		prove_session(ctx, event->key);
 	} else {
-		auth_state(ctx, State::FAILED);
+		auth_state(ctx, State::failed);
 		ctx.handler.close();
 	}
 }
@@ -182,7 +182,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	if(hash != packet->digest) {
 		CLIENT_DEBUG(ctx.logger, ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
-		auth_state(ctx, State::FAILED);
+		auth_state(ctx, State::failed);
 		ctx.handler.close(); // key mismatch, client can't decrypt response
 		return;
 	}
@@ -205,7 +205,7 @@ void send_auth_challenge(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
-	protocol::SMSG_AUTH_CHALLENGE response;
+	protocol::smsg_auth_challenge response;
 	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
 	ctx.connection.send(response);
 }
@@ -215,7 +215,7 @@ void send_addon_data(ClientContext& ctx) {
 
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	const auto& addons = auth_ctx.packet->addons;
-	protocol::SMSG_ADDON_INFO response;
+	protocol::smsg_addon_info response;
 
 	// todo, use AddonData.dbc
 	for(const auto& addon : addons) {
@@ -223,7 +223,7 @@ void send_addon_data(ClientContext& ctx) {
 			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
 
 		protocol::server::AddonInfo::AddonData data;
-		data.type = protocol::server::AddonInfo::AddonData::Type::BLIZZARD;
+		data.type = protocol::server::AddonInfo::AddonData::Type::blizzard;
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
@@ -249,30 +249,30 @@ void auth_queue(ClientContext& ctx) {
 			Locator::dispatcher()->post_event(uuid, QueuePosition(position));
 		},
 		[uuid]() {
-			const Event event { EventType::QUEUE_SUCCESS };
+			const Event event { EventType::queue_success };
 			Locator::dispatcher()->post_event(uuid, event);
 		}
 	);
 
 	ctx.handler.cancel_timer();
-	auth_state(ctx, State::IN_QUEUE);
+	auth_state(ctx, State::in_queue);
 	CLIENT_DEBUG(ctx.logger, ctx) << "added to queue" << LOG_ASYNC;
 }
 
 void auth_success(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	send_auth_result(ctx, protocol::Result::AUTH_OK);
+	send_auth_result(ctx, protocol::Result::auth_ok);
 	send_addon_data(ctx);
-	auth_state(ctx, State::SUCCESS);
-	ctx.handler.state_update(ClientState::CHARACTER_LIST);
+	auth_state(ctx, State::success);
+	ctx.handler.state_update(ClientState::cs_character_list);
 	CLIENT_DEBUG(ctx.logger, ctx) << "authenticated" << LOG_ASYNC;
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::SMSG_AUTH_RESPONSE response;
+	protocol::smsg_auth_response response;
 	response->result = result;
 	ctx.connection.send(response);
 }
@@ -280,8 +280,8 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::SMSG_AUTH_RESPONSE packet;
-	packet->result = protocol::Result::AUTH_WAIT_QUEUE;
+	protocol::smsg_auth_response packet;
+	packet->result = protocol::Result::auth_wait_queue;
 	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
 	ctx.connection.send(packet);
 }
@@ -304,7 +304,7 @@ void enter(ClientContext& ctx) {
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
-		case protocol::ClientOpcode::CMSG_AUTH_SESSION:
+		case protocol::ClientOpcode::cmsg_auth_session:
 			handle_authentication(ctx);
 			break;
 		default:
@@ -314,19 +314,19 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 
 void handle_event(ClientContext& ctx, const Event* event) {
 	switch(event->type) {
-		case EventType::TIMER_EXPIRED:
+		case EventType::timer_expired:
 			handle_timeout(ctx);
 			break;
-		case EventType::ACCOUNT_ID_RESPONSE:
+		case EventType::account_id_response:
 			handle_account_id(ctx, static_cast<const AccountIDResponse*>(event));
 			break;
-		case EventType::SESSION_KEY_RESPONSE:
+		case EventType::session_key_response:
 			handle_session_key(ctx, static_cast<const SessionKeyResponse*>(event));
 			break;
-		case EventType::QUEUE_UPDATE_POSITION:
+		case EventType::queue_update_position:
 			handle_queue_update(ctx, static_cast<const QueuePosition*>(event));
 			break;
-		case EventType::QUEUE_SUCCESS:
+		case EventType::queue_success:
 			handle_queue_success(ctx);
 			break;
 		default:
@@ -337,7 +337,7 @@ void handle_event(ClientContext& ctx, const Event* event) {
 void exit(ClientContext& ctx) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(auth_ctx.state == State::IN_QUEUE) {
+	if(auth_ctx.state == State::in_queue) {
 		Locator::queue()->dequeue(ctx.handler.uuid());
 	} else {
 		ctx.handler.cancel_timer();

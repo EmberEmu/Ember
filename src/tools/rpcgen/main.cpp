@@ -57,7 +57,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	const auto& file_verbosity = log::severity_string(args["fverbosity"].as<std::string>());
 	
 	auto fsink = std::make_unique<log::FileSink>(
-		file_verbosity, log::Filter(0), "rpcgen.log", log::FileSink::Mode::APPEND
+		file_verbosity, log::Filter(0), "rpcgen.log", log::FileSink::Mode::append
 	);
 
 	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));

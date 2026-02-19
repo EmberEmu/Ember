@@ -29,25 +29,30 @@
 namespace ember {
 
 class Spinlock final {
-	static constexpr auto SPIN_COUNT { 16 };
-	enum class State { LOCKED, UNLOCKED };
+	static constexpr auto spin_count { 16 };
+
+	enum class State {
+		locked, 
+		unlocked
+	};
+
 	std::atomic<State> state;
 
 public:
-	Spinlock() : state(State::UNLOCKED) {}
+	Spinlock() : state(State::unlocked) {}
 
 	inline bool acquire() {
 		// relaxed load before attempting the exchange helps is friendlier to shared cache
-		if(state.load(std::memory_order_relaxed) == State::LOCKED) {
+		if(state.load(std::memory_order_relaxed) == State::locked) {
 			return false;
 		}
 
-		return state.exchange(State::LOCKED, std::memory_order_acquire) == State::UNLOCKED;
+		return state.exchange(State::locked, std::memory_order_acquire) == State::unlocked;
 	}
 
 	void lock() {
 		for(auto spins = 0; !acquire(); ++spins) {
-			if(spins == SPIN_COUNT) {
+			if(spins == spin_count) {
 				spins = 0;
 				std::this_thread::yield();
 			} else {
@@ -57,7 +62,7 @@ public:
 	}
 
 	void unlock() {
-		state.store(State::UNLOCKED, std::memory_order_release);
+		state.store(State::unlocked, std::memory_order_release);
 	}
 };
 

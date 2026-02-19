@@ -26,82 +26,82 @@ WORD colour_attribute(Colour colour) {
 	
 	// set foreground
 	switch(colour) {
-		case Colour::BLACK_ON_WHITE_BG:
+		case Colour::black_on_white_bg:
 			[[fallthrough]];
-		case Colour::BLACK:
+		case Colour::black:
 			attribute = 0;
 			break;
-		case Colour::LIGHT_BLUE:
+		case Colour::light_blue:
 			attribute = FOREGROUND_INTENSITY;
 			[[fallthrough]];
-		case Colour::BLUE:
+		case Colour::blue:
 			attribute |= FOREGROUND_BLUE;
 			break;
-		case Colour::LIGHT_RED:
+		case Colour::light_red:
 			attribute = FOREGROUND_INTENSITY;
 			[[fallthrough]];
-		case Colour::RED:
+		case Colour::red:
 			attribute |= FOREGROUND_RED;
 			break;
-		case Colour::BROWN:
+		case Colour::brown:
 			attribute = FOREGROUND_GREEN | FOREGROUND_RED;
 			break;
-		case Colour::LIGHT_CYAN:
+		case Colour::light_cyan:
 			attribute = FOREGROUND_INTENSITY;
 			[[fallthrough]];
-		case Colour::CYAN:
+		case Colour::cyan:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_GREEN;
 			break;
-		case Colour::LIGHT_GREEN:
+		case Colour::light_green:
 			attribute = FOREGROUND_INTENSITY;
 			[[fallthrough]];
-		case Colour::GREEN:
+		case Colour::green:
 			attribute |= FOREGROUND_GREEN;
 			break;
-		case Colour::LIGHT_MAGENTA:
+		case Colour::light_magenta:
 			attribute = FOREGROUND_INTENSITY;
 			[[fallthrough]];
-		case Colour::MAGENTA:
+		case Colour::magenta:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_RED;
 			break;
-		case Colour::DARK_GREY:
+		case Colour::dark_grey:
 			attribute = FOREGROUND_INTENSITY;
 			break;
-		case Colour::WHITE_ON_GREY_BG:
+		case Colour::white_on_grey_bg:
 			[[fallthrough]];
-		case Colour::WHITE_ON_RED_BG:
+		case Colour::white_on_red_bg:
 			[[fallthrough]];
-		case Colour::WHITE_ON_CYAN_BG:
+		case Colour::white_on_cyan_bg:
 			[[fallthrough]];
-		case Colour::WHITE:
+		case Colour::white:
 			attribute |= FOREGROUND_INTENSITY;
 			[[fallthrough]];
-		case Colour::GREY:
+		case Colour::grey:
 			attribute |= FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 			break;
-		case Colour::YELLOW:
+		case Colour::yellow:
 			attribute = FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_RED;
 			break;
-		case Colour::DEFAULT:
+		case Colour::default_colour:
 			// shutting the compiler up
 			break;
 	}
 
 	// set background
 	switch(colour) {
-		case Colour::WHITE_ON_GREY_BG:
+		case Colour::white_on_grey_bg:
 			attribute |= BACKGROUND_INTENSITY;
 			break;
-		case Colour::BLACK_ON_WHITE_BG:
+		case Colour::black_on_white_bg:
 			attribute |= BACKGROUND_INTENSITY | BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED;
 			break;
-		case Colour::WHITE_ON_CYAN_BG:
+		case Colour::white_on_cyan_bg:
 			attribute |= BACKGROUND_GREEN | BACKGROUND_BLUE;
 			break;
-		case Colour::WHITE_ON_RED_BG:
+		case Colour::white_on_red_bg:
 			attribute |= BACKGROUND_RED;
 			break;
-		case Colour::DEFAULT:
+		case Colour::default_colour:
 			// shutting the compiler up
 			break;
 	}
@@ -113,45 +113,45 @@ WORD colour_attribute(Colour colour) {
 
 std::string_view ansi_sequence(Colour colour) {
 	switch(colour) {
-		case Colour::BLACK:
+		case Colour::black:
 			return "\033[22;30m";
-		case Colour::BLUE:
+		case Colour::blue:
 			return "\033[22;34m";
 		case Colour::BROWN:
 			return "\033[22;33m";
-		case Colour::CYAN:
+		case Colour::cyan:
 			return "\033[22;36m";
-		case Colour::DARK_GREY:
+		case Colour::dark_grey:
 			return "\033[01;30m";
-		case Colour::GREEN:
+		case Colour::green:
 			return "\033[22;32m";
-		case Colour::GREY:
+		case Colour::grey:
 			return "\033[22;37m";
-		case Colour::LIGHT_BLUE:
+		case Colour::light_blue:
 			return "\033[01;34m";
-		case Colour::LIGHT_CYAN:
+		case Colour::light_cyan:
 			return "\033[01;36m";
-		case Colour::LIGHT_GREEN:
+		case Colour::light_green:
 			return "\033[01;32m";
-		case Colour::LIGHT_MAGENTA:
+		case Colour::light_magenta:
 			return "\033[01;35m";
-		case Colour::LIGHT_RED:
+		case Colour::light_red:
 			return "\033[01;31m";
-		case Colour::MAGENTA:
+		case Colour::magenta:
 			return "\033[22;35m";
-		case Colour::RED:
+		case Colour::red:
 			return "\033[22;31m";
-		case Colour::WHITE:
+		case Colour::white:
 			return "\033[01;37m";
-		case Colour::YELLOW:
+		case Colour::yellow:
 			return "\033[01;33m";
-		case Colour::WHITE_ON_RED_BG:
+		case Colour::white_on_red_bg:
 			return "\033[01;37m\033[41m";
-		case Colour::WHITE_ON_GREY_BG:
+		case Colour::white_on_grey_bg:
 			return "\033[01;37m\033[100m";
-		case Colour::WHITE_ON_CYAN_BG:
+		case Colour::white_on_cyan_bg:
 			return "\033[01;37m\033[46m";
-		case Colour::BLACK_ON_WHITE_BG:
+		case Colour::black_on_white_bg:
 			return "\033[01;30m\033[107m";
 		default:
 			return "\033[0m";
@@ -178,7 +178,7 @@ Colour save_console_out_colour() {
 	GetConsoleScreenBufferInfo(stdout_handle, &buffer);
 	return static_cast<Colour>(buffer.wAttributes);
 #else
-	return Colour::DEFAULT;
+	return Colour::default_colour;
 #endif
 }
 

@@ -13,11 +13,11 @@
 namespace ember::gateway::world_enter {
 
 enum class State {
-	INITIATED
+	initiated
 };
 
 struct Context {
-	State state { State::INITIATED };
+	State state { State::initiated };
 	std::uint64_t character_id {};
 };
 

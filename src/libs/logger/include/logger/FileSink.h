@@ -26,7 +26,10 @@ class FileSink final : public Sink {
 	static constexpr auto MAX_BUF_SIZE = 4096u;
 
 public:
-	enum class Mode { TRUNCATE, APPEND };
+	enum class Mode {
+		truncate,
+		append 
+	};
 
 private:
 	File file_;
@@ -42,7 +45,7 @@ private:
 	cstring_view time_format_ = "[%d/%m/%Y %H:%M:%S] ";
 	boost::container::small_vector<char, SV_RESERVE> out_buf_;
 
-	void open(Mode mode = Mode::TRUNCATE);
+	void open(Mode mode = Mode::truncate);
 	void rotate();
 	void rotate_check(std::size_t buffer_size, const std::tm& curr_time);
 	void format_file_name();

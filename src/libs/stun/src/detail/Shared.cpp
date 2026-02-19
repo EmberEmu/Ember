@@ -83,7 +83,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 	std::size_t offset = buffer.size();
 
 	if(complete) {
-		offset = attribute_offset(buffer, Attributes::FINGERPRINT);
+		offset = attribute_offset(buffer, Attributes::fingerprint);
 	}
 
 	std::array<std::uint8_t, 4> res;
@@ -105,11 +105,11 @@ std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
 	std::size_t fp_offset = 0;
 
 	if(complete) {
-		msgi_offset = attribute_offset(buffer, Attributes::MESSAGE_INTEGRITY);
-		fp_offset = attribute_offset(buffer, Attributes::FINGERPRINT);
+		msgi_offset = attribute_offset(buffer, Attributes::message_integrity);
+		fp_offset = attribute_offset(buffer, Attributes::fingerprint);
 
 		if(!msgi_offset) {
-			throw parse_error(Error::BUFFER_PARSE_ERROR,
+			throw parse_error(Error::buffer_parse_error,
 				"MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
 		}
 	}
@@ -145,11 +145,11 @@ std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
 	std::size_t fp_offset = 0;
 
 	if(complete) {
-		fp_offset = attribute_offset(buffer, Attributes::FINGERPRINT);
-		msgi_offset = attribute_offset(buffer, Attributes::MESSAGE_INTEGRITY);
+		fp_offset = attribute_offset(buffer, Attributes::fingerprint);
+		msgi_offset = attribute_offset(buffer, Attributes::message_integrity);
 
 		if(!msgi_offset) {
-			throw parse_error(Error::BUFFER_PARSE_ERROR,
+			throw parse_error(Error::buffer_parse_error,
 				"MESSAGE-INTEGRITY not found, cannot calculate HMAC-SHA1");
 		}
 	}
@@ -198,7 +198,7 @@ Header read_header(std::span<const std::uint8_t> buffer) try {
 
 	return header;
 } catch(const spark::exception& e) {
-	throw exception(Error::BUFFER_PARSE_ERROR, e.what());
+	throw exception(Error::buffer_parse_error, e.what());
 }
 
 std::size_t generate_key(const TxID& tx_id, RFCMode mode) {
@@ -209,7 +209,7 @@ std::size_t generate_key(const TxID& tx_id, RFCMode mode) {
 	 */
 	FNVHash fnv;
 
-	if(mode == RFC3489) {
+	if(mode == rfc3489) {
 		auto bytes = std::as_bytes(std::span(tx_id.id_3489));
 		fnv.update<std::byte>(bytes);
 	} else {

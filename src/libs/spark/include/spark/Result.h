@@ -11,13 +11,13 @@
 namespace ember::spark {
 
 enum class Result {
-	OK,
-	LINK_GONE,
-	TIMED_OUT,
-	CANCELLED,
-	NET_ERROR,
-	CHANNEL_CLOSED,
-	WRONG_MESSAGE_TYPE
+	ok,
+	link_gone,
+	timed_out,
+	cancelled,
+	net_error,
+	channel_closed,
+	wrong_message_type
 };
 
 } // spark, ember

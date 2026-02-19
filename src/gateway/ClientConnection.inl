@@ -32,9 +32,9 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 		crypt_->encrypt(opcode);
 	}
 
-	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, 0);
+	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::io::StreamSeek::SK_STREAM_ABSOLUTE, end_pos);
+	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, end_pos);
 	return true;
 }
 
@@ -54,7 +54,7 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 	}
 
 	if(packet_logger_) [[unlikely]] {
-		packet_logger_->log(packet, PacketDirection::OUTBOUND);
+		packet_logger_->log(packet, PacketDirection::outbound);
 	}
 
 	++stats_.messages_out;

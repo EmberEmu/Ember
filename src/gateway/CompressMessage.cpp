@@ -25,13 +25,13 @@ int compress_message(const spark::io::pmr::Buffer& in, spark::io::pmr::Buffer& o
 
 // temp testing function, do not use yet
 int compress_message(const auto& packet, spark::io::pmr::Buffer& out, int compression_level) {
-	constexpr std::size_t BLOCK_SIZE = 64;
+	constexpr std::size_t block_size = 64;
 	spark::io::DynamicBuffer<4096> temp_buffer;
 	spark::io::pmr::BinaryStream stream(temp_buffer);
 	spark::io::pmr::BinaryStream out_stream(out);
 
-	std::uint8_t in_buff[BLOCK_SIZE];
-	std::uint8_t out_buff[BLOCK_SIZE];
+	std::uint8_t in_buff[block_size];
+	std::uint8_t out_buff[block_size];
 
 	z_stream z_stream{};
 	z_stream.next_in = in_buff;
@@ -39,23 +39,23 @@ int compress_message(const auto& packet, spark::io::pmr::Buffer& out, int compre
 	deflateInit(&z_stream, compression_level);
 
 	stream << packet->opcode << packet;
-	out_stream << std::uint16_t(0) << protocol::ServerOpcode::SMSG_COMPRESSED_UPDATE_OBJECT;
+	out_stream << std::uint16_t(0) << protocol::ServerOpcode::smsg_compressed_update_object;
 
 	while(!stream.empty()) {
-		z_stream.avail_in = stream.size() >= BLOCK_SIZE? BLOCK_SIZE : stream.size();
+		z_stream.avail_in = stream.size() >= block_size? block_size : stream.size();
 		stream.get(in_buff, z_stream.avail_in);
 
 		const auto flush = stream.empty()? Z_FINISH : Z_NO_FLUSH;
 
 		do {
-			z_stream.avail_out = BLOCK_SIZE;
+			z_stream.avail_out = block_size;
 			const int ret = deflate(&z_stream, flush);
 
 			if(ret != Z_OK && ret != Z_STREAM_END) {
 				return ret;
 			}
 
-			out.write(out_buff, BLOCK_SIZE - z_stream.avail_out);
+			out.write(out_buff, block_size - z_stream.avail_out);
 
 			if(flush == Z_FINISH && ret == Z_OK) {
 				continue;
@@ -63,7 +63,7 @@ int compress_message(const auto& packet, spark::io::pmr::Buffer& out, int compre
 		} while(z_stream.avail_out == 0);
 
 
-		out.write(out_buff, BLOCK_SIZE - z_stream.avail_out);
+		out.write(out_buff, block_size - z_stream.avail_out);
 	}
 
 	return deflateEnd(&z_stream);

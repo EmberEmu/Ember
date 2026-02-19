@@ -23,8 +23,10 @@ class MessageHeader final {
 
 public:
 	enum class State {
-		INITIAL, ERRORED, OK
-	} state = State::INITIAL;
+		initial,
+		errored,
+		ok
+	} state = State::initial;
 
 	boost::uuids::uuid uuid = {};
 	std::uint32_t size = 0;
@@ -55,9 +57,9 @@ public:
 		be::little_to_native_inplace(padding);
 
 		stream.skip(padding);
-		return (state = State::OK);
+		return (state = State::ok);
 	} catch(const std::exception&) {
-		state = State::ERRORED;
+		state = State::errored;
 		return state;
 	}
 

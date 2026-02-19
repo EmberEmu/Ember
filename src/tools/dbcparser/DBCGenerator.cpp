@@ -82,10 +82,10 @@ public:
 				throw std::runtime_error("Unable to locate type base");
 			}
 
-			if(found->type == types::Type::STRUCT) {
+			if(found->type == types::Type::t_struct) {
 				visit(static_cast<const types::Struct*>(found), field);
 				return;
-			} else if(found->type == types::Type::ENUM) {
+			} else if(found->type == types::Type::t_enum) {
 				const auto enum_type = static_cast<const types::Enum*>(found);
 				type = enum_type->underlying_type;
 			} else {

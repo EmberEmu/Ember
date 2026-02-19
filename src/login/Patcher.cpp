@@ -131,18 +131,18 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 
 auto Patcher::check_version(const GameVersion& client_version) const -> PatchLevel {
 	if(std::ranges::find(versions_, client_version) != versions_.end()) {
-		return PatchLevel::OK;
+		return PatchLevel::ok;
 	}
 
 	// Figure out whether any of the allowed client versions are newer than the client.
 	// If so, there's a chance that it can be patched.
 	for(const auto& v : versions_) {
 		if(v > client_version) {
-			return PatchLevel::TOO_OLD;
+			return PatchLevel::too_old;
 		}
 	}
 
-	return PatchLevel::TOO_NEW;
+	return PatchLevel::too_new;
 }
 
 void Patcher::load_patch(PatchMeta& patch, const dal::PatchDAO& dao, const std::string& path) {

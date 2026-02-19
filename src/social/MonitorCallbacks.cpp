@@ -24,19 +24,19 @@ void monitor_log_callback(const Monitor::Source& source, Monitor::Severity sever
 	}
 
 	switch(severity) {
-		case Monitor::Severity::FATAL:
+		case Monitor::Severity::fatal:
 			LOG_FATAL(logger) << message.view() << LOG_ASYNC;
 			break;
-		case Monitor::Severity::ERROR:
+		case Monitor::Severity::error:
 			LOG_ERROR(logger) << message.view() << LOG_ASYNC;
 			break;
-		case Monitor::Severity::WARN:
+		case Monitor::Severity::warn:
 			LOG_WARN(logger) << message.view() << LOG_ASYNC;
 			break;
-		case Monitor::Severity::INFO:
+		case Monitor::Severity::info:
 			LOG_INFO(logger) << message.view() << LOG_ASYNC;
 			break;
-		case Monitor::Severity::DEBUG:
+		case Monitor::Severity::debug:
 			LOG_DEBUG(logger) << message.view() << LOG_ASYNC;
 			break;
 	}

@@ -21,16 +21,16 @@ struct Pong final {
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> sequence_id;
-		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
 		stream << sequence_id;
-		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 };
 

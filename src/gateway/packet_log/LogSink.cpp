@@ -24,7 +24,7 @@ LogSink::LogSink(log::Logger& logger, log::Severity severity, std::string remote
 }
 
 void LogSink::start_log() {
-	logger_ << severity_ << log::Filter(LF_PACKET_LOG)
+	logger_ << severity_ << log::Filter(lf_packet_log)
 		<< "Starting packet logging for " << remote_host_ << log::flush;
 }
 
@@ -33,7 +33,7 @@ void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	const auto output = utility::format_packet(buffer.data(), buffer.size());
 
 	cstring_view fmt("%H:%M:%S");
-	std::string_view direction = dir == PacketDirection::INBOUND? "inbound" : "outbound";
+	std::string_view direction = dir == PacketDirection::inbound? "inbound" : "outbound";
 	std::tm tm;
 
 #if _MSC_VER && !__INTEL_COMPILER
@@ -45,13 +45,13 @@ void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	std::array<char, 32> time_buf{};
 	log::detail::put_time(tm, fmt, std::span(time_buf));
 
-	logger_ << severity_ << log::Filter(LF_PACKET_LOG)
+	logger_ << severity_ << log::Filter(lf_packet_log)
 		<< "[" << time_buf.data() << "] " << remote_host_ << ", " << direction
 		<< ":\n" << output << log::flush;
 }
 
 LogSink::~LogSink() {
-	logger_ << severity_ << log::Filter(LF_PACKET_LOG)
+	logger_ << severity_ << log::Filter(lf_packet_log)
 		<< "Ending packet logging for " << remote_host_ << log::flush;
 }
 

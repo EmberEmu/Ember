@@ -32,15 +32,15 @@ using BehaviourResult  = std::expected<Behaviour, ErrorRet>;
 namespace detail {
 
 enum class State {
-	BASIC,
-	MAPPING_TEST_1,
-	MAPPING_TEST_2,
-	MAPPING_TEST_3,
-	FILTERING_TEST_1,
-	FILTERING_TEST_2,
-	FILTERING_TEST_3,
-	HAIRPIN,
-	HAIRPIN_AWAIT_RESP
+	basic,
+	mapping_test_1,
+	mapping_test_2,
+	mapping_test_3,
+	filtering_test_1,
+	filtering_test_2,
+	filtering_test_3,
+	hairpin,
+	hairpin_await_resp
 };
 
 struct Transaction {

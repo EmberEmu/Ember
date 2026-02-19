@@ -382,28 +382,28 @@ public:
 
 	void write_seek(const BufferSeek direction, size_type offset) override {
 		// nothing to do in this case
-		if(direction == BufferSeek::SK_ABSOLUTE && offset == size_) {
+		if(direction == BufferSeek::sk_absolute && offset == size_) {
 			return;
 		}
 
 		auto tail = root_.prev;
 
 		switch(direction) {
-			case BufferSeek::SK_BACKWARD:
+			case BufferSeek::sk_backward:
 				size_ -= offset;
 				break;
-			case BufferSeek::SK_FORWARD:
+			case BufferSeek::sk_forward:
 				size_ += offset;
 				break;
-			case BufferSeek::SK_ABSOLUTE:
+			case BufferSeek::sk_absolute:
 				size_ = offset;
 				offset = abs_seek_offset(offset);
 				break;
 		}
 
 		const bool rewind
-			= (direction == BufferSeek::SK_BACKWARD
-			   || (direction == BufferSeek::SK_ABSOLUTE && offset < size_));
+			= (direction == BufferSeek::sk_backward
+			   || (direction == BufferSeek::sk_absolute && offset < size_));
 
 		while(offset) {
 			auto buffer = buffer_from_node(tail);

@@ -14,34 +14,34 @@
 namespace ember::grunt {
 
 smart_enum_class(Opcode, std::uint8_t,
-	// Auth server opcodes
-	CMD_AUTH_LOGON_CHALLENGE      = 0x00,
-	CMD_AUTH_LOGON_PROOF          = 0x01,
-	CMD_AUTH_RECONNECT_CHALLENGE  = 0x02,
-	CMD_AUTH_RECONNECT_PROOF      = 0x03,
-	CMD_SURVEY_RESULT             = 0x04,
+	// auth server opcodes
+	cmd_auth_logon_challenge      = 0x00,
+	cmd_auth_logon_proof          = 0x01,
+	cmd_auth_reconnect_challenge  = 0x02,
+	cmd_auth_reconnect_proof      = 0x03,
+	cmd_survey_result             = 0x04,
 	
-	// Realm listing server opcodes
-	CMD_REALM_LIST                = 0x10,
+	// realm listing server opcodes
+	cmd_realm_list                = 0x10,
 
-	// Patch server opcodes
-	CMD_XFER_INITIATE             = 0x30,
-	CMD_XFER_DATA                 = 0x31,
-	CMD_XFER_ACCEPT               = 0x32,
-	CMD_XFER_RESUME               = 0x33,
-	CMD_XFER_CANCEL               = 0x34
+	// patch server opcodes
+	cmd_xfer_initiate             = 0x30,
+	cmd_xfer_data                 = 0x31,
+	cmd_xfer_accept               = 0x32,
+	cmd_xfer_resume               = 0x33,
+	cmd_xfer_cancel               = 0x34
 )
 
 // These seem to be part of a legacy auth protocol or (more likely) were used by internal services
 // Included for posterity
 enum class ServerLinkOpcode : std::uint8_t {
-	CMD_GRUNT_AUTH_VERIFY         = 0x02,
-	CMD_GRUNT_CONN_PING           = 0x10,
-	CMD_GRUNT_CONN_PONG           = 0x11,
-	CMD_GRUNT_HELLO               = 0x20,
-	CMD_GRUNT_PROVESESSION        = 0x21,
-	CMD_GRUNT_KICK                = 0x24,
-	CMD_GRUNT_CANCEL_UNKNOWN      = 0x26
+	cmd_grunt_auth_verify         = 0x02,
+	cmd_grunt_conn_ping           = 0x10,
+	cmd_grunt_conn_pong           = 0x11,
+	cmd_grunt_hello               = 0x20,
+	cmd_grunt_provesession        = 0x21,
+	cmd_grunt_kick                = 0x24,
+	cmd_grunt_cancel_unknown      = 0x26
 };
 
 } // grunt, ember

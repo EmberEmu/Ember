@@ -37,7 +37,8 @@ using clientopts = int;
 constexpr clientopts SUPPRESS_BANNER = 0x01;
 
 enum class Protocol {
-	TCP, UDP
+	tcp,
+	udp
 };
 
 class Client final {
@@ -97,7 +98,7 @@ class Client final {
 public:
 	Client(const std::string& bind, std::string host,
            std::uint16_t port, Protocol protocol,
-	       RFCMode mode = RFCMode::RFC5780);
+	       RFCMode mode = RFCMode::rfc5780);
 	~Client();
 
 	void log_callback(LogCB callback);

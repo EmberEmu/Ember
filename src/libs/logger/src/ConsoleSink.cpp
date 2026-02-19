@@ -121,26 +121,26 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 utility::Colour ConsoleSink::severity_colour(Severity severity) {
 	switch(severity) {
-		case Severity::FATAL:
+		case Severity::fatal:
 			[[fallthrough]];
 		case Severity::ERROR_:
 			[[fallthrough]];
-		case Severity::WARN:
-			return utility::Colour::LIGHT_RED;
+		case Severity::warn:
+			return utility::Colour::light_red;
 			break;
-		case Severity::INFO:
-			return utility::Colour::WHITE;
+		case Severity::info:
+			return utility::Colour::white;
 			break;
-		case Severity::DEBUG:
-			return utility::Colour::LIGHT_CYAN;
+		case Severity::debug:
+			return utility::Colour::light_cyan;
 			break;
-		case Severity::TRACE:
-			return utility::Colour::DARK_GREY;
+		case Severity::trace:
+			return utility::Colour::dark_grey;
 			break;
-		case Severity::DISABLED:
+		case Severity::disabled:
 			[[fallthrough]];
 		default:
-			return utility::Colour::DEFAULT;
+			return utility::Colour::default_colour;
 	}
 }
 

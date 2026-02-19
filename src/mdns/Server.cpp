@@ -52,12 +52,12 @@ void Server::handle_question(const Query& query) {
 	out.questions = query.questions;
 	out.header.questions = query.header.questions;
 	out.header.id = query.header.id;
-	out.header.flags.opcode = Opcode::STANDARD_QUERY;
-	out.header.flags.rcode = ReplyCode::REPLY_NO_ERROR;
+	out.header.flags.opcode = Opcode::standard_query;
+	out.header.flags.rcode = ReplyCode::reply_no_error;
 	out.header.flags.qr = 1;
 
 	if(query.header.answers || query.header.additional_rrs || query.header.authority_rrs) {
-		out.header.flags.rcode = ReplyCode::FORMAT_ERROR;
+		out.header.flags.rcode = ReplyCode::format_error;
 	}
 
 	if(!query.header.questions) {

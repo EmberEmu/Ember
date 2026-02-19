@@ -23,27 +23,28 @@ namespace be = boost::endian;
 
 class TransferData final : public Packet {
 	static const std::size_t WIRE_LENGTH = 1;
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 public:
 	static const std::uint16_t MAX_CHUNK_SIZE = 65535;
 
-	TransferData() : Packet(Opcode::CMD_XFER_DATA) {}
+	TransferData()
+		: Packet(Opcode::cmd_xfer_data) {}
 
 	be::little_uint16_t size = 0;
 	std::array<std::byte, MAX_CHUNK_SIZE> chunk;
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
 		if(stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
+			return State::call_again;
 		}
 
 		stream >> opcode;
 		stream >> size;
 
-		return (state_ = State::DONE);
+		return (state_ = State::done);
 	}
 
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {

@@ -34,22 +34,22 @@ struct CharacterTemplate { // used during creation
 
 struct Character { // used for character list display
 	enum class Flags : std::uint32_t { // todo, investigate
-		NONE                   = 0x000,
-		UNKNOWN1               = 0x001,
-		UNKNOWN2               = 0x002,
-		LOCKED_FOR_TRANSFER    = 0x004,
-		UNKNOWN4               = 0x008,
-		UNKNOWN5               = 0x010,
-		UNKNOWN6               = 0x020,
-		UNKNOWN7               = 0x040,
-		UNKNOWN8               = 0x080,
-		UNKNOWN9               = 0x100,
-		UNKNOWN10              = 0x200,
-		HIDE_HELM              = 0x400,
-		HIDE_CLOAK             = 0x800,
-		UNKNOWN13              = 0x1000,
-		GHOST                  = 0x2000,
-		RENAME                 = 0x4000
+		none                   = 0x000,
+		unknown1               = 0x001,
+		unknown2               = 0x002,
+		locked_for_transfer    = 0x004,
+		unknown4               = 0x008,
+		unknown5               = 0x010,
+		unknown6               = 0x020,
+		unknown7               = 0x040,
+		unknown8               = 0x080,
+		unknown9               = 0x100,
+		unknown10              = 0x200,
+		hide_helm              = 0x400,
+		hide_cloak             = 0x800,
+		unknown13              = 0x1000,
+		ghost                  = 0x2000,
+		rename                 = 0x4000
 	};
 
 	utf8_string name;

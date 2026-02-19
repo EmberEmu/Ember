@@ -51,16 +51,17 @@ constexpr std::uint8_t CHANGE_PORT_MASK = 0x01 << 1;
 constexpr std::uint32_t MAGIC_COOKIE = 0x2112A442;
 
 enum class AddressFamily : std::uint8_t {
-	IPV4 = 1, IPV6 = 2
+	ipv4 = 1,
+	ipv6 = 2
 };
 
 enum class MessageType : std::uint16_t {
-	BINDING_REQUEST              = 0x0001,
-	BINDING_RESPONSE             = 0x0101,
-	BINDING_ERROR_RESPONSE       = 0x0111,
-	SHARED_SECRET_REQUEST        = 0x0002,
-	SHARED_SECRET_RESPONSE       = 0x0102,
-	SHARED_SECRET_ERROR_RESPONSE = 0x0112
+	binding_request              = 0x0001,
+	binding_response             = 0x0101,
+	binding_error_response       = 0x0111,
+	shared_secret_request        = 0x0002,
+	shared_secret_response       = 0x0102,
+	shared_secret_error_response = 0x0112
 };
 
 union TxID {
@@ -82,67 +83,68 @@ struct Header {
 // rfc5389 attributes spec
 enum class Attributes : std::uint16_t {
 	// Comprehension required
-	MAPPED_ADDRESS           = 0x0001,
-	RESPONSE_ADDRESS         = 0x0002, // rfc3489 only
-	CHANGE_REQUEST           = 0x0003, // rfc3489 & rfc5780 (reinstated)
-	SOURCE_ADDRESS           = 0x0004, // rfc3489 only
-	CHANGED_ADDRESS          = 0x0005, // rfc3489 only
-	USERNAME                 = 0x0006,
-	PASSWORD                 = 0x0007, // rfc3489 only
-	MESSAGE_INTEGRITY        = 0x0008,
-	ERROR_CODE               = 0x0009,
-	UNKNOWN_ATTRIBUTES       = 0x000a,
-	REFLECTED_FROM           = 0x000b, // rfc3489 only
-	REALM                    = 0x0014,
-	NONCE                    = 0x0015,
-	XOR_MAPPED_ADDRESS       = 0x0020,
-	PRIORITY                 = 0x0024, // rfc8445
-	USE_CANDIDATE            = 0x0025, // rfc8445
-	PADDING                  = 0x0026, // rfc5780
-	RESPONSE_PORT            = 0x0027, // rfc5780
-	MESSAGE_INTEGRITY_SHA256 = 0x001c, // rfc8489
-	PASSWORD_ALGORITHM       = 0x001d, // rfc8489
-	USERHASH                 = 0x001e, // rfc8489
+	mapped_address           = 0x0001,
+	response_address         = 0x0002, // rfc3489 only
+	change_request           = 0x0003, // rfc3489 & rfc5780 (reinstated)
+	source_address           = 0x0004, // rfc3489 only
+	changed_address          = 0x0005, // rfc3489 only
+	username                 = 0x0006,
+	password                 = 0x0007, // rfc3489 only
+	message_integrity        = 0x0008,
+	error_code               = 0x0009,
+	unknown_attributes       = 0x000a,
+	reflected_from           = 0x000b, // rfc3489 only
+	realm                    = 0x0014,
+	nonce                    = 0x0015,
+	xor_mapped_address       = 0x0020,
+	priority                 = 0x0024, // rfc8445
+	use_candidate            = 0x0025, // rfc8445
+	padding                  = 0x0026, // rfc5780
+	response_port            = 0x0027, // rfc5780
+	message_integrity_sha256 = 0x001c, // rfc8489
+	password_algorithm       = 0x001d, // rfc8489
+	userhash                 = 0x001e, // rfc8489
 
 	// Comprehension optional
-	PASSWORD_ALGORITHMS = 0x8002, // rfc8489
-	ALTERNATE_DOMAIN    = 0x8003, // rfc8489
-	XOR_MAPPED_ADDR_OPT = 0x8020, // rfc3489 *draft*
-	SOFTWARE            = 0x8022,
-	ALTERNATE_SERVER    = 0x8023,
-	CACHE_TIMEOUT       = 0x8027, // rfc5780
-	FINGERPRINT         = 0x8028,
-	ICE_CONTROLLED      = 0x8029, // rfc8445
-	ICE_CONTROLLING     = 0x802a, // rfc8445
-	RESPONSE_ORIGIN     = 0x802B, // rfc5780
-	OTHER_ADDRESS       = 0x802C  // rfc5780 ("OTHER-ADDRESS uses the same attribute number as CHANGED-ADDRESS", RFC error?)
+	password_algorithms = 0x8002, // rfc8489
+	alternate_domain    = 0x8003, // rfc8489
+	xor_mapped_addr_opt = 0x8020, // rfc3489 *draft*
+	software            = 0x8022,
+	alternate_server    = 0x8023,
+	cache_timeout       = 0x8027, // rfc5780
+	fingerprint         = 0x8028,
+	ice_controlled      = 0x8029, // rfc8445
+	ice_controlling     = 0x802a, // rfc8445
+	response_origin     = 0x802B, // rfc5780
+	other_address       = 0x802C  // rfc5780 ("OTHER-ADDRESS uses the same attribute number as CHANGED-ADDRESS", RFC error?)
 };
 
 enum class Errors {
-	TRY_ALTERNATE     = 300,
-	BAD_REQUEST       = 400,
-	UNAUTHORISED      = 401,
-	UNKNOWN_ATTRIBUTE = 420,
-	STALE_NONCE       = 438,
-	ROLE_CONFLICT     = 487, // rfc8445
-	SERVER_ERROR      = 500
+	try_alternate     = 300,
+	bad_request       = 400,
+	unauthorised      = 401,
+	unknown_attribute = 420,
+	stale_nonce       = 438,
+	role_conflict     = 487, // rfc8445
+	server_error      = 500
 };
 
 enum RFCMode {
-	RFC3489,
-	RFC5389,
-	RFC5780,
-	RFC8445
+	rfc3489,
+	rfc5389,
+	rfc5780,
+	rfc8445
 };
 
 smart_enum_class(Hairpinning, std::uint8_t,
-	SUPPORTED, NOT_SUPPORTED
+	supported,
+	not_supported
 );
 
 smart_enum_class(Behaviour, std::uint8_t,
-	ENDPOINT_INDEPENDENT,
-	ADDRESS_DEPENDENT,
-	ADDRESS_PORT_DEPENDENT
+	endpoint_independent,
+	address_dependent,
+	address_port_dependent
 );
 
 using AttrReqBy = std::unordered_map<Attributes, std::vector<RFCMode>>;

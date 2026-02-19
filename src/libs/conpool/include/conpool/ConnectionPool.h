@@ -114,7 +114,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 					}
 				} catch(const std::exception& e) {
 					if(log_cb_) {
-						log_cb_(Severity::DEBUG, "On connection clean: "s + e.what());
+						log_cb_(Severity::debug, "On connection clean: "s + e.what());
 					}
 					return false;
 				}
@@ -206,7 +206,7 @@ public:
 				driver_.close(c.conn);
 			} catch(const std::exception& e) { 
 				if(log_cb_) {
-					log_cb_(Severity::ERROR, "Closing pool, driver threw: "s + e.what());
+					log_cb_(Severity::error, "Closing pool, driver threw: "s + e.what());
 				}
 			}
 		}

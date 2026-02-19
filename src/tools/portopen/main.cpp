@@ -52,9 +52,9 @@ void launch(const po::variables_map& args) {
 void print_error(const ports::Error& error) {
 	std::println("Mapping error: {} ({})", error.code, std::to_underlying(error.code));
 
-	if(error.code == ports::ErrorCode::PCP_CODE) {
+	if(error.code == ports::ErrorCode::pcp_code) {
 		std::println("PCP code: {}", error.pcp_code);
-	} else if(error.code == ports::ErrorCode::NATPMP_CODE) {
+	} else if(error.code == ports::ErrorCode::natpmp_code) {
 		std::println("NAT-PMP code: {}", error.natpmp_code);
 	}
 }
@@ -67,10 +67,10 @@ void use_natpmp(const po::variables_map& args) {
 	const auto& protocol = args["protocol"].as<std::string>();
 	const auto deletion = args.contains("delete");
 	
-	auto proto = ports::Protocol::TCP;
+	auto proto = ports::Protocol::tcp;
 
 	if(protocol == "udp") {
-		proto = ports::Protocol::UDP;
+		proto = ports::Protocol::udp;
 	}
 
 	const ports::MapRequest request {
@@ -134,10 +134,10 @@ void use_upnp(const po::variables_map& args) {
 	boost::asio::io_context ctx;
 	ports::upnp::SSDP ssdp(interface, ctx);
 
-	auto proto = ports::Protocol::TCP;
+	auto proto = ports::Protocol::tcp;
 
 	if(protocol == "udp") {
-		proto = ports::Protocol::UDP;
+		proto = ports::Protocol::udp;
 	}
 
 	ssdp.locate_gateways([&](ports::upnp::LocateResult result) {

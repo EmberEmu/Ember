@@ -59,7 +59,7 @@ struct AuthSession final {
 		stream >> decompressed_size;
 
 		if(!stream.read_limit()) {
-			return StreamResult::BAD_FIELD_SIZE;
+			return StreamResult::bad_field_size;
 		}
 
 		// calculate how many bytes are left in this message
@@ -67,7 +67,7 @@ struct AuthSession final {
 		const uLongf compressed_size = gsl::narrow<uLongf>(remaining);
 
 		if(decompressed_size > 0xFFFFF) {
-			return StreamResult::BAD_FIELD_SIZE;
+			return StreamResult::bad_field_size;
 		}
 		
 		boost::container::small_vector<std::uint8_t, 512> source(
@@ -84,7 +84,7 @@ struct AuthSession final {
 		auto ret = uncompress(dest.data(), &dest_len, source.data(), compressed_size);
 
 		if(ret != Z_OK) {
-			return StreamResult::DECOMPRESSION_FAILED;
+			return StreamResult::decompression_failed;
 		}
 
 		spark::io::BufferAdaptor buffer(dest);
@@ -99,9 +99,9 @@ struct AuthSession final {
 			addons.emplace_back(std::move(data));
 		}
 
-		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
@@ -110,9 +110,9 @@ struct AuthSession final {
 		stream << spark::io::null_terminated(username);
 		stream << seed;
 		stream.put(digest.data(), digest.size());
-		return stream? StreamResult::SUCCESS : StreamResult::STREAM_ERROR;
+		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 };
 

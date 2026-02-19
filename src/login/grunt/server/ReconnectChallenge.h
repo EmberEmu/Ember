@@ -22,19 +22,21 @@ class ReconnectChallenge final : public Packet {
 	const static std::size_t WIRE_LENGTH = 34;
 	const static std::size_t RAND_LENGTH = 16;
 
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 public:
-	ReconnectChallenge() : Packet(Opcode::CMD_AUTH_RECONNECT_CHALLENGE) {}
+	ReconnectChallenge()
+		: Packet(Opcode::cmd_auth_reconnect_challenge) {}
+
 	Result result;
 	std::array<std::uint8_t, RAND_LENGTH> salt;
 	std::array<std::uint8_t, RAND_LENGTH> checksum_salt; // client no longer uses this
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+			return State::call_again;
 		}
 		
 		stream >> opcode;
@@ -42,7 +44,7 @@ public:
 		stream.get(salt.data(), salt.size());
 		stream.get(checksum_salt.data(), checksum_salt.size());
 
-		return (state_ = State::DONE);
+		return (state_ = State::done);
 	}
 
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {

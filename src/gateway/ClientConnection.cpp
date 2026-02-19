@@ -39,7 +39,7 @@ void ClientConnection::parse_header() {
 		return;
 	}
 
-	read_state_ = ReadState::BODY;
+	read_state_ = ReadState::body;
 }
 
 void ClientConnection::completion_check() {
@@ -47,7 +47,7 @@ void ClientConnection::completion_check() {
 		return;
 	}
 
-	read_state_ = ReadState::DONE;
+	read_state_ = ReadState::done;
 }
 
 void ClientConnection::dispatch_message() {
@@ -56,24 +56,24 @@ void ClientConnection::dispatch_message() {
 
 void ClientConnection::process_buffered_data() {
 	do {
-		if(read_state_ == ReadState::HEADER) {
+		if(read_state_ == ReadState::header) {
 			parse_header();
 		}
 
-		if(read_state_ == ReadState::BODY) {
+		if(read_state_ == ReadState::body) {
 			completion_check();
 		}
 
-		if(read_state_ == ReadState::DONE) {
+		if(read_state_ == ReadState::done) {
 			++stats_.messages_in;
 
 			if(packet_logger_) [[unlikely]] {
 				std::span packet(inbound_buffer_.read_ptr(), msg_size_);
-				packet_logger_->log(packet, PacketDirection::INBOUND);
+				packet_logger_->log(packet, PacketDirection::inbound);
 			}
 			
 			dispatch_message();
-			read_state_ = ReadState::HEADER;
+			read_state_ = ReadState::header;
 		} else {
 			break;
 		}
@@ -268,7 +268,7 @@ void ClientConnection::log_packets(bool enable) {
 		packet_logger_ = std::make_unique<PacketLogger>();
 		packet_logger_->add_sink(std::make_unique<FBSink>("temp", "gateway", remote_address()));
 		packet_logger_->add_sink(
-			std::make_unique<LogSink>(logger_, log::Severity::INFO, remote_address())
+			std::make_unique<LogSink>(logger_, log::Severity::info, remote_address())
 		);
 	} else {
 		packet_logger_.reset();
@@ -276,7 +276,7 @@ void ClientConnection::log_packets(bool enable) {
 }
 
 inline std::size_t ClientConnection::minimum_transfer() const {
-	if(read_state_ == ReadState::HEADER) {
+	if(read_state_ == ReadState::header) {
 		return protocol::ClientHeader::WIRE_SIZE;
 	} else {
 		return msg_size_ - inbound_buffer_.size();

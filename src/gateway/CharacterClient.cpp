@@ -103,7 +103,7 @@ void CharacterClient::handle_create_reply(const spark::Link& link,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(protocol::Result::CHAR_CREATE_ERROR);
+		cb(protocol::Result::char_create_error);
 		return;
 	}
 
@@ -117,14 +117,14 @@ void CharacterClient::handle_rename_reply(const spark::Link& link,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(protocol::Result::CHAR_NAME_FAILURE, 0, "");
+		cb(protocol::Result::char_name_failure, 0, "");
 		return;
 	}
 
 	const auto msg = *res;
 
 	if(!msg->name()) {
-		cb(protocol::Result::CHAR_NAME_FAILURE, 0, "");
+		cb(protocol::Result::char_name_failure, 0, "");
 		return;
 	}
 
@@ -137,14 +137,14 @@ void CharacterClient::handle_retrieve_reply(const spark::Link& link,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(Status::UNKNOWN_ERROR, {});
+		cb(Status::unknown_error, {});
 		return;
 	}
 
 	const auto msg = *res;
 
 	if(!msg->characters()) {
-		cb(Status::OK, {});
+		cb(Status::ok, {});
 		return;
 	}
 
@@ -183,7 +183,7 @@ void CharacterClient::handle_retrieve_reply(const spark::Link& link,
 		characters.emplace_back(std::move(character));
 	}
 
-	cb(Status::OK, std::move(characters));
+	cb(Status::ok, std::move(characters));
 }
 
 void CharacterClient::handle_delete_reply(const spark::Link& link,
@@ -192,7 +192,7 @@ void CharacterClient::handle_delete_reply(const spark::Link& link,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	if(!res) {
-		cb(protocol::Result::CHAR_DELETE_FAILED);
+		cb(protocol::Result::char_delete_failed);
 		return;
 	}
 

@@ -33,13 +33,13 @@ CharacterService::handle_create(const Create& msg, const Link& link, const Token
 
 	if(!msg.character()) {
 		return CreateResponseT {
-			.status = Status::ILLFORMED_MESSAGE 
+			.status = Status::illformed_message 
 		};
 	}
 
 	handler_.create(msg.account_id(), msg.realm_id(), *msg.character(), [=, this](auto res) {
 		CreateResponseT msg {
-			.status = Status::OK,
+			.status = Status::ok,
 			.result = std::to_underlying(res)
 		};
 
@@ -57,7 +57,7 @@ CharacterService::handle_delete(const Delete& msg, const Link& link, const Token
 		LOG_DEBUG_ASYNC(logger_, "Deletion response: {}", protocol::to_string(res));
 
 		DeleteResponseT msg {
-			.status = Status::OK,
+			.status = Status::ok,
 			.result = std::to_underlying(res)
 		};
 
@@ -73,7 +73,7 @@ CharacterService::handle_rename(const Rename& msg, const Link& link, const Token
 
 	if(!msg.name()) {
 		return RenameResponseT{
-			.status = Status::ILLFORMED_MESSAGE
+			.status = Status::illformed_message
 		};
 	}
 
@@ -104,7 +104,7 @@ void CharacterService::send_rename(const protocol::Result& res,
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	RenameResponseT response {
-		.status = Status::OK,
+		.status = Status::ok,
 		.result = std::to_underlying(res),
 	};
 
@@ -159,10 +159,10 @@ void CharacterService::send_characters(const bool result,
 	RetrieveResponseT response;
 
 	if(result) {
-		response.status = Status::OK;
+		response.status = Status::ok;
 		response.characters = std::move(chars);
 	} else {
-		response.status = Status::UNKNOWN_ERROR;
+		response.status = Status::unknown_error;
 	}
 
 	send(response, link, token);

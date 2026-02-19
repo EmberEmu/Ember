@@ -14,16 +14,16 @@
 namespace ember::gateway {
 
 enum class Route {
-    INVALID,
-    SELF,
-    SOCIAL,
-    TRANSACTOR,
-    WORLD
+    invalid,
+    self,
+    social,
+    transactor,
+    world
 };
 
 // todo, autogenerate in packet compiler
 const std::unordered_map<protocol::ClientOpcode, Route> cmsg_routes {
-    { protocol::ClientOpcode::CMSG_PING, Route::SELF }
+    { protocol::ClientOpcode::cmsg_ping, Route::self }
 };
 
 } // gateway, ember

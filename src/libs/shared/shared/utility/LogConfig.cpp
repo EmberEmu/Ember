@@ -28,7 +28,7 @@ std::unique_ptr<log::Sink> init_remote_sink(const po::variables_map& args, log::
 	const auto& host = args["remote_log.host"].as<std::string>();
 	const auto& service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<std::uint16_t>();
-	auto facility = log::SyslogSink::Facility::LOCAL_USE_0;
+	auto facility = log::SyslogSink::Facility::local_use_0;
 	auto filter = args["remote_log.filter-mask"].as<std::uint32_t>();
 	return std::make_unique<log::SyslogSink>(severity, log::Filter(filter), host, port, facility, service);
 }
@@ -42,8 +42,8 @@ std::unique_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Se
 		throw std::runtime_error("Invalid file logging mode supplied");
 	}
 
-	auto mode = (mode_str == "append")? log::FileSink::Mode::APPEND :
-	                                    log::FileSink::Mode::TRUNCATE;
+	auto mode = (mode_str == "append")? log::FileSink::Mode::append :
+	                                    log::FileSink::Mode::truncate;
 
 	auto sink = std::make_unique<log::FileSink>(severity, log::Filter(filter), path, mode);
 	sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
@@ -91,7 +91,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	severity = log::severity_string(args["console_log.verbosity"].as<std::string>());
 
 	if(enable_input) {
-		if(severity != log::Severity::DISABLED) {
+		if(severity != log::Severity::disabled) {
 #ifdef _WIN32
 			logger.add_sink(init_command_sink(args, severity));
 #else
@@ -99,7 +99,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 #endif
 		}
 	} else {
-		if(severity != log::Severity::DISABLED) {
+		if(severity != log::Severity::disabled) {
 			logger.add_sink(init_console_sink(args, severity));
 		}
 	}
@@ -107,14 +107,14 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	// file logger
 	severity = log::severity_string(args["file_log.verbosity"].as<std::string>());
 
-	if(severity != log::Severity::DISABLED) {
+	if(severity != log::Severity::disabled) {
 		logger.add_sink(init_file_sink(args, severity));
 	}
 
 	// remote logger
 	severity = log::severity_string(args["remote_log.verbosity"].as<std::string>());
 
-	if(severity != log::Severity::DISABLED) {
+	if(severity != log::Severity::disabled) {
 		logger.add_sink(init_remote_sink(args, severity));
 	}
 }

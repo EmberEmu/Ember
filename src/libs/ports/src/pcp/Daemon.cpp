@@ -27,7 +27,7 @@ Daemon::Daemon(Client& client, boost::asio::io_context& ctx)
 }
 
 void Daemon::start_renew_timer(const std::chrono::seconds time) {
-	state_ = State::TIMER_WAIT;
+	state_ = State::timer_wait;
 
 	timer_.expires_after(time);
 	timer_.async_wait(boost::asio::bind_executor(strand_, [&](const boost::system::error_code& ec) {
@@ -41,7 +41,7 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
 			const auto time_remaining = mapping.expiry - time;
 
 			if(time_remaining < 0s) {
-				handler_(Event::MAPPING_EXPIRED, mapping.request);
+				handler_(Event::mapping_expired, mapping.request);
 			}
 
 			if(time_remaining < RENEW_WHEN_BELOW) {
@@ -72,7 +72,7 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
  *                       ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
  */
 void Daemon::process_queue() {
-	state_ = State::QUEUE;
+	state_ = State::queue;
 	timer_.cancel();
 
 	if(queue_.empty()) {
@@ -93,11 +93,11 @@ void Daemon::renew_mapping(const Mapping& mapping) {
 		// showed that it's possible to have transient errors,
 		// so we'll keep the entry and hope we have better luck next time
 		if(result) {
-			handler_(Event::RENEWED_MAPPING, mapping.request);
+			handler_(Event::renewed_mapping, mapping.request);
 			update_mapping(result);
 			check_epoch(result->epoch);
 		} else {
-			handler_(Event::FAILED_TO_RENEW, mapping.request);
+			handler_(Event::failed_to_renew, mapping.request);
 		}
 
 		if(mapping.handler) {
@@ -184,7 +184,7 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 				.strict = strict,
 			};
 
-			handler_(Event::ADDED_MAPPING, mapping.request);
+			handler_(Event::added_mapping, mapping.request);
 			mappings_.emplace_back(std::move(mapping));
 			check_epoch(result->epoch);
 		}
@@ -200,7 +200,7 @@ void Daemon::add_mapping(MapRequest request, bool strict, RequestHandler&& handl
 	boost::asio::post(strand_, [&, mapping = std::move(mapping)]() mutable {
 		queue_.emplace_front(std::move(mapping));
 
-		if(state_ == State::TIMER_WAIT) {
+		if(state_ == State::timer_wait) {
 			start_renew_timer(0s);
 		}
 	});
@@ -232,7 +232,7 @@ void Daemon::delete_mapping(std::uint16_t internal_port, Protocol protocol,
 	boost::asio::post(strand_, [&, mapping = std::move(mapping)]() mutable {
 		queue_.emplace_front(std::move(mapping));
 
-		if(state_ == State::TIMER_WAIT) {
+		if(state_ == State::timer_wait) {
 			start_renew_timer(0s);
 		}
 	});

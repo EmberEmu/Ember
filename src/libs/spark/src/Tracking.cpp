@@ -80,12 +80,12 @@ void Tracking::track(Token token, TrackedState state, sc::seconds ttl) {
 
 void Tracking::timeout(Request& request) {
 	spark::Link link; // todo
-	request.state(link, std::unexpected(Result::TIMED_OUT));
+	request.state(link, std::unexpected(Result::timed_out));
 }
 
 void Tracking::cancel(Request& request) {
 	spark::Link link; // todo
-	request.state(link, std::unexpected(Result::CANCELLED));
+	request.state(link, std::unexpected(Result::cancelled));
 }
 
 Tracking::~Tracking() {

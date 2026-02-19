@@ -33,7 +33,7 @@ void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger& logger) 
 		"Database connection pool is empty!",
 	};
 
-	monitor.add_source(source, Monitor::Severity::ERROR,
+	monitor.add_source(source, Monitor::Severity::error,
 		std::bind(monitor_log_callback, std::placeholders::_1, std::placeholders::_2,
 		          std::placeholders::_3, std::ref(logger))
 	);

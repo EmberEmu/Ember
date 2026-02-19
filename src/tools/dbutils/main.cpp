@@ -71,7 +71,7 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 
 	auto fsink = std::make_unique<log::FileSink>(
-		file_verbosity, log::Filter(0), "dbmanage.log", log::FileSink::Mode::APPEND
+		file_verbosity, log::Filter(0), "dbmanage.log", log::FileSink::Mode::append
 	);
 
 	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));

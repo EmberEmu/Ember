@@ -27,7 +27,7 @@ class LoginProof final : public Packet {
 	static const std::size_t BODY_LENGTH = 24;
 	static const std::size_t PROOF_LENGTH = 20;
 
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 	void read_head(spark::io::pmr::BinaryStream& stream) {
 		stream >> opcode;
@@ -36,14 +36,14 @@ class LoginProof final : public Packet {
 
 	void read_body(spark::io::pmr::BinaryStream& stream) {
 		// no need to keep reading - the other fields aren't set
-		if(result != grunt::Result::SUCCESS) {
-			state_ = State::DONE;
+		if(result != grunt::Result::success) {
+			state_ = State::done;
 			return;
 		}
 
 		// must be CMD_AUTH_LOGIN_PROOF, so read the rest of the packet
 		if(stream.size() < BODY_LENGTH) {
-			state_ = State::CALL_AGAIN;
+			state_ = State::call_again;
 			return;
 		}
 		
@@ -56,24 +56,25 @@ class LoginProof final : public Packet {
 	}
 
 public:
-	LoginProof() : Packet(Opcode::CMD_AUTH_LOGON_PROOF) {}
+	LoginProof()
+		: Packet(Opcode::cmd_auth_logon_proof) {}
 
 	Result result;
 	Botan::BigInt M2;
 	be::little_uint32_t survey_id = 0;
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < HEADER_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < HEADER_LENGTH) {
+			return State::call_again;
 		}
 
 		switch(state_) {
-			case State::INITIAL:
+			case State::initial:
 				read_head(stream);
 				[[fallthrough]];
-			case State::CALL_AGAIN:
+			case State::call_again:
 				read_body(stream);
 				break;
 			default:
@@ -88,7 +89,7 @@ public:
 		stream << result;
 
 		// no need to stream the rest of the members
-		if(result != grunt::Result::SUCCESS && result != grunt::Result::SUCCESS_SURVEY) {
+		if(result != grunt::Result::success && result != grunt::Result::success_survey) {
 			return;
 		}
 

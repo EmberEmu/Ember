@@ -68,114 +68,123 @@ constexpr auto UNICAST_RESP_OFFSET = 0x0F;
 constexpr auto UNICAST_RESP_MASK = 0x01 << UNICAST_RESP_OFFSET;
 
 enum class QR {
-    QUERY, REPLY
+    query,
+	reply
 };
 
 enum class ResCode {
-    RNOERROR, FORMERR, SERVFAIL, NXDOMAIN
+    rnoerror,
+	formerr,
+	servfail,
+	nxdomain
 };
 
 smart_enum_class(RecordType, std::uint16_t,
-	A          = 1,
-	AAAA       = 28,
-	AFSDB      = 18,
-	APL        = 42,
-	CAA        = 257,
-	CDNSKEY    = 60,
-	CDS        = 59,
-	CERT       = 47,
-	CNAME      = 5,
-	DHCID      = 49,
-	DLV        = 32769,
-	DNAME      = 39,
-	DNSKEY     = 48,
-	DS         = 43,
-	HIP        = 55,
-	IPSECKEY   = 45,
-	KEY        = 25,
-	KX         = 36,
-	LOC        = 29,
-	MX         = 15,
-	NAPTR      = 35,
-	NS         = 2,
-	NSEC       = 47,
-	NSEC3      = 50,
-	NSEC3PARAM = 51,
-	OPENPGPKEY = 61,
-	PTR        = 12,
-	RRSIG      = 46,
-	RP         = 17,
-	SIG        = 24,
-	SOA        = 6,
-	SRV        = 33,
-	SSHFP      = 44,
-	TA         = 32769,
-	TKEY       = 249,
-	TLSA       = 52,
-	TSIG       = 250,
-	TXT        = 16,
-	URI        = 256,
+	a          = 1,
+	aaaa       = 28,
+	afsdb      = 18,
+	apl        = 42,
+	caa        = 257,
+	cdnskey    = 60,
+	cds        = 59,
+	cert       = 47,
+	cname      = 5,
+	dhcid      = 49,
+	dlv        = 32769,
+	dname      = 39,
+	dnskey     = 48,
+	ds         = 43,
+	hip        = 55,
+	ipseckey   = 45,
+	key        = 25,
+	kx         = 36,
+	loc        = 29,
+	mx         = 15,
+	naptr      = 35,
+	ns         = 2,
+	nsec       = 47,
+	nsec3      = 50,
+	nsec3param = 51,
+	openpgpkey = 61,
+	ptr        = 12,
+	rrsig      = 46,
+	rp         = 17,
+	sig        = 24,
+	soa        = 6,
+	srv        = 33,
+	sshfp      = 44,
+	ta         = 32769,
+	tkey       = 249,
+	tlsa       = 52,
+	tsig       = 250,
+	txt        = 16,
+	uri        = 256,
 
 	// misc
-	ALL        = 255,
-	AXFR       = 252,
-	IXFR       = 251,
-	OPT        = 41,
+	all        = 255,
+	axfr       = 252,
+	ixfr       = 251,
+	opt        = 41,
 
 	// obsolete
-	MD         = 3,
-	MF         = 4,
-	MAILA      = 254,
-	MB         = 7,
-	MG         = 8,
-	MR         = 9,
-	MINFO      = 14,
-	MAILB      = 253,
-	WKS        = 11,
-	NB         = 32,
-	// NBSTAT     = 33,
-	NULL_      = 10,
-	A6         = 38,
-	NXT        = 30,
-	KEY_       = 25,
-	SIG_       = 24,
-	HINFO      = 13,
-	RP_        = 17,
-	X25        = 19,
-	ISDN       = 20,
-	RT         = 21,
-	NSAP       = 22,
-	NSAP_PTR   = 23,
-	PX         = 26,
-	EID        = 31,
-	NIMLOC     = 32,
-	ATMA       = 34,
-	APL_       = 42,
-	SINK       = 40,
-	GPOS       = 27,
-	UINFO      = 100,
-	UID        = 101,
-	GID        = 102,
-	UNSPEC     = 103,
-	SPF        = 99
+	md         = 3,
+	mf         = 4,
+	maila      = 254,
+	mb         = 7,
+	mg         = 8,
+	mr         = 9,
+	minfo      = 14,
+	mailb      = 253,
+	wks        = 11,
+	nb         = 32,
+	// nbstat     = 33,
+	null_      = 10,
+	a6         = 38,
+	nxt        = 30,
+	key_       = 25,
+	sig_       = 24,
+	hinfo      = 13,
+	rp_        = 17,
+	x25        = 19,
+	isdn       = 20,
+	rt         = 21,
+	nsap       = 22,
+	nsap_ptr   = 23,
+	px         = 26,
+	eid        = 31,
+	nimloc     = 32,
+	atma       = 34,
+	apl_       = 42,
+	sink       = 40,
+	gpos       = 27,
+	uinfo      = 100,
+	uid        = 101,
+	gid        = 102,
+	unspec     = 103,
+	spf        = 99
 )
 
 smart_enum_class(Class, std::uint16_t,
-	CLASS_IN = 1, // Internet
-	CLASS_CS = 2, // CSNET, obsolete
-	CLASS_CH = 3, // Chaos
-	CLASS_HS = 4, // Hesiod
-	CLASS_ANY = 255
+	class_in = 1, // Internet
+	class_cs = 2, // CSNET, obsolete
+	class_ch = 3, // Chaos
+	class_hs = 4, // Hesiod
+	class_any = 255
 )
 
 smart_enum_class(Opcode, std::uint16_t,
-	STANDARD_QUERY, IQUERY, STATUS
+	standard_query,
+	iquery,
+	status
 )
 
 smart_enum_class(ReplyCode, std::uint16_t,
-	REPLY_NO_ERROR, FORMAT_ERROR,
-	SERVER_FAILURE, NAME_ERROR,
-	NOT_IMPLEMENTED, REFUSED
+	reply_no_error,
+	format_error,
+	server_failure,
+	name_error,
+	not_implemented,
+	refused
 )
 
 /* 

@@ -15,21 +15,21 @@ namespace ember::srp6 {
 
 Botan::BigInt Generator::g_from_group(Group& group) {
 	switch(group) {
-		case Group::_256_BIT:
+		case Group::g_256_bit:
 			return 7;
-		case Group::_1024_BIT:
+		case Group::g_1024_bit:
 			[[fallthrough]];
-		case Group::_1536_BIT:
+		case Group::g_1536_bit:
 			[[fallthrough]];
-		case Group::_2048_BIT:
+		case Group::g_2048_bit:
 			return 2;
-		case Group::_3072_BIT:
+		case Group::g_3072_bit:
 			[[fallthrough]];
-		case Group::_4096_BIT:
+		case Group::g_4096_bit:
 			[[fallthrough]];
-		case Group::_6144_BIT:
+		case Group::g_6144_bit:
 			return 5;
-		case Group::_8192_BIT:
+		case Group::g_8192_bit:
 			return 19;
 	}
 
@@ -40,22 +40,22 @@ Botan::BigInt Generator::g_from_group(Group& group) {
 // todo: Botan 3 should have std::span overloads to clean this up
 Botan::BigInt Generator::n_from_group(Group& group) {
 	switch(group) {
-		case Group::_256_BIT:
-			return { _256_bit.data(), _256_bit.size() };
-		case Group::_1024_BIT:
-			return { _1024_bit.data(), _1024_bit.size() };
-		case Group::_1536_BIT:
-			return { _1536_bit.data(), _1536_bit.size() };
-		case Group::_2048_BIT:
-			return { _2048_bit.data(), _2048_bit.size() };
-		case Group::_3072_BIT:
-			return { _3072_bit.data(), _3072_bit.size() };
-		case Group::_4096_BIT:
-			return { _4096_bit.data(), _4096_bit.size() };
-		case Group::_6144_BIT:
-			return { _6144_bit.data(), _6144_bit.size() };
-		case Group::_8192_BIT:
-			return { _8192_bit.data(), _8192_bit.size() };
+		case Group::g_256_bit:
+			return { g_256_bit.data(), g_256_bit.size() };
+		case Group::g_1024_bit:
+			return { g_1024_bit.data(), g_1024_bit.size() };
+		case Group::g_1536_bit:
+			return { g_1536_bit.data(), g_1536_bit.size() };
+		case Group::g_2048_bit:
+			return { g_2048_bit.data(), g_2048_bit.size() };
+		case Group::g_3072_bit:
+			return { g_3072_bit.data(), g_3072_bit.size() };
+		case Group::g_4096_bit:
+			return { g_4096_bit.data(), g_4096_bit.size() };
+		case Group::g_6144_bit:
+			return { g_6144_bit.data(), g_6144_bit.size() };
+		case Group::g_8192_bit:
+			return { g_8192_bit.data(), g_8192_bit.size() };
 	}
 
 	BOOST_ASSERT_MSG(0, "Unhandled enum constant - this is an SRP6 library error!");

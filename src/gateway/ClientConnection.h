@@ -38,7 +38,11 @@ namespace ember::gateway {
 class SessionManager;
 
 class ClientConnection final {
-	enum class ReadState { HEADER, BODY, DONE } read_state_;
+	enum class ReadState {
+		header,
+		body,
+		done
+	} read_state_;
 
 	tcp_socket socket_;
 	boost::asio::ip::tcp::endpoint remote_ep_;
@@ -92,7 +96,7 @@ public:
 		  stats_{},
 		  msg_size_{0},
 		  logger_(logger),
-		  read_state_(ReadState::HEADER),
+		  read_state_(ReadState::header),
 		  stopped_(false),
 		  write_in_progress_(false),
 		  handler_(*this, uuid, socket_.get_executor(), logger),

@@ -35,15 +35,15 @@ void send_character_list_fail(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
 	// displays an error dialogue on the client
-	protocol::SMSG_CHAR_CREATE response;
-	response->result = protocol::Result::CHAR_LIST_FAILED;
+	protocol::smsg_char_create response;
+	response->result = protocol::Result::char_list_failed;
 	ctx.connection.send(response);
 }
 
 void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::SMSG_CHAR_ENUM response;
+	protocol::smsg_char_enum response;
 	response->characters = std::move(characters);
 	ctx.connection.send(response);
 }
@@ -51,7 +51,7 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::SMSG_CHAR_RENAME response;
+	protocol::smsg_char_rename response;
 	response->result = res->result;
 	response->id = res->character_id;
 	response->name = res->name;
@@ -61,7 +61,7 @@ void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
 void character_rename(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::CMSG_CHAR_RENAME packet;
+	protocol::cmsg_char_rename packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -91,7 +91,7 @@ void character_enumerate(const ClientContext& ctx) {
 void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* event) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	if(event->status == rpc::Character::Status::OK) {
+	if(event->status == rpc::Character::Status::ok) {
 		send_character_list(ctx, event->characters);
 	} else {
 		send_character_list_fail(ctx);
@@ -101,7 +101,7 @@ void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* 
 void send_character_delete(ClientContext& ctx, const CharDeleteResponse* res) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::SMSG_CHAR_DELETE response;
+	protocol::smsg_char_delete response;
 	response->result = res->result;
 	ctx.connection.send(response);
 }
@@ -109,7 +109,7 @@ void send_character_delete(ClientContext& ctx, const CharDeleteResponse* res) {
 void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::SMSG_CHAR_CREATE response;
+	protocol::smsg_char_create response;
 	response->result = res->result;
 	ctx.connection.send(response);
 }
@@ -117,7 +117,7 @@ void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
 void character_create(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::CMSG_CHAR_CREATE packet;
+	protocol::cmsg_char_create packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -133,7 +133,7 @@ void character_create(ClientContext& ctx) {
 void character_delete(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	protocol::CMSG_CHAR_DELETE packet;
+	protocol::cmsg_char_delete packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -149,9 +149,9 @@ void character_delete(ClientContext& ctx) {
 void player_login(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	ctx.handler.state_update(ClientState::WORLD_ENTER);
+	ctx.handler.state_update(ClientState::cs_world_enter);
 
-	protocol::CMSG_PLAYER_LOGIN packet;
+	protocol::cmsg_player_login packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -161,7 +161,7 @@ void player_login(ClientContext& ctx) {
 		ctx.handler.uuid(), PlayerLogin(packet->character_id)
 	);
 
-	ctx.handler.state_update(ClientState::WORLD_ENTER);
+	ctx.handler.state_update(ClientState::cs_world_enter);
 }
 
 void handle_timeout(ClientContext& ctx) {
@@ -177,19 +177,19 @@ void enter(ClientContext& ctx) {
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
-		case protocol::ClientOpcode::CMSG_CHAR_ENUM:
+		case protocol::ClientOpcode::cmsg_char_enum:
 			character_enumerate(ctx);
 			break;
-		case protocol::ClientOpcode::CMSG_CHAR_CREATE:
+		case protocol::ClientOpcode::cmsg_char_create:
 			character_create(ctx);
 			break;
-		case protocol::ClientOpcode::CMSG_CHAR_DELETE:
+		case protocol::ClientOpcode::cmsg_char_delete:
 			character_delete(ctx);
 			break;
-		case protocol::ClientOpcode::CMSG_CHAR_RENAME:
+		case protocol::ClientOpcode::cmsg_char_rename:
 			character_rename(ctx);
 			break;
-		case protocol::ClientOpcode::CMSG_PLAYER_LOGIN:
+		case protocol::ClientOpcode::cmsg_player_login:
 			player_login(ctx);
 			break;
 		default:
@@ -199,19 +199,19 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 
 void handle_event(ClientContext& ctx, const Event* event) {
 	switch(event->type) {
-		case EventType::TIMER_EXPIRED:
+		case EventType::timer_expired:
 			handle_timeout(ctx);
 			break;
-		case EventType::CHAR_CREATE_RESPONSE:
+		case EventType::char_create_response:
 			send_character_create(ctx, static_cast<const CharCreateResponse*>(event));
 			break;
-		case EventType::CHAR_DELETE_RESPONSE:
+		case EventType::char_delete_response:
 			send_character_delete(ctx, static_cast<const CharDeleteResponse*>(event));
 			break;
-		case EventType::CHAR_ENUM_RESPONSE:
+		case EventType::char_enum_response:
 			character_enumerate_completion(ctx, static_cast<const CharEnumResponse*>(event));
 			break;
-		case EventType::CHAR_RENAME_RESPONSE:
+		case EventType::char_rename_response:
 			send_character_rename(ctx, static_cast<const CharRenameResponse*>(event));
 			break;
 		default:
@@ -222,7 +222,7 @@ void handle_event(ClientContext& ctx, const Event* event) {
 void exit(ClientContext& ctx) {
 	ctx.handler.cancel_timer();
 
-	if(ctx.state == ClientState::SESSION_CLOSED) {
+	if(ctx.state == ClientState::cs_session_closed) {
 		//--test;
 		Locator::queue()->free_slot();
 	}

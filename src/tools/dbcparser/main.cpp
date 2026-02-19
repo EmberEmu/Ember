@@ -47,7 +47,7 @@ int main(int argc, const char* argv[]) try {
 
 	auto logger = std::make_unique<log::Logger>();
 	auto fsink = std::make_unique<log::FileSink>(file_verbosity, log::Filter(0),
-	                                             "dbcparser.log", log::FileSink::Mode::APPEND);
+	                                             "dbcparser.log", log::FileSink::Mode::append);
 	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
@@ -76,13 +76,13 @@ int launch(const po::variables_map& args) try {
 
 void handle_options(const po::variables_map& args, const dbc::types::Definitions& defs) {
 	dbc::Validator validator;
-	dbc::Validator::Options val_opts { dbc::Validator::VAL_SKIP_FOREIGN_KEYS };
+	dbc::Validator::Options val_opts { dbc::Validator::val_skip_foreign_keys };
 
 	// if we're doing code generation for a DBC that references other DBCs, we
 	// need to make sure that those references are also valid, otherwise we
 	// might generate code that doesn't compile
 	if(args["disk"].as<bool>()) {
-		val_opts = static_cast<dbc::Validator::Options>(val_opts & ~dbc::Validator::VAL_SKIP_FOREIGN_KEYS);
+		val_opts = static_cast<dbc::Validator::Options>(val_opts & ~dbc::Validator::val_skip_foreign_keys);
 	}
 
 	validator.validate(defs, val_opts);
@@ -101,7 +101,7 @@ void handle_options(const po::variables_map& args, const dbc::types::Definitions
 
 	if(args["dbc-gen"].as<bool>()) {
 		for(const auto& dbc : defs) {
-			if(dbc->type == dbc::types::Type::STRUCT) {
+			if(dbc->type == dbc::types::Type::t_struct) {
 				dbc::generate_dbc_template(static_cast<const dbc::types::Struct*>(dbc.get()), out);
 			}
 		}
@@ -134,7 +134,7 @@ void print_dbc_table(const dbc::types::Definitions& defs) {
 	printer.PrintHeader();
 
 	for(const auto& def : defs) {
-		if(def->type == dbc::types::Type::STRUCT) {
+		if(def->type == dbc::types::Type::t_struct) {
 			const auto dbc = static_cast<const dbc::types::Struct*>(def.get());
 			printer << std::string_view(dbc->name).substr(0, name_len) << dbc->fields.size()
 				<< dbc->comment;
@@ -155,7 +155,7 @@ void print_dbc_fields(const dbc::types::Definitions& groups) {
 		printer.AddColumn("Comment", 20);
 		printer.PrintHeader();
 
-		if(def->type != dbc::types::Type::STRUCT) {
+		if(def->type != dbc::types::Type::t_struct) {
 			continue;
 		}
 

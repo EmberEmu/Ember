@@ -32,13 +32,13 @@ class BinaryStreamWriter : virtual public StreamBase {
 	std::size_t total_write_;
 
 	inline void write(const void* data, const std::size_t size) try {
-		if(state() == StreamState::OK) [[likely]] {
+		if(state() == StreamState::ok) [[likely]] {
 			buffer_.write(data, size);
 			total_write_ += size;
 		}
 
 	} catch(...) {
-		set_state(StreamState::BUFF_WRITE_ERR);
+		set_state(StreamState::buffer_write_error);
 
 		if(allow_throw()) {
 			throw;
@@ -75,7 +75,7 @@ public:
 		  buffer_(rhs.buffer_), 
 		  total_write_(rhs.total_write_) {
 		rhs.total_write_ = static_cast<std::size_t>(-1);
-		rhs.set_state(StreamState::INVALID_STREAM);
+		rhs.set_state(StreamState::invalid_stream);
 	}
 
 	BinaryStreamWriter& operator=(BinaryStreamWriter&&) = delete;
@@ -215,11 +215,11 @@ public:
 	}
 
 	void write_seek(const StreamSeek direction, const std::size_t offset) {
-		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
+		if(direction == StreamSeek::sk_stream_absolute) {
 			if(offset >= total_write_) {
-				buffer_.write_seek(BufferSeek::SK_FORWARD, offset - total_write_);
+				buffer_.write_seek(BufferSeek::sk_forward, offset - total_write_);
 			} else {
-				buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
+				buffer_.write_seek(BufferSeek::sk_backward, total_write_ - offset);
 			}
 
 			total_write_ = offset;

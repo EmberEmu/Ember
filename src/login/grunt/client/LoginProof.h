@@ -24,11 +24,13 @@ namespace ember::grunt::client {
 
 class LoginProof final : public Packet {
 	enum class ReadState {
-		READ_KEY_DATA, READ_PIN_TYPE,
-		READ_PIN_DATA, DONE
-	} read_state_ = ReadState::READ_KEY_DATA;
+		key_data,
+		pin_type,
+		pin_data,
+		done
+	} read_state_ = ReadState::key_data;
 
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 	static const std::size_t WIRE_LENGTH = 74; 
 	static const unsigned int A_LENGTH = 32;
@@ -64,9 +66,9 @@ class LoginProof final : public Packet {
 		stream >> two_factor_auth;
 
 		if(two_factor_auth) {
-			read_state_ = ReadState::READ_PIN_DATA;
+			read_state_ = ReadState::pin_data;
 		} else {
-			read_state_ = ReadState::DONE;
+			read_state_ = ReadState::done;
 		}
 
 		return true;
@@ -80,7 +82,7 @@ class LoginProof final : public Packet {
 		stream.get(pin_salt.data(), pin_salt.size());
 		stream.get(pin_hash.data(), pin_hash.size());
 
-		read_state_ = ReadState::DONE;
+		read_state_ = ReadState::done;
 		return true;
 	}
 
@@ -103,12 +105,13 @@ class LoginProof final : public Packet {
 			keys.emplace_back(data);
 		}
 
-		read_state_ = ReadState::READ_PIN_TYPE;
+		read_state_ = ReadState::pin_type;
 		return true;
 	}
 
 public:
-	LoginProof() : Packet(Opcode::CMD_AUTH_LOGON_PROOF) {}
+	LoginProof()
+		: Packet(Opcode::cmd_auth_logon_proof) {}
 
 	Botan::BigInt A;
 	Botan::BigInt M1;
@@ -123,36 +126,36 @@ public:
 
 		while(continue_read) {
 			switch(read_state_) {
-				case ReadState::READ_KEY_DATA:
+				case ReadState::key_data:
 					continue_read = read_key_data(stream);
 					break;
-				case ReadState::READ_PIN_TYPE:
+				case ReadState::pin_type:
 					continue_read = read_security_type(stream);
 					break;
-				case ReadState::READ_PIN_DATA:
+				case ReadState::pin_data:
 					continue_read = read_pin_data(stream);
 					break;
-				case ReadState::DONE:
+				case ReadState::done:
 					continue_read = false;
 					break;
 			}
 		}
 
-		state_ = (read_state_ == ReadState::DONE)? State::DONE : State::CALL_AGAIN;
+		state_ = (read_state_ == ReadState::done)? State::done : State::call_again;
 	}
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+			return State::call_again;
 		}
 
 		switch(state_) {
-			case State::INITIAL:
+			case State::initial:
 				read_body(stream);
 				[[fallthrough]];
-			case State::CALL_AGAIN:
+			case State::call_again:
 				read_optional_data(stream);
 				break;
 			default:

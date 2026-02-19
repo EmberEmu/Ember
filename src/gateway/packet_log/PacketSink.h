@@ -16,7 +16,8 @@
 namespace ember::gateway {
 
 enum class PacketDirection {
-	INBOUND, OUTBOUND
+	inbound,
+	outbound
 };
 
 class PacketSink {

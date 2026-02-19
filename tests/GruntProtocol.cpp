@@ -204,7 +204,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	ASSERT_EQ(Botan::BigInt("0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"), packet.N)
 		<< "field: N [safe prime]";
 	ASSERT_EQ(32, packet.n_len) << "field: N length";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
+	ASSERT_EQ(grunt::Result::success, packet.result) << "field: result";
 	ASSERT_EQ(Botan::BigInt("0xF4C7DBCA7138DA48D9B7BE55C0C76B1145AF67340CF7A6718D452A563E12A19C"), packet.s)
 		<< "field: salt";
 	ASSERT_EQ(0, packet.protocol_ver) << "field: protocol_ver";
@@ -240,7 +240,7 @@ TEST(GruntProtocol, ServerLoginProof) {
 	ASSERT_EQ(0, packet.survey_id) << "field: survey ID";
 	ASSERT_EQ(Botan::BigInt("0xa3fbd672a092de7650fb0733419ebf59bcae644a"), packet.M2)
 		<< "field: M2";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
+	ASSERT_EQ(grunt::Result::success, packet.result) << "field: result";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);
@@ -275,8 +275,8 @@ TEST(GruntProtocol, ServerRealmList) {
 		const auto& realm = entry.realm;
 		const auto& chars = entry.characters;
 
-		ASSERT_EQ(Realm::Flags::OFFLINE, realm.flags) << "Invalid realm flags";
-		ASSERT_EQ(Realm::Type::PvP, realm.type) << "Invalid realm type";
+		ASSERT_EQ(Realm::Flags::offline, realm.flags) << "Invalid realm flags";
+		ASSERT_EQ(Realm::Type::pvp, realm.type) << "Invalid realm type";
 		ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
 		ASSERT_EQ("127.0.0.1:1337"s, realm.address) << "Invalid realm IP";
 		ASSERT_EQ("Ember"s, realm.name) << "Invalid realm name";
@@ -289,8 +289,8 @@ TEST(GruntProtocol, ServerRealmList) {
 		const auto& realm = entry.realm;
 		const auto& chars = entry.characters;
 
-		ASSERT_EQ(Realm::Flags::INVALID, realm.flags) << "Invalid realm flags";
-		ASSERT_EQ(Realm::Type::PvE, realm.type) << "Invalid realm type";
+		ASSERT_EQ(Realm::Flags::invalid, realm.flags) << "Invalid realm flags";
+		ASSERT_EQ(Realm::Type::pve, realm.type) << "Invalid realm type";
 		ASSERT_EQ(dbc::Cfg_Categories::Category::UNITED_STATES, realm.category) << "Invalid realm category";
 		ASSERT_EQ("127.0.0.1:8085"s, realm.address) << "Invalid realm IP";
 		ASSERT_EQ("Ember Test"s, realm.name) << "Invalid realm name";
@@ -335,7 +335,7 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
 	ASSERT_EQ(salt, packet.salt) << "field: salt";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
+	ASSERT_EQ(grunt::Result::success, packet.result) << "field: result";
 	ASSERT_EQ(expected_bytes, packet.checksum_salt) << "field: checksum_salt";
 
 	// serialise back to the stream and verify that the output matches the original packet
@@ -364,7 +364,7 @@ TEST(GruntProtocol, ServerReconnectProof) {
 
 	// verify the deserialisation results
 	ASSERT_EQ(0, chain.size()) << "Read length incorrect";
-	ASSERT_EQ(grunt::Result::SUCCESS, packet.result) << "field: result";
+	ASSERT_EQ(grunt::Result::success, packet.result) << "field: result";
 
 	// serialise back to the stream and verify that the output matches the original packet
 	packet.write_to_stream(out_stream);

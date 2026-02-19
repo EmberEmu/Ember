@@ -48,8 +48,8 @@ using TypeStore = std::vector<std::string>;
 class Validator final {
 public:
 	enum Options {
-		VAL_DEFAULT           = 1 << 0,
-		VAL_SKIP_FOREIGN_KEYS = 1 << 1
+		val_default           = 1 << 0,
+		val_skip_foreign_keys = 1 << 1
 	};
 
 private:
@@ -84,7 +84,7 @@ private:
 
 public:
 	Validator() = default;
-	void validate(const types::Definitions& definitions_, Options options = VAL_DEFAULT);
+	void validate(const types::Definitions& definitions_, Options options = val_default);
 };
 
 } // dbc, ember

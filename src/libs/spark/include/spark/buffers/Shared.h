@@ -46,25 +46,27 @@ STRING_ADAPTOR(prefixed_varint)
 STRING_ADAPTOR(null_terminated)
 
 enum class BufferSeek {
-	SK_ABSOLUTE, SK_BACKWARD, SK_FORWARD
+	sk_absolute,
+	sk_backward,
+	sk_forward
 };
 
 enum class StreamSeek {
 	// Seeks within the entire underlying buffer
-	SK_BUFFER_ABSOLUTE,
-	SK_BACKWARD,
-	SK_FORWARD,
+	sk_buffer_absolute,
+	sk_backward,
+	sk_forward,
 	// Seeks only within the range written by the current stream
-	SK_STREAM_ABSOLUTE
+	sk_stream_absolute
 };
 
 enum class StreamState {
-	OK,
-	READ_LIMIT_ERR,
-	BUFF_LIMIT_ERR,
-	BUFF_WRITE_ERR,
-	INVALID_STREAM,
-	USER_DEFINED_ERR
+	ok,
+	read_limit_error,
+	buffer_limit_error,
+	buffer_write_error,
+	invalid_stream,
+	user_defined_error
 };
 
 namespace detail {

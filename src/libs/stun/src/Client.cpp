@@ -42,10 +42,10 @@ Client::Client(const std::string& bind, std::string host, const std::uint16_t po
 	thread::set_name(worker_, "STUN Worker");
 
 	switch(proto) {
-		case Protocol::TCP:
+		case Protocol::tcp:
 			transport_ = std::make_unique<StreamTransport>(bind);
 			break;
-		case Protocol::UDP:
+		case Protocol::udp:
 			transport_ = std::make_unique<DatagramTransport>(bind);
 			break;
 	}
@@ -71,7 +71,7 @@ Client::~Client() {
 
 void Client::log_callback(LogCB callback) {
 	if(!callback) {
-		throw exception(Error::BAD_CALLBACK, "Logging callback cannot be null");
+		throw exception(Error::bad_callback, "Logging callback cannot be null");
 	}
 
 	logger_ = callback;
@@ -89,7 +89,7 @@ void Client::connect(const std::string& host, const std::uint16_t port,
 			if(!ec) {
 				cb(ec);
 			} else {
-				abort_transaction(Error::UNABLE_TO_CONNECT);
+				abort_transaction(Error::unable_to_connect);
 			}
 		}
 	);
@@ -97,7 +97,7 @@ void Client::connect(const std::string& host, const std::uint16_t port,
 
 std::pair<std::shared_ptr<std::vector<std::uint8_t>>, std::size_t>
 Client::build_request(const bool change_ip, const bool change_port) {
-	MessageBuilder builder(MessageType::BINDING_REQUEST, mode_);
+	MessageBuilder builder(MessageType::binding_request, mode_);
 
 	if(!(opts_ & SUPPRESS_BANNER)) {
 		builder.add_software(SOFTWARE_DESC);
@@ -115,7 +115,7 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 	std::lock_guard guard(mutex_);
 
 	if(buffer.size() < HEADER_LENGTH) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_BUFFER_LT_HEADER);
+		logger_(Verbosity::debug, Error::resp_buffer_lt_header);
 		return; // RFC says invalid messages should be discarded
 	}
 
@@ -128,20 +128,20 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 	const auto hash = generate_key(header.tx_id, mode_);
 
 	if(tx_ && tx_->key != hash) {
-		logger_(Verbosity::STUN_LOG_DEBUG, Error::RESP_TX_NOT_FOUND);
+		logger_(Verbosity::debug, Error::resp_tx_not_found);
 		return;
 	}
 
 	tx_->timer.cancel();
 
-	if(auto error = parser.validate_header(header); error != Error::OK) {
+	if(auto error = parser.validate_header(header); error != Error::ok) {
 		abort_transaction(error);
 		return;
 	}
 
 	process_message(buffer);
 } catch(const spark::exception& e) {
-	logger_(Verbosity::STUN_LOG_DEBUG, Error::BUFFER_PARSE_ERROR);
+	logger_(Verbosity::debug, Error::buffer_parse_error);
 }
 
 void Client::process_message(std::span<const std::uint8_t> buffer) try {
@@ -155,7 +155,7 @@ void Client::process_message(std::span<const std::uint8_t> buffer) try {
 		const auto crc32 = parser.fingerprint();
 
 		if(crc32 != fp->crc32) {
-			abort_transaction(Error::RESP_INVALID_FINGERPRINT);
+			abort_transaction(Error::resp_invalid_fingerprint);
 			return;
 		}
 	}
@@ -165,20 +165,20 @@ void Client::process_message(std::span<const std::uint8_t> buffer) try {
 	const MessageType type{ header.type.value() };
 
 	switch(type) {
-		case MessageType::BINDING_RESPONSE:
+		case MessageType::binding_response:
 			handle_binding_resp();
 			break;
-		case MessageType::BINDING_ERROR_RESPONSE:
+		case MessageType::binding_error_response:
 			handle_binding_err_resp();
 			break;
-		case MessageType::BINDING_REQUEST:
+		case MessageType::binding_request:
 			handle_binding_req();
 			break;
 		default:
-			abort_transaction(Error::RESP_UNK_MESSAGE_TYPE);
+			abort_transaction(Error::resp_unk_message_type);
 	}
 } catch (const spark::exception&) {
-	abort_transaction(Error::BUFFER_PARSE_ERROR);
+	abort_transaction(Error::buffer_parse_error);
 }
 
 void Client::abort_transaction(const Error error, attributes::ErrorCode ec, const bool erase) {
@@ -218,11 +218,11 @@ void Client::set_nat_present() {
 }
 
 void Client::handle_binding_req() {
-	if(tx_->state == State::HAIRPIN_AWAIT_RESP) {
-		tx_->data.hairpinning_result = Hairpinning::SUPPORTED;
+	if(tx_->state == State::hairpin_await_resp) {
+		tx_->data.hairpinning_result = Hairpinning::supported;
 		complete_transaction();
 	} else {
-		abort_transaction(Error::RESP_UNHANDLED_RESP_TYPE);
+		abort_transaction(Error::resp_unhandled_resp_type);
 	}
 }
 
@@ -230,7 +230,7 @@ void Client::perform_mapping_test3() {
 	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
 
 	if(!xma_attr) {
-		abort_transaction(Error::RESP_MISSING_ATTR);
+		abort_transaction(Error::resp_missing_attr);
 		return;
 	}
 
@@ -240,12 +240,12 @@ void Client::perform_mapping_test3() {
 		connect(alternate_address, port_, [&](const boost::system::error_code& ec) {
 			create_transaction(std::move(tx_->promise));
 			auto [buffer, key] = build_request();
-			rearm_transaction(State::MAPPING_TEST_3, key, buffer);
+			rearm_transaction(State::mapping_test_3, key, buffer);
 			start_transaction_timer();
 			transport_->send(buffer);
 		});
 	} else {
-		tx_->data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
+		tx_->data.behaviour_result = Behaviour::endpoint_independent;
 		complete_transaction();
 	}
 }
@@ -263,13 +263,13 @@ void Client::perform_filtering_test2() {
 	const auto oa_attr = retrieve_attribute<attributes::OtherAddress>(tx_->attributes);
 
 	if(!oa_attr) {
-		abort_transaction(Error::UNSUPPORTED_BY_SERVER);
+		abort_transaction(Error::unsupported_by_server);
 		return;
 	}
 
 	create_transaction(std::move(tx_->promise));
 	auto [buffer, key] = build_request(true, false);
-	rearm_transaction(State::FILTERING_TEST_2, key, buffer);
+	rearm_transaction(State::filtering_test_2, key, buffer);
 	start_transaction_timer();
 	transport_->send(buffer);
 }
@@ -277,7 +277,7 @@ void Client::perform_filtering_test2() {
 void Client::perform_filtering_test3() {
 	create_transaction(std::move(tx_->promise));
 	auto [buffer, key] = build_request(false, true);
-	rearm_transaction(State::FILTERING_TEST_3, key, buffer);
+	rearm_transaction(State::filtering_test_3, key, buffer);
 	start_transaction_timer();
 	transport_->send(buffer);
 }
@@ -286,15 +286,15 @@ void Client::mapping_test_result() {
 	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
 
 	if(!xma_attr) {
-		abort_transaction(Error::RESP_MISSING_ATTR);
+		abort_transaction(Error::resp_missing_attr);
 		return;
 	}
 
 	if(tx_->data.xmapped == xma_attr) {
-		tx_->data.behaviour_result = Behaviour::ADDRESS_DEPENDENT;
+		tx_->data.behaviour_result = Behaviour::address_dependent;
 		complete_transaction();
 	} else {
-		tx_->data.behaviour_result = Behaviour::ADDRESS_PORT_DEPENDENT;
+		tx_->data.behaviour_result = Behaviour::address_port_dependent;
 		complete_transaction();
 	}
 }
@@ -303,7 +303,7 @@ void Client::perform_hairpinning_test() {
 	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
 
 	if(!xma_attr) {
-		abort_transaction(Error::RESP_MISSING_ATTR);
+		abort_transaction(Error::resp_missing_attr);
 		return;
 	}
 
@@ -312,7 +312,7 @@ void Client::perform_hairpinning_test() {
 	transport_->connect(bind_ip, xma_attr->port, [&](const boost::system::error_code&) {
 		create_transaction(std::move(tx_->promise));
 		auto [buffer, key] = build_request();
-		rearm_transaction(State::HAIRPIN_AWAIT_RESP, key, buffer);
+		rearm_transaction(State::hairpin_await_resp, key, buffer);
 		start_transaction_timer();
 		transport_->send(buffer);
 	});
@@ -323,7 +323,7 @@ void Client::perform_mapping_test2() {
 	const auto xma_attr = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
 
 	if(!oa_attr || !xma_attr) {
-		abort_transaction(Error::UNSUPPORTED_BY_SERVER);
+		abort_transaction(Error::unsupported_by_server);
 		return;
 	}
 
@@ -335,7 +335,7 @@ void Client::perform_mapping_test2() {
 
 	if(bind_ip == transport_->local_ip()
 		&& xma_attr->port == transport_->local_port()) {
-		data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
+		data.behaviour_result = Behaviour::endpoint_independent;
 		complete_transaction();
 	} else {
 		auto alternate_address = extract_ip_to_string(*oa_attr);
@@ -344,7 +344,7 @@ void Client::perform_mapping_test2() {
 			auto data = tx_->data;
 			create_transaction(std::move(tx_->promise));
 			auto [buffer, key] = build_request();
-			rearm_transaction(State::MAPPING_TEST_2, key, buffer, data);
+			rearm_transaction(State::mapping_test_2, key, buffer, data);
 			start_transaction_timer();
 			transport_->send(buffer);
 		});
@@ -355,34 +355,34 @@ void Client::handle_binding_resp() {
 	set_nat_present();
 	
 	switch(tx_->state) {
-		case State::BASIC:
+		case State::basic:
 			complete_transaction();
 			break;
-		case State::MAPPING_TEST_1:
+		case State::mapping_test_1:
 			perform_mapping_test2();
 			break;
-		case State::MAPPING_TEST_2:
+		case State::mapping_test_2:
 			perform_mapping_test3();
 			break;
-		case State::MAPPING_TEST_3:
+		case State::mapping_test_3:
 			mapping_test_result();
 			break;
-		case State::HAIRPIN:
+		case State::hairpin:
 			perform_hairpinning_test();
 			break;
-		case State::FILTERING_TEST_1:
+		case State::filtering_test_1:
 			perform_filtering_test2();
 			break;
-		case State::FILTERING_TEST_2:
-			tx_->data.behaviour_result = Behaviour::ENDPOINT_INDEPENDENT;
+		case State::filtering_test_2:
+			tx_->data.behaviour_result = Behaviour::endpoint_independent;
 			complete_transaction();
 			break;
-		case State::FILTERING_TEST_3:
-			tx_->data.behaviour_result = Behaviour::ADDRESS_DEPENDENT;
+		case State::filtering_test_3:
+			tx_->data.behaviour_result = Behaviour::address_dependent;
 			complete_transaction();
 			break;
 		default:
-			abort_transaction(Error::CONNECTION_ERROR);
+			abort_transaction(Error::connection_error);
 	}
 }
 
@@ -390,14 +390,14 @@ void Client::handle_binding_err_resp() {
 	const auto& ec = retrieve_attribute<attributes::ErrorCode>(tx_->attributes);
 
 	if(!ec) {
-		abort_transaction(Error::RESP_MISSING_ATTR);
+		abort_transaction(Error::resp_missing_attr);
 		return;
 	}
 
-	if(Errors(ec->code) == Errors::TRY_ALTERNATE) {
+	if(Errors(ec->code) == Errors::try_alternate) {
 		// insurance policy against being bounced around servers
 		if(tx_->redirects >= MAX_REDIRECTS) {
-			abort_transaction(Error::RESP_BAD_REDIRECT);
+			abort_transaction(Error::resp_bad_redirect);
 			return;
 		}
 
@@ -406,7 +406,7 @@ void Client::handle_binding_err_resp() {
 		const auto alt_attr = retrieve_attribute<attributes::AlternateServer>(tx_->attributes);
 
 		if(!alt_attr) {
-			abort_transaction(Error::RESP_MISSING_ATTR);
+			abort_transaction(Error::resp_missing_attr);
 			return;
 		}
 
@@ -420,7 +420,7 @@ void Client::handle_binding_err_resp() {
 		// check we haven't resent to this address previously to prevent a redirect loop
 		if(auto entry = dest_hist_.find(ip); entry != dest_hist_.end()) {
 			if(std::chrono::steady_clock::now() - entry->second < 5min) {
-				abort_transaction(Error::RESP_BAD_REDIRECT);
+				abort_transaction(Error::resp_bad_redirect);
 				return;
 			}
 		}
@@ -438,9 +438,9 @@ void Client::handle_binding_err_resp() {
 		});
 	} else {
 		if(ec) {
-			abort_transaction(Error::RESP_BINDING_ERROR, *ec);
+			abort_transaction(Error::resp_binding_error, *ec);
 		} else {
-			abort_transaction(Error::RESP_BINDING_ERROR);
+			abort_transaction(Error::resp_binding_error);
 		}
 	}
 }
@@ -461,7 +461,7 @@ void Client::complete_transaction() {
 			auto xmapped = retrieve_attribute<attributes::XorMappedAddress>(tx_->attributes);
 
 			if(!xmapped) {
-				arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
+				arg.set_value(std::unexpected(ErrorRet(Error::resp_missing_attr)));
 				return;
 			}
 
@@ -483,7 +483,7 @@ void Client::complete_transaction() {
 			if(is_nat_present_) {
 				arg.set_value(*is_nat_present_);
 			} else {
-				arg.set_value(std::unexpected(ErrorRet(Error::RESP_MISSING_ATTR)));
+				arg.set_value(std::unexpected(ErrorRet(Error::resp_missing_attr)));
 			}
 		} else {
 			static_assert(always_false_v<T>, "Unhandled variant type");
@@ -495,19 +495,19 @@ void Client::complete_transaction() {
 
 void Client::handle_no_response() {
 	switch(tx_->state) {
-		case State::HAIRPIN_AWAIT_RESP:
-			tx_->data.hairpinning_result = Hairpinning::NOT_SUPPORTED;
+		case State::hairpin_await_resp:
+			tx_->data.hairpinning_result = Hairpinning::not_supported;
 			complete_transaction();
 			break;
-		case State::FILTERING_TEST_2:
+		case State::filtering_test_2:
 			perform_filtering_test3();
 			break;
-		case State::FILTERING_TEST_3:
-			tx_->data.behaviour_result = Behaviour::ADDRESS_PORT_DEPENDENT;
+		case State::filtering_test_3:
+			tx_->data.behaviour_result = Behaviour::address_port_dependent;
 			complete_transaction();
 			break;
 		default:
-			abort_transaction(Error::NO_RESPONSE_RECEIVED);
+			abort_transaction(Error::no_response_received);
 	}
 }
 
@@ -544,11 +544,11 @@ void Client::on_connection_error(const boost::system::error_code& ec) {
 	std::lock_guard guard(mutex_);
 
 	if(ec == boost::asio::error::connection_aborted) {
-		abort_transaction(Error::CONNECTION_ABORTED);
+		abort_transaction(Error::connection_aborted);
 	} else if(ec == boost::asio::error::connection_reset) {
-		abort_transaction(Error::CONNECTION_RESET);
+		abort_transaction(Error::connection_reset);
 	} else {
-		abort_transaction(Error::CONNECTION_ERROR);
+		abort_transaction(Error::connection_error);
 	}
 }
 
@@ -582,10 +582,10 @@ std::future<NATResult> Client::nat_present() {
 
 	connect(host_, port_, [&](const boost::system::error_code& ec) {
 		if(!ec) {
-			tx_->state = State::BASIC;
+			tx_->state = State::basic;
 			perform_connectivity_test();
 		} else {
-			abort_transaction(Error::UNABLE_TO_CONNECT);
+			abort_transaction(Error::unable_to_connect);
 		}
 	});
 
@@ -601,7 +601,7 @@ std::future<T> Client::basic_request() {
 	create_transaction(std::move(promise));
 
 	connect(host_, port_, [&](const boost::system::error_code&) {
-		tx_->state = State::BASIC;
+		tx_->state = State::basic;
 		perform_connectivity_test();
 	});
 
@@ -613,8 +613,8 @@ std::future<T> Client::behaviour_test(const State state) {
 	std::promise<T> promise;
 	auto future = promise.get_future();
 
-	if(proto_ == Protocol::TCP) {
-		promise.set_value(std::unexpected(ErrorRet(Error::UDP_TEST_ONLY)));
+	if(proto_ == Protocol::tcp) {
+		promise.set_value(std::unexpected(ErrorRet(Error::udp_test_only)));
 		return future;
 	}
 
@@ -631,16 +631,16 @@ std::future<T> Client::behaviour_test(const State state) {
 
 
 std::future<BehaviourResult> Client::filtering() {
-	return behaviour_test<BehaviourResult>(State::FILTERING_TEST_1);
+	return behaviour_test<BehaviourResult>(State::filtering_test_1);
 }
 
 std::future<BehaviourResult> Client::mapping() {
-	return behaviour_test<BehaviourResult>(State::MAPPING_TEST_1);
+	return behaviour_test<BehaviourResult>(State::mapping_test_1);
 }
 
 // RFC allows it over TCP but we don't support it
 std::future<HairpinResult> Client::hairpinning() {
-	return behaviour_test<HairpinResult>(State::HAIRPIN);
+	return behaviour_test<HairpinResult>(State::hairpin);
 }
 
 std::future<AttributesResult> Client::binding_request() {

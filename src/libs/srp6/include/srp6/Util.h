@@ -20,15 +20,18 @@
  
 namespace ember::srp6 {
 	
-constexpr auto SMALL_VEC_LENGTH = 32;
-constexpr auto INTERLEAVE_LENGTH = 40;
+constexpr auto small_vec_length = 32;
+constexpr auto interleave_length = 40;
 
-using SmallVec = boost::container::small_vector<std::uint8_t, SMALL_VEC_LENGTH>;
-using KeyType = boost::container::small_vector<std::uint8_t, INTERLEAVE_LENGTH>;
+using SmallVec = boost::container::small_vector<std::uint8_t, small_vec_length>;
+using KeyType = boost::container::small_vector<std::uint8_t, interleave_length>;
 
 BOOST_STRONG_TYPEDEF(KeyType, SessionKey);
 
-enum class Compliance { RFC5054, GAME };
+enum class Compliance {
+	rfc5054,
+	game
+};
 
 namespace detail {
 

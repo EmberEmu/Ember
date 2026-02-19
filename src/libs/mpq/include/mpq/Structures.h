@@ -15,33 +15,33 @@
 namespace ember::mpq {
 
 enum Flags : std::uint32_t {
-	MPQ_FILE_IMPLODE       = 0x00000100, // PKWARE compression
-	MPQ_FILE_COMPRESS      = 0x00000200,
-	MPQ_FILE_ENCRYPTED     = 0x00010000,
-	MPQ_FILE_FIX_KEY       = 0x00020000,
-	MPQ_FILE_PATCH_FILE    = 0x00100000,
-	MPQ_FILE_SINGLE_UNIT   = 0x01000000,
-	MPQ_FILE_DELETE_MARKER = 0x02000000,
-	MPQ_FILE_SECTOR_CRC    = 0x04000000,
-	MPQ_FILE_EXISTS        = 0x80000000,
-	MPQ_FILE_COMPRESS_MASK = 0x0000FF00  // StormLib defines as 0xFF but why?
+	mpq_file_implode       = 0x00000100, // PKWARE compression
+	mpq_file_compress      = 0x00000200,
+	mpq_file_encrypted     = 0x00010000,
+	mpq_file_fix_key       = 0x00020000,
+	mpq_file_patch_file    = 0x00100000,
+	mpq_file_single_unit   = 0x01000000,
+	mpq_file_delete_marker = 0x02000000,
+	mpq_file_sector_crc    = 0x04000000,
+	mpq_file_exists        = 0x80000000,
+	mpq_file_compress_mask = 0x0000FF00  // StormLib defines as 0xFF but why?
 };
 
 enum class Locale : std::uint16_t {
-	NEUTRAL         = 0x00,
-	TAIWAN_MANDARIN = 0x404,
-	GERMAN          = 0x407,
-	SPANISH         = 0x40a,
-	ITALIAN         = 0x410,
-	KOREAN          = 0x412,
-	PORTUGESE       = 0x416,
-	CZECH           = 0x405,
-	ENGLISH_US      = 0x409,
-	FRENCH          = 0x40c,
-	JAPANESE        = 0x411,
-	POLISH          = 0x415,
-	RUSSIAN         = 0x419,
-	ENGLISH_UK      = 0x809
+	neutral         = 0x00,
+	taiwan_mandarin = 0x404,
+	german          = 0x407,
+	spanish         = 0x40a,
+	italian         = 0x410,
+	korean          = 0x412,
+	portugese       = 0x416,
+	czech           = 0x405,
+	english_us      = 0x409,
+	french          = 0x40c,
+	japanese        = 0x411,
+	polish          = 0x415,
+	russian         = 0x419,
+	english_uk      = 0x809
 };
 
 namespace v0 {

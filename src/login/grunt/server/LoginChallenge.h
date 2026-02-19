@@ -25,15 +25,15 @@ class LoginChallenge final : public Packet {
 	static const std::size_t WIRE_LENGTH = 119;
 	static const std::uint8_t SALT_LENGTH = 32;
 
-	State state_ = State::INITIAL;
+	State state_ = State::initial;
 
 	void read_body(spark::io::pmr::BinaryStream& stream) {
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream >> result;
 
-		if(result != grunt::Result::SUCCESS) {
-			state_ = State::DONE;
+		if(result != grunt::Result::success) {
+			state_ = State::done;
 			return; // rest of the fields won't be sent
 		}
 
@@ -61,7 +61,7 @@ class LoginChallenge final : public Packet {
 	}
 
 	void read_pin_data(spark::io::pmr::BinaryStream& stream) {
-		if(!two_factor_auth || state_ == State::DONE) {
+		if(!two_factor_auth || state_ == State::done) {
 			return;
 		}
 
@@ -69,9 +69,9 @@ class LoginChallenge final : public Packet {
 		if(stream.size() >= (pin_salt.size() + sizeof(pin_grid_seed))) {
 			stream >> pin_grid_seed;
 			stream.get(pin_salt.data(), PIN_SALT_LENGTH);
-			state_ = State::DONE;
+			state_ = State::done;
 		} else {
-			state_ = State::CALL_AGAIN;
+			state_ = State::call_again;
 		}
 	}
 
@@ -81,10 +81,12 @@ public:
 	static const std::uint8_t PIN_SALT_LENGTH      = 16;
 	static const std::uint8_t CHECKSUM_SALT_LENGTH = 16;
 
-	LoginChallenge() : Packet(Opcode::CMD_AUTH_LOGON_CHALLENGE) { }
+	LoginChallenge()
+		: Packet(Opcode::cmd_auth_logon_challenge) {}
 
 	enum class TwoFactorSecurity : std::uint8_t {
-		NONE, PIN
+		none,
+		pin
 	};
 
 	Result result;
@@ -102,17 +104,17 @@ public:
 
 	// todo - early abort (wire length change)
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
-		BOOST_ASSERT_MSG(state_ != State::DONE, "Packet already complete - check your logic!");
+		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::INITIAL && stream.size() < WIRE_LENGTH) {
-			return State::CALL_AGAIN;
+		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+			return State::call_again;
 		}
 
 		switch(state_) {
-			case State::INITIAL:
+			case State::initial:
 				read_body(stream);
 				[[fallthrough]];
-			case State::CALL_AGAIN:
+			case State::call_again:
 				read_pin_data(stream);
 				break;
 			default:
@@ -127,7 +129,7 @@ public:
 		stream << protocol_ver;
 		stream << result;
 
-		if(result != grunt::Result::SUCCESS) {
+		if(result != grunt::Result::success) {
 			return; // don't send the rest of the fields
 		}
 		

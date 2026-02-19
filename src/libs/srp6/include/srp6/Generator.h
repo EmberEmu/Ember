@@ -16,10 +16,10 @@ namespace ember::srp6 {
 
 struct Generator {
 	enum class Group {
-		_256_BIT, _1024_BIT,
-		_1536_BIT, _2048_BIT,
-		_3072_BIT, _4096_BIT,
-		_6144_BIT, _8192_BIT
+		g_256_bit, g_1024_bit,
+		g_1536_bit, g_2048_bit,
+		g_3072_bit, g_4096_bit,
+		g_6144_bit, g_8192_bit
 	};
 
 	Generator(Botan::BigInt g, Botan::BigInt N)

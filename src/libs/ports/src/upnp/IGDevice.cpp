@@ -89,9 +89,9 @@ BufType IGDevice::build_http_request(const HTTPRequest& request) {
 
 std::string IGDevice::protocol_to_string(const Protocol protocol) {
 	switch(protocol) {
-		case Protocol::TCP:
+		case Protocol::tcp:
 			return "TCP";
-		case Protocol::UDP:
+		case Protocol::udp:
 			return "UDP";
 		default:
 			throw std::invalid_argument("Bad protocol specified");
@@ -212,7 +212,7 @@ ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 }
 
 std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<const char> buffer) {
-	if(header.code != HTTPStatus::OK 
+	if(header.code != HTTPStatus::ok 
 	   || header.fields.find("Content-Length") == header.fields.end()) {
 		throw std::invalid_argument("Bad HTTP response");
 	}
@@ -256,23 +256,23 @@ ba::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
 ba::awaitable<ErrorCode> IGDevice::process_request(HTTPTransport& transport, use_awaitable_t) try {
 	co_await transport.connect(hostname_, port_);
 	co_await refresh_xml_cache(transport);	
-	co_return ErrorCode::SUCCESS;
+	co_return ErrorCode::success;
 } catch(const boost::system::error_code&) {
-	co_return ErrorCode::NETWORK_FAILURE;
+	co_return ErrorCode::network_failure;
 } catch(const std::exception&)  {
-	co_return  ErrorCode::HTTP_BAD_RESPONSE;
+	co_return  ErrorCode::http_bad_response;
 }
 
 ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
-	ErrorCode ec { ErrorCode::SUCCESS };
+	ErrorCode ec { ErrorCode::success };
 
 	try {
 		co_await request->transport->connect(hostname_, port_);
 		co_await refresh_xml_cache(*request->transport);
 	}  catch(const boost::system::error_code&) {
-		ec = ErrorCode::NETWORK_FAILURE;
+		ec = ErrorCode::network_failure;
 	} catch(const std::exception&)  {
-		ec = ErrorCode::HTTP_BAD_RESPONSE;
+		ec = ErrorCode::http_bad_response;
 	}
 
 	co_await request->handler(*request->transport, ec);
@@ -284,11 +284,11 @@ ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mapping
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		co_return ErrorCode::SOAP_MISSING_URI;
+		co_return ErrorCode::soap_missing_uri;
 	}
 
-	if(mapping.protocol == Protocol::ALL) {
-		co_return ErrorCode::INVALID_MAPPING_ARG;
+	if(mapping.protocol == Protocol::all) {
+		co_return ErrorCode::invalid_mapping_arg;
 	}
 
 	auto args = build_upnp_del_mapping(mapping);
@@ -305,11 +305,11 @@ ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mapping
 	co_await transport.send(std::move(request));
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 
-	if(header.code != HTTPStatus::OK) {
-		co_return ErrorCode::HTTP_NOT_OK;
+	if(header.code != HTTPStatus::ok) {
+		co_return ErrorCode::http_not_ok;
 	}
 
-	co_return ErrorCode::SUCCESS;
+	co_return ErrorCode::success;
 }
 
 /*
@@ -320,7 +320,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 	const auto& expected_args = scpd_xml_->arguments(args.action, "in");
 
 	if(expected_args.empty()) {
-		return ErrorCode::SOAP_NO_ARGUMENTS;
+		return ErrorCode::soap_no_arguments;
 	}
 
 	for(const auto& arg : expected_args) {
@@ -335,26 +335,26 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 		}
 
 		if(!found) {
-			return ErrorCode::SOAP_ARGUMENTS_MISMATCH;
+			return ErrorCode::soap_arguments_mismatch;
 		}
 	}
 
-	return ErrorCode::SUCCESS;
+	return ErrorCode::success;
 }
 
 ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
-		co_return ErrorCode::SOAP_MISSING_URI;
+		co_return ErrorCode::soap_missing_uri;
 	}
 
 	if(mapping.internal_ip.empty()) {
 		mapping.internal_ip = transport.local_endpoint().address().to_string();
 	}
 
-	if(mapping.protocol == Protocol::ALL) {
-		co_return ErrorCode::INVALID_MAPPING_ARG;
+	if(mapping.protocol == Protocol::all) {
+		co_return ErrorCode::invalid_mapping_arg;
 	}
 
 	auto args = build_upnp_add_mapping(mapping);
@@ -371,11 +371,11 @@ ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTran
 	co_await transport.send(std::move(request));
 	const auto& [header, _] = co_await transport.receive_http_response();
 	
-	if(header.code != HTTPStatus::OK) {
-		co_return ErrorCode::HTTP_NOT_OK;
+	if(header.code != HTTPStatus::ok) {
+		co_return ErrorCode::http_not_ok;
 	}
 
-	co_return ErrorCode::SUCCESS;
+	co_return ErrorCode::success;
 }
 
 void IGDevice::launch_request(UPnPRequest::Handler&& handler) {

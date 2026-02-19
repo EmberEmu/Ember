@@ -14,14 +14,18 @@
 namespace ember::gateway::authentication {
 
 enum class State {
-	NOT_AUTHED, IN_PROGRESS, IN_QUEUE, SUCCESS, FAILED
+	not_authed,
+	in_progress,
+	in_queue,
+	success,
+	failed
 };
 
 struct Context {
 	State state;
 	std::uint32_t seed;
 	std::uint32_t account_id;
-	protocol::CMSG_AUTH_SESSION packet;
+	protocol::cmsg_auth_session packet;
 };
 
 } // authentication, gateway, ember

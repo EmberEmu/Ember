@@ -27,32 +27,32 @@ constexpr auto HEADER_SIZE = 24u;
 
 // defined by IANA
 enum class Protocol : std::uint8_t {
-	ALL = 0x00,
-	TCP = 0x06,
-	UDP = 0x11
+	all = 0x00,
+	tcp = 0x06,
+	udp = 0x11
 };
 
 enum class Opcode : std::uint8_t {
-	ANNOUNCE = 0x00,
-	MAP      = 0x01,
-	PEER     = 0x02
+	announce = 0x00,
+	map      = 0x01,
+	peer     = 0x02
 };
 
 smart_enum_class(Result, std::uint8_t,
-	SUCCESS                 = 0x00,
-	UNSUPP_VERSION          = 0x01,
-	NOT_AUTHORISED          = 0x02,
-	MALFORMED_REQUEST       = 0x03,
-	UNSUPP_OPCODE           = 0x04,
-	UNSUPP_OPTION           = 0x05,
-	MALFORMED_OPTION        = 0x06,
-	NETWORK_FAILURE         = 0x07,
-	NO_RESOURCES            = 0x08,
-	UNSUPP_PROTOCOL         = 0x09,
-	USER_EX_QUOTA           = 0x0a,
-	CANNOT_PROVIDE_EXTERNAL = 0x0b,
-	ADDRESS_MISMATCH        = 0x0c,
-	EXCESSIVE_REMOTE_PEERS  = 0x0d
+	success                 = 0x00,
+	unsupp_version          = 0x01,
+	not_authorised          = 0x02,
+	malformed_request       = 0x03,
+	unsupp_opcode           = 0x04,
+	unsupp_option           = 0x05,
+	malformed_option        = 0x06,
+	network_failure         = 0x07,
+	no_resources            = 0x08,
+	unsupp_protocol         = 0x09,
+	user_ex_quota           = 0x0a,
+	cannot_provide_external = 0x0b,
+	address_mismatch        = 0x0c,
+	excessive_remote_peers  = 0x0d
 );
 
 struct RequestHeader {
@@ -94,9 +94,9 @@ struct MapResponse {
 };
 
 enum class OptionCode : std::uint8_t {
-	THIRD_PARTY    = 0x01,
-	PREFER_FAILURE = 0x02,
-	FILTER         = 0x03
+	third_party    = 0x01,
+	prefer_failure = 0x02,
+	filter         = 0x03
 };
 
 struct OptionHeader {
@@ -110,21 +110,21 @@ struct OptionHeader {
 namespace natpmp {
 
 smart_enum_class(Result, std::uint16_t,
-	SUCCESS,
-	UNSUPPORTED_VERSION,
-	NOT_AUTHORISED,
-	NETWORK_FAILURE,
-	OUT_OF_RESOURCES,
-	UNSUPPORTED_OPCODE
+	success,
+	unsupported_version,
+	not_authorised,
+	network_failure,
+	out_of_resources,
+	unsupported_opcode
 );
 
 enum class Opcode : std::uint8_t {
-	REQUEST_EXTERNAL = 0x00,
-	UDP = 0x01,
-	TCP = 0x02,
-	RESP_EXT = 128 + REQUEST_EXTERNAL,
-	RESP_TCP = 128 + TCP,
-	RESP_UDP = 128 + UDP
+	request_external = 0x00,
+	udp = 0x01,
+	tcp = 0x02,
+	resp_ext = 128 + request_external,
+	resp_tcp = 128 + tcp,
+	resp_udp = 128 + udp
 };
 
 struct MapRequest {

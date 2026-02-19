@@ -21,9 +21,9 @@ namespace ember::stun {
 std::string extract_ip_to_string(const auto& address) {
 	std::string addr_str;
 
-	if(address.family == AddressFamily::IPV4) {
+	if(address.family == AddressFamily::ipv4) {
 		addr_str = boost::asio::ip::address_v4(address.ipv4).to_string();
-	} else if(address.family == AddressFamily::IPV6) {
+	} else if(address.family == AddressFamily::ipv6) {
 		addr_str = boost::asio::ip::address_v6(address.ipv6).to_string();
 	} else {
 		throw std::invalid_argument("Unable to extract address");

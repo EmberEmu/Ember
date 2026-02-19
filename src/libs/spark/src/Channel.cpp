@@ -27,14 +27,14 @@ Channel::Channel(boost::asio::io_context& ctx, std::uint8_t id,
 	  link_ { .peer_banner = std::move(banner), .service_name = std::move(service) } {}
 
 void Channel::open() {
-	if(state_ != State::OPEN) {
-		state_ = State::OPEN;
+	if(state_ != State::open) {
+		state_ = State::open;
 		link_up();
 	}
 }
 
 bool Channel::is_open() const {
-	return state_ == State::OPEN;
+	return state_ == State::open;
 }
 
 void Channel::dispatch(const MessageHeader& header, std::span<const std::uint8_t> data) {
@@ -68,7 +68,7 @@ bool Channel::send(flatbuffers::FlatBufferBuilder&& fbb, const Token& token, con
 bool Channel::send(flatbuffers::FlatBufferBuilder&& fbb, TrackedState state,
                    std::chrono::seconds timeout) {
 	if(!is_open()) {
-		state(link_, std::unexpected(Result::CHANNEL_CLOSED));
+		state(link_, std::unexpected(Result::channel_closed));
 		return false;
 	}
 
@@ -115,7 +115,7 @@ void Channel::close() {
 		handler_->on_link_down(link_);
 	}
 
-	state_ = State::CLOSED;
+	state_ = State::closed;
 }
 
 Channel::~Channel() {

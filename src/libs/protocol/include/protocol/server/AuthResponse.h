@@ -27,37 +27,37 @@ struct AuthResponse final {
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> result;
 
-		if(result == Result::AUTH_WAIT_QUEUE) {
+		if(result == Result::auth_wait_queue) {
 			stream >> queue_position;
 		}
 
-		if(result == Result::AUTH_OK) {
+		if(result == Result::auth_ok) {
 			stream >> billing_time;
 			stream >> billing_flags;
 			stream >> billing_rested;
 		}
 
-		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
 		stream << result;
 
-		if(result == Result::AUTH_WAIT_QUEUE) {
+		if(result == Result::auth_wait_queue) {
 			stream << queue_position;
 		}
 
-		if(result == Result::AUTH_OK) {
+		if(result == Result::auth_ok) {
 			stream << billing_time;
 			stream << billing_flags;
 			stream << billing_rested;
 		}
 
-		return stream? StreamResult::SUCCESS : StreamResult::FAILED;
+		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
-		return StreamResult::CAUGHT_EXCEPTION;
+		return StreamResult::caught_exception;
 	}
 };
 

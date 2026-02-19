@@ -32,7 +32,7 @@ std::optional<std::reference_wrapper<const types::Field>> Validator::locate_fk_p
 			continue;
 		}
 
-		if(def->type != types::Type::STRUCT) {
+		if(def->type != types::Type::t_struct) {
 			continue;
 		}
 			
@@ -97,7 +97,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 
 	std::vector<std::string> sym_names;
 
-	if(def->type == types::Type::STRUCT) {
+	if(def->type == types::Type::t_struct) {
 		auto def_s = static_cast<const types::Struct*>(def);
 
 		for(auto& symbol : def_s->children) {
@@ -107,7 +107,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 				throw exception("Multiple definitions of " + symbol->name);
 			}
 		}
-	} else if(def->type == types::Type::ENUM) {
+	} else if(def->type == types::Type::t_enum) {
 		auto def_s = static_cast<const types::Enum*>(def);
 
 		for(auto& symbol : def_s->options) {
@@ -192,10 +192,10 @@ void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Str
 		auto node = std::make_unique<TreeNode<std::string>>();
 
 		switch(child->type) {
-			case types::Type::STRUCT:
+			case types::Type::t_struct:
 				map_struct_types(node.get(), static_cast<types::Struct*>(child.get()));
 				break;
-			case types::Type::ENUM:
+			case types::Type::t_enum:
 				add_user_type(node.get(), static_cast<types::Enum*>(child.get())->name);
 				break;
 			default:
@@ -211,10 +211,10 @@ void Validator::recursive_type_parse(TreeNode<std::string>* parent, const types:
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	switch(def->type) {
-		case types::Type::STRUCT:
+		case types::Type::t_struct:
 			map_struct_types(parent, static_cast<const types::Struct*>(def));
 			break;
-		case types::Type::ENUM:
+		case types::Type::t_enum:
 			add_user_type(parent, def->name);
 			break;
 		default:
@@ -322,17 +322,17 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 		name_check_(field.name);
 		check_key_types(field);
 
-		if(!(options_ & Options::VAL_SKIP_FOREIGN_KEYS)) {
+		if(!(options_ & Options::val_skip_foreign_keys)) {
 			check_foreign_keys(field);
 		}
 	}
 
 	for(auto& child : def->children) {
 		switch(child->type) {
-			case types::Type::STRUCT:
+			case types::Type::t_struct:
 				validate_struct(static_cast<const types::Struct*>(child.get()), node);
 				break;
-			case types::Type::ENUM:
+			case types::Type::t_enum:
 				validate_enum(static_cast<const types::Enum*>(child.get()));
 				break;
 			default:
@@ -418,10 +418,10 @@ void Validator::validate_definition(const types::Base* def) {
 	LOG_DEBUG_GLOB << "Validating " << def->name << LOG_ASYNC;
 
 	switch(def->type) {
-		case types::Type::STRUCT:
+		case types::Type::t_struct:
 			validate_struct(static_cast<const types::Struct*>(def), &root_);
 			break;
-		case types::Type::ENUM:
+		case types::Type::t_enum:
 			validate_enum(static_cast<const types::Enum*>(def));
 			break;
 		default:

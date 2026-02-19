@@ -17,26 +17,29 @@ namespace ember {
 
 struct Realm {
 	enum class CreationSetting : std::uint8_t {
-		ENABLED,
-		DISABLED,
-		QUEUED,
-		EXISTING_ONLY
+		enabled,
+		disabled,
+		queued,
+		existing_only
 	};
 
 	enum class Flags : std::uint8_t {
-		NONE         = 0x00,
-		INVALID      = 0x01,
-		OFFLINE      = 0x02,
-		SPECIFYBUILD = 0x04,
-		UNK1         = 0x08,
-		UNK2         = 0x10,
-		RECOMMENDED  = 0x20, // can set manually or allow client to do so by setting the population to 600.0f
-		NEW_PLAYERS  = 0x40, // can set manually or allow client to do so by setting the population to 200.0f
-		FULL         = 0x80  // can set manually or allow client to do so by setting the population to 400.0f
+		none         = 0x00,
+		invalid      = 0x01,
+		offline      = 0x02,
+		specifybuild = 0x04,
+		unknown1     = 0x08,
+		unknown2     = 0x10,
+		recommended  = 0x20, // can set manually or allow client to do so by setting the population to 600.0f
+		new_players  = 0x40, // can set manually or allow client to do so by setting the population to 200.0f
+		full         = 0x80  // can set manually or allow client to do so by setting the population to 400.0f
 	}; 
 
 	enum class Type : std::uint32_t {
-		PvE, PvP, RP = 6, RPPvP = 8,
+		pve,
+		pvp,
+		rp = 6,
+		rppvp = 8,
 	};
 
 	std::uint32_t id;

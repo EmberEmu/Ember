@@ -11,16 +11,16 @@
 namespace ember::gateway {
 
 enum class EventType {
-	QUEUE_SUCCESS,
-    QUEUE_UPDATE_POSITION,
-	ACCOUNT_ID_RESPONSE,
-	SESSION_KEY_RESPONSE,
-	CHAR_CREATE_RESPONSE,
-	CHAR_DELETE_RESPONSE,
-	CHAR_ENUM_RESPONSE,
-	CHAR_RENAME_RESPONSE,
-	PLAYER_LOGIN,
-	TIMER_EXPIRED
+	queue_success,
+    queue_update_position,
+	account_id_response,
+	session_key_response,
+	char_create_response,
+	char_delete_response,
+	char_enum_response,
+	char_rename_response,
+	player_login,
+	timer_expired
 };
 
 } // gateway, ember

@@ -31,14 +31,14 @@ namespace ember::spark::io {
 using namespace detail;
 
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
-	if(state_ != StreamState::OK) [[unlikely]] {                 \
+	if(state_ != StreamState::ok) [[unlikely]] {                 \
 		return ret_var;                                           \
 	}                                                             \
                                                                   \
 	enforce_read_bounds(read_size);                               \
 	                                                              \
 	if constexpr(std::is_same_v<exceptions, no_throw_t>) {        \
-		if(state_ != StreamState::OK) [[unlikely]] {             \
+		if(state_ != StreamState::ok) [[unlikely]] {             \
 			return ret_var;                                       \
 		}                                                         \
 	}
@@ -67,12 +67,12 @@ private:
 	buf_type& buffer_;
 	[[no_unique_address]] cond_size_type total_write_{};
 	size_type total_read_ = 0;
-	StreamState state_ = StreamState::OK;
+	StreamState state_ = StreamState::ok;
 	const size_type read_limit_;
 
 	inline void enforce_read_bounds(const size_type read_size) {
 		if(read_size > buffer_.size()) [[unlikely]] {
-			state_ = StreamState::BUFF_LIMIT_ERR;
+			state_ = StreamState::buffer_limit_error;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 				throw buffer_underrun(read_size, total_read_, buffer_.size());
@@ -85,7 +85,7 @@ private:
 			const auto max_read_remaining = read_limit_ - total_read_;
 
 			if(read_size > max_read_remaining) [[unlikely]] {
-				state_ = StreamState::READ_LIMIT_ERR;
+				state_ = StreamState::read_limit_error;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 					throw stream_read_limit(read_size, total_read_, read_limit_);
@@ -111,12 +111,12 @@ private:
 	template<typename... Ts>
 	inline void write(Ts&&... args) {
 		try {
-			if(state_ == StreamState::OK) [[likely]] {
+			if(state_ == StreamState::ok) [[likely]] {
 				buffer_.write(std::forward<Ts>(args)...);
 				advance_write(std::forward<Ts>(args)...);                            
 			}
 		} catch(...) {
-			state_ = StreamState::BUFF_WRITE_ERR;
+			state_ = StreamState::buffer_write_error;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 				throw;
@@ -194,7 +194,7 @@ public:
 		  state_(rhs.state_),
 		  read_limit_(rhs.read_limit_) {
 		rhs.total_read_ = static_cast<size_type>(-1);
-		rhs.state_ = StreamState::INVALID_STREAM;
+		rhs.state_ = StreamState::invalid_stream;
 	}
 
 	BinaryStream& operator=(BinaryStream&&) = delete;
@@ -350,7 +350,7 @@ public:
 		std::uint32_t size = 0;
 		*this >> endian::le(size);
 
-		if(state_ != StreamState::OK) {
+		if(state_ != StreamState::ok) {
 			return *this;
 		}
 
@@ -368,7 +368,7 @@ public:
 		std::uint32_t size = 0;
 		*this >> endian::le(size);
 
-		if(state_ != StreamState::OK) {
+		if(state_ != StreamState::ok) {
 			return *this;
 		}
 
@@ -380,7 +380,7 @@ public:
 		const auto size = varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
-		if(state_ != StreamState::OK) {
+		if(state_ != StreamState::ok) {
 			return *this;
 		}
 
@@ -398,7 +398,7 @@ public:
 		const auto size = varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
-		if(state_ != StreamState::OK) {
+		if(state_ != StreamState::ok) {
 			return *this;
 		}
 		
@@ -558,7 +558,7 @@ public:
 	std::span<out_type> span(size_type count) requires contiguous<buf_type> {
 		std::span view { std::start_lifetime_as<out_type>(buffer_.read_ptr()), count };
 		skip(sizeof(out_type) * count);
-		return (state_ == StreamState::OK? view : std::span<out_type>());
+		return (state_ == StreamState::ok? view : std::span<out_type>());
 	}
 
 	/**  Misc functions **/
@@ -568,11 +568,11 @@ public:
 	}
 
 	void write_seek(const StreamSeek direction, const offset_type offset) requires(seekable<buf_type>) {
-		if(direction == StreamSeek::SK_STREAM_ABSOLUTE) {
+		if(direction == StreamSeek::sk_stream_absolute) {
 			if(offset >= total_write_) {
-				buffer_.write_seek(BufferSeek::SK_FORWARD, offset - total_write_);
+				buffer_.write_seek(BufferSeek::sk_forward, offset - total_write_);
 			} else {
-				buffer_.write_seek(BufferSeek::SK_BACKWARD, total_write_ - offset);
+				buffer_.write_seek(BufferSeek::sk_backward, total_write_ - offset);
 			}
 
 			total_write_ = offset;
@@ -623,11 +623,11 @@ public:
 	}
 
 	bool good() const {
-		return state_ == StreamState::OK;
+		return state_ == StreamState::ok;
 	}
 
 	void clear_error_state() {
-		state_ = StreamState::OK;
+		state_ = StreamState::ok;
 	}
 
 	operator bool() const {
@@ -635,7 +635,7 @@ public:
 	}
 
 	void set_error_state() {
-		state_ = StreamState::USER_DEFINED_ERR;
+		state_ = StreamState::user_defined_error;
 	}
 };
 
