@@ -19,6 +19,7 @@
 #include <semaphore>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <cassert>
 #include <cstdint>
 
@@ -53,6 +54,7 @@ public:
 	boost::asio::steady_timer timer_;
 	std::binary_semaphore shutdown_wait_;
 
+	std::string_view error_string(const Error& error);
 	void begin_forwarding(Method Method, const std::string& iface, const std::string& gateway, std::uint16_t port);
 	void try_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port);
 	void start_upnp(const std::string& iface, std::uint16_t port);

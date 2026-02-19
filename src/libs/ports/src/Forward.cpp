@@ -105,10 +105,20 @@ void Forward::start_pmp(const std::string& iface, const std::string& gateway, st
 							request.lifetime);
 			mapping_active_ = true;
 		} else {
-			LOG_ERROR_ASYNC(logger_, "[NATPMP/PCP] Port forwarding failed, error {}", result.error().code);
+			LOG_ERROR_ASYNC(logger_, R"([NATPMP/PCP] Port forwarding failed, error "{}")", error_string(result.error()));
 			mapping_active_ = false; // mapping can succeed and later fail when refreshed
 		}
 	});
+}
+
+std::string_view Forward::error_string(const Error& error) {
+	if(error.code == ErrorCode::natpmp_code) {
+		return to_string(error.natpmp_code);
+	} else if(error.code == ErrorCode::pcp_code) {
+		return to_string(error.pcp_code);
+	} else {
+		return to_string(error.code);
+	}
 }
 
 void Forward::unmap_upnp() {
