@@ -117,7 +117,7 @@ std::string_view ansi_sequence(Colour colour) {
 			return "\033[22;30m";
 		case Colour::blue:
 			return "\033[22;34m";
-		case Colour::BROWN:
+		case Colour::brown:
 			return "\033[22;33m";
 		case Colour::cyan:
 			return "\033[22;36m";
