@@ -140,8 +140,8 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help", "Displays a list of available options")
-		("host,h", po::value<std::string>()->default_value("stunserver.stunprotocol.org"), "Host")
-		("port,p", po::value<std::uint16_t>()->default_value(3479), "Port")
+		("host,h", po::value<std::string>()->default_value("stun.l.google.com"), "Host")
+		("port,p", po::value<std::uint16_t>()->default_value(3478), "Port")
 		("protocol,c", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)")
 		("bind,b", po::value<std::string>()->default_value("0.0.0.0"), "The network interface to bind to");
 
