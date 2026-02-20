@@ -266,7 +266,14 @@ void CommandSink::dispatch_command() {
 	}
 
 	if(!invoke_handler(command_)) {
-		write_buffer("Unable to execute command, no command handler has been registered", true);
+		std::string_view msg = "Unable to execute command, no command handler has been registered";
+
+		if(colour_) {
+			utility::ConsoleColour concol(utility::Colour::white_on_red_bg);
+			write_buffer(msg, true);
+		} else {
+			write_buffer(msg, true);
+		}
 	}
 
 	cmd_history_.emplace_back(command_);
