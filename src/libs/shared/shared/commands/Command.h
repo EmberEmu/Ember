@@ -63,7 +63,7 @@ public:
 	std::shared_ptr<Command> handler(CommandHandler handler);
 	std::shared_ptr<Command> name(std::string description);
 	bool erase_argument(const std::string& argument);
-	void erase_arguments();
+	void clear_arguments();
 	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
 	void clear_subcommands();
 

@@ -194,7 +194,7 @@ bool Command::erase_argument(const std::string& argument) {
 	return !!remove.size();
 }
 
-void Command::erase_arguments() {
+void Command::clear_arguments() {
 	std::lock_guard guard(mutex_);
 	args_.clear();
 }
