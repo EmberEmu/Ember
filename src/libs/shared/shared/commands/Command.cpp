@@ -265,8 +265,9 @@ std::size_t Command::argument_count() const {
 	return args_.size();
 }
 
-void Command::update_name(std::string name) {
+std::shared_ptr<Command> Command::name(std::string name) {
 	name_ = std::move(name);
+	return this->shared_from_this();
 }
 
 } // commands, ember
