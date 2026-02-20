@@ -19,7 +19,7 @@ namespace commands { class Registry; class Command;  }
 
 namespace ember::utility {
 
-std::shared_ptr<commands::Command> register_help_command(commands::Registry& registry, log::Logger& logger);
+void register_shared_commands(commands::Registry& registry, log::Logger& logger);
 void register_command_handlers(commands::Registry& registry, log::Logger& logger);
 
 } // commands, ember

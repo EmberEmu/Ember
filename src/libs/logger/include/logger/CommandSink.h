@@ -86,6 +86,8 @@ class CommandSink final : public Sink {
 	bool invoke_handler(const std::string_view command);
 
 public:
+	static constexpr std::string_view name = "CommandSink";
+
 	CommandSink(Severity severity, Filter filter, std::string prompt);
 	~CommandSink();
 
@@ -97,6 +99,8 @@ public:
 
 	void register_handler(CommandHandler handler);
 	void register_autocomplete(Autocomplete handler);
+
+	void clear_console();
 
 	bool unique() override { return true; }
 };

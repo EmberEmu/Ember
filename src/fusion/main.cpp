@@ -70,7 +70,7 @@ int main(int argc, const char* argv[]) try {
 
 	commands::Registry registry;
 	utility::register_command_handlers(registry, logger);
-	utility::register_help_command(registry, logger);
+	utility::register_shared_commands(registry, logger);
 
 	const auto ret = launch(args, registry, share_logger, logger);
 	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);

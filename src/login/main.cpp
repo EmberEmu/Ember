@@ -57,7 +57,7 @@ int main(int argc, const char* argv[]) try {
 	commands::Registry registry;
 	commands::PrefixedRegistry cmd_register(registry);
 	utility::register_command_handlers(registry, logger);
-	utility::register_help_command(registry, logger);
+	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, cmd_register, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);

@@ -31,7 +31,7 @@ using namespace detail;
 static constexpr auto prompt_colour = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // white
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
-	: Sink(severity, filter, "CommandSink"),
+	: Sink(severity, filter, name),
 	  prompt_(std::move(prompt)),
 	  colour_(false),
 	  stopped_(false),
@@ -480,6 +480,29 @@ static std::wstring utf8_to_utf16(std::string_view str) {
 	std::wstring wstr(size_needed, L'\0');
 	MultiByteToWideChar(CP_UTF8, 0, str.data(), static_cast<int>(str.size()), wstr.data(), size_needed);
 	return wstr;
+}
+
+void CommandSink::clear_console() {
+	std::lock_guard guard(console_lock_);
+
+	COORD topLeft{};
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO screen;
+	DWORD written{};
+	
+	GetConsoleScreenBufferInfo(console, &screen);
+
+	FillConsoleOutputCharacterA(
+		console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+	);
+
+	FillConsoleOutputAttribute(
+		console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
+		screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+	);
+
+	SetConsoleCursorPosition(console, topLeft);
+	redraw_prompt();
 }
 
 void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {

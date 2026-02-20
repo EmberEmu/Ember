@@ -15,6 +15,7 @@
 #include <ranges>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ember::utility {
@@ -136,19 +137,36 @@ void execute_command(std::string_view input, const commands::Registry& registry,
 	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
 }
 
-std::shared_ptr<commands::Command> register_help_command(commands::Registry& registry, log::Logger& logger) {
+void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
 	auto handler = [&](const auto&) {
 		LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
 	};
 
-	return registry.register_command("help")
+	registry.register_command("help")
 		->description("Display console command usage information")
 		->handler(handler);
+
+	registry.register_command("cls")
+		->description("Clears the console")
+		->handler([&](const auto& arguments) {
+		auto sinks = logger.fetch_sink(log::CommandSink::name);
+
+		if(sinks.empty()) {
+			LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
+		} else if(sinks.size() != 1) {
+			LOG_ERROR_SYNC(logger, "Didn't expect multiple command sinks, cannot execute command");
+			return;
+		}
+
+		auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
+		assert(command_sink.name() == log::CommandSink::name);
+		command_sink->clear_console();
+	});
 }
 
 void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
 #ifdef _WIN32
-	auto sinks = logger.fetch_sink("CommandSink");
+	auto sinks = logger.fetch_sink(log::CommandSink::name);
 
 	if(sinks.empty()) {
 		LOG_INFO_SYNC(logger, "Console commands disabled, no suitable logging sink found");
