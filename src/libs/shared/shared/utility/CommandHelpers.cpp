@@ -159,7 +159,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 		}
 
 		auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
-		assert(command_sink.name() == log::CommandSink::name);
+		assert(command_sink->name() == log::CommandSink::name);
 		command_sink->clear_console();
 	});
 }
