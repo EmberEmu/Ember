@@ -48,6 +48,9 @@ class Command : public std::enable_shared_from_this<Command> {
 	Command(std::string name);
 
 public:
+	struct required {};
+	struct optional {};
+
 	static std::shared_ptr<Command> create(std::string name);
 
 	Command(Command&) = delete;
@@ -75,6 +78,12 @@ public:
 	std::size_t argument_count() const;
 
 	Result execute(std::span<const ArgumentValue> arguments);
+
+	Command& operator()(CommandHandler handler);
+	Command& operator()(std::shared_ptr<Command> command);
+	Command& operator()(std::string description);
+	Command& operator()(std::string argument, ArgumentType type, required);
+	Command& operator()(std::string argument, ArgumentType type, optional);
 };
 
 } // commands, ember

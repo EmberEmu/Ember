@@ -270,4 +270,29 @@ std::shared_ptr<Command> Command::name(std::string name) {
 	return this->shared_from_this();
 }
 
+Command& Command::operator()(std::shared_ptr<Command> command) {
+	this->insert(command);
+	return *this;
+}
+
+Command& Command::operator()(CommandHandler handler) {
+	this->handler(handler);
+	return *this;
+}
+
+Command& Command::operator()(std::string description) {
+	this->description(description);
+	return *this;
+}
+
+Command& Command::operator()(std::string argument, ArgumentType type, required) {
+	this->argument(std::move(argument), type);
+	return *this;
+}
+
+Command& Command::operator()(std::string argument, ArgumentType type, optional) {
+	this->optional_argument(std::move(argument), type);
+	return *this;
+}
+
 } // commands, ember
