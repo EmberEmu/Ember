@@ -42,6 +42,11 @@ std::vector<std::string> Registry::parse_input(std::string_view input) {
 	return tokens;
 }
 
+auto Registry::search(std::string_view query) const -> SearchResult {
+	const auto tokens = parse_input(query);
+	return search(tokens);
+}
+
 // this is really inefficient due to the registry copies (must be copied from subcommands for safety)
 // but it's not even remotely performance sensitive, so it'll do
 auto Registry::search(std::span<const std::string> tokens) const -> SearchResult {

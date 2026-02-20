@@ -49,6 +49,7 @@ public:
 
 	Suggestions autocomplete(std::string_view query) const;
 
+	SearchResult search(std::string_view query) const;
 	SearchResult search(std::span<const std::string> tokens) const;
 	bool unregister(const std::string& name);
 	std::shared_ptr<Command> root() const;
