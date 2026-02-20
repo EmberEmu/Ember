@@ -146,6 +146,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 		->description("Display console command usage information")
 		->handler(handler);
 
+#ifdef _WIN32
 	registry.register_command("cls")
 		->description("Clears the console")
 		->handler([&](const auto& arguments) {
@@ -161,6 +162,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 		assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
 		command_sink->clear_console();
 	});
+#endif
 }
 
 void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
