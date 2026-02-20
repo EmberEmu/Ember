@@ -15,14 +15,14 @@
 namespace ember::commands {
 
 Command::Command(std::string name)
-	: name_(name) {
+	: name_(std::move(name)) {
 	if(name_.empty()) {
 		throw exception("Command name cannot be empty");
 	}
 }
 
 std::shared_ptr<Command> Command::create(std::string name) {
-	return std::shared_ptr<Command>(new Command(name)); // make_shared can't access ctor
+	return std::shared_ptr<Command>(new Command(std::move(name))); // make_shared can't access ctor
 }
 
 auto Command::validate_arg_count(const std::size_t count) const -> Result {
@@ -186,11 +186,11 @@ void Command::subcommand(std::shared_ptr<Command> command) {
 bool Command::remove_argument(const std::string& argument) {
 	std::lock_guard guard(mutex_);
 
-	auto remove = std::ranges::remove_if(args_, [&](auto& arg){
+	const auto& remove = std::ranges::remove_if(args_, [&](auto& arg){
 		return argument == arg.name;
 	});
 
-	args_.erase(remove.begin(), args_.end());
+	args_.erase(remove.begin(), remove.end());
 	return !!remove.size();
 }
 
@@ -259,7 +259,7 @@ std::size_t Command::argument_count() const {
 }
 
 void Command::update_name(std::string name) {
-	name_ = name;
+	name_ = std::move(name);
 }
 
 } // commands, ember

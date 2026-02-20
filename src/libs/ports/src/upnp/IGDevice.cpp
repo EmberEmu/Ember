@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,9 +10,10 @@
 #include <ports/upnp/Utility.h>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <algorithm>
 #include <format>
-#include <utility>
 #include <ranges>
+#include <utility>
 #include <regex>
 
 namespace ember::ports::upnp {
@@ -324,15 +325,10 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 	}
 
 	for(const auto& arg : expected_args) {
-		bool found = false;
-
 		// didn't originally have a use for a map
-		for(const auto& key : args.arguments | std::views::keys) {
-			if(key == arg) {
-				found = true;
-				break;
-			}
-		}
+		const bool found = std::ranges::any_of(args.arguments | std::views::keys, [&](auto& key) {
+			return key == arg;
+		});
 
 		if(!found) {
 			return ErrorCode::soap_arguments_mismatch;
