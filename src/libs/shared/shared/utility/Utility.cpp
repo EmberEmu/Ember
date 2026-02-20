@@ -209,8 +209,8 @@ std::uint32_t to_u32bit(const Botan::BigInt& value) {
 }
 
 std::string time_duration_format(std::chrono::nanoseconds uptime) {
-	assert(uptime >= 0ns);
-
+	uptime = +uptime;
+	
 	auto uptime_s = std::chrono::duration_cast<std::chrono::seconds>(uptime).count();
 
 	const auto days = uptime_s / (60 * 60 * 24);

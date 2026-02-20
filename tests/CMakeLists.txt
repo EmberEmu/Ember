@@ -34,6 +34,7 @@ set(EXECUTABLE_SRC
     GameVersion.cpp
     FileBuffer.cpp
     NullBuffer.cpp
+    Utilities.cpp
 )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
