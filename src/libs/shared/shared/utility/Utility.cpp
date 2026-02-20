@@ -209,8 +209,6 @@ std::uint32_t to_u32bit(const Botan::BigInt& value) {
 }
 
 std::string time_duration_format(std::chrono::nanoseconds uptime) {
-	uptime = +uptime;
-	
 	auto uptime_s = std::chrono::duration_cast<std::chrono::seconds>(uptime).count();
 
 	const auto days = uptime_s / (60 * 60 * 24);
@@ -225,4 +223,4 @@ std::string time_duration_format(std::chrono::nanoseconds uptime) {
 		minutes, (minutes != 1)? "s" : "", seconds, (seconds != 1)? "s" : "");
 }
 
-} // util, ember
+} // utility, ember

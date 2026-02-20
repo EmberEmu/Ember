@@ -35,7 +35,7 @@ static inline std::uint64_t rotl(const std::uint64_t x, int k) {
 	return (x << k) | (x >> (64 - k));
 }
 
-std::uint64_t next(void) {
+std::uint64_t next() {
 	const std::uint64_t s0 = seed[0];
 	std::uint64_t s1 = seed[1];
 	const std::uint64_t result = s0 + s1;
@@ -52,7 +52,7 @@ std::uint64_t next(void) {
 to 2^64 calls to next(); it can be used to generate 2^64
 non-overlapping subsequences for parallel computations. */
 
-void jump(void) {
+void jump() {
 	static const std::uint64_t JUMP[] = { 0xbeac0467eba5facb, 0xd86b048b86aa9922 };
 
 	std::uint64_t s0 = 0;

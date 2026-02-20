@@ -18,4 +18,4 @@ namespace ember::utility {
 std::array<std::uint8_t, 16> generate_md5(std::span<const std::byte> data);
 std::array<std::uint8_t, 16> generate_md5(const std::filesystem::path& file);
 
-} // util, ember
+} // utility, ember

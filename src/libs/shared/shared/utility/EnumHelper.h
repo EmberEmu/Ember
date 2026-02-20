@@ -47,4 +47,4 @@ std::string fb_status(auto value, const char* const* enums) {
 	return std::format("{} ({})", message, std::to_underlying(value));
 }
 
-} // util, ember
+} // utility, ember

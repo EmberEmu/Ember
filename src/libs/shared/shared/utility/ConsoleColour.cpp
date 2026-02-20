@@ -182,4 +182,4 @@ Colour save_console_out_colour() {
 #endif
 }
 
-} // util, ember
+} // utility, ember

@@ -154,14 +154,14 @@ CommandMap Command::subcommands() const {
 std::string Command::usage_string() const {
 	std::lock_guard guard(mutex_);
 
-	std::string result;
-
 	if(args_.empty()) {
 		return "<no arguments>";
 	}
 
+	std::string result;
+
 	for(const auto& arg : args_) {
-		result += (arg.required ? " <" : " [") + arg.name + (arg.required ? ">" : "]");
+		result += (arg.required? " <" : " [") + arg.name + (arg.required ? ">" : "]");
 	}
 
 	return result;

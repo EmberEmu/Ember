@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,8 +13,7 @@
 #include <logger/Logger.h>
 #include <logger/HelperMacros.h>
 #include <boost/program_options.hpp>
-#include <format>
-#include <memory>
+#include <string>
 #include <cstdint>
 
 namespace po = boost::program_options;

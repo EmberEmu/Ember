@@ -28,4 +28,4 @@ struct Clock final : ClockBase {
 	}
 };
 
-} // util, ember
+} // utility, ember

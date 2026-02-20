@@ -51,4 +51,4 @@ std::array<std::uint8_t, 16> generate_md5(const std::filesystem::path& file) {
 	return res;
 }
 
-} // util, ember
+} // utility, ember

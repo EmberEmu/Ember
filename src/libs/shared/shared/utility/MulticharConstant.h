@@ -20,4 +20,4 @@ constexpr std::uint32_t make_mcc(char const (&s)[5]) {
     return s[0] << 24 | s[1] << 16 | s[2] << 8 | s[3];
 }
 
-} // util, ember
+} // utility, ember

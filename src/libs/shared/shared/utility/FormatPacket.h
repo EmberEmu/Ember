@@ -62,4 +62,4 @@ inline std::string format_packet(std::span<const T> packet, unsigned int columns
 	return format_packet(packet.data(), packet.size_bytes(), columns);
 }
 
-} // util, ember
+} // utility, ember

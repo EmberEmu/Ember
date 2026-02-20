@@ -64,4 +64,4 @@ std::uint32_t to_u32bit(const Botan::BigInt& value);
 
 std::string time_duration_format(std::chrono::nanoseconds uptime);
 
-} // util, ember
+} // utility, ember

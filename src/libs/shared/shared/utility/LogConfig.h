@@ -15,4 +15,4 @@ namespace ember::utility {
 
 void configure_logger(log::Logger& logger, const boost::program_options::variables_map& args);
 
-} // util, ember
+} // utility, ember

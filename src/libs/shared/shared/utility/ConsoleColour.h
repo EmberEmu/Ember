@@ -44,4 +44,4 @@ public:
 	}
 };
 
-} // util, ember
+} // utility, ember

@@ -138,29 +138,27 @@ void execute_command(std::string_view input, const commands::Registry& registry,
 }
 
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
-	auto handler = [&](const auto&) {
-		LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
-	};
-
 	registry.register_command("help")
 		->description("Display console command usage information")
-		->handler(handler);
+		->handler([&](const auto&) {
+			LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
+	});
 
 #ifdef _WIN32
 	registry.register_command("cls")
 		->description("Clears the console")
 		->handler([&](const auto& arguments) {
-		auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+			auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
-		if(sinks.empty()) {
-			LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
-		}
+			if(sinks.empty()) {
+				LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
+			}
 
-		assert(sinks.size() == 1 && "multiple command sinks?");
+			assert(sinks.size() == 1 && "multiple command sinks?");
 
-		auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
-		assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
-		command_sink->clear_console();
+			auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
+			assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
+			command_sink->clear_console();
 	});
 #endif
 }

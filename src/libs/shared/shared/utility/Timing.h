@@ -38,4 +38,4 @@ public:
 	static bool valid();
 };
 
-} // util, ember
+} // utility, ember

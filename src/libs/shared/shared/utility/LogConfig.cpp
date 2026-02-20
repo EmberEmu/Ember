@@ -119,4 +119,4 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	}
 }
 
-} // util, ember
+} // utility, ember
