@@ -20,7 +20,7 @@ AccountClient::AccountClient(spark::Server& spark, log::Logger& logger)
 	connect("127.0.0.1", 6003); // temp
 }
 
-void AccountClient::connect_failed(std::string_view ip, std::uint16_t port) {
+void AccountClient::connect_failed(const std::string_view ip, std::uint16_t port) {
 	LOG_INFO_ASYNC(logger_, "Failed to connect to account service on {}:{}", ip, port);
 }
 

@@ -54,7 +54,7 @@ public:
 	~HTTPTransport();
 
 	ba::awaitable<Response> receive_http_response();
-	ba::awaitable<void> connect(std::string_view host, std::uint16_t port);
+	ba::awaitable<void> connect(const std::string_view host, std::uint16_t port);
 	ba::awaitable<void> send(std::shared_ptr<std::vector<std::uint8_t>> message);
 	ba::awaitable<void> send(std::vector<std::uint8_t> message);
 	void close();

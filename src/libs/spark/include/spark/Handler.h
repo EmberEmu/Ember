@@ -26,7 +26,7 @@ public:
 	                        const spark::Token& token) = 0;
 	virtual void on_link_up(const spark::Link& link) = 0;
 	virtual void on_link_down(const spark::Link& link) = 0;
-	virtual void connect_failed(std::string_view ip, std::uint16_t port) = 0;
+	virtual void connect_failed(const std::string_view ip, std::uint16_t port) = 0;
 
 	virtual ~Handler() = default;
 };

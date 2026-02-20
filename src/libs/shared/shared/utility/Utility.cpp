@@ -42,7 +42,7 @@ using namespace std::chrono_literals;
 
 namespace ember::utility {
 
-std::size_t max_consecutive(std::string_view name, const bool case_insensitive,
+std::size_t max_consecutive(const std::string_view name, const bool case_insensitive,
                             const std::locale& locale) {
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;

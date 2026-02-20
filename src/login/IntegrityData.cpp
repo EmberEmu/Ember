@@ -46,7 +46,7 @@ auto IntegrityData::lookup(const GameVersion version,
 	}
 }
 
-void IntegrityData::load_binaries(std::string_view path, std::uint16_t build,
+void IntegrityData::load_binaries(const std::string_view path, std::uint16_t build,
                                   std::span<const std::string_view> files,
                                   const grunt::System system,
                                   const grunt::Platform platform) {

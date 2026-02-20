@@ -119,7 +119,7 @@ std::string_view trim_whitespace(std::string_view str) {
     return str;
 }
     
-std::string_view extract_entry(std::string_view values) {
+std::string_view extract_entry(const std::string_view values) {
 	const size_t next_comma_pos = values.find(',');
     
     if(next_comma_pos != std::string_view::npos) {
@@ -135,7 +135,7 @@ std::string_view extract_entry(std::string_view values) {
 	std::exit(EXIT_FAILURE);
 }
 
-unsigned long long decimal_convert(std::string_view rhs, bool& error) {
+unsigned long long decimal_convert(const std::string_view rhs, bool& error) {
 	std::stringstream ss;
 	ss << "0x" << std::hex << std::setw(2) << std::setfill('0');
 

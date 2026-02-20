@@ -44,7 +44,7 @@ class NetworkServiceDiscovery final : public services::DiscoveryClient {
 
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
-	void connect_failed(std::string_view ip, std::uint16_t port) override;
+	void connect_failed(const std::string_view ip, std::uint16_t port) override;
 
 public:
 	NetworkServiceDiscovery(spark::Server& spark, std::string host,

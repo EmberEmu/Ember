@@ -31,7 +31,7 @@ class RecordPrinter final : public types::TypeVisitor {
 	const std::string default_string = "Hello, world!";
 	const std::string default_string_loc = "Hello, localised string!";
 
-	void generate_field(std::string_view type) {
+	void generate_field(const std::string_view type) {
 		if(type == "int8" || type == "uint8" || type == "bool") {
 			record_ << std::uint8_t{1};
 		} else if(type == "int16" || type == "uint16") {

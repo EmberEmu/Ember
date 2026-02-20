@@ -25,7 +25,7 @@ class XMLParser final {
 	                                         const std::string& type) const;
 
 public:
-	XMLParser(std::string_view xml);
+	XMLParser(const std::string_view xml);
 	XMLParser(std::string xml);
 
 	rapidxml::xml_node<char>* locate_device(const std::string& type) const;

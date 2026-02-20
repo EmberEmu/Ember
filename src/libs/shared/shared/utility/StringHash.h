@@ -21,7 +21,7 @@ struct StringHash {
 		return hash_type{}(str);
 	}
 
-	std::size_t operator()(std::string_view str) const {
+	std::size_t operator()(const std::string_view str) const {
 		return hash_type{}(str);
 	}
 

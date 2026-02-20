@@ -136,7 +136,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(std::string_view string) {
+	BinaryStreamWriter& operator<<(const std::string_view string) {
 		return (*this << prefixed(string));
 	}
 

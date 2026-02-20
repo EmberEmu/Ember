@@ -262,7 +262,7 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator<<(std::string_view string) requires writeable<buf_type> {
+	BinaryStream& operator<<(const std::string_view string) requires writeable<buf_type> {
 		return (*this << prefixed(string));
 	}
 

@@ -17,7 +17,7 @@ namespace ember {
  * just the name of the type. For example:
  * ember.spark.MessageType -> MessageType
  */
-std::string remove_fbs_ns(std::string_view name) {
+std::string remove_fbs_ns(const std::string_view name) {
 	auto loc = name.find_last_of('.');
 
 	if(loc == std::string_view::npos) {
@@ -32,7 +32,7 @@ std::string remove_fbs_ns(std::string_view name) {
  *  the name sans extension. For example:
  * //InputSchema.fbs -> InputSchema
  */
-std::string fbs_to_name(std::string_view name) {
+std::string fbs_to_name(const std::string_view name) {
 	std::string_view fixed {name};
 
 	while(fixed.starts_with('/')) {
@@ -48,7 +48,7 @@ std::string fbs_to_name(std::string_view name) {
  * can be used in C++. For example:
  * ember.spark.v2 -> ember::spark
  */
-std::string to_cpp_ns(std::string_view val) {
+std::string to_cpp_ns(const std::string_view val) {
 	std::string result {val};
 
 	for(auto it = result.begin(); it != result.end();) {
@@ -66,7 +66,7 @@ std::string to_cpp_ns(std::string_view val) {
 /*
  * Converts from Pascal or camel case to snake case
  */
-std::string snake_case(std::string_view val) {
+std::string snake_case(const std::string_view val) {
 	std::string result;
 	bool first = true;
 

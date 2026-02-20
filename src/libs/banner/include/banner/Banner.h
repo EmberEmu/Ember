@@ -12,6 +12,6 @@
 
 namespace ember {
 
-void print_banner(std::string_view display_name);
+void print_banner(const std::string_view display_name);
 
 }

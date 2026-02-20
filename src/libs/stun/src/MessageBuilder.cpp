@@ -96,7 +96,7 @@ void MessageBuilder::add_textual(Attributes attr, std::span<const T> value) {
 	write_padding(pad_size);
 }
 
-void MessageBuilder::add_software(std::string_view value) {
+void MessageBuilder::add_software(const std::string_view value) {
 	add_textual<const char>(Attributes::software, value);
 }
 
@@ -157,7 +157,7 @@ std::vector<std::uint8_t> MessageBuilder::final(const char* const password,
 	return final(std::string_view(password), fingerprint);
 }
 
-std::vector<std::uint8_t> MessageBuilder::final(std::string_view password,
+std::vector<std::uint8_t> MessageBuilder::final(const std::string_view password,
                                                 bool fingerprint) {
 	assert(!finalised_);
 	finalised_ = true;

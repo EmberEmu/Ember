@@ -33,7 +33,7 @@ StreamTransport::~StreamTransport() {
 	work_.reset();
 }
 
-void StreamTransport::connect(std::string_view host, const std::uint16_t port, OnConnect&& cb) {
+void StreamTransport::connect(const std::string_view host, const std::uint16_t port, OnConnect&& cb) {
 	resolver_.async_resolve(host, std::to_string(port),
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		         ba::ip::tcp::resolver::results_type endpoints) mutable {

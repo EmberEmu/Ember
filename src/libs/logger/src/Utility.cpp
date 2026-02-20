@@ -83,7 +83,7 @@ std::string_view severity_string(Severity severity) {
 
 } // detail
 
-Severity severity_string(std::string_view severity) {
+Severity severity_string(const std::string_view severity) {
 	if(severity == "trace") {
 		return Severity::trace;
 	} else if(severity == "debug") {

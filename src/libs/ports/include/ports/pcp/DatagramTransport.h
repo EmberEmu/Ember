@@ -50,14 +50,14 @@ class DatagramTransport final {
 	void do_write();
 
 public:
-	DatagramTransport(std::string_view bind, std::uint16_t port, ba::io_context& ctx_);
+	DatagramTransport(const std::string_view bind, std::uint16_t port, ba::io_context& ctx_);
 	~DatagramTransport();
 
 	void set_callbacks(OnReceive rcb, OnConnectionError ecb);
-	void resolve(std::string_view host, std::uint16_t port, OnResolve&& cb);
+	void resolve(const std::string_view host, std::uint16_t port, OnResolve&& cb);
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message);
 	void send(std::vector<std::uint8_t> message);
-	void join_group(std::string_view address);
+	void join_group(const std::string_view address);
 	void close();
 };
 

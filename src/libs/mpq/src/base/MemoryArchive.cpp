@@ -65,7 +65,7 @@ int MemoryArchive::version() const {
 }
 
 [[nodiscard]]
-std::size_t MemoryArchive::file_lookup(std::string_view name, const std::uint16_t locale) const {
+std::size_t MemoryArchive::file_lookup(const std::string_view name, const std::uint16_t locale) const {
 	const auto table = hash_table();
 	auto index = hash_string(name, mpq_hash_table_index);
 

@@ -47,7 +47,7 @@ public:
 	MessageBuilder(MessageType type, RFCMode mode);
 
 	std::size_t key() const;
-	void add_software(std::string_view value);
+	void add_software(const std::string_view value);
 	void add_change_request(bool ip, bool port);
 	void add_response_port(std::uint16_t port);
 
@@ -56,7 +56,7 @@ public:
 	std::vector<std::uint8_t> final(const char* const password,
 	                                bool fingerprint = false);
 
-	std::vector<std::uint8_t> final(std::string_view password,
+	std::vector<std::uint8_t> final(const std::string_view password,
 	                                bool fingerprint = false);
 
 	std::vector<std::uint8_t> final(std::span<const std::uint8_t> username,

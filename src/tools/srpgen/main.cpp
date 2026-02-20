@@ -26,8 +26,8 @@ namespace po = boost::program_options;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
-void json_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
+void plaintext_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
+void json_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -82,7 +82,7 @@ void launch(const po::variables_map& args) {
 	}
 }
 
-void plaintext_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
+void plaintext_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	std::cout << "Username: " << username << "\n";
 	std::cout << "Verifier: " << verifier.to_hex_string() << "\n";
 	std::cout << "Salt: ";
@@ -92,7 +92,7 @@ void plaintext_output(std::string_view username, const Botan::BigInt& verifier, 
 	}
 }
 
-void json_output(std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
+void json_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
 	const auto vstr = std::format("0x{}", verifier.to_hex_string());
 	const auto saltdec = Botan::BigInt::from_bytes(salt);
 	const auto sstr = std::format("0x{}",  saltdec.to_hex_string());

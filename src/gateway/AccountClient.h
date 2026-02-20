@@ -28,7 +28,7 @@ private:
 
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
-	void connect_failed(std::string_view ip, std::uint16_t port) override;
+	void connect_failed(const std::string_view ip, std::uint16_t port) override;
 
 	void handle_locate_response(
 		std::expected<const rpc::Account::SessionResponse*, spark::Result> res,

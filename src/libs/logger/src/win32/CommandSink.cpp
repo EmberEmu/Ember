@@ -432,7 +432,7 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-std::string CommandSink::truncate_description(std::string_view description) {
+std::string CommandSink::truncate_description(const std::string_view description) {
 	constexpr std::string_view ellipsis { "..." };
 	static_assert(table_desc_cols >= ellipsis.size());
 	const auto ellipsis_space = table_desc_cols - ellipsis.size();
@@ -477,7 +477,7 @@ void CommandSink::cursor_reposition(const CursorPosition position) {
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
 
-static std::wstring utf8_to_utf16(std::string_view str) {
+static std::wstring utf8_to_utf16(const std::string_view str) {
 	if(str.empty()) {
 		return {};
 	}
@@ -621,7 +621,7 @@ void CommandSink::register_autocomplete(Autocomplete handler) {
 	autocomplete_ = std::move(handler);
 }
 
-bool CommandSink::invoke_handler(std::string_view command) {
+bool CommandSink::invoke_handler(const std::string_view command) {
 	if(handler_) {
 		handler_(command_);
 		return true;

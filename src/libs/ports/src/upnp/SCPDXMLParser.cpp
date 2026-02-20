@@ -10,7 +10,7 @@
 
 namespace ember::ports::upnp {
 
-SCPDXMLParser::SCPDXMLParser(std::string_view xml) : xml_(std::string(xml)) {
+SCPDXMLParser::SCPDXMLParser(const std::string_view xml) : xml_(std::string(xml)) {
 	// rapidxml uses a load of stack space, hence the allocation
 	parser_ = std::make_unique<rapidxml::xml_document<>>();
 	parser_->parse<0>(xml_.data());
@@ -21,7 +21,7 @@ SCPDXMLParser::SCPDXMLParser(std::string xml) : xml_(std::move(xml)) {
 	parser_->parse<0>(xml_.data());
 }
 
-rapidxml::xml_node<char>* SCPDXMLParser::action(std::string_view action) const {
+rapidxml::xml_node<char>* SCPDXMLParser::action(const std::string_view action) const {
 	const auto scpd = parser_->first_node("scpd", 0, false);
 
 	if(!scpd) {
@@ -53,7 +53,7 @@ rapidxml::xml_node<char>* SCPDXMLParser::action(std::string_view action) const {
 	return nullptr;
 }
 
-std::vector<std::string_view> SCPDXMLParser::arguments(std::string_view action_name,
+std::vector<std::string_view> SCPDXMLParser::arguments(const std::string_view action_name,
                                                        std::string_view direction) const {
 	const auto action_node = action(action_name);
 

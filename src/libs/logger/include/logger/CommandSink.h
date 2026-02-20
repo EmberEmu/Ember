@@ -37,7 +37,7 @@ class CommandSink final : public Sink {
 		start, end
 	};
 
-	using CommandHandler = std::function<void(std::string_view)>;
+	using CommandHandler = std::function<void(const std::string_view)>;
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
 
 	inline static bool exists_ = false;
@@ -66,7 +66,7 @@ class CommandSink final : public Sink {
 	utility::Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
-	std::string truncate_description(std::string_view description);
+	std::string truncate_description(const std::string_view description);
 
 	void clear_line();
 	void redraw_prompt();

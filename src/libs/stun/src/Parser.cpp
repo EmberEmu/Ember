@@ -382,7 +382,7 @@ std::array<std::uint8_t, 20> Parser::msg_integrity(std::span<const std::uint8_t>
 	return detail::msg_integrity(buffer_, username, realm, password, true);
 }
 
-std::array<std::uint8_t, 20> Parser::msg_integrity(std::string_view password) const {
+std::array<std::uint8_t, 20> Parser::msg_integrity(const std::string_view password) const {
 	return detail::msg_integrity(buffer_, password, true);
 }
 

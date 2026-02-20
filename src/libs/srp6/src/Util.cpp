@@ -99,7 +99,7 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	return Botan::BigInt::from_bytes(hash);
 }
 
-Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
+Botan::BigInt compute_x(const std::string_view identifier, std::string_view password,
                         std::span<const std::uint8_t> salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
@@ -131,7 +131,7 @@ Botan::BigInt compute_x(std::string_view identifier, std::string_view password,
 
 } // detail
 
-Botan::BigInt generate_client_proof(std::string_view identifier, const SessionKey& key,
+Botan::BigInt generate_client_proof(const std::string_view identifier, const SessionKey& key,
                                     const Botan::BigInt& N, const Botan::BigInt& g,
                                     const Botan::BigInt& A, const Botan::BigInt& B,
                                     std::span<const std::uint8_t> salt) {
@@ -188,7 +188,7 @@ void generate_salt(std::span<std::uint8_t> buffer) {
 	Botan::AutoSeeded_RNG().randomize(buffer.data(), buffer.size());
 }
 
-Botan::BigInt generate_verifier(std::string_view identifier, std::string_view password,
+Botan::BigInt generate_verifier(const std::string_view identifier, std::string_view password,
                                 const Generator& generator, std::span<const std::uint8_t> salt,
                                 Compliance mode) {
 	return detail::generate(identifier, password, generator, salt, mode);

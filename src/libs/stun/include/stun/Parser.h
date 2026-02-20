@@ -62,7 +62,7 @@ public:
 	Header read_header();
 	std::vector<attributes::Attribute> attributes();
 	std::uint32_t fingerprint() const;
-	std::array<std::uint8_t, 20> msg_integrity(std::string_view password) const;
+	std::array<std::uint8_t, 20> msg_integrity(const std::string_view password) const;
 
 	std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> username,
 	                                           std::string_view realm,

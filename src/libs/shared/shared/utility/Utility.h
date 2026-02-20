@@ -24,7 +24,7 @@ namespace Botan { class BigInt; }
  */
 namespace ember::utility {
 
-std::size_t max_consecutive(std::string_view name, bool case_insensitive = false,
+std::size_t max_consecutive(const std::string_view name, bool case_insensitive = false,
                             const std::locale& locale = std::locale());
 
 void set_window_title(cstring_view title);

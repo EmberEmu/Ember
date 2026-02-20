@@ -42,14 +42,14 @@ private:
 public:
 	Registry();
 
-	static std::vector<std::string> parse_input(std::string_view input);
+	static std::vector<std::string> parse_input(const std::string_view input);
 
 	std::shared_ptr<Command> register_command(std::string name);
 	void register_command(std::shared_ptr<Command> command);
 
-	Suggestions autocomplete(std::string_view query) const;
+	Suggestions autocomplete(const std::string_view query) const;
 
-	SearchResult search(std::string_view query) const;
+	SearchResult search(const std::string_view query) const;
 	SearchResult search(std::span<const std::string> tokens) const;
 	bool unregister(const std::string& name);
 	std::shared_ptr<Command> root() const;

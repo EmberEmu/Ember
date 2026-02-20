@@ -96,7 +96,7 @@ commands::ArgumentValue convert_type(commands::ArgumentType type, std::string_vi
 	}
 }
 
-void execute_command(std::string_view input, const commands::Registry& registry, log::Logger& logger) try {
+void execute_command(const std::string_view input, const commands::Registry& registry, log::Logger& logger) try {
 	const auto tokens = registry.parse_input(input);
 	const auto search = registry.search(tokens);
 

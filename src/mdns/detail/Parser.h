@@ -76,7 +76,7 @@ Pointers write_questions(const Query& query, spark::io::pmr::BinaryStream& strea
 std::size_t write_rdata(const ResourceRecord& rr, spark::io::pmr::BinaryStream& stream);
 void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs, spark::io::pmr::BinaryStream& stream);
 void write_resource_records(const Query& query, const Pointers& ptrs, spark::io::pmr::BinaryStream& stream);
-void write_label_notation(std::string_view name, spark::io::pmr::BinaryStream& stream);
+void write_label_notation(const std::string_view name, spark::io::pmr::BinaryStream& stream);
 std::uint16_t encode_flags(const Flags& flags);
 
 } // parser, dns, ember

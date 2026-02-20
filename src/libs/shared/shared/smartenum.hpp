@@ -36,10 +36,10 @@ SOFTWARE.
 namespace smart_enum {
 
 int char_to_int(char c, int base, bool& err);
-std::expected<unsigned long long, bool> svtoull(std::string_view string, int base = 0);
-std::string_view trim_whitespace(std::string_view str);
-std::string_view extract_entry(std::string_view values);
-unsigned long long decimal_convert(std::string_view rhs, bool& conv_err);
+std::expected<unsigned long long, bool> svtoull(const std::string_view string, int base = 0);
+std::string_view trim_whitespace(const std::string_view str);
+std::string_view extract_entry(const std::string_view values);
+unsigned long long decimal_convert(const std::string_view rhs, bool& conv_err);
 [[noreturn]] void print_and_bail(std::source_location location);
 
 static std::string_view unknown_enum_str { "UNKNOWN_ENUM_VALUE" };

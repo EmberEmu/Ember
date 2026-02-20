@@ -35,7 +35,7 @@ DatagramTransport::~DatagramTransport() {
 	ctx_.stop();
 }
 
-void DatagramTransport::connect(std::string_view host, const std::uint16_t port, OnConnect&& cb) {
+void DatagramTransport::connect(const std::string_view host, const std::uint16_t port, OnConnect&& cb) {
 	resolver_.async_resolve(host, std::to_string(port),
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		                        ba::ip::udp::resolver::results_type results) {

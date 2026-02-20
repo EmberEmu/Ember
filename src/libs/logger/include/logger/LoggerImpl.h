@@ -147,7 +147,7 @@ public:
 		return *this;
 	}
 
-	impl& operator <<(std::string_view data) {
+	impl& operator <<(const std::string_view data) {
 		const auto size = buffer_.second.size();
 		buffer_.second.resize(size + data.size());
 		std::ranges::copy(data, buffer_.second.data() + size);
@@ -188,7 +188,7 @@ public:
 		return sinks_;
 	}
 
-	std::vector<std::shared_ptr<Sink>> fetch_sink(std::string_view name) {
+	std::vector<std::shared_ptr<Sink>> fetch_sink(const std::string_view name) {
 		std::lock_guard lock(sink_lock_);
 		std::vector<std::shared_ptr<Sink>> sinks;
 

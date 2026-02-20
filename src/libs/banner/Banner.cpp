@@ -14,7 +14,7 @@
 
 namespace ember {
 
-void print_banner(std::string_view display_name) {
+void print_banner(const std::string_view display_name) {
 	utility::ConsoleColour console;
 
 	console.set(utility::Colour::dark_grey);

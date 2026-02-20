@@ -14,7 +14,7 @@
 
 namespace ember::ports {
 
-DatagramTransport::DatagramTransport(std::string_view bind, std::uint16_t port, ba::io_context& ctx)
+DatagramTransport::DatagramTransport(const std::string_view bind, std::uint16_t port, ba::io_context& ctx)
 	: ctx_(ctx), strand_(ctx),
 	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), port)),
 	  resolver_(ctx_) {
@@ -30,7 +30,7 @@ DatagramTransport::~DatagramTransport() {
 	ctx_.stop();
 }
 
-void DatagramTransport::join_group(std::string_view address) {
+void DatagramTransport::join_group(const std::string_view address) {
 	const auto group_ip = ba::ip::make_address(address);
 	const auto mcast_iface = socket_.local_endpoint().address();
 	ba::ip::multicast::join_group join_opt{};
@@ -43,7 +43,7 @@ void DatagramTransport::join_group(std::string_view address) {
 	socket_.set_option(join_opt);
 }
 
-void DatagramTransport::resolve(std::string_view host, const std::uint16_t port, OnResolve&& cb) {
+void DatagramTransport::resolve(const std::string_view host, const std::uint16_t port, OnResolve&& cb) {
 	resolver_.async_resolve(host, std::to_string(port), ba::bind_executor(strand_, 
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
 		                        ba::ip::udp::resolver::results_type results) {

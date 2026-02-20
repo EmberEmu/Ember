@@ -111,7 +111,7 @@ void Server::deregister_handler(gsl::not_null<Handler*> handler) {
 }
 
 ba::awaitable<std::shared_ptr<RemotePeer>>
-Server::connect(std::string_view host, const std::uint16_t port) try {
+Server::connect(const std::string_view host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port));
@@ -165,7 +165,7 @@ ba::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
 	peers_.add(key, std::move(peer));
 }
 
-void Server::connect(std::string_view host, const std::uint16_t port,
+void Server::connect(const std::string_view host, const std::uint16_t port,
                      std::string_view service, gsl::not_null<Handler*> handler) {
 	connect(std::string(host), port, std::string(service), handler);
 }

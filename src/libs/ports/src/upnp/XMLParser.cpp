@@ -11,7 +11,7 @@
 
 namespace ember::ports::upnp {
 
-XMLParser::XMLParser(std::string_view xml) : xml_(std::string(xml)) {
+XMLParser::XMLParser(const std::string_view xml) : xml_(std::string(xml)) {
 	// rapidxml uses a load of stack space, hence the allocation
 	parser_ = std::make_unique<rapidxml::xml_document<>>();
 	parser_->parse<0>(xml_.data());

@@ -27,7 +27,7 @@ using namespace ember;
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 void log_cb(stun::Verbosity verbosity, stun::Error reason);
-void print_error(std::string_view test, const stun::ErrorRet& error);
+void print_error(const std::string_view test, const stun::ErrorRet& error);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -97,7 +97,7 @@ void launch(const po::variables_map& args) {
 	}
 }
 
-void print_error(std::string_view test, const stun::ErrorRet& error) {
+void print_error(const std::string_view test, const stun::ErrorRet& error) {
 	std::println("{} test failed: {} ({})", test,
 	             stun::to_string(error.reason),
 	             std::to_underlying(error.reason));

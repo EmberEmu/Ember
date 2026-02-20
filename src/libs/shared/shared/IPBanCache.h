@@ -81,7 +81,7 @@ class IPBanCache {
 		}
 	}
 
-	void load_ban(std::string_view ip, const std::uint32_t cidr) {
+	void load_ban(const std::string_view ip, const std::uint32_t cidr) {
 		auto address = boost::asio::ip::make_address(ip);
 
 		if(address.is_v6()) {
@@ -104,11 +104,11 @@ public:
 		load_ban(entry.first, entry.second);
 	}
 
-	void ban(std::string_view ip, const std::uint32_t mask) {
+	void ban(const std::string_view ip, const std::uint32_t mask) {
 		load_ban(ip, mask);
 	}
 
-	bool is_banned(std::string_view ip) const {
+	bool is_banned(const std::string_view ip) const {
 		if(ipv4_entries_.empty() && ipv6_entries_.empty()) {
 			return false;
 		}

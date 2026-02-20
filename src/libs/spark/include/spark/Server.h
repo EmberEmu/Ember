@@ -39,7 +39,7 @@ class Server final {
 	boost::asio::awaitable<void> listen();
 	boost::asio::awaitable<void> accept_connection();
 	boost::asio::awaitable<void> accept(boost::asio::ip::tcp::socket socket);
-	boost::asio::awaitable<std::shared_ptr<RemotePeer>> connect(std::string_view host, std::uint16_t port);
+	boost::asio::awaitable<std::shared_ptr<RemotePeer>> connect(const std::string_view host, std::uint16_t port);
 	boost::asio::awaitable<void> send_banner(Connection& conn, const std::string& banner);
 	boost::asio::awaitable<std::string> receive_banner(Connection& conn);
 	boost::asio::awaitable<void> try_open(std::string host,
@@ -59,7 +59,7 @@ public:
 
 	std::uint16_t port() const;
 
-	void connect(std::string_view host, std::uint16_t port,
+	void connect(const std::string_view host, std::uint16_t port,
 	             std::string_view service, gsl::not_null<Handler*> handler);
 
 	void connect(std::string host, std::uint16_t port,

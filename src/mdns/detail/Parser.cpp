@@ -543,7 +543,7 @@ void write_resource_records(const Query& query, const Pointers& ptrs,
 }
 
 // todo: replace this monstrosity with a regex
-void write_label_notation(std::string_view name, spark::io::pmr::BinaryStream& stream) {
+void write_label_notation(const std::string_view name, spark::io::pmr::BinaryStream& stream) {
 	std::string_view segment(name);
 	auto last = 0;
 

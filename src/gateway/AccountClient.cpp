@@ -29,7 +29,7 @@ void AccountClient::on_link_down(const spark::Link& link) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 }
 
-void AccountClient::connect_failed(std::string_view ip, const std::uint16_t port) {
+void AccountClient::connect_failed(const std::string_view ip, const std::uint16_t port) {
 	LOG_INFO_ASYNC(logger_, "Failed to connect to account service on {}:{}", ip, port);
 }
 

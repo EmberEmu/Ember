@@ -34,7 +34,7 @@ std::vector<std::shared_ptr<Sink>> Logger::fetch_sinks() {
 	return pimpl_->fetch_sinks();
 }
 
-std::vector<std::shared_ptr<Sink>> Logger::fetch_sink(std::string_view name) {
+std::vector<std::shared_ptr<Sink>> Logger::fetch_sink(const std::string_view name) {
 	return pimpl_->fetch_sink(name);
 }
 
@@ -60,7 +60,7 @@ Logger& Logger::operator <<(Filter type) {
 	return *this;
 }
 
-Logger& Logger::operator <<(std::string_view data) {
+Logger& Logger::operator <<(const std::string_view data) {
 	*pimpl_ << data;
 	return *this;
 }

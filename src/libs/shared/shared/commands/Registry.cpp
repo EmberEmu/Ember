@@ -24,7 +24,7 @@ void Registry::register_command(std::shared_ptr<Command> command) {
 	root_->subcommand(std::move(command));
 }
 
-std::vector<std::string> Registry::parse_input(std::string_view input) {
+std::vector<std::string> Registry::parse_input(const std::string_view input) {
 	std::vector<std::string> tokens;
 	std::string str(input);
 
@@ -42,7 +42,7 @@ std::vector<std::string> Registry::parse_input(std::string_view input) {
 	return tokens;
 }
 
-auto Registry::search(std::string_view query) const -> SearchResult {
+auto Registry::search(const std::string_view query) const -> SearchResult {
 	const auto tokens = parse_input(query);
 	return search(tokens);
 }
@@ -143,7 +143,7 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 	return result;
 }
 
-Suggestions Registry::autocomplete(std::string_view query) const {
+Suggestions Registry::autocomplete(const std::string_view query) const {
 	auto tokens = parse_input(query);
 	auto results = autocomplete_recurse(root_->subcommands(), tokens);
 

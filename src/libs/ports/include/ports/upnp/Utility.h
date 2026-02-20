@@ -18,7 +18,7 @@ namespace ember::ports::upnp {
 
 struct CaseInsensitive {
 	struct Comparator {
-		bool operator() (std::string_view lhs, std::string_view rhs) const {
+		bool operator() (const std::string_view lhs, std::string_view rhs) const {
 			return std::ranges::equal(lhs, rhs,
 				[](char lhs, char rhs) {
 					return std::tolower(lhs) == std::tolower(rhs);
@@ -28,7 +28,7 @@ struct CaseInsensitive {
 	};
 
 	struct Hash {
-		std::size_t operator() (std::string_view key) const {
+		std::size_t operator() (const std::string_view key) const {
 			std::string hash_key(key.begin(), key.end());
 			std::ranges::transform(hash_key, hash_key.begin(), [](const unsigned char c) {
 				return std::tolower(c);
@@ -42,9 +42,9 @@ struct CaseInsensitive {
   This exists because string_view isn't guaranteed to be null-terminated,
   (and we know ours isn't) so we can't use the standard atoi functions
 */ 
-int sv_to_int(std::string_view string);
-long sv_to_long(std::string_view string);
-long long sv_to_ll(std::string_view string);
+int sv_to_int(const std::string_view string);
+long sv_to_long(const std::string_view string);
+long long sv_to_ll(const std::string_view string);
 
 long long span_to_ll(std::span<const char> span);
 
@@ -53,6 +53,6 @@ long long span_to_ll(std::span<const char> span);
    C++ developers arguing about how best to split strings and on why
    the standard still provides no functionality for it will never not be funny
  */
-std::string_view split_argument(std::string_view input, const char needle);
+std::string_view split_argument(const std::string_view input, const char needle);
 
 } // upnp, ports, ember

@@ -31,7 +31,7 @@ void RealmClient::on_link_down(const spark::Link& link) {
 	mark_realm_offline(link);
 }
 
-void RealmClient::connect_failed(std::string_view ip, const std::uint16_t port) {
+void RealmClient::connect_failed(const std::string_view ip, const std::uint16_t port) {
 	LOG_DEBUG_ASYNC(logger_, "Failed to connect to realm on {}:{}", ip, port);
 }
 

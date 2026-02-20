@@ -129,7 +129,7 @@ public:
 		return update(t.begin(), t.end());
 	}
 
-	std::uint32_t update(std::string_view t) {
+	std::uint32_t update(const std::string_view t) {
 		return update(t.begin(), t.end());
 	}
 

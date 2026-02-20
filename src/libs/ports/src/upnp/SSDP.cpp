@@ -103,7 +103,7 @@ ErrorCode SSDP::validate_message(std::span<const std::uint8_t> datagram) {
 	return ErrorCode::success;
 }
 
-std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
+std::vector<std::uint8_t> SSDP::build_ssdp_request(const std::string_view type,
                                                    std::string_view subtype,
                                                    const int version) {
 	constexpr std::string_view request {
@@ -120,7 +120,7 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(std::string_view type,
 	return buffer;
 }
 
-ba::awaitable<void> SSDP::start_ssdp_search(std::string_view type,
+ba::awaitable<void> SSDP::start_ssdp_search(const std::string_view type,
                                             std::string_view subtype,
                                             const int version) {
 	auto buffer = build_ssdp_request(type, subtype, version);
@@ -187,7 +187,7 @@ void SSDP::locate_gateways(LocateHandler&& handler) {
 	});
 }
 
-void SSDP::search(std::string_view type, std::string_view subtype,
+void SSDP::search(const std::string_view type, std::string_view subtype,
                   const int version, LocateHandler&& handler) {
 	handler_ = handler;
 

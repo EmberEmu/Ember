@@ -35,7 +35,7 @@ static constexpr void decrypt_block(std::span<std::byte> buffer, std::uint32_t k
 	}
 }
 
-static constexpr std::uint32_t hash_string(std::string_view key, std::uint32_t type) {
+static constexpr std::uint32_t hash_string(const std::string_view key, std::uint32_t type) {
 	std::uint32_t seed1 = 0x7FED7FED;
 	std::uint32_t seed2 = 0xEEEEEEEE;
 

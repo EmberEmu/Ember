@@ -18,7 +18,7 @@
 
 namespace ember::log { 
 
-Severity severity_string(std::string_view severity);
+Severity severity_string(const std::string_view severity);
 
 namespace detail {
 
