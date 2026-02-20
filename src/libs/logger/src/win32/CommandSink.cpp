@@ -266,9 +266,7 @@ void CommandSink::dispatch_command() {
 		return;
 	}
 
-	if(handler_) {
-		handler_(command_);
-	} else {
+	if(!invoke_handler(command_)) {
 		write_buffer("Unable to execute command, no command handler has been registered", true);
 	}
 
@@ -592,6 +590,15 @@ void CommandSink::register_handler(CommandHandler handler) {
 void CommandSink::register_autocomplete(Autocomplete handler) {
 	std::lock_guard lock(handler_lock_);
 	autocomplete_ = std::move(handler);
+}
+
+bool CommandSink::invoke_handler(std::string_view command) {
+	if(handler_) {
+		handler_(command_);
+		return true;
+	}
+	
+	return false;
 }
 
 } // log, ember

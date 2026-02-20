@@ -83,6 +83,7 @@ class CommandSink final : public Sink {
 	void write_buffer(std::span<const char> buffer, bool redraw = true);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 	void autocomplete();
+	bool invoke_handler(const std::string_view command);
 
 public:
 	CommandSink(Severity severity, Filter filter, std::string prompt);
