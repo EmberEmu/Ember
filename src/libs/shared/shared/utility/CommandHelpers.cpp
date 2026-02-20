@@ -156,9 +156,9 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 		}
 
 		assert(sinks.size() == 1 && "multiple command sinks?");
-		assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
 
 		auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
+		assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
 		command_sink->clear_console();
 	});
 }
